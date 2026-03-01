@@ -53,9 +53,9 @@ class MaybeUser
 }
 ```
 
-With the `MaybeUser` class, you can either receive a `UserDetail` object in result or get an error message in 'errorMessage'.
+With the `MaybeUser` class, you can either receive a `UserDetail` object in result or get an error message in `errorMessage`.
 
-> Original Instructor implementation in Python provides utility class Maybe making this pattern even easier. Such mechanism is not yet available in PHP version of Instructor.
+> InstructorPHP provides `Cognesy\Instructor\Extras\Maybe\Maybe` for optional extraction flows. See the `Maybe` section in essentials docs.
 
 
 
@@ -66,10 +66,10 @@ To prevent data misalignment, use Enums for standardized fields. Always include 
 ```php
 <?php
 enum Role : string {
-    case Principal = 'principal'
-    case Teacher = 'teacher'
-    case Student = 'student'
-    case Other = 'other'
+    case Principal = 'principal';
+    case Teacher = 'teacher';
+    case Student = 'student';
+    case Other = 'other';
 }
 
 class UserDetail
@@ -146,7 +146,7 @@ class Property
 
 class UserDetail
 {
-    public int $age
+    public int $age;
     public string $name;
     /** @var Property[] Numbered list of arbitrary extracted properties, should be less than 3 */
     public array $properties;
@@ -247,7 +247,7 @@ class TimeRange {
 
 class UserDetail
 {
-    public int $name;
+    public string $name;
     /** Time range during which the user is working. */
     public TimeRange $workTime;
     /** Time range reserved for leisure activities. */

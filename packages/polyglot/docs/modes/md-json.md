@@ -63,9 +63,9 @@ Respond with a JSON object following this structure:
 EOT;
 
 $response = $inference->with(
-messages: $prompt,
-mode: OutputMode::MdJson
-)->toJson();
+    messages: $prompt,
+    mode: OutputMode::MdJson
+)->asJson();
 
 // Process as normal JSON
 ```

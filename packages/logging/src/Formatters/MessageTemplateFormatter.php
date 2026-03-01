@@ -49,7 +49,11 @@ final readonly class MessageTemplateFormatter implements EventFormatter
         if (is_array($context->eventData)) {
             foreach ($context->eventData as $key => $value) {
                 if (is_scalar($value) || is_null($value)) {
-                    $replacements["{$key}"] = (string) $value;
+                    $placeholder = '{' . $key . '}';
+                    if (array_key_exists($placeholder, $replacements)) {
+                        continue;
+                    }
+                    $replacements[$placeholder] = (string) $value;
                 }
             }
         }

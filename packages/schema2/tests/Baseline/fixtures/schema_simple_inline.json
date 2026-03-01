@@ -1,0 +1,138 @@
+{
+    "additionalProperties": false,
+    "properties": {
+        "arrayOfIntegerEnums": {
+            "items": {
+                "description": "Correctly extract items of type: one of: 1, 2, 3",
+                "enum": [
+                    1,
+                    2,
+                    3
+                ],
+                "type": "int",
+                "x-php-class": "Cognesy\\Schema\\Tests\\Examples\\Schema\\IntEnum"
+            },
+            "type": "array"
+        },
+        "arrayOfStrings": {
+            "items": {
+                "description": "Correctly extract items of type: string",
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "nestedClassVar": {
+            "additionalProperties": false,
+            "description": "this tests double nested classes resolution",
+            "properties": {
+                "nestedArrayOfBools": {
+                    "items": {
+                        "description": "Correctly extract items of type: bool",
+                        "type": "boolean"
+                    },
+                    "type": "array"
+                },
+                "nestedArrayOfIntegerEnums": {
+                    "items": {
+                        "description": "Correctly extract items of type: one of: 1, 2, 3",
+                        "enum": [
+                            1,
+                            2,
+                            3
+                        ],
+                        "type": "int",
+                        "x-php-class": "Cognesy\\Schema\\Tests\\Examples\\Schema\\IntEnum"
+                    },
+                    "type": "array"
+                },
+                "nestedArrayOfIntegers": {
+                    "items": {
+                        "description": "Correctly extract items of type: int",
+                        "type": "integer"
+                    },
+                    "type": "array"
+                },
+                "nestedArrayOfStrings": {
+                    "items": {
+                        "description": "Correctly extract items of type: string",
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "nestedFloatVar": {
+                    "type": "number"
+                },
+                "nestedIntVar": {
+                    "type": "integer"
+                },
+                "nestedStringEnumVar": {
+                    "enum": [
+                        "a",
+                        "b",
+                        "c"
+                    ],
+                    "type": "string",
+                    "x-php-class": "Cognesy\\Schema\\Tests\\Examples\\Schema\\StringEnum"
+                },
+                "nestedStringVar": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "nestedIntVar",
+                "nestedFloatVar",
+                "nestedStringVar",
+                "nestedStringEnumVar",
+                "nestedArrayOfStrings",
+                "nestedArrayOfBools",
+                "nestedArrayOfIntegers",
+                "nestedArrayOfIntegerEnums"
+            ],
+            "type": "object",
+            "x-php-class": "Cognesy\\Schema\\Tests\\Examples\\Schema\\NestedClass",
+            "x-title": "nestedClassVar"
+        },
+        "selfReferencingClassVar": {
+            "additionalProperties": false,
+            "description": "this tests self-referencing classes resolution",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "parent": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "x-php-class": "Cognesy\\Schema\\Tests\\Examples\\Schema\\SelfReferencingClass",
+                    "x-title": "parent"
+                }
+            },
+            "required": [
+                "name"
+            ],
+            "type": "object",
+            "x-php-class": "Cognesy\\Schema\\Tests\\Examples\\Schema\\SelfReferencingClass",
+            "x-title": "selfReferencingClassVar"
+        },
+        "stringEnumVar": {
+            "enum": [
+                "a",
+                "b",
+                "c"
+            ],
+            "type": "string",
+            "x-php-class": "Cognesy\\Schema\\Tests\\Examples\\Schema\\StringEnum"
+        },
+        "stringVar": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "stringVar",
+        "stringEnumVar",
+        "arrayOfStrings",
+        "arrayOfIntegerEnums"
+    ],
+    "type": "object",
+    "x-php-class": "Cognesy\\Schema\\Tests\\Examples\\Schema\\SimpleClass",
+    "x-title": "SimpleClass"
+}

@@ -277,7 +277,8 @@ class InferenceFake
         // Handle sequence responses
         if (isset($this->responses['_sequence']) && is_array($this->responses['_sequence'])) {
             if (!empty($this->responses['_sequence'])) {
-                return array_shift($this->responses['_sequence']);
+                $next = array_shift($this->responses['_sequence']);
+                return $next === null ? '' : $this->normalizeResponse($next);
             }
         }
 
@@ -293,15 +294,16 @@ class InferenceFake
 
             if (str_contains($messageString, $pattern)) {
                 if (is_array($response) && array_is_list($response)) {
-                    return array_shift($this->responses[$pattern]);
+                    $next = array_shift($this->responses[$pattern]);
+                    return $next === null ? '' : $this->normalizeResponse($next);
                 }
-                return is_array($response) ? json_encode($response) : $response;
+                return $this->normalizeResponse($response);
             }
         }
 
         // Return default response
         if (isset($this->responses['default'])) {
-            return $this->responses['default'];
+            return $this->normalizeResponse($this->responses['default']);
         }
 
         return '';
@@ -317,6 +319,13 @@ class InferenceFake
         }
 
         return json_encode($this->messages) ?: '';
+    }
+
+    protected function normalizeResponse(string|array $response): string
+    {
+        return is_array($response)
+            ? json_encode($response) ?: ''
+            : $response;
     }
 
     // Assertions

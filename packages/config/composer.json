@@ -37,9 +37,9 @@
     "vimeo/psalm": "^6.0"
   },
   "scripts": {
-    "tests": "@php vendor/bin/pest",
-    "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
-    "psalm": "@php vendor/bin/psalm"
+    "tests": "@php ../../vendor/bin/pest --configuration=phpunit.xml --bootstrap=../../vendor/autoload.php tests",
+    "phpstan": "@php ../../vendor/bin/phpstan analyse -c phpstan.neon",
+    "psalm": "@php ../../vendor/bin/psalm --root=../.. --config=psalm.xml"
   },
   "config": {
     "allow-plugins": {

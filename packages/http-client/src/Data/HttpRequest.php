@@ -120,27 +120,40 @@ class HttpRequest
             'url' => $this->url,
             'method' => $this->method,
             'headers' => $this->headers,
-            'body' => $this->body->toArray(),
+            'body' => $this->body->toString(),
             'options' => $this->options,
             //
             'id' => $this->id,
             'createdAt' => $this->createdAt->format(DateTimeImmutable::ATOM),
             'updatedAt' => $this->updatedAt->format(DateTimeImmutable::ATOM),
-            'metadata' => $this->metadata,
+            'metadata' => $this->metadata->toArray(),
         ];
     }
 
     public static function fromArray(array $data): HttpRequest {
+        $body = $data['body'] ?? '';
+        $serializedBody = match (true) {
+            is_string($body), is_array($body) => $body,
+            default => '',
+        };
+
+        $metadata = $data['metadata'] ?? [];
+        $serializedMetadata = match (true) {
+            $metadata instanceof Metadata => $metadata,
+            is_array($metadata) => Metadata::fromArray($metadata),
+            default => Metadata::empty(),
+        };
+
         return new self(
             url: $data['url'],
             method: $data['method'],
             headers: $data['headers'],
-            body: $data['body'],
+            body: $serializedBody,
             options: $data['options'],
             id: $data['id'],
             createdAt: DateTimeImmutable::createFromFormat(DateTimeImmutable::ATOM, $data['createdAt']) ?: null,
             updatedAt: DateTimeImmutable::createFromFormat(DateTimeImmutable::ATOM, $data['updatedAt']) ?: null,
-            metadata: Metadata::fromArray($data['metadata']),
+            metadata: $serializedMetadata,
         );
     }
 }

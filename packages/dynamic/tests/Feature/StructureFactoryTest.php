@@ -26,6 +26,14 @@ class TestClassForFactory {
     public function methodWithVariadic(string $param1, string ...$items): void {}
 }
 
+readonly class ReadonlyDtoForFactory
+{
+    public function __construct(
+        public string $name,
+        public int $age,
+    ) {}
+}
+
 it('creates structure from function name', function() {
     $structure = StructureFactory::fromFunctionName('testFunctionWithParams');
 
@@ -127,6 +135,14 @@ it('creates structure from method with variadic parameters', function() {
     $items = $structure->field('items');
     expect($items->name())->toBe('items');
     expect($items->typeDetails()->type())->toBe(TypeDetails::PHP_COLLECTION);
+});
+
+it('includes readonly DTO properties when creating structure from class', function () {
+    $structure = StructureFactory::fromClass(ReadonlyDtoForFactory::class);
+
+    expect($structure->fields())->toHaveCount(2);
+    expect($structure->field('name')->typeDetails()->type())->toBe(TypeDetails::PHP_STRING);
+    expect($structure->field('age')->typeDetails()->type())->toBe(TypeDetails::PHP_INT);
 });
 
 it('creates structure from callable closure', function() {

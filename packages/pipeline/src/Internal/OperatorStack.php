@@ -43,9 +43,13 @@ final class OperatorStack implements Countable, IteratorAggregate
     }
 
     public function with(CanProcessState ...$operators): self {
-        $new = clone $this;
-        $new->add(...$operators);
+        $new = new self();
+        $new->add(...$this->operators, ...$operators);
         return $new;
+    }
+
+    public function snapshot(): self {
+        return $this->with();
     }
 
     public function clear(): self {

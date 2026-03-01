@@ -78,7 +78,12 @@
     "cognesy/instructor-schema": "For schema validation and management"
   },
   "scripts": {
-    "tests": "@php vendor/bin/pest",
+    "docs:qa": "@php ../../bin/instructor-docs qa --source-dir=docs --profile=instructor",
+    "test": "@tests",
+    "tests": [
+      "@php vendor/bin/pest",
+      "@docs:qa"
+    ],
     "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
     "psalm": "@php vendor/bin/psalm"
   },

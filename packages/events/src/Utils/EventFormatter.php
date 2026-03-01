@@ -54,12 +54,12 @@ class EventFormatter
     /**
      * Determines whether the event should be logged
      *
-     * @param string $level The log level of the event
-     * @param string $threshold The log level threshold
+     * @param string $threshold The minimum accepted log level threshold
+     * @param string $eventLevel The log level of the event
      * @return bool True if the event should be logged, false otherwise
      */
-    public static function logFilter(string $level, string $threshold): bool {
-        return self::logLevelRank($level) >= self::logLevelRank($threshold);
+    public static function logFilter(string $threshold, string $eventLevel): bool {
+        return self::logLevelRank($eventLevel) <= self::logLevelRank($threshold);
     }
 
     /**

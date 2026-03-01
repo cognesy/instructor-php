@@ -46,7 +46,7 @@ var_dump($person);
 //     age: 28
 // }
 ?>
-// @doctest id="9479"
+// @doctest id="a9e4"
 ```
 
 !!! note
@@ -69,8 +69,24 @@ $structuredOutput = (new StructuredOutput)
     ->withExamples($examples)           // Set example data
     ->withModel($modelName)             // Set LLM model
     ->withOptions($options)             // Set LLM options
-    ->withStreaming(true)               // Enable streaming
-// @doctest id="ba7c"
+    ->withStreaming(true);              // Enable streaming
+// @doctest id="59bc"
+```
+
+You can also pass a prebuilt request object:
+
+```php
+use Cognesy\Instructor\Data\StructuredOutputRequest;
+
+$request = new StructuredOutputRequest(
+    messages: 'Extract user data',
+    requestedSchema: User::class,
+);
+
+$user = (new StructuredOutput)
+    ->withRequest($request)
+    ->get();
+// @doctest id="86e7"
 ```
 
 ### Response Model Configuration
@@ -79,8 +95,8 @@ $structuredOutput = (new StructuredOutput)
     ->withResponseModel($model)         // Set response model (class/object/array)
     ->withResponseClass($className)     // Set response class specifically
     ->withResponseObject($object)       // Set response object instance
-    ->withResponseJsonSchema($schema)   // Set JSON schema directly
-// @doctest id="9086"
+    ->withResponseJsonSchema($schema);  // Set JSON schema directly
+// @doctest id="af52"
 ```
 
 ### Output Formats
@@ -91,8 +107,8 @@ Control how extracted data is returned while keeping the same schema:
 $structuredOutput = (new StructuredOutput)
     ->intoArray()                       // Return as associative array
     ->intoInstanceOf($className)        // Return as different class
-    ->intoObject($selfDeserializing)    // Return as self-deserializing object
-// @doctest id="78ef"
+    ->intoObject($selfDeserializing);   // Return as self-deserializing object
+// @doctest id="4971"
 ```
 
 **Example - Get raw arrays:**
@@ -104,7 +120,7 @@ $userData = (new StructuredOutput)
     ->get();
 
 // Result: ['name' => 'John Doe', 'age' => 30]
-// @doctest id="e6e1"
+// @doctest id="3f51"
 ```
 
 **Example - Use different output class:**
@@ -116,7 +132,7 @@ $dto = (new StructuredOutput)
     ->get();
 
 // Schema defines 5 fields, output has 2 fields
-// @doctest id="4343"
+// @doctest id="48e5"
 ```
 
 See: [Output Formats Guide](../advanced/output_formats.md) for comprehensive documentation.
@@ -127,8 +143,8 @@ $structuredOutput = (new StructuredOutput)
     ->withMaxRetries(3)                 // Set retry count
     ->withOutputMode($mode)             // Set output mode
     ->withConfig($config)               // Set configuration object
-    ->withDefaultToStdClass(true)       // Use stdClass fallback for schema-less data
-// @doctest id="9f6e"
+    ->withDefaultToStdClass(true);      // Use stdClass fallback for schema-less data
+// @doctest id="4f0e"
 ```
 
 ### LLM Provider Configuration
@@ -143,11 +159,11 @@ $structuredOutput = (new StructuredOutput)->withRuntime(
 );
 
 $provider = LLMProvider::using('openai')
-    ->withLLMConfigOverrides(['temperature' => 0.2]);
+    ->withConfigOverrides(['temperature' => 0.2]);
 $structuredOutput = (new StructuredOutput)->withRuntime(
     StructuredOutputRuntime::fromProvider(provider: $provider)
 );
-// @doctest id="af99"
+// @doctest id="097c"
 ```
 
 ### Processing Overrides
@@ -156,8 +172,8 @@ $structuredOutput = (new StructuredOutput)
     ->withValidators(...$validators)    // Override validators
     ->withTransformers(...$transformers) // Override transformers
     ->withDeserializers(...$deserializers) // Override deserializers
-    ->withExtractors(...$extractors)    // Override extractors
-// @doctest id="713d"
+    ->withExtractors(...$extractors);   // Override extractors
+// @doctest id="6c93"
 ```
 
 
@@ -185,7 +201,7 @@ $llmResponse = $structuredOutput->response();
 // Get streaming interface
 $stream = $structuredOutput->stream();
 ?>
-// @doctest id="915d"
+// @doctest id="01fc"
 ```
 
 ### Pending Execution with `create()`
@@ -210,7 +226,20 @@ $json = $pending->toJson();      // Convert result to JSON string
 $array = $pending->toArray();    // Convert result to array
 $jsonObj = $pending->toJsonObject(); // Convert result to Json object
 ?>
-// @doctest id="7f23"
+// @doctest id="f175"
+```
+
+You can inspect execution metadata from `PendingStructuredOutput`:
+
+```php
+<?php
+$pending = $structuredOutput->create();
+$execution = $pending->execution();
+
+$executionId = $execution->id()->toString();
+$requestId = $execution->request()->id()->toString();
+?>
+// @doctest id="e87a"
 ```
 
 ### Runtime-First Execution (`CanCreateStructuredOutput`)
@@ -232,7 +261,7 @@ $request = new StructuredOutputRequest(
 $requestId = $request->id()->toString(); // StructuredOutputRequestId at boundary
 $person = $creator->create($request)->get();
 ?>
-// @doctest id="7081"
+// @doctest id="a228"
 ```
 
 ### Response Types Explained
@@ -242,6 +271,47 @@ $person = $creator->create($request)->get();
 - **`stream()`**: Returns `StructuredOutputStream` for real-time processing of streaming responses
 
 The `PendingStructuredOutput` class serves as a flexible execution interface that lets you choose how to process the LLM response based on your specific needs.
+
+### Typed convenience getters
+
+When you expect a scalar/object/array shape, you can use strict getters:
+
+```php
+<?php
+use Cognesy\Instructor\Extras\Scalar\Scalar;
+use Cognesy\Instructor\StructuredOutput;
+
+$age = (new StructuredOutput)
+    ->with(messages: 'Jason is 28 years old', responseModel: Scalar::integer('age'))
+    ->getInt();
+
+$user = (new StructuredOutput)
+    ->with(messages: 'Jason is 28 years old', responseModel: Person::class)
+    ->getObject();
+?>
+// @doctest id="875a"
+```
+
+Available methods: `getString()`, `getInt()`, `getFloat()`, `getBoolean()`, `getObject()`, `getArray()`.
+
+### Runtime access
+
+For advanced integration, you can access runtime and dispatch custom events:
+
+```php
+<?php
+use Cognesy\Events\Event;
+use Cognesy\Instructor\StructuredOutput;
+
+$structuredOutput = StructuredOutput::using('openai');
+$runtime = $structuredOutput->runtime();
+
+$structuredOutput->dispatch(new Event(['source' => 'app']));
+?>
+// @doctest id="a448"
+```
+
+`dispatch()`, `onEvent()`, and `wiretap()` require `StructuredOutputRuntime`.
 
 
 ## String as Input
@@ -259,7 +329,7 @@ $value = (new StructuredOutput)
     )
     ->get();
 ?>
-// @doctest id="6b45"
+// @doctest id="8f9e"
 ```
 
 
@@ -269,8 +339,8 @@ Instructor offers a way to use structured data as an input. This is
 useful when you want to use object data as input and get another object
 with a result of LLM inference.
 
-The `input` field of Instructor's `with()` method
-can be an object, but also an array or just a string.
+Use `withInput()` when your source data is an object, array, or string and you want
+Instructor to convert it into messages.
 
 ```php
 <?php
@@ -290,14 +360,15 @@ $email = new Email(
     body: 'Your account has been updated.'
 );
 
-$translation = (new StructuredOutput)->with(
-        input: $email,
+$translation = (new StructuredOutput)
+    ->withInput($email)
+    ->with(
         responseModel: Email::class,
         prompt: 'Translate the text fields of email to Spanish. Keep other fields unchanged.',
     )
     ->get();
 ?>
-// @doctest id="8ed7"
+// @doctest id="93dd"
 ```
 
 
@@ -319,16 +390,16 @@ $stream = (new StructuredOutput)->with(
 
 foreach ($stream->partials() as $partialPerson) {
     // process partial person data
-    echo "Name: " $partialPerson->name ?? '...';
-    echo "Age: " $partialPerson->age ?? '...';
+    echo "Name: " . ($partialPerson->name ?? '...') . PHP_EOL;
+    echo "Age: " . ($partialPerson->age ?? '...') . PHP_EOL;
 }
 
 // after streaming is done you can get the final, fully processed person object...
-$person = $stream->lastUpdate()
+$person = $stream->lastUpdate();
 // ...to, for example, save it to the database
 $db->save($person);
 ?>
-// @doctest id="9e7d"
+// @doctest id="8ede"
 ```
 
 
@@ -361,7 +432,7 @@ $stream = $structuredOutput->stream();     // Get streaming interface
 $pending = $structuredOutput->create();
 $result = $pending->get();                 // Same methods available
 $json = $pending->toJson();               // Plus utility methods
-// @doctest id="f924"
+// @doctest id="29af"
 ```
 
 - **`get()`**: Returns the parsed and validated structured result

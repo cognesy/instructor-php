@@ -55,8 +55,13 @@ class AgentCtrl extends Facade
     /**
      * Get a Claude Code agent builder with Laravel defaults.
      */
-    public static function claudeCode(): ClaudeCodeBridgeBuilder
+    public static function claudeCode(): ClaudeCodeBridgeBuilder|AgentCtrlFake
     {
+        $root = static::getFacadeRoot();
+        if ($root instanceof AgentCtrlFake) {
+            return $root->claudeCode();
+        }
+
         $builder = BaseAgentCtrl::claudeCode();
 
         return static::applyLaravelDefaults($builder, 'claude_code');
@@ -65,8 +70,13 @@ class AgentCtrl extends Facade
     /**
      * Get a Codex agent builder with Laravel defaults.
      */
-    public static function codex(): CodexBridgeBuilder
+    public static function codex(): CodexBridgeBuilder|AgentCtrlFake
     {
+        $root = static::getFacadeRoot();
+        if ($root instanceof AgentCtrlFake) {
+            return $root->codex();
+        }
+
         $builder = BaseAgentCtrl::codex();
 
         return static::applyLaravelDefaults($builder, 'codex');
@@ -75,8 +85,13 @@ class AgentCtrl extends Facade
     /**
      * Get an OpenCode agent builder with Laravel defaults.
      */
-    public static function openCode(): OpenCodeBridgeBuilder
+    public static function openCode(): OpenCodeBridgeBuilder|AgentCtrlFake
     {
+        $root = static::getFacadeRoot();
+        if ($root instanceof AgentCtrlFake) {
+            return $root->openCode();
+        }
+
         $builder = BaseAgentCtrl::openCode();
 
         return static::applyLaravelDefaults($builder, 'opencode');
@@ -85,7 +100,7 @@ class AgentCtrl extends Facade
     /**
      * Get an agent builder by type.
      */
-    public static function make(AgentType $type): ClaudeCodeBridgeBuilder|CodexBridgeBuilder|OpenCodeBridgeBuilder
+    public static function make(AgentType $type): ClaudeCodeBridgeBuilder|CodexBridgeBuilder|OpenCodeBridgeBuilder|AgentCtrlFake
     {
         return match ($type) {
             AgentType::ClaudeCode => static::claudeCode(),
@@ -106,7 +121,7 @@ class AgentCtrl extends Facade
         ClaudeCodeBridgeBuilder|CodexBridgeBuilder|OpenCodeBridgeBuilder $builder,
         string $agentKey
     ): ClaudeCodeBridgeBuilder|CodexBridgeBuilder|OpenCodeBridgeBuilder {
-        $config = config("instructor.agents.{$agentKey}", []);
+        $config = static::configGet("instructor.agents.{$agentKey}", []);
 
         // Apply model if configured
         if ($model = $config['model'] ?? null) {
@@ -114,22 +129,35 @@ class AgentCtrl extends Facade
         }
 
         // Apply timeout if configured
-        if ($timeout = $config['timeout'] ?? config('instructor.agents.timeout')) {
+        if ($timeout = $config['timeout'] ?? static::configGet('instructor.agents.timeout')) {
             $builder->withTimeout($timeout);
         }
 
         // Apply working directory if configured
-        if ($directory = $config['directory'] ?? config('instructor.agents.directory')) {
+        if ($directory = $config['directory'] ?? static::configGet('instructor.agents.directory')) {
             $builder->inDirectory($directory);
         }
 
         // Apply sandbox driver if configured
-        if ($sandbox = $config['sandbox'] ?? config('instructor.agents.sandbox')) {
+        if ($sandbox = $config['sandbox'] ?? static::configGet('instructor.agents.sandbox')) {
             $sandboxDriver = \Cognesy\Sandbox\Enums\SandboxDriver::from($sandbox);
             $builder->withSandboxDriver($sandboxDriver);
         }
 
         return $builder;
+    }
+
+    private static function configGet(string $key, mixed $default = null): mixed
+    {
+        if (function_exists('config')) {
+            return config($key, $default);
+        }
+
+        if (static::$app === null || !static::$app->bound('config')) {
+            return $default;
+        }
+
+        return static::$app->make('config')->get($key, $default);
     }
 
     /**

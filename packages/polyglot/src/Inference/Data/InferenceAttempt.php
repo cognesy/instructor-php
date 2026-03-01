@@ -184,8 +184,11 @@ class InferenceAttempt
     }
 
     public static function fromArray(array $data) : self {
+        $response = $data['response'] ?? null;
         return new self(
-            response: InferenceResponse::fromArray($data['response'] ?? []),
+            response: (is_array($response) && $response !== [])
+                ? InferenceResponse::fromArray($response)
+                : null,
             isFinalized: $data['isFinalized'] ?? null,
             errors: $data['errors'] ?? [],
             id: isset($data['id']) ? new InferenceAttemptId($data['id']) : null,

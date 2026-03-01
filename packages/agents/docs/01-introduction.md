@@ -64,7 +64,8 @@ Tool/                 # ToolInterface, BaseTool, FunctionTool, ToolExecutor
 ## Minimal Example
 
 ```php
-use Cognesy\Agents\AgentLoop;use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Data\AgentState;
 
 $loop = AgentLoop::default();
 $state = AgentState::empty()->withUserMessage('Hello!');

@@ -9,8 +9,8 @@ Instructor comes with the following default settings groups:
 - `http`: HTTP client configurations
 - `llm`: LLM provider connections
 - `prompt`: Prompt libraries and their settings
+- `structured`: Structured-output defaults (mode, retries, prompts, stream cache policy)
 - `web`: Web service providers (e.g. scraper API configurations)
 
 Each group is stored in a separate file in the configuration directory. The file name corresponds to the group name.
-
 

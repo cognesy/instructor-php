@@ -35,18 +35,18 @@ class UserDetail {
 
 #### Step 2: Extract
 
-Use the `StructuredOutput::create()` method to send a prompt and extract the data into the target object. The `responseModel` parameter specifies the model to use for extraction.
+Use `StructuredOutput` with `with(...)->get()` to send a prompt and extract the data into the target object. The `responseModel` parameter specifies the model to use for extraction.
 
 ```php
 /** @var UserDetail */
 $user = (new StructuredOutput)->with(
-    messages: [["role": "user", "content": "Extract Jason is 25 years old"]],
+    messages: [['role' => 'user', 'content' => 'Extract Jason is 25 years old']],
     responseModel: UserDetail::class,
-    model: "gpt-3.5-turbo",
+    model: 'gpt-3.5-turbo',
 )->get();
 
-assert($user->name == "Jason")
-assert($user->age == 25)
+assert($user->name === 'Jason');
+assert($user->age === 25);
 ```
 
 It's helpful to annotate the variable with the type of the response model, which will help your IDE provide autocomplete and spell check.

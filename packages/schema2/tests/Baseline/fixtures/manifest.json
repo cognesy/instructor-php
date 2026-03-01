@@ -1,0 +1,13 @@
+{
+    "fixtures": [
+        "schema_simple_inline",
+        "schema_self_ref_inline",
+        "toolcall_transitive_defs",
+        "toolcall_defs_collision",
+        "jsonschema_object_without_class",
+        "typedetails_union_policy"
+    ],
+    "generated_at": "2026-03-01T10:25:31+00:00",
+    "generator": "packages/schema2/tools/baseline/generate.php",
+    "source": "packages/schema (legacy baseline)"
+}

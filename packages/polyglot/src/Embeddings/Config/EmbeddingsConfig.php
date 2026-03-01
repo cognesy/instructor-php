@@ -25,10 +25,12 @@ final class EmbeddingsConfig
     ) {}
 
     public static function fromArray(array $config) : EmbeddingsConfig {
+        $normalized = self::normalizeConfigArray($config);
+
         try {
-            $instance = new self(...$config);
+            $instance = new self(...$normalized);
         } catch (Throwable $e) {
-            $data = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+            $data = json_encode($normalized, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
             throw new ConfigurationException(
                 message: "Invalid configuration for EmbeddingsConfig: {$e->getMessage()}\nData: {$data}",
                 previous: $e,
@@ -48,10 +50,25 @@ final class EmbeddingsConfig
             'apiKey' => $this->apiKey,
             'endpoint' => $this->endpoint,
             'model' => $this->model,
-            'defaultDimensions' => $this->dimensions,
+            'dimensions' => $this->dimensions,
             'maxInputs' => $this->maxInputs,
             'metadata' => $this->metadata,
             'driver' => $this->driver,
         ];
+    }
+
+    private static function normalizeConfigArray(array $config): array {
+        if (array_key_exists('dimensions', $config)) {
+            return $config;
+        }
+
+        if (!array_key_exists('defaultDimensions', $config)) {
+            return $config;
+        }
+
+        $config['dimensions'] = $config['defaultDimensions'];
+        unset($config['defaultDimensions']);
+
+        return $config;
     }
 }

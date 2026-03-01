@@ -17,22 +17,33 @@ Network connectivity problems can prevent successful API requests.
 2. **Verify API Endpoint**: Make sure the API endpoint URL is correct
 ```php
 // In your configuration file (config/llm.php)
-'apiUrl' => 'https://api.openai.com/v1', // Correct URL
+return [
+    'apiUrl' => 'https://api.openai.com/v1', // Correct URL
+];
 ```
 
 3. **Proxy Settings**: If you're behind a proxy, configure it properly
 
 ```php
 // Using custom HTTP client with proxy settings
-use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\HttpClient;use Cognesy\Polyglot\Inference\Inference;use Cognesy\Polyglot\Inference\InferenceRuntime;
+use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\Http\Creation\HttpClientBuilder;
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
+use GuzzleHttp\Client;
 
 $config = new HttpClientConfig(
     requestTimeout: 30,
     connectTimeout: 10,
-    additionalOptions: ['proxy' => 'http://proxy.example.com:8080']
+    driver: 'guzzle',
 );
 
-$httpClient = new HttpClient('guzzle', $config);
+$httpClient = (new HttpClientBuilder())
+    ->withConfig($config)
+    ->withClientInstance('guzzle', new Client([
+        'proxy' => 'http://proxy.example.com:8080',
+    ]))
+    ->create();
 $inference = Inference::fromRuntime(InferenceRuntime::using(
     preset: 'openai',
     httpClient: $httpClient,

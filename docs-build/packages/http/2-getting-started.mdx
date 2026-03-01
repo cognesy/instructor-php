@@ -9,14 +9,14 @@ description: 'Quick start for sync requests with mock and real drivers.'
 use Cognesy\Http\HttpClient;
 
 $client = HttpClient::default(); // default preset (curl)
-// @doctest id="31b1"
+// @doctest id="4d4a"
 ```
 
 Use a specific driver preset when needed:
 
 ```php
 $client = HttpClient::using('guzzle');
-// @doctest id="1835"
+// @doctest id="1d33"
 ```
 
 ## 2. Create and Execute a Request
@@ -36,14 +36,14 @@ $response = $client->withRequest($request)->get();
 
 echo $response->statusCode();
 echo $response->body();
-// @doctest id="a75d"
+// @doctest id="c63b"
 ```
 
 ## 3. Add Middleware (Immutable)
 
 ```php
 $client = $client->withMiddleware($middleware);
-// @doctest id="218b"
+// @doctest id="438c"
 ```
 
 Do not rely on in-place mutation.
@@ -63,7 +63,7 @@ $client = (new HttpClientBuilder())
         );
     })
     ->create();
-// @doctest id="5ed3"
+// @doctest id="230b"
 ```
 
 This is the recommended default for deterministic examples and tests.

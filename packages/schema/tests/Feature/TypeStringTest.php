@@ -1,5 +1,7 @@
 <?php
 
+namespace Cognesy\Schema\Tests\Feature\TypeStringTest;
+
 use Cognesy\Schema\TypeString\TypeString;
 
 class TestUser {}

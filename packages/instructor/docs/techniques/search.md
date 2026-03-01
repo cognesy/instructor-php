@@ -43,7 +43,7 @@ class SearchQuery
 
 ## Segmenting the Search Prompt
 
-The `segment` function takes a string `data` and segments it into multiple search queries. It uses the `StructuredOutput::create()` method to send a prompt and extract the data into the target object. The `responseModel` parameter specifies `Search::class` as the model to use for extraction.
+The `segment` function takes a string `data` and segments it into multiple search queries. It uses `StructuredOutput` to send a prompt and extract the data into the target object. The `responseModel` parameter specifies `Search::class` as the model to use for extraction.
 
 ```php
 <?php

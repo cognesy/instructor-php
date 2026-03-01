@@ -77,7 +77,11 @@ JsonSchema::array(
 // Collection (alias for array)
 JsonSchema::collection(
     name: 'users',
-    itemSchema: JsonSchema::object(...),
+    itemSchema: JsonSchema::object(
+        name: 'User',
+        properties: [JsonSchema::string('name')],
+        requiredProperties: ['name'],
+    ),
     description: 'List of users',
 );
 ```
@@ -109,9 +113,11 @@ $schema = JsonSchema::fromArray([
 
 ```php
 $schema = JsonSchema::object('User')
-    ->withProperty(JsonSchema::string('name'))
-    ->withProperty(JsonSchema::integer('age'))
-    ->withRequired(['name']);
+    ->withProperties([
+        JsonSchema::string('name'),
+        JsonSchema::integer('age'),
+    ])
+    ->withRequiredProperties(['name']);
 ```
 
 ## Using Manual Schemas with StructuredOutput
@@ -130,7 +136,7 @@ $userSchema = JsonSchema::object(
 );
 
 // Use with StructuredOutput
-$user = StructuredOutput::create()
+$user = (new StructuredOutput)
     ->with(
         messages: 'Extract user: John Doe, 30 years old',
         responseModel: $userSchema,
@@ -160,8 +166,11 @@ class User {
     ) {}
 }
 
-$user = StructuredOutput::create()
-    ->with(responseModel: User::class, ...)
+$user = (new StructuredOutput)
+    ->with(
+        messages: 'Extract user: John Doe, 30',
+        responseModel: User::class,
+    )
     ->get();
 ```
 
@@ -184,8 +193,11 @@ $schema = JsonSchema::object('User', [
     JsonSchema::integer('age'),
 ], ['name', 'age']);
 
-$user = StructuredOutput::create()
-    ->with(responseModel: $schema, ...)
+$user = (new StructuredOutput)
+    ->with(
+        messages: 'Extract user: John Doe, 30',
+        responseModel: $schema,
+    )
     ->get();
 ```
 
@@ -231,7 +243,7 @@ $orderSchema = JsonSchema::object(
     requiredProperties: ['orderId', 'customer', 'items', 'status']
 );
 
-$order = StructuredOutput::create()
+$order = (new StructuredOutput)
     ->with(
         messages: 'Extract order details from: ...',
         responseModel: $orderSchema,

@@ -1,23 +1,21 @@
 ---
 title: 'AgentBuilder & Capabilities'
-description: 'Compose agents from modular capabilities using AgentBuilder'
+description: 'Build AgentLoop instances from reusable capabilities'
 ---
 
 # AgentBuilder & Capabilities
 
-`AgentBuilder` is a composition layer that assembles an `AgentLoop` from pluggable capabilities. Each capability (`Use*` class) installs tools, hooks, drivers, or compilers into the builder. The result is a configured `AgentLoop` ready for execution.
+`AgentBuilder` is the composition layer for `AgentLoop`.
+Use it when you want reusable setup instead of wiring tools, hooks, and drivers by hand.
 
-## Why AgentBuilder
-
-`AgentLoop` is a stateless execution engine with sensible defaults. You can use it directly for simple agents. But as you add guards, custom tools, hooks, and compilers, manual setup becomes verbose and error-prone.
-
-`AgentBuilder` solves this by letting you compose features as independent, reusable modules:
+## Quick Start
 
 ```php
 use Cognesy\Agents\Builder\AgentBuilder;
 use Cognesy\Agents\Capability\Bash\UseBash;
 use Cognesy\Agents\Capability\Core\UseGuards;
 use Cognesy\Agents\Capability\Core\UseLLMConfig;
+use Cognesy\Agents\Data\AgentState;
 
 $agent = AgentBuilder::base()
     ->withCapability(new UseLLMConfig(preset: 'anthropic'))
@@ -29,324 +27,129 @@ $state = AgentState::empty()->withUserMessage('List files in /tmp');
 $result = $agent->execute($state);
 ```
 
-`AgentBuilder` is about **composition at construction time**. It does not manage persistence or multi-request lifecycle. For that, use session runtime (see [Session Runtime](16-session-runtime.md)).
-
-## Core API
-
-`AgentBuilder` exposes two interfaces:
-
-**`CanComposeAgentLoop`** (user-facing):
+## API
 
 ```php
-$builder->withCapability(CanProvideAgentCapability $capability): self;
-$builder->build(): CanControlAgentLoop;
+$builder = AgentBuilder::base();
+$builder = $builder->withCapability($capability);
+$agent = $builder->build(); // AgentLoop
 ```
 
-**`CanConfigureAgent`** (capability-facing):
+`AgentBuilder` is immutable. Every `withCapability()` call returns a new builder.
+
+## Common Recipes
+
+### Add a custom tool
 
 ```php
-$agent->tools(): Tools;
-$agent->withTools(Tools $tools): self;
+use Cognesy\Agents\Capability\Core\UseTools;
 
-$agent->contextCompiler(): CanCompileMessages;
-$agent->withContextCompiler(CanCompileMessages $compiler): self;
-
-$agent->toolUseDriver(): CanUseTools;
-$agent->withToolUseDriver(CanUseTools $driver): self;
-
-$agent->hooks(): HookStack;
-$agent->withHooks(HookStack $hooks): self;
-
-$agent->deferredTools(): DeferredToolProviders;
-$agent->withDeferredTools(DeferredToolProviders $deferredTools): self;
-
-$agent->events(): CanHandleEvents;
+$agent = AgentBuilder::base()
+    ->withCapability(new UseTools($myTool))
+    ->build();
 ```
 
-## Writing a Capability
-
-Implement `CanProvideAgentCapability` with `capabilityName()` and `configure()`:
+### Replace the driver
 
 ```php
-use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
-use Cognesy\Agents\Builder\Contracts\CanConfigureAgent;
+use Cognesy\Agents\Capability\Core\UseDriver;
 
-class UseRateLimiting implements CanProvideAgentCapability
-{
-    public function __construct(
-        private int $maxCallsPerMinute = 60,
-    ) {}
-
-    public static function capabilityName(): string {
-        return 'use_rate_limiting';
-    }
-
-    public function configure(CanConfigureAgent $agent): CanConfigureAgent {
-        $hooks = $agent->hooks()->with(
-            hook: new RateLimitHook($this->maxCallsPerMinute),
-            triggerTypes: HookTriggers::beforeToolUse(),
-            priority: 200,
-        );
-        return $agent->withHooks($hooks);
-    }
-}
+$agent = AgentBuilder::base()
+    ->withCapability(new UseDriver($driver))
+    ->build();
 ```
 
-Capabilities can configure any aspect of the agent: tools, hooks, driver, compiler, and deferred tool providers.
-
-### What a Capability Can Do
-
-A capability receives a `CanConfigureAgent` instance and returns a modified copy. The five configuration surfaces are:
-
-| Surface | Method | Typical Use |
-|---|---|---|
-| **Tools** | `withTools()` | Add tool instances to the agent |
-| **Hooks** | `withHooks()` | Register lifecycle hooks (guards, logging, state transforms) |
-| **Driver** | `withToolUseDriver()` | Replace or wrap the tool-use driver |
-| **Compiler** | `withContextCompiler()` | Replace or wrap the message compiler |
-| **Deferred tools** | `withDeferredTools()` | Register tools resolved at `build()` time |
-
-### Adding Tools
-
-The most common pattern — merge new tools into the existing set:
+### Add a hook
 
 ```php
-public function configure(CanConfigureAgent $agent): CanConfigureAgent {
-    $myTool = new MyCustomTool();
-    return $agent->withTools(
-        $agent->tools()->merge(new Tools($myTool))
-    );
-}
-```
+use Cognesy\Agents\Capability\Core\UseHook;
+use Cognesy\Agents\Hook\Collections\HookTriggers;
+use Cognesy\Agents\Hook\Hooks\CallableHook;
 
-### Adding Hooks
-
-Register a hook with trigger types and priority:
-
-```php
-public function configure(CanConfigureAgent $agent): CanConfigureAgent {
-    $hooks = $agent->hooks()->with(
-        hook: new MyHook(),
-        triggerTypes: HookTriggers::afterStep(),
+$agent = AgentBuilder::base()
+    ->withCapability(new UseHook(
+        hook: new CallableHook(fn($ctx) => $ctx),
+        triggers: HookTriggers::afterStep(),
         priority: 10,
-    );
-    return $agent->withHooks($hooks);
-}
+        name: 'after_step_noop',
+    ))
+    ->build();
 ```
 
-### Deferred Tools
-
-Some tools need access to the final driver or event bus, which aren't available until `build()` runs. Use `CanProvideDeferredTools` to defer tool creation:
+### Wrap the default message compiler
 
 ```php
-use Cognesy\Agents\Builder\Contracts\CanProvideDeferredTools;
-use Cognesy\Agents\Builder\Data\DeferredToolContext;
+use Cognesy\Agents\Capability\Core\UseContextCompilerDecorator;
+use Cognesy\Agents\Context\CanCompileMessages;
 
-public function configure(CanConfigureAgent $agent): CanConfigureAgent {
-    $deferred = new class implements CanProvideDeferredTools {
-        public function provideTools(DeferredToolContext $context): Tools {
-            // $context gives you: tools(), toolUseDriver(), events()
-            return new Tools(new MyToolNeedingDriver($context->toolUseDriver()));
-        }
-    };
-
-    return $agent->withDeferredTools(
-        $agent->deferredTools()->withProvider($deferred)
-    );
-}
+$agent = AgentBuilder::base()
+    ->withCapability(new UseContextCompilerDecorator(
+        fn(CanCompileMessages $inner) => new TokenLimitCompiler($inner, maxTokens: 4000)
+    ))
+    ->build();
 ```
 
-`UseSubagents` uses this pattern — the `SpawnSubagentTool` needs the parent's driver and event bus, which are only finalized at build time.
-
-### Multi-Concern Capabilities
-
-A single capability can install multiple components. For example, a capability might add a tool, register a persistence hook, and set a response format — all in one `configure()` call:
+### Enable subagents
 
 ```php
-public function configure(CanConfigureAgent $agent): CanConfigureAgent {
-    // Add the tool
-    $agent = $agent->withTools($agent->tools()->merge(new Tools(new DataExtractionTool())));
+use Cognesy\Agents\Capability\Subagent\UseSubagents;
 
-    // Add a persistence hook
-    $agent = $agent->withHooks($agent->hooks()->with(
-        hook: new PersistResultsHook(),
-        triggerTypes: HookTriggers::afterStep(),
-        priority: -50,
-    ));
-
-    return $agent;
-}
+$agent = AgentBuilder::base()
+    ->withCapability(new UseSubagents(provider: $registry))
+    ->build();
 ```
-
-### Capability Names
-
-`capabilityName()` returns a unique string identifier (e.g., `'use_bash'`). This is used by the `AgentCapabilityRegistry` and agent templates to reference capabilities by name. See [Agent Templates](14-agent-templates.md) for how definitions reference capabilities.
 
 ## Built-in Capabilities
 
-### Core Primitives
+### Core capabilities
 
-| Capability | Purpose |
-|---|---|
-| `UseGuards` | Step, token, time, and finish-reason guards |
-| `UseLLMConfig` | LLM provider preset and retry policy |
-| `UseContextConfig` | System prompt and response format |
-| `UseReActConfig` | ReAct-style driver with structured output |
-| `UseDriver` | Custom driver implementation |
-| `UseDriverDecorator` | Wrap the existing driver |
-| `UseTools` | Individual tool instances |
-| `UseHook` | Single hook with trigger and priority |
-| `UseContextCompiler` | Custom message compiler |
-| `UseContextCompilerDecorator` | Wrap the existing compiler |
-| `UseToolFactory` | Deferred tool creation (runs at `build()` time) |
+- `UseLLMConfig` - set model/provider config
+- `UseGuards` - step/token/time/finish guards
+- `UseTools` - add tools
+- `UseHook` - add one hook
+- `UseDriver` - replace driver
+- `UseDriverDecorator` - wrap current driver
+- `UseContextCompiler` - replace compiler
+- `UseContextCompilerDecorator` - wrap compiler
+- `UseContextConfig` - set system prompt and response format
+- `UseReActConfig` - configure ReAct driver
+- `UseToolFactory` - resolve tools at build time
 
-### Domain Capabilities
+### Domain capabilities
 
-| Capability | What It Installs |
-|---|---|
-| `UseBash` | Bash command execution tool (with sandbox policy) |
-| `UseFileTools` | File read/write/edit tools (scoped to a base directory) |
-| `UseSubagents` | Subagent spawning tool with depth control |
-| `UsePlanningSubagent` | Planning tool that runs an isolated planner subagent and returns a markdown plan |
-| `UseStructuredOutputs` | Schema-based data extraction tool + persistence hook |
-| `UseSummarization` | Message-to-buffer and buffer summarization hooks |
-| `UseSelfCritique` | Self-critique loop hook |
-| `UseSkills` | Skill injection for subagents |
-| `UseTaskPlanning` | Task planning tool |
-| `UseMetadataTools` | Metadata read/write tools |
-| `UseToolRegistry` | Dynamic tool registration |
-| `UseExecutionHistory` | Records execution summaries after each `execute()` call |
-| `UseExecutionRetrospective` | Execution checkpointing and rewind tool + hook |
+- `UseBash`
+- `UseFileTools`
+- `UseSubagents`
+- `UsePlanningSubagent`
+- `UseStructuredOutputs`
+- `UseSummarization`
+- `UseSelfCritique`
+- `UseSkills`
+- `UseTaskPlanning`
+- `UseMetadataTools`
+- `UseToolRegistry`
+- `UseExecutionHistory`
+- `UseExecutionRetrospective`
 
-## Capability Examples
+## Build-time Resolution
 
-### Minimal agent (no tools)
+When `build()` runs, the configurator resolves components in this order:
 
-```php
-$agent = AgentBuilder::base()
-    ->withCapability(new UseLLMConfig(preset: 'anthropic'))
-    ->build();
-```
+1. message compiler
+2. tool-use driver
+3. concrete tools (including deferred tools)
+4. interceptor from hook stack
 
-### File system agent with guards
+This matters for deferred tools that need access to the final driver or event handler.
 
-```php
-$agent = AgentBuilder::base()
-    ->withCapability(new UseLLMConfig(preset: 'openai'))
-    ->withCapability(new UseFileTools(baseDir: '/home/user/workspace'))
-    ->withCapability(new UseGuards(maxSteps: 15, maxExecutionTime: 60.0))
-    ->build();
-```
+## AgentBuilder vs AgentLoop
 
-### Agent with custom hook
+Use `AgentLoop` directly when you need a small one-off setup.
+Use `AgentBuilder` when the setup should be reusable, testable, and shared across agents.
 
-```php
-$agent = AgentBuilder::base()
-    ->withCapability(new UseBash())
-    ->withCapability(new UseHook(
-        hook: new CallableHook(function (HookContext $ctx): HookContext {
-            $command = $ctx->toolCall()?->args()['command'] ?? '';
-            if (str_contains($command, 'rm -rf')) {
-                return $ctx->withToolExecutionBlocked('Dangerous command blocked');
-            }
-            return $ctx;
-        }),
-        triggers: HookTriggers::beforeToolUse(),
-        priority: 100,
-    ))
-    ->build();
-```
+## Related
 
-### Custom context compiler
-
-```php
-$agent = AgentBuilder::base()
-    ->withCapability(new UseContextCompiler(new MyCustomCompiler()))
-    ->build();
-
-// Or wrap the default compiler via decorator
-$agent = AgentBuilder::base()
-    ->withCapability(new UseContextCompilerDecorator(
-        fn(CanCompileMessages $inner) => new TokenLimitingCompiler($inner, maxTokens: 4000)
-    ))
-    ->build();
-```
-
-## Build Resolution Order
-
-When `build()` is called, components are resolved in order:
-
-1. **Compiler** - configured compiler channel
-2. **Driver** - configured driver channel, then compiler/events are rebound
-3. **Tools** - configured tools merged with deferred tool providers (resolved with tools+driver+events context)
-4. **Interceptor** - derived from configured hooks (`HookStack`), or pass-through when no hooks
-
-This ordering matters: deferred tools run after driver resolution so they can access the final driver and events (needed by `UseSubagents`).
-
-## Hook Priority Convention
-
-| Range | Purpose |
-|---|---|
-| 200+ | Guards (steps, tokens, time) |
-| 100 | Context preparation, security checks |
-| 0 | Default (business logic) |
-| -50 | Persistence, logging |
-| -200 | Deferred processing (summarization, buffer management) |
-
-Higher priority hooks run first within each trigger phase.
-
-## Events and Logging
-
-Pass a parent event handler to `AgentBuilder::base()` for event propagation:
-
-```php
-$events = new EventDispatcher();
-$agent = AgentBuilder::base($events)
-    ->withCapability(new UseBash())
-    ->build();
-
-// Or attach a logger after building
-$logger = new AgentEventConsoleObserver(useColors: true, showTimestamps: true);
-$agent->wiretap($logger->wiretap());
-```
-
-## Immutability
-
-`withCapability()` returns a new builder instance. This means you can safely branch from a base configuration:
-
-```php
-$base = AgentBuilder::base()
-    ->withCapability(new UseLLMConfig(preset: 'anthropic'))
-    ->withCapability(new UseGuards(maxSteps: 20));
-
-$bashAgent = $base->withCapability(new UseBash())->build();
-$fileAgent = $base->withCapability(new UseFileTools(baseDir: '.'))->build();
-// $base is unchanged
-```
-
-## Builder Internals
-
-`AgentBuilder` is a thin facade. The actual assembly happens in `AgentConfigurator`, an internal class that accumulates configuration and resolves it into an `AgentLoop`.
-
-```
-AgentBuilder (user-facing)
-  → collects CanProvideAgentCapability instances
-  → on build(): creates AgentConfigurator, installs all capabilities, calls toAgentLoop()
-
-AgentConfigurator (internal, implements CanConfigureAgent)
-  → tools: Tools
-  → contextCompiler: CanCompileMessages
-  → toolUseDriver: CanUseTools
-  → hooks: HookStack
-  → deferredTools: DeferredToolProviders
-  → events: CanHandleEvents
-  → toAgentLoop(): resolves driver → tools → interceptor → AgentLoop
-```
-
-Each `capability.configure(configurator)` call returns a new `AgentConfigurator` with the applied changes. When all capabilities are installed, `toAgentLoop()` runs the resolution pipeline and produces the final `AgentLoop`.
-
-## See Also
-
-- [Agent Templates](14-agent-templates.md) — define agents as data files and reference capabilities by name
-- [Subagents](15-subagents.md) — task delegation via `UseSubagents`
-- [Session Runtime](16-session-runtime.md) — persist and resume agent sessions across calls
+- [Basic Agent](02-basic-agent.md)
+- [Hooks](08-hooks.md)
+- [Subagents](15-subagents.md)
+- [Session Runtime](16-session-runtime.md)

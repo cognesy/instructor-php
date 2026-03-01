@@ -20,7 +20,6 @@ AgentState (readonly)
   |   |-- metadata: Metadata
   |   |-- systemPrompt: string
   |   |-- responseFormat: ResponseFormat
-  |   |-- deadline: ?DateTimeImmutable
   |-- execution: ?ExecutionState    # null between executions
       |-- executionId: ExecutionId
       |-- status: ExecutionStatus   # Pending|InProgress|Completed|Stopped|Failed
@@ -86,7 +85,7 @@ $definition = new AgentDefinition(
 );
 ```
 
-Each subagent receives its own declared budget. Recursion depth is controlled separately via `SubagentPolicy::maxDepth`.
+Each subagent receives its own declared budget. Recursion depth is controlled separately via `SubagentPolicy` (`maxDepth`).
 
 ## Serialization
 

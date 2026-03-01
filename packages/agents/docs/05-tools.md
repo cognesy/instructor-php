@@ -48,7 +48,10 @@ function get_weather(string $city): string {
 }
 
 function calculate(string $expression): string {
-    return (string) eval("return {$expression};");
+    return match ($expression) {
+        '2+2' => '4',
+        default => 'unsupported expression',
+    };
 }
 
 $tools = new Tools(
@@ -92,7 +95,7 @@ The description contract — provides identity and documentation:
 
 ```php
 interface CanDescribeTool {
-    public function name(): string;          // tool name (e.g., 'file.read')
+    public function name(): string;          // tool name (e.g., 'read_file')
     public function description(): string;   // what the tool does
     public function metadata(): array;       // summary for browsing/discovery
     public function instructions(): array;   // full specification with parameters
@@ -103,10 +106,14 @@ interface CanDescribeTool {
 
 ### BaseTool
 
-`BaseTool` implements both interfaces and is the standard base class for custom tools. It auto-generates parameter schemas from the `__invoke()` method signature:
+`BaseTool` is the standard state-aware base class for custom tools. Because `SimpleTool`
+declares `__invoke(mixed ...$args)`, BaseTool subclasses should keep that signature,
+extract parameters via `$this->arg()`, and usually provide an explicit `toToolSchema()`.
 
 ```php
 use Cognesy\Agents\Tool\Tools\BaseTool;
+use Cognesy\Utils\JsonSchema\JsonSchema;
+use Cognesy\Utils\JsonSchema\ToolSchema;
 
 class WeatherTool extends BaseTool
 {
@@ -117,13 +124,27 @@ class WeatherTool extends BaseTool
         );
     }
 
-    public function __invoke(string $city): string {
+    public function __invoke(mixed ...$args): string {
+        $city = (string) $this->arg($args, 'city', 0, '');
         return "Weather in {$city}: 72F, sunny";
+    }
+
+    public function toToolSchema(): array
+    {
+        return ToolSchema::make(
+            name: $this->name(),
+            description: $this->description(),
+            parameters: JsonSchema::object('parameters')
+                ->withProperties([
+                    JsonSchema::string('city', 'City name'),
+                ])
+                ->withRequiredProperties(['city'])
+        )->toArray();
     }
 }
 ```
 
-See [Building Tools](06-building-tools.md) for the full guide on creating custom tools.
+See [Building Tools](06-building-tools.md) for the quick path, then [Building Tools: Advanced Patterns](17-building-tools-advanced.md) for lower-level patterns.
 
 ## How It Works
 

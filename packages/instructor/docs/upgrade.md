@@ -11,7 +11,7 @@ Recent changes to the Instructor package may require some manual fixes in your c
 Run the following command in your CLI:
 
 ```bash
-composer update cognesy/instructor
+composer update cognesy/instructor-php
 ```
 
 ## Step 2: Config files

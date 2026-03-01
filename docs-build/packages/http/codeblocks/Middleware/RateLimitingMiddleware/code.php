@@ -1,60 +1,45 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Middleware\RateLimitingMiddleware;
 
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Contracts\HttpMiddleware;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
-use Cognesy\Http\Middleware\Base\BaseMiddleware;
 
-class RateLimitingMiddleware extends BaseMiddleware
+final class RateLimitingMiddleware implements HttpMiddleware
 {
-    private int $maxRequests;
-    private int $perSeconds;
+    /** @var list<int> */
     private array $requestTimes = [];
 
-    public function __construct(int $maxRequests = 60, int $perSeconds = 60)
-    {
-        $this->maxRequests = $maxRequests;
-        $this->perSeconds = $perSeconds;
-    }
+    public function __construct(
+        private int $maxRequests = 60,
+        private int $perSeconds = 60,
+    ) {}
 
     public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse
     {
-        // Clean up old request times
-        $this->removeOldRequestTimes();
+        $this->removeExpired();
 
-        // If we've hit our limit, wait until we can make another request
         if (count($this->requestTimes) >= $this->maxRequests) {
-            $oldestRequest = $this->requestTimes[0];
-            $timeToWait = $oldestRequest + $this->perSeconds - time();
-
-            if ($timeToWait > 0) {
-                sleep($timeToWait);
+            $waitFor = ($this->requestTimes[0] + $this->perSeconds) - time();
+            if ($waitFor > 0) {
+                sleep($waitFor);
             }
-
-            // Clean up again after waiting
-            $this->removeOldRequestTimes();
+            $this->removeExpired();
         }
 
-        // Record this request time
         $this->requestTimes[] = time();
 
-        // Make the request
         return $next->handle($request);
     }
 
-    private function removeOldRequestTimes(): void
+    private function removeExpired(): void
     {
         $cutoff = time() - $this->perSeconds;
-
-        // Remove request times older than our window
-        $this->requestTimes = array_filter(
+        $this->requestTimes = array_values(array_filter(
             $this->requestTimes,
-            fn($time) => $time > $cutoff
-        );
-
-        // Reindex the array
-        $this->requestTimes = array_values($this->requestTimes);
+            static fn(int $t): bool => $t > $cutoff,
+        ));
     }
 }

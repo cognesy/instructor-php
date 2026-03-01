@@ -108,7 +108,7 @@ final class StructuredOutput implements CanCreateStructuredOutput
         return $copy;
     }
 
-    public function withInput(mixed $input): self {
+    public function withInput(string|array|object $input): self {
         $copy = clone $this;
         $copy->request = $copy->request->withMessages(Messages::fromInput($input));
         return $copy;

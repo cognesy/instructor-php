@@ -138,16 +138,23 @@ class DataMap implements JsonSerializable
     /**
      * Create a DataMap from JSON.
      *
+     * Accepted JSON root types: object or array.
+     *
      * @param string $json
      * @return self
      *
-     * @throws InvalidArgumentException If the JSON is invalid.
+     * @throws InvalidArgumentException If the JSON is invalid or root type is unsupported.
      */
     public static function fromJson(string $json): self {
         $data = json_decode($json, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new InvalidArgumentException('Invalid JSON provided: ' . json_last_error_msg());
+        }
+
+        if (!is_array($data)) {
+            $type = gettype($data);
+            throw new InvalidArgumentException("DataMap::fromJson expects JSON object or array as root type, got {$type}.");
         }
 
         return self::fromArray($data);

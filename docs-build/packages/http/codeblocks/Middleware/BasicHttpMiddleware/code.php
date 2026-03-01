@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Middleware\BasicHttpMiddleware;
 
@@ -6,43 +6,28 @@ use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpMiddleware;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
+use Psr\Log\LoggerInterface;
 
-class LoggingMiddleware implements HttpMiddleware
+final class LoggingMiddleware implements HttpMiddleware
 {
-    private $logger;
-
-    public function __construct($logger)
-    {
-        $this->logger = $logger;
-    }
+    public function __construct(
+        private LoggerInterface $logger,
+    ) {}
 
     public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse
     {
-        // Pre-request logging
-        $this->logger->info('Sending request', [
-            'url' => $request->url(),
+        $this->logger->info('HTTP request', [
             'method' => $request->method(),
-            'headers' => $request->headers(),
-            'body' => $request->body()->toString(),
+            'url' => $request->url(),
         ]);
 
-        $startTime = microtime(true);
-
-        // Call the next handler in the chain
         $response = $next->handle($request);
 
-        $endTime = microtime(true);
-        $duration = round(($endTime - $startTime) * 1000, 2); // in milliseconds
-
-        // Post-response logging
-        $this->logger->info('Received response', [
+        $this->logger->info('HTTP response', [
             'status' => $response->statusCode(),
-            'headers' => $response->headers(),
-            'body' => $response->body(),
-            'duration_ms' => $duration,
+            'streamed' => $response->isStreamed(),
         ]);
 
-        // Return the response
         return $response;
     }
 }

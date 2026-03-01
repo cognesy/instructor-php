@@ -35,7 +35,7 @@ $agent = AgentBuilder::base()
     ->withCapability(new UseBash())
     ->withCapability(new UseGuards(maxSteps: 10))
     ->build();
-// @doctest id="044a"
+// @doctest id="61ae"
 ```
 
 ## Package Structure
@@ -59,20 +59,21 @@ Interception/         # CanInterceptAgentLifecycle, PassThroughInterceptor
 Template/             # Agent definitions, parsers, registry
 Session/              # AgentSession, SessionRuntime, actions, repositories, stores
 Tool/                 # ToolInterface, BaseTool, FunctionTool, ToolExecutor
-// @doctest id="d1e6"
+// @doctest id="7c62"
 ```
 
 ## Minimal Example
 
 ```php
-use Cognesy\Agents\AgentLoop;use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Data\AgentState;
 
 $loop = AgentLoop::default();
 $state = AgentState::empty()->withUserMessage('Hello!');
 $result = $loop->execute($state);
 
 echo $result->finalResponse()->toString();
-// @doctest id="a47a"
+// @doctest id="7063"
 ```
 
 ## Recommended Path

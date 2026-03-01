@@ -231,13 +231,21 @@ final readonly class InferenceResponse
     }
 
     public static function fromArray(array $data): self {
+        $responseData = $data['responseData'] ?? null;
+
         return new self(
             content: $data['content'] ?? '',
             finishReason: $data['finishReason'] ?? '',
-            toolCalls: isset($data['toolCalls']) ? ToolCalls::fromArray($data['toolCalls']) : null,
+            toolCalls: (isset($data['toolCalls']) && is_array($data['toolCalls']))
+                ? ToolCalls::fromArray($data['toolCalls'])
+                : null,
             reasoningContent: $data['reasoningContent'] ?? '',
-            usage: isset($data['usage']) ? Usage::fromArray($data['usage']) : null,
-            responseData: HttpResponse::fromArray($data['responseData'] ?? []),
+            usage: (isset($data['usage']) && is_array($data['usage']))
+                ? Usage::fromArray($data['usage'])
+                : null,
+            responseData: (is_array($responseData) && $responseData !== [])
+                ? HttpResponse::fromArray($responseData)
+                : null,
             isPartial: $data['isPartial'] ?? false,
             //
             id: isset($data['id']) ? new InferenceResponseId($data['id']) : null,

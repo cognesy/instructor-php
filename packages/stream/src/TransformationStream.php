@@ -5,6 +5,7 @@ namespace Cognesy\Stream;
 use Cognesy\Stream\Contracts\Stream;
 use Cognesy\Stream\Contracts\Transducer;
 use Cognesy\Stream\Sinks\SideEffect\ToQueueReducer;
+use ArrayIterator;
 use Iterator;
 use SplQueue;
 
@@ -20,6 +21,9 @@ final class TransformationStream implements Stream
     private ?Iterator $iterator;
     private ?TransformationExecution $execution;
     private ?SplQueue $queue = null;
+    /** @var list<mixed> */
+    private array $materializedOutput = [];
+    private bool $materialized = false;
 
     public function __construct(
         ?iterable $input,
@@ -56,14 +60,23 @@ final class TransformationStream implements Stream
 
     #[\Override]
     public function getIterator(): Iterator {
+        if ($this->materialized) {
+            return new ArrayIterator($this->materializedOutput);
+        }
+
         if ($this->iterator === null) {
             $this->iterator = $this->makeIterator($this->execution());
         }
+
         return $this->iterator;
     }
 
     public function getCompleted() : mixed {
-        return $this->execution()->completed();
+        if (!$this->materialized) {
+            foreach ($this->getIterator() as $_) {}
+        }
+
+        return $this->materializedOutput;
     }
 
     // INTERNAL /////////////////////////////////////////////////////////////
@@ -88,14 +101,20 @@ final class TransformationStream implements Stream
             $transduction->step();
             while (!$queue->isEmpty()) {
                 // Phase 2) Yield all items currently in the queue until it's empty
-                yield $queue->dequeue();
+                $nextValue = $queue->dequeue();
+                $this->materializedOutput[] = $nextValue;
+                yield $nextValue;
             }
         }
         // Completion phase: allow reducers to flush final values (e.g., finalize sequences)
         $transduction->completed();
         while (!$queue->isEmpty()) {
-            yield $queue->dequeue();
+            $nextValue = $queue->dequeue();
+            $this->materializedOutput[] = $nextValue;
+            yield $nextValue;
         }
+
+        $this->materialized = true;
     }
 
     private function execution(): TransformationExecution {
@@ -108,10 +127,9 @@ final class TransformationStream implements Stream
     private function makeExecution() : TransformationExecution {
         $this->queue = new SplQueue();
         $sink = new ToQueueReducer($this->queue);
-        $transformation = $this->transformation->withSink($sink);
-        if ($this->input !== []) {
-            $transformation = $transformation->withInput($this->input);
-        }
+        $transformation = $this->transformation
+            ->withSink($sink)
+            ->withInput($this->input);
         return $transformation->execution();
     }
 
@@ -119,7 +137,7 @@ final class TransformationStream implements Stream
         if ($this->execution === null || $this->queue === null) {
             throw new \LogicException('Execution not initialized');
         }
-        $this->iterator = $this->iterate($this->execution, $this->queue);
+        $this->iterator = $this->iterate($execution, $this->queue);
         return $this->iterator;
     }
 }

@@ -24,6 +24,10 @@ final readonly class CollectErrorsReducer implements Reducer
 
     #[\Override]
     public function step(mixed $accumulator, mixed $reducible): mixed {
+        if (!is_array($accumulator)) {
+            $accumulator = [];
+        }
+
         if ($reducible instanceof Result && $reducible->isFailure()) {
             $accumulator[] = $reducible->error();
         }

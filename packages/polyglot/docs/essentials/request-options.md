@@ -34,7 +34,7 @@ $inference = new Inference();
 $response = $inference->with(
     messages: 'Write a short poem about programming.',
     options: $options
-)->toText();
+)->get();
 ```
 
 
@@ -57,7 +57,7 @@ $inference = Inference::using('anthropic');
 $response = $inference->with(
     messages: 'Write a short poem about programming.',
     options: $anthropicOptions
-)->toText();
+)->get();
 ```
 
 ## Response Stream Cache Policy

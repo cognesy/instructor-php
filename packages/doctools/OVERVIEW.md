@@ -48,6 +48,7 @@
 - `mark-dir`: Recursively process Markdown files in a directory and add IDs to code snippets
 - `extract`: Extract code blocks from Markdown files to target directory
 - `validate`: Validate extracted code blocks and list missing/wrong paths
+- `qa`: Run docs Quality checks (YAML rules, ast-grep/regex patterns, broken links, fenced PHP lint)
 
 ### Documentation Generation Commands
 - `generate-mintlify`: Generate Mintlify-compatible documentation

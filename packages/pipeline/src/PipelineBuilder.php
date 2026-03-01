@@ -227,10 +227,10 @@ class PipelineBuilder
 
     public function create(): Pipeline {
         return new Pipeline(
-            steps: $this->steps,
-            middleware: $this->middleware,
-            hooks: $this->hooks,
-            finalizers: $this->finalizers,
+            steps: $this->steps->snapshot(),
+            middleware: $this->middleware->snapshot(),
+            hooks: $this->hooks->snapshot(),
+            finalizers: $this->finalizers->snapshot(),
             onError: $this->onError,
         );
     }

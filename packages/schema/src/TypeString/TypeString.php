@@ -88,28 +88,38 @@ class TypeString implements \Stringable
     }
 
     public function isObject() : bool {
-        if (empty($this->withoutNull($this->types))) {
+        $types = $this->withoutNull($this->types);
+        if (empty($types)) {
             return false;
         }
-        // check if every $this->types is an object type or null
-        foreach ($this->types as $type) {
-            if ($type === TypeDetails::PHP_NULL) {
-                continue; // null is allowed in objects
+
+        $hasObjectEvidence = false;
+        foreach ($types as $type) {
+            if ($type === TypeDetails::PHP_OBJECT) {
+                $hasObjectEvidence = true;
+                continue;
             }
+
             if ($type === TypeDetails::PHP_ARRAY) {
-                return false; // array type is not an object
+                return false;
+            }
+            if ($type === TypeDetails::PHP_MIXED) {
+                return false;
             }
             if (in_array($type, TypeDetails::PHP_SCALAR_TYPES, true)) {
-                return false; // scalar types are not objects
+                return false;
             }
             if ($this->endsWithBrackets($type)) {
-                return false; // collection types are not objects
+                return false;
             }
-            if (class_exists($type)) {
-                return true; // if class exists, it is an object type
+            if (!class_exists($type)) {
+                return false;
             }
+
+            $hasObjectEvidence = true;
         }
-        return true;
+
+        return $hasObjectEvidence;
     }
 
     public function isUntypedObject() : bool {

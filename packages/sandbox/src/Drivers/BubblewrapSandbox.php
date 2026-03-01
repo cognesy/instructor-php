@@ -30,9 +30,6 @@ final class BubblewrapSandbox implements CanExecuteCommand
 
     #[\Override]
     public function execute(array $argv, ?string $stdin = null, ?callable $onOutput = null): ExecResult {
-        if ($this->bwrapBin === '') {
-            throw new \RuntimeException('bubblewrap not found');
-        }
         $workDir = Workdir::create($this->policy);
         try {
             $cmd = $this->buildCommand($workDir, $argv);

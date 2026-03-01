@@ -6,15 +6,15 @@ This will help LLM to understand the context and the expected structure of the o
 It is typically useful in the `OutputMode::Json` and `OutputMode::MdJson` modes, where the output
 is expected to be a JSON object.
 
-Instructor's `request()` method accepts an array of examples as the `examples` parameter,
+Instructor's `with(...)` method accepts an array of examples as the `examples` parameter,
 where each example is an instance of the `Example` class.
 
 
 ## `Example` class
 
-`Example` constructor have two main arguments: `input` and `output`.
+`Example` constructor has two main arguments: `input` and `output`.
 
-The `input` property is  a string which describes the input message, while he `output`
+The `input` property is a string which describes the input message, while the `output`
 property is an array which represents the expected output.
 
 Instructor will append the list of examples to the prompt sent to LLM, with output
@@ -23,6 +23,8 @@ array data rendered as JSON text.
 ```php
 <?php
 use Cognesy\Instructor\Extras\Example\Example;
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 class User {
     public int $age;

@@ -18,7 +18,7 @@ $state = AgentState::empty()
 $state->context()->systemPrompt();
 $state->context()->messages();
 $state->context()->metadata();
-// @doctest id="4af4"
+// @doctest id="130e"
 ```
 
 ## Message Compilers
@@ -30,7 +30,7 @@ interface CanCompileMessages
 {
     public function compile(AgentState $state): Messages;
 }
-// @doctest id="7a18"
+// @doctest id="d380"
 ```
 
 The default compiler assembles messages from the agent's context. You can replace it to control exactly what the LLM sees.
@@ -40,7 +40,9 @@ The default compiler assembles messages from the agent's context. You can replac
 Implement `CanCompileMessages` for custom message assembly:
 
 ```php
-use Cognesy\Agents\Context\CanCompileMessages;use Cognesy\Agents\Data\AgentState;use Cognesy\Messages\Messages;
+use Cognesy\Agents\Context\CanCompileMessages;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Messages\Messages;
 
 class MyCompiler implements CanCompileMessages
 {
@@ -50,7 +52,7 @@ class MyCompiler implements CanCompileMessages
         return $state->messages();
     }
 }
-// @doctest id="5eff"
+// @doctest id="29c5"
 ```
 
 Inject it into the loop's driver:
@@ -62,7 +64,7 @@ $driver = new ToolCallingDriver(
     messageCompiler: new MyCompiler(),
 );
 $loop = AgentLoop::default()->withDriver($driver);
-// @doctest id="309f"
+// @doctest id="2a0b"
 ```
 
 Or via `AgentBuilder`:
@@ -74,7 +76,7 @@ use Cognesy\Agents\Capability\Core\UseContextCompiler;
 $agent = AgentBuilder::base()
     ->withCapability(new UseContextCompiler(new MyCompiler()))
     ->build();
-// @doctest id="28e8"
+// @doctest id="b9af"
 ```
 
 ## Use Cases
@@ -117,7 +119,7 @@ class TokenLimitCompiler implements CanCompileMessages
         return new Messages(...$kept);
     }
 }
-// @doctest id="2c84"
+// @doctest id="2068"
 ```
 
 Use as a decorator via `UseContextCompilerDecorator`:
@@ -130,7 +132,7 @@ $agent = AgentBuilder::base()
         fn(CanCompileMessages $inner) => new TokenLimitCompiler($inner, maxTokens: 4000)
     ))
     ->build();
-// @doctest id="94f9"
+// @doctest id="3700"
 ```
 
 The decorator pattern wraps the default compiler, so you get standard message assembly plus your custom logic on top.

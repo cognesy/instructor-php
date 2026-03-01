@@ -1,52 +1,92 @@
 ---
 title: Configuration Layer
-description: 'Understanding the configuration layer of Polyglot for LLM and Embeddings.'
+description: 'How Polyglot resolves LLM and embeddings configuration.'
 ---
 
-Polyglot's configuration layer manages settings for different providers.
+Polyglot resolves two config objects:
 
-## LLM Configuration
+- `LLMConfig` for inference
+- `EmbeddingsConfig` for embeddings
 
-```php
-namespace Cognesy\Polyglot\Inference\Data;
-
-class LLMConfig {
-    public function __construct(
-        public string $apiUrl = '',
-        public string $apiKey = '',
-        public string $endpoint = '',
-        public array $queryParams = [],
-        public array $metadata = [],
-        public string $model = '',
-        public int $maxTokens = 1024,
-        public int $contextLength = 8000,
-        public int $maxOutputLength = 4096,
-        public string $httpClient = '',
-        public string $providerType = 'openai-compatible'
-    ) { ... }
-
-    public static function load(string $connection): \Cognesy\Polyglot\Inference\Config\LLMConfig { ... }
-}
-```
-
-## Embeddings Configuration
+## LLMConfig
 
 ```php
-namespace Cognesy\Polyglot\Embeddings\Data;
+<?php
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
-class EmbeddingsConfig {
-    public function __construct(
-        public string $apiUrl = '',
-        public string $apiKey = '',
-        public string $endpoint = '',
-        public string $model = '',
-        public int $dimensions = 0,
-        public int $maxInputs = 0,
-        public array $metadata = [],
-        public string $httpClient = '',
-        public string $providerType = 'openai'
-    ) { ... }
-
-    public static function load(string $connection): \Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig { ... }
-}
+$config = new LLMConfig(
+    apiUrl: 'https://api.openai.com/v1',
+    apiKey: 'sk-...',
+    endpoint: '/chat/completions',
+    model: 'gpt-4o-mini',
+    maxTokens: 1024,
+    contextLength: 128000,
+    maxOutputLength: 16384,
+    driver: 'openai',
+    options: ['temperature' => 0.2],
+);
 ```
+
+Key fields:
+
+- `driver`: which inference driver to use (`openai`, `anthropic`, `openai-compatible`, etc.)
+- `apiUrl`, `endpoint`, `apiKey`: transport/auth settings
+- `model`, `maxTokens`, `contextLength`, `maxOutputLength`
+- `metadata`, `queryParams`, `pricing`, `options`
+
+## EmbeddingsConfig
+
+```php
+<?php
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
+
+$config = new EmbeddingsConfig(
+    apiUrl: 'https://api.openai.com/v1',
+    apiKey: 'sk-...',
+    endpoint: '/embeddings',
+    model: 'text-embedding-3-small',
+    dimensions: 1536,
+    maxInputs: 2048,
+    driver: 'openai',
+);
+```
+
+Key fields:
+
+- `driver`: embeddings driver (`openai`, `cohere`, `gemini`, etc.)
+- `apiUrl`, `endpoint`, `apiKey`
+- `model`, `dimensions`, `maxInputs`, `metadata`
+
+## Resolution Flow
+
+```php
+<?php
+use Cognesy\Polyglot\Inference\InferenceRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
+
+$provider = LLMProvider::using('openai')
+    ->withConfigOverrides(['model' => 'gpt-4o']);
+
+$config = $provider->resolveConfig();          // LLMConfig
+$runtime = InferenceRuntime::fromProvider($provider);
+```
+
+Embeddings flow is equivalent via `EmbeddingsProvider` and `EmbeddingsRuntime`.
+
+## DSN and Overrides
+
+Both providers support DSN input:
+
+```php
+<?php
+use Cognesy\Polyglot\Inference\LLMProvider;
+
+$provider = LLMProvider::dsn('preset=openai,model=gpt-4o-mini,maxTokens=512');
+$config = $provider->resolveConfig();
+```
+
+## Notes
+
+- Use `driver`, not `providerType`.
+- HTTP client selection is handled in runtime construction (`InferenceRuntime` / `EmbeddingsRuntime`), not as a config field.
+- Retry policy is explicit (`withRetryPolicy(...)`), not embedded in generic `options`.

@@ -13,7 +13,6 @@ use Cognesy\Http\HttpClient;
 use Cognesy\Instructor\Laravel\Console\InstructorInstallCommand;
 use Cognesy\Instructor\Laravel\Console\InstructorTestCommand;
 use Cognesy\Instructor\Laravel\Console\MakeResponseModelCommand;
-use Cognesy\Instructor\Laravel\Events\InstructorEventBridge;
 use Cognesy\Instructor\Laravel\Support\LaravelConfigProvider;
 use Cognesy\Instructor\Laravel\Testing\AgentCtrlFake;
 use Cognesy\Instructor\Laravel\Testing\StructuredOutputFake;
@@ -33,6 +32,7 @@ use Cognesy\Polyglot\Inference\LLMProvider;
 use Illuminate\Contracts\Events\Dispatcher as LaravelDispatcher;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Foundation\Application as LaravelApplication;
+use Illuminate\Http\Client\Factory as LaravelHttpFactory;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -72,7 +72,6 @@ class InstructorServiceProvider extends ServiceProvider
         $this->publishConfiguration();
         $this->registerCommands();
         $this->configureLogging();
-        $this->configureEventBridge();
     }
 
     /**
@@ -80,10 +79,17 @@ class InstructorServiceProvider extends ServiceProvider
      */
     protected function registerEventDispatcher(): void
     {
-        // Register our Laravel event dispatcher adapter
         $this->app->singleton(CanHandleEvents::class, function (Container $app) {
+            $dispatchToLaravel = (bool) $this->configGet($app, 'instructor.events.dispatch_to_laravel', true);
+            $bridgeEvents = $this->configGet($app, 'instructor.events.bridge_events', []);
+            if (!is_array($bridgeEvents)) {
+                $bridgeEvents = [];
+            }
+
             return new LaravelEventDispatcher(
-                $app->make(LaravelDispatcher::class)
+                $app->make(LaravelDispatcher::class),
+                $dispatchToLaravel,
+                $bridgeEvents,
             );
         });
     }
@@ -117,7 +123,7 @@ class InstructorServiceProvider extends ServiceProvider
                 configProvider: $app->make(CanProvideConfig::class),
             ))
                 ->withConfig($httpConfig)
-                ->withClientInstance('laravel', new \Illuminate\Http\Client\Factory())
+                ->withClientInstance('laravel', $app->make(LaravelHttpFactory::class))
                 ->create();
         });
     }
@@ -344,23 +350,6 @@ class InstructorServiceProvider extends ServiceProvider
     }
 
     /**
-     * Configure event bridge to Laravel events.
-     */
-    protected function configureEventBridge(): void
-    {
-        if (!$this->configGet($this->app, 'instructor.events.dispatch_to_laravel', true)) {
-            return;
-        }
-
-        $this->app->singleton(InstructorEventBridge::class, function (Container $app) {
-            return new InstructorEventBridge(
-                $app->make(LaravelDispatcher::class),
-                $this->configGet($app, 'instructor.events.bridge_events', [])
-            );
-        });
-    }
-
-    /**
      * Apply logging to a service.
      */
     protected function applyLogging(Container $app, object $service): void
@@ -409,7 +398,6 @@ class InstructorServiceProvider extends ServiceProvider
             CanCreateStructuredOutput::class,
             StructuredOutputFake::class,
             AgentCtrlFake::class,
-            InstructorEventBridge::class,
         ];
     }
 }

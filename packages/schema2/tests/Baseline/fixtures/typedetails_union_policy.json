@@ -1,0 +1,31 @@
+{
+    "Cognesy\\Schema\\Tests\\Examples\\RefsCollision\\NA\\User|Cognesy\\Schema\\Tests\\Examples\\RefsCollision\\NB\\User": {
+        "error_class": "Exception",
+        "error_message": "Union types with multiple non-null branches are not supported: Cognesy\\Schema\\Tests\\Examples\\RefsCollision\\NA\\User|Cognesy\\Schema\\Tests\\Examples\\RefsCollision\\NB\\User",
+        "ok": false
+    },
+    "int|float": {
+        "as_string": "float",
+        "ok": true,
+        "type": {
+            "class": null,
+            "docString": "float",
+            "enumType": null,
+            "enumValues": null,
+            "nestedType": null,
+            "type": "float"
+        }
+    },
+    "int|string": {
+        "as_string": "mixed",
+        "ok": true,
+        "type": {
+            "class": null,
+            "docString": "mixed",
+            "enumType": null,
+            "enumValues": null,
+            "nestedType": null,
+            "type": "mixed"
+        }
+    }
+}

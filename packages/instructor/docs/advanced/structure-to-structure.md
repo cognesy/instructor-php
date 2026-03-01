@@ -4,8 +4,8 @@ Instructor offers a way to use structured data as an input. This is
 useful when you want to use object data as input and get another object
 with a result of LLM inference.
 
-The `input` field of Instructor's `create()` method
-can be an object, but also an array or just a string.
+The `input` field in `with(...)` (or `withInput(...)`) can be an object,
+an array, or a string.
 
 ```php
 <?php

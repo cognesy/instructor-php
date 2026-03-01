@@ -1,0 +1,50 @@
+version: 1
+rules:
+  - id: instructor.no_structuredoutput_fromconfig
+    engine: regex
+    scope: markdown
+    pattern: '/\bStructuredOutput::fromConfig\s*\(/'
+    message: 'Use runtime configuration APIs (StructuredOutputRuntime::fromConfig(...) or StructuredOutput::withConfig(...)).'
+
+  - id: instructor.no_structuredoutput_fromdsn
+    engine: regex
+    scope: markdown
+    pattern: '/\bStructuredOutput::fromDsn\s*\(/'
+    message: 'Use StructuredOutputRuntime::fromDsn(...) and pass runtime to StructuredOutput.'
+
+  - id: instructor.no_structuredoutput_fromruntime
+    engine: regex
+    scope: markdown
+    pattern: '/\bStructuredOutput::fromRuntime\s*\(/'
+    message: 'StructuredOutput has constructor/runtime injection, not StructuredOutput::fromRuntime(...).'
+
+  - id: instructor.no_structuredoutput_registerdriver
+    engine: regex
+    scope: markdown
+    pattern: '/\bStructuredOutput::registerDriver\s*\(/'
+    message: 'Driver registration belongs to lower-level HTTP/Polyglot layers, not StructuredOutput facade.'
+
+  - id: instructor.no_inference_text
+    engine: regex
+    scope: markdown
+    pattern: '/\bInference::text\s*\(/'
+    message: 'Use (new Inference())->with(...)->get() or response()/asJson()/stream() depending on needed output.'
+
+  - id: instructor.no_provider_type_key
+    engine: regex
+    scope: markdown
+    pattern: '/\bproviderType\b/'
+    message: 'Configuration key is `driver`, not `providerType`.'
+
+  - id: instructor.no_structuredoutput_create_static
+    engine: regex
+    scope: markdown
+    pattern: '/\bStructuredOutput::create\s*\(/'
+    message: 'Use `(new StructuredOutput)->with(...)->get()` or `->create()` on an instance.'
+
+  - id: instructor.no_withllmconfigoverrides
+    engine: regex
+    scope: markdown
+    pattern: '/\bwithLLMConfigOverrides\s*\(/'
+    message: 'Use `withConfigOverrides(...)` on LLMProvider.'
+

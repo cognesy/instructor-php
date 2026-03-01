@@ -1,0 +1,59 @@
+{
+  "name": "cognesy/instructor-schema2",
+  "description": "TypeInfo-first schema reimplementation for Instructor (migration package)",
+  "license": "MIT",
+  "homepage": "https://instructorphp.com",
+  "support": {
+    "issues": "https://github.com/cognesy/instructor-php/issues",
+    "source": "https://github.com/cognesy/instructor-php"
+  },
+  "authors": [
+    {
+      "name": "Dariusz Debowczyk",
+      "email": "ddebowczyk@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Cognesy\\Schema\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Cognesy\\Schema\\Tests\\": "tests/"
+    },
+    "files": []
+  },
+  "require": {
+    "php": "^8.3",
+    "cognesy/instructor-utils": "^1.22",
+    "cognesy/instructor-pipeline": "^1.22",
+    "symfony/property-info": "^7.0"
+  },
+  "require-dev": {
+    "icanhazstring/composer-unused": "^0.9.0",
+    "jetbrains/phpstorm-attributes": "^1.2",
+    "maglnet/composer-require-checker": "^4.16",
+    "pestphp/pest": "^2.34",
+    "phpstan/phpstan": "^1.11",
+    "roave/security-advisories": "dev-latest",
+    "symfony/var-dumper": "^7.3",
+    "vimeo/psalm": "^6.0"
+  },
+  "scripts": {
+    "tests": "@php vendor/bin/pest",
+    "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
+    "psalm": "@php vendor/bin/psalm"
+  },
+  "suggest": {
+    "symfony/type-info": "TypeInfo replaces deprecated PropertyInfo types in Symfony 7.3+."
+  },
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    },
+    "sort-packages": true
+  },
+  "minimum-stability": "RC",
+  "prefer-stable": true
+}

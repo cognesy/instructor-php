@@ -9,6 +9,7 @@ use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
 use JsonSerializable;
+use Traversable;
 
 trait HandlesSerialization
 {
@@ -24,11 +25,11 @@ trait HandlesSerialization
                 continue;
             }
             $data[$fieldName] = match(true) {
-                ($field->typeDetails()->type === TypeDetails::PHP_ENUM) => $value->value,
-                ($field->typeDetails()->type === TypeDetails::PHP_ARRAY) => $this->serializeArrayField($value),
-                ($field->typeDetails()->type === TypeDetails::PHP_COLLECTION) => $this->serializeArrayField($value),
-                ($field->typeDetails()->class == Structure::class) => $value?->toArray(),
-                ($field->typeDetails()->class !== null) => $this->serializeObjectField($value),
+                ($field->typeDetails()->type === TypeDetails::PHP_ENUM) => $this->serializeEnumField($value),
+                ($field->typeDetails()->type === TypeDetails::PHP_ARRAY) => $this->serializeArrayLikeField($value),
+                ($field->typeDetails()->type === TypeDetails::PHP_COLLECTION) => $this->serializeArrayLikeField($value),
+                ($field->typeDetails()->class == Structure::class) => ($value instanceof Structure) ? $value->toArray() : $value,
+                ($field->typeDetails()->class !== null) && is_object($value) => $this->serializeObjectField($value),
                 default => $value,
             };
         }
@@ -60,5 +61,23 @@ trait HandlesSerialization
                 default => $item,
             };
         }, $array);
+    }
+
+    private function serializeEnumField(mixed $value): mixed {
+        return match(true) {
+            $value instanceof BackedEnum => $value->value,
+            default => $value,
+        };
+    }
+
+    private function serializeArrayLikeField(mixed $value): array {
+        $array = match(true) {
+            is_array($value) => $value,
+            $value instanceof Traversable => iterator_to_array($value),
+            $value === null => [],
+            default => [$value],
+        };
+
+        return $this->serializeArrayField($array);
     }
 }

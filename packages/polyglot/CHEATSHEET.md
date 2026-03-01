@@ -1,271 +1,281 @@
-# Polyglot API Overview (Enhanced)
+# Polyglot Package Cheatsheet
 
-## Main Entry Point Classes
+Code-verified API reference for `packages/polyglot`.
 
-### Inference
-**`Inference`** - Thin facade for LLM inference request composition and execution
-- `new(?CanCreateInference $runtime = null)` - Constructor with optional runtime
-- `registerDriver($name, $driver)` - Register custom inference driver
-- `unregisterDriver($name)` - Unregister one custom inference driver
-- `resetDrivers()` - Clear all custom inference drivers (useful in tests/workers)
+## Core Facades
 
-**Runtime Selection:**
-- `Inference::using($preset)` - Construct from preset-backed runtime
-- `Inference::fromDsn($dsn)` - Construct from DSN-backed runtime
-- `Inference::fromRuntime($runtime)` - Construct from explicit runtime
-- `withRuntime($runtime)` - Replace runtime on a cloned facade
-- `runtime()` - Access `CanCreateInference` runtime
-
-**Request Building:**
-- `withMessages($messages)` - Set conversation messages (string or array)
-- `withModel($model)` - Set model name
-- `withMaxTokens($maxTokens)` - Set maximum tokens
-- `withTools($tools)` - Set available tools
-- `withToolChoice($toolChoice)` - Set tool selection preference
-- `withResponseFormat($format)` - Set response format constraints
-- `withOptions($options)` - Set inference options (temperature, max tokens, etc.)
-- `withStreaming($stream)` - Enable/disable streaming
-- `withOutputMode($mode)` - Set output mode
-- `withCachedContext($messages, $tools, $toolChoice, $responseFormat)` - Set cached context
-
-**Invocation:**
-- `withRequest($request)` - Set explicit inference request
-- `with($messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode)` - Set all parameters at once
-- `create()` - Create PendingInference instance
-
-**Shortcuts:**
-- `stream()` - Get streaming response
-- `response()` - Get full response object
-- `get()` - Get response content as string
-- `asJson()` - Get response as JSON string
-- `asJsonData()` - Get response as array
-
-### Embeddings
-**`Embeddings`** - Main facade for text embedding operations with trait-based API
-- `new($events, $configProvider)` - Constructor with optional event handler and config provider
-- `registerDriver($name, $driver)` - Register custom embedding driver
-
-**Initialization (via HandlesInitMethods trait):**
-- `using($preset)` - Use predefined configuration preset
-- `withPreset($preset)` - Set configuration preset
-- `withDsn($dsn)` - Configure via DSN string
-- `withConfig($config)` - Set explicit embeddings configuration
-- `withConfigProvider($provider)` - Set configuration provider
-- `withDriver($driver)` - Set explicit vectorization driver
-- `withProvider($provider)` - Set embeddings provider
-- `withHttpClient($client)` - Set custom HTTP client
-- `withHttpDebugPreset($preset)` - Set debug configuration
-
-**Fluent Methods (via HandlesFluentMethods trait):**
-- `withInputs($input)` - Set input text/array for embedding
-- `withModel($model)` - Set model name
-- `withOptions($options)` - Set embedding options
-
-**Invocation (via HandlesInvocation trait):**
-- `withRequest($request)` - Set explicit embeddings request
-- `with($input, $options, $model)` - Set all parameters at once
-- `create()` - Create PendingEmbeddings instance
-
-**Shortcuts (via HandlesShortcuts trait):**
-- `get()` - Get full embeddings response
-- `vectors()` - Get all embedding vectors
-- `first()` - Get first embedding vector
-
-## Response Processing Classes
-
-### PendingInference
-**`PendingInference`** - Handles inference responses and format conversion
-- `new($request, $driver, $eventDispatcher)` - Constructor
-- `isStreamed()` - Check if response is streamed
-- `get()` - Get response content as string
-- `stream()` - Get streaming response (throws if not streamed)
-- `asJson()` - Get response as JSON string
-- `asJsonData()` - Get response as array
-- `response()` - Get full InferenceResponse object
-
-### InferenceStream
-**`InferenceStream`** - Handles streaming responses from language models
-- `new($request, $driver, $eventDispatcher)` - Constructor
-- `responses()` - Generator yielding partial responses
-- `all()` - Get all partial responses as array
-- `final()` - Get final accumulated response
-- `onPartialResponse($callback)` - Set callback for partial responses
-
-### PendingEmbeddings
-**`PendingEmbeddings`** - Handles embeddings responses
-- `new($request, $driver, $events)` - Constructor
-- `request()` - Get original request
-- `get()` - Get embeddings response
-- `makeResponse()` - Create response from driver
-
-## Provider Classes
-
-### LLMProvider
-**`LLMProvider`** - Builder for configuring LLM inference drivers
-- `new($events, $configProvider)` - Create new provider instance
-- `using($preset)` - Use predefined configuration preset
-- `dsn($dsn)` - Configure via DSN string
-- `withLLMPreset($preset)` - Set LLM preset
-- `withLLMConfig($config)` - Set explicit LLM configuration
-- `withConfigOverrides($overrides)` - Override config values
-- `withConfigProvider($provider)` - Set config provider
-- `withDsn($dsn)` - Set DSN string
-- `withDriver($driver)` - Set explicit inference driver
-- Use `resolveConfig()` + `InferenceDriverFactory::makeDriver()` to create drivers
-
-### EmbeddingsProvider
-**`EmbeddingsProvider`** - Builder for configuring embeddings drivers
-- `new($events, $configProvider)` - Create new provider instance
-- `using($preset)` - Use predefined configuration preset
-- `dsn($dsn)` - Configure via DSN string
-- `withPreset($preset)` - Set configuration preset
-- `withDsn($dsn)` - Set DSN string
-- `withConfig($config)` - Set explicit embeddings configuration
-- `withConfigProvider($provider)` - Set config provider
-- `withDriver($driver)` - Set explicit vectorization driver
-- Use `resolveConfig()` + `EmbeddingsDriverFactory::makeDriver()` to create drivers
-
-## Request/Response Classes
-
-### InferenceRequest
-**`InferenceRequest`** - Configuration for inference operations
-- `new($messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode, $cachedContext)` - Constructor
-- `withMessages($messages)` - Set conversation messages
-- `withModel($model)` - Set model name
-- `withTools($tools)` - Set available tools
-- `withToolChoice($toolChoice)` - Set tool selection preference
-- `withResponseFormat($format)` - Set response format constraints
-- `withOptions($options)` - Set inference options
-- `withStreaming($streaming)` - Enable/disable streaming
-- `withOutputMode($mode)` - Set output mode
-- `withCachedContext($context)` - Set cached context
-- `messages()`, `model()`, `tools()`, `options()`, `outputMode()`, `cachedContext()` - Getters
-- `isStreamed()` - Check if streaming enabled
-- `hasTools()`, `hasMessages()`, `hasModel()`, `hasOptions()` - Validation helpers
-- `withCacheApplied()` - Apply cached context to request
-- `toArray()` - Convert to array representation
-
-### InferenceResponse
-**`InferenceResponse`** - Response from inference operations
-- `new($content, $finishReason, $toolCalls, $reasoningContent, $usage, $responseData, $isPartial, $partialResponses)` - Constructor
-- `fromPartialResponses($partialResponses)` - Create from partial responses
-- `content()` - Get response text content
-- `withContent($content)` - Set content
-- `reasoningContent()` - Get reasoning content
-- `withReasoningContent($content)` - Set reasoning content
-- `toolCalls()` - Get tool calls made by model
-- `usage()` - Get token usage statistics
-- `finishReason()` - Get completion reason
-- `value()` - Get processed/transformed value
-- `withValue($value)` - Set processed value
-- `hasContent()`, `hasToolCalls()`, `hasValue()`, `hasReasoningContent()` - Validation helpers
-- `findJsonData($mode)` - Extract JSON from response
-- `isPartial()` - Check if response is partial
-- `partialResponses()` - Get partial responses
-- `lastPartialResponse()` - Get last partial response
-- `toArray()` - Convert to array representation
-
-### EmbeddingsRequest
-**`EmbeddingsRequest`** - Configuration for embedding operations
-- `new($input, $options, $model)` - Constructor with input text/array
-- `inputs()` - Get input data array
-- `options()` - Get embedding options
-- `model()` - Get model name
-- `toArray()` - Convert to array representation
-
-### EmbeddingsResponse
-**`EmbeddingsResponse`** - Response from embedding operations
-- `new($vectors, $usage)` - Constructor
-- `vectors()` - Get all embedding vectors
-- `all()` - Get all vectors (alias for vectors())
-- `first()` - Get first vector
-- `last()` - Get last vector
-- `split($index)` - Split vectors at index
-- `usage()` - Get token usage statistics
-- `toValuesArray()` - Get raw vector values as arrays
-- `toArray()` - Convert to array representation
-
-## Data Classes
-
-### Vector
-**`Vector`** - Represents an embedding vector
-- `values()` - Get vector values array
-- `toArray()` - Convert to array representation
-
-### Usage
-**`Usage`** - Token usage statistics
-- `toArray()` - Get usage data as array
-- `accumulate($usage)` - Accumulate usage from another instance
-- `clone()` - Create a copy
-
-### ToolCalls
-**`ToolCalls`** - Collection of tool calls
-- `hasAny()` - Check if any tool calls exist
-- `hasSingle()` - Check if exactly one tool call
-- `first()` - Get first tool call
-- `toArray()` - Convert to array
-- `clone()` - Create a copy
-
-### ToolCall
-**`ToolCall`** - Single tool call
-- `args()` - Get tool call arguments
-
-### PartialInferenceResponse
-**`PartialInferenceResponse`** - Partial response from streaming
-- `withContent($content)` - Set accumulated content
-- `withReasoningContent($content)` - Set accumulated reasoning content
-- `withFinishReason($reason)` - Set finish reason
-- `hasToolName()`, `hasToolArgs()` - Tool validation helpers
-- `toolName()`, `toolArgs()` - Get tool information
-
-## Enums
-
-### OutputMode
-Defines inference output modes: `Unrestricted`, `Tools`, `Json`, `JsonSchema`, `MdJson`, `Text`
-
-### InferenceFinishReason
-Completion reasons: `Stop`, `Length`, `ToolCalls`, `ContentFilter`, `Error`
-
-### InferenceContentType
-Content types for inference
-
-## Typical Usage Patterns
-
-### Basic Inference
 ```php
-$response = (new Inference())
-    ->using('openai/gpt-4')
-    ->withMessages('Hello, world!')
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Embeddings\Embeddings;
+
+$inference = new Inference();
+$embeddings = new Embeddings();
+```
+
+## Inference Quick Start
+
+```php
+use Cognesy\Polyglot\Inference\Inference;
+
+$responseText = Inference::using('openai')
+    ->withModel('gpt-4o-mini')
+    ->withMessages('Say hello in one sentence.')
     ->get();
 ```
 
-### Streaming Inference
+Get parsed JSON:
+
 ```php
-$stream = (new Inference())
-    ->using('openai/gpt-4')
-    ->withMessages('Tell me a story')
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
+
+$data = Inference::using('openai')
+    ->withModel('gpt-4o-mini')
+    ->withOutputMode(OutputMode::Json)
+    ->withMessages('Return {"ok": true}')
+    ->asJsonData();
+```
+
+## Inference Constructors
+
+```php
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
+
+$inference = new Inference();
+$inference = Inference::using('openai');
+$inference = Inference::fromDsn('preset=openai,model=gpt-4o-mini');
+$inference = Inference::fromRuntime(InferenceRuntime::using('openai'));
+$inference = $inference->withRuntime(InferenceRuntime::fromDsn('preset=openai,model=gpt-4o-mini'));
+```
+
+## Inference Request Builder Methods
+
+```php
+use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
+
+$inference = (new Inference)
+    ->withMessages($messages)
+    ->withModel('gpt-4o-mini')
+    ->withMaxTokens(800)
+    ->withTools($tools)
+    ->withToolChoice('auto')
+    ->withResponseFormat($responseFormat)
+    ->withOptions(['temperature' => 0])
     ->withStreaming(true)
+    ->withOutputMode(OutputMode::Tools)
+    ->withResponseCachePolicy(ResponseCachePolicy::Memory)
+    ->withRetryPolicy(new InferenceRetryPolicy(maxAttempts: 3))
+    ->withCachedContext(
+        messages: $cachedMessages,
+        tools: $cachedTools,
+        toolChoice: 'auto',
+        responseFormat: $cachedResponseFormat,
+    );
+```
+
+Single-call variant:
+
+```php
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
+
+$inference = (new Inference)->with(
+    messages: $messages,
+    model: 'gpt-4o-mini',
+    tools: $tools,
+    toolChoice: 'auto',
+    responseFormat: $responseFormat,
+    options: ['temperature' => 0],
+    mode: OutputMode::Tools,
+);
+```
+
+With explicit request:
+
+```php
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+
+$request = new InferenceRequest(
+    messages: 'Hello',
+    model: 'gpt-4o-mini',
+);
+
+$inference = (new Inference)->withRequest($request);
+$pending = $inference->create();
+```
+
+## Inference Execution Surfaces
+
+```php
+$pending = $inference->create();
+
+$text = $inference->get();
+$response = $inference->response();
+$json = $inference->asJson();
+$data = $inference->asJsonData();
+$stream = $inference->stream();
+
+$isStreamed = $pending->isStreamed();
+$text = $pending->get();
+$response = $pending->response();
+$json = $pending->asJson();
+$data = $pending->asJsonData();
+$stream = $pending->stream();
+```
+
+## Streaming (`InferenceStream`)
+
+```php
+$stream = $inference
+    ->withStreaming(true)
+    ->create()
     ->stream();
 
 foreach ($stream->responses() as $partial) {
-    echo $partial->content();
+    // PartialInferenceResponse
 }
+
+$mapped = $stream->map(fn($partial) => $partial->contentDelta);
+$filtered = $stream->filter(fn($partial) => $partial->contentDelta !== '');
+$total = $stream->reduce(fn($carry, $partial) => $carry + strlen($partial->contentDelta), 0);
+
+$allPartials = $stream->all();
+$final = $stream->final(); // ?InferenceResponse
+
+$stream->onPartialResponse(function ($partial): void {
+    // callback for each partial
+});
+
+$execution = $stream->execution();
 ```
 
-### Tool Usage
+## Inference Runtime / Provider Setup
+
 ```php
-$response = (new Inference())
-    ->using('openai/gpt-4')
-    ->withMessages('What is the weather like?')
-    ->withTools($tools)
-    ->withToolChoice('auto')
-    ->response();
+use Cognesy\Polyglot\Inference\InferenceRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
+
+$runtime = InferenceRuntime::using('openai');
+$runtime = InferenceRuntime::fromDsn('preset=openai,model=gpt-4o-mini');
+$runtime = InferenceRuntime::fromProvider(LLMProvider::using('openai'));
+
+$provider = LLMProvider::new()
+    ->withLLMPreset('openai')
+    ->withDsn('preset=openai,model=gpt-4o-mini')
+    ->withConfigOverrides(['temperature' => 0])
+    ->withModel('gpt-4o-mini');
 ```
 
-### Basic Embeddings
+Driver registry helpers:
+
 ```php
-$embeddings = (new Embeddings())
-    ->using('openai/text-embedding-3-small')
-    ->withInputs(['Hello', 'World'])
-    ->get();
+Inference::registerDriver('custom', $driverFactory);
+Inference::unregisterDriver('custom');
+Inference::resetDrivers();
+```
+
+## Embeddings Quick Start
+
+```php
+use Cognesy\Polyglot\Embeddings\Embeddings;
+
+$vectors = Embeddings::using('openai')
+    ->withModel('text-embedding-3-small')
+    ->withInputs(['hello world'])
+    ->vectors();
+```
+
+## Embeddings Constructors and Builder Methods
+
+```php
+use Cognesy\Polyglot\Embeddings\Embeddings;
+use Cognesy\Polyglot\Embeddings\EmbeddingsRuntime;
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsRetryPolicy;
+
+$embeddings = new Embeddings();
+$embeddings = Embeddings::using('openai');
+$embeddings = Embeddings::fromDsn('driver=openai,model=text-embedding-3-small');
+$embeddings = Embeddings::fromRuntime(EmbeddingsRuntime::using('openai'));
+
+$embeddings = $embeddings
+    ->withInputs(['a', 'b'])
+    ->withModel('text-embedding-3-small')
+    ->withOptions(['dimensions' => 512])
+    ->withRetryPolicy(new EmbeddingsRetryPolicy(maxAttempts: 3));
+```
+
+Single-call variant:
+
+```php
+$embeddings = (new Embeddings)->with(
+    input: ['hello'],
+    options: ['dimensions' => 512],
+    model: 'text-embedding-3-small',
+);
+```
+
+With explicit request:
+
+```php
+use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
+
+$request = new EmbeddingsRequest(
+    input: ['hello'],
+    model: 'text-embedding-3-small',
+);
+
+$pending = (new Embeddings)
+    ->withRequest($request)
+    ->create();
+```
+
+Execution shortcuts:
+
+```php
+$response = $embeddings->get();
+$vectors = $embeddings->vectors();
+$first = $embeddings->first();
+
+$pending = $embeddings->create();
+$request = $pending->request();
+$response = $pending->get();
+```
+
+## Embeddings Runtime / Provider Setup
+
+```php
+use Cognesy\Polyglot\Embeddings\EmbeddingsProvider;
+use Cognesy\Polyglot\Embeddings\EmbeddingsRuntime;
+
+$runtime = EmbeddingsRuntime::using('openai');
+$runtime = EmbeddingsRuntime::fromDsn('preset=openai,model=text-embedding-3-small');
+$runtime = EmbeddingsRuntime::fromProvider(EmbeddingsProvider::using('openai'));
+
+$provider = EmbeddingsProvider::new()
+    ->withPreset('openai')
+    ->withDsn('preset=openai,model=text-embedding-3-small');
+```
+
+Driver registry helper:
+
+```php
+Embeddings::registerDriver('custom', $driverFactory);
+```
+
+## Useful Enums
+
+```php
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
+
+OutputMode::Unrestricted;
+OutputMode::Tools;
+OutputMode::Json;
+OutputMode::JsonSchema;
+OutputMode::MdJson;
+OutputMode::Text;
+
+ResponseCachePolicy::None;
+ResponseCachePolicy::Memory;
 ```

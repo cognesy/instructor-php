@@ -309,10 +309,14 @@ class InferenceExecution
     }
 
     public static function fromArray(mixed $data): self {
+        $currentAttempt = $data['currentAttempt'] ?? null;
+
         return new self(
             request: InferenceRequest::fromArray($data['request'] ?? []),
             attempts: InferenceAttemptList::fromArray($data['attempts'] ?? []),
-            currentAttempt: InferenceAttempt::fromArray($data['currentAttempt'] ?? []),
+            currentAttempt: (is_array($currentAttempt) && $currentAttempt !== [])
+                ? InferenceAttempt::fromArray($currentAttempt)
+                : null,
             isFinalized: $data['isFinalized'] ?? false,
             //
             id: isset($data['id']) ? new InferenceExecutionId($data['id']) : null,

@@ -6,6 +6,7 @@ use Cognesy\Stream\Contracts\Reducer;
 use Cognesy\Stream\Support\Reduced;
 use Iterator;
 use LogicException;
+use Throwable;
 
 class TransformationExecution
 {
@@ -23,6 +24,7 @@ class TransformationExecution
     ) {
         $this->reducerStack = $reducerStack;
         $this->iterator = $iterator;
+        $this->initializeIterator();
         $this->accumulator = $accumulator;
         $this->exhausted = !$this->iterator->valid();
     }
@@ -87,7 +89,7 @@ class TransformationExecution
         };
     }
 
-    private function onReduced(mixed $accumulator) : mixed {
+    private function onReduced(Reduced $accumulator) : mixed {
         $this->iterator->next();
         $this->exhausted = true;
         return $accumulator->value();
@@ -97,5 +99,13 @@ class TransformationExecution
         $this->iterator->next();
         $this->exhausted = !$this->iterator->valid();
         return $accumulator;
+    }
+
+    private function initializeIterator(): void {
+        try {
+            $this->iterator->rewind();
+        } catch (Throwable) {
+            // Ignore non-rewindable iterators (e.g. already-started generators).
+        }
     }
 }

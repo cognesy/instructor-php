@@ -46,6 +46,14 @@ describe('Result transformations', function () {
             expect($mapped->error())->toBeInstanceOf(RuntimeException::class);
             expect($mapped->error()->getMessage())->toBe('transform failed');
         });
+
+        test('captures TypeError in transformation', function () {
+            $result = Result::success(5);
+            $mapped = $result->map(fn($x) => strlen([]));
+
+            expect($mapped)->toBeInstanceOf(Failure::class);
+            expect($mapped->error())->toBeInstanceOf(TypeError::class);
+        });
     });
 
     describe('then()', function () {
@@ -79,6 +87,14 @@ describe('Result transformations', function () {
 
             expect($chained)->toBeInstanceOf(Failure::class);
             expect($chained->error())->toBe('chain failed');
+        });
+
+        test('captures TypeError in chaining callback', function () {
+            $result = Result::success(5);
+            $chained = $result->then(fn($x) => strlen([]));
+
+            expect($chained)->toBeInstanceOf(Failure::class);
+            expect($chained->error())->toBeInstanceOf(TypeError::class);
         });
     });
 
@@ -139,6 +155,17 @@ describe('Result transformations', function () {
             expect($ensured)->toBeInstanceOf(Failure::class);
             expect($ensured->error())->toBeInstanceOf(RuntimeException::class);
         });
+
+        test('captures TypeError in onFailure callback', function () {
+            $result = Result::success(3);
+            $ensured = $result->ensure(
+                fn($x) => false,
+                fn($x) => strlen([])
+            );
+
+            expect($ensured)->toBeInstanceOf(Failure::class);
+            expect($ensured->error())->toBeInstanceOf(TypeError::class);
+        });
     });
 
     describe('tap()', function () {
@@ -172,6 +199,14 @@ describe('Result transformations', function () {
             expect($tapped->error())->toBeInstanceOf(RuntimeException::class);
             expect($tapped->error()->getMessage())->toBe('tap failed');
         });
+
+        test('captures TypeError from side effect callback', function () {
+            $result = Result::success('test');
+            $tapped = $result->tap(fn($value) => strlen([]));
+
+            expect($tapped)->toBeInstanceOf(Failure::class);
+            expect($tapped->error())->toBeInstanceOf(TypeError::class);
+        });
     });
 
     describe('recover()', function () {
@@ -198,6 +233,14 @@ describe('Result transformations', function () {
             expect($recovered)->toBeInstanceOf(Failure::class);
             expect($recovered->error())->toBeInstanceOf(RuntimeException::class);
             expect($recovered->error()->getMessage())->toBe('recovery failed');
+        });
+
+        test('captures TypeError in recovery callback', function () {
+            $result = Result::failure('error');
+            $recovered = $result->recover(fn($error) => strlen([]));
+
+            expect($recovered)->toBeInstanceOf(Failure::class);
+            expect($recovered->error())->toBeInstanceOf(TypeError::class);
         });
     });
 
@@ -233,6 +276,14 @@ describe('Result transformations', function () {
             expect($mapped)->toBeInstanceOf(Failure::class);
             expect($mapped->error())->toBeInstanceOf(RuntimeException::class);
             expect($mapped->error()->getMessage())->toBe('map failed');
+        });
+
+        test('captures TypeError in error transformation', function () {
+            $result = Result::failure('error');
+            $mapped = $result->mapError(fn($error) => strlen([]));
+
+            expect($mapped)->toBeInstanceOf(Failure::class);
+            expect($mapped->error())->toBeInstanceOf(TypeError::class);
         });
     });
 });

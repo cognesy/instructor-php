@@ -7,6 +7,7 @@ description: 'Concurrent request execution with typed request/response collectio
 
 ```php
 use Cognesy\Http\Collections\HttpRequestList;
+use Cognesy\Http\Data\HttpRequest;
 
 $requests = HttpRequestList::of(
     new HttpRequest('https://api.example.com/a', 'GET', [], '', []),

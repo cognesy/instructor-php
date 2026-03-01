@@ -1,168 +1,104 @@
 ---
 title: Inference Class
-description: 'How to use the Inference class in Polyglot for LLM requests'
+description: Public API of the Inference facade.
 ---
 
-The `Inference` class is the primary facade for making requests to LLM providers in Polyglot.
-It is a thin request facade: runtime/provider/http/event assembly lives in `InferenceRuntime`.
+`Inference` is a request facade over `InferenceRuntime`.
+Use it to build requests fluently, then execute as text, response object, JSON, or stream.
 
-
-## Architecture Overview
-
-The `Inference` facade focuses on:
-- **Request builder methods** (`withMessages`, `withModel`, `withOptions`, etc.)
-- **Execution shortcuts** (`get`, `response`, `stream`, `asJson`, `asJsonData`)
-- **Runtime handoff** via `runtime()` / `withRuntime()`
-
-
-## Basic Usage
+## Create an Instance
 
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
-// Simple text completion
-$response = (new Inference())
-    ->withMessages('What is the capital of France?')
+$default = new Inference();
+$openai = Inference::using('openai');
+$fromDsn = Inference::fromDsn('preset=openai,model=gpt-4.1-nano');
+```
+
+## Build a Request
+
+```php
+<?php
+use Cognesy\Polyglot\Inference\Inference;
+
+$inference = (new Inference())
+    ->withMessages('Summarize CQRS in two sentences.')
+    ->withModel('gpt-4.1-nano')
+    ->withOptions(['temperature' => 0.2])
+    ->withMaxTokens(120)
+    ->withStreaming(false);
+```
+
+## Execute
+
+```php
+<?php
+$text = $inference->get();          // string
+$response = $inference->response(); // InferenceResponse
+$json = $inference->asJson();       // JSON string
+$data = $inference->asJsonData();   // array
+$stream = $inference->stream();     // InferenceStream
+```
+
+## One-Call Configuration
+
+```php
+<?php
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
+
+$text = (new Inference())
+    ->with(
+        messages: 'Return valid JSON with key "status".',
+        options: ['temperature' => 0],
+        mode: OutputMode::Json,
+    )
     ->get();
-
-// Using a specific provider
-$response = Inference::using('openai')
-    ->withMessages('Explain quantum physics')
-    ->get();
 ```
 
-
-## Runtime Selection
-
-Create a facade with constructor sugar or inject a custom runtime:
-
-```php
-use Cognesy\Polyglot\Inference\InferenceRuntime;
-
-$inference = Inference::using('openai');               // Preset-based runtime
-$inference = Inference::fromDsn('preset=openai,model=gpt-4o-mini');
-$inference = Inference::fromRuntime(
-    InferenceRuntime::using('openai')
-);
-```
-
-
-## Request Building Methods
-
-Configure the inference request:
-
-```php
-// Message configuration
-$inference->withMessages('Hello, world!');           // String message
-$inference->withMessages(['user' => 'Hello']);       // Array format
-$inference->withMessages($messageObject);            // Message object
-
-// Model and generation parameters
-$inference->withModel('gpt-4');                      // Specific model
-$inference->withMaxTokens(100);                      // Token limit
-$inference->withOutputMode($outputMode);             // Response format mode
-
-// Tool usage
-$inference->withTools($toolDefinitions);             // Available tools
-$inference->withToolChoice('auto');                  // Tool selection strategy
-
-// Response formatting
-$inference->withResponseFormat(['type' => 'json']); // Response format
-$inference->withOptions(['temperature' => 0.5]);    // Additional options
-
-// Advanced features
-$inference->withStreaming(true);                     // Enable streaming
-$inference->withCachedContext($messages, $tools);   // Context caching
-```
-
-
-## Invocation Methods
-
-Execute inference requests:
-
-```php
-// Flexible configuration method
-$inference->with(
-    messages: 'Hello',
-    model: 'gpt-4',
-    tools: [],
-    toolChoice: 'auto',
-    responseFormat: ['type' => 'text'],
-    options: ['temperature' => 0.7],
-    mode: OutputMode::Text
-);
-
-// Create pending inference for advanced handling
-$pending = $inference->create();
-
-// Direct request execution
-$inference->withRequest($existingRequest);
-```
-
-## Runtime-First Usage (`CanCreateInference`)
-
-For constructor-injected creators, call `runtime()` and execute explicit requests:
+## Runtime-First Usage
 
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Inference;
 
-$creator = Inference::using('openai')->runtime();
+$runtime = Inference::using('openai')->runtime();
 
-$request = new InferenceRequest(
-    messages: 'What is the capital of France?',
-    model: 'gpt-4o-mini',
+$pending = $runtime->create(new InferenceRequest(messages: 'Ping', model: 'gpt-4.1-nano'));
+$text = $pending->get();
+```
+
+## Register Custom Drivers
+
+```php
+<?php
+use Cognesy\Http\HttpClient;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
+use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIDriver;
+use Cognesy\Polyglot\Inference\Inference;
+use Psr\EventDispatcher\EventDispatcherInterface;
+
+Inference::registerDriver(
+    'openai-custom',
+    function (
+        LLMConfig $config,
+        HttpClient $httpClient,
+        EventDispatcherInterface $events,
+    ): CanProcessInferenceRequest {
+        return new OpenAIDriver($config, $httpClient, $events);
+    }
 );
 
-$response = $creator->create($request)->get();
-```
-
-
-## Response Shortcuts
-
-Get responses in different formats:
-
-```php
-// Text responses
-$text = $inference->get();                           // Plain text
-$response = $inference->response();                  // Full InferenceResponse object
-
-// JSON responses  
-$json = $inference->asJson();                        // JSON string
-$data = $inference->asJsonData();                    // Parsed array
-
-// Streaming
-$stream = $inference->stream();                      // InferenceStream object
-```
-
-
-## Driver Registration
-
-Register custom drivers for new providers:
-
-```php
-// Register with class name
-Inference::registerDriver('custom-provider', CustomDriver::class);
-
-// Register with factory callable
-Inference::registerDriver('custom-provider', function($config, $httpClient) {
-    return new CustomDriver($config, $httpClient);
-});
-```
-
-### Driver Registry Lifecycle
-
-Custom inference drivers are stored in a static registry.
-In long-running workers (Swoole/RoadRunner) and tests, manage this lifecycle explicitly:
-
-```php
-// Remove one custom driver
-Inference::unregisterDriver('custom-provider');
-
-// Clear all custom inference drivers
+Inference::unregisterDriver('openai-custom');
 Inference::resetDrivers();
 ```
 
-Use `resetDrivers()` in test teardown / `afterEach` to avoid cross-test pollution.
+## See Also
+
+- [Inference overview](./overview.md)
+- [Creating requests](./creating-requests.md)
+- [Request options](./request-options.md)
+- [Extending Polyglot](../advanced/extending.md)

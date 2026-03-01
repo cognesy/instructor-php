@@ -50,7 +50,7 @@ class DataStore {
 $text = "His name is Jason, he is 28 years old and he lives in Germany.";
 $args = (new StructuredOutput)->with(
     messages: $text,
-    responseModel: FunctionCallFactory::fromMethodName(Datastore::class, 'saveUser'),
+    responseModel: FunctionCallFactory::fromMethodName(DataStore::class, 'saveUser'),
 )->get();
 
 // call the function with the extracted arguments
@@ -68,9 +68,9 @@ use Cognesy\Addons\FunctionCall\FunctionCallFactory;
 use Cognesy\Instructor\StructuredOutput;
 
 /** Save user data to storage */
-$callable = function saveUser(string $name, int $age, string $country) {
+$callable = function (string $name, int $age, string $country): void {
     // ...
-}
+};
 
 $text = "His name is Jason, he is 28 years old and he lives in Germany.";
 $args = (new StructuredOutput)->with(

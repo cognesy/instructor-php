@@ -68,12 +68,19 @@ class SymfonyDriver implements CanHandleHttpRequest
     // INTERNAL /////////////////////////////////////////////
 
     private function performHttpCall(HttpRequest $request): ResponseInterface {
+        $body = $request->body()->toString();
+        $jsonBody = $this->decodeJsonArray($body);
+        $serializedBody = match (true) {
+            $jsonBody !== null => json_encode($jsonBody) ?: $body,
+            default => $body,
+        };
+
         return $this->client->request(
             method: $request->method(),
             url: $request->url(),
             options: [
                 'headers' => $request->headers(),
-                'body' => is_array($request->body()->toArray()) ? json_encode($request->body()->toArray()) : $request->body()->toArray(),
+                'body' => $serializedBody,
                 'timeout' => $this->config->idleTimeout,
                 'max_duration' => $this->config->requestTimeout,
                 'buffer' => !$request->isStreamed(),
@@ -150,5 +157,22 @@ class SymfonyDriver implements CanHandleHttpRequest
             'body' => $request->body()->toArray(),
             'errors' => $exception->getMessage(),
         ]));
+    }
+
+    private function decodeJsonArray(string $body): ?array {
+        if ($body === '') {
+            return null;
+        }
+
+        $decoded = json_decode($body, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return null;
+        }
+
+        if (!is_array($decoded)) {
+            return null;
+        }
+
+        return $decoded;
     }
 }

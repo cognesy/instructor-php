@@ -40,7 +40,7 @@ Current design uses JSON Schema `$comment` field (or `x-php-class` field) on pro
 You can provide an array as `responseModel` to specify the JSON Schema:
 
 ```php
-$output = StructuredOutput::create()
+$output = (new StructuredOutput)
     ->with(
         responseModel: [
             'x-php-class' => User::class,  // ← Required for deserialization
@@ -64,8 +64,11 @@ class to deserialize the data into.
 InstructorPHP does NOT return raw arrays. The output is ALWAYS an object:
 
 ```php
-$user = StructuredOutput::create()
-    ->with(responseModel: User::class, ...)
+$user = (new StructuredOutput)
+    ->with(
+        messages: 'Extract user: John Doe, 30',
+        responseModel: User::class,
+    )
     ->get();
 
 // Result is User object (not array)
@@ -78,8 +81,11 @@ $user['name']; // ❌ Error - not an array
 If you need raw arrays instead of objects, use the `intoArray()` output format:
 
 ```php
-$userArray = StructuredOutput::create()
-    ->with(responseModel: User::class, ...)
+$userArray = (new StructuredOutput)
+    ->with(
+        messages: 'Extract user: John Doe, 30',
+        responseModel: User::class,
+    )
     ->intoArray()  // Returns array instead of object
     ->get();
 
@@ -94,15 +100,21 @@ You can also use different output classes or self-deserializing objects:
 
 ```php
 // Use different class for output than schema
-$dto = StructuredOutput::create()
-    ->with(responseModel: UserProfile::class, ...)  // Rich schema (5 fields)
+$dto = (new StructuredOutput)
+    ->with(
+        messages: 'Extract user profile for John Doe',
+        responseModel: UserProfile::class, // Rich schema (5 fields)
+    )
     ->intoInstanceOf(UserDTO::class)                // Simple output (2 fields)
     ->get();
 
 // Self-deserializing objects
-$scalar = StructuredOutput::create()
-    ->with(responseModel: Rating::class, ...)
-    ->intoObject(new Scalar('rating', 'integer'))
+$scalar = (new StructuredOutput)
+    ->with(
+        messages: 'Extract product rating from review',
+        responseModel: Rating::class,
+    )
+    ->intoObject(Scalar::integer('rating'))
     ->get();
 ```
 
@@ -143,4 +155,3 @@ Examples contain an implementation of custom response model handling strategies,
  - and transformation
 
 into requested value type.
-

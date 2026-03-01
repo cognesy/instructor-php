@@ -12,12 +12,14 @@ use Cognesy\Polyglot\Embeddings\Contracts\CanCreateEmbeddings;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
 use Cognesy\Polyglot\Embeddings\Embeddings;
 use Cognesy\Polyglot\Embeddings\PendingEmbeddings;
+use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\PendingInference;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher as LaravelDispatcher;
+use Illuminate\Http\Client\Factory as LaravelHttpFactory;
 
 final class TestConfigRepository implements ArrayAccess
 {
@@ -113,14 +115,48 @@ final class TestLaravelDispatcher implements LaravelDispatcher
     public function forgetPushed(): void {}
 }
 
-function makeLaravelContainer(): Container {
+final class RecordingLaravelDispatcher implements LaravelDispatcher
+{
+    /** @var list<object|string> */
+    public array $dispatched = [];
+
+    /**
+     * @param string|array<int, string> $events
+     * @param (callable(mixed ...$payload): mixed)|string|null $listener
+     */
+    public function listen($events, $listener = null): void {}
+    public function hasListeners($eventName): bool { return false; }
+    public function subscribe($subscriber): void {}
+    public function until($event, $payload = []): mixed { return null; }
+    public function dispatch($event, $payload = [], $halt = false): mixed {
+        $this->dispatched[] = $event;
+        return $event;
+    }
+    public function push($event, $payload = []): void {}
+    public function flush($event): void {}
+    public function forget($event): void {}
+    public function forgetPushed(): void {}
+}
+
+final class AllowedBridgeEvent
+{
+    public function __construct(public string $value) {}
+}
+
+final class BlockedBridgeEvent
+{
+    public function __construct(public string $value) {}
+}
+
+function makeLaravelContainer(array $configOverrides = [], ?LaravelDispatcher $dispatcher = null): Container {
     $app = new Container();
-    $app->instance('config', new TestConfigRepository([
+    $config = array_replace_recursive([
         'instructor' => [
             'logging' => ['enabled' => false],
         ],
-    ]));
-    $app->instance(LaravelDispatcher::class, new TestLaravelDispatcher());
+    ], $configOverrides);
+    $app->instance('config', new TestConfigRepository($config));
+    $app->instance(LaravelDispatcher::class, $dispatcher ?? new TestLaravelDispatcher());
     return $app;
 }
 
@@ -179,4 +215,74 @@ it('keeps facade bindings and fakes working alongside runtime contract bindings'
 
     expect($app->make(CanCreateInference::class))->not->toBe($inferenceFacade);
     expect($app->make(CanCreateEmbeddings::class))->not->toBe($embeddingsFacade);
+});
+
+it('uses container-bound Laravel HTTP factory for laravel driver wiring', function () {
+    $app = makeLaravelContainer();
+    $factory = new LaravelHttpFactory();
+    $app->instance(LaravelHttpFactory::class, $factory);
+
+    /** @phpstan-ignore-next-line */
+    (new InstructorServiceProvider($app))->register();
+
+    $httpClient = $app->make(\Cognesy\Http\HttpClient::class);
+
+    $httpClientReflection = new ReflectionObject($httpClient);
+    $driverProperty = $httpClientReflection->getProperty('driver');
+    $driverProperty->setAccessible(true);
+    $driver = $driverProperty->getValue($httpClient);
+
+    $driverReflection = new ReflectionObject($driver);
+    $factoryProperty = $driverReflection->getProperty('factory');
+    $factoryProperty->setAccessible(true);
+    $resolvedFactory = $factoryProperty->getValue($driver);
+
+    expect($resolvedFactory)->toBe($factory);
+});
+
+it('does not dispatch events to Laravel when bridge dispatch is disabled', function () {
+    $dispatcher = new RecordingLaravelDispatcher();
+    $app = makeLaravelContainer(
+        configOverrides: [
+            'instructor' => [
+                'events' => [
+                    'dispatch_to_laravel' => false,
+                ],
+            ],
+        ],
+        dispatcher: $dispatcher,
+    );
+
+    /** @phpstan-ignore-next-line */
+    (new InstructorServiceProvider($app))->register();
+
+    $events = $app->make(CanHandleEvents::class);
+    $events->dispatch(new AllowedBridgeEvent('x'));
+
+    expect($dispatcher->dispatched)->toBe([]);
+});
+
+it('dispatches only configured bridged event classes to Laravel', function () {
+    $dispatcher = new RecordingLaravelDispatcher();
+    $app = makeLaravelContainer(
+        configOverrides: [
+            'instructor' => [
+                'events' => [
+                    'dispatch_to_laravel' => true,
+                    'bridge_events' => [AllowedBridgeEvent::class],
+                ],
+            ],
+        ],
+        dispatcher: $dispatcher,
+    );
+
+    /** @phpstan-ignore-next-line */
+    (new InstructorServiceProvider($app))->register();
+
+    $events = $app->make(CanHandleEvents::class);
+    $events->dispatch(new AllowedBridgeEvent('allowed'));
+    $events->dispatch(new BlockedBridgeEvent('blocked'));
+
+    expect($dispatcher->dispatched)->toHaveCount(1)
+        ->and($dispatcher->dispatched[0])->toBeInstanceOf(AllowedBridgeEvent::class);
 });

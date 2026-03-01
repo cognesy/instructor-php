@@ -17,21 +17,21 @@ Provider rate limits can cause request failures during high traffic periods.
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 
 $inference = new Inference();
+$retryPolicy = new InferenceRetryPolicy(
+    maxAttempts: 4,
+    baseDelayMs: 250,
+    maxDelayMs: 8000,
+    jitter: 'full',
+    retryOnStatus: [429, 500, 502, 503, 504],
+);
 
 $response = $inference->with(
     messages: 'What is the capital of France?',
-    options: [
-        'retryPolicy' => [
-            'maxAttempts' => 4,
-            'baseDelayMs' => 250,
-            'maxDelayMs' => 8000,
-            'jitter' => 'full',
-            'retryOnStatus' => [429, 500, 502, 503, 504],
-        ],
-    ]
-)->get();
+)->withRetryPolicy($retryPolicy)
+    ->get();
 
 echo "Response: $response\n";
 ```
@@ -70,7 +70,7 @@ for ($i = 0; $i < 10; $i++) {
     $limiter->waitIfNeeded();
     $response = $inference->with(
         messages: "This is request $i"
-    )->toText();
+    )->get();
     echo "Response $i: $response\n";
 }
 ```

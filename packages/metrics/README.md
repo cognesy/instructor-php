@@ -1,20 +1,34 @@
-# Metrics
+# Metrics Package
 
-Event-driven metrics collection system for Instructor PHP library
+Event-driven metrics collection for InstructorPHP.
 
-## Installation
+Use it to:
+- collect metrics from event listeners
+- store them in a registry
+- export them to logs or custom backends
 
-```bash
-composer require cognesy/instructor-instructor-metrics
-```
-
-## Usage
+## Example
 
 ```php
 <?php
-// TODO: Add usage examples
+
+use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Metrics\Data\Tags;
+use Cognesy\Metrics\Exporters\CallbackExporter;
+use Cognesy\Metrics\Metrics;
+
+$metrics = (new Metrics(new EventDispatcher()))
+    ->exportTo(new CallbackExporter(function (iterable $items): void {
+        foreach ($items as $metric) {
+            // send metric to your backend
+        }
+    }));
+
+$metrics->registry()->counter('requests_total', Tags::of(['route' => '/health']));
+$metrics->export();
 ```
 
-## License
+## Documentation
 
-This library is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+- `packages/metrics/CHEATSHEET.md`
+- `packages/metrics/src/`

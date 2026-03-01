@@ -1,34 +1,35 @@
 # HTTP Client Package
 
-Framework-agnostic HTTP layer for Instructor, focused on reliable sync, streaming, and pooled execution.
+Framework-agnostic HTTP transport layer used by Instructor for sync, streaming, and pooled requests.
 
-## Core API
+## Example
 
-- `HttpClient::default()` / `HttpClient::using($preset)`
-- `withRequest(HttpRequest)->get()` for sync responses
-- `withRequest(HttpRequest)->stream()` for streaming responses
-- `pool(HttpRequestList, ?int)` / `withPool(HttpRequestList)` for concurrency
-- `withMiddleware()` / `withoutMiddleware()` for request/response interception
+```php
+use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\HttpClient;
 
-## Design Rules
+$client = HttpClient::default();
 
-- `with*()` operations are immutable and return new instances
-- Streaming and sync pending execution paths are isolated
-- Pooling uses the active client driver; unsupported external drivers fail explicitly
+$request = new HttpRequest(
+    url: 'https://api.example.com/health',
+    method: 'GET',
+    headers: ['Accept' => 'application/json'],
+    body: '',
+    options: [],
+);
+
+$response = $client->withRequest($request)->get();
+echo $response->statusCode();
+```
 
 ## Documentation
 
-See `packages/http-client/docs/` for focused guides:
+For usage details, read the package docs:
 
-1. Overview
-2. Getting Started
-3. Making Requests
-4. Handling Responses
-5. Streaming Responses
-6. Request Pooling
-7. Middleware
+- `packages/http-client/docs/1-overview.md`
+- `packages/http-client/docs/2-getting-started.md`
+- `packages/http-client/docs/_meta.yaml` (navigation order)
 
-v2 scope/pruning references:
-
+2.0 API scope notes:
 - `packages/http-client/V2_API_SURFACE.md`
 - `packages/http-client/V2_CORE_SCOPE.md`

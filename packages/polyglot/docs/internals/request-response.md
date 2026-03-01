@@ -1,131 +1,140 @@
 ---
 title: Request and Response Objects
-description: 'Learn about the request and response objects used in Polyglot.'
+description: 'Core request/response types used by inference and embeddings.'
 ---
-
 
 ## InferenceRequest
 
-The `InferenceRequest` class encapsulates all the parameters needed for an LLM request:
+`InferenceRequest` is the canonical payload passed to inference drivers.
 
 ```php
-namespace Cognesy\Polyglot\LLM;
+<?php
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
-class InferenceRequest {
-    public array $messages = [];
-    public string $model = '';
-    public array $tools = [];
-    public string|array $toolChoice = [];
-    public array $responseFormat = [];
-    public array $options = [];
-    public Mode $mode = OutputMode::Text;
-    public ?CachedContext $cachedContext;
-
-    public function __construct(...) { ... }
-
-    // Getters
-    public function id(): InferenceRequestId { ... }
-    public function messages(): array { ... }
-    public function model(): string { ... }
-    public function isStreamed(): bool { ... }
-    public function tools(): array { ... }
-    public function toolChoice(): string|array { ... }
-    public function responseFormat(): array { ... }
-    public function options(): array { ... }
-    public function mode(): Mode { ... }
-    public function cachedContext(): ?CachedContext { ... }
-
-    // Fluent setters
-    public function withMessages(string|array $messages): self { ... }
-    public function withModel(string $model): self { ... }
-    public function withStreaming(bool $streaming): self { ... }
-    public function withTools(array $tools): self { ... }
-    public function withToolChoice(string|array $toolChoice): self { ... }
-    public function withResponseFormat(array $responseFormat): self { ... }
-    public function withOptions(array $options): self { ... }
-    public function withMode(Mode $mode): self { ... }
-    public function withCachedContext(?CachedContext $cachedContext): self { ... }
-
-    // Utility methods
-    public function toArray(): array { ... }
-    public function withCacheApplied(): self { ... }
-}
+$request = new InferenceRequest(
+    messages: 'Summarize this text',
+    model: 'gpt-4o-mini',
+    options: ['temperature' => 0.2],
+    mode: OutputMode::Text,
+);
 ```
 
-Internally, request identity is represented by `InferenceRequestId` and can be converted to string at boundaries via `->id()->toString()`.
-Attempt identity in execution state is represented by `InferenceAttemptId` and is serialized as string in event payloads and arrays.
-Execution identity is represented by `InferenceExecutionId` and converted to string when emitted in events and serialized output.
-Response identity is represented by `InferenceResponseId` and serialized as string at boundaries.
-Partial streaming chunk identity is represented by `PartialInferenceResponseId` and serialized as string at boundaries.
-External tool-call identity is represented by `ToolCallId`; OpenResponses stream item identity uses `OpenResponseItemId` internally and converts to string at stream/transport boundaries.
+Most used accessors:
 
+- `messages()`
+- `model()`
+- `tools()`, `toolChoice()`
+- `responseFormat()`
+- `options()`
+- `outputMode()`
+- `cachedContext()`
+- `responseCachePolicy()`
+- `retryPolicy()`
 
+Most used mutators:
+
+- `withMessages(...)`
+- `withModel(...)`
+- `withStreaming(...)`
+- `withTools(...)`
+- `withToolChoice(...)`
+- `withResponseFormat(...)`
+- `withOptions(...)`
+- `withOutputMode(...)`
+- `withCachedContext(...)`
+- `withResponseCachePolicy(...)`
+- `withRetryPolicy(...)`
 
 ## PendingInference
 
-The `PendingInference` class handles the response from an LLM API:
+`PendingInference` defers execution until you read output.
 
 ```php
-namespace Cognesy\Polyglot\LLM;
+<?php
+use Cognesy\Polyglot\Inference\Inference;
 
-use Cognesy\Polyglot\Inference\Data\InferenceRequest;class PendingInference {
-    public function __construct(
-        InferenceRequest $request,
-        CanHandleInference $driver,
-        EventDispatcherInterface $events,
-    ) { ... }
+$pending = Inference::using('openai')
+    ->withMessages('Explain event sourcing in one paragraph.')
+    ->create();
 
-    // Access methods
-    public function isStreamed(): bool { ... }
-    public function toText(): string { ... }
-    public function toArray(): array { ... }
-    public function stream(): InferenceStream { ... }
-    public function response(): InferenceResponse { ... }
-}
+$text = $pending->get();
+$json = $pending->asJsonData();
+$response = $pending->response();
 ```
 
-For streaming responses, the `InferenceStream` class provides methods to process the stream:
+Core methods:
+
+- `get()`: text content
+- `asJson()`, `asJsonData()`
+- `response()`: full `InferenceResponse`
+- `stream()`: `InferenceStream` (only when streaming is enabled)
+- `isStreamed()`
+
+## InferenceStream
+
+`InferenceStream` exposes partial snapshots during streaming.
 
 ```php
-namespace Cognesy\Polyglot\LLM;
+<?php
+$stream = Inference::using('openai')
+    ->withMessages('Write three short title ideas.')
+    ->withStreaming(true)
+    ->stream();
 
-class InferenceStream {
-    public function __construct(
-        HttpResponse        $httpResponse,
-        CanHandleInference        $driver,
-        EventDispatcherInterface  $events,
-    ) { ... }
-
-    // Stream processing methods
-    public function responses(): Generator { ... }
-    public function all(): array { ... }
-    public function final(): ?InferenceResponse { ... }
-    public function onPartialResponse(callable $callback): self { ... }
+foreach ($stream->responses() as $partial) {
+    echo $partial->contentDelta;
 }
+
+$final = $stream->final();
 ```
 
+Core methods:
 
+- `responses()`: generator of `PartialInferenceResponse`
+- `all()`: collect all partial responses
+- `final()`: materialized final `InferenceResponse`
+- `onPartialResponse(callable)`
+- `map(...)`, `filter(...)`, `reduce(...)`
 
-## EmbeddingsResponse
+## PartialInferenceResponse
 
-The `EmbeddingsResponse` class encapsulates the result of an embeddings request:
+Each streamed chunk is represented as a cumulative snapshot:
+
+- `contentDelta` / `content()`
+- `reasoningContentDelta` / `reasoningContent()`
+- `toolId`, `toolName`, `toolArgs`
+- `toolCalls()`
+- `finishReason()`
+- `usage()`
+
+## EmbeddingsRequest and EmbeddingsResponse
+
+Embeddings follow the same deferred pattern.
 
 ```php
-namespace Cognesy\Polyglot\Embeddings;
+<?php
+use Cognesy\Polyglot\Embeddings\Embeddings;
 
-class EmbeddingsResponse {
-    public function __construct(
-        public array $vectors,
-        public ?Usage $usage
-    ) { ... }
+$pending = Embeddings::using('openai')
+    ->withInputs(['doc one', 'doc two'])
+    ->create();
 
-    // Access methods
-    public function first(): Vector { ... }
-    public function last(): Vector { ... }
-    public function all(): array { ... }
-    public function usage(): Usage { ... }
-    public function toValuesArray(): array { ... }
-    public function totalTokens(): int { ... }
-    public function split(int $index): array { ... }
-}
+$response = $pending->get();
+$first = $response->first();
+$vectors = $response->vectors();
+$usage = $response->usage();
 ```
+
+`EmbeddingsResponse` also provides `last()`, `split(...)`, `toValuesArray()`, and `toArray()`.
+
+## Identity Types
+
+IDs are value objects serialized as strings at boundaries:
+
+- `InferenceRequestId`
+- `InferenceExecutionId`
+- `InferenceAttemptId`
+- `InferenceResponseId`
+- `PartialInferenceResponseId`
+- `ToolCallId`

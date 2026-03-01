@@ -130,7 +130,7 @@ final class ExecutionPolicy
     }
 
     /** @param array<string,string> $env */
-    public function withEnv(array $env, bool $inherit = false): self {
+    public function withEnv(array $env, ?bool $inherit = null): self {
         return $this->with(env: $env, inheritEnv: $inherit);
     }
 

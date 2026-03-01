@@ -1,18 +1,64 @@
 ---
-title: Advanced Topics (Archived)
-description: 'This page was archived during HTTP Client 2.0 docs cleanup.'
+title: Changing Client Config
+description: Configure driver behavior with typed config or DSN overrides.
 ---
 
-This topic was intentionally removed from the primary docs set to keep guidance focused on core production workflows.
+## Configure via `HttpClientConfig`
 
-Use these guides instead:
+```php
+use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\Http\Creation\HttpClientBuilder;
 
-- `1-overview`
-- `2-getting-started`
-- `3-making-requests`
-- `4-handling-responses`
-- `5-streaming-responses`
-- `6-pooling`
-- `10-middleware`
+$config = new HttpClientConfig(
+    driver: 'guzzle',
+    connectTimeout: 2,
+    requestTimeout: 20,
+    streamChunkSize: 512,
+    failOnError: true,
+);
 
-If you need a specific advanced extension scenario, prefer package source + tests as the current reference until the advanced docs are rewritten.
+$client = (new HttpClientBuilder())
+    ->withConfig($config)
+    ->create();
+```
+
+## Configure via DSN
+
+```php
+use Cognesy\Http\Creation\HttpClientBuilder;
+
+$client = (new HttpClientBuilder())
+    ->withDsn('driver=symfony')
+    ->create();
+```
+
+Use DSN for simple string-based selection (for example `driver`).
+For numeric and boolean options, prefer `withConfig(new HttpClientConfig(...))`.
+
+## Preset + Override Pattern
+
+```php
+use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\Http\Creation\HttpClientBuilder;
+
+$client = (new HttpClientBuilder())
+    ->withPreset('guzzle')
+    ->withConfig(new HttpClientConfig(driver: 'guzzle', failOnError: true))
+    ->create();
+```
+
+When `withConfig(...)` is provided, that config is authoritative.
+
+## Pool and Error Behavior
+
+`HttpClientConfig` also controls:
+
+- `maxConcurrent` and `poolTimeout` for pooling defaults
+- `failOnError` for exception-on-4xx/5xx behavior
+- `streamChunkSize` for adapter streaming chunk size
+
+## See Also
+
+- [Changing client](7-changing-client.md)
+- [Making requests](3-making-requests.md)
+- [Handling responses](4-handling-responses.md)

@@ -3,7 +3,5 @@ parameters:
   paths:
     - src
     - tests
-    - config
   reportUnmatchedIgnoredErrors: false
-  checkGenericClassInNonGenericObjectType: false
   tmpDir: /tmp

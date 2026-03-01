@@ -68,7 +68,22 @@ $structuredOutput = (new StructuredOutput)
     ->withExamples($examples)           // Set example data
     ->withModel($modelName)             // Set LLM model
     ->withOptions($options)             // Set LLM options
-    ->withStreaming(true)               // Enable streaming
+    ->withStreaming(true);              // Enable streaming
+```
+
+You can also pass a prebuilt request object:
+
+```php
+use Cognesy\Instructor\Data\StructuredOutputRequest;
+
+$request = new StructuredOutputRequest(
+    messages: 'Extract user data',
+    requestedSchema: User::class,
+);
+
+$user = (new StructuredOutput)
+    ->withRequest($request)
+    ->get();
 ```
 
 ### Response Model Configuration
@@ -77,7 +92,7 @@ $structuredOutput = (new StructuredOutput)
     ->withResponseModel($model)         // Set response model (class/object/array)
     ->withResponseClass($className)     // Set response class specifically
     ->withResponseObject($object)       // Set response object instance
-    ->withResponseJsonSchema($schema)   // Set JSON schema directly
+    ->withResponseJsonSchema($schema);  // Set JSON schema directly
 ```
 
 ### Output Formats
@@ -88,7 +103,7 @@ Control how extracted data is returned while keeping the same schema:
 $structuredOutput = (new StructuredOutput)
     ->intoArray()                       // Return as associative array
     ->intoInstanceOf($className)        // Return as different class
-    ->intoObject($selfDeserializing)    // Return as self-deserializing object
+    ->intoObject($selfDeserializing);   // Return as self-deserializing object
 ```
 
 **Example - Get raw arrays:**
@@ -121,7 +136,7 @@ $structuredOutput = (new StructuredOutput)
     ->withMaxRetries(3)                 // Set retry count
     ->withOutputMode($mode)             // Set output mode
     ->withConfig($config)               // Set configuration object
-    ->withDefaultToStdClass(true)       // Use stdClass fallback for schema-less data
+    ->withDefaultToStdClass(true);      // Use stdClass fallback for schema-less data
 ```
 
 ### LLM Provider Configuration
@@ -136,7 +151,7 @@ $structuredOutput = (new StructuredOutput)->withRuntime(
 );
 
 $provider = LLMProvider::using('openai')
-    ->withLLMConfigOverrides(['temperature' => 0.2]);
+    ->withConfigOverrides(['temperature' => 0.2]);
 $structuredOutput = (new StructuredOutput)->withRuntime(
     StructuredOutputRuntime::fromProvider(provider: $provider)
 );
@@ -148,7 +163,7 @@ $structuredOutput = (new StructuredOutput)
     ->withValidators(...$validators)    // Override validators
     ->withTransformers(...$transformers) // Override transformers
     ->withDeserializers(...$deserializers) // Override deserializers
-    ->withExtractors(...$extractors)    // Override extractors
+    ->withExtractors(...$extractors);   // Override extractors
 ```
 
 
@@ -202,6 +217,18 @@ $jsonObj = $pending->toJsonObject(); // Convert result to Json object
 ?>
 ```
 
+You can inspect execution metadata from `PendingStructuredOutput`:
+
+```php
+<?php
+$pending = $structuredOutput->create();
+$execution = $pending->execution();
+
+$executionId = $execution->id()->toString();
+$requestId = $execution->request()->id()->toString();
+?>
+```
+
 ### Runtime-First Execution (`CanCreateStructuredOutput`)
 
 When you need constructor-injected creators (for agents, addons, or DI containers), use `StructuredOutputRuntime` directly and execute via request objects:
@@ -231,6 +258,45 @@ $person = $creator->create($request)->get();
 
 The `PendingStructuredOutput` class serves as a flexible execution interface that lets you choose how to process the LLM response based on your specific needs.
 
+### Typed convenience getters
+
+When you expect a scalar/object/array shape, you can use strict getters:
+
+```php
+<?php
+use Cognesy\Instructor\Extras\Scalar\Scalar;
+use Cognesy\Instructor\StructuredOutput;
+
+$age = (new StructuredOutput)
+    ->with(messages: 'Jason is 28 years old', responseModel: Scalar::integer('age'))
+    ->getInt();
+
+$user = (new StructuredOutput)
+    ->with(messages: 'Jason is 28 years old', responseModel: Person::class)
+    ->getObject();
+?>
+```
+
+Available methods: `getString()`, `getInt()`, `getFloat()`, `getBoolean()`, `getObject()`, `getArray()`.
+
+### Runtime access
+
+For advanced integration, you can access runtime and dispatch custom events:
+
+```php
+<?php
+use Cognesy\Events\Event;
+use Cognesy\Instructor\StructuredOutput;
+
+$structuredOutput = StructuredOutput::using('openai');
+$runtime = $structuredOutput->runtime();
+
+$structuredOutput->dispatch(new Event(['source' => 'app']));
+?>
+```
+
+`dispatch()`, `onEvent()`, and `wiretap()` require `StructuredOutputRuntime`.
+
 
 ## String as Input
 
@@ -256,8 +322,8 @@ Instructor offers a way to use structured data as an input. This is
 useful when you want to use object data as input and get another object
 with a result of LLM inference.
 
-The `input` field of Instructor's `with()` method
-can be an object, but also an array or just a string.
+Use `withInput()` when your source data is an object, array, or string and you want
+Instructor to convert it into messages.
 
 ```php
 <?php
@@ -277,8 +343,9 @@ $email = new Email(
     body: 'Your account has been updated.'
 );
 
-$translation = (new StructuredOutput)->with(
-        input: $email,
+$translation = (new StructuredOutput)
+    ->withInput($email)
+    ->with(
         responseModel: Email::class,
         prompt: 'Translate the text fields of email to Spanish. Keep other fields unchanged.',
     )
@@ -305,12 +372,12 @@ $stream = (new StructuredOutput)->with(
 
 foreach ($stream->partials() as $partialPerson) {
     // process partial person data
-    echo "Name: " $partialPerson->name ?? '...';
-    echo "Age: " $partialPerson->age ?? '...';
+    echo "Name: " . ($partialPerson->name ?? '...') . PHP_EOL;
+    echo "Age: " . ($partialPerson->age ?? '...') . PHP_EOL;
 }
 
 // after streaming is done you can get the final, fully processed person object...
-$person = $stream->lastUpdate()
+$person = $stream->lastUpdate();
 // ...to, for example, save it to the database
 $db->save($person);
 ?>

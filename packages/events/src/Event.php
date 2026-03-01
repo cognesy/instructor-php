@@ -64,7 +64,7 @@ class Event implements JsonSerializable
      * Prints the event data to the console
      *
      * @param bool $quote Whether to quote the message
-     * @param string $threshold The log level threshold
+     * @param string $threshold Minimum log level threshold accepted for printing
      */
     public function print(bool $quote = false, string $threshold = LogLevel::DEBUG): void {
         if (!EventFormatter::logFilter($threshold, $this->logLevel)) {
@@ -99,17 +99,15 @@ class Event implements JsonSerializable
     }
 
     /**
-     * Returns the event data as an array
+     * Returns a best-effort informational snapshot of the event.
      *
-     * @return array The event data as an array
+     * This helper is intended for diagnostics/logging convenience only.
+     * It does not guarantee JSON-safe values for every payload shape.
+     *
+     * @return array<string, mixed>
      */
     public function toArray(): array {
-        // TODO: make this better
-        $encoded = json_encode($this);
-        if ($encoded === false) {
-            return [];
-        }
-        return json_decode($encoded, true);
+        return $this->jsonSerialize();
     }
 
     /**

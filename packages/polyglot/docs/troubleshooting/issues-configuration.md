@@ -84,17 +84,17 @@ Ensure all required configuration parameters are present and correctly formatted
 
 ```php
 <?php
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 function verifyConfig(string $preset): void {
     try {
-        $provider = new ConfigProvider();
-        $config = LLMConfig::fromArray($provider->getConfig($preset));
+        $config = LLMProvider::using($preset)->resolveConfig();
 
         echo "Configuration for '$preset':\n";
         echo "API URL: {$config->apiUrl}\n";
         echo "Endpoint: {$config->endpoint}\n";
         echo "Default Model: {$config->model}\n";
-        echo "Provider Type: {$config->providerType}\n";
+        echo "Driver: {$config->driver}\n";
 
         // Check for empty values
         if (empty($config->apiKey)) {

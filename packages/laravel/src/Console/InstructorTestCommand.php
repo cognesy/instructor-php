@@ -105,7 +105,7 @@ class InstructorTestCommand extends Command
         CanHandleEvents $events,
         HttpClient $httpClient,
     ): int {
-        $this->components->task('Testing raw inference', function () use ($preset, $configProvider, $events, $httpClient) {
+        $ok = $this->components->task('Testing raw inference', function () use ($preset, $configProvider, $events, $httpClient) {
             try {
                 $response = InferenceRuntime::fromProvider(
                     provider: LLMProvider::new($configProvider)->withLLMPreset($preset),
@@ -126,7 +126,7 @@ class InstructorTestCommand extends Command
         $this->newLine();
         $this->components->info('Inference test completed!');
 
-        return self::SUCCESS;
+        return $ok ? self::SUCCESS : self::FAILURE;
     }
 
     /**
@@ -138,7 +138,7 @@ class InstructorTestCommand extends Command
         CanHandleEvents $events,
         HttpClient $httpClient,
     ): int {
-        $this->components->task('Testing structured output extraction', function () use ($preset, $configProvider, $events, $httpClient) {
+        $ok = $this->components->task('Testing structured output extraction', function () use ($preset, $configProvider, $events, $httpClient) {
             try {
                 // Simple extraction test using array response model
                 $result = StructuredOutputRuntime::fromProvider(
@@ -183,6 +183,6 @@ class InstructorTestCommand extends Command
         $this->newLine();
         $this->components->info('Structured output test completed!');
 
-        return self::SUCCESS;
+        return $ok ? self::SUCCESS : self::FAILURE;
     }
 }

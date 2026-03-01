@@ -149,7 +149,6 @@ class StructureFactory
                 case $propertyInfo->isStatic():
                 // GETTERS SUPPORT
                 //case !$propertyInfo->isPublic():
-                case $propertyInfo->isReadOnly():
                 case $propertyInfo->hasAttribute(Ignore::class):
                     continue 2;
             }

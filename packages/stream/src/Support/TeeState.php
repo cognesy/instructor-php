@@ -3,6 +3,7 @@
 namespace Cognesy\Stream\Support;
 
 use Iterator;
+use Throwable;
 
 /**
  * Manages shared state for splitting a single iterator into multiple independent branches.
@@ -39,6 +40,7 @@ final class TeeState
 
     /** Whether the source iterator has been initially positioned */
     private bool $sourceInitialized = false;
+    private bool $sourcePreparedForValidation = false;
 
     /** Whether the source iterator is exhausted */
     private bool $sourceExhausted = false;
@@ -66,6 +68,7 @@ final class TeeState
 
         // Need to check if source has values without fully initializing
         if (!$this->sourceInitialized) {
+            $this->prepareSourceForValidation();
             return $this->source->valid();
         }
 
@@ -135,6 +138,8 @@ final class TeeState
     }
 
     private function initializeSource(): bool {
+        $this->prepareSourceForValidation();
+
         if (!$this->source->valid()) {
             $this->sourceExhausted = true;
             return false;
@@ -204,5 +209,22 @@ final class TeeState
             unset($this->buffer[$i]);
         }
         $this->head = $position;
+    }
+
+    private function prepareSourceForValidation(): void {
+        if ($this->sourcePreparedForValidation) {
+            return;
+        }
+
+        $this->sourcePreparedForValidation = true;
+        if ($this->source instanceof \Generator) {
+            return;
+        }
+
+        try {
+            $this->source->rewind();
+        } catch (Throwable) {
+            // Ignore non-rewindable iterators (e.g. already-started generators).
+        }
     }
 }

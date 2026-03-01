@@ -15,7 +15,6 @@ use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 use Cognesy\Utils\Collection\ArrayList;
-use Exception;
 use Generator;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use RuntimeException;
@@ -99,7 +98,8 @@ class StructuredOutputStream
         foreach ($this->streamResponses() as $partialResponse) {
             $value = $partialResponse->value();
             if (!($value instanceof Sequenceable)) {
-                throw new Exception('Expected Sequenceable, got ' . get_class($value));
+                $type = get_debug_type($value);
+                throw new RuntimeException("Expected Sequenceable value in sequence() stream, got {$type}.");
             }
 
             $result = $tracker->consume($value);
@@ -145,19 +145,35 @@ class StructuredOutputStream
         if ($this->finalizedResponse !== null) {
             return $this->finalizedResponse;
         }
-        if ($this->streamCompleted && $this->lastResponse !== null) {
-            $this->finalizedResponse = $this->lastResponse;
-            $this->events->dispatch(new StructuredOutputResponseGenerated(['response' => $this->lastResponse]));
+
+        if ($this->streamCompleted) {
+            $response = $this->resolveFinalResponse();
+            if ($response === null) {
+                throw new RuntimeException(
+                    'Final response is unavailable: stream completed without finalized inference response.'
+                );
+            }
+            $this->lastResponse = $response;
+            $this->finalizedResponse = $response;
+            $this->events->dispatch(new StructuredOutputResponseGenerated(['response' => $response]));
             return $this->finalizedResponse;
         }
+
         foreach ($this->streamResponses() as $_) {
             // Just consume the stream, streamResponses() handles the updates
         }
-        if (is_null($this->lastResponse)) {
-            throw new RuntimeException('Expected final InferenceResponse, got null');
+
+        $response = $this->resolveFinalResponse();
+        if ($response === null) {
+            throw new RuntimeException(
+                'Final response is unavailable: no finalized inference response after stream consumption.'
+            );
         }
-        $this->finalizedResponse = $this->lastResponse;
-        $this->events->dispatch(new StructuredOutputResponseGenerated(['response' => $this->lastResponse]));
+
+        $this->lastResponse = $response;
+        $this->finalizedResponse = $response;
+        $this->events->dispatch(new StructuredOutputResponseGenerated(['response' => $response]));
+
         return $this->finalizedResponse;
     }
 
@@ -243,5 +259,17 @@ class StructuredOutputStream
 
     private function shouldCache(): bool {
         return $this->cachePolicy->shouldCache();
+    }
+
+    private function resolveFinalResponse(): ?InferenceResponse {
+        if ($this->lastResponse !== null) {
+            return $this->lastResponse;
+        }
+
+        if ($this->execution->isFinalized()) {
+            return $this->execution->inferenceResponse();
+        }
+
+        return null;
     }
 }

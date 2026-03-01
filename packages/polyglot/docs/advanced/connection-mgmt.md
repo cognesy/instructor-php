@@ -67,7 +67,7 @@ try {
     $response = withFallback($providers, function($inference) {
         return $inference->with(
             messages: 'What is the capital of France?'
-        )->toText();
+        )->get();
     });
 
     echo "Response: $response\n";

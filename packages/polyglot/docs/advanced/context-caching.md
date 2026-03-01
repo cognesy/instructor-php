@@ -18,7 +18,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $inference = Inference::using('anthropic');
 
 // Set up a conversation with cached context
-$inference->withCachedContext(
+$inference = $inference->withCachedContext(
     messages: [
         ['role' => 'system', 'content' => 'You are a helpful assistant who provides concise answers.'],
         ['role' => 'user', 'content' => 'I want to discuss machine learning concepts.'],
@@ -66,7 +66,7 @@ $documentContent = file_get_contents('large_document.txt');
 
 // Set up cached context with the document
 $inference = Inference::using('anthropic');
-$inference->withCachedContext(
+$inference = $inference->withCachedContext(
     messages: [
         ['role' => 'system', 'content' => 'You will help analyze and summarize documents.'],
         ['role' => 'user', 'content' => 'Here is the document to analyze:'],

@@ -11,9 +11,11 @@ Each LLM provider has unique quirks and issues. This section covers common provi
 1. **Organization IDs**: Set the organization ID if using a shared account
 ```php
 // In config/llm.php
-'metadata' => [
-    'organization' => 'org-your-organization-id',
-],
+return [
+    'metadata' => [
+        'organization' => 'org-your-organization-id',
+    ],
+];
 ```
 
 2. **API Versions**: Pay attention to API version changes

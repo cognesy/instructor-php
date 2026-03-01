@@ -80,7 +80,19 @@ class LaravelDriver implements CanHandleHttpRequest
 
     private function performHttpCall(HttpRequest $request): Response {
         $pendingRequest = $this->createPendingRequest($request->headers(), $request->isStreamed());
-        return $this->sendRequest($pendingRequest, $request->method(), $request->url(), $request->body()->toArray());
+        $method = strtoupper($request->method());
+        $body = $request->body()->toString();
+        $jsonBody = $this->decodeJsonArray($body);
+
+        if ($method === 'GET') {
+            return $pendingRequest->get($request->url());
+        }
+
+        if ($jsonBody !== null) {
+            return $this->sendJsonRequest($pendingRequest, $method, $request->url(), $jsonBody);
+        }
+
+        return $this->sendRawRequest($pendingRequest, $method, $request->url(), $body, $request->headers());
     }
 
     private function buildHttpResponse(Response $response, HttpRequest $request): HttpResponse {
@@ -122,15 +134,29 @@ class LaravelDriver implements CanHandleHttpRequest
         return $pendingRequest;
     }
 
-    private function sendRequest(PendingRequest $pendingRequest, string $method, string $url, array $body): Response {
+    private function sendJsonRequest(PendingRequest $pendingRequest, string $method, string $url, array $body): Response {
         return match (strtoupper($method)) {
-            'GET' => $pendingRequest->get($url),
             'POST' => $pendingRequest->post($url, $body),
             'PUT' => $pendingRequest->put($url, $body),
             'PATCH' => $pendingRequest->patch($url, $body),
             'DELETE' => $pendingRequest->delete($url, $body),
             default => throw new InvalidArgumentException("Unsupported HTTP method: {$method}")
         };
+    }
+
+    private function sendRawRequest(
+        PendingRequest $pendingRequest,
+        string $method,
+        string $url,
+        string $body,
+        array $headers,
+    ): Response {
+        $requestWithBody = $pendingRequest;
+        if ($body !== '') {
+            $requestWithBody = $requestWithBody->withBody($body, $this->resolveContentType($headers));
+        }
+
+        return $requestWithBody->send($method, $url);
     }
 
     // exception handling
@@ -185,5 +211,30 @@ class LaravelDriver implements CanHandleHttpRequest
         $this->events->dispatch(new HttpResponseReceived([
             'statusCode' => $response->statusCode()
         ]));
+    }
+
+    private function decodeJsonArray(string $body): ?array {
+        if ($body === '') {
+            return null;
+        }
+
+        $decoded = json_decode($body, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return null;
+        }
+
+        if (!is_array($decoded)) {
+            return null;
+        }
+
+        return $decoded;
+    }
+
+    private function resolveContentType(array $headers): string {
+        return match (true) {
+            isset($headers['Content-Type']) => (string) $headers['Content-Type'],
+            isset($headers['content-type']) => (string) $headers['content-type'],
+            default => 'text/plain',
+        };
     }
 }

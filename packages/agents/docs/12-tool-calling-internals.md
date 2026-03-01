@@ -5,6 +5,9 @@ description: 'How ToolCallingDriver and ReActDriver implement tool use through d
 
 # Tool Calling Internals
 
+> Most users can skip this page.
+> For day-to-day usage, start with [Basic Agent](02-basic-agent.md), [Tools](05-tools.md), and [AgentBuilder & Capabilities](13-agent-builder.md).
+
 The agent's ability to use tools relies on two contracts and two drivers that implement them differently.
 
 ## Architecture

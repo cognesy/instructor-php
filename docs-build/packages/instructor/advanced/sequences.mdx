@@ -20,11 +20,11 @@ $text = <<<TEXT
 TEXT;
 
 $list = (new StructuredOutput)
-    ->withResponseClass(Sequence::of(Person::class))
+    ->withResponseModel(Sequence::of(Person::class))
     ->with(
         messages: [['role' => 'user', 'content' => $text]],
     )->get();
-// @doctest id="19e6"
+// @doctest id="5456"
 ```
 
 
@@ -64,7 +64,7 @@ $text = <<<TEXT
 TEXT;
 
 $stream = (new StructuredOutput)
-    ->withResponseClass(Sequence::of(Person::class))
+    ->withResponseModel(Sequence::of(Person::class))
     ->with(
         messages: [['role' => 'user', 'content' => $text]],
         options: ['stream' => true],
@@ -82,7 +82,7 @@ foreach ($list as $person) {
     // do something with each person
     $this->db->save($person);
 }
-// @doctest id="875d"
+// @doctest id="fe9f"
 ```
 
 
@@ -98,7 +98,7 @@ $sequence->first();   // returns the first extracted item
 $sequence->last();    // returns the last extracted item
 $sequence->get(1);    // returns the second extracted item
 $sequence->toArray(); // returns the list of extracted items as an array
-// @doctest id="4d51"
+// @doctest id="e5b0"
 ```
 
 ## Streaming sequence updates

@@ -2,6 +2,7 @@
 
 namespace Cognesy\Utils\Json;
 
+use InvalidArgumentException;
 use JsonException;
 
 class Json
@@ -48,7 +49,18 @@ class Json
         if ($this->isEmpty()) {
             return [];
         }
-        return json_decode($this->json, true);
+        try {
+            $decoded = json_decode($this->json, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            throw new InvalidArgumentException("Invalid JSON provided: {$e->getMessage()}", 0, $e);
+        }
+
+        if (!is_array($decoded)) {
+            $type = gettype($decoded);
+            throw new InvalidArgumentException("Json::toArray expects JSON object or array as root type, got {$type}.");
+        }
+
+        return $decoded;
     }
 
     public function format(int $options = 0, ?int $depth = null) : string {

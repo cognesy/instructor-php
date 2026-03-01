@@ -145,7 +145,7 @@ use Cognesy\Instructor\StructuredOutput;
 
 $text = <<<TEXT
     Jane Doe lives in Springfield. She is 25 years old and works as a line worker. 
-    McDonald's in Ney York is located at 456 Elm St, NYC, 12345.
+    McDonald's in New York is located at 456 Elm St, NYC, 12345.
     TEXT;
 
 $person = (new StructuredOutput)->with(

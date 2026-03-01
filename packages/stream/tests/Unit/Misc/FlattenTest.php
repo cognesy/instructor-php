@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Stream\Support\CallableReducer;
-use Cognesy\Stream\Transform\Flatten\Tranducers\Flatten;
+use Cognesy\Stream\Transform\Flatten\Transducers\Flatten;
 
 test('flattens one level by default', function () {
     $reducer = new CallableReducer(

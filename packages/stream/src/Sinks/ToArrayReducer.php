@@ -13,6 +13,10 @@ final class ToArrayReducer implements Reducer
 
     #[\Override]
     public function step(mixed $accumulator, mixed $reducible): mixed {
+        if (!is_array($accumulator)) {
+            $accumulator = [];
+        }
+
         $accumulator[] = $reducible;
         return $accumulator;
     }

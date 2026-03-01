@@ -26,7 +26,7 @@ This will install Polyglot along with its dependencies.
 
 ## Requirements
 
-- PHP 8.2 or higher
+- PHP 8.3 or higher
 - Composer
 - Valid API keys for at least one supported LLM provider
 
@@ -167,7 +167,7 @@ Settings::setPath('/your/path/to/config');
 
 ### Common Installation Issues
 
-- **Composer Dependencies**: Make sure you have PHP 8.2+ installed and Composer correctly configured.
+- **Composer Dependencies**: Make sure you have PHP 8.3+ installed and Composer correctly configured.
 - **API Keys**: Verify that your API keys are correctly set in your environment variables.
 - **Configuration Files**: Check that your configuration files are properly formatted and accessible.
 

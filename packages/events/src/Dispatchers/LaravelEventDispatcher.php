@@ -16,11 +16,23 @@ final class LaravelEventDispatcher implements CanHandleEvents
 
     /** @var SplPriorityQueue  wire-tap listeners ("*") */
     private SplPriorityQueue $taps;
+    private bool $dispatchToLaravel;
+    /** @var array<class-string> */
+    private array $bridgedEvents;
 
-    public function __construct(Dispatcher $laravel)
+    /**
+     * @param array<class-string> $bridgedEvents
+     */
+    public function __construct(
+        Dispatcher $laravel,
+        bool $dispatchToLaravel = true,
+        array $bridgedEvents = [],
+    )
     {
         $this->dispatcher = $laravel;
         $this->taps    = new SplPriorityQueue();
+        $this->dispatchToLaravel = $dispatchToLaravel;
+        $this->bridgedEvents = $bridgedEvents;
     }
 
     #[\Override]
@@ -35,9 +47,6 @@ final class LaravelEventDispatcher implements CanHandleEvents
         $queue = $this->registry[$name] ??= new SplPriorityQueue();
         $queue->insert($listener, $priority);
 
-        // hand off to Laravel (priority ignored by Laravel, but order is preserved per registration)
-        /** @var \Closure $listener */
-        $this->dispatcher->listen($name, $listener);
     }
 
     /**
@@ -50,8 +59,11 @@ final class LaravelEventDispatcher implements CanHandleEvents
 
     #[\Override]
     public function dispatch(object $event): object {
-        // Laravel executes all framework / user listeners.
-        $this->dispatcher->dispatch($event);
+        $this->dispatchClassListeners($event);
+
+        if ($this->shouldBridgeToLaravel($event)) {
+            $this->dispatcher->dispatch($event);
+        }
 
         // Now run taps (guaranteed, final state of the event).
         foreach (clone $this->taps as $tap) {
@@ -80,6 +92,36 @@ final class LaravelEventDispatcher implements CanHandleEvents
         // taps
         foreach (clone $this->taps as $tap) {
             yield $tap;
+        }
+    }
+
+    private function shouldBridgeToLaravel(object $event): bool {
+        if (!$this->dispatchToLaravel) {
+            return false;
+        }
+
+        if ($this->bridgedEvents === []) {
+            return true;
+        }
+
+        foreach ($this->bridgedEvents as $eventClass) {
+            if ($event instanceof $eventClass) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function dispatchClassListeners(object $event): void {
+        $name = $event::class;
+        if (!isset($this->registry[$name])) {
+            return;
+        }
+
+        foreach (clone $this->registry[$name] as $listener) {
+            /** @var callable $listener */
+            $listener($event);
         }
     }
 }

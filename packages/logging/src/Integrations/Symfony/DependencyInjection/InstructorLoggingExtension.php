@@ -57,8 +57,6 @@ class InstructorLoggingExtension extends Extension
                 ]);
         }
 
-        // Tag Instructor services for auto-configuration
-        $container->registerForAutoconfiguration(\Cognesy\Events\Traits\HandlesEvents::class)
-            ->addMethodCall('wiretap', [new Reference('instructor_logging.pipeline_factory')]);
+        // Trait-based wiring is handled by WiretapHandlesEventsPass during compilation.
     }
 }

@@ -1,0 +1,28 @@
+{
+    "resolved_json_schema": {
+        "additionalProperties": false,
+        "description": "Object without x-php-class",
+        "properties": {
+            "id": {
+                "type": "integer"
+            },
+            "name": {
+                "type": "string"
+            }
+        },
+        "required": [
+            "id",
+            "name"
+        ],
+        "type": "object",
+        "x-title": "shape_without_class"
+    },
+    "resolved_type": {
+        "class": null,
+        "docString": "",
+        "enumType": null,
+        "enumValues": null,
+        "nestedType": null,
+        "type": "array"
+    }
+}

@@ -100,6 +100,16 @@ describe('Pricing', function () {
 });
 
 describe('Usage::calculateCost', function () {
+    it('keeps missing pricing as missing after fromArray hydration', function () {
+        $usage = Usage::fromArray([
+            'input' => 1_000,
+            'output' => 500,
+        ]);
+
+        expect(fn() => $usage->cost())
+            ->toThrow(\RuntimeException::class, 'Cannot calculate cost: no pricing information available');
+    });
+
     it('calculates cost for input and output tokens ($/1M)', function () {
         $usage = new Usage(
             inputTokens: 1_000_000,

@@ -5,6 +5,7 @@ Sometimes we just want to get quick results without defining a class for the res
 ```php
 <?php
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\Extras\Scalar\Scalar;
 
 $value = (new StructuredOutput)
     ->with(
@@ -15,12 +16,12 @@ $value = (new StructuredOutput)
 
 var_dump($value);
 // int(28)
-// @doctest id="15e7"
+// @doctest id="a2ff"
 ```
 
 In this example, we're extracting a single integer value from the text. You can also use `Scalar::string()`, `Scalar::boolean()` and `Scalar::float()` to extract other types of values.
 
-Additionally, you can use Scalar adapter to extract enums via `Scalar::enum()`.
+Additionally, you can use the `Scalar` adapter to extract enums via `Scalar::enum()`.
 
 
 ## Examples
@@ -37,7 +38,7 @@ $value = (new StructuredOutput)
     ->get();
 // expect($value)->toBeString();
 // expect($value)->toBe("Jason");
-// @doctest id="a3ed"
+// @doctest id="a88d"
 ```
 
 ### Integer result
@@ -52,7 +53,7 @@ $value = (new StructuredOutput)
     ->get();
 // expect($value)->toBeInt();
 // expect($value)->toBe(28);
-// @doctest id="1aac"
+// @doctest id="662c"
 ```
 
 ### Boolean result
@@ -67,7 +68,7 @@ $value = (new StructuredOutput)
     ->get();
 // expect($value)->toBeBool();
 // expect($value)->toBe(true);
-// @doctest id="62a8"
+// @doctest id="8b01"
 ```
 
 ### Float result
@@ -82,7 +83,7 @@ $value = (new StructuredOutput)
     ->get();
 // expect($value)->toBeFloat();
 // expect($value)->toBe(11.6);
-// @doctest id="ef80"
+// @doctest id="3c8c"
 ```
 
 ### Enum result / select one of the options
@@ -98,7 +99,7 @@ $value = (new StructuredOutput)
         ],
         responseModel: Scalar::enum(CitizenshipGroup::class, name: 'citizenshipGroup'),
     )->get();
-// expect($value)->toBeString();
-// expect($value)->toBe('other');
-// @doctest id="6bdc"
+// expect($value)->toBeInstanceOf(CitizenshipGroup::class);
+// expect($value->value)->toBe('other');
+// @doctest id="22aa"
 ```

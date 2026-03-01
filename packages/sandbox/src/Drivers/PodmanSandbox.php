@@ -31,10 +31,6 @@ final class PodmanSandbox implements CanExecuteCommand
 
     #[\Override]
     public function execute(array $argv, ?string $stdin = null, ?callable $onOutput = null): ExecResult {
-        if ($this->podmanBin === '') {
-            throw new \RuntimeException('Podman binary not found');
-        }
-
         $workDir = Workdir::create($this->policy);
         try {
             $cmd = $this->buildContainerCommand($workDir, $argv);

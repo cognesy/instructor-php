@@ -3,7 +3,7 @@ title: LLM API Providers
 description: 'Instructor supports a number of LLM API providers.'
 ---
 
-Following table lists the supported providers:
+The following list shows the supported providers:
 
 - A21
 - Anthropic
@@ -27,4 +27,4 @@ Following table lists the supported providers:
 - Together
 - XAI
 
-Check [the cookbook](/cookbook) for examples of how to use them.
+Check [the cookbook](/cookbook/introduction) for examples of how to use them.

@@ -43,7 +43,8 @@ class PendingExecution
      */
     public function each(iterable $inputs, array $tags = []): Generator {
         foreach ($inputs as $item) {
-            yield $this->for($item, $tags);
+            yield (new self($this->initialState, $this->pipeline))
+                ->for($item, $tags);
         }
     }
 
@@ -97,7 +98,12 @@ class PendingExecution
     }
 
     public function exception(): ?Throwable {
-        return $this->execute()->exceptionOr(null);
+        $exception = $this->execute()->exceptionOr(null);
+
+        return match (true) {
+            $exception instanceof Throwable => $exception,
+            default => null,
+        };
     }
 
     // INTERNAL ////////////////////////////////////////////////////

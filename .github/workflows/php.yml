@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build:
-    name: 'PHP ${{ matrix.php }} (Composer Flags: ${{ matrix.composer }})'
+    name: 'PHP ${{ matrix.php }} (Symfony ${{ matrix.symfony }}, Composer Flags: ${{ matrix.composer }})'
 
     runs-on: ubuntu-24.04
 
@@ -19,7 +19,11 @@ jobs:
       fail-fast: true
       matrix:
         php: ['8.3', '8.4', '8.5']
+        symfony: ['^7.0', '^8.0']
         composer: ['--prefer-stable', '--prefer-lowest']
+        exclude:
+          - php: '8.3'
+            symfony: '^8.0'
 
     steps:
     - uses: actions/checkout@v3
@@ -37,13 +41,29 @@ jobs:
 #          ${{ runner.os }}-php-
 
     - name: Install dependencies
-      run: composer update --no-interaction ${{ matrix.composer }}
+      run: >
+        composer update --no-interaction ${{ matrix.composer }} -W
+        --with symfony/console:${{ matrix.symfony }}
+        --with symfony/filesystem:${{ matrix.symfony }}
+        --with symfony/process:${{ matrix.symfony }}
+        --with symfony/property-access:${{ matrix.symfony }}
+        --with symfony/property-info:${{ matrix.symfony }}
+        --with symfony/serializer:${{ matrix.symfony }}
+        --with symfony/validator:${{ matrix.symfony }}
+        --with symfony/var-dumper:${{ matrix.symfony }}
+        --with symfony/yaml:${{ matrix.symfony }}
+        --with symfony/css-selector:${{ matrix.symfony }}
+        --with symfony/dom-crawler:${{ matrix.symfony }}
+        --with symfony/http-client:${{ matrix.symfony }}
 
     - name: Regenerate Autoloader
       run: composer dump-autoload
 
     - name: Run test suite (all code local)
       run: composer test
+
+    - name: Run Instructor docs QA
+      run: composer --working-dir=packages/instructor docs:qa
 
 #    - name: Install dependencies in all packages
 #      run: |

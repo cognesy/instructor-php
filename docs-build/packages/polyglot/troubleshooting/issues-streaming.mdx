@@ -17,7 +17,10 @@ Streaming responses can encounter specific problems.
 
 ```php
 <?php
-use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\HttpClient;use Cognesy\Polyglot\Inference\Inference;use Cognesy\Polyglot\Inference\InferenceRuntime;
+use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\Http\Creation\HttpClientBuilder;
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 
 // Create a custom HTTP client with longer timeouts
 $config = new HttpClientConfig(
@@ -26,7 +29,9 @@ $config = new HttpClientConfig(
     idleTimeout: 60       // 60 seconds allowed between stream chunks
 );
 
-$httpClient = new HttpClient('guzzle', $config);
+$httpClient = (new HttpClientBuilder())
+    ->withConfig($config->withOverrides(['driver' => 'guzzle']))
+    ->create();
 $inference = Inference::fromRuntime(InferenceRuntime::using(
     preset: 'openai',
     httpClient: $httpClient,
@@ -43,7 +48,7 @@ foreach ($stream as $partial) {
     echo $partial->contentDelta;
     flush();
 }
-// @doctest id="b7c5"
+// @doctest id="b0d2"
 ```
 
 2. **Buffer Flushing**: Ensure output buffers are properly flushed during streaming
@@ -57,7 +62,7 @@ foreach ($stream as $partial) {
     }
     flush();
 }
-// @doctest id="67d2"
+// @doctest id="8df8"
 ```
 
 3. **Error Handling in Streams**: Implement specific error handling for streams
@@ -86,10 +91,10 @@ try {
             echo "Partial content received: " . strlen($content) . " characters\n";
         }
     }
-} catch (RequestException $e) {
+} catch (\Throwable $e) {
     echo "Request failed: " . $e->getMessage() . "\n";
 }
-// @doctest id="eb07"
+// @doctest id="aee3"
 ```
 
 4. **Fallback to Non-streaming**: Implement a fallback to non-streaming mode
@@ -119,7 +124,7 @@ function getResponse(string $prompt, bool $preferStreaming = true): string {
     }
 
     // Fallback to non-streaming
-    return $inference->with(messages: $prompt)->toText();
+    return $inference->with(messages: $prompt)->get();
 }
-// @doctest id="2d45"
+// @doctest id="a754"
 ```

@@ -22,8 +22,8 @@ $structuredOutput = (new StructuredOutput)
     ->withOptions($options)             // Set LLM-specific options
     ->withOption($key, $value)          // Set individual LLM option
     ->withStreaming(true)               // Enable streaming responses
-    ->withCachedContext($messages, $system, $prompt, $examples) // Use cached context
-// @doctest id="4023"
+    ->withCachedContext($messages, $system, $prompt, $examples); // Use cached context
+// @doctest id="3a04"
 ```
 
 ## Response Configuration
@@ -34,8 +34,8 @@ Define how Instructor should process and validate responses:
 $structuredOutput = (new StructuredOutput)
     ->withMaxRetries(3)                 // Set retry count for failed validations
     ->withOutputMode(OutputMode::Tools) // Set output mode (Tools, Json, JsonSchema, MdJson)
-    ->withDefaultToStdClass(true)       // Fallback to stdClass for schema-less payloads
-// @doctest id="b407"
+    ->withDefaultToStdClass(true);      // Fallback to stdClass for schema-less payloads
+// @doctest id="6149"
 ```
 
 Stream replay policy is configured through `StructuredOutputConfig`:
@@ -48,7 +48,7 @@ $structuredOutput = (new StructuredOutput)
     ->withConfig(new StructuredOutputConfig(
         responseCachePolicy: ResponseCachePolicy::None, // default in 2.0
     ));
-// @doctest id="073a"
+// @doctest id="3c69"
 ```
 
 Use `ResponseCachePolicy::Memory` if you need second-pass replay of streamed updates.
@@ -60,8 +60,8 @@ Fine-tune Instructor's internal processing:
 ```php
 $structuredOutput = (new StructuredOutput)
     ->withConfig($configObject)         // Use custom StructuredOutputConfig instance
-    ->withDefaultToStdClass(true)       // Default to stdClass for unknown types
-// @doctest id="1ae8"
+    ->withDefaultToStdClass(true);      // Default to stdClass for unknown types
+// @doctest id="9605"
 ```
 
 ## LLM Provider Configuration
@@ -79,12 +79,22 @@ $structuredOutput = (new StructuredOutput)->withRuntime(
 );
 
 $provider = LLMProvider::using('openai')
-    ->withLLMConfigOverrides(['temperature' => 0.2]);
+    ->withConfigOverrides(['temperature' => 0.2]);
 $structuredOutput = (new StructuredOutput)->withRuntime(
     StructuredOutputRuntime::fromProvider(provider: $provider)
 );
-// @doctest id="b910"
+// @doctest id="d1b4"
 ```
+
+`StructuredOutputRuntime` also supports:
+- `fromConfig(LLMConfig $config)` - start from explicit `LLMConfig`
+- `fromResolver(CanResolveLLMConfig $resolver)` - plug your own resolver
+- `fromDefaults()` - use defaults with optional event/http overrides
+
+Runtime accessors are useful for diagnostics and DI wiring:
+- `config()`
+- `events()`
+- `validators()`, `transformers()`, `deserializers()`, `extractors()`
 
 ## Processing Pipeline Overrides
 
@@ -95,8 +105,45 @@ $structuredOutput = (new StructuredOutput)
     ->withValidators(...$validators)    // Override response validators
     ->withTransformers(...$transformers) // Override response transformers  
     ->withDeserializers(...$deserializers) // Override response deserializers
-    ->withExtractors(...$extractors)    // Override response extractors
-// @doctest id="1e9a"
+    ->withExtractors(...$extractors);    // Override response extractors
+// @doctest id="a35e"
+```
+
+## StructuredOutputConfig Knobs
+
+Besides `outputMode`, `maxRetries`, and `responseCachePolicy`, you can tune:
+
+- `schemaName` / `schemaDescription` - schema metadata sent to the model
+- `toolName` / `toolDescription` - tool-call metadata in `OutputMode::Tools`
+- `retryPrompt` - feedback prompt used for recovery attempts
+- `modePrompts` - per-mode prompt templates
+- `useObjectReferences` - schema rendering behavior for object references
+- `defaultToStdClass` - fallback type for schema-less payloads
+- `throwOnTransformationFailure` - fail-fast behavior for transform step
+- `chatStructure` - order of template sections used to build final prompt
+
+Example:
+
+```php
+use Cognesy\Instructor\Config\StructuredOutputConfig;
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
+
+$config = new StructuredOutputConfig(
+    outputMode: OutputMode::Tools,
+    toolName: 'extract_person',
+    toolDescription: 'Extract person attributes from user content',
+    maxRetries: 2,
+    responseCachePolicy: ResponseCachePolicy::Memory,
+);
+
+$result = (new StructuredOutput)
+    ->withConfig($config)
+    ->withMessages('Extract person data')
+    ->withResponseClass(Person::class)
+    ->get();
+// @doctest id="9f9c"
 ```
 
 ## Streaming Updates And Events
@@ -107,7 +154,7 @@ Handle incremental updates via stream iterators or event subscribers:
 $stream = (new StructuredOutput)
     ->withStreaming(true)
     ->withMessages("Generate a list of tasks")
-    ->withResponseClass(Sequence::of(Task::class))
+    ->withResponseModel(Sequence::of(Task::class))
     ->stream();
 
 foreach ($stream->partials() as $partial) {
@@ -121,7 +168,7 @@ foreach ($stream->sequence() as $sequence) {
 $structuredOutput = (new StructuredOutput)
     ->onEvent(\Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated::class, $callback)
     ->onEvent(\Cognesy\Instructor\Events\Request\SequenceUpdated::class, $callback);
-// @doctest id="f6fe"
+// @doctest id="1931"
 ```
 
 ## Configuration Examples
@@ -134,7 +181,7 @@ $result = StructuredOutput::using('openai')
     ->withMessages("Extract person data from: John is 25 years old")
     ->withResponseClass(Person::class)
     ->get();
-// @doctest id="1e81"
+// @doctest id="ec2a"
 ```
 
 ### Streaming with partials()
@@ -142,7 +189,7 @@ $result = StructuredOutput::using('openai')
 $stream = StructuredOutput::using('openai')
     ->withStreaming(true)
     ->withMessages("Generate a list of tasks")
-    ->withResponseClass(Sequence::of(Task::class))
+    ->withResponseModel(Sequence::of(Task::class))
     ->stream();
 
 foreach ($stream->partials() as $partial) {
@@ -150,7 +197,7 @@ foreach ($stream->partials() as $partial) {
 }
 
 $result = $stream->finalValue();
-// @doctest id="20ed"
+// @doctest id="1881"
 ```
 
 ### Custom Configuration Object
@@ -166,5 +213,5 @@ $result = (new StructuredOutput)
     ->withMessages($input)
     ->withResponseClass(Person::class)
     ->get();
-// @doctest id="d2a2"
+// @doctest id="9a4a"
 ```

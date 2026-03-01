@@ -80,13 +80,13 @@ use Cognesy\Polyglot\Inference\InferenceRuntime;
 $events = new EventDispatcher();
 
 // Add listeners
-$events->listen(InferenceRequested::class, function (InferenceRequested $event) {
-    echo "Request sent: " . json_encode($event->request->toArray()) . "\n";
+$events->addListener(InferenceRequested::class, function (InferenceRequested $event): void {
+    echo "Request sent: " . json_encode($event->data['request'] ?? []) . "\n";
 });
 
-$events->listen(InferenceResponseCreated::class, function (InferenceResponseCreated $event) {
-    echo "Response received: " . substr($event->inferenceResponse->content(), 0, 50) . "...\n";
-    echo "Token usage: " . $event->inferenceResponse->usage()->total() . "\n";
+$events->addListener(InferenceResponseCreated::class, function (InferenceResponseCreated $event): void {
+    $response = $event->data['response'] ?? $event->data;
+    echo "Response received: " . substr((string) json_encode($response), 0, 120) . "...\n";
 });
 
 // Create an inference object with the event dispatcher
@@ -132,15 +132,14 @@ function logToFile(string $message, string $filename = 'llm_debug.log'): void {
 $events = new EventDispatcher();
 
 // Listen for request events
-$events->listen(InferenceRequested::class, function (InferenceRequested $event) {
-    $request = $event->request;
-    logToFile("REQUEST: " . json_encode($request->toArray()));
+$events->addListener(InferenceRequested::class, function (InferenceRequested $event): void {
+    logToFile("REQUEST: " . json_encode($event->data['request'] ?? []));
 });
 
 // Listen for response events
-$events->listen(InferenceResponseCreated::class, function (InferenceResponseCreated $event) {
-    $response = $event->inferenceResponse;
-    logToFile("RESPONSE: " . json_encode($response->toArray()));
+$events->addListener(InferenceResponseCreated::class, function (InferenceResponseCreated $event): void {
+    $response = $event->data['response'] ?? $event->data;
+    logToFile("RESPONSE: " . json_encode($response));
 });
 
 // Create an inference object with the custom event dispatcher

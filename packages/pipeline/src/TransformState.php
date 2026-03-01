@@ -127,9 +127,7 @@ class TransformState
         return new self($newState);
     }
 
-    /**
-     * @param callable(mixed):bool $condition Condition to check before adding tags
-     */
+    /** @param callable(CanCarryState):bool $condition */
     public function addTagsIf(callable $condition, TagInterface ...$tags): self {
         $newState = $condition($this->state)
             ? $this->state->addTags(...$tags)
@@ -138,19 +136,19 @@ class TransformState
     }
 
     public function addTagsIfSuccess(TagInterface ...$tags): self {
-        return $this->addTagsIf(fn($state) => $state->result()->isSuccess(), ...$tags);
+        return $this->addTagsIf(fn(CanCarryState $state): bool => $state->result()->isSuccess(), ...$tags);
     }
 
     public function addTagsIfFailure(TagInterface ...$tags): self {
-        return $this->addTagsIf(fn($state) => $state->result()->isFailure(), ...$tags);
+        return $this->addTagsIf(fn(CanCarryState $state): bool => $state->result()->isFailure(), ...$tags);
     }
 
-    public function mergeFrom(mixed $source): self {
+    public function mergeFrom(CanCarryState $source): self {
         $newState = $this->state->replaceTags(...$this->state->tagMap()->merge($source->tagMap())->getAllInOrder());
         return new self($newState);
     }
 
-    public function mergeInto(mixed $target): self {
+    public function mergeInto(CanCarryState $target): self {
         $newState = $this->state->replaceTags(
             ...$target->tagMap()->merge($this->state->tagMap())->getAllInOrder()
         );

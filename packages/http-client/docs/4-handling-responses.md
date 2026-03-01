@@ -13,26 +13,27 @@ $pending = $client->withRequest($request);
 
 Available access patterns:
 
-- `$pending->get()` returns `HttpResponse`
+- `$pending->get()` returns `HttpResponse` for the request mode
 - `$pending->statusCode()` reads status quickly
 - `$pending->headers()` reads response headers
-- `$pending->content()` reads sync body text
+- `$pending->content()` reads body text (non-streamed mode)
 - `$pending->stream()` yields streamed chunks
 
 ## Sync vs Stream Contract
 
 `PendingHttpResponse` keeps sync and stream executions separate.
 
-- Calling `content()`/`get()` uses sync execution
-- Calling `stream()` uses streamed execution
-- If you use both paths, they are executed independently and cached per mode
+- `get()` follows request mode (`withStreaming(false|true)`)
+- `content()` uses non-streamed execution
+- `stream()` uses streamed execution
+- If you use both paths, they execute independently and cache per mode
 
 This avoids hidden mode collisions.
 
 ## Working with HttpResponse
 
 ```php
-$response = $pending->get();
+$response = $pending->get(); // default request mode is non-streamed
 
 $status = $response->statusCode();
 $headers = $response->headers();

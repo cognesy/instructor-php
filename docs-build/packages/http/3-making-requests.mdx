@@ -17,7 +17,7 @@ $request = new HttpRequest(
 );
 
 $response = $client->withRequest($request)->get();
-// @doctest id="05e6"
+// @doctest id="ff3c"
 ```
 
 ### POST JSON
@@ -32,7 +32,7 @@ $request = new HttpRequest(
 );
 
 $response = $client->withRequest($request)->get();
-// @doctest id="00d2"
+// @doctest id="db72"
 ```
 
 ## Request Mutation Is Immutable
@@ -41,7 +41,7 @@ $response = $client->withRequest($request)->get();
 $request = $request
     ->withHeader('Authorization', 'Bearer ' . $token)
     ->withStreaming(false);
-// @doctest id="08f8"
+// @doctest id="b36d"
 ```
 
 Each `with*()` call returns a new request.
@@ -60,10 +60,13 @@ $client = (new HttpClientBuilder())
         failOnError: true,
     ))
     ->create();
-// @doctest id="be16"
+// @doctest id="c578"
 ```
 
 ## Error Strategy
 
 - `failOnError: false` (default): HTTP 4xx/5xx are returned as regular responses
 - `failOnError: true`: driver throws typed HTTP exceptions for 4xx/5xx
+
+> Migration note: built-in preset defaults are aligned to `failOnError: false`.
+> If you depended on throwing behavior by default, set `failOnError: true` explicitly.

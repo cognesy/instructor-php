@@ -6,7 +6,7 @@ use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\Enums\ErrorStrategy;
 use Cognesy\Pipeline\Internal\OperatorStack;
 use Cognesy\Pipeline\StateContracts\CanCarryState;
-use Exception;
+use Throwable;
 
 /**
  * Pipeline with per-execution & per-step middleware support.
@@ -133,7 +133,7 @@ class Pipeline implements CanProcessState
                 $processable instanceof CanProcessState => $processable->process($state),
                 default => $processable($state),
             };
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             if ($this->onError === ErrorStrategy::FailFast) {
                 throw $e;
             }

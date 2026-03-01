@@ -80,6 +80,7 @@ The `StructuredOutputStream` class provides comprehensive methods for processing
 
 ### Utility Methods
 - `usage()`: Get token usage statistics from the streaming response.
+- `getIterator()`: Low-level stream of `StructuredOutputExecution` updates.
 
 
 ### Example: streaming partial responses
@@ -157,3 +158,19 @@ $stream = (new StructuredOutput)
 ```
 
 Replay reuses captured stream data, not a fresh LLM execution.
+
+## Low-level execution stream
+
+Use `getIterator()` only when you need raw execution objects:
+
+```php
+<?php
+$stream = (new StructuredOutput)
+    ->with(messages: 'Extract person', responseModel: Person::class)
+    ->stream();
+
+foreach ($stream->getIterator() as $execution) {
+    $usage = $execution->usage();
+    // custom metrics/observability logic
+}
+```

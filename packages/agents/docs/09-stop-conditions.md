@@ -14,15 +14,12 @@ The loop stops when:
 2. There are no pending tool calls (LLM gave a final response)
 
 ```php
-// ExecutionState::shouldStop()
-public function shouldStop(): bool {
-    return match(true) {
-        $this->continuation->shouldStop() => true,       // stop signal present AND no continuation override
-        $this->continuation->isContinuationRequested() => false, // continuation override active
-        $this->hasToolCalls() => false,                  // more tools to run
-        default => true,                                 // no tools = done
-    };
-}
+$shouldStop = match (true) {
+    $continuation->shouldStop() => true,            // stop signal present AND no continuation override
+    $continuation->isContinuationRequested() => false, // continuation override active
+    $hasToolCalls => false,                         // more tools to run
+    default => true,                                // no tools = done
+};
 ```
 
 ## StopSignal
@@ -64,10 +61,11 @@ Throw from a tool to immediately stop the loop. The loop catches this exception 
 use Cognesy\Agents\Continuation\AgentStopException;
 use Cognesy\Agents\Continuation\StopReason;
 use Cognesy\Agents\Continuation\StopSignal;
+use Cognesy\Agents\Tool\Tools\BaseTool;
 
 class StopTool extends BaseTool
 {
-    public function __invoke(): never
+    public function __invoke(mixed ...$args): never
     {
         throw new AgentStopException(
             signal: new StopSignal(

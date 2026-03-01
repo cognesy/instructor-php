@@ -21,6 +21,16 @@ final readonly class PartitionResults implements Transducer
     public function __invoke(Reducer $reducer): Reducer {
         return new CallableReducer(
             stepFn: function(mixed $accumulator, mixed $reducible): mixed {
+                if (!is_array($accumulator)) {
+                    $accumulator = ['successes' => [], 'failures' => []];
+                }
+                if (!isset($accumulator['successes']) || !is_array($accumulator['successes'])) {
+                    $accumulator['successes'] = [];
+                }
+                if (!isset($accumulator['failures']) || !is_array($accumulator['failures'])) {
+                    $accumulator['failures'] = [];
+                }
+
                 if (!($reducible instanceof Result)) {
                     return $accumulator;
                 }

@@ -25,7 +25,7 @@ $driver = FakeAgentDriver::fromSteps(
 
 ```php
 ScenarioStep::final('response text');       // Final response, loop stops
-ScenarioStep::tool('intermediate text');     // Tool step, loop continues
+ScenarioStep::tool('intermediate text');     // ToolExecution step without tool calls
 ScenarioStep::error('error text');           // Error step
 ScenarioStep::toolCall(                      // Tool call with execution
     toolName: 'bash',
@@ -35,10 +35,18 @@ ScenarioStep::toolCall(                      // Tool call with execution
 );
 ```
 
+`ScenarioStep::tool()` sets step type to `ToolExecution`, but it does not create tool calls.
+To drive multi-step loops, use multiple scripted steps or `ScenarioStep::toolCall(...)`.
+
 ### Full Test Example
 
 ```php
-use Cognesy\Agents\AgentLoop;use Cognesy\Agents\Collections\Tools;use Cognesy\Agents\Data\AgentState;use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;use Cognesy\Agents\Drivers\Testing\ScenarioStep;use Cognesy\Agents\Tool\Tools\MockTool;
+use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Collections\Tools;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
+use Cognesy\Agents\Drivers\Testing\ScenarioStep;
+use Cognesy\Agents\Tool\Tools\MockTool;
 
 it('executes tools and produces final response', function () {
     $tool = MockTool::returning('search', 'Search the web', 'PHP is great');
@@ -84,7 +92,7 @@ use Cognesy\Agents\Tool\Tools\MockTool;
 $tool = MockTool::returning('search', 'Search the web', 'result text');
 
 // Custom logic
-$tool = new MockTool('calculator', 'Math operations', fn(string $expr) => eval("return {$expr};"));
+$tool = new MockTool('format', 'String formatting', fn(string $text) => strtoupper($text));
 ```
 
 Combine with `FakeAgentDriver` to test the full loop without any real LLM or tool calls, or with `ScenarioStep::toolCall(..., executeTools: true)` to actually execute the mock tool during the scenario.

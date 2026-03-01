@@ -1,0 +1,20 @@
+{
+    "additionalProperties": false,
+    "properties": {
+        "name": {
+            "type": "string"
+        },
+        "parent": {
+            "additionalProperties": false,
+            "type": "object",
+            "x-php-class": "Cognesy\\Schema\\Tests\\Examples\\Schema\\SelfReferencingClass",
+            "x-title": "parent"
+        }
+    },
+    "required": [
+        "name"
+    ],
+    "type": "object",
+    "x-php-class": "Cognesy\\Schema\\Tests\\Examples\\Schema\\SelfReferencingClass",
+    "x-title": "SelfReferencingClass"
+}

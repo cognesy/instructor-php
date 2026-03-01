@@ -17,24 +17,24 @@ Provider rate limits can cause request failures during high traffic periods.
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 
 $inference = new Inference();
+$retryPolicy = new InferenceRetryPolicy(
+    maxAttempts: 4,
+    baseDelayMs: 250,
+    maxDelayMs: 8000,
+    jitter: 'full',
+    retryOnStatus: [429, 500, 502, 503, 504],
+);
 
 $response = $inference->with(
     messages: 'What is the capital of France?',
-    options: [
-        'retryPolicy' => [
-            'maxAttempts' => 4,
-            'baseDelayMs' => 250,
-            'maxDelayMs' => 8000,
-            'jitter' => 'full',
-            'retryOnStatus' => [429, 500, 502, 503, 504],
-        ],
-    ]
-)->get();
+)->withRetryPolicy($retryPolicy)
+    ->get();
 
 echo "Response: $response\n";
-// @doctest id="db0c"
+// @doctest id="94fd"
 ```
 
 2. **Request Throttling**: Limit the rate of requests from your application
@@ -71,10 +71,10 @@ for ($i = 0; $i < 10; $i++) {
     $limiter->waitIfNeeded();
     $response = $inference->with(
         messages: "This is request $i"
-    )->toText();
+    )->get();
     echo "Response $i: $response\n";
 }
-// @doctest id="de82"
+// @doctest id="412b"
 ```
 
 3. **Request Batching**: Combine multiple requests into batches when possible
@@ -96,7 +96,7 @@ foreach ($questions as $i => $question) {
 
 $batchResponse = $inference->with(messages: $batchedQuestions)->get();
 // Then parse the batch response into individual answers
-// @doctest id="b496"
+// @doctest id="3218"
 ```
 
 4. **Upgrade API Plan**: Consider upgrading to a higher tier with increased rate limits

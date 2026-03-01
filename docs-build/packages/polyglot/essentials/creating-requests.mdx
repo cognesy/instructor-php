@@ -15,16 +15,19 @@ The `with()` method is the main way to set the parameters of the requests to LLM
 It accepts several parameters:
 
 ```php
-public function with(
-    string|array $messages = [],    // The messages to send to the LLM
-    string $model = '',             // The model to use (overrides default)
-    array $tools = [],              // Tools/functions for the model to use
-    string|array $toolChoice = [],  // Tool selection preference
-    array $responseFormat = [],     // Response format specification
-    array $options = [],            // Additional request options
-    Mode $mode = OutputMode::Text   // Output mode (Text, JSON, etc.)
-) : self
-// @doctest id="895e"
+<?php
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
+
+$inference = $inference->with(
+    messages: 'Summarize this text',
+    model: 'gpt-4o-mini',
+    tools: [],
+    toolChoice: [],
+    responseFormat: [],
+    options: [],
+    mode: OutputMode::Text
+);
+// @doctest id="c5fc"
 ```
 
 
@@ -45,7 +48,7 @@ $response = $inference
     ->get();   // get the data - here it executes the request
 
 echo "Response: $response";
-// @doctest id="e67f"
+// @doctest id="ed49"
 ```
 
 
@@ -68,7 +71,7 @@ $response = $inference
     ->get();
 
 echo "Response: $response";
-// @doctest id="07ed"
+// @doctest id="2dc3"
 ```
 
 ## Using `Messages` Class
@@ -82,7 +85,7 @@ use Cognesy\Polyglot\Inference\Inference;
 
 $messages = (new Messages)
     ->asSystem('You are a senior PHP8 backend developer.')
-    ->asDeveloper('Be concise and use modern PHP8.2+ features.') // OpenAI developer role is supported and normalized for other providers
+    ->asDeveloper('Be concise and use modern PHP8.3+ features.') // OpenAI developer role is supported and normalized for other providers
     ->asUser([
         'What is the best way to handle errors in PHP8?',
         'Provide a code example.',
@@ -92,7 +95,7 @@ $response = Inference::using('openai')
     ->withModel('gpt-4o')
     ->withMessages($messages)
     ->get();
-// @doctest id="4cba"
+// @doctest id="4b5e"
 ```
 
 ## Message Formats
@@ -132,7 +135,7 @@ $response = Inference::using('openai')
     ->withModel('gpt-4o') // use multimodal model
     ->with(messages: $messages)
     ->get();
-// @doctest id="af73"
+// @doctest id="e5c2"
 ```
 
 Instructor library offers `Cognesy\Messages\Utils\Image` class for easier conversion of image files to the message format.

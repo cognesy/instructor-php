@@ -14,6 +14,7 @@ Agent templates let you define agents as data — in markdown, YAML, or JSON fil
 ```php
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Data\ExecutionBudget;
+use Cognesy\Agents\Collections\NameList;
 
 $definition = new AgentDefinition(
     name: 'researcher',
@@ -22,8 +23,8 @@ $definition = new AgentDefinition(
     label: 'Research Agent',           // optional display name
     llmConfig: 'anthropic',            // optional LLM preset or LLMConfig
     budget: new ExecutionBudget(maxSteps: 10, maxTokens: 8000),
-    tools: new NameList(['bash', 'file.read']),       // optional tool allow-list
-    toolsDeny: new NameList(['file.write']),           // optional tool deny-list
+    tools: new NameList(['bash', 'read_file']),        // optional tool allow-list
+    toolsDeny: new NameList(['write_file']),           // optional tool deny-list
     capabilities: new NameList(['use_bash']),          // capability names to install
 );
 ```
@@ -45,7 +46,7 @@ budget:
   maxTokens: 8000
 tools:
   - bash
-  - file.read
+  - read_file
 capabilities:
   - use_bash
 ---
@@ -77,6 +78,11 @@ budget:
   "budget": { "maxSteps": 10 }
 }
 ```
+
+### Tool List Semantics in File Definitions
+
+For file-loaded definitions, declare `tools` explicitly when subagents need tools.
+In current parsing behavior, omitted tool lists are normalized to empty lists.
 
 ## Loading Definitions
 

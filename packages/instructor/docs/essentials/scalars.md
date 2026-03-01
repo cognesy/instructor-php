@@ -5,6 +5,7 @@ Sometimes we just want to get quick results without defining a class for the res
 ```php
 <?php
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\Extras\Scalar\Scalar;
 
 $value = (new StructuredOutput)
     ->with(
@@ -19,7 +20,7 @@ var_dump($value);
 
 In this example, we're extracting a single integer value from the text. You can also use `Scalar::string()`, `Scalar::boolean()` and `Scalar::float()` to extract other types of values.
 
-Additionally, you can use Scalar adapter to extract enums via `Scalar::enum()`.
+Additionally, you can use the `Scalar` adapter to extract enums via `Scalar::enum()`.
 
 
 ## Examples
@@ -93,6 +94,6 @@ $value = (new StructuredOutput)
         ],
         responseModel: Scalar::enum(CitizenshipGroup::class, name: 'citizenshipGroup'),
     )->get();
-// expect($value)->toBeString();
-// expect($value)->toBe('other');
+// expect($value)->toBeInstanceOf(CitizenshipGroup::class);
+// expect($value->value)->toBe('other');
 ```

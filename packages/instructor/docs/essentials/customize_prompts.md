@@ -2,7 +2,7 @@
 
 In case you want to take control over the prompts sent by Instructor
 to LLM for different modes, you can use the `prompt` parameter in the
-`create()` method.
+`with()` method.
 
 It will override the default Instructor prompts, allowing you to fully
 customize how LLM is instructed to process the input.
@@ -20,14 +20,22 @@ as tools are not used in these modes.
 
 ```php
 <?php
+use Cognesy\Instructor\Config\StructuredOutputConfig;
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
+
+$config = (new StructuredOutputConfig)
+    ->withOutputMode(OutputMode::Tools)
+    ->withToolName('extract')
+    ->withToolDescription('Extract information from provided content');
+
 $user = (new StructuredOutput)
-    ->request(
+    ->withConfig($config)
+    ->with(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
         prompt: "\nYour task is to extract correct and accurate data from the messages using provided tools.\n",
-        toolName: 'extract',
-        toolDescription: 'Extract information from provided content',
-        mode: OutputMode::Tools)
+    )
     ->get();
 ```
 
@@ -79,15 +87,16 @@ $jsonSchema = json_encode([
         "name" => ["type" => "string"],
         "age" => ["type" => "integer"]
     ],
-    "required" => ["name", "age"]
+    "required" => ["name", "age"],
 ]);
 
-$user = $structuredOutput
-    ->request(
+$user = (new StructuredOutput)
+    ->with(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
-        prompt: "\nYour task is to respond correctly with JSON object. Response must follow JSONSchema: $jsonSchema\n",
-        mode: OutputMode::Json)
+        prompt: "\nYour task is to respond correctly with JSON object. Response must follow JSONSchema: {$jsonSchema}\n",
+        mode: OutputMode::Json,
+    )
     ->get();
 ```
 
@@ -110,11 +119,12 @@ Example below demonstrates how to use a template string as a prompt:
 ```php
 <?php
 $user = (new StructuredOutput)
-    ->request(
+    ->with(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
         prompt: "\nYour task is to respond correctly with JSON object. Response must follow JSONSchema:\n<|json_schema|>\n",
-        mode: OutputMode::Json)
+        mode: OutputMode::Json,
+    )
     ->get();
 ```
 
@@ -138,10 +148,11 @@ is correctly structured and contains the expected data.
 ```php
 <?php
 $user = (new StructuredOutput)
-    ->request(
+    ->with(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
-        prompt: "\nYour task is to respond correctly with strict JSON object containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n<|json_schema|>\n",
-        mode: OutputMode::MdJson)
+        prompt: "\nYour task is to respond correctly with strict JSON object in a fenced json code block. Object must validate against this JSONSchema:\n<|json_schema|>\n",
+        mode: OutputMode::MdJson,
+    )
     ->get();
 ```

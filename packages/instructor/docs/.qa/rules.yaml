@@ -1,0 +1,8 @@
+version: 1
+rules:
+  - id: instructor.docs.no_structuredoutput_fromconfig
+    engine: regex
+    scope: markdown
+    pattern: '/\bStructuredOutput::fromConfig\s*\(/'
+    message: 'Use StructuredOutputRuntime::fromConfig(...) or StructuredOutput::withConfig(...).'
+

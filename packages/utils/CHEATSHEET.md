@@ -13,7 +13,7 @@ Json::fromArray(['key' => 'value'])  // Convert array to Json
 Json::none()                         // Empty JSON
 
 // Conversion
-$json->toArray()                     // → array
+$json->toArray()                     // → array (JSON root must be object or array)
 $json->toString()                    // → string
 $json->isEmpty()                     // → bool
 $json->format(JSON_PRETTY_PRINT)    // → formatted string
@@ -122,7 +122,7 @@ Files::directories($path)            // → Iterator<SplFileInfo> (dirs only)
 // Creation
 new DataMap(['key' => 'value'])
 DataMap::fromArray($array)
-DataMap::fromJson('{"key":"value"}')
+DataMap::fromJson('{"key":"value"}') // JSON root must be object or array
 
 // Dot notation access
 $map->get('user.name', 'default')    // Deep get with fallback

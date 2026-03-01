@@ -20,7 +20,6 @@ Immutable value object holding everything about an agent's session and execution
 **Session data** (persists across executions):
 - `agentId` - unique identifier
 - `context` - messages, system prompt, metadata, response format
-- `budget` - resource limits (steps, tokens, time)
 
 **Execution data** (transient, null between executions):
 - `execution` - current `ExecutionState` with steps, status, continuation signals

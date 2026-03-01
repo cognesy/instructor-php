@@ -7,16 +7,16 @@ If you need help getting started with Instructor or with advanced usage, the fol
     <Card
         title="Concepts"
         icon="lightbulb"
-        href="/concepts"
+        href="../concepts/overview.md"
     >
-        The [concepts](concepts/prompting.md) section explains the core concepts of Instructor and how to prompt with models.
+        Start with [concepts](../concepts/overview.md), then read [prompting](../techniques/prompting.md).
     </Card>
     <Card
         title="Cookbooks"
         icon="book"
-        href="/examples"
+        href="/cookbook/introduction"
     >
-        The [cookbooks](./hub/index.md) are a great place to start. They contain a variety of examples that demonstrate how to use Instructor in different scenarios.
+        The [cookbook](/cookbook/introduction) has practical examples for common use cases.
     </Card>
 
     <Card
@@ -45,7 +45,7 @@ If you need help getting started with Instructor or with advanced usage, the fol
         icon="newspaper"
         href="https://cognesy.com/blog"
     >
-        The [blog](blog/index.md) contains articles that explain how to use Instructor in different scenarios.
+        The [blog](https://cognesy.com/blog) contains practical walkthroughs and updates.
     </Card>
     <Card
         title="Twitter"

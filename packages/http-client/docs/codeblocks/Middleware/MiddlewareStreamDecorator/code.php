@@ -5,24 +5,17 @@ namespace Middleware\MiddlewareStreamDecorator;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Middleware\Base\BaseMiddleware;
-use Middleware\MiddlewareResponseDecorator\JsonStreamDecorator;
+use Middleware\MiddlewareResponseDecorator\TrimChunkDecorator;
 
-class JsonStreamMiddleware extends BaseMiddleware
+final class TrimChunkMiddleware extends BaseMiddleware
 {
-    protected function shouldDecorateResponse(
-        HttpRequest $request,
-        HttpResponse $response,
-    ): bool {
-        // Only decorate streaming JSON responses
-        return $request->isStreamed() &&
-            isset($response->headers()['Content-Type']) &&
-            strpos($response->headers()['Content-Type'][0], 'application/json') !== false;
+    protected function shouldDecorateResponse(HttpRequest $request, HttpResponse $response): bool
+    {
+        return $response->isStreamed();
     }
 
-    protected function toResponse(
-        HttpRequest $request,
-        HttpResponse $response,
-    ): HttpResponse {
-        return new JsonStreamDecorator($request, $response);
+    protected function toResponse(HttpRequest $request, HttpResponse $response): HttpResponse
+    {
+        return TrimChunkDecorator::decorate($response);
     }
 }

@@ -16,15 +16,18 @@ The `with()` method is the main way to set the parameters of the requests to LLM
 It accepts several parameters:
 
 ```php
-public function with(
-    string|array $messages = [],    // The messages to send to the LLM
-    string $model = '',             // The model to use (overrides default)
-    array $tools = [],              // Tools/functions for the model to use
-    string|array $toolChoice = [],  // Tool selection preference
-    array $responseFormat = [],     // Response format specification
-    array $options = [],            // Additional request options
-    Mode $mode = OutputMode::Text   // Output mode (Text, JSON, etc.)
-) : self
+<?php
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
+
+$inference = $inference->with(
+    messages: 'Summarize this text',
+    model: 'gpt-4o-mini',
+    tools: [],
+    toolChoice: [],
+    responseFormat: [],
+    options: [],
+    mode: OutputMode::Text
+);
 ```
 
 
@@ -80,7 +83,7 @@ use Cognesy\Polyglot\Inference\Inference;
 
 $messages = (new Messages)
     ->asSystem('You are a senior PHP8 backend developer.')
-    ->asDeveloper('Be concise and use modern PHP8.2+ features.') // OpenAI developer role is supported and normalized for other providers
+    ->asDeveloper('Be concise and use modern PHP8.3+ features.') // OpenAI developer role is supported and normalized for other providers
     ->asUser([
         'What is the best way to handle errors in PHP8?',
         'Provide a code example.',

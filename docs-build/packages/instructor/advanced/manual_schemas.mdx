@@ -34,7 +34,7 @@ $schema = JsonSchema::object(
     requiredProperties: ['name', 'age'],
     additionalProperties: false,
 );
-// @doctest id="d33f"
+// @doctest id="81cb"
 ```
 
 ### Primitive Schemas
@@ -63,7 +63,7 @@ JsonSchema::boolean(
     name: 'verified',
     description: 'Is verified',
 );
-// @doctest id="2abc"
+// @doctest id="3ed1"
 ```
 
 ### Array Schemas
@@ -79,10 +79,14 @@ JsonSchema::array(
 // Collection (alias for array)
 JsonSchema::collection(
     name: 'users',
-    itemSchema: JsonSchema::object(...),
+    itemSchema: JsonSchema::object(
+        name: 'User',
+        properties: [JsonSchema::string('name')],
+        requiredProperties: ['name'],
+    ),
     description: 'List of users',
 );
-// @doctest id="5cd0"
+// @doctest id="77d6"
 ```
 
 ### Enum Schemas
@@ -93,7 +97,7 @@ JsonSchema::enum(
     enumValues: ['pending', 'active', 'completed'],
     description: 'Order status',
 );
-// @doctest id="da97"
+// @doctest id="eb12"
 ```
 
 ### From Array
@@ -107,17 +111,19 @@ $schema = JsonSchema::fromArray([
     ],
     'required' => ['name'],
 ]);
-// @doctest id="a863"
+// @doctest id="df6e"
 ```
 
 ## Fluent Builder Pattern
 
 ```php
 $schema = JsonSchema::object('User')
-    ->withProperty(JsonSchema::string('name'))
-    ->withProperty(JsonSchema::integer('age'))
-    ->withRequired(['name']);
-// @doctest id="0427"
+    ->withProperties([
+        JsonSchema::string('name'),
+        JsonSchema::integer('age'),
+    ])
+    ->withRequiredProperties(['name']);
+// @doctest id="6160"
 ```
 
 ## Using Manual Schemas with StructuredOutput
@@ -136,13 +142,13 @@ $userSchema = JsonSchema::object(
 );
 
 // Use with StructuredOutput
-$user = StructuredOutput::create()
+$user = (new StructuredOutput)
     ->with(
         messages: 'Extract user: John Doe, 30 years old',
         responseModel: $userSchema,
     )
     ->get();
-// @doctest id="a2cc"
+// @doctest id="c1d0"
 ```
 
 ## Comparison: Reflection vs Manual
@@ -167,10 +173,13 @@ class User {
     ) {}
 }
 
-$user = StructuredOutput::create()
-    ->with(responseModel: User::class, ...)
+$user = (new StructuredOutput)
+    ->with(
+        messages: 'Extract user: John Doe, 30',
+        responseModel: User::class,
+    )
     ->get();
-// @doctest id="b814"
+// @doctest id="feed"
 ```
 
 ### Manual (Explicit)
@@ -192,10 +201,13 @@ $schema = JsonSchema::object('User', [
     JsonSchema::integer('age'),
 ], ['name', 'age']);
 
-$user = StructuredOutput::create()
-    ->with(responseModel: $schema, ...)
+$user = (new StructuredOutput)
+    ->with(
+        messages: 'Extract user: John Doe, 30',
+        responseModel: $schema,
+    )
     ->get();
-// @doctest id="cf83"
+// @doctest id="de91"
 ```
 
 ## Complex Example
@@ -240,13 +252,13 @@ $orderSchema = JsonSchema::object(
     requiredProperties: ['orderId', 'customer', 'items', 'status']
 );
 
-$order = StructuredOutput::create()
+$order = (new StructuredOutput)
     ->with(
         messages: 'Extract order details from: ...',
         responseModel: $orderSchema,
     )
     ->get();
-// @doctest id="98be"
+// @doctest id="1d13"
 ```
 
 ## Best Practices

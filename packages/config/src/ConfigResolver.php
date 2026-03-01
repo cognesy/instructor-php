@@ -57,8 +57,7 @@ class ConfigResolver implements CanProvideConfig
     }
 
     public function withSuppressedProviderErrors(bool $suppress = true): static {
-        $this->suppressProviderErrors = $suppress;
-        return $this;
+        return new static($this->providerFactories, $suppress);
     }
 
     // MAIN API ///////////////////////////////////////////////////////////

@@ -30,12 +30,15 @@ final readonly class HttpEventStream implements Stream
             }
             $buffer .= $chunk;
             while (true) {
-                $end = strpos($buffer, "\n\n");
-                if ($end === false) {
+                $match = [];
+                if (!preg_match('/\r?\n\r?\n/', $buffer, $match, PREG_OFFSET_CAPTURE)) {
                     break;
                 }
+
+                $end = $match[0][1];
+                $separatorLength = strlen($match[0][0]);
                 $raw = substr($buffer, 0, $end);
-                $buffer = substr($buffer, $end + 2);
+                $buffer = substr($buffer, $end + $separatorLength);
                 $payload = $this->extractEventData($raw);
                 if ($payload !== null) {
                     yield $payload;
@@ -53,6 +56,7 @@ final readonly class HttpEventStream implements Stream
     private function extractEventData(string $raw): ?string {
         $data = [];
         foreach (explode("\n", $raw) as $line) {
+            $line = rtrim($line, "\r");
             if ($line === '') {
                 continue;
             }

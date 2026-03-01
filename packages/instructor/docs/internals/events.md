@@ -34,7 +34,7 @@ $structuredOutput = (new StructuredOutput)
     // see all events in console-friendly format
     ->wiretap(fn($event) => $event->print())
     // log all events in log-friendly format
-    ->wiretap(fn($event) => YourLogger::log($event->asLog()))
+    ->wiretap(fn($event) => YourLogger::log($event->asLog()));
 
 $structuredOutput->with(
     messages: "What is the population of Paris?",

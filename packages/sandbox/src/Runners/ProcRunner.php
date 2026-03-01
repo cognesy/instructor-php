@@ -9,6 +9,7 @@ use Cognesy\Sandbox\Utils\ProcUtils;
 use Cognesy\Sandbox\Utils\StreamAggregator;
 use Cognesy\Sandbox\Utils\TimeoutTracker;
 use Symfony\Component\Process\Process;
+use Throwable;
 
 final class ProcRunner implements CanRunProcess
 {
@@ -44,8 +45,16 @@ final class ProcRunner implements CanRunProcess
      */
     private function openProcess(array $argv, string $cwd, array $env): array {
         $desc = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
-        $proc = proc_open($argv, $desc, $pipes, $cwd, $env);
-        if (!\is_resource($proc)) { throw new \RuntimeException('Failed to start ' . $this->nameForError); }
+        try {
+            $proc = proc_open($argv, $desc, $pipes, $cwd, $env);
+        } catch (Throwable $e) {
+            throw new \RuntimeException('Failed to start ' . $this->nameForError, previous: $e);
+        }
+
+        if (!\is_resource($proc)) {
+            throw new \RuntimeException('Failed to start ' . $this->nameForError);
+        }
+
         return [$proc, $pipes];
     }
 

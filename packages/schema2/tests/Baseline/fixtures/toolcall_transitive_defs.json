@@ -1,0 +1,53 @@
+{
+    "function": {
+        "description": "baseline tool schema",
+        "name": "baseline_tool",
+        "parameters": {
+            "$defs": {
+                "Cognesy.Schema.Tests.Examples.TransitiveRefs.Leaf": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "value": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "value"
+                    ],
+                    "type": "object",
+                    "x-php-class": "Cognesy\\Schema\\Tests\\Examples\\TransitiveRefs\\Leaf",
+                    "x-title": "Leaf"
+                },
+                "Cognesy.Schema.Tests.Examples.TransitiveRefs.Middle": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "leaf": {
+                            "$ref": "#/$defs/Cognesy.Schema.Tests.Examples.TransitiveRefs.Leaf",
+                            "x-php-class": "Cognesy\\Schema\\Tests\\Examples\\TransitiveRefs\\Leaf"
+                        }
+                    },
+                    "required": [
+                        "leaf"
+                    ],
+                    "type": "object",
+                    "x-php-class": "Cognesy\\Schema\\Tests\\Examples\\TransitiveRefs\\Middle",
+                    "x-title": "Middle"
+                }
+            },
+            "additionalProperties": false,
+            "properties": {
+                "middle": {
+                    "$ref": "#/$defs/Cognesy.Schema.Tests.Examples.TransitiveRefs.Middle",
+                    "x-php-class": "Cognesy\\Schema\\Tests\\Examples\\TransitiveRefs\\Middle"
+                }
+            },
+            "required": [
+                "middle"
+            ],
+            "type": "object",
+            "x-php-class": "Cognesy\\Schema\\Tests\\Examples\\TransitiveRefs\\Root",
+            "x-title": "Root"
+        }
+    },
+    "type": "function"
+}

@@ -22,7 +22,7 @@ $structuredOutput = (new StructuredOutput)
     ->withOptions($options)             // Set LLM-specific options
     ->withOption($key, $value)          // Set individual LLM option
     ->withStreaming(true)               // Enable streaming responses
-    ->withCachedContext($messages, $system, $prompt, $examples) // Use cached context
+    ->withCachedContext($messages, $system, $prompt, $examples); // Use cached context
 ```
 
 ## Response Configuration
@@ -33,7 +33,7 @@ Define how Instructor should process and validate responses:
 $structuredOutput = (new StructuredOutput)
     ->withMaxRetries(3)                 // Set retry count for failed validations
     ->withOutputMode(OutputMode::Tools) // Set output mode (Tools, Json, JsonSchema, MdJson)
-    ->withDefaultToStdClass(true)       // Fallback to stdClass for schema-less payloads
+    ->withDefaultToStdClass(true);      // Fallback to stdClass for schema-less payloads
 ```
 
 Stream replay policy is configured through `StructuredOutputConfig`:
@@ -57,7 +57,7 @@ Fine-tune Instructor's internal processing:
 ```php
 $structuredOutput = (new StructuredOutput)
     ->withConfig($configObject)         // Use custom StructuredOutputConfig instance
-    ->withDefaultToStdClass(true)       // Default to stdClass for unknown types
+    ->withDefaultToStdClass(true);      // Default to stdClass for unknown types
 ```
 
 ## LLM Provider Configuration
@@ -75,11 +75,21 @@ $structuredOutput = (new StructuredOutput)->withRuntime(
 );
 
 $provider = LLMProvider::using('openai')
-    ->withLLMConfigOverrides(['temperature' => 0.2]);
+    ->withConfigOverrides(['temperature' => 0.2]);
 $structuredOutput = (new StructuredOutput)->withRuntime(
     StructuredOutputRuntime::fromProvider(provider: $provider)
 );
 ```
+
+`StructuredOutputRuntime` also supports:
+- `fromConfig(LLMConfig $config)` - start from explicit `LLMConfig`
+- `fromResolver(CanResolveLLMConfig $resolver)` - plug your own resolver
+- `fromDefaults()` - use defaults with optional event/http overrides
+
+Runtime accessors are useful for diagnostics and DI wiring:
+- `config()`
+- `events()`
+- `validators()`, `transformers()`, `deserializers()`, `extractors()`
 
 ## Processing Pipeline Overrides
 
@@ -90,7 +100,43 @@ $structuredOutput = (new StructuredOutput)
     ->withValidators(...$validators)    // Override response validators
     ->withTransformers(...$transformers) // Override response transformers  
     ->withDeserializers(...$deserializers) // Override response deserializers
-    ->withExtractors(...$extractors)    // Override response extractors
+    ->withExtractors(...$extractors);    // Override response extractors
+```
+
+## StructuredOutputConfig Knobs
+
+Besides `outputMode`, `maxRetries`, and `responseCachePolicy`, you can tune:
+
+- `schemaName` / `schemaDescription` - schema metadata sent to the model
+- `toolName` / `toolDescription` - tool-call metadata in `OutputMode::Tools`
+- `retryPrompt` - feedback prompt used for recovery attempts
+- `modePrompts` - per-mode prompt templates
+- `useObjectReferences` - schema rendering behavior for object references
+- `defaultToStdClass` - fallback type for schema-less payloads
+- `throwOnTransformationFailure` - fail-fast behavior for transform step
+- `chatStructure` - order of template sections used to build final prompt
+
+Example:
+
+```php
+use Cognesy\Instructor\Config\StructuredOutputConfig;
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
+
+$config = new StructuredOutputConfig(
+    outputMode: OutputMode::Tools,
+    toolName: 'extract_person',
+    toolDescription: 'Extract person attributes from user content',
+    maxRetries: 2,
+    responseCachePolicy: ResponseCachePolicy::Memory,
+);
+
+$result = (new StructuredOutput)
+    ->withConfig($config)
+    ->withMessages('Extract person data')
+    ->withResponseClass(Person::class)
+    ->get();
 ```
 
 ## Streaming Updates And Events
@@ -101,7 +147,7 @@ Handle incremental updates via stream iterators or event subscribers:
 $stream = (new StructuredOutput)
     ->withStreaming(true)
     ->withMessages("Generate a list of tasks")
-    ->withResponseClass(Sequence::of(Task::class))
+    ->withResponseModel(Sequence::of(Task::class))
     ->stream();
 
 foreach ($stream->partials() as $partial) {
@@ -134,7 +180,7 @@ $result = StructuredOutput::using('openai')
 $stream = StructuredOutput::using('openai')
     ->withStreaming(true)
     ->withMessages("Generate a list of tasks")
-    ->withResponseClass(Sequence::of(Task::class))
+    ->withResponseModel(Sequence::of(Task::class))
     ->stream();
 
 foreach ($stream->partials() as $partial) {

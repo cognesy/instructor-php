@@ -248,7 +248,15 @@ class ResultChain
      * @return Result
      */
     public function result(?callable $callback = null): Result {
-        return $this->process($callback, false);
+        $base = $this->process(null, false);
+        $baseResult = $base instanceof Result ? $base : Result::from($base);
+
+        if ($callback === null) {
+            return $baseResult;
+        }
+
+        $transformed = $callback($baseResult);
+        return Result::from($transformed);
     }
 
     // INTERNAL ///////////////////////////////////////////////////////////////////////////////
@@ -339,6 +347,9 @@ class ResultChain
             // if processor has returned null - break the chain
             if ($output === null) {
                 break;
+            }
+            if (!($output instanceof Result)) {
+                $output = Result::from($output);
             }
             // if chain step has failed - execute failure handlers...
             // ...and break the chain: skip to then() callback

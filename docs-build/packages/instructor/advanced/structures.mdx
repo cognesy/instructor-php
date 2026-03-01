@@ -45,7 +45,7 @@ $structure = Structure::define('person', [
     Field::enum('role', Role::class),
 ]);
 ?>
-// @doctest id="0fac"
+// @doctest id="3abb"
 ```
 
 Following types of fields are currently supported:
@@ -71,7 +71,7 @@ $structure = Structure::define('person', [
     //...
 ]);
 ?>
-// @doctest id="f9e0"
+// @doctest id="9936"
 ```
 
 
@@ -90,7 +90,7 @@ $structure = Structure::define('person', [
     Field::enum('role', Role::class, 'Role of the person'),
 ], 'A person object');
 ?>
-// @doctest id="9d42"
+// @doctest id="01bb"
 ```
 
 ## Nesting structures
@@ -113,7 +113,7 @@ $structure = Structure::define('person', [
     Field::enum('role', Role::class, 'Role of the person'),
 ], 'A person object');
 ?>
-// @doctest id="523a"
+// @doctest id="9d83"
 ```
 
 ## Validation of structure data
@@ -137,7 +137,7 @@ $structure = Structure::define('person', [
     // ...
 ], 'A person object');
 ?>
-// @doctest id="fe54"
+// @doctest id="d2a6"
 ```
 
 ## Extracting data
@@ -150,7 +150,7 @@ use Cognesy\Instructor\StructuredOutput;
 
 $text = <<<TEXT
     Jane Doe lives in Springfield. She is 25 years old and works as a line worker. 
-    McDonald's in Ney York is located at 456 Elm St, NYC, 12345.
+    McDonald's in New York is located at 456 Elm St, NYC, 12345.
     TEXT;
 
 $person = (new StructuredOutput)->with(
@@ -183,7 +183,7 @@ $personArray = (new StructuredOutput)->with(
 dump($personArray);
 // array [ "name" => "Jane Doe", "age" => 25, ... ]
 ?>
-// @doctest id="da28"
+// @doctest id="5bae"
 ```
 
 
@@ -227,5 +227,5 @@ $age = $person->age;
 $role = $person->role->name;
 $level = $person->role->level;
 ?>
-// @doctest id="95e8"
+// @doctest id="c371"
 ```

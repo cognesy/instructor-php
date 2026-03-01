@@ -30,9 +30,6 @@ final class FirejailSandbox implements CanExecuteCommand
 
     #[\Override]
     public function execute(array $argv, ?string $stdin = null, ?callable $onOutput = null): ExecResult {
-        if ($this->firejailBin === '') {
-            throw new \RuntimeException('Firejail binary not found');
-        }
         $workDir = Workdir::create($this->policy);
         try {
             $cmd = $this->buildCommand($workDir, $argv);

@@ -9,7 +9,7 @@ Polyglot's support for different output formats gives you the flexibility to wor
 
 ## Understanding Output Modes
 
-Polyglot supports multiple output modes through the `Mode` enum:
+Polyglot supports multiple output modes through the `OutputMode` enum:
 
 ```php
 <?php

@@ -4,18 +4,25 @@
 handling all interactions with the client code and internal Instructor components.
 
 
-## Request handlers
+## Runtime composition
 
-One of the essential tasks of the `StructuredOutput` class is to read the configuration
-and use it to retrieve a component implementing `CanHandleRequest` interface (specified in the configuration) to process the request and return the response.
+`StructuredOutput` is a facade over `StructuredOutputRuntime` + `StructuredOutputRequest`.
 
+Main responsibilities:
+- build immutable request state via fluent `with*()` methods
+- delegate execution to runtime through `create()`
+- expose convenience execution methods (`get()`, `response()`, `stream()`)
+
+Advanced access:
+- `runtime()` - returns current runtime object
+- `withRequest(StructuredOutputRequest $request)` - replace the full request object
 
 ## Dispatched events
 
 `StructuredOutput` class dispatches several high level events during initialization and processing
 of the request and response:
 
- - `StructuredOutputStarted` - dispatched when the structured output processes starts
+ - `StructuredOutputStarted` - dispatched when structured output processing starts
  - `StructuredOutputRequestReceived` - dispatched when the request is received
  - `StructuredOutputResponseGenerated` - dispatched when the response is generated
  - `StructuredOutputResponseUpdated` - dispatched when the response update is streamed
@@ -40,6 +47,10 @@ into Instructor event system, including:
 
 ## Error handling
 
-`StructuredOutput` class contains top level try-catch block to let user handle any uncaught
-errors before throwing them back to the client code. It allows you to register a handler
-which will log the error or notify your monitoring system about a problem.
+`StructuredOutput` does not expose a dedicated global exception handler API.
+Errors bubble to the caller unless your code handles them.
+
+For observability and diagnostics, prefer:
+- `onEvent(...)`
+- `wiretap(...)`
+- `dispatch(new Event(...))` for custom instrumentation events

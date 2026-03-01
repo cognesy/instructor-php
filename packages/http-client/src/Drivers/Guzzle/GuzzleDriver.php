@@ -64,14 +64,25 @@ class GuzzleDriver implements CanHandleHttpRequest
     // INTERNAL //////////////////////////////////////////////////////////////////////////
 
     private function performHttpCall(HttpRequest $request) : ResponseInterface {
-        return $this->client->request($request->method(), $request->url(), [
+        $body = $request->body()->toString();
+        $jsonBody = $this->decodeJsonArray($body);
+        $options = [
             'headers' => $request->headers(),
-            'json' => $request->body()->toArray(),
             'connect_timeout' => $this->config->connectTimeout ?? 3,
             'timeout' => $this->config->requestTimeout ?? 30,
             'stream' => $request->isStreamed(),
             'http_errors' => false, // Disable Guzzle's automatic HTTP error handling
-        ]);
+        ];
+
+        if ($jsonBody !== null) {
+            $options['json'] = $jsonBody;
+        }
+
+        if ($jsonBody === null && $body !== '') {
+            $options['body'] = $body;
+        }
+
+        return $this->client->request($request->method(), $request->url(), $options);
     }
 
     private function buildHttpResponse(ResponseInterface $response, HttpRequest $request): HttpResponse {
@@ -136,5 +147,22 @@ class GuzzleDriver implements CanHandleHttpRequest
         $this->events->dispatch(new HttpResponseReceived([
             'statusCode' => $response->statusCode()
         ]));
+    }
+
+    private function decodeJsonArray(string $body): ?array {
+        if ($body === '') {
+            return null;
+        }
+
+        $decoded = json_decode($body, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return null;
+        }
+
+        if (!is_array($decoded)) {
+            return null;
+        }
+
+        return $decoded;
     }
 }

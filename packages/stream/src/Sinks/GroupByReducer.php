@@ -35,6 +35,10 @@ final readonly class GroupByReducer implements Reducer
 
     #[\Override]
     public function step(mixed $accumulator, mixed $reducible): mixed {
+        if (!is_array($accumulator)) {
+            $accumulator = [];
+        }
+
         $key = ($this->keyFn)($reducible);
 
         if (!isset($accumulator[$key])) {

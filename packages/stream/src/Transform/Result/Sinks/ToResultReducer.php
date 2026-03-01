@@ -31,11 +31,24 @@ final readonly class ToResultReducer implements Reducer
 
     #[\Override]
     public function step(mixed $accumulator, mixed $reducible): mixed {
+        if (!is_array($accumulator)) {
+            $accumulator = ['success' => true, 'values' => [], 'error' => null];
+        }
+        if (!array_key_exists('success', $accumulator) || !is_bool($accumulator['success'])) {
+            $accumulator['success'] = true;
+        }
+        if (!isset($accumulator['values']) || !is_array($accumulator['values'])) {
+            $accumulator['values'] = [];
+        }
+        if (!array_key_exists('error', $accumulator)) {
+            $accumulator['error'] = null;
+        }
+
         if (!($reducible instanceof Result)) {
             return $accumulator;
         }
 
-        if ($reducible->isFailure() && is_bool($accumulator['success']) && $accumulator['success']) {
+        if ($reducible->isFailure() && $accumulator['success']) {
             $accumulator['success'] = false;
             $accumulator['error'] = $reducible->error();
         } elseif ($reducible->isSuccess()) {
@@ -47,6 +60,16 @@ final readonly class ToResultReducer implements Reducer
 
     #[\Override]
     public function complete(mixed $accumulator): mixed {
+        if (!is_array($accumulator)) {
+            return Result::failure(null);
+        }
+        if (!array_key_exists('success', $accumulator) || !is_bool($accumulator['success'])) {
+            return Result::failure($accumulator['error'] ?? null);
+        }
+        if (!isset($accumulator['values']) || !is_array($accumulator['values'])) {
+            $accumulator['values'] = [];
+        }
+
         if ($accumulator['success']) {
             return Result::success($accumulator['values']);
         }

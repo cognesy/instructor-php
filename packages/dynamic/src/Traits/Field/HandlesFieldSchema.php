@@ -15,9 +15,9 @@ trait HandlesFieldSchema
 
     public function withName(string $name) : self {
         $this->schema = $this->schema->withName($name);
-        // TODO: revise this
-        if ($this->isStructure()) {
-            $this->get()?->withName($name);
+        $structure = $this->structureValue();
+        if ($structure !== null) {
+            $structure->withName($name);
         }
         return $this;
     }
@@ -28,18 +28,19 @@ trait HandlesFieldSchema
 
     public function withDescription(string $description) : self {
         $this->schema = $this->schema->withDescription($description);
-        // TODO: revise this
-        if ($this->isStructure()) {
-            $this->get()->withDescription($description);
+        $structure = $this->structureValue();
+        if ($structure !== null) {
+            $structure->withDescription($description);
         }
         return $this;
     }
 
     public function schema() : Schema {
-        return match(true) {
-            $this->isStructure() => $this->value->schema(),
-            default => $this->schema,
-        };
+        $structure = $this->structureValue();
+        if ($this->isStructure() && $structure !== null) {
+            return $structure->schema();
+        }
+        return $this->schema;
     }
 
     public function isStructure() : bool {
@@ -56,5 +57,13 @@ trait HandlesFieldSchema
             throw new \Exception('Field does not have a nested type');
         }
         return $nestedType;
+    }
+
+    private function structureValue() : ?Structure {
+        $value = $this->get();
+        return match(true) {
+            $value instanceof Structure => $value,
+            default => null,
+        };
     }
 }

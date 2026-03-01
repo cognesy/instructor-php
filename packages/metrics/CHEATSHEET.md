@@ -1,0 +1,84 @@
+# Metrics Package Cheatsheet
+
+Code-verified reference for `packages/metrics`.
+
+## Main Entry Point
+
+`Cognesy\Metrics\Metrics`:
+- `__construct(CanHandleEvents $events, ?CanStoreMetrics $registry = null)`
+- `collect(CanCollectMetrics $collector): self`
+- `exportTo(CanExportMetrics $exporter): self`
+- `export(): void`
+- `registry(): CanStoreMetrics`
+- `clear(): void`
+
+## Registry
+
+`Cognesy\Metrics\Contracts\CanStoreMetrics`:
+- `counter(string $name, Tags $tags, float $increment = 1): Counter`
+- `gauge(string $name, Tags $tags, float $value): Gauge`
+- `histogram(string $name, Tags $tags, float $value): Histogram`
+- `timer(string $name, Tags $tags, float $durationMs): Timer`
+- `all(): iterable<Metric>`
+- `find(string $name, ?Tags $tags = null): iterable<Metric>`
+- `clear(): void`
+- `count(): int`
+
+Default implementation:
+- `Cognesy\Metrics\Registry\InMemoryRegistry`
+
+## Collectors
+
+Collector contract:
+- `CanCollectMetrics::register(CanHandleEvents $events, CanStoreMetrics $registry): void`
+
+Base class:
+- `Cognesy\Metrics\Collectors\MetricsCollector`
+- implement `listeners(): array<class-string, string>`
+Protected helpers on `MetricsCollector`:
+- `counter(string $name, array $tags = [], float $increment = 1): Counter`
+- `gauge(string $name, float $value, array $tags = []): Gauge`
+- `histogram(string $name, float $value, array $tags = []): Histogram`
+- `timer(string $name, float $durationMs, array $tags = []): Timer`
+
+## Exporters
+
+Exporter contract:
+- `CanExportMetrics::export(iterable $metrics): void`
+
+Built-in exporters:
+- `LogExporter(LoggerInterface $logger, string $level = LogLevel::INFO)`
+- `CallbackExporter(callable $callback)` where callback signature is `callable(iterable<Metric>): void`
+- `NullExporter()`
+
+## Metric Data Objects
+
+Shared interface:
+- `Metric` (`name()`, `value()`, `tags()`, `timestamp()`, `type()`, `toArray()`)
+
+Concrete types:
+- `Counter::create(string $name, float $value = 1, array $tags = [], ?DateTimeImmutable $timestamp = null)`
+- `Gauge::create(string $name, float $value, array $tags = [], ?DateTimeImmutable $timestamp = null)`
+- `Histogram::create(string $name, float $value, array $tags = [], ?DateTimeImmutable $timestamp = null)`
+- `Timer::create(string $name, float $durationMs, array $tags = [], ?DateTimeImmutable $timestamp = null)`
+
+`Timer` extra methods:
+- `durationMs(): float`
+- `durationSeconds(): float`
+
+## Tags
+
+`Cognesy\Metrics\Data\Tags`:
+- `Tags::empty(): self`
+- `Tags::of(array $values): self`
+- `with(string $key, string|int|float|bool $value): self`
+- `without(string $key): self`
+- `merge(Tags $other): self`
+- `get(string $key, mixed $default = null): mixed`
+- `has(string $key): bool`
+- `isEmpty(): bool`
+- `toArray(): array`
+- `getIterator(): Traversable`
+- `count(): int`
+- `toKey(): string`
+- `__toString(): string`

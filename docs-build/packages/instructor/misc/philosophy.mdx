@@ -13,7 +13,7 @@ abstractions.
 
 ### Simplicity
 
-1. Most users will only need to learn `responseModel` and `StructuredOutput::create()` to get started.
+1. Most users will only need to learn `responseModel` and `StructuredOutput->with(...)->get()` to get started.
 2. No new prompting language to learn, no new abstractions to learn.
 
 
@@ -26,7 +26,7 @@ abstractions.
 ### Flexibility
 
 1. If you build a system with OpenAI directly, it is easy to incrementally adopt Instructor by just adding
-`StructuredOutput::create()` with data schemas fed in via `responseModel`.
+`StructuredOutput->with(...)->get()` with data schemas fed in via `responseModel`.
 2. Use any class to define your data schema (no need to inherit from some base class).
 
 

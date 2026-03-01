@@ -3,3 +3,4 @@ order:
   - index
   - navigation-ordering
   - package-discovery
+  - quality-rules

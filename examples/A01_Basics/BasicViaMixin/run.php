@@ -32,7 +32,6 @@ static public function infer(
 Recommended replacement:
 
 ```php
-<?php
 use Cognesy\Instructor\StructuredOutput;
 
 $user = StructuredOutput::using('openai')

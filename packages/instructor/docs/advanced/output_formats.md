@@ -137,7 +137,7 @@ Provides a custom object that controls its own deserialization from the extracte
 ```php
 $scalar = (new StructuredOutput)
     ->withResponseClass(Rating::class)
-    ->intoObject(new Scalar('rating', 'integer'))
+    ->intoObject(Scalar::integer('rating'))
     ->with(messages: 'Extract rating: 5 stars')
     ->get();
 
@@ -157,7 +157,7 @@ use Cognesy\Instructor\Extras\Scalar\Scalar;
 // Extract a single integer value
 $rating = (new StructuredOutput)
     ->withResponseClass(Rating::class)
-    ->intoObject(new Scalar('rating', 'integer'))
+    ->intoObject(Scalar::integer('rating'))
     ->with(messages: 'Extract rating from: "5 out of 5 stars"')
     ->get();
 
@@ -166,7 +166,7 @@ dump($rating);  // 5 (integer)
 // Extract a single string value
 $sentiment = (new StructuredOutput)
     ->withResponseClass(Sentiment::class)
-    ->intoObject(new Scalar('sentiment', 'string'))
+    ->intoObject(Scalar::string('sentiment'))
     ->with(messages: 'Analyze sentiment: "This product is amazing!"')
     ->get();
 
@@ -175,16 +175,16 @@ dump($sentiment);  // 'positive' (string)
 
 **Custom self-deserializing object:**
 ```php
-use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelfFromArray;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 
-class Money implements CanDeserializeSelfFromArray
+class Money implements CanDeserializeSelf
 {
     public function __construct(
         private int $amountInCents,
         private string $currency,
     ) {}
 
-    public static function fromArray(array $data): self {
+    public function fromArray(array $data, ?string $toolName = null): static {
         // Custom deserialization logic
         $amount = $data['amount'] ?? 0;
         $currency = $data['currency'] ?? 'USD';
@@ -522,4 +522,4 @@ Use `withExtractors()` when:
 - [Response Models](../internals/response_models.md) - How schemas work
 - [Structures](structures.md) - Dynamic data models
 - [Validation](../essentials/validation.md) - How validation works
-- [Streaming](../essentials/streaming.md) - Streaming responses
+- [Streaming](partials.md) - Streaming responses

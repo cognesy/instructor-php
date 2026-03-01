@@ -28,7 +28,7 @@ trait HandlesFieldValue
     }
 
     public function isEmpty() : bool {
-        return is_null($this->get()) || empty($this->get());
+        return $this->get() === null;
     }
 
     public function withDefaultValue(mixed $value) : self {

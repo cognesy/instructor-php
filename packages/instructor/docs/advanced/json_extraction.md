@@ -74,7 +74,7 @@ After extraction, multiple parsers attempt to handle malformed JSON:
 Native `json_decode` with strict error handling.
 
 ```php
-json_decode($json, true, 512, JSON_THROW_ON_ERROR)
+json_decode($json, true, 512, JSON_THROW_ON_ERROR);
 ```
 
 ### 2. Resilient Parser
@@ -299,4 +299,4 @@ See: [Output Formats - Pluggable Extraction](output_formats.md#pluggable-extract
 
 - [Response Models](../internals/response_models.md) - How schemas are processed
 - [Validation](../essentials/validation.md) - What happens after extraction
-- [Retry Mechanisms](../essentials/retry.md) - Error handling and retries
+- [Retry Mechanisms](../essentials/configuration.md#response-configuration) - Error handling and retries

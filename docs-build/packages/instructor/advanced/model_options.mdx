@@ -14,11 +14,11 @@ $person = (new StructuredOutput)->with(
     model: 'gpt-3.5-turbo',
     options: [
         // custom temperature setting
-        'temperature' => 0.0
+        'temperature' => 0.0,
         // ... other options - e.g. provider or model specific
     ],
 )->get();
-// @doctest id="cc98"
+// @doctest id="b033"
 ```
 
 > NOTE: Please note that many options might be specific to the provider or even some model that you are using.
@@ -47,7 +47,7 @@ $config = new LLMConfig(
     maxTokens: 128,
     // configure HTTP via HttpClientBuilder or facade-level methods
     driver: 'openai',
-));
+);
 
 // Get Instructor with the default configuration overridden with your own
 $runtime = StructuredOutputRuntime::fromProvider(
@@ -60,5 +60,5 @@ $person = $structuredOutput->with(
     responseModel: Person::class,
     options: ['temperature' => 0.0],
 )->get();
-// @doctest id="cdd3"
+// @doctest id="2e49"
 ```

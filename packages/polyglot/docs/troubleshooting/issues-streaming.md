@@ -17,7 +17,10 @@ Streaming responses can encounter specific problems.
 
 ```php
 <?php
-use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\HttpClient;use Cognesy\Polyglot\Inference\Inference;use Cognesy\Polyglot\Inference\InferenceRuntime;
+use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\Http\Creation\HttpClientBuilder;
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 
 // Create a custom HTTP client with longer timeouts
 $config = new HttpClientConfig(
@@ -26,7 +29,9 @@ $config = new HttpClientConfig(
     idleTimeout: 60       // 60 seconds allowed between stream chunks
 );
 
-$httpClient = new HttpClient('guzzle', $config);
+$httpClient = (new HttpClientBuilder())
+    ->withConfig($config->withOverrides(['driver' => 'guzzle']))
+    ->create();
 $inference = Inference::fromRuntime(InferenceRuntime::using(
     preset: 'openai',
     httpClient: $httpClient,
@@ -84,7 +89,7 @@ try {
             echo "Partial content received: " . strlen($content) . " characters\n";
         }
     }
-} catch (RequestException $e) {
+} catch (\Throwable $e) {
     echo "Request failed: " . $e->getMessage() . "\n";
 }
 ```
@@ -116,6 +121,6 @@ function getResponse(string $prompt, bool $preferStreaming = true): string {
     }
 
     // Fallback to non-streaming
-    return $inference->with(messages: $prompt)->toText();
+    return $inference->with(messages: $prompt)->get();
 }
 ```

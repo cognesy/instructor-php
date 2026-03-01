@@ -31,10 +31,6 @@ final class DockerSandbox implements CanExecuteCommand
 
     #[\Override]
     public function execute(array $argv, ?string $stdin = null, ?callable $onOutput = null): ExecResult {
-        if ($this->dockerBin === '') {
-            throw new \RuntimeException('Docker binary not found');
-        }
-
         $workDir = Workdir::create($this->policy);
         try {
             $cmd = $this->buildContainerCommand($workDir, $argv);

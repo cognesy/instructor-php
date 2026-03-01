@@ -19,7 +19,7 @@ use Cognesy\Doctools\Doctest\Commands\ExtractCodeBlocks;
 use Cognesy\Doctools\Doctest\Commands\MarkSnippets;
 use Cognesy\Doctools\Doctest\Commands\MarkSnippetsRecursively;
 use Cognesy\Doctools\Doctest\Commands\ValidateCodeBlocks;
-use Cognesy\Doctools\Doctest\Services\ValidationService;
+use Cognesy\Doctools\Quality\Commands\RunDocsQualityCommand;
 use Cognesy\Doctools\Lesson\Commands\MakeLesson;
 use Cognesy\Doctools\Lesson\Commands\MakeLessonImage;
 use Cognesy\Doctools\Doctest\Services\DocRepository;
@@ -190,6 +190,7 @@ class Docs extends Application
                 $this->eventDispatcher,
             ),
             new ValidateCodeBlocks($this->eventDispatcher),
+            new RunDocsQualityCommand(),
             new MakeLesson($this->examples),
             new MakeLessonImage(),
         ]);

@@ -82,17 +82,40 @@ final class SymfonyLoggingFactory
             $tokenStorage = $container->get('security.token_storage');
             $token = $tokenStorage->getToken();
 
-            if (!$token || !$token->getUser()) {
+            if (!is_object($token) || !method_exists($token, 'getUser')) {
                 return [];
             }
 
             $user = $token->getUser();
+            if ($user === null) {
+                return [];
+            }
+
+            $roles = self::extractTokenRoles($token);
+
+            if (is_string($user)) {
+                return [
+                    'user_id' => null,
+                    'username' => $user,
+                    'user_type' => 'string',
+                    'roles' => $roles,
+                ];
+            }
+
+            if (!is_object($user)) {
+                return [];
+            }
+
+            $username = self::extractUserIdentifier($user);
+            if ($username === null) {
+                return [];
+            }
 
             return [
                 'user_id' => method_exists($user, 'getId') ? $user->getId() : null,
-                'username' => $user->getUserIdentifier(),
+                'username' => $username,
                 'user_type' => $user::class,
-                'roles' => $token->getRoleNames(),
+                'roles' => $roles,
             ];
         }));
 
@@ -149,5 +172,38 @@ final class SymfonyLoggingFactory
                 \Cognesy\Instructor\Events\PartialResponseGenerated::class,
             ],
         ]);
+    }
+
+    private static function extractTokenRoles(object $token): array
+    {
+        if (!method_exists($token, 'getRoleNames')) {
+            return [];
+        }
+
+        $roles = $token->getRoleNames();
+        if (!is_array($roles)) {
+            return [];
+        }
+
+        return $roles;
+    }
+
+    private static function extractUserIdentifier(object $user): ?string
+    {
+        if (method_exists($user, 'getUserIdentifier')) {
+            $identifier = $user->getUserIdentifier();
+            return is_string($identifier) && $identifier !== ''
+                ? $identifier
+                : null;
+        }
+
+        if (!method_exists($user, '__toString')) {
+            return null;
+        }
+
+        $identifier = (string) $user;
+        return $identifier !== ''
+            ? $identifier
+            : null;
     }
 }

@@ -346,7 +346,31 @@ class ResponseModelFactory
         if (is_object($requestedModel)) {
             return [get_class($requestedModel), $requestedModel];
         }
-        return [$requestedModel, $this->makeInstance($requestedModel)];
+        return [$requestedModel, $this->makeProviderInstance($requestedModel)];
+    }
+
+    private function makeProviderInstance(string $class): object {
+        if (!class_exists($class)) {
+            throw new InvalidArgumentException("Class $class does not exist.");
+        }
+
+        $reflection = new \ReflectionClass($class);
+        $constructor = $reflection->getConstructor();
+        if ($constructor !== null && $constructor->getNumberOfRequiredParameters() > 0) {
+            throw new InvalidArgumentException(
+                "Schema provider class {$class} requires constructor arguments. ".
+                'Pass a provider instance instead of class-string.'
+            );
+        }
+
+        try {
+            return $reflection->newInstance();
+        } catch (\Throwable $e) {
+            throw new InvalidArgumentException(
+                "Failed to instantiate schema provider class {$class}: {$e->getMessage()}",
+                previous: $e,
+            );
+        }
     }
 
     private function makeResponseModel(

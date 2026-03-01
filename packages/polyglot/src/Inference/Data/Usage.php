@@ -20,13 +20,20 @@ class Usage
     }
 
     public static function fromArray(array $value) : self {
+        $hasPricing = array_key_exists('pricing', $value);
+        $pricingValue = $value['pricing'] ?? null;
+
         return new self(
             inputTokens: (int) ($value['input'] ?? 0),
             outputTokens: (int) ($value['output'] ?? 0),
             cacheWriteTokens: (int) ($value['cacheWrite'] ?? 0),
             cacheReadTokens: (int) ($value['cacheRead'] ?? 0),
             reasoningTokens: (int) ($value['reasoning'] ?? 0),
-            pricing: Pricing::fromArray($value['pricing'] ?? []),
+            pricing: match (true) {
+                !$hasPricing => null,
+                is_array($pricingValue) => Pricing::fromArray($pricingValue),
+                default => null,
+            },
         );
     }
 

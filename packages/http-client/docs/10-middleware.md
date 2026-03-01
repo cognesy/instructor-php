@@ -31,19 +31,7 @@ $client = $client->withoutMiddleware('request-id');
 
 - Request decoration (auth headers, tracing IDs)
 - Response normalization (small shape adaptations)
-- Retry/circuit-breaker/idempotency policies
-- Stream chunk transformation for SSE/chunked flows
-
-## Built-In Reliability Middleware
-
-```php
-use Cognesy\Http\Creation\HttpClientBuilder;
-use Cognesy\Http\Middleware\RetryPolicy;
-
-$client = (new HttpClientBuilder())
-    ->withRetryPolicy(new RetryPolicy(maxRetries: 3))
-    ->create();
-```
+- Lightweight validation or policy checks
 
 Use the event bus for debug/observability rather than embedding verbose logging directly in middleware logic.
 
@@ -52,3 +40,9 @@ Use the event bus for debug/observability rather than embedding verbose logging 
 - Keep logic deterministic and focused
 - Avoid hidden I/O side effects in transformation middleware
 - Prefer one responsibility per middleware
+
+## See Also
+
+- [Processing with middleware](11-processing-with-middleware.md)
+- [Reliability middleware (extras)](12-reliability-middleware.md)
+- [Record and replay (extras)](13-record-replay.md)

@@ -1,88 +1,20 @@
 ---
 title: 'Building Tools'
-description: 'Create custom tools by extending BaseTool with auto-generated parameter schemas'
+description: 'Quick path for building tools with FunctionTool or BaseTool'
 ---
 
 # Building Tools
 
-## Class Hierarchy
+Most projects only need one of two paths:
 
-```
-SimpleTool (abstract)               – lowest level; schema is manual
-├── ReflectiveSchemaTool (abstract) – adds auto-schema from typed __invoke()
-│   └── FunctionTool                – wraps any callable
-└── StateAwareTool (abstract)       – adds $this->agentState
-    ├── BaseTool (abstract)         – auto-schema + agent state  ← use this
-    └── ContextAwareTool (abstract) – mixed args + agent state + $this->toolCall
-```
+- `FunctionTool::fromCallable()` for typed, fast tool creation
+- `BaseTool` for state-aware class tools with custom schema
 
-Pick the lowest class that gives you what you need.
+If you need lower-level patterns, see [Building Tools: Advanced Patterns](17-building-tools-advanced.md).
 
----
+## Quick Path 1: FunctionTool (recommended)
 
-## BaseTool — recommended starting point
-
-Extend `BaseTool`, implement `__invoke(mixed ...$args)`, and override `toToolSchema()`.
-Use `$this->arg()` to extract named or positional parameters. `$this->agentState` gives access to
-the current `AgentState` (step count, token usage, message history).
-
-> **PHP constraint:** `__invoke()` must match the `mixed ...$args` signature declared in `SimpleTool`.
-> Typed named parameters are not allowed in subclasses — use `FunctionTool::fromCallable()` if you want typed params with auto-generated schema.
-
-```php
-use Cognesy\Agents\Tool\Tools\BaseTool;
-use Cognesy\Utils\JsonSchema\JsonSchema;
-use Cognesy\Utils\JsonSchema\ToolSchema;
-
-class CalculatorTool extends BaseTool
-{
-    public function __construct()
-    {
-        parent::__construct(
-            name: 'calculator',
-            description: 'Performs basic arithmetic on two numbers.',
-        );
-    }
-
-    public function __invoke(mixed ...$args): string
-    {
-        $a  = (float)  $this->arg($args, 'a', 0, 0);
-        $b  = (float)  $this->arg($args, 'b', 1, 0);
-        $op = (string) $this->arg($args, 'operation', 2, 'add');
-
-        return (string) match ($op) {
-            'add'      => $a + $b,
-            'subtract' => $a - $b,
-            'multiply' => $a * $b,
-            'divide'   => $b !== 0.0 ? $a / $b : 'Error: division by zero',
-            default    => "Error: unknown operation '{$op}'",
-        };
-    }
-
-    #[\Override]
-    public function toToolSchema(): array
-    {
-        return ToolSchema::make(
-            name: $this->name(),
-            description: $this->description(),
-            parameters: JsonSchema::object('parameters')
-                ->withProperties([
-                    JsonSchema::number('a', 'First operand'),
-                    JsonSchema::number('b', 'Second operand'),
-                    JsonSchema::string('operation', 'Operation: add, subtract, multiply, or divide'),
-                ])
-                ->withRequiredProperties(['a', 'b', 'operation'])
-        )->toArray();
-    }
-}
-```
-
----
-
-## FunctionTool — wrap a callable (typed params, auto-schema)
-
-Wrap any callable without creating a class. The schema is **auto-generated** from the function
-signature — this is where typed named parameters and `#[Description]` attributes work:
+Use this when you want typed parameters and auto-generated schema.
 
 ```php
 use Cognesy\Agents\Tool\Tools\FunctionTool;
@@ -90,52 +22,36 @@ use Cognesy\Schema\Attributes\Description;
 
 $tool = FunctionTool::fromCallable(
     function (
-        #[Description('First operand')] float $a,
-        #[Description('Second operand')] float $b,
-        #[Description('Operation: add, subtract, multiply, or divide')] string $operation,
+        #[Description('City name')] string $city,
     ): string {
-        return (string) match ($operation) {
-            'add'      => $a + $b,
-            'subtract' => $a - $b,
-            'multiply' => $a * $b,
-            'divide'   => $b !== 0.0 ? $a / $b : 'Error: division by zero',
-            default    => "Error: unknown operation '{$operation}'",
-        };
+        return "Weather in {$city}: 72F, sunny";
     }
 );
 ```
 
-The tool name and description are inferred from the callable. For named functions the function name is used;
-for closures, wrap in a named function or use a named method reference.
+## Quick Path 2: BaseTool (state-aware class)
 
----
-
-## ContextAwareTool — access the raw ToolCall
-
-When you need the raw `ToolCall` object (call ID, unparsed arguments, etc.), extend `ContextAwareTool` instead of `BaseTool`.
-Unlike `BaseTool`, it does **not** auto-generate a schema — you must implement `toToolSchema()` manually.
-Parameters are received as `mixed ...$args`; use `$this->arg()` to extract them by name or position.
+Use this when you need access to `AgentState` (`$this->agentState`) or custom behavior in a class.
 
 ```php
-use Cognesy\Agents\Tool\Tools\ContextAwareTool;
+use Cognesy\Agents\Tool\Tools\BaseTool;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
 
-class AuditingTool extends ContextAwareTool
+class WeatherTool extends BaseTool
 {
     public function __construct()
     {
-        parent::__construct(new \Cognesy\Agents\Tool\ToolDescriptor(
-            name: 'auditing_tool',
-            description: 'Records tool call metadata for auditing.',
-        ));
+        parent::__construct(
+            name: 'weather',
+            description: 'Get weather for a city',
+        );
     }
 
     public function __invoke(mixed ...$args): string
     {
-        $input = $this->arg($args, 'input', 0, '');
-        $callId = $this->toolCall?->id ?? 'unknown';
-        return "Recorded call {$callId} with input: {$input}";
+        $city = (string) $this->arg($args, 'city', 0, '');
+        return "Weather in {$city}: 72F, sunny";
     }
 
     public function toToolSchema(): array
@@ -145,153 +61,41 @@ class AuditingTool extends ContextAwareTool
             description: $this->description(),
             parameters: JsonSchema::object('parameters')
                 ->withProperties([
-                    JsonSchema::string('input', 'The input to audit'),
+                    JsonSchema::string('city', 'City name'),
                 ])
-                ->withRequiredProperties(['input'])
+                ->withRequiredProperties(['city'])
         )->toArray();
     }
 }
 ```
 
----
+## Important PHP Constraint
 
-## SimpleTool — full control
+`SimpleTool` declares `__invoke(mixed ...$args)`, so subclasses (`BaseTool`, `ContextAwareTool`, `SimpleTool`) must keep that signature.
 
-`SimpleTool` is the lowest-level base. It has no auto-schema and no state injection.
-Use it when you want to manage the descriptor and schema yourself — this is what most built-in tools (`BashTool`, `ReadFileTool`, etc.) do.
+If you need typed parameters, use `FunctionTool::fromCallable()`.
 
-```php
-use Cognesy\Agents\Tool\Tools\SimpleTool;
-use Cognesy\Agents\Tool\ToolDescriptor;
+## Test Helpers
 
-class MyLowLevelTool extends SimpleTool
-{
-    public function __construct()
-    {
-        parent::__construct(new ToolDescriptor(
-            name: 'my_tool',
-            description: 'Does something very specific.',
-        ));
-    }
-
-    public function __invoke(mixed ...$args): string
-    {
-        $value = $this->arg($args, 'value', 0, '');
-        return "Got: {$value}";
-    }
-
-    public function toToolSchema(): array
-    {
-        // manual schema required
-        return [ /* ... */ ];
-    }
-}
-```
-
----
-
-## Extracting parameters — $this->arg()
-
-All tool base classes include the `HasArgs` trait, which provides `$this->arg()` for extracting
-parameters by name or positional index with an optional default:
-
-```php
-$value = $this->arg($args, 'value', 0, 'default');
-//                          ↑name  ↑pos  ↑default
-```
-
-This is only needed when using `ContextAwareTool` or `SimpleTool` (which receive `mixed ...$args`).
-With `BaseTool`, parameters arrive as typed named arguments directly.
-
----
-
-## Externalizing descriptors with ToolDescriptor
-
-For tools with rich documentation — examples, usage notes, error descriptions — extract the
-descriptor into its own class. This keeps tool logic clean and makes documentation reusable.
-
-```php
-use Cognesy\Agents\Tool\ToolDescriptor;
-
-final readonly class MyToolDescriptor extends ToolDescriptor
-{
-    public function __construct() {
-        parent::__construct(
-            name: 'my_tool',
-            description: 'Does something useful with detailed guidance.',
-            metadata: [
-                'namespace' => 'domain',
-                'tags' => ['analysis', 'data'],
-            ],
-            instructions: [
-                'parameters' => [
-                    'input' => 'The data to process.',
-                ],
-                'returns' => 'Processed result as string.',
-                'usage' => [
-                    'Pass structured data for best results.',
-                ],
-                'errors' => [
-                    'Returns error message on invalid input.',
-                ],
-            ],
-        );
-    }
-}
-```
-
-Wire it into your tool by overriding `descriptor()`:
-
-```php
-class MyTool extends BaseTool
-{
-    private MyToolDescriptor $desc;
-
-    public function __construct() {
-        $this->desc = new MyToolDescriptor();
-        parent::__construct(
-            name: $this->desc->name(),
-            description: $this->desc->description(),
-        );
-    }
-
-    #[\Override]
-    public function descriptor(): CanDescribeTool {
-        return $this->desc;
-    }
-
-    public function __invoke(
-        #[Description('The data to process')] string $input,
-    ): string {
-        return "Processed: {$input}";
-    }
-}
-```
-
-Most built-in tools use this pattern — `BashTool` has `BashToolDescriptor`, each file tool has its own.
-`metadata()` and `instructions()` power progressive disclosure: registries show summaries via `metadata()`;
-the LLM receives full specifications via `instructions()` when needed.
-
----
-
-## MockTool for testing
+Use `MockTool` when testing loop behavior:
 
 ```php
 use Cognesy\Agents\Tool\Tools\MockTool;
 
-$tool = MockTool::returning('my_tool', 'Does something', 'fixed result');
-
-// Or with custom logic
-$tool = new MockTool('my_tool', 'Does something', fn($x) => strtoupper($x));
+$tool = MockTool::returning('search', 'Search the web', 'result text');
 ```
 
----
+## Which Base Class Should I Use?
 
-## When to override toToolSchema()
-
-| Base class | Auto-schema | Override needed? |
+| Base class | Use when | Schema strategy |
 |---|---|---|
-| `BaseTool` | No — `__invoke()` must be `mixed ...$args` | **Yes** |
-| `FunctionTool` | Yes — from typed callable signature | No |
-| `ContextAwareTool` | No | **Yes** |
-| `SimpleTool` | No | **Yes** |
+| `FunctionTool` | You can provide a callable | Auto from typed callable |
+| `BaseTool` | You need state-aware class behavior | Usually define manually |
+| `ContextAwareTool` | You need raw `ToolCall` access | Manual |
+| `SimpleTool` | You want full low-level control | Manual |
+
+## Next Step
+
+For `ContextAwareTool`, `SimpleTool`, descriptor extraction, and schema strategy details, see:
+
+- [Building Tools: Advanced Patterns](17-building-tools-advanced.md)

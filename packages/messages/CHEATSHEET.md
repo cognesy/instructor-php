@@ -9,7 +9,7 @@ The MessageStore system provides multi-section message management for complex co
 ```php
 class MessageStore {
     public Sections $sections;
-    public MessageStoreParameters $parameters;
+    public Metadata $parameters;
 }
 
 // Usage patterns
@@ -60,6 +60,7 @@ enum ContentType: string {
     case Text = 'text';
     case Image = 'image_url';
     case File = 'file';
+    case Audio = 'input_audio';
 }
 ```
 
@@ -108,7 +109,7 @@ Message::fromImage($image, $role);         // From Image object
 match(true) {
     is_string($message) => new Message(role: $role, content: $message),
     is_array($message) => Message::fromArray($message),
-    $message instanceof Message => $message->clone(),
+    $message instanceof Message => $message,
     $message instanceof Content => Message::fromContent($message),
     $message instanceof ContentPart => Message::fromContentPart($message),
     $message instanceof ContentParts => Message::fromContent(Content::fromParts($message)),
@@ -132,8 +133,6 @@ final readonly class Content {
     // Content state classification
     public function isComposite(): bool;    // Multi-part or complex content
     public function isEmpty(): bool;        // All parts empty
-    public function isNull(): bool;         // No parts
-    public function isSimple(): bool;       // Single simple text part
 }
 ```
 
@@ -185,8 +184,6 @@ match(true) {
 // Content introspection
 $content->parts();                         // ContentPart[] (deprecated)
 $content->partsList();                     // ContentParts collection
-$content->firstContentPart();              // First part or null
-$content->lastContentPart();               // Last part (never null)
 $content->toArray();                       // Serialize to array
 $content->toString();                      // Extract text content
 $content->normalized();                    // string|array based on complexity
@@ -194,7 +191,6 @@ $content->normalized();                    // string|array based on complexity
 // Content mutation (immutable)
 $content->addContentPart($part);           // Add new part
 $content->appendContentField($key, $value); // Add single field to last part
-$content->clone();                         // Deep clone
 ```
 
 ### Content Complexity Logic
@@ -278,7 +274,6 @@ $part->isSimple();                        // Single 'text' field only
 // Serialization
 $part->toArray();                         // Export with type filtering
 $part->toString();                        // Extract text or empty string
-$part->clone();                          // Deep clone
 ```
 
 ### ContentPart Export Filtering
@@ -532,7 +527,7 @@ $content = $content->appendContentField('analysis_type', 'comprehensive');
 ```php
 final readonly class MessageStore {
     public Sections $sections;                // Collection of named sections
-    public MessageStoreParameters $parameters; // Key-value parameters
+    public Metadata $parameters;              // Key-value parameters
 }
 
 // Construction
@@ -601,7 +596,7 @@ final readonly class Sections {
     
     // Iteration and access
     public function all(): array;
-    public function each(): iterable;
+    // IteratorAggregate - iterate with foreach ($sections as $section)
     public function count(): int;
     public function names(): array;
 }
@@ -723,7 +718,6 @@ $messages->toMergedPerRole();              // Merge consecutive same-role messag
 // Collection operations
 $messages->reversed();                     // Reverse message order
 $messages->withoutEmptyMessages();                      // Remove empty messages
-$messages->clone();                        // Deep clone all messages
 ```
 
 ### Messages Serialization
@@ -733,7 +727,6 @@ $messages->toArray();                      // Message array format (filters empt
 $messages->toString($separator = "\n");    // Text with separator (no composites)
 
 // Static conversion utilities
-Messages::asPerRoleArray($messageArray);   // Merge same-role messages
 Messages::asString($messageArray, $separator, $renderer); // Custom rendering
 
 // Composite handling
@@ -769,7 +762,6 @@ $message->withContent($content);           // Replace content
 $message->withRole($role);                 // Change role
 $message->addContentFrom($sourceMessage); // Merge content from another message
 $message->addContentPart($part);           // Add content part
-$message->clone();                         // Deep clone
 ```
 
 ### Message Serialization
@@ -777,6 +769,9 @@ $message->clone();                         // Deep clone
 // Array format (OpenAI compatible)
 $message->toArray() produces:
 [
+    'id' => 'uuid-v4',
+    'createdAt' => '2026-02-01T12:00:00+00:00',
+    'parentId' => 'uuid-v4',               // Optional
     'role' => $this->role,
     'name' => $this->name,                 // If not empty
     'content' => /* content based on complexity */,
@@ -805,12 +800,6 @@ Message::isMessage($array): bool {
     );
 }
 
-Message::hasRoleAndContent($array): bool {
-    return isset($array['role']) && (
-        isset($array['content']) || isset($array['_metadata'])
-    );
-}
-
 Message::isMessages($array): bool {
     // All items must be valid messages
     foreach ($array as $message) {
@@ -825,50 +814,19 @@ Messages::becomesEmpty($input);            // Will be empty after parsing
 Messages::becomesComposite($messageArray); // Contains composite messages
 ```
 
-### Array Type Detection
+### Internal Input Detection (not public API)
 ```php
-// Used in Message::fromArray() for input classification
+// Internal helper currently used by MessageInput::fromArray()
 private static function isArrayOfStrings(array $array): bool;
-private static function isArrayOfMessageArrays(array $array): bool;
-private static function isArrayOfContent(array $array): bool;
-private static function isArrayOfMessages(array $array): bool;
-private static function isArrayOfContentParts(array $array): bool;
 ```
 
 ## Conversion and Integration Patterns
 
 ### Role-Based Merging
 ```php
-// Messages::asPerRoleArray() logic
-public static function asPerRoleArray(array $messages): array {
-    $role = 'user';
-    $merged = Messages::empty();
-    $content = [];
-    
-    foreach ($messages as $message) {
-        if ($role !== $message['role'] || Message::becomesComposite($message)) {
-            // Flush accumulated content
-            $merged = $merged->appendMessage(new Message(
-                role: $role,
-                content: implode("\n\n", array_filter($content)),
-            ));
-            
-            // Handle composite messages separately
-            if (Message::becomesComposite($message)) {
-                $merged = $merged->appendMessage($message);
-                continue;
-            }
-            
-            // Start new role group
-            $role = $message['role'];
-            $content = [];
-        }
-        $content[] = $message['content'];
-    }
-    
-    // Flush remaining content
-    return $merged->toArray();
-}
+// Merge consecutive same-role messages
+$merged = $messages->toMergedPerRole();
+$array = $merged->toArray();
 ```
 
 ### Provider Pattern Integration
@@ -913,14 +871,10 @@ Messages::fromInput($input) uses similar pattern for Messages
 
 ### Immutable Design Patterns
 ```php
-// All classes are readonly with immutable operations
+// Core value objects use immutable operations
 $newMessage = $message->withRole('assistant');     // Creates new instance
 $newContent = $content->addContentPart($part);     // Creates new instance
 $newMessages = $messages->appendMessage($message); // Creates new instance
-
-// Clone operations preserve deep structure
-$clonedMessage = $message->clone();                // Deep clones Content and parts
-$clonedMessages = $messages->clone();              // Deep clones all messages
 ```
 
 ### Lazy Evaluation Patterns

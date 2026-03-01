@@ -38,7 +38,9 @@ The default compiler assembles messages from the agent's context. You can replac
 Implement `CanCompileMessages` for custom message assembly:
 
 ```php
-use Cognesy\Agents\Context\CanCompileMessages;use Cognesy\Agents\Data\AgentState;use Cognesy\Messages\Messages;
+use Cognesy\Agents\Context\CanCompileMessages;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Messages\Messages;
 
 class MyCompiler implements CanCompileMessages
 {

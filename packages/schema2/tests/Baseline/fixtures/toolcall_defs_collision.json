@@ -1,0 +1,57 @@
+{
+    "function": {
+        "description": "baseline tool schema",
+        "name": "baseline_tool",
+        "parameters": {
+            "$defs": {
+                "Cognesy.Schema.Tests.Examples.RefsCollision.NA.User": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "name"
+                    ],
+                    "type": "object",
+                    "x-php-class": "Cognesy\\Schema\\Tests\\Examples\\RefsCollision\\NA\\User",
+                    "x-title": "User"
+                },
+                "Cognesy.Schema.Tests.Examples.RefsCollision.NB.User": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "age": {
+                            "type": "integer"
+                        }
+                    },
+                    "required": [
+                        "age"
+                    ],
+                    "type": "object",
+                    "x-php-class": "Cognesy\\Schema\\Tests\\Examples\\RefsCollision\\NB\\User",
+                    "x-title": "User"
+                }
+            },
+            "additionalProperties": false,
+            "properties": {
+                "naUser": {
+                    "$ref": "#/$defs/Cognesy.Schema.Tests.Examples.RefsCollision.NA.User",
+                    "x-php-class": "Cognesy\\Schema\\Tests\\Examples\\RefsCollision\\NA\\User"
+                },
+                "nbUser": {
+                    "$ref": "#/$defs/Cognesy.Schema.Tests.Examples.RefsCollision.NB.User",
+                    "x-php-class": "Cognesy\\Schema\\Tests\\Examples\\RefsCollision\\NB\\User"
+                }
+            },
+            "required": [
+                "naUser",
+                "nbUser"
+            ],
+            "type": "object",
+            "x-php-class": "Cognesy\\Schema\\Tests\\Examples\\RefsCollision\\Root",
+            "x-title": "Root"
+        }
+    },
+    "type": "function"
+}

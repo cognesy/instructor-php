@@ -44,7 +44,7 @@ $presets = ['openai', 'anthropic', 'mistral'];
 foreach ($presets as $preset) {
     testApiKey($preset);
 }
-// @doctest id="663a"
+// @doctest id="3987"
 ```
 
 
@@ -69,7 +69,7 @@ $inference = Inference::fromRuntime(InferenceRuntime::using(
 $response = $inference->with(
     messages: 'Test message with debug enabled'
 )->get();
-// @doctest id="995e"
+// @doctest id="7883"
 ```
 
 
@@ -86,17 +86,17 @@ Ensure all required configuration parameters are present and correctly formatted
 
 ```php
 <?php
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 function verifyConfig(string $preset): void {
     try {
-        $provider = new ConfigProvider();
-        $config = LLMConfig::fromArray($provider->getConfig($preset));
+        $config = LLMProvider::using($preset)->resolveConfig();
 
         echo "Configuration for '$preset':\n";
         echo "API URL: {$config->apiUrl}\n";
         echo "Endpoint: {$config->endpoint}\n";
         echo "Default Model: {$config->model}\n";
-        echo "Provider Type: {$config->providerType}\n";
+        echo "Driver: {$config->driver}\n";
 
         // Check for empty values
         if (empty($config->apiKey)) {
@@ -117,5 +117,5 @@ foreach ($presets as $preset) {
     verifyConfig($preset);
     echo "\n";
 }
-// @doctest id="f247"
+// @doctest id="86ff"
 ```

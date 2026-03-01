@@ -27,6 +27,45 @@ final readonly class InferenceRetryPolicy
     public int $maxTokensIncrement = 512,
 ) {}
 
+    public function toArray(): array {
+        return [
+            'maxAttempts' => $this->maxAttempts,
+            'baseDelayMs' => $this->baseDelayMs,
+            'maxDelayMs' => $this->maxDelayMs,
+            'jitter' => $this->jitter,
+            'retryOnStatus' => $this->retryOnStatus,
+            'retryOnExceptions' => $this->retryOnExceptions,
+            'lengthRecovery' => $this->lengthRecovery,
+            'lengthMaxAttempts' => $this->lengthMaxAttempts,
+            'lengthContinuePrompt' => $this->lengthContinuePrompt,
+            'maxTokensIncrement' => $this->maxTokensIncrement,
+        ];
+    }
+
+    public static function fromArray(array $data): self {
+        $retryOnStatus = $data['retryOnStatus'] ?? $data['retry_on_status'] ?? [408, 429, 500, 502, 503, 504];
+        $retryOnExceptions = $data['retryOnExceptions'] ?? $data['retry_on_exceptions'] ?? [
+            TimeoutException::class,
+            NetworkException::class,
+        ];
+
+        return new self(
+            maxAttempts: (int) ($data['maxAttempts'] ?? $data['max_attempts'] ?? 1),
+            baseDelayMs: (int) ($data['baseDelayMs'] ?? $data['base_delay_ms'] ?? 250),
+            maxDelayMs: (int) ($data['maxDelayMs'] ?? $data['max_delay_ms'] ?? 8000),
+            jitter: (string) ($data['jitter'] ?? 'full'),
+            retryOnStatus: is_array($retryOnStatus) ? array_values($retryOnStatus) : [408, 429, 500, 502, 503, 504],
+            retryOnExceptions: is_array($retryOnExceptions) ? array_values($retryOnExceptions) : [
+                TimeoutException::class,
+                NetworkException::class,
+            ],
+            lengthRecovery: (string) ($data['lengthRecovery'] ?? $data['length_recovery'] ?? 'none'),
+            lengthMaxAttempts: (int) ($data['lengthMaxAttempts'] ?? $data['length_max_attempts'] ?? 1),
+            lengthContinuePrompt: (string) ($data['lengthContinuePrompt'] ?? $data['length_continue_prompt'] ?? 'Continue.'),
+            maxTokensIncrement: (int) ($data['maxTokensIncrement'] ?? $data['max_tokens_increment'] ?? 512),
+        );
+    }
+
     public function shouldRetryException(\Throwable $error): bool {
         if ($error instanceof ProviderException) {
             return $error->isRetriable();

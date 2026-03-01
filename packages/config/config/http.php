@@ -12,7 +12,7 @@ return [
             'streamChunkSize' => 256,
             'maxConcurrent' => 5,
             'poolTimeout' => 60,
-            'failOnError' => true,
+            'failOnError' => false,
         ],
         'guzzle' => [
             'driver' => 'guzzle',
@@ -22,7 +22,7 @@ return [
             'streamChunkSize' => 256,
             'maxConcurrent' => 5,
             'poolTimeout' => 60,
-            'failOnError' => true,
+            'failOnError' => false,
         ],
         'symfony' => [
             'driver' => 'symfony',
@@ -32,7 +32,7 @@ return [
             'streamChunkSize' => 0,
             'maxConcurrent' => 5,
             'poolTimeout' => 60,
-            'failOnError' => true,
+            'failOnError' => false,
         ],
         'laravel' => [
             'driver' => 'laravel',
@@ -42,7 +42,7 @@ return [
             'streamChunkSize' => 256,
             'maxConcurrent' => 5,
             'poolTimeout' => 60,
-            'failOnError' => true,
+            'failOnError' => false,
         ],
         'exthttp' => [
             'driver' => 'exthttp',
@@ -52,7 +52,7 @@ return [
             'streamChunkSize' => 256,
             'maxConcurrent' => 10,
             'poolTimeout' => 60,
-            'failOnError' => true,
+            'failOnError' => false,
         ],
         'http-ollama' => [
             'driver' => 'guzzle',
@@ -62,7 +62,7 @@ return [
             'idleTimeout' => -1,
             'maxConcurrent' => 5,
             'poolTimeout' => 60,
-            'failOnError' => true,
+            'failOnError' => false,
         ],
     ],
 ];

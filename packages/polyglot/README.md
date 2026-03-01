@@ -1,22 +1,27 @@
-# Overview
+# Polyglot Package
 
-This directory contains the source code for the LLM connectivity layer of the Instructor library.
+Unified LLM connectivity layer for InstructorPHP.
 
-Contents:
- - LLM - provides integrations with various language model API providers
- - Embeddings - provides integrations with various embeddings API providers
+It provides two facades:
+- `Inference` for chat/completion responses
+- `Embeddings` for vector generation
 
-`Inference` and `Embeddings` are thin request facades. Provider/config/http/event assembly lives in
-`InferenceRuntime` and `EmbeddingsRuntime`.
-
-Quick example:
+## Example
 
 ```php
 <?php
-use Cognesy\Polyglot\Embeddings\Embeddings;
 
-$vectors = Embeddings::using('openai')
-    ->withModel('text-embedding-3-small')
-    ->withInputs(['hello world'])
-    ->vectors();
+use Cognesy\Polyglot\Inference\Inference;
+
+$text = Inference::using('openai')
+    ->withModel('gpt-4o-mini')
+    ->withMessages('Write one short sentence about PHP.')
+    ->get();
 ```
+
+## Documentation
+
+- `packages/polyglot/docs/quickstart.md`
+- `packages/polyglot/docs/essentials/inference-class.md`
+- `packages/polyglot/docs/embeddings/overview.md`
+- `packages/polyglot/docs/_meta.yaml`

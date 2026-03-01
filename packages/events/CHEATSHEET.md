@@ -1,381 +1,175 @@
-# Events Package - Deep Reference
+# Events Package Cheatsheet
 
-## Core Architecture
+Code-verified reference for `packages/events`.
 
-### Event System Contracts
+## Core Interface
+
 ```php
-interface CanHandleEvents extends EventDispatcherInterface, ListenerProviderInterface {
+use Cognesy\Events\Contracts\CanHandleEvents;
+
+// Extends PSR EventDispatcherInterface + ListenerProviderInterface
+interface CanHandleEvents {
     public function addListener(string $name, callable $listener, int $priority = 0): void;
     public function wiretap(callable $listener): void;
-}
-
-// PSR-14 compliance: EventDispatcherInterface, ListenerProviderInterface
-// Custom extensions: wiretap for global event observation
-```
-
-### Event Base Class
-```php
-class Event implements JsonSerializable {
-    public readonly string $id;              // UUID v4
-    public readonly DateTimeImmutable $createdAt;
-    public mixed $data;                      // Event payload
-    public $logLevel = LogLevel::DEBUG;      // PSR-3 log level
+    public function dispatch(object $event): object;
+    public function getListenersForEvent(object $event): iterable;
 }
 ```
 
-## Event Definition and Usage
+## Basic Dispatcher Usage
 
-### Basic Event Creation
 ```php
-// Simple event with data
-$event = new Event(['user_id' => 123, 'action' => 'login']);
+use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Events\Event;
 
-// Event properties are auto-generated
-$event->id;        // UUID v4: "a1b2c3d4-..."  
-$event->createdAt; // DateTimeImmutable
-$event->data;      // ['user_id' => 123, 'action' => 'login']
+final class UserLoggedIn extends Event {}
 
-// Data transformation logic
-match(true) {
-    is_array($data) => $data,
-    is_object($data) => get_object_vars($data),
-    default => $data,
-}
+$events = new EventDispatcher(name: 'app');
+
+$events->addListener(UserLoggedIn::class, function (UserLoggedIn $event): void {
+    // handle event
+}, priority: 100);
+
+$events->wiretap(function (object $event): void {
+    // observe all events
+});
+
+$events->dispatch(new UserLoggedIn(['userId' => 123]));
 ```
 
-### Custom Event Classes
+Notes:
+- `addListener('*', $listener)` also registers a global listener.
+- Class listeners run first (priority desc), wiretaps run after.
+- Parent classes and implemented interfaces are considered for listener matching.
+
+## Event Base Class (`Event`)
+
 ```php
-class UserLoggedIn extends Event {
-    public $logLevel = LogLevel::INFO;
-    
-    public function __construct(int $userId, string $sessionId) {
-        parent::__construct([
-            'user_id' => $userId,
-            'session_id' => $sessionId,
-            'timestamp' => time()
-        ]);
-    }
-}
+use Cognesy\Events\Event;
+use Psr\Log\LogLevel;
+
+$event = new Event(['status' => 'ok']);
+
+$id = $event->id;
+$createdAt = $event->createdAt;
+$data = $event->data;
+$event->logLevel = LogLevel::INFO;
+
+$name = $event->name();
+$asLog = $event->asLog();
+$asConsole = $event->asConsole();
+$array = $event->toArray();
+
+$event->print(threshold: LogLevel::DEBUG);
+$event->printLog();
+$event->printDebug();
 ```
 
-### Event Introspection
-```php
-$event->name();        // Short class name (ReflectionClass::getShortName)
-$event->toArray();     // Event as array (json_decode/encode hack)
-$event->jsonSerialize(); // get_object_vars($this)
-$event->__toString();  // JSON encoded data
-```
+## Event Bus Resolver
 
-## Event Bus Resolution System
-
-### EventBusResolver Factory
 ```php
-// Default event dispatcher
+use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Event;
+
 $events = EventBusResolver::default();
+$events = EventBusResolver::using($existingDispatcherOrNull);
 
-// Using existing dispatcher
-$events = EventBusResolver::using($customDispatcher);
-$events = EventBusResolver::using(null); // creates default EventDispatcher
-
-// Resolution logic prevents double-wrapping
-match(true) {
-    is_null($eventHandler) => new EventDispatcher(),
-    $eventHandler instanceof EventBusResolver => $eventHandler->eventHandler, // unwrap
-    $eventHandler instanceof EventDispatcher => $eventHandler, // direct use
-    $eventHandler instanceof CanHandleEvents => $eventHandler, // interface match
-    $eventHandler instanceof EventDispatcherInterface => new EventDispatcher(parent: $eventHandler), // wrap
-    default => $eventHandler,
-}
+$events->addListener(Event::class, fn(object $e) => null);
+$events->wiretap(fn(object $e) => null);
+$events->dispatch(new Event(['ping' => true]));
 ```
 
-### Event Bus API
+`EventBusResolver::using(...)` behavior:
+- `null` -> creates internal `EventDispatcher`
+- `CanHandleEvents` -> uses it directly
+- plain PSR dispatcher -> wraps in internal `EventDispatcher`
+
+## Framework Bridges
+
+### Symfony Bridge
+
 ```php
-$events = EventBusResolver::default();
+use Cognesy\Events\Dispatchers\SymfonyEventDispatcher;
+use Cognesy\Events\Event;
 
-// Add class-specific listeners
-$events->addListener(UserLoggedIn::class, function($event) { /* handle */ });
+final class MyEvent extends Event {}
 
-// Add global listeners (wiretaps)
-$events->wiretap(function($event) { /* observe all events */ });
-
-// Dispatch events
-$result = $events->dispatch($userLoggedInEvent);
-
-// Get listeners for introspection
-$listeners = $events->getListenersForEvent($event);
+$symfonyBridge = new SymfonyEventDispatcher($symfonyDispatcher);
+$symfonyBridge->addListener(MyEvent::class, fn(object $e) => null, priority: 50);
+$symfonyBridge->wiretap(fn(object $e) => null);
+$symfonyBridge->dispatch(new MyEvent());
 ```
 
-## Event Dispatcher Implementation
+### Laravel Bridge
 
-### Core EventDispatcher
 ```php
-class EventDispatcher implements CanHandleEvents {
-    private string $name = 'default';
-    private ?EventDispatcherInterface $parent;
-    /** @var array<string, SplPriorityQueue> */
-    private array $listeners = [];
-}
+use Cognesy\Events\Dispatchers\LaravelEventDispatcher;
+use Cognesy\Events\Event;
+
+final class MyEvent extends Event {}
+
+$laravelBridge = new LaravelEventDispatcher(
+    laravel: $laravelDispatcher,
+    dispatchToLaravel: true,
+    bridgedEvents: [],
+);
+
+$laravelBridge->addListener(MyEvent::class, fn(object $e) => null, priority: 50);
+$laravelBridge->wiretap(fn(object $e) => null);
+$laravelBridge->dispatch(new MyEvent());
 ```
 
-### Listener Management
+## `HandlesEvents` Trait
+
 ```php
-// Priority-based listener registration
-$dispatcher->addListener(UserLoggedIn::class, $callback, $priority = 0);
+use Cognesy\Events\Event;
+use Cognesy\Events\Traits\HandlesEvents;
 
-// Higher priority = executed first
-$dispatcher->addListener(UserLoggedIn::class, $highPriority, 100);
-$dispatcher->addListener(UserLoggedIn::class, $lowPriority, -100);
-
-// Wiretaps stored as '*' listeners
-$dispatcher->wiretap($globalListener); // internally calls addListener('*', $listener)
-```
-
-### Event Dispatch Flow
-```php
-public function dispatch(object $event): object {
-    // 1. Class-specific listeners (honour StoppableEventInterface)
-    foreach ($this->classListeners($event) as $listener) {
-        $listener($event);
-        if ($event instanceof StoppableEventInterface && $event->isPropagationStopped()) {
-            break; // stop propagation
-        }
-    }
-    
-    // 2. Wiretaps - always run (no propagation stopping)
-    if (isset($this->listeners['*'])) {
-        foreach (clone $this->listeners['*'] as $tap) {
-            $tap($event);
-        }
-    }
-    
-    // 3. Bubble up to parent dispatcher
-    $this->parent?->dispatch($event);
-    
-    return $event;
-}
-```
-
-### Hierarchical Type Matching
-```php
-private function classListeners(object $event): iterable {
-    // Match event class, parent classes, and interfaces
-    $types = array_merge(
-        [get_class($event)],           // Exact class match
-        class_parents($event),         // Inheritance chain
-        class_implements($event)       // Interface implementations
-    );
-    
-    foreach ($types as $type) {
-        if (isset($this->listeners[$type])) {
-            foreach (clone $this->listeners[$type] as $listener) {
-                yield $listener;
-            }
-        }
-    }
-}
-```
-
-## Framework Integrations
-
-### Laravel Event Dispatcher Bridge
-```php
-class LaravelEventDispatcher implements CanHandleEvents {
-    private Dispatcher $dispatcher;           // Laravel's event dispatcher
-    private array $registry = [];            // Local listener registry
-    private SplPriorityQueue $taps;          // Wiretap listeners
-}
-
-// Dual registration pattern
-public function addListener(string $name, callable $listener, int $priority = 0): void {
-    if ($name === '*') {
-        $this->taps->insert($listener, $priority);
-        return;
-    }
-    
-    // Store locally for introspection
-    $queue = $this->registry[$name] ??= new SplPriorityQueue();
-    $queue->insert($listener, $priority);
-    
-    // Register with Laravel (priority ignored, order preserved)
-    $this->dispatcher->listen($name, $listener);
-}
-
-// Dispatch flow: Laravel first, then taps
-public function dispatch(object $event): object {
-    $this->dispatcher->dispatch($event); // Laravel handles framework/user listeners
-    
-    foreach (clone $this->taps as $tap) { // Run taps after Laravel
-        $tap($event);
-    }
-    return $event;
-}
-```
-
-### Symfony Event Dispatcher Bridge
-```php
-class SymfonyEventDispatcher implements CanHandleEvents {
-    private EventDispatcherInterface $dispatcher; // Symfony dispatcher
-    private SplPriorityQueue $taps;               // Wiretap queue
-}
-
-// Delegation pattern with wiretap extension
-public function addListener(string $name, callable $listener, int $priority = 0): void {
-    if ($name === '*') {
-        $this->taps->insert($listener, $priority);
-        return;
-    }
-    $this->dispatcher->addListener($name, $listener, $priority);
-}
-
-// Framework first, taps after
-public function dispatch(object $event): object {
-    $event = $this->dispatcher->dispatch($event); // Symfony listeners first
-    
-    foreach (clone $this->taps as $tap) {         // Taps always run
-        $tap($event);
-    }
-    return $event;
-}
-```
-
-## HandlesEvents Trait
-
-### Event Handler Integration
-```php
-trait HandlesEvents {
-    protected CanHandleEvents $events;
-    
-    public function withEventHandler(CanHandleEvents|EventDispatcherInterface $events): static {
-        $this->events = EventBusResolver::using($events);
-        return $this;
-    }
-    
-    public function dispatch(Event $event): object {
-        return $this->events->dispatch($event);
-    }
-    
-    public function wiretap(?callable $listener): self {
-        if ($listener !== null) {
-            $this->events->wiretap($listener);
-        }
-        return $this;
-    }
-    
-    public function onEvent(string $class, ?callable $listener): self {
-        if ($listener !== null) {
-            $this->events->addListener($class, $listener);
-        }
-        return $this;
-    }
-}
-```
-
-### Usage in Classes
-```php
-class UserService {
+final class Service {
     use HandlesEvents;
-    
-    public function login(User $user) {
-        // Business logic...
-        
-        $this->dispatch(new UserLoggedIn($user->id, session_id()));
-        
-        return $user;
+
+    public function run(): void {
+        $this->dispatch(new Event(['action' => 'run']));
     }
 }
 
-// Setup with fluent API
-$service = (new UserService())
-    ->withEventHandler($eventDispatcher)
-    ->wiretap(fn($event) => logger()->info($event->asLog()))
-    ->onEvent(UserLoggedIn::class, fn($event) => $this->sendWelcomeEmail($event));
+$service
+    ->withEventHandler($events)
+    ->onEvent(Event::class, fn(object $e) => null)
+    ->wiretap(fn(object $e) => null);
 ```
 
-## Event Formatting and Logging
+## Event Formatter Utilities
 
-### Event Output Formatting
 ```php
-// Console output with colored formatting
-$event->asConsole($quote = false); 
-// Format: "(.uuid) HH:mm:ss vms  LEVEL        EventName - message"
+use Cognesy\Events\Utils\EventFormatter;
 
-$event->print($quote = false, $threshold = LogLevel::DEBUG);
-$event->printLog();     // Raw log format
-$event->printDebug();   // Console + dump()
+$shortName = EventFormatter::toShortName($event);
+$fullName = EventFormatter::toFullName($event);
 
-// Log file format
-$event->asLog();
-// Format: "(uuid) YYYY-mm-dd HH:mm:ss vms (LEVEL) [Full\Class\Name] - message"
+$line = EventFormatter::logFormat($event, 'message');
+$console = EventFormatter::consoleFormat($event, 'message', quote: false);
+
+$shouldPrint = EventFormatter::logFilter('info', 'warning');
+$rank = EventFormatter::logLevelRank('error');
 ```
 
-### EventFormatter Utilities
+## Console Event Printer
+
 ```php
-EventFormatter::toShortName($event);  // Class basename
-EventFormatter::toFullName($event);   // Fully qualified class name
+use Cognesy\Events\Contracts\CanFormatConsoleEvent;
+use Cognesy\Events\Data\ConsoleEventLine;
+use Cognesy\Events\Enums\ConsoleColor;
+use Cognesy\Events\Support\ConsoleEventPrinter;
 
-// Log level filtering
-EventFormatter::logFilter($eventLevel, $threshold); // bool
-EventFormatter::logLevelRank($level); // int (0=EMERGENCY to 7=DEBUG)
+$printer = new ConsoleEventPrinter(useColors: true, showTimestamps: true);
 
-// Log level hierarchy (lower number = higher severity)
-LogLevel::EMERGENCY => 0,  LogLevel::ALERT => 1,     LogLevel::CRITICAL => 2,
-LogLevel::ERROR => 3,      LogLevel::WARNING => 4,   LogLevel::NOTICE => 5,
-LogLevel::INFO => 6,       LogLevel::DEBUG => 7
-```
-
-
-## Advanced Patterns
-
-### Event Propagation Control
-```php
-// StoppableEventInterface support
-class CancellableEvent extends Event implements StoppableEventInterface {
-    private bool $stopped = false;
-    
-    public function stopPropagation(): void {
-        $this->stopped = true;
+$formatter = new class implements CanFormatConsoleEvent {
+    public function format(object $event): ?ConsoleEventLine {
+        return new ConsoleEventLine('INFO', 'event received', ConsoleColor::Green, 'events');
     }
-    
-    public function isPropagationStopped(): bool {
-        return $this->stopped;
-    }
-}
+};
 
-// Dispatcher honours stopPropagation for class listeners, not wiretaps
-```
-
-### Priority-Based Execution
-```php
-// SplPriorityQueue manages execution order
-$dispatcher->addListener(EventClass::class, $criticalHandler, 1000);   // First
-$dispatcher->addListener(EventClass::class, $normalHandler, 0);       // Middle  
-$dispatcher->addListener(EventClass::class, $cleanupHandler, -1000);  // Last
-
-// Cloning prevents iterator corruption during dispatch
-foreach (clone $this->listeners[$type] as $listener) {
-    yield $listener;
-}
-```
-
-### Parent Dispatcher Hierarchy
-```php
-$parent = new EventDispatcher('parent');
-$child = new EventDispatcher('child', $parent);
-
-// Events bubble up: child listeners first, then parent listeners
-$child->dispatch($event);
-// 1. Child class listeners (with stopPropagation)
-// 2. Child wiretaps (always run)  
-// 3. Parent->dispatch($event) recursively
-```
-
-### Introspection and Debugging
-```php
-$dispatcher->name();                    // Dispatcher name
-$dispatcher->getListenersForEvent($event); // All applicable listeners
-$dispatcher->dispatcher();              // Parent dispatcher or self
-
-// Event debugging
-$event->printDebug(); // Console output + var_dump
-$event->toArray();    // Full event state as array
+$wiretap = $printer->wiretap($formatter);
+$wiretap(new stdClass());
 ```

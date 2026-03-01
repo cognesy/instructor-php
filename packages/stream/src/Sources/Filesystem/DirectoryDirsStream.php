@@ -8,6 +8,7 @@ use FilesystemIterator;
 use Iterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use SplFileInfo;
 
 /**
  * @implements Stream<int, string>
@@ -27,6 +28,9 @@ final readonly class DirectoryDirsStream implements Stream
                 RecursiveIteratorIterator::SELF_FIRST,
             );
             foreach ($it as $info) {
+                if (!$info instanceof SplFileInfo) {
+                    continue;
+                }
                 if ($info->isDir()) {
                     yield $info->getPathname();
                 }
@@ -34,6 +38,9 @@ final readonly class DirectoryDirsStream implements Stream
             return;
         }
         foreach (new DirectoryIterator($this->root) as $info) {
+            if (!$info instanceof SplFileInfo) {
+                continue;
+            }
             if ($info->isDir() && !$info->isDot()) {
                 yield $info->getPathname();
             }

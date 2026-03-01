@@ -1,6 +1,7 @@
 # Navigation order for HTTP Client documentation
 # Files use numeric prefixes, listed here in correct order
 order:
+  # Essentials
   - 1-overview
   - 2-getting-started
   - 3-making-requests
@@ -8,3 +9,11 @@ order:
   - 5-streaming-responses
   - 6-pooling
   - 10-middleware
+  # Extras
+  - 7-changing-client
+  - 8-changing-client-config
+  - 9-1-custom-clients
+  - 11-processing-with-middleware
+  - 12-reliability-middleware
+  - 13-record-replay
+  - 14-upgrade-guide

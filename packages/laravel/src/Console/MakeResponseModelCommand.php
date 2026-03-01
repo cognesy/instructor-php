@@ -60,10 +60,22 @@ class MakeResponseModelCommand extends GeneratorCommand
      */
     protected function resolveStubPath(string $stub): string
     {
-        $customPath = $this->laravel->basePath(trim($stub, '/'));
+        $relativeStubPath = ltrim($stub, '/');
+        $stubWithinStubs = str_starts_with($relativeStubPath, 'stubs/')
+            ? substr($relativeStubPath, strlen('stubs/'))
+            : $relativeStubPath;
+        $publishedStubPath = $this->laravel->basePath(
+            'stubs/instructor/' . $stubWithinStubs,
+        );
 
-        if (file_exists($customPath)) {
-            return $customPath;
+        if (file_exists($publishedStubPath)) {
+            return $publishedStubPath;
+        }
+
+        $legacyCustomPath = $this->laravel->basePath($relativeStubPath);
+
+        if (file_exists($legacyCustomPath)) {
+            return $legacyCustomPath;
         }
 
         return __DIR__ . '/../../resources' . $stub;

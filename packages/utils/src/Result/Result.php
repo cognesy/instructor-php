@@ -3,7 +3,6 @@
 namespace Cognesy\Utils\Result;
 
 use Cognesy\Utils\Exceptions\CompositeException;
-use Exception;
 use Throwable;
 
 /**
@@ -183,7 +182,7 @@ abstract readonly class Result
             return $result instanceof Result
                 ? $result
                 : self::success($result);
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             return self::failure($e);
         }
     }
@@ -203,7 +202,7 @@ abstract readonly class Result
                     is_null($output) => self::success(null),
                     default => self::success($output),
                 };
-            } catch (Exception $e) {
+            } catch (Throwable $e) {
                 return self::failure($e);
             }
         }
@@ -236,7 +235,7 @@ abstract readonly class Result
             return $failure instanceof Result
                 ? $failure
                 : self::failure($failure);
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             return self::failure($e);
         }
     }
@@ -253,7 +252,7 @@ abstract readonly class Result
         try {
             $sideEffect($this->unwrap());
             return $this;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             return self::failure($e);
         }
     }
@@ -271,7 +270,7 @@ abstract readonly class Result
         if ($this->isFailure()) {
             try {
                 return self::success($f($this->error()));
-            } catch (Exception $e) {
+            } catch (Throwable $e) {
                 return self::failure($e);
             }
         }
@@ -294,7 +293,7 @@ abstract readonly class Result
             return $error instanceof Result
                 ? $error
                 : self::failure($error);
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             return self::failure($e);
         }
     }

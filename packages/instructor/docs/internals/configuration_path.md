@@ -42,8 +42,7 @@ INSTRUCTOR_CONFIG_PATHS='/path/to/config/,another/path'
 Instructor uses a configuration directory with a set of `.php` files to store its settings, e.g. LLM provider configurations.
 
 Instructor will look for its configuration location in the following order:
-- If static variable value `$path` in `Settings` class is set, it will use it,
-- If `INSTRUCTOR_CONFIG_PATHS` environment variable is set, it will use its value,
+- If `Settings::setPath()` has been called, it will use that custom path list,
+- If `INSTRUCTOR_CONFIG_PATHS` (or `INSTRUCTOR_CONFIG_PATH`) environment variable is set, it will use that value,
 - Finally, it will default to the directory, which is bundled with Instructor package (under `/config`) and contains default set of configuration files.
-
 

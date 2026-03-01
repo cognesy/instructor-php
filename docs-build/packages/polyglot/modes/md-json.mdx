@@ -25,7 +25,7 @@ foreach ($response['languages'] as $language) {
     echo "{$language['name']} - {$language['paradigm']}\n";
     echo "Key features: " . implode(', ', $language['key_features']) . "\n\n";
 }
-// @doctest id="9e35"
+// @doctest id="1d2e"
 ```
 
 ### How MdJson Mode Works
@@ -63,12 +63,12 @@ Respond with a JSON object following this structure:
 EOT;
 
 $response = $inference->with(
-messages: $prompt,
-mode: OutputMode::MdJson
-)->toJson();
+    messages: $prompt,
+    mode: OutputMode::MdJson
+)->asJson();
 
 // Process as normal JSON
-// @doctest id="5506"
+// @doctest id="bc82"
 ```
 
 ### When to Use MdJson Mode

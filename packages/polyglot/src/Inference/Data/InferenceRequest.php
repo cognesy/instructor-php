@@ -345,11 +345,16 @@ class InferenceRequest
             'response_format' => $this->responseFormat->toArray(),
             'options' => $this->options,
             'mode' => $this->mode?->value,
+            'cached_context' => $this->cachedContext?->toArray(),
             'response_cache_policy' => $this->responseCachePolicy->value,
+            'retry_policy' => $this->retryPolicy?->toArray(),
         ];
     }
 
     public static function fromArray(array $data) : self {
+        $cachedContext = $data['cached_context'] ?? $data['cachedContext'] ?? null;
+        $retryPolicy = $data['retry_policy'] ?? $data['retryPolicy'] ?? null;
+
         return new self(
             messages: $data['messages'] ?? [],
             model: $data['model'] ?? '',
@@ -358,7 +363,9 @@ class InferenceRequest
             responseFormat: $data['response_format'] ?? [],
             options: $data['options'] ?? [],
             mode: isset($data['mode']) ? OutputMode::from($data['mode']) : null,
+            cachedContext: is_array($cachedContext) ? CachedInferenceContext::fromArray($cachedContext) : null,
             responseCachePolicy: isset($data['response_cache_policy']) ? ResponseCachePolicy::from($data['response_cache_policy']) : null,
+            retryPolicy: is_array($retryPolicy) ? InferenceRetryPolicy::fromArray($retryPolicy) : null,
         );
     }
 

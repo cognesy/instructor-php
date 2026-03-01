@@ -20,7 +20,7 @@ $text = <<<TEXT
 TEXT;
 
 $list = (new StructuredOutput)
-    ->withResponseClass(Sequence::of(Person::class))
+    ->withResponseModel(Sequence::of(Person::class))
     ->with(
         messages: [['role' => 'user', 'content' => $text]],
     )->get();
@@ -63,7 +63,7 @@ $text = <<<TEXT
 TEXT;
 
 $stream = (new StructuredOutput)
-    ->withResponseClass(Sequence::of(Person::class))
+    ->withResponseModel(Sequence::of(Person::class))
     ->with(
         messages: [['role' => 'user', 'content' => $text]],
         options: ['stream' => true],
