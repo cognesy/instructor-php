@@ -15,7 +15,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $text = (new Inference())
     ->withMessages('What is the capital of France?')
     ->get();
-// @doctest id="d910"
+// @doctest id="4cd2"
 ```
 
 ## Use a Specific Preset
@@ -29,7 +29,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $text = Inference::using('anthropic')
     ->withMessages('Give me three deployment checklist items.')
     ->get();
-// @doctest id="b5b7"
+// @doctest id="26a1"
 ```
 
 ## Override Model and Options Per Request
@@ -45,7 +45,7 @@ $text = (new Inference())
         options: ['temperature' => 0.2, 'max_tokens' => 120],
     )
     ->get();
-// @doctest id="1a65"
+// @doctest id="d03a"
 ```
 
 ## Stream Output
@@ -62,7 +62,7 @@ $stream = (new Inference())
 foreach ($stream->responses() as $partial) {
     echo $partial->contentDelta;
 }
-// @doctest id="4038"
+// @doctest id="639c"
 ```
 
 ## Switch Providers at Runtime
@@ -78,7 +78,7 @@ foreach ($presets as $preset) {
         ->withMessages('One sentence: what is dependency injection?')
         ->get();
 }
-// @doctest id="8bf5"
+// @doctest id="33c8"
 ```
 
 ## See Also

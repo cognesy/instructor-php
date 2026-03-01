@@ -10,6 +10,8 @@ use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
+use JsonException;
+use RuntimeException;
 
 class OpenAIResponseAdapter implements CanTranslateInferenceResponse
 {
@@ -19,8 +21,7 @@ class OpenAIResponseAdapter implements CanTranslateInferenceResponse
 
     #[\Override]
     public function fromResponse(HttpResponse $response): ?InferenceResponse {
-        $responseBody = $response->body();
-        $data = json_decode($responseBody, true);
+        $data = $this->decodeResponseData($response->body());
         return new InferenceResponse(
             content: $this->makeContent($data),
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
@@ -45,8 +46,8 @@ class OpenAIResponseAdapter implements CanTranslateInferenceResponse
     }
 
     protected function fromStreamResponse(string $eventBody, ?HttpResponse $responseData = null): ?PartialInferenceDelta {
-        $data = json_decode($eventBody, true);
-        if ($data === null || empty($data)) {
+        $data = $this->decodeJsonData($eventBody, 'OpenAI stream payload');
+        if (empty($data)) {
             return null;
         }
         return new PartialInferenceDelta(
@@ -111,5 +112,34 @@ class OpenAIResponseAdapter implements CanTranslateInferenceResponse
 
     protected function makeToolArgsDelta(array $data) : string {
         return $data['choices'][0]['delta']['tool_calls'][0]['function']['arguments'] ?? '';
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    protected function decodeResponseData(string $payload): array {
+        $data = $this->decodeJsonData($payload, 'OpenAI response payload');
+        if (!isset($data['choices']) || !is_array($data['choices'])) {
+            throw new RuntimeException('Malformed OpenAI response payload: missing `choices` array.');
+        }
+
+        return $data;
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    protected function decodeJsonData(string $payload, string $context): array {
+        try {
+            $decoded = json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            throw new RuntimeException($context . ' is not valid JSON.', previous: $e);
+        }
+
+        if (!is_array($decoded)) {
+            throw new RuntimeException($context . ' must decode to an object or array.');
+        }
+
+        return $decoded;
     }
 }

@@ -4,7 +4,8 @@ namespace Cognesy\Instructor\Data;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Creation\StructuredOutputSchemaRenderer;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Schema\Data\Schema\Schema;
+use Cognesy\Schema\Data\Schema;
+use Cognesy\Schema\TypeInfo;
 use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 
 class ResponseModel implements CanProvideJsonSchema
@@ -62,7 +63,7 @@ class ResponseModel implements CanProvideJsonSchema
     }
 
     public function returnedClass() : string {
-        return $this->schema->typeDetails->class ?? '';
+        return TypeInfo::className($this->schema->type) ?? '';
     }
 
     public function instance() : mixed {

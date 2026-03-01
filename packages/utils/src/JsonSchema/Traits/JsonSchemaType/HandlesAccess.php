@@ -8,37 +8,44 @@ use Cognesy\Utils\JsonSchema\JsonSchemaType;
 trait HandlesAccess
 {
     public function isAny() : bool {
-        return empty($this->types) || Arrays::valuesMatch(JsonSchemaType::JSON_ANY_TYPES, $this->types);
+        $types = $this->nonNullTypes();
+        return $types === [] || Arrays::valuesMatch(JsonSchemaType::JSON_ANY_TYPES, $types);
     }
 
     public function isArray() : bool {
-        return count($this->types) === 1
-            && in_array(JsonSchemaType::JSON_ARRAY, $this->types, true);
+        $types = $this->nonNullTypes();
+        return count($types) === 1
+            && in_array(JsonSchemaType::JSON_ARRAY, $types, true);
     }
 
     public function isObject() : bool {
-        return count($this->types) === 1
-            && in_array(JsonSchemaType::JSON_OBJECT, $this->types, true);
+        $types = $this->nonNullTypes();
+        return count($types) === 1
+            && in_array(JsonSchemaType::JSON_OBJECT, $types, true);
     }
 
     public function isString() : bool {
-        return count($this->types) === 1
-            && in_array(JsonSchemaType::JSON_STRING, $this->types, true);
+        $types = $this->nonNullTypes();
+        return count($types) === 1
+            && in_array(JsonSchemaType::JSON_STRING, $types, true);
     }
 
     public function isInteger() : bool {
-        return count($this->types) === 1
-            && in_array(JsonSchemaType::JSON_INTEGER, $this->types, true);
+        $types = $this->nonNullTypes();
+        return count($types) === 1
+            && in_array(JsonSchemaType::JSON_INTEGER, $types, true);
     }
 
     public function isBoolean() : bool {
-        return count($this->types) === 1
-            && in_array(JsonSchemaType::JSON_BOOLEAN, $this->types, true);
+        $types = $this->nonNullTypes();
+        return count($types) === 1
+            && in_array(JsonSchemaType::JSON_BOOLEAN, $types, true);
     }
 
     public function isNumber() : bool {
-        return count($this->types) === 1
-            && in_array(JsonSchemaType::JSON_NUMBER, $this->types, true);
+        $types = $this->nonNullTypes();
+        return count($types) === 1
+            && in_array(JsonSchemaType::JSON_NUMBER, $types, true);
     }
 
     public function isNull() : bool {
@@ -47,11 +54,24 @@ trait HandlesAccess
     }
 
     public function isScalar() : bool {
-        foreach($this->types as $type) {
+        $types = $this->nonNullTypes();
+        if ($types === []) {
+            return false;
+        }
+
+        foreach ($types as $type) {
             if (!in_array($type, JsonSchemaType::JSON_SCALAR_TYPES, true)) {
                 return false;
             }
         }
         return true;
+    }
+
+    /** @return list<string> */
+    private function nonNullTypes() : array {
+        return array_values(array_filter(
+            $this->types,
+            static fn(string $type) : bool => $type !== JsonSchemaType::JSON_NULL,
+        ));
     }
 }

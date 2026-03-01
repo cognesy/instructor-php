@@ -365,11 +365,10 @@ class OpenResponsesResponseAdapterTest extends TestCase
         $this->assertNull($result);
     }
 
-    public function test_handles_invalid_json(): void
+    public function test_throws_on_invalid_json(): void
     {
-        $result = $this->streamOne('not json');
-
-        $this->assertNull($result);
+        $this->expectException(\RuntimeException::class);
+        $this->streamOne('not json');
     }
 
     public function test_stream_function_call_done_with_item_id_preserves_call_id(): void

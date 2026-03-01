@@ -2,7 +2,7 @@
 
 namespace Cognesy\Schema\Contracts;
 
-use Cognesy\Schema\Data\Schema\Schema;
+use Cognesy\Schema\Data\Schema;
 
 /**
  * Response model can provide a Schema object for the response object

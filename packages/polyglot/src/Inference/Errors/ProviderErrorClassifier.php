@@ -68,6 +68,10 @@ final class ProviderErrorClassifier
             return new ProviderAuthenticationException($message, $status, $payload);
         }
 
+        if ($status === 408) {
+            return new ProviderTransientException($message, $status, $payload);
+        }
+
         if (in_array($status, [400, 404, 409, 422], true) || str_contains($normalized, 'invalid')) {
             return new ProviderInvalidRequestException($message, $status, $payload);
         }

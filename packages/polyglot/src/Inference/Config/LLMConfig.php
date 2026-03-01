@@ -17,6 +17,7 @@ final class LLMConfig
 
     public function __construct(
         public string $apiUrl = '',
+        #[\SensitiveParameter]
         public string $apiKey = '',
         public string $endpoint = '',
         public array  $queryParams = [],

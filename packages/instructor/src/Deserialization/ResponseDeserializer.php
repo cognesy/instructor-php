@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\Deserialization;
 
+use Cognesy\Dynamic\Structure as DynamicStructure;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
@@ -38,6 +39,13 @@ class ResponseDeserializer implements CanDeserializeResponse
         // Determine target class from OutputFormat or fall back to schema class
         $outputFormat = $responseModel->outputFormat();
         $targetClass = $outputFormat?->targetClass() ?? $responseModel->returnedClass();
+        $instance = $responseModel->instance();
+
+        // Dynamic structure is a record model with schema-aware normalization.
+        // Keep tool-call internals out of its public API.
+        if ($instance instanceof DynamicStructure) {
+            return Result::try(fn() => $instance->fromArray($data));
+        }
 
         // Self-deserializing object with fromArray support
         if ($outputFormat?->isObject()) {
@@ -54,7 +62,7 @@ class ResponseDeserializer implements CanDeserializeResponse
 
         // CanDeserializeSelf (fromArray)
         if ($this->canDeserializeSelf($responseModel)) {
-            return $this->deserializeSelf($data, $responseModel->instance(), $responseModel->toolName());
+            return $this->deserializeSelf($data, $responseModel->instance());
         }
 
         // Use deserializers
@@ -80,9 +88,9 @@ class ResponseDeserializer implements CanDeserializeResponse
         return $responseModel->instance() instanceof CanDeserializeSelf;
     }
 
-    protected function deserializeSelf(array $data, CanDeserializeSelf $response, ?string $toolName = null) : Result {
+    protected function deserializeSelf(array $data, CanDeserializeSelf $response) : Result {
         $this->events->dispatch(new CustomResponseDeserializationAttempt(['response' => $response, 'json' => json_encode($data)]));
-        return Result::try(fn() => $response->fromArray($data, $toolName));
+        return Result::try(fn() => $response->fromArray($data));
     }
 
     /**

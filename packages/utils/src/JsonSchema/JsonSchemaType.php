@@ -18,20 +18,20 @@ class JsonSchemaType implements JsonSerializable, Stringable
         $this->types = $types;
     }
 
-    public static function fromJsonData(array $data, ?bool $isNullable = null): self {
+    public static function fromJsonData(array $data): self {
         $types = match(true) {
             empty($data) => [],
             isset($data['type']) && is_string($data['type']) => [$data['type']],
             isset($data['type']) && is_array($data['type']) => $data['type'],
-            isset($data['anyOf']) && is_array($data['anyOf']) => array_map(
-                fn($item) => $item['type'] ?? '',
-                $data['anyOf'],
-            ),
+            isset($data['anyOf']) && is_array($data['anyOf']) => self::extractTypesFromAnyOf($data['anyOf']),
             default => [], // No type specified = any type
         };
 
-        // deduplicate types
-        $types = array_unique($types);
+        // keep only explicit, non-empty type names and deduplicate
+        $types = array_values(array_unique(array_filter(
+            $types,
+            static fn(mixed $type): bool => is_string($type) && $type !== '',
+        )));
 
         foreach ($types as $type) {
             if ($type === 'null') {
@@ -43,6 +43,31 @@ class JsonSchemaType implements JsonSerializable, Stringable
         }
 
         return new self(types: $types);
+    }
+
+    private static function extractTypesFromAnyOf(array $anyOf): array {
+        $types = [];
+        foreach ($anyOf as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+
+            $itemType = $item['type'] ?? null;
+            if (is_string($itemType) && $itemType !== '') {
+                $types[] = $itemType;
+                continue;
+            }
+            if (!is_array($itemType)) {
+                continue;
+            }
+
+            foreach ($itemType as $type) {
+                if (is_string($type) && $type !== '') {
+                    $types[] = $type;
+                }
+            }
+        }
+        return $types;
     }
 
     #[\Override]

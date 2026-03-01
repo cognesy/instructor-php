@@ -10,7 +10,7 @@ use Cognesy\Http\HttpClient;
 
 $client = HttpClient::using('guzzle');
 $client = HttpClient::using('symfony');
-// @doctest id="df7c"
+// @doctest id="5432"
 ```
 
 Equivalent builder form:
@@ -21,7 +21,7 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 $client = (new HttpClientBuilder())
     ->withPreset('guzzle')
     ->create();
-// @doctest id="2e65"
+// @doctest id="385b"
 ```
 
 ## Inject an Explicit Driver
@@ -33,7 +33,7 @@ use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 $client = (new HttpClientBuilder())
     ->withDriver(new MockHttpDriver())
     ->create();
-// @doctest id="12e8"
+// @doctest id="fe99"
 ```
 
 ## Use an Existing Vendor Client Instance
@@ -45,7 +45,7 @@ use GuzzleHttp\Client;
 $client = (new HttpClientBuilder())
     ->withClientInstance('guzzle', new Client(['timeout' => 10]))
     ->create();
-// @doctest id="8d36"
+// @doctest id="674b"
 ```
 
 `withClientInstance()` sets the driver name and passes the instance to that driver.
@@ -59,7 +59,7 @@ $client = (new HttpClientBuilder())
     ->withDriver($customDriver)
     ->withPoolHandler($customPoolHandler)
     ->create();
-// @doctest id="a341"
+// @doctest id="63d6"
 ```
 
 Use this when your custom driver cannot use built-in pooling adapters.

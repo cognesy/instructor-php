@@ -3,218 +3,182 @@
 namespace Cognesy\Dynamic;
 
 use Closure;
-use Cognesy\Schema\Data\Schema\Schema;
-use Cognesy\Schema\Data\Schema\ObjectSchema;
-use Cognesy\Schema\Data\TypeDetails;
-use Cognesy\Schema\Factories\JsonSchemaToSchema;
-use Cognesy\Schema\Reflection\ClassInfo;
-use Cognesy\Schema\Reflection\FunctionInfo;
-use Symfony\Component\Serializer\Attribute\Ignore;
+use Cognesy\Schema\Data\Schema;
+use Cognesy\Schema\SchemaFactory;
+use Cognesy\Schema\TypeInfo;
+use Cognesy\Schema\Utils\DocblockInfo;
+use Cognesy\Utils\JsonSchema\JsonSchema;
+use ReflectionFunction;
+use ReflectionFunctionAbstract;
+use ReflectionMethod;
+use ReflectionParameter;
+use Symfony\Component\TypeInfo\Type;
+use Symfony\Component\TypeInfo\TypeResolver\TypeResolver;
 
-class StructureFactory
+final class StructureFactory
 {
-    static public function fromArrayKeyValues(string $name, array $data, string $description = '') : Structure {
-        $fields = self::makeArrayFields($data);
-        return Structure::define($name, $fields, $description);
+    private TypeResolver $resolver;
+
+    public function __construct(
+        private readonly ?SchemaFactory $schemaFactory = null,
+        ?TypeResolver $resolver = null,
+    ) {
+        $this->resolver = $resolver ?? TypeResolver::create();
     }
 
-    static private function makeArrayFields(array $data) : array {
-        $fields = [];
-        foreach ($data as $name => $value) {
-            $typeDetails = TypeDetails::fromValue($value);
-            $fields[] = FieldFactory::fromTypeDetails($name, $typeDetails, '')->optional();
+    /** @param callable(mixed...):mixed $callable */
+    public function fromCallable(callable $callable, ?string $name = null, ?string $description = null) : Structure {
+        return $this->fromReflection($this->reflectCallable($callable), $name, $description);
+    }
+
+    public function fromFunctionName(string $function, ?string $name = null, ?string $description = null) : Structure {
+        return $this->fromReflection(new ReflectionFunction($function), $name, $description);
+    }
+
+    public function fromMethodName(string $class, string $method, ?string $name = null, ?string $description = null) : Structure {
+        return $this->fromReflection(new ReflectionMethod($class, $method), $name, $description);
+    }
+
+    public function fromClass(string $class, ?string $name = null, ?string $description = null) : Structure {
+        $schema = $this->schemaFactory()->schema($class);
+        return $this->fromSchema($name ?? $schema->name(), $schema, $description ?? $schema->description());
+    }
+
+    public function fromSchema(string $name, Schema $schema, string $description = '') : Structure {
+        $namedSchema = SchemaFactory::withMetadata(
+            $schema,
+            name: $name !== '' ? $name : $schema->name(),
+            description: $description !== '' ? $description : $schema->description(),
+        );
+
+        return Structure::fromSchema($namedSchema);
+    }
+
+    /** @param array<string,mixed> $jsonSchema */
+    public function fromJsonSchema(array $jsonSchema) : Structure {
+        $name = is_string($jsonSchema['x-title'] ?? null) ? $jsonSchema['x-title'] : 'schema';
+        $description = is_string($jsonSchema['description'] ?? null) ? $jsonSchema['description'] : '';
+        $schema = $this->schemaFactory()->schemaParser()->parse(JsonSchema::fromArray($jsonSchema));
+        return Structure::fromSchema(SchemaFactory::withMetadata($schema, $name, $description));
+    }
+
+    /** @param array<string,mixed> $data */
+    public function fromArrayKeyValues(string $name, array $data, string $description = '') : Structure {
+        $builder = StructureBuilder::define($name, $description);
+
+        foreach ($data as $field => $value) {
+            if (!is_string($field)) {
+                continue;
+            }
+
+            $schema = $this->schemaFactory()->fromType(TypeInfo::fromValue($value), $field, '');
+            $builder = $builder->withField(Field::fromSchema($field, $schema, false));
         }
-        return $fields;
+
+        return $builder->build();
     }
 
-    static public function fromFunctionName(string $function, ?string $name = null, ?string $description = null) : Structure {
-        return self::makeFromFunctionInfo(FunctionInfo::fromFunctionName($function), $name, $description);
+    public function fromString(string $name, string $typeString, string $description = '') : Structure {
+        $builder = StructureBuilder::define($name, $description);
+        $trimmed = trim($typeString);
+        $source = str_starts_with($trimmed, 'array{') && str_ends_with($trimmed, '}')
+            ? substr($trimmed, 6, -1)
+            : $trimmed;
+
+        foreach (explode(',', $source) as $part) {
+            $normalized = trim($part);
+            if ($normalized === '') {
+                continue;
+            }
+
+            [$fieldName, $fieldType, $fieldDescription] = $this->parseStringField($normalized);
+            if ($fieldName === '') {
+                continue;
+            }
+
+            $builder = $builder->withField(FieldFactory::fromTypeName($fieldName, $fieldType, $fieldDescription));
+        }
+
+        return $builder->build();
     }
 
-    static public function fromMethodName(string $class, string $method, ?string $name = null, ?string $description = null) : Structure {
-        return self::makeFromFunctionInfo(FunctionInfo::fromMethodName($class, $method), $name, $description);
+    private function schemaFactory() : SchemaFactory {
+        return $this->schemaFactory ?? SchemaFactory::default();
     }
 
-    /**
-     * @param callable $callable
-     * @phpstan-ignore-next-line
-     */
-    static public function fromCallable(callable $callable, ?string $name = null, ?string $description = null) : Structure {
-        $closure = match(true) {
+    private function fromReflection(ReflectionFunctionAbstract $function, ?string $name, ?string $description) : Structure {
+        $resolvedName = $name !== null && $name !== '' ? $name : $function->getShortName();
+        $resolvedDescription = $description !== null && $description !== ''
+            ? $description
+            : DocblockInfo::summary($function->getDocComment() ?: '');
+
+        $builder = StructureBuilder::define($resolvedName, $resolvedDescription);
+
+        foreach ($function->getParameters() as $parameter) {
+            $parameterName = $parameter->getName();
+            $field = FieldFactory::fromType(
+                $parameterName,
+                $this->parameterType($parameter),
+                DocblockInfo::parameterDescription($function->getDocComment() ?: '', $parameterName),
+            )->optional($parameter->isOptional());
+
+            if ($parameter->isDefaultValueAvailable()) {
+                $field = $field->withDefaultValue($parameter->getDefaultValue());
+            }
+
+            $builder = $builder->withField($field);
+        }
+
+        return $builder->build();
+    }
+
+    private function parameterType(ReflectionParameter $parameter) : Type {
+        $resolved = $this->resolver->resolve($parameter);
+
+        if (!$parameter->isVariadic()) {
+            return $resolved;
+        }
+
+        if (TypeInfo::isCollection($resolved) || TypeInfo::isArray($resolved)) {
+            return $resolved;
+        }
+
+        return Type::list($resolved);
+    }
+
+    /** @param callable(mixed...):mixed $callable */
+    private function reflectCallable(callable $callable) : ReflectionFunctionAbstract {
+        $closure = match (true) {
             $callable instanceof Closure => $callable,
             default => Closure::fromCallable($callable),
         };
-        return self::makeFromFunctionInfo(FunctionInfo::fromClosure($closure), $name, $description);
-    }
 
-    static public function fromClass(
-        string $class,
-        ?string $name = null,
-        ?string $description = null
-    ) : Structure {
-        $classInfo = ClassInfo::fromString($class);
-        return self::fromClassInfo($classInfo, $name, $description);
-    }
+        $reflection = new ReflectionFunction($closure);
+        $scopeClass = $reflection->getClosureScopeClass()?->getName();
+        $functionName = $reflection->getName();
 
-    static private function fromClassInfo(
-        ClassInfo $classInfo,
-        ?string $name = null,
-        ?string $description = null
-    ) : Structure {
-        $className = $name ?? $classInfo->getShortName();
-        $classDescription = $description ?? $classInfo->getClassDescription();
-        $arguments = self::makePropertyFields($classInfo);
-        return Structure::define($className, $arguments, $classDescription);
-    }
-
-    static public function fromJsonSchema(array $jsonSchema): Structure {
-        $name = $jsonSchema['x-title'] ?? 'default_schema';
-        $description = $jsonSchema['description'] ?? '';
-        $schemaConverter = new JsonSchemaToSchema(
-            defaultToolName: $name,
-            defaultToolDescription: $description,
-        );
-        $schema = $schemaConverter->fromJsonSchema($jsonSchema);
-        return self::fromSchema($name, $schema, $description);
-    }
-
-    static public function fromSchema(string $name, Schema $schema, string $description = '') : Structure {
-        $fields = self::makeSchemaFields($schema);
-        $name = $name ?: $schema->name();
-        $description = $description ?: $schema->description();
-        return Structure::define($name, $fields, $description);
-    }
-
-    static public function fromString(string $name, string $typeString, string $description = '') : Structure {
-        // Input format is:
-        // 1) field1:string, field2:int, ...
-        // 2) array{field1: string, field2: int, ...}
-        // Additionally, you can add a description in () brackets:
-        // field1:string (description), field2:int (description), ...
-        $typeString = trim($typeString);
-        if (str_starts_with($typeString, 'array{') && str_ends_with($typeString, '}')) {
-            $typeString = substr($typeString, 6, -1);
+        if ($scopeClass === null || str_contains($functionName, '{closure')) {
+            return $reflection;
         }
-        $items = explode(',', $typeString);
-        $fields = self::makeFieldsFromStrings($items);
-        return Structure::define($name, $fields, $description);
+
+        return new ReflectionMethod($scopeClass, $functionName);
     }
 
-    // INTERNAL //////////////////////////////////////////////////////////////////////
-
-    static private function makeFromFunctionInfo(
-        FunctionInfo $functionInfo,
-        ?string $name = null,
-        ?string $description = null
-    ) : Structure {
-        $functionName = $name ?? $functionInfo->getShortName();
-        $functionDescription = $description ?? $functionInfo->getDescription();
-        $arguments = self::makeArgumentFields($functionInfo);
-        return Structure::define($functionName, $arguments, $functionDescription);
-    }
-
-    static private function makeArgumentFields(FunctionInfo $functionInfo) : array {
-        $arguments = [];
-        foreach ($functionInfo->getParameters() as $parameter) {
-            $parameterName = $parameter->getName();
-            $parameterDescription = $functionInfo->getParameterDescription($parameterName);
-            $isOptional = $parameter->isOptional();
-            $isVariadic = $parameter->isVariadic();
-            $paramType = $parameter->getType()?->getName();
-
-            // For variadic parameters, we need a collection type, but 'mixed' can't be
-            // a collection item type (no valid JSON Schema representation).
-            // Treat variadic mixed as untyped array instead.
-            $typeDetails = match(true) {
-                $isVariadic && ($paramType === 'mixed' || $paramType === null) => TypeDetails::array(),
-                $isVariadic => TypeDetails::collection($paramType),
-                default => TypeDetails::fromTypeName($paramType),
-            };
-
-            $defaultValue = $parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : null;
-            $arguments[] = FieldFactory::fromTypeDetails($parameterName, $typeDetails, $parameterDescription)
-                ->optional($isOptional)
-                ->withDefaultValue($defaultValue);
-        }
-        return $arguments;
-    }
-
-    /**
-     * @return Field[]
-     */
-    static private function makePropertyFields(ClassInfo $classInfo) : array {
-        $arguments = [];
-        foreach ($classInfo->getProperties() as $propertyName => $propertyInfo) {
-            switch (true) {
-                case $propertyInfo->isStatic():
-                // GETTERS SUPPORT
-                //case !$propertyInfo->isPublic():
-                case $propertyInfo->hasAttribute(Ignore::class):
-                    continue 2;
-            }
-            $arguments[] = FieldFactory::fromTypeDetails(
-                $propertyName,
-                $propertyInfo->getTypeDetails(),
-                $propertyInfo->getDescription()
-            )->optional($propertyInfo->isNullable());
-        }
-        return $arguments;
-    }
-
-    static private function makeSchemaFields(Schema $schema) : array {
-        $fields = [];
-        $required = ($schema instanceof ObjectSchema) ? $schema->required : [];
-        foreach ($schema->getPropertySchemas() as $propertyName => $propertySchema) {
-            $typeDetails = $propertySchema->typeDetails();
-            $field = FieldFactory::fromTypeDetails($propertyName, $typeDetails, $propertySchema->description());
-            $isRequired = in_array($propertyName, $required, true);
-            $fields[] = match (true) {
-                $isRequired => $field->required(),
-                default => $field->optional(),
-            };
-        }
-        return $fields;
-    }
-
-    /** @param string[] $data */
-    /** @return Field[] */
-    static private function makeFieldsFromStrings(array $items) : array {
-        $fields = [];
-        foreach ($items as $item) {
-            $description = self::extractDescription($item);
-            $item = self::removeDescription($item);
-            [$name, $typeName] = self::parseStringParam($item);
-            $fields[] = FieldFactory::fromTypeName($name, $typeName, $description);
-        }
-        return $fields;
-    }
-
-    static private function extractDescription(string $item) : string {
-        // possible formats: field1:string (description), field2:int (description), ...
-        $item = trim($item);
-        $parts = explode('(', $item);
+    /** @return array{string, string, string} */
+    private function parseStringField(string $definition) : array {
         $description = '';
-        if (count($parts) > 1) {
-            $description = substr($parts[1], 0, -1);
+        if (preg_match('/\((.*?)\)\s*$/', $definition, $matches) === 1) {
+            $description = trim($matches[1]);
+            $definition = trim((string) preg_replace('/\s*\(.*?\)\s*$/', '', $definition));
         }
-        return $description;
-    }
 
-    static private function removeDescription(string $item) : string {
-        $parts = explode('(', $item);
-        return $parts[0];
-    }
+        $chunks = explode(':', str_replace(' ', '', $definition));
 
-    /** @return array{string, string} */
-    static private function parseStringParam(string $paramString) : array {
-        $paramString = str_replace(' ', '', $paramString);
-        $parts = explode(':', $paramString);
-        if (count($parts) > 2) {
-            throw new \InvalidArgumentException('Invalid parameter string');
-        }
         return [
-            trim($parts[0]),
-            trim($parts[1] ?? 'string')
+            trim($chunks[0] ?? ''),
+            trim($chunks[1] ?? 'string'),
+            $description,
         ];
     }
+
 }

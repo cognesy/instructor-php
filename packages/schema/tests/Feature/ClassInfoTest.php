@@ -1,24 +1,19 @@
 <?php
 
-use Cognesy\Schema\Data\TypeDetails;
+use Cognesy\Schema\Exceptions\ReflectionException;
 use Cognesy\Schema\Reflection\ClassInfo;
 use Cognesy\Schema\Reflection\PropertyInfo;
 use Cognesy\Schema\Tests\Examples\ClassInfo\EnumType;
 use Cognesy\Schema\Tests\Examples\ClassInfo\IntEnumType;
 use Cognesy\Schema\Tests\Examples\ClassInfo\StringEnumType;
 use Cognesy\Schema\Tests\Examples\ClassInfo\TestClassA;
+use Symfony\Component\TypeInfo\Type;
 
 it('can get property type', function () {
-    // Assuming TestClass has properties with defined types
-    $type = ClassInfo::fromString(TestClassA::class)->getPropertyTypeDetails('mixedProperty');
-    expect($type)->toBeInstanceOf(TypeDetails::class);
-    expect($type->type)->toEqual('mixed');
+    $type = ClassInfo::fromString(TestClassA::class)->getPropertyType('mixedProperty');
+    expect($type)->toBeInstanceOf(Type::class);
+    expect((string) $type)->toBe('mixed');
 });
-
-//it('throws exception for undefined property type', function () {
-//    // Assuming TestClass has a property without a defined type
-//    $this->classInfo->getType(TestClassA::class, 'undefinedProperty');
-//})->throws(Exception::class, 'No type found for property');
 
 it('can get class property names', function () {
     $properties = ClassInfo::fromString(TestClassA::class)->getPropertyNames();
@@ -96,19 +91,19 @@ it('can get the backing type of an enum', function () {
     expect($backingType)->toEqual('int');
 });
 
-//it('can get the values of an enum', function () {
-//    // Assuming EnumClass is an enum with defined values
-//    $values = $this->classInfo->enumValues(EnumClass::class);
-//    expect($values)->toBeArray();
-//    expect($values)->toEqual(['VALUE1', 'VALUE2']); // Adjust expected values based on your EnumClass
-//});
-//
-//it('can check if a class implements an interface', function () {
-//    // Assuming TestClass implements TestInterface
-//    $implementsInterface = $this->classInfo->implementsInterface(TestClassA::class, TestInterface::class);
-//    expect($implementsInterface)->toBeTrue();
-//
-//    // Assuming AnotherClass does not implement TestInterface
-//    $implementsInterface = $this->classInfo->implementsInterface(AnotherClass::class, TestInterface::class);
-//    expect($implementsInterface)->toBeFalse();
-//});
+it('throws domain exception for unknown class', function () {
+    expect(fn() => ClassInfo::fromString('Unknown\\MissingClass'))
+        ->toThrow(ReflectionException::class, 'Cannot create ClassInfo');
+});
+
+it('throws domain exception for unknown property', function () {
+    $classInfo = ClassInfo::fromString(TestClassA::class);
+    expect(fn() => $classInfo->getProperty('missingProperty'))
+        ->toThrow(ReflectionException::class, 'Property `missingProperty` not found');
+});
+
+it('throws domain exception for invalid filter', function () {
+    $classInfo = ClassInfo::fromString(TestClassA::class);
+    expect(fn() => $classInfo->getFilteredProperties([123]))
+        ->toThrow(ReflectionException::class, 'Filter must be a callable.');
+});

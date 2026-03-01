@@ -3,7 +3,8 @@
 namespace Cognesy\Addons\ToolUse\Tools;
 
 use Cognesy\Addons\ToolUse\Contracts\ToolInterface;
-use Cognesy\Dynamic\StructureFactory;
+use Cognesy\Dynamic\CallableSchemaFactory;
+use Cognesy\Schema\SchemaFactory;
 use Cognesy\Utils\Result\Result;
 use Throwable;
 
@@ -63,9 +64,8 @@ abstract class BaseTool implements ToolInterface
 
     protected function paramsJsonSchema(): array {
         if (!isset($this->cachedParamsJsonSchema)) {
-            $this->cachedParamsJsonSchema = StructureFactory::fromMethodName(static::class, '__invoke')
-                ->toSchema()
-                ->toJsonSchema();
+            $schema = (new CallableSchemaFactory())->fromMethodName(static::class, '__invoke');
+            $this->cachedParamsJsonSchema = SchemaFactory::default()->toJsonSchema($schema);
         }
         return $this->cachedParamsJsonSchema;
     }

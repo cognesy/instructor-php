@@ -1,8 +1,9 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Schema\Data\Schema\ObjectSchema;
-use Cognesy\Schema\Factories\SchemaFactory;
+use Cognesy\Schema\Data\ObjectSchema;
+use Cognesy\Schema\SchemaFactory;
 use Cognesy\Schema\Tests\Examples\ClassInfo\TestClassA;
+use Cognesy\Schema\TypeInfo;
 
 it('supports plain object instances passed to schema()', function () {
     $factory = new SchemaFactory();
@@ -11,7 +12,7 @@ it('supports plain object instances passed to schema()', function () {
     $schema = $factory->schema(new TestClassA('readonly'));
 
     expect($schema)->toBeInstanceOf(ObjectSchema::class);
-    expect($schema->typeDetails->class)->toBe(TestClassA::class);
+    expect(TypeInfo::className($schema->type))->toBe(TestClassA::class);
     expect($schema->getPropertyNames())->toBe([
         'mixedProperty',
         'attributeMixedProperty',
@@ -21,4 +22,3 @@ it('supports plain object instances passed to schema()', function () {
         'readOnlyStringProperty',
     ]);
 });
-

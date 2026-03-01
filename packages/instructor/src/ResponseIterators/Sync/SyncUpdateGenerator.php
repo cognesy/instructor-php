@@ -7,7 +7,10 @@ use Cognesy\Instructor\Core\InferenceProvider;
 use Cognesy\Instructor\Data\StructuredOutputAttemptState;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Enums\AttemptPhase;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Utils\Json\Json;
 
 /**
  * Stream iterator for synchronous (non-streaming) execution.
@@ -25,13 +28,9 @@ use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
  */
 final readonly class SyncUpdateGenerator implements CanStreamStructuredOutputUpdates
 {
-    private ResponseNormalizer $normalizer;
-
     public function __construct(
         private InferenceProvider $inferenceProvider,
-    ) {
-        $this->normalizer = new ResponseNormalizer();
-    }
+    ) {}
 
     #[\Override]
     public function hasNext(StructuredOutputExecution $execution): bool {
@@ -53,7 +52,7 @@ final readonly class SyncUpdateGenerator implements CanStreamStructuredOutputUpd
             return $execution;
         }
         $inference = $this->inferenceProvider->getInference($execution)->response();
-        $inference = $this->normalizer->normalizeContent($inference, $execution->outputMode());
+        $inference = $this->normalizeContent($inference, $execution->outputMode());
         $attemptState = StructuredOutputAttemptState::fromSingleChunk(
             $inference,
             PartialInferenceResponse::empty(),
@@ -66,5 +65,19 @@ final readonly class SyncUpdateGenerator implements CanStreamStructuredOutputUpd
                 partialInferenceResponse: PartialInferenceResponse::empty(),
                 errors: $execution->currentErrors(),
             );
+    }
+
+    // INTERNAL ////////////////////////////////////////////////////////////////
+
+    private function normalizeContent(InferenceResponse $response, OutputMode $mode): InferenceResponse {
+        return $response->withContent(match ($mode) {
+            OutputMode::Text => $response->content(),
+            OutputMode::Tools => $response->toolCalls()->first()?->argsAsJson()
+                ?: $response->content() // fallback if no tool calls - some LLMs return just a string
+                    ?: '',
+            // for OutputMode::MdJson, OutputMode::Json, OutputMode::JsonSchema try extracting JSON from content
+            // and replacing original content with it
+            default => Json::fromString($response->content())->toString(),
+        });
     }
 }

@@ -178,6 +178,7 @@ class InferenceAttempt
             'createdAt' => $this->createdAt->format(DATE_ATOM),
             'updatedAt' => $this->updatedAt->format(DATE_ATOM),
             'response' => $this->response?->toArray(),
+            'accumulatedPartial' => $this->accumulatedPartial?->toArray(),
             'isFinalized' => $this->isFinalized,
             'errors' => $this->errorsToStringArray($this->errors),
         ];
@@ -185,9 +186,13 @@ class InferenceAttempt
 
     public static function fromArray(array $data) : self {
         $response = $data['response'] ?? null;
+        $partial = $data['accumulatedPartial'] ?? $data['partialResponse'] ?? $data['partial_response'] ?? null;
         return new self(
             response: (is_array($response) && $response !== [])
                 ? InferenceResponse::fromArray($response)
+                : null,
+            accumulatedPartial: (is_array($partial) && $partial !== [])
+                ? PartialInferenceResponse::fromArray($partial)
                 : null,
             isFinalized: $data['isFinalized'] ?? null,
             errors: $data['errors'] ?? [],

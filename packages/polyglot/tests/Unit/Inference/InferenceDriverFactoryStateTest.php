@@ -48,3 +48,26 @@ it('cannot build unregistered custom driver after reset', function () {
     expect(fn() => $factory->makeDriver($config, $httpClient))
         ->toThrow(InvalidArgumentException::class, 'custom-unregistered');
 });
+
+it('does not leak static custom drivers across new factory instances', function () {
+    $config = new LLMConfig(
+        apiUrl: 'https://example.com',
+        apiKey: 'KEY',
+        endpoint: '/v1/messages',
+        model: 'test-model',
+        driver: 'custom-once',
+    );
+
+    InferenceDriverFactory::registerDriver('custom-once', fn($cfg, $httpClient, $events) => new FakeInferenceDriver());
+
+    $events = new EventDispatcher();
+    $httpClient = (new HttpClientBuilder())->create();
+
+    $firstFactory = new InferenceDriverFactory($events);
+    $firstDriver = $firstFactory->makeDriver($config, $httpClient);
+    expect($firstDriver)->toBeInstanceOf(FakeInferenceDriver::class);
+
+    $secondFactory = new InferenceDriverFactory($events);
+    expect(fn() => $secondFactory->makeDriver($config, $httpClient))
+        ->toThrow(InvalidArgumentException::class, 'custom-once');
+});

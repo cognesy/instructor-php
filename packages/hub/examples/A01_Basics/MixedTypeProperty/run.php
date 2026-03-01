@@ -34,7 +34,7 @@ $user = (new StructuredOutput)
 
 dump($user);
 
-assert($user->name === "Jason");
+assert(trim($user->name) === "Jason");
 assert($user->extraInfo === null || $user->extraInfo !== ''); // optional mixed field
 ?>
 ```

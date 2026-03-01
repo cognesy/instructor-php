@@ -60,6 +60,27 @@ trait HandlesAccess
         return $this->title ?? '';
     }
 
+    public function ref() : ?string {
+        return $this->ref;
+    }
+
+    public function hasRef() : bool {
+        return is_string($this->ref) && $this->ref !== '';
+    }
+
+    /** @return array<string, JsonSchema> */
+    public function defs() : array {
+        return $this->defs ?? [];
+    }
+
+    public function hasDefs() : bool {
+        return ($this->defs ?? []) !== [];
+    }
+
+    public function def(string $name) : ?JsonSchema {
+        return $this->defs[$name] ?? null;
+    }
+
     public function meta(?string $key = null, mixed $default = null) : mixed {
         if ($key === null) {
             return $this->meta;

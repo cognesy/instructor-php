@@ -2,7 +2,7 @@
 
 namespace Cognesy\Experimental\Signature\Contracts;
 
-use Cognesy\Schema\Data\Schema\Schema;
+use Cognesy\Schema\Data\Schema;
 
 interface HasInputSchema
 {

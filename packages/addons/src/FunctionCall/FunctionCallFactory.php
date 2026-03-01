@@ -4,49 +4,33 @@ namespace Cognesy\Addons\FunctionCall;
 
 use Cognesy\Dynamic\Structure;
 use Cognesy\Dynamic\StructureFactory;
-use Cognesy\Schema\Reflection\FunctionInfo;
 
 class FunctionCallFactory
 {
     static public function fromFunctionName(string $function) : FunctionCall {
-        $functionInfo = FunctionInfo::fromFunctionName($function);
-        $structure = StructureFactory::fromFunctionName($function, '', '');
-        return self::makeFromFunctionInfo(
-            $functionInfo,
-            $structure
-        );
+        $structure = (new StructureFactory())->fromFunctionName($function, '', '');
+        return self::makeFromStructure($structure);
     }
 
     static public function fromMethodName(string $class, string $method) : FunctionCall {
-        $functionInfo = FunctionInfo::fromMethodName($class, $method);
-        $structure = StructureFactory::fromMethodName($class, $method, '', '');
-        return self::makeFromFunctionInfo(
-            $functionInfo,
-            $structure
-        );
+        $structure = (new StructureFactory())->fromMethodName($class, $method, '', '');
+        return self::makeFromStructure($structure);
     }
 
     /**
      * @param callable(): mixed $callable
      */
     static public function fromCallable(callable $callable) : FunctionCall {
-        $closure = $callable instanceof \Closure ? $callable : \Closure::fromCallable($callable);
-        $functionInfo = FunctionInfo::fromClosure($closure);
-        $structure = StructureFactory::fromCallable($callable, '', '');
-        return self::makeFromFunctionInfo(
-            $functionInfo,
-            $structure
-        );
+        $structure = (new StructureFactory())->fromCallable($callable, '', '');
+        return self::makeFromStructure($structure);
     }
 
     // INTERNAL //////////////////////////////////////////////////////////////////////////
 
-    static private function makeFromFunctionInfo(FunctionInfo $functionInfo, Structure $structure) : FunctionCall {
-        $functionName = $functionInfo->getShortName();
-        $functionDescription = $functionInfo->getDescription();
+    static private function makeFromStructure(Structure $structure) : FunctionCall {
         return new FunctionCall(
-            $functionName,
-            $functionDescription,
+            $structure->name(),
+            $structure->description(),
             $structure
         );
     }

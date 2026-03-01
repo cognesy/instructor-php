@@ -5,21 +5,20 @@ namespace Cognesy\Instructor\Creation;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Data\SchemaRendering;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Schema\Data\Schema\Schema;
-use Cognesy\Schema\Factories\JsonSchemaToSchema;
-use Cognesy\Schema\Factories\SchemaFactory;
-use Cognesy\Schema\Factories\ToolCallBuilder;
-use Cognesy\Schema\Visitors\SchemaToJsonSchema;
+use Cognesy\Schema\Data\Schema;
+use Cognesy\Schema\JsonSchemaParser;
+use Cognesy\Schema\JsonSchemaRenderer;
+use Cognesy\Schema\SchemaFactory;
 
 final class StructuredOutputSchemaRenderer
 {
     private StructuredOutputConfig $config;
     private SchemaFactory $schemaFactory;
-    private JsonSchemaToSchema $schemaConverter;
+    private JsonSchemaParser $schemaConverter;
 
     public function __construct(StructuredOutputConfig $config) {
         $this->config = $config;
-        $this->schemaConverter = new JsonSchemaToSchema(
+        $this->schemaConverter = new JsonSchemaParser(
             defaultToolName: $config->toolName(),
             defaultToolDescription: $config->toolDescription(),
         );
@@ -39,7 +38,7 @@ final class StructuredOutputSchemaRenderer
 
     public function renderFromSchema(Schema $schema) : SchemaRendering {
         $toolCallBuilder = $this->makeToolCallBuilder();
-        $jsonSchema = (new SchemaToJsonSchema)->toArray(
+        $jsonSchema = (new JsonSchemaRenderer)->toArray(
             $schema,
             $toolCallBuilder->onObjectRef(...)
         );
@@ -98,7 +97,7 @@ final class StructuredOutputSchemaRenderer
     }
 
     private function renderToolCallSchemaFrom(
-        ToolCallBuilder $toolCallBuilder,
+        ToolCallSchemaBuilder $toolCallBuilder,
         array $jsonSchema,
     ) : array {
         return $toolCallBuilder->renderToolCall(
@@ -108,7 +107,7 @@ final class StructuredOutputSchemaRenderer
         );
     }
 
-    private function makeToolCallBuilder() : ToolCallBuilder {
-        return new ToolCallBuilder($this->schemaFactory);
+    private function makeToolCallBuilder() : ToolCallSchemaBuilder {
+        return new ToolCallSchemaBuilder($this->schemaFactory);
     }
 }

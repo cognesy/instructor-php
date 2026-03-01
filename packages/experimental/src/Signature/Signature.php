@@ -3,11 +3,12 @@
 namespace Cognesy\Experimental\Signature;
 
 use Cognesy\Dynamic\Structure;
-use Cognesy\Dynamic\StructureFactory;
 use Cognesy\Experimental\Signature\Contracts\HasInputSchema;
 use Cognesy\Experimental\Signature\Contracts\HasOutputSchema;
-use Cognesy\Schema\Data\Schema\Schema;
-use Cognesy\Schema\Factories\JsonSchemaToSchema;
+use Cognesy\Schema\Data\Schema;
+use Cognesy\Schema\JsonSchemaParser;
+use Cognesy\Schema\SchemaFactory;
+use Cognesy\Schema\TypeInfo;
 
 /**
  * Signature represents a specification of the module - its input and output schemas, and a description.
@@ -45,7 +46,13 @@ final readonly class Signature implements HasInputSchema, HasOutputSchema
     }
 
     static public function toStructure(string $name, Signature $signature) : Structure {
-        return StructureFactory::fromSchema($name, $signature->toOutputSchema(), $signature->getDescription());
+        return Structure::fromSchema(
+            SchemaFactory::withMetadata(
+                $signature->toOutputSchema(),
+                name: $name,
+                description: $signature->getDescription(),
+            ),
+        );
     }
 
     public function toShortSignature(): string {
@@ -117,10 +124,11 @@ final readonly class Signature implements HasInputSchema, HasOutputSchema
     public function hasTextOutput(): bool {
         $outputs = $this->outputNames();
         $firstOutput = $outputs[0] ?? null;
+        $outputProperty = $firstOutput !== null ? $this->output->getPropertySchema($firstOutput) : null;
         return $this->hasScalarOutput()
             && (
-                $this->output->typeDetails()->isString()
-                || $this->output->getPropertySchema($firstOutput)->typeDetails()->isString()
+                TypeInfo::toJsonType($this->output->type)->isString()
+                || ($outputProperty !== null && TypeInfo::toJsonType($outputProperty->type)->isString())
             );
     }
 
@@ -143,17 +151,19 @@ final readonly class Signature implements HasInputSchema, HasOutputSchema
     // SERIALIZATION ///////////////////////////////////////////////////
 
     public function toArray() : array {
+        $schemaFactory = SchemaFactory::default();
+
         return [
             'shortSignature' => $this->shortSignature,
             'fullSignature' => $this->fullSignature,
             'description' => $this->description,
-            'input' => $this->input->toJsonSchema(),
-            'output' => $this->output->toJsonSchema(),
+            'input' => $schemaFactory->toJsonSchema($this->input),
+            'output' => $schemaFactory->toJsonSchema($this->output),
         ];
     }
 
     public static function fromJsonData(array $data) : static {
-        $converter = new JsonSchemaToSchema;
+        $converter = new JsonSchemaParser;
         return new static(
             $converter->fromJsonSchema($data['input']),
             $converter->fromJsonSchema($data['output']),
@@ -193,7 +203,7 @@ final readonly class Signature implements HasInputSchema, HasOutputSchema
         if (!empty($schema->description())) {
             $description = ' (' . $schema->description() . ')';
         }
-        return $schema->name() . ':' . $schema->typeDetails()->toString() . $description;
+        return $schema->name() . ':' . (string) $schema->type . $description;
     }
 
     private function shortPropertySignature(Schema $schema) : string {

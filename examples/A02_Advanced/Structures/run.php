@@ -65,19 +65,24 @@ $person = (new StructuredOutput)->with(
 )->get();
 
 print("OUTPUT:\n");
-// Structure returns an object with dynamic properties (NOT an array)
-print("Name: " . $person->name . "\n");              // ✅ Object property access
-print("Age: " . $person->age . "\n");                // ✅ Works
-print("Gender: " . $person->gender . "\n");          // ✅ Works
-print("Address / city: " . $person->address->city . "\n");  // ✅ Nested objects
-print("Address / ZIP: " . $person->address->zip . "\n");
-print("Role: " . $person->role->value . "\n");
+// Dynamic output is array-first in 2.x
+$personData = match (true) {
+    $person instanceof Structure => $person->toArray(),
+    is_array($person) => $person,
+    default => (array) $person,
+};
+print("Name: " . ($personData['name'] ?? '') . "\n");
+print("Age: " . ($personData['age'] ?? '') . "\n");
+print("Gender: " . ($personData['gender'] ?? '') . "\n");
+print("Address / city: " . ($personData['address']['city'] ?? '') . "\n");
+print("Address / ZIP: " . ($personData['address']['zip'] ?? '') . "\n");
+print("Role: " . ($personData['role'] ?? '') . "\n");
 print("Favourite books:\n");
-foreach ($person->favourite_books as $book) {
-    print("  - " . $book->title . " by " . $book->author . "\n");
+foreach (($personData['favourite_books'] ?? []) as $book) {
+    if (!is_array($book)) {
+        continue;
+    }
+    print("  - " . ($book['title'] ?? '') . " by " . ($book['author'] ?? '') . "\n");
 }
-
-// Note: Array access does NOT work:
-// print($person['name']);  // ❌ Error - Structure is not an array
 ?>
 ```

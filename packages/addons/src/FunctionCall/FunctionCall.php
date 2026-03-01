@@ -9,7 +9,7 @@ use Cognesy\Instructor\Transformation\Contracts\CanTransformSelf;
 use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
 use Cognesy\Instructor\Validation\ValidationResult;
 use Cognesy\Schema\Contracts\CanProvideSchema;
-use Cognesy\Schema\Data\Schema\Schema;
+use Cognesy\Schema\Data\Schema;
 
 /**
  * Represents a function call that can be inferred from provided context
@@ -76,7 +76,9 @@ final readonly class FunctionCall implements CanDeserializeSelf, CanTransformSel
     }
 
     public function toJsonSchema(): array {
-        return $this->arguments->toJsonSchema();
+        $jsonSchema = $this->arguments->toJsonSchema();
+        unset($jsonSchema['x-title'], $jsonSchema['description']);
+        return $jsonSchema;
     }
 
     public function toToolCall() : array {
@@ -100,7 +102,7 @@ final readonly class FunctionCall implements CanDeserializeSelf, CanTransformSel
     public function toArgs(): array {
         $arguments = [];
         foreach ($this->arguments->fields() as $field) {
-            $arguments[$field->name()] = $field->get();
+            $arguments[$field->name()] = $this->arguments->get($field->name());
         }
         return $arguments;
     }
@@ -115,9 +117,8 @@ final readonly class FunctionCall implements CanDeserializeSelf, CanTransformSel
     // SERIALIZATION ///////////////////////////////////////////////
 
     #[\Override]
-    public function fromArray(array $data, ?string $toolName = null): static {
+    public function fromArray(array $data): static {
         $arguments = $this->arguments->fromArray($data);
-        $name = $toolName ?? $this->name;
-        return new static($name, $this->description, $arguments);
+        return new static($this->name, $this->description, $arguments);
     }
 }

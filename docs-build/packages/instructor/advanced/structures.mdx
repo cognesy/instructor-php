@@ -45,7 +45,7 @@ $structure = Structure::define('person', [
     Field::enum('role', Role::class),
 ]);
 ?>
-// @doctest id="3abb"
+// @doctest id="0379"
 ```
 
 Following types of fields are currently supported:
@@ -71,7 +71,7 @@ $structure = Structure::define('person', [
     //...
 ]);
 ?>
-// @doctest id="9936"
+// @doctest id="e218"
 ```
 
 
@@ -90,7 +90,7 @@ $structure = Structure::define('person', [
     Field::enum('role', Role::class, 'Role of the person'),
 ], 'A person object');
 ?>
-// @doctest id="01bb"
+// @doctest id="e7b2"
 ```
 
 ## Nesting structures
@@ -113,17 +113,16 @@ $structure = Structure::define('person', [
     Field::enum('role', Role::class, 'Role of the person'),
 ], 'A person object');
 ?>
-// @doctest id="9d83"
+// @doctest id="938f"
 ```
 
 ## Validation of structure data
 
 Instructor supports validation of structures.
 
-You can define field validator with:
+You can define field validation with:
 
- - `$field->validator(callable $validator)` - $validator has to return an instance of `ValidationResult`
- - `$field->validIf(callable $condition, string $message)` - $condition has to return false if validation has not succeeded, $message with be provided to LLM as explanation for self-correction of the next extraction attempt
+- `$field->validIf(callable $condition, string $message)` - `$condition` should return `true` for valid values and `false` for invalid values; `$message` is used to explain validation failure.
 
 Let's add a simple field validation to the example above: 
 
@@ -137,7 +136,7 @@ $structure = Structure::define('person', [
     // ...
 ], 'A person object');
 ?>
-// @doctest id="d2a6"
+// @doctest id="090b"
 ```
 
 ## Extracting data
@@ -183,14 +182,14 @@ $personArray = (new StructuredOutput)->with(
 dump($personArray);
 // array [ "name" => "Jane Doe", "age" => 25, ... ]
 ?>
-// @doctest id="5bae"
+// @doctest id="3774"
 ```
 
 
 ## Working with `Structure` objects
 
-Structure object properties can be accessed using `get()` and `set()` methods,
-but also directly as properties.
+Structure is immutable when writing data: use `set()` and reassign returned instance.
+You can read values using `get()` or magic property access.
 
 ```php
 <?php
@@ -203,29 +202,27 @@ $person = Structure::define('person', [
     ])
 ]);
 
-// Setting properties via set()
-$person->set('name', 'John Doe');
-$person->set('age', 30);
-$person->get('role')->set('name', 'Manager');
-$person->get('role')->set('level', 1);
+// set() is immutable - reassign result
+$person = $person->set('name', 'John Doe');
+$person = $person->set('age', 30);
 
-// Setting properties directly 
-$person->name = 'John Doe';
-$person->age = 30;
-$person->role->name = 'Manager';
-$person->role->level = 1;
+// Nested structures are stored as arrays
+$person = $person->set('role', [
+    'name' => 'Manager',
+    'level' => 1,
+]);
 
 // Getting properties via get()
 $name = $person->get('name');
 $age = $person->get('age');
-$role = $person->get('role')->get('name');
-$level = $person->get('role')->get('level');
+$role = $person->get('role')['name'];
+$level = $person->get('role')['level'];
 
 // Getting properties directly
 $name = $person->name;
 $age = $person->age;
-$role = $person->role->name;
-$level = $person->role->level;
+$role = $person->role['name'];
+$level = $person->role['level'];
 ?>
-// @doctest id="c371"
+// @doctest id="2987"
 ```

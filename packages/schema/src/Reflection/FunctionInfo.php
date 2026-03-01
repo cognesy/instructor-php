@@ -3,43 +3,48 @@
 namespace Cognesy\Schema\Reflection;
 
 use Closure;
+use Cognesy\Schema\Exceptions\ReflectionException;
 use Cognesy\Schema\Utils\Descriptions;
 use ReflectionFunction;
+use ReflectionFunctionAbstract;
 use ReflectionMethod;
 use ReflectionParameter;
 
 class FunctionInfo
 {
-    private ReflectionFunction|ReflectionMethod $function;
-    /** @var ReflectionParameter[] */
-    private array $parameters;
-    /** @phpstan-ignore-next-line - property is intentionally unused */
-    private mixed $returnType;
+    private ReflectionFunctionAbstract $function;
 
-    private function __construct(ReflectionFunction|ReflectionMethod $function) {
+    /** @var array<string, ReflectionParameter> */
+    private array $parameters;
+
+    private function __construct(ReflectionFunctionAbstract $function) {
         $this->function = $function;
-        $this->parameters = $function->getParameters();
+        $this->parameters = [];
+        foreach ($function->getParameters() as $parameter) {
+            $this->parameters[$parameter->getName()] = $parameter;
+        }
     }
 
     /**
      * @param Closure(): mixed $closure
      */
-    static public function fromClosure(Closure $closure) : self {
-        $reflection = new \ReflectionFunction($closure);
-        $class = $reflection->getClosureScopeClass()?->getName();
+    public static function fromClosure(Closure $closure) : self {
+        $reflection = new ReflectionFunction($closure);
+        $scopeClass = $reflection->getClosureScopeClass()?->getName();
         $functionName = $reflection->getName();
-        return new self(match(true) {
-            !empty($class) && !str_contains($functionName, '{closure') => new ReflectionMethod($class, $functionName),
-            !empty($functionName) => $reflection,
-            default => throw new \InvalidArgumentException('Unsupported callable type: ' . gettype($closure)),
-        });
+
+        if ($scopeClass !== null && !str_contains($functionName, '{closure')) {
+            return new self(new ReflectionMethod($scopeClass, $functionName));
+        }
+
+        return new self($reflection);
     }
 
-    static public function fromFunctionName(string $name) : self {
+    public static function fromFunctionName(string $name) : self {
         return new self(new ReflectionFunction($name));
     }
 
-    static public function fromMethodName(string $class, string $name) : self {
+    public static function fromMethodName(string $class, string $name) : self {
         return new self(new ReflectionMethod($class, $name));
     }
 
@@ -52,19 +57,19 @@ class FunctionInfo
     }
 
     public function hasParameter(string $name) : bool {
-        return array_key_exists($name, $this->parameters);
+        return isset($this->parameters[$name]);
     }
 
     public function isNullable(string $name) : bool {
-        return $this->parameters[$name]->allowsNull();
+        return $this->parameter($name)->allowsNull();
     }
 
     public function isOptional(string $name) : bool {
-        return $this->parameters[$name]->isOptional();
+        return $this->parameter($name)->isOptional();
     }
 
     public function isVariadic(string $name) : bool {
-        return $this->parameters[$name]->isVariadic();
+        return $this->parameter($name)->isVariadic();
     }
 
     public function isClassMethod() : bool {
@@ -72,39 +77,55 @@ class FunctionInfo
     }
 
     public function hasDefaultValue(string $name) : bool {
-        return $this->parameters[$name]->isDefaultValueAvailable();
+        return $this->parameter($name)->isDefaultValueAvailable();
     }
 
     public function getDefaultValue(string $name) : mixed {
-        return $this->parameters[$name]->getDefaultValue();
+        return $this->parameter($name)->getDefaultValue();
     }
 
+    /** @return array<string, ReflectionParameter> */
     public function getParameters() : array {
         return $this->parameters;
     }
 
     public function getDescription() : string {
-        return match(true) {
-            $this->function instanceof ReflectionMethod => Descriptions::forMethod(
+        if ($this->function instanceof ReflectionMethod) {
+            return Descriptions::forMethod(
                 $this->function->getDeclaringClass()->getName(),
-                $this->function->getName()
-            ),
-            default => str_contains($this->function->getName(), '{closure')
-                ? ''
-                : Descriptions::forFunction($this->function->getName()),
-        };
+                $this->function->getName(),
+            );
+        }
+
+        if (str_contains($this->function->getName(), '{closure')) {
+            return '';
+        }
+
+        return Descriptions::forFunction($this->function->getName());
     }
 
     public function getParameterDescription(string $argument) : string {
-        return match(true) {
-            $this->function instanceof ReflectionMethod => Descriptions::forMethodParameter(
+        if ($this->function instanceof ReflectionMethod) {
+            return Descriptions::forMethodParameter(
                 $this->function->getDeclaringClass()->getName(),
                 $this->function->getName(),
-                $argument
-            ),
-            default => str_contains($this->function->getName(), '{closure')
-                ? ''
-                : Descriptions::forFunctionParameter($this->function->getName(), $argument),
-        };
+                $argument,
+            );
+        }
+
+        if (str_contains($this->function->getName(), '{closure')) {
+            return '';
+        }
+
+        return Descriptions::forFunctionParameter($this->function->getName(), $argument);
+    }
+
+    private function parameter(string $name) : ReflectionParameter {
+        $parameter = $this->parameters[$name] ?? null;
+        if ($parameter === null) {
+            throw ReflectionException::parameterNotFound($name, $this->function->getName());
+        }
+
+        return $parameter;
     }
 }

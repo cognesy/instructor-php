@@ -1,118 +1,89 @@
 <?php
 
-use Cognesy\Schema\Data\Schema\ObjectSchema;
-use Cognesy\Schema\Factories\JsonSchemaToSchema;
+declare(strict_types=1);
+
+use Cognesy\Schema\Data\ArrayShapeSchema;
+use Cognesy\Schema\Data\CollectionSchema;
+use Cognesy\Schema\Data\EnumSchema;
+use Cognesy\Schema\Data\ObjectSchema;
+use Cognesy\Schema\JsonSchemaParser;
+use Cognesy\Schema\TypeInfo;
 
 dataset('schema_converter_json', [[[
-    'x-php-class' => 'Cognesy\Schema\Tests\Examples\SchemaConverter\TestObject',
+    'x-php-class' => 'Cognesy\\Schema\\Tests\\Examples\\SchemaConverter\\TestObject',
     'type' => 'object',
     'properties' => [
-        'optionalProperty' => [
-            'description' => 'Optional property',
-            'type' => 'string',
-        ],
-        'stringProperty' => [
-            'description' => 'String property',
-            'type' => 'string',
-        ],
-        'integerProperty' => [
-            'description' => 'Integer property',
-            'type' => 'integer',
-        ],
-        'boolProperty' => [
-            'description' => 'Boolean property',
-            'type' => 'boolean',
-        ],
-        'floatProperty' => [
-            'description' => 'Float property',
-            'type' => 'number',
-        ],
+        'optionalProperty' => ['description' => 'Optional property', 'type' => 'string'],
+        'stringProperty' => ['description' => 'String property', 'type' => 'string'],
+        'integerProperty' => ['description' => 'Integer property', 'type' => 'integer'],
+        'boolProperty' => ['description' => 'Boolean property', 'type' => 'boolean'],
+        'floatProperty' => ['description' => 'Float property', 'type' => 'number'],
         'enumProperty' => [
-            'x-php-class' => 'Cognesy\Schema\Tests\Examples\SchemaConverter\TestEnum',
+            'x-php-class' => 'Cognesy\\Schema\\Tests\\Examples\\SchemaConverter\\TestEnum',
             'description' => 'Enum property',
             'type' => 'string',
             'enum' => ['one', 'two', 'three'],
         ],
         'objectProperty' => [
-            'x-php-class' => 'Cognesy\Schema\Tests\Examples\SchemaConverter\TestNestedObject',
+            'x-php-class' => 'Cognesy\\Schema\\Tests\\Examples\\SchemaConverter\\TestNestedObject',
             'description' => 'Object property',
             'type' => 'object',
             'properties' => [
-                'nestedStringProperty' => [
-                    'type' => 'string',
-                ],
+                'nestedStringProperty' => ['type' => 'string'],
                 'nestedObjectProperty' => [
-                    'x-php-class' => 'Cognesy\Schema\Tests\Examples\SchemaConverter\TestDoubleNestedObject',
+                    'x-php-class' => 'Cognesy\\Schema\\Tests\\Examples\\SchemaConverter\\TestDoubleNestedObject',
                     'type' => 'object',
                     'properties' => [
-                        'nestedNestedStringProperty' => [
-                            'type' => 'string',
-                        ],
+                        'nestedNestedStringProperty' => ['type' => 'string'],
                     ],
-                    'required' => [
-                        'nestedNestedStringProperty'
-                    ],
+                    'required' => ['nestedNestedStringProperty'],
                 ],
             ],
-            'required' => [
-                'nestedStringProperty',
-                'nestedObjectProperty'
-            ],
+            'required' => ['nestedStringProperty', 'nestedObjectProperty'],
         ],
         'arrayProperty' => [
             'description' => 'Array property',
             'type' => 'array',
-//            'items' => ['type' => 'string'],
-            'items' => ['anyOf' => [
-                ['type' => 'boolean'],
-                ['type' => 'integer'],
-                ['type' => 'number'],
-                ['type' => 'string'],
-                ['type' => 'array'],
-                ['type' => 'object'],
-            ]],
+            'items' => [
+                'anyOf' => [
+                    ['type' => 'boolean'],
+                    ['type' => 'integer'],
+                    ['type' => 'number'],
+                    ['type' => 'string'],
+                    ['type' => 'array'],
+                    ['type' => 'object'],
+                ],
+            ],
         ],
         'stringCollectionProperty' => [
             'description' => 'String collection property',
             'type' => 'array',
-            'items' => [
-                'type' => 'string',
-            ],
+            'items' => ['type' => 'string'],
         ],
         'collectionProperty' => [
             'description' => 'Collection property',
             'type' => 'array',
             'items' => [
-                'x-php-class' => 'Cognesy\Schema\Tests\Examples\SchemaConverter\Simple',
+                'x-php-class' => 'Cognesy\\Schema\\Tests\\Examples\\SchemaConverter\\Simple',
                 'type' => 'object',
-                'properties' => [
-                    'stringProperty' => [
-                        'type' => 'string',
-                    ],
-                ],
+                'properties' => ['stringProperty' => ['type' => 'string']],
             ],
         ],
         'collectionObjectProperty' => [
             'description' => 'Collection of objects property',
             'type' => 'array',
             'items' => [
-                'x-php-class' => 'Cognesy\Schema\Tests\Examples\SchemaConverter\TestNestedObject',
+                'x-php-class' => 'Cognesy\\Schema\\Tests\\Examples\\SchemaConverter\\TestNestedObject',
                 'type' => 'object',
-                'properties' => [
-                    'nestedStringProperty' => [
-                        'type' => 'string',
-                    ],
-                ],
-                'required' => [
-                    'nestedStringProperty'
-                ],
+                'properties' => ['nestedStringProperty' => ['type' => 'string']],
+                'required' => ['nestedStringProperty'],
             ],
         ],
         'collectionEnumProperty' => [
             'description' => 'Collection of enum property',
             'type' => 'array',
             'items' => [
-                'x-php-class' => 'Cognesy\Schema\Tests\Examples\SchemaConverter\TestEnum',
+                'x-php-class' => 'Cognesy\\Schema\\Tests\\Examples\\SchemaConverter\\TestEnum',
                 'type' => 'string',
                 'enum' => ['one', 'two', 'three'],
             ],
@@ -129,13 +100,13 @@ dataset('schema_converter_json', [[[
         'stringCollectionProperty',
         'collectionProperty',
         'collectionObjectProperty',
-        'collectionEnumProperty'
+        'collectionEnumProperty',
     ],
 ]]]);
 
+it('creates object schema with required fields', function (array $jsonSchema) {
+    $schema = (new JsonSchemaParser())->fromJsonSchema($jsonSchema);
 
-it('creates Schema object from JSON Schema array - required fields', function ($jsonSchema) {
-    $schema = (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
     expect($schema)->toBeInstanceOf(ObjectSchema::class);
     expect($schema->required)->toBe([
         'stringProperty',
@@ -148,106 +119,46 @@ it('creates Schema object from JSON Schema array - required fields', function ($
         'stringCollectionProperty',
         'collectionProperty',
         'collectionObjectProperty',
-        'collectionEnumProperty'
+        'collectionEnumProperty',
     ]);
 })->with('schema_converter_json');
 
-it('creates Schema object from JSON Schema array - scalar props', function ($jsonSchema) {
-    $schema = (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
-    expect($schema)->toBeInstanceOf(ObjectSchema::class);
+it('maps scalar and enum properties to native TypeInfo-backed schema', function (array $jsonSchema) {
+    $schema = (new JsonSchemaParser())->fromJsonSchema($jsonSchema);
 
-    expect($schema->properties['stringProperty']->name)->toBe('stringProperty');
-    expect($schema->properties['stringProperty']->description)->toBe('String property');
-    expect($schema->properties['stringProperty']->typeDetails->type())->toBe('string');
-    expect($schema->properties['integerProperty']->name)->toBe('integerProperty');
-    expect($schema->properties['integerProperty']->description)->toBe('Integer property');
-    expect($schema->properties['integerProperty']->typeDetails->type())->toBe('int');
-    expect($schema->properties['boolProperty']->name)->toBe('boolProperty');
-    expect($schema->properties['boolProperty']->description)->toBe('Boolean property');
-    expect($schema->properties['boolProperty']->typeDetails->type())->toBe('bool');
-    expect($schema->properties['floatProperty']->name)->toBe('floatProperty');
-    expect($schema->properties['floatProperty']->description)->toBe('Float property');
-    expect($schema->properties['floatProperty']->typeDetails->type())->toBe('float');
+    expect(TypeInfo::toJsonType($schema->properties['stringProperty']->type)->toString())->toBe('string');
+    expect(TypeInfo::toJsonType($schema->properties['integerProperty']->type)->toString())->toBe('integer');
+    expect(TypeInfo::toJsonType($schema->properties['boolProperty']->type)->toString())->toBe('boolean');
+    expect(TypeInfo::toJsonType($schema->properties['floatProperty']->type)->toString())->toBe('number');
+
+    $enumProperty = $schema->properties['enumProperty'];
+    expect($enumProperty)->toBeInstanceOf(EnumSchema::class);
+    expect(TypeInfo::className($enumProperty->type))->toBe('Cognesy\\Schema\\Tests\\Examples\\SchemaConverter\\TestEnum');
+    expect($enumProperty->enumValues)->toBe(['one', 'two', 'three']);
 })->with('schema_converter_json');
 
-it('creates Schema object from JSON Schema array - enum props', function ($jsonSchema) {
-    $schema = (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
-    expect($schema)->toBeInstanceOf(ObjectSchema::class);
+it('maps nested objects and collections with class metadata', function (array $jsonSchema) {
+    $schema = (new JsonSchemaParser())->fromJsonSchema($jsonSchema);
 
-    expect($schema->properties['enumProperty']->name)->toBe('enumProperty');
-    expect($schema->properties['enumProperty']->description)->toBe('Enum property');
-    expect($schema->properties['enumProperty']->typeDetails->type())->toBe('enum');
-    expect($schema->properties['enumProperty']->typeDetails->class)->toBe('Cognesy\Schema\Tests\Examples\SchemaConverter\TestEnum');
-    expect($schema->properties['enumProperty']->typeDetails->enumType)->toBe('string');
-    expect($schema->properties['enumProperty']->typeDetails->enumValues)->toBe(['one', 'two', 'three']);
-})->with('schema_converter_json');
-
-
-it('creates Schema object from JSON Schema array - object props', function ($jsonSchema) {
-    $schema = (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
-    expect($schema)->toBeInstanceOf(ObjectSchema::class);
-
-    /** @var \Cognesy\Schema\Data\Schema\ObjectSchema $objectProperty */
+    /** @var ObjectSchema $objectProperty */
     $objectProperty = $schema->properties['objectProperty'];
-    expect($objectProperty->name)->toBe('objectProperty');
-    expect($objectProperty->description)->toBe('Object property');
-    expect($objectProperty->typeDetails->type())->toBe('object');
-    expect($objectProperty->typeDetails->class)->toBe('Cognesy\Schema\Tests\Examples\SchemaConverter\TestNestedObject');
-    expect($objectProperty->properties['nestedStringProperty']->name)->toBe('nestedStringProperty');
-    expect($objectProperty->properties['nestedStringProperty']->typeDetails->type())->toBe('string');
-    /** @var \Cognesy\Schema\Data\Schema\ObjectSchema $nestedObjectProperty */
-    $nestedObjectProperty = $objectProperty->properties['nestedObjectProperty'];
-    expect($nestedObjectProperty->name)->toBe('nestedObjectProperty');
-    expect($nestedObjectProperty->typeDetails->type())->toBe('object');
-    expect($nestedObjectProperty->typeDetails->class)->toBe('Cognesy\Schema\Tests\Examples\SchemaConverter\TestDoubleNestedObject');
-    expect($nestedObjectProperty->properties['nestedNestedStringProperty']->name)->toBe('nestedNestedStringProperty');
-    expect($nestedObjectProperty->properties['nestedNestedStringProperty']->typeDetails->type)->toBe('string');
+    expect($objectProperty)->toBeInstanceOf(ObjectSchema::class);
+    expect(TypeInfo::className($objectProperty->type))->toBe('Cognesy\\Schema\\Tests\\Examples\\SchemaConverter\\TestNestedObject');
 
-})->with('schema_converter_json');
+    /** @var ObjectSchema $nestedObject */
+    $nestedObject = $objectProperty->properties['nestedObjectProperty'];
+    expect(TypeInfo::className($nestedObject->type))->toBe('Cognesy\\Schema\\Tests\\Examples\\SchemaConverter\\TestDoubleNestedObject');
 
-
-it('creates Schema object from JSON Schema array - array props', function ($jsonSchema) {
-    $schema = (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
-    expect($schema)->toBeInstanceOf(ObjectSchema::class);
-
-    expect($schema->properties['arrayProperty']->name)->toBe('arrayProperty');
-    expect($schema->properties['arrayProperty']->description)->toBe('Array property');
-    expect($schema->properties['arrayProperty']->typeDetails->type)->toBe('array');
-})->with('schema_converter_json');
-
-it('creates Schema object from JSON Schema array - collection props', function ($jsonSchema) {
-    $schema = (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
-    expect($schema)->toBeInstanceOf(ObjectSchema::class);
-
-    /** @var \Cognesy\Schema\Data\Schema\CollectionSchema $collectionProperty */
+    /** @var CollectionSchema $collectionProperty */
     $collectionProperty = $schema->properties['collectionProperty'];
-    expect($collectionProperty->name)->toBe('collectionProperty');
-    expect($collectionProperty->description)->toBe('Collection property');
-    expect($collectionProperty->typeDetails->type)->toBe('collection');
-    expect($collectionProperty->nestedItemSchema->typeDetails->type)->toBe('object');
-    expect($collectionProperty->nestedItemSchema->typeDetails->class)->toBe('Cognesy\Schema\Tests\Examples\SchemaConverter\Simple');
+    expect($collectionProperty)->toBeInstanceOf(CollectionSchema::class);
+    expect(TypeInfo::className($collectionProperty->nestedItemSchema->type))->toBe('Cognesy\\Schema\\Tests\\Examples\\SchemaConverter\\Simple');
 
-    /** @var \Cognesy\Schema\Data\Schema\CollectionSchema $collectionObjectProperty */
-    $collectionObjectProperty = $schema->properties['collectionObjectProperty'];
-    expect($collectionObjectProperty->name)->toBe('collectionObjectProperty');
-    expect($collectionObjectProperty->description)->toBe('Collection of objects property');
-    expect($collectionObjectProperty->typeDetails->type)->toBe('collection');
-    expect($collectionObjectProperty->nestedItemSchema->typeDetails->type)->toBe('object');
-    expect($collectionObjectProperty->nestedItemSchema->typeDetails->class)->toBe('Cognesy\Schema\Tests\Examples\SchemaConverter\TestNestedObject');
-    /** @var \Cognesy\Schema\Data\Schema\ObjectSchema $nestedObject */
-    $nestedObject = $collectionObjectProperty->nestedItemSchema;
-    expect($nestedObject->properties['nestedStringProperty']->name)->toBe('nestedStringProperty');
-    expect($nestedObject->properties['nestedStringProperty']->typeDetails->type)->toBe('string');
-
-    /** @var \Cognesy\Schema\Data\Schema\CollectionSchema $collectionEnumProperty */
-    $collectionEnumProperty = $schema->properties['collectionEnumProperty'];
-    expect($collectionEnumProperty->name)->toBe('collectionEnumProperty');
-    expect($collectionEnumProperty->description)->toBe('Collection of enum property');
-    expect($collectionEnumProperty->typeDetails->type)->toBe('collection');
-    expect($collectionEnumProperty->nestedItemSchema->typeDetails->type)->toBe('enum');
-    expect($collectionEnumProperty->nestedItemSchema->typeDetails->class)->toBe('Cognesy\Schema\Tests\Examples\SchemaConverter\TestEnum');
-    expect($collectionEnumProperty->nestedItemSchema->typeDetails->enumType)->toBe('string');
-    expect($collectionEnumProperty->nestedItemSchema->typeDetails->enumValues)->toBe(['one', 'two', 'three']);
+    /** @var CollectionSchema $collectionEnum */
+    $collectionEnum = $schema->properties['collectionEnumProperty'];
+    expect($collectionEnum->nestedItemSchema)->toBeInstanceOf(EnumSchema::class);
+    expect(TypeInfo::className($collectionEnum->nestedItemSchema->type))->toBe('Cognesy\\Schema\\Tests\\Examples\\SchemaConverter\\TestEnum');
+    expect($collectionEnum->nestedItemSchema->enumValues)->toBe(['one', 'two', 'three']);
 })->with('schema_converter_json');
 
 it('creates object schema with empty properties array', function () {
@@ -256,23 +167,10 @@ it('creates object schema with empty properties array', function () {
         'type' => 'object',
         'properties' => [],
     ];
-    $schema = (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
+
+    $schema = (new JsonSchemaParser())->fromJsonSchema($jsonSchema);
     expect($schema->properties)->toBe([]);
 });
-
-// We should allow this and assume 'mixed' type items
-//it('throws exception when array schema is missing items field', function () {
-//    $jsonSchema = [
-//        'x-php-class' => 'stdClass',
-//        'type' => 'object',
-//        'properties' => [
-//            'arrayProperty' => [
-//                'type' => 'array',
-//            ],
-//        ],
-//    ];
-//    (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
-//})->throws(\Exception::class, 'Array must have items field');
 
 it('throws exception for invalid enum type', function () {
     $jsonSchema = [
@@ -282,17 +180,18 @@ it('throws exception for invalid enum type', function () {
             'arrayProperty' => [
                 'type' => 'array',
                 'items' => [
-                    'type' => 'enum', // this is wrong: enum is not a valid type, should be string or int
+                    'type' => 'enum',
                     'enum' => ['one', 'two', 'three'],
-                    'x-php-class' => 'Cognesy\Schema\Tests\Examples\SchemaConverter\TestEnum',
+                    'x-php-class' => 'Cognesy\\Schema\\Tests\\Examples\\SchemaConverter\\TestEnum',
                 ],
             ],
         ],
     ];
-    (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
-})->throws(\Exception::class, 'Invalid JSON type: enum in:');
 
-it('returns array schema when x-php-class is missing for nested object', function () {
+    (new JsonSchemaParser())->fromJsonSchema($jsonSchema);
+})->throws(Exception::class, 'Invalid JSON type: enum in:');
+
+it('returns array shape schema when x-php-class is missing for nested object', function () {
     $jsonSchema = [
         'x-php-class' => 'stdClass',
         'type' => 'object',
@@ -301,13 +200,13 @@ it('returns array schema when x-php-class is missing for nested object', functio
                 'type' => 'object',
                 'properties' => [
                     'nestedProperty' => ['type' => 'string'],
-                ]
+                ],
             ],
         ],
     ];
-    $schema = (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
-    // Nested object without x-php-class should become array type
-    expect($schema->properties['objectProperty'])->toBeInstanceOf(\Cognesy\Schema\Data\Schema\ArraySchema::class);
+
+    $schema = (new JsonSchemaParser())->fromJsonSchema($jsonSchema);
+    expect($schema->properties['objectProperty'])->toBeInstanceOf(ArrayShapeSchema::class);
 });
 
 it('throws exception for invalid type in nested schema', function () {
@@ -323,5 +222,6 @@ it('throws exception for invalid type in nested schema', function () {
             ],
         ],
     ];
-    (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
-})->throws(\Exception::class, 'Invalid JSON type: invalidType in:');
+
+    (new JsonSchemaParser())->fromJsonSchema($jsonSchema);
+})->throws(Exception::class, 'Invalid JSON type: invalidType in:');

@@ -14,7 +14,6 @@ use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Schema\Attributes\Description;
-use Cognesy\Schema\Utils\AttributeUtils;
 use Cognesy\Utils\Arrays;
 use Exception;
 use InvalidArgumentException;
@@ -56,12 +55,18 @@ class Prediction extends Module implements HasSignature
     private function setup() : void {
         // CREATE SIGNATURE
         $reflection = new ReflectionClass($this);
-        $hasSignature = AttributeUtils::hasAttribute($reflection, ModuleSignature::class);
-        if (!$hasSignature) {
+        $signatureAttributes = $reflection->getAttributes(ModuleSignature::class);
+        if ($signatureAttributes === []) {
             throw new Exception("Prediction module must have a #[Signature] attribute");
         }
-        $signatures = AttributeUtils::getValues($reflection, ModuleSignature::class, 'signature');
-        $descriptions = AttributeUtils::getValues($reflection, Description::class, 'text');
+        $signatures = array_map(
+            static fn(\ReflectionAttribute $attribute) : string => $attribute->newInstance()->signature,
+            $signatureAttributes,
+        );
+        $descriptions = array_map(
+            static fn(\ReflectionAttribute $attribute) : string => $attribute->newInstance()->text,
+            $reflection->getAttributes(Description::class),
+        );
         //$instructions = AttributeUtils::getValues($reflection, Instructions::class, 'text');
         $this->signature = SignatureFactory::fromString(Arrays::flattenToString($signatures), Arrays::flattenToString($descriptions));
 

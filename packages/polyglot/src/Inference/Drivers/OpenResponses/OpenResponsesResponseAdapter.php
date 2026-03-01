@@ -11,6 +11,8 @@ use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\ToolCallId;
+use JsonException;
+use RuntimeException;
 
 /**
  * Translates OpenResponses API responses to InferenceResponse objects.
@@ -35,12 +37,7 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
 
     #[\Override]
     public function fromResponse(HttpResponse $response): ?InferenceResponse {
-        $responseBody = $response->body();
-        $data = json_decode($responseBody, true);
-
-        if ($data === null) {
-            return null;
-        }
+        $data = $this->decodeResponseData($response->body());
 
         return new InferenceResponse(
             content: $this->extractContent($data),
@@ -58,8 +55,12 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
         $previous = PartialInferenceResponse::empty();
 
         foreach ($eventBodies as $eventBody) {
-            $data = json_decode($eventBody, true);
-            if ($data === null || empty($data)) {
+            if (trim($eventBody) === '') {
+                continue;
+            }
+
+            $data = $this->decodeJsonData($eventBody, 'OpenResponses stream payload');
+            if (empty($data)) {
                 continue;
             }
 
@@ -101,6 +102,35 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
             $data === '[DONE]' => false,
             default => $data,
         };
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    private function decodeResponseData(string $payload): array {
+        $data = $this->decodeJsonData($payload, 'OpenResponses response payload');
+        if (!isset($data['output']) || !is_array($data['output'])) {
+            throw new RuntimeException('Malformed OpenResponses response payload: missing `output` array.');
+        }
+
+        return $data;
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    private function decodeJsonData(string $payload, string $context): array {
+        try {
+            $decoded = json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            throw new RuntimeException($context . ' is not valid JSON.', previous: $e);
+        }
+
+        if (!is_array($decoded)) {
+            throw new RuntimeException($context . ' must decode to an object or array.');
+        }
+
+        return $decoded;
     }
 
     // RESPONSE EXTRACTION ////////////////////////////////////////////

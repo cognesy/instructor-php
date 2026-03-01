@@ -16,7 +16,7 @@ $value = (new StructuredOutput)
 
 var_dump($value);
 // int(28)
-// @doctest id="a2ff"
+// @doctest id="cf32"
 ```
 
 In this example, we're extracting a single integer value from the text. You can also use `Scalar::string()`, `Scalar::boolean()` and `Scalar::float()` to extract other types of values.
@@ -38,7 +38,7 @@ $value = (new StructuredOutput)
     ->get();
 // expect($value)->toBeString();
 // expect($value)->toBe("Jason");
-// @doctest id="a88d"
+// @doctest id="ae4d"
 ```
 
 ### Integer result
@@ -53,7 +53,7 @@ $value = (new StructuredOutput)
     ->get();
 // expect($value)->toBeInt();
 // expect($value)->toBe(28);
-// @doctest id="662c"
+// @doctest id="77a2"
 ```
 
 ### Boolean result
@@ -68,7 +68,7 @@ $value = (new StructuredOutput)
     ->get();
 // expect($value)->toBeBool();
 // expect($value)->toBe(true);
-// @doctest id="8b01"
+// @doctest id="409e"
 ```
 
 ### Float result
@@ -83,7 +83,7 @@ $value = (new StructuredOutput)
     ->get();
 // expect($value)->toBeFloat();
 // expect($value)->toBe(11.6);
-// @doctest id="3c8c"
+// @doctest id="c988"
 ```
 
 ### Enum result / select one of the options
@@ -101,5 +101,5 @@ $value = (new StructuredOutput)
     )->get();
 // expect($value)->toBeInstanceOf(CitizenshipGroup::class);
 // expect($value->value)->toBe('other');
-// @doctest id="22aa"
+// @doctest id="2229"
 ```

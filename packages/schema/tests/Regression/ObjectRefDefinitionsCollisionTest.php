@@ -1,20 +1,16 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Schema\Factories\SchemaFactory;
-use Cognesy\Schema\Factories\ToolCallBuilder;
+use Cognesy\Schema\SchemaFactory;
 use Cognesy\Schema\Tests\Examples\RefsCollision\NA\User as NAUser;
 use Cognesy\Schema\Tests\Examples\RefsCollision\NB\User as NBUser;
 use Cognesy\Schema\Tests\Examples\RefsCollision\Root;
-use Cognesy\Schema\Visitors\SchemaToJsonSchema;
+use Cognesy\Schema\Tests\Support\ToolCallSchemaFixtureBuilder;
 
 // Guards regression from instructor-mahg (same-basename class collisions in $defs keys).
 it('keeps distinct $defs and refs for classes sharing basename', function () {
     $factory = new SchemaFactory(useObjectReferences: true);
-    $builder = new ToolCallBuilder($factory);
-
     $schema = $factory->schema(Root::class);
-    $jsonSchema = (new SchemaToJsonSchema)->toArray($schema, $builder->onObjectRef(...));
-    $toolCall = $builder->renderToolCall($jsonSchema, 'test_tool', 'test');
+    $toolCall = ToolCallSchemaFixtureBuilder::render($factory, $schema, 'test_tool', 'test');
     $parameters = $toolCall[0]['function']['parameters'];
     $defs = $parameters['$defs'] ?? [];
 

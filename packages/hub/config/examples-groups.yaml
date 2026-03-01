@@ -119,6 +119,16 @@ groups:
             path: '*'
           - source: root
             path: D10_AgentCtrl
+      - id: sandbox
+        title: Sandbox
+        include:
+          - source: root
+            path: D20_Sandbox
+      - id: sandbox_apis
+        title: Sandbox APIs
+        include:
+          - source: root
+            path: D21_SandboxAPIs
   - id: prompting
     title: Prompting
     subgroups:

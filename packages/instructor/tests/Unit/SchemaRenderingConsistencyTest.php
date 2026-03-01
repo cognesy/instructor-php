@@ -9,7 +9,7 @@ use Cognesy\Instructor\Creation\StructuredOutputSchemaRenderer;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Tests\Examples\ResponseModel\User;
 use Cognesy\Instructor\Tests\Examples\ResponseModel\UserWithProvider;
-use Cognesy\Schema\Data\Schema\Schema;
+use Cognesy\Schema\Data\Schema;
 
 final class ToolSelectionUserModel implements CanHandleToolSelection
 {

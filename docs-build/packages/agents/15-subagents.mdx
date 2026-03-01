@@ -38,7 +38,7 @@ $state = AgentState::empty()->withUserMessage(
     'Review src/AgentLoop.php and summarize key issues.'
 );
 $result = $agent->execute($state);
-// @doctest id="2777"
+// @doctest id="1c4b"
 ```
 
 The parent LLM decides when to call `spawn_subagent`.
@@ -69,14 +69,14 @@ $registry->register(new AgentDefinition(
     tools: new NameList(['read_file', 'search_files']),
     budget: new ExecutionBudget(maxSteps: 8, maxTokens: 4000),
 ));
-// @doctest id="c95e"
+// @doctest id="403b"
 ```
 
 ### File-based definitions
 
 ```php
 $registry->loadFromDirectory('/agents', recursive: true);
-// @doctest id="adbb"
+// @doctest id="41ad"
 ```
 
 See [Agent Templates](14-agent-templates.md) for markdown/yaml/json formats.
@@ -97,7 +97,7 @@ new AgentDefinition(
     tools: new NameList(['read_file', 'write_file', 'edit_file']),
     toolsDeny: new NameList(['write_file']),
 );
-// @doctest id="026c"
+// @doctest id="ffb9"
 ```
 
 ## Depth Control
@@ -120,7 +120,7 @@ $agent = AgentBuilder::base()
 $agent = AgentBuilder::base()
     ->withCapability(UseSubagents::withDepth(2, provider: $registry))
     ->build();
-// @doctest id="b8cd"
+// @doctest id="d53e"
 ```
 
 If depth is exceeded, subagent tool execution fails with `SubagentDepthExceededException`.
@@ -139,7 +139,7 @@ new AgentDefinition(
     llmConfig: 'openai:gpt-4o-mini',
     budget: new ExecutionBudget(maxSteps: 5, maxTokens: 2500, maxSeconds: 20.0),
 );
-// @doctest id="e89a"
+// @doctest id="7c0c"
 ```
 
 Parent limits are separate and configured on the parent builder (for example `UseGuards`).
@@ -162,7 +162,7 @@ $agent->onEvent(SubagentSpawning::class, function (SubagentSpawning $e) {
 $agent->onEvent(SubagentCompleted::class, function (SubagentCompleted $e) {
     echo "Completed {$e->subagentName} in {$e->steps} steps\n";
 });
-// @doctest id="49d4"
+// @doctest id="eb9b"
 ```
 
 ## Testing
@@ -193,7 +193,7 @@ $agent = AgentBuilder::base()
     ->build();
 
 $result = $agent->execute(AgentState::empty());
-// @doctest id="41e4"
+// @doctest id="6869"
 ```
 
 ## ResearchSubagentTool
@@ -210,7 +210,7 @@ $tool = ResearchSubagentTool::inDirectory('/my/project');
 $agent = AgentBuilder::base()
     ->withCapability(new UseTools($tool))
     ->build();
-// @doctest id="0890"
+// @doctest id="5fa9"
 ```
 
 ## Troubleshooting

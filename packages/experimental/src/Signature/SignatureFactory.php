@@ -6,8 +6,7 @@ use Cognesy\Dynamic\Structure;
 use Cognesy\Experimental\Signature\Factories\SignatureFromCallable;
 use Cognesy\Experimental\Signature\Factories\SignatureFromClassMetadata;
 use Cognesy\Experimental\Signature\Factories\SignatureFromString;
-use Cognesy\Schema\Factories\SchemaFactory;
-use Cognesy\Schema\Reflection\ClassInfo;
+use Cognesy\Schema\SchemaFactory;
 
 class SignatureFactory
 {
@@ -26,11 +25,12 @@ class SignatureFactory
         string|object $input,
         string|object $output
     ): Signature {
-        $outputClass = is_string($output) ? $output : get_class($output);
+        $schemaFactory = new SchemaFactory();
+        $outputSchema = $schemaFactory->schema($output);
         $signature = new Signature(
-            input: (new SchemaFactory)->schema($input),
-            output: (new SchemaFactory)->schema($output),
-            description: ClassInfo::fromString($outputClass)->getClassDescription(),
+            input: $schemaFactory->schema($input),
+            output: $outputSchema,
+            description: $outputSchema->description(),
         );
         return $signature;
     }
@@ -62,17 +62,17 @@ class SignatureFactory
         if (!$structure->has('inputs') || !$structure->has('outputs')) {
             throw new \InvalidArgumentException('Invalid structure, missing "inputs" or "outputs" fields');
         }
-        // check if inputs and outputs are structures
-        if (!$structure->field('inputs')->typeDetails()->class instanceof Structure) {
-            throw new \InvalidArgumentException('Invalid structure, "inputs" field must be Structure');
+
+        $inputSchema = $structure->field('inputs')->schema();
+        $outputSchema = $structure->field('outputs')->schema();
+        if (!$inputSchema->hasProperties() || !$outputSchema->hasProperties()) {
+            throw new \InvalidArgumentException('Invalid structure, "inputs" and "outputs" must be object schemas.');
         }
-        if (!$structure->field('outputs')->typeDetails()->class instanceof Structure) {
-            throw new \InvalidArgumentException('Invalid structure, "outputs" field must be Structure');
-        }
+
         return new Signature(
-            input: $structure->inputs->schema(),
-            output: $structure->outputs->schema(),
-            description: $description ?: $structure->outputs->description(),
+            input: $inputSchema,
+            output: $outputSchema,
+            description: $description ?: $outputSchema->description(),
         );
     }
 

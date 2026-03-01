@@ -14,7 +14,6 @@ use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Extraction\ResponseExtractor;
 use Cognesy\Instructor\Exceptions\StructuredOutputRecoveryException;
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\ModularStreamFactory;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\ModularUpdateGenerator;
 use Cognesy\Instructor\RetryPolicy\DefaultRetryPolicy;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
@@ -41,16 +40,20 @@ function makeAttemptTestResponseModel(): ResponseModel {
 }
 
 function makeModularStreamIterator(EventDispatcher $events, InferenceProvider $inferenceProvider): ModularUpdateGenerator {
-    $factory = new ModularStreamFactory(
-        deserializer: new ResponseDeserializer($events, [\Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer::class], new StructuredOutputConfig()),
-        transformer: new ResponseTransformer($events, [], new StructuredOutputConfig()),
-        events: $events,
-        bufferFactory: null,
+    $deserializer = new ResponseDeserializer(
+        $events,
+        [\Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer::class],
+        new StructuredOutputConfig()
     );
+
+    $transformer = new ResponseTransformer($events, [], new StructuredOutputConfig());
 
     return new ModularUpdateGenerator(
         inferenceProvider: $inferenceProvider,
-        factory: $factory,
+        deserializer: $deserializer,
+        transformer: $transformer,
+        events: $events,
+        bufferFactory: null,
     );
 }
 

@@ -16,7 +16,7 @@ final class ServerSideEventStream implements StreamInterface
     private EventSourceStream $stream;
 
     public function __construct(
-        private StreamInterface $source,
+        StreamInterface $source,
     ) {
         $this->stream = new EventSourceStream(
             source: $source,

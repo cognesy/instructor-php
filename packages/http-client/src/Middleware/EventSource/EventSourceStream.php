@@ -17,6 +17,10 @@ final class EventSourceStream implements StreamInterface
     /** @var Closure(string): (string|bool)|null */
     private ?Closure $parser;
 
+    /**
+     * @param array<array-key,object> $listeners
+     * @param callable(string): (string|bool)|null $parser
+     */
     public function __construct(
         private StreamInterface $source,
         private ?HttpRequest $request,

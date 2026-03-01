@@ -2,11 +2,11 @@
 
 namespace Cognesy\Experimental\Signature\Factories;
 
-use Cognesy\Dynamic\FieldFactory;
-use Cognesy\Dynamic\Structure;
-use Cognesy\Dynamic\StructureFactory;
+use Cognesy\Dynamic\CallableSchemaFactory;
 use Cognesy\Experimental\Signature\Signature;
-use Cognesy\Schema\Data\Schema\Schema;
+use Cognesy\Schema\Data\Schema;
+use Cognesy\Schema\SchemaFactory;
+use Cognesy\Schema\TypeInfo;
 use Exception;
 use InvalidArgumentException;
 use ReflectionFunction;
@@ -31,7 +31,7 @@ class SignatureFromCallable
         $description = $reflection->getDocComment() ?: '';
 
         return new Signature(
-            input: StructureFactory::fromCallable($callable, self::DEFAULT_INPUT_NAME)->schema(),
+            input: (new CallableSchemaFactory())->fromCallable($callable, self::DEFAULT_INPUT_NAME),
             output: $this->makeOutputSchemaFromReflection($reflection),
             description: $description,
         );
@@ -47,9 +47,14 @@ class SignatureFromCallable
         $typeName = $returnType->getName();
         $name = self::DEFAULT_OUTPUT;
         try {
-            $schema = Structure::define(self::DEFAULT_OUTPUT_NAME, [
-                FieldFactory::fromTypeName($name, $typeName)
-            ])->schema();
+            $fieldSchema = SchemaFactory::default()->fromType(TypeInfo::fromTypeName($typeName), $name, '');
+            $schema = SchemaFactory::default()->object(
+                class: \stdClass::class,
+                name: self::DEFAULT_OUTPUT_NAME,
+                description: '',
+                properties: [$name => $fieldSchema],
+                required: [$name],
+            );
         } catch (Exception $e) {
             $functionName = $reflection->getName() .'($'. implode(',$', array_map(fn($p)=>$p->getName(), $reflection->getParameters())) .')';
             throw new InvalidArgumentException(

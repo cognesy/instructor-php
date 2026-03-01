@@ -52,7 +52,7 @@ final class Inference implements CanCreateInference
     }
 
     /**
-     * @param string|callable $driver
+     * @param string|callable(\Cognesy\Polyglot\Inference\Config\LLMConfig,\Cognesy\Http\HttpClient,\Cognesy\Events\Contracts\CanHandleEvents):\Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest $driver
      */
     public static function registerDriver(string $name, string|callable $driver): void {
         InferenceDriverFactory::registerDriver($name, $driver);
@@ -120,6 +120,7 @@ final class Inference implements CanCreateInference
         return $copy;
     }
 
+    #[\Override]
     public function create(?InferenceRequest $request = null): PendingInference {
         return $this->runtime->create($request ?? $this->requestBuilder->create());
     }

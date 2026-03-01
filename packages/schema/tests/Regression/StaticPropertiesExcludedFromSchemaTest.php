@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Schema\Factories\SchemaFactory;
+use Cognesy\Schema\SchemaFactory;
 use Cognesy\Schema\Tests\Examples\Schema\StaticPropertiesClass;
 
 it('excludes static properties from generated schema properties and required list', function () {
     $factory = new SchemaFactory();
-    $json = $factory->schema(StaticPropertiesClass::class)->toJsonSchema();
+    $json = $factory->toJsonSchema($factory->schema(StaticPropertiesClass::class));
 
     $properties = $json['properties'] ?? [];
     $required = $json['required'] ?? [];
@@ -18,4 +18,3 @@ it('excludes static properties from generated schema properties and required lis
     expect($required)->not->toContain('globalName');
     expect($required)->not->toContain('globalCount');
 });
-

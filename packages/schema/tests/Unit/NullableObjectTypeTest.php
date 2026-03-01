@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Schema\Reflection\PropertyInfo;
-use Cognesy\Schema\Data\TypeDetails;
+use Symfony\Component\TypeInfo\Type;
 
 // Fixture classes for testing nullable object types
 class UserDetail {
@@ -22,8 +22,8 @@ class NullableNestedObject {
 }
 
 it('resolves nullable object types without calling getClassName() on NullableType', function () {
-    $type = PropertyInfo::fromName(MaybeUser::class, 'result')->getTypeDetails();
-    expect($type)->toBeInstanceOf(TypeDetails::class);
+    $type = PropertyInfo::fromName(MaybeUser::class, 'result')->getType();
+    expect($type)->toBeInstanceOf(Type::class);
 
     $str = (string) $type;
     // Should resolve to 'UserDetail' not throw an error
@@ -31,16 +31,16 @@ it('resolves nullable object types without calling getClassName() on NullableTyp
 });
 
 it('handles nullable string types correctly', function () {
-    $type = PropertyInfo::fromName(MaybeUser::class, 'errorMessage')->getTypeDetails();
-    expect($type)->toBeInstanceOf(TypeDetails::class);
+    $type = PropertyInfo::fromName(MaybeUser::class, 'errorMessage')->getType();
+    expect($type)->toBeInstanceOf(Type::class);
 
     $str = (string) $type;
     expect($str)->toBe('string');
 });
 
 it('handles non-nullable bool types correctly', function () {
-    $type = PropertyInfo::fromName(MaybeUser::class, 'error')->getTypeDetails();
-    expect($type)->toBeInstanceOf(TypeDetails::class);
+    $type = PropertyInfo::fromName(MaybeUser::class, 'error')->getType();
+    expect($type)->toBeInstanceOf(Type::class);
 
     $str = (string) $type;
     expect($str)->toBe('bool');
@@ -62,16 +62,16 @@ it('detects non-nullable property correctly', function () {
 });
 
 it('resolves nested nullable object types', function () {
-    $type = PropertyInfo::fromName(NullableNestedObject::class, 'user')->getTypeDetails();
-    expect($type)->toBeInstanceOf(TypeDetails::class);
+    $type = PropertyInfo::fromName(NullableNestedObject::class, 'user')->getType();
+    expect($type)->toBeInstanceOf(Type::class);
 
     $str = (string) $type;
     expect($str)->toBe('UserDetail');
 });
 
 it('resolves nullable object containing nullable object', function () {
-    $type = PropertyInfo::fromName(NullableNestedObject::class, 'maybeUser')->getTypeDetails();
-    expect($type)->toBeInstanceOf(TypeDetails::class);
+    $type = PropertyInfo::fromName(NullableNestedObject::class, 'maybeUser')->getType();
+    expect($type)->toBeInstanceOf(Type::class);
 
     $str = (string) $type;
     expect($str)->toBe('MaybeUser');

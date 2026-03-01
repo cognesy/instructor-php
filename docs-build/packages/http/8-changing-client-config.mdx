@@ -20,7 +20,7 @@ $config = new HttpClientConfig(
 $client = (new HttpClientBuilder())
     ->withConfig($config)
     ->create();
-// @doctest id="f17b"
+// @doctest id="1e9e"
 ```
 
 ## Configure via DSN
@@ -31,7 +31,7 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 $client = (new HttpClientBuilder())
     ->withDsn('driver=symfony')
     ->create();
-// @doctest id="8b70"
+// @doctest id="67a6"
 ```
 
 Use DSN for simple string-based selection (for example `driver`).
@@ -47,7 +47,7 @@ $client = (new HttpClientBuilder())
     ->withPreset('guzzle')
     ->withConfig(new HttpClientConfig(driver: 'guzzle', failOnError: true))
     ->create();
-// @doctest id="8d4d"
+// @doctest id="82b0"
 ```
 
 When `withConfig(...)` is provided, that config is authoritative.

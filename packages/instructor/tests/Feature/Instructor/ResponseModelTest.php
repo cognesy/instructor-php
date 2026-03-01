@@ -198,7 +198,7 @@ it('hydrates dynamic structure from json schema', function() {
     expect($structure)->toBeInstanceOf(Structure::class);
     expect($structure->name())->toBe('city');
     expect($structure->field('name')->isRequired())->toBeTrue();
-    $structure->fromArray([
+    $structure = $structure->fromArray([
         'name' => 'Paris',
         'population' => 2140526,
     ]);

@@ -12,10 +12,15 @@ use Cognesy\Polyglot\Inference\Data\ToolCall;
 
 final class MakeToolCalls
 {
+    private readonly StructureFactory $structureFactory;
+
     public function __construct(
         private readonly Tools $tools,
         private readonly ReActValidator $validator,
-    ) {}
+        ?StructureFactory $structureFactory = null,
+    ) {
+        $this->structureFactory = $structureFactory ?? new StructureFactory();
+    }
 
     public function __invoke(Decision $decision) : ToolCalls {
         if (!$decision->isCall()) {
@@ -42,7 +47,7 @@ final class MakeToolCalls
         if (!is_array($parameters)) {
             return null;
         }
-        return StructureFactory::fromJsonSchema([
+        return $this->structureFactory->fromJsonSchema([
             ...$parameters,
             'x-title' => $parameters['x-title'] ?? $toolName . '_arguments',
             'description' => $parameters['description'] ?? ('Arguments for ' . $toolName),
@@ -53,21 +58,16 @@ final class MakeToolCalls
         if ($toolName === '' || $argStructure === null) {
             return $args;
         }
-        $structure = $argStructure->clone();
-        foreach ($args as $key => $value) {
-            // Skip numeric keys - they indicate the LLM returned a list instead of an object
-            if (!is_string($key)) {
-                continue;
-            }
-            if ($structure->has($key)) {
-                $structure->set($key, $value);
-            }
-        }
-        $normalized = $structure->toArray();
+        $stringKeyArgs = array_filter(
+            $args,
+            static fn(mixed $key) : bool => is_string($key),
+            ARRAY_FILTER_USE_KEY,
+        );
+        $normalized = $argStructure->normalizeRecord($stringKeyArgs);
+
         return array_filter(
             $normalized,
             static fn($value) => $value !== null,
         );
     }
 }
-

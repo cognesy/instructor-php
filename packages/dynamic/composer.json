@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-dynamic",
-  "description": "Dynamic data structures for Instructor PHP library",
+  "description": "Lightweight dynamic structure record and schema builder for Instructor",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
   "support": {
@@ -25,22 +25,16 @@
   },
   "require": {
     "php": "^8.3",
-    "cognesy/instructor-utils": "^1.22",
-    "cognesy/instructor-struct": "^1.22"
+    "cognesy/instructor-schema": "^2.0",
+    "cognesy/instructor": "^1.22"
   },
   "require-dev": {
-    "roave/security-advisories": "dev-latest",
-    "icanhazstring/composer-unused": "^0.9.0",
-    "jetbrains/phpstorm-attributes": "^1.2",
-    "maglnet/composer-require-checker": "^4.16",
-    "pestphp/pest": "^2.34",
+    "pestphp/pest": "^4.0",
     "phpstan/phpstan": "^1.11",
     "vimeo/psalm": "^6.0"
   },
   "scripts": {
-    "tests": "@php vendor/bin/pest",
-    "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
-    "psalm": "@php vendor/bin/psalm"
+    "tests": "@php -r \"\\$paths=['vendor/bin/pest','../../vendor/bin/pest']; foreach(\\$paths as \\$path){ if(is_file(\\$path)){ passthru(PHP_BINARY.' '.\\$path.' tests', \\$code); exit(\\$code);} } fwrite(STDERR, 'Could not open pest binary'.PHP_EOL); exit(1);\""
   },
   "config": {
     "allow-plugins": {

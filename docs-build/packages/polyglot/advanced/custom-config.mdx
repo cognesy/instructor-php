@@ -25,7 +25,7 @@ return [
         ],
     ],
 ];
-// @doctest id="2183"
+// @doctest id="e1a7"
 ```
 
 Required fields for an LLM preset are `driver`, `apiUrl`, `apiKey`, `endpoint`, and `model`.
@@ -50,7 +50,7 @@ return [
         ],
     ],
 ];
-// @doctest id="4eee"
+// @doctest id="a3bb"
 ```
 
 ## Build Config at Runtime
@@ -73,7 +73,7 @@ $config = new LLMConfig(
 $text = Inference::fromRuntime(InferenceRuntime::fromConfig($config))
     ->withMessages('Explain blue-green deployment in one paragraph.')
     ->get();
-// @doctest id="61b8"
+// @doctest id="c796"
 ```
 
 ## Use DSN for Lightweight Overrides
@@ -85,7 +85,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $text = Inference::fromDsn('preset=openai,model=gpt-4.1-nano,maxTokens=256')
     ->withMessages('Write a commit message for a bugfix.')
     ->get();
-// @doctest id="9338"
+// @doctest id="186b"
 ```
 
 ## Register and Use a Custom Driver Alias
@@ -98,7 +98,7 @@ use App\LLM\AcmeDriver;
 Inference::registerDriver('acme', AcmeDriver::class);
 
 // Use "driver" => "acme" in an LLM preset or LLMConfig.
-// @doctest id="04ee"
+// @doctest id="f0f8"
 ```
 
 ## Environment-Based Default Preset
@@ -111,7 +111,7 @@ return [
     'defaultPreset' => Env::get('APP_ENV', 'prod') === 'prod' ? 'openai' : 'ollama',
     'presets' => [/* ... */],
 ];
-// @doctest id="f8b0"
+// @doctest id="6f8a"
 ```
 
 ## See Also

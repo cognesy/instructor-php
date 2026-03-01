@@ -5,10 +5,10 @@ namespace Cognesy\Instructor\Extras\Maybe;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
-use Cognesy\Schema\Data\TypeDetails;
-use Cognesy\Schema\Factories\SchemaFactory;
-use Cognesy\Schema\Visitors\SchemaToJsonSchema;
+use Cognesy\Schema\JsonSchemaRenderer;
+use Cognesy\Schema\SchemaFactory;
 use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
+use ReflectionClass;
 
 final class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
 {
@@ -49,8 +49,8 @@ final class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
     #[\Override]
     public function toJsonSchema(): array {
         $schema = $this->schemaFactory->schema($this->class);
-        $schemaData = (new SchemaToJsonSchema)->toArray($schema);
-        $schemaData['x-title'] = $this->name ?: TypeDetails::fromTypeName($this->class)->classOnly();
+        $schemaData = (new JsonSchemaRenderer)->toArray($schema);
+        $schemaData['x-title'] = $this->name ?: (new ReflectionClass($this->class))->getShortName();
         $schemaData['description'] = $this->description ?: ('Correctly extracted values of ' . $schemaData['x-title']);
         $schemaData['x-php-class'] = $this->class;
 
@@ -67,7 +67,7 @@ final class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
     }
 
     #[\Override]
-    public function fromArray(array $data, ?string $toolName = null): static {
+    public function fromArray(array $data): static {
         $this->hasValue = (bool) ($data['hasValue'] ?? false);
         $this->error = (string) ($data['error'] ?? '');
 

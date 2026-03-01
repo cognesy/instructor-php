@@ -135,14 +135,24 @@ class InferenceExecution
      */
     public function errors(): array {
         $chunks = [];
+        $seenAttemptIds = [];
         foreach ($this->attempts->all() as $attempt) {
             if ($attempt->hasErrors()) {
                 $chunks[] = $attempt->errors();
+                $seenAttemptIds[$attempt->id->toString()] = true;
             }
         }
-        if ($this->currentAttempt?->hasErrors()) {
-            $chunks[] = $this->currentAttempt->errors();
+
+        $currentAttempt = $this->currentAttempt;
+        if ($currentAttempt === null || !$currentAttempt->hasErrors()) {
+            return Arrays::mergeMany($chunks);
         }
+
+        if (isset($seenAttemptIds[$currentAttempt->id->toString()])) {
+            return Arrays::mergeMany($chunks);
+        }
+
+        $chunks[] = $currentAttempt->errors();
         return Arrays::mergeMany($chunks);
     }
 

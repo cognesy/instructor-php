@@ -2,61 +2,37 @@
 
 namespace Cognesy\Schema\Utils;
 
-use Cognesy\Pipeline\Enums\ErrorStrategy;
-use Cognesy\Pipeline\Pipeline;
-use Cognesy\Pipeline\ProcessingState;
-use Cognesy\Pipeline\StateContracts\CanCarryState;
-
 class DocstringUtils
 {
-    public static function descriptionsOnly(string $code): string {
-        $pipeline = Pipeline::builder(ErrorStrategy::FailFast)
-            ->through(fn($code) => self::removeMarkers($code))
-            ->through(fn($code) => self::removeAnnotations($code))
-            ->finally(fn(CanCarryState $state) => trim($state->value()))
-            ->create();
-
-        $result = $pipeline
-            ->executeWith(ProcessingState::with($code))
-            ->value();
-        return is_string($result) ? $result : '';
-    }
-
-    public static function getParameterDescription(string $name, string $text): string {
-        $pattern = '/@param\s+' . $name . '\s+(.*)/';
-        if (preg_match($pattern, $text, $matches)) {
-            return $matches[1];
-        }
-        return '';
-    }
-
-    private static function removeMarkers(string $code): string {
-        // Pattern to match comment markers
-        $pattern = '/(\/\*\*|\*\/|\/\/|#)/';
-
-        // Remove comment markers from the string
-        $cleanedString = preg_replace($pattern, '', $code);
-        if ($cleanedString === null) {
+    public static function descriptionsOnly(string $docComment) : string {
+        if ($docComment === '') {
             return '';
         }
 
-        // Optional: Clean up extra asterisks and whitespace from multiline comments
-        $result = preg_replace('/^\s*\*\s?/m', '', $cleanedString);
-        return $result ?? '';
-    }
+        $docComment = preg_replace('/^\s*\/\*\*|\*\/\s*$/m', '', $docComment) ?? '';
+        $lines = preg_split('/\R/', $docComment) ?: [];
 
-    private static function removeAnnotations(string $code): string {
-        $lines = explode("\n", $code);
-        $cleanedLines = [];
+        $descriptionLines = [];
         foreach ($lines as $line) {
-            $trimmed = trim($line);
-            if (empty($trimmed)) {
+            $line = trim(preg_replace('/^\s*\*\s?/', '', $line) ?? '');
+            if ($line === '' || str_starts_with($line, '@')) {
                 continue;
             }
-            if ($trimmed[0] !== '@') {
-                $cleanedLines[] = $line;
-            }
+            $descriptionLines[] = $line;
         }
-        return implode("\n", $cleanedLines);
+
+        return trim(implode("\n", $descriptionLines));
+    }
+
+    public static function getParameterDescription(string $name, string $docComment) : string {
+        if ($docComment === '') {
+            return '';
+        }
+
+        if (!preg_match('/@param\s+[^\s]+\s+\$?' . preg_quote($name, '/') . '\s*(.*)/', $docComment, $matches)) {
+            return '';
+        }
+
+        return trim($matches[1]);
     }
 }

@@ -69,6 +69,7 @@ final readonly class TaskId implements Stringable
     /**
      * String representation
      */
+    #[\Override]
     public function __toString(): string
     {
         return $this->value;

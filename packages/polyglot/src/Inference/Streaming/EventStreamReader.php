@@ -41,13 +41,18 @@ class EventStreamReader
      * @return Generator The generator yielding processed data after parsing.
      */
     public function eventsFrom(iterable $stream): Generator {
+        if ($this->parser !== null) {
+            yield from $this->eventsFromSse($stream);
+            return;
+        }
+
         foreach ($this->readLines($stream) as $line) {
             $this->events->dispatch(new StreamEventReceived($line));
             $processedData = $this->processLine($line);
             if ($processedData === false) {
                 break;
             }
-            if ($processedData !== null) {
+            if (is_string($processedData)) {
                 $this->events->dispatch(new StreamEventParsed($processedData));
                 yield $processedData;
             }
@@ -55,6 +60,23 @@ class EventStreamReader
     }
 
     // INTERNAL //////////////////////////////////////////////
+
+    /**
+     * Parses stream as SSE events (blank-line delimited) and yields parser output.
+     */
+    protected function eventsFromSse(iterable $stream): Generator {
+        foreach ($this->readSseEvents($stream) as $event) {
+            $this->events->dispatch(new StreamEventReceived($event));
+            $processedData = $this->processSseEvent($event);
+            if ($processedData === false) {
+                break;
+            }
+            if (is_string($processedData)) {
+                $this->events->dispatch(new StreamEventParsed($processedData));
+                yield $processedData;
+            }
+        }
+    }
 
     /**
      * Reads and extracts complete lines from an iterable stream.
@@ -77,6 +99,126 @@ class EventStreamReader
     }
 
     /**
+     * Reads blank-line delimited SSE events from stream.
+     *
+     * @param iterable $stream
+     * @return Generator<string>
+     */
+    protected function readSseEvents(iterable $stream): Generator {
+        $eventLines = [];
+        foreach ($this->readLines($stream) as $line) {
+            $line = rtrim($line, "\r\n");
+            if ($line === '') {
+                if ($eventLines === []) {
+                    continue;
+                }
+
+                yield implode("\n", $eventLines);
+                $eventLines = [];
+                continue;
+            }
+
+            if ($this->shouldFlushImplicitBoundary($eventLines, $line)) {
+                yield implode("\n", $eventLines);
+                $eventLines = [];
+            }
+
+            $eventLines[] = $line;
+        }
+
+        if ($eventLines === []) {
+            return;
+        }
+
+        yield implode("\n", $eventLines);
+    }
+
+    /**
+     * Compatibility heuristic for relays that emit line-delimited SSE data
+     * without blank-line separators.
+     *
+     * @param list<string> $eventLines
+     */
+    protected function shouldFlushImplicitBoundary(array $eventLines, string $line): bool {
+        if ($eventLines === []) {
+            return false;
+        }
+
+        if (str_starts_with($line, 'event:') && $this->hasDataLine($eventLines)) {
+            return true;
+        }
+
+        if (!str_starts_with($line, 'data:')) {
+            return false;
+        }
+
+        if (!$this->isStandaloneDataLine($line)) {
+            return false;
+        }
+
+        return $this->isStandaloneDataEvent($eventLines);
+    }
+
+    /**
+     * @param list<string> $eventLines
+     */
+    protected function hasDataLine(array $eventLines): bool {
+        foreach ($eventLines as $line) {
+            if (str_starts_with($line, 'data:')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param list<string> $eventLines
+     */
+    protected function isStandaloneDataEvent(array $eventLines): bool {
+        $hasData = false;
+        foreach ($eventLines as $line) {
+            if ($line === '' || str_starts_with($line, ':')) {
+                continue;
+            }
+
+            if (!str_starts_with($line, 'data:')) {
+                return false;
+            }
+
+            if (!$this->isStandaloneDataLine($line)) {
+                return false;
+            }
+
+            $hasData = true;
+        }
+
+        return $hasData;
+    }
+
+    protected function isStandaloneDataLine(string $line): bool {
+        if (!str_starts_with($line, 'data:')) {
+            return false;
+        }
+
+        $payload = trim(substr($line, 5));
+        if ($payload === '') {
+            return false;
+        }
+
+        if ($payload === '[DONE]') {
+            return true;
+        }
+
+        $lastChar = substr($payload, -1);
+        if ($lastChar === '' || in_array($lastChar, [',', ':', '{', '[', '\\'], true)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Processes a single line of input, trims whitespace, attempts to parse it,
      * and optionally performs a debug dump if needed.
      *
@@ -96,6 +238,35 @@ class EventStreamReader
             return null;
         }
         return $data;
+    }
+
+    /**
+     * Processes one SSE event and returns parser output.
+     */
+    protected function processSseEvent(string $event): string|bool|null {
+        $dataLines = [];
+        foreach (explode("\n", $event) as $line) {
+            if ($line === '' || str_starts_with($line, ':')) {
+                continue;
+            }
+
+            if (!str_contains($line, ':')) {
+                continue;
+            }
+
+            [$field, $value] = explode(':', $line, 2);
+            if ($field !== 'data') {
+                continue;
+            }
+
+            $dataLines[] = ltrim($value, ' ');
+        }
+
+        if ($dataLines === []) {
+            return null;
+        }
+
+        return $this->processLine('data: ' . implode("\n", $dataLines));
     }
 
     /**

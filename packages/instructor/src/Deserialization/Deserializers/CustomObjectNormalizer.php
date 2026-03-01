@@ -18,7 +18,6 @@ use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use Symfony\Component\PropertyInfo\PropertyTypeExtractorInterface;
 use Symfony\Component\PropertyInfo\PropertyWriteInfo;
-use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Serializer\Exception\LogicException;
 use Symfony\Component\Serializer\Mapping\AttributeMetadata;
 use Symfony\Component\Serializer\Mapping\ClassDiscriminatorResolverInterface;
@@ -238,7 +237,12 @@ final class CustomObjectNormalizer extends AbstractObjectNormalizer
         }
 
         $method = $reflection->getMethod($attribute);
+        $ignoreAttributeClass = class_exists('Symfony\\Component\\Serializer\\Attribute\\Ignore')
+            ? 'Symfony\\Component\\Serializer\\Attribute\\Ignore'
+            : 'Symfony\\Component\\Serializer\\Annotation\\Ignore';
 
-        return !$method->isStatic() && !$method->getAttributes(Ignore::class) && !$method->getNumberOfRequiredParameters();
+        return !$method->isStatic()
+            && !$method->getAttributes($ignoreAttributeClass)
+            && !$method->getNumberOfRequiredParameters();
     }
 }

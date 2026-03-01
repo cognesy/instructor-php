@@ -86,7 +86,7 @@ it('can deserialize from array', function () {
         ]
     ];
     $call = FunctionCallFactory::fromCallable(Cognesy\Addons\Tests\Examples\Call\testFunction(...));
-    $call->fromArray($data);
+    $call = $call->fromArray($data);
     $args = $call->transform();
     expect($args['intParam'])->toBe(1);
     expect($args['stringParam'])->toBe('string');

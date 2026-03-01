@@ -88,17 +88,62 @@ final class StructuredOutput implements CanCreateStructuredOutput
     }
 
     public function withValidators(CanValidateObject|string ...$validators): self {
-        $runtime = $this->runtimeOrFail()->withValidators($validators);
+        $validatorList = [];
+        foreach (array_values($validators) as $validator) {
+            if (!is_string($validator)) {
+                $validatorList[] = $validator;
+                continue;
+            }
+
+            if (!class_exists($validator) || !is_subclass_of($validator, CanValidateObject::class)) {
+                throw new \InvalidArgumentException("Validator class must implement " . CanValidateObject::class . ": {$validator}");
+            }
+
+            /** @var class-string<CanValidateObject> $validator */
+            $validatorList[] = $validator;
+        }
+
+        $runtime = $this->runtimeOrFail()->withValidators($validatorList);
         return $this->withRuntime($runtime);
     }
 
     public function withTransformers(CanTransformData|string ...$transformers): self {
-        $runtime = $this->runtimeOrFail()->withTransformers($transformers);
+        $transformerList = [];
+        foreach (array_values($transformers) as $transformer) {
+            if (!is_string($transformer)) {
+                $transformerList[] = $transformer;
+                continue;
+            }
+
+            if (!class_exists($transformer) || !is_subclass_of($transformer, CanTransformData::class)) {
+                throw new \InvalidArgumentException("Transformer class must implement " . CanTransformData::class . ": {$transformer}");
+            }
+
+            /** @var class-string<CanTransformData> $transformer */
+            $transformerList[] = $transformer;
+        }
+
+        $runtime = $this->runtimeOrFail()->withTransformers($transformerList);
         return $this->withRuntime($runtime);
     }
 
     public function withDeserializers(CanDeserializeClass|string ...$deserializers): self {
-        $runtime = $this->runtimeOrFail()->withDeserializers($deserializers);
+        $deserializerList = [];
+        foreach (array_values($deserializers) as $deserializer) {
+            if (!is_string($deserializer)) {
+                $deserializerList[] = $deserializer;
+                continue;
+            }
+
+            if (!class_exists($deserializer) || !is_subclass_of($deserializer, CanDeserializeClass::class)) {
+                throw new \InvalidArgumentException("Deserializer class must implement " . CanDeserializeClass::class . ": {$deserializer}");
+            }
+
+            /** @var class-string<CanDeserializeClass> $deserializer */
+            $deserializerList[] = $deserializer;
+        }
+
+        $runtime = $this->runtimeOrFail()->withDeserializers($deserializerList);
         return $this->withRuntime($runtime);
     }
 
@@ -207,6 +252,7 @@ final class StructuredOutput implements CanCreateStructuredOutput
         return $copy;
     }
 
+    /** @param class-string $class */
     public function intoInstanceOf(string $class): self {
         $copy = clone $this;
         $copy->request = $copy->request->withOutputFormat(OutputFormat::instanceOf($class));
@@ -267,6 +313,7 @@ final class StructuredOutput implements CanCreateStructuredOutput
         return $this->runtime->create($request);
     }
 
+    /** @param callable(object):void|null $listener */
     public function wiretap(?callable $listener): self {
         if ($listener === null) {
             return $this;
@@ -278,6 +325,7 @@ final class StructuredOutput implements CanCreateStructuredOutput
         return $this;
     }
 
+    /** @param callable(object):void|null $listener */
     public function onEvent(string $class, ?callable $listener): self {
         if ($listener === null) {
             return $this;

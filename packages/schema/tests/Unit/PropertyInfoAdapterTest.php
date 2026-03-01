@@ -1,6 +1,5 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Schema\Data\TypeDetails;
 use Cognesy\Schema\Reflection\PropertyInfo;
 use Symfony\Component\TypeInfo\Type;
 
@@ -22,27 +21,17 @@ class PI_Fixture
     public array $mapOfNestedArrays = [];
 }
 
-it('resolves property types with explicit compatibility-adapter expectations', function (string $property, string $expectedType) {
-    $type = PropertyInfo::fromName(PI_Fixture::class, $property)->getTypeDetails();
+it('resolves property types using Symfony TypeInfo representation', function (string $property, string $expectedType) {
+    $type = PropertyInfo::fromName(PI_Fixture::class, $property)->getType();
 
-    expect($type)->toBeInstanceOf(TypeDetails::class);
+    expect($type)->toBeInstanceOf(Type::class);
     expect((string)$type)->toBe($expectedType);
 })->with(function (): array {
-    // Keep expectations explicit and adapter-version aware.
-    return match (class_exists(Type::class)) {
-        true => [
-            'nullableArrayOfObjects' => ['nullableArrayOfObjects', 'DateTimeImmutable[]'],
-            'iterableOfFloats' => ['iterableOfFloats', 'float[]'],
-            'arrayOfArraysOfInts' => ['arrayOfArraysOfInts', 'array'],
-            'nullableIntStringArray' => ['nullableIntStringArray', 'string[]'],
-            'mapOfNestedArrays' => ['mapOfNestedArrays', 'array'],
-        ],
-        false => [
-            'nullableArrayOfObjects' => ['nullableArrayOfObjects', 'DateTimeImmutable[]'],
-            'iterableOfFloats' => ['iterableOfFloats', 'float[]'],
-            'arrayOfArraysOfInts' => ['arrayOfArraysOfInts', 'array'],
-            'nullableIntStringArray' => ['nullableIntStringArray', 'string[]'],
-            'mapOfNestedArrays' => ['mapOfNestedArrays', 'array'],
-        ],
-    };
+    return [
+        'nullableArrayOfObjects' => ['nullableArrayOfObjects', 'array<int|string, DateTimeImmutable>'],
+        'iterableOfFloats' => ['iterableOfFloats', 'iterable<int|string, float>'],
+        'arrayOfArraysOfInts' => ['arrayOfArraysOfInts', 'array<int|string, array<int|string, int>>'],
+        'nullableIntStringArray' => ['nullableIntStringArray', 'array<int, string>'],
+        'mapOfNestedArrays' => ['mapOfNestedArrays', 'array<int, array<string, int>>'],
+    ];
 });

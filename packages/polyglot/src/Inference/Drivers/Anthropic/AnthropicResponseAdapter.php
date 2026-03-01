@@ -10,6 +10,8 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
+use JsonException;
+use RuntimeException;
 
 class AnthropicResponseAdapter implements CanTranslateInferenceResponse
 {
@@ -21,7 +23,7 @@ class AnthropicResponseAdapter implements CanTranslateInferenceResponse
     public function fromResponse(HttpResponse $response): ?InferenceResponse {
         $responseBody = $response->body();
         //$responseBody = $this->normalizeUnknownValues($responseBody);
-        $data = json_decode($responseBody, true);
+        $data = $this->decodeResponseData($responseBody);
         return new InferenceResponse(
             content: $this->makeContent($data),
             finishReason: $data['stop_reason'] ?? '',
@@ -48,7 +50,7 @@ class AnthropicResponseAdapter implements CanTranslateInferenceResponse
 
     protected function fromStreamResponse(string $eventBody, ?HttpResponse $responseData = null): ?PartialInferenceDelta {
         //$eventBody = $this->normalizeUnknownValues($responseBody);
-        $data = json_decode($eventBody, true);
+        $data = $this->decodeJsonData($eventBody, 'Anthropic stream payload');
         if (empty($data)) {
             return null;
         }
@@ -76,6 +78,9 @@ class AnthropicResponseAdapter implements CanTranslateInferenceResponse
         }
         if ($data === '[DONE]') {
             return false;
+        }
+        if (str_starts_with($data, 'event:')) {
+            return '';
         }
         $payload = json_decode($data, true);
         if (is_array($payload) && ($payload['type'] ?? '') === 'message_stop') {
@@ -123,6 +128,35 @@ class AnthropicResponseAdapter implements CanTranslateInferenceResponse
             $nl = PHP_EOL;
         }
         return $content;
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    private function decodeResponseData(string $payload): array {
+        $data = $this->decodeJsonData($payload, 'Anthropic response payload');
+        if (!isset($data['content']) || !is_array($data['content'])) {
+            throw new RuntimeException('Malformed Anthropic response payload: missing `content` array.');
+        }
+
+        return $data;
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    private function decodeJsonData(string $payload, string $context): array {
+        try {
+            $decoded = json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            throw new RuntimeException($context . ' is not valid JSON.', previous: $e);
+        }
+
+        if (!is_array($decoded)) {
+            throw new RuntimeException($context . ' must decode to an object or array.');
+        }
+
+        return $decoded;
     }
 
     /**

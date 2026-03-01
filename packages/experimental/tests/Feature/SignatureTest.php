@@ -4,10 +4,10 @@ namespace Cognesy\Experimental\Tests\Feature\Extras;
 
 use Cognesy\Dynamic\Field;
 use Cognesy\Dynamic\Structure;
+use Cognesy\Experimental\Signature\Attributes\InputField;
+use Cognesy\Experimental\Signature\Attributes\OutputField;
 use Cognesy\Experimental\Signature\SignatureFactory;
 use Cognesy\Schema\Attributes\Description;
-use Cognesy\Schema\Attributes\InputField;
-use Cognesy\Schema\Attributes\OutputField;
 use Symfony\Component\Serializer\Attribute\Ignore;
 
 it('creates signature from string', function () {

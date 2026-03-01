@@ -2,14 +2,18 @@
 
 namespace Cognesy\Schema\Reflection;
 
-use Cognesy\Schema\Contracts\CanGetPropertyType;
-use Cognesy\Schema\Data\TypeDetails;
+use Cognesy\Schema\TypeInfo;
 use Cognesy\Schema\Utils\AttributeUtils;
-use Cognesy\Schema\Utils\Compat\PropertyInfoV6Adapter;
-use Cognesy\Schema\Utils\Compat\PropertyInfoV7Adapter;
 use Cognesy\Schema\Utils\Descriptions;
 use ReflectionClass;
+use ReflectionMethod;
+use ReflectionParameter;
 use ReflectionProperty;
+use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
+use Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
+use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
+use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
+use Symfony\Component\TypeInfo\Type;
 
 class PropertyInfo
 {
@@ -18,53 +22,44 @@ class PropertyInfo
     private string $class;
     private string $propertyName;
     private ReflectionClass $parentClass;
-    private ClassInfo $classInfo;
-    private CanGetPropertyType $typeInfoAdapter;
+    private static ?PropertyInfoExtractor $extractor = null;
 
-    // cached values
-    private ?bool $hasMutatorCandidates = null;
-    private ?bool $hasAccessorCandidates = null;
-    private ?array $constructorParams = null;
+    private ?Type $resolvedType = null;
 
-    static public function fromName(
-        string $class,
-        string $property
-    ) : PropertyInfo {
-        $reflection = new ReflectionProperty($class, $property);
-        return PropertyInfo::fromReflection($reflection);
+    public static function fromName(string $class, string $property) : self {
+        return self::fromReflection(new ReflectionProperty($class, $property));
     }
 
-    static public function fromReflection(
-        ReflectionProperty $reflection
-    ) : PropertyInfo {
-        return new PropertyInfo($reflection);
+    public static function fromReflection(ReflectionProperty $reflection) : self {
+        return new self($reflection);
     }
 
-    private function __construct(
-        ReflectionProperty $reflection,
-    ) {
+    private function __construct(ReflectionProperty $reflection) {
         $this->reflection = $reflection;
         $this->propertyName = $reflection->getName();
         $this->parentClass = $reflection->getDeclaringClass();
         $this->class = $this->parentClass->getName();
-        $this->classInfo = ClassInfo::fromString($this->class);
-        $this->typeInfoAdapter = $this->makeAdapter();
     }
 
     public function getName() : string {
         return $this->propertyName;
     }
 
-    public function getTypeDetails() : TypeDetails {
-        return $this->typeInfoAdapter->getPropertyTypeDetails();
+    public function getType() : Type {
+        return TypeInfo::normalize($this->resolvedType());
     }
 
-    public function getDescription(): string {
+    public function getDescription() : string {
         return Descriptions::forProperty($this->class, $this->propertyName);
     }
 
     public function isNullable() : bool {
-        return $this->typeInfoAdapter->isPropertyNullable();
+        $nativeType = $this->reflection->getType();
+        if ($nativeType !== null && $nativeType->allowsNull()) {
+            return true;
+        }
+
+        return $this->resolvedType()->isNullable();
     }
 
     public function hasAttribute(string $attributeClass) : bool {
@@ -80,185 +75,124 @@ class PropertyInfo
         return $this->reflection->isPublic();
     }
 
-    public function isReadOnly(): bool {
+    public function isReadOnly() : bool {
         return $this->reflection->isReadOnly();
     }
 
-    public function isStatic(): bool {
+    public function isStatic() : bool {
         return $this->reflection->isStatic();
     }
 
     public function isDeserializable() : bool {
-        return $this->reflection->isPublic()
-            || $this->matchesConstructorParam()
-            || $this->hasMutatorCandidates($this->propertyName);
+        return $this->isPublic()
+            || $this->constructorParameter() !== null
+            || $this->setterParameter() !== null;
     }
 
     public function isRequired() : bool {
-        // case 1: property is PUBLIC or NOT, but has a matching constructor parameter
-        if ($this->matchesConstructorParam()) {
-            $constructorParam = $this->getConstructorParam($this->propertyName);
-            return match(true) {
-                // if constructor parameter has a default value, it is not required
-                $constructorParam->isNullable() => false,
-                $constructorParam->hasDefaultValue() => false,
-                //$constructorParam->isOptional() => false,
-                default => true,
-            };
-        }
-
-        // case 2: property is public and is not nullable
-        if ($this->isPublic()) {
-            return match(true) {
-                $this->isNullable() => false,
-                //$this->hasDefaultValue() => false, // exclude this - default value should not make it optional
-                default => true,
-            };
-        }
-
-        // case 3: property is NOT public, but has a mutator method and the mutator parameter is not nullable
-        if ($this->hasMutatorCandidates($this->propertyName)) {
-            $mutatorParam = $this->getMutatorParam($this->propertyName);
-            if ($mutatorParam === null) {
-                return false; // no mutator found
+        $constructorParameter = $this->constructorParameter();
+        if ($constructorParameter !== null) {
+            if ($constructorParameter->allowsNull()) {
+                return false;
             }
-            return match(true) {
-                $this->isNullable() => false, // if property is nullable, it is not required
-                $mutatorParam->isNullable() => false, // if mutator parameter is nullable, it is not required
-                $mutatorParam->hasDefaultValue() => false, // exclude this - default value should not make it optional
-                //$mutatorParam->isOptional() => false,
-                default => true,
-            };
+            return !$constructorParameter->isDefaultValueAvailable();
         }
 
-        return false;
+        if ($this->isPublic()) {
+            return !$this->isNullable();
+        }
+
+        $setterParameter = $this->setterParameter();
+        if ($setterParameter === null) {
+            return false;
+        }
+
+        if ($this->isNullable()) {
+            return false;
+        }
+
+        if ($setterParameter->allowsNull()) {
+            return false;
+        }
+
+        return !$setterParameter->isDefaultValueAvailable();
     }
 
     public function getClass() : string {
         return $this->class;
     }
 
-    private function constructorParams() : array {
-        if (!isset($this->constructorParams)) {
-            $this->constructorParams = $this->classInfo->getConstructorInfo()->getParameterNames();
-        }
-        return $this->constructorParams;
-    }
-
-    public function hasDefaultValue() : bool {
-        return $this->reflection->hasDefaultValue();
-    }
-
-    public function getConstructorParam(string $propertyName) : ParameterInfo {
-        return $this->classInfo->getConstructorInfo()->getParameter($propertyName);
-    }
-
-    // INTERNAL /////////////////////////////////////////////////////////////////////////
-
-    private function makeAdapter() : CanGetPropertyType {
-        // Symfony 7+ uses TypeInfo component, Symfony 6 uses PropertyInfo Type class
-        $useV7Adapter = class_exists("Symfony\Component\TypeInfo\Type");
-
-        return match(true) {
-            $useV7Adapter => new PropertyInfoV7Adapter(
-                class: $this->class,
-                propertyName: $this->propertyName,
-            ),
-            default => new PropertyInfoV6Adapter(
-                class: $this->class,
-                propertyName: $this->propertyName,
-            ),
-        };
-    }
-
-    private function matchesConstructorParam() : bool {
-        return in_array($this->propertyName, $this->constructorParams(), true);
-    }
-
-    private function hasMutatorCandidates(string $propertyName) : bool {
-        if (!is_null($this->hasMutatorCandidates)) {
-            return $this->hasMutatorCandidates;
+    private function resolvedType() : Type {
+        if ($this->resolvedType !== null) {
+            return $this->resolvedType;
         }
 
-        $patterns = [
-            fn($name) => 'set' . ucfirst($name),
-            //fn($name) => 'with' . ucfirst($name),
-        ];
-
-        foreach ($patterns as $pattern) {
-            $methodName = $pattern($propertyName);
-            if (!$this->parentClass->hasMethod($methodName)) {
-                continue; // Skip if method does not exist
-            }
-            $method = $this->parentClass->getMethod($methodName);
-            // Check if the method is public
-            if (!$method->isPublic()) {
-                continue; // Skip non-public methods
-            }
-            // Check if the method is a setter (one parameter)
-            if ($method->getNumberOfParameters() !== 1) {
-                continue; // Skip methods other than with one parameter
-            }
-            // Check if the method returns a value
-            $returnType = $method->getReturnType();
-            if ($returnType instanceof \ReflectionNamedType && 'void' !== $returnType->getName()) {
-                continue; // Skip methods that do not return void
-            }
-            return true;
-        }
-        return $this->hasMutatorCandidates = false;
+        $this->resolvedType = self::extractor()->getType($this->class, $this->propertyName) ?? Type::mixed();
+        return $this->resolvedType;
     }
 
-    /** @phpstan-ignore-next-line - method is intentionally unused */
-    private function hasAccessorCandidates(string $propertyName) : bool {
-        if (!is_null($this->hasAccessorCandidates)) {
-            return $this->hasAccessorCandidates;
+    private static function extractor() : PropertyInfoExtractor {
+        if (self::$extractor !== null) {
+            return self::$extractor;
         }
 
-        $patterns = [
-            //fn($name) => $name,
-            fn($name) => 'has'. ucfirst($name),
-            fn($name) => 'get' . ucfirst($name),
-            fn($name) => 'is' . ucfirst($name),
-        ];
-
-        foreach ($patterns as $pattern) {
-            $methodName = $pattern($propertyName);
-            if (!$this->parentClass->hasMethod($methodName)) {
-                continue;
-            }
-            $method = $this->parentClass->getMethod($methodName);
-            // Check if the method is public
-            if (!$method->isPublic()) {
-                continue;
-            }
-            // Check if the method is a getter (no parameters)
-            if ($method->getNumberOfParameters() > 0) {
-                continue;
-            }
-            // Check if the method returns a value
-            $returnType = $method->getReturnType();
-            if ($returnType instanceof \ReflectionNamedType && 'void' === $returnType->getName()) {
-                continue;
-            }
-            return true;
-        }
-        return $this->hasAccessorCandidates = false;
-    }
-
-    private function getMutatorParam(string $name) : ?ParameterInfo {
-        $mutatorMethodName = 'set' . ucfirst($name);
-        if (!$this->parentClass->hasMethod($mutatorMethodName)) {
-            return null;
-        }
-        $mutatorMethod = $this->parentClass->getMethod($mutatorMethodName);
-        $parameter = $mutatorMethod->getParameters()[0] ?? null;
-        if (is_null($parameter)) {
-            return null;
-        }
-        return new ParameterInfo(
-            paramReflection: $parameter,
-            functionReflection: $mutatorMethod,
+        $phpDocExtractor = new PhpDocExtractor();
+        $reflectionExtractor = new ReflectionExtractor();
+        self::$extractor = new PropertyInfoExtractor(
+            [$reflectionExtractor],
+            [new PhpStanExtractor(), $phpDocExtractor, $reflectionExtractor],
+            [$phpDocExtractor],
+            [$reflectionExtractor],
+            [$reflectionExtractor],
         );
+
+        return self::$extractor;
+    }
+
+    private function constructorParameter() : ?\ReflectionParameter {
+        $constructor = $this->parentClass->getConstructor();
+        if ($constructor === null) {
+            return null;
+        }
+
+        foreach ($constructor->getParameters() as $parameter) {
+            if ($parameter->getName() === $this->propertyName) {
+                return $parameter;
+            }
+        }
+
+        return null;
+    }
+
+    private function setterParameter() : ?ReflectionParameter {
+        $setter = $this->setterMethod();
+        if ($setter === null) {
+            return null;
+        }
+
+        return $setter->getParameters()[0] ?? null;
+    }
+
+    private function setterMethod() : ?ReflectionMethod {
+        $methodName = 'set' . ucfirst($this->propertyName);
+        if (!$this->parentClass->hasMethod($methodName)) {
+            return null;
+        }
+
+        $method = $this->parentClass->getMethod($methodName);
+        if (!$method->isPublic()) {
+            return null;
+        }
+
+        if ($method->getNumberOfParameters() !== 1) {
+            return null;
+        }
+
+        $returnType = $method->getReturnType();
+        if ($returnType !== null && (!$returnType instanceof \ReflectionNamedType || $returnType->getName() !== 'void')) {
+            return null;
+        }
+
+        return $method;
     }
 }

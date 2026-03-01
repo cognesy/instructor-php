@@ -78,10 +78,10 @@ final class SymfonyEventDispatcher implements CanHandleEvents
 
     /** @return list<string> */
     private function eventTypes(object $event): array {
-        return array_merge(
+        return array_values(array_unique(array_merge(
             [get_class($event)],
             class_parents($event),
             class_implements($event),
-        );
+        )));
     }
 }

@@ -11,7 +11,6 @@ use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Enums\AttemptPhase;
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\ModularStreamFactory;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\ModularUpdateGenerator;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
@@ -48,9 +47,13 @@ function makeModularUpdateGeneratorTestInfrastructure(FakeInferenceDriver $drive
     $deserializer = new ResponseDeserializer($events, [SymfonyDeserializer::class], $config);
     $transformer = new ResponseTransformer(events: $events, transformers: [], config: $config);
 
-    $factory = new ModularStreamFactory($deserializer, $transformer, $events);
-
-    $generator = new ModularUpdateGenerator($inferenceProvider, $factory);
+    $generator = new ModularUpdateGenerator(
+        inferenceProvider: $inferenceProvider,
+        deserializer: $deserializer,
+        transformer: $transformer,
+        events: $events,
+        bufferFactory: null,
+    );
 
     $responseModel = $responseModelFactory->fromAny(TestGeneratorModel::class);
 

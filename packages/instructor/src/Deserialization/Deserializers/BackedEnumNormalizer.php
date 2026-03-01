@@ -2,7 +2,6 @@
 
 namespace Cognesy\Instructor\Deserialization\Deserializers;
 
-use Symfony\Component\PropertyInfo\Type;
 use Symfony\Component\Serializer\Exception\InvalidArgumentException;
 use Symfony\Component\Serializer\Exception\NotNormalizableValueException;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
@@ -77,7 +76,13 @@ final class BackedEnumNormalizer implements NormalizerInterface, DenormalizerInt
         }
 
         if (!\is_int($data) && !\is_string($data)) {
-            throw NotNormalizableValueException::createForUnexpectedDataType('The data is neither an integer nor a string, you should pass an integer or a string that can be parsed as an enumeration case of type '.$type.'.', $data, [Type::BUILTIN_TYPE_INT, Type::BUILTIN_TYPE_STRING], $context['deserialization_path'] ?? null, true);
+            throw NotNormalizableValueException::createForUnexpectedDataType(
+                'The data is neither an integer nor a string, you should pass an integer or a string that can be parsed as an enumeration case of type '.$type.'.',
+                $data,
+                ['int', 'string'],
+                $context['deserialization_path'] ?? null,
+                true,
+            );
         }
 
         try {

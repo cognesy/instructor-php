@@ -8,5 +8,5 @@ namespace Cognesy\Instructor\Deserialization\Contracts;
 interface CanDeserializeSelf
 {
     /** @param array<string, mixed> $data */
-    public function fromArray(array $data, ?string $toolName = null) : static;
+    public function fromArray(array $data) : static;
 }

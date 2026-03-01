@@ -74,7 +74,6 @@ final class InferenceRuntime implements CanCreateInference
             ),
         };
 
-        assert($driver instanceof CanProcessInferenceRequest);
         return new self(
             driver: $driver,
             events: $events,

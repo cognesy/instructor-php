@@ -2,12 +2,27 @@
 
 namespace Cognesy\Instructor\ResponseIterators\ModularPipeline;
 
+use Closure;
+use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Instructor\Contracts\CanStreamStructuredOutputUpdates;
 use Cognesy\Instructor\Core\InferenceProvider;
+use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\StructuredOutputAttemptState;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\Enums\AttemptPhase;
+use Cognesy\Instructor\ResponseIterators\ModularPipeline\Aggregation\AggregateStream;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Aggregation\StreamAggregate;
+use Cognesy\Instructor\ResponseIterators\ModularPipeline\Events\EventTapTransducer;
+use Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline\DeserializeAndDeduplicate;
+use Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline\EnrichResponse;
+use Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline\ExtractDelta;
+use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Stream\Transformation;
+use Cognesy\Stream\TransformationStream;
+use IteratorAggregate;
 
 /**
  * Iterates over chunks from a single attempt using the modular pipeline.
@@ -28,7 +43,10 @@ final readonly class ModularUpdateGenerator implements CanStreamStructuredOutput
 {
     public function __construct(
         private InferenceProvider $inferenceProvider,
-        private ModularStreamFactory $factory,
+        private CanDeserializeResponse $deserializer,
+        private CanTransformResponse $transformer,
+        private CanHandleEvents $events,
+        private ?Closure $bufferFactory = null,
     ) {}
 
     #[\Override]
@@ -74,7 +92,7 @@ final readonly class ModularUpdateGenerator implements CanStreamStructuredOutput
             ->responses();
 
         // Wrap in Clean pipeline
-        $aggregateStream = $this->factory->makeStream(
+        $aggregateStream = $this->makeStream(
             source: $inferenceStream,
             responseModel: $responseModel,
             mode: $execution->outputMode(),
@@ -132,5 +150,48 @@ final readonly class ModularUpdateGenerator implements CanStreamStructuredOutput
                 partialInferenceResponse: $aggregate->partial(),
                 errors: $execution->currentErrors(), // Preserve existing errors
             );
+    }
+
+    /**
+     * Create observable stream that processes partials and emits StreamAggregate.
+     *
+     * @param iterable<PartialInferenceResponse> $source
+     * @return IteratorAggregate<int, StreamAggregate>
+     */
+    private function makeStream(
+        iterable $source,
+        ResponseModel $responseModel,
+        OutputMode $mode,
+    ): IteratorAggregate {
+        // Build pipeline stages (transducers)
+        $stages = [
+            // 1. Entry: Extract delta and create PartialFrame
+            new ExtractDelta($mode, $this->bufferFactory),
+
+            // 2. Objects: Deserialize, transform, deduplicate
+            new DeserializeAndDeduplicate(
+                deserializer: $this->deserializer,
+                transformer: $this->transformer,
+                responseModel: $responseModel,
+            ),
+
+            // 3. Events: Dispatch all domain events
+            new EventTapTransducer(
+                events: $this->events,
+                expectedToolName: $mode === OutputMode::Tools ? $responseModel->toolName() : '',
+            ),
+
+            // 4. Enrich: Convert PartialFrame → PartialInferenceResponse
+            new EnrichResponse($mode),
+
+            // 5. Terminal: Aggregate into StreamAggregate
+            new AggregateStream(),
+        ];
+
+        // Build transformation
+        $transformation = Transformation::define(...$stages);
+
+        // Wrap in Stream for observation
+        return TransformationStream::from($source)->using($transformation);
     }
 }

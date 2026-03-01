@@ -2,7 +2,6 @@
 namespace Cognesy\Instructor\Creation;
 
 use Cognesy\Dynamic\Structure;
-use Cognesy\Dynamic\StructureFactory;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Contracts\CanHandleToolSelection;
 use Cognesy\Instructor\Data\OutputFormat;
@@ -12,8 +11,10 @@ use Cognesy\Instructor\Events\Request\ResponseModelBuildModeSelected;
 use Cognesy\Instructor\Events\Request\ResponseModelBuilt;
 use Cognesy\Instructor\Events\Request\ResponseModelRequested;
 use Cognesy\Schema\Contracts\CanProvideSchema;
-use Cognesy\Schema\Data\Schema\ObjectSchema;
-use Cognesy\Schema\Data\Schema\Schema;
+use Cognesy\Schema\Data\ObjectSchema;
+use Cognesy\Schema\Data\Schema;
+use Cognesy\Schema\SchemaFactory;
+use Cognesy\Schema\TypeInfo;
 use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 use Cognesy\Utils\Str;
 use InvalidArgumentException;
@@ -100,16 +101,14 @@ class ResponseModelFactory
         $schema = $this->schemaRenderer->schemaFromJsonSchema($requestedModel);
         $schemaName = $this->schemaName($requestedModel);
         $schemaDescription = $this->schemaDescription($requestedModel);
-        $schema = $schema
-            ->withName($schemaName)
-            ->withDescription($schemaDescription);
+        $schema = SchemaFactory::withMetadata(
+            $schema,
+            name: $schemaName,
+            description: $schemaDescription,
+        );
         $instance = match (true) {
             $class === Structure::class,
-            is_subclass_of($class, Structure::class) => StructureFactory::fromSchema(
-                $schemaName,
-                $schema,
-                $schemaDescription,
-            ),
+            is_subclass_of($class, Structure::class) => Structure::fromSchema($schema),
             default => $this->makeInstance($class),
         };
         $jsonSchema = $requestedModel;
@@ -214,7 +213,7 @@ class ResponseModelFactory
     private function fromSchema(Schema $requestedModel, ?OutputFormat $outputFormat) : ResponseModel {
         $this->events->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromSchema']));
         $schema = $requestedModel;
-        $class = $schema->typeDetails->class ?? throw new InvalidArgumentException('Schema must have a class to create ResponseModel');
+        $class = TypeInfo::className($schema->type) ?? throw new InvalidArgumentException('Schema must have a class to create ResponseModel');
         $instance = $this->makeInstance($class);
         $rendering = $this->renderSchema($schema);
         $jsonSchema = $rendering->jsonSchema();
@@ -279,7 +278,7 @@ class ResponseModelFactory
             is_string($requestedSchema) => $requestedSchema,
             is_array($requestedSchema) => $requestedSchema['name'] ?? $requestedSchema['x-title'] ?? null,
             method_exists($requestedSchema, 'name') => $requestedSchema->name(),
-            method_exists($requestedSchema, 'toSchema') => $requestedSchema->toSchema()->typeDetails->name,
+            method_exists($requestedSchema, 'toSchema') => $requestedSchema->toSchema()->name(),
             default => 'default_schema',
         };
         $name = $name ?: $this->config->schemaName() ?: 'default_schema';
@@ -444,7 +443,7 @@ class ResponseModelFactory
         if ($outputFormat !== null) {
             return $outputFormat;
         }
-        $returnedClass = $schema->typeDetails->class ?? '';
+        $returnedClass = TypeInfo::className($schema->type) ?? '';
         return $returnedClass === '' ? OutputFormat::array() : null;
     }
 }

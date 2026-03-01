@@ -8,13 +8,17 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIResponseAdapter;
+use RuntimeException;
 
 class CohereV2ResponseAdapter extends OpenAIResponseAdapter
 {
     #[\Override]
     public function fromResponse(HttpResponse $response): InferenceResponse {
-        $responseBody = $response->body();
-        $data = json_decode($responseBody, true);
+        $data = $this->decodeJsonData($response->body(), 'Cohere V2 response payload');
+        if (!isset($data['message']) || !is_array($data['message'])) {
+            throw new RuntimeException('Malformed Cohere V2 response payload: missing `message` object.');
+        }
+
         return new InferenceResponse(
             content: $this->makeContent($data),
             finishReason: $data['finish_reason'] ?? '',
@@ -26,7 +30,7 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
 
     #[\Override]
     protected function fromStreamResponse(string $eventBody, ?HttpResponse $responseData = null): ?PartialInferenceDelta {
-        $data = json_decode($eventBody, true);
+        $data = $this->decodeJsonData($eventBody, 'Cohere V2 stream payload');
         if (empty($data)) {
             return null;
         }

@@ -11,7 +11,7 @@ description: 'Run agents to completion with execute() or step through with itera
 
 ```php
 $finalState = $loop->execute($state);
-// @doctest id="3d0e"
+// @doctest id="6576"
 ```
 
 `iterate()` yields state after each step, giving you full control:
@@ -26,7 +26,7 @@ foreach ($loop->iterate($state) as $stepState) {
         echo "  Tool: {$exec->name()} -> {$exec->value()}\n";
     }
 }
-// @doctest id="4a72"
+// @doctest id="0d04"
 ```
 
 ## Inspecting State
@@ -51,7 +51,7 @@ $toolExec = $state->lastToolExecution();
 $toolExec?->name();     // 'weather'
 $toolExec?->value();    // '72F, sunny'
 $toolExec?->hasError(); // false
-// @doctest id="d0f5"
+// @doctest id="cc3d"
 ```
 
 ## Reading the Agent's Response
@@ -68,7 +68,7 @@ all other cases: forced stops, errors, budget exhaustion, etc.
 ```php
 $state->hasFinalResponse();             // true only on natural completion
 $state->finalResponse()->toString();    // strict: empty when interrupted
-// @doctest id="1068"
+// @doctest id="8fcf"
 ```
 
 Use `finalResponse()` when you need to distinguish between a genuine
@@ -82,7 +82,7 @@ otherwise the last step's output messages regardless of step type.
 
 ```php
 $state->currentResponse()->toString();  // pragmatic: last output text
-// @doctest id="ccfc"
+// @doctest id="0a08"
 ```
 
 Use `currentResponse()` when you want to show *something* to the user
@@ -111,7 +111,7 @@ if ($state->hasFinalResponse()) {
     echo "Agent stopped: {$reason->value}\n";
     echo $state->currentResponse()->toString();
 }
-// @doctest id="5f24"
+// @doctest id="6956"
 ```
 
 ## Listening to Events
@@ -129,5 +129,5 @@ $loop->onEvent(AgentStepCompleted::class, function (AgentStepCompleted $event) {
 $loop->wiretap(function ($event) {
     echo get_class($event) . "\n";
 });
-// @doctest id="2384"
+// @doctest id="c939"
 ```

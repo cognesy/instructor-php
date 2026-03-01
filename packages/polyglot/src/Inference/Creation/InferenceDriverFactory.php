@@ -43,8 +43,11 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  */
 class InferenceDriverFactory
 {
-    /** @var array<string, callable> */
-    private static array $drivers = [];
+    /** @var array<string, callable(LLMConfig,HttpClient,CanHandleEvents):CanProcessInferenceRequest> */
+    private static array $pendingDrivers = [];
+
+    /** @var array<string, callable(LLMConfig,HttpClient,CanHandleEvents):CanProcessInferenceRequest> */
+    private array $drivers = [];
 
     private array $bundledDrivers;
     private CanHandleEvents $events;
@@ -54,34 +57,58 @@ class InferenceDriverFactory
     ) {
         $this->events = EventBusResolver::using($events);
         $this->bundledDrivers = $this->bundledDrivers();
+        $this->drivers = self::$pendingDrivers;
+        self::$pendingDrivers = [];
     }
 
     /**
      * Registers driver under given name
-     * @param string|callable(\Cognesy\Polyglot\Inference\Config\LLMConfig, \Cognesy\Http\HttpClient, \Psr\EventDispatcher\EventDispatcherInterface): \Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest $driver
+     * @param string|callable(LLMConfig,HttpClient,CanHandleEvents):CanProcessInferenceRequest $driver
      */
     public static function registerDriver(string $name, string|callable $driver) : void {
-        self::$drivers[$name] = match(true) {
-            is_callable($driver) => $driver,
-            is_string($driver) => fn($config, $httpClient, $events) => new $driver($config, $httpClient, $events),
-        };
+        self::$pendingDrivers[$name] = self::toDriverFactory($driver);
     }
 
     public static function unregisterDriver(string $name): void {
-        unset(self::$drivers[$name]);
+        unset(self::$pendingDrivers[$name]);
     }
 
     public static function resetDrivers(): void {
-        self::$drivers = [];
+        self::$pendingDrivers = [];
     }
 
     public static function hasDriver(string $name): bool {
-        return isset(self::$drivers[$name]);
+        return isset(self::$pendingDrivers[$name]);
     }
 
     /** @return array<string> */
     public static function registeredDrivers(): array {
-        return array_keys(self::$drivers);
+        return array_keys(self::$pendingDrivers);
+    }
+
+    /**
+     * Registers driver in this factory instance.
+     * @param string|callable(LLMConfig,HttpClient,CanHandleEvents):CanProcessInferenceRequest $driver
+     */
+    public function withDriver(string $name, string|callable $driver): self {
+        $copy = clone $this;
+        $copy->drivers[$name] = self::toDriverFactory($driver);
+        return $copy;
+    }
+
+    public function withoutDriver(string $name): self {
+        $copy = clone $this;
+        unset($copy->drivers[$name]);
+        return $copy;
+    }
+
+    public function hasLocalDriver(string $name): bool {
+        return isset($this->drivers[$name]);
+    }
+
+    /** @return array<string> */
+    public function localDrivers(): array {
+        return array_keys($this->drivers);
     }
 
     /**
@@ -97,7 +124,7 @@ class InferenceDriverFactory
             throw new InvalidArgumentException("Provider type not specified in the configuration.");
         }
 
-        $driverFactory = self::$drivers[$driver] ?? $this->getBundledDriver($driver);
+        $driverFactory = $this->drivers[$driver] ?? $this->getBundledDriver($driver);
         if ($driverFactory === null) {
             throw new InvalidArgumentException("Provider type not supported - missing built-in or custom driver: {$driver}");
         }
@@ -111,7 +138,7 @@ class InferenceDriverFactory
 
         $this->events->dispatch(new InferenceDriverBuilt([
             'driverClass' => get_class($driver),
-            'config' => $config->toArray(),
+            'config' => $this->redactedConfig($config),
             'httpClient' => get_class($httpClient),
         ]));
 
@@ -160,5 +187,84 @@ class InferenceDriverFactory
             'openai-compatible' => fn($config, $httpClient, $events) => new OpenAICompatibleDriver($config, $httpClient, $events),
             'together' => fn($config, $httpClient, $events) => new OpenAICompatibleDriver($config, $httpClient, $events),
        ];
+    }
+
+    /**
+     * @param string|callable(LLMConfig,HttpClient,CanHandleEvents):CanProcessInferenceRequest $driver
+     * @return callable(LLMConfig,HttpClient,CanHandleEvents):CanProcessInferenceRequest
+     */
+    private static function toDriverFactory(string|callable $driver): callable {
+        return match(true) {
+            is_callable($driver) => static function (LLMConfig $config, HttpClient $httpClient, CanHandleEvents $events) use ($driver): CanProcessInferenceRequest {
+                $instance = $driver($config, $httpClient, $events);
+                if (!$instance instanceof CanProcessInferenceRequest) {
+                    throw new InvalidArgumentException('Custom inference driver factory must return ' . CanProcessInferenceRequest::class);
+                }
+
+                return $instance;
+            },
+            is_string($driver) => static function (LLMConfig $config, HttpClient $httpClient, CanHandleEvents $events) use ($driver): CanProcessInferenceRequest {
+                $instance = new $driver($config, $httpClient, $events);
+                if (!$instance instanceof CanProcessInferenceRequest) {
+                    throw new InvalidArgumentException('Custom inference driver class must implement ' . CanProcessInferenceRequest::class);
+                }
+
+                return $instance;
+            },
+        };
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    private function redactedConfig(LLMConfig $config): array {
+        return $this->redactSensitiveValues($config->toArray());
+    }
+
+    /**
+     * @param array<string,mixed> $data
+     * @return array<string,mixed>
+     */
+    private function redactSensitiveValues(array $data): array {
+        $redacted = [];
+        foreach ($data as $key => $value) {
+            if ($this->isSensitiveKey((string) $key)) {
+                $redacted[$key] = '[REDACTED]';
+                continue;
+            }
+
+            if (!is_array($value)) {
+                $redacted[$key] = $value;
+                continue;
+            }
+
+            $redacted[$key] = $this->redactSensitiveValues($value);
+        }
+
+        return $redacted;
+    }
+
+    private function isSensitiveKey(string $key): bool {
+        $normalized = strtolower(str_replace(['-', '_'], '', $key));
+
+        if (in_array($normalized, ['apikey', 'authorization', 'proxyauthorization', 'token', 'accesstoken', 'refreshtoken', 'secret', 'password', 'cookie', 'setcookie'], true)) {
+            return true;
+        }
+
+        if (str_contains($normalized, 'apikey')) {
+            return true;
+        }
+
+        if (str_contains($normalized, 'authorization')) {
+            return true;
+        }
+
+        if (str_contains($normalized, 'cookie')) {
+            return true;
+        }
+
+        return str_contains($normalized, 'token')
+            || str_contains($normalized, 'secret')
+            || str_contains($normalized, 'password');
     }
 }

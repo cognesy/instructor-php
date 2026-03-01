@@ -40,7 +40,9 @@ it('processes synthetic OpenAI streaming data with a custom parser', function ()
 
     $generator = function () {
         yield 'data: {"id": "cmpl-xyz", "object": "text_completion", "choices": [{"text": "Hello, ", "index": 0}]}'. "\n";
+        yield "\n";
         yield 'data: {"id": "cmpl-xyz", "object": "text_completion", "choices": [{"text": "world!", "index": 1}]}' . "\n";
+        yield "\n";
     };
 
     $expected = [
@@ -131,9 +133,13 @@ it('stops reading stream when parser signals termination', function () {
 
     $generator = function () {
         yield 'data: {"part":1}' . "\n";
+        yield "\n";
         yield 'data: {"part":2}' . "\n";
+        yield "\n";
         yield 'data: [DONE]' . "\n";
+        yield "\n";
         yield 'data: {"part":3}' . "\n"; // must not be parsed/yielded
+        yield "\n";
     };
 
     $result = iterator_to_array($reader->eventsFrom($generator()));

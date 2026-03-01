@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-schema",
-  "description": "Object to schema conversion for Instructor library, should be used with Instructor",
+  "description": "TypeInfo-first schema package for Instructor",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
   "support": {

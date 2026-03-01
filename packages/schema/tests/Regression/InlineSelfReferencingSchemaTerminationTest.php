@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Schema\Factories\SchemaFactory;
+use Cognesy\Schema\SchemaFactory;
 use Cognesy\Schema\Tests\Examples\Schema\SelfReferencingClass;
 
 // Guards regression from instructor-hos5 (self-referential inline schema recursion blowup).
@@ -8,7 +8,7 @@ it('terminates for self-referencing classes when object references are disabled'
     $factory = new SchemaFactory(useObjectReferences: false);
 
     $schema = $factory->schema(SelfReferencingClass::class);
-    $json = $schema->toJsonSchema();
+    $json = $factory->toJsonSchema($schema);
     $parent = $json['properties']['parent'] ?? [];
     $cycleCut = $parent['properties']['parent'] ?? [];
 

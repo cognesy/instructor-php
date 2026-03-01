@@ -116,10 +116,9 @@ $structure = Structure::define('person', [
 
 Instructor supports validation of structures.
 
-You can define field validator with:
+You can define field validation with:
 
- - `$field->validator(callable $validator)` - $validator has to return an instance of `ValidationResult`
- - `$field->validIf(callable $condition, string $message)` - $condition has to return false if validation has not succeeded, $message with be provided to LLM as explanation for self-correction of the next extraction attempt
+- `$field->validIf(callable $condition, string $message)` - `$condition` should return `true` for valid values and `false` for invalid values; `$message` is used to explain validation failure.
 
 Let's add a simple field validation to the example above: 
 
@@ -183,8 +182,8 @@ dump($personArray);
 
 ## Working with `Structure` objects
 
-Structure object properties can be accessed using `get()` and `set()` methods,
-but also directly as properties.
+Structure is immutable when writing data: use `set()` and reassign returned instance.
+You can read values using `get()` or magic property access.
 
 ```php
 <?php
@@ -197,28 +196,26 @@ $person = Structure::define('person', [
     ])
 ]);
 
-// Setting properties via set()
-$person->set('name', 'John Doe');
-$person->set('age', 30);
-$person->get('role')->set('name', 'Manager');
-$person->get('role')->set('level', 1);
+// set() is immutable - reassign result
+$person = $person->set('name', 'John Doe');
+$person = $person->set('age', 30);
 
-// Setting properties directly 
-$person->name = 'John Doe';
-$person->age = 30;
-$person->role->name = 'Manager';
-$person->role->level = 1;
+// Nested structures are stored as arrays
+$person = $person->set('role', [
+    'name' => 'Manager',
+    'level' => 1,
+]);
 
 // Getting properties via get()
 $name = $person->get('name');
 $age = $person->get('age');
-$role = $person->get('role')->get('name');
-$level = $person->get('role')->get('level');
+$role = $person->get('role')['name'];
+$level = $person->get('role')['level'];
 
 // Getting properties directly
 $name = $person->name;
 $age = $person->age;
-$role = $person->role->name;
-$level = $person->role->level;
+$role = $person->role['name'];
+$level = $person->role['level'];
 ?>
 ```

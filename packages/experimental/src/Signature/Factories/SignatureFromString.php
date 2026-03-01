@@ -21,10 +21,11 @@ class SignatureFromString
 
         $signatureString = $this->normalizeSignatureString($signatureString);
         [$inputs, $outputs] = explode('>', $signatureString);
+        $structureFactory = new StructureFactory();
 
         return new Signature(
-            input: StructureFactory::fromString('inputs', $inputs)->schema(),
-            output: StructureFactory::fromString('outputs', $outputs)->schema(),
+            input: $structureFactory->fromString('inputs', $inputs)->schema(),
+            output: $structureFactory->fromString('outputs', $outputs)->schema(),
             description: $description,
         );
     }

@@ -69,6 +69,7 @@ final class Embeddings implements CanCreateEmbeddings
         return $copy;
     }
 
+    #[\Override]
     public function create(?EmbeddingsRequest $request = null): PendingEmbeddings {
         $request ??= new EmbeddingsRequest(
             input: $this->inputs,
@@ -80,9 +81,7 @@ final class Embeddings implements CanCreateEmbeddings
         return $this->runtime->create($request);
     }
 
-    /**
-     * @param string|callable $driver
-     */
+    /** @param string|callable(\Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig,\Cognesy\Http\HttpClient,\Psr\EventDispatcher\EventDispatcherInterface):\Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization $driver */
     public static function registerDriver(string $name, string|callable $driver) : void {
         EmbeddingsDriverFactory::registerDriver($name, $driver);
     }

@@ -51,3 +51,12 @@ it('aggregates current errors and exposes currentErrors()', function () {
         ->and($exec->isSuccessful())->toBeFalse()
         ->and($exec->isFailedFinal())->toBeFalse();
 });
+
+it('does not duplicate errors when current finalized attempt is already in attempts list', function () {
+    $exec = InferenceExecution::fromRequest(new InferenceRequest());
+    $exec = $exec->withFailedAttempt(new InferenceResponse(usage: new Usage()), null, 'boom');
+
+    expect($exec->currentErrors())->toBe(['boom'])
+        ->and($exec->errors())->toBe(['boom'])
+        ->and(count($exec->errors()))->toBe(1);
+});

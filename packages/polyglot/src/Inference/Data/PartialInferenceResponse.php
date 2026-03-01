@@ -343,6 +343,7 @@ class PartialInferenceResponse
     }
 
     private function startToolByName(string $key): void {
+        $this->toolsCount += 1;
         $this->tools[$key] = [
             'id' => '',
             'name' => $this->toolName,
@@ -371,10 +372,15 @@ class PartialInferenceResponse
     public function toArray(): array {
         return [
             'content_delta' => $this->contentDelta,
+            'content' => $this->content,
             'reasoning_content_delta' => $this->reasoningContentDelta,
+            'reasoning_content' => $this->reasoningContent,
             'tool_id' => $this->toolId,
             'tool_name' => $this->toolName,
             'tool_args' => $this->toolArgs,
+            'tools' => $this->tools,
+            'tools_count' => $this->toolsCount,
+            'last_tool_key' => $this->lastToolKey,
             'finish_reason' => $this->finishReason,
             'usage' => $this->usage?->toArray(),
             'usage_is_cumulative' => $this->usageIsCumulative,
@@ -386,7 +392,7 @@ class PartialInferenceResponse
     }
 
     public static function fromArray(array $data): self {
-        return new self(
+        $partial = new self(
             contentDelta: $data['content_delta'] ?? '',
             reasoningContentDelta: $data['reasoning_content_delta'] ?? '',
             toolId: $data['tool_id'] ?? '',
@@ -400,6 +406,14 @@ class PartialInferenceResponse
             createdAt: isset($data['created_at']) ? new DateTimeImmutable($data['created_at']) : null,
             updatedAt: isset($data['updated_at']) ? new DateTimeImmutable($data['updated_at']) : null
         );
+
+        $partial->content = (string) ($data['content'] ?? $partial->contentDelta);
+        $partial->reasoningContent = (string) ($data['reasoning_content'] ?? $partial->reasoningContentDelta);
+        $partial->tools = self::fromSerializedTools($data['tools'] ?? []);
+        $partial->toolsCount = isset($data['tools_count']) ? (int) $data['tools_count'] : count($partial->tools);
+        $partial->lastToolKey = (string) ($data['last_tool_key'] ?? '');
+
+        return $partial;
     }
 
     // INTERNAL /////////////////////////////////////////////////////
@@ -465,5 +479,30 @@ class PartialInferenceResponse
         }
 
         $this->accumulateTools($previous);
+    }
+
+    /**
+     * @param mixed $data
+     * @return array<string,array{id:string,name:string,args:string}>
+     */
+    private static function fromSerializedTools(mixed $data): array {
+        if (!is_array($data)) {
+            return [];
+        }
+
+        $tools = [];
+        foreach ($data as $key => $entry) {
+            if (!is_string($key) || !is_array($entry)) {
+                continue;
+            }
+
+            $tools[$key] = [
+                'id' => (string) ($entry['id'] ?? ''),
+                'name' => (string) ($entry['name'] ?? ''),
+                'args' => (string) ($entry['args'] ?? ''),
+            ];
+        }
+
+        return $tools;
     }
 }

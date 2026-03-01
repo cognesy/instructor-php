@@ -13,7 +13,12 @@ trait HandlesTransformation
     }
 
     public function toArray() : array {
-        return match(true) {
+        if ($this->rawSchema !== null) {
+            return $this->rawSchema;
+        }
+
+        $array = match(true) {
+            $this->hasRef() => $this->refToArray(),
             $this->type->isObject() => $this->objectToArray(),
             $this->type->isArray() => $this->arrayToArray(),
             $this->type->isString() => $this->stringToArray(),
@@ -23,6 +28,8 @@ trait HandlesTransformation
             $this->type->isAny() => $this->anyToArray(),
             default => throw new \Exception('Invalid type: ' . $this->type),
         };
+
+        return $this->appendDefinitions($array);
     }
 
     public function toFunctionCall(
@@ -133,6 +140,14 @@ trait HandlesTransformation
         ], $this->meta));
     }
 
+    private function refToArray() : array {
+        return $this->prepare([
+            '$ref' => $this->ref(),
+            'description' => $this->description,
+            'title' => $this->title,
+        ], $this->meta);
+    }
+
     // INTERNAL ////////////////////////////////////////////////////////////
 
     private function propertiesAsArray() : array {
@@ -176,5 +191,23 @@ trait HandlesTransformation
             $result[$key] = $value;
         }
         return array_merge($values, $result);
+    }
+
+    private function appendDefinitions(array $schema) : array {
+        if (!$this->hasDefs()) {
+            return $schema;
+        }
+
+        $definitions = [];
+        foreach ($this->defs() as $name => $definition) {
+            $definitions[$name] = $definition->toArray();
+        }
+
+        if ($definitions === []) {
+            return $schema;
+        }
+
+        $schema['$defs'] = $definitions;
+        return $schema;
     }
 }

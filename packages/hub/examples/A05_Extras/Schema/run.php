@@ -16,7 +16,7 @@ the JSON Schema manually, which can be error-prone and time-consuming.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Schema\Factories\SchemaFactory;
+use Cognesy\Schema\SchemaFactory;
 
 class City {
     public string $name;

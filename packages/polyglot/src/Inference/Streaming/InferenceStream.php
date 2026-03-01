@@ -35,6 +35,8 @@ class InferenceStream
     protected InferenceExecution $execution;
     private ResponseCachePolicy $cachePolicy;
     private PartialInferenceResponseList $cachedResponses;
+    /** @var list<PartialInferenceResponse> */
+    private array $cachedResponsesBuffer = [];
     private bool $streamConsumed = false;
 
     private ?DateTimeImmutable $startedAt;
@@ -42,6 +44,9 @@ class InferenceStream
     /** @var (Closure(InferenceResponse): InferenceResponse)|null */
     private ?Closure $decorateFinalResponse = null;
 
+    /**
+     * @param (Closure(InferenceResponse):InferenceResponse)|null $decorateFinalResponse
+     */
     public function __construct(
         InferenceExecution         $execution,
         CanProcessInferenceRequest $driver,
@@ -79,10 +84,11 @@ class InferenceStream
 
         foreach ($this->makePartialResponses($this->stream) as $partialInferenceResponse) {
             if ($this->shouldCache()) {
-                $this->cachedResponses = $this->cachedResponses->withNewPartialResponse($partialInferenceResponse);
+                $this->cachedResponsesBuffer[] = $partialInferenceResponse;
             }
             yield $partialInferenceResponse;
         }
+        $this->materializeCachedResponses();
         $this->streamConsumed = true;
     }
 
@@ -244,5 +250,18 @@ class InferenceStream
     private function shouldCache(): bool
     {
         return $this->cachePolicy->shouldCache();
+    }
+
+    private function materializeCachedResponses(): void {
+        if (!$this->shouldCache()) {
+            return;
+        }
+
+        if ($this->cachedResponsesBuffer === []) {
+            return;
+        }
+
+        $this->cachedResponses = PartialInferenceResponseList::of(...$this->cachedResponsesBuffer);
+        $this->cachedResponsesBuffer = [];
     }
 }

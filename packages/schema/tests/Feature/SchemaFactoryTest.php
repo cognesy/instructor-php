@@ -1,9 +1,9 @@
 <?php
 
-use Cognesy\Schema\Data\Schema\ObjectSchema;
-use Cognesy\Schema\Factories\SchemaFactory;
+use Cognesy\Schema\Data\ObjectSchema;
+use Cognesy\Schema\JsonSchemaRenderer;
+use Cognesy\Schema\SchemaFactory;
 use Cognesy\Schema\Tests\Examples\ClassInfo\TestClassA;
-use Cognesy\Schema\Visitors\SchemaToJsonSchema;
 
 it('creates a schema from a class name', function () {
     $factory = new SchemaFactory();
@@ -26,7 +26,7 @@ it('creates a schema from a class name with object references', function () {
     $factory = new SchemaFactory(useObjectReferences: true);
     /** @var ObjectSchema $schema */
     $schema = $factory->schema(TestClassA::class);
-    $json = (new SchemaToJsonSchema)->toArray($schema);
+    $json = (new JsonSchemaRenderer)->toArray($schema);
 
     expect($json)->toBeArray();
     $expected = [

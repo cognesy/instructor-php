@@ -1,20 +1,16 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Schema\Factories\SchemaFactory;
-use Cognesy\Schema\Factories\ToolCallBuilder;
+use Cognesy\Schema\SchemaFactory;
 use Cognesy\Schema\Tests\Examples\TransitiveRefs\Leaf;
 use Cognesy\Schema\Tests\Examples\TransitiveRefs\Middle;
 use Cognesy\Schema\Tests\Examples\TransitiveRefs\Root;
-use Cognesy\Schema\Visitors\SchemaToJsonSchema;
+use Cognesy\Schema\Tests\Support\ToolCallSchemaFixtureBuilder;
 
 // Guards regression from instructor-pf02 (nested refs completeness in tool-call schemas).
 it('generates transitive $defs and resolves all internal refs for nested object references', function () {
     $factory = new SchemaFactory(useObjectReferences: true);
-    $builder = new ToolCallBuilder($factory);
-
     $schema = $factory->schema(Root::class);
-    $jsonSchema = (new SchemaToJsonSchema)->toArray($schema, $builder->onObjectRef(...));
-    $toolCall = $builder->renderToolCall($jsonSchema, 'test_tool', 'test');
+    $toolCall = ToolCallSchemaFixtureBuilder::render($factory, $schema, 'test_tool', 'test');
     $parameters = $toolCall[0]['function']['parameters'];
     $defs = $parameters['$defs'] ?? [];
 

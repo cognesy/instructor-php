@@ -105,6 +105,7 @@ final class Scalar implements CanProvideJsonSchema, CanDeserializeSelf, CanTrans
         );
     }
 
+    /** @param class-string<BackedEnum> $enumType */
     public static function enum(
         string $enumType,
         string $name = 'enum',
@@ -152,7 +153,7 @@ final class Scalar implements CanProvideJsonSchema, CanDeserializeSelf, CanTrans
     }
 
     #[\Override]
-    public function fromArray(array $data, ?string $toolName = null) : static {
+    public function fromArray(array $data) : static {
         $this->value = $data[$this->name] ?? $this->defaultValue;
         return $this;
     }

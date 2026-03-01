@@ -2,39 +2,35 @@
 
 namespace Cognesy\Schema\Reflection;
 
-use Cognesy\Schema\Data\TypeDetails;
+use Cognesy\Schema\Exceptions\ReflectionException;
 use Cognesy\Schema\Utils\Descriptions;
-use Exception;
 use ReflectionClass;
+use Symfony\Component\TypeInfo\Type;
 
-class ClassInfo {
+class ClassInfo
+{
     /** @var class-string */
-    protected string $class;
-    protected ReflectionClass $reflectionClass;
-    protected array $propertyInfos = [];
-    protected bool $isNullable = false;
+    private string $class;
+    private ReflectionClass $reflectionClass;
+
+    /** @var array<string, PropertyInfo>|null */
+    private ?array $properties = null;
 
     /**
      * @param class-string $class
      */
-    protected function __construct(string $class) {
-        // if class name starts with ?, remove it
-        if (str_starts_with($class, '?')) {
-            $class = substr($class, 1);
-            $this->isNullable = true;
-        }
+    private function __construct(string $class) {
         $this->class = $class;
-        /** @var class-string $class */
-        $this->reflectionClass = new ReflectionClass($class);
+        $this->reflectionClass = new ReflectionClass($this->class);
     }
 
     public static function fromString(string $class) : self {
-        return match(true) {
-            // is any enum class
-            class_exists($class) && is_subclass_of($class, \BackedEnum::class) => new EnumInfo($class),
-            class_exists($class) => new ClassInfo($class),
-            default => throw new Exception("Cannot create ClassInfo for `$class`"),
-        };
+        if (!class_exists($class)) {
+            throw ReflectionException::classNotFound($class);
+        }
+
+        /** @var class-string $class */
+        return new self($class);
     }
 
     public function getClass() : string {
@@ -45,8 +41,8 @@ class ClassInfo {
         return $this->reflectionClass->getShortName();
     }
 
-    public function getPropertyTypeDetails(string $property): TypeDetails {
-        return $this->getProperty($property)->getTypeDetails();
+    public function getPropertyType(string $property) : Type {
+        return $this->getProperty($property)->getType();
     }
 
     /** @return string[] */
@@ -54,42 +50,50 @@ class ClassInfo {
         return array_keys($this->getProperties());
     }
 
-    /** @return PropertyInfo[] */
+    /** @return array<string, PropertyInfo> */
     public function getProperties() : array {
-        if (empty($this->propertyInfos)) {
-            $this->propertyInfos = $this->makePropertyInfos();
+        if ($this->properties !== null) {
+            return $this->properties;
         }
-        return $this->propertyInfos;
+
+        $result = [];
+        foreach ($this->reflectionClass->getProperties() as $property) {
+            if ($property->isStatic()) {
+                continue;
+            }
+            $result[$property->getName()] = PropertyInfo::fromReflection($property);
+        }
+
+        $this->properties = $result;
+        return $result;
     }
 
     public function getProperty(string $name) : PropertyInfo {
-        $properties = $this->getProperties();
-        if (!isset($properties[$name])) {
-            throw new \Exception("Property `$name` not found in class `$this->class`.");
+        $property = $this->getProperties()[$name] ?? null;
+        if ($property === null) {
+            throw ReflectionException::propertyNotFound($name, $this->class);
         }
-        return $properties[$name];
+
+        return $property;
     }
 
-    public function getPropertyDescription(string $property): string {
+    public function getPropertyDescription(string $property) : string {
         return $this->getProperty($property)->getDescription();
     }
 
     public function hasProperty(string $property) : bool {
-        $properties = $this->getProperties();
-        return isset($properties[$property]);
+        return isset($this->getProperties()[$property]);
     }
 
     public function isPublic(string $property) : bool {
-        if (!$this->hasProperty($property)) {
-            return false;
-        }
-        return $this->getProperty($property)->isPublic();
+        return $this->hasProperty($property) && $this->getProperty($property)->isPublic();
     }
 
     public function isNullable(?string $property = null) : bool {
         if ($property === null) {
-            return $this->isNullable;
+            return false;
         }
+
         return $this->getProperty($property)->isNullable();
     }
 
@@ -103,17 +107,13 @@ class ClassInfo {
 
     /** @return string[] */
     public function getRequiredProperties() : array {
-        $properties = $this->getProperties();
-        if (empty($properties)) {
-            return [];
-        }
         $required = [];
-        foreach ($properties as $property) {
-            if (!$property->isRequired()) {
-                continue;
+        foreach ($this->getProperties() as $property) {
+            if ($property->isRequired()) {
+                $required[] = $property->getName();
             }
-            $required[] = $property->getName();
         }
+
         return $required;
     }
 
@@ -122,92 +122,50 @@ class ClassInfo {
     }
 
     public function isBacked() : bool {
-        return $this->reflectionClass->isEnum()
-            && (new EnumInfo($this->class))->isBacked();
+        return $this->isEnum() && is_subclass_of($this->class, \BackedEnum::class);
+    }
+
+    public function enumBackingType() : string {
+        if (!$this->isBacked()) {
+            return '';
+        }
+
+        /** @var class-string<\UnitEnum> $enumClass */
+        $enumClass = $this->class;
+        $enum = new \ReflectionEnum($enumClass);
+        $backingType = $enum->getBackingType();
+        if (!$backingType instanceof \ReflectionNamedType) {
+            return '';
+        }
+
+        return $backingType->getName();
     }
 
     public function implementsInterface(string $interface) : bool {
-        if (!class_exists($this->class)) {
-            return false;
-        }
         return in_array($interface, class_implements($this->class), true);
     }
 
-    // CONSTRUCTOR ///////////////////////////////////////////////////////////////
-
-    public function getConstructorInfo(): ConstructorInfo {
-        return ConstructorInfo::fromReflectionClass($this->reflectionClass);
-    }
-
-    public function hasConstructor(): bool {
-        return $this
-            ->getConstructorInfo()
-            ->hasConstructor();
-    }
-
-    // FILTERING /////////////////////////////////////////////////////////////////
-
     /**
-     * @param ClassInfo $classInfo
      * @param array<callable(PropertyInfo): bool> $filters
-     * @return array<string>
+     * @return string[]
      */
     public function getFilteredPropertyNames(array $filters) : array {
-        return array_keys($this->getFilteredPropertyData(
-            filters: $filters,
-            extractor: fn(PropertyInfo $property) => $property->getName()
-        ));
+        return array_keys($this->getFilteredProperties($filters));
     }
 
     /**
-     * @param ClassInfo $classInfo
      * @param array<callable(PropertyInfo): bool> $filters
-     * @return array<PropertyInfo>
+     * @return array<string, PropertyInfo>
      */
     public function getFilteredProperties(array $filters) : array {
-        return $this->filterProperties($filters);
-    }
-
-    // INTERNAL /////////////////////////////////////////////////////////////////
-
-    /**
-     * @param array<callable(PropertyInfo): bool> $filters
-     * @return PropertyInfo[]
-     */
-    protected function filterProperties(array $filters) : array {
-        $propertyInfos = $this->getProperties();
-        foreach($filters as $filter) {
+        $properties = $this->getProperties();
+        foreach ($filters as $filter) {
             if (!is_callable($filter)) {
-                throw new Exception("Filter must be a callable.");
+                throw ReflectionException::invalidFilter();
             }
-            $propertyInfos = array_filter($propertyInfos, $filter);
+            $properties = array_filter($properties, $filter);
         }
-        return $propertyInfos;
-    }
 
-    /** @return PropertyInfo[] */
-    protected function makePropertyInfos() : array {
-        $properties = $this->reflectionClass->getProperties() ?? [];
-        $info = [];
-        foreach ($properties as $property) {
-            if ($property->isStatic()) {
-                continue;
-            }
-            $info[$property->name] = PropertyInfo::fromReflection($property);
-        }
-        return $info;
-    }
-
-    /**
-     * @template T
-     * @param array<callable(PropertyInfo): bool> $filters
-     * @param callable(PropertyInfo): T $extractor
-     * @return array<string, T>
-     */
-    protected function getFilteredPropertyData(array $filters, callable $extractor) : array {
-        return array_map(
-            callback: fn(PropertyInfo $property) => $extractor($property),
-            array: $this->filterProperties($filters),
-        );
+        return $properties;
     }
 }

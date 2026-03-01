@@ -3,7 +3,8 @@
 namespace Cognesy\Addons\ToolUse\Tools;
 
 use Closure;
-use Cognesy\Dynamic\StructureFactory;
+use Cognesy\Dynamic\CallableSchemaFactory;
+use Cognesy\Schema\SchemaFactory;
 
 class FunctionTool extends BaseTool
 {
@@ -28,11 +29,11 @@ class FunctionTool extends BaseTool
      * @param callable(mixed...): mixed $function
      */
     public static function fromCallable(callable $function): self {
-        $structure = StructureFactory::fromCallable($function);
+        $schema = (new CallableSchemaFactory())->fromCallable($function);
         return new self(
-            name: $structure->name(),
-            description: $structure->description(),
-            jsonSchema: $structure->toJsonSchema(),
+            name: $schema->name(),
+            description: $schema->description(),
+            jsonSchema: SchemaFactory::default()->toJsonSchema($schema),
             callback: $function instanceof Closure
                 ? $function
                 : Closure::fromCallable($function)

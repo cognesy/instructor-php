@@ -17,7 +17,6 @@ use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\Extraction\Contracts\CanBufferContent;
 use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
 use Cognesy\Instructor\Extraction\Contracts\CanProvideContentBuffer;
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\ModularStreamFactory;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\ModularUpdateGenerator;
 use Cognesy\Instructor\ResponseIterators\Sync\SyncUpdateGenerator;
 use Cognesy\Instructor\RetryPolicy\DefaultRetryPolicy;
@@ -73,16 +72,12 @@ class ResponseIteratorFactory
     }
 
     private function makeStreamingIterator(): CanStreamStructuredOutputUpdates {
-        $factory = new ModularStreamFactory(
+        return new ModularUpdateGenerator(
+            inferenceProvider: $this->makeInferenceProvider(),
             deserializer: $this->responseDeserializer,
             transformer: $this->responseTransformer,
             events: $this->events,
             bufferFactory: $this->makeBufferFactory(),
-        );
-
-        return new ModularUpdateGenerator(
-            inferenceProvider: $this->makeInferenceProvider(),
-            factory: $factory,
         );
     }
 

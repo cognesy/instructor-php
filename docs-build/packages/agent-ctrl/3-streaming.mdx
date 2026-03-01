@@ -15,7 +15,7 @@ $response = AgentCtrl::openCode()
     ->onComplete(fn(AgentResponse $response) => print("\n[done]\n"))
     ->onError(fn(string $message, ?string $code) => print("\n[error:$message]\n"))
     ->executeStreaming('Explain this package architecture.');
-// @doctest id="ae97"
+// @doctest id="62c3"
 ```
 
 `execute()` is a non-streaming convenience method.

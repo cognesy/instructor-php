@@ -1,17 +1,8 @@
 <?php
 
-/*
-|--------------------------------------------------------------------------
-| Test Case
-|--------------------------------------------------------------------------
-|
-| The closure you provide to your test functions is always bound to a specific PHPUnit test
-| case class. By default, that class is "PHPUnit\Framework\TestCase". Of course, you may
-| need to change it using the "uses()" function to bind a different classes or traits.
-|
-*/
+declare(strict_types=1);
 
-// uses(Tests\TestCase::class)->in('Feature');
+bootstrapSchemaPackageAutoload();
 
 /*
 |--------------------------------------------------------------------------
@@ -52,7 +43,38 @@ expect()->extend('toBeCloseTo', function (float $expected, int $precision = 8) {
 |
 */
 
-function something()
+if (!function_exists('something')) {
+    function something()
+    {
+        // ..
+    }
+}
+
+function bootstrapSchemaPackageAutoload() : void
 {
-    // ..
+    $root = dirname(__DIR__);
+    spl_autoload_register(
+        static function (string $class) use ($root) : void {
+            $prefixes = [
+                'Cognesy\\Schema\\Tests\\' => $root . '/tests/',
+                'Cognesy\\Schema\\' => $root . '/src/',
+            ];
+
+            foreach ($prefixes as $prefix => $baseDir) {
+                if (!str_starts_with($class, $prefix)) {
+                    continue;
+                }
+
+                $relative = substr($class, strlen($prefix));
+                $file = $baseDir . str_replace('\\', '/', $relative) . '.php';
+                if (is_file($file)) {
+                    require_once $file;
+                }
+
+                return;
+            }
+        },
+        true,
+        true,
+    );
 }

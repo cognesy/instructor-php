@@ -12,10 +12,11 @@ use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
 use Cognesy\Instructor\Validation\ValidationResult;
 use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
 use Cognesy\Schema\Contracts\CanProvideSchema;
-use Cognesy\Schema\Data\Schema\Schema;
-use Cognesy\Schema\Data\TypeDetails;
+use Cognesy\Schema\Data\Schema;
+use Cognesy\Schema\SchemaFactory;
 use Cognesy\Utils\Collection\ArrayList;
 use IteratorAggregate;
+use ReflectionClass;
 use Traversable;
 
 /**
@@ -51,10 +52,12 @@ final class Sequence implements
         $this->items = ArrayList::empty();
     }
 
+    #[\Override]
     public static function of(string $class, string $name = '', string $description = '') : static {
         return new static($class, $name, $description);
     }
 
+    #[\Override]
     public function toArray() : array {
         return $this->items->toArray();
     }
@@ -63,6 +66,7 @@ final class Sequence implements
         return $this->items->toArray();
     }
 
+    #[\Override]
     public function count(): int {
         return $this->items->count();
     }
@@ -79,10 +83,12 @@ final class Sequence implements
         return $this->items->last();
     }
 
+    #[\Override]
     public function push(mixed $item) : void {
         $this->items = $this->items->withAppended($item);
     }
 
+    #[\Override]
     public function pop() : mixed {
         if ($this->items->isEmpty()) {
             return null;
@@ -94,6 +100,7 @@ final class Sequence implements
         return $item;
     }
 
+    #[\Override]
     public function isEmpty() : bool {
         return $this->items->isEmpty();
     }
@@ -105,16 +112,17 @@ final class Sequence implements
 
     #[\Override]
     public function toSchema(): Schema {
-        $collectionSchema = Schema::collection(
+        $factory = SchemaFactory::default();
+        $collectionSchema = $factory->collection(
             nestedType: $this->class,
             name: 'list',
         );
 
-        $nestedTypeDetails = TypeDetails::fromTypeName($this->class);
+        $itemLabel = (new ReflectionClass($this->class))->getShortName();
 
-        return Schema::object(
+        return $factory->object(
             class: self::class,
-            name: $this->name ?: ('collectionOf' . $nestedTypeDetails->classOnly()),
+            name: $this->name ?: ('collectionOf' . $itemLabel),
             description: $this->description ?: ('A collection of ' . $this->class),
             properties: ['list' => $collectionSchema],
             required: ['list'],
@@ -122,7 +130,7 @@ final class Sequence implements
     }
 
     #[\Override]
-    public function fromArray(array $data, ?string $toolName = null): static {
+    public function fromArray(array $data): static {
         $returnedList = $data['list'] ?? $data['properties']['list'] ?? [];
 
         if (!is_array($returnedList)) {
@@ -162,6 +170,7 @@ final class Sequence implements
         return ValidationResult::make($errors, 'Sequence validation failed');
     }
 
+    #[\Override]
     public function offsetExists(mixed $offset): bool {
         if (!is_int($offset)) {
             return false;
@@ -170,6 +179,7 @@ final class Sequence implements
         return $this->items->getOrNull($offset) !== null;
     }
 
+    #[\Override]
     public function offsetGet(mixed $offset): mixed {
         if (!is_int($offset)) {
             return null;
@@ -178,6 +188,7 @@ final class Sequence implements
         return $this->items->getOrNull($offset);
     }
 
+    #[\Override]
     public function offsetSet(mixed $offset, mixed $value): void {
         if ($offset === null) {
             $this->push($value);
@@ -193,6 +204,7 @@ final class Sequence implements
         $this->items = ArrayList::fromArray(array_values($items));
     }
 
+    #[\Override]
     public function offsetUnset(mixed $offset): void {
         if (!is_int($offset)) {
             return;
