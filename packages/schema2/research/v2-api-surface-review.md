@@ -1,191 +1,200 @@
 # Schema2 V2 API Surface Review (instructor-8e35)
 
-Date: 2026-03-01
+Date: 2026-03-01  
+Status: Revised after critical review
 
 ## Context
 
-Current `Cognesy\Schema` surface is still wider than the domain boundary should allow.
-Schema should be focused on:
+Current `Cognesy\Schema` is still too broad for a clean 2.0 boundary.  
+Target boundary:
 
-- structural type modeling
-- schema derivation/introspection
-- JSON Schema parsing/rendering
+- schema model + schema conversion capabilities
+- no generic reflection toolkit exports
+- no package-specific convenience utilities
+- no tool-call envelope assembly concerns
 
-Schema should not be responsible for:
 
-- tool-call envelope assembly (`type=function`, function metadata wrapping)
-- generic reflection helper toolkit for other packages
-- package-specific attribute metadata extraction convenience
 
-## How this review was built (reproducible)
+## Public API Split (revised)
 
-1. Enumerated current public classes:
-- `find packages/schema2/src -type f -name '*.php'`
+### Group A: Foundation API for 2.0
 
-2. Mapped external imports:
-- `rg 'use Cognesy\\Schema\\' -n packages examples docs-build --glob '!packages/schema/**' --glob '!packages/schema2/**'`
-
-3. Focused leakage check for internals:
-- `rg 'use Cognesy\\Schema\\Utils\\|use Cognesy\\Schema\\Reflection\\|use Cognesy\\Schema\\Visitors\\|use Cognesy\\Schema\\Factories\\ToolCallBuilder' -n packages --glob '!packages/schema/**' --glob '!packages/schema2/**'`
-
-## External usage snapshot (runtime packages)
-
-Most imported symbols in runtime packages:
-
-- `Data\TypeDetails` (dynamic/instructor heavy)
-- `Data\Schema\Schema` (instructor/dynamic/experimental/addons)
-- `Factories\SchemaFactory`
-- `Contracts\CanProvideSchema`
-
-Internal leakage currently used by runtime packages:
-
-- `Reflection\ClassInfo` (dynamic, experimental)
-- `Reflection\FunctionInfo` (dynamic, addons)
-- `Reflection\PropertyInfo` (experimental)
-- `Utils\AttributeUtils` (experimental)
-- `Visitors\SchemaToJsonSchema` (instructor, dynamic)
-- `Factories\ToolCallBuilder` (instructor)
-
-## Public API Split
-
-## Group A: Solid foundation for 2.0
-
-These align with schema domain and should remain public/stable.
+Keep public and stable:
 
 - `Contracts\CanProvideSchema`
-- `Data\Schema\Schema`
-- `Data\Schema\ObjectSchema`
-- `Data\Schema\ScalarSchema`
-- `Data\Schema\EnumSchema`
-- `Data\Schema\CollectionSchema`
-- `Data\Schema\ArraySchema` (keep, but tighten semantics)
-- `Data\TypeDetails` (keep for now; may be slimmed)
+- `Data\Schema\Schema` plus core nodes currently needed by runtime (`ObjectSchema`, `ScalarSchema`, `EnumSchema`, `CollectionSchema`, `ArraySchema`)
+- `Data\TypeDetails` (temporary; keep only while downstream migration is incomplete)
 - `Factories\SchemaFactory`
-- `Factories\JsonSchemaToSchema` -> name needs change, contract is solid
-- `Visitors\SchemaToJsonSchema` (through a contract/facade, see below)
+- `Factories\JsonSchemaToSchema` -> bad name, contract ok
+- `Visitors\SchemaToJsonSchema` -> should not be public (temporary public; target migration to renderer contract)
 - `Attributes\Description`
 - `Attributes\Instructions`
 
-Rationale:
-- These symbols represent the core input/output vocabulary expected by `instructor`, `dynamic`, `addons`, and examples.
-- Removing them immediately would force broad high-risk rewrites without architectural payoff.
+### Group B: Must-change / deprecate for 2.0
 
-## Group B: Questionable / must-change for cleaner API
+Deprecate as public cross-package dependencies:
 
-These should be refactored out of the public API boundary or moved to domain-specific packages.
+- `Cognesy\Schema\Reflection\ClassInfo`
+- `Cognesy\Schema\Reflection\FunctionInfo`
+- `Cognesy\Schema\Reflection\PropertyInfo`
+- `Cognesy\Schema\Utils\AttributeUtils`
+- `Cognesy\Schema\Utils\Descriptions`
+- `Cognesy\Schema\Utils\DocstringUtils`
+- `Cognesy\Schema\Factories\ToolCallBuilder`
+- `Data\Schema\ArrayShapeSchema` (internal representation detail)
+- `Data\Schema\ObjectRefSchema` (internal representation detail)
+- `Attributes\InputField` and `Attributes\OutputField` (experimental-specific)
+- direct downstream coupling to schema-internal exception classes
 
-- `Cognesy\Inference\Factories\ToolCallBuilder`
-- `Cognesy\Utils\Reflection\ClassInfo`
-- `Cognesy\Utils\Reflection\FunctionInfo`
-- `Cognesy\Utils\Reflection\PropertyInfo`
-- `Cognesy\Utils\AttributeUtils`
-- `Cognesy\Utils\Descriptions`
-- `Cognesy\Utils\DocstringUtils`
-- `Attributes\InputField` (should be moved to experimental if retained at all)
-- `Attributes\OutputField` (should be moved to experimental if retained at all)
-- `Attributes\SignatureField` (should be moved to experimental if retained at all)
-- `Data\Schema\ArrayShapeSchema` (should be internal, not a public contract)
-- `Data\Schema\ObjectRefSchema` (should be internal, not a public contract)
-- granular exception classes as direct dependencies (`ReflectionException`, `SchemaMappingException`, `SchemaParsingException`, `TypeResolutionException`) for downstream packages
+## Contract Strategy (minimal, not over-designed)
 
-Rationale:
-- They are utility-oriented internals, not stable schema-domain contracts.
-- They encode implementation details (reflection/docstring extraction/object-ref rendering mechanics) that should be hidden behind contracts.
-- Several are used by other packages only because no focused contract currently exists.
+Do not introduce many new contracts at once.  
+Use only two new contracts to constrain coupling:
 
-## Target public contract set (proposed)
+1. `CanRenderSchema`  
+Purpose: `Schema -> JSON Schema` with optional reference callback.
 
-Introduce explicit contracts and route all cross-package usage through them:
+2. `CanParseJsonSchema`  
+Purpose: `JSON Schema -> Schema`.
 
-- `Contracts\CanProvideSchema` (existing)
-- `Contracts\CanCreateSchema`
-  - from class/type/value/callable/json-schema
-- `Contracts\CanRenderSchema`
-  - schema -> json schema
-- `Contracts\CanParseSchema`
-  - json schema -> schema
-- `Contracts\CanDescribeSchema`
-  - class/property/parameter descriptions (if retained at all)
+Everything else should continue through `SchemaFactory` for now.  
+No new `CanDescribeSchema` contract in 2.0 (would reintroduce utility scope creep).
 
-Then make concrete classes (`SchemaFactory`, `JsonSchemaToSchema`, `SchemaToJsonSchema`) implementation details behind these contracts.
+## Callsite Replacement Matrix (required)
 
-## Downstream impact map (must-change symbols)
+### 1) Instructor
 
-## instructor
+File: `packages/instructor/src/Creation/StructuredOutputSchemaRenderer.php`
 
-- Current dependencies:
-  - `Visitors\SchemaToJsonSchema`
-  - `Factories\ToolCallBuilder`
-- Change:
-  - use one schema rendering contract returning:
-    - pure JSON schema
-    - optional definitions payload
-  - move function-tool envelope assembly from schema to instructor/polyglot boundary.
+Current:
 
-## dynamic
+- directly instantiates `ToolCallBuilder`
+- directly uses `SchemaToJsonSchema`
 
-- Current dependencies:
-  - `Reflection\ClassInfo`
-  - `Reflection\FunctionInfo`
-  - `Visitors\SchemaToJsonSchema`
-- Change:
-  - replace reflection helpers with:
-    - Symfony reflection/TypeInfo directly, or
-    - `CanCreateSchema` callable/class derivation contract
-  - consume schema rendering contract, not visitor implementation.
+Target:
 
-## addons
+- use `CanRenderSchema` for JSON Schema rendering
+- move tool-call envelope assembly out of schema package (to instructor/polyglot boundary)
+- schema package should return schema, not OpenAI-specific tool envelope structures
 
-- Current dependencies:
-  - `Reflection\FunctionInfo`
-- Change:
-  - switch to callable schema extraction contract (or native reflection + TypeInfo).
+### 2) Dynamic
 
-## experimental
+File: `packages/dynamic/src/StructureFactory.php`
 
-- Current dependencies:
-  - `Reflection\ClassInfo`
-  - `Reflection\PropertyInfo`
-  - `Utils\AttributeUtils`
-  - `Attributes\InputField` / `OutputField`
-- Change:
-  - move signature-specific attributes/helpers into `experimental` package.
-  - use native reflection + Symfony attributes, avoid schema-utils dependency.
+Current:
 
-## agents docs/examples + cookbook examples
+- uses `Reflection\ClassInfo` and `Reflection\FunctionInfo`
+- uses `JsonSchemaToSchema` and schema visitors directly
 
-- Mostly `Attributes\Description` + `Instructions` usage.
-- Keep as stable in 2.0 (low risk, high documentation value).
+Target:
 
-## Dynamic alignment (from `research/better-dynamic-structure-design.md`)
+- stop importing `Cognesy\Schema\Reflection\*`
+- derive callable/class metadata via native reflection + Symfony TypeInfo or thin dynamic-local adapters
+- consume `SchemaFactory` + renderer/parser contracts only
 
-The dynamic redesign and schema boundary cleanup are directly aligned:
+### 3) Addons
 
-- Schema owns structure contracts and transforms.
-- Dynamic owns runtime record processing pipeline (normalize/validate/hydrate/serialize), array-first.
-- Dynamic should not depend on schema internals (`Reflection/*`, `Utils/*`, visitor concrete classes).
+File: `packages/addons/src/FunctionCall/FunctionCallFactory.php`
 
-Recommended direction:
+Current:
 
-1. Keep packages separate in 2.0, but enforce contract-only dependency from dynamic -> schema.
-2. Deprecate `StructureFactory` internals that rely on schema reflection utils.
-3. Introduce `DynamicSchema` adapter over schema contracts while migrating away from mutable `Structure/Field`.
-4. Reassess package merge only after dynamic runtime pipeline is stable and schema boundary is narrow.
+- imports `Reflection\FunctionInfo`
 
-## Architectural decisions suggested now
+Target:
 
-- Keep `schema` focused and narrow; do not let it remain a utility bucket.
-- Move tool-call envelope construction out of schema package.
-- Start deprecating direct cross-package imports of:
-  - `Cognesy\Schema\Reflection\*`
-  - `Cognesy\Schema\Utils\*`
-  - `Cognesy\Schema\Factories\ToolCallBuilder`
-- Preserve stable model-level surface (`Schema`, `TypeDetails`, factory/parser/renderer contracts).
+- use native reflection and/or dynamic-local callable analyzer
+- remove schema reflection dependency
 
-## Acceptance mapping (instructor-8e35)
+### 4) Experimental
 
-- Public inventory captured (all `packages/schema2/src` classes reviewed).
-- Every class bucketed into foundation vs must-change.
-- Redesign direction defined for each must-change category.
-- Callsite impact mapped for `instructor`, `dynamic`, `addons`, `experimental`, `agents docs/examples`.
-- Output is plan-ready and can be used directly for follow-up execution tasks.
+Files:
+
+- `packages/experimental/src/Signature/Factories/SignatureFromClassMetadata.php`
+- `packages/experimental/src/Module/Modules/Prediction.php`
+
+Current:
+
+- imports `Reflection\ClassInfo`, `Reflection\PropertyInfo`, `Utils\AttributeUtils`
+- uses schema attributes `InputField` / `OutputField`
+
+Target:
+
+- move attribute/reflection helpers to `experimental`
+- if schema attributes remain, keep only generic schema attributes in schema package
+- remove `Schema\Utils\*` imports from experimental runtime
+
+## Dynamic Alignment
+
+Align with `research/better-dynamic-structure-design.md`:
+
+- schema defines structural model and conversion contracts
+- dynamic owns record lifecycle (normalize, validate, hydrate, serialize)
+- runtime value representation should be array-first
+- dynamic should not require schema internals (`Reflection/*`, `Utils/*`, concrete visitor classes)
+
+## Measurable Acceptance Gates
+
+The study is only execution-ready if these gates are enforced:
+
+1. Import bans in non-schema packages:
+- no `use Cognesy\Schema\Reflection\*`
+- no `use Cognesy\Schema\Utils\*`
+- no `use Cognesy\Schema\Factories\ToolCallBuilder`
+
+2. Boundary checks:
+- tool-call envelope creation removed from schema package responsibility
+- schema package exports schema capabilities, not provider-specific request wrappers
+
+3. Reduction checks:
+- LOC delta recorded per phase for `packages/schema2`
+- LOC compared against previous pass and original `packages/schema` after each completed task
+
+4. Verification checks:
+- monorepo root `composer test` passes
+- examples impacted by schema rendering/reflection pass
+
+## Execution Order (pragmatic)
+
+1. Replace `ToolCallBuilder` usage in instructor with local envelope assembler.
+2. Introduce and adopt `CanRenderSchema`/`CanParseJsonSchema` facades.
+3. Remove dynamic/addons/experimental imports of schema reflection and schema utils.
+4. Move or delete now-unused schema internals.
+5. Re-run tests/examples and validate LOC reduction gate.
+
+## Final Assessment
+
+The architecture direction remains valid, but the revised plan is intentionally narrower:
+
+- fewer new abstractions
+- explicit callsite-by-callsite replacements
+- hard acceptance gates with measurable outcomes
+
+This version is execution-ready for radical simplification work.
+
+
+
+---
+
+
+## Corrections to prior version
+
+The previous draft had incorrect class namespaces in Group B. Correct forms:
+
+- `Cognesy\Schema\Factories\ToolCallBuilder` (not `Cognesy\Inference\Factories\ToolCallBuilder`)
+- `Cognesy\Schema\Reflection\ClassInfo` (not `Cognesy\Utils\Reflection\ClassInfo`)
+- `Cognesy\Schema\Reflection\FunctionInfo` (not `Cognesy\Utils\Reflection\FunctionInfo`)
+- `Cognesy\Schema\Reflection\PropertyInfo` (not `Cognesy\Utils\Reflection\PropertyInfo`)
+- `Cognesy\Schema\Utils\AttributeUtils` (not `Cognesy\Utils\AttributeUtils`)
+- `Cognesy\Schema\Utils\Descriptions` (not `Cognesy\Utils\Descriptions`)
+- `Cognesy\Schema\Utils\DocstringUtils` (not `Cognesy\Utils\DocstringUtils`)
+
+## Evidence Snapshot (runtime source imports)
+
+Snapshot from current `packages/{instructor,dynamic,addons,experimental}/src`:
+
+- `dynamic` imports `TypeDetails`, `Schema`, `SchemaFactory`, `JsonSchemaToSchema`, `SchemaToJsonSchema`, `Reflection\ClassInfo`, `Reflection\FunctionInfo`
+- `instructor` imports `SchemaFactory`, `JsonSchemaToSchema`, `SchemaToJsonSchema`, `ToolCallBuilder`, `TypeDetails`, `Schema`
+- `addons` imports `Reflection\FunctionInfo`, `Schema`, `CanProvideSchema`, `Description`
+- `experimental` imports `Reflection\ClassInfo`, `Reflection\PropertyInfo`, `Utils\AttributeUtils`, `SchemaFactory`, `JsonSchemaToSchema`, `Schema`, `InputField`, `OutputField`
+
+This confirms strong coupling to schema internals in `dynamic`, `addons`, and `experimental`.

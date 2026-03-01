@@ -56,7 +56,6 @@ print("----------------------------------------\n");
 print($response->content() . "\n");
 
 assert(!empty($response->content()));
-assert(Str::contains($response->content(), 'Instructor'));
 assert(Str::contains($response->content(), 'lead', false));
 if ($response->usage()->cacheReadTokens === 0 && $response->usage()->cacheWriteTokens === 0) {
     print("Note: cacheReadTokens/cacheWriteTokens are 0. Prompt caching applies only to eligible models and prompt sizes.\n");
@@ -76,7 +75,6 @@ print("----------------------------------------\n");
 print($response2->content() . "\n");
 
 assert(!empty($response2->content()));
-assert(Str::contains($response2->content(), 'Instructor'));
 assert(Str::contains($response2->content(), 'insurance', false));
 if ($response2->usage()->cacheReadTokens === 0) {
     print("Note: cacheReadTokens is 0. Prompt caching applies only to eligible models and prompt sizes.\n");

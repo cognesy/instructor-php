@@ -16,18 +16,17 @@ and that the final response contains the expected marker.
 require 'examples/boot.php';
 
 use Cognesy\Polyglot\Inference\Inference;
-use Cognesy\Polyglot\Inference\Events\PartialInferenceResponseCreated;
 use Cognesy\Utils\Str;
 
 $expectedPhrase = 'paris';
 $prompt = 'Describe the history of Paris in exactly 3 sentences.';
 
 $stream = Inference::using('openai-responses')
-    ->onEvent(PartialInferenceResponseCreated::class, fn(PartialInferenceResponseCreated $e) => $e->print())
     ->withMessages($prompt)
     ->withOptions(['max_output_tokens' => 256])
     ->withStreaming()
-    ->stream();
+    ->stream()
+    ->onPartialResponse(fn($partial) => print($partial->contentDelta));
 
 $assembled = '';
 $deltaCount = 0;

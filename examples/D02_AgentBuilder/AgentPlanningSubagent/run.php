@@ -42,6 +42,7 @@ use Cognesy\Agents\Capability\File\ReadFileTool;
 use Cognesy\Agents\Capability\File\SearchFilesTool;
 use Cognesy\Agents\Capability\PlanningSubagent\UsePlanningSubagent;
 use Cognesy\Agents\Collections\NameList;
+use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Data\ExecutionBudget;
 use Cognesy\Agents\Enums\ExecutionStatus;

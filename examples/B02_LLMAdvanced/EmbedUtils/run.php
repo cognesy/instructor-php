@@ -23,6 +23,7 @@ Embeddings providers access details can be found and modified via
 require 'examples/boot.php';
 
 use Cognesy\Polyglot\Embeddings\EmbeddingsProvider;
+use Cognesy\Polyglot\Embeddings\EmbeddingsRuntime;
 use Cognesy\Polyglot\Embeddings\Utils\EmbedUtils;
 
 $documents = [
@@ -49,7 +50,7 @@ $presets = [
 
 foreach($presets as $preset) {
     $bestMatches = EmbedUtils::findSimilar(
-        provider: EmbeddingsProvider::using($preset),
+        embeddings: EmbeddingsRuntime::fromProvider(EmbeddingsProvider::using($preset)),
         query: $query,
         documents: $documents,
         topK: 3

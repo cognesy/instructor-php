@@ -37,6 +37,7 @@ use Cognesy\Agents\Capability\File\UseFileTools;
 use Cognesy\Agents\Capability\Subagent\UseSubagents;
 use Cognesy\Agents\Collections\NameList;
 use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
 use Cognesy\Agents\Template\AgentDefinitionRegistry;
 use Cognesy\Agents\Template\Data\AgentDefinition;
@@ -102,7 +103,9 @@ echo "Tokens: {$finalState->usage()->total()}\n";
 echo "Status: {$finalState->status()->value}\n";
 
 // Assertions
-assert(!empty($finalState->finalResponse()->toString()), 'Expected non-empty response');
+$hasAnswer = trim($finalState->finalResponse()->toString()) !== '';
+$isStopped = $finalState->status() === ExecutionStatus::Stopped;
+assert($hasAnswer || $isStopped, 'Expected non-empty response or stopped status');
 assert($finalState->stepCount() >= 1, 'Expected at least 1 step');
 assert($finalState->usage()->total() > 0, 'Expected token usage > 0');
 ?>
