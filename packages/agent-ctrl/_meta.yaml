@@ -1,0 +1,14 @@
+# Navigation order for AgentCtrl documentation
+order:
+  # Essentials
+  - 1-overview
+  - 2-getting-started
+  - 3-streaming
+  - 4-session-management
+  - 5-agent-options
+  - 6-response-object
+  # Extras
+  - 7-troubleshooting
+  - 8-claude-code-bridge
+  - 9-codex-bridge
+  - 10-opencode-bridge
