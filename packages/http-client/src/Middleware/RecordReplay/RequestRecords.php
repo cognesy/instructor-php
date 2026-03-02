@@ -23,7 +23,20 @@ class RequestRecords
         $record = RequestRecord::createAppropriate($request, $response);
         $filename = $this->getFilenameForRequest($request);
 
-        file_put_contents($filename, $record->toJson());
+        $errorMessage = null;
+        set_error_handler(static function (int $severity, string $message) use (&$errorMessage): bool {
+            $errorMessage = $message;
+            return true;
+        });
+        try {
+            $written = file_put_contents($filename, $record->toJson());
+        } finally {
+            restore_error_handler();
+        }
+
+        if ($written === false) {
+            throw new RuntimeException("Failed to save HTTP interaction recording to {$filename}: " . ($errorMessage ?? 'Unknown write error'));
+        }
 
         return $filename;
     }

@@ -75,12 +75,7 @@ final class CurlDriver implements CanHandleHttpRequest
             headerParser: $headerParser,
         );
 
-        try {
-            $response = $adapter->toHttpResponse();
-        } catch (Throwable $e) {
-            $this->handleError($handle, $request);
-        }
-
+        $response = $this->toSyncResponseOrFail($adapter, $handle, $request);
         $this->validateStatusCodeOrFail($response, $request);
         $this->dispatchResponseReceived($response->statusCode());
 
@@ -110,7 +105,11 @@ final class CurlDriver implements CanHandleHttpRequest
             chunkSize: $this->config->streamChunkSize ?? 256,
         );
 
-        return $response->toHttpResponse();
+        $httpResponse = $response->toHttpResponse();
+        $this->validateStatusCodeOrFail($httpResponse, $request);
+        $this->dispatchResponseReceived($httpResponse->statusCode());
+
+        return $httpResponse;
     }
 
     private function parseHeader(HeaderParser $parser, string $line): int {
@@ -134,6 +133,18 @@ final class CurlDriver implements CanHandleHttpRequest
 
         $this->dispatchRequestFailed($exception, $request);
         throw $exception;
+    }
+
+    private function toSyncResponseOrFail(
+        SyncCurlResponseAdapter $adapter,
+        CurlHandle $handle,
+        HttpRequest $request,
+    ): HttpResponse {
+        try {
+            return $adapter->toHttpResponse();
+        } catch (Throwable) {
+            $this->handleError($handle, $request);
+        }
     }
 
     private function validateStatusCodeOrFail(HttpResponse $response, HttpRequest $request): void {

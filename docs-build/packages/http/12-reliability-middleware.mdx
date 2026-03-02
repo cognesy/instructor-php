@@ -15,7 +15,7 @@ $client = (new HttpClientBuilder())
         baseDelayMs: 200,
     ))
     ->create();
-// @doctest id="2707"
+// @doctest id="7def"
 ```
 
 ## Circuit Breaker Policy
@@ -30,7 +30,7 @@ $client = (new HttpClientBuilder())
         openForSec: 30,
     ))
     ->create();
-// @doctest id="0de5"
+// @doctest id="94f8"
 ```
 
 ## Idempotency Keys
@@ -45,7 +45,7 @@ $client = (new HttpClientBuilder())
         methods: ['POST'],
     ))
     ->create();
-// @doctest id="4331"
+// @doctest id="b6df"
 ```
 
 ## Combine Policies
@@ -61,7 +61,7 @@ $client = (new HttpClientBuilder())
     ->withCircuitBreakerPolicy(new CircuitBreakerPolicy())
     ->withIdempotencyMiddleware(new IdempotencyMiddleware())
     ->create();
-// @doctest id="8a83"
+// @doctest id="3aba"
 ```
 
 ## See Also

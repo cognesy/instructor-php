@@ -8,6 +8,7 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Drivers\Curl\CurlDriver;
+use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Http\Tests\Support\IntegrationTestServer;
 
 beforeEach(function () {
@@ -120,6 +121,30 @@ it('can stream response', function () {
 
     expect($chunks)->not()->toBeEmpty();
     expect(implode('', $chunks))->not()->toBeEmpty();
+})->skip(fn() => !extension_loaded('curl'), 'cURL extension not available');
+
+it('throws on streamed non-2xx when failOnError is enabled', function () {
+    $driver = new CurlDriver(
+        new HttpClientConfig(
+            driver: 'curl',
+            connectTimeout: 3,
+            requestTimeout: 30,
+            streamChunkSize: 256,
+            failOnError: true,
+        ),
+        $this->events,
+    );
+
+    $request = new HttpRequest(
+        url: $this->baseUrl . '/status/500',
+        method: 'GET',
+        headers: ['User-Agent' => 'instructor-php/test'],
+        body: [],
+        options: ['stream' => true],
+    );
+
+    expect(fn() => $driver->handle($request))
+        ->toThrow(HttpRequestException::class);
 })->skip(fn() => !extension_loaded('curl'), 'cURL extension not available');
 
 it('handles different HTTP methods', function () {

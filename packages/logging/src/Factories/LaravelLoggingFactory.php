@@ -10,6 +10,7 @@ use Cognesy\Logging\Filters\LogLevelFilter;
 use Cognesy\Logging\Formatters\MessageTemplateFormatter;
 use Cognesy\Logging\Pipeline\LoggingPipeline;
 use Cognesy\Logging\Writers\PsrLoggerWriter;
+use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\Request;
 use Cognesy\Events\Event;
@@ -102,10 +103,17 @@ final class LaravelLoggingFactory
      */
     public static function defaultSetup(Application $app): callable
     {
+        $channel = (string) self::configGet($app, 'instructor.logging.channel', 'instructor');
+        $level = (string) self::configGet($app, 'instructor.logging.level', 'warning');
+        $excludeEvents = self::configGet($app, 'instructor.logging.exclude_events', [
+            \Cognesy\Http\Events\DebugRequestBodyUsed::class,
+            \Cognesy\Http\Events\DebugResponseBodyReceived::class,
+        ]);
+
         return self::create($app, [
-            'channel' => 'instructor',
-            'level' => config('logging.default_level', 'debug'),
-            'exclude_events' => config('instructor.logging.exclude_events', []),
+            'channel' => $channel,
+            'level' => $level,
+            'exclude_events' => is_array($excludeEvents) ? $excludeEvents : [],
             'templates' => [
                 \Cognesy\Instructor\Events\StructuredOutputStarted::class =>
                     'Starting {responseClass} generation with {model}',
@@ -123,14 +131,30 @@ final class LaravelLoggingFactory
      */
     public static function productionSetup(Application $app): callable
     {
+        $channel = (string) self::configGet($app, 'instructor.logging.channel', 'instructor');
+
         return self::create($app, [
-            'channel' => 'instructor',
+            'channel' => $channel,
             'level' => 'warning',
             'exclude_events' => [
                 \Cognesy\Http\Events\DebugRequestBodyUsed::class,
                 \Cognesy\Http\Events\DebugResponseBodyReceived::class,
-                \Cognesy\Instructor\Events\PartialResponseGenerated::class,
+                \Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated::class,
             ],
         ]);
+    }
+
+    private static function configGet(Application $app, string $path, mixed $default): mixed
+    {
+        $config = match (true) {
+            !$app->bound('config') => null,
+            default => $app->make('config'),
+        };
+
+        return match (true) {
+            $config instanceof ConfigRepository => $config->get($path, $default),
+            is_object($config) && method_exists($config, 'get') => $config->get($path, $default),
+            default => $default,
+        };
     }
 }

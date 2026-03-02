@@ -191,19 +191,19 @@ return [
         /*
         | Minimum log level.
         */
-        'level' => env('INSTRUCTOR_LOG_LEVEL', 'debug'),
+        'level' => env('INSTRUCTOR_LOG_LEVEL', 'warning'),
 
         /*
         | Logging preset: default, production, or custom
         */
-        'preset' => env('INSTRUCTOR_LOGGING_PRESET', 'default'),
+        'preset' => env('INSTRUCTOR_LOGGING_PRESET', 'production'),
 
         /*
         | Events to exclude from logging.
         */
         'exclude_events' => [
-            // Cognesy\Http\Events\DebugRequestBodyUsed::class,
-            // Cognesy\Http\Events\DebugResponseBodyReceived::class,
+            Cognesy\Http\Events\DebugRequestBodyUsed::class,
+            Cognesy\Http\Events\DebugResponseBodyReceived::class,
         ],
 
     ],

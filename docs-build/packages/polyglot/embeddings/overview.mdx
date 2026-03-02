@@ -41,7 +41,7 @@ $result = Embeddings::using('openai')
 
 $vector = $result->first()?->values() ?? [];
 echo count($vector);
-// @doctest id="1eee"
+// @doctest id="2eee"
 ```
 
 
@@ -55,7 +55,7 @@ use Cognesy\Polyglot\Embeddings\Embeddings;
 
 $embeddings = Embeddings::using('openai');
 $embeddings = Embeddings::fromDsn('driver=openai,model=text-embedding-3-small');
-// @doctest id="3c5c"
+// @doctest id="34ac"
 ```
 
 Inject a fully assembled runtime for advanced setup:
@@ -77,7 +77,7 @@ $runtime = EmbeddingsRuntime::using(
 );
 
 $embeddings = Embeddings::fromRuntime($runtime);
-// @doctest id="71b7"
+// @doctest id="9398"
 ```
 
 
@@ -94,7 +94,7 @@ $embeddings->with(
     options: ['dimensions' => 1536],
     model: 'text-embedding-3-large',
 );
-// @doctest id="9a46"
+// @doctest id="98bc"
 ```
 
 
@@ -104,7 +104,7 @@ $embeddings->with(
 $response = $embeddings->get();
 $vectors = $embeddings->vectors();
 $first = $embeddings->first();
-// @doctest id="5500"
+// @doctest id="1fad"
 ```
 
 
@@ -123,7 +123,7 @@ $cohere = Embeddings::using('cohere')
     ->withModel('embed-english-v3.0')
     ->withInputs(['Document 1', 'Document 2'])
     ->vectors();
-// @doctest id="0177"
+// @doctest id="2c4b"
 ```
 
 
@@ -138,5 +138,5 @@ For explicit config/provider wiring, assemble runtime via `EmbeddingsRuntime::fr
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
 Embeddings::registerDriver('custom-provider', CustomEmbeddingsDriver::class);
-// @doctest id="c2cc"
+// @doctest id="cf8c"
 ```

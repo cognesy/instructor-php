@@ -33,7 +33,7 @@ class Inference {
     public function response(): InferenceResponse { ... }
     public function stream(): InferenceStream { ... }
 }
-// @doctest id="a6d4"
+// @doctest id="b4fd"
 ```
 
 The `Inference` class follows a fluent interface pattern for request building; infrastructure is assembled in `InferenceRuntime`.
@@ -71,7 +71,7 @@ class Embeddings {
     public function first(): ?Vector { ... }
     public function vectors(): array { ... }
 }
-// @doctest id="bff9"
+// @doctest id="bb78"
 ```
 
 Similarity-search helper methods are provided by `EmbedUtils`, not by the `Embeddings` facade:
@@ -85,5 +85,5 @@ $matches = EmbedUtils::findSimilar(
     documents: $documents,
     topK: 5,
 );
-// @doctest id="d00d"
+// @doctest id="f0ca"
 ```

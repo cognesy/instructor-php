@@ -2,9 +2,15 @@
 
 use Cognesy\Dynamic\CallableSchemaFactory;
 use Cognesy\Schema\Data\ObjectSchema;
+use Cognesy\Schema\TypeInfo;
+use Symfony\Component\TypeInfo\Type;
+use Symfony\Component\TypeInfo\TypeContext\TypeContext;
+use Symfony\Component\TypeInfo\TypeIdentifier;
 use Symfony\Component\TypeInfo\TypeResolver\TypeResolver;
+use Symfony\Component\TypeInfo\TypeResolver\TypeResolverInterface;
 
 function dynamicCallableFactorySample(string $name, int $count = 1): void {}
+function dynamicCallableFactoryVariadicSample(mixed ...$tags): void {}
 
 it('creates schema from function signature', function () {
     $schema = (new CallableSchemaFactory())->fromFunctionName('dynamicCallableFactorySample');
@@ -35,4 +41,22 @@ it('accepts optional type resolver injection', function () {
     expect($schema)->toBeInstanceOf(ObjectSchema::class)
         ->and($schema->hasProperty('name'))->toBeTrue()
         ->and($schema->hasProperty('count'))->toBeTrue();
+});
+
+it('does not double-wrap variadic parameters when resolver already returns collection type', function () {
+    $resolver = TypeResolver::create([
+        \ReflectionParameter::class => new class implements TypeResolverInterface {
+            public function resolve(mixed $subject, ?TypeContext $typeContext = null): Type {
+                return Type::list(Type::string());
+            }
+        },
+    ]);
+
+    $schema = (new CallableSchemaFactory(resolver: $resolver))
+        ->fromFunctionName('dynamicCallableFactoryVariadicSample');
+    $tagsType = $schema->getPropertySchema('tags')->type();
+    $nestedType = TypeInfo::collectionValueType($tagsType);
+
+    expect((string) $tagsType)->toBe((string) Type::list(Type::string()))
+        ->and($nestedType?->isIdentifiedBy(TypeIdentifier::STRING))->toBeTrue();
 });

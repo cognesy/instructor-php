@@ -15,6 +15,7 @@ use Cognesy\Agents\Events\ToolCallCompleted;
 use Cognesy\Agents\Events\ToolCallStarted;
 use Cognesy\Agents\Hook\Hooks\StepsLimitHook;
 use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Events\StreamEventParsed;
 use Cognesy\Polyglot\Inference\Events\StreamEventReceived;
 use DateTimeImmutable;
 
@@ -147,13 +148,13 @@ it('returns wiretap callable that handles all events', function () {
     expect($broadcaster->calls[2]['envelope']['type'])->toBe('agent.tool.started');
 });
 
-it('handles StreamEventReceived for real-time chat', function () {
+it('handles StreamEventParsed for real-time chat', function () {
     $broadcaster = new FakeBroadcaster();
     $eventBroadcaster = new AgentEventBroadcaster($broadcaster, 'session-1', 'exec-1');
 
-    $eventBroadcaster->onStreamChunk(new StreamEventReceived('Hello'));
-    $eventBroadcaster->onStreamChunk(new StreamEventReceived(' world'));
-    $eventBroadcaster->onStreamChunk(new StreamEventReceived('!'));
+    $eventBroadcaster->onStreamChunk(new StreamEventParsed('Hello'));
+    $eventBroadcaster->onStreamChunk(new StreamEventParsed(' world'));
+    $eventBroadcaster->onStreamChunk(new StreamEventParsed('!'));
 
     expect(count($broadcaster->calls))->toBe(3);
     expect($broadcaster->calls[0]['envelope']['type'])->toBe('agent.stream.chunk');
@@ -171,9 +172,9 @@ it('filters empty stream content', function () {
     $broadcaster = new FakeBroadcaster();
     $eventBroadcaster = new AgentEventBroadcaster($broadcaster, 'session-1', 'exec-1');
 
-    $eventBroadcaster->onStreamChunk(new StreamEventReceived(''));
-    $eventBroadcaster->onStreamChunk(new StreamEventReceived('Hello'));
-    $eventBroadcaster->onStreamChunk(new StreamEventReceived(''));
+    $eventBroadcaster->onStreamChunk(new StreamEventParsed(''));
+    $eventBroadcaster->onStreamChunk(new StreamEventParsed('Hello'));
+    $eventBroadcaster->onStreamChunk(new StreamEventParsed(''));
 
     expect(count($broadcaster->calls))->toBe(1);
     expect($broadcaster->calls[0]['envelope']['payload']['content'])->toBe('Hello');
@@ -312,7 +313,7 @@ it('respects minimal config - no streaming', function () {
         BroadcastConfig::minimal(),
     );
 
-    $eventBroadcaster->onStreamChunk(new StreamEventReceived('Hello'));
+    $eventBroadcaster->onStreamChunk(new StreamEventParsed('Hello'));
 
     expect(count($broadcaster->calls))->toBe(0);
 });
@@ -344,13 +345,26 @@ it('can be reset for new executions', function () {
     $eventBroadcaster = new AgentEventBroadcaster($broadcaster, 'session-1', 'exec-1');
 
     // First execution
-    $eventBroadcaster->onStreamChunk(new StreamEventReceived('Hello'));
+    $eventBroadcaster->onStreamChunk(new StreamEventParsed('Hello'));
     expect($broadcaster->calls[0]['envelope']['payload']['chunk_index'])->toBe(0);
 
     // Reset
     $eventBroadcaster->reset();
 
     // Second execution
-    $eventBroadcaster->onStreamChunk(new StreamEventReceived('World'));
+    $eventBroadcaster->onStreamChunk(new StreamEventParsed('World'));
     expect($broadcaster->calls[1]['envelope']['payload']['chunk_index'])->toBe(0);
+});
+
+it('wiretap ignores raw stream frames and broadcasts parsed chunks only', function () {
+    $broadcaster = new FakeBroadcaster();
+    $eventBroadcaster = new AgentEventBroadcaster($broadcaster, 'session-1', 'exec-1');
+    $wiretap = $eventBroadcaster->wiretap();
+
+    $wiretap(new StreamEventReceived('data: {"delta":"raw"}'));
+    $wiretap(new StreamEventParsed('clean'));
+
+    expect(count($broadcaster->calls))->toBe(1);
+    expect($broadcaster->calls[0]['envelope']['type'])->toBe('agent.stream.chunk');
+    expect($broadcaster->calls[0]['envelope']['payload']['content'])->toBe('clean');
 });

@@ -22,7 +22,7 @@ $provider = LLMProvider::using('openai')
     ->withConfigOverrides(['model' => 'gpt-4o']);
 
 $config = $provider->resolveConfig();
-// @doctest id="6d84"
+// @doctest id="c1cb"
 ```
 
 Common methods:
@@ -45,7 +45,7 @@ $provider = EmbeddingsProvider::using('openai')
     ->withConfigProvider($configProvider);
 
 $config = $provider->resolveConfig();
-// @doctest id="febc"
+// @doctest id="950a"
 ```
 
 Common methods:
@@ -63,7 +63,7 @@ Common methods:
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 
 $runtime = InferenceRuntime::fromProvider($provider);
-// @doctest id="28d5"
+// @doctest id="56c4"
 ```
 
 Inference runtime factories:
@@ -86,7 +86,7 @@ interface CanProcessInferenceRequest {
     public function makeStreamResponsesFor(InferenceRequest $request): iterable;
     public function capabilities(?string $model = null): DriverCapabilities;
 }
-// @doctest id="58b7"
+// @doctest id="b4f8"
 ```
 
 Embeddings:
@@ -96,7 +96,7 @@ interface CanHandleVectorization {
     public function handle(EmbeddingsRequest $request): HttpResponse;
     public function fromData(array $data): ?EmbeddingsResponse;
 }
-// @doctest id="5e4b"
+// @doctest id="f3f2"
 ```
 
 ## Adapter Contracts
@@ -134,7 +134,7 @@ use Cognesy\Polyglot\Inference\Inference;
 Inference::registerDriver('my-driver', MyInferenceDriver::class);
 Inference::unregisterDriver('my-driver');
 Inference::resetDrivers();
-// @doctest id="9ab1"
+// @doctest id="f8fe"
 ```
 
 Embeddings drivers are selected by `EmbeddingsConfig::$driver` in `EmbeddingsDriverFactory`.
@@ -145,5 +145,5 @@ Custom registration is available via:
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
 Embeddings::registerDriver('my-embed-driver', MyEmbeddingsDriver::class);
-// @doctest id="9e70"
+// @doctest id="fe4a"
 ```

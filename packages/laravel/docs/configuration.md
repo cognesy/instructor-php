@@ -176,10 +176,10 @@ Configure logging:
     'channel' => env('INSTRUCTOR_LOG_CHANNEL', 'stack'),
 
     // Minimum log level
-    'level' => env('INSTRUCTOR_LOG_LEVEL', 'debug'),
+    'level' => env('INSTRUCTOR_LOG_LEVEL', 'warning'),
 
     // Logging preset: default, production, or custom
-    'preset' => env('INSTRUCTOR_LOGGING_PRESET', 'default'),
+    'preset' => env('INSTRUCTOR_LOGGING_PRESET', 'production'),
 
     // Events to exclude from logging
     'exclude_events' => [
@@ -192,8 +192,8 @@ Configure logging:
 
 | Preset | Description |
 |--------|-------------|
-| `default` | Full logging with request/response details |
-| `production` | Minimal logging, no sensitive data |
+| `default` | Verbose logging for local debugging |
+| `production` | Minimal logging for production workloads |
 | `custom` | Define your own pipeline |
 
 ## Events Settings
@@ -243,6 +243,8 @@ Configure response caching:
 | `INSTRUCTOR_HTTP_TIMEOUT` | `120` | Request timeout (seconds) |
 | `INSTRUCTOR_LOGGING_ENABLED` | `true` | Enable logging |
 | `INSTRUCTOR_LOG_CHANNEL` | `stack` | Laravel log channel |
+| `INSTRUCTOR_LOG_LEVEL` | `warning` | Minimum log level |
+| `INSTRUCTOR_LOGGING_PRESET` | `production` | Logging preset |
 | `INSTRUCTOR_DISPATCH_EVENTS` | `true` | Bridge events to Laravel |
 | `INSTRUCTOR_CACHE_ENABLED` | `false` | Enable response caching |
 | `OPENAI_API_KEY` | - | OpenAI API key |

@@ -196,3 +196,27 @@ test('changes storage directory', function() {
         rmdir($newDir);
     }
 });
+
+test('throws when recording cannot be written to storage', function() {
+    $request = new HttpRequest(
+        'https://api.example.com/users',
+        'GET',
+        ['Accept' => 'application/json'],
+        '',
+        []
+    );
+
+    $response = MockHttpResponseFactory::success(body: '{"id":123}');
+    $readOnlyDir = sys_get_temp_dir() . '/http_test_records_ro_' . uniqid();
+    mkdir($readOnlyDir, 0777, true);
+    chmod($readOnlyDir, 0555);
+    $this->records->setStorageDir($readOnlyDir);
+
+    try {
+        expect(fn() => $this->records->save($request, $response))
+            ->toThrow(RuntimeException::class);
+    } finally {
+        chmod($readOnlyDir, 0777);
+        rmdir($readOnlyDir);
+    }
+});

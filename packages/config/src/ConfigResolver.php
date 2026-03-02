@@ -32,8 +32,8 @@ class ConfigResolver implements CanProvideConfig
         $this->hasCache = new CachedMap(fn(string $path) => $this->resolveHas($path));
     }
 
-    public static function default(): static {
-        return (new static([new SettingsConfigProvider]));
+    public static function default(): self {
+        return (new self([new SettingsConfigProvider]));
     }
 
     public static function using(?CanProvideConfig $provider): self {
@@ -48,16 +48,16 @@ class ConfigResolver implements CanProvideConfig
     /**
      * @param (callable(): CanProvideConfig)|CanProvideConfig|null $provider
      */
-    public function then(callable|CanProvideConfig|null $provider): static {
+    public function then(callable|CanProvideConfig|null $provider): self {
         if ($provider !== null) {
             $newProviders = [...$this->providerFactories, $this->createProviderFactory($provider)];
-            return new static($newProviders, $this->suppressProviderErrors);
+            return new self($newProviders, $this->suppressProviderErrors);
         }
-        return new static($this->providerFactories, $this->suppressProviderErrors);
+        return new self($this->providerFactories, $this->suppressProviderErrors);
     }
 
-    public function withSuppressedProviderErrors(bool $suppress = true): static {
-        return new static($this->providerFactories, $suppress);
+    public function withSuppressedProviderErrors(bool $suppress = true): self {
+        return new self($this->providerFactories, $suppress);
     }
 
     // MAIN API ///////////////////////////////////////////////////////////
@@ -129,10 +129,12 @@ class ConfigResolver implements CanProvideConfig
     private function tryProviderGet(int $index, string $path): array {
         try {
             $provider = $this->getProvider($index);
-            if (!$provider->has($path)) {
+            $sentinel = new \stdClass();
+            $value = $provider->get($path, $sentinel);
+            if ($value === $sentinel) {
                 return ['found' => false, 'value' => null];
             }
-            return ['found' => true, 'value' => $provider->get($path)];
+            return ['found' => true, 'value' => $value];
         } catch (\Throwable $e) {
             if (!$this->suppressProviderErrors) {
                 throw new ConfigurationException("Failed to resolve configuration from provider.", 0, $e);

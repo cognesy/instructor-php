@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cognesy\Instructor\Laravel;
 
 use Cognesy\Config\Contracts\CanProvideConfig;
+use Cognesy\Events\Event;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\LaravelEventDispatcher;
 use Cognesy\Http\Config\HttpClientConfig;
@@ -358,22 +359,35 @@ class InstructorServiceProvider extends ServiceProvider
             return;
         }
 
-        $preset = $this->configGet($app, 'instructor.logging.preset', 'default');
+        $preset = $this->configGet($app, 'instructor.logging.preset', 'production');
         $config = $this->configGet($app, 'instructor.logging', []);
 
         $pipeline = match ($preset) {
+            'default' => LaravelLoggingFactory::defaultSetup($app),
             'production' => LaravelLoggingFactory::productionSetup($app),
             'custom' => LaravelLoggingFactory::create($app, $config),
-            default => LaravelLoggingFactory::defaultSetup($app),
+            default => LaravelLoggingFactory::productionSetup($app),
         };
 
         if (method_exists($service, 'wiretap')) {
-            $service->wiretap($pipeline);
+            $service->wiretap(static function (object $event) use ($pipeline): void {
+                if (!$event instanceof Event) {
+                    return;
+                }
+
+                $pipeline($event);
+            });
             return;
         }
 
         if ($service instanceof Inference) {
-            $app->make(CanHandleEvents::class)->wiretap($pipeline);
+            $app->make(CanHandleEvents::class)->wiretap(static function (object $event) use ($pipeline): void {
+                if (!$event instanceof Event) {
+                    return;
+                }
+
+                $pipeline($event);
+            });
         }
     }
 

@@ -18,7 +18,7 @@ $request = new InferenceRequest(
     options: ['temperature' => 0.2],
     mode: OutputMode::Text,
 );
-// @doctest id="ff95"
+// @doctest id="05e3"
 ```
 
 Most used accessors:
@@ -62,7 +62,7 @@ $pending = Inference::using('openai')
 $text = $pending->get();
 $json = $pending->asJsonData();
 $response = $pending->response();
-// @doctest id="6129"
+// @doctest id="c8d2"
 ```
 
 Core methods:
@@ -89,7 +89,7 @@ foreach ($stream->responses() as $partial) {
 }
 
 $final = $stream->final();
-// @doctest id="5d46"
+// @doctest id="43b6"
 ```
 
 Core methods:
@@ -127,7 +127,7 @@ $response = $pending->get();
 $first = $response->first();
 $vectors = $response->vectors();
 $usage = $response->usage();
-// @doctest id="31fc"
+// @doctest id="16c2"
 ```
 
 `EmbeddingsResponse` also provides `last()`, `split(...)`, `toValuesArray()`, and `toArray()`.

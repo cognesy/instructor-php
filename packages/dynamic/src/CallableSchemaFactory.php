@@ -5,13 +5,13 @@ namespace Cognesy\Dynamic;
 use Cognesy\Schema\Data\ObjectSchema;
 use Cognesy\Schema\Data\Schema;
 use Cognesy\Schema\SchemaFactory;
+use Cognesy\Schema\TypeInfo;
 use Cognesy\Schema\Utils\DocblockInfo;
 use ReflectionFunction;
 use ReflectionFunctionAbstract;
 use ReflectionMethod;
 use ReflectionParameter;
 use Symfony\Component\TypeInfo\Type;
-use Symfony\Component\TypeInfo\TypeIdentifier;
 use Symfony\Component\TypeInfo\TypeResolver\TypeResolver;
 
 final class CallableSchemaFactory
@@ -77,7 +77,7 @@ final class CallableSchemaFactory
         }
 
         return match (true) {
-            $resolved->isIdentifiedBy(TypeIdentifier::ARRAY) => $resolved,
+            TypeInfo::isCollection($resolved) || TypeInfo::isArray($resolved) => $resolved,
             default => Type::list($resolved),
         };
     }

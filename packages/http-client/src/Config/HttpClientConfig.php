@@ -56,7 +56,7 @@ final class HttpClientConfig
     public static function fromArray(array $config) : HttpClientConfig {
         try {
             $instance = new self(...$config);
-        } catch (\InvalidArgumentException $e) {
+        } catch (\Throwable $e) {
             $data = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
             throw new ConfigurationException(
                 message: "Failed to create HttpClientConfig from array:\n$data\nError: {$e->getMessage()}",

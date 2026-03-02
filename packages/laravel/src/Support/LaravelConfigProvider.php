@@ -115,8 +115,22 @@ final class LaravelConfigProvider implements CanProvideConfig
      */
     private function getHttpConfig(string $path, mixed $default): mixed
     {
-        if ($path === 'http' || $path === 'http.presets') {
+        if ($path === 'http') {
             return $this->buildHttpPresets();
+        }
+
+        if ($path === 'http.presets') {
+            return $this->buildHttpPresets()['presets'];
+        }
+
+        if ($path === 'http.defaultPreset') {
+            return $this->buildHttpPresets()['defaultPreset'];
+        }
+
+        if (str_starts_with($path, 'http.presets.')) {
+            $presetName = substr($path, strlen('http.presets.'));
+            $presets = $this->buildHttpPresets()['presets'];
+            return $presets[$presetName] ?? $default;
         }
 
         return $default;
@@ -161,7 +175,16 @@ final class LaravelConfigProvider implements CanProvideConfig
      */
     private function hasHttpConfig(string $path): bool
     {
-        return $path === 'http' || $path === 'http.presets';
+        if ($path === 'http' || $path === 'http.presets' || $path === 'http.defaultPreset') {
+            return true;
+        }
+
+        if (str_starts_with($path, 'http.presets.')) {
+            $presetName = substr($path, strlen('http.presets.'));
+            return array_key_exists($presetName, $this->buildHttpPresets()['presets']);
+        }
+
+        return false;
     }
 
     /**

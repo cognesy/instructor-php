@@ -2,11 +2,15 @@
 
 namespace Cognesy\Http\Stream;
 
+use LogicException;
+
 final class BufferedStream implements StreamInterface
 {
     /** @var list<string> */
     private array $chunks;
     private bool $isCompleted;
+    private bool $isStreaming = false;
+    private bool $wasInterrupted = false;
     /** @var iterable<string> */
     private iterable $source;
 
@@ -44,6 +48,8 @@ final class BufferedStream implements StreamInterface
     public function getIterator(): \Traversable {
         return match (true) {
             $this->isCompleted => $this->iterateCached(),
+            $this->wasInterrupted => throw new LogicException('Buffered stream was not fully consumed and cannot be replayed. Consume it fully in a single pass.'),
+            $this->isStreaming => throw new LogicException('Buffered stream is currently being consumed and cannot be iterated concurrently.'),
             default => $this->iterateIncoming(),
         };
     }
@@ -62,13 +68,19 @@ final class BufferedStream implements StreamInterface
 
     /** @return \Traversable<string> */
     private function iterateIncoming(): \Traversable {
+        $this->isStreaming = true;
+        $consumedFully = false;
+
         try {
             foreach ($this->source as $chunk) {
                 $this->chunks[] = $chunk;
                 yield $chunk;
             }
+            $consumedFully = true;
         } finally {
-            $this->isCompleted = true;
+            $this->isStreaming = false;
+            $this->isCompleted = $consumedFully;
+            $this->wasInterrupted = !$consumedFully;
         }
     }
 }

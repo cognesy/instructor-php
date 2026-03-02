@@ -97,7 +97,11 @@ class ResponseModelFactory
 
     private function fromJsonSchema(array $requestedModel, ?OutputFormat $outputFormat) : ResponseModel {
         $this->events->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromJsonSchema']));
-        $class = $requestedModel['x-php-class'] ?? '\Cognesy\Dynamic\Structure';
+        $rawClass = $requestedModel['x-php-class'] ?? Structure::class;
+        $class = match (true) {
+            is_string($rawClass) && $rawClass !== '' => ltrim($rawClass, '\\'),
+            default => Structure::class,
+        };
         $schema = $this->schemaRenderer->schemaFromJsonSchema($requestedModel);
         $schemaName = $this->schemaName($requestedModel);
         $schemaDescription = $this->schemaDescription($requestedModel);
@@ -213,8 +217,19 @@ class ResponseModelFactory
     private function fromSchema(Schema $requestedModel, ?OutputFormat $outputFormat) : ResponseModel {
         $this->events->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromSchema']));
         $schema = $requestedModel;
-        $class = TypeInfo::className($schema->type) ?? throw new InvalidArgumentException('Schema must have a class to create ResponseModel');
-        $instance = $this->makeInstance($class);
+        $schemaClass = TypeInfo::className($schema->type);
+        $isStructureSchema = $schema instanceof ObjectSchema && match (true) {
+            $schemaClass === null => true,
+            $schemaClass === \stdClass::class => true,
+            $schemaClass === Structure::class => true,
+            is_string($schemaClass) && is_subclass_of($schemaClass, Structure::class) => true,
+            default => false,
+        };
+        [$class, $instance] = match (true) {
+            $isStructureSchema => [Structure::class, Structure::fromSchema($schema)],
+            $schemaClass === null => throw new InvalidArgumentException('Schema must have a class to create ResponseModel'),
+            default => [$schemaClass, $this->makeInstance($schemaClass)],
+        };
         $rendering = $this->renderSchema($schema);
         $jsonSchema = $rendering->jsonSchema();
         $schemaName = $this->schemaName($requestedModel);

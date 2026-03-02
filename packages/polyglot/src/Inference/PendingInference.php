@@ -17,6 +17,7 @@ use Cognesy\Polyglot\Inference\Events\InferenceAttemptSucceeded;
 use Cognesy\Polyglot\Inference\Events\InferenceCompleted;
 use Cognesy\Polyglot\Inference\Events\InferenceStarted;
 use Cognesy\Polyglot\Inference\Events\InferenceUsageReported;
+use Cognesy\Polyglot\Inference\Exceptions\ProviderException;
 use Cognesy\Polyglot\Inference\Streaming\InferenceStream;
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Messages\Messages;
@@ -346,7 +347,11 @@ class PendingInference
         $partialUsage = $response?->usage()
             ?? $this->cachedStream?->execution()->partialResponse()?->usage()
             ?? $this->execution->partialResponse()?->usage();
-        $statusCode = $error instanceof HttpRequestException ? $error->getStatusCode() : null;
+        $statusCode = match (true) {
+            $error instanceof HttpRequestException => $error->getStatusCode(),
+            $error instanceof ProviderException => $error->statusCode,
+            default => null,
+        };
 
         $this->events->dispatch(InferenceAttemptFailed::fromThrowable(
             executionId: $this->execution->id->toString(),

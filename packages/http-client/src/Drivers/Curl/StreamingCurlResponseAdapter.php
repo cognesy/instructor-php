@@ -5,6 +5,7 @@ namespace Cognesy\Http\Drivers\Curl;
 use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Events\HttpResponseChunkReceived;
+use Cognesy\Http\Exceptions\NetworkException;
 use Cognesy\Http\Stream\IterableStream;
 use CurlMultiHandle;
 use Generator;
@@ -95,9 +96,7 @@ final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
 
                 // Drive multi handle
                 $status = curl_multi_exec($this->multi, $active);
-                if ($status !== CURLM_OK) {
-                    break;
-                }
+                $this->assertMultiExecSucceeded($status);
 
                 if ($active > 0) {
                     curl_multi_select($this->multi, 0.1);
@@ -122,11 +121,24 @@ final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
         $start = microtime(true);
 
         while ($active > 0 && $this->headerParser->statusCode() === 0 && (microtime(true) - $start) < 0.2) {
-            curl_multi_exec($this->multi, $active);
+            $status = curl_multi_exec($this->multi, $active);
+            $this->assertMultiExecSucceeded($status);
             if ($active > 0) {
                 curl_multi_select($this->multi, 0.05);
             }
         }
+    }
+
+    private function assertMultiExecSucceeded(int $status): void {
+        if ($status === CURLM_OK) {
+            return;
+        }
+
+        $error = function_exists('curl_multi_strerror')
+            ? curl_multi_strerror($status)
+            : 'Unknown cURL multi error';
+
+        throw new NetworkException("cURL multi execution failed ({$status}): {$error}");
     }
 
     private function cleanup(): void {

@@ -44,7 +44,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 class InferenceDriverFactory
 {
     /** @var array<string, callable(LLMConfig,HttpClient,CanHandleEvents):CanProcessInferenceRequest> */
-    private static array $pendingDrivers = [];
+    private static array $registeredDrivers = [];
 
     /** @var array<string, callable(LLMConfig,HttpClient,CanHandleEvents):CanProcessInferenceRequest> */
     private array $drivers = [];
@@ -57,8 +57,7 @@ class InferenceDriverFactory
     ) {
         $this->events = EventBusResolver::using($events);
         $this->bundledDrivers = $this->bundledDrivers();
-        $this->drivers = self::$pendingDrivers;
-        self::$pendingDrivers = [];
+        $this->drivers = self::$registeredDrivers;
     }
 
     /**
@@ -66,24 +65,24 @@ class InferenceDriverFactory
      * @param string|callable(LLMConfig,HttpClient,CanHandleEvents):CanProcessInferenceRequest $driver
      */
     public static function registerDriver(string $name, string|callable $driver) : void {
-        self::$pendingDrivers[$name] = self::toDriverFactory($driver);
+        self::$registeredDrivers[$name] = self::toDriverFactory($driver);
     }
 
     public static function unregisterDriver(string $name): void {
-        unset(self::$pendingDrivers[$name]);
+        unset(self::$registeredDrivers[$name]);
     }
 
     public static function resetDrivers(): void {
-        self::$pendingDrivers = [];
+        self::$registeredDrivers = [];
     }
 
     public static function hasDriver(string $name): bool {
-        return isset(self::$pendingDrivers[$name]);
+        return isset(self::$registeredDrivers[$name]);
     }
 
     /** @return array<string> */
     public static function registeredDrivers(): array {
-        return array_keys(self::$pendingDrivers);
+        return array_keys(self::$registeredDrivers);
     }
 
     /**

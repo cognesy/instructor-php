@@ -15,7 +15,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $default = new Inference();
 $openai = Inference::using('openai');
 $fromDsn = Inference::fromDsn('preset=openai,model=gpt-4.1-nano');
-// @doctest id="679e"
+// @doctest id="985e"
 ```
 
 ## Build a Request
@@ -30,7 +30,7 @@ $inference = (new Inference())
     ->withOptions(['temperature' => 0.2])
     ->withMaxTokens(120)
     ->withStreaming(false);
-// @doctest id="dc13"
+// @doctest id="0db6"
 ```
 
 ## Execute
@@ -42,7 +42,7 @@ $response = $inference->response(); // InferenceResponse
 $json = $inference->asJson();       // JSON string
 $data = $inference->asJsonData();   // array
 $stream = $inference->stream();     // InferenceStream
-// @doctest id="5688"
+// @doctest id="5746"
 ```
 
 ## One-Call Configuration
@@ -58,7 +58,7 @@ $text = (new Inference())
         mode: OutputMode::Json,
     )
     ->get();
-// @doctest id="ed99"
+// @doctest id="a5c6"
 ```
 
 ## Runtime-First Usage
@@ -72,7 +72,7 @@ $runtime = Inference::using('openai')->runtime();
 
 $pending = $runtime->create(new InferenceRequest(messages: 'Ping', model: 'gpt-4.1-nano'));
 $text = $pending->get();
-// @doctest id="f984"
+// @doctest id="3501"
 ```
 
 ## Register Custom Drivers
@@ -99,7 +99,7 @@ Inference::registerDriver(
 
 Inference::unregisterDriver('openai-custom');
 Inference::resetDrivers();
-// @doctest id="52e9"
+// @doctest id="0753"
 ```
 
 ## See Also

@@ -25,7 +25,7 @@ Before:
 
 ```php
 $client = HttpClient::default()->withSSEStream();
-// @doctest id="c9de"
+// @doctest id="32a4"
 ```
 
 After:
@@ -38,7 +38,7 @@ $client = HttpClient::default()->withMiddleware(
         static fn(string $payload): string|bool => $payload
     )
 );
-// @doctest id="c36a"
+// @doctest id="4c97"
 ```
 
 ## 2) `HttpClientBuilder::using()`
@@ -49,7 +49,7 @@ Before:
 $client = (new HttpClientBuilder())
     ->using('guzzle')
     ->create();
-// @doctest id="96ce"
+// @doctest id="3ffb"
 ```
 
 After:
@@ -58,7 +58,7 @@ After:
 $client = (new HttpClientBuilder())
     ->withPreset('guzzle')
     ->create();
-// @doctest id="f910"
+// @doctest id="8218"
 ```
 
 ## 3) `HttpClientBuilder::withDebugPreset()`
@@ -69,7 +69,7 @@ Before:
 $client = (new HttpClientBuilder())
     ->withDebugPreset('verbose')
     ->create();
-// @doctest id="1b7a"
+// @doctest id="2a2a"
 ```
 
 After:
@@ -78,7 +78,7 @@ After:
 $client = (new HttpClientBuilder())
     ->withHttpDebugPreset('verbose')
     ->create();
-// @doctest id="8961"
+// @doctest id="afe8"
 ```
 
 ## 4) `Middleware\ServerSideEvents\*`
@@ -89,7 +89,7 @@ Before:
 use Cognesy\Http\Middleware\ServerSideEvents\StreamSSEsMiddleware;
 
 $client = $client->withMiddleware(new StreamSSEsMiddleware());
-// @doctest id="fb11"
+// @doctest id="6c8d"
 ```
 
 After:
@@ -102,7 +102,7 @@ $client = $client->withMiddleware(
         static fn(string $payload): string|bool => $payload
     )
 );
-// @doctest id="a520"
+// @doctest id="abd6"
 ```
 
 Additional import migrations:

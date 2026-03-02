@@ -9,7 +9,7 @@ use Cognesy\Agents\Events\ContinuationEvaluated;
 use Cognesy\Agents\Events\ToolCallCompleted;
 use Cognesy\Agents\Events\ToolCallStarted;
 use Cognesy\Events\Event;
-use Cognesy\Polyglot\Inference\Events\StreamEventReceived;
+use Cognesy\Polyglot\Inference\Events\StreamEventParsed;
 use DateTimeImmutable;
 
 /**
@@ -53,7 +53,7 @@ final class AgentEventBroadcaster
     {
         return function (Event $event): void {
             match (true) {
-                $event instanceof StreamEventReceived => $this->onStreamChunk($event),
+                $event instanceof StreamEventParsed => $this->onStreamChunk($event),
                 $event instanceof AgentStepStarted => $this->onAgentStepStarted($event),
                 $event instanceof AgentStepCompleted => $this->onAgentStepCompleted($event),
                 $event instanceof ToolCallStarted => $this->onToolCallStarted($event),
@@ -67,7 +67,7 @@ final class AgentEventBroadcaster
     /**
      * Handle streaming text chunks for real-time chat display.
      */
-    public function onStreamChunk(StreamEventReceived $event): void
+    public function onStreamChunk(StreamEventParsed $event): void
     {
         if (!$this->config->includeStreamChunks) {
             return;
