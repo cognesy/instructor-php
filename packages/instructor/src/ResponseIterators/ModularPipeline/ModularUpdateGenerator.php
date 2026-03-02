@@ -165,23 +165,23 @@ final readonly class ModularUpdateGenerator implements CanStreamStructuredOutput
     ): IteratorAggregate {
         // Build pipeline stages (transducers)
         $stages = [
-            // 1. Entry: Extract delta and create PartialFrame
+            // 1. Entry: Build PartialFrame from cumulative snapshot content
             new ExtractDelta($mode, $this->bufferFactory),
 
-            // 2. Objects: Deserialize, transform, deduplicate
+            // 2. Objects: Deserialize, transform, deduplicate object emissions
             new DeserializeAndDeduplicate(
                 deserializer: $this->deserializer,
                 transformer: $this->transformer,
                 responseModel: $responseModel,
             ),
 
-            // 3. Events: Dispatch all domain events
+            // 3. Events: Dispatch frame-level domain events
             new EventTapTransducer(
                 events: $this->events,
                 expectedToolName: $mode === OutputMode::Tools ? $responseModel->toolName() : '',
             ),
 
-            // 4. Enrich: Convert PartialFrame → PartialInferenceResponse
+            // 4. Enrich: Convert frame to mode-specific partial response shape
             new EnrichResponse($mode),
 
             // 5. Terminal: Aggregate into StreamAggregate

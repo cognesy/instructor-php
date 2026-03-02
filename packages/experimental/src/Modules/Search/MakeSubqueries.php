@@ -3,7 +3,7 @@ namespace Cognesy\Experimental\Modules\Search;
 
 use Cognesy\Experimental\Module\Core\Module;
 use Cognesy\Experimental\Module\Core\Predictor;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Messages\Messages;
@@ -15,10 +15,11 @@ class MakeSubqueries extends Module
     protected Predictor $makeSubqueries;
 
     public function __construct() {
+        $events = new EventDispatcher(name: 'experimental.search.subqueries');
         $inference = InferenceRuntime::fromProvider(LLMProvider::new());
         $structuredOutput = new StructuredOutputRuntime(
             inference: $inference,
-            events: EventBusResolver::using(null),
+            events: $events,
             config: (new StructuredOutputConfigBuilder())->create(),
         );
         $this->makeSubqueries = Predictor::fromSignature(

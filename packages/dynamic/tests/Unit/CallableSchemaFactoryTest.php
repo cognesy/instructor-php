@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Dynamic\CallableSchemaFactory;
+use Cognesy\Schema\CallableSchemaFactory;
 use Cognesy\Schema\Data\ObjectSchema;
 use Cognesy\Schema\TypeInfo;
 use Symfony\Component\TypeInfo\Type;

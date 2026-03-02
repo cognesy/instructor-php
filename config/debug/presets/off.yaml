@@ -1,0 +1,9 @@
+httpEnabled: false
+httpTrace: false
+httpRequestUrl: false
+httpRequestHeaders: false
+httpRequestBody: false
+httpResponseHeaders: false
+httpResponseBody: false
+httpResponseStream: false
+httpResponseStreamByLine: false

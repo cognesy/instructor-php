@@ -15,23 +15,31 @@ $client = (new HttpClientBuilder())
         baseDelayMs: 200,
     ))
     ->create();
-// @doctest id="7def"
+// @doctest id="e6d8"
 ```
+
+`Retry-After` is respected only for numeric seconds or RFC7231 HTTP-date values (`D, d M Y H:i:s T`).
 
 ## Circuit Breaker Policy
 
 ```php
 use Cognesy\Http\Creation\HttpClientBuilder;
+use Cognesy\Http\Middleware\ApcuCircuitBreakerStateStore;
 use Cognesy\Http\Middleware\CircuitBreakerPolicy;
 
 $client = (new HttpClientBuilder())
-    ->withCircuitBreakerPolicy(new CircuitBreakerPolicy(
-        failureThreshold: 5,
-        openForSec: 30,
-    ))
+    ->withCircuitBreakerPolicy(
+        new CircuitBreakerPolicy(
+            failureThreshold: 5,
+            openForSec: 30,
+        ),
+        new ApcuCircuitBreakerStateStore(),
+    )
     ->create();
-// @doctest id="94f8"
+// @doctest id="ec31"
 ```
+
+Use a shared state store for circuit breaker in multi-request runtimes (for example PHP-FPM). Without APCu, middleware falls back to in-process memory only.
 
 ## Idempotency Keys
 
@@ -45,7 +53,7 @@ $client = (new HttpClientBuilder())
         methods: ['POST'],
     ))
     ->create();
-// @doctest id="b6df"
+// @doctest id="7ef3"
 ```
 
 ## Combine Policies
@@ -61,7 +69,7 @@ $client = (new HttpClientBuilder())
     ->withCircuitBreakerPolicy(new CircuitBreakerPolicy())
     ->withIdempotencyMiddleware(new IdempotencyMiddleware())
     ->create();
-// @doctest id="3aba"
+// @doctest id="d185"
 ```
 
 ## See Also

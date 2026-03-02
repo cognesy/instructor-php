@@ -2,7 +2,6 @@
 
 namespace Cognesy\Addons\FunctionCall;
 
-use Cognesy\Dynamic\Field;
 use Cognesy\Dynamic\Structure;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformSelf;
@@ -47,15 +46,11 @@ final readonly class FunctionCall implements CanDeserializeSelf, CanTransformSel
 
     /** @return string[] returns array argument names */
     public function getArgumentNames() : array {
-        $arguments = [];
-        foreach ($this->arguments->fields() as $field) {
-            $arguments[] = $field->name();
-        }
-        return $arguments;
+        return $this->arguments->schema()->getPropertyNames();
     }
 
-    public function getArgumentInfo(string $name) : Field {
-        return $this->arguments->field($name);
+    public function getArgumentInfo(string $name) : Schema {
+        return $this->arguments->schema()->getPropertySchema($name);
     }
 
     // MUTATORS ////////////////////////////////////////////////////
@@ -101,8 +96,8 @@ final readonly class FunctionCall implements CanDeserializeSelf, CanTransformSel
 
     public function toArgs(): array {
         $arguments = [];
-        foreach ($this->arguments->fields() as $field) {
-            $arguments[$field->name()] = $this->arguments->get($field->name());
+        foreach ($this->arguments->schema()->getPropertyNames() as $name) {
+            $arguments[$name] = $this->arguments->get($name);
         }
         return $arguments;
     }

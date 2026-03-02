@@ -21,7 +21,7 @@ use Cognesy\Addons\StepByStep\StateProcessing\CanApplyProcessors;
 use Cognesy\Addons\StepByStep\Step\StepResult;
 use Cognesy\Addons\StepByStep\StepByStep;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Events\Traits\HandlesEvents;
 use Throwable;
 
@@ -60,7 +60,7 @@ class Collaboration extends StepByStep
         $this->collaborators = $collaborators;
         $this->nextCollaboratorSelector = $nextCollaboratorSelector;
         $this->continuationCriteria = $continuationCriteria;
-        $this->events = EventBusResolver::using($events);
+        $this->events = $events ?? new EventDispatcher(name: 'addons.collaboration');
         $this->forceThrowOnFailure = $forceThrowOnFailure;
     }
 
@@ -213,7 +213,7 @@ class Collaboration extends StepByStep
             nextCollaboratorSelector: $nextCollaboratorSelector ?? $this->nextCollaboratorSelector,
             processors: $resolvedProcessors,
             continuationCriteria: $continuationCriteria ?? $this->continuationCriteria,
-            events: EventBusResolver::using($events),
+            events: $events ?? $this->events,
         );
     }
 

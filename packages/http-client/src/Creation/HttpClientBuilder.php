@@ -7,12 +7,13 @@ use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Config\Events\ConfigResolutionFailed;
 use Cognesy\Config\Events\ConfigResolved;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Config\DebugConfig;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\CanHandleRequestPool;
 use Cognesy\Http\Contracts\HttpMiddleware;
+use Cognesy\Http\Middleware\CanStoreCircuitBreakerState;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\Events\HttpClientBuilt;
 use Cognesy\Http\HttpClient;
@@ -26,7 +27,6 @@ use Cognesy\Http\Middleware\RetryMiddleware;
 use Cognesy\Http\Middleware\RetryPolicy;
 use Cognesy\Http\Middleware\MiddlewareStack;
 use Cognesy\Utils\Result\Result;
-use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Fluent builder for creating HttpClient instances in a type-safe way.
@@ -48,10 +48,10 @@ final class HttpClientBuilder
     private array $middleware = [];
 
     public function __construct(
-        null|CanHandleEvents|EventDispatcherInterface $events = null,
+        ?CanHandleEvents $events = null,
         ?CanProvideConfig $configProvider = null,
     ) {
-        $this->events = EventBusResolver::using($events);
+        $this->events = $this->resolveEvents($events);
         $this->presets = ConfigPresets::using($configProvider);
     }
 
@@ -142,16 +142,19 @@ final class HttpClientBuilder
         return $this->withMiddleware(new RetryMiddleware($policy));
     }
 
-    public function withCircuitBreakerPolicy(CircuitBreakerPolicy $policy): self {
-        return $this->withMiddleware(new CircuitBreakerMiddleware($policy));
+    public function withCircuitBreakerPolicy(
+        CircuitBreakerPolicy $policy,
+        ?CanStoreCircuitBreakerState $stateStore = null,
+    ): self {
+        return $this->withMiddleware(new CircuitBreakerMiddleware($policy, $stateStore));
     }
 
     public function withIdempotencyMiddleware(IdempotencyMiddleware $middleware): self {
         return $this->withMiddleware($middleware);
     }
 
-    public function withEventBus(CanHandleEvents|EventDispatcherInterface $events): self {
-        $this->events = EventBusResolver::using($events);
+    public function withEventBus(CanHandleEvents $events): self {
+        $this->events = $events;
         return $this;
     }
 
@@ -266,6 +269,13 @@ final class HttpClientBuilder
             return $config;
         }
         throw new \InvalidArgumentException('Invalid debug configuration type');
+    }
+
+    private function resolveEvents(?CanHandleEvents $events): CanHandleEvents {
+        if ($events !== null) {
+            return $events;
+        }
+        return new EventDispatcher(name: 'http.client.builder');
     }
 
     private function buildMiddlewareStack(DebugConfig $debugConfig): MiddlewareStack {

@@ -1,0 +1,8 @@
+driver: mistral
+apiUrl: 'https://api.mistral.ai/v1'
+apiKey: '${MISTRAL_API_KEY}'
+endpoint: /chat/completions
+model: mistral-small-latest
+maxTokens: 1024
+contextLength: 128000
+maxOutputLength: 4096

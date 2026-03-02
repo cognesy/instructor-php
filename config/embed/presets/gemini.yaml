@@ -1,0 +1,7 @@
+driver: gemini
+apiUrl: 'https://generativelanguage.googleapis.com/v1beta'
+apiKey: '${GEMINI_API_KEY}'
+endpoint: '/{model}:batchEmbedContents'
+model: models/gemini-embedding-001
+dimensions: 768
+maxInputs: 100

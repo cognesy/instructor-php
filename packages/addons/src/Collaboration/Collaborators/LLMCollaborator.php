@@ -10,7 +10,7 @@ use Cognesy\Addons\Collaboration\Events\CollaborationInferenceResponseReceived;
 use Cognesy\Addons\StepByStep\MessageCompilation\CanCompileMessages;
 use Cognesy\Addons\StepByStep\MessageCompilation\Compilers\SelectedSections;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Enums\MessageRole;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
@@ -32,7 +32,7 @@ final readonly class LLMCollaborator implements CanCollaborate
         ?CanHandleEvents $events = null,
     ) {
         $this->compiler = $compiler ?? new SelectedSections(['summary', 'buffer', 'messages']);
-        $this->events = EventBusResolver::using($events);
+        $this->events = $events ?? new EventDispatcher(name: 'addons.collaboration.collaborator.llm');
     }
 
     #[\Override]

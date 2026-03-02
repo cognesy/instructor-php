@@ -229,12 +229,10 @@ it('uses container-bound Laravel HTTP factory for laravel driver wiring', functi
 
     $httpClientReflection = new ReflectionObject($httpClient);
     $driverProperty = $httpClientReflection->getProperty('driver');
-    $driverProperty->setAccessible(true);
     $driver = $driverProperty->getValue($httpClient);
 
     $driverReflection = new ReflectionObject($driver);
     $factoryProperty = $driverReflection->getProperty('factory');
-    $factoryProperty->setAccessible(true);
     $resolvedFactory = $factoryProperty->getValue($driver);
 
     expect($resolvedFactory)->toBe($factory);

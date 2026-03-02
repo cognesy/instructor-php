@@ -65,24 +65,15 @@ $event->printLog();
 $event->printDebug();
 ```
 
-## Event Bus Resolver
+## Explicit Wiring
 
 ```php
-use Cognesy\Events\EventBusResolver;
-use Cognesy\Events\Event;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 
-$events = EventBusResolver::default();
-$events = EventBusResolver::using($existingDispatcherOrNull);
-
-$events->addListener(Event::class, fn(object $e) => null);
-$events->wiretap(fn(object $e) => null);
-$events->dispatch(new Event(['ping' => true]));
+$events = new EventDispatcher(name: 'app');
 ```
 
-`EventBusResolver::using(...)` behavior:
-- `null` -> creates internal `EventDispatcher`
-- `CanHandleEvents` -> uses it directly
-- plain PSR dispatcher -> wraps in internal `EventDispatcher`
+Pass `CanHandleEvents` explicitly to classes that emit events.
 
 ## Framework Bridges
 

@@ -24,7 +24,7 @@ use Cognesy\Addons\ToolUse\Events\ToolUseStepStarted;
 use Cognesy\Addons\ToolUse\Exceptions\ToolUseException;
 use Cognesy\Addons\ToolUse\Exceptions\ToolUseFailed;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Events\Traits\HandlesEvents;
 use Throwable;
 
@@ -64,7 +64,7 @@ class ToolUse extends StepByStep
         $this->processors = $processors;
         $this->continuationCriteria = $continuationCriteria;
         $this->driver = $driver;
-        $this->events = EventBusResolver::using($events);
+        $this->events = $events ?? new EventDispatcher(name: 'addons.tool-use');
         $this->tools = $tools;
         $this->toolExecutor = $toolExecutor;
     }

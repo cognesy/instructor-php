@@ -12,7 +12,7 @@ use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\ToolUse;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Enums\MessageRole;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
@@ -38,7 +38,7 @@ final readonly class LLMWithToolsCollaborator implements CanCollaborate
     ) {
         $this->name = $name;
         $this->systemPrompt = $systemPrompt ?? '';
-        $this->events = $events ?? EventBusResolver::using($events);
+        $this->events = $events ?? new EventDispatcher(name: 'addons.collaboration.collaborator.llm-tools');
         $this->toolUse = $toolUse ?? ToolUseFactory::default(events: $this->events);
     }
 

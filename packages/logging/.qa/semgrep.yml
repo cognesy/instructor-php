@@ -1,0 +1,9 @@
+rules:
+  - id: logging-no-trait-discovery-autowiring
+    message: "Logging integrations must use explicit event bus wiring, not trait discovery/afterResolving magic."
+    severity: ERROR
+    languages: [php]
+    paths:
+      include:
+        - "src/Integrations/**/*.php"
+    pattern-regex: "class_uses_recursive\\s*\\(|usesTrait\\s*\\(|afterResolving\\s*\\("

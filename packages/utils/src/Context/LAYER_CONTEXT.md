@@ -338,9 +338,9 @@ Usage in code:
 - For classes that already accept a provider (e.g., HttpClientBuilder), rely on the layer to inject it.
 - For scripts/examples, compose `ConfigResolver::default()` unless you need custom providers.
 
-### EventBusResolver and CanHandleEvents
+### Events and CanHandleEvents
 
-Code typically accepts `CanHandleEvents|EventDispatcherInterface` and normalizes via `EventBusResolver::using()`.
+Code should accept `CanHandleEvents` and use explicit event-bus wiring at composition roots.
 
 Blueprint layer:
 
@@ -355,7 +355,8 @@ $eventsLayer = Layer::provides(EventDispatcher::class, new EventDispatcher())
 ```
 
 Guidelines:
-- If your class raises or reacts to domain/infra events, accept `CanHandleEvents` (preferred) or `EventDispatcherInterface`.
+- If your class raises or reacts to domain/infra events, accept `CanHandleEvents`.
+- Keep `EventDispatcherInterface` use at integration/adaptation boundaries.
 - Don’t construct dispatchers inside services; wire them in via Layer for testability.
 
 ### HttpClient vs CanHandleHttpRequest (drivers)
@@ -705,17 +706,17 @@ Runtime data vs services:
 - Experimental pipeline
   - Wire `ExecutionPolicies`, `DefaultExecutor`, `EventDispatcherInterface`, and operator collaborators via layers; keep the core loop free of context lookups.
 
-## Externalizing Resolution (Replacing “Resolver” Paradigms)
+## Externalizing Resolution (Replacing Legacy Resolver Paradigms)
 
 Layer/Context lets you move normalization/selection work to composition time so consumers receive a single, stable contract rather than unions/nulls.
 
-### Events: EventBusResolver → Layer wiring
+### Events: Explicit Layer Wiring
 
-- Purpose today: accept `null|CanHandleEvents|EventDispatcherInterface` and normalize.
-- With Layers: bind a concrete dispatcher in a layer and inject `CanHandleEvents` directly.
+- Preferred model: bind a concrete dispatcher in a layer and inject `CanHandleEvents` directly.
 - Guidance:
-  - New/refactored classes: accept `CanHandleEvents` (or `EventDispatcherInterface`) only.
-  - Keep `EventBusResolver` as a boundary/legacy adapter in public factories for BC, but avoid using it inside internals when layering is available.
+  - New/refactored classes: accept `CanHandleEvents`.
+  - Keep `EventDispatcherInterface` for framework/bridge boundaries.
+  - Avoid resolver-style normalization in internals.
 
 ### Config: Keep ConfigResolver, externalize its assembly
 
@@ -727,14 +728,14 @@ Layer/Context lets you move normalization/selection work to composition time so 
 
 ### Practical migration
 
-1) Stage 1: Introduce layers that provide `CanHandleEvents` and `CanProvideConfig`; wire consumers through layers (resolvers become no-ops in practice).
+1) Stage 1: Introduce layers that provide `CanHandleEvents` and `CanProvideConfig`; wire consumers through layers.
 2) Stage 2: For new entry points, drop union/nullable constructor params; accept a single contract and document the layer recipe.
-3) Stage 3: Optionally deprecate `EventBusResolver::using` in internals; keep `ConfigResolver` as the injected provider chain.
+3) Stage 3: Keep `ConfigResolver` as the injected provider chain and remove resolver-style event normalization from internals.
 
 ### Before/After (conceptual)
 
 - Before (normalizing inside constructor):
-  - `new HttpClientBuilder(events: null|CanHandleEvents|EventDispatcherInterface, configProvider: ?CanProvideConfig)` → calls resolvers internally.
+  - `new HttpClientBuilder(events: ?CanHandleEvents, configProvider: ?CanProvideConfig)` → creates/fallbacks internally.
 - After (normalized by layer):
   - Layer binds `EventDispatcherInterface` and `CanProvideConfig` → `new HttpClientBuilder(events: $events, configProvider: $cfg)`.
 

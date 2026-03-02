@@ -1,0 +1,9 @@
+driver: openai
+apiUrl: 'https://api.openai.com/v1'
+apiKey: '${OPENAI_API_KEY}'
+endpoint: /embeddings
+metadata:
+  organization: ''
+model: text-embedding-3-small
+dimensions: 1536
+maxInputs: 2048

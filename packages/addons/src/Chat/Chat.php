@@ -21,7 +21,7 @@ use Cognesy\Addons\StepByStep\StateProcessing\CanApplyProcessors;
 use Cognesy\Addons\StepByStep\Step\StepResult;
 use Cognesy\Addons\StepByStep\StepByStep;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Events\Traits\HandlesEvents;
 use Throwable;
 
@@ -60,7 +60,7 @@ class Chat extends StepByStep
         $this->participants = $participants;
         $this->nextParticipantSelector = $nextParticipantSelector;
         $this->continuationCriteria = $continuationCriteria;
-        $this->events = EventBusResolver::using($events);
+        $this->events = $events ?? new EventDispatcher(name: 'addons.chat');
         $this->forceThrowOnFailure = $forceThrowOnFailure;
     }
 
@@ -211,7 +211,7 @@ class Chat extends StepByStep
             nextParticipantSelector: $nextParticipantSelector ?? $this->nextParticipantSelector,
             processors: $processors ?? $this->processors,
             continuationCriteria: $continuationCriteria ?? $this->continuationCriteria,
-            events: EventBusResolver::using($events),
+            events: $events ?? $this->events,
         );
     }
 

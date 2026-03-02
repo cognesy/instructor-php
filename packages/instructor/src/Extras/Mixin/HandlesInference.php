@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 namespace Cognesy\Instructor\Extras\Mixin;
 
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\StructuredOutputRuntime;
@@ -33,9 +33,10 @@ trait HandlesInference {
         ?LLMProvider $llm = null,
     ) : mixed {
         $provider = $llm ?? LLMProvider::new();
+        $events = new EventDispatcher(name: 'instructor.mixin.infer');
         $runtime = new StructuredOutputRuntime(
-            inference: InferenceRuntime::fromProvider($provider),
-            events: EventBusResolver::using(null),
+            inference: InferenceRuntime::fromProvider($provider, events: $events),
+            events: $events,
             config: (new StructuredOutputConfigBuilder())
                 ->with(
                     outputMode: $mode,

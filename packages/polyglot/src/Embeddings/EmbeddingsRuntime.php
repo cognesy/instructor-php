@@ -3,7 +3,7 @@
 namespace Cognesy\Polyglot\Embeddings;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
@@ -13,13 +13,12 @@ use Cognesy\Polyglot\Embeddings\Contracts\CanResolveEmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\HasExplicitEmbeddingsDriver;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
 use Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory;
-use Psr\EventDispatcher\EventDispatcherInterface;
 
 final class EmbeddingsRuntime implements CanCreateEmbeddings
 {
     public function __construct(
         private readonly CanHandleVectorization $driver,
-        private readonly EventDispatcherInterface $events,
+        private readonly CanHandleEvents $events,
     ) {}
 
     #[\Override]
@@ -33,10 +32,10 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
 
     public static function fromConfig(
         EmbeddingsConfig $config,
-        null|CanHandleEvents|EventDispatcherInterface $events = null,
+        ?CanHandleEvents $events = null,
         ?HttpClient $httpClient = null,
     ): self {
-        $events = EventBusResolver::using($events);
+        $events = self::resolveEvents($events);
         $driver = (new EmbeddingsDriverFactory($events))->makeDriver(
             config: $config,
             httpClient: self::resolveHttpClient($events, $httpClient),
@@ -46,10 +45,10 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
 
     public static function fromResolver(
         CanResolveEmbeddingsConfig $resolver,
-        null|CanHandleEvents|EventDispatcherInterface $events = null,
+        ?CanHandleEvents $events = null,
         ?HttpClient $httpClient = null,
     ): self {
-        $events = EventBusResolver::using($events);
+        $events = self::resolveEvents($events);
         $config = $resolver->resolveConfig();
         $driver = match (true) {
             $resolver instanceof HasExplicitEmbeddingsDriver && $resolver->explicitEmbeddingsDriver() !== null
@@ -66,7 +65,7 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
 
     public static function fromProvider(
         EmbeddingsProvider $provider,
-        null|CanHandleEvents|EventDispatcherInterface $events = null,
+        ?CanHandleEvents $events = null,
         ?HttpClient $httpClient = null,
     ): self {
         return self::fromResolver(
@@ -78,7 +77,7 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
 
     public static function fromDsn(
         string $dsn,
-        null|CanHandleEvents|EventDispatcherInterface $events = null,
+        ?CanHandleEvents $events = null,
         ?HttpClient $httpClient = null,
     ): self {
         return self::fromProvider(
@@ -90,7 +89,7 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
 
     public static function using(
         string $preset,
-        null|CanHandleEvents|EventDispatcherInterface $events = null,
+        ?CanHandleEvents $events = null,
         ?HttpClient $httpClient = null,
     ): self {
         return self::fromProvider(
@@ -101,12 +100,19 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
     }
 
     private static function resolveHttpClient(
-        null|CanHandleEvents|EventDispatcherInterface $events,
+        CanHandleEvents $events,
         ?HttpClient $httpClient,
     ): HttpClient {
         if ($httpClient !== null) {
             return $httpClient;
         }
         return (new HttpClientBuilder(events: $events))->create();
+    }
+
+    private static function resolveEvents(?CanHandleEvents $events): CanHandleEvents {
+        if ($events !== null) {
+            return $events;
+        }
+        return new EventDispatcher(name: 'polyglot.embeddings.runtime');
     }
 }

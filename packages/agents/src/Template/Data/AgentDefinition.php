@@ -72,9 +72,9 @@ final readonly class AgentDefinition
             label: $label,
             llmConfig: self::deserializeLLMConfig($data['llmConfig'] ?? null),
             capabilities: NameList::fromArray($data['capabilities'] ?? []),
-            tools: NameList::fromArray($data['tools'] ?? []),
-            toolsDeny: NameList::fromArray($data['toolsDeny'] ?? []),
-            skills: NameList::fromArray($data['skills'] ?? []),
+            tools: self::deserializeOptionalNameList($data, 'tools'),
+            toolsDeny: self::deserializeOptionalNameList($data, 'toolsDeny'),
+            skills: self::deserializeOptionalNameList($data, 'skills'),
             budget: self::deserializeBudget($data['budget'] ?? null),
             metadata: Metadata::fromArray($data['metadata'] ?? []),
         );
@@ -94,6 +94,19 @@ final readonly class AgentDefinition
         return match (true) {
             is_array($param) => ExecutionBudget::fromArray($param),
             default => null,
+        };
+    }
+
+    /** @param array<string, mixed> $data */
+    private static function deserializeOptionalNameList(array $data, string $key): ?NameList {
+        if (!array_key_exists($key, $data) || $data[$key] === null) {
+            return null;
+        }
+
+        return match (true) {
+            $data[$key] instanceof NameList => $data[$key],
+            is_array($data[$key]) => NameList::fromArray($data[$key]),
+            default => NameList::fromArray([]),
         };
     }
 

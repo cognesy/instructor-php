@@ -121,16 +121,17 @@ Config keys:
 
 Laravel:
 - `Cognesy\Logging\Integrations\Laravel\InstructorLoggingServiceProvider`
-- Reads `instructor-logging` config and wires pipeline via `afterResolving(...)` to services using `Cognesy\Events\Traits\HandlesEvents`.
+- Reads `instructor-logging` config and wires pipeline explicitly to the configured event bus binding (`event_bus_binding`, default `Cognesy\Events\Contracts\CanHandleEvents`).
 
 Symfony:
 - `Cognesy\Logging\Integrations\Symfony\InstructorLoggingBundle`
-- `InstructorLoggingExtension` registers `instructor_logging.pipeline_factory`.
-- `WiretapHandlesEventsPass` adds one `wiretap()` method call to services that use `HandlesEvents`.
+- `InstructorLoggingExtension` registers `instructor_logging.pipeline_factory` and `instructor_logging.pipeline_listener`.
+- `WiretapEventBusPass` adds one `wiretap()` method call to the configured event bus service.
 
 Symfony config root (`instructor_logging`):
 - `enabled` (`bool`, default `true`)
 - `preset` (`default|production|custom`)
+- `event_bus_service` (`string`, default `Cognesy\Events\Contracts\CanHandleEvents`)
 - `config.channel` (`string`)
 - `config.level` (`emergency|alert|critical|error|warning|notice|info|debug`)
 - `config.exclude_events` (`string[]`)

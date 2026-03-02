@@ -17,9 +17,8 @@ use Cognesy\AgentCtrl\Event\AgentExecutionStarted;
 use Cognesy\AgentCtrl\Event\AgentTextReceived;
 use Cognesy\AgentCtrl\Event\AgentToolUsed;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Events\Traits\HandlesEvents;
-use Psr\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 
 /**
@@ -48,7 +47,7 @@ abstract class AbstractBridgeBuilder implements AgentBridgeBuilder
 
     public function __construct()
     {
-        $this->events = EventBusResolver::default();
+        $this->events = new EventDispatcher(name: 'agent-ctrl.bridge-builder');
     }
 
     abstract public function agentType(): AgentType;

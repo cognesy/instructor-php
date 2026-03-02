@@ -3,7 +3,7 @@
 namespace Cognesy\Addons\ToolUse\Tools;
 
 use Cognesy\Addons\ToolUse\Contracts\ToolInterface;
-use Cognesy\Dynamic\CallableSchemaFactory;
+use Cognesy\Schema\CallableSchemaFactory;
 use Cognesy\Schema\SchemaFactory;
 use Cognesy\Utils\Result\Result;
 use Throwable;

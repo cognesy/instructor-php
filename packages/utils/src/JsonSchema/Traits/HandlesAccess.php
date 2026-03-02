@@ -92,10 +92,18 @@ trait HandlesAccess
         return isset($this->meta[$key]);
     }
 
+    public function hasDefaultValue() : bool {
+        return array_key_exists('default', $this->meta);
+    }
+
+    public function defaultValue() : mixed {
+        return $this->meta['default'] ?? null;
+    }
+
     // TYPE SPECIFIC //////////////////////////////////////////////////////////
 
     /**
-     * @return array<string>
+     * @return array<int|string>
      */
     public function enumValues() : array {
         return $this->enumValues ?? [];

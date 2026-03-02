@@ -16,7 +16,7 @@ class HttpRequestBody
     ) {
         $this->body = match (true) {
             is_string($body) => $body,
-            is_array($body) => json_encode($body) ?: '',
+            is_array($body) => $this->encodeJsonBody($body),
             default => ''
         };
     }
@@ -47,5 +47,18 @@ class HttpRequestBody
         }
 
         return $data;
+    }
+
+    /** @param array<string,mixed>|array<int,mixed> $body */
+    private function encodeJsonBody(array $body) : string {
+        try {
+            return json_encode($body, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            throw new \InvalidArgumentException(
+                'Failed to encode request body as JSON: ' . $e->getMessage(),
+                0,
+                $e,
+            );
+        }
     }
 }

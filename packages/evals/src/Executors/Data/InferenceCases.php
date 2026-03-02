@@ -4,6 +4,7 @@ namespace Cognesy\Evals\Executors\Data;
 
 use Cognesy\Config\Settings;
 use Cognesy\Evals\Utils\Combination;
+use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
@@ -13,7 +14,6 @@ use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Creation\InferenceDriverFactory;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Generator;
-use Psr\EventDispatcher\EventDispatcherInterface;
 
 class InferenceCases
 {
@@ -24,7 +24,7 @@ class InferenceCases
 
     private ?InferenceDriverFactory $driverFactory = null;
     private ?HttpClient $httpClient = null;
-    private ?EventDispatcherInterface $events = null;
+    private ?CanHandleEvents $events = null;
 
     private function __construct(
         array $presets = [],
@@ -216,7 +216,7 @@ class InferenceCases
     /**
      * Get or create an event dispatcher.
      */
-    private function getEvents() : EventDispatcherInterface {
+    private function getEvents() : CanHandleEvents {
         if ($this->events === null) {
             $this->events = new EventDispatcher();
         }
@@ -267,7 +267,7 @@ class InferenceCases
     /**
      * Set a custom event dispatcher for testing.
      */
-    public function withEvents(EventDispatcherInterface $events) : self {
+    public function withEvents(CanHandleEvents $events) : self {
         $this->events = $events;
         return $this;
     }

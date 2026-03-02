@@ -22,7 +22,7 @@ use Cognesy\Agents\Template\Contracts\CanManageAgentDefinitions;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Tool\Tools\ContextAwareTool;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
@@ -60,7 +60,7 @@ final class SpawnSubagentTool extends ContextAwareTool
         $this->skillLibrary = $skillLibrary;
         $this->policy = $policy ?? SubagentPolicy::default();
         $this->currentDepth = $currentDepth;
-        $this->events = EventBusResolver::using($events);
+        $this->events = $events ?? new EventDispatcher(name: 'agents.capability.spawn-subagent');
     }
 
     #[\Override]

@@ -27,7 +27,7 @@ use Cognesy\Agents\Interception\PassThroughInterceptor;
 use Cognesy\Agents\Tool\ToolExecutor;
 use Cognesy\Agents\Tool\Contracts\CanExecuteToolCalls;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\HttpClient;
 use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\Data\CachedContext as StructuredCachedContext;
@@ -101,7 +101,7 @@ final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         $this->maxRetries = $maxRetries;
         $this->mode = $mode;
         $this->messageCompiler = $messageCompiler ?? new ConversationWithCurrentToolTrace();
-        $this->events = EventBusResolver::using($events);
+        $this->events = $events ?? new EventDispatcher(name: 'agents.driver.react');
         $this->tools = $tools ?? new Tools();
         $this->executor = $executor ?? new ToolExecutor(
             tools: $this->tools,

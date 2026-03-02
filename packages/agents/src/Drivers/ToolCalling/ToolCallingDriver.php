@@ -17,7 +17,7 @@ use Cognesy\Agents\Events\InferenceRequestStarted;
 use Cognesy\Agents\Events\InferenceResponseReceived;
 use Cognesy\Agents\Tool\Contracts\CanExecuteToolCalls;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\HttpClient;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
@@ -87,7 +87,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         $this->messageCompiler = $messageCompiler ?? new ConversationWithCurrentToolTrace();
         $this->retryPolicy = $retryPolicy;
         $this->formatter = new ToolExecutionFormatter();
-        $this->events = EventBusResolver::using($events);
+        $this->events = $events ?? new EventDispatcher(name: 'agents.driver.tool-calling');
         $this->tools = $tools ?? new Tools();
         $this->executor = $executor ?? new ToolExecutor(
             tools: $this->tools,

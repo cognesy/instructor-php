@@ -9,13 +9,12 @@ use Cognesy\Config\Dsn;
 use Cognesy\Config\Events\ConfigResolutionFailed;
 use Cognesy\Config\Events\ConfigResolved;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
 use Cognesy\Polyglot\Embeddings\Contracts\CanResolveEmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\HasExplicitEmbeddingsDriver;
 use Cognesy\Utils\Result\Result;
-use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Builder for creating fully configured embeddings vectorization drivers.
@@ -33,14 +32,14 @@ final class EmbeddingsProvider implements CanResolveEmbeddingsConfig, HasExplici
     private ?CanHandleVectorization $explicitDriver;
 
     private function __construct(
-        null|CanHandleEvents|EventDispatcherInterface $events = null,
+        ?CanHandleEvents          $events = null,
         ?CanProvideConfig         $configProvider = null,
         ?string                   $preset = null,
         ?string                   $dsn = null,
         ?EmbeddingsConfig         $explicitConfig = null,
         ?CanHandleVectorization   $explicitDriver = null,
     ) {
-        $this->events = EventBusResolver::using($events);
+        $this->events = $events ?? new EventDispatcher(name: 'polyglot.embeddings.provider');
         $this->configProvider = $configProvider ?? ConfigResolver::using($configProvider);
         $this->presets = ConfigPresets::using($this->configProvider)->for(EmbeddingsConfig::group());
 

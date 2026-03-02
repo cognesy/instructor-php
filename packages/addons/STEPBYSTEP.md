@@ -496,8 +496,8 @@ Processors are executed in a middleware chain pattern where each processor can:
 The StepByStep mechanism integrates with the event system for observability:
 
 ```php
-use Cognesy\Events\EventBusResolver;
 use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 
 class MyProcess extends StepByStep
 {
@@ -507,7 +507,7 @@ class MyProcess extends StepByStep
         // ... other parameters
         ?CanHandleEvents $events = null,
     ) {
-        $this->events = EventBusResolver::using($events);
+        $this->events = $events ?? new EventDispatcher(name: 'addons.stepbystep.process');
     }
 
     protected function makeNextStep(object $state): object

@@ -1,0 +1,8 @@
+driver: guzzle
+connectTimeout: 3
+requestTimeout: 90
+streamChunkSize: 256
+idleTimeout: -1
+maxConcurrent: 5
+poolTimeout: 60
+failOnError: false

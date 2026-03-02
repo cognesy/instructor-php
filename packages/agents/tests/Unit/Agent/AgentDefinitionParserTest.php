@@ -43,8 +43,9 @@ describe('AgentDefinition::fromArray', function () {
 
         expect($definition->label())->toBe('minimal-agent');
         expect($definition->budget()->isEmpty())->toBeTrue();
-        expect($definition->tools)->not->toBeNull();
-        expect($definition->tools?->isEmpty())->toBeTrue();
+        expect($definition->tools)->toBeNull();
+        expect($definition->toolsDeny)->toBeNull();
+        expect($definition->inheritsAllTools())->toBeTrue();
         expect($definition->capabilities->isEmpty())->toBeTrue();
         expect($definition->metadata?->isEmpty())->toBeTrue();
     });
@@ -85,6 +86,19 @@ describe('AgentDefinition::fromArray', function () {
         $definition = AgentDefinition::fromArray($data);
 
         expect($definition->tools->all())->toBe(['read_file', 'bash']);
+    });
+
+    it('keeps explicit empty tools list as no-tools allowlist', function () {
+        $definition = AgentDefinition::fromArray([
+            'name' => 'empty-allowlist',
+            'description' => 'No tools explicitly',
+            'systemPrompt' => 'No tools.',
+            'tools' => [],
+        ]);
+
+        expect($definition->tools)->not->toBeNull()
+            ->and($definition->tools?->isEmpty())->toBeTrue()
+            ->and($definition->inheritsAllTools())->toBeFalse();
     });
 
     it('inheritsAllTools returns true when tools is null', function () {

@@ -3,7 +3,7 @@
 namespace Cognesy\Evals\Executors;
 
 use Closure;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Evals\Executors\Data\InferenceSchema;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
@@ -141,7 +141,7 @@ class InferenceAdapter
     }
 
     private function runtime(string $preset): CanCreateInference {
-        $events = EventBusResolver::using(null);
+        $events = new EventDispatcher(name: 'evals.inference.adapter');
         if ($this->wiretap !== null) {
             $events->wiretap($this->wiretap);
         }

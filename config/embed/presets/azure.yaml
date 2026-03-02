@@ -1,0 +1,11 @@
+driver: azure
+apiUrl: 'https://{resourceName}.openai.azure.com/openai/deployments/{deploymentId}'
+apiKey: '${AZURE_OPENAI_EMBED_API_KEY}'
+endpoint: /embeddings
+metadata:
+  apiVersion: '2023-05-15'
+  resourceName: instructor-dev
+  deploymentId: text-embedding-3-small
+model: text-embedding-3-small
+dimensions: 1536
+maxInputs: 16

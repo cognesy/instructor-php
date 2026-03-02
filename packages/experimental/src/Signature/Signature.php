@@ -2,7 +2,7 @@
 
 namespace Cognesy\Experimental\Signature;
 
-use Cognesy\Dynamic\Structure;
+use Cognesy\Experimental\Signature\Internal\SignatureStringRenderer;
 use Cognesy\Experimental\Signature\Contracts\HasInputSchema;
 use Cognesy\Experimental\Signature\Contracts\HasOutputSchema;
 use Cognesy\Schema\Data\Schema;
@@ -41,17 +41,15 @@ final readonly class Signature implements HasInputSchema, HasOutputSchema
         $this->input = $input;
         $this->output = $output;
         $this->description = $description;
-        $this->shortSignature = $this->makeShortSignatureString();
-        $this->fullSignature = $this->makeSignatureString();
+        $this->shortSignature = SignatureStringRenderer::short($this->input, $this->output);
+        $this->fullSignature = SignatureStringRenderer::full($this->input, $this->output);
     }
 
-    static public function toStructure(string $name, Signature $signature) : Structure {
-        return Structure::fromSchema(
-            SchemaFactory::withMetadata(
-                $signature->toOutputSchema(),
-                name: $name,
-                description: $signature->getDescription(),
-            ),
+    public function toRequestedSchema(string $name = 'prediction') : Schema {
+        return SchemaFactory::withMetadata(
+            $this->toOutputSchema(),
+            name: $name,
+            description: $this->getDescription(),
         );
     }
 
@@ -78,58 +76,53 @@ final readonly class Signature implements HasInputSchema, HasOutputSchema
     }
 
     public function hasSingleOutput(): bool {
-        return (count($this->outputNames()) == 1);
+        return count($this->outputNames()) === 1;
     }
 
     public function hasArrayOutput(): bool {
-        $outputs = $this->outputNames();
-        $firstOutput = $outputs[0] ?? null;
-        return (count($outputs) == 1)
-            && (
-                $this->output->isArray()
-                || $this->output->getPropertySchema($firstOutput)->isArray()
-            );
+        $outputProperty = $this->singleOutputProperty();
+        if ($outputProperty === null) {
+            return false;
+        }
+
+        return $this->output->isArray() || $outputProperty->isArray();
     }
 
     public function hasObjectOutput(): bool {
-        $outputs = $this->outputNames();
-        $firstOutput = $outputs[0] ?? null;
-        return (count($outputs) == 1)
-            && (
-                $this->output->isObject()
-                || $this->output->getPropertySchema($firstOutput)->isObject()
-            );
+        $outputProperty = $this->singleOutputProperty();
+        if ($outputProperty === null) {
+            return false;
+        }
+
+        return $this->output->isObject() || $outputProperty->isObject();
     }
 
     public function hasEnumOutput(): bool {
-        $outputs = $this->outputNames();
-        $firstOutput = $outputs[0] ?? null;
-        return (count($outputs) == 1)
-            && (
-                $this->output->isEnum()
-                || $this->output->getPropertySchema($firstOutput)->isEnum()
-            );
+        $outputProperty = $this->singleOutputProperty();
+        if ($outputProperty === null) {
+            return false;
+        }
+
+        return $this->output->isEnum() || $outputProperty->isEnum();
     }
 
     public function hasScalarOutput(): bool {
-        $outputs = $this->outputNames();
-        $firstOutput = $outputs[0] ?? null;
-        return (count($outputs) == 1)
-            && (
-                $this->output->isScalar()
-                || $this->output->getPropertySchema($firstOutput)->isScalar()
-            );
+        $outputProperty = $this->singleOutputProperty();
+        if ($outputProperty === null) {
+            return false;
+        }
+
+        return $this->output->isScalar() || $outputProperty->isScalar();
     }
 
     public function hasTextOutput(): bool {
-        $outputs = $this->outputNames();
-        $firstOutput = $outputs[0] ?? null;
-        $outputProperty = $firstOutput !== null ? $this->output->getPropertySchema($firstOutput) : null;
-        return $this->hasScalarOutput()
-            && (
-                TypeInfo::toJsonType($this->output->type)->isString()
-                || ($outputProperty !== null && TypeInfo::toJsonType($outputProperty->type)->isString())
-            );
+        $outputProperty = $this->singleOutputProperty();
+        if ($outputProperty === null || !$this->hasScalarOutput()) {
+            return false;
+        }
+
+        return TypeInfo::toJsonType($this->output->type())->isString()
+            || TypeInfo::toJsonType($outputProperty->type())->isString();
     }
 
     // CONVERSION //////////////////////////////////////////////////////
@@ -173,40 +166,13 @@ final readonly class Signature implements HasInputSchema, HasOutputSchema
 
     // INTERNAL ////////////////////////////////////////////////////////
 
-    protected function makeShortSignatureString() : string {
-        return $this->renderSignature($this->shortPropertySignature(...));
-    }
-
-    protected function makeSignatureString() : string {
-        return $this->renderSignature($this->propertySignature(...));
-    }
-
-    private function renderSignature(callable $nameRenderer) : string {
-        $inputs = $this->mapProperties($this->input->getPropertySchemas(), $nameRenderer);
-        $outputs = $this->mapProperties($this->output->getPropertySchemas(), $nameRenderer);
-        return implode('', [
-            implode(', ', $inputs),
-            (" " . Signature::ARROW . " "),
-            implode(', ', $outputs)
-        ]);
-    }
-
-    private function mapProperties(array $properties, callable $nameRenderer) : array {
-        return array_map(
-            fn(Schema $propertySchema) => $nameRenderer($propertySchema),
-            $properties
-        );
-    }
-
-    private function propertySignature(Schema $schema) : string {
-        $description = '';
-        if (!empty($schema->description())) {
-            $description = ' (' . $schema->description() . ')';
+    private function singleOutputProperty() : ?Schema {
+        $outputs = $this->outputNames();
+        if (count($outputs) !== 1) {
+            return null;
         }
-        return $schema->name() . ':' . (string) $schema->type . $description;
-    }
 
-    private function shortPropertySignature(Schema $schema) : string {
-        return $schema->name();
+        $firstOutput = $outputs[0];
+        return $this->output->getPropertySchema($firstOutput);
     }
 }

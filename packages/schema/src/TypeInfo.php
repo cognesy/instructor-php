@@ -20,13 +20,16 @@ final class TypeInfo
 {
     private static ?TypeResolver $resolver = null;
 
-    public static function fromTypeName(?string $typeName) : Type {
+    public static function fromTypeName(?string $typeName, bool $normalize = true) : Type {
         if ($typeName === null || trim($typeName) === '') {
             return Type::mixed();
         }
 
         $resolved = self::resolver()->resolve($typeName);
-        return self::normalize($resolved, throwOnUnsupportedUnion: true);
+        return match (true) {
+            $normalize => self::normalize($resolved, throwOnUnsupportedUnion: true),
+            default => $resolved,
+        };
     }
 
     public static function fromValue(mixed $value) : Type {

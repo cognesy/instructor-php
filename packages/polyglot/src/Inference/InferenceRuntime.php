@@ -3,7 +3,7 @@
 namespace Cognesy\Polyglot\Inference;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Contracts\CanManageStreamCache;
 use Cognesy\Http\HttpClient;
@@ -17,13 +17,12 @@ use Cognesy\Polyglot\Inference\Creation\InferenceDriverFactory;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\BaseInferenceRequestDriver;
-use Psr\EventDispatcher\EventDispatcherInterface;
 
 final class InferenceRuntime implements CanCreateInference
 {
     public function __construct(
         private readonly CanProcessInferenceRequest $driver,
-        private readonly EventDispatcherInterface $events,
+        private readonly CanHandleEvents $events,
         private readonly ?Pricing $pricing = null,
     ) {}
 
@@ -39,11 +38,11 @@ final class InferenceRuntime implements CanCreateInference
 
     public static function fromConfig(
         LLMConfig $config,
-        null|CanHandleEvents|EventDispatcherInterface $events = null,
+        ?CanHandleEvents $events = null,
         ?HttpClient $httpClient = null,
         ?CanManageStreamCache $streamCacheManager = null,
     ): self {
-        $events = EventBusResolver::using($events);
+        $events = self::resolveEvents($events);
         $driver = (new InferenceDriverFactory($events))->makeDriver(
             config: $config,
             httpClient: self::resolveHttpClient($events, $httpClient),
@@ -58,11 +57,11 @@ final class InferenceRuntime implements CanCreateInference
 
     public static function fromResolver(
         CanResolveLLMConfig $resolver,
-        null|CanHandleEvents|EventDispatcherInterface $events = null,
+        ?CanHandleEvents $events = null,
         ?HttpClient $httpClient = null,
         ?CanManageStreamCache $streamCacheManager = null,
     ): self {
-        $events = EventBusResolver::using($events);
+        $events = self::resolveEvents($events);
         $config = $resolver->resolveConfig();
         $driver = match (true) {
             $resolver instanceof HasExplicitInferenceDriver && $resolver->explicitInferenceDriver() !== null
@@ -83,7 +82,7 @@ final class InferenceRuntime implements CanCreateInference
 
     public static function fromProvider(
         LLMProvider $provider,
-        null|CanHandleEvents|EventDispatcherInterface $events = null,
+        ?CanHandleEvents $events = null,
         ?HttpClient $httpClient = null,
         ?CanManageStreamCache $streamCacheManager = null,
     ): self {
@@ -97,7 +96,7 @@ final class InferenceRuntime implements CanCreateInference
 
     public static function fromDsn(
         string $dsn,
-        null|CanHandleEvents|EventDispatcherInterface $events = null,
+        ?CanHandleEvents $events = null,
         ?HttpClient $httpClient = null,
         ?CanManageStreamCache $streamCacheManager = null,
     ): self {
@@ -111,7 +110,7 @@ final class InferenceRuntime implements CanCreateInference
 
     public static function using(
         string $preset,
-        null|CanHandleEvents|EventDispatcherInterface $events = null,
+        ?CanHandleEvents $events = null,
         ?HttpClient $httpClient = null,
         ?CanManageStreamCache $streamCacheManager = null,
     ): self {
@@ -124,13 +123,20 @@ final class InferenceRuntime implements CanCreateInference
     }
 
     private static function resolveHttpClient(
-        null|CanHandleEvents|EventDispatcherInterface $events,
+        CanHandleEvents $events,
         ?HttpClient $httpClient,
     ): HttpClient {
         if ($httpClient !== null) {
             return $httpClient;
         }
         return (new HttpClientBuilder(events: $events))->create();
+    }
+
+    private static function resolveEvents(?CanHandleEvents $events): CanHandleEvents {
+        if ($events !== null) {
+            return $events;
+        }
+        return new EventDispatcher(name: 'polyglot.inference.runtime');
     }
 
     private static function withStreamCacheManager(

@@ -19,7 +19,6 @@ use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
-use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @template TResponse
@@ -31,7 +30,7 @@ final class StructuredOutput implements CanCreateStructuredOutput
 
     public function __construct(
         ?CanCreateStructuredOutput $runtime = null,
-        null|CanHandleEvents|EventDispatcherInterface $events = null,
+        ?CanHandleEvents $events = null,
     ) {
         if ($runtime === null) {
             $this->runtime = StructuredOutputRuntime::fromDefaults(

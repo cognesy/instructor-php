@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cognesy\Logging\Integrations\Symfony\DependencyInjection;
 
 use Cognesy\Logging\Factories\SymfonyLoggingFactory;
+use Cognesy\Logging\Integrations\EventPipelineWiretap;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -33,7 +34,6 @@ class InstructorLoggingExtension extends Extension
 
     private function configureLogging(ContainerBuilder $container, array $config): void
     {
-        // Register the logging pipeline factory
         $factoryMethod = match ($config['preset']) {
             'production' => 'productionSetup',
             'default' => 'defaultSetup',
@@ -57,6 +57,9 @@ class InstructorLoggingExtension extends Extension
                 ]);
         }
 
-        // Trait-based wiring is handled by WiretapHandlesEventsPass during compilation.
+        $container->register('instructor_logging.pipeline_listener', EventPipelineWiretap::class)
+            ->setArguments([new Reference('instructor_logging.pipeline_factory')]);
+
+        $container->setParameter('instructor_logging.event_bus_service', $config['event_bus_service']);
     }
 }

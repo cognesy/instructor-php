@@ -8,8 +8,8 @@ use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\PartialFrame;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Enums\EmissionType;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
 use Cognesy\Stream\Contracts\Reducer;
-use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Result\Result;
+use ReflectionObject;
 use Throwable;
 
 /**
@@ -114,10 +114,107 @@ final class DeserializeAndDeduplicateReducer implements Reducer
     }
 
     private function hashObject(mixed $object): string {
-        return hash('xxh3', Json::encode($object));
+        $seen = [];
+        $snapshot = $this->snapshotValue($object, $seen);
+        return hash('xxh3', serialize($snapshot));
     }
 
     private function forward(mixed $accumulator, PartialFrame $frame): mixed {
         return $this->inner->step($accumulator, $frame);
+    }
+
+    /**
+     * @param array<int, true> $seen
+     */
+    private function snapshotValue(mixed $value, array &$seen): mixed {
+        if (is_null($value) || is_scalar($value)) {
+            return $value;
+        }
+
+        if (is_array($value)) {
+            return $this->snapshotArray($value, $seen);
+        }
+
+        if ($value instanceof \BackedEnum) {
+            return ['class' => $value::class, 'value' => $value->value];
+        }
+
+        if ($value instanceof \UnitEnum) {
+            return ['class' => $value::class, 'name' => $value->name];
+        }
+
+        if ($value instanceof \DateTimeInterface) {
+            return ['class' => $value::class, 'value' => $value->format(DATE_ATOM)];
+        }
+
+        if ($value instanceof \JsonSerializable) {
+            return [
+                'class' => $value::class,
+                'json' => $this->snapshotValue($value->jsonSerialize(), $seen),
+            ];
+        }
+
+        if (is_object($value)) {
+            return $this->snapshotObject($value, $seen);
+        }
+
+        return get_debug_type($value);
+    }
+
+    /**
+     * @param array<int|string, mixed> $value
+     * @param array<int, true> $seen
+     * @return array<int|string, mixed>
+     */
+    private function snapshotArray(array $value, array &$seen): array {
+        if (array_is_list($value)) {
+            return array_map(
+                fn(mixed $item): mixed => $this->snapshotValue($item, $seen),
+                $value,
+            );
+        }
+
+        ksort($value);
+        $result = [];
+        foreach ($value as $key => $item) {
+            $result[(string) $key] = $this->snapshotValue($item, $seen);
+        }
+        return $result;
+    }
+
+    /**
+     * @param array<int, true> $seen
+     * @return array<string, mixed>
+     */
+    private function snapshotObject(object $value, array &$seen): array {
+        $objectId = spl_object_id($value);
+        if (isset($seen[$objectId])) {
+            return ['class' => $value::class, 'recursion' => $objectId];
+        }
+        $seen[$objectId] = true;
+
+        $reflection = new ReflectionObject($value);
+        $properties = [];
+        foreach ($reflection->getProperties() as $property) {
+            if ($property->isStatic()) {
+                continue;
+            }
+
+            $key = $property->getDeclaringClass()->getName() . '::' . $property->getName();
+            $properties[$key] = $property->isInitialized($value)
+                ? $this->snapshotValue($property->getValue($value), $seen)
+                : '__uninitialized__';
+        }
+
+        foreach (get_object_vars($value) as $key => $item) {
+            $properties['dynamic::' . $key] = $this->snapshotValue($item, $seen);
+        }
+
+        ksort($properties);
+
+        return [
+            'class' => $value::class,
+            'properties' => $properties,
+        ];
     }
 }

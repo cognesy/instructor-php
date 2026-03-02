@@ -1,0 +1,2 @@
+baseUri: 'https://r.jina.ai/'
+apiKey: '${JINAREADER_API_KEY}'

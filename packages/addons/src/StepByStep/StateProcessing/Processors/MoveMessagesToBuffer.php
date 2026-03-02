@@ -7,7 +7,7 @@ use Cognesy\Addons\Chat\Utils\SplitMessages;
 use Cognesy\Addons\StepByStep\State\Contracts\HasMessageStore;
 use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Utils\Tokenizer;
 
 /**
@@ -22,7 +22,7 @@ final readonly class MoveMessagesToBuffer implements CanProcessAnyState
         private string $bufferSection,
         ?CanHandleEvents $events = null,
     ) {
-        $this->events = $events ?? EventBusResolver::using($events);
+        $this->events = $events ?? new EventDispatcher(name: 'addons.processor.move-messages-to-buffer');
     }
 
     #[\Override]

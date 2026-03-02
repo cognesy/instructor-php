@@ -1,17 +1,19 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Dynamic\Field;
 use Cognesy\Dynamic\Structure;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\MockHttp;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Schema\SchemaBuilder;
 
 it('returns array output for dynamic schema when intoArray is used', function () {
-    $city = Structure::define('city', [
-        Field::string('name', 'City name')->required(),
-        Field::int('population', 'City population')->required(),
-        Field::int('founded', 'Founding year')->required(),
-    ]);
+    $city = Structure::fromSchema(
+        SchemaBuilder::define('city')
+            ->string('name', 'City name')
+            ->int('population', 'City population')
+            ->int('founded', 'Founding year')
+            ->schema(),
+    );
 
     $mockHttp = MockHttp::get([
         '{"name":"Paris","population":2148000,"founded":-52}'

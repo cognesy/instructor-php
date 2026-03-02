@@ -5,7 +5,7 @@ namespace Tests\Addons\Unit\Tools;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
@@ -14,7 +14,7 @@ use ReflectionMethod;
 use ReflectionProperty;
 
 it('injects constructor-provided runtime creators into ReAct driver', function () {
-    $events = EventBusResolver::using(null);
+    $events = new EventDispatcher('addons.test.tool-use-factory-react');
     $inferenceRuntime = InferenceRuntime::fromProvider(
         provider: LLMProvider::new(),
         events: $events,

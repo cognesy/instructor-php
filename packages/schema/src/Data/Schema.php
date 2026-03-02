@@ -14,6 +14,9 @@ readonly class Schema
         public string $description = '',
         /** @var array<string|int>|null */
         public ?array $enumValues = null,
+        public bool $nullable = false,
+        public bool $hasDefaultValue = false,
+        public mixed $defaultValue = null,
     ) {}
 
     public function name() : string {
@@ -26,6 +29,18 @@ readonly class Schema
 
     public function type() : Type {
         return $this->type;
+    }
+
+    public function isNullable() : bool {
+        return $this->nullable;
+    }
+
+    public function hasDefaultValue() : bool {
+        return $this->hasDefaultValue;
+    }
+
+    public function defaultValue() : mixed {
+        return $this->defaultValue;
     }
 
     public function hasProperties() : bool {
@@ -69,12 +84,20 @@ readonly class Schema
 
     /** @return array<string, mixed> */
     public function toArray() : array {
-        return [
+        $array = [
             'name' => $this->name,
             'description' => $this->description,
             'type' => (string) $this->type,
             'class' => TypeInfo::className($this->type),
             'enumValues' => $this->enumValues ?? TypeInfo::enumValues($this->type),
+            'nullable' => $this->nullable,
+            'hasDefaultValue' => $this->hasDefaultValue,
         ];
+
+        if ($this->hasDefaultValue) {
+            $array['defaultValue'] = $this->defaultValue;
+        }
+
+        return $array;
     }
 }

@@ -6,6 +6,9 @@ use Cognesy\Dynamic\Structure;
 use Cognesy\Experimental\Signature\Factories\SignatureFromCallable;
 use Cognesy\Experimental\Signature\Factories\SignatureFromClassMetadata;
 use Cognesy\Experimental\Signature\Factories\SignatureFromString;
+use Cognesy\Schema\Data\ArrayShapeSchema;
+use Cognesy\Schema\Data\ObjectSchema;
+use Cognesy\Schema\Data\Schema;
 use Cognesy\Schema\SchemaFactory;
 
 class SignatureFactory
@@ -25,14 +28,14 @@ class SignatureFactory
         string|object $input,
         string|object $output
     ): Signature {
-        $schemaFactory = new SchemaFactory();
+        $schemaFactory = SchemaFactory::default();
         $outputSchema = $schemaFactory->schema($output);
-        $signature = new Signature(
+
+        return new Signature(
             input: $schemaFactory->schema($input),
             output: $outputSchema,
             description: $outputSchema->description(),
         );
-        return $signature;
     }
 
     static public function fromClassMetadata(
@@ -42,37 +45,67 @@ class SignatureFactory
         return (new SignatureFromClassMetadata)->make($class, $description);
     }
 
+    /**
+     * @deprecated Transitional adapter. Prefer fromSchemas()/fromSchema() with schema-first APIs.
+     */
     static public function fromStructures(
         Structure $inputs,
         Structure $outputs,
         string $description = '',
     ) : Signature {
-        return new Signature(
+        // Transitional adapter for callsites still passing Dynamic Structure.
+        return self::fromSchemas(
             input: $inputs->schema(),
             output: $outputs->schema(),
             description: $description ?: $outputs->description(),
         );
     }
 
+    /**
+     * @deprecated Transitional adapter. Prefer fromSchema() with schema-first APIs.
+     */
     static public function fromStructure(
         Structure $structure,
         string $description = '',
     ) : Signature {
-        // check if structure has inputs and outputs fields
-        if (!$structure->has('inputs') || !$structure->has('outputs')) {
-            throw new \InvalidArgumentException('Invalid structure, missing "inputs" or "outputs" fields');
-        }
+        // Transitional adapter for callsites still passing Dynamic Structure.
+        return self::fromSchema($structure->schema(), $description);
+    }
 
-        $inputSchema = $structure->field('inputs')->schema();
-        $outputSchema = $structure->field('outputs')->schema();
-        if (!$inputSchema->hasProperties() || !$outputSchema->hasProperties()) {
-            throw new \InvalidArgumentException('Invalid structure, "inputs" and "outputs" must be object schemas.');
-        }
-
+    static public function fromSchemas(
+        Schema $input,
+        Schema $output,
+        string $description = '',
+    ) : Signature {
         return new Signature(
+            input: $input,
+            output: $output,
+            description: $description !== '' ? $description : $output->description(),
+        );
+    }
+
+    static public function fromSchema(
+        Schema $schema,
+        string $description = '',
+    ) : Signature {
+        if (!($schema instanceof ObjectSchema || $schema instanceof ArrayShapeSchema)) {
+            throw new \InvalidArgumentException('Invalid schema, expected object schema with inputs and outputs fields.');
+        }
+
+        if (!$schema->hasProperty('inputs') || !$schema->hasProperty('outputs')) {
+            throw new \InvalidArgumentException('Invalid schema, missing "inputs" or "outputs" fields.');
+        }
+
+        $inputSchema = $schema->getPropertySchema('inputs');
+        $outputSchema = $schema->getPropertySchema('outputs');
+        if (!$inputSchema->hasProperties() || !$outputSchema->hasProperties()) {
+            throw new \InvalidArgumentException('Invalid schema, "inputs" and "outputs" must be object schemas.');
+        }
+
+        return self::fromSchemas(
             input: $inputSchema,
             output: $outputSchema,
-            description: $description ?: $outputSchema->description(),
+            description: $description !== '' ? $description : $outputSchema->description(),
         );
     }
 

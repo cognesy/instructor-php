@@ -359,7 +359,7 @@ use Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
-$llm = LLMProvider::new()->withConnection('anthropic');
+$llm = LLMProvider::new()->withLLMPreset('anthropic');
 $driver = new ToolCallingDriver(
     inference: InferenceRuntime::fromProvider($llm),
     llm: $llm,

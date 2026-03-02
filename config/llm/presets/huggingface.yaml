@@ -1,0 +1,8 @@
+driver: huggingface
+apiUrl: 'https://router.huggingface.co/v1'
+apiKey: '${HUGGINGFACE_API_KEY}'
+endpoint: /chat/completions
+model: 'openai/gpt-oss-20b:fireworks-ai'
+maxTokens: 1024
+contextLength: 32000
+maxOutputLength: 4096

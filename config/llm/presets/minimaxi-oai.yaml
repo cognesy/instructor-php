@@ -1,0 +1,8 @@
+driver: minimaxi
+apiUrl: 'https://api.minimaxi.chat/v1'
+apiKey: '${MINIMAXI_API_KEY}'
+endpoint: /chat/completions
+model: MiniMax-Text-01
+maxTokens: 1024
+contextLength: 1000000
+maxOutputLength: 4096

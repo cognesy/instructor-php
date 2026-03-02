@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Cognesy\Logging\Integrations\Symfony;
 
 use Cognesy\Logging\Integrations\Symfony\DependencyInjection\InstructorLoggingExtension;
-use Cognesy\Logging\Integrations\Symfony\DependencyInjection\Compiler\WiretapHandlesEventsPass;
+use Cognesy\Logging\Integrations\Symfony\DependencyInjection\Compiler\WiretapEventBusPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
@@ -17,7 +17,7 @@ class InstructorLoggingBundle extends Bundle
     public function build(ContainerBuilder $container): void
     {
         parent::build($container);
-        $container->addCompilerPass(new WiretapHandlesEventsPass());
+        $container->addCompilerPass(new WiretapEventBusPass());
     }
 
     public function getContainerExtension(): InstructorLoggingExtension

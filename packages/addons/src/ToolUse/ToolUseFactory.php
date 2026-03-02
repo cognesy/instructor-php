@@ -22,7 +22,7 @@ use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
@@ -38,7 +38,7 @@ class ToolUseFactory
         ?CanUseTools $driver = null,
         ?CanHandleEvents $events = null,
     ): ToolUse {
-        $events = EventBusResolver::using($events);
+        $events = $events ?? new EventDispatcher(name: 'addons.tool-use.factory.default');
         $tools = $tools ?? new Tools();
 
         return (new ToolUse(
@@ -69,7 +69,7 @@ class ToolUseFactory
         ?string $finalModel = null,
         array $finalOptions = [],
     ): ToolUse {
-        $events = EventBusResolver::using($events);
+        $events = $events ?? new EventDispatcher(name: 'addons.tool-use.factory.react');
         $tools = $tools ?? new Tools();
 
         return new ToolUse(

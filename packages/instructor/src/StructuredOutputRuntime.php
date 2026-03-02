@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor;
 
 use Cognesy\Config\Contracts\CanProvideConfig;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\HttpClient;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
@@ -22,7 +22,6 @@ use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Contracts\CanResolveLLMConfig;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Psr\EventDispatcher\EventDispatcherInterface;
 
 final class StructuredOutputRuntime implements CanCreateStructuredOutput
 {
@@ -42,11 +41,11 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
 
     public static function fromConfig(
         LLMConfig $config,
-        null|CanHandleEvents|EventDispatcherInterface $events = null,
+        ?CanHandleEvents $events = null,
         ?HttpClient $httpClient = null,
         ?StructuredOutputConfig $structuredConfig = null,
     ): self {
-        $events = EventBusResolver::using($events);
+        $events = self::resolveEvents($events);
         return new self(
             inference: InferenceRuntime::fromConfig(
                 config: $config,
@@ -59,7 +58,7 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
     }
 
     public static function fromDefaults(
-        null|CanHandleEvents|EventDispatcherInterface $events = null,
+        ?CanHandleEvents $events = null,
         ?CanProvideConfig $configProvider = null,
         ?HttpClient $httpClient = null,
         ?StructuredOutputConfig $structuredConfig = null,
@@ -77,11 +76,11 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
 
     public static function fromResolver(
         CanResolveLLMConfig $resolver,
-        null|CanHandleEvents|EventDispatcherInterface $events = null,
+        ?CanHandleEvents $events = null,
         ?HttpClient $httpClient = null,
         ?StructuredOutputConfig $structuredConfig = null,
     ): self {
-        $events = EventBusResolver::using($events);
+        $events = self::resolveEvents($events);
         return new self(
             inference: InferenceRuntime::fromResolver(
                 resolver: $resolver,
@@ -95,7 +94,7 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
 
     public static function fromProvider(
         LLMProvider $provider,
-        null|CanHandleEvents|EventDispatcherInterface $events = null,
+        ?CanHandleEvents $events = null,
         ?HttpClient $httpClient = null,
         ?StructuredOutputConfig $structuredConfig = null,
     ): self {
@@ -109,7 +108,7 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
 
     public static function fromDsn(
         string $dsn,
-        null|CanHandleEvents|EventDispatcherInterface $events = null,
+        ?CanHandleEvents $events = null,
         ?HttpClient $httpClient = null,
         ?StructuredOutputConfig $structuredConfig = null,
     ): self {
@@ -123,7 +122,7 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
 
     public static function using(
         string $preset,
-        null|CanHandleEvents|EventDispatcherInterface $events = null,
+        ?CanHandleEvents $events = null,
         ?HttpClient $httpClient = null,
         ?StructuredOutputConfig $structuredConfig = null,
     ): self {
@@ -133,6 +132,13 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
             httpClient: $httpClient,
             structuredConfig: $structuredConfig,
         );
+    }
+
+    private static function resolveEvents(?CanHandleEvents $events): CanHandleEvents {
+        if ($events !== null) {
+            return $events;
+        }
+        return new EventDispatcher(name: 'instructor.structured-output.runtime');
     }
 
     #[\Override]

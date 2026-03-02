@@ -1,0 +1,12 @@
+driver: azure
+apiUrl: 'https://{resourceName}.openai.azure.com/openai/deployments/{deploymentId}'
+apiKey: '${AZURE_OPENAI_API_KEY}'
+endpoint: /chat/completions
+metadata:
+  apiVersion: 2024-08-01-preview
+  resourceName: instructor-dev
+  deploymentId: gpt-4o-mini
+model: gpt-4o-mini
+maxTokens: 1024
+contextLength: 128000
+maxOutputLength: 16384

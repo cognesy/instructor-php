@@ -1,13 +1,14 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Dynamic\Structure;
-use Cognesy\Dynamic\StructureBuilder;
+use Cognesy\Schema\SchemaBuilder;
 
 it('exposes record api schema data withData validate toArray', function () {
-    $record = StructureBuilder::define('city')
+    $schema = SchemaBuilder::define('city')
         ->string('name')
         ->int('population')
-        ->build(['name' => 'Wroclaw']);
+        ->schema();
+    $record = Structure::fromSchema($schema, ['name' => 'Wroclaw']);
 
     $updated = $record->withData(['name' => 'Wroclaw', 'population' => 670000]);
 
@@ -18,10 +19,11 @@ it('exposes record api schema data withData validate toArray', function () {
 });
 
 it('fails validation when required field is missing', function () {
-    $record = StructureBuilder::define('city')
+    $schema = SchemaBuilder::define('city')
         ->string('name')
         ->int('population')
-        ->build(['name' => 'Wroclaw']);
+        ->schema();
+    $record = Structure::fromSchema($schema, ['name' => 'Wroclaw']);
 
     $validation = $record->validate();
 
@@ -29,11 +31,12 @@ it('fails validation when required field is missing', function () {
         ->and($validation->getErrorMessage())->toContain('Missing required field');
 });
 
-it('supports transitional define api', function () {
-    $record = Structure::define('user', [
-        \Cognesy\Dynamic\Field::string('name'),
-        \Cognesy\Dynamic\Field::int('age')->optional(),
-    ]);
+it('supports schema-first creation api', function () {
+    $schema = SchemaBuilder::define('user')
+        ->string('name')
+        ->int('age', required: false)
+        ->schema();
+    $record = Structure::fromSchema($schema);
 
     $populated = $record->fromArray(['name' => 'Ada']);
 

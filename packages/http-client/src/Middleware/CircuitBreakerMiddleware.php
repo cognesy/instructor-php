@@ -10,17 +10,21 @@ use Cognesy\Http\Exceptions\CircuitBreakerOpenException;
 
 final class CircuitBreakerMiddleware implements HttpMiddleware
 {
-    /** @var array<string, array{state: string, failures: int, lastFailure: int, halfOpenRequests: int, halfOpenSuccesses: int}> */
-    private array $circuits = [];
+    private static ?InMemoryCircuitBreakerStateStore $fallbackStore = null;
+
+    private readonly CanStoreCircuitBreakerState $store;
 
     public function __construct(
         private readonly CircuitBreakerPolicy $policy = new CircuitBreakerPolicy(),
-    ) {}
+        ?CanStoreCircuitBreakerState $store = null,
+    ) {
+        $this->store = $store ?? self::defaultStateStore();
+    }
 
     #[\Override]
     public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse {
         $key = $this->keyFor($request);
-        $circuit = $this->circuits[$key] ?? $this->newCircuit();
+        $circuit = $this->store->load($key) ?? $this->newCircuit();
 
         if ($circuit['state'] === 'open') {
             if ($this->isOpenExpired($circuit)) {
@@ -28,13 +32,13 @@ final class CircuitBreakerMiddleware implements HttpMiddleware
                 $circuit['halfOpenRequests'] = 0;
                 $circuit['halfOpenSuccesses'] = 0;
             } else {
-                $this->circuits[$key] = $circuit;
+                $this->store->save($key, $circuit);
                 throw new CircuitBreakerOpenException("Circuit open for {$key}", $request);
             }
         }
 
         if ($circuit['state'] === 'half_open' && $circuit['halfOpenRequests'] >= $this->policy->halfOpenMaxRequests) {
-            $this->circuits[$key] = $circuit;
+            $this->store->save($key, $circuit);
             throw new CircuitBreakerOpenException("Circuit half-open limit reached for {$key}", $request);
         }
 
@@ -48,18 +52,18 @@ final class CircuitBreakerMiddleware implements HttpMiddleware
             if ($this->policy->isFailureException($error)) {
                 $circuit = $this->recordFailure($circuit);
             }
-            $this->circuits[$key] = $circuit;
+            $this->store->save($key, $circuit);
             throw $error;
         }
 
         if ($this->policy->isFailureResponse($response)) {
             $circuit = $this->recordFailure($circuit);
-            $this->circuits[$key] = $circuit;
+            $this->store->save($key, $circuit);
             return $response;
         }
 
         $circuit = $this->recordSuccess($circuit);
-        $this->circuits[$key] = $circuit;
+        $this->store->save($key, $circuit);
 
         return $response;
     }
@@ -108,5 +112,14 @@ final class CircuitBreakerMiddleware implements HttpMiddleware
 
         $circuit['failures'] = 0;
         return $circuit;
+    }
+
+    private static function defaultStateStore(): CanStoreCircuitBreakerState {
+        if (ApcuCircuitBreakerStateStore::isSupported()) {
+            return new ApcuCircuitBreakerStateStore();
+        }
+
+        self::$fallbackStore ??= new InMemoryCircuitBreakerStateStore();
+        return self::$fallbackStore;
     }
 }

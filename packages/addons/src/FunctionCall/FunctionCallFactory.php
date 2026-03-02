@@ -3,35 +3,38 @@
 namespace Cognesy\Addons\FunctionCall;
 
 use Cognesy\Dynamic\Structure;
-use Cognesy\Dynamic\StructureFactory;
+use Cognesy\Schema\CallableSchemaFactory;
+use Cognesy\Schema\Data\Schema;
 
 class FunctionCallFactory
 {
     static public function fromFunctionName(string $function) : FunctionCall {
-        $structure = (new StructureFactory())->fromFunctionName($function, '', '');
-        return self::makeFromStructure($structure);
+        $schema = (new CallableSchemaFactory())->fromFunctionName($function);
+        return self::makeFromSchema($schema);
     }
 
     static public function fromMethodName(string $class, string $method) : FunctionCall {
-        $structure = (new StructureFactory())->fromMethodName($class, $method, '', '');
-        return self::makeFromStructure($structure);
+        $schema = (new CallableSchemaFactory())->fromMethodName($class, $method);
+        return self::makeFromSchema($schema);
     }
 
     /**
      * @param callable(): mixed $callable
      */
     static public function fromCallable(callable $callable) : FunctionCall {
-        $structure = (new StructureFactory())->fromCallable($callable, '', '');
-        return self::makeFromStructure($structure);
+        $schema = (new CallableSchemaFactory())->fromCallable($callable);
+        return self::makeFromSchema($schema);
     }
 
     // INTERNAL //////////////////////////////////////////////////////////////////////////
 
-    static private function makeFromStructure(Structure $structure) : FunctionCall {
+    static private function makeFromSchema(Schema $schema) : FunctionCall {
+        $arguments = Structure::fromSchema($schema);
+
         return new FunctionCall(
-            $structure->name(),
-            $structure->description(),
-            $structure
+            $arguments->name(),
+            $arguments->description(),
+            $arguments,
         );
     }
 }

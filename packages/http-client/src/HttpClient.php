@@ -3,7 +3,7 @@
 namespace Cognesy\Http;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Events\Traits\HandlesEvents;
 use Cognesy\Http\Collections\HttpRequestList;
 use Cognesy\Http\Collections\HttpResponseList;
@@ -22,7 +22,6 @@ use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
 use Cognesy\Http\Middleware\EventSource\EventSourceMiddleware;
 use Cognesy\Http\Middleware\MiddlewareStack;
 use InvalidArgumentException;
-use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * HTTP client adapter that provides unified access to underlying
@@ -49,11 +48,11 @@ class HttpClient
     public function __construct(
         ?CanHandleHttpRequest $driver = null,
         ?MiddlewareStack $middlewareStack = null,
-        null|EventDispatcherInterface|CanHandleEvents $events = null,
+        ?CanHandleEvents $events = null,
         ?HttpClientConfig $config = null,
         ?CanHandleRequestPool $poolHandler = null,
     ) {
-        $this->events = EventBusResolver::using($events);
+        $this->events = $this->resolveEvents($events);
         $this->driverFactory = new HttpClientDriverFactory($this->events);
         $this->config = $this->resolveConfig($driver, $config);
         $this->driver = $driver ?? $this->makeDefaultDriver($this->config);
@@ -214,5 +213,12 @@ class HttpClient
             $driver instanceof LaravelDriver => 'laravel',
             default => null,
         };
+    }
+
+    private function resolveEvents(?CanHandleEvents $events): CanHandleEvents {
+        if ($events !== null) {
+            return $events;
+        }
+        return new EventDispatcher(name: 'http.client');
     }
 }

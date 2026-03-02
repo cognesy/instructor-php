@@ -7,7 +7,7 @@ use Cognesy\Agents\Capability\Summarization\Events\MessageBufferSummarized;
 use Cognesy\Agents\Hook\Contracts\HookInterface;
 use Cognesy\Agents\Hook\Data\HookContext;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Messages;
 use Cognesy\Utils\Tokenizer;
 
@@ -26,7 +26,7 @@ final readonly class SummarizeBufferHook implements HookInterface
         private CanSummarizeMessages $summarizer,
         ?CanHandleEvents $events = null,
     ) {
-        $this->events = EventBusResolver::using($events);
+        $this->events = $events ?? new EventDispatcher(name: 'agents.hook.summarize-buffer');
     }
 
     #[\Override]

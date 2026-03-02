@@ -24,6 +24,8 @@ use Cognesy\Utils\Result\Result;
 final class ExtractDeltaReducer implements Reducer
 {
     private int $frameIndex = 0;
+    private string $lastSnapshot = '';
+    private ?CanBufferContent $activeBuffer = null;
 
     /**
      * @param Closure(OutputMode): CanBufferContent|null $bufferFactory Optional factory for content buffer
@@ -37,6 +39,8 @@ final class ExtractDeltaReducer implements Reducer
     #[\Override]
     public function init(): mixed {
         $this->frameIndex = 0;
+        $this->lastSnapshot = '';
+        $this->activeBuffer = null;
         return $this->inner->init();
     }
 
@@ -107,10 +111,23 @@ final class ExtractDeltaReducer implements Reducer
 
     private function bufferFromSnapshot(string $snapshot): CanBufferContent {
         if ($snapshot === '') {
-            return $this->createEmptyBuffer();
+            $this->lastSnapshot = '';
+            $this->activeBuffer = $this->createEmptyBuffer();
+            return $this->activeBuffer;
         }
 
-        return $this->createEmptyBuffer()->assemble($snapshot);
+        if ($this->activeBuffer === null) {
+            $this->activeBuffer = $this->createEmptyBuffer();
+            $this->lastSnapshot = '';
+        }
+
+        if ($this->snapshotExtendsPrevious($snapshot)) {
+            return $this->appendSnapshotDelta($snapshot);
+        }
+
+        $this->activeBuffer = $this->createEmptyBuffer()->assemble($snapshot);
+        $this->lastSnapshot = $snapshot;
+        return $this->activeBuffer;
     }
 
     private function createFrame(
@@ -131,5 +148,20 @@ final class ExtractDeltaReducer implements Reducer
         return $snapshot === ''
             && $reducible->finishReason() === ''
             && !$reducible->hasValue();
+    }
+
+    private function snapshotExtendsPrevious(string $snapshot): bool {
+        return $this->lastSnapshot !== '' && str_starts_with($snapshot, $this->lastSnapshot);
+    }
+
+    private function appendSnapshotDelta(string $snapshot): CanBufferContent {
+        $delta = substr($snapshot, strlen($this->lastSnapshot));
+        if ($delta === '' || $this->activeBuffer === null) {
+            return $this->activeBuffer ?? $this->createEmptyBuffer();
+        }
+
+        $this->activeBuffer = $this->activeBuffer->assemble($delta);
+        $this->lastSnapshot = $snapshot;
+        return $this->activeBuffer;
     }
 }

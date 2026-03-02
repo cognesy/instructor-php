@@ -16,7 +16,7 @@ it('checks collection branch before object and enum branches in makeSchema', fun
     $source = file_get_contents(__DIR__ . '/../../src/SchemaFactory.php');
     expect($source)->not->toBeFalse();
 
-    $methodStart = strpos($source, 'private function makeSchema(Type $type) : Schema');
+    $methodStart = strpos($source, 'private function makeSchema(Type $type, bool $nullable = false) : Schema');
     expect($methodStart)->not->toBeFalse();
 
     $methodBody = substr($source, $methodStart);

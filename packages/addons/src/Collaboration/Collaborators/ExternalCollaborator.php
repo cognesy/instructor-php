@@ -11,7 +11,7 @@ use Cognesy\Addons\Collaboration\Events\CollaborationResponseRequested;
 use Cognesy\Addons\StepByStep\MessageCompilation\CanCompileMessages;
 use Cognesy\Addons\StepByStep\MessageCompilation\Compilers\SelectedSections;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\Usage;
@@ -34,7 +34,7 @@ final class ExternalCollaborator implements CanCollaborate
     ) {
         $this->provider = $this->makeProvider($provider);
         $this->compiler = $compiler ?? new SelectedSections(['summary', 'buffer', 'messages']);
-        $this->events = $events ?? EventBusResolver::using($events);
+        $this->events = $events ?? new EventDispatcher(name: 'addons.collaboration.collaborator.external');
     }
 
     #[\Override]

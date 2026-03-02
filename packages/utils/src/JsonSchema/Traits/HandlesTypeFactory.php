@@ -49,6 +49,7 @@ trait HandlesTypeFactory
         );
     }
 
+    /** @param array<int|string> $enumValues */
     public static function enum(
         string $name = '',
         array  $enumValues = [],

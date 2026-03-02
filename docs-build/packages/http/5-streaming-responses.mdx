@@ -13,7 +13,7 @@ $request = (new HttpRequest(
     body: '',
     options: [],
 ))->withStreaming(true);
-// @doctest id="a605"
+// @doctest id="8977"
 ```
 
 ## Consume Chunks
@@ -23,7 +23,7 @@ foreach ($client->withRequest($request)->stream() as $chunk) {
     // parse or forward chunk
     echo $chunk;
 }
-// @doctest id="cc44"
+// @doctest id="cb8a"
 ```
 
 ## Middleware + Streaming
@@ -32,7 +32,7 @@ You can transform stream chunks in middleware before downstream consumers receiv
 
 ```php
 $client = $client->withMiddleware($myStreamMiddleware);
-// @doctest id="1734"
+// @doctest id="b2be"
 ```
 
 Keep stream middleware focused and cheap; avoid heavy buffering unless required.
@@ -46,7 +46,7 @@ $client = $client->withMiddleware(
     (new EventSourceMiddleware())
         ->withParser(static fn(string $payload): string|bool => $payload)
 );
-// @doctest id="400e"
+// @doctest id="057b"
 ```
 
 `withParser()` receives assembled SSE `data:` payloads.
@@ -57,3 +57,4 @@ $client = $client->withMiddleware(
 - If you need replay/caching, do it explicitly with dedicated stream cache components.
 - For mixed usage (`stream()` and `content()`), treat them as separate execution paths.
 - `HttpClient::withSSEStream()` is deprecated; use `EventSourceMiddleware` instead.
+- For curl streaming, `streamHeaderTimeout` controls how long to wait for response headers before throwing `TimeoutException`.

@@ -19,6 +19,8 @@ $request = new HttpRequest(
 $response = $client->withRequest($request)->get();
 ```
 
+`string|array` request bodies are supported. Arrays are JSON-encoded. If encoding fails (for example because a value is not serializable), `HttpRequestBody` throws `InvalidArgumentException`.
+
 ### POST JSON
 
 ```php

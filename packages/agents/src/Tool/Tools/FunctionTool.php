@@ -4,7 +4,7 @@ namespace Cognesy\Agents\Tool\Tools;
 
 use Closure;
 use Cognesy\Agents\Tool\ToolDescriptor;
-use Cognesy\Dynamic\CallableSchemaFactory;
+use Cognesy\Schema\CallableSchemaFactory;
 use Cognesy\Schema\SchemaFactory;
 
 class FunctionTool extends ReflectiveSchemaTool

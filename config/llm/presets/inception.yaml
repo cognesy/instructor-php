@@ -1,0 +1,8 @@
+driver: inception
+apiUrl: 'https://api.inceptionlabs.ai/v1'
+apiKey: '${INCEPTION_API_KEY}'
+endpoint: /chat/completions
+model: mercury
+maxTokens: 1024
+contextLength: 128000
+maxOutputLength: 4096

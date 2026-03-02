@@ -34,7 +34,7 @@ $response = $inference->with(
     ->get();
 
 echo "Response: $response\n";
-// @doctest id="04ef"
+// @doctest id="357f"
 ```
 
 2. **Request Throttling**: Limit the rate of requests from your application
@@ -74,7 +74,7 @@ for ($i = 0; $i < 10; $i++) {
     )->get();
     echo "Response $i: $response\n";
 }
-// @doctest id="a418"
+// @doctest id="8826"
 ```
 
 3. **Request Batching**: Combine multiple requests into batches when possible
@@ -96,7 +96,7 @@ foreach ($questions as $i => $question) {
 
 $batchResponse = $inference->with(messages: $batchedQuestions)->get();
 // Then parse the batch response into individual answers
-// @doctest id="41a3"
+// @doctest id="b765"
 ```
 
 4. **Upgrade API Plan**: Consider upgrading to a higher tier with increased rate limits

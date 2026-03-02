@@ -1,0 +1,7 @@
+driver: ollama
+apiUrl: 'http://localhost:11434/v1'
+apiKey: '${OLLAMA_API_KEY}'
+endpoint: /embeddings
+model: nomic-embed-text
+dimensions: 1024
+maxInputs: 512

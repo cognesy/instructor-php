@@ -20,6 +20,11 @@ class TestDeserializeModel {
     public string $key = '';
 }
 
+final class DedupCollisionObject
+{
+    public function __construct(private int $value) {}
+}
+
 function makeDeserializeTestResponseModel(): ResponseModel {
     $cfg = new StructuredOutputConfig();
     $factory = new ResponseModelFactory(
@@ -189,6 +194,35 @@ test('emits when object changes', function() {
     $reducer->step(null, $frame2);
 
     // Both should emit
+    expect($collector->collected[0]->emissionType)->toBe(EmissionType::ObjectReady)
+        ->and($collector->collected[1]->emissionType)->toBe(EmissionType::ObjectReady);
+});
+
+test('does not collapse distinct private-state objects during deduplication', function () {
+    $collector = makeDeserializedCollector();
+    $transformer = new class implements CanTransformResponse {
+        public function transform(mixed $object, ResponseModel $responseModel): Result {
+            return Result::success(new DedupCollisionObject((int) ($object->value ?? 0)));
+        }
+    };
+
+    $reducer = new DeserializeAndDeduplicateReducer(
+        inner: $collector,
+        deserializer: makeSuccessDeserializer(),
+        transformer: $transformer,
+        responseModel: makeDeserializeTestResponseModel(),
+    );
+
+    $reducer->init();
+
+    $frame1 = PartialFrame::fromResponse(new PartialInferenceResponse(usage: Usage::none()))
+        ->withBuffer(JsonBuffer::empty()->assemble('{"value":1}'));
+    $reducer->step(null, $frame1);
+
+    $frame2 = PartialFrame::fromResponse(new PartialInferenceResponse(usage: Usage::none()))
+        ->withBuffer(JsonBuffer::empty()->assemble('{"value":2}'));
+    $reducer->step(null, $frame2);
+
     expect($collector->collected[0]->emissionType)->toBe(EmissionType::ObjectReady)
         ->and($collector->collected[1]->emissionType)->toBe(EmissionType::ObjectReady);
 });

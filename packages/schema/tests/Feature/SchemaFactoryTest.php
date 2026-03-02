@@ -36,30 +36,35 @@ it('creates a schema from a class name with object references', function () {
         'properties' => [
             'mixedProperty' => [
                 //'type' => ['null', 'boolean', 'object', 'array', 'number', 'string'],
-                'description' => 'Property description'
+                'description' => 'Property description',
+                'nullable' => true,
+                'default' => null,
             ],
             'attributeMixedProperty' => [
                 //'type' => 'string',
-                'description' => 'Attribute description'
+                'description' => 'Attribute description',
+                'nullable' => true,
+                'default' => null,
             ],
             'nonNullableIntProperty' => [
-                'type' => 'integer'
+                'type' => 'integer',
+                'default' => 0,
             ],
             'explicitMixedProperty' => [
                 //'type' => 'string'
+                'nullable' => true,
+                'default' => null,
             ],
             'nullableIntProperty' => [
-                'type' => 'integer'
+                'type' => 'integer',
+                'nullable' => true,
+                'default' => null,
             ],
             'readOnlyStringProperty' => [
                 'type' => 'string'
             ],
         ],
         'required' => [
-            //'mixedProperty',
-            //'attributeMixedProperty',
-            'nonNullableIntProperty',
-            //'explicitMixedProperty',
             'readOnlyStringProperty',
         ],
         'x-php-class' => 'Cognesy\Schema\Tests\Examples\ClassInfo\TestClassA',

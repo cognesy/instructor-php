@@ -76,37 +76,37 @@ trait HandlesTransformation
             'description' => $this->description,
             'title' => $this->title,
         ], $this->meta);
-        if (!empty($this->enumValues)) {
-            $result['enum'] = $this->enumValues;
-        }
-        return $result;
+        return $this->appendEnumValues($result);
     }
 
     private function boolToArray() : array {
-        return $this->prepare([
+        $result = $this->prepare([
             'type' => 'boolean',
             'nullable' => $this->nullable,
             'description' => $this->description,
             'title' => $this->title,
         ], $this->meta);
+        return $this->appendEnumValues($result);
     }
 
     private function numberToArray() : array {
-        return $this->prepare([
+        $result = $this->prepare([
             'type' => 'number',
             'nullable' => $this->nullable,
             'description' => $this->description,
             'title' => $this->title,
         ], $this->meta);
+        return $this->appendEnumValues($result);
     }
 
     private function integerToArray() : array {
-        return $this->prepare([
+        $result = $this->prepare([
             'type' => 'integer',
             'nullable' => $this->nullable,
             'description' => $this->description,
             'title' => $this->title,
         ], $this->meta);
+        return $this->appendEnumValues($result);
     }
 
     private function objectToArray() : array {
@@ -161,13 +161,13 @@ trait HandlesTransformation
     private function prepare(array $values, array $meta) : array {
         $result = $this->appendMeta($values, $meta);
         foreach ($result as $key => $value) {
-            if ($value === null) {
+            if ($value === null && $key !== 'default') {
                 unset($result[$key]);
             }
-            if (is_array($value) && empty($value)) {
+            if (is_array($value) && empty($value) && $key !== 'default') {
                 unset($result[$key]);
             }
-            if (is_string($value) && $value === '') {
+            if (is_string($value) && $value === '' && $key !== 'default') {
                 unset($result[$key]);
             }
         }
@@ -179,6 +179,7 @@ trait HandlesTransformation
         foreach ($meta as $key => $value) {
             // if key does not start with 'x-', prepend it with 'x-'
             $key = match(true) {
+                is_string($key) && $key === 'default' => 'default',
                 is_string($key) && (strpos($key, 'x-') === 0) => $key,
                 default => 'x-' . $key,
             };
@@ -191,6 +192,15 @@ trait HandlesTransformation
             $result[$key] = $value;
         }
         return array_merge($values, $result);
+    }
+
+    private function appendEnumValues(array $schema) : array {
+        if (empty($this->enumValues)) {
+            return $schema;
+        }
+
+        $schema['enum'] = $this->enumValues;
+        return $schema;
     }
 
     private function appendDefinitions(array $schema) : array {

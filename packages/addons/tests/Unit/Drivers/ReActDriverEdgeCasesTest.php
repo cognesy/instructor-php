@@ -13,7 +13,7 @@ use Cognesy\Addons\ToolUse\Enums\ToolUseStepType;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUse;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Messages\Messages;
@@ -27,7 +27,7 @@ use Tests\Addons\Support\FakeInferenceDriver;
 function _noop(): string { return 'ok'; }
 
 function makeReActDriverForEdgeCases(FakeInferenceDriver $driver): ReActDriver {
-    $events = EventBusResolver::using(null);
+    $events = new EventDispatcher('addons.test.react-driver-edge-cases');
     $inference = InferenceRuntime::fromProvider(
         provider: LLMProvider::new()->withDriver($driver),
         events: $events,

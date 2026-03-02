@@ -2,6 +2,7 @@
 
 use Cognesy\Addons\FunctionCall\FunctionCallFactory;
 use Cognesy\Addons\Tests\Examples\Call\TestClass;
+use Cognesy\Schema\TypeInfo;
 
 it('can process function by name', function () {
     $call = FunctionCallFactory::fromFunctionName('Cognesy\Addons\Tests\Examples\Call\testFunction');
@@ -53,10 +54,14 @@ it('can get arguments from method', function () {
 it('it can handle variadic args', function () {
     $call = FunctionCallFactory::fromCallable(Cognesy\Addons\Tests\Examples\Call\variadicFunction(...));
     $arguments = $call->getArgumentNames();
+    $schema = $call->getArgumentInfo('objectParams');
+    $nested = $schema->nestedItemSchema ?? null;
+
     expect($arguments)->toBe(['objectParams']);
-    expect($call->getArgumentInfo('objectParams')->typeDetails()->type)->toBe('collection');
-    expect($call->getArgumentInfo('objectParams')->typeDetails()->nestedType->type)->toBe('object');
-    expect($call->getArgumentInfo('objectParams')->typeDetails()->nestedType->class)->toBe('Cognesy\Addons\Tests\Examples\Call\TestClass');
+    expect(TypeInfo::isCollection($schema->type()))->toBeTrue();
+    expect($nested)->not->toBeNull();
+    expect(TypeInfo::isObject($nested->type()))->toBeTrue();
+    expect(TypeInfo::className($nested->type()))->toBe('Cognesy\Addons\Tests\Examples\Call\TestClass');
 });
 
 it('it can handle default args', function () {

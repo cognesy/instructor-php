@@ -49,6 +49,9 @@ class SchemaFactory
     public static function withMetadata(Schema $schema, ?string $name = null, ?string $description = null) : Schema {
         $resolvedName = $name ?? $schema->name;
         $resolvedDescription = $description ?? $schema->description;
+        $resolvedNullable = $schema->nullable;
+        $resolvedHasDefaultValue = $schema->hasDefaultValue;
+        $resolvedDefaultValue = $schema->defaultValue;
 
         return match (true) {
             $schema instanceof ObjectSchema => new ObjectSchema(
@@ -57,6 +60,9 @@ class SchemaFactory
                 description: $resolvedDescription,
                 properties: $schema->properties,
                 required: $schema->required,
+                nullable: $resolvedNullable,
+                hasDefaultValue: $resolvedHasDefaultValue,
+                defaultValue: $resolvedDefaultValue,
             ),
             $schema instanceof ArrayShapeSchema => new ArrayShapeSchema(
                 type: $schema->type,
@@ -64,18 +70,27 @@ class SchemaFactory
                 description: $resolvedDescription,
                 properties: $schema->properties,
                 required: $schema->required,
+                nullable: $resolvedNullable,
+                hasDefaultValue: $resolvedHasDefaultValue,
+                defaultValue: $resolvedDefaultValue,
             ),
             $schema instanceof CollectionSchema => new CollectionSchema(
                 type: $schema->type,
                 name: $resolvedName,
                 description: $resolvedDescription,
                 nestedItemSchema: $schema->nestedItemSchema,
+                nullable: $resolvedNullable,
+                hasDefaultValue: $resolvedHasDefaultValue,
+                defaultValue: $resolvedDefaultValue,
             ),
             default => new ($schema::class)(
                 $schema->type,
                 $resolvedName,
                 $resolvedDescription,
                 $schema->enumValues,
+                $resolvedNullable,
+                $resolvedHasDefaultValue,
+                $resolvedDefaultValue,
             ),
         };
     }
@@ -94,15 +109,17 @@ class SchemaFactory
             return $this->schemaConverter->parse(JsonSchema::fromArray($anyType->toJsonSchema()));
         }
 
-        $type = match (true) {
-            $anyType instanceof Type => TypeInfo::normalize($anyType),
-            is_string($anyType) => TypeInfo::fromTypeName($anyType),
+        $sourceType = match (true) {
+            $anyType instanceof Type => $anyType,
+            is_string($anyType) => TypeInfo::fromTypeName($anyType, normalize: false),
             default => TypeInfo::fromValue($anyType),
         };
+        $nullable = $sourceType->isNullable();
+        $type = TypeInfo::normalize($sourceType);
 
-        $cacheKey = TypeInfo::cacheKey($type);
+        $cacheKey = TypeInfo::cacheKey($type) . '|nullable:' . ($nullable ? '1' : '0');
         if (!isset($this->schemaCache[$cacheKey])) {
-            $this->schemaCache[$cacheKey] = $this->makeSchema($type);
+            $this->schemaCache[$cacheKey] = $this->makeSchema($type, nullable: $nullable);
         }
 
         return $this->schemaCache[$cacheKey];
@@ -111,8 +128,24 @@ class SchemaFactory
     /**
      * @param array<string|int>|null $enumValues
      */
-    public function propertySchema(Type $type, string $name, string $description, ?array $enumValues = null) : Schema {
-        return $this->makePropertySchema($type, $name, $description, $enumValues);
+    public function propertySchema(
+        Type $type,
+        string $name,
+        string $description,
+        ?array $enumValues = null,
+        ?bool $nullable = null,
+        bool $hasDefaultValue = false,
+        mixed $defaultValue = null,
+    ) : Schema {
+        return $this->makePropertySchema(
+            type: $type,
+            name: $name,
+            description: $description,
+            enumValues: $enumValues,
+            nullable: $nullable,
+            hasDefaultValue: $hasDefaultValue,
+            defaultValue: $defaultValue,
+        );
     }
 
     public function schemaParser() : CanParseJsonSchema {
@@ -138,8 +171,21 @@ class SchemaFactory
         return $this->schemaRenderer->render($schema, $onObjectRef);
     }
 
-    public function fromType(Type $type, string $name = '', string $description = '') : Schema {
-        return $this->makePropertySchema(TypeInfo::normalize($type), $name, $description);
+    public function fromType(
+        Type $type,
+        string $name = '',
+        string $description = '',
+        bool $hasDefaultValue = false,
+        mixed $defaultValue = null,
+    ) : Schema {
+        return $this->makePropertySchema(
+            type: $type,
+            name: $name,
+            description: $description,
+            nullable: $type->isNullable(),
+            hasDefaultValue: $hasDefaultValue,
+            defaultValue: $defaultValue,
+        );
     }
 
     public function string(string $name = '', string $description = '') : ScalarSchema {
@@ -220,6 +266,9 @@ class SchemaFactory
             $propertyInfo->getType(),
             $propertyInfo->getName(),
             $propertyInfo->getDescription(),
+            nullable: $propertyInfo->isNullable(),
+            hasDefaultValue: $propertyInfo->hasDefaultValue(),
+            defaultValue: $propertyInfo->defaultValue(),
         );
     }
 
@@ -244,7 +293,7 @@ class SchemaFactory
         return $propertySchemas;
     }
 
-    private function makeSchema(Type $type) : Schema {
+    private function makeSchema(Type $type, bool $nullable = false) : Schema {
         $type = TypeInfo::normalize($type);
         $className = TypeInfo::className($type);
 
@@ -258,22 +307,25 @@ class SchemaFactory
                     'item',
                     'Correctly extract items of type: ' . TypeInfo::shortName(TypeInfo::collectionValueType($type) ?? Type::mixed()),
                 ),
+                nullable: $nullable,
             ),
             TypeInfo::isObject($type) && !TypeInfo::isEnum($type) => $this->makeObjectSchema(
                 $type,
                 name: $className !== null ? TypeInfo::shortName($type) : 'object',
                 description: $this->classDescription($className),
                 allowReference: false,
+                nullable: $nullable,
             ),
             TypeInfo::isEnum($type) => new EnumSchema(
                 type: $type,
                 name: $className ?? '',
                 description: $this->classDescription($className),
                 enumValues: TypeInfo::enumValues($type),
+                nullable: $nullable,
             ),
-            TypeInfo::isArray($type) => new ArraySchema($type),
-            TypeInfo::isScalar($type) => new ScalarSchema($type, 'value', 'Correctly extracted value'),
-            TypeInfo::isMixed($type) => new Schema($type, 'value', 'Correctly extracted value'),
+            TypeInfo::isArray($type) => new ArraySchema($type, nullable: $nullable),
+            TypeInfo::isScalar($type) => new ScalarSchema($type, 'value', 'Correctly extracted value', nullable: $nullable),
+            TypeInfo::isMixed($type) => new Schema($type, 'value', 'Correctly extracted value', nullable: $nullable),
             default => throw SchemaMappingException::unknownSchemaType((string) $type),
         };
     }
@@ -281,7 +333,16 @@ class SchemaFactory
     /**
      * @param array<string|int>|null $enumValues
      */
-    private function makePropertySchema(Type $type, string $name, string $description, ?array $enumValues = null) : Schema {
+    private function makePropertySchema(
+        Type $type,
+        string $name,
+        string $description,
+        ?array $enumValues = null,
+        ?bool $nullable = null,
+        bool $hasDefaultValue = false,
+        mixed $defaultValue = null,
+    ) : Schema {
+        $resolvedNullable = $nullable ?? $type->isNullable();
         $type = TypeInfo::normalize($type);
 
         return match (true) {
@@ -294,29 +355,89 @@ class SchemaFactory
                     'item',
                     'Correctly extract items of type: ' . TypeInfo::shortName(TypeInfo::collectionValueType($type) ?? Type::mixed()),
                 ),
+                nullable: $resolvedNullable,
+                hasDefaultValue: $hasDefaultValue,
+                defaultValue: $defaultValue,
             ),
-            TypeInfo::isEnum($type) => new EnumSchema($type, $name, $description, $enumValues ?? TypeInfo::enumValues($type)),
-            TypeInfo::isObject($type) => $this->makeObjectSchema($type, $name, $description, allowReference: true),
-            TypeInfo::isScalar($type) => new ScalarSchema($type, $name, $description, $enumValues),
-            TypeInfo::isArray($type) => new ArraySchema($type, $name, $description),
-            TypeInfo::isMixed($type) => new Schema($type, $name, $description),
+            TypeInfo::isEnum($type) => new EnumSchema(
+                $type,
+                $name,
+                $description,
+                $enumValues ?? TypeInfo::enumValues($type),
+                $resolvedNullable,
+                $hasDefaultValue,
+                $defaultValue,
+            ),
+            TypeInfo::isObject($type) => $this->makeObjectSchema(
+                $type,
+                $name,
+                $description,
+                allowReference: true,
+                nullable: $resolvedNullable,
+                hasDefaultValue: $hasDefaultValue,
+                defaultValue: $defaultValue,
+            ),
+            TypeInfo::isScalar($type) => new ScalarSchema(
+                $type,
+                $name,
+                $description,
+                $enumValues,
+                $resolvedNullable,
+                $hasDefaultValue,
+                $defaultValue,
+            ),
+            TypeInfo::isArray($type) => new ArraySchema($type, $name, $description, nullable: $resolvedNullable, hasDefaultValue: $hasDefaultValue, defaultValue: $defaultValue),
+            TypeInfo::isMixed($type) => new Schema($type, $name, $description, nullable: $resolvedNullable, hasDefaultValue: $hasDefaultValue, defaultValue: $defaultValue),
             default => throw SchemaMappingException::unknownSchemaType((string) $type),
         };
     }
 
-    private function makeObjectSchema(Type $type, string $name, string $description, bool $allowReference) : Schema {
+    private function makeObjectSchema(
+        Type $type,
+        string $name,
+        string $description,
+        bool $allowReference,
+        bool $nullable = false,
+        bool $hasDefaultValue = false,
+        mixed $defaultValue = null,
+    ) : Schema {
         if ($this->useObjectReferences && $allowReference) {
-            return new ObjectRefSchema($type, $name, $description);
+            return new ObjectRefSchema(
+                $type,
+                $name,
+                $description,
+                nullable: $nullable,
+                hasDefaultValue: $hasDefaultValue,
+                defaultValue: $defaultValue,
+            );
         }
 
         $className = TypeInfo::className($type);
         if ($className === null || !class_exists($className)) {
-            return new ObjectSchema($type, $name, $description, [], []);
+            return new ObjectSchema(
+                $type,
+                $name,
+                $description,
+                [],
+                [],
+                nullable: $nullable,
+                hasDefaultValue: $hasDefaultValue,
+                defaultValue: $defaultValue,
+            );
         }
 
         $depth = $this->inlineObjectExpansionDepth[$className] ?? 0;
         if ($depth >= 2) {
-            return new ObjectSchema($type, $name, $description, [], []);
+            return new ObjectSchema(
+                $type,
+                $name,
+                $description,
+                [],
+                [],
+                nullable: $nullable,
+                hasDefaultValue: $hasDefaultValue,
+                defaultValue: $defaultValue,
+            );
         }
 
         $this->inlineObjectExpansionDepth[$className] = $depth + 1;
@@ -328,6 +449,9 @@ class SchemaFactory
                 $description,
                 $this->getPropertySchemas($classInfo),
                 $classInfo->getRequiredProperties(),
+                nullable: $nullable,
+                hasDefaultValue: $hasDefaultValue,
+                defaultValue: $defaultValue,
             );
         } finally {
             if ($depth === 0) {

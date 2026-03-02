@@ -6,6 +6,7 @@ use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Http\Exceptions\NetworkException;
 use Cognesy\Http\Exceptions\TimeoutException;
+use DateTimeImmutable;
 
 final readonly class RetryPolicy
 {
@@ -90,11 +91,19 @@ final readonly class RetryPolicy
         if (is_numeric($value)) {
             return (int) $value;
         }
-        $timestamp = strtotime((string) $value);
-        if ($timestamp === false) {
+        $httpDate = trim((string) $value);
+        $date = DateTimeImmutable::createFromFormat('D, d M Y H:i:s T', $httpDate);
+        if ($date === false) {
             return null;
         }
-        $delta = $timestamp - time();
+        $errors = DateTimeImmutable::getLastErrors();
+        if (($errors['warning_count'] ?? 0) > 0 || ($errors['error_count'] ?? 0) > 0) {
+            return null;
+        }
+        if ($date->format('D, d M Y H:i:s T') !== $httpDate) {
+            return null;
+        }
+        $delta = $date->getTimestamp() - time();
         return $delta > 0 ? $delta : null;
     }
 }

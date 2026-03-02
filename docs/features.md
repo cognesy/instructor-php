@@ -423,16 +423,20 @@ class Analysis {
 
 ```php
 <?php
-use Cognesy\Instructor\Extras\Structure\Structure;
+use Cognesy\Dynamic\StructureBuilder;
+use Cognesy\Instructor\StructuredOutput;
 
-$schema = Structure::define('user', [
-    Structure::string('name'),
-    Structure::int('age'),
-    Structure::array('tags', Structure::string('tag')),
-]);
+$schema = StructureBuilder::define('user')
+    ->string('name')
+    ->int('age', required: false)
+    ->collection('tags', 'string', required: false)
+    ->build();
 
 $result = (new StructuredOutput)
-    ->withResponseClass($schema)
+    ->with(
+        messages: 'Extract user profile from this text...',
+        responseModel: $schema,
+    )
     ->get();
 ```
 

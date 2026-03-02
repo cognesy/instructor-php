@@ -5,7 +5,9 @@
 `Cognesy\Schema` maps PHP types/classes to schema objects and renders/parses JSON Schema.
 
 Primary classes:
+- `Cognesy\Schema\SchemaBuilder`
 - `Cognesy\Schema\SchemaFactory`
+- `Cognesy\Schema\CallableSchemaFactory`
 - `Cognesy\Schema\TypeInfo`
 - `Cognesy\Schema\JsonSchemaRenderer`
 - `Cognesy\Schema\JsonSchemaParser`
@@ -16,13 +18,36 @@ Primary classes:
 
 ```php
 <?php
-use Cognesy\Schema\SchemaFactory;
+use Cognesy\Schema\SchemaBuilder;
 
-$factory = SchemaFactory::default();
-
-$schema = $factory->schema(User::class);
-$jsonSchema = $factory->toJsonSchema($schema);
+$schema = SchemaBuilder::define('user')
+    ->string('name')
+    ->int('age', required: false)
+    ->schema();
 ```
+
+---
+
+## SchemaBuilder API
+
+Create:
+
+- `SchemaBuilder::define(string $name, string $description = ''): SchemaBuilder`
+- `SchemaBuilder::fromSchema(Schema $schema): SchemaBuilder`
+
+Property methods:
+
+- `withProperty(string $name, Schema $schema, bool $required = true): SchemaBuilder`
+- `string()`, `int()`, `float()`, `bool()`, `array()`
+- `enum()`, `option()`, `object()`, `collection()`, `shape()`
+
+Build:
+
+- `schema(): ObjectSchema`
+- `build(): ObjectSchema`
+
+Implementation note:
+- `SchemaBuilder` reuses one `SchemaFactory` instance per builder lifecycle.
 
 ---
 
@@ -68,6 +93,10 @@ $user = $factory->object(User::class, 'user');
 $status = $factory->enum(Status::class, 'status');
 $tags = $factory->collection('string', 'tags');
 ```
+
+Notes:
+- enum rendering preserves backing values exactly (`string` and `int`)
+- int-backed enums render as JSON Schema `type: integer` with integer `enum` values
 
 ### From Symfony TypeInfo `Type`
 
@@ -123,6 +152,9 @@ Common methods on `Schema`:
 - `name()`
 - `description()`
 - `type()`
+- `isNullable()`
+- `hasDefaultValue()`
+- `defaultValue()`
 - `isScalar()`
 - `isObject()`
 - `isEnum()`
@@ -140,6 +172,11 @@ Common methods on `Schema`:
 
 `CollectionSchema` includes:
 - `public Schema $nestedItemSchema`
+
+Default/nullability behavior:
+- reflection extraction maps constructor/property/setter defaults to schema node metadata
+- JSON bridge preserves `nullable` and `default` in both directions
+- `hasDefaultValue()` distinguishes "no default" from `defaultValue() === null`
 
 ---
 

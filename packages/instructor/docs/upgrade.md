@@ -55,3 +55,25 @@ $user = StructuredOutput::using('openai')
     )
     ->getObject();
 ```
+
+## Step 7: Events 2.0 explicit wiring
+
+If your code previously relied on resolver-style event wiring, migrate to explicit shared bus injection.
+
+Before:
+
+```php
+$events = EventBusResolver::using($events);
+```
+
+After:
+
+```php
+use Cognesy\Events\Dispatchers\EventDispatcher;
+
+$events = $events ?? new EventDispatcher(name: 'instructor.runtime');
+```
+
+Pass the same `$events` instance into related runtimes/builders (for example `HttpClientBuilder`, `InferenceRuntime`, `StructuredOutputRuntime`) so listeners and wiretaps observe the full flow.
+
+For full details, see: `packages/events/MIGRATION-2.0.md`.

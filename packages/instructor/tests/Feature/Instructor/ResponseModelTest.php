@@ -1,6 +1,5 @@
 <?php
 
-use Cognesy\Dynamic\Field;
 use Cognesy\Dynamic\Structure;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
@@ -8,6 +7,7 @@ use Cognesy\Instructor\Creation\ResponseModelFactory;
 use Cognesy\Instructor\Creation\StructuredOutputSchemaRenderer;
 use Cognesy\Instructor\Tests\Examples\ResponseModel\User;
 use Cognesy\Instructor\Tests\Examples\ResponseModel\UserWithProvider;
+use Cognesy\Schema\SchemaBuilder;
 
 dataset('user_response_model', [[[
     'x-php-class' => 'Cognesy\Instructor\Tests\Examples\ResponseModel\User',
@@ -189,15 +189,17 @@ it('hydrates dynamic structure from json schema', function() {
         $config,
         $events,
     );
-    $city = Structure::define('city', [
-        Field::string('name')->required(),
-        Field::int('population')->required(),
-    ]);
+    $city = Structure::fromSchema(
+        SchemaBuilder::define('city')
+            ->string('name')
+            ->int('population')
+            ->schema(),
+    );
     $responseModel = $responseModelFactory->fromAny($city->toJsonSchema());
     $structure = $responseModel->instance();
     expect($structure)->toBeInstanceOf(Structure::class);
     expect($structure->name())->toBe('city');
-    expect($structure->field('name')->isRequired())->toBeTrue();
+    expect($structure->schema()->required)->toContain('name');
     $structure = $structure->fromArray([
         'name' => 'Paris',
         'population' => 2140526,

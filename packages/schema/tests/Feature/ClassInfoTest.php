@@ -46,7 +46,8 @@ it('can determine required properties', function () {
     // Assuming TestClass has at least one non-nullable property
     $requiredProperties = ClassInfo::fromString(TestClassA::class)->getRequiredProperties();
     expect($requiredProperties)->toBeArray();
-    expect($requiredProperties)->toContain('nonNullableIntProperty');
+    expect($requiredProperties)->toContain('readOnlyStringProperty');
+    expect($requiredProperties)->not()->toContain('nonNullableIntProperty');
     expect($requiredProperties)->not()->toContain('nullableIntProperty');
 });
 

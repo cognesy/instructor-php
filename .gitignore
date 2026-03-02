@@ -149,3 +149,6 @@ tasks.json
 
 # bv (beads viewer) local config and caches
 .bv/
+
+# QA tooling local caches
+.qa/.semgrep/

@@ -1,0 +1,2 @@
+baseUri: 'https://api.scrapfly.io/scrape'
+apiKey: '${SCRAPFLY_API_KEY}'

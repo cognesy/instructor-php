@@ -1,0 +1,15 @@
+driver: bedrock-openai
+apiUrl: 'https://bedrock-runtime.us-east-1.amazonaws.com/openai/v1'
+apiKey: '${AWS_BEDROCK_API_KEY}'
+endpoint: /chat/completions
+metadata:
+  region: '${AWS_BEDROCK_REGION:-us-east-1}'
+  guardrailId: '${AWS_BEDROCK_GUARDRAIL_ID}'
+  guardrailVersion: '${AWS_BEDROCK_GUARDRAIL_VERSION}'
+  awsAccessKeyId: '${AWS_ACCESS_KEY_ID}'
+  awsSecretAccessKey: '${AWS_SECRET_ACCESS_KEY}'
+  awsSessionToken: '${AWS_SESSION_TOKEN}'
+model: 'anthropic.claude-3-5-sonnet-20241022-v2:0'
+maxTokens: 1024
+contextLength: 200000
+maxOutputLength: 8192

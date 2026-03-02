@@ -25,10 +25,10 @@ Immutability rule: `with*()` methods return new instances. Reassign (`$client = 
 - `withClientInstance(string $driverName, object $clientInstance): self`
 - `withMiddleware(HttpMiddleware ...$middleware): self`
 - `withRetryPolicy(RetryPolicy $policy): self`
-- `withCircuitBreakerPolicy(CircuitBreakerPolicy $policy): self`
+- `withCircuitBreakerPolicy(CircuitBreakerPolicy $policy, ?CanStoreCircuitBreakerState $stateStore = null): self`
 - `withIdempotencyMiddleware(IdempotencyMiddleware $middleware): self`
 - `withMock(?callable $configure = null): self`
-- `withEventBus(CanHandleEvents|EventDispatcherInterface $events): self`
+- `withEventBus(CanHandleEvents $events): self`
 - `create(): HttpClient`
 - Deprecated aliases: `using()`, `withDebugPreset()`
 
@@ -37,6 +37,7 @@ Immutability rule: `with*()` methods return new instances. Reassign (`$client = 
 ### `HttpRequest`
 Constructor:
 - `new HttpRequest(string $url, string $method, array $headers, string|array $body, array $options)`
+- array bodies are JSON-encoded; encoding failures throw `InvalidArgumentException` (no silent empty-body fallback)
 
 Methods:
 - `url(): string`
@@ -47,6 +48,7 @@ Methods:
 - `isStreamed(): bool`
 - `withHeader(string $key, string $value): self`
 - `withStreaming(bool $streaming): self`
+- lifecycle fields are readonly (`id`, `createdAt`, `updatedAt`, `metadata`)
 
 ### `HttpResponse`
 Factories:
@@ -97,7 +99,9 @@ Methods:
 
 ### Built-in Middleware
 - `RetryMiddleware` + `RetryPolicy`
+- `RetryPolicy` honors `Retry-After` only for numeric seconds or RFC7231 HTTP-date values
 - `CircuitBreakerMiddleware` + `CircuitBreakerPolicy`
+- Circuit breaker state stores: `CanStoreCircuitBreakerState`, `InMemoryCircuitBreakerStateStore`, `ApcuCircuitBreakerStateStore`
 - `IdempotencyMiddleware`
 - `EventSource\EventSourceMiddleware`
 - `RecordReplay\RecordReplayMiddleware`
@@ -209,5 +213,6 @@ $client = (new HttpClientBuilder())
 
 ## DSN Note
 
-`withDsn()` currently works best for string options (for example `driver=symfony`).
-For numeric/boolean fields, prefer `withConfig(new HttpClientConfig(...))`.
+`withDsn()` supports typed fields and coerces values to `HttpClientConfig` types.
+
+Example: `driver=symfony,connectTimeout=2,requestTimeout=20,streamHeaderTimeout=5,failOnError=true`

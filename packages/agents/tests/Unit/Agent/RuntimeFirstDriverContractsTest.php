@@ -4,7 +4,7 @@ namespace Cognesy\Agents\Tests\Unit\Agent;
 
 use Cognesy\Agents\Drivers\ReAct\ReActDriver;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMProvider;
@@ -15,7 +15,7 @@ use ReflectionMethod;
 
 describe('Runtime-first driver contracts', function () {
     it('does not expose CanAcceptLLMProvider on runtime-first drivers', function () {
-        $events = EventBusResolver::using(null);
+        $events = new EventDispatcher('agents.test.runtime-first-driver-contracts');
         $inference = InferenceRuntime::fromProvider(
             provider: LLMProvider::new(),
             events: $events,

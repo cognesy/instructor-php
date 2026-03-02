@@ -17,19 +17,27 @@ $client = (new HttpClientBuilder())
     ->create();
 ```
 
+`Retry-After` is respected only for numeric seconds or RFC7231 HTTP-date values (`D, d M Y H:i:s T`).
+
 ## Circuit Breaker Policy
 
 ```php
 use Cognesy\Http\Creation\HttpClientBuilder;
+use Cognesy\Http\Middleware\ApcuCircuitBreakerStateStore;
 use Cognesy\Http\Middleware\CircuitBreakerPolicy;
 
 $client = (new HttpClientBuilder())
-    ->withCircuitBreakerPolicy(new CircuitBreakerPolicy(
-        failureThreshold: 5,
-        openForSec: 30,
-    ))
+    ->withCircuitBreakerPolicy(
+        new CircuitBreakerPolicy(
+            failureThreshold: 5,
+            openForSec: 30,
+        ),
+        new ApcuCircuitBreakerStateStore(),
+    )
     ->create();
 ```
+
+Use a shared state store for circuit breaker in multi-request runtimes (for example PHP-FPM). Without APCu, middleware falls back to in-process memory only.
 
 ## Idempotency Keys
 

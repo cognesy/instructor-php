@@ -1,10 +1,29 @@
-# Dynamic
+# Instructor Dynamic
 
-Lightweight runtime structure record for schema-driven outputs.
+Lightweight runtime structures for schema-driven inputs and outputs.
 
-Core API:
-- `Structure` record (`schema()`, `data()`, `withData()`, `validate()`, `toArray()`)
-- `StructureBuilder` fluent schema DSL
-- `CallableSchemaFactory` callable/method signature -> `Schema`
+```php
+use Cognesy\Dynamic\Structure;
+use Cognesy\Schema\SchemaBuilder;
 
-Legacy-heavy internals from previous implementation were intentionally removed.
+$schema = SchemaBuilder::define('search_args')
+    ->string('query')
+    ->int('limit', required: false)
+    ->schema();
+
+$args = Structure::fromSchema($schema, ['query' => 'laravel']);
+
+$updated = $args->set('limit', 10);
+
+$updated->validate()->isValid(); // true
+$updated->toArray();             // ['query' => 'laravel', 'limit' => 10]
+```
+
+Use this package when you need:
+
+- a small immutable runtime record (`Structure`)
+- schema-driven structures from callables/classes (`StructureFactory`)
+
+Schema authoring lives in `Cognesy\Schema` (`SchemaBuilder`, `SchemaFactory`, `CallableSchemaFactory`).
+
+See [CHEATSHEET.md](CHEATSHEET.md) for API details.

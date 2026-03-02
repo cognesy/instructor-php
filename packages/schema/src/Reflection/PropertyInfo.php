@@ -99,6 +99,9 @@ class PropertyInfo
         }
 
         if ($this->isPublic()) {
+            if ($this->reflection->hasDefaultValue()) {
+                return false;
+            }
             return !$this->isNullable();
         }
 
@@ -116,6 +119,42 @@ class PropertyInfo
         }
 
         return !$setterParameter->isDefaultValueAvailable();
+    }
+
+    public function hasDefaultValue() : bool {
+        $constructorParameter = $this->constructorParameter();
+        if ($constructorParameter !== null && $constructorParameter->isDefaultValueAvailable()) {
+            return true;
+        }
+
+        if ($this->reflection->hasDefaultValue()) {
+            return true;
+        }
+
+        $setterParameter = $this->setterParameter();
+        if ($setterParameter === null) {
+            return false;
+        }
+
+        return $setterParameter->isDefaultValueAvailable();
+    }
+
+    public function defaultValue() : mixed {
+        $constructorParameter = $this->constructorParameter();
+        if ($constructorParameter !== null && $constructorParameter->isDefaultValueAvailable()) {
+            return $constructorParameter->getDefaultValue();
+        }
+
+        if ($this->reflection->hasDefaultValue()) {
+            return $this->reflection->getDefaultValue();
+        }
+
+        $setterParameter = $this->setterParameter();
+        if ($setterParameter !== null && $setterParameter->isDefaultValueAvailable()) {
+            return $setterParameter->getDefaultValue();
+        }
+
+        return null;
     }
 
     public function getClass() : string {

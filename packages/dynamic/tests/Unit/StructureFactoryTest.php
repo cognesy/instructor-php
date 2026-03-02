@@ -4,20 +4,13 @@ use Cognesy\Dynamic\StructureFactory;
 
 function dynamicStructureFactoryProbe(int $id, string $name = 'default') : void {}
 
-it('uses non-static api and reuses cached type resolver', function () {
+it('uses non-static api and builds structure from callable signatures', function () {
     $method = new ReflectionMethod(StructureFactory::class, 'fromCallable');
     expect($method->isStatic())->toBeFalse();
 
     $factory = new StructureFactory();
-    $readResolver = Closure::bind(
-        static fn(StructureFactory $instance) : object => $instance->resolver,
-        null,
-        StructureFactory::class,
-    );
+    $structure = $factory->fromFunctionName('dynamicStructureFactoryProbe');
 
-    $before = $readResolver($factory);
-    $factory->fromFunctionName('dynamicStructureFactoryProbe');
-    $after = $readResolver($factory);
-
-    expect($before)->toBe($after);
+    expect($structure->has('id'))->toBeTrue()
+        ->and($structure->has('name'))->toBeTrue();
 });

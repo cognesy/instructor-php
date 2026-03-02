@@ -1,0 +1,11 @@
+driver: openai
+apiUrl: 'https://api.openai.com/v1'
+apiKey: '${OPENAI_API_KEY}'
+endpoint: /chat/completions
+metadata:
+  organization: ''
+  project: ''
+model: gpt-4.1-nano
+maxTokens: 1024
+contextLength: 1000000
+maxOutputLength: 16384

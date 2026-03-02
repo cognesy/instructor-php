@@ -14,7 +14,7 @@ it('excludes static properties from generated schema properties and required lis
     expect($properties)->toHaveKey('age');
     expect($properties)->not->toHaveKey('globalName');
     expect($properties)->not->toHaveKey('globalCount');
-    expect($required)->toContain('name');
+    expect($required)->not->toContain('name');
     expect($required)->not->toContain('globalName');
     expect($required)->not->toContain('globalCount');
 });

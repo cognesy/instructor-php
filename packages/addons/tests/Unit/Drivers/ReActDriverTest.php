@@ -14,7 +14,7 @@ use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Messages\Messages;
@@ -27,7 +27,7 @@ use Tests\Addons\Support\FakeInferenceDriver;
 function _react_add(int $a, int $b): int { return $a + $b; }
 
 function makeReActDriverForDriverTest(FakeInferenceDriver $driver, bool $finalViaInference = false): ReActDriver {
-    $events = EventBusResolver::using(null);
+    $events = new EventDispatcher('addons.test.react-driver');
     $inference = InferenceRuntime::fromProvider(
         provider: LLMProvider::new()->withDriver($driver),
         events: $events,

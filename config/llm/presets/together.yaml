@@ -1,0 +1,8 @@
+driver: together
+apiUrl: 'https://api.together.xyz/v1'
+apiKey: '${TOGETHER_API_KEY}'
+endpoint: /chat/completions
+model: meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8
+maxTokens: 1024
+contextLength: 128000
+maxOutputLength: 4096

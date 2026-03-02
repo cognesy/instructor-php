@@ -1,0 +1,9 @@
+driver: jina
+apiUrl: 'https://api.jina.ai/v1'
+apiKey: '${JINA_API_KEY}'
+endpoint: /embeddings
+metadata:
+  organization: ''
+model: jina-embeddings-v2-base-en
+dimensions: 768
+maxInputs: 500

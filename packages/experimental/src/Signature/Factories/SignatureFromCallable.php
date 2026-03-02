@@ -2,7 +2,7 @@
 
 namespace Cognesy\Experimental\Signature\Factories;
 
-use Cognesy\Dynamic\CallableSchemaFactory;
+use Cognesy\Schema\CallableSchemaFactory;
 use Cognesy\Experimental\Signature\Signature;
 use Cognesy\Schema\Data\Schema;
 use Cognesy\Schema\SchemaFactory;

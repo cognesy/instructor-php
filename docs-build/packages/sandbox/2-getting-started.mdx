@@ -9,7 +9,7 @@ description: 'Run your first command in a sandbox.'
 use Cognesy\Sandbox\Config\ExecutionPolicy;
 
 $policy = ExecutionPolicy::in(__DIR__);
-// @doctest id="6369"
+// @doctest id="8398"
 ```
 
 ## 2. Create Sandbox
@@ -18,7 +18,7 @@ $policy = ExecutionPolicy::in(__DIR__);
 use Cognesy\Sandbox\Sandbox;
 
 $sandbox = Sandbox::host($policy);
-// @doctest id="db8c"
+// @doctest id="35e0"
 ```
 
 ## 3. Execute Command
@@ -28,7 +28,7 @@ $result = $sandbox->execute(['php', '-v']);
 
 echo $result->stdout();
 echo $result->exitCode();
-// @doctest id="dd52"
+// @doctest id="76bb"
 ```
 
 For enum-based driver selection:
@@ -38,5 +38,5 @@ use Cognesy\Sandbox\Enums\SandboxDriver;
 use Cognesy\Sandbox\Sandbox;
 
 $sandbox = Sandbox::with($policy)->using(SandboxDriver::Host);
-// @doctest id="c21b"
+// @doctest id="9139"
 ```

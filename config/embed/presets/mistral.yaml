@@ -1,0 +1,7 @@
+driver: mistral
+apiUrl: 'https://api.mistral.ai/v1'
+apiKey: '${MISTRAL_API_KEY}'
+endpoint: /embeddings
+model: mistral-embed
+dimensions: 1024
+maxInputs: 512

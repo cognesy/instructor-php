@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+use Cognesy\Instructor\Extraction\Contracts\CanBufferContent;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\PartialFrame;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline\ExtractDeltaReducer;
 use Cognesy\Instructor\Tests\Support\FakeStreamFactory;
@@ -26,6 +27,44 @@ function makeFrameCollector(): Reducer {
             return $this->collected;
         }
     };
+}
+
+final class TrackingBuffer implements CanBufferContent
+{
+    /** @var int[] */
+    public static array $assembledLengths = [];
+
+    public function __construct(private string $raw = '') {}
+
+    public static function reset(): void {
+        self::$assembledLengths = [];
+    }
+
+    #[\Override]
+    public function assemble(string $delta): CanBufferContent {
+        self::$assembledLengths[] = strlen($delta);
+        return new self($this->raw . $delta);
+    }
+
+    #[\Override]
+    public function raw(): string {
+        return $this->raw;
+    }
+
+    #[\Override]
+    public function normalized(): string {
+        return $this->raw;
+    }
+
+    #[\Override]
+    public function parsed(): ?array {
+        return null;
+    }
+
+    #[\Override]
+    public function isEmpty(): bool {
+        return $this->raw === '';
+    }
 }
 
 test('extracts content snapshot in JsonSchema mode', function() {
@@ -268,4 +307,30 @@ test('uses content snapshots across frames', function() {
     expect($collector->collected[0]->buffer->raw())->toBe('{"key"')
         ->and($collector->collected[1]->buffer->raw())->toBe('{"key": "val')
         ->and($collector->collected[2]->buffer->raw())->toBe('{"key": "value"}');
+});
+
+test('assembles only incremental deltas for cumulative snapshots', function() {
+    TrackingBuffer::reset();
+    $collector = makeFrameCollector();
+    $reducer = new ExtractDeltaReducer(
+        inner: $collector,
+        mode: OutputMode::JsonSchema,
+        bufferFactory: fn(OutputMode $mode): CanBufferContent => new TrackingBuffer(),
+    );
+
+    $reducer->init();
+
+    [$partial1, $partial2, $partial3, $partial4] = FakeStreamFactory::from(
+        new PartialInferenceResponse(contentDelta: 'a', usage: Usage::none()),
+        new PartialInferenceResponse(contentDelta: 'b', usage: Usage::none()),
+        new PartialInferenceResponse(contentDelta: 'c', usage: Usage::none()),
+        new PartialInferenceResponse(contentDelta: 'd', usage: Usage::none()),
+    );
+
+    $reducer->step(null, $partial1);
+    $reducer->step(null, $partial2);
+    $reducer->step(null, $partial3);
+    $reducer->step(null, $partial4);
+
+    expect(TrackingBuffer::$assembledLengths)->toBe([1, 1, 1, 1]);
 });

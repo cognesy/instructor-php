@@ -1,7 +1,5 @@
 parameters:
-  level: 1
+  level: 8
   paths:
     - src
     - tests
-  reportUnmatchedIgnoredErrors: false
-  tmpDir: /tmp

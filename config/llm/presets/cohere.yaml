@@ -1,0 +1,8 @@
+driver: cohere
+apiUrl: 'https://api.cohere.ai/v2'
+apiKey: '${COHERE_API_KEY}'
+endpoint: /chat
+model: command-r-plus-08-2024
+maxTokens: 1024
+contextLength: 128000
+maxOutputLength: 4096

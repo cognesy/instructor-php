@@ -14,6 +14,7 @@ $config = new HttpClientConfig(
     connectTimeout: 2,
     requestTimeout: 20,
     streamChunkSize: 512,
+    streamHeaderTimeout: 5,
     failOnError: true,
 );
 
@@ -28,12 +29,11 @@ $client = (new HttpClientBuilder())
 use Cognesy\Http\Creation\HttpClientBuilder;
 
 $client = (new HttpClientBuilder())
-    ->withDsn('driver=symfony')
+    ->withDsn('driver=symfony,connectTimeout=2,requestTimeout=20,streamHeaderTimeout=5,failOnError=true')
     ->create();
 ```
 
-Use DSN for simple string-based selection (for example `driver`).
-For numeric and boolean options, prefer `withConfig(new HttpClientConfig(...))`.
+DSN values are coerced to the typed `HttpClientConfig` fields (`int`, `bool`, `string`).
 
 ## Preset + Override Pattern
 
@@ -56,6 +56,7 @@ When `withConfig(...)` is provided, that config is authoritative.
 - `maxConcurrent` and `poolTimeout` for pooling defaults
 - `failOnError` for exception-on-4xx/5xx behavior
 - `streamChunkSize` for adapter streaming chunk size
+- `streamHeaderTimeout` for streaming header priming timeout (curl driver)
 
 ## See Also
 

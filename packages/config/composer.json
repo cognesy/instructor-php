@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-config",
-  "description": "Configuration functionality for Instructor PHP library",
+  "description": "Lean config loading utilities for Instructor",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
   "support": {
@@ -25,14 +25,10 @@
   },
   "require": {
     "php": "^8.3",
-    "cognesy/instructor-utils": "^1.22"
+    "symfony/yaml": "^7.0 || ^8.0"
   },
   "require-dev": {
-    "roave/security-advisories": "dev-latest",
-    "icanhazstring/composer-unused": "^0.9.0",
-    "jetbrains/phpstorm-attributes": "^1.2",
-    "maglnet/composer-require-checker": "^4.16",
-    "pestphp/pest": "^2.34",
+    "pestphp/pest": "^4.0",
     "phpstan/phpstan": "^1.11",
     "vimeo/psalm": "^6.0"
   },

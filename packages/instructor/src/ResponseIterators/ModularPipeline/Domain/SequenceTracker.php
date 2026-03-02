@@ -71,13 +71,7 @@ final readonly class SequenceTracker
         // Emit items from previousLength to currentLength - 1
         // (keep last item for updates)
         $targetIndex = max(0, $currentLength - 2);
-        $updates = [];
-
-        for ($i = $this->previousLength; $i <= $targetIndex; $i++) {
-            $updates[] = $this->sequenceUpToIndex($this->current, $i);
-        }
-
-        return SequenceUpdateList::of($updates);
+        return SequenceUpdateList::of($this->buildSnapshots($targetIndex));
     }
 
     /**
@@ -112,14 +106,25 @@ final readonly class SequenceTracker
 
     // INTERNAL //////////////////////////////////////////////////////////////
 
-    private function sequenceUpToIndex(Sequenceable $sequence, int $index): Sequenceable {
-        $result = clone $sequence;
-
-        // Pop items until we're at the target index
-        while (count($result) > $index + 1) {
-            $result->pop();
+    /**
+     * @return Sequenceable[]
+     */
+    private function buildSnapshots(int $targetIndex): array {
+        if ($this->current === null) {
+            return [];
         }
 
-        return $result;
+        $working = clone $this->current;
+        $working->pop(); // keep the newest item pending for potential updates
+
+        $reverseOrderSnapshots = [];
+        for ($i = $targetIndex; $i >= $this->previousLength; $i--) {
+            $reverseOrderSnapshots[] = clone $working;
+            if ($i > $this->previousLength) {
+                $working->pop();
+            }
+        }
+
+        return array_reverse($reverseOrderSnapshots);
     }
 }

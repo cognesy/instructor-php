@@ -61,11 +61,18 @@ composer phpstan
 #### Root-level commands (via `composer.json`):
 - `composer test` - Run tests for main project
 - `composer tests` - Alias for test
+- `composer qa` - Run full QA pipeline (PHPStan + Psalm + Pint check + docs QA + Semgrep)
+- `composer qa:phpstan` - Run PHPStan (`phpstan.neon`)
+- `composer qa:psalm` - Run Psalm (`packages/instructor/psalm.xml`)
+- `composer qa:pint` - Run Pint in test mode (format check only)
+- `composer qa:docs` - Run docs QA across docs packages
+- `composer qa:semgrep` - Run Semgrep global rules + package-local Semgrep rules
 - `composer phpstan` - Run PHPStan analysis
 - `composer psalm` - Run Psalm analysis
 - `composer psalm-unused` - Find unused code with Psalm
-- `composer unused` - Find unused classes and methods with ShipMonk Dead Code Detector
-- `composer unused-debug` - Find unused code with verbose debugging output
+- `composer dead-code` - Find unused classes/methods (ShipMonk dead-code detector)
+- `composer dead-code-debug` - Dead-code analysis with verbose diagnostics
+- `composer unused-deps` - Find unused Composer dependencies
 - `composer hub` - Run Instructor Hub CLI
 - `composer tell` - Run Tell CLI
 - `composer setup` - Run setup wizard
@@ -95,16 +102,23 @@ ATTENTION: Tests executed this way rely on Packagist dependencies, so they may m
 
 ### Code Quality
 
-Run static analysis tools:
+Recommended QA workflow:
 ```bash
-composer phpstan  # Root level
-composer psalm    # Root level
+# Full pipeline (recommended before PRs / merges)
+composer qa
 
-# Or for individual packages
-cd packages/instructor
-composer phpstan
-composer psalm
+# Individual QA tools
+composer qa:phpstan
+composer qa:psalm
+composer qa:pint
+composer qa:docs
+composer qa:semgrep
 ```
+
+Semgrep rule layout:
+- Global (cross-package) rules live in `/.qa/semgrep/global.yml`
+- Package-specific rules live in `packages/<package>/.qa/semgrep.yml`
+- Keep package-only rules inside the package; keep shared rules at repo root
 
 ### ID Modeling Standard
 
@@ -122,10 +136,10 @@ Detect unused classes, methods, and dead code:
 
 ```bash
 # Find unused classes and methods using ShipMonk Dead Code Detector
-composer unused
+composer dead-code
 
 # Get detailed debugging information about specific class/method usage
-composer unused-debug
+composer dead-code-debug
 
 # Alternative: Find unused code with Psalm
 composer psalm-unused
@@ -133,7 +147,7 @@ composer psalm-unused
 
 #### Understanding Unused Code Output
 
-The `composer unused` command will show:
+The `composer dead-code` command will show:
 - **Unused classes**: Classes that are never instantiated or referenced
 - **Unused methods**: Methods that are never called, including transitively unused methods
 - **Dead cycles**: Methods that only call each other but are never called externally
@@ -161,7 +175,7 @@ parameters:
                 - App\YourClass::yourMethod
 ```
 
-Then run `composer unused-debug` to see detailed usage analysis.
+Then run `composer dead-code-debug` to see detailed usage analysis.
 
 ## Creating New Packages
 

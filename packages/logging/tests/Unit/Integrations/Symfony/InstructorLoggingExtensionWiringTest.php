@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Events\Traits\HandlesEvents;
+use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Logging\Factories\SymfonyLoggingFactory;
 use Cognesy\Logging\Integrations\Symfony\DependencyInjection\InstructorLoggingExtension;
 use Cognesy\Logging\Integrations\Symfony\InstructorLoggingBundle;
@@ -9,34 +9,50 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 
-final class HandlesEventsTraitConsumer
+final class ExplicitEventBusConsumer implements CanHandleEvents
 {
-    use HandlesEvents;
+    public function dispatch(object $event): object
+    {
+        return $event;
+    }
+
+    public function getListenersForEvent(object $event): iterable
+    {
+        return [];
+    }
+
+    public function addListener(string $name, callable $listener, int $priority = 0): void {}
+
+    public function wiretap(callable $listener): void {}
 }
 
-function compiledLoggingContainer(string $preset): ContainerBuilder
+function compiledLoggingContainer(string $preset, ?string $eventBusService = null): ContainerBuilder
 {
     $container = new ContainerBuilder();
     $container->register('logger', NullLogger::class)->setPublic(true);
-    $container->register(HandlesEventsTraitConsumer::class, HandlesEventsTraitConsumer::class)->setPublic(true);
+    $container->register(CanHandleEvents::class, ExplicitEventBusConsumer::class)->setPublic(true);
 
     $bundle = new InstructorLoggingBundle();
     $bundle->build($container);
 
     $extension = new InstructorLoggingExtension();
-    $extension->load([['enabled' => true, 'preset' => $preset]], $container);
+    $extensionConfig = ['enabled' => true, 'preset' => $preset];
+    if ($eventBusService !== null) {
+        $extensionConfig['event_bus_service'] = $eventBusService;
+    }
+    $extension->load([$extensionConfig], $container);
 
     $container->compile();
 
     return $container;
 }
 
-it('wires trait-based handlers and preserves preset factory method', function (string $preset, string $expectedFactoryMethod) {
+it('wires explicit event bus service and preserves preset factory method', function (string $preset, string $expectedFactoryMethod) {
     $container = compiledLoggingContainer($preset);
 
-    $consumerDefinition = $container->findDefinition(HandlesEventsTraitConsumer::class);
+    $eventBusDefinition = $container->findDefinition(CanHandleEvents::class);
     $wiretapCalls = array_values(array_filter(
-        $consumerDefinition->getMethodCalls(),
+        $eventBusDefinition->getMethodCalls(),
         fn(array $call): bool => $call[0] === 'wiretap'
     ));
 
@@ -47,11 +63,7 @@ it('wires trait-based handlers and preserves preset factory method', function (s
     expect($isReferenceOrDefinition)->toBeTrue();
 
     if ($wiretapArgument instanceof Reference) {
-        expect((string) $wiretapArgument)->toBe('instructor_logging.pipeline_factory');
-    }
-
-    if ($wiretapArgument instanceof Definition) {
-        expect($wiretapArgument->getFactory())->toBe([SymfonyLoggingFactory::class, $expectedFactoryMethod]);
+        expect((string) $wiretapArgument)->toBe('instructor_logging.pipeline_listener');
     }
 
     if ($container->hasDefinition('instructor_logging.pipeline_factory')) {
@@ -63,3 +75,29 @@ it('wires trait-based handlers and preserves preset factory method', function (s
     ['production', 'productionSetup'],
     ['custom', 'create'],
 ]);
+
+it('supports custom event bus service id configuration', function () {
+    $container = new ContainerBuilder();
+    $container->register('logger', NullLogger::class)->setPublic(true);
+    $container->register('app.custom_event_bus', ExplicitEventBusConsumer::class)->setPublic(true);
+
+    $bundle = new InstructorLoggingBundle();
+    $bundle->build($container);
+
+    $extension = new InstructorLoggingExtension();
+    $extension->load([[
+        'enabled' => true,
+        'preset' => 'default',
+        'event_bus_service' => 'app.custom_event_bus',
+    ]], $container);
+
+    $container->compile();
+
+    $eventBusDefinition = $container->findDefinition('app.custom_event_bus');
+    $wiretapCalls = array_values(array_filter(
+        $eventBusDefinition->getMethodCalls(),
+        fn(array $call): bool => $call[0] === 'wiretap'
+    ));
+
+    expect($wiretapCalls)->toHaveCount(1);
+});

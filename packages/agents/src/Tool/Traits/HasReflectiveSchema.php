@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Tool\Traits;
 
-use Cognesy\Dynamic\CallableSchemaFactory;
+use Cognesy\Schema\CallableSchemaFactory;
 use Cognesy\Schema\SchemaFactory;
 
 trait HasReflectiveSchema

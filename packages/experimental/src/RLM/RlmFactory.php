@@ -20,7 +20,7 @@ use Cognesy\Experimental\RLM\Drivers\StrictRlmDriver;
 use Cognesy\Experimental\RLM\Env\BasicReplEnvironment;
 use Cognesy\Experimental\RLM\Env\ToolUseToolset;
 use Cognesy\Experimental\RLM\State\RlmState;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Messages\Messages;
@@ -38,11 +38,12 @@ final class RlmFactory
         $tools = $tools ?? ToolUseToolset::fromTools(new ToolUseTools());
         $repl = $repl ?? new BasicReplEnvironment();
         if ($driver === null) {
+            $events = new EventDispatcher(name: 'experimental.rlm');
             $inference = InferenceRuntime::fromProvider(LLMProvider::using('openai'));
             $driver = new StrictRlmDriver(
                 structuredOutput: new StructuredOutputRuntime(
                     inference: $inference,
-                    events: EventBusResolver::using(null),
+                    events: $events,
                     config: (new StructuredOutputConfigBuilder())
                         ->withMaxRetries(2)
                         ->create(),

@@ -1,228 +1,63 @@
-## Handling dynamic data models
+## Dynamic Structures
 
-If you want to define the shape of data during runtime, you can use `Structure` class.
-
-Structures allow you to define and modify arbitrary shape of data to be extracted by
-LLM. Classes may not be the best fit for this purpose, as declaring or changing them
-during execution is not possible.
-
-With structures, you can define custom data shapes dynamically, for example based
-on the user input or context of the processing, to specify the information you need
-LLM to infer from the provided text or chat messages.
-
-
-## Defining a shape of data
-
-Use `Structure::define()` to define the structure and pass it to Instructor
-as response model.
-
-If `Structure` instance has been provided as a response model, Instructor
-returns a `Structure` object with dynamic properties in the shape you defined.
-
-You can access properties directly or call `->toArray()` to convert to an array.
-
-> **Note:** If you need raw arrays instead of objects, use `->intoArray()` when calling
-> StructuredOutput. See: [Output Formats](output_formats.md)
-
-`Structure::define()` accepts array of `Field` objects.
-
-Let's first define the structure, which is a shape of the data we want to
-extract from the message.
+Use dynamic structures when output shape is decided at runtime.
 
 ```php
 <?php
-use Cognesy\Dynamic\Field;
 use Cognesy\Dynamic\Structure;
+use Cognesy\Schema\SchemaBuilder;
 
-enum Role : string {
-    case Manager = 'manager';
-    case Line = 'line';
-}
+$personSchema = SchemaBuilder::define('person')
+    ->string('name')
+    ->int('age', required: false)
+    ->schema();
 
-$structure = Structure::define('person', [
-    Field::string('name'),
-    Field::int('age'),
-    Field::enum('role', Role::class),
-]);
-?>
-// @doctest id="026d"
+$personModel = Structure::fromSchema($personSchema);
+// @doctest id="14e1"
 ```
 
-Following types of fields are currently supported:
+## Schema Definition
 
-- `Field::bool()` - boolean value
-- `Field::int()` - int value
-- `Field::string()` - string value
-- `Field::float()` - float value
-- `Field::enum()` - enum value
-- `Field::structure()` - for nesting structures
+Define shape with `SchemaBuilder` (not with `Structure`):
 
-
-## Optional fields
-
-Fields can be marked as optional with `$field->optional()`.  By default, all
-defined fields are required.
+- scalars: `string()`, `int()`, `float()`, `bool()`, `array()`
+- constrained values: `enum()`, `option()`
+- nested values: `shape()`, `collection()`, `object()`
 
 ```php
 <?php
-$structure = Structure::define('person', [
-    //...
-    Field::int('age')->optional(),
-    //...
-]);
-?>
-// @doctest id="1b08"
+use Cognesy\Schema\SchemaBuilder;
+
+$schema = SchemaBuilder::define('person')
+    ->string('name')
+    ->shape('address', fn(SchemaBuilder $builder) => $builder
+        ->string('city')
+        ->string('zip', required: false)
+    )
+    ->schema();
+// @doctest id="7519"
 ```
 
-
-## Descriptions for guiding LLM inference
-
-Instructor includes field descriptions in the content of instructions for LLM, so you
-can use them to provide explanations, detailed specifications or requirements for each field.
-
-You can also provide extra inference instructions for LLM at the structure level with `$structure->description(string $description)`
+## Extraction
 
 ```php
 <?php
-$structure = Structure::define('person', [
-    Field::string('name', 'Name of the person'),
-    Field::int('age', 'Age of the person')->optional(),
-    Field::enum('role', Role::class, 'Role of the person'),
-], 'A person object');
-?>
-// @doctest id="ed57"
-```
-
-## Nesting structures
-
-You can use `Field::structure()` to nest structures in case you want to define
-more complex data shapes.
-
-```php
-<?php
-$structure = Structure::define('person', [
-    Field::string('name','Name of the person'),
-    Field::int('age', 'Age of the person')->validIf(
-        fn($value) => $value > 0, "Age has to be positive number"
-    ),
-    Field::structure('address', [
-        Field::string('street', 'Street name')->optional(),
-        Field::string('city', 'City name'),
-        Field::string('zip', 'Zip code')->optional(),
-    ], 'Address of the person'),
-    Field::enum('role', Role::class, 'Role of the person'),
-], 'A person object');
-?>
-// @doctest id="0087"
-```
-
-## Validation of structure data
-
-Instructor supports validation of structures.
-
-You can define field validation with:
-
-- `$field->validIf(callable $condition, string $message)` - `$condition` should return `true` for valid values and `false` for invalid values; `$message` is used to explain validation failure.
-
-Let's add a simple field validation to the example above: 
-
-```php
-<?php
-$structure = Structure::define('person', [
-    // ...
-    Field::int('age', 'Age of the person')->validIf(
-        fn($value) => $value > 0, "Age has to be positive number"
-    ),
-    // ...
-], 'A person object');
-?>
-// @doctest id="9195"
-```
-
-## Extracting data
-
-Now, let's extract the data from the message.
-
-```php
-<?php
+use Cognesy\Dynamic\Structure;
 use Cognesy\Instructor\StructuredOutput;
 
-$text = <<<TEXT
-    Jane Doe lives in Springfield. She is 25 years old and works as a line worker. 
-    McDonald's in New York is located at 456 Elm St, NYC, 12345.
-    TEXT;
-
 $person = (new StructuredOutput)->with(
-    messages: $text,
-    responseModel: $structure,
+    messages: 'Jane Doe is 25 years old.',
+    responseModel: Structure::fromSchema($schema),
 )->get();
 
-// $person is a Structure object, not an array
-echo $person->name;  // "Jane Doe"
-echo $person->age;   // 25
-echo $person->role;  // "line"
-
-// Convert to array if needed
-dump($person->toArray());
-// array [
-//   "name" => "Jane Doe"
-//   "age" => 25
-//   "address" => array [
-//     "city" => "Springfield"
-//   ]
-//   "role" => "line"
-// ]
-
-// Or use intoArray() to get raw array directly
-$personArray = (new StructuredOutput)->with(
-    messages: $text,
-    responseModel: $structure,
-)->intoArray()->get();
-
-dump($personArray);
-// array [ "name" => "Jane Doe", "age" => 25, ... ]
-?>
-// @doctest id="1b57"
+$data = $person->toArray();
+// @doctest id="bc95"
 ```
 
+## Runtime Value API
 
-## Working with `Structure` objects
+`Structure` is immutable:
 
-Structure is immutable when writing data: use `set()` and reassign returned instance.
-You can read values using `get()` or magic property access.
-
-```php
-<?php
-$person = Structure::define('person', [
-    Field::string('name'),
-    Field::int('age'),
-    Field::structure('role', [
-        Field::string('name'),
-        Field::int('level'),
-    ])
-]);
-
-// set() is immutable - reassign result
-$person = $person->set('name', 'John Doe');
-$person = $person->set('age', 30);
-
-// Nested structures are stored as arrays
-$person = $person->set('role', [
-    'name' => 'Manager',
-    'level' => 1,
-]);
-
-// Getting properties via get()
-$name = $person->get('name');
-$age = $person->get('age');
-$role = $person->get('role')['name'];
-$level = $person->get('role')['level'];
-
-// Getting properties directly
-$name = $person->name;
-$age = $person->age;
-$role = $person->role['name'];
-$level = $person->role['level'];
-?>
-// @doctest id="6731"
-```
+- `set()` and `withData()` return new instances
+- `get()` reads value or schema default
+- `validate()` checks schema compliance

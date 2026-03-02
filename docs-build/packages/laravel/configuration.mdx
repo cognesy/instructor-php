@@ -6,7 +6,7 @@ After publishing the configuration file, you'll find it at `config/instructor.ph
 
 ```php
 'default' => env('INSTRUCTOR_CONNECTION', 'openai'),
-// @doctest id="7c97"
+// @doctest id="47fa"
 ```
 
 Set the default LLM connection. Can be overridden at runtime with `->using('connection')`.
@@ -60,7 +60,7 @@ Configure multiple LLM provider connections:
         'max_tokens' => env('OLLAMA_MAX_TOKENS', 4096),
     ],
 ],
-// @doctest id="3777"
+// @doctest id="3308"
 ```
 
 ### Supported Drivers
@@ -92,7 +92,7 @@ Configure multiple LLM provider connections:
         'max_tokens' => 4096,
     ],
 ],
-// @doctest id="6ea2"
+// @doctest id="7614"
 ```
 
 ## Embeddings Connections
@@ -121,7 +121,7 @@ Configure embedding model connections:
         ],
     ],
 ],
-// @doctest id="7971"
+// @doctest id="e7a9"
 ```
 
 ## Extraction Settings
@@ -139,7 +139,7 @@ Configure structured output extraction defaults:
     // Prompt template for retry attempts
     'retry_prompt' => 'The response did not pass validation. Please fix the following errors and try again: {errors}',
 ],
-// @doctest id="ffe8"
+// @doctest id="826f"
 ```
 
 ### Output Modes
@@ -166,7 +166,7 @@ Configure the HTTP client:
     // Connection timeout in seconds
     'connect_timeout' => env('INSTRUCTOR_HTTP_CONNECT_TIMEOUT', 30),
 ],
-// @doctest id="f2e6"
+// @doctest id="c9a3"
 ```
 
 ## Logging Settings
@@ -182,25 +182,25 @@ Configure logging:
     'channel' => env('INSTRUCTOR_LOG_CHANNEL', 'stack'),
 
     // Minimum log level
-    'level' => env('INSTRUCTOR_LOG_LEVEL', 'debug'),
+    'level' => env('INSTRUCTOR_LOG_LEVEL', 'warning'),
 
     // Logging preset: default, production, or custom
-    'preset' => env('INSTRUCTOR_LOGGING_PRESET', 'default'),
+    'preset' => env('INSTRUCTOR_LOGGING_PRESET', 'production'),
 
     // Events to exclude from logging
     'exclude_events' => [
         // Cognesy\Http\Events\DebugRequestBodyUsed::class,
     ],
 ],
-// @doctest id="0316"
+// @doctest id="99dc"
 ```
 
 ### Logging Presets
 
 | Preset | Description |
 |--------|-------------|
-| `default` | Full logging with request/response details |
-| `production` | Minimal logging, no sensitive data |
+| `default` | Verbose logging for local debugging |
+| `production` | Minimal logging for production workloads |
 | `custom` | Define your own pipeline |
 
 ## Events Settings
@@ -217,7 +217,7 @@ Configure event dispatching:
         // \Cognesy\Instructor\Events\ExtractionComplete::class,
     ],
 ],
-// @doctest id="bbe2"
+// @doctest id="0c62"
 ```
 
 ## Cache Settings
@@ -238,7 +238,7 @@ Configure response caching:
     // Cache key prefix
     'prefix' => 'instructor',
 ],
-// @doctest id="261b"
+// @doctest id="480a"
 ```
 
 ## Environment Variables Reference
@@ -252,6 +252,8 @@ Configure response caching:
 | `INSTRUCTOR_HTTP_TIMEOUT` | `120` | Request timeout (seconds) |
 | `INSTRUCTOR_LOGGING_ENABLED` | `true` | Enable logging |
 | `INSTRUCTOR_LOG_CHANNEL` | `stack` | Laravel log channel |
+| `INSTRUCTOR_LOG_LEVEL` | `warning` | Minimum log level |
+| `INSTRUCTOR_LOGGING_PRESET` | `production` | Logging preset |
 | `INSTRUCTOR_DISPATCH_EVENTS` | `true` | Bridge events to Laravel |
 | `INSTRUCTOR_CACHE_ENABLED` | `false` | Enable response caching |
 | `OPENAI_API_KEY` | - | OpenAI API key |
@@ -272,5 +274,5 @@ $result = StructuredOutput::using('anthropic')  // Switch connection
         responseModel: MyModel::class,
     )
     ->get();
-// @doctest id="93f1"
+// @doctest id="a5fe"
 ```

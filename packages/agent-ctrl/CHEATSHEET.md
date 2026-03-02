@@ -42,7 +42,7 @@ Callback signatures:
 
 Event hooks available on builders:
 
-- `withEventHandler(CanHandleEvents|EventDispatcherInterface $events): static`
+- `withEventHandler(CanHandleEvents $events): static`
 - `wiretap(?callable $listener): self`
 - `onEvent(string $class, ?callable $listener): self`
 

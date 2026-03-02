@@ -5,15 +5,9 @@ docname: 'schema_dynamic'
 
 ## Overview
 
-Instructor has a built-in support for generating JSON Schema from
-dynamic objects with `Structure` class.
+Instructor can generate JSON Schema from runtime schemas.
 
-This is useful when the data model is built during runtime or defined
-by your app users.
-
-`Structure` helps you flexibly design and modify data models that
-can change with every request or user input and allows you to generate
-JSON Schema for them.
+Use `SchemaBuilder` to build the schema, then wrap it in `Structure`.
 
 ## Example
 
@@ -21,16 +15,18 @@ JSON Schema for them.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Dynamic\Field;
 use Cognesy\Dynamic\Structure;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Schema\SchemaBuilder;
 
-$city = Structure::define('city', [
-    Field::string('name', 'City name')->required(),
-    Field::int('population', 'City population')->required(),
-    Field::int('founded', 'Founding year')->required(),
-]);
+$citySchema = SchemaBuilder::define('city')
+    ->string('name', 'City name')
+    ->int('population', 'City population')
+    ->int('founded', 'Founding year')
+    ->schema();
+
+$city = Structure::fromSchema($citySchema);
 
 $data = StructuredOutput::using('openai')
     //->withHttpDebugPreset('on')

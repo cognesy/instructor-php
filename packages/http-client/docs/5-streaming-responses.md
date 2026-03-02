@@ -53,3 +53,4 @@ $client = $client->withMiddleware(
 - If you need replay/caching, do it explicitly with dedicated stream cache components.
 - For mixed usage (`stream()` and `content()`), treat them as separate execution paths.
 - `HttpClient::withSSEStream()` is deprecated; use `EventSourceMiddleware` instead.
+- For curl streaming, `streamHeaderTimeout` controls how long to wait for response headers before throwing `TimeoutException`.

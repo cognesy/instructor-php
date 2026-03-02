@@ -152,7 +152,7 @@ class Predictor
         $request = $this->requestInfo
             ->withMessages(Json::encode($callArgs)) // TODO: make format configurable - JSON, YAML, XML
             ->withPrompt($this->instructions())
-            ->withRequestedSchema(Signature::toStructure('prediction', $this->signature));
+            ->withRequestedSchema($this->signature->toRequestedSchema('prediction'));
         return $this->structuredOutput->create($request)->get();
     }
 

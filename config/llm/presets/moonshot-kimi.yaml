@@ -1,0 +1,8 @@
+driver: moonshot
+apiUrl: 'https://api.moonshot.cn/v1'
+apiKey: '${MOONSHOT_API_KEY}'
+endpoint: /chat/completions
+model: kimi-latest
+maxTokens: 1024
+contextLength: 128000
+maxOutputLength: 4096

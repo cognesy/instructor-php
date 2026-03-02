@@ -11,7 +11,42 @@ permissions:
 #  GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
 jobs:
+  build-release-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        if: github.ref_type == 'tag'
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+
+      - name: Install PHP dependencies
+        if: github.ref_type == 'tag'
+        run: composer install --no-dev --optimize-autoloader --no-interaction
+
+      - name: Generate docs build directories
+        if: github.ref_type == 'tag'
+        run: |
+          php bin/instructor-docs gen:mintlify
+          php bin/instructor-docs gen:mkdocs
+
+      - name: Upload docs workspace artifact
+        if: github.ref_type == 'tag'
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-docs-workspace
+          path: |
+            docs-build
+            docs-mkdocs
+            packages/*/docs
+          if-no-files-found: error
+          retention-days: 7
+
   split:
+    needs: build-release-docs
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -98,6 +133,13 @@ jobs:
         with:
           fetch-depth: 0  # Full history for proper splitting
 
+      - name: Download docs workspace artifact
+        if: github.ref_type == 'tag'
+        uses: actions/download-artifact@v4
+        with:
+          name: release-docs-workspace
+          path: .
+
       # Use centralized release notes from docs/release-notes
       - name: Prepare release notes
         if: github.ref_type == 'tag'
@@ -115,6 +157,82 @@ jobs:
             echo "NOTES_PATH=" >> $GITHUB_ENV
           fi
 
+      - name: Prepare docs bundles for release artifacts
+        if: github.ref_type == 'tag'
+        id: docs_bundle
+        run: |
+          set -euo pipefail
+
+          TAG_NAME="${{ github.ref_name }}"
+          PKG_LOCAL="${{ matrix.package.local }}"
+          PKG_NAME="${PKG_LOCAL#packages/}"
+          DOC_SLUG=""
+          BUNDLE_DIR=".release-docs"
+
+          mkdir -p "$BUNDLE_DIR"
+
+          CANDIDATES=("$PKG_NAME")
+          case "$PKG_NAME" in
+            http-client)
+              CANDIDATES=("http-client" "http")
+              ;;
+            instructor)
+              CANDIDATES=("instructor" "instructor2")
+              ;;
+          esac
+
+          for candidate in "${CANDIDATES[@]}"; do
+            if [ -d "docs-build/packages/$candidate" ] || [ -d "docs-mkdocs/packages/$candidate" ]; then
+              DOC_SLUG="$candidate"
+              break
+            fi
+          done
+
+          if [ -n "$DOC_SLUG" ] && [ -d "docs-build/packages/$DOC_SLUG" ]; then
+            tar -czf "$BUNDLE_DIR/${PKG_NAME}-docs-mintlify-${TAG_NAME}.tar.gz" -C docs-build/packages "$DOC_SLUG"
+          fi
+
+          if [ -n "$DOC_SLUG" ] && [ -d "docs-mkdocs/packages/$DOC_SLUG" ]; then
+            tar -czf "$BUNDLE_DIR/${PKG_NAME}-docs-mkdocs-${TAG_NAME}.tar.gz" -C docs-mkdocs/packages "$DOC_SLUG"
+          fi
+
+          if [ -d "$PKG_LOCAL/docs" ]; then
+            tar -czf "$BUNDLE_DIR/${PKG_NAME}-docs-raw-${TAG_NAME}.tar.gz" -C "$PKG_LOCAL" docs
+          fi
+
+          if ! compgen -G "$BUNDLE_DIR/*.tar.gz" > /dev/null; then
+            FALLBACK_DIR="$BUNDLE_DIR/${PKG_NAME}-markdown"
+            mkdir -p "$FALLBACK_DIR"
+
+            for file in README.md CHEATSHEET.md; do
+              if [ -f "$PKG_LOCAL/$file" ]; then
+                cp "$PKG_LOCAL/$file" "$FALLBACK_DIR/$file"
+              fi
+            done
+
+            if [ -d "$PKG_LOCAL/docs" ]; then
+              cp -R "$PKG_LOCAL/docs" "$FALLBACK_DIR/docs"
+            fi
+
+            if find "$FALLBACK_DIR" -type f -name '*.md*' | grep -q .; then
+              tar -czf "$BUNDLE_DIR/${PKG_NAME}-docs-markdown-${TAG_NAME}.tar.gz" -C "$BUNDLE_DIR" "${PKG_NAME}-markdown"
+              rm -rf "$FALLBACK_DIR"
+            fi
+          fi
+
+          if compgen -G "$BUNDLE_DIR/*.tar.gz" > /dev/null; then
+            echo "has_files=true" >> "$GITHUB_OUTPUT"
+            {
+              echo "files<<EOF"
+              find "$BUNDLE_DIR" -type f -name '*.tar.gz' | sort
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+            ls -la "$BUNDLE_DIR"
+          else
+            echo "has_files=false" >> "$GITHUB_OUTPUT"
+            echo "files=" >> "$GITHUB_OUTPUT"
+          fi
+
       # ► push branch + tag
       - name: Split Monorepo
         uses: "danharrin/monorepo-split-github-action@v2.3.0"
@@ -130,9 +248,22 @@ jobs:
           user_name: 'ddebowczyk'
           user_email: 'ddebowczyk@gmail.com'
 
-      # ► create GitHub Release with notes
+      # ► create GitHub Release with notes + docs bundles
       - uses: softprops/action-gh-release@v2
-        if: github.ref_type == 'tag' && env.NOTES_PATH != ''
+        if: github.ref_type == 'tag' && env.NOTES_PATH != '' && steps.docs_bundle.outputs.has_files == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.SPLIT_TOKEN_4 }}
+        with:
+          repository: ${{ matrix.package.repo }}          # target repo
+          tag_name: ${{ github.ref_name }}             # v1.2.3
+          body_path: ${{ env.NOTES_PATH }}
+          files: ${{ steps.docs_bundle.outputs.files }}
+          fail_on_unmatched_files: true
+          token: ${{ secrets.SPLIT_TOKEN_4 }}        # PAT here
+
+      # ► fallback release path (notes only)
+      - uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag' && env.NOTES_PATH != '' && steps.docs_bundle.outputs.has_files != 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.SPLIT_TOKEN_4 }}
         with:

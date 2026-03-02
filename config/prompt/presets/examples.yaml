@@ -1,0 +1,10 @@
+templateEngine: twig
+resourcePath: prompts/examples
+cachePath: /tmp/instructor/cache/examples
+extension: .twig
+frontMatterTags:
+  - '{#---'
+  - '---#}'
+frontMatterFormat: yaml
+metadata:
+  autoReload: true

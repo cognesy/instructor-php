@@ -1,0 +1,10 @@
+templateEngine: arrowpipe
+resourcePath: prompts/system
+cachePath: /tmp/instructor/cache/system
+extension: .tpl
+frontMatterTags:
+  - '{#---'
+  - '---#}'
+frontMatterFormat: yaml
+metadata:
+  autoReload: true

@@ -12,7 +12,7 @@ Run the following command in your CLI:
 
 ```bash
 composer update cognesy/instructor-php
-# @doctest id="561e"
+# @doctest id="d9ef"
 ```
 
 ## Step 2: Config files
@@ -55,5 +55,29 @@ $user = StructuredOutput::using('openai')
         responseModel: User::class,
     )
     ->getObject();
-// @doctest id="0751"
+// @doctest id="2884"
 ```
+
+## Step 7: Events 2.0 explicit wiring
+
+If your code previously relied on resolver-style event wiring, migrate to explicit shared bus injection.
+
+Before:
+
+```php
+$events = EventBusResolver::using($events);
+// @doctest id="61e9"
+```
+
+After:
+
+```php
+use Cognesy\Events\Dispatchers\EventDispatcher;
+
+$events = $events ?? new EventDispatcher(name: 'instructor.runtime');
+// @doctest id="2d1e"
+```
+
+Pass the same `$events` instance into related runtimes/builders (for example `HttpClientBuilder`, `InferenceRuntime`, `StructuredOutputRuntime`) so listeners and wiretaps observe the full flow.
+
+For full details, see: `packages/events/MIGRATION-2.0.md`.

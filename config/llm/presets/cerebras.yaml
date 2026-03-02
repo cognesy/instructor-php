@@ -1,0 +1,8 @@
+driver: cerebras
+apiUrl: 'https://api.cerebras.ai/v1'
+apiKey: '${CEREBRAS_API_KEY}'
+endpoint: /chat/completions
+model: llama3.1-8b
+maxTokens: 1024
+contextLength: 128000
+maxOutputLength: 2048

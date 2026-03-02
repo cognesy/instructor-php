@@ -5,7 +5,7 @@ namespace Tests\Addons\Unit\Chat;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Events\ChatResponseRequested;
 use Cognesy\Addons\Chat\Participants\ScriptedParticipant;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Enums\MessageRole;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\MessageStore;
@@ -69,7 +69,7 @@ it('returns proper usage and metadata', function () {
 });
 
 it('dispatches events during execution', function () {
-    $events = EventBusResolver::using(null);
+    $events = new EventDispatcher('addons.test.scripted-participant');
     $requestedEvents = [];
     $receivedEvents = [];
 

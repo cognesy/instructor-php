@@ -11,7 +11,17 @@ readonly class CollectionSchema extends Schema
         string $name,
         string $description,
         public Schema $nestedItemSchema,
+        bool $nullable = false,
+        bool $hasDefaultValue = false,
+        mixed $defaultValue = null,
     ) {
-        parent::__construct($type, $name, $description);
+        parent::__construct(
+            type: $type,
+            name: $name,
+            description: $description,
+            nullable: $nullable,
+            hasDefaultValue: $hasDefaultValue,
+            defaultValue: $defaultValue,
+        );
     }
 }

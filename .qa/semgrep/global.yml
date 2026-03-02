@@ -1,0 +1,20 @@
+rules:
+  - id: global-events-no-eventbusresolver
+    message: "EventBusResolver is removed. Wire CanHandleEvents explicitly from composition roots."
+    severity: ERROR
+    languages: [php]
+    paths:
+      include:
+        - "/packages/**/src/**/*.php"
+    pattern-regex: "\\bEventBusResolver\\b"
+
+  - id: global-events-no-optional-canhandleevents-constructor
+    message: "Constructor event dependencies should be explicit. Avoid nullable/optional CanHandleEvents in constructors."
+    severity: ERROR
+    languages: [php]
+    paths:
+      include:
+        - "/packages/**/src/**/*.php"
+      exclude:
+        - "/packages/agents/src/Hook/HookStack.php"
+    pattern-regex: "(?s)function\\s+__construct\\s*\\([^)]*(\\?CanHandleEvents\\s+\\$[A-Za-z_][A-Za-z0-9_]*\\s*=\\s*null|CanHandleEvents\\s*\\|\\s*null|null\\s*\\|\\s*CanHandleEvents)[^)]*\\)"

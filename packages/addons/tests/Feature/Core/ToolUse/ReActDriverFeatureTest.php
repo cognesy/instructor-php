@@ -14,7 +14,7 @@ use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;
 use Cognesy\Addons\ToolUse\Enums\ToolUseStepType;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Messages\Messages;
@@ -33,7 +33,7 @@ function react_subtract_numbers(int $a, int $b): int {
 }
 
 function makeReActDriverFromFake(FakeInferenceDriver $driver, bool $finalViaInference = false): ReActDriver {
-    $events = EventBusResolver::using(null);
+    $events = new EventDispatcher('addons.test.react-driver-feature');
     $inference = InferenceRuntime::fromProvider(
         provider: LLMProvider::new()->withDriver($driver),
         events: $events,

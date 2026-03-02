@@ -141,6 +141,32 @@ test('dispatches StreamedToolCallStarted when tool call begins', function() {
     expect($toolStartEvents)->toHaveCount(1);
 });
 
+test('emits StreamedToolCallStarted only once for repeated same tool signal', function() {
+    $events = makeEventCollector();
+    $reducer = new EventTap(
+        inner: makePassThroughReducer(),
+        events: $events,
+        expectedToolName: 'test_tool',
+    );
+
+    $reducer->init();
+
+    [$partial1, $partial2] = FakeStreamFactory::from(
+        new PartialInferenceResponse(toolName: 'test_tool', usage: Usage::none()),
+        new PartialInferenceResponse(toolName: 'test_tool', usage: Usage::none()),
+    );
+
+    $reducer->step(null, PartialFrame::fromResponse($partial1));
+    $reducer->step(null, PartialFrame::fromResponse($partial2));
+
+    $toolStartEvents = array_values(array_filter(
+        $events->events,
+        fn($e) => $e instanceof \Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallStarted
+    ));
+
+    expect($toolStartEvents)->toHaveCount(1);
+});
+
 test('dispatches StreamedToolCallUpdated when args accumulate', function() {
     $events = makeEventCollector();
     $reducer = new EventTap(
@@ -275,6 +301,24 @@ test('dispatches StreamedResponseReceived on complete with aggregate', function(
         $events->events,
         fn($e) => $e instanceof \Cognesy\Instructor\Events\PartialsGenerator\StreamedResponseReceived
     );
+
+    expect($streamEvents)->toHaveCount(1);
+});
+
+test('dispatches StreamedResponseReceived on complete with no frames', function() {
+    $events = makeEventCollector();
+    $reducer = new EventTap(
+        inner: makePassThroughReducer(),
+        events: $events,
+    );
+
+    $reducer->init();
+    $reducer->complete(null);
+
+    $streamEvents = array_values(array_filter(
+        $events->events,
+        fn($e) => $e instanceof \Cognesy\Instructor\Events\PartialsGenerator\StreamedResponseReceived
+    ));
 
     expect($streamEvents)->toHaveCount(1);
 });

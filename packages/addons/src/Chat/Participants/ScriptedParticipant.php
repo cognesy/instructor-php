@@ -9,7 +9,7 @@ use Cognesy\Addons\Chat\Events\ChatResponseRequested;
 use Cognesy\Addons\StepByStep\MessageCompilation\CanCompileMessages;
 use Cognesy\Addons\StepByStep\MessageCompilation\Compilers\SelectedSections;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Enums\MessageRole;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
@@ -32,7 +32,7 @@ final class ScriptedParticipant implements CanParticipateInChat
     ) {
         $this->count = count($messages);
         $this->compiler = $compiler ?? new SelectedSections(['summary', 'buffer', 'messages']);
-        $this->events = $events ?? EventBusResolver::using($events);
+        $this->events = $events ?? new EventDispatcher(name: 'addons.chat.participant.scripted');
     }
 
     #[\Override]

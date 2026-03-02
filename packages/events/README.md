@@ -30,4 +30,5 @@ $events->dispatch(new UserLoggedIn(['userId' => 123]));
 ## Documentation
 
 - `packages/events/CHEATSHEET.md`
+- `packages/events/MIGRATION-2.0.md`
 - `packages/events/tests/`

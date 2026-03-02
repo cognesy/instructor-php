@@ -6,6 +6,7 @@ use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Events\HttpResponseChunkReceived;
 use Cognesy\Http\Exceptions\NetworkException;
+use Cognesy\Http\Exceptions\TimeoutException;
 use Cognesy\Http\Stream\IterableStream;
 use CurlMultiHandle;
 use Generator;
@@ -35,6 +36,7 @@ final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
         private readonly HeaderParser $headerParser,
         private readonly EventDispatcherInterface $events,
         private readonly int $chunkSize = 256,
+        private readonly float $headerTimeoutSeconds = 5.0,
     ) {}
 
     #[\Override]
@@ -119,14 +121,29 @@ final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
     private function primeHandles(): void {
         $active = 1;
         $start = microtime(true);
+        $timeout = max(0.0, $this->headerTimeoutSeconds);
 
-        while ($active > 0 && $this->headerParser->statusCode() === 0 && (microtime(true) - $start) < 0.2) {
+        while ($active > 0 && $this->headerParser->statusCode() === 0 && (microtime(true) - $start) < $timeout) {
             $status = curl_multi_exec($this->multi, $active);
             $this->assertMultiExecSucceeded($status);
             if ($active > 0) {
                 curl_multi_select($this->multi, 0.05);
             }
         }
+
+        if ($this->headerParser->statusCode() !== 0) {
+            return;
+        }
+
+        $elapsed = microtime(true) - $start;
+        if ($elapsed >= $timeout) {
+            throw new TimeoutException(
+                message: sprintf('Timed out waiting for response headers after %.3f seconds', $timeout),
+                duration: $elapsed,
+            );
+        }
+
+        throw new NetworkException('Failed to read response headers before starting stream.');
     }
 
     private function assertMultiExecSucceeded(int $status): void {

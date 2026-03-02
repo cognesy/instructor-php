@@ -37,7 +37,7 @@ $user = (new StructuredOutput)
         prompt: "\nYour task is to extract correct and accurate data from the messages using provided tools.\n",
     )
     ->get();
-// @doctest id="46c9"
+// @doctest id="6b22"
 ```
 
 
@@ -57,7 +57,7 @@ $user = (new StructuredOutput)->with(
     prompt: "\nYour task is to respond correctly with JSON object.",
     mode: OutputMode::Json
 )->get();
-// @doctest id="4f5c"
+// @doctest id="6a9b"
 ```
 Note that various models and API providers have specific requirements
 on the input format, e.g. for OpenAI JSON mode you are required to include
@@ -100,7 +100,7 @@ $user = (new StructuredOutput)
         mode: OutputMode::Json,
     )
     ->get();
-// @doctest id="9bab"
+// @doctest id="c781"
 ```
 
 The example above demonstrates how to manually create JSON Schema, but
@@ -129,7 +129,7 @@ $user = (new StructuredOutput)
         mode: OutputMode::Json,
     )
     ->get();
-// @doctest id="f046"
+// @doctest id="370b"
 ```
 
 
@@ -159,5 +159,5 @@ $user = (new StructuredOutput)
         mode: OutputMode::MdJson,
     )
     ->get();
-// @doctest id="cdb2"
+// @doctest id="c1c0"
 ```

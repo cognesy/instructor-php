@@ -8,7 +8,7 @@ use Cognesy\Agents\Context\ContextSections;
 use Cognesy\Agents\Hook\Contracts\HookInterface;
 use Cognesy\Agents\Hook\Data\HookContext;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Utils\Tokenizer;
 
 /**
@@ -23,7 +23,7 @@ final readonly class MoveMessagesToBufferHook implements HookInterface
         private string $bufferSection,
         ?CanHandleEvents $events = null,
     ) {
-        $this->events = EventBusResolver::using($events);
+        $this->events = $events ?? new EventDispatcher(name: 'agents.hook.move-messages-to-buffer');
     }
 
     #[\Override]

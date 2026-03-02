@@ -38,6 +38,20 @@ composer docs gen:mkdocs
 echo "Step 0.1: Copying resource files..."
 ./scripts/copy-resources.sh
 
+# 0.2. Prepare docs bundles for GitHub release artifacts
+echo "Step 0.2: Preparing docs bundles..."
+DOCS_BUNDLE_DIR="release-artifacts/docs"
+mkdir -p "$DOCS_BUNDLE_DIR"
+
+MINTLIFY_BUNDLE="$DOCS_BUNDLE_DIR/docs-build-v$VERSION.tar.gz"
+MKDOCS_BUNDLE="$DOCS_BUNDLE_DIR/docs-mkdocs-v$VERSION.tar.gz"
+
+tar -czf "$MINTLIFY_BUNDLE" docs-build
+tar -czf "$MKDOCS_BUNDLE" docs-mkdocs
+
+echo "✅ Prepared docs bundles:"
+ls -lh "$DOCS_BUNDLE_DIR"
+
 # 1. Update all package versions using sync-ver.sh
 echo "Step 1: Updating package versions..."
 ./scripts/sync-ver.sh "$VERSION"
@@ -91,6 +105,8 @@ echo "Step 7: Creating GitHub release..."
 gh release create "v$VERSION" \
     --title "v$VERSION" \
     --notes-file "$NOTES_FILE" \
+    "$MINTLIFY_BUNDLE" \
+    "$MKDOCS_BUNDLE" \
     --repo "$REPO"
 
 echo "🎉 Release v$VERSION completed!"

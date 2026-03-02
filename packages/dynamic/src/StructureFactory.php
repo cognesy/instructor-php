@@ -2,41 +2,34 @@
 
 namespace Cognesy\Dynamic;
 
-use Closure;
+use Cognesy\Schema\CallableSchemaFactory;
 use Cognesy\Schema\Data\Schema;
+use Cognesy\Schema\SchemaBuilder;
 use Cognesy\Schema\SchemaFactory;
 use Cognesy\Schema\TypeInfo;
-use Cognesy\Schema\Utils\DocblockInfo;
 use Cognesy\Utils\JsonSchema\JsonSchema;
-use ReflectionFunction;
-use ReflectionFunctionAbstract;
-use ReflectionMethod;
-use ReflectionParameter;
-use Symfony\Component\TypeInfo\Type;
-use Symfony\Component\TypeInfo\TypeResolver\TypeResolver;
 
 final class StructureFactory
 {
-    private TypeResolver $resolver;
-
     public function __construct(
         private readonly ?SchemaFactory $schemaFactory = null,
-        ?TypeResolver $resolver = null,
-    ) {
-        $this->resolver = $resolver ?? TypeResolver::create();
-    }
+        private readonly ?CallableSchemaFactory $callableSchemaFactory = null,
+    ) {}
 
     /** @param callable(mixed...):mixed $callable */
     public function fromCallable(callable $callable, ?string $name = null, ?string $description = null) : Structure {
-        return $this->fromReflection($this->reflectCallable($callable), $name, $description);
+        $schema = $this->callableSchemaFactory()->fromCallable($callable, $name, $description);
+        return $this->fromSchema($schema->name(), $schema, $schema->description());
     }
 
     public function fromFunctionName(string $function, ?string $name = null, ?string $description = null) : Structure {
-        return $this->fromReflection(new ReflectionFunction($function), $name, $description);
+        $schema = $this->callableSchemaFactory()->fromFunctionName($function, $name, $description);
+        return $this->fromSchema($schema->name(), $schema, $schema->description());
     }
 
     public function fromMethodName(string $class, string $method, ?string $name = null, ?string $description = null) : Structure {
-        return $this->fromReflection(new ReflectionMethod($class, $method), $name, $description);
+        $schema = $this->callableSchemaFactory()->fromMethodName($class, $method, $name, $description);
+        return $this->fromSchema($schema->name(), $schema, $schema->description());
     }
 
     public function fromClass(string $class, ?string $name = null, ?string $description = null) : Structure {
@@ -64,7 +57,7 @@ final class StructureFactory
 
     /** @param array<string,mixed> $data */
     public function fromArrayKeyValues(string $name, array $data, string $description = '') : Structure {
-        $builder = StructureBuilder::define($name, $description);
+        $builder = SchemaBuilder::define($name, $description);
 
         foreach ($data as $field => $value) {
             if (!is_string($field)) {
@@ -72,14 +65,14 @@ final class StructureFactory
             }
 
             $schema = $this->schemaFactory()->fromType(TypeInfo::fromValue($value), $field, '');
-            $builder = $builder->withField(Field::fromSchema($field, $schema, false));
+            $builder = $builder->withProperty($field, $schema, required: false);
         }
 
-        return $builder->build();
+        return Structure::fromSchema($builder->schema());
     }
 
     public function fromString(string $name, string $typeString, string $description = '') : Structure {
-        $builder = StructureBuilder::define($name, $description);
+        $builder = SchemaBuilder::define($name, $description);
         $trimmed = trim($typeString);
         $source = str_starts_with($trimmed, 'array{') && str_ends_with($trimmed, '}')
             ? substr($trimmed, 6, -1)
@@ -96,72 +89,23 @@ final class StructureFactory
                 continue;
             }
 
-            $builder = $builder->withField(FieldFactory::fromTypeName($fieldName, $fieldType, $fieldDescription));
+            $schema = $this->schemaFactory()->fromType(
+                type: TypeInfo::fromTypeName($fieldType),
+                name: $fieldName,
+                description: $fieldDescription,
+            );
+            $builder = $builder->withProperty($fieldName, $schema);
         }
 
-        return $builder->build();
+        return Structure::fromSchema($builder->schema());
     }
 
     private function schemaFactory() : SchemaFactory {
         return $this->schemaFactory ?? SchemaFactory::default();
     }
 
-    private function fromReflection(ReflectionFunctionAbstract $function, ?string $name, ?string $description) : Structure {
-        $resolvedName = $name !== null && $name !== '' ? $name : $function->getShortName();
-        $resolvedDescription = $description !== null && $description !== ''
-            ? $description
-            : DocblockInfo::summary($function->getDocComment() ?: '');
-
-        $builder = StructureBuilder::define($resolvedName, $resolvedDescription);
-
-        foreach ($function->getParameters() as $parameter) {
-            $parameterName = $parameter->getName();
-            $field = FieldFactory::fromType(
-                $parameterName,
-                $this->parameterType($parameter),
-                DocblockInfo::parameterDescription($function->getDocComment() ?: '', $parameterName),
-            )->optional($parameter->isOptional());
-
-            if ($parameter->isDefaultValueAvailable()) {
-                $field = $field->withDefaultValue($parameter->getDefaultValue());
-            }
-
-            $builder = $builder->withField($field);
-        }
-
-        return $builder->build();
-    }
-
-    private function parameterType(ReflectionParameter $parameter) : Type {
-        $resolved = $this->resolver->resolve($parameter);
-
-        if (!$parameter->isVariadic()) {
-            return $resolved;
-        }
-
-        if (TypeInfo::isCollection($resolved) || TypeInfo::isArray($resolved)) {
-            return $resolved;
-        }
-
-        return Type::list($resolved);
-    }
-
-    /** @param callable(mixed...):mixed $callable */
-    private function reflectCallable(callable $callable) : ReflectionFunctionAbstract {
-        $closure = match (true) {
-            $callable instanceof Closure => $callable,
-            default => Closure::fromCallable($callable),
-        };
-
-        $reflection = new ReflectionFunction($closure);
-        $scopeClass = $reflection->getClosureScopeClass()?->getName();
-        $functionName = $reflection->getName();
-
-        if ($scopeClass === null || str_contains($functionName, '{closure')) {
-            return $reflection;
-        }
-
-        return new ReflectionMethod($scopeClass, $functionName);
+    private function callableSchemaFactory() : CallableSchemaFactory {
+        return $this->callableSchemaFactory ?? new CallableSchemaFactory(schemaFactory: $this->schemaFactory());
     }
 
     /** @return array{string, string, string} */

@@ -10,7 +10,7 @@ use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
@@ -214,7 +214,7 @@ it('works without system prompt', function () {
 });
 
 it('dispatches tool use events', function () {
-    $events = EventBusResolver::using(null);
+    $events = new EventDispatcher('addons.test.llm-participant-with-tools');
     $startedEvents = [];
     $completedEvents = [];
 

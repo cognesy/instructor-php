@@ -16,6 +16,7 @@ use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\PartialFrame;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\SequenceTracker;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Enums\EmissionType;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Stream\Contracts\Reducer;
@@ -35,6 +36,7 @@ final class EventTap implements Reducer
 {
     private string $activeToolKey;
     private ToolCalls $lastToolCalls;
+    private ?PartialInferenceResponse $lastPartial;
     private SequenceTracker $sequenceTracker;
 
     public function __construct(
@@ -44,6 +46,7 @@ final class EventTap implements Reducer
     ) {
         $this->activeToolKey = '';
         $this->lastToolCalls = ToolCalls::empty();
+        $this->lastPartial = null;
         $this->sequenceTracker = SequenceTracker::empty();
     }
 
@@ -51,6 +54,7 @@ final class EventTap implements Reducer
     public function init(): mixed {
         $this->activeToolKey = '';
         $this->lastToolCalls = ToolCalls::empty();
+        $this->lastPartial = null;
         $this->sequenceTracker = SequenceTracker::empty();
         return $this->inner->init();
     }
@@ -78,12 +82,9 @@ final class EventTap implements Reducer
             $this->events->dispatch(new SequenceUpdated($update));
         }
 
-        // Mark stream as finished
-        if ($accumulator instanceof StreamAggregate) {
-            $this->events->dispatch(new StreamedResponseReceived([
-                'finalResponse' => $accumulator->toInferenceResponse(),
-            ]));
-        }
+        $this->events->dispatch(new StreamedResponseReceived([
+            'finalResponse' => $this->finalResponse($accumulator),
+        ]));
 
         return $this->inner->complete($accumulator);
     }
@@ -109,6 +110,9 @@ final class EventTap implements Reducer
 
         // Sequence tracking and events
         $this->handleSequenceEvents($frame);
+
+        // Keep the latest transformed partial to emit final stream event on completion.
+        $this->lastPartial = $this->toFinalPartial($frame);
     }
 
     private function handleToolCallEvents(PartialFrame $frame): void {
@@ -128,7 +132,11 @@ final class EventTap implements Reducer
     }
 
     private function transitionToolStart(string $toolKey, ToolCalls $toolCalls): void {
-        if ($this->hasActiveTool() && !$this->isActiveToolKey($toolKey)) {
+        if ($this->isActiveToolKey($toolKey)) {
+            return;
+        }
+
+        if ($this->hasActiveTool()) {
             $this->emitToolCompletedForActive($toolCalls);
         }
 
@@ -292,5 +300,34 @@ final class EventTap implements Reducer
         $this->events->dispatch(new PartialResponseGenerated(
             $frame->object->unwrap()
         ));
+    }
+
+    private function toFinalPartial(PartialFrame $frame): PartialInferenceResponse {
+        if ($this->expectedToolName !== '') {
+            return $frame->toPartialResponse();
+        }
+
+        if (!$frame->hasObject()) {
+            return $frame->source;
+        }
+
+        return $frame->source->withValue($frame->object->unwrap());
+    }
+
+    private function finalResponse(mixed $accumulator): InferenceResponse {
+        if ($accumulator instanceof StreamAggregate) {
+            return $accumulator->toInferenceResponse();
+        }
+
+        if ($this->lastPartial === null) {
+            return InferenceResponse::empty();
+        }
+
+        $response = InferenceResponse::fromAccumulatedPartial($this->lastPartial);
+        if ($this->lastPartial->hasValue()) {
+            return $response->withValue($this->lastPartial->value());
+        }
+
+        return $response;
     }
 }

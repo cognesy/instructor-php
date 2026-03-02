@@ -3,7 +3,7 @@
 namespace Cognesy\Addons\ToolUse\Tools;
 
 use Closure;
-use Cognesy\Dynamic\CallableSchemaFactory;
+use Cognesy\Schema\CallableSchemaFactory;
 use Cognesy\Schema\SchemaFactory;
 
 class FunctionTool extends BaseTool

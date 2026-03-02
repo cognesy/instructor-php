@@ -18,8 +18,19 @@ class PrintToConsole implements CanListenToHttpEvents
     // INTERNAL /////////////////////////////////////////////////////////
 
     protected function printBody(string $body) : void {
-        /** @noinspection ForgottenDebugOutputInspection */
-        dump(json_decode($body));
+        $decoded = json_decode($body, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            Console::println($body, [Color::GRAY]);
+            return;
+        }
+
+        $pretty = json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        if ($pretty === false) {
+            Console::println($body, [Color::GRAY]);
+            return;
+        }
+
+        Console::println($pretty, [Color::GRAY]);
     }
 
     protected function printHeaders(array $headers) : void {

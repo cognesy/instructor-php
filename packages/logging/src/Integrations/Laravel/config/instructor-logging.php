@@ -24,6 +24,16 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Event Bus Binding
+    |--------------------------------------------------------------------------
+    |
+    | Container binding to a shared event bus implementing
+    | Cognesy\Events\Contracts\CanHandleEvents.
+    */
+    'event_bus_binding' => \Cognesy\Events\Contracts\CanHandleEvents::class,
+
+    /*
+    |--------------------------------------------------------------------------
     | Custom Configuration
     |--------------------------------------------------------------------------
     |

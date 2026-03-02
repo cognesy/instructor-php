@@ -23,10 +23,12 @@ use Psr\Http\Message\ResponseInterface;
 
 class GuzzlePool implements CanHandleRequestPool
 {
+    protected EventDispatcherInterface $events;
+
     public function __construct(
         protected HttpClientConfig $config,
         protected ClientInterface $client,
-        protected ?EventDispatcherInterface $events,
+        ?EventDispatcherInterface $events,
     ) {
         $this->events = $events ?? new EventDispatcher();
     }
@@ -96,13 +98,8 @@ class GuzzlePool implements CanHandleRequestPool
     }
 
     private function handleFulfilledResponse(ResponseInterface $response): Result {
-        if ($this->events !== null) {
-            $this->events->dispatch(new HttpResponseReceived($response->getStatusCode()));
-        }
+        $this->events->dispatch(new HttpResponseReceived($response->getStatusCode()));
         $isStreamed = $this->isStreamed($response);
-        if ($this->events === null) {
-            throw new \RuntimeException('Event dispatcher is required for pooled requests');
-        }
         return Result::success(new PsrHttpResponseAdapter(
             response: $response,
             stream: $response->getBody(),
@@ -141,14 +138,12 @@ class GuzzlePool implements CanHandleRequestPool
     }
 
     private function dispatchRequestEvent(HttpRequest $request): void {
-        if ($this->events !== null) {
-            $this->events->dispatch(new HttpRequestSent([
-                'url' => $request->url(),
-                'method' => $request->method(),
-                'headers' => $request->headers(),
-                'body' => $request->body()->toString()
-            ]));
-        }
+        $this->events->dispatch(new HttpRequestSent([
+            'url' => $request->url(),
+            'method' => $request->method(),
+            'headers' => $request->headers(),
+            'body' => $request->body()->toString()
+        ]));
     }
 
     private function normalizeResponses(array $responses): HttpResponseList {

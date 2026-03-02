@@ -58,6 +58,9 @@ class JsonSchemaParser implements CanParseJsonSchema
                 $description,
                 $this->makeProperties($jsonSchema->properties()),
                 $jsonSchema->requiredProperties(),
+                nullable: $jsonSchema->isNullable(),
+                hasDefaultValue: $jsonSchema->hasDefaultValue(),
+                defaultValue: $jsonSchema->defaultValue(),
             );
         }
 
@@ -68,6 +71,9 @@ class JsonSchemaParser implements CanParseJsonSchema
             $description,
             $this->makeProperties($jsonSchema->properties()),
             $jsonSchema->requiredProperties(),
+            nullable: $jsonSchema->isNullable(),
+            hasDefaultValue: $jsonSchema->hasDefaultValue(),
+            defaultValue: $jsonSchema->defaultValue(),
         );
     }
 
@@ -98,11 +104,27 @@ class JsonSchemaParser implements CanParseJsonSchema
 
     private function makeEnumOrOptionProperty(string $name, JsonSchema $json) : Schema {
         if ($json->hasObjectClass()) {
-            return new EnumSchema(TypeInfo::fromJsonSchema($json), $name, $json->description(), $json->enumValues());
+            return new EnumSchema(
+                TypeInfo::fromJsonSchema($json),
+                $name,
+                $json->description(),
+                $json->enumValues(),
+                nullable: $json->isNullable(),
+                hasDefaultValue: $json->hasDefaultValue(),
+                defaultValue: $json->defaultValue(),
+            );
         }
 
         if ($json->hasEnumValues()) {
-            return new ScalarSchema(TypeInfo::fromJsonSchema($json), $name, $json->description(), $json->enumValues());
+            return new ScalarSchema(
+                TypeInfo::fromJsonSchema($json),
+                $name,
+                $json->description(),
+                $json->enumValues(),
+                nullable: $json->isNullable(),
+                hasDefaultValue: $json->hasDefaultValue(),
+                defaultValue: $json->defaultValue(),
+            );
         }
 
         if ($json->isScalar()) {
@@ -118,6 +140,9 @@ class JsonSchemaParser implements CanParseJsonSchema
             $name,
             $json->description(),
             $json->enumValues(),
+            nullable: $json->isNullable(),
+            hasDefaultValue: $json->hasDefaultValue(),
+            defaultValue: $json->defaultValue(),
         );
     }
 
@@ -132,6 +157,9 @@ class JsonSchemaParser implements CanParseJsonSchema
             $name,
             $json->description(),
             $this->makePropertySchema('', $itemSchema),
+            nullable: $json->isNullable(),
+            hasDefaultValue: $json->hasDefaultValue(),
+            defaultValue: $json->defaultValue(),
         );
     }
 
@@ -140,6 +168,9 @@ class JsonSchemaParser implements CanParseJsonSchema
             TypeInfo::fromJsonSchema($json),
             $name,
             $json->description(),
+            nullable: $json->isNullable(),
+            hasDefaultValue: $json->hasDefaultValue(),
+            defaultValue: $json->defaultValue(),
         );
     }
 
@@ -150,6 +181,9 @@ class JsonSchemaParser implements CanParseJsonSchema
             $json->description(),
             $this->makeProperties($json->properties()),
             $json->requiredProperties(),
+            nullable: $json->isNullable(),
+            hasDefaultValue: $json->hasDefaultValue(),
+            defaultValue: $json->defaultValue(),
         );
     }
 
@@ -160,6 +194,9 @@ class JsonSchemaParser implements CanParseJsonSchema
             $json->description(),
             $this->makeProperties($json->properties()),
             $json->requiredProperties(),
+            nullable: $json->isNullable(),
+            hasDefaultValue: $json->hasDefaultValue(),
+            defaultValue: $json->defaultValue(),
         );
     }
 }

@@ -14,7 +14,7 @@ use Cognesy\Addons\ToolUse\Events\ToolCallStarted;
 use Cognesy\Addons\ToolUse\Exceptions\InvalidToolArgumentsException;
 use Cognesy\Addons\ToolUse\Exceptions\ToolExecutionException;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Utils\Result\Failure;
@@ -34,7 +34,7 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
     ) {
         $this->tools = $tools;
         $this->throwOnToolFailure = $throwOnToolFailure;
-        $this->events = EventBusResolver::using($events);
+        $this->events = $events ?? new EventDispatcher(name: 'addons.tool-executor');
     }
 
     // MAIN API /////////////////////////////////////////////
@@ -97,7 +97,7 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
         return new self(
             tools: $this->tools,
             throwOnToolFailure: $this->throwOnToolFailure,
-            events: EventBusResolver::using($events),
+            events: $events,
         );
     }
 

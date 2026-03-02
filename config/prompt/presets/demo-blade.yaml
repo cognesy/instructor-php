@@ -1,0 +1,8 @@
+templateEngine: blade
+resourcePath: prompts/demo-blade
+cachePath: /tmp/instructor/cache/blade
+extension: .blade.php
+frontMatterTags:
+  - '{{--'
+  - '--}}'
+frontMatterFormat: yaml

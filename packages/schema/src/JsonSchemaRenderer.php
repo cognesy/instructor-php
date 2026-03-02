@@ -38,7 +38,7 @@ class JsonSchemaRenderer implements CanRenderJsonSchema
      * @return array<string, mixed>
      */
     private function renderArray(Schema $schema, ?callable $onObjectRef = null) : array {
-        return match (true) {
+        $rendered = match (true) {
             $schema instanceof ArraySchema => [
                 'type' => 'array',
                 'items' => ['anyOf' => [['type' => 'string'], ['type' => 'integer'], ['type' => 'number'], ['type' => 'boolean'], ['type' => 'object']]],
@@ -52,7 +52,7 @@ class JsonSchemaRenderer implements CanRenderJsonSchema
             $schema instanceof ObjectSchema => $this->renderObject($schema, $onObjectRef),
             $schema instanceof ArrayShapeSchema => $this->renderArrayShape($schema, $onObjectRef),
             $schema instanceof EnumSchema => array_filter([
-                'type' => TypeInfo::enumBackingType($schema->type) ?? 'string',
+                'type' => $this->enumJsonType($schema),
                 'description' => $schema->description,
                 'enum' => $schema->enumValues ?? TypeInfo::enumValues($schema->type),
                 'x-php-class' => TypeInfo::className($schema->type) ?? '',
@@ -63,6 +63,8 @@ class JsonSchemaRenderer implements CanRenderJsonSchema
                 'description' => $schema->description,
             ]),
         };
+
+        return $this->withSchemaMetadata($rendered, $schema);
     }
 
     /**
@@ -128,6 +130,30 @@ class JsonSchemaRenderer implements CanRenderJsonSchema
         }
 
         return array_filter($array);
+    }
+
+    private function enumJsonType(EnumSchema $schema) : string {
+        return match (TypeInfo::enumBackingType($schema->type)) {
+            'int' => 'integer',
+            'string' => 'string',
+            default => 'string',
+        };
+    }
+
+    /**
+     * @param array<string,mixed> $data
+     * @return array<string,mixed>
+     */
+    private function withSchemaMetadata(array $data, Schema $schema) : array {
+        if ($schema->isNullable()) {
+            $data['nullable'] = true;
+        }
+
+        if ($schema->hasDefaultValue()) {
+            $data['default'] = $schema->defaultValue();
+        }
+
+        return $data;
     }
 
     /**

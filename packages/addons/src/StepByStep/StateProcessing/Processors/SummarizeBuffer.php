@@ -7,7 +7,7 @@ use Cognesy\Addons\Chat\Events\MessageBufferSummarized;
 use Cognesy\Addons\StepByStep\State\Contracts\HasMessageStore;
 use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Messages;
 use Cognesy\Utils\Tokenizer;
 
@@ -26,7 +26,7 @@ final readonly class SummarizeBuffer implements CanProcessAnyState
         private CanSummarizeMessages $summarizer,
         ?CanHandleEvents $events = null,
     ) {
-        $this->events = $events ?? EventBusResolver::using($events);
+        $this->events = $events ?? new EventDispatcher(name: 'addons.processor.summarize-buffer');
     }
 
     #[\Override]

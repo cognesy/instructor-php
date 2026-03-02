@@ -1,0 +1,57 @@
+outputMode: tool_call
+maxRetries: 0
+useObjectReferences: false
+schemaName: default_schema
+schemaDescription: ''
+toolName: extracted_data
+toolDescription: 'Function call based on user instructions.'
+outputClass: Cognesy\Dynamic\Structure
+retryPrompt: |
+  JSON generated incorrectly, fix following errors:
+modePrompts:
+  tool_call: |
+    Extract correct and accurate data from the input using provided tools.
+  json: |
+    Response must follow JSON Schema:
+    <|json_schema|>
+    . Respond correctly with strict JSON object.
+  json_schema: |
+    Response must follow provided JSON Schema. Respond correctly with strict JSON object.
+  md_json: |
+    Response must validate against this JSON Schema:
+    <|json_schema|>
+    . Respond correctly with strict JSON object within a ```json {} ``` codeblock.
+chatStructure:
+  - system
+  - pre-cached
+  - pre-cached-prompt
+  - cached-prompt
+  - post-cached-prompt
+  - pre-cached-examples
+  - cached-examples
+  - post-cached-examples
+  - cached-messages
+  - post-cached
+  - pre-prompt
+  - prompt
+  - post-prompt
+  - pre-examples
+  - examples
+  - post-examples
+  - pre-messages
+  - messages
+  - post-messages
+  - pre-retries
+  - retries
+  - post-retries
+defaultToStdClass: false
+deserializationErrorPrompt: |
+  Failed to serialize response:
+  <|json|>
+
+  Serializer error:
+  <|error|>
+
+  Expected schema:
+  <|jsonSchema|>
+throwOnTransformationFailure: false

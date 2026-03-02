@@ -44,7 +44,7 @@ class JsonSchema implements CanProvideJsonSchema
     /** @var array<string>|null */
     protected ?array $requiredProperties = null;
     protected ?JsonSchema $itemSchema = null;
-    /** @var array<string>|null */
+    /** @var array<int|string>|null */
     protected ?array $enumValues = null;
     protected ?bool $additionalProperties = null;
     protected ?string $description = null;
@@ -93,11 +93,13 @@ class JsonSchema implements CanProvideJsonSchema
         $this->rawSchema = $rawSchema;
 
         if ($this->enumValues !== null) {
-            // validate enum values are strings
+            // validate enum values are scalar enum members supported by schema bridge
             foreach ($this->enumValues as $value) {
-                if (!is_string($value)) {
-                    throw new RuntimeException('Invalid JSON type: invalid in: ' . $this->name . ' - enum values must be strings');
+                if (is_string($value) || is_int($value)) {
+                    continue;
                 }
+
+                throw new RuntimeException('Invalid JSON type: invalid in: ' . $this->name . ' - enum values must be strings or integers');
             }
         }
 
@@ -180,6 +182,10 @@ class JsonSchema implements CanProvideJsonSchema
         $meta = [];
         foreach ($data as $key => $value) {
             if (in_array($key, $excludedFields, true)) {
+                continue;
+            }
+            if ($key === 'default') {
+                $meta['default'] = $value;
                 continue;
             }
             // if key starts with x- add it to meta

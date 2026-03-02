@@ -12,7 +12,7 @@ use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Agents\Drivers\ReAct\ReActDriver;
 use Cognesy\Events\Contracts\CanAcceptEventHandler;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Messages\Messages;
@@ -69,23 +69,19 @@ describe('AgentBuilder event wiring', function () {
 
         $driver = $loop->driver();
         $eventsProperty = new ReflectionProperty($driver, 'events');
-        $driverEventsResolver = $eventsProperty->getValue($driver);
-        $resolverProperty = new ReflectionProperty($driverEventsResolver, 'eventHandler');
-        $driverEvents = $resolverProperty->getValue($driverEventsResolver);
+        $driverEvents = $eventsProperty->getValue($driver);
 
         $inferenceProperty = new ReflectionProperty($driver, 'inference');
         $inferenceRuntime = $inferenceProperty->getValue($driver);
         $inferenceEventsProperty = new ReflectionProperty($inferenceRuntime, 'events');
-        $inferenceEventsResolver = $inferenceEventsProperty->getValue($inferenceRuntime);
-        $inferenceResolverProperty = new ReflectionProperty($inferenceEventsResolver, 'eventHandler');
-        $inferenceEvents = $inferenceResolverProperty->getValue($inferenceEventsResolver);
+        $inferenceEvents = $inferenceEventsProperty->getValue($inferenceRuntime);
 
         expect($driverEvents)->toBe($loop->eventHandler());
         expect($inferenceEvents)->toBe($loop->eventHandler());
     });
 
     it('passes constructor-provided ReAct runtimes into driver wiring unchanged', function () {
-        $runtimeEvents = EventBusResolver::using(null);
+        $runtimeEvents = new EventDispatcher('agents.test.agent-builder-event-wiring');
         $inferenceRuntime = InferenceRuntime::fromProvider(
             provider: LLMProvider::new(),
             events: $runtimeEvents,

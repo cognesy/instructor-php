@@ -15,7 +15,7 @@ use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Agents\Tool\Tools\ContextAwareTool;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
@@ -53,7 +53,7 @@ final class PlanningSubagentTool extends ContextAwareTool
         $this->plannerTools = $plannerTools;
         $this->plannerAdditionalTools = $plannerAdditionalTools;
         $this->plannerBudget = $plannerBudget ?? ExecutionBudget::unlimited();
-        $this->events = EventBusResolver::using($events);
+        $this->events = $events ?? new EventDispatcher(name: 'agents.capability.planning-subagent');
     }
 
     #[\Override]

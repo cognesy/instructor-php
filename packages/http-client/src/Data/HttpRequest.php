@@ -15,8 +15,8 @@ class HttpRequest
 {
     public readonly string $id;
     public readonly DateTimeImmutable $createdAt;
-    public DateTimeImmutable $updatedAt;
-    public Metadata $metadata;
+    public readonly DateTimeImmutable $updatedAt;
+    public readonly Metadata $metadata;
 
     private string $url;
     private string $method;
@@ -97,20 +97,26 @@ class HttpRequest
     // MUTATORS /////////////////////////////////////////////////////////////////////
 
     public function withHeader(string $key, string $value) : self {
-        $copy = clone $this;
-        $copy->headers[$key] = $value;
-        $copy->updatedAt = new DateTimeImmutable();
-        return $copy;
+        $headers = $this->headers;
+        $headers[$key] = $value;
+
+        return $this->copyWith(
+            headers: $headers,
+            options: $this->options,
+        );
     }
 
     /**
      * Set the request URL
      */
     public function withStreaming(bool $streaming) : self {
-        $copy = clone $this;
-        $copy->options['stream'] = $streaming;
-        $copy->updatedAt = new DateTimeImmutable();
-        return $copy;
+        $options = $this->options;
+        $options['stream'] = $streaming;
+
+        return $this->copyWith(
+            headers: $this->headers,
+            options: $options,
+        );
     }
 
     // SERIALIZATION ////////////////////////////////////////////////////////////////
@@ -154,6 +160,20 @@ class HttpRequest
             createdAt: DateTimeImmutable::createFromFormat(DateTimeImmutable::ATOM, $data['createdAt']) ?: null,
             updatedAt: DateTimeImmutable::createFromFormat(DateTimeImmutable::ATOM, $data['updatedAt']) ?: null,
             metadata: $serializedMetadata,
+        );
+    }
+
+    private function copyWith(array $headers, array $options) : self {
+        return new self(
+            url: $this->url,
+            method: $this->method,
+            headers: $headers,
+            body: $this->body->toString(),
+            options: $options,
+            id: $this->id,
+            createdAt: $this->createdAt,
+            updatedAt: new DateTimeImmutable(),
+            metadata: $this->metadata,
         );
     }
 }

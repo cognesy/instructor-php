@@ -1,0 +1,8 @@
+driver: deepseek
+apiUrl: 'https://api.deepseek.com'
+apiKey: '${DEEPSEEK_API_KEY}'
+endpoint: /chat/completions
+model: deepseek-reasoner
+maxTokens: 1024
+contextLength: 128000
+maxOutputLength: 8192

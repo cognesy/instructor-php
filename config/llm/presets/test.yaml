@@ -1,0 +1,8 @@
+driver: openai
+apiUrl: 'https://api.openai.com/v1'
+apiKey: '${OPENAI_API_KEY}'
+endpoint: /chat/completions
+model: gpt-4o-mini
+maxTokens: 1024
+contextLength: 128000
+maxOutputLength: 4096

@@ -5,6 +5,7 @@
 - **CONTRIBUTOR_GUIDE.md** - Development workflows, package management, and contribution guidelines
 - **CONTENTS.md** - Project structure and package overview
 - **README.md** - Main project documentation
+- **HARD REFERENCE** - `CONTRIBUTOR_GUIDE.md` is the source of truth for QA execution (`composer qa`, `qa:*`) and contribution workflow details.
 
 ## Individual Subpackages
 
@@ -110,6 +111,13 @@ The boundary between `\Core` and `\Hook` is **whether the behavior is optional**
 - task-master - import documentation from: @./docs-internal/taskmaster.md
 - tbd (to-be-done) - issue tracking system, see: @./docs-internal/tbd/tbd_cheatsheet.md
 
+## `bd` CLI (dense workflow)
+**Query**: `bd work --json` (ready work on newer CLI) or `bd ready --json` (compat); `bd list --json --no-pager` (open, use `--all` for closed too); `bd show <id> --json` for detail. Common filters: `-s`/`-p`/`-t`/`-l`/`--parent`/`--assignee`.
+
+**Create**: Task default: `bd create "title" -d "desc" -p 2 -l area:events`; explicit task: `bd create "title" -t task -d "desc" --parent <epic-id>`; epic: `bd create "Epic: title" -t epic -d "goal/context/outcome/acceptance"`; child tasks under epic via `--parent <epic-id>`; deps via `--deps "blocks:<id>,depends-on:<id>"`.
+
+**Update/Close/Remove**: Update fields/status: `bd update <id> -s in_progress -a <assignee> -p 1 --notes "plan"`; labels: `--add-label`, `--remove-label`, `--set-labels`; close: `bd close <id> -r "done"`; reopen: `bd reopen <id>`; remove (destructive): `bd delete <id> --force` (`--cascade` for dependents, `--dry-run` to preview).
+
 
 # Commit Message Guidelines
 
@@ -129,7 +137,6 @@ The boundary between `\Core` and `\Hook` is **whether the behavior is optional**
 4. **PUSH TO REMOTE** - This is MANDATORY:
    ```bash
    git pull --rebase
-   bd sync
    git push
    git status  # MUST show "up to date with origin"
    ```

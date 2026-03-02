@@ -1,22 +1,22 @@
-# Instructor Config
+# instructor-config (lean)
 
-Small configuration toolkit used across Instructor packages.
+Minimal configuration infrastructure for Instructor.
 
-It provides:
+Scope:
+- load YAML or PHP config files as raw arrays,
+- derive deterministic dot-keys from file paths,
+- optional YAML/PHP parse cache compiled to PHP,
+- no presets, no provider chains, no global settings.
 
-- provider-based config resolution (`ConfigResolver`)
-- preset selection (`ConfigPresets`)
-- DSN parsing (`Dsn`)
+Usage:
 
 ```php
-use Cognesy\Config\ConfigResolver;
-use Cognesy\Config\Providers\ArrayConfigProvider;
+use Cognesy\Config\ConfigLoader;
 
-$config = ConfigResolver::using(new ArrayConfigProvider([
-    'llm' => ['model' => 'gpt-4.1-mini'],
-]));
+$configs = ConfigLoader::fromPaths(
+    __DIR__ . '/config/polyglot/llm/connections/openai.yaml',
+    __DIR__ . '/config/http-client/http/profiles/curl.yaml',
+)->withCache(__DIR__ . '/var/cache/instructor-config.php');
 
-echo $config->get('llm.model');
+$data = $configs->load('polyglot.llm.connections.openai')->toArray();
 ```
-
-See [CHEATSHEET.md](CHEATSHEET.md) for API details.
