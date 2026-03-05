@@ -1,6 +1,5 @@
 <?php
 
-use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Drivers\ExtHttp\ExtHttpDriver;
 use Cognesy\Http\Drivers\ExtHttp\ExtHttpPool;
 use Cognesy\Http\HttpClient;
@@ -12,8 +11,6 @@ use Cognesy\Http\Middleware\ServerSideEvents\StreamSSEsMiddleware;
 it('marks compatibility aliases as deprecated', function() {
     $targets = [
         [HttpClient::class, 'withSSEStream'],
-        [HttpClientBuilder::class, 'using'],
-        [HttpClientBuilder::class, 'withDebugPreset'],
         [StreamedRequestRecord::class, 'createAppropriateRecord'],
     ];
 

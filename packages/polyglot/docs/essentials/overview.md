@@ -25,7 +25,7 @@ Presets come from `config/llm.php`.
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
-$text = Inference::using('anthropic')
+$text = Inference::using('openai')
     ->withMessages('Give me three deployment checklist items.')
     ->get();
 ```

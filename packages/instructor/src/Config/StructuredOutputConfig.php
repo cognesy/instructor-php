@@ -3,9 +3,9 @@
 namespace Cognesy\Instructor\Config;
 
 use Cognesy\Config\Dsn;
-use Cognesy\Config\Exceptions\ConfigurationException;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
+use InvalidArgumentException;
 use Throwable;
 
 final readonly class StructuredOutputConfig
@@ -53,7 +53,7 @@ final readonly class StructuredOutputConfig
         $this->useObjectReferences = $useObjectReferences ?? false;
         $this->maxRetries = $maxRetries ?? 0;
         if ($this->maxRetries < 0) {
-            throw new ConfigurationException("maxRetries cannot be negative, got: {$this->maxRetries}");
+            throw new InvalidArgumentException("maxRetries cannot be negative, got: {$this->maxRetries}");
         }
         $this->retryPrompt = $retryPrompt ?? "JSON generated incorrectly, fix following errors:\n";
         $this->modePrompts = $modePrompts ?? [
@@ -125,7 +125,7 @@ final readonly class StructuredOutputConfig
             $instance = new self(...$config);
         } catch (Throwable $e) {
             $data = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-            throw new ConfigurationException(
+            throw new InvalidArgumentException(
                 message: "Failed to create StructuredOutputConfig from array:\n$data\nError: {$e->getMessage()}",
                 previous: $e,
             );
@@ -135,7 +135,6 @@ final readonly class StructuredOutputConfig
 
     public static function fromDsn(string $dsn): self {
         $data = Dsn::fromString($dsn)->toArray();
-        unset($data['preset']);
         return self::fromArray($data);
     }
 

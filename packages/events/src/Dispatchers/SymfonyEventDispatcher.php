@@ -9,13 +9,13 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface as SymfonyDispatc
 
 final class SymfonyEventDispatcher implements CanHandleEvents
 {
-    /** @var SplPriorityQueue */
+    /** @var SplPriorityQueue<int, callable(object): void> */
     private SplPriorityQueue $taps;
 
     public function __construct(
         private SymfonyDispatcher $dispatcher,
     ) {
-        $this->taps = new SplPriorityQueue();
+        $this->taps = $this->newTapQueue();
     }
 
     #[\Override]
@@ -44,8 +44,9 @@ final class SymfonyEventDispatcher implements CanHandleEvents
             }
         }
 
-        foreach (clone $this->taps as $tap) { // taps always run, honour priority
-            /** @var callable $tap */
+        /** @var SplPriorityQueue<int, callable(object): void> $taps */
+        $taps = clone $this->taps;
+        foreach ($taps as $tap) { // taps always run, honour priority
             $tap($event);
         }
 
@@ -59,8 +60,9 @@ final class SymfonyEventDispatcher implements CanHandleEvents
     public function getListenersForEvent(object $event): iterable {
         yield from $this->classListeners($event);
 
-        foreach (clone $this->taps as $tap) {
-            /** @var callable(object): void $tap */
+        /** @var SplPriorityQueue<int, callable(object): void> $taps */
+        $taps = clone $this->taps;
+        foreach ($taps as $tap) {
             yield $tap;
         }
     }
@@ -83,5 +85,13 @@ final class SymfonyEventDispatcher implements CanHandleEvents
             class_parents($event),
             class_implements($event),
         )));
+    }
+
+    /** @return SplPriorityQueue<int, callable(object): void> */
+    private function newTapQueue(): SplPriorityQueue {
+        /** @var SplPriorityQueue<int, callable(object): void> $queue */
+        $queue = new SplPriorityQueue();
+        $queue->setExtractFlags(SplPriorityQueue::EXTR_DATA);
+        return $queue;
     }
 }

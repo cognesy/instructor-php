@@ -268,7 +268,7 @@ Ensure the HTTP driver is set to 'laravel':
 
 ```php
 // Use faster provider
-$result = StructuredOutput::using('groq')
+$result = StructuredOutput::connection('groq')
     ->with(...)->get();
 
 // Cache responses
@@ -358,7 +358,7 @@ If you're still stuck:
 
 3. **Test the API directly:**
    ```bash
-   php artisan instructor:test --preset=openai
+   php artisan instructor:test --connection=openai
    ```
 
 4. **Check GitHub issues:**

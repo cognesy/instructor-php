@@ -21,7 +21,7 @@ it('returns embeddings for OpenAI (single input)', function () {
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
     $vectors = Embeddings::fromRuntime(
-        EmbeddingsRuntime::using(preset: 'openai', httpClient: $http)
+        EmbeddingsRuntime::fromEmbeddingsConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::embeddings('openai'), httpClient: $http)
     )
         ->withModel('text-embedding-3-small')
         ->withInputs(['hello'])
@@ -46,7 +46,7 @@ it('supports runtime-style create with explicit request', function () {
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
     $vectors = Embeddings::fromRuntime(
-        EmbeddingsRuntime::using(preset: 'openai', httpClient: $http)
+        EmbeddingsRuntime::fromEmbeddingsConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::embeddings('openai'), httpClient: $http)
     )
         ->create(new EmbeddingsRequest(
             input: ['hello'],
@@ -78,7 +78,7 @@ it('supports facade runtime extraction and runtime static factories', function (
     );
 
     $fromFacadeRuntime = Embeddings::fromRuntime(
-        EmbeddingsRuntime::using(preset: 'openai', httpClient: $http)
+        EmbeddingsRuntime::fromEmbeddingsConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::embeddings('openai'), httpClient: $http)
     )
         ->runtime()
         ->create($request)
@@ -100,8 +100,8 @@ it('supports facade runtime extraction and runtime static factories', function (
         ]);
     $http2 = (new HttpClientBuilder())->withDriver($mock2)->create();
 
-    $fromStaticRuntime = EmbeddingsRuntime::using(
-        preset: 'openai',
+    $fromStaticRuntime = EmbeddingsRuntime::fromEmbeddingsConfig(
+        config: \Cognesy\Polyglot\Tests\Support\TestConfig::embeddings('openai'),
         httpClient: $http2,
     )->create($request)->get()->vectors();
 

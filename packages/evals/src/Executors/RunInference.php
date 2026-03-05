@@ -5,7 +5,8 @@ namespace Cognesy\Evals\Executors;
 use Cognesy\Evals\Contracts\CanRunExecution;
 use Cognesy\Evals\Execution;
 use Cognesy\Evals\Executors\Data\InferenceData;
-use Cognesy\Events\Event;
+use Cognesy\Http\Config\DebugConfig;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 
 class RunInference implements CanRunExecution
@@ -24,14 +25,8 @@ class RunInference implements CanRunExecution
         return $execution;
     }
 
-    public function withDebugPreset(?string $preset) : self {
-        return $this->withHttpDebugPreset($preset);
-    }
-
-    public function withHttpDebugPreset(?string $preset) : self {
-        if ($preset !== null) {
-            $this->inferenceAdapter->withHttpDebugPreset($preset);
-        }
+    public function withDebugConfig(DebugConfig $debugConfig) : self {
+        $this->inferenceAdapter->withDebugConfig($debugConfig);
         return $this;
     }
 
@@ -46,8 +41,13 @@ class RunInference implements CanRunExecution
     // INTERNAL /////////////////////////////////////////////////
 
     private function makeInferenceResponse(Execution $execution) : InferenceResponse {
+        $llmConfig = $execution->get('case.llmConfig');
+        if (!$llmConfig instanceof LLMConfig) {
+            throw new \InvalidArgumentException('Missing typed LLM config in case data.');
+        }
+
         return $this->inferenceAdapter->callInferenceFor(
-            preset: $execution->get('case.preset'),
+            llmConfig: $llmConfig,
             mode: $execution->get('case.mode'),
             isStreamed: $execution->get('case.isStreamed'),
             messages: $this->inferenceData->messages,

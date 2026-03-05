@@ -10,13 +10,14 @@ Use it to turn unstructured LLM responses into typed PHP data, with validation, 
 <?php
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 class Person {
     public string $name;
     public int $age;
 }
 
-$person = StructuredOutput::using('openai')
+$person = StructuredOutput::fromLLMConfig(LLMConfig::fromArray(['driver' => 'openai']))
     ->with(
         messages: 'His name is Jason and he is 28 years old.',
         responseModel: Person::class,

@@ -24,9 +24,10 @@ $user = (new StructuredOutput)
 
 ```php
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 $so = new StructuredOutput();
-$so = StructuredOutput::using('openai');
+$so = StructuredOutput::fromLLMConfig(LLMConfig::fromArray(['driver' => 'openai']));
 ```
 
 ## Request Configuration (`StructuredOutput`)
@@ -73,10 +74,11 @@ $so = (new StructuredOutput)->with(
 ```php
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
-$so = StructuredOutput::using('openai');
+$so = StructuredOutput::fromLLMConfig(LLMConfig::fromArray(['driver' => 'openai']));
 
-$runtime = StructuredOutputRuntime::fromDsn('preset=openai,model=gpt-4o-mini');
+$runtime = StructuredOutputRuntime::fromDsn('driver=openai,model=gpt-4o-mini');
 $so = (new StructuredOutput)->withRuntime($runtime);
 ```
 

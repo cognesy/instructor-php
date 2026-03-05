@@ -4,28 +4,44 @@ namespace Cognesy\Config;
 
 use InvalidArgumentException;
 use RuntimeException;
+use Throwable;
 use Symfony\Component\Yaml\Yaml;
 
 final class Config
 {
-    private const CACHE_VERSION = 1;
+    private const CACHE_VERSION = 2;
 
+    private readonly EnvTemplate $template;
+    /** @var array<int, string> */
+    private readonly array $paths;
+
+    /**
+     * @param array<string> $paths
+     */
     public function __construct(
-        private readonly string $path,
+        array $paths,
         private readonly ?string $cachePath = null,
-    ) {}
-
-    public function withCache(string $cachePath): self {
-        return new self(path: $this->path, cachePath: $cachePath);
+        ?EnvTemplate $template = null,
+    ) {
+        $this->paths = self::normalizeBasePaths($paths);
+        $this->template = $template ?? new EnvTemplate();
     }
 
-    public function load(): ConfigEntry {
-        $sourcePath = self::normalizePath($this->path);
+    public static function fromPaths(string ...$paths): self {
+        return new self(paths: array_values($paths));
+    }
+
+    public function withCache(string $cachePath): self {
+        return new self(paths: $this->paths, cachePath: $cachePath, template: $this->template);
+    }
+
+    public function load(string $config): ConfigEntry {
+        $sourcePath = $this->resolveSourcePath($config);
         $rawData = match (true) {
             $this->cachePath === null => self::readSource($sourcePath),
             default => $this->readSourceWithCache($sourcePath),
         };
-        $data = self::interpolateTemplates($rawData);
+        $data = $this->template->resolveData($rawData);
 
         return new ConfigEntry(
             key: ConfigKey::fromPath($sourcePath),
@@ -34,61 +50,71 @@ final class Config
         );
     }
 
+    /** @return array<array-key, mixed> */
     private function readSourceWithCache(string $sourcePath): array {
         $sourceMtime = self::sourceMtime($sourcePath);
-        $cachedPayload = $this->readCachePayload();
+        $cachedPayload = $this->readCachePayload() ?? [
+            '_meta' => ['version' => self::CACHE_VERSION],
+            'entries' => [],
+        ];
+        $cachedEntry = $cachedPayload['entries'][$sourcePath] ?? null;
 
-        if ($this->isSingleCacheFresh($cachedPayload, $sourcePath, $sourceMtime)) {
-            return $cachedPayload['data'];
+        if ($this->isCachedEntryFresh($cachedEntry, $sourceMtime)) {
+            return $cachedEntry['data'];
         }
 
         $data = self::readSource($sourcePath);
-        $payload = [
-            '_meta' => [
-                'version' => self::CACHE_VERSION,
-                'source' => $sourcePath,
-                'mtime' => $sourceMtime,
-            ],
+        $cachedPayload['entries'][$sourcePath] = [
+            'mtime' => $sourceMtime,
             'data' => $data,
         ];
 
-        $this->writeCachePayload($payload);
+        $this->writeCachePayload($cachedPayload);
         return $data;
     }
 
+    /** @return array<string, mixed>|null */
     private function readCachePayload(): ?array {
         if ($this->cachePath === null || !is_file($this->cachePath)) {
             return null;
         }
 
-        /** @var mixed $payload */
-        $payload = require $this->cachePath;
+        try {
+            $payload = self::requireFile($this->cachePath);
+        } catch (Throwable) {
+            return null;
+        }
+
         if (!is_array($payload)) {
+            return null;
+        }
+
+        $meta = $payload['_meta'] ?? null;
+        $entries = $payload['entries'] ?? null;
+        if (!is_array($meta) || !is_array($entries)) {
+            return null;
+        }
+        if (($meta['version'] ?? null) !== self::CACHE_VERSION) {
             return null;
         }
 
         return $payload;
     }
 
-    private function isSingleCacheFresh(?array $payload, string $sourcePath, int $sourceMtime): bool {
-        if ($payload === null) {
-            return false;
-        }
-
-        $meta = $payload['_meta'] ?? null;
-        if (!is_array($meta)) {
+    /** @param mixed $entry */
+    private function isCachedEntryFresh(mixed $entry, int $sourceMtime): bool {
+        if (!is_array($entry)) {
             return false;
         }
 
         return match (true) {
-            ($meta['version'] ?? null) !== self::CACHE_VERSION => false,
-            ($meta['source'] ?? null) !== $sourcePath => false,
-            ($meta['mtime'] ?? null) !== $sourceMtime => false,
-            !isset($payload['data']) || !is_array($payload['data']) => false,
+            ($entry['mtime'] ?? null) !== $sourceMtime => false,
+            !isset($entry['data']) || !is_array($entry['data']) => false,
             default => true,
         };
     }
 
+    /** @param array<string, mixed> $payload */
     private function writeCachePayload(array $payload): void {
         if ($this->cachePath === null) {
             return;
@@ -96,19 +122,32 @@ final class Config
 
         $cacheDirectory = dirname($this->cachePath);
         if (!is_dir($cacheDirectory)) {
-            mkdir($cacheDirectory, 0777, true);
+            if (!mkdir($cacheDirectory, 0777, true) && !is_dir($cacheDirectory)) {
+                throw new RuntimeException(sprintf('Directory "%s" was not created', $cacheDirectory));
+            }
         }
 
+        $payload['_meta'] = ['version' => self::CACHE_VERSION];
         $export = var_export($payload, true);
         $content = "<?php declare(strict_types=1);\n\nreturn {$export};\n";
-        file_put_contents($this->cachePath, $content);
+        $tempPath = $this->cachePath . '.' . bin2hex(random_bytes(8)) . '.tmp';
+        $result = file_put_contents($tempPath, $content, LOCK_EX);
+        if ($result === false) {
+            throw new RuntimeException("Failed to write temporary config cache file: {$tempPath}");
+        }
+
+        if (!rename($tempPath, $this->cachePath)) {
+            @unlink($tempPath);
+            throw new RuntimeException("Failed to atomically replace config cache file: {$this->cachePath}");
+        }
     }
 
+    /** @return array<array-key, mixed> */
     private static function readSource(string $sourcePath): array {
         $extension = strtolower(pathinfo($sourcePath, PATHINFO_EXTENSION));
         $data = match ($extension) {
             'yaml', 'yml' => Yaml::parseFile($sourcePath),
-            'php' => require $sourcePath,
+            'php' => self::requireFile($sourcePath),
             default => throw new InvalidArgumentException("Unsupported config extension: {$extension} in {$sourcePath}"),
         };
 
@@ -140,76 +179,114 @@ final class Config
         };
     }
 
-    private static function interpolateTemplates(array $data): array {
-        $resolved = [];
-        foreach ($data as $key => $value) {
-            $resolved[$key] = self::interpolateValue($value);
+    /**
+     * @param array<string> $paths
+     * @return array<int, string>
+     */
+    private static function normalizeBasePaths(array $paths): array {
+        $normalized = [];
+
+        foreach ($paths as $path) {
+            $trimmed = trim($path);
+            if ($trimmed === '') {
+                continue;
+            }
+
+            $normalizedPath = self::normalizePath($trimmed);
+            if (!is_dir($normalizedPath)) {
+                continue;
+            }
+
+            $normalized[rtrim($normalizedPath, "/\\")] = rtrim($normalizedPath, "/\\");
         }
-        return $resolved;
+
+        if ($normalized === []) {
+            throw new InvalidArgumentException('Config requires at least one existing base path');
+        }
+
+        return array_values($normalized);
     }
 
-    private static function interpolateValue(mixed $value): mixed {
-        return match (true) {
-            is_array($value) => self::interpolateTemplates($value),
-            is_string($value) => self::interpolateString($value),
-            default => $value,
-        };
-    }
+    private function resolveSourcePath(string $config): string {
+        $relativePath = self::sanitizeRelativePath($config);
 
-    private static function interpolateString(string $value): string {
-        if (!str_contains($value, '${')) {
-            return $value;
+        foreach ($this->paths as $basePath) {
+            $sourcePath = $this->resolveWithinBasePath($basePath, $relativePath);
+            if ($sourcePath === null) {
+                continue;
+            }
+
+            return $sourcePath;
         }
 
-        $pattern = '/\$\{([A-Za-z_][A-Za-z0-9_]*)(?:(:-|\:\?|[?])([^}]*)?)?\}/';
-        $resolved = preg_replace_callback(
-            $pattern,
-            static function (array $matches): string {
-                $name = $matches[1];
-                $operator = $matches[2] ?? '';
-                $operand = $matches[3] ?? '';
-                $env = self::readEnv($name);
-
-                return match ($operator) {
-                    '' => $env ?? '',
-                    ':-' => ($env === null || $env === '') ? $operand : $env,
-                    '?' => self::requiredValue($name, $env, null),
-                    ':?' => self::requiredValue($name, $env, $operand),
-                    default => throw new RuntimeException("Unsupported template operator '{$operator}' for {$name}"),
-                };
-            },
-            $value,
+        throw new InvalidArgumentException(
+            "Config file '{$relativePath}' was not found in base paths: " . implode(', ', $this->paths),
         );
-
-        if (!is_string($resolved)) {
-            throw new RuntimeException('Template interpolation failed for non-string value');
-        }
-
-        return $resolved;
     }
 
-    private static function requiredValue(string $name, ?string $env, ?string $customMessage): string {
-        if ($env !== null && $env !== '') {
-            return $env;
+    private function resolveWithinBasePath(string $basePath, string $relativePath): ?string {
+        $candidate = $basePath . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
+        if (!is_file($candidate)) {
+            return null;
         }
 
-        $message = match (true) {
-            is_string($customMessage) && $customMessage !== '' => $customMessage,
-            default => "Required environment variable '{$name}' is missing or empty",
-        };
-        throw new InvalidArgumentException($message);
+        $resolvedCandidate = self::normalizePath($candidate);
+        $basePrefix = $basePath . DIRECTORY_SEPARATOR;
+        if ($resolvedCandidate !== $basePath && !str_starts_with($resolvedCandidate, $basePrefix)) {
+            throw new InvalidArgumentException("Resolved config file escapes base path: {$relativePath}");
+        }
+
+        return $resolvedCandidate;
     }
 
-    private static function readEnv(string $name): ?string {
-        $value = getenv($name);
-        if (is_string($value)) {
-            return $value;
+    private static function sanitizeRelativePath(string $config): string {
+        $trimmed = trim($config);
+        if ($trimmed === '') {
+            throw new InvalidArgumentException('Config::load() requires a relative config file path');
         }
 
-        $fromEnv = $_ENV[$name] ?? null;
+        if (self::isAbsolutePath($trimmed)) {
+            throw new InvalidArgumentException("Config::load() accepts relative paths only: {$trimmed}");
+        }
+
+        $normalized = str_replace('\\', '/', $trimmed);
+        $normalized = ltrim($normalized, '/');
+        $segments = array_values(array_filter(explode('/', $normalized), static fn(string $segment): bool => $segment !== ''));
+
+        if ($segments === []) {
+            throw new InvalidArgumentException('Config::load() requires a relative config file path');
+        }
+
+        $safeSegments = [];
+        foreach ($segments as $segment) {
+            if ($segment === '..') {
+                throw new InvalidArgumentException("Config path traversal is not allowed: {$config}");
+            }
+            if ($segment === '.') {
+                continue;
+            }
+            $safeSegments[] = $segment;
+        }
+
+        if ($safeSegments === []) {
+            throw new InvalidArgumentException('Config::load() requires a relative config file path');
+        }
+
+        return implode('/', $safeSegments);
+    }
+
+    private static function isAbsolutePath(string $path): bool {
         return match (true) {
-            is_string($fromEnv) => $fromEnv,
-            default => null,
+            str_starts_with($path, '/') => true,
+            str_starts_with($path, '\\\\') => true,
+            preg_match('/^[A-Za-z]:[\\\\\\/]/', $path) === 1 => true,
+            default => false,
         };
+    }
+
+    /** @return mixed */
+    private static function requireFile(string $path): mixed {
+        /** @psalm-suppress UnresolvableInclude */
+        return require $path;
     }
 }

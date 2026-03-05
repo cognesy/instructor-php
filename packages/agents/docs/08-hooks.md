@@ -164,7 +164,7 @@ $timeGuard = new ExecutionTimeLimitHook(maxSeconds: 30.0);
 $stack = $stack
     ->with($stepsGuard, HookTriggers::beforeStep(), priority: 200)
     ->with($tokenGuard, HookTriggers::beforeStep(), priority: 200)
-    ->with($timeGuard, HookTriggers::with(HookTrigger::BeforeExecution, HookTrigger::BeforeStep), priority: 200);
+    ->with($timeGuard, HookTriggers::of(HookTrigger::BeforeExecution, HookTrigger::BeforeStep), priority: 200);
 ```
 
 ## Hook Priority

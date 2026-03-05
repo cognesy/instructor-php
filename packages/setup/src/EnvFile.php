@@ -2,8 +2,6 @@
 
 namespace Cognesy\Setup;
 
-use Cognesy\Config\Settings;
-use ReflectionClass;
 use RuntimeException;
 
 /**
@@ -153,26 +151,22 @@ class EnvFile
         // Identify new variables present in the source but not in the destination
         $newVars = array_diff_key($sourceVars, $destVars);
 
-        // Prepare the CONFIG_PATH_KEY variable
+        // Prepare the CONFIG_PATH_KEY variable relative to the project root.
         $configDirAbs = $this->resolveConfigDir($configDir);
-        $settingsDir = $this->getSettingsBaseDir();
-        $relativeConfigPath = $this->getRelativePath($settingsDir, $configDirAbs);
+        $projectRoot = $this->getProjectRoot();
+        $relativeConfigPath = $this->getRelativePath($projectRoot, $configDirAbs);
 
         $newVars[self::CONFIG_PATH_KEY] = $relativeConfigPath;
 
         return $newVars;
     }
 
-    /**
-     * Gets the base directory containing Settings.php.
-     */
-    private function getSettingsBaseDir(): string
-    {
-        $filename = (new ReflectionClass(Settings::class))->getFileName();
-        if ($filename === false) {
-            throw new \RuntimeException('Could not determine Settings class file location');
+    private function getProjectRoot(): string {
+        $root = getcwd();
+        if (!is_string($root) || $root === '') {
+            throw new RuntimeException('Could not determine current working directory');
         }
-        return dirname($filename);
+        return $root;
     }
 
     /**
@@ -184,8 +178,8 @@ class EnvFile
     {
         try {
             $configDirAbs = $this->resolveConfigDir($configDir);
-            $settingsDir = $this->getSettingsBaseDir();
-            $relativeConfigPath = $this->getRelativePath($settingsDir, $configDirAbs);
+            $projectRoot = $this->getProjectRoot();
+            $relativeConfigPath = $this->getRelativePath($projectRoot, $configDirAbs);
 
             $this->output->out("<yellow>Would set " . self::CONFIG_PATH_KEY . " to:</yellow>\n $relativeConfigPath");
             return self::RESULT_NOOP;

@@ -43,7 +43,7 @@ SKILL;
         ($this->createSkillFile)('skill2', 'Second skill');
 
         $library = new SkillLibrary($this->tempDir);
-        $tool = LoadSkillTool::withLibrary($library);
+        $tool = LoadSkillTool::fromLibrary($library);
 
         $result = $tool(list_skills: true);
 
@@ -56,7 +56,7 @@ SKILL;
         ($this->createSkillFile)('my-skill', 'A skill');
 
         $library = new SkillLibrary($this->tempDir);
-        $tool = LoadSkillTool::withLibrary($library);
+        $tool = LoadSkillTool::fromLibrary($library);
 
         $result = $tool(skill_name: null);
 
@@ -67,7 +67,7 @@ SKILL;
         ($this->createSkillFile)('code-review', 'Review code', '# Code Review Guide\n\nReview all code.');
 
         $library = new SkillLibrary($this->tempDir);
-        $tool = LoadSkillTool::withLibrary($library);
+        $tool = LoadSkillTool::fromLibrary($library);
 
         $result = $tool(skill_name: 'code-review');
 
@@ -80,7 +80,7 @@ SKILL;
         ($this->createSkillFile)('existing', 'Exists');
 
         $library = new SkillLibrary($this->tempDir);
-        $tool = LoadSkillTool::withLibrary($library);
+        $tool = LoadSkillTool::fromLibrary($library);
 
         $result = $tool(skill_name: 'nonexistent');
 
@@ -90,7 +90,7 @@ SKILL;
 
     it('creates tool with library factory', function () {
         $library = new SkillLibrary($this->tempDir);
-        $tool = LoadSkillTool::withLibrary($library);
+        $tool = LoadSkillTool::fromLibrary($library);
 
         expect($tool)->toBeInstanceOf(LoadSkillTool::class);
     });

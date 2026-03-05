@@ -20,7 +20,7 @@ final readonly class Sandbox
         $this->policy = $policy;
     }
 
-    public static function with(ExecutionPolicy $policy) : self {
+    public static function fromPolicy(ExecutionPolicy $policy) : self {
         return new self($policy);
     }
 

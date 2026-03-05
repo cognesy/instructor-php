@@ -35,6 +35,18 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
         ?CanHandleEvents $events = null,
         ?HttpClient $httpClient = null,
     ): self {
+        return self::fromEmbeddingsConfig(
+            config: $config,
+            events: $events,
+            httpClient: $httpClient,
+        );
+    }
+
+    public static function fromEmbeddingsConfig(
+        EmbeddingsConfig $config,
+        ?CanHandleEvents $events = null,
+        ?HttpClient $httpClient = null,
+    ): self {
         $events = self::resolveEvents($events);
         $driver = (new EmbeddingsDriverFactory($events))->makeDriver(
             config: $config,
@@ -70,30 +82,6 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
     ): self {
         return self::fromResolver(
             resolver: $provider,
-            events: $events,
-            httpClient: $httpClient,
-        );
-    }
-
-    public static function fromDsn(
-        string $dsn,
-        ?CanHandleEvents $events = null,
-        ?HttpClient $httpClient = null,
-    ): self {
-        return self::fromProvider(
-            provider: EmbeddingsProvider::dsn($dsn),
-            events: $events,
-            httpClient: $httpClient,
-        );
-    }
-
-    public static function using(
-        string $preset,
-        ?CanHandleEvents $events = null,
-        ?HttpClient $httpClient = null,
-    ): self {
-        return self::fromProvider(
-            provider: EmbeddingsProvider::using($preset),
             events: $events,
             httpClient: $httpClient,
         );

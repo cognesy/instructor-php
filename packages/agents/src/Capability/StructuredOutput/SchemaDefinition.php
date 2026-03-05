@@ -48,12 +48,15 @@ final readonly class SchemaDefinition
         return new self(class: $class);
     }
 
-    /**
-     * Create with a description (for schema listing).
-     * @param class-string $class
-     */
-    public static function withDescription(string $class, string $description): self {
-        return new self(class: $class, description: $description);
+    public function withDescription(string $description): self {
+        return new self(
+            class: $this->class,
+            description: $description,
+            prompt: $this->prompt,
+            examples: $this->examples,
+            maxRetries: $this->maxRetries,
+            llmOptions: $this->llmOptions,
+        );
     }
 
     public function withRequest(StructuredOutputRequest $request): StructuredOutputRequest {

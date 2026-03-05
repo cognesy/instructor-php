@@ -39,7 +39,7 @@ final class UseExecutionHistory implements CanProvideAgentCapability
     {
         $hooks = $agent->hooks()->with(
             hook: new ExecutionHistoryHook(store: $this->store),
-            triggerTypes: HookTriggers::with(HookTrigger::AfterExecution),
+            triggerTypes: HookTriggers::of(HookTrigger::AfterExecution),
             priority: -1000,
             name: 'execution_history',
         );

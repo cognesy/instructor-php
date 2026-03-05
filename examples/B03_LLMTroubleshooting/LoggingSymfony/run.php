@@ -24,6 +24,7 @@ use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Symfony\Component\HttpFoundation\Request;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 // Mock Symfony request
 $request = Request::create('/api/stream');
@@ -53,8 +54,8 @@ echo "📋 About to demonstrate Inference logging with Symfony...\n\n";
 // Create inference with logging
 $events = new EventDispatcher();
 $events->wiretap($pipeline);
-$inference = Inference::fromRuntime(InferenceRuntime::using(
-    preset: 'openai',
+$inference = Inference::fromRuntime(InferenceRuntime::fromConfig(
+    config: LLMConfig::fromPreset('openai'),
     events: $events,
 ));
 

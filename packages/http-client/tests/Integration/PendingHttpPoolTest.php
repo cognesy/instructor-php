@@ -2,6 +2,7 @@
 
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Collections\HttpRequestList;
+use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\PendingHttpPool;
 use Cognesy\Utils\Result\Success;
@@ -162,7 +163,7 @@ test('PendingHttpPool works with different HTTP client drivers', function() {
         new HttpRequest($this->baseUrl . '/get?driver=test', 'GET', [], [], [])
     );
 
-    $guzzleClient = HttpClient::using('guzzle');
+    $guzzleClient = HttpClient::fromConfig(new HttpClientConfig(driver: 'guzzle'));
     $pendingPool = $guzzleClient->withPool($requests);
     $results = $pendingPool->all();
     $resultArray = $results->all();

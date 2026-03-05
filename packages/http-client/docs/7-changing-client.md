@@ -3,22 +3,24 @@ title: Changing Client
 description: Switch HTTP drivers and runtime clients without changing request code.
 ---
 
-## Switch by Preset
+## Switch by Typed Config
 
 ```php
+use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\HttpClient;
 
-$client = HttpClient::using('guzzle');
-$client = HttpClient::using('symfony');
+$client = HttpClient::fromConfig(new HttpClientConfig(driver: 'guzzle'));
+$client = HttpClient::fromConfig(new HttpClientConfig(driver: 'symfony'));
 ```
 
 Equivalent builder form:
 
 ```php
+use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Creation\HttpClientBuilder;
 
 $client = (new HttpClientBuilder())
-    ->withPreset('guzzle')
+    ->withConfig(new HttpClientConfig(driver: 'guzzle'))
     ->create();
 ```
 

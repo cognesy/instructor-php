@@ -59,8 +59,8 @@ use Cognesy\Polyglot\Inference\InferenceRuntime;
 
 // Enable debug mode
 $http = (new HttpClientBuilder())->withHttpDebugPreset('on')->create();
-$inference = Inference::fromRuntime(InferenceRuntime::using(
-    preset: 'openai',
+$inference = Inference::fromRuntime(InferenceRuntime::fromConfig(
+    config: LLMConfig::fromArray(['driver' => 'openai']),
     httpClient: $http,
 ));
 

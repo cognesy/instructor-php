@@ -30,7 +30,6 @@ use Cognesy\Agents\Interception\PassThroughInterceptor;
 use Cognesy\Agents\Tool\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Tool\Contracts\ToolInterface;
 use Cognesy\Agents\Tool\ToolExecutor;
-use Cognesy\Config\ConfigResolver;
 use Cognesy\Events\Contracts\CanAcceptEventHandler;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
@@ -61,7 +60,7 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
         $events = new EventDispatcher('agent-loop');
         $interceptor = new PassThroughInterceptor();
         $tools = new Tools();
-        $llm = LLMProvider::new(ConfigResolver::default());
+        $llm = LLMProvider::new();
         return new self(
             tools: $tools,
             toolExecutor: new ToolExecutor(

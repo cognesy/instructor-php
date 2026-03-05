@@ -16,7 +16,7 @@ it('respects JSON mode for Gemini', function () {
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $data = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'gemini', httpClient: $http))
+    $data = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('gemini'), httpClient: $http))
         ->withModel('gemini-1.5-flash')
         ->withOutputMode(OutputMode::Json)
         ->withMessages('Q?')

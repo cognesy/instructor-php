@@ -62,6 +62,7 @@ Inject a fully assembled runtime for advanced setup:
 <?php
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Embeddings;
 use Cognesy\Polyglot\Embeddings\EmbeddingsRuntime;
 
@@ -69,8 +70,8 @@ $http = (new HttpClientBuilder())
     ->withDriver(new MockHttpDriver())
     ->create();
 
-$runtime = EmbeddingsRuntime::using(
-    preset: 'openai',
+$runtime = EmbeddingsRuntime::fromEmbeddingsConfig(
+    config: EmbeddingsConfig::fromArray(['driver' => 'openai']),
     httpClient: $http,
 );
 

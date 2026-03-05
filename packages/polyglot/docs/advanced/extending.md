@@ -90,13 +90,13 @@ use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 
 $httpClient = (new HttpClientBuilder())
-    ->withPreset('guzzle')
+    ->withConfig(EmbeddingsConfig::fromArray(['driver' => 'guzzle']))
     ->create()
     ->withMiddleware(new YourCustomMiddleware());
 
 $inference = Inference::fromRuntime(
-    InferenceRuntime::using(
-        preset: 'openai',
+    InferenceRuntime::fromConfig(
+        config: LLMConfig::fromArray(['driver' => 'openai']),
         httpClient: $httpClient,
     )
 );

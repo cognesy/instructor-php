@@ -121,7 +121,7 @@ $agent = AgentBuilder::base()
     ->withCapability(new UseBash())
     ->withCapability(new UseFileTools(__DIR__))
     ->withCapability(new UseTaskPlanning())
-    ->withCapability(UseSubagents::withDepth(3, $registry))  // Allow 3 levels of nesting
+    ->withCapability(UseSubagents::forDepth(3, $registry))  // Allow 3 levels of nesting
     ->withLlmPreset('anthropic')
     ->build();
 

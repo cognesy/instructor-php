@@ -2,6 +2,7 @@
 
 namespace Cognesy\Auxiliary\Web;
 
+use Cognesy\Auxiliary\Web\Config\ScraperConfig;
 use Cognesy\Auxiliary\Web\Contracts\CanFilterContent;
 use Cognesy\Auxiliary\Web\Contracts\CanGetUrlContent;
 use Cognesy\Auxiliary\Web\Filters\NoFilter;
@@ -22,18 +23,27 @@ class Website
     protected array $crawled = [];
 
 
-    public function __construct(string $rootUrl, int $maxPages = 10, string $scraper = '') {
+    public function __construct(
+        string $rootUrl,
+        int $maxPages = 10,
+        string $scraper = '',
+        ?ScraperConfig $scraperConfig = null,
+    ) {
         $this->rootUrl = $rootUrl;
         $this->queue[] = $rootUrl;
-        $this->scraper = Scraper::withDriver($scraper);
+        $this->scraper = Scraper::fromDriver($scraper, $scraperConfig);
         $this->maxPages = $maxPages;
     }
 
-    public static function crawl(string $rootUrl, ?CanFilterContent $filter = null) : Website {
+    public static function crawl(
+        string $rootUrl,
+        ?CanFilterContent $filter = null,
+        ?ScraperConfig $scraperConfig = null,
+    ) : Website {
         if (is_null($filter)) {
             $filter = new NoFilter();
         }
-        $website = new Website($rootUrl);
+        $website = new Website($rootUrl, scraperConfig: $scraperConfig);
         $website->crawler($filter);
         return $website;
     }

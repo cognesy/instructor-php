@@ -39,11 +39,14 @@ class InferenceFake
     /** @var array<string, string|array> */
     protected array $responses = [];
 
-    /** @var array<int, array{messages: mixed, model: ?string, preset: ?string, tools: array, options: array}> */
+    /** @var array<int, array{messages: mixed, model: ?string, connection: ?string, llmConfig: ?array, tools: array, options: array}> */
     protected array $recorded = [];
 
     /** @var string|null */
-    protected ?string $preset = null;
+    protected ?string $connection = null;
+
+    /** @var array<string,mixed>|null */
+    protected ?array $llmConfig = null;
 
     /** @var string|array|null */
     protected string|array|null $messages = null;
@@ -99,9 +102,15 @@ class InferenceFake
 
     // Fluent API methods to match Inference
 
-    public function using(string $preset): self
+    public function connection(string $name): self
     {
-        $this->preset = $preset;
+        $this->connection = $name;
+        return $this;
+    }
+
+    public function withLLMConfig(LLMConfig $config): self
+    {
+        $this->llmConfig = $config->toArray();
         return $this;
     }
 
@@ -177,22 +186,12 @@ class InferenceFake
         return $this;
     }
 
-    public function withLLMConfig(LLMConfig $config): self
-    {
-        return $this;
-    }
-
     public function withLLMConfigOverrides(array $overrides): self
     {
         return $this;
     }
 
     public function withDsn(string $dsn): self
-    {
-        return $this;
-    }
-
-    public function withHttpDebugPreset(?string $preset): self
     {
         return $this;
     }
@@ -259,7 +258,8 @@ class InferenceFake
         $this->recorded[] = [
             'messages' => $this->messages,
             'model' => $this->model,
-            'preset' => $this->preset,
+            'connection' => $this->connection,
+            'llmConfig' => $this->llmConfig,
             'tools' => $this->tools,
             'options' => $this->options,
         ];
@@ -270,7 +270,8 @@ class InferenceFake
         // Reset state
         $this->messages = null;
         $this->model = null;
-        $this->preset = null;
+        $this->connection = null;
+        $this->llmConfig = null;
         $this->tools = [];
         $this->options = [];
 
@@ -394,15 +395,15 @@ class InferenceFake
     }
 
     /**
-     * Assert inference used a specific preset.
+     * Assert inference used a specific configured connection.
      */
-    public function assertUsedPreset(string $preset): self
+    public function assertUsedConnection(string $connection): self
     {
-        $found = collect($this->recorded)->contains('preset', $preset);
+        $found = collect($this->recorded)->contains('connection', $connection);
 
         PHPUnit::assertTrue(
             $found,
-            "Expected preset [{$preset}] was not used."
+            "Expected connection [{$connection}] was not used."
         );
 
         return $this;

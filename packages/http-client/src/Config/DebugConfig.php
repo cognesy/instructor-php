@@ -2,7 +2,9 @@
 
 namespace Cognesy\Http\Config;
 
-use Cognesy\Config\Exceptions\ConfigurationException;
+use Cognesy\Config\BasePath;
+use Cognesy\Config\Config;
+use InvalidArgumentException;
 use Throwable;
 
 final class DebugConfig
@@ -25,12 +27,31 @@ final class DebugConfig
         public readonly bool $httpResponseStreamByLine = true,
     ) {}
 
+    private const PRESET_PATHS = [
+        'config/debug/presets',
+        'packages/http-client/resources/config/debug/presets',
+        'vendor/cognesy/instructor-php/packages/http-client/resources/config/debug/presets',
+        'vendor/cognesy/instructor-http/resources/config/debug/presets',
+    ];
+
+    public static function fromPreset(string $preset, ?string $basePath = null): self {
+        $basePaths = $basePath !== null ? [$basePath] : self::PRESET_PATHS;
+        $resolvedPaths = BasePath::resolveExisting(...$basePaths);
+        if ($resolvedPaths === []) {
+            throw new InvalidArgumentException("No preset directory found for '{$preset}'. Searched: " . implode(', ', $basePaths));
+        }
+        $data = Config::fromPaths(...$resolvedPaths)
+            ->load("{$preset}.yaml")
+            ->toArray();
+        return self::fromArray($data);
+    }
+
     public static function fromArray(array $config): self {
         try {
             $instance = new self(...$config);
         } catch (Throwable $e) {
             $data = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-            throw new ConfigurationException(
+            throw new InvalidArgumentException(
                 message: "Invalid configuration for DebugConfig: {$e->getMessage()}\nData: {$data}",
                 previous: $e,
             );

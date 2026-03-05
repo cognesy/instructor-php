@@ -111,7 +111,7 @@ use Cognesy\Polyglot\Embeddings\Embeddings;
 use Cognesy\Polyglot\Embeddings\EmbeddingsProvider;
 use Cognesy\Polyglot\Embeddings\EmbeddingsRuntime;
 
-$provider = EmbeddingsProvider::new()->withPreset('openai');
+$provider = EmbeddingsProvider::using('openai');
 $runtime = EmbeddingsRuntime::fromProvider($provider);
 
 $embeddings = Embeddings::fromRuntime($runtime);

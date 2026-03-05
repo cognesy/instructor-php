@@ -15,13 +15,14 @@ Agent templates let you define agents as data — in markdown, YAML, or JSON fil
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Data\ExecutionBudget;
 use Cognesy\Agents\Collections\NameList;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 $definition = new AgentDefinition(
     name: 'researcher',
     description: 'Searches for information on a topic',
     systemPrompt: 'You are a research assistant. Find and summarize information.',
     label: 'Research Agent',           // optional display name
-    llmConfig: 'anthropic',            // optional LLM preset or LLMConfig
+    llmConfig: LLMConfig::fromArray(['driver' => 'anthropic']), // optional LLMConfig
     budget: new ExecutionBudget(maxSteps: 10, maxTokens: 8000),
     tools: new NameList(['bash', 'read_file']),        // optional tool allow-list
     toolsDeny: new NameList(['write_file']),           // optional tool deny-list
@@ -40,7 +41,8 @@ All fields except `name`, `description`, and `systemPrompt` are optional.
 name: researcher
 description: Searches for information on a topic
 label: Research Agent
-llmConfig: anthropic
+llmConfig:
+  driver: anthropic
 budget:
   maxSteps: 10
   maxTokens: 8000
@@ -64,6 +66,8 @@ name: researcher
 description: Searches for information on a topic
 systemPrompt: |
   You are a research assistant. Find and summarize information.
+llmConfig:
+  driver: anthropic
 budget:
   maxSteps: 10
 ```
@@ -75,6 +79,7 @@ budget:
   "name": "researcher",
   "description": "Searches for information on a topic",
   "systemPrompt": "You are a research assistant.",
+  "llmConfig": { "driver": "anthropic" },
   "budget": { "maxSteps": 10 }
 }
 ```

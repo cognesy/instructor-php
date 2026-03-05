@@ -42,7 +42,7 @@ In 2.0, stream iterators are one-shot by default (`ResponseCachePolicy::None`).
 
 `HandlesInference` and `HandlesSelfInference` are deprecated in 2.0.
 
-Use runtime-first APIs instead:
+Use `StructuredOutput::using()` with a named preset instead:
 
 ```php
 <?php

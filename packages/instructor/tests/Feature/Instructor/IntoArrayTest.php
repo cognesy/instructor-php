@@ -7,6 +7,7 @@ namespace Cognesy\Instructor\Tests\Feature\Instructor;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Tests\MockHttp;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 /**
@@ -170,7 +171,13 @@ it('streaming with intoArray() returns array as final value', function () {
         ->create();
 
     $runtime = StructuredOutputRuntime::fromProvider(
-        provider: LLMProvider::using('openai'),
+        provider: LLMProvider::fromLLMConfig(new LLMConfig(
+            driver: 'openai',
+            apiUrl: 'https://api.openai.com/v1',
+            apiKey: 'test',
+            endpoint: '/chat/completions',
+            model: 'gpt-4o-mini',
+        )),
         httpClient: $http,
     );
 

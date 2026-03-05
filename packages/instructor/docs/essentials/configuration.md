@@ -65,15 +65,19 @@ $structuredOutput = (new StructuredOutput)
 Configure connection and communication with LLM providers:
 
 ```php
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
+// Quickest way — use a named preset (matches config/llm/presets/*.yaml)
 $structuredOutput = StructuredOutput::using('openai');
 
+// Via DSN string
 $structuredOutput = (new StructuredOutput)->withRuntime(
-    StructuredOutputRuntime::fromDsn('preset=openai,model=gpt-4o-mini')
+    StructuredOutputRuntime::fromDsn('driver=openai,model=gpt-4o-mini')
 );
 
+// Via a customized provider
 $provider = LLMProvider::using('openai')
     ->withConfigOverrides(['temperature' => 0.2]);
 $structuredOutput = (new StructuredOutput)->withRuntime(

@@ -9,7 +9,7 @@ it('ships production-safe logging defaults in laravel config', function () {
     unset($_ENV['INSTRUCTOR_LOG_LEVEL'], $_ENV['INSTRUCTOR_LOGGING_PRESET']);
     unset($_SERVER['INSTRUCTOR_LOG_LEVEL'], $_SERVER['INSTRUCTOR_LOGGING_PRESET']);
 
-    $config = require __DIR__ . '/../../../../laravel/config/instructor.php';
+    $config = require __DIR__ . '/../../../../laravel/resources/config/instructor.php';
 
     try {
         expect($config['logging']['level'])->toBe('warning')

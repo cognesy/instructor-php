@@ -1,0 +1,74 @@
+<?php
+
+/**
+ * @deprecated Legacy preset-style PHP config for backward compatibility.
+ * Migrate to package-scoped YAML config under resources/config/**.
+ */
+
+
+return [
+    'defaultPreset' => 'curl',
+
+    'presets' => [
+        'curl' => [
+            'driver' => 'curl',
+            'connectTimeout' => 5,
+            'requestTimeout' => 60,
+            'idleTimeout' => -1,
+            'streamChunkSize' => 256,
+            'maxConcurrent' => 5,
+            'poolTimeout' => 60,
+            'failOnError' => true,
+        ],
+        'guzzle' => [
+            'driver' => 'guzzle',
+            'connectTimeout' => 3,
+            'requestTimeout' => 30,
+            'idleTimeout' => -1,
+            'streamChunkSize' => 256,
+            'maxConcurrent' => 5,
+            'poolTimeout' => 60,
+            'failOnError' => true,
+        ],
+        'symfony' => [
+            'driver' => 'symfony',
+            'connectTimeout' => 10,
+            'requestTimeout' => 30,
+            'idleTimeout' => -1,
+            'streamChunkSize' => 0,
+            'maxConcurrent' => 5,
+            'poolTimeout' => 60,
+            'failOnError' => true,
+        ],
+        'laravel' => [
+            'driver' => 'laravel',
+            'connectTimeout' => 3,
+            'requestTimeout' => 30,
+            'idleTimeout' => -1,
+            'streamChunkSize' => 256,
+            'maxConcurrent' => 5,
+            'poolTimeout' => 60,
+            'failOnError' => true,
+        ],
+        'exthttp' => [
+            'driver' => 'exthttp',
+            'connectTimeout' => 3,
+            'requestTimeout' => 30,
+            'idleTimeout' => -1,
+            'streamChunkSize' => 256,
+            'maxConcurrent' => 10,
+            'poolTimeout' => 60,
+            'failOnError' => true,
+        ],
+        'http-ollama' => [
+            'driver' => 'guzzle',
+            'connectTimeout' => 3,
+            'requestTimeout' => 90,
+            'streamChunkSize' => 256,
+            'idleTimeout' => -1,
+            'maxConcurrent' => 5,
+            'poolTimeout' => 60,
+            'failOnError' => true,
+        ],
+    ],
+];

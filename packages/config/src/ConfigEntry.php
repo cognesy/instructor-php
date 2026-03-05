@@ -4,6 +4,9 @@ namespace Cognesy\Config;
 
 readonly final class ConfigEntry
 {
+    /**
+     * @param array<array-key, mixed> $data
+     */
     public function __construct(
         private string $key,
         private string $sourcePath,
@@ -18,6 +21,9 @@ readonly final class ConfigEntry
         return $this->sourcePath;
     }
 
+    /**
+     * @return array<array-key, mixed>
+     */
     public function toArray(): array {
         return $this->data;
     }

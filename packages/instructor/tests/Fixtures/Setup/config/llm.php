@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * @deprecated Legacy preset-style PHP config for backward compatibility.
+ * Migrate to package-scoped YAML config under resources/config/**.
+ */
+
+
 use Cognesy\Config\Env;
 
 return [

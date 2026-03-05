@@ -13,7 +13,7 @@ Tools mode enables function calling, allowing the model to request specific acti
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
-$inference = Inference::using('openai');  // Tools are best supported by OpenAI
+$inference = Inference::using('openai'); // Tools are best supported by OpenAI
 
 // Define a tool for weather information
 $weatherTool = [

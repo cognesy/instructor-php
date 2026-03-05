@@ -6,7 +6,7 @@ Immutability rule: `with*()` methods return new instances. Reassign (`$client = 
 
 ### `HttpClient`
 - `HttpClient::default(): HttpClient`
-- `HttpClient::using(string $preset): HttpClient`
+- `HttpClient::fromConfig(HttpClientConfig $config): HttpClient`
 - `withRequest(HttpRequest $request): PendingHttpResponse`
 - `pool(HttpRequestList $requests, ?int $maxConcurrent = null): HttpResponseList`
 - `withPool(HttpRequestList $requests): PendingHttpPool`
@@ -17,7 +17,6 @@ Immutability rule: `with*()` methods return new instances. Reassign (`$client = 
 - `withSSEStream(): HttpClient` (deprecated)
 
 ### `HttpClientBuilder`
-- `withPreset(string $preset): self`
 - `withConfig(HttpClientConfig $config): self`
 - `withDsn(string $dsn): self`
 - `withDriver(CanHandleHttpRequest $driver): self`
@@ -30,7 +29,6 @@ Immutability rule: `with*()` methods return new instances. Reassign (`$client = 
 - `withMock(?callable $configure = null): self`
 - `withEventBus(CanHandleEvents $events): self`
 - `create(): HttpClient`
-- Deprecated aliases: `using()`, `withDebugPreset()`
 
 ## Data Types
 

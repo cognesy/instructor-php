@@ -2,165 +2,70 @@
 
 namespace Cognesy\Polyglot\Embeddings;
 
-use Cognesy\Config\ConfigPresets;
-use Cognesy\Config\ConfigResolver;
-use Cognesy\Config\Contracts\CanProvideConfig;
-use Cognesy\Config\Dsn;
-use Cognesy\Config\Events\ConfigResolutionFailed;
-use Cognesy\Config\Events\ConfigResolved;
-use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
 use Cognesy\Polyglot\Embeddings\Contracts\CanResolveEmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\HasExplicitEmbeddingsDriver;
-use Cognesy\Utils\Result\Result;
 
-/**
- * Builder for creating fully configured embeddings vectorization drivers.
- * Once create() is called, returns a complete, ready-to-use instance.
- */
 final class EmbeddingsProvider implements CanResolveEmbeddingsConfig, HasExplicitEmbeddingsDriver
 {
-    private readonly CanHandleEvents $events;
-    private CanProvideConfig $configProvider;
-    private ConfigPresets $presets;
-
-    private ?string $preset;
-    private ?string $dsn;
-    private ?EmbeddingsConfig $explicitConfig;
-    private ?CanHandleVectorization $explicitDriver;
-
     private function __construct(
-        ?CanHandleEvents          $events = null,
-        ?CanProvideConfig         $configProvider = null,
-        ?string                   $preset = null,
-        ?string                   $dsn = null,
-        ?EmbeddingsConfig         $explicitConfig = null,
-        ?CanHandleVectorization   $explicitDriver = null,
-    ) {
-        $this->events = $events ?? new EventDispatcher(name: 'polyglot.embeddings.provider');
-        $this->configProvider = $configProvider ?? ConfigResolver::using($configProvider);
-        $this->presets = ConfigPresets::using($this->configProvider)->for(EmbeddingsConfig::group());
-
-        $this->preset = $preset;
-        $this->dsn = $dsn;
-        $this->explicitConfig = $explicitConfig;
-        $this->explicitDriver = $explicitDriver;
-    }
+        private readonly EmbeddingsConfig $config,
+        private readonly ?CanHandleVectorization $explicitDriver = null,
+    ) {}
 
     public static function new(
-        ?CanHandleEvents          $events = null,
-        ?CanProvideConfig         $configProvider = null,
+        ?EmbeddingsConfig $config = null,
     ): self {
-        return new self($events, $configProvider);
+        return new self(
+            config: $config ?? EmbeddingsConfig::fromArray([]),
+        );
     }
 
-    public static function using(string $preset): self {
-        return self::new()->withPreset($preset);
-    }
-
-    public static function dsn(string $dsn): self {
-        return self::new()->withDsn($dsn);
-    }
-
-    public function withPreset(string $preset): self {
-        $this->preset = $preset;
-        return $this;
-    }
-
-    public function withDsn(string $dsn): self {
-        $this->dsn = $dsn;
-        return $this;
-    }
-
-    public function withConfig(EmbeddingsConfig $config): self {
-        $this->explicitConfig = $config;
-        return $this;
-    }
-
-    public function withConfigProvider(CanProvideConfig $configProvider): self {
-        $this->configProvider = $configProvider;
-        $this->presets = $this->presets->withConfigProvider($configProvider);
-        return $this;
-    }
-
-    public function withDriver(CanHandleVectorization $driver): self {
-        $this->explicitDriver = $driver;
-        return $this;
+    public static function fromEmbeddingsConfig(
+        EmbeddingsConfig $config,
+    ): self {
+        return new self(
+            config: $config,
+        );
     }
 
     /**
-     * Resolves and returns the effective embeddings configuration for this provider.
+     * @param array<string, mixed> $config
      */
+    public static function fromArray(array $config): self {
+        return self::fromEmbeddingsConfig(EmbeddingsConfig::fromArray($config));
+    }
+
+    public function with(
+        ?EmbeddingsConfig $config = null,
+        ?CanHandleVectorization $explicitDriver = null,
+    ): self {
+        return new self(
+            config: $config ?? $this->config,
+            explicitDriver: $explicitDriver ?? $this->explicitDriver,
+        );
+    }
+
+    public function withConfig(EmbeddingsConfig $config): self {
+        return $this->with(config: $config);
+    }
+
+    public function withConfigOverrides(array $overrides): self {
+        return $this->with(config: $this->config->withOverrides($overrides));
+    }
+
+    public function withDriver(CanHandleVectorization $driver): self {
+        return $this->with(explicitDriver: $driver);
+    }
+
     #[\Override]
     public function resolveConfig(): EmbeddingsConfig {
-        return $this->buildConfig();
+        return $this->config;
     }
 
     #[\Override]
     public function explicitEmbeddingsDriver(): ?CanHandleVectorization {
         return $this->explicitDriver;
-    }
-
-    // INTERNAL ////////////////////////////////////////////////////////////
-
-    private function buildConfig(): EmbeddingsConfig {
-        if ($this->explicitConfig !== null) {
-            $this->events->dispatch(new ConfigResolved([
-                'group' => 'embeddings',
-                'config' => $this->explicitConfig->toArray()
-            ]));
-            return $this->explicitConfig;
-        }
-
-        $effectivePreset = $this->determinePreset();
-        $dsnOverrides = $this->getDsnOverrides();
-        
-        $result = Result::try(fn() => $this->presets->getOrDefault($effectivePreset));
-
-        if ($result->isFailure()) {
-            $this->events->dispatch(new ConfigResolutionFailed([
-                'group' => 'embeddings',
-                'effectivePreset' => $effectivePreset,
-                'preset' => $this->preset,
-                'dsn' => $this->dsn,
-                'error' => $result->exception()->getMessage(),
-            ]));
-            throw $result->exception();
-        }
-
-        $config = $result->unwrap();
-        $data = !empty($dsnOverrides) ? array_merge($config, $dsnOverrides) : $config;
-        $final = EmbeddingsConfig::fromArray($data);
-
-        $this->events->dispatch(new ConfigResolved([
-            'group' => 'embeddings',
-            'effectivePreset' => $effectivePreset,
-            'preset' => $this->preset,
-            'dsn' => $this->dsn,
-            'config' => $final->toArray(),
-        ]));
-
-        return $final;
-    }
-
-    // HTTP client building removed from provider.
-
-    private function determinePreset(): ?string {
-        return match (true) {
-            $this->preset !== null => $this->preset,
-            $this->dsn !== null => Dsn::fromString($this->dsn)->param('preset'),
-            default => null,
-        };
-    }
-
-    private function getDsnOverrides(): array {
-        if ($this->dsn === null) {
-            return [];
-        }
-        return Dsn::fromString($this->dsn)
-            ->without('preset')
-            ->toArray();
     }
 }

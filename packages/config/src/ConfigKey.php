@@ -19,10 +19,10 @@ final class ConfigKey
 
     private static function relativePath(string $path): string {
         $matches = [];
-        $hasConfigSegment = preg_match('~(?:^|/)config/(.+)$~', $path, $matches) === 1;
-        return match (true) {
-            $hasConfigSegment => (string) $matches[1],
-            default => basename($path),
-        };
+        if (preg_match('~(?:^|/)config/(.+)$~', $path, $matches) === 1) {
+            return $matches[1];
+        }
+
+        return basename($path);
     }
 }

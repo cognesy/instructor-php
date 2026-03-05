@@ -51,7 +51,7 @@ function makeRetrospectiveLoop(
 
     $hooks = (new HookStack(new RegisteredHooks(), $events))->with(
         hook: new ExecutionRetrospectiveHook(policy: $policy),
-        triggerTypes: HookTriggers::with(HookTrigger::BeforeStep, HookTrigger::AfterStep),
+        triggerTypes: HookTriggers::of(HookTrigger::BeforeStep, HookTrigger::AfterStep),
         priority: 100,
         name: 'execution_retrospective',
     );

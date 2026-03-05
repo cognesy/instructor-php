@@ -278,7 +278,7 @@ class AIService
     // Fast, cheap extraction for simple tasks
     public function quickExtract(string $text, string $model): mixed
     {
-        return StructuredOutput::using('groq')
+        return StructuredOutput::connection('groq')
             ->with(messages: $text, responseModel: $model)
             ->get();
     }
@@ -286,7 +286,7 @@ class AIService
     // High-quality extraction for complex tasks
     public function precisionExtract(string $text, string $model): mixed
     {
-        return StructuredOutput::using('anthropic')
+        return StructuredOutput::connection('anthropic')
             ->withModel('claude-3-opus-20240229')
             ->with(messages: $text, responseModel: $model)
             ->get();
@@ -295,7 +295,7 @@ class AIService
     // Local extraction for sensitive data
     public function privateExtract(string $text, string $model): mixed
     {
-        return StructuredOutput::using('ollama')
+        return StructuredOutput::connection('ollama')
             ->with(messages: $text, responseModel: $model)
             ->get();
     }
@@ -433,7 +433,7 @@ class FallbackExtractor
     {
         foreach ($this->providers as $provider) {
             try {
-                return StructuredOutput::using($provider)
+                return StructuredOutput::connection($provider)
                     ->with(messages: $text, responseModel: $model)
                     ->get();
             } catch (\Throwable $e) {

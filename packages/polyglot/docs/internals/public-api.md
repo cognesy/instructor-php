@@ -12,13 +12,17 @@ The `Inference` class is the main entry point for LLM interactions. It encapsula
 namespace Cognesy\Polyglot\Inference;
 
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 class Inference {
     public function __construct(?CanCreateInference $runtime = null) { ... }
 
     // Runtime selection
     public static function using(string $preset): self { ... }
+    public static function fromLLMConfig(LLMConfig $config): self { ... }
+    public static function fromLLMProvider(LLMProvider $provider): self { ... }
     public static function fromDsn(string $dsn): self { ... }
     public static function fromRuntime(CanCreateInference $runtime): self { ... }
     public function withRuntime(CanCreateInference $runtime): self { ... }
@@ -49,13 +53,17 @@ Similarly, the `Embeddings` class provides a unified interface for generating em
 namespace Cognesy\Polyglot\Embeddings;
 
 use Cognesy\Polyglot\Embeddings\Contracts\CanCreateEmbeddings;
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
+use Cognesy\Polyglot\Embeddings\EmbeddingsProvider;
 
 class Embeddings {
     public function __construct(?CanCreateEmbeddings $runtime = null) { ... }
 
     // Runtime selection
     public static function using(string $preset): self { ... }
+    public static function fromEmbeddingsConfig(EmbeddingsConfig $config): self { ... }
+    public static function fromEmbeddingsProvider(EmbeddingsProvider $provider): self { ... }
     public static function fromDsn(string $dsn): self { ... }
     public static function fromRuntime(CanCreateEmbeddings $runtime): self { ... }
     public function withRuntime(CanCreateEmbeddings $runtime): self { ... }

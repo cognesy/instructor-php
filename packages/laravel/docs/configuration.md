@@ -8,7 +8,7 @@ After publishing the configuration file, you'll find it at `config/instructor.ph
 'default' => env('INSTRUCTOR_CONNECTION', 'openai'),
 ```
 
-Set the default LLM connection. Can be overridden at runtime with `->using('connection')`.
+Set the default LLM connection. Can be overridden at runtime with `->connection('name')`.
 
 ## Connections
 
@@ -257,7 +257,7 @@ Override configuration at runtime:
 ```php
 use Cognesy\Instructor\Laravel\Facades\StructuredOutput;
 
-$result = StructuredOutput::using('anthropic')  // Switch connection
+$result = StructuredOutput::connection('anthropic')  // Switch connection
     ->withModel('claude-3-opus-20240229')        // Override model
     ->withMaxRetries(5)                          // Override retries
     ->with(

@@ -29,11 +29,10 @@ class Template
 
     public function __construct(
         string                $path = '',
-        string                $preset = '',
         ?TemplateEngineConfig $config = null,
         ?CanHandleTemplate    $driver = null,
     ) {
-        $this->provider = new TemplateProvider($preset, $config, $driver);
+        $this->provider = new TemplateProvider($config, $driver);
         $this->templateContent = $path ? $this->provider->loadTemplate($path) : '';
         $this->templateInfo = new TemplateInfo($this->templateContent, $this->provider->config());
     }
@@ -57,8 +56,8 @@ class Template
         };
     }
 
-    public static function using(string $preset) : static {
-        return new static(preset: $preset);
+    public static function forEngine(string $engine) : static {
+        return new static(config: self::configForEngine($engine));
     }
 
     public static function text(string $pathOrDsn, array $variables) : string {
@@ -77,12 +76,7 @@ class Template
         if (count($parts) !== 2) {
             throw new InvalidArgumentException("Invalid DSN: `$dsn` - failed to parse");
         }
-        return new static(path: $parts[1], preset: $parts[0]);
-    }
-
-    public function withPreset(string $preset) : self {
-        $this->provider->get($preset);
-        return $this;
+        return new static(path: $parts[1], config: self::configForEngine($parts[0]));
     }
 
     public function withConfig(TemplateEngineConfig $config) : self {
@@ -359,5 +353,16 @@ class Template
             }
         }
         return $messages;
+    }
+
+    private static function configForEngine(string $engine): TemplateEngineConfig {
+        return match (strtolower($engine)) {
+            'twig' => TemplateEngineConfig::twig(),
+            'blade' => TemplateEngineConfig::blade(),
+            'arrowpipe' => TemplateEngineConfig::arrowpipe(),
+            default => throw new InvalidArgumentException(
+                "Unknown template engine alias: {$engine}. Use twig, blade, arrowpipe, or pass TemplateEngineConfig directly.",
+            ),
+        };
     }
 }

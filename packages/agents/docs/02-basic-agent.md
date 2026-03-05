@@ -101,9 +101,12 @@ use Cognesy\Agents\Builder\AgentBuilder;
 use Cognesy\Agents\Capability\Bash\UseBash;
 use Cognesy\Agents\Capability\Core\UseGuards;
 use Cognesy\Agents\Capability\Core\UseLLMConfig;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 $agent = AgentBuilder::base()
-    ->withCapability(new UseLLMConfig(preset: 'anthropic'))
+    ->withCapability(new UseLLMConfig(
+        llm: LLMProvider::using('anthropic')
+    ))
     ->withCapability(new UseBash())
     ->withCapability(new UseGuards(maxSteps: 10))
     ->build();

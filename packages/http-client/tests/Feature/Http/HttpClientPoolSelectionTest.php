@@ -9,7 +9,7 @@ use Cognesy\Http\HttpClient;
 use Cognesy\Http\PendingHttpPool;
 
 test('withPool selects pool handler matching active driver', function() {
-    $client = HttpClient::using('guzzle');
+    $client = HttpClient::fromConfig(new HttpClientConfig(driver: 'guzzle'));
     $pendingPool = $client->withPool(HttpRequestList::empty());
 
     $poolHandlerProperty = new \ReflectionProperty(PendingHttpPool::class, 'poolHandler');

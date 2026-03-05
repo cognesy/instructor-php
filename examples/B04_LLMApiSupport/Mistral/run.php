@@ -25,9 +25,10 @@ Mode compatibility:
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\Str;
 
+
 require 'examples/boot.php';
 
-$answer = Inference::using('mistral') // see /config/llm.php
+$answer = Inference::using('mistral')
     ->with(
         messages: [['role' => 'user', 'content' => 'What is the capital of France']],
         options: ['max_tokens' => 256]

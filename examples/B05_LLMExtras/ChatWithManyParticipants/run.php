@@ -31,6 +31,7 @@ use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
+
 echo "🎙️ AI PANEL DISCUSSION: The Future of AI Development\n";
 echo "═══════════════════════════════════════════════════\n\n";
 

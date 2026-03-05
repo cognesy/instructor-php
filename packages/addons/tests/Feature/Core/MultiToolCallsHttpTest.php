@@ -7,6 +7,7 @@ use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
@@ -35,7 +36,13 @@ it('executes two tool calls returned by HTTP mocked response', function () {
         })
         ->create();
 
-    $llm = LLMProvider::using('openai');
+    $llm = LLMProvider::fromLLMConfig(LLMConfig::fromArray([
+        'driver' => 'openai',
+        'apiUrl' => 'https://api.openai.com/v1',
+        'apiKey' => 'test',
+        'endpoint' => '/chat/completions',
+        'model' => 'gpt-4o-mini',
+    ]));
     $driver = new ToolCallingDriver(
         inference: InferenceRuntime::fromProvider(
             provider: $llm,

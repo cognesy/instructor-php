@@ -19,10 +19,12 @@ Mode compatibility:
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Http\Config\DebugConfig;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 enum UserType : string {
     case Guest = 'guest';
@@ -40,11 +42,11 @@ class User {
 }
 
 // Get Instructor with specified LLM client connection
-// See: /config/llm.php to check or change LLM client connection configuration details
-$debugHttpClient = (new HttpClientBuilder)->withHttpDebugPreset('on')->create();
+// Adjust provider credentials and model in the LLMConfig::fromArray([...]) values below.
+$debugHttpClient = (new HttpClientBuilder)->withDebugConfig(DebugConfig::fromPreset('on'))->create();
 $structuredOutput = new StructuredOutput(
-    StructuredOutputRuntime::using(
-        preset: 'minimaxi',
+    StructuredOutputRuntime::fromConfig(
+        config: LLMConfig::fromPreset('minimaxi'),
         httpClient: $debugHttpClient,
     )
 );

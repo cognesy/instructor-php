@@ -265,8 +265,8 @@ generate_fallback_commit_message() {
     fi
     
     # Basic pattern analysis
-    if echo "$all_files" | grep -q "\.md$\|docs-build/\|README"; then
-        if [ $(echo "$all_files" | wc -l) -eq $(echo "$all_files" | grep -c "\.md$\|docs-build/\|README") ]; then
+    if echo "$all_files" | grep -q "\.md$\|builds/docs-build/\|README"; then
+        if [ $(echo "$all_files" | wc -l) -eq $(echo "$all_files" | grep -c "\.md$\|builds/docs-build/\|README") ]; then
             commit_type="docs"
             description="update documentation"
         fi

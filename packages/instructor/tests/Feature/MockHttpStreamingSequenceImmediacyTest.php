@@ -54,7 +54,7 @@ it('streams sequence updates incrementally without waiting for full stream compl
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
     $stream = (new StructuredOutput)
-        ->withRuntime(makeStructuredRuntime(httpClient: $http, preset: 'openai'))
+        ->withRuntime(makeStructuredRuntime(httpClient: $http, llmDriver: 'openai'))
         ->withOutputMode(OutputMode::Json)
         ->with(
             messages: 'Extract people',

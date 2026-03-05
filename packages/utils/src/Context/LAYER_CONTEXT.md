@@ -83,10 +83,10 @@ $ctx = $httpLayer->applyTo(Context::empty());
 Minimal standalone bootstrap
 
 ```php
-use Cognesy\Config\{ConfigPresets,ConfigResolver};use Cognesy\Events\Dispatchers\EventDispatcher;use Cognesy\Utils\Context\Context;use Cognesy\Utils\Context\Layer;
+use Cognesy\Config\{ConfigPresets,ConfigLoader};use Cognesy\Events\Dispatchers\EventDispatcher;use Cognesy\Utils\Context\Context;use Cognesy\Utils\Context\Layer;
 
 $base = Layer::provides(Psr\EventDispatcher\EventDispatcherInterface::class, new EventDispatcher('app'))
-  ->merge(Layer::provides(Cognesy\Config\Contracts\CanProvideConfig::class, ConfigResolver::default()))
+  ->merge(Layer::provides(Cognesy\Config\Contracts\CanProvideConfig::class, ConfigLoader::fromPaths(__DIR__ . '/config/llm/presets/openai.yaml')))
   ->merge(Layer::providesFrom(ConfigPresets::class, fn($c) => ConfigPresets::using($c->get(Cognesy\Config\Contracts\CanProvideConfig::class))));
 
 $http = Layer::providesFrom(\Cognesy\Http\Creation\HttpClientBuilder::class, fn($c) => new \Cognesy\Http\Creation\HttpClientBuilder(
@@ -317,17 +317,17 @@ $layer = Layer::providesFrom(
 
 Guideline: A “Factory” class should never reach into a global container; obtain collaborators via constructor (wired by Layer) or method parameters.
 
-### ConfigResolver and CanProvideConfig
+### ConfigLoader and CanProvideConfig
 
 Many entry points accept `CanProvideConfig` and internally use `ConfigPresets::using($provider)`.
 
 Blueprint layer:
 
 ```php
-use Cognesy\Config\{ConfigResolver, ConfigPresets};
+use Cognesy\Config\{ConfigLoader, ConfigPresets};
 use Cognesy\Config\Contracts\CanProvideConfig;
 
-$configLayer = Layer::provides(CanProvideConfig::class, ConfigResolver::default())
+$configLayer = Layer::provides(CanProvideConfig::class, ConfigLoader::fromPaths(__DIR__ . '/config/llm/presets/openai.yaml'))
   ->merge(Layer::providesFrom(ConfigPresets::class, fn(Context $c) =>
       ConfigPresets::using($c->get(CanProvideConfig::class))
   ));
@@ -336,7 +336,7 @@ $configLayer = Layer::provides(CanProvideConfig::class, ConfigResolver::default(
 Usage in code:
 - Prefer accepting `CanProvideConfig` in constructors of services that resolve presets.
 - For classes that already accept a provider (e.g., HttpClientBuilder), rely on the layer to inject it.
-- For scripts/examples, compose `ConfigResolver::default()` unless you need custom providers.
+- For scripts/examples, compose `ConfigLoader::fromPaths(__DIR__ . '/config/llm/presets/openai.yaml')` unless you need custom providers.
 
 ### Events and CanHandleEvents
 
@@ -461,17 +461,17 @@ $http = $testCtx->get(\Cognesy\Http\Creation\HttpClientBuilder::class)
     ->create();
 ```
 
-### Config Presets & Settings (Root config/*.php)
+### Edge YAML Config (Root config/*.php)
 
-Root `config/*.php` drive defaults for http, llm, embeddings, debug, prompt, structured. The `SettingsConfigProvider` used by `ConfigResolver::default()` reads these files.
+Root `config/*.php` drive defaults for http, llm, embeddings, debug, prompt, structured. The `YAMLConfigLoader` used by `ConfigLoader::fromPaths(__DIR__ . '/config/llm/presets/openai.yaml')` reads these files.
 
 - Layer wiring
 
 ```php
-use Cognesy\Config\{ConfigResolver, ConfigPresets};
+use Cognesy\Config\{ConfigLoader, ConfigPresets};
 use Cognesy\Config\Contracts\CanProvideConfig;
 
-$configLayer = Layer::provides(CanProvideConfig::class, ConfigResolver::default())
+$configLayer = Layer::provides(CanProvideConfig::class, ConfigLoader::fromPaths(__DIR__ . '/config/llm/presets/openai.yaml'))
   ->merge(Layer::providesFrom(ConfigPresets::class, fn(Context $c) =>
       ConfigPresets::using($c->get(CanProvideConfig::class))
   ));
@@ -479,7 +479,7 @@ $configLayer = Layer::provides(CanProvideConfig::class, ConfigResolver::default(
 
 - Usage
   - Always inject `CanProvideConfig` into services that resolve presets.
-  - Avoid calling `ConfigResolver::using()` inside consumers; compose in layer instead.
+  - Avoid calling `edge config composition` inside consumers; compose in layer instead.
   - Use `ConfigPresets::using($cfg)->for('llm')->getOrDefault('openai')` to resolve preset data when needed in factories.
 
 ### Providers: LLMProvider/EmbeddingsProvider
@@ -698,7 +698,7 @@ Runtime data vs services:
 
 - Foundational layers
   - events: `EventDispatcherInterface` → `EventDispatcher`
-  - config: `CanProvideConfig` → `ConfigResolver::default`, plus `ConfigPresets::using()`
+  - config: `CanProvideConfig` → `ConfigLoader::default`, plus `ConfigPresets::using()`
   - utils: `ClockInterface` → `SystemClock`, optional `LoggerInterface` → `NullLogger`
 - HTTP client
   - Provide `HttpClientBuilder` (requires events + config) and optionally `HttpClient`.
@@ -718,19 +718,19 @@ Layer/Context lets you move normalization/selection work to composition time so 
   - Keep `EventDispatcherInterface` for framework/bridge boundaries.
   - Avoid resolver-style normalization in internals.
 
-### Config: Keep ConfigResolver, externalize its assembly
+### Config: Keep ConfigLoader, externalize its assembly
 
-- `ConfigResolver` is a real service (provider chain, caching, fallback). Do not remove it.
+- `ConfigLoader` is a real service (provider chain, caching, fallback). Do not remove it.
 - With Layers: decide which providers compose the resolver, bind `CanProvideConfig`, and inject that into consumers.
 - Guidance:
-  - New/refactored classes: accept `CanProvideConfig`; avoid calling `ConfigResolver::using()` inside consumers.
-  - Compose `ConfigResolver::default()` (or a custom chain) in a layer; provide `ConfigPresets::using($cfg)` there as well.
+  - New/refactored classes: accept `CanProvideConfig`; avoid calling `edge config composition` inside consumers.
+  - Compose `ConfigLoader::fromPaths(__DIR__ . '/config/llm/presets/openai.yaml')` (or a custom chain) in a layer; provide `ConfigPresets::using($cfg)` there as well.
 
 ### Practical migration
 
 1) Stage 1: Introduce layers that provide `CanHandleEvents` and `CanProvideConfig`; wire consumers through layers.
 2) Stage 2: For new entry points, drop union/nullable constructor params; accept a single contract and document the layer recipe.
-3) Stage 3: Keep `ConfigResolver` as the injected provider chain and remove resolver-style event normalization from internals.
+3) Stage 3: Keep `ConfigLoader` as the injected provider chain and remove resolver-style event normalization from internals.
 
 ### Before/After (conceptual)
 

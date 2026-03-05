@@ -4,11 +4,45 @@ Strategic overview of the Instructor PHP ecosystem - a comprehensive AI/LLM inte
 
 ## Executive Summary
 
-The Instructor PHP monorepo provides a complete toolkit for integrating LLM/AI capabilities into PHP applications with strict type safety, structured output generation, and enterprise-grade infrastructure. The architecture follows clean separation of concerns with 10+ specialized packages that handle everything from low-level HTTP communication to high-level AI response parsing.
+The Instructor PHP monorepo provides a complete toolkit for integrating LLM/AI capabilities into PHP applications with strict type safety, structured output generation, and enterprise-grade infrastructure. The architecture follows clean separation of concerns with 27 packages that handle everything from low-level HTTP communication to high-level AI response parsing.
+
+## Current Package Inventory (`packages/*`)
+
+The following package directories are currently present in the monorepo:
+
+- `addons`
+- `agent-ctrl`
+- `agents`
+- `auxiliary`
+- `config`
+- `doctools`
+- `doctor`
+- `dynamic`
+- `evals`
+- `events`
+- `experimental`
+- `http-client`
+- `hub`
+- `instructor`
+- `laravel`
+- `logging`
+- `messages`
+- `metrics`
+- `pipeline`
+- `polyglot`
+- `sandbox`
+- `schema`
+- `setup`
+- `stream`
+- `tell`
+- `templates`
+- `utils`
 
 ---
 
 ## Package Responsibilities & Capabilities
+
+The sections below describe the core/most visible packages in detail.
 
 ### **Instructor** - Structured Outputs Extraction
 **Role**: Primary facade and structured output engine  

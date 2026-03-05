@@ -7,6 +7,7 @@ namespace Cognesy\Instructor\Laravel\Testing;
 use Cognesy\Instructor\PendingStructuredOutput;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use PHPUnit\Framework\Assert as PHPUnit;
@@ -40,11 +41,14 @@ class StructuredOutputFake
     /** @var array<class-string, mixed> */
     protected array $responses = [];
 
-    /** @var array<int, array{class: string, messages: mixed, model: ?string}> */
+    /** @var array<int, array{class: string, messages: mixed, model: ?string, connection: ?string, llmConfig: ?array}> */
     protected array $recorded = [];
 
     /** @var string|null */
-    protected ?string $preset = null;
+    protected ?string $connection = null;
+
+    /** @var array<string,mixed>|null */
+    protected ?array $llmConfig = null;
 
     /** @var string|array|null */
     protected string|array|null $messages = null;
@@ -88,9 +92,15 @@ class StructuredOutputFake
 
     // Fluent API methods to match StructuredOutput
 
-    public function using(string $preset): self
+    public function connection(string $name): self
     {
-        $this->preset = $preset;
+        $this->connection = $name;
+        return $this;
+    }
+
+    public function withLLMConfig(LLMConfig $config): self
+    {
+        $this->llmConfig = $config->toArray();
         return $this;
     }
 
@@ -245,16 +255,15 @@ class StructuredOutputFake
             'class' => $class,
             'messages' => $this->messages,
             'model' => $this->model,
-            'preset' => $this->preset,
+            'connection' => $this->connection,
+            'llmConfig' => $this->llmConfig,
         ];
 
         // Reset state
-        $messages = $this->messages;
-        $model = $this->model;
-        $preset = $this->preset;
         $this->messages = null;
         $this->model = null;
-        $this->preset = null;
+        $this->connection = null;
+        $this->llmConfig = null;
         $this->responseModel = null;
 
         // Find matching response
@@ -361,15 +370,15 @@ class StructuredOutputFake
     }
 
     /**
-     * Assert extraction used a specific preset.
+     * Assert extraction used a specific configured connection.
      */
-    public function assertUsedPreset(string $preset): self
+    public function assertUsedConnection(string $connection): self
     {
-        $found = collect($this->recorded)->contains('preset', $preset);
+        $found = collect($this->recorded)->contains('connection', $connection);
 
         PHPUnit::assertTrue(
             $found,
-            "Expected preset [{$preset}] was not used."
+            "Expected connection [{$connection}] was not used."
         );
 
         return $this;

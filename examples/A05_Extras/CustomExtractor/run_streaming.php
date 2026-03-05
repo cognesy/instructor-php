@@ -61,7 +61,7 @@ class Person {
 
 echo "=== Example 2: Custom extractor with streaming updates ===\n\n";
 
-$stream = (new StructuredOutput)
+$stream = StructuredOutput::using('openai')
     ->withResponseClass(Person::class)
     ->withExtractors(
         new DirectJsonExtractor(),

@@ -2,6 +2,8 @@
 
 namespace Cognesy\Tell;
 
+use Cognesy\Config\Dsn;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\PendingInference;
@@ -20,7 +22,7 @@ class TellCommand extends Command
         $this->setName(self::$defaultName)
             ->setDescription('Prompt AI')
             ->addArgument('prompt', InputArgument::REQUIRED, 'Prompt')
-            ->addOption('connection', 'c', InputOption::VALUE_OPTIONAL, 'LLM connection preset', 'openai')
+            ->addOption('connection', 'c', InputOption::VALUE_OPTIONAL, 'LLM connection/driver name', 'openai')
             ->addOption('model', 'm', InputOption::VALUE_OPTIONAL, 'The model option', '')
             ->addOption('dsn', 'd', InputOption::VALUE_OPTIONAL, 'The DSN option', '');
     }
@@ -30,11 +32,11 @@ class TellCommand extends Command
         $prompt = $input->getArgument('prompt');
 
         $dsn = $input->getOption('dsn');
-        $preset = $input->getOption('connection');
+        $connection = $input->getOption('connection');
         $model = $input->getOption('model');
 
         $response = match(true) {
-            empty($dsn) => $this->inferenceUsingPreset($preset, $prompt, $model),
+            empty($dsn) => $this->inferenceUsingConnection($connection, $prompt, $model),
             default => $this->inferenceUsingDSN($dsn, $prompt),
         };
 
@@ -47,16 +49,22 @@ class TellCommand extends Command
     }
 
     protected function inferenceUsingDSN(string $dsn, string $prompt) : PendingInference {
-        return InferenceRuntime::fromDsn($dsn)->create(new InferenceRequest(
+        $config = LLMConfig::fromArray(Dsn::fromString($dsn)->toArray());
+
+        return InferenceRuntime::fromLLMConfig($config)->create(new InferenceRequest(
             messages: $prompt,
             options: ['stream' => true],
         ));
     }
 
-    protected function inferenceUsingPreset(string $preset, string $prompt, string $model = '') : PendingInference {
-        return InferenceRuntime::using($preset)->create(new InferenceRequest(
+    protected function inferenceUsingConnection(string $connection, string $prompt, string $model = '') : PendingInference {
+        $config = LLMConfig::fromArray([
+            'driver' => $connection,
+            'model' => $model,
+        ]);
+
+        return InferenceRuntime::fromLLMConfig($config)->create(new InferenceRequest(
             messages: $prompt,
-            model: $model,
             options: ['stream' => true],
         ));
     }

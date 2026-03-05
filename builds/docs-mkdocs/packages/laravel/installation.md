@@ -1,0 +1,122 @@
+# Installation
+
+## Requirements
+
+- PHP 8.2 or higher
+- Laravel 10.x, 11.x, or 12.x
+- A valid API key from a supported LLM provider
+
+## Install via Composer
+
+```bash
+composer require cognesy/instructor-laravel
+# @doctest id="93e9"
+```
+
+The package uses Laravel's auto-discovery, so the service provider and facades are registered automatically.
+
+## Publish Configuration
+
+Publish the configuration file to customize settings:
+
+```bash
+php artisan vendor:publish --tag=instructor-config
+# @doctest id="6839"
+```
+
+This creates `config/instructor.php` with all available options.
+
+## Configure API Keys
+
+Add your LLM provider API key to `.env`:
+
+```env
+# OpenAI (default)
+OPENAI_API_KEY=sk-...
+
+# Or Anthropic
+ANTHROPIC_API_KEY=sk-ant-...
+
+# Or other providers
+GEMINI_API_KEY=...
+GROQ_API_KEY=...
+MISTRAL_API_KEY=...
+// @doctest id="5bfe"
+```
+
+## Verify Installation
+
+Run the installation command to verify everything is configured correctly:
+
+```bash
+php artisan instructor:install
+# @doctest id="3703"
+```
+
+This will:
+1. Publish the configuration if not already published
+2. Check for API key configuration
+3. Show next steps
+
+## Test Your Connection
+
+Test that your API configuration is working:
+
+```bash
+php artisan instructor:test
+# @doctest id="c720"
+```
+
+Or test a specific connection:
+
+```bash
+php artisan instructor:test --connection=anthropic
+# @doctest id="0ba2"
+```
+
+## Optional: Publish Stubs
+
+If you want to customize the response model stubs:
+
+```bash
+php artisan vendor:publish --tag=instructor-stubs
+# @doctest id="7073"
+```
+
+This publishes stubs to `stubs/instructor/` in your application.
+
+## Manual Registration (Optional)
+
+If you've disabled auto-discovery, manually register the service provider in `config/app.php`:
+
+```php
+'providers' => [
+    // ...
+    Cognesy\Instructor\Laravel\InstructorServiceProvider::class,
+],
+
+'aliases' => [
+    // ...
+    'StructuredOutput' => Cognesy\Instructor\Laravel\Facades\StructuredOutput::class,
+    'Inference' => Cognesy\Instructor\Laravel\Facades\Inference::class,
+    'Embeddings' => Cognesy\Instructor\Laravel\Facades\Embeddings::class,
+],
+// @doctest id="6a3c"
+```
+
+## Upgrading
+
+When upgrading to a new version, republish the configuration if there are new options:
+
+```bash
+php artisan vendor:publish --tag=instructor-config --force
+# @doctest id="0ea7"
+```
+
+Review the [changelog](https://github.com/cognesy/instructor-php/blob/main/CHANGELOG.md) for breaking changes.
+
+## Next Steps
+
+- [Configuration](configuration.md) - Configure connections and settings
+- [Facades](facades.md) - Learn how to use the facades
+- [Response Models](response-models.md) - Create your first response model

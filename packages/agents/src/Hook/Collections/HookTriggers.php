@@ -61,7 +61,7 @@ class HookTriggers
         return new self(HookTrigger::OnError);
     }
 
-    public static function with(HookTrigger ...$triggers): self {
+    public static function of(HookTrigger ...$triggers): self {
         return new self(...$triggers);
     }
 

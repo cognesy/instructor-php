@@ -55,7 +55,7 @@ final readonly class UseGuards implements CanProvideAgentCapability
         if ($this->maxExecutionTime !== null) {
             $hooks = $hooks->with(
                 hook: new ExecutionTimeLimitHook(maxSeconds: $this->maxExecutionTime),
-                triggerTypes: HookTriggers::with(HookTrigger::BeforeExecution, HookTrigger::BeforeStep),
+                triggerTypes: HookTriggers::of(HookTrigger::BeforeExecution, HookTrigger::BeforeStep),
                 priority: 200,
                 name: 'guard:time_limit',
             );

@@ -16,6 +16,7 @@ use Cognesy\Instructor\Transformation\Contracts\CanTransformData;
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
@@ -42,14 +43,18 @@ final class StructuredOutput implements CanCreateStructuredOutput
         $this->request = new StructuredOutputRequest();
     }
 
-    public static function using(string $preset): self {
-        return new self(StructuredOutputRuntime::using($preset));
-    }
-
     public function withRuntime(CanCreateStructuredOutput $runtime): self {
         $copy = clone $this;
         $copy->runtime = $runtime;
         return $copy;
+    }
+
+    public static function fromLLMConfig(LLMConfig $config): self {
+        return new self(StructuredOutputRuntime::fromConfig($config));
+    }
+
+    public static function using(string $preset, ?string $basePath = null): self {
+        return self::fromLLMConfig(LLMConfig::fromPreset($preset, $basePath));
     }
 
     public function runtime(): CanCreateStructuredOutput {

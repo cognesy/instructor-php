@@ -2,6 +2,7 @@
 
 namespace Cognesy\Polyglot\Inference;
 
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Creation\InferenceDriverFactory;
 use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
@@ -29,16 +30,20 @@ final class Inference implements CanCreateInference
         $this->runtime = $runtime ?? InferenceRuntime::fromProvider(LLMProvider::new());
     }
 
-    public static function using(string $preset): self {
-        return new self(InferenceRuntime::using($preset));
+    public static function fromLLMConfig(LLMConfig $config): self {
+        return new self(InferenceRuntime::fromLLMConfig($config));
     }
 
-    public static function fromDsn(string $dsn): self {
-        return new self(InferenceRuntime::fromDsn($dsn));
+    public static function fromLLMProvider(LLMProvider $provider): self {
+        return new self(InferenceRuntime::fromProvider($provider));
     }
 
     public static function fromRuntime(CanCreateInference $runtime): self {
         return new self($runtime);
+    }
+
+    public static function using(string $preset, ?string $basePath = null): self {
+        return self::fromLLMConfig(LLMConfig::fromPreset($preset, $basePath));
     }
 
     public function withRuntime(CanCreateInference $runtime): self {

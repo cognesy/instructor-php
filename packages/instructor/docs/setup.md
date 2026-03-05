@@ -28,7 +28,7 @@ This will allow you to customize the library's behavior and use different prompt
 These files can be found in the `vendor/cognesy/instructor-php` directory:
 - `.env-dist` - Environment variables for API keys and configuration paths
 - `/config/*.php` - Configurations of Instructor modules
-- `/prompts/*` - Prompt templates for generating structured data from text
+- `/packages/templates/resources/prompts/*` - Prompt templates for generating structured data from text
 
 You can publish these files to your project directory by running following command:
 
@@ -68,19 +68,16 @@ Check `.env-dist` for other API keys Instructor uses in its default configuratio
 
 ### Step 4: Set Configuration Location (optional)
 
-Instructor uses a configuration directory to store its settings, e.g. LLM provider configurations.
-
-You can set the path to this directory via `Settings::setPath('/path/to/config')` in your code.
-
-But to make it easier you can just set the value in your `.env` file. `Settings` will pick it up automatically
-from there. This way you don't have to set it in every script.
+Keep configuration location at the application edge.
+Load YAML files from explicit paths in your bootstrap using `Config` / `ConfigLoader`,
+then map arrays to typed config objects (`XxxConfig::fromArray()`).
 
 ```ini .env
 INSTRUCTOR_CONFIG_PATHS='/path/to/your/config/dir/,another/path'
 ```
 
 <Note>
-`INSTRUCTOR_CONFIG_PATHS` is set automatically if you use the Instructor CLI tool to publish assets.
+`INSTRUCTOR_CONFIG_PATHS` can still be used by your own bootstrap scripts as an input value.
 </Note>
 
 
@@ -149,7 +146,7 @@ manually or automatically using the provided CLI tool.
 
 By default, this command will:
 1. Copy configuration files from `vendor/cognesy/instructor-php/config` to `config/instructor/`
-2. Copy prompt templates from `vendor/cognesy/instructor-php/prompts` to `resources/prompts/`
+2. Copy prompt templates from `vendor/cognesy/instructor-php/packages/templates/resources/prompts` to `resources/prompts/`
 3. Merge (or copy) `vendor/cognesy/instructor-php/.env-dist` file to `.env` with environment variables
 
 ### Command Options
@@ -196,7 +193,7 @@ These files contain LLM API connection settings and Instructor's behavior config
 mkdir -p resources/prompts
 
 # Copy prompt templates
-cp -r vendor/cognesy/instructor-php/prompts/* resources/prompts/
+cp -r vendor/cognesy/instructor-php/packages/templates/resources/prompts/* resources/prompts/
 ```
 Prompt templates define how Instructor communicates with LLMs for different tasks.
 

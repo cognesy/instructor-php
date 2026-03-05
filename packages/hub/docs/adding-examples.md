@@ -10,7 +10,7 @@ Two config files in `./config/` control discovery and grouping:
 - `examples.yaml` — lists which directories are scanned as sources
 - `examples-groups.yaml` — maps source paths to named groups and subgroups
 
-The hub reads these from `./config/` at the project root. The copies under `packages/hub/config/` are mirrors kept in sync manually.
+The hub reads these from `./config/` at the project root. Package-owned defaults live under `packages/hub/resources/config/`.
 
 ---
 

@@ -7,7 +7,7 @@
 ### Key Components
 
 **HttpClient** - Main entry point providing immutable fluent API:
-- `HttpClient::default()` / `HttpClient::using(preset)` - Factory methods
+- `HttpClient::default()` / `HttpClient::fromConfig(HttpClientConfig)` - Factory methods
 - `withRequest(HttpRequest)` → `PendingHttpResponse` - Lazy execution model
 - `PendingHttpResponse` - Represents a pending execution, lets you choose and chain further operations (e.g., regular call vs streaming)
 - `withMiddleware()` / `withoutMiddleware()` - Stack manipulation
@@ -16,7 +16,7 @@
 - Internally wraps: `CanHandleHttpRequest` driver + `MiddlewareStack`
 
 **HttpClientBuilder** - Fluent configuration builder:
-- Resolves driver from config presets or explicit instances
+- Resolves driver from typed config or explicit instances
 - Assembles middleware stack (default: BufferResponse + optional debug)
 - Manages event dispatching and dependency injection
 - Supports custom client instance injection for DI container integration
@@ -119,7 +119,7 @@ HttpClient
 - Output: `HttpResponseList` → iterate or `->all()` for array access
 - Results: Each element is `Result<HttpResponse>` (Success/Failure monad)
 
-**Configuration**: Preset-based config resolution supports environment-specific defaults while allowing per-client overrides.
+**Configuration**: Typed `HttpClientConfig` controls driver/timeouts/retry-related behavior with explicit overrides.
 
 **Immutability**: All client operations and collections return new instances, enabling safe concurrent usage and configuration sharing.
 
@@ -173,7 +173,6 @@ HttpClient
 
 The package eliminates HTTP client lock-in:
 - **Instance Injection**: Accepts pre-configured client instances from DI containers
-- **Preset System**: Environment-specific configurations (Laravel, Symfony, etc.)
 - **Middleware Compatibility**: Consistent processing layer regardless of underlying client
 - **Exception Consistency**: Same exception hierarchy across all HTTP implementations
 - **Pool Abstraction**: Concurrent request handling without driver coupling

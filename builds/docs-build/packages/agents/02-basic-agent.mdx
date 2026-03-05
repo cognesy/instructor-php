@@ -1,0 +1,127 @@
+---
+title: 'Basic Agent'
+description: 'Create your first agent with AgentLoop and get a response from an LLM'
+---
+
+# Basic Agent
+
+The simplest agent uses `AgentLoop` to send a message and get a response.
+
+## Hello World
+
+```php
+use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Data\AgentState;
+
+$loop = AgentLoop::default();
+$state = AgentState::empty()->withUserMessage('What is 2+2?');
+$result = $loop->execute($state);
+
+echo $result->finalResponse()->toString();
+// "2 + 2 equals 4."
+// @doctest id="82b4"
+```
+
+## What Happens
+
+1. `AgentLoop::execute()` starts the loop
+2. The driver (`ToolCallingDriver`) sends messages to the LLM
+3. LLM responds with text (no tool calls)
+4. The loop detects no tool calls and stops
+5. Final response is available via `$result->finalResponse()`
+
+## Agent with a Tool
+
+Give the agent a tool and it will decide when to use it:
+
+```php
+use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Tool\Tools\FunctionTool;
+
+$weather = FunctionTool::fromCallable(
+    function (string $city): string {
+        return "Weather in {$city}: 72F, sunny";
+    }
+);
+
+$loop = AgentLoop::default()->withTool($weather);
+$state = AgentState::empty()->withUserMessage('What is the weather in Paris?');
+$result = $loop->execute($state);
+
+echo $result->finalResponse()->toString();
+// "The weather in Paris is 72°F and sunny."
+// @doctest id="8e6b"
+```
+
+## Customizing the Loop
+
+Add a tool to a default loop:
+
+```php
+$loop = AgentLoop::default()->withTool($myTool);
+// @doctest id="1a01"
+```
+
+Swap the driver to use ReAct reasoning:
+
+```php
+use Cognesy\Agents\Drivers\ReAct\ReActDriver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
+
+$events = new EventDispatcher();
+$inference = InferenceRuntime::fromProvider(LLMProvider::new(), events: $events);
+$structuredOutput = new StructuredOutputRuntime(
+    inference: $inference,
+    events: $events,
+    config: (new StructuredOutputConfigBuilder())->create(),
+);
+$loop = AgentLoop::default()->withDriver(new ReActDriver(
+    inference: $inference,
+    structuredOutput: $structuredOutput,
+    model: 'gpt-4o',
+));
+// @doctest id="c89c"
+```
+
+## System Prompt
+
+```php
+$state = AgentState::empty()
+    ->withSystemPrompt('You are a helpful assistant.')
+    ->withUserMessage('Hello!');
+// @doctest id="2ec0"
+```
+
+## Using AgentBuilder
+
+For more complex agents, use `AgentBuilder` to compose capabilities:
+
+```php
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Bash\UseBash;
+use Cognesy\Agents\Capability\Core\UseGuards;
+use Cognesy\Agents\Capability\Core\UseLLMConfig;
+use Cognesy\Polyglot\Inference\LLMProvider;
+
+$agent = AgentBuilder::base()
+    ->withCapability(new UseLLMConfig(
+        llm: LLMProvider::using('anthropic')
+    ))
+    ->withCapability(new UseBash())
+    ->withCapability(new UseGuards(maxSteps: 10))
+    ->build();
+
+$result = $agent->execute($state);
+// @doctest id="dd25"
+```
+
+See [AgentBuilder & Capabilities](13-agent-builder) for details.
+
+When agent configuration should come from files, see [Agent Templates](14-agent-templates).
+
+When you need persisted, resumable agent state across requests/processes, see [Session Runtime](16-session-runtime).

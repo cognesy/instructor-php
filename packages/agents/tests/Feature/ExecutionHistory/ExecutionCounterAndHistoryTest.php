@@ -52,7 +52,7 @@ function makeLoop(
     if ($historyHook !== null) {
         $hooksBuilder = $hooksBuilder->with(
             hook: $historyHook,
-            triggerTypes: HookTriggers::with(HookTrigger::AfterExecution),
+            triggerTypes: HookTriggers::of(HookTrigger::AfterExecution),
             priority: -1000,
             name: 'execution_history',
         );

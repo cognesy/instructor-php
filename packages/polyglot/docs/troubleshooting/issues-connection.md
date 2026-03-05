@@ -44,8 +44,8 @@ $httpClient = (new HttpClientBuilder())
         'proxy' => 'http://proxy.example.com:8080',
     ]))
     ->create();
-$inference = Inference::fromRuntime(InferenceRuntime::using(
-    preset: 'openai',
+$inference = Inference::fromRuntime(InferenceRuntime::fromConfig(
+    config: LLMConfig::fromArray(['driver' => 'openai']),
     httpClient: $httpClient,
 ));
 ```

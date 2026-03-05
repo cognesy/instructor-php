@@ -1,0 +1,61 @@
+rules:
+  - id: global-method-convention-fromxxx-must-be-static
+    message: "`fromXxx(...)` methods must be static named constructors. Add an exception only if explicitly approved."
+    severity: ERROR
+    languages: [php]
+    paths:
+      include:
+        - "/packages/**/src/**/*.php"
+      exclude:
+        - "/packages/instructor/src/Creation/ResponseModelFactory.php"
+        - "/packages/dynamic/src/StructureFactory.php"
+        - "/packages/dynamic/src/Structure.php"
+        - "/packages/addons/src/FunctionCall/FunctionCall.php"
+        - "/packages/schema/src/CallableSchemaFactory.php"
+        - "/packages/schema/src/JsonSchemaParser.php"
+        - "/packages/experimental/src/*/Contracts/CanTransformModuleInput.php"
+        - "/packages/instructor/src/Deserialization/**/*.php"
+        - "/packages/instructor/src/Extras/Maybe/Maybe.php"
+        - "/packages/instructor/src/Extras/Scalar/Scalar.php"
+        - "/packages/instructor/src/Extras/Sequence/Sequence.php"
+        - "/packages/polyglot/src/Inference/Contracts/CanTranslateInferenceResponse.php"
+        - "/packages/polyglot/src/Inference/Drivers/*/*ResponseAdapter.php"
+        - "/packages/polyglot/src/Inference/Contracts/CanMapUsage.php"
+        - "/packages/polyglot/src/Inference/Drivers/*/*UsageFormat.php"
+        - "/packages/polyglot/src/Embeddings/Contracts/CanMapUsage.php"
+        - "/packages/polyglot/src/Embeddings/Contracts/CanHandleVectorization.php"
+        - "/packages/polyglot/src/Embeddings/Contracts/EmbedResponseAdapter.php"
+        - "/packages/polyglot/src/Embeddings/Drivers/BaseEmbedDriver.php"
+        - "/packages/polyglot/src/Embeddings/Drivers/*/*ResponseAdapter.php"
+        - "/packages/polyglot/src/Embeddings/Drivers/*/*UsageFormat.php"
+    pattern-regex: "(?m)^\\s*(?:final\\s+)?(?:public|protected)\\s+(?:(?!\\bstatic\\b)[A-Za-z_]+\\s+)*function\\s+from[A-Z][A-Za-z0-9_]*\\s*\\("
+
+  - id: global-method-convention-withxxx-must-be-instance
+    message: "`withXxx(...)` / `with(...)` methods must be instance methods (non-static)."
+    severity: ERROR
+    languages: [php]
+    paths:
+      include:
+        - "/packages/**/src/**/*.php"
+      exclude:
+        - "/packages/pipeline/src/Operators/Tap.php"
+        - "/packages/pipeline/src/Operators/ConditionalCall.php"
+        - "/packages/pipeline/src/Operators/Call.php"
+        - "/packages/pipeline/src/Operators/CallAfter.php"
+        - "/packages/pipeline/src/Operators/CallBefore.php"
+        - "/packages/pipeline/src/Operators/Fail.php"
+        - "/packages/pipeline/src/Operators/FailWhen.php"
+        - "/packages/pipeline/src/Operators/Finalize.php"
+        - "/packages/pipeline/src/Operators/Processor.php"
+        - "/packages/pipeline/src/Operators/RawCall.php"
+        - "/packages/pipeline/src/Operators/TapOnFailure.php"
+        - "/packages/pipeline/src/ProcessingState.php"
+        - "/packages/pipeline/src/TransformState.php"
+        - "/packages/experimental/src/ModPredict/Core/Module.php"
+        - "/packages/experimental/src/Module/Core/Module.php"
+        - "/packages/experimental/src/NewModule/Prediction.php"
+        - "/packages/experimental/src/Pipeline2/OperatorList.php"
+        - "/packages/experimental/src/Interpreter/Core/Continued.php"
+        - "/packages/auxiliary/src/Web/Traits/HandlesCreation.php"
+        - "/packages/agents/src/Capability/Bash/BashTool.php"
+    pattern-regex: "(?m)^\\s*(?:final\\s+)?(?:public|protected)\\s+(?=[A-Za-z_\\s]*\\bstatic\\b)[A-Za-z_\\s]*function\\s+with(?:[A-Z][A-Za-z0-9_]*)?\\s*\\("

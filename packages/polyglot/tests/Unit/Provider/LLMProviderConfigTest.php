@@ -1,6 +1,5 @@
 <?php
 
-use Cognesy\Config\Providers\ArrayConfigProvider;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
@@ -26,18 +25,11 @@ it('creates driver from explicit config and resolves correct class', function ()
 });
 
 it('preserves model override when config overrides are applied later', function () {
-    $config = new ArrayConfigProvider([
-        'llm' => [
-            'defaultPreset' => 'default',
-            'presets' => [
-                'default' => [
-                    'driver' => 'openai',
-                    'model' => 'base-model',
-                    'maxTokens' => 256,
-                ],
-            ],
-        ],
-    ]);
+    $config = new LLMConfig(
+        driver: 'openai',
+        model: 'base-model',
+        maxTokens: 256,
+    );
 
     $resolved = LLMProvider::new($config)
         ->withModel('model-from-with-model')
@@ -49,18 +41,11 @@ it('preserves model override when config overrides are applied later', function 
 });
 
 it('preserves both config overrides and model regardless of call order', function () {
-    $config = new ArrayConfigProvider([
-        'llm' => [
-            'defaultPreset' => 'default',
-            'presets' => [
-                'default' => [
-                    'driver' => 'openai',
-                    'model' => 'base-model',
-                    'maxTokens' => 256,
-                ],
-            ],
-        ],
-    ]);
+    $config = new LLMConfig(
+        driver: 'openai',
+        model: 'base-model',
+        maxTokens: 256,
+    );
 
     $resolved = LLMProvider::new($config)
         ->withConfigOverrides(['maxTokens' => 1024])

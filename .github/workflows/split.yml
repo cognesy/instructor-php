@@ -39,8 +39,8 @@ jobs:
         with:
           name: release-docs-workspace
           path: |
-            docs-build
-            docs-mkdocs
+            builds/docs-build
+            builds/docs-mkdocs
             packages/*/docs
           if-no-files-found: error
           retention-days: 7
@@ -182,18 +182,18 @@ jobs:
           esac
 
           for candidate in "${CANDIDATES[@]}"; do
-            if [ -d "docs-build/packages/$candidate" ] || [ -d "docs-mkdocs/packages/$candidate" ]; then
+            if [ -d "builds/docs-build/packages/$candidate" ] || [ -d "builds/docs-mkdocs/packages/$candidate" ]; then
               DOC_SLUG="$candidate"
               break
             fi
           done
 
-          if [ -n "$DOC_SLUG" ] && [ -d "docs-build/packages/$DOC_SLUG" ]; then
-            tar -czf "$BUNDLE_DIR/${PKG_NAME}-docs-mintlify-${TAG_NAME}.tar.gz" -C docs-build/packages "$DOC_SLUG"
+          if [ -n "$DOC_SLUG" ] && [ -d "builds/docs-build/packages/$DOC_SLUG" ]; then
+            tar -czf "$BUNDLE_DIR/${PKG_NAME}-docs-mintlify-${TAG_NAME}.tar.gz" -C builds/docs-build/packages "$DOC_SLUG"
           fi
 
-          if [ -n "$DOC_SLUG" ] && [ -d "docs-mkdocs/packages/$DOC_SLUG" ]; then
-            tar -czf "$BUNDLE_DIR/${PKG_NAME}-docs-mkdocs-${TAG_NAME}.tar.gz" -C docs-mkdocs/packages "$DOC_SLUG"
+          if [ -n "$DOC_SLUG" ] && [ -d "builds/docs-mkdocs/packages/$DOC_SLUG" ]; then
+            tar -czf "$BUNDLE_DIR/${PKG_NAME}-docs-mkdocs-${TAG_NAME}.tar.gz" -C builds/docs-mkdocs/packages "$DOC_SLUG"
           fi
 
           if [ -d "$PKG_LOCAL/docs" ]; then

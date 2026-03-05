@@ -64,12 +64,12 @@ class Docs extends Application
         $this->examples = new ExampleRepository($sources, $grouping);
 
         $this->docsSourceDir = BasePath::get('docs');
-        $this->docsTargetDir = BasePath::get('docs-build');
-        $this->mkdocsTargetDir = BasePath::get('docs-mkdocs');
-        $this->cookbookTargetDir = BasePath::get('docs-build/cookbook');
-        $this->mkdocsCookbookTargetDir = BasePath::get('docs-mkdocs/cookbook');
+        $this->docsTargetDir = BasePath::get('builds/docs-build');
+        $this->mkdocsTargetDir = BasePath::get('builds/docs-mkdocs');
+        $this->cookbookTargetDir = BasePath::get('builds/docs-build/cookbook');
+        $this->mkdocsCookbookTargetDir = BasePath::get('builds/docs-mkdocs/cookbook');
         $this->mintlifySourceIndexFile = BasePath::get('docs/mint.json');
-        $this->mintlifyTargetIndexFile = BasePath::get('docs-build/mint.json');
+        $this->mintlifyTargetIndexFile = BasePath::get('builds/docs-build/mint.json');
         $this->codeblocksDir = BasePath::get('codeblocks');
         $this->dynamicGroups = [
             'Cookbook \ Instructor \ Basics',

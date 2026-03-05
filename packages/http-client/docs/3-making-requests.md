@@ -66,5 +66,5 @@ $client = (new HttpClientBuilder())
 - `failOnError: false` (default): HTTP 4xx/5xx are returned as regular responses
 - `failOnError: true`: driver throws typed HTTP exceptions for 4xx/5xx
 
-> Migration note: built-in preset defaults are aligned to `failOnError: false`.
+> Migration note: default `HttpClientConfig` aligns to `failOnError: false`.
 > If you depended on throwing behavior by default, set `failOnError: true` explicitly.

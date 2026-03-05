@@ -119,7 +119,7 @@ class PublishCommand extends Command
         $assets = [];
         if ($input->getOption('target-config-dir')) {
             $assets[] = new ConfigurationsDirAsset(
-                __DIR__ . '/../config',
+                __DIR__ . '/../resources/config',
                 $this->targetConfigDir,
                 $this->filesystem,
                 $this->output,

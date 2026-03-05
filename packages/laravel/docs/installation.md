@@ -65,7 +65,7 @@ php artisan instructor:test
 Or test a specific connection:
 
 ```bash
-php artisan instructor:test --preset=anthropic
+php artisan instructor:test --connection=anthropic
 ```
 
 ## Optional: Publish Stubs

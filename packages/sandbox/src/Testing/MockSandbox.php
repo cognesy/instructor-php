@@ -30,7 +30,7 @@ final class MockSandbox implements CanExecuteCommand
     /**
      * @param array<string, list<ExecResult|array<string, mixed>>> $responses
      */
-    public static function withResponses(array $responses, ?ExecResult $defaultResponse = null): self {
+    public static function fromResponses(array $responses, ?ExecResult $defaultResponse = null): self {
         return new self(ExecutionPolicy::default(), $responses, $defaultResponse);
     }
 

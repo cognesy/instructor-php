@@ -320,7 +320,7 @@ final class SpawnSubagentTool extends ContextAwareTool
         return match (true) {
             $spec->llmConfig instanceof LLMConfig => $spec->llmConfig,
             $spec->llmConfig === null => $parentConfig,
-            is_string($spec->llmConfig) && $spec->llmConfig !== '' => LLMProvider::using($spec->llmConfig)->resolveConfig(),
+            is_string($spec->llmConfig) && $spec->llmConfig !== '' => LLMConfig::fromArray(['driver' => $spec->llmConfig]),
             is_string($spec->llmConfig) => $parentConfig,
             default => $parentConfig,
         };

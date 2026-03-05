@@ -116,7 +116,7 @@ composer qa:semgrep
 ```
 
 Semgrep rule layout:
-- Global (cross-package) rules live in `/.qa/semgrep/global.yml`
+- Global (cross-package) rules live in `/.qa/semgrep/*.yml` (e.g. `global.yml`, `config-model.yml`)
 - Package-specific rules live in `packages/<package>/.qa/semgrep.yml`
 - Keep package-only rules inside the package; keep shared rules at repo root
 

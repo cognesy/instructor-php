@@ -6,12 +6,14 @@ namespace Cognesy\Instructor\Laravel\Facades;
 
 use Cognesy\Instructor\Laravel\Testing\StructuredOutputFake;
 use Cognesy\Instructor\StructuredOutput as BaseStructuredOutput;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Illuminate\Support\Facades\Facade;
 
 /**
  * Facade for StructuredOutput
  *
- * @method static \Cognesy\Instructor\StructuredOutput using(string $preset)
+ * @method static \Cognesy\Instructor\StructuredOutput connection(string $name)
+ * @method static \Cognesy\Instructor\StructuredOutput fromLLMConfig(\Cognesy\Polyglot\Inference\Config\LLMConfig $config)
  * @method static \Cognesy\Instructor\StructuredOutput withRuntime(\Cognesy\Instructor\Contracts\CanCreateStructuredOutput $runtime)
  * @method static \Cognesy\Instructor\StructuredOutput withConfig(\Cognesy\Instructor\Config\StructuredOutputConfig $config)
  * @method static \Cognesy\Instructor\StructuredOutput withDefaultToStdClass(bool $defaultToStdClass = true)
@@ -57,18 +59,28 @@ use Illuminate\Support\Facades\Facade;
 class StructuredOutput extends Facade
 {
     /**
-     * Shortcut for swapping runtime to the given LLM preset.
+     * Create facade instance from explicit typed LLM config.
      */
-    public static function using(string $preset): BaseStructuredOutput|StructuredOutputFake
+    public static function fromLLMConfig(LLMConfig $config): BaseStructuredOutput|StructuredOutputFake
     {
         $root = static::getFacadeRoot();
         if ($root instanceof StructuredOutputFake) {
-            return $root->using($preset);
+            return $root->withLLMConfig($config);
         }
         if ($root instanceof BaseStructuredOutput) {
-            return $root->withRuntime(\Cognesy\Instructor\StructuredOutputRuntime::using($preset));
+            return $root->withRuntime(\Cognesy\Instructor\StructuredOutputRuntime::fromConfig(
+                $config,
+            ));
         }
         throw new \RuntimeException('StructuredOutput facade root is not initialized.');
+    }
+
+    /**
+     * Create facade instance from configured Laravel connection name.
+     */
+    public static function connection(string $name): BaseStructuredOutput|StructuredOutputFake
+    {
+        return static::fromLLMConfig(static::resolveLLMConfig($name));
     }
 
     /**
@@ -87,5 +99,40 @@ class StructuredOutput extends Facade
     protected static function getFacadeAccessor(): string
     {
         return BaseStructuredOutput::class;
+    }
+
+    private static function resolveLLMConfig(string $name): LLMConfig
+    {
+        $raw = config("instructor.connections.{$name}", []);
+        $connection = is_array($raw) ? $raw : [];
+        $driver = (string) ($connection['driver'] ?? $name ?: 'openai');
+        $model = (string) ($connection['model'] ?? '');
+        $endpoint = (string) ($connection['endpoint'] ?? static::defaultLlmEndpoint($driver, $model));
+
+        $known = ['driver', 'api_url', 'api_key', 'endpoint', 'model', 'max_tokens', 'options'];
+        $extraOptions = array_diff_key($connection, array_flip($known));
+        $options = match (true) {
+            isset($connection['options']) && is_array($connection['options']) => array_merge($extraOptions, $connection['options']),
+            default => $extraOptions,
+        };
+
+        return LLMConfig::fromArray([
+            'driver' => $driver,
+            'apiUrl' => (string) ($connection['api_url'] ?? ''),
+            'apiKey' => (string) ($connection['api_key'] ?? ''),
+            'endpoint' => $endpoint,
+            'model' => $model,
+            'maxTokens' => (int) ($connection['max_tokens'] ?? 4096),
+            'options' => $options,
+        ]);
+    }
+
+    private static function defaultLlmEndpoint(string $driver, string $model): string
+    {
+        return match ($driver) {
+            'anthropic' => '/messages',
+            'gemini' => "/models/{$model}:generateContent",
+            default => '/chat/completions',
+        };
     }
 }

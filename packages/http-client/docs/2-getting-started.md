@@ -6,15 +6,16 @@ description: 'Quick start for sync requests with mock and real drivers.'
 ## 1. Build a Client
 
 ```php
+use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\HttpClient;
 
-$client = HttpClient::default(); // default preset (curl)
+$client = HttpClient::default(); // default driver from HttpClientConfig defaults (curl)
 ```
 
-Use a specific driver preset when needed:
+Select a specific driver via typed config when needed:
 
 ```php
-$client = HttpClient::using('guzzle');
+$client = HttpClient::fromConfig(new HttpClientConfig(driver: 'guzzle'));
 ```
 
 ## 2. Create and Execute a Request

@@ -1,0 +1,38 @@
+---
+title: 'Streaming and Results'
+description: 'Consume output incrementally and inspect execution status.'
+---
+
+## Streaming Callback
+
+```php
+$result = $sandbox->execute(
+    ['php', '-r', 'echo "hello";'],
+    null,
+    function (string $type, string $chunk): void {
+        // $type: "out" or "err"
+        echo $chunk;
+    }
+);
+// @doctest id="57a8"
+```
+
+## Result API
+
+`ExecResult` provides:
+
+- `stdout()`, `stderr()`, `combinedOutput()`
+- `exitCode()`, `success()`
+- `duration()`
+- `timedOut()`
+- `truncatedStdout()`, `truncatedStderr()`
+- `toArray()`
+
+## Minimal Check
+
+```php
+if ($result->success()) {
+    echo $result->stdout();
+}
+// @doctest id="9b07"
+```

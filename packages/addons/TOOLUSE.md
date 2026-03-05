@@ -84,9 +84,13 @@ Notes:
 
 ```php
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;use Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit;use Cognesy\Addons\ToolUse\Collections\Tools;use Cognesy\Addons\ToolUse\Data\ToolUseState;use Cognesy\Addons\ToolUse\Drivers\ReAct\ContinuationCriteria\StopOnFinalDecision;use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;use Cognesy\Addons\ToolUse\Tools\FunctionTool;use Cognesy\Addons\ToolUse\ToolUseFactory;use Cognesy\Events\Dispatchers\EventDispatcher;use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;use Cognesy\Instructor\StructuredOutputRuntime;use Cognesy\Messages\Messages;use Cognesy\Polyglot\Inference\Enums\OutputMode;use Cognesy\Polyglot\Inference\InferenceRuntime;use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 $events = new EventDispatcher(name: 'addons.tooluse.react');
-$inference = InferenceRuntime::fromProvider(LLMProvider::using('openai'), events: $events);
+$inference = InferenceRuntime::fromProvider(
+    LLMProvider::fromLLMConfig(LLMConfig::fromArray(['driver' => 'openai'])),
+    events: $events,
+);
 $structuredOutput = new StructuredOutputRuntime(
     inference: $inference,
     events: $events,

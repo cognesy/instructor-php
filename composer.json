@@ -62,12 +62,11 @@
         "bench": "@php ./vendor/bin/phpbench run",
         "docs": "@php ./bin/instructor-docs",
         "docs:qa": "bash ./scripts/docs-qa-all.sh",
-        "check-events-2.0": "bash ./scripts/check-events-2.0.sh",
         "qa:phpstan": "@php ./vendor/bin/phpstan analyse -c phpstan.neon",
         "qa:psalm": "@php ./vendor/bin/psalm -c packages/instructor/psalm.xml",
         "qa:pint": "@php ./vendor/bin/pint --config packages/agents/pint.json packages/agents/src/ --test",
         "qa:docs": "bash ./scripts/docs-qa-all.sh",
-        "qa:semgrep": "bash -lc 'set -euo pipefail; export HOME=\"$PWD/.qa\"; export SSL_CERT_FILE=\"${SSL_CERT_FILE:-/opt/homebrew/etc/openssl@3/cert.pem}\"; semgrep scan --disable-version-check --metrics=off --config .qa/semgrep/global.yml --error; for cfg in packages/*/.qa/semgrep.yml; do [ -f \"$cfg\" ] || continue; pkg_dir=$(dirname \"$(dirname \"$cfg\")\"); semgrep scan --disable-version-check --metrics=off --config \"$cfg\" --error \"$pkg_dir\"; done'",
+        "qa:semgrep": "bash -lc 'set -euo pipefail; export HOME=\"$PWD/.qa\"; export SSL_CERT_FILE=\"${SSL_CERT_FILE:-/opt/homebrew/etc/openssl@3/cert.pem}\"; for cfg in .qa/semgrep/*.yml; do [ -f \"$cfg\" ] || continue; semgrep scan --disable-version-check --metrics=off --config \"$cfg\" --error; done; for cfg in packages/*/.qa/semgrep.yml; do [ -f \"$cfg\" ] || continue; pkg_dir=$(dirname \"$(dirname \"$cfg\")\"); semgrep scan --disable-version-check --metrics=off --config \"$cfg\" --error \"$pkg_dir\"; done'",
         "qa": [
             "@qa:phpstan",
             "@qa:psalm",
@@ -147,6 +146,7 @@
     "autoload-dev": {
         "psr-4": {
             "Cognesy\\Config\\": "config/",
+            "Cognesy\\Qa\\PHPStan\\": ".qa/phpstan/",
             "Cognesy\\Auxiliary\\": "packages/auxiliary/src/",
             "Cognesy\\Evals\\": "packages/evals/src/",
             "Cognesy\\Tell\\": "packages/tell/src/",

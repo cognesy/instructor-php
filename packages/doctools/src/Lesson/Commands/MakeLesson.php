@@ -7,6 +7,7 @@ use Cognesy\Doctools\Lesson\Services\LessonService;
 use Cognesy\InstructorHub\Data\Example;
 use Cognesy\InstructorHub\Services\ExampleRepository;
 use Cognesy\InstructorHub\Utils\CliMarkdown;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -30,7 +31,9 @@ class MakeLesson extends Command
         $config = new LessonConfig();
         $this->lessonService = new LessonService(
             config: $config,
-            inference: InferenceRuntime::using($config->llmPreset),
+            inference: InferenceRuntime::fromLLMConfig(
+                LLMConfig::fromArray(['driver' => $config->llmDriver]),
+            ),
         );
     }
 

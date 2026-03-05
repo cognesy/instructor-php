@@ -9,7 +9,7 @@ use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\PendingStructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
-use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 class RunStructuredOutputInference implements CanRunExecution
 {
@@ -28,7 +28,7 @@ class RunStructuredOutputInference implements CanRunExecution
     // INTERNAL /////////////////////////////////////////////////
 
     private function makeInstructorResponse(Execution $execution) : PendingStructuredOutput {
-        $config = (new StructuredOutputConfigBuilder())
+        $structuredConfig = (new StructuredOutputConfigBuilder())
             ->withMaxRetries($this->structuredOutputData->maxRetries)
             ->withToolName($this->structuredOutputData->toolName)
             ->withToolDescription($this->structuredOutputData->toolDescription)
@@ -50,9 +50,14 @@ class RunStructuredOutputInference implements CanRunExecution
             ],
         );
 
-        return StructuredOutputRuntime::using(
-            preset: $execution->get('case.preset'),
-            structuredConfig: $config,
+        $llmConfig = $execution->get('case.llmConfig');
+        if (!$llmConfig instanceof LLMConfig) {
+            throw new \InvalidArgumentException('Missing typed LLM config in case data.');
+        }
+
+        return StructuredOutputRuntime::fromConfig(
+            config: $llmConfig,
+            structuredConfig: $structuredConfig,
         )->create($request);
     }
 }

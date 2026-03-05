@@ -24,8 +24,8 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
-use Cognesy\Polyglot\Inference\LLMProvider;
 
 final class RlmFactory
 {
@@ -39,7 +39,13 @@ final class RlmFactory
         $repl = $repl ?? new BasicReplEnvironment();
         if ($driver === null) {
             $events = new EventDispatcher(name: 'experimental.rlm');
-            $inference = InferenceRuntime::fromProvider(LLMProvider::using('openai'));
+            $inference = InferenceRuntime::fromLLMConfig(new LLMConfig(
+                driver: 'openai',
+                apiUrl: 'https://api.openai.com/v1',
+                apiKey: '',
+                endpoint: '/chat/completions',
+                model: 'gpt-4o-mini',
+            ));
             $driver = new StrictRlmDriver(
                 structuredOutput: new StructuredOutputRuntime(
                     inference: $inference,

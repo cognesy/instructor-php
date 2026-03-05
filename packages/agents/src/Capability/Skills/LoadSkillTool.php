@@ -16,7 +16,7 @@ class LoadSkillTool extends SimpleTool
         $this->library = $library;
     }
 
-    public static function withLibrary(SkillLibrary $library): self {
+    public static function fromLibrary(SkillLibrary $library): self {
         return new self($library);
     }
 

@@ -2,6 +2,7 @@
 
 namespace Cognesy\Auxiliary\Web;
 
+use Cognesy\Auxiliary\Web\Config\ScraperConfig;
 use Cognesy\Auxiliary\Web\Contracts\CanGetUrlContent;
 use Cognesy\Auxiliary\Web\Scrapers\BasicReader;
 use Cognesy\Auxiliary\Web\Scrapers\BrowsershotDriver;
@@ -9,16 +10,15 @@ use Cognesy\Auxiliary\Web\Scrapers\FirecrawlDriver;
 use Cognesy\Auxiliary\Web\Scrapers\JinaReaderDriver;
 use Cognesy\Auxiliary\Web\Scrapers\ScrapFlyDriver;
 use Cognesy\Auxiliary\Web\Scrapers\ScrapingBeeDriver;
-use Cognesy\Config\Settings;
 use Exception;
 
 class Scraper
 {
-    public static function withDriver(string $scraper = '') : CanGetUrlContent {
-        $scraper = $scraper ?: Settings::get('web', 'defaultScraper', 'none');
-
-        $baseUrl = Settings::get('web', 'scrapers.'.$scraper.'.baseUri', '');
-        $apiKey = Settings::get('web', 'scrapers.'.$scraper.'.apiKey', '');
+    public static function fromDriver(string $scraper = '', ?ScraperConfig $config = null) : CanGetUrlContent {
+        $config ??= new ScraperConfig();
+        $scraper = $config->selectedScraper($scraper);
+        $baseUrl = $config->baseUriFor($scraper);
+        $apiKey = $config->apiKeyFor($scraper);
 
         return match($scraper) {
             'none' => new BasicReader(),

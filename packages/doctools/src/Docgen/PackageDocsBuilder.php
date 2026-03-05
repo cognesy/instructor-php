@@ -14,11 +14,13 @@ class PackageDocsBuilder
 {
     private string $targetBaseDir;
     private string $format;
+    private LinkRewriter $linkRewriter;
 
     public function __construct(string $targetBaseDir, string $format = 'mintlify')
     {
         $this->targetBaseDir = BasePath::get($targetBaseDir);
         $this->format = $format;
+        $this->linkRewriter = new LinkRewriter($format);
     }
 
     /**
@@ -40,6 +42,7 @@ class PackageDocsBuilder
                 Files::renameFileExtensions($targetPath, 'md', 'mdx');
             }
 
+            $this->linkRewriter->rewriteDirectory($targetPath);
             $this->inlineExternalCodeblocks($targetPath);
             $filesProcessed = $this->countFiles($targetPath);
 

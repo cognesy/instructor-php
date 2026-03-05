@@ -42,6 +42,20 @@ final class InferenceRuntime implements CanCreateInference
         ?HttpClient $httpClient = null,
         ?CanManageStreamCache $streamCacheManager = null,
     ): self {
+        return self::fromLLMConfig(
+            config: $config,
+            events: $events,
+            httpClient: $httpClient,
+            streamCacheManager: $streamCacheManager,
+        );
+    }
+
+    public static function fromLLMConfig(
+        LLMConfig $config,
+        ?CanHandleEvents $events = null,
+        ?HttpClient $httpClient = null,
+        ?CanManageStreamCache $streamCacheManager = null,
+    ): self {
         $events = self::resolveEvents($events);
         $driver = (new InferenceDriverFactory($events))->makeDriver(
             config: $config,
@@ -88,34 +102,6 @@ final class InferenceRuntime implements CanCreateInference
     ): self {
         return self::fromResolver(
             resolver: $provider,
-            events: $events,
-            httpClient: $httpClient,
-            streamCacheManager: $streamCacheManager,
-        );
-    }
-
-    public static function fromDsn(
-        string $dsn,
-        ?CanHandleEvents $events = null,
-        ?HttpClient $httpClient = null,
-        ?CanManageStreamCache $streamCacheManager = null,
-    ): self {
-        return self::fromProvider(
-            provider: LLMProvider::dsn($dsn),
-            events: $events,
-            httpClient: $httpClient,
-            streamCacheManager: $streamCacheManager,
-        );
-    }
-
-    public static function using(
-        string $preset,
-        ?CanHandleEvents $events = null,
-        ?HttpClient $httpClient = null,
-        ?CanManageStreamCache $streamCacheManager = null,
-    ): self {
-        return self::fromProvider(
-            provider: LLMProvider::using($preset),
             events: $events,
             httpClient: $httpClient,
             streamCacheManager: $streamCacheManager,

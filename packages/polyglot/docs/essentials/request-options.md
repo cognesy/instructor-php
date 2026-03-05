@@ -53,7 +53,7 @@ $anthropicOptions = [
     'stream' => true,
 ];
 
-$inference = Inference::using('anthropic');
+$inference = Inference::using('openai');
 $response = $inference->with(
     messages: 'Write a short poem about programming.',
     options: $anthropicOptions

@@ -6,14 +6,16 @@ namespace Cognesy\Instructor\Laravel\Facades;
 
 use Cognesy\Instructor\Laravel\Testing\EmbeddingsFake;
 use Cognesy\Polyglot\Embeddings\Embeddings as BaseEmbeddings;
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
+use Cognesy\Polyglot\Embeddings\EmbeddingsProvider;
+use Cognesy\Polyglot\Embeddings\EmbeddingsRuntime;
 use Illuminate\Support\Facades\Facade;
 
 /**
  * Facade for Embeddings
  *
- * @method static \Cognesy\Polyglot\Embeddings\Embeddings using(string $preset)
- * @method static \Cognesy\Polyglot\Embeddings\Embeddings fromDsn(string $dsn)
- * @method static \Cognesy\Polyglot\Embeddings\Embeddings fromRuntime(\Cognesy\Polyglot\Embeddings\Contracts\CanCreateEmbeddings $runtime)
+ * @method static \Cognesy\Polyglot\Embeddings\Embeddings connection(string $name)
+ * @method static \Cognesy\Polyglot\Embeddings\Embeddings fromEmbeddingsConfig(\Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig $config)
  * @method static \Cognesy\Polyglot\Embeddings\Embeddings withRuntime(\Cognesy\Polyglot\Embeddings\Contracts\CanCreateEmbeddings $runtime)
  * @method static \Cognesy\Polyglot\Embeddings\Contracts\CanCreateEmbeddings runtime()
  * @method static \Cognesy\Polyglot\Embeddings\Embeddings withInputs(string|array $inputs)
@@ -33,6 +35,31 @@ use Illuminate\Support\Facades\Facade;
 class Embeddings extends Facade
 {
     /**
+     * Create facade instance from explicit typed embeddings config.
+     */
+    public static function fromEmbeddingsConfig(EmbeddingsConfig $config): BaseEmbeddings|EmbeddingsFake
+    {
+        $root = static::getFacadeRoot();
+        if ($root instanceof EmbeddingsFake) {
+            return $root->withEmbeddingsConfig($config);
+        }
+        if ($root instanceof BaseEmbeddings) {
+            return new BaseEmbeddings(EmbeddingsRuntime::fromProvider(
+                provider: EmbeddingsProvider::fromEmbeddingsConfig($config),
+            ));
+        }
+        throw new \RuntimeException('Embeddings facade root is not initialized.');
+    }
+
+    /**
+     * Create facade instance from configured Laravel embedding connection name.
+     */
+    public static function connection(string $name): BaseEmbeddings|EmbeddingsFake
+    {
+        return static::fromEmbeddingsConfig(static::resolveEmbeddingsConfig($name));
+    }
+
+    /**
      * Replace the Embeddings instance with a fake for testing.
      */
     public static function fake(array $responses = []): EmbeddingsFake
@@ -48,5 +75,22 @@ class Embeddings extends Facade
     protected static function getFacadeAccessor(): string
     {
         return BaseEmbeddings::class;
+    }
+
+    private static function resolveEmbeddingsConfig(string $name): EmbeddingsConfig
+    {
+        $raw = config("instructor.embeddings.connections.{$name}", []);
+        $connection = is_array($raw) ? $raw : [];
+        $driver = (string) ($connection['driver'] ?? $name ?: 'openai');
+
+        return EmbeddingsConfig::fromArray([
+            'driver' => $driver,
+            'apiUrl' => (string) ($connection['api_url'] ?? ''),
+            'apiKey' => (string) ($connection['api_key'] ?? ''),
+            'endpoint' => (string) ($connection['endpoint'] ?? '/embeddings'),
+            'model' => (string) ($connection['model'] ?? ''),
+            'dimensions' => (int) ($connection['dimensions'] ?? 0),
+            'maxInputs' => (int) ($connection['max_inputs'] ?? 0),
+        ]);
     }
 }

@@ -65,8 +65,8 @@ You can set the path to this directory in your `.env` file:
 INSTRUCTOR_CONFIG_PATHS='/../../config/,another/path'
 ```
 
-This tells Instructor where to find its configuration files, if it has not been configured manually
-via `Settings` class. The path is relative to the vendor directory where Instructor is installed.
+This value can be read by your bootstrap code to locate YAML config files before
+mapping them to typed config objects.
 
 <Note>
     `INSTRUCTOR_CONFIG_PATHS` is set automatically if you use the Instructor CLI tool to publish assets.

@@ -1,0 +1,44 @@
+---
+title: Drivers
+description: 'Choose the isolation backend for command execution.'
+---
+
+Use `SandboxDriver` enum or static constructors.
+
+## Driver List
+
+- `SandboxDriver::Host`
+- `SandboxDriver::Docker`
+- `SandboxDriver::Podman`
+- `SandboxDriver::Firejail`
+- `SandboxDriver::Bubblewrap`
+
+## Enum-Based Selection
+
+```php
+use Cognesy\Sandbox\Enums\SandboxDriver;
+use Cognesy\Sandbox\Sandbox;
+
+$sandbox = Sandbox::with($policy)->using(SandboxDriver::Docker);
+// @doctest id="eec9"
+```
+
+## Static Constructors
+
+```php
+$host = Sandbox::host($policy);
+$docker = Sandbox::docker($policy, image: 'alpine:3');
+$podman = Sandbox::podman($policy, image: 'alpine:3');
+$firejail = Sandbox::firejail($policy);
+$bubblewrap = Sandbox::bubblewrap($policy);
+// @doctest id="d843"
+```
+
+## Binary Overrides
+
+Environment variables:
+
+- `DOCKER_BIN`
+- `PODMAN_BIN`
+- `FIREJAIL_BIN`
+- `BWRAP_BIN`

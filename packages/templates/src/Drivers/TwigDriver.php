@@ -28,13 +28,7 @@ class TwigDriver implements CanHandleTemplate
     public function __construct(
         private TemplateEngineConfig $config,
     ) {
-        $resourcePath = $this->config->resourcePath ?: '.';
-        try {
-            $paths = [BasePath::get($resourcePath)];
-        } catch (\Exception $e) {
-            // Fallback to current directory if BasePath fails
-            $paths = [getcwd() ?: '.'];
-        }
+        $paths = $this->resolveTemplatePaths($this->config->resourcePath);
         $extension = $this->config->extension;
 
         $loader = new class(
@@ -148,6 +142,36 @@ class TwigDriver implements CanHandleTemplate
     }
 
     // INTERNAL /////////////////////////////////////////////////
+
+    /**
+     * @return list<string>
+     */
+    private function resolveTemplatePaths(string $resourcePath): array {
+        $requestedPath = $resourcePath !== '' ? $resourcePath : '.';
+        $candidates = [$requestedPath];
+
+        if ($requestedPath === '.') {
+            $candidates[] = 'packages/templates/resources';
+        }
+
+        if ($requestedPath === 'prompts' || str_starts_with($requestedPath, 'prompts/')) {
+            $candidates[] = 'packages/templates/resources/' . $requestedPath;
+        }
+
+        $paths = [];
+        foreach (array_unique($candidates) as $candidate) {
+            try {
+                $resolved = BasePath::get($candidate);
+            } catch (\Exception) {
+                continue;
+            }
+            if (is_dir($resolved)) {
+                $paths[] = $resolved;
+            }
+        }
+
+        return $paths !== [] ? $paths : [getcwd() ?: '.'];
+    }
 
     private function findVariables(Node $node): array {
         $variables = [];

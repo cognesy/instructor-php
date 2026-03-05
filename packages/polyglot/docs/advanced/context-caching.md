@@ -15,7 +15,7 @@ Polyglot supports context caching through the `withCachedContext()` method:
 use Cognesy\Polyglot\Inference\Inference;
 
 // Create an inference object
-$inference = Inference::using('anthropic');
+$inference = Inference::using('openai');
 
 // Set up a conversation with cached context
 $inference = $inference->withCachedContext(
@@ -65,7 +65,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $documentContent = file_get_contents('large_document.txt');
 
 // Set up cached context with the document
-$inference = Inference::using('anthropic');
+$inference = Inference::using('openai');
 $inference = $inference->withCachedContext(
     messages: [
         ['role' => 'system', 'content' => 'You will help analyze and summarize documents.'],

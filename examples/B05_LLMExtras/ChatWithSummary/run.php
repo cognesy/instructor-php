@@ -32,6 +32,7 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 $events = new EventDispatcher();
 

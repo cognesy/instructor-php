@@ -32,7 +32,9 @@ use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
  *   $agent = AgentBuilder::base()
  *       ->withCapability(new UseStructuredOutputs(
  *           schemas: $schemas,
- *           policy: new StructuredOutputPolicy(llmPreset: 'anthropic'),
+ *           policy: new StructuredOutputPolicy(
+ *               llm: LLMProvider::fromLLMConfig(LLMConfig::fromArray(['driver' => 'anthropic'])),
+ *           ),
  *       ))
  *       ->build();
  */

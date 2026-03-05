@@ -2,9 +2,9 @@
 
 namespace Cognesy\Template\Config;
 
-use Cognesy\Config\Exceptions\ConfigurationException;
 use Cognesy\Template\Enums\FrontMatterFormat;
 use Cognesy\Template\Enums\TemplateEngineType;
+use InvalidArgumentException;
 use Throwable;
 
 class TemplateEngineConfig
@@ -89,7 +89,7 @@ class TemplateEngineConfig
             $instance = new self(...$config);
         } catch (Throwable $e) {
             $data = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-            throw new ConfigurationException(
+            throw new InvalidArgumentException(
                 message: "Invalid configuration for TemplateEngineConfig: {$e->getMessage()}\nData: {$data}",
                 previous: $e,
             );

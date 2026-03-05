@@ -7,12 +7,12 @@ namespace Cognesy\Instructor\Laravel\Console;
 use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Http\HttpClient;
-use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
-use Cognesy\Polyglot\Inference\LLMProvider;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -30,7 +30,7 @@ class InstructorTestCommand extends Command
      * @var string
      */
     protected $signature = 'instructor:test
-                            {--preset= : The preset to test (defaults to configured default)}
+                            {--connection= : The connection to test (defaults to configured default)}
                             {--inference : Test raw inference instead of structured output}';
 
     /**
@@ -52,30 +52,30 @@ class InstructorTestCommand extends Command
         $this->components->info('Testing Instructor installation...');
         $this->newLine();
 
-        $preset = $this->option('preset') ?? config('instructor.default', 'openai');
+        $connection = $this->option('connection') ?? config('instructor.default', 'openai');
 
         // Show configuration
-        $this->showConfiguration($preset);
+        $this->showConfiguration($connection);
 
         // Test the connection
         if ($this->option('inference')) {
-            return $this->testInference($preset, $configProvider, $events, $httpClient);
+            return $this->testInference($connection, $configProvider, $events, $httpClient);
         }
 
-        return $this->testStructuredOutput($preset, $configProvider, $events, $httpClient);
+        return $this->testStructuredOutput($connection, $configProvider, $events, $httpClient);
     }
 
     /**
      * Show current configuration.
      */
-    protected function showConfiguration(string $preset): void
+    protected function showConfiguration(string $connection): void
     {
-        $connection = config("instructor.connections.{$preset}", []);
+        $connectionConfig = config("instructor.connections.{$connection}", []);
 
-        $this->components->twoColumnDetail('Preset', $preset);
-        $this->components->twoColumnDetail('Driver', $connection['driver'] ?? 'unknown');
-        $this->components->twoColumnDetail('Model', $connection['model'] ?? 'default');
-        $this->components->twoColumnDetail('API Key', $this->maskApiKey($connection['api_key'] ?? ''));
+        $this->components->twoColumnDetail('Connection', $connection);
+        $this->components->twoColumnDetail('Driver', $connectionConfig['driver'] ?? 'unknown');
+        $this->components->twoColumnDetail('Model', $connectionConfig['model'] ?? 'default');
+        $this->components->twoColumnDetail('API Key', $this->maskApiKey($connectionConfig['api_key'] ?? ''));
 
         $this->newLine();
     }
@@ -100,15 +100,15 @@ class InstructorTestCommand extends Command
      * Test raw inference.
      */
     protected function testInference(
-        string $preset,
+        string $connection,
         CanProvideConfig $configProvider,
         CanHandleEvents $events,
         HttpClient $httpClient,
     ): int {
-        $ok = $this->components->task('Testing raw inference', function () use ($preset, $configProvider, $events, $httpClient) {
+        $ok = $this->components->task('Testing raw inference', function () use ($connection, $configProvider, $events, $httpClient) {
             try {
-                $response = InferenceRuntime::fromProvider(
-                    provider: LLMProvider::new($configProvider)->withLLMPreset($preset),
+                $response = InferenceRuntime::fromLLMConfig(
+                    config: $this->resolveLLMConfig($connection, $configProvider),
                     events: $events,
                     httpClient: $httpClient,
                 )->create(new InferenceRequest(
@@ -133,19 +133,19 @@ class InstructorTestCommand extends Command
      * Test structured output.
      */
     protected function testStructuredOutput(
-        string $preset,
+        string $connection,
         CanProvideConfig $configProvider,
         CanHandleEvents $events,
         HttpClient $httpClient,
     ): int {
-        $ok = $this->components->task('Testing structured output extraction', function () use ($preset, $configProvider, $events, $httpClient) {
+        $ok = $this->components->task('Testing structured output extraction', function () use ($connection, $configProvider, $events, $httpClient) {
             try {
                 // Simple extraction test using array response model
-                $result = StructuredOutputRuntime::fromProvider(
-                    provider: LLMProvider::new($configProvider)->withLLMPreset($preset),
+                $result = StructuredOutputRuntime::fromConfig(
+                    config: $this->resolveLLMConfig($connection, $configProvider),
                     events: $events,
                     httpClient: $httpClient,
-                    structuredConfig: (new StructuredOutputConfigBuilder(configProvider: $configProvider))->create(),
+                    structuredConfig: $this->resolveStructuredOutputConfig($configProvider),
                 )->create(new StructuredOutputRequest(
                     messages: 'Extract the name and age: John Smith is 30 years old.',
                     requestedSchema: [
@@ -184,5 +184,49 @@ class InstructorTestCommand extends Command
         $this->components->info('Structured output test completed!');
 
         return $ok ? self::SUCCESS : self::FAILURE;
+    }
+
+    private function resolveLLMConfig(string $connection, CanProvideConfig $configProvider): LLMConfig {
+        $raw = $configProvider->get("instructor.connections.{$connection}", []);
+        $config = is_array($raw) ? $raw : [];
+        $driver = (string) ($config['driver'] ?? $connection ?: 'openai');
+        $model = (string) ($config['model'] ?? '');
+        $endpoint = (string) ($config['endpoint'] ?? $this->defaultLlmEndpoint($driver, $model));
+
+        return LLMConfig::fromArray([
+            'driver' => $driver,
+            'apiUrl' => (string) ($config['api_url'] ?? ''),
+            'apiKey' => (string) ($config['api_key'] ?? ''),
+            'endpoint' => $endpoint,
+            'model' => $model,
+            'maxTokens' => (int) ($config['max_tokens'] ?? 4096),
+        ]);
+    }
+
+    private function resolveStructuredOutputConfig(CanProvideConfig $configProvider): StructuredOutputConfig {
+        $maxRetries = $configProvider->get('instructor.extraction.max_retries');
+        $outputMode = $configProvider->get('instructor.extraction.output_mode');
+        $retryPrompt = $configProvider->get('instructor.extraction.retry_prompt');
+
+        $data = [];
+        if (is_int($maxRetries) || is_numeric($maxRetries)) {
+            $data['maxRetries'] = (int) $maxRetries;
+        }
+        if (is_string($outputMode) && $outputMode !== '') {
+            $data['outputMode'] = $outputMode;
+        }
+        if (is_string($retryPrompt) && $retryPrompt !== '') {
+            $data['retryPrompt'] = $retryPrompt;
+        }
+
+        return StructuredOutputConfig::fromArray($data);
+    }
+
+    private function defaultLlmEndpoint(string $driver, string $model): string {
+        return match ($driver) {
+            'anthropic' => '/messages',
+            'gemini' => "/models/{$model}:generateContent",
+            default => '/chat/completions',
+        };
     }
 }

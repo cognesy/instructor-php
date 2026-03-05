@@ -14,14 +14,14 @@ use InvalidArgumentException;
 
 describe('Sandbox driver selection', function () {
     it('throws explicit exception for invalid driver string', function () {
-        $sandbox = Sandbox::with(ExecutionPolicy::in(sys_get_temp_dir()));
+        $sandbox = Sandbox::fromPolicy(ExecutionPolicy::in(sys_get_temp_dir()));
 
         expect(fn() => $sandbox->using('not-a-driver'))
             ->toThrow(InvalidArgumentException::class, 'Unsupported sandbox driver: not-a-driver');
     });
 
     it('supports enum-safe driver selection', function (SandboxDriver $driver, string $expectedClass) {
-        $sandbox = Sandbox::with(ExecutionPolicy::in(sys_get_temp_dir()));
+        $sandbox = Sandbox::fromPolicy(ExecutionPolicy::in(sys_get_temp_dir()));
 
         $selected = $sandbox->using($driver);
 

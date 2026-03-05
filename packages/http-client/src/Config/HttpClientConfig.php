@@ -3,7 +3,7 @@
 namespace Cognesy\Http\Config;
 
 use Cognesy\Config\Dsn;
-use Cognesy\Config\Exceptions\ConfigurationException;
+use InvalidArgumentException;
 
 /**
  * Class HttpClientConfig
@@ -58,7 +58,6 @@ final class HttpClientConfig
 
     public static function fromDsn(string $dsn) : HttpClientConfig {
         $data = Dsn::fromString($dsn)->toArray();
-        unset($data['preset']);
         return self::fromArray(self::coerceDsnTypes($data));
     }
 
@@ -73,7 +72,7 @@ final class HttpClientConfig
             $instance = new self(...$config);
         } catch (\Throwable $e) {
             $data = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-            throw new ConfigurationException(
+            throw new InvalidArgumentException(
                 message: "Failed to create HttpClientConfig from array:\n$data\nError: {$e->getMessage()}",
                 previous: $e
             );
@@ -122,7 +121,7 @@ final class HttpClientConfig
         return match (true) {
             is_string($value) => $value,
             is_scalar($value) => (string) $value,
-            default => throw new ConfigurationException(
+            default => throw new InvalidArgumentException(
                 message: sprintf('Invalid DSN value for "%s": expected string, got %s', $key, get_debug_type($value)),
             ),
         };
@@ -132,7 +131,7 @@ final class HttpClientConfig
         return match (true) {
             is_int($value) => $value,
             is_string($value) && preg_match('/^-?\d+$/', $value) === 1 => (int) $value,
-            default => throw new ConfigurationException(
+            default => throw new InvalidArgumentException(
                 message: sprintf('Invalid DSN value for "%s": expected integer, got %s (%s)', $key, get_debug_type($value), self::stringifyDsnValue($value)),
             ),
         };
@@ -144,7 +143,7 @@ final class HttpClientConfig
         }
 
         if (!is_scalar($value)) {
-            throw new ConfigurationException(
+            throw new InvalidArgumentException(
                 message: sprintf('Invalid DSN value for "%s": expected boolean, got %s', $key, get_debug_type($value)),
             );
         }
@@ -154,7 +153,7 @@ final class HttpClientConfig
             return $parsed;
         }
 
-        throw new ConfigurationException(
+        throw new InvalidArgumentException(
             message: sprintf('Invalid DSN value for "%s": expected boolean, got %s (%s)', $key, get_debug_type($value), self::stringifyDsnValue($value)),
         );
     }

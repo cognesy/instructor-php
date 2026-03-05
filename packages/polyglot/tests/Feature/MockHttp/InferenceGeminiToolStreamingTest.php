@@ -22,7 +22,7 @@ it('handles tool call during streaming for Gemini', function () {
 
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $final = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'gemini', httpClient: $http))
+    $final = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('gemini'), httpClient: $http))
         ->withModel('gemini-1.5-flash')
         ->withMessages('Search')
         ->withStreaming(true)

@@ -23,6 +23,7 @@ use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 // Create Monolog logger
 $logger = new Logger('inference');
@@ -45,8 +46,8 @@ echo "📋 About to demonstrate Inference logging with Monolog...\n\n";
 // Create inference with logging
 $events = new EventDispatcher();
 $events->wiretap($pipeline);
-$inference = Inference::fromRuntime(InferenceRuntime::using(
-    preset: 'openai',
+$inference = Inference::fromRuntime(InferenceRuntime::fromConfig(
+    config: LLMConfig::fromPreset('openai'),
     events: $events,
 ));
 

@@ -42,7 +42,7 @@ $person = StructuredOutput::with(
 ### Switching Connections
 
 ```php
-$person = StructuredOutput::using('anthropic')->with(
+$person = StructuredOutput::connection('anthropic')->with(
     messages: 'Extract person data...',
     responseModel: PersonData::class,
 )->get();
@@ -84,7 +84,9 @@ $items = StructuredOutput::with(...)->getArray();
 
 | Method | Description |
 |--------|-------------|
-| `using(string $preset)` | Switch to a different connection preset |
+| `connection(string $name)` | Switch to a different configured connection |
+| `using(string $preset)` | Use a named LLM preset (e.g. `'anthropic'`, `'openai'`) |
+| `fromLLMConfig(LLMConfig $config)` | Use explicit typed LLM config |
 | `withRuntime(CanCreateStructuredOutput)` | Replace runtime directly (advanced) |
 | `with(...)` | Configure extraction with all parameters |
 | `withMessages(...)` | Set input messages |
@@ -147,7 +149,7 @@ $data = Inference::with(
 ### Switching Connections
 
 ```php
-$response = Inference::using('groq')->with(
+$response = Inference::connection('groq')->with(
     messages: 'Explain quantum computing',
 )->get();
 ```
@@ -156,7 +158,9 @@ $response = Inference::using('groq')->with(
 
 | Method | Description |
 |--------|-------------|
-| `using(string $preset)` | Switch connection |
+| `connection(string $name)` | Switch connection |
+| `using(string $preset)` | Use a named LLM preset (e.g. `'anthropic'`, `'openai'`) |
+| `fromLLMConfig(LLMConfig $config)` | Use explicit typed LLM config |
 | `with(...)` | Configure with all parameters |
 | `withMessages(...)` | Set messages |
 | `withModel(string)` | Override model |
@@ -196,7 +200,7 @@ $embeddings = Embeddings::withInputs([
 ### Switching Connections
 
 ```php
-$embedding = Embeddings::using('ollama')
+$embedding = Embeddings::connection('ollama')
     ->withInputs('Local embedding test')
     ->first();
 ```
@@ -222,7 +226,9 @@ $usage = $response->usage();
 
 | Method | Description |
 |--------|-------------|
-| `using(string $preset)` | Switch connection |
+| `connection(string $name)` | Switch connection |
+| `using(string $preset)` | Use a named embeddings preset (e.g. `'openai'`, `'cohere'`) |
+| `fromEmbeddingsConfig(EmbeddingsConfig $config)` | Use explicit typed embeddings config |
 | `withInputs(string\|array)` | Set input text(s) |
 | `withModel(string)` | Override model |
 | `withOptions(array)` | Set options |
@@ -407,6 +413,6 @@ All facades proxy to the underlying service classes. The facades resolve fresh i
 
 ```php
 // Each call gets a fresh instance
-StructuredOutput::using('openai')->with(...)->get();
-StructuredOutput::using('anthropic')->with(...)->get();
+StructuredOutput::connection('openai')->with(...)->get();
+StructuredOutput::connection('anthropic')->with(...)->get();
 ```

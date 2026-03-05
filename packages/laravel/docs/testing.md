@@ -99,8 +99,8 @@ $fake->assertNothingExtracted();
 // Assert messages contained specific text
 $fake->assertExtractedWith(PersonData::class, 'John Smith');
 
-// Assert preset was used
-$fake->assertUsedPreset('anthropic');
+// Assert configured connection was used
+$fake->assertUsedConnection('anthropic');
 
 // Assert model was used
 $fake->assertUsedModel('gpt-4o');
@@ -120,7 +120,7 @@ foreach ($recorded as $extraction) {
     echo "Class: " . $extraction['class'];
     echo "Messages: " . json_encode($extraction['messages']);
     echo "Model: " . $extraction['model'];
-    echo "Preset: " . $extraction['preset'];
+    echo "Connection: " . $extraction['connection'];
 }
 ```
 
@@ -207,8 +207,8 @@ $fake->assertNotCalled();
 // Assert called with specific message
 $fake->assertCalledWith('What is the capital');
 
-// Assert preset was used
-$fake->assertUsedPreset('groq');
+// Assert configured connection was used
+$fake->assertUsedConnection('groq');
 
 // Assert model was used
 $fake->assertUsedModel('llama-3.3-70b');
@@ -283,8 +283,8 @@ $fake->assertNotCalled();
 // Assert called with specific input
 $fake->assertCalledWith('hello world');
 
-// Assert preset was used
-$fake->assertUsedPreset('openai');
+// Assert configured connection was used
+$fake->assertUsedConnection('openai');
 
 // Assert model was used
 $fake->assertUsedModel('text-embedding-3-large');
@@ -616,7 +616,7 @@ public function test_uses_correct_model(): void
 
     $this->service->processWithClaude();
 
-    $fake->assertUsedPreset('anthropic');
+    $fake->assertUsedConnection('anthropic');
     $fake->assertUsedModel('claude-3-5-sonnet-20241022');
 }
 ```

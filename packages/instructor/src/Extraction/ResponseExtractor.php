@@ -74,7 +74,7 @@ class ResponseExtractor implements CanExtractResponse, CanProvideContentBuffer
      *
      * @param CanExtractResponse|class-string<CanExtractResponse> ...$extractors
      */
-    public static function withExtractors(CanExtractResponse|string ...$extractors): self
+    public static function fromExtractors(CanExtractResponse|string ...$extractors): self
     {
         return new self($extractors);
     }

@@ -81,7 +81,7 @@ Both providers support DSN input:
 <?php
 use Cognesy\Polyglot\Inference\LLMProvider;
 
-$provider = LLMProvider::dsn('preset=openai,model=gpt-4o-mini,maxTokens=512');
+$provider = LLMProvider::dsn('driver=openai,model=gpt-4o-mini,maxTokens=512');
 $config = $provider->resolveConfig();
 ```
 

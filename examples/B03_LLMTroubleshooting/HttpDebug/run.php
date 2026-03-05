@@ -6,7 +6,7 @@ id: 'f26a'
 ## Overview
 
 Instructor PHP provides a way to debug HTTP calls made to LLM APIs by using
-an HTTP client configured with `withHttpDebugPreset()` and passing it into
+an HTTP client configured with `withDebugConfig(DebugConfig::fromPreset(...))` and passing it into
 `InferenceRuntime`.
 
 When HTTP debug mode is enabled, the HTTP middleware stack prints request and
@@ -19,14 +19,16 @@ debug events.
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Http\Config\DebugConfig;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Http\Creation\HttpClientBuilder;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
-$http = (new HttpClientBuilder())->withHttpDebugPreset('on')->create();
+$http = (new HttpClientBuilder())->withDebugConfig(DebugConfig::fromPreset('on'))->create();
 
-$response = Inference::fromRuntime(InferenceRuntime::using(
-        preset: 'openai',
+$response = Inference::fromRuntime(InferenceRuntime::fromConfig(
+        config: LLMConfig::fromPreset('openai'),
         httpClient: $http,
     ))
     ->with(

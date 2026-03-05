@@ -35,15 +35,17 @@ $client = (new HttpClientBuilder())
 
 DSN values are coerced to the typed `HttpClientConfig` fields (`int`, `bool`, `string`).
 
-## Preset + Override Pattern
+## Config + Override Pattern
 
 ```php
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Creation\HttpClientBuilder;
 
+$base = new HttpClientConfig(driver: 'guzzle');
+$strict = $base->withOverrides(['failOnError' => true]);
+
 $client = (new HttpClientBuilder())
-    ->withPreset('guzzle')
-    ->withConfig(new HttpClientConfig(driver: 'guzzle', failOnError: true))
+    ->withConfig($strict)
     ->create();
 ```
 

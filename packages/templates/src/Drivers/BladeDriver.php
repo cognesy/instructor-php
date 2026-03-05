@@ -25,7 +25,7 @@ class BladeDriver implements CanHandleTemplate
     public function __construct(
         private TemplateEngineConfig $config,
     ) {
-        $views = BasePath::get($this->config->resourcePath);
+        $views = $this->resolveResourcePath($this->config->resourcePath);
         $cache = BasePath::get($this->config->cachePath);
         $extension = $this->config->extension;
         $mode = $this->config->metadata['mode'] ?? BladeOne::MODE_AUTO;
@@ -91,5 +91,27 @@ class BladeDriver implements CanHandleTemplate
             $variables[] = $name;
         }
         return array_unique($variables);
+    }
+
+    private function resolveResourcePath(string $resourcePath): string {
+        $requestedPath = $resourcePath !== '' ? $resourcePath : '.';
+        $candidates = [$requestedPath];
+
+        if ($requestedPath === 'prompts' || str_starts_with($requestedPath, 'prompts/')) {
+            $candidates[] = 'packages/templates/resources/' . $requestedPath;
+        }
+
+        foreach (array_unique($candidates) as $candidate) {
+            try {
+                $resolved = BasePath::get($candidate);
+            } catch (\Exception) {
+                continue;
+            }
+            if (is_dir($resolved)) {
+                return $resolved;
+            }
+        }
+
+        return BasePath::get($requestedPath);
     }
 }

@@ -2,11 +2,10 @@
 
 namespace Cognesy\Instructor;
 
-use Cognesy\Config\Contracts\CanProvideConfig;
+use Cognesy\Config\Dsn;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\HttpClient;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
 use Cognesy\Instructor\Creation\StructuredOutputExecutionBuilder;
@@ -59,18 +58,15 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
 
     public static function fromDefaults(
         ?CanHandleEvents $events = null,
-        ?CanProvideConfig $configProvider = null,
         ?HttpClient $httpClient = null,
         ?StructuredOutputConfig $structuredConfig = null,
+        ?LLMConfig $llmConfig = null,
     ): self {
-        $provider = LLMProvider::new(configProvider: $configProvider);
-        $config = $structuredConfig ?? (new StructuredOutputConfigBuilder(configProvider: $configProvider))->create();
-
-        return self::fromProvider(
-            provider: $provider,
+        return self::fromConfig(
+            config: $llmConfig ?? LLMProvider::new()->resolveConfig(),
             events: $events,
             httpClient: $httpClient,
-            structuredConfig: $config,
+            structuredConfig: self::resolveStructuredConfig($structuredConfig),
         );
     }
 
@@ -112,22 +108,8 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
         ?HttpClient $httpClient = null,
         ?StructuredOutputConfig $structuredConfig = null,
     ): self {
-        return self::fromProvider(
-            provider: LLMProvider::dsn($dsn),
-            events: $events,
-            httpClient: $httpClient,
-            structuredConfig: $structuredConfig,
-        );
-    }
-
-    public static function using(
-        string $preset,
-        ?CanHandleEvents $events = null,
-        ?HttpClient $httpClient = null,
-        ?StructuredOutputConfig $structuredConfig = null,
-    ): self {
-        return self::fromProvider(
-            provider: LLMProvider::using($preset),
+        return self::fromConfig(
+            config: LLMConfig::fromArray(Dsn::fromString($dsn)->toArray()),
             events: $events,
             httpClient: $httpClient,
             structuredConfig: $structuredConfig,
@@ -227,7 +209,7 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
         if ($config !== null) {
             return $config;
         }
-        return (new StructuredOutputConfigBuilder())->create();
+        return new StructuredOutputConfig();
     }
 
     /**

@@ -56,7 +56,7 @@ $events = new EventDispatcher();
 $events->wiretap($pipeline);
 
 $embeddings = Embeddings::fromRuntime(
-    EmbeddingsRuntime::using(preset: 'openai', events: $events)
+    EmbeddingsRuntime::fromEmbeddingsConfig(config: EmbeddingsConfig::fromPreset('openai'), events: $events)
 );
 
 echo "🚀 Starting Embeddings generation...\n";

@@ -14,7 +14,7 @@ use Cognesy\Polyglot\Inference\Inference;
 
 $default = new Inference();
 $openai = Inference::using('openai');
-$fromDsn = Inference::fromDsn('preset=openai,model=gpt-4.1-nano');
+$fromDsn = Inference::fromDsn('driver=openai,model=gpt-4.1-nano');
 ```
 
 ## Build a Request

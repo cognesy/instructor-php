@@ -55,12 +55,12 @@ $agent = AgentBuilder::base()
     ->withCapability(new UseFileTools('/project'))
     ->withCapability(new UseTaskPlanning())
     ->withCapability(new UseSkills($library))
-    ->withCapability(UseSubagents::withDepth(3, $registry, summaryMaxChars: 8000))
+    ->withCapability(UseSubagents::forDepth(3, $registry, summaryMaxChars: 8000))
     ->withSystemPrompt('You are a code reviewer. Be concise and actionable.')
     ->withMaxSteps(20)
     ->withMaxTokens(32768)
     ->withTimeout(300)
-    ->withLlmPreset('anthropic')
+    ->withLlmConfig(LLMConfig::fromArray(['driver' => 'anthropic']))
     ->build();
 ```
 
@@ -78,7 +78,7 @@ $agent = AgentBuilder::base()
 | `withMaxTokens($n)` | Set token usage limit |
 | `withTimeout($seconds)` | Set execution time limit |
 | `withMaxRetries($n)` | Set retry limit on errors |
-| `withLlmPreset($preset)` | Use LLM preset from config |
+| `withLlmConfig($config)` | Use explicit `LLMConfig` |
 | `withDriver($driver)` | Use custom tool-calling driver |
 | `withEvents($eventBus)` | Set event handler |
 | `withCachedContext($cache)` | Set cached context for stable prompt parts |
@@ -307,7 +307,7 @@ Extracts data into registered schema classes with optional storage to metadata.
 ### LoadSkillTool
 Load SKILL.md files on-demand.
 ```php
-LoadSkillTool::withLibrary(new SkillLibrary('./skills'));
+LoadSkillTool::fromLibrary(new SkillLibrary('./skills'));
 ```
 
 ### SpawnSubagentTool
@@ -356,10 +356,11 @@ $agent = AgentBuilder::base()
 ### Custom Driver
 ```php
 use Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
-$llm = LLMProvider::new()->withLLMPreset('anthropic');
+$llm = LLMProvider::fromLLMConfig(LLMConfig::fromArray(['driver' => 'anthropic']));
 $driver = new ToolCallingDriver(
     inference: InferenceRuntime::fromProvider($llm),
     llm: $llm,
@@ -404,7 +405,7 @@ $spec = new AgentSpec(
     description: 'Reviews code for quality and suggests improvements',
     systemPrompt: 'You are a code reviewer. Analyze code for bugs, style issues, and improvements.',
     tools: ['read_file', 'search_files'],  // null = inherit all parent tools
-    model: 'anthropic',  // preset name, 'inherit', or LLMConfig object
+    model: 'anthropic',  // driver name, 'inherit', or LLMConfig object
     skills: ['code-review'],
 );
 

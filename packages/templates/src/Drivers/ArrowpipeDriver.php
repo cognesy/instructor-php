@@ -16,7 +16,7 @@ class ArrowpipeDriver implements CanHandleTemplate
     public function __construct(
         private TemplateEngineConfig $config,
     ) {
-        $this->baseDir = rtrim(BasePath::get($this->config->resourcePath), '/') . '/';
+        $this->baseDir = rtrim($this->resolveResourcePath($this->config->resourcePath), '/') . '/';
         $this->extension = $this->config->extension;
     }
 
@@ -55,5 +55,27 @@ class ArrowpipeDriver implements CanHandleTemplate
             clearUnknownParams: false,
         );
         return $template->getVariableNames($content);
+    }
+
+    private function resolveResourcePath(string $resourcePath): string {
+        $requestedPath = $resourcePath !== '' ? $resourcePath : '.';
+        $candidates = [$requestedPath];
+
+        if ($requestedPath === 'prompts' || str_starts_with($requestedPath, 'prompts/')) {
+            $candidates[] = 'packages/templates/resources/' . $requestedPath;
+        }
+
+        foreach (array_unique($candidates) as $candidate) {
+            try {
+                $resolved = BasePath::get($candidate);
+            } catch (\Exception) {
+                continue;
+            }
+            if (is_dir($resolved)) {
+                return $resolved;
+            }
+        }
+
+        return BasePath::get($requestedPath);
     }
 }

@@ -17,6 +17,7 @@ use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Illuminate\Http\Client\Factory;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 class User {
     public int $age;

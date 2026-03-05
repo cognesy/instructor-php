@@ -22,8 +22,8 @@ use Cognesy\Polyglot\Inference\InferenceRuntime;
 
 // Enable HTTP debug middleware in the HTTP client used by runtime
 $http = (new HttpClientBuilder())->withHttpDebugPreset('on')->create();
-$inference = Inference::fromRuntime(InferenceRuntime::using(
-    preset: 'openai',
+$inference = Inference::fromRuntime(InferenceRuntime::fromConfig(
+    config: LLMConfig::fromArray(['driver' => 'openai']),
     httpClient: $http,
 ));
 
@@ -52,8 +52,8 @@ $events = new EventDispatcher();
 $events->addListener(DebugRequestURLUsed::class, fn(DebugRequestURLUsed $e) => dump($e->toArray()));
 $events->addListener(DebugResponseBodyReceived::class, fn(DebugResponseBodyReceived $e) => dump($e->toArray()));
 $http = (new HttpClientBuilder(events: $events))->withHttpDebugPreset('url-only')->create();
-$inference = Inference::fromRuntime(InferenceRuntime::using(
-    preset: 'openai',
+$inference = Inference::fromRuntime(InferenceRuntime::fromConfig(
+    config: LLMConfig::fromArray(['driver' => 'openai']),
     events: $events,
     httpClient: $http,
 ));
@@ -90,8 +90,8 @@ $events->addListener(InferenceResponseCreated::class, function (InferenceRespons
 });
 
 // Create an inference object with the event dispatcher
-$inference = Inference::fromRuntime(InferenceRuntime::using(
-    preset: 'openai',
+$inference = Inference::fromRuntime(InferenceRuntime::fromConfig(
+    config: LLMConfig::fromArray(['driver' => 'openai']),
     events: $events,
 ));
 
@@ -143,8 +143,8 @@ $events->addListener(InferenceResponseCreated::class, function (InferenceRespons
 });
 
 // Create an inference object with the custom event dispatcher
-$inference = Inference::fromRuntime(InferenceRuntime::using(
-    preset: 'openai',
+$inference = Inference::fromRuntime(InferenceRuntime::fromConfig(
+    config: LLMConfig::fromArray(['driver' => 'openai']),
     events: $events,
 ));
 

@@ -3,7 +3,10 @@
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
 use Cognesy\Polyglot\Embeddings\Contracts\CanCreateEmbeddings;
 use Cognesy\Polyglot\Embeddings\Embeddings;
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\PendingEmbeddings;
+use Cognesy\Polyglot\Tests\Support\TestConfig;
+use Cognesy\Config\Dsn;
 
 it('uses provided runtime and preserves it across request mutations', function () {
     $runtime = new class implements CanCreateEmbeddings {
@@ -63,7 +66,7 @@ it('delegates create to runtime with built request', function () {
     expect($runtime->captured?->options())->toBe(['foo' => 'bar']);
 });
 
-it('supports request hydration and static constructor sugar', function () {
+it('supports request hydration and typed constructor sugar', function () {
     $runtime = new class implements CanCreateEmbeddings {
         public ?EmbeddingsRequest $captured = null;
 
@@ -84,6 +87,8 @@ it('supports request hydration and static constructor sugar', function () {
     expect(fn() => $facade->create())->toThrow(RuntimeException::class, 'stop');
     expect($runtime->captured?->inputs())->toBe(['hydrated']);
     expect($runtime->captured?->model())->toBe('embed-small');
-    expect(Embeddings::using('openai'))->toBeInstanceOf(Embeddings::class);
-    expect(Embeddings::fromDsn('driver=openai,model=text-embedding-3-small'))->toBeInstanceOf(Embeddings::class);
+    expect(Embeddings::fromEmbeddingsConfig(TestConfig::embeddings('openai')))->toBeInstanceOf(Embeddings::class);
+
+    $raw = Dsn::fromString('driver=openai,model=text-embedding-3-small')->toArray();
+    expect(Embeddings::fromEmbeddingsConfig(EmbeddingsConfig::fromArray($raw)))->toBeInstanceOf(Embeddings::class);
 });

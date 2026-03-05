@@ -70,7 +70,7 @@ php artisan instructor:test
 
 | Option | Description |
 |--------|-------------|
-| `--preset=` | Test a specific connection preset |
+| `--connection=` | Test a specific configured connection |
 | `--inference` | Test raw inference instead of structured output |
 
 ### Examples
@@ -80,7 +80,7 @@ php artisan instructor:test
 php artisan instructor:test
 
 # Test specific connection
-php artisan instructor:test --preset=anthropic
+php artisan instructor:test --connection=anthropic
 
 # Test raw inference
 php artisan instructor:test --inference

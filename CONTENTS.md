@@ -7,12 +7,14 @@ This document provides an overview of the essential directories and important fi
 ### `packages/`
 Contains all independent PHP packages that make up the Instructor ecosystem. Each package has its own `composer.json`, tests, and documentation. Current packages include:
 - **Core**: `instructor`, `config`, `events`, `messages`, `utils`, `schema`, `templates`
-- **Extended functionality**: `addons`, `auxiliary`, `polyglot`, `setup`, `hub`, `tell`, `dynamic`
-- **Development tools**: `evals`, `experimental`, `doctor`
+- **Extended functionality**: `addons`, `auxiliary`, `polyglot`, `setup`, `hub`, `tell`, `dynamic`, `stream`
+- **Development tools**: `evals`, `experimental`, `doctor`, `doctools`
 - **Agent control**: `agent-ctrl` - Unified CLI bridge for code agents
-- **Observability**: `metrics` - metrics collection and export
+- **Agents SDK**: `agents` - SDK for building custom AI agents
+- **Observability**: `metrics`, `logging`
 - **HTTP client**: `http-client`
 - **Pipeline processing**: `pipeline`
+- **Sandbox**: `sandbox` - Safe code execution environment
 
 ### `examples/`
 Comprehensive collection of working examples demonstrating various features, complexity levels, API integrations, and prompting techniques. Examples are organized by topic and difficulty to help users learn and implement different patterns.
@@ -26,51 +28,62 @@ Development and maintenance automation scripts:
 - `update-split-yml.sh` - Update split.yml with centralized package configuration
 - `run-all-tests.sh` - Execute tests for all packages
 - `composer-*-all.sh` - Composer operations across packages
-- `create-package.php` - Generate new package structure
-
-- More details in `docs-internal/development/SCRIPTS.md` file.
+- `make-package` / `make-package-enhanced` - Generate new package structure
 
 ### `docs/`
-Documentation website skeleton and root-level files. These are merged with documentation files from `./packages/*/docs/` to build the complete documentation distribution in `./docs-build/`.
+Documentation website skeleton and root-level files. These are merged with documentation files from `./packages/*/docs/` to build the complete documentation distribution in `./builds/docs-build/`.
 
 ### `bin/`
 Executable CLI tools:
 - `instructor-hub` - List, view, and execute runnable code samples from the `./examples/` folder
 - `tell` - Interactive CLI assistant
 - `instructor-setup` - Project setup wizard
+- `instructor-docs` - Documentation generation tool
+
+### `builds/`
+Generated build artifacts:
+- `docs-build/` - Generated Mintlify documentation (built from `./docs/` + `./packages/*/docs/`)
+- `docs-mkdocs/` - Generated MkDocs documentation
+- `docs-site/` - Final documentation site output
 
 ### `evals/`
 Evaluation and testing frameworks for model performance assessment with different complexity levels and extraction scenarios.
 
-### `config/`
-Default configuration files for various components (debug, HTTP, LLM, prompts, structured output).
+### `research/`
+Development notes, design documents, architecture explorations, and planning materials organized by date and topic.
+
+### `data/`
+Data files used by the project.
+
+### `src/`
+Root-level PHP source files (e.g., polyfills shared across packages).
 
 ## Important Root Files
 
 ### Development Files
 - `composer.json` / `composer.lock` - Main project dependencies and autoloading
-- `phpstan.neon` / `psalm.xml` - Static analysis configurations
+- `phpstan.neon` / `phpstan-baseline.neon` / `phpstan-unused.neon` / `phpstan.neon.dist` - Static analysis configurations
+- `psalm.xml` - Psalm static analysis configuration
 - `phpunit.xml` - Test configuration
+- `phpbench.json` - Benchmark configuration
+- `mago.toml` - Mago tool configuration
+- `pyproject.toml` / `pyrightconfig.json` / `uv.lock` - Python tooling (doc generation scripts)
+- `requirements-doc.txt` - Python dependencies for documentation tools
 
 ### Documentation
 - `README.md` - Main project documentation and getting started guide
 - `CONTRIBUTOR_GUIDE.md` - Comprehensive guide for contributors and developers
-- `docs-internal/development/SCRIPTS.md` - Overview of the available scripts
+- `AGENTS.md` - Key reference files for AI agents working in this codebase
+- `PACKAGES.md` - Strategic overview of the package architecture
 - `LICENSE` - Project license information
 
 ### Configuration
 - `packages.json` - Centralized package configuration for monorepo management
-- `package-config.example.json` - Template for creating new packages
+- `package-config.example.json` / `package-config-enhanced.example.json` - Templates for creating new packages
 - `mkdocs.yml` - Documentation site configuration
-
-## Archive and Legacy
-- `archived/` - Legacy code and deprecated implementations
-- `notes/` - Development notes, ideas, and planning documents
-- `scratchpad/` - Experimental code and proof-of-concepts
 
 ## Supporting Directories
 - `vendor/` - Composer dependencies
 - `tmp/` - Temporary files and build artifacts
-- `docs-build/` - Generated documentation files (built from `./docs/` + `./packages/*/docs/`)
-- `prompts/` - Template files for prompts (Twig, Blade)
 - `tests/` - Root-level test files and configuration
+- `test-matrix/` - Test matrix configuration files

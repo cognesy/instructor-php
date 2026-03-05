@@ -56,8 +56,7 @@ $text = <<<TEXT
     Jason is 25 years old.
     TEXT;
 
-
-$user = (new StructuredOutput)
+$user = StructuredOutput::using('openai')
     ->withMessages($text)
     ->withResponseClass(UserWithConstructor::class)
     ->get();

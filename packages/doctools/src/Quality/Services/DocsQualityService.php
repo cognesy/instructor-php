@@ -467,7 +467,7 @@ final readonly class DocsQualityService
         return [
             ...$this->linkCandidates(Path::join($docsRoot, $relative)),
             ...$this->linkCandidates(Path::join($repoRoot, 'docs', $relative)),
-            ...$this->linkCandidates(Path::join($repoRoot, 'docs-build', $relative)),
+            ...$this->linkCandidates(Path::join($repoRoot, 'builds/docs-build', $relative)),
         ];
     }
 

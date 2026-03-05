@@ -1,0 +1,153 @@
+---
+title: 'Tool Calling Internals'
+description: 'How ToolCallingDriver and ReActDriver implement tool use through different strategies'
+---
+
+# Tool Calling Internals
+
+> Most users can skip this page.
+> For day-to-day usage, start with [Basic Agent](02-basic-agent), [Tools](05-tools), and [AgentBuilder & Capabilities](13-agent-builder).
+
+The agent's ability to use tools relies on two contracts and two drivers that implement them differently.
+
+## Architecture
+
+```
+AgentLoop
+  |-- CanUseTools (driver)          # decides what tools to call
+  |   |-- ToolCallingDriver         # native LLM function calling
+  |   |-- ReActDriver               # Thought/Action/Observation via structured output
+  |   |-- FakeAgentDriver           # scripted responses for testing
+  |
+  |-- CanExecuteToolCalls (executor) # runs the actual tools
+      |-- ToolExecutor              # default implementation
+// @doctest id="d98f"
+```
+
+## The Two Contracts
+
+### CanUseTools (Driver)
+
+Sends state to the LLM (with tools injected via `withToolRuntime()`), gets back an updated state with tool call decisions:
+
+```php
+interface CanUseTools {
+    public function useTools(AgentState $state): AgentState;
+}
+// @doctest id="c270"
+```
+
+### CanExecuteToolCalls (Executor)
+
+Runs tool calls and returns execution results:
+
+```php
+interface CanExecuteToolCalls {
+    public function executeTools(ToolCalls $toolCalls, AgentState $state): ToolExecutions;
+}
+// @doctest id="c094"
+```
+
+## ToolCallingDriver
+
+Uses the LLM's native function calling API.
+
+**Flow:**
+1. Compile messages from state via `CanCompileMessages`
+2. Send messages + tool schemas to LLM via `Inference`
+3. Parse `InferenceResponse` for tool calls
+4. Pass tool calls to `ToolExecutor`
+5. Format execution results as assistant/tool message pairs
+6. Return updated state with new `AgentStep`
+
+```php
+$llm = LLMProvider::new();
+$events = new EventDispatcher('agent');
+$inference = InferenceRuntime::fromProvider($llm, events: $events);
+
+$driver = new ToolCallingDriver(
+    inference: $inference,
+    llm: $llm,
+    model: 'gpt-4o',
+    toolChoice: 'auto',          // 'auto', 'required', or specific tool
+    mode: OutputMode::Tools,
+);
+// @doctest id="6741"
+```
+
+The LLM natively understands tools and returns structured `tool_calls` in its response.
+
+## ReActDriver
+
+Uses structured output to extract Thought/Action/Observation decisions.
+
+**Flow:**
+1. Build a system prompt describing available tools and ReAct format
+2. Use `StructuredOutput` to extract a `ReActDecision` from the LLM
+3. Validate the decision (type, tool existence, arguments)
+4. If `call_tool`: execute via `ToolExecutor`, format as Observation messages
+5. If `final_answer`: return the answer as the final response
+
+```php
+$llm = LLMProvider::new();
+$events = new EventDispatcher('agent');
+$inference = InferenceRuntime::fromProvider($llm, events: $events);
+$structuredOutput = new StructuredOutputRuntime(
+    inference: $inference,
+    events: $events,
+    config: (new StructuredOutputConfigBuilder())
+        ->withOutputMode(OutputMode::Json)
+        ->withMaxRetries(2)
+        ->create(),
+);
+
+$driver = new ReActDriver(
+    inference: $inference,
+    structuredOutput: $structuredOutput,
+    llm: $llm,
+    model: 'gpt-4o',
+    mode: OutputMode::Json,
+    maxRetries: 2,               // retries on extraction failure
+    finalViaInference: false,    // optionally use separate LLM call for final answer
+);
+// @doctest id="1b7c"
+```
+
+The LLM doesn't need native tool support - it outputs JSON with `type`, `tool`, `args`, and `thought` fields.
+
+## ToolExecutor
+
+The default `CanExecuteToolCalls` implementation. For each tool call:
+
+1. **beforeToolUse intercept** - interceptor can modify the call or block it
+2. **Emit event** - `ToolCallStarted`
+3. **Prepare tool** - inject `AgentState` if tool implements `CanAccessAgentState`, inject `ToolCall` if it implements `CanAccessToolCall`
+4. **Validate args** - check required parameters
+5. **Execute** - call `$tool->use(...$args)`
+6. **Emit event** - `ToolCallCompleted`
+7. **afterToolUse intercept** - interceptor can modify the result
+
+The `ToolExecutor` is created automatically by `AgentLoop::default()`. To customize it:
+
+```php
+$executor = new ToolExecutor(
+    tools: $tools,
+    events: $events,
+    interceptor: $interceptor,
+    throwOnToolFailure: false,  // true = throw on first tool error
+    stopOnToolBlock: false,     // true = stop executing remaining tools if one is blocked
+);
+
+$loop = AgentLoop::default()->withTools($tools)->withToolExecutor($executor);
+// @doctest id="e0c7"
+```
+
+## When to Use Which Driver
+
+| | ToolCallingDriver | ReActDriver |
+|---|---|---|
+| **Requires** | LLM with function calling | Any LLM with JSON output |
+| **Tool selection** | Native, reliable | Structured output extraction |
+| **Reasoning** | Implicit | Explicit (Thought field) |
+| **Reliability** | Higher (native API) | Lower (parsing required) |
+| **Flexibility** | Standard tools only | Custom decision schemas |

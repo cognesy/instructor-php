@@ -4,10 +4,10 @@ site_description: 'A lightweight library for structured outputs with LLMs.'
 repo_name: instructor-php
 repo_url: 'https://github.com/cognesy/instructor-php'
 site_url: 'https://cognesy.github.io/instructor-php/'
-edit_uri: edit/main/docs-mkdocs/
+edit_uri: edit/main/builds/docs-mkdocs/
 copyright: 'Copyright &copy; 2024 Dariusz Debowczyk'
-docs_dir: docs-mkdocs
-site_dir: docs-site
+docs_dir: builds/docs-mkdocs
+site_dir: builds/docs-site
 theme:
   name: material
   icon:
@@ -152,7 +152,7 @@ nav:
           - { Essentials: [{ Usage: packages/instructor/essentials/usage.md }, { 'Data Model': packages/instructor/essentials/data_model.md }, { Validation: packages/instructor/essentials/validation.md }, { Modes: packages/instructor/essentials/modes.md }, { Scalars: packages/instructor/essentials/scalars.md }, { Demonstrations: packages/instructor/essentials/demonstrations.md }, { 'Customize Prompts': packages/instructor/essentials/customize_prompts.md }, { Configuration: packages/instructor/essentials/configuration.md }] }
           - { Advanced: [{ Partials: packages/instructor/advanced/partials.md }, { Sequences: packages/instructor/advanced/sequences.md }, { Structures: packages/instructor/advanced/structures.md }, { 'Function Calls': packages/instructor/advanced/function_calls.md }, { 'Manual Schemas': packages/instructor/advanced/manual_schemas.md }, { 'Json Extraction': packages/instructor/advanced/json_extraction.md }, { 'Output Formats': packages/instructor/advanced/output_formats.md }, { Prompts: packages/instructor/advanced/prompts.md }, { 'Model Options': packages/instructor/advanced/model_options.md }, { 'Structure To Structure': packages/instructor/advanced/structure-to-structure.md }] }
           - { Techniques: [{ Prompting: packages/instructor/techniques/prompting.md }, { Classification: packages/instructor/techniques/classification.md }, { Search: packages/instructor/techniques/search.md }] }
-          - { Internals: [{ Instructor: packages/instructor/internals/instructor.md }, { Lifecycle: packages/instructor/internals/lifecycle.md }, { 'Configuration Path': packages/instructor/internals/configuration_path.md }, { 'Config Files': packages/instructor/internals/config_files.md }, { 'Settings Class': packages/instructor/internals/settings_class.md }, { Environment: packages/instructor/internals/environment.md }, { Events: packages/instructor/internals/events.md }, { 'Response Models': packages/instructor/internals/response_models.md }, { Debugging: packages/instructor/internals/debugging.md }] }
+          - { Internals: [{ Instructor: packages/instructor/internals/instructor.md }, { Lifecycle: packages/instructor/internals/lifecycle.md }, { 'Configuration Path': packages/instructor/internals/configuration_path.md }, { 'Config Files': packages/instructor/internals/config_files.md }, { 'Config Access': packages/instructor/internals/settings_class.md }, { Environment: packages/instructor/internals/environment.md }, { Events: packages/instructor/internals/events.md }, { 'Response Models': packages/instructor/internals/response_models.md }, { Debugging: packages/instructor/internals/debugging.md }] }
           - { Misc: [{ Help: packages/instructor/misc/help.md }, { 'Llm Providers': packages/instructor/misc/llm_providers.md }, { Philosophy: packages/instructor/misc/philosophy.md }, { Contributing: packages/instructor/misc/contributing.md }] }
       -
         Polyglot:

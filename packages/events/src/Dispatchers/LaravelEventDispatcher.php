@@ -11,10 +11,10 @@ final class LaravelEventDispatcher implements CanHandleEvents
     /** Laravel’s own dispatcher (sync or queued) */
     private Dispatcher $dispatcher;
 
-    /** @var array<class-string, SplPriorityQueue> */
+    /** @var array<class-string, SplPriorityQueue<int, callable(object): void>> */
     private array $registry = [];
 
-    /** @var SplPriorityQueue  wire-tap listeners ("*") */
+    /** @var SplPriorityQueue<int, callable(object): void> wire-tap listeners ("*") */
     private SplPriorityQueue $taps;
     private bool $dispatchToLaravel;
     /** @var array<class-string> */
@@ -30,7 +30,7 @@ final class LaravelEventDispatcher implements CanHandleEvents
     )
     {
         $this->dispatcher = $laravel;
-        $this->taps    = new SplPriorityQueue();
+        $this->taps = $this->newListenerQueue();
         $this->dispatchToLaravel = $dispatchToLaravel;
         $this->bridgedEvents = $bridgedEvents;
     }
@@ -44,7 +44,7 @@ final class LaravelEventDispatcher implements CanHandleEvents
 
         // remember for introspection
         /** @var class-string $name */
-        $queue = $this->registry[$name] ??= new SplPriorityQueue();
+        $queue = $this->registry[$name] ??= $this->newListenerQueue();
         $queue->insert($listener, $priority);
 
     }
@@ -66,8 +66,9 @@ final class LaravelEventDispatcher implements CanHandleEvents
         }
 
         // Now run taps (guaranteed, final state of the event).
-        foreach (clone $this->taps as $tap) {
-            /** @var callable $tap */
+        /** @var SplPriorityQueue<int, callable(object): void> $taps */
+        $taps = clone $this->taps;
+        foreach ($taps as $tap) {
             $tap($event);
         }
 
@@ -84,13 +85,17 @@ final class LaravelEventDispatcher implements CanHandleEvents
 
         // class-specific listeners registered through this bridge
         if (isset($this->registry[$name])) {
-            foreach (clone $this->registry[$name] as $listener) {
+            /** @var SplPriorityQueue<int, callable(object): void> $listeners */
+            $listeners = clone $this->registry[$name];
+            foreach ($listeners as $listener) {
                 yield $listener;
             }
         }
 
         // taps
-        foreach (clone $this->taps as $tap) {
+        /** @var SplPriorityQueue<int, callable(object): void> $taps */
+        $taps = clone $this->taps;
+        foreach ($taps as $tap) {
             yield $tap;
         }
     }
@@ -119,9 +124,18 @@ final class LaravelEventDispatcher implements CanHandleEvents
             return;
         }
 
-        foreach (clone $this->registry[$name] as $listener) {
-            /** @var callable $listener */
+        /** @var SplPriorityQueue<int, callable(object): void> $listeners */
+        $listeners = clone $this->registry[$name];
+        foreach ($listeners as $listener) {
             $listener($event);
         }
+    }
+
+    /** @return SplPriorityQueue<int, callable(object): void> */
+    private function newListenerQueue(): SplPriorityQueue {
+        /** @var SplPriorityQueue<int, callable(object): void> $queue */
+        $queue = new SplPriorityQueue();
+        $queue->setExtractFlags(SplPriorityQueue::EXTR_DATA);
+        return $queue;
     }
 }

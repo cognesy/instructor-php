@@ -40,8 +40,8 @@ it('accumulates hooks when chaining withHook()', function () {
     };
 
     $stack = $stack
-        ->with($hookA, HookTriggers::with(HookTrigger::BeforeExecution))
-        ->with($hookB, HookTriggers::with(HookTrigger::BeforeExecution));
+        ->with($hookA, HookTriggers::of(HookTrigger::BeforeExecution))
+        ->with($hookB, HookTriggers::of(HookTrigger::BeforeExecution));
 
     $stack->intercept(HookContext::beforeExecution(
         state: AgentState::empty(),
@@ -82,8 +82,8 @@ it('orders hooks by descending priority', function () {
     };
 
     $stack = $stack
-        ->with($hookLow, HookTriggers::with(HookTrigger::BeforeExecution), priority: 0)
-        ->with($hookHigh, HookTriggers::with(HookTrigger::BeforeExecution), priority: 10);
+        ->with($hookLow, HookTriggers::of(HookTrigger::BeforeExecution), priority: 0)
+        ->with($hookHigh, HookTriggers::of(HookTrigger::BeforeExecution), priority: 10);
 
     $stack->intercept(HookContext::beforeExecution(
         state: AgentState::empty(),

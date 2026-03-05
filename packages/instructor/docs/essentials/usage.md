@@ -141,15 +141,19 @@ $structuredOutput = (new StructuredOutput)
 
 ### LLM Provider Configuration
 ```php
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
+// Quickest way — use a named preset
 $structuredOutput = StructuredOutput::using('openai');
 
+// Via DSN string
 $structuredOutput = (new StructuredOutput)->withRuntime(
-    StructuredOutputRuntime::fromDsn('preset=openai,model=gpt-4o-mini')
+    StructuredOutputRuntime::fromDsn('driver=openai,model=gpt-4o-mini')
 );
 
+// Via a customized provider
 $provider = LLMProvider::using('openai')
     ->withConfigOverrides(['temperature' => 0.2]);
 $structuredOutput = (new StructuredOutput)->withRuntime(
@@ -237,8 +241,9 @@ When you need constructor-injected creators (for agents, addons, or DI container
 <?php
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
-$creator = StructuredOutputRuntime::using('openai');
+$creator = StructuredOutputRuntime::fromConfig(LLMConfig::fromPreset('openai'));
 
 $request = new StructuredOutputRequest(
     messages: "His name is Jason, he is 28 years old.",

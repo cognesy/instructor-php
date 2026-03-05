@@ -19,7 +19,7 @@ use DateTimeImmutable;
  *   $broadcaster = new AgentEventBroadcaster($transport, $sessionId, $executionId);
  *   $agent->wiretap($broadcaster->wiretap());
  *
- * Usage with config preset:
+ * Usage with predefined config:
  *   $broadcaster = new AgentEventBroadcaster(
  *       $transport, $sessionId, $executionId,
  *       BroadcastConfig::debug()

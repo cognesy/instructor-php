@@ -73,7 +73,7 @@ final readonly class ExtractingBuffer implements CanBufferContent
     /**
      * Create buffer with custom extractors.
      */
-    public static function withExtractors(
+    public static function fromExtractors(
         OutputMode $mode,
         CanExtractResponse ...$extractors,
     ): self {

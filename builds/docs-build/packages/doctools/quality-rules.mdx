@@ -1,0 +1,71 @@
+# Quality Rules
+
+Doctools quality checks are rule-driven.
+
+Rules are loaded from:
+1. Profile baseline (`packages/doctools/resources/config/quality/profiles/<profile>.yaml`)
+2. Package-local docs rules (`<docs-root>/.qa/rules.yaml`)
+3. Explicit CLI files (`--rules`), applied last
+
+Later sources override earlier ones when rule IDs are the same.
+
+## Rule File Format
+
+```yaml
+version: 1
+rules:
+  - id: no_from_config
+    engine: regex
+    scope: markdown
+    pattern: '/\bStructuredOutput::fromConfig\s*\(/'
+    message: 'Use StructuredOutputRuntime::fromConfig(...) or StructuredOutput::withConfig(...).'
+
+  - id: no_request_call
+    engine: ast-grep
+    scope: php-snippet
+    language: php
+    pattern: '$OBJ->request($$$ARGS)'
+    message: 'Avoid direct request() calls in examples.'
+# @doctest id="c7a7"
+```
+
+### Required fields
+
+- `id`
+- `engine`: `regex` or `ast-grep`
+- `scope`: `markdown` or `php-snippet`
+- `pattern`
+- `message`
+
+For `ast-grep` rules, `language` is required.
+
+## CLI Usage
+
+```bash
+php bin/instructor-docs qa \
+  --source-dir packages/instructor/docs \
+  --profile instructor \
+  --rules packages/instructor/docs/.qa/rules.yaml
+# @doctest id="43ea"
+```
+
+JSON output for CI:
+
+```bash
+php bin/instructor-docs qa \
+  --source-dir packages/instructor/docs \
+  --profile instructor \
+  --format json
+# @doctest id="332c"
+```
+
+If `ast-grep` rules are configured, missing binary fails by default.  
+Use `--no-strict` to continue without ast-grep checks.
+
+## Rollout Checklist
+
+1. Add `<package>/docs/.qa/rules.yaml`.
+2. Start with high-signal rules only.
+3. Run `php bin/instructor-docs qa --source-dir <package>/docs --profile instructor`.
+4. Add `--format json` in CI for machine-readable reports.
+5. Keep rule IDs stable to support predictable overrides.

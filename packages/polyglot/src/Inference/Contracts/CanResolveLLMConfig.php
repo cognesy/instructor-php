@@ -5,9 +5,9 @@ namespace Cognesy\Polyglot\Inference\Contracts;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 /**
- * Contract for resolving LLM configuration from various sources.
- * Implementations handle preset resolution, DSN parsing and override merging
- * to produce a validated, immutable LLMConfig instance.
+ * Contract for resolving finalized LLM configuration objects.
+ * Implementations return validated, immutable LLMConfig instances
+ * regardless of how data was obtained at the application edge.
  */
 interface CanResolveLLMConfig
 {

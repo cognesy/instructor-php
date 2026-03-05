@@ -19,6 +19,7 @@ use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpClient\HttpClient;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 // custom Symfony components
 // custom Symfony components

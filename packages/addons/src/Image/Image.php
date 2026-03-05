@@ -6,6 +6,7 @@ use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Messages\Utils\Image as ImageUtil;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 /**
  * The Image class.
@@ -93,7 +94,7 @@ class Image extends ImageUtil
     }
 
     protected function makeLegacyStructuredOutputRuntime(string $connection): CanCreateStructuredOutput {
-        return StructuredOutputRuntime::using($connection);
+        return StructuredOutputRuntime::fromConfig(LLMConfig::fromArray(['driver' => $connection]));
     }
 
     private function resolveStructuredOutputRuntime(
@@ -105,7 +106,7 @@ class Image extends ImageUtil
             is_string($structuredOutput) && $structuredOutput !== '' => $this->makeLegacyStructuredOutputRuntime($structuredOutput),
             isset($legacyOptions['connection']) && is_string($legacyOptions['connection']) && $legacyOptions['connection'] !== '' => $this->makeLegacyStructuredOutputRuntime($legacyOptions['connection']),
             default => throw new \InvalidArgumentException(
-                'Image::toData() requires `structuredOutput` runtime (or legacy `connection` preset).',
+                'Image::toData() requires `structuredOutput` runtime (or legacy `connection` driver).',
             ),
         };
     }

@@ -32,7 +32,7 @@ final class UseExecutionRetrospective implements CanProvideAgentCapability
         // Register the hook for BeforeExecution (system prompt), BeforeStep (checkpoints), AfterStep (rewind)
         $hooks = $agent->hooks()->with(
             hook: new ExecutionRetrospectiveHook(policy: $policy, onRewind: $this->onRewind),
-            triggerTypes: HookTriggers::with(HookTrigger::BeforeExecution, HookTrigger::BeforeStep, HookTrigger::AfterStep),
+            triggerTypes: HookTriggers::of(HookTrigger::BeforeExecution, HookTrigger::BeforeStep, HookTrigger::AfterStep),
             priority: 100,
             name: 'execution_retrospective',
         );

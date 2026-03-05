@@ -1,0 +1,40 @@
+Instructor offers several ways to debug its internal state and execution flow.
+
+## Events
+
+Instructor emits events at various points in its lifecycle, which you can listen to
+and react to. You can use these events to debug execution flow and to inspect
+data at various stages of processing.
+
+For more details see the [Events](events.md) section.
+
+
+## HTTP Debugging
+
+Enable HTTP debug middleware while constructing runtime:
+
+```php
+use Cognesy\Http\Creation\HttpClientBuilder;
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+
+$debugHttpClient = (new HttpClientBuilder)->withHttpDebugPreset('on')->create();
+
+$result = (new StructuredOutput(
+    StructuredOutputRuntime::fromDefaults(httpClient: $debugHttpClient)
+))
+    ->with(
+        messages: "Jason is 25 years old",
+        responseModel: User::class,
+    )
+    ->get();
+// @doctest id="132b"
+```
+
+It displays detailed information about the request being sent to LLM API and response received from it,
+including:
+
+ - request headers, URI, method and body,
+ - response status, headers, and body.
+
+This is useful for debugging the request and response when you are not getting the expected results.

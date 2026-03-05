@@ -2,6 +2,7 @@
 
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 
 it('uses the injected runtime instance', function () {
@@ -39,8 +40,8 @@ it('allows runtime replacement explicitly', function () {
     expect($structuredOutput->runtime())->toBe($second);
 });
 
-it('creates a facade with runtime from preset via static using()', function () {
-    $structuredOutput = StructuredOutput::using('openai');
+it('creates a facade with runtime from driver via static fromLLMConfig()', function () {
+    $structuredOutput = StructuredOutput::fromLLMConfig(LLMConfig::fromArray(['driver' => 'openai']));
 
     expect($structuredOutput)->toBeInstanceOf(StructuredOutput::class);
     expect($structuredOutput->runtime())->toBeInstanceOf(StructuredOutputRuntime::class);

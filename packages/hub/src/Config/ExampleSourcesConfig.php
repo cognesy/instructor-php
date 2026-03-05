@@ -8,7 +8,7 @@ use Symfony\Component\Yaml\Yaml;
 final readonly class ExampleSourcesConfig
 {
     public function __construct(
-        private string $path = 'config/examples.yaml',
+        private string $path = 'packages/hub/resources/config/examples.yml',
     ) {}
 
     public function load(): ExampleSources

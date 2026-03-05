@@ -80,7 +80,7 @@ $service->onEvent(MyEvent::class, fn(object $event) => null);
 Run:
 
 ```bash
-composer check-events-2.0
+composer qa:semgrep
 ```
 
-This checks resolver removal, legacy union signatures, and logging trait-discovery wiring removal.
+This checks resolver removal, constructor optionality patterns, and logging trait-discovery wiring removal using the centralized QA rules.

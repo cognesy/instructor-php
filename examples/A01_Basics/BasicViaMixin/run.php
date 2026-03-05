@@ -6,7 +6,7 @@ id: '068c'
 ## Overview
 
 `HandlesSelfInference` is deprecated in 2.0.
-Prefer runtime-first usage via `StructuredOutput::using(...)->with(...)->getObject()`.
+Prefer runtime-first usage via `StructuredOutput::using('openai')->with(...)->getObject()`.
 
 Legacy mixin usage is still available and shown below for migration reference.
 
@@ -49,6 +49,7 @@ $user = StructuredOutput::using('openai')
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Mixin\HandlesSelfInference;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 class User {
     use HandlesSelfInference;
@@ -57,7 +58,10 @@ class User {
     public string $name;
 }
 
-$user = User::infer("Jason is 25 years old and works as an engineer.");
+$user = User::infer(
+    messages: "Jason is 25 years old and works as an engineer.",
+    llm: LLMProvider::using('openai'),
+);
 
 dump($user);
 

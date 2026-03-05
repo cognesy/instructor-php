@@ -1,30 +1,14 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Config\Providers\ArrayConfigProvider;
+use Cognesy\Config\Dsn;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\EmbeddingsProvider;
 
-it('resolves embeddings config from DSN with preset parameter', function () {
-    $provider = new ArrayConfigProvider([
-        'embed' => [
-            'defaultPreset' => 'openai',
-            'presets' => [
-                'openai' => [
-                    'driver' => 'openai',
-                    'model' => 'text-embedding-3-small',
-                    'dimensions' => 1536,
-                    'apiUrl' => 'https://api.openai.com/v1',
-                    'endpoint' => '/embeddings',
-                    'apiKey' => 'test',
-                    'maxInputs' => 64,
-                    'metadata' => [],
-                ],
-            ],
-        ],
-    ]);
+it('resolves embeddings config from raw DSN parameters', function () {
+    $raw = Dsn::fromString('driver=openai,model=text-embedding-3-small,dimensions=1536,apiUrl=https://api.openai.com/v1,endpoint=/embeddings,apiKey=test,maxInputs=64')
+        ->toArray();
 
-    $config = EmbeddingsProvider::dsn('preset=openai')
-        ->withConfigProvider($provider)
+    $config = EmbeddingsProvider::fromEmbeddingsConfig(EmbeddingsConfig::fromArray($raw))
         ->resolveConfig();
 
     expect($config->driver)->toBe('openai')

@@ -197,7 +197,7 @@ class HookContext
                 toolCall: $toolCall,
                 message: $message,
             ),
-            errorList: ErrorList::with($exception),
+            errorList: ErrorList::fromErrors($exception),
         );
     }
 

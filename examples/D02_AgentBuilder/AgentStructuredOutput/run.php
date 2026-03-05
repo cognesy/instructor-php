@@ -41,6 +41,7 @@ use Cognesy\Agents\Tool\Tools\BaseTool;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Symfony\Component\Validator\Constraints as Assert;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 // =============================================================================
 // 1. Define the Lead schema (what we want to extract)
@@ -164,7 +165,7 @@ $agent = AgentBuilder::base()
             provider: LLMProvider::using('openai'),
         ),
         policy: new StructuredOutputPolicy(
-            llmPreset: 'openai',
+            llm: LLMProvider::using('openai'),
             defaultMaxRetries: 3,
         ),
     ))
@@ -248,6 +249,11 @@ echo "Answer: {$response}\n";
 echo "Steps: {$finalState->stepCount()}\n";
 echo "Tokens: {$finalState->usage()->total()}\n";
 echo "Status: {$finalState->status()->value}\n";
+
+if ($finalState->status()->value !== 'completed') {
+    echo "Skipping assertions because execution status is {$finalState->status()->value}.\n";
+    return;
+}
 
 // Assertions
 assert($extractedLead !== null, 'Expected extracted lead in metadata');

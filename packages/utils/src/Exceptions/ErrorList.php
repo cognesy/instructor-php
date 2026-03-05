@@ -20,7 +20,7 @@ readonly class ErrorList
         return new static();
     }
 
-    public static function with(Throwable ...$errors): static {
+    public static function fromErrors(Throwable ...$errors): static {
         return new static(...$errors);
     }
 

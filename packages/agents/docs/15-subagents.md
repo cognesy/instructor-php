@@ -59,6 +59,7 @@ The parent does not receive the child internal trace by default. It receives the
 ```php
 use Cognesy\Agents\Collections\NameList;
 use Cognesy\Agents\Data\ExecutionBudget;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 
 $registry->register(new AgentDefinition(
@@ -98,7 +99,7 @@ new AgentDefinition(
 
 ## Depth Control
 
-Use `SubagentPolicy` or `UseSubagents::withDepth()` to cap recursion.
+Use `SubagentPolicy` or `UseSubagents::forDepth()` to cap recursion.
 
 ```php
 use Cognesy\Agents\Builder\AgentBuilder;
@@ -114,7 +115,7 @@ $agent = AgentBuilder::base()
 
 // Equivalent shortcut:
 $agent = AgentBuilder::base()
-    ->withCapability(UseSubagents::withDepth(2, provider: $registry))
+    ->withCapability(UseSubagents::forDepth(2, provider: $registry))
     ->build();
 ```
 
@@ -131,7 +132,10 @@ new AgentDefinition(
     name: 'quick_reviewer',
     description: 'Short, fast review',
     systemPrompt: 'Be concise.',
-    llmConfig: 'openai:gpt-4o-mini',
+    llmConfig: LLMConfig::fromArray([
+        'driver' => 'openai',
+        'model' => 'gpt-4o-mini',
+    ]),
     budget: new ExecutionBudget(maxSteps: 5, maxTokens: 2500, maxSeconds: 20.0),
 );
 ```

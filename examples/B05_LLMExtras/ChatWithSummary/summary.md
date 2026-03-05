@@ -39,7 +39,7 @@ class City {
     public int $population;
 }
 
-$city = StructuredOutput::using('openai')->with(
+$city = StructuredOutput::fromLLMConfig(LLMConfig::fromArray(['driver' => 'openai']))->with(
     messages: 'What is the capital of France?',
     responseModel: City::class,
 )->get();

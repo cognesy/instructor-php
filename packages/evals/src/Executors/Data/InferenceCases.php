@@ -2,7 +2,6 @@
 
 namespace Cognesy\Evals\Executors\Data;
 
-use Cognesy\Config\Settings;
 use Cognesy\Evals\Utils\Combination;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
@@ -17,83 +16,133 @@ use Generator;
 
 class InferenceCases
 {
-    private array $presets = [];
+    /** @var array<string, array<string, mixed>> */
+    private const DEFAULT_CONNECTION_CONFIGS = [
+        'a21' => ['driver' => 'a21', 'model' => 'jamba-large-1.7'],
+        'anthropic' => ['driver' => 'anthropic', 'model' => 'claude-3-5-sonnet-latest'],
+        'deepseek' => ['driver' => 'deepseek', 'model' => 'deepseek-chat'],
+        'deepseek-r' => ['driver' => 'deepseek', 'model' => 'deepseek-reasoner'],
+        'gemini-oai' => ['driver' => 'gemini-oai', 'model' => 'gemini-2.5-flash'],
+        'openai' => ['driver' => 'openai', 'model' => 'gpt-4o-mini'],
+        'perplexity' => ['driver' => 'perplexity', 'model' => 'sonar'],
+        'sambanova' => ['driver' => 'sambanova', 'model' => 'Meta-Llama-3.1-70B-Instruct'],
+    ];
+
+    private array $connections = [];
     private array $modes = [];
     private array $stream = [];
     private bool $filterByCapabilities = true;
+    /** @var array<string, LLMConfig> */
+    private array $connectionConfigs = [];
 
     private ?InferenceDriverFactory $driverFactory = null;
     private ?HttpClient $httpClient = null;
     private ?CanHandleEvents $events = null;
 
+    /**
+     * @param array<string> $connections
+     * @param array<OutputMode> $modes
+     * @param array<bool> $stream
+     * @param array<string, array<string, mixed>|LLMConfig> $connectionConfigs
+     */
     private function __construct(
-        array $presets = [],
+        array $connections = [],
         array $modes = [],
         array $stream = [],
         bool $filterByCapabilities = true,
+        array $connectionConfigs = [],
     ) {
-        $this->presets = $presets;
+        $this->connections = $connections;
         $this->modes = $modes;
         $this->stream = $stream;
         $this->filterByCapabilities = $filterByCapabilities;
+        $this->connectionConfigs = $this->normalizeConnectionConfigs($connectionConfigs);
     }
 
-    public static function all(bool $filterByCapabilities = true) : Generator {
-        return (new self(filterByCapabilities: $filterByCapabilities))->initiateWithAll()->make();
+    /**
+     * @param array<string, array<string, mixed>|LLMConfig> $connectionConfigs
+     */
+    public static function all(
+        bool $filterByCapabilities = true,
+        array $connectionConfigs = [],
+    ) : Generator {
+        return (new self(
+            filterByCapabilities: $filterByCapabilities,
+            connectionConfigs: $connectionConfigs,
+        ))->initiateWithAll()->make();
     }
 
+    /**
+     * @param array<string> $connections
+     * @param array<OutputMode> $modes
+     * @param array<bool> $stream
+     * @param array<string, array<string, mixed>|LLMConfig> $connectionConfigs
+     */
     public static function except(
-        array $presets = [],
+        array $connections = [],
         array $modes = [],
         array $stream = [],
         bool $filterByCapabilities = true,
+        array $connectionConfigs = [],
     ) : Generator {
-        $instance = (new self(filterByCapabilities: $filterByCapabilities))->initiateWithAll();
-        $instance->presets = match(true) {
-            [] === $presets => $instance->presets,
-            default => array_diff($instance->presets, $presets),
+        $instance = (new self(
+            filterByCapabilities: $filterByCapabilities,
+            connectionConfigs: $connectionConfigs,
+        ))->initiateWithAll();
+        $instance->connections = match (true) {
+            [] === $connections => $instance->connections,
+            default => array_values(array_diff($instance->connections, $connections)),
         };
-        $instance->modes = match(true) {
+        $instance->modes = match (true) {
             [] === $modes => $instance->modes,
-            default => array_filter($instance->modes, fn($mode) => !$mode->isIn($modes)),
+            default => array_values(array_filter($instance->modes, fn($mode) => !$mode->isIn($modes))),
         };
-        $instance->stream = match(true) {
+        $instance->stream = match (true) {
             [] === $stream => $instance->stream,
-            default => array_diff($instance->stream, $stream),
+            default => array_values(array_diff($instance->stream, $stream)),
         };
         return $instance->make();
     }
 
+    /**
+     * @param array<string> $connections
+     * @param array<OutputMode> $modes
+     * @param array<bool> $stream
+     * @param array<string, array<string, mixed>|LLMConfig> $connectionConfigs
+     */
     public static function only(
-        array $presets = [],
+        array $connections = [],
         array $modes = [],
         array $stream = [],
         bool $filterByCapabilities = true,
+        array $connectionConfigs = [],
     ) : Generator {
-        $instance = (new self(filterByCapabilities: $filterByCapabilities))->initiateWithAll();
-        $instance->presets = match(true) {
-            [] === $presets => $instance->presets,
-            default => array_intersect($instance->presets, $presets),
+        $instance = (new self(
+            filterByCapabilities: $filterByCapabilities,
+            connectionConfigs: $connectionConfigs,
+        ))->initiateWithAll();
+        $instance->connections = match (true) {
+            [] === $connections => $instance->connections,
+            default => array_values(array_intersect($instance->connections, $connections)),
         };
-        $instance->modes = match(true) {
+        $instance->modes = match (true) {
             [] === $modes => $instance->modes,
-            default => array_filter($instance->modes, fn($mode) => $mode->isIn($modes)),
+            default => array_values(array_filter($instance->modes, fn($mode) => $mode->isIn($modes))),
         };
-        $instance->stream = match(true) {
+        $instance->stream = match (true) {
             [] === $stream => $instance->stream,
-            default => array_intersect($instance->stream, $stream),
+            default => array_values(array_intersect($instance->stream, $stream)),
         };
         return $instance->make();
     }
-
-    // INTERNAL //////////////////////////////////////////////////
 
     private function initiateWithAll() : self {
         $instance = new self(
-            presets: $this->presets(),
+            connections: $this->connections(),
             modes: $this->modes(),
             stream: $this->streamingModes(),
             filterByCapabilities: $this->filterByCapabilities,
+            connectionConfigs: $this->connectionConfigs,
         );
         $instance->driverFactory = $this->driverFactory;
         $instance->httpClient = $this->httpClient;
@@ -110,36 +159,31 @@ class InferenceCases
             sources: [
                 'isStreamed' => $this->stream ?: $this->streamingModes(),
                 'mode' => $this->modes ?: $this->modes(),
-                'preset' => $this->presets ?: $this->presets(),
+                'connection' => $this->connections ?: $this->connections(),
             ],
         );
 
-        if (!$this->filterByCapabilities) {
-            yield from $generator;
-            return;
-        }
-
-        // Filter by driver capabilities
         foreach ($generator as $case) {
+            $case->llmConfig = $this->connectionConfigs[$case->connection] ?? null;
+            if (!$this->filterByCapabilities) {
+                yield $case;
+                continue;
+            }
+
             if ($this->isSupported($case)) {
                 yield $case;
             }
         }
     }
 
-    /**
-     * Check if the given case parameters are supported by the driver.
-     */
     private function isSupported(InferenceCaseParams $case) : bool {
         try {
-            $driver = $this->getDriverForPreset($case->preset);
+            $driver = $this->getDriverForConnection($case->llmConfig);
             if ($driver === null) {
-                return true; // If we can't determine, include the case
+                return true;
             }
 
             $capabilities = $driver->capabilities();
-
-            // Check if the mode is supported
             if (!$capabilities->supportsOutputMode($case->mode)) {
                 return false;
             }
@@ -148,52 +192,28 @@ class InferenceCases
                 return false;
             }
 
-            // For Tools mode, also check if tool calling is supported
             if ($case->mode === OutputMode::Tools && !$capabilities->supportsToolCalling()) {
                 return false;
             }
 
-            // Check if streaming is supported (only filter if streaming is requested)
             if ($case->isStreamed && !$capabilities->supportsStreaming()) {
                 return false;
             }
 
             return true;
-        } catch (\Exception $e) {
-            // If we can't resolve the driver, include the case (fail-open)
+        } catch (\Exception) {
             return true;
         }
     }
 
-    /**
-     * Get driver instance for a given preset.
-     */
-    private function getDriverForPreset(string $preset) : ?CanProcessInferenceRequest {
-        $config = $this->getConfigForPreset($preset);
+    private function getDriverForConnection(?LLMConfig $config) : ?CanProcessInferenceRequest {
         if ($config === null) {
             return null;
         }
 
-        $factory = $this->getDriverFactory();
-        $httpClient = $this->getHttpClient();
-
-        return $factory->makeDriver($config, $httpClient);
+        return $this->getDriverFactory()->makeDriver($config, $this->getHttpClient());
     }
 
-    /**
-     * Get LLMConfig for a given preset name.
-     */
-    private function getConfigForPreset(string $preset) : ?LLMConfig {
-        $presetData = Settings::get(LLMConfig::group(), "presets.{$preset}", []);
-        if (empty($presetData)) {
-            return null;
-        }
-        return LLMConfig::fromArray($presetData);
-    }
-
-    /**
-     * Get or create the driver factory.
-     */
     private function getDriverFactory() : InferenceDriverFactory {
         if ($this->driverFactory === null) {
             $this->driverFactory = new InferenceDriverFactory($this->getEvents());
@@ -201,9 +221,6 @@ class InferenceCases
         return $this->driverFactory;
     }
 
-    /**
-     * Get or create a mock HTTP client (capabilities check doesn't need real HTTP).
-     */
     private function getHttpClient() : HttpClient {
         if ($this->httpClient === null) {
             $this->httpClient = (new HttpClientBuilder())
@@ -213,9 +230,6 @@ class InferenceCases
         return $this->httpClient;
     }
 
-    /**
-     * Get or create an event dispatcher.
-     */
     private function getEvents() : CanHandleEvents {
         if ($this->events === null) {
             $this->events = new EventDispatcher();
@@ -223,11 +237,33 @@ class InferenceCases
         return $this->events;
     }
 
-    private function presets() : array {
-        $presets = Settings::get(LLMConfig::group(), 'presets', []);
-        return array_keys($presets);
+    /** @return array<string> */
+    private function connections() : array {
+        return array_keys($this->connectionConfigs);
     }
 
+    /**
+     * @param array<string, array<string, mixed>|LLMConfig> $connectionConfigs
+     * @return array<string, LLMConfig>
+     */
+    private function normalizeConnectionConfigs(array $connectionConfigs) : array {
+        $source = match (true) {
+            [] === $connectionConfigs => self::DEFAULT_CONNECTION_CONFIGS,
+            default => $connectionConfigs,
+        };
+
+        $normalized = [];
+        foreach ($source as $connection => $config) {
+            $normalized[$connection] = match (true) {
+                $config instanceof LLMConfig => $config,
+                is_array($config) => LLMConfig::fromArray($config),
+                default => throw new \InvalidArgumentException("LLM config for connection '{$connection}' must be array or LLMConfig."),
+            };
+        }
+        return $normalized;
+    }
+
+    /** @return array<bool> */
     private function streamingModes() : array {
         return [
             true,
@@ -235,6 +271,7 @@ class InferenceCases
         ];
     }
 
+    /** @return array<OutputMode> */
     private function modes() : array {
         return [
             OutputMode::Text,
@@ -246,29 +283,26 @@ class InferenceCases
         ];
     }
 
-    // DEPENDENCY INJECTION FOR TESTING /////////////////////////////
-
-    /**
-     * Set a custom driver factory for testing.
-     */
     public function withDriverFactory(InferenceDriverFactory $factory) : self {
         $this->driverFactory = $factory;
         return $this;
     }
 
-    /**
-     * Set a custom HTTP client for testing.
-     */
     public function withHttpClient(HttpClient $httpClient) : self {
         $this->httpClient = $httpClient;
         return $this;
     }
 
-    /**
-     * Set a custom event dispatcher for testing.
-     */
     public function withEvents(CanHandleEvents $events) : self {
         $this->events = $events;
+        return $this;
+    }
+
+    /**
+     * @param array<string, array<string, mixed>|LLMConfig> $connectionConfigs
+     */
+    public function withConnectionConfigs(array $connectionConfigs) : self {
+        $this->connectionConfigs = $this->normalizeConnectionConfigs($connectionConfigs);
         return $this;
     }
 }

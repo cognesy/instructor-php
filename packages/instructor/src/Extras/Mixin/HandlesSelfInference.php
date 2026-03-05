@@ -15,7 +15,7 @@ use Cognesy\Polyglot\Inference\LLMProvider;
  * using the provided parameters. It utilizes runtime-first structured extraction to handle the
  * inference process.
  *
- * @deprecated 2.0 Use `StructuredOutput::using(...)->with(...)->getObject()`
+ * @deprecated 2.0 Use `StructuredOutput::fromLLMConfig(...)->with(...)->getObject()`
  *             or `StructuredOutputRuntime::fromProvider(...)->create(...)->getInstanceOf(...)`.
  */
 trait HandlesSelfInference {

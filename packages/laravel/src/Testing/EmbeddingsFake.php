@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cognesy\Instructor\Laravel\Testing;
 
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use PHPUnit\Framework\Assert as PHPUnit;
 
 /**
@@ -32,11 +33,14 @@ class EmbeddingsFake
     /** @var array<string, array<float>> */
     protected array $responses = [];
 
-    /** @var array<int, array{inputs: mixed, model: ?string, preset: ?string, options: array}> */
+    /** @var array<int, array{inputs: mixed, model: ?string, connection: ?string, embeddingsConfig: ?array, options: array}> */
     protected array $recorded = [];
 
     /** @var string|null */
-    protected ?string $preset = null;
+    protected ?string $connection = null;
+
+    /** @var array<string,mixed>|null */
+    protected ?array $embeddingsConfig = null;
 
     /** @var string|array|null */
     protected string|array|null $inputs = null;
@@ -97,9 +101,15 @@ class EmbeddingsFake
 
     // Fluent API methods to match Embeddings
 
-    public function using(string $preset): self
+    public function connection(string $name): self
     {
-        $this->preset = $preset;
+        $this->connection = $name;
+        return $this;
+    }
+
+    public function withEmbeddingsConfig(EmbeddingsConfig $config): self
+    {
+        $this->embeddingsConfig = $config->toArray();
         return $this;
     }
 
@@ -137,11 +147,6 @@ class EmbeddingsFake
     }
 
     public function withDsn(string $dsn): self
-    {
-        return $this;
-    }
-
-    public function withHttpDebugPreset(?string $preset): self
     {
         return $this;
     }
@@ -208,7 +213,8 @@ class EmbeddingsFake
         $this->recorded[] = [
             'inputs' => $this->inputs,
             'model' => $this->model,
-            'preset' => $this->preset,
+            'connection' => $this->connection,
+            'embeddingsConfig' => $this->embeddingsConfig,
             'options' => $this->options,
         ];
 
@@ -219,7 +225,8 @@ class EmbeddingsFake
         $savedInputs = $this->inputs;
         $this->inputs = null;
         $this->model = null;
-        $this->preset = null;
+        $this->connection = null;
+        $this->embeddingsConfig = null;
         $this->options = [];
 
         // Resolve embeddings for each input
@@ -322,15 +329,15 @@ class EmbeddingsFake
     }
 
     /**
-     * Assert embeddings used a specific preset.
+     * Assert embeddings used a specific configured connection.
      */
-    public function assertUsedPreset(string $preset): self
+    public function assertUsedConnection(string $connection): self
     {
-        $found = collect($this->recorded)->contains('preset', $preset);
+        $found = collect($this->recorded)->contains('connection', $connection);
 
         PHPUnit::assertTrue(
             $found,
-            "Expected preset [{$preset}] was not used."
+            "Expected connection [{$connection}] was not used."
         );
 
         return $this;

@@ -37,12 +37,14 @@ class HttpClient
     private readonly HttpClientConfig $config;
     private readonly ?CanHandleRequestPool $poolHandler;
 
-    public static function using(string $preset) : self {
-        return (new HttpClientBuilder())->withPreset($preset)->create();
-    }
-
     public static function default() : self {
         return (new HttpClientBuilder())->create();
+    }
+
+    public static function fromConfig(HttpClientConfig $config) : self {
+        return (new HttpClientBuilder())
+            ->withConfig($config)
+            ->create();
     }
 
     public function __construct(
@@ -183,7 +185,7 @@ class HttpClient
         return match (true) {
             $driverName !== null => $driverName,
             default => throw new InvalidArgumentException(sprintf(
-                'Driver "%s" does not support request pooling via HttpClient::pool(). Use a built-in driver preset for pooling.',
+                'Driver "%s" does not support request pooling via HttpClient::pool(). Use a registered pooling-capable driver.',
                 get_debug_type($this->driver),
             )),
         };

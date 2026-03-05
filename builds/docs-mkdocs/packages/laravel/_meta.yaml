@@ -1,0 +1,13 @@
+# Navigation order for Laravel integration documentation
+order:
+  - index
+  - installation
+  - configuration
+  - facades
+  - response-models
+  - agents
+  - events
+  - commands
+  - testing
+  - advanced
+  - troubleshooting

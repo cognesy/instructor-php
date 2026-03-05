@@ -8,7 +8,7 @@ use Symfony\Component\Yaml\Yaml;
 final readonly class ExampleGroupingConfig
 {
     public function __construct(
-        private string $path = 'config/examples-groups.yaml',
+        private string $path = 'packages/hub/resources/config/examples-groups.yml',
     ) {}
 
     public function load(): ExampleGrouping

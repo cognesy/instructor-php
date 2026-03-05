@@ -18,6 +18,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
@@ -36,7 +37,13 @@ function makeModularUpdateGeneratorTestInfrastructure(FakeInferenceDriver $drive
         $events
     );
 
-    $llmProvider = LLMProvider::using('openai')
+    $llmProvider = LLMProvider::fromLLMConfig(new LLMConfig(
+        driver: 'openai',
+        apiUrl: 'https://api.openai.com/v1',
+        apiKey: 'test',
+        endpoint: '/chat/completions',
+        model: 'gpt-4o-mini',
+    ))
         ->withDriver($driver);
 
     $inferenceProvider = new InferenceProvider(

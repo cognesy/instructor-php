@@ -21,6 +21,7 @@ class MintlifyDocumentation
     private DocsConfig $docsConfig;
     private PackageDiscovery $packageDiscovery;
     private PackageDocsBuilder $packageBuilder;
+    private LinkRewriter $linkRewriter;
     private DocsMetadata $metadata;
 
     public function __construct(
@@ -38,6 +39,7 @@ class MintlifyDocumentation
             targetBaseDir: $this->docsConfig->mintlifyTarget,
             format: 'mintlify',
         );
+        $this->linkRewriter = new LinkRewriter('mintlify');
         $this->metadata = new DocsMetadata();
     }
 
@@ -193,6 +195,7 @@ class MintlifyDocumentation
         Files::removeDirectory($this->config->docsTargetDir);
         Files::copyDirectory($this->config->docsSourceDir, $this->config->docsTargetDir);
         Files::renameFileExtensions($this->config->docsTargetDir, 'md', 'mdx');
+        $this->linkRewriter->rewriteDirectory($this->config->docsTargetDir);
 
         // Generate packages listing page
         $this->generatePackagesIndex();
@@ -225,6 +228,7 @@ class MintlifyDocumentation
                 if ($sourceFileLastUpdate > $targetFileLastUpdate) {
                     unlink($targetFilePath);
                     Files::copyFile($example->runPath, $targetFilePath);
+                    $this->linkRewriter->rewriteFile($targetFilePath);
                     return FileProcessingResult::updated($targetFilePath, 'Source file updated');
                 }
 
@@ -232,6 +236,7 @@ class MintlifyDocumentation
             }
 
             Files::copyFile($example->runPath, $targetFilePath);
+            $this->linkRewriter->rewriteFile($targetFilePath);
             return FileProcessingResult::created($targetFilePath, 'New example file');
 
         } catch (\Throwable $e) {

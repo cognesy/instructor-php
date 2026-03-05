@@ -34,7 +34,7 @@ final class MockHttpStreamingSequenceSmokeTest extends TestCase
         $sequenceModel = SequenceModel::of('SeqItem');
 
         $stream = (new StructuredOutput)
-            ->withRuntime(makeStructuredRuntime(httpClient: $http, preset: 'openai'))
+            ->withRuntime(makeStructuredRuntime(httpClient: $http, llmDriver: 'openai'))
             ->withOutputMode(OutputMode::Json)
             ->with(
                 messages: 'Extract list of items',

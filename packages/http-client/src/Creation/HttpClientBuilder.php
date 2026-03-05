@@ -2,10 +2,6 @@
 
 namespace Cognesy\Http\Creation;
 
-use Cognesy\Config\ConfigPresets;
-use Cognesy\Config\Contracts\CanProvideConfig;
-use Cognesy\Config\Events\ConfigResolutionFailed;
-use Cognesy\Config\Events\ConfigResolved;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Config\DebugConfig;
@@ -26,18 +22,14 @@ use Cognesy\Http\Middleware\IdempotencyMiddleware;
 use Cognesy\Http\Middleware\RetryMiddleware;
 use Cognesy\Http\Middleware\RetryPolicy;
 use Cognesy\Http\Middleware\MiddlewareStack;
-use Cognesy\Utils\Result\Result;
 
 /**
  * Fluent builder for creating HttpClient instances in a type-safe way.
  */
 final class HttpClientBuilder
 {
-    private ConfigPresets $presets;
     private CanHandleEvents $events;
 
-    private ?string $preset = null;
-    private ?string $debugPreset = null;
     private ?HttpClientConfig $config = null;
     private ?DebugConfig $debugConfig = null;
     private ?CanHandleHttpRequest $driver = null;
@@ -49,34 +41,8 @@ final class HttpClientBuilder
 
     public function __construct(
         ?CanHandleEvents $events = null,
-        ?CanProvideConfig $configProvider = null,
     ) {
         $this->events = $this->resolveEvents($events);
-        $this->presets = ConfigPresets::using($configProvider);
-    }
-
-    /**
-     * @deprecated Use withPreset() for explicit builder semantics.
-     */
-    public function using(string $preset): self {
-        return $this->withPreset($preset);
-    }
-
-    public function withPreset(string $preset): self {
-        $this->preset = $preset;
-        return $this;
-    }
-
-    /**
-     * @deprecated Use withHttpDebugPreset() to keep method naming aligned with config group.
-     */
-    public function withDebugPreset(?string $preset): self {
-        return $this->withHttpDebugPreset($preset);
-    }
-
-    public function withHttpDebugPreset(?string $preset): self {
-        $this->debugPreset = $preset;
-        return $this;
     }
 
     public function withConfig(HttpClientConfig $config): self {
@@ -91,11 +57,6 @@ final class HttpClientBuilder
 
     public function withDebugConfig(DebugConfig $debugConfig): self {
         $this->debugConfig = $debugConfig;
-        return $this;
-    }
-
-    public function withConfigProvider(CanProvideConfig $configProvider): self {
-        $this->presets = $this->presets->withConfigProvider($configProvider);
         return $this;
     }
 
@@ -187,43 +148,11 @@ final class HttpClientBuilder
     }
 
     private function buildHttpClientConfig(): HttpClientConfig {
-        if ($this->config !== null) {
-            $config = match(true) {
-                ($this->driverName !== null) => $this->config->withOverrides(['driver' => $this->driverName]),
-                default => $this->config,
-            };
-            $this->events->dispatch(new ConfigResolved([
-                'group' => HttpClientConfig::group(),
-                'config' => $config,
-            ]));
-            return $config;
-        }
-
-        $result = Result::try(fn() => $this->presets
-            ->for(HttpClientConfig::group())
-            ->getOrDefault($this->preset));
-        if ($result->isFailure()) {
-            $this->events->dispatch(new ConfigResolutionFailed([
-                'group' => 'http',
-                'preset' => $this->preset,
-                'exception' => $result->exception(),
-            ]));
-            throw $result->exception();
-        }
-
-        $data = $result->unwrap();
-        $data['driver'] = match(true) {
-            ($this->driverName !== null) => $this->driverName,
-            default => $data['driver'] ?? '',
+        $config = $this->config ?? new HttpClientConfig();
+        return match (true) {
+            $this->driverName !== null => $config->withOverrides(['driver' => $this->driverName]),
+            default => $config,
         };
-
-        $this->events->dispatch(new ConfigResolved([
-            'group' => 'http',
-            'config' => $data,
-            'preset' => $this->preset,
-        ]));
-
-        return HttpClientConfig::fromArray($data);
     }
 
     private function buildDriver(HttpClientConfig $config): CanHandleHttpRequest {
@@ -238,37 +167,7 @@ final class HttpClientBuilder
     }
 
     private function buildDebugConfig(): DebugConfig {
-        $result = Result::try(fn() => match(true) {
-            $this->debugConfig !== null => $this->debugConfig,
-            default => $this->presets
-                ->for(DebugConfig::group())
-                ->getOrDefault($this->debugPreset),
-        });
-
-        if ($result->isFailure()) {
-            $this->events->dispatch(new ConfigResolutionFailed([
-                'group' => 'debug',
-                'preset' => $this->debugPreset,
-                'exception' => $result->exception(),
-            ]));
-            throw $result->exception();
-        }
-
-        $config = $result->unwrap();
-
-        $this->events->dispatch(new ConfigResolved([
-            'group' => 'debug',
-            'config' => $config,
-            'preset' => $this->debugPreset,
-        ]));
-
-        if (is_array($config)) {
-            return DebugConfig::fromArray($config);
-        }
-        if ($config instanceof DebugConfig) {
-            return $config;
-        }
-        throw new \InvalidArgumentException('Invalid debug configuration type');
+        return $this->debugConfig ?? new DebugConfig();
     }
 
     private function resolveEvents(?CanHandleEvents $events): CanHandleEvents {

@@ -1,7 +1,6 @@
 <?php
 require 'evals/boot.php';
 
-use Cognesy\Config\Settings;
 use Cognesy\Evals\Enums\NumberAggregationMethod;
 use Cognesy\Evals\Executors\Data\InferenceCases;
 use Cognesy\Evals\Executors\Data\InferenceData;
@@ -42,7 +41,15 @@ $data = new InferenceData(
     ),
 );
 
-$presets = array_keys(Settings::get('llm', 'presets'));
+$presetFiles = array_merge(
+    glob(dirname(__DIR__, 2) . '/config/llm/presets/*.yaml') ?: [],
+    glob(dirname(__DIR__, 2) . '/config/llm/presets/*.yml') ?: [],
+);
+$presets = array_map(
+    static fn(string $file): string => pathinfo($file, PATHINFO_FILENAME),
+    $presetFiles,
+);
+sort($presets);
 //$presets = [
 //    'deepseek-r', // stream > text - will be solved by removing outputmode
 //    'minimaxi', // stream sync > unrestricted json_schema json

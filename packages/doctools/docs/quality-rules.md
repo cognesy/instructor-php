@@ -3,7 +3,7 @@
 Doctools quality checks are rule-driven.
 
 Rules are loaded from:
-1. Profile baseline (`packages/doctools/config/quality/profiles/<profile>.yaml`)
+1. Profile baseline (`packages/doctools/resources/config/quality/profiles/<profile>.yaml`)
 2. Package-local docs rules (`<docs-root>/.qa/rules.yaml`)
 3. Explicit CLI files (`--rules`), applied last
 
@@ -66,4 +66,3 @@ Use `--no-strict` to continue without ast-grep checks.
 3. Run `php bin/instructor-docs qa --source-dir <package>/docs --profile instructor`.
 4. Add `--format json` in CI for machine-readable reports.
 5. Keep rule IDs stable to support predictable overrides.
-

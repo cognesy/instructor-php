@@ -10,7 +10,7 @@ use Cognesy\Polyglot\Inference\LLMProvider;
 final readonly class StructuredOutputPolicy
 {
     public function __construct(
-        public ?string $llmPreset = null,
+        public ?LLMProvider $llm = null,
         public ?string $model = null,
         public int $defaultMaxRetries = 3,
         public ?OutputMode $outputMode = null,
@@ -19,7 +19,7 @@ final readonly class StructuredOutputPolicy
     ) {}
 
     public function with(
-        ?string $llmPreset = null,
+        ?LLMProvider $llm = null,
         ?string $model = null,
         ?int $defaultMaxRetries = null,
         ?OutputMode $outputMode = null,
@@ -27,7 +27,7 @@ final readonly class StructuredOutputPolicy
         ?bool $useMaybe = null,
     ): self {
         return new self(
-            llmPreset: $llmPreset ?? $this->llmPreset,
+            llm: $llm ?? $this->llm,
             model: $model ?? $this->model,
             defaultMaxRetries: $defaultMaxRetries ?? $this->defaultMaxRetries,
             outputMode: $outputMode ?? $this->outputMode,
@@ -36,8 +36,8 @@ final readonly class StructuredOutputPolicy
         );
     }
 
-    public function withLLMPreset(string $preset): self {
-        return $this->with(llmPreset: $preset);
+    public function withLLMProvider(LLMProvider $llm): self {
+        return $this->with(llm: $llm);
     }
 
     public function withModel(string $model): self {
@@ -45,10 +45,7 @@ final readonly class StructuredOutputPolicy
     }
 
     public function provider(): LLMProvider {
-        return match (true) {
-            $this->llmPreset !== null => LLMProvider::using($this->llmPreset),
-            default => LLMProvider::new(),
-        };
+        return $this->llm ?? LLMProvider::new();
     }
 
     public function withRequest(StructuredOutputRequest $request): StructuredOutputRequest {

@@ -2,6 +2,7 @@
 
 use Cognesy\Evals\Executors\Data\InferenceCases;
 use Cognesy\Evals\Executors\Data\InferenceCaseParams;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 describe('InferenceCases capability filtering', function () {
@@ -9,7 +10,7 @@ describe('InferenceCases capability filtering', function () {
     it('filters out JsonSchema mode for Anthropic', function () {
         // Use preserve_keys: false to avoid key collision issues with generators
         $cases = iterator_to_array(InferenceCases::only(
-            presets: ['anthropic'],
+            connections: ['anthropic'],
             modes: [OutputMode::JsonSchema, OutputMode::Tools, OutputMode::Text],
         ), false);
 
@@ -24,7 +25,7 @@ describe('InferenceCases capability filtering', function () {
 
     it('filters out Json mode for Anthropic', function () {
         $cases = iterator_to_array(InferenceCases::only(
-            presets: ['anthropic'],
+            connections: ['anthropic'],
             modes: [OutputMode::Json, OutputMode::MdJson],
         ), false);
 
@@ -36,7 +37,7 @@ describe('InferenceCases capability filtering', function () {
 
     it('filters out JsonSchema mode for A21', function () {
         $cases = iterator_to_array(InferenceCases::only(
-            presets: ['a21'],
+            connections: ['a21'],
             modes: [OutputMode::JsonSchema, OutputMode::Json],
         ), false);
 
@@ -48,7 +49,7 @@ describe('InferenceCases capability filtering', function () {
 
     it('filters out JsonSchema mode for Gemini OAI', function () {
         $cases = iterator_to_array(InferenceCases::only(
-            presets: ['gemini-oai'],
+            connections: ['gemini-oai'],
             modes: [OutputMode::JsonSchema, OutputMode::Json],
         ), false);
 
@@ -60,7 +61,7 @@ describe('InferenceCases capability filtering', function () {
 
     it('filters out JsonSchema mode for SambaNova', function () {
         $cases = iterator_to_array(InferenceCases::only(
-            presets: ['sambanova'],
+            connections: ['sambanova'],
             modes: [OutputMode::JsonSchema, OutputMode::Json],
         ), false);
 
@@ -72,7 +73,7 @@ describe('InferenceCases capability filtering', function () {
 
     it('filters out Tools mode for Perplexity', function () {
         $cases = iterator_to_array(InferenceCases::only(
-            presets: ['perplexity'],
+            connections: ['perplexity'],
             modes: [OutputMode::Tools, OutputMode::Json, OutputMode::Text],
         ), false);
 
@@ -85,7 +86,7 @@ describe('InferenceCases capability filtering', function () {
 
     it('includes all modes for OpenAI (full capabilities)', function () {
         $cases = iterator_to_array(InferenceCases::only(
-            presets: ['openai'],
+            connections: ['openai'],
             stream: [false], // Reduce combinations
         ), false);
 
@@ -98,10 +99,10 @@ describe('InferenceCases capability filtering', function () {
         expect($modes)->toContain(OutputMode::Text);
     });
 
-    it('filters Tools mode for deepseek-r (reasoner) preset', function () {
-        // 'deepseek-r' is the reasoner preset in the default config
+    it('filters Tools mode for deepseek-r (reasoner) connection', function () {
+        // 'deepseek-r' is the reasoner connection in the default set
         $cases = iterator_to_array(InferenceCases::only(
-            presets: ['deepseek-r'],
+            connections: ['deepseek-r'],
             modes: [OutputMode::Tools, OutputMode::Text],
         ), false);
 
@@ -112,10 +113,10 @@ describe('InferenceCases capability filtering', function () {
         expect($modes)->toContain(OutputMode::Text);
     });
 
-    it('includes Tools mode for deepseek (chat) preset', function () {
-        // 'deepseek' is the chat preset in the default config
+    it('includes Tools mode for deepseek (chat) connection', function () {
+        // 'deepseek' is the chat connection in the default set
         $cases = iterator_to_array(InferenceCases::only(
-            presets: ['deepseek'],
+            connections: ['deepseek'],
             modes: [OutputMode::Tools, OutputMode::Text],
         ), false);
 
@@ -128,13 +129,13 @@ describe('InferenceCases capability filtering', function () {
 
     it('can disable capability filtering', function () {
         $filteredCases = iterator_to_array(InferenceCases::only(
-            presets: ['anthropic'],
+            connections: ['anthropic'],
             modes: [OutputMode::JsonSchema, OutputMode::Text],
             filterByCapabilities: true,
         ), false);
 
         $unfilteredCases = iterator_to_array(InferenceCases::only(
-            presets: ['anthropic'],
+            connections: ['anthropic'],
             modes: [OutputMode::JsonSchema, OutputMode::Text],
             filterByCapabilities: false,
         ), false);
@@ -148,16 +149,17 @@ describe('InferenceCases capability filtering', function () {
 
     it('generates InferenceCaseParams objects', function () {
         $cases = iterator_to_array(InferenceCases::only(
-            presets: ['openai'],
+            connections: ['openai'],
             modes: [OutputMode::Text],
             stream: [false],
         ), false);
 
         expect($cases)->toHaveCount(1);
         expect($cases[0])->toBeInstanceOf(InferenceCaseParams::class);
-        expect($cases[0]->preset)->toBe('openai');
+        expect($cases[0]->connection)->toBe('openai');
         expect($cases[0]->mode)->toBe(OutputMode::Text);
         expect($cases[0]->isStreamed)->toBeFalse();
+        expect($cases[0]->llmConfig)->toBeInstanceOf(LLMConfig::class);
     });
 
 });
@@ -178,29 +180,29 @@ describe('InferenceCases static methods', function () {
         expect($count)->toBeGreaterThanOrEqual(1);
     });
 
-    it('except() excludes specified presets', function () {
+    it('except() excludes specified connections', function () {
         $cases = iterator_to_array(InferenceCases::except(
-            presets: ['anthropic', 'perplexity', 'deepseek', 'deepseek-r'],
+            connections: ['anthropic', 'perplexity', 'deepseek', 'deepseek-r'],
             modes: [OutputMode::Text],
             stream: [false],
         ), false);
 
-        $presets = array_map(fn($case) => $case->preset, $cases);
-        expect($presets)->not->toContain('anthropic');
-        expect($presets)->not->toContain('perplexity');
-        expect($presets)->toContain('openai');
+        $connections = array_map(fn($case) => $case->connection, $cases);
+        expect($connections)->not->toContain('anthropic');
+        expect($connections)->not->toContain('perplexity');
+        expect($connections)->toContain('openai');
     });
 
-    it('only() includes only specified presets', function () {
+    it('only() includes only specified connections', function () {
         $cases = iterator_to_array(InferenceCases::only(
-            presets: ['openai'],
+            connections: ['openai'],
             modes: [OutputMode::Text],
             stream: [false],
         ), false);
 
-        $presets = array_map(fn($case) => $case->preset, $cases);
-        expect($presets)->toHaveCount(1);
-        expect($presets[0])->toBe('openai');
+        $connections = array_map(fn($case) => $case->connection, $cases);
+        expect($connections)->toHaveCount(1);
+        expect($connections[0])->toBe('openai');
     });
 
 });

@@ -31,15 +31,20 @@ Provided by `InstructorServiceProvider::provides()`:
 ## Facades
 
 `StructuredOutput` facade:
-- `StructuredOutput::using(string $preset): Cognesy\Instructor\StructuredOutput|StructuredOutputFake`
+- `StructuredOutput::connection(string $name): Cognesy\Instructor\StructuredOutput|StructuredOutputFake`
+- `StructuredOutput::fromLLMConfig(LLMConfig $config): Cognesy\Instructor\StructuredOutput|StructuredOutputFake`
 - `StructuredOutput::fake(array $responses = []): StructuredOutputFake`
 - forwards to `Cognesy\Instructor\StructuredOutput` (for example: `with(...)->get()`)
 
 `Inference` facade:
+- `Inference::connection(string $name): Cognesy\Polyglot\Inference\Inference|InferenceFake`
+- `Inference::fromLLMConfig(LLMConfig $config): Cognesy\Polyglot\Inference\Inference|InferenceFake`
 - `Inference::fake(array $responses = []): InferenceFake`
 - forwards to `Cognesy\Polyglot\Inference\Inference` (for example: `with(...)->get()`)
 
 `Embeddings` facade:
+- `Embeddings::connection(string $name): Cognesy\Polyglot\Embeddings\Embeddings|EmbeddingsFake`
+- `Embeddings::fromEmbeddingsConfig(EmbeddingsConfig $config): Cognesy\Polyglot\Embeddings\Embeddings|EmbeddingsFake`
 - `Embeddings::fake(array $responses = []): EmbeddingsFake`
 - forwards to `Cognesy\Polyglot\Embeddings\Embeddings` (for example: `withInputs(...)->first()`)
 
@@ -54,17 +59,17 @@ Provided by `InstructorServiceProvider::provides()`:
 
 `StructuredOutputFake`:
 - setup: `respondWith(string $class, mixed $response)`, `respondWithSequence(string $class, array $responses)`
-- assertions: `assertExtracted`, `assertExtractedTimes`, `assertNothingExtracted`, `assertExtractedWith`, `assertUsedPreset`, `assertUsedModel`
+- assertions: `assertExtracted`, `assertExtractedTimes`, `assertNothingExtracted`, `assertExtractedWith`, `assertUsedConnection`, `assertUsedModel`
 - inspection: `recorded(): array`
 
 `InferenceFake`:
 - setup: `respondWith(string $pattern, string|array $response)`, `respondWithSequence(array $responses)`
-- assertions: `assertCalled`, `assertCalledTimes`, `assertNotCalled`, `assertCalledWith`, `assertUsedPreset`, `assertUsedModel`, `assertCalledWithTools`
+- assertions: `assertCalled`, `assertCalledTimes`, `assertNotCalled`, `assertCalledWith`, `assertUsedConnection`, `assertUsedModel`, `assertCalledWithTools`
 - inspection: `recorded(): array`
 
 `EmbeddingsFake`:
 - setup: `respondWith(string $pattern, array $embedding)`, `withDimensions(int $dimensions)`
-- assertions: `assertCalled`, `assertCalledTimes`, `assertNotCalled`, `assertCalledWith`, `assertUsedPreset`, `assertUsedModel`
+- assertions: `assertCalled`, `assertCalledTimes`, `assertNotCalled`, `assertCalledWith`, `assertUsedConnection`, `assertUsedModel`
 - inspection: `recorded(): array`
 
 `AgentCtrlFake`:
@@ -76,7 +81,7 @@ Provided by `InstructorServiceProvider::provides()`:
 ## Artisan Commands
 
 - `instructor:install {--force}`
-- `instructor:test {--preset=} {--inference}`
+- `instructor:test {--connection=} {--inference}`
 - `make:response-model {name} {--collection} {--nested} {--description=} {--force}`
 
 ## Publish Tags
@@ -88,7 +93,7 @@ From `InstructorServiceProvider`:
 ## Config File
 
 Main config file:
-- `packages/laravel/config/instructor.php`
+- `packages/laravel/resources/config/instructor.php`
 
 Top-level keys:
 - `default`

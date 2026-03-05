@@ -1,0 +1,254 @@
+site_name: 'Instructor for PHP'
+site_author: 'Dariusz Debowczyk'
+site_description: 'A lightweight library for structured outputs with LLMs.'
+repo_name: instructor-php
+repo_url: 'https://github.com/cognesy/instructor-php'
+site_url: 'https://cognesy.github.io/instructor-php/'
+edit_uri: edit/main/builds/docs-mkdocs/
+copyright: 'Copyright &copy; 2024 Dariusz Debowczyk'
+docs_dir: builds/docs-mkdocs
+site_dir: builds/docs-site
+theme:
+  name: material
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil
+    view: material/eye
+  features:
+    - announce.dismiss
+    - content.action.edit
+    - content.action.view
+    - content.code.annotate
+    - content.code.copy
+    - content.code.select
+    - content.tabs.link
+    - content.tooltips
+    - header.autohide
+    - navigation.expand
+    - navigation.footer
+    - navigation.indexes
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
+    - navigation.prune
+    - navigation.sections
+    - navigation.tabs
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+  palette:
+    -
+      scheme: default
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: 'Switch to dark mode'
+    -
+      scheme: slate
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: 'Switch to light mode'
+  font:
+    text: Roboto
+    code: 'Roboto Mono'
+markdown_extensions:
+  - abbr
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  -
+    toc:
+      permalink: true
+  -
+    pymdownx.arithmatex:
+      generic: true
+  -
+    pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  -
+    pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  -
+    pymdownx.magiclink:
+      normalize_issue_symbols: true
+      repo_url_shorthand: true
+      user: cognesy
+      repo: instructor-php
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  -
+    pymdownx.superfences:
+      custom_fences:
+        -
+          name: mermaid
+          class: mermaid
+          format: pymdownx.superfences.fence_code_format
+  -
+    pymdownx.tabbed:
+      alternate_style: true
+      combine_header_slug: true
+  -
+    pymdownx.tasklist:
+      custom_checkbox: true
+plugins:
+  -
+    search:
+      separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+extra:
+  social:
+    -
+      icon: fontawesome/brands/twitter
+      link: 'https://twitter.com/ddebowczyk'
+    -
+      icon: fontawesome/brands/github
+      link: 'https://github.com/cognesy'
+extra_css:
+  - stylesheets/nav.css
+nav:
+  -
+    Main:
+      -
+        Overview: index.md
+      -
+        'Getting Started': getting-started.md
+      -
+        Features: features.md
+      -
+        Packages: packages.md
+      -
+        'Use Cases': use-cases.md
+      -
+        'Why Instructor': why-instructor.md
+      -
+        'Release Notes':
+          - { Overview: release-notes/versions.md }
+  -
+    Packages:
+      -
+        Overview: packages/index.md
+      -
+        Instructor:
+          - { Introduction: packages/instructor/introduction.md }
+          - { Quickstart: packages/instructor/quickstart.md }
+          - { Setup: packages/instructor/setup.md }
+          - { Upgrade: packages/instructor/upgrade.md }
+          - { 'Cli Tools': packages/instructor/cli_tools.md }
+          - { Concepts: [{ Overview: packages/instructor/concepts/overview.md }, { Why: packages/instructor/concepts/why.md }] }
+          - { Essentials: [{ Usage: packages/instructor/essentials/usage.md }, { 'Data Model': packages/instructor/essentials/data_model.md }, { Validation: packages/instructor/essentials/validation.md }, { Modes: packages/instructor/essentials/modes.md }, { Scalars: packages/instructor/essentials/scalars.md }, { Demonstrations: packages/instructor/essentials/demonstrations.md }, { 'Customize Prompts': packages/instructor/essentials/customize_prompts.md }, { Configuration: packages/instructor/essentials/configuration.md }] }
+          - { Advanced: [{ Partials: packages/instructor/advanced/partials.md }, { Sequences: packages/instructor/advanced/sequences.md }, { Structures: packages/instructor/advanced/structures.md }, { 'Function Calls': packages/instructor/advanced/function_calls.md }, { 'Manual Schemas': packages/instructor/advanced/manual_schemas.md }, { 'Json Extraction': packages/instructor/advanced/json_extraction.md }, { 'Output Formats': packages/instructor/advanced/output_formats.md }, { Prompts: packages/instructor/advanced/prompts.md }, { 'Model Options': packages/instructor/advanced/model_options.md }, { 'Structure To Structure': packages/instructor/advanced/structure-to-structure.md }] }
+          - { Techniques: [{ Prompting: packages/instructor/techniques/prompting.md }, { Classification: packages/instructor/techniques/classification.md }, { Search: packages/instructor/techniques/search.md }] }
+          - { Internals: [{ Instructor: packages/instructor/internals/instructor.md }, { Lifecycle: packages/instructor/internals/lifecycle.md }, { 'Configuration Path': packages/instructor/internals/configuration_path.md }, { 'Config Files': packages/instructor/internals/config_files.md }, { 'Settings Class': packages/instructor/internals/settings_class.md }, { Environment: packages/instructor/internals/environment.md }, { Events: packages/instructor/internals/events.md }, { 'Response Models': packages/instructor/internals/response_models.md }, { Debugging: packages/instructor/internals/debugging.md }] }
+          - { Misc: [{ Help: packages/instructor/misc/help.md }, { 'Llm Providers': packages/instructor/misc/llm_providers.md }, { Philosophy: packages/instructor/misc/philosophy.md }, { Contributing: packages/instructor/misc/contributing.md }] }
+      -
+        Polyglot:
+          - { Overview: packages/polyglot/overview.md }
+          - { Quickstart: packages/polyglot/quickstart.md }
+          - { Setup: packages/polyglot/setup.md }
+          - { Essentials: [{ Overview: packages/polyglot/essentials/overview.md }, { 'Inference Class': packages/polyglot/essentials/inference-class.md }, { 'Creating Requests': packages/polyglot/essentials/creating-requests.md }, { 'Request Options': packages/polyglot/essentials/request-options.md }, { 'Response Handling': packages/polyglot/essentials/response-handling.md }] }
+          - { Modes: [{ Overview: packages/polyglot/modes/overview.md }, { Tools: packages/polyglot/modes/tools.md }, { 'Json Schema': packages/polyglot/modes/json-schema.md }, { Json: packages/polyglot/modes/json.md }, { 'Md Json': packages/polyglot/modes/md-json.md }, { Text: packages/polyglot/modes/text.md }] }
+          - { Streaming: [{ Overview: packages/polyglot/streaming/overview.md }, { Misc: packages/polyglot/streaming/misc.md }] }
+          - { Embeddings: [{ Overview: packages/polyglot/embeddings/overview.md }, { 'Work With Embeddings': packages/polyglot/embeddings/work-with-embeddings.md }, { Optimization: packages/polyglot/embeddings/optimization.md }] }
+          - { Advanced: [{ 'Custom Config': packages/polyglot/advanced/custom-config.md }, { 'Custom Http Client': packages/polyglot/advanced/custom-http-client.md }, { 'Context Caching': packages/polyglot/advanced/context-caching.md }, { 'Connection Mgmt': packages/polyglot/advanced/connection-mgmt.md }, { 'Json Schema': packages/polyglot/advanced/json-schema.md }, { Extending: packages/polyglot/advanced/extending.md }] }
+          - { Internals: [{ Overview: packages/polyglot/internals/overview.md }, { Lifecycle: packages/polyglot/internals/lifecycle.md }, { Configuration: packages/polyglot/internals/configuration.md }, { Providers: packages/polyglot/internals/providers.md }, { Adapters: packages/polyglot/internals/adapters.md }, { 'Http Client': packages/polyglot/internals/http-client.md }, { 'Request Response': packages/polyglot/internals/request-response.md }, { Events: packages/polyglot/internals/events.md }, { 'Public Api': packages/polyglot/internals/public-api.md }] }
+          - { Troubleshooting: [{ Overview: packages/polyglot/troubleshooting/overview.md }, { Debugging: packages/polyglot/troubleshooting/debugging.md }, { 'Issues Connection': packages/polyglot/troubleshooting/issues-connection.md }, { 'Issues Authentication': packages/polyglot/troubleshooting/issues-authentication.md }, { 'Issues Configuration': packages/polyglot/troubleshooting/issues-configuration.md }, { 'Issues Rate Limits': packages/polyglot/troubleshooting/issues-rate-limits.md }, { 'Issues Streaming': packages/polyglot/troubleshooting/issues-streaming.md }, { 'Issues Model Specific': packages/polyglot/troubleshooting/issues-model-specific.md }, { 'Issues Provider Specific': packages/polyglot/troubleshooting/issues-provider-specific.md }] }
+      -
+        Agents:
+          - { Introduction: packages/agents/01-introduction.md }
+          - { 'Basic Agent': packages/agents/02-basic-agent.md }
+          - { 'Basic Concepts': packages/agents/03-basic-concepts.md }
+          - { 'Controlling The Loop': packages/agents/04-controlling-the-loop.md }
+          - { Tools: packages/agents/05-tools.md }
+          - { 'Building Tools': packages/agents/06-building-tools.md }
+          - { 'Context And Compilers': packages/agents/07-context-and-compilers.md }
+          - { Hooks: packages/agents/08-hooks.md }
+          - { 'Stop Conditions': packages/agents/09-stop-conditions.md }
+          - { Testing: packages/agents/10-testing.md }
+          - { 'State Internals': packages/agents/11-state-internals.md }
+          - { 'Tool Calling Internals': packages/agents/12-tool-calling-internals.md }
+          - { 'Agent Builder': packages/agents/13-agent-builder.md }
+          - { 'Agent Templates': packages/agents/14-agent-templates.md }
+          - { Subagents: packages/agents/15-subagents.md }
+          - { 'Session Runtime': packages/agents/16-session-runtime.md }
+          - { 'Building Tools Advanced': packages/agents/17-building-tools-advanced.md }
+      -
+        'HTTP Client':
+          - { Overview: packages/http/1-overview.md }
+          - { 'Getting Started': packages/http/2-getting-started.md }
+          - { 'Making Requests': packages/http/3-making-requests.md }
+          - { 'Handling Responses': packages/http/4-handling-responses.md }
+          - { 'Streaming Responses': packages/http/5-streaming-responses.md }
+          - { Pooling: packages/http/6-pooling.md }
+          - { Middleware: packages/http/10-middleware.md }
+          - { 'Changing Client': packages/http/7-changing-client.md }
+          - { 'Changing Client Config': packages/http/8-changing-client-config.md }
+          - { 'Custom Clients': packages/http/9-1-custom-clients.md }
+          - { 'Processing With Middleware': packages/http/11-processing-with-middleware.md }
+          - { 'Reliability Middleware': packages/http/12-reliability-middleware.md }
+          - { 'Record Replay': packages/http/13-record-replay.md }
+          - { 'Upgrade Guide': packages/http/14-upgrade-guide.md }
+      -
+        Laravel:
+          - { Overview: packages/laravel/index.md }
+          - { Installation: packages/laravel/installation.md }
+          - { Configuration: packages/laravel/configuration.md }
+          - { Facades: packages/laravel/facades.md }
+          - { 'Response Models': packages/laravel/response-models.md }
+          - { Agents: packages/laravel/agents.md }
+          - { Events: packages/laravel/events.md }
+          - { Commands: packages/laravel/commands.md }
+          - { Testing: packages/laravel/testing.md }
+          - { Advanced: packages/laravel/advanced.md }
+          - { Troubleshooting: packages/laravel/troubleshooting.md }
+      -
+        Agent-ctrl:
+          - { Overview: packages/agent-ctrl/1-overview.md }
+          - { 'Getting Started': packages/agent-ctrl/2-getting-started.md }
+          - { Streaming: packages/agent-ctrl/3-streaming.md }
+          - { 'Session Management': packages/agent-ctrl/4-session-management.md }
+          - { 'Agent Options': packages/agent-ctrl/5-agent-options.md }
+          - { 'Response Object': packages/agent-ctrl/6-response-object.md }
+          - { Troubleshooting: packages/agent-ctrl/7-troubleshooting.md }
+          - { 'Claude Code Bridge': packages/agent-ctrl/8-claude-code-bridge.md }
+          - { 'Codex Bridge': packages/agent-ctrl/9-codex-bridge.md }
+          - { 'Opencode Bridge': packages/agent-ctrl/10-opencode-bridge.md }
+      -
+        Doctools:
+          - { Overview: packages/doctools/index.md }
+          - { 'Navigation Ordering': packages/doctools/navigation-ordering.md }
+          - { 'Package Discovery': packages/doctools/package-discovery.md }
+          - { 'Quality Rules': packages/doctools/quality-rules.md }
+          - { 'Examples Configuration': packages/doctools/examples-configuration.md }
+          - { 'Llm Docs': packages/doctools/llm-docs.md }
+      -
+        Sandbox:
+          - { Overview: packages/sandbox/1-overview.md }
+          - { 'Getting Started': packages/sandbox/2-getting-started.md }
+          - { 'Execution Policy': packages/sandbox/3-execution-policy.md }
+          - { Drivers: packages/sandbox/4-drivers.md }
+          - { 'Streaming And Results': packages/sandbox/5-streaming-and-results.md }
+          - { Testing: packages/sandbox/6-testing.md }
+          - { Troubleshooting: packages/sandbox/7-troubleshooting.md }
+  -
+    Cookbook:
+      -
+        Introduction: cookbook/introduction.md
+      -
+        Contributing: cookbook/contributing.md
+      -
+        'Test Group':
+          - { 'Test Example': cookbook/basics/TestGroup/.md }

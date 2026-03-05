@@ -79,7 +79,7 @@ $text = Inference::fromRuntime(InferenceRuntime::fromConfig($config))
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
-$text = Inference::fromDsn('preset=openai,model=gpt-4.1-nano,maxTokens=256')
+$text = Inference::fromDsn('driver=openai,model=gpt-4.1-nano,maxTokens=256')
     ->withMessages('Write a commit message for a bugfix.')
     ->get();
 ```

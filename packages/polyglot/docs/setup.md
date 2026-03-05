@@ -154,12 +154,15 @@ INSTRUCTOR_CONFIG_PATHS='/path/to/your/config,alternative/path'
 
 ### Overriding Configuration Location
 
-You can use `Settings` class static `setPath()` method to override the value of config path set in environment variable with your own value.
+Use explicit paths in your bootstrap to control configuration location.
 
 ```php
-use Cognesy\Config\Settings;
+use Cognesy\Config\ConfigLoader;
 
-Settings::setPath('/your/path/to/config');
+$loader = ConfigLoader::fromPaths(
+    __DIR__ . '/config/llm/presets/openai.yaml',
+    __DIR__ . '/config/embed/presets/openai.yaml',
+);
 ```
 
 

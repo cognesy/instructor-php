@@ -17,7 +17,7 @@ it('streams partial responses and assembles final content (Gemini SSE)', functio
         ], addDone: true);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'gemini', httpClient: $http))
+    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('gemini'), httpClient: $http))
         ->withModel('gemini-1.5-flash')
         ->withMessages('Greet')
         ->withStreaming(true)
@@ -64,7 +64,7 @@ it('correctly accumulates cumulative token usage in streaming (regression test)'
 
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'gemini', httpClient: $http))
+    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('gemini'), httpClient: $http))
         ->withModel('gemini-1.5-flash')
         ->withMessages('Test cumulative usage')
         ->withStreaming(true)

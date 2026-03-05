@@ -1,6 +1,5 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Config\Exceptions\ConfigurationException;
 use Cognesy\Http\Config\HttpClientConfig;
 
 it('coerces typed http client config values from dsn', function () {
@@ -20,10 +19,10 @@ it('coerces typed http client config values from dsn', function () {
 
 it('throws configuration exception for invalid integer dsn values', function () {
     expect(fn() => HttpClientConfig::fromDsn('driver=curl,connectTimeout=abc'))
-        ->toThrow(ConfigurationException::class, 'connectTimeout');
+        ->toThrow(\InvalidArgumentException::class, 'connectTimeout');
 });
 
 it('throws configuration exception for invalid boolean dsn values', function () {
     expect(fn() => HttpClientConfig::fromDsn('driver=curl,failOnError=maybe'))
-        ->toThrow(ConfigurationException::class, 'failOnError');
+        ->toThrow(\InvalidArgumentException::class, 'failOnError');
 });

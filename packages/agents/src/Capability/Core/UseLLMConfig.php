@@ -12,8 +12,7 @@ use Cognesy\Polyglot\Inference\LLMProvider;
 final readonly class UseLLMConfig implements CanProvideAgentCapability
 {
     public function __construct(
-        private ?string $preset = null,
-        private ?string $model = null,
+        private ?LLMProvider $llm = null,
         private int $maxRetries = 1,
     ) {}
 
@@ -24,14 +23,7 @@ final readonly class UseLLMConfig implements CanProvideAgentCapability
 
     #[\Override]
     public function configure(CanConfigureAgent $agent): CanConfigureAgent {
-        $llm = match ($this->preset) {
-            null => LLMProvider::new(),
-            default => LLMProvider::using($this->preset),
-        };
-
-        if ($this->model !== null) {
-            $llm = $llm->withModel($this->model);
-        }
+        $llm = $this->llm ?? LLMProvider::new();
 
         $retryPolicy = match (true) {
             $this->maxRetries > 1 => new InferenceRetryPolicy(maxAttempts: $this->maxRetries),

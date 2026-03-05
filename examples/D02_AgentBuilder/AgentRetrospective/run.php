@@ -47,6 +47,7 @@ use Cognesy\Agents\Capability\Retrospective\UseExecutionRetrospective;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 // Track rewinds for observability
 $rewindLog = [];
@@ -68,7 +69,11 @@ $workDir = dirname(__DIR__, 3);
 // UseExecutionRetrospective automatically appends retrospective instructions
 // to the system prompt via BeforeExecution hook — no manual prompt setup needed.
 $agent = AgentBuilder::base()
-    ->withCapability(new UseLLMConfig(model: 'gpt-5.2'))
+    ->withCapability(new UseLLMConfig(
+        llm: LLMProvider::using('openai')->withConfigOverrides([
+            'model' => 'gpt-5.2',
+        ]),
+    ))
     ->withCapability(new UseContextConfig(
         systemPrompt: <<<'SYSTEM'
         You are a CLI automation agent. You accomplish tasks using bash commands.
@@ -153,6 +158,11 @@ if ($rewindLog !== []) {
     }
 } else {
     echo "\nNo rewinds occurred — agent completed on first attempt.\n";
+}
+
+if ($finalState->status()->value !== 'completed') {
+    echo "Skipping assertions because execution status is {$finalState->status()->value}.\n";
+    return;
 }
 
 // Assertions

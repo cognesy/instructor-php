@@ -23,6 +23,7 @@ use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Stream\Contracts\Reducer;
@@ -38,7 +39,13 @@ function mmr_makeResponseModelAndGenerator(FakeInferenceDriver $driver, EventDis
     $schemaRenderer = new StructuredOutputSchemaRenderer($config);
     $responseModelFactory = new ResponseModelFactory($schemaRenderer, $config, $events);
 
-    $llmProvider = LLMProvider::using('openai')->withDriver($driver);
+    $llmProvider = LLMProvider::fromLLMConfig(new LLMConfig(
+        driver: 'openai',
+        apiUrl: 'https://api.openai.com/v1',
+        apiKey: 'test',
+        endpoint: '/chat/completions',
+        model: 'gpt-4o-mini',
+    ))->withDriver($driver);
     $inferenceProvider = new InferenceProvider(
         InferenceRuntime::fromProvider($llmProvider),
         new RequestMaterializer(),

@@ -15,7 +15,7 @@ final readonly class UseReActConfig implements CanProvideAgentCapability
     public function __construct(
         private CanCreateInference $inference,
         private CanCreateStructuredOutput $structuredOutput,
-        private ?string $preset = null,
+        private ?LLMProvider $llm = null,
         private string $model = '',
         private array $options = [],
         private bool $finalViaInference = false,
@@ -32,10 +32,7 @@ final readonly class UseReActConfig implements CanProvideAgentCapability
 
     #[\Override]
     public function configure(CanConfigureAgent $agent): CanConfigureAgent {
-        $llm = match ($this->preset) {
-            null => LLMProvider::new(),
-            default => LLMProvider::using($this->preset),
-        };
+        $llm = $this->llm ?? LLMProvider::new();
 
         return $agent->withToolUseDriver(new ReActDriver(
             llm: $llm,

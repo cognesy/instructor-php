@@ -31,7 +31,7 @@ class WriteFileTool extends SimpleTool
         return new self(baseDir: $baseDir);
     }
 
-    public static function withPolicy(ExecutionPolicy $policy): self {
+    public static function fromPolicy(ExecutionPolicy $policy): self {
         return new self(policy: $policy);
     }
 

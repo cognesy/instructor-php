@@ -5,9 +5,9 @@ namespace Cognesy\Polyglot\Embeddings\Contracts;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 
 /**
- * Contract for resolving Embeddings configuration from various sources.
- * Implementations handle preset resolution, DSN parsing and override merging
- * to produce a validated, immutable EmbeddingsConfig instance.
+ * Contract for resolving finalized embeddings configuration objects.
+ * Implementations return validated, immutable EmbeddingsConfig instances
+ * regardless of how data was obtained at the application edge.
  */
 interface CanResolveEmbeddingsConfig
 {

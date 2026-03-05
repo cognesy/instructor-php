@@ -12,7 +12,7 @@ describe('DocsConfig', function () {
             $config = DocsConfig::defaults();
 
             expect($config->mainTitle)->toBe('Instructor for PHP');
-            expect($config->mkdocsTarget)->toBe('./docs-mkdocs');
+            expect($config->mkdocsTarget)->toBe('./builds/docs-mkdocs');
         });
 
         it('includes llms defaults', function () {
@@ -32,7 +32,7 @@ describe('DocsConfig', function () {
 
         it('loads llms configuration from yaml', function () {
             // This test uses the actual config file
-            $config = DocsConfig::fromFile('config/docs.yaml');
+            $config = DocsConfig::fromFile('packages/doctools/resources/config/docs.yml');
 
             expect($config->llmsEnabled)->toBeTrue();
             expect($config->llmsIndexFile)->toBe('llms.txt');

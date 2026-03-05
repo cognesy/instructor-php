@@ -10,7 +10,7 @@ use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 /**
- * @deprecated 2.0 Use `StructuredOutput::using(...)->with(...)->get()` or
+ * @deprecated 2.0 Use `StructuredOutput::fromLLMConfig(...)->with(...)->get()` or
  *             `StructuredOutputRuntime::fromProvider(...)->create(...)->get()` instead.
  */
 trait HandlesInference {

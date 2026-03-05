@@ -1,4 +1,5 @@
-<?php
+<?php declare(strict_types=1);
+
 $loader = require 'vendor/autoload.php';
 
 ini_set('display_errors', 1);

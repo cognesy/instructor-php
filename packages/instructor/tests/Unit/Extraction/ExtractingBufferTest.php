@@ -20,7 +20,7 @@ describe('ExtractingBuffer', function () {
     });
 
     it('creates buffer with custom extractors', function () {
-        $buffer = ExtractingBuffer::withExtractors(OutputMode::Json, new DirectJsonExtractor());
+        $buffer = ExtractingBuffer::fromExtractors(OutputMode::Json, new DirectJsonExtractor());
 
         expect($buffer->extractors())->toHaveCount(1);
         expect($buffer->extractors()[0])->toBeInstanceOf(DirectJsonExtractor::class);

@@ -20,7 +20,7 @@ it('OpenAI embeddings golden: multiple inputs + usage', function () {
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
     $res = Embeddings::fromRuntime(
-        EmbeddingsRuntime::using(preset: 'openai', httpClient: $http)
+        EmbeddingsRuntime::fromEmbeddingsConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::embeddings('openai'), httpClient: $http)
     )
         ->withModel('text-embedding-3-small')
         ->withInputs(['hello', 'world'])

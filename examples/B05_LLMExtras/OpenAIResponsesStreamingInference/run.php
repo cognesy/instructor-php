@@ -5,9 +5,10 @@ id: '983e'
 ---
 ## Overview
 
-A minimal streaming example using the `openai-responses` preset from
-`config/llm.php`. The example verifies that streaming produces deltas
-and that the final response contains the expected marker.
+A minimal streaming example using explicit typed config:
+`Inference::using('openai-responses')`.
+The example verifies that streaming produces deltas and that the final
+response contains the expected marker.
 
 ## Example
 

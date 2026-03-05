@@ -18,14 +18,16 @@ use Cognesy\Instructor\Laravel\Support\LaravelConfigProvider;
 use Cognesy\Instructor\Laravel\Testing\AgentCtrlFake;
 use Cognesy\Instructor\Laravel\Testing\StructuredOutputFake;
 use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
-use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Logging\Factories\LaravelLoggingFactory;
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanCreateEmbeddings;
 use Cognesy\Polyglot\Embeddings\Embeddings;
 use Cognesy\Polyglot\Embeddings\EmbeddingsProvider;
 use Cognesy\Polyglot\Embeddings\EmbeddingsRuntime;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
@@ -53,7 +55,7 @@ class InstructorServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__ . '/../config/instructor.php', 'instructor');
+        $this->mergeConfigFrom(__DIR__ . '/../resources/config/instructor.php', 'instructor');
 
         $this->registerEventDispatcher();
         $this->registerConfigProvider();
@@ -119,10 +121,7 @@ class InstructorServiceProvider extends ServiceProvider
                 'connectTimeout' => $config['connect_timeout'] ?? 30,
             ]);
 
-            return (new HttpClientBuilder(
-                events: $app->make(CanHandleEvents::class),
-                configProvider: $app->make(CanProvideConfig::class),
-            ))
+            return (new HttpClientBuilder(events: $app->make(CanHandleEvents::class)))
                 ->withConfig($httpConfig)
                 ->withClientInstance('laravel', $app->make(LaravelHttpFactory::class))
                 ->create();
@@ -135,16 +134,8 @@ class InstructorServiceProvider extends ServiceProvider
     protected function registerInference(): void
     {
         $this->app->singleton(Inference::class, function (Container $app) {
-            $provider = LLMProvider::new(
-                configProvider: $app->make(CanProvideConfig::class),
-            );
-            $default = $this->configGet($app, 'instructor.default');
-            if ($default) {
-                $provider = $provider->withLLMPreset($default);
-            }
-
             $runtime = InferenceRuntime::fromProvider(
-                provider: $provider,
+                provider: LLMProvider::fromLLMConfig($this->resolveLLMConfig($app)),
                 events: $app->make(CanHandleEvents::class),
                 httpClient: $app->make(HttpClient::class),
             );
@@ -165,18 +156,8 @@ class InstructorServiceProvider extends ServiceProvider
     protected function registerEmbeddings(): void
     {
         $this->app->singleton(Embeddings::class, function (Container $app) {
-            $provider = EmbeddingsProvider::new(
-                configProvider: $app->make(CanProvideConfig::class),
-                events: $app->make(CanHandleEvents::class),
-            );
-
-            $default = $this->configGet($app, 'instructor.embeddings.default');
-            if ($default) {
-                $provider = $provider->withPreset($default);
-            }
-
             $runtime = EmbeddingsRuntime::fromProvider(
-                provider: $provider,
+                provider: EmbeddingsProvider::fromEmbeddingsConfig($this->resolveEmbeddingsConfig($app)),
                 events: $app->make(CanHandleEvents::class),
                 httpClient: $app->make(HttpClient::class),
             );
@@ -197,27 +178,11 @@ class InstructorServiceProvider extends ServiceProvider
     protected function registerStructuredOutput(): void
     {
         $this->app->bind(StructuredOutput::class, function (Container $app) {
-            $provider = LLMProvider::new(
-                configProvider: $app->make(CanProvideConfig::class),
-            );
-            $default = $this->configGet($app, 'instructor.default');
-            if ($default) {
-                $provider = $provider->withLLMPreset($default);
-            }
-
-            $configBuilder = new StructuredOutputConfigBuilder(
-                configProvider: $app->make(CanProvideConfig::class),
-            );
-            $maxRetries = $this->configGet($app, 'instructor.extraction.max_retries');
-            if ($maxRetries !== null) {
-                $configBuilder = $configBuilder->withMaxRetries($maxRetries);
-            }
-
             $runtime = StructuredOutputRuntime::fromProvider(
-                provider: $provider,
+                provider: LLMProvider::fromLLMConfig($this->resolveLLMConfig($app)),
                 events: $app->make(CanHandleEvents::class),
                 httpClient: $app->make(HttpClient::class),
-                structuredConfig: $configBuilder->create(),
+                structuredConfig: $this->resolveStructuredOutputConfig($app),
             );
             $instructor = new StructuredOutput($runtime);
 
@@ -236,56 +201,27 @@ class InstructorServiceProvider extends ServiceProvider
     protected function registerRuntimeCreators(): void
     {
         $this->app->singleton(CanCreateInference::class, function (Container $app) {
-            $provider = LLMProvider::new(
-                configProvider: $app->make(CanProvideConfig::class),
-            );
-            $default = $this->configGet($app, 'instructor.default');
-            if ($default) {
-                $provider = $provider->withLLMPreset($default);
-            }
             return InferenceRuntime::fromProvider(
-                provider: $provider,
+                provider: LLMProvider::fromLLMConfig($this->resolveLLMConfig($app)),
                 events: $app->make(CanHandleEvents::class),
                 httpClient: $app->make(HttpClient::class),
             );
         });
 
         $this->app->singleton(CanCreateEmbeddings::class, function (Container $app) {
-            $provider = EmbeddingsProvider::new(
-                configProvider: $app->make(CanProvideConfig::class),
-                events: $app->make(CanHandleEvents::class),
-            );
-            $default = $this->configGet($app, 'instructor.embeddings.default');
-            if ($default) {
-                $provider = $provider->withPreset($default);
-            }
             return EmbeddingsRuntime::fromProvider(
-                provider: $provider,
+                provider: EmbeddingsProvider::fromEmbeddingsConfig($this->resolveEmbeddingsConfig($app)),
                 events: $app->make(CanHandleEvents::class),
                 httpClient: $app->make(HttpClient::class),
             );
         });
 
         $this->app->singleton(CanCreateStructuredOutput::class, function (Container $app) {
-            $provider = LLMProvider::new(
-                configProvider: $app->make(CanProvideConfig::class),
-            );
-            $default = $this->configGet($app, 'instructor.default');
-            if ($default) {
-                $provider = $provider->withLLMPreset($default);
-            }
-            $configBuilder = new StructuredOutputConfigBuilder(
-                configProvider: $app->make(CanProvideConfig::class),
-            );
-            $maxRetries = $this->configGet($app, 'instructor.extraction.max_retries');
-            if ($maxRetries !== null) {
-                $configBuilder = $configBuilder->withMaxRetries($maxRetries);
-            }
             return StructuredOutputRuntime::fromProvider(
-                provider: $provider,
+                provider: LLMProvider::fromLLMConfig($this->resolveLLMConfig($app)),
                 events: $app->make(CanHandleEvents::class),
                 httpClient: $app->make(HttpClient::class),
-                structuredConfig: $configBuilder->create(),
+                structuredConfig: $this->resolveStructuredOutputConfig($app),
             );
         });
     }
@@ -315,7 +251,7 @@ class InstructorServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__ . '/../config/instructor.php' => $this->app->configPath('instructor.php'),
+                __DIR__ . '/../resources/config/instructor.php' => $this->app->configPath('instructor.php'),
             ], 'instructor-config');
 
             $this->publishes([
@@ -393,6 +329,78 @@ class InstructorServiceProvider extends ServiceProvider
 
     private function configGet(Container $app, string $path, mixed $default = null): mixed {
         return $app->make('config')->get($path, $default);
+    }
+
+    private function resolveLLMConfig(Container $app): LLMConfig {
+        $name = (string) $this->configGet($app, 'instructor.default', 'openai');
+        $raw = $this->configGet($app, "instructor.connections.{$name}", []);
+        $connection = is_array($raw) ? $raw : [];
+        $driver = (string) ($connection['driver'] ?? $name ?: 'openai');
+        $model = (string) ($connection['model'] ?? '');
+        $apiUrl = (string) ($connection['api_url'] ?? '');
+        $endpoint = (string) ($connection['endpoint'] ?? $this->defaultLlmEndpoint($driver, $model));
+
+        $known = ['driver', 'api_url', 'api_key', 'endpoint', 'model', 'max_tokens', 'options'];
+        $extraOptions = array_diff_key($connection, array_flip($known));
+        $options = match (true) {
+            isset($connection['options']) && is_array($connection['options']) => array_merge($extraOptions, $connection['options']),
+            default => $extraOptions,
+        };
+
+        return LLMConfig::fromArray([
+            'driver' => $driver,
+            'apiUrl' => $apiUrl,
+            'apiKey' => (string) ($connection['api_key'] ?? ''),
+            'endpoint' => $endpoint,
+            'model' => $model,
+            'maxTokens' => (int) ($connection['max_tokens'] ?? 4096),
+            'options' => $options,
+        ]);
+    }
+
+    private function resolveEmbeddingsConfig(Container $app): EmbeddingsConfig {
+        $name = (string) $this->configGet($app, 'instructor.embeddings.default', 'openai');
+        $raw = $this->configGet($app, "instructor.embeddings.connections.{$name}", []);
+        $connection = is_array($raw) ? $raw : [];
+        $driver = (string) ($connection['driver'] ?? $name ?: 'openai');
+
+        return EmbeddingsConfig::fromArray([
+            'driver' => $driver,
+            'apiUrl' => (string) ($connection['api_url'] ?? ''),
+            'apiKey' => (string) ($connection['api_key'] ?? ''),
+            'endpoint' => (string) ($connection['endpoint'] ?? '/embeddings'),
+            'model' => (string) ($connection['model'] ?? ''),
+            'dimensions' => (int) ($connection['dimensions'] ?? 0),
+            'maxInputs' => (int) ($connection['max_inputs'] ?? 0),
+        ]);
+    }
+
+    private function resolveStructuredOutputConfig(Container $app): StructuredOutputConfig {
+        $data = [];
+        $mode = $this->configGet($app, 'instructor.extraction.output_mode');
+        if (is_string($mode) && $mode !== '') {
+            $data['outputMode'] = $mode;
+        }
+
+        $maxRetries = $this->configGet($app, 'instructor.extraction.max_retries');
+        if (is_int($maxRetries) || is_numeric($maxRetries)) {
+            $data['maxRetries'] = (int) $maxRetries;
+        }
+
+        $retryPrompt = $this->configGet($app, 'instructor.extraction.retry_prompt');
+        if (is_string($retryPrompt) && $retryPrompt !== '') {
+            $data['retryPrompt'] = $retryPrompt;
+        }
+
+        return StructuredOutputConfig::fromArray($data);
+    }
+
+    private function defaultLlmEndpoint(string $driver, string $model): string {
+        return match ($driver) {
+            'anthropic' => '/messages',
+            'gemini' => "/models/{$model}:generateContent",
+            default => '/chat/completions',
+        };
     }
 
     /**

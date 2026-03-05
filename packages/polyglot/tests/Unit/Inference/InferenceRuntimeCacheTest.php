@@ -6,8 +6,11 @@ use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\PendingInference;
 use Cognesy\Polyglot\Tests\Support\FakeInferenceDriver;
+use Cognesy\Polyglot\Tests\Support\TestConfig;
+use Cognesy\Config\Dsn;
 
 it('uses provided runtime and preserves it across request mutations', function () {
     $runtime = new class implements CanCreateInference {
@@ -92,7 +95,9 @@ it('stream shortcut implies streaming intent', function () {
     expect($final?->content())->toBe('Hello');
 });
 
-it('provides static using and fromDsn constructor sugar', function () {
-    expect(Inference::using('openai'))->toBeInstanceOf(Inference::class);
-    expect(Inference::fromDsn('preset=openai,model=gpt-4o-mini'))->toBeInstanceOf(Inference::class);
+it('provides typed constructor sugar', function () {
+    expect(Inference::fromLLMConfig(TestConfig::llm('openai')))->toBeInstanceOf(Inference::class);
+
+    $raw = Dsn::fromString('model=gpt-4o-mini')->toArray();
+    expect(Inference::fromLLMConfig(LLMConfig::fromArray($raw)))->toBeInstanceOf(Inference::class);
 });

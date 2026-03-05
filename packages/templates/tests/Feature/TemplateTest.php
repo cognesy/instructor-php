@@ -8,8 +8,8 @@ use Cognesy\Template\Template;
 
 // RECOMMENDED, READING FRIENDLY SYNTAX
 
-it('can use "using->get->with" syntax', function () {
-    $prompt = Template::using('demo-twig')->get('hello')->with(['name' => 'World']);
+it('can use "forEngine->get->with" syntax', function () {
+    $prompt = Template::forEngine('twig')->get('prompts/demo-twig/hello')->with(['name' => 'World']);
     expect($prompt->toText())->toBe('Hello, World!');
     $messages = $prompt->toMessages()->toArray();
     expect($messages)->toHaveCount(1);
@@ -18,7 +18,7 @@ it('can use "using->get->with" syntax', function () {
 });
 
 it('can use short "make->with" syntax', function () {
-    $prompt = Template::make('demo-twig:hello')->with(['name' => 'World']);
+    $prompt = Template::make('prompts/demo-twig/hello')->with(['name' => 'World']);
     expect($prompt->toText())->toBe('Hello, World!');
     $messages = $prompt->toMessages()->toArray();
     expect($messages)->toHaveCount(1);
@@ -27,12 +27,12 @@ it('can use short "make->with" syntax', function () {
 });
 
 it('can render the template using short syntax', function () {
-    $prompt = Template::text('demo-twig:hello', ['name' => 'World']);
+    $prompt = Template::text('prompts/demo-twig/hello', ['name' => 'World']);
     expect($prompt)->toBe('Hello, World!');
 });
 
 it('can render the template to messages using short syntax', function () {
-    $messages = Template::messages('demo-twig:hello', ['name' => 'World']);
+    $messages = Template::messages('prompts/demo-twig/hello', ['name' => 'World']);
     $array = $messages->toArray();
     expect($array)->toHaveCount(1);
     expect($array[0]['role'])->toBe('user');
@@ -68,19 +68,20 @@ it('can set parameters for rendering', function () {
 });
 
 it('can load a template by name - Blade', function () {
-    $prompt = Template::using('demo-blade')->withTemplate('hello');
+    $prompt = (new Template(config: TemplateEngineConfig::blade(resourcePath: 'prompts/demo-blade')))
+        ->withTemplate('hello');
     expect($prompt->template())->toContain('Hello');
 });
 
 it('can render string template - Blade', function () {
-    $prompt = Template::using('demo-blade')
+    $prompt = Template::forEngine('blade')
         ->withTemplateContent('Hello, {{ $name }}!')
         ->withValues(['name' => 'World']);
     expect($prompt->toText())->toBe('Hello, World!');
 });
 
 it('can find template variables - Blade', function () {
-    $prompt = Template::using('demo-blade')
+    $prompt = Template::forEngine('blade')
         ->withTemplateContent('Hello, {{ $name }}!')
         ->withValues(['name' => 'World']);
     $variables = $prompt->variables();
@@ -109,19 +110,19 @@ it('can convert template with chat markup to script', function () {
 });
 
 it('can load a template by name - Twig', function () {
-    $prompt = Template::using('demo-twig')->withTemplate('hello');
+    $prompt = Template::forEngine('twig')->withTemplate('prompts/demo-twig/hello');
     expect($prompt->template())->toContain('Hello');
 });
 
 it('can render string template - Twig', function () {
-    $prompt = (new Template(preset: 'demo-twig'))
+    $prompt = (new Template(config: TemplateEngineConfig::twig()))
         ->withTemplateContent('Hello, {{ name }}!')
         ->withValues(['name' => 'World']);
     expect($prompt->toText())->toBe('Hello, World!');
 });
 
 it('can find template variables - Twig', function () {
-    $prompt = Template::using('demo-twig')
+    $prompt = Template::forEngine('twig')
         ->withTemplateContent('Hello, {{ name }}!')
         ->withValues(['name' => 'World']);
     $variables = $prompt->variables();
@@ -144,6 +145,6 @@ it('can create Template from "in memory" config', function () {
 });
 
 it('can use DSN to load a template', function () {
-    $prompt = Template::fromDsn('demo-blade:hello')->with(['name' => 'World']);
+    $prompt = Template::fromDsn('twig:prompts/demo-twig/hello')->with(['name' => 'World']);
     expect($prompt->toText())->toBe('Hello, World!');
 });

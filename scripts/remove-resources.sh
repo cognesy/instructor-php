@@ -10,12 +10,6 @@ for package_dir in packages/*/; do
         package_name=$(basename "$package_dir")
         echo "Processing package: $package_name"
         
-        # Remove config directory contents (but keep the directory)
-        if [ -d "${package_dir}config" ]; then
-            rm -rf "${package_dir}config/"*
-            echo "  ✓ Removed config files"
-        fi
-        
         # Remove prompts directory
         if [ -d "${package_dir}prompts" ]; then
             rm -rf "${package_dir}prompts"
@@ -52,10 +46,10 @@ for package_dir in packages/*/; do
     fi
 done
 
-# Clean up docs-build directory if it exists
-if [ -d "docs-build" ]; then
-    rm -rf docs-build/*
-    echo "✓ Cleaned docs-build directory"
+# Clean up builds/docs-build directory if it exists
+if [ -d "builds/docs-build" ]; then
+    rm -rf builds/docs-build/*
+    echo "✓ Cleaned builds/docs-build directory"
 fi
 
 echo "✅ Done! All shared resource files have been removed from packages."

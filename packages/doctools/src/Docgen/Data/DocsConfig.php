@@ -41,7 +41,7 @@ readonly class DocsConfig
     /**
      * Load configuration from YAML file
      */
-    public static function fromFile(string $path = 'config/docs.yaml'): self
+    public static function fromFile(string $path = 'packages/doctools/resources/config/docs.yml'): self
     {
         $fullPath = BasePath::get($path);
 
@@ -76,9 +76,9 @@ readonly class DocsConfig
             // Changelog section
             changelogSource: $config['changelog']['source'] ?? './docs/release-notes',
             // Output targets
-            mintlifyTarget: $config['output']['mintlify']['target'] ?? './docs-build',
+            mintlifyTarget: $config['output']['mintlify']['target'] ?? './builds/docs-build',
             mintlifySourceIndex: $config['output']['mintlify']['source_index'] ?? './docs/mint.json',
-            mkdocsTarget: $config['output']['mkdocs']['target'] ?? './docs-mkdocs',
+            mkdocsTarget: $config['output']['mkdocs']['target'] ?? './builds/docs-mkdocs',
             mkdocsTemplate: $config['output']['mkdocs']['template'] ?? './docs/mkdocs.yml.template',
             // LLMs documentation
             llmsEnabled: $config['llms']['enabled'] ?? true,
@@ -108,9 +108,9 @@ readonly class DocsConfig
             examplesSource: './examples',
             examplesIntroPages: [],
             changelogSource: './docs/release-notes',
-            mintlifyTarget: './docs-build',
+            mintlifyTarget: './builds/docs-build',
             mintlifySourceIndex: './docs/mint.json',
-            mkdocsTarget: './docs-mkdocs',
+            mkdocsTarget: './builds/docs-mkdocs',
             mkdocsTemplate: './docs/mkdocs.yml.template',
             llmsEnabled: true,
             llmsIndexFile: 'llms.txt',

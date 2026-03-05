@@ -11,6 +11,7 @@ use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 
@@ -216,10 +217,16 @@ it('supports structured output runtime static factories', function () {
         '{"name":"FromResolver","age":42}',
         '{"name":"FromProvider","age":43}',
         '{"name":"FromDsn","age":44}',
-        '{"name":"FromUsing","age":45}',
+        '{"name":"FromDriverConfig","age":45}',
     ], provider: 'openai');
 
-    $provider = LLMProvider::using('openai');
+    $provider = LLMProvider::fromLLMConfig(new LLMConfig(
+        driver: 'openai',
+        apiUrl: 'https://api.openai.com/v1',
+        apiKey: 'test',
+        endpoint: '/chat/completions',
+        model: 'gpt-4o-mini',
+    ));
     $llmConfig = $provider->resolveConfig();
     $structuredConfig = (new StructuredOutputConfig())->withOutputMode(OutputMode::Tools);
     $request = new StructuredOutputRequest(
@@ -252,18 +259,18 @@ it('supports structured output runtime static factories', function () {
     expect($fromProvider->age)->toBe(43);
 
     $fromDsn = StructuredOutputRuntime::fromDsn(
-        dsn: 'preset=openai',
+        dsn: 'driver=openai,apiUrl=https://api.openai.com/v1,apiKey=test,endpoint=/chat/completions,model=gpt-4o-mini',
         httpClient: $http,
         structuredConfig: $structuredConfig,
     )->create($request)->get();
     expect($fromDsn->name)->toBe('FromDsn');
     expect($fromDsn->age)->toBe(44);
 
-    $fromUsing = StructuredOutputRuntime::using(
-        preset: 'openai',
+    $fromDriverConfig = StructuredOutputRuntime::fromConfig(
+        config: LLMConfig::fromArray(['driver' => 'openai']),
         httpClient: $http,
         structuredConfig: $structuredConfig,
     )->create($request)->get();
-    expect($fromUsing->name)->toBe('FromUsing');
-    expect($fromUsing->age)->toBe(45);
+    expect($fromDriverConfig->name)->toBe('FromDriverConfig');
+    expect($fromDriverConfig->age)->toBe(45);
 });

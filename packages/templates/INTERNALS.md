@@ -1,167 +1,54 @@
-# Templates Package Overview
+# Templates Package Internals
 
-The Templates package provides a flexible templating system for the Instructor-PHP framework, enabling dynamic content generation with multiple template engine support and advanced message/script composition capabilities.
+The Templates package is a small engine-agnostic rendering layer used to turn template files or inline template strings into:
+- text
+- `Messages`
+- `MessageStore`
 
-## Core Capabilities
+## Runtime Boundary
 
-### Multi-Engine Template Support
-- **Twig**: Professional template engine with extensive features
-- **Blade**: Laravel's elegant templating syntax  
-- **Arrowpipe**: Lightweight custom template engine
+The runtime API is typed and explicit:
+- choose engine with `Template::twig()`, `Template::blade()`, `Template::arrowpipe()`, or `Template::forEngine(string $engine)`
+- or pass an explicit `TemplateEngineConfig` to `new Template(config: ...)`
 
-### Template Processing
-- Load templates from files or use inline content
-- Variable substitution with validation
-- Front matter metadata support (YAML format)
-- Template variable extraction and validation
-- DSN-based template loading (`engine:template_name`)
+No preset lookup is performed in core runtime.
 
-### Message & MessageStore Generation
-- Convert templates to `Messages` objects for LLM interaction
-- Generate structured `MessageStore` objects with multiple sections
-- Support for XML-based chat markup with roles (system, user, assistant)
-- Multi-modal content support (text, images, audio)
+## Core Flow
 
-### Advanced Features
-- Template presets and configuration management
-- String-based templating with `<|variable|>` syntax
-- Section-based script organization
-- Parameter validation and error reporting
-- Cache control for ephemeral content
+1. `Template` receives a `TemplateEngineConfig` and optional explicit driver.
+2. `TemplateProvider` resolves the concrete driver from engine type.
+3. Driver loads and renders template content with provided variables.
+4. `Template` converts rendered output to text/messages/message store.
 
-## Key Classes
+## Entry Points
 
-### Template
-Main template class providing fluent interface for template operations.
+- `Template::make(string $pathOrDsn)` accepts a file path or `engine:path` DSN
+- `Template::fromDsn(string $dsn)` parses `engine:path`
+- `Template::text(...)` and `Template::messages(...)` are convenience static helpers
 
-**Core Methods:**
-- `Template::make(string $pathOrDsn)` - Create from path or DSN
-- `Template::using(string $preset)` - Use configuration preset
-- `withTemplate(string $path)` / `withTemplateContent(string $content)` - Set template source
-- `withValues(array $values)` - Set template variables
-- `toText()` / `toMessages()` / `toMessageStore()` - Output conversions
+## TemplateProvider Responsibilities
 
-**Static Shortcuts:**
-- `Template::text(string $pathOrDsn, array $variables)` - Direct text rendering
-- `Template::messages(string $pathOrDsn, array $variables)` - Direct message conversion
+- hold active `TemplateEngineConfig`
+- create driver from config
+- delegate load/render/variable extraction to driver
 
-### TemplateProvider
-Manages template engine configuration and provides rendering services.
+## Driver Selection
 
-**Key Methods:**
-- `loadTemplate(string $path)` - Load template content
-- `renderString(string $content, array $variables)` - Render with variables
-- `getVariableNames(string $content)` - Extract variable names
+`TemplateProvider` uses `TemplateEngineType`:
+- `Twig` -> `TwigDriver`
+- `Blade` -> `BladeDriver`
+- `Arrowpipe` -> `ArrowpipeDriver`
 
-### MessageStore
-Advanced message sequence management for complex LLM interactions.
+If Twig/Blade dependencies are missing, provider throws clear runtime guidance.
 
-**Features:**
-- Multiple named sections for organized message flow
-- Section selection and reordering
-- Parameter-based message rendering
-- Conversion to Messages or array formats
+## Output Conversion
 
-### StringTemplate
-Lightweight string templating utility using `<|variable|>` syntax.
+`Template` can parse rendered XML-like chat blocks into:
+- ordered `Messages`
+- section-aware `MessageStore`
 
-**Methods:**
-- `StringTemplate::render(string $template, array $parameters)` - Static rendering
-- `renderString(string $template)` - Instance-based rendering
-- `renderMessages(array|Messages $messages)` - Message collection rendering
+Supported content blocks:
+- text
+- image (`image_url`)
+- audio (`input_audio`)
 
-## Usage Patterns
-
-### Basic Template Rendering
-```php
-// Using preset configuration
-$text = Template::using('demo-twig')
-    ->get('hello')
-    ->with(['name' => 'World'])
-    ->toText();
-
-// Using DSN syntax
-$messages = Template::messages('demo-twig:hello', ['name' => 'World']);
-
-// Direct text rendering
-$text = Template::text('demo-blade:greeting', ['user' => 'Alice']);
-```
-
-### XML Chat Markup
-```php
-$template = '<chat>
-    <message role="system">You are helpful assistant.</message>
-    <message role="user">Hello, {{ name }}</message>
-</chat>';
-
-$messages = Template::blade()
-    ->withTemplateContent($template)
-    ->withValues(['name' => 'assistant'])
-    ->toMessages();
-```
-
-### MessageStore-Based Organization
-```php
-
-$store = new MessageStore(
-    new Section('system'),
-    new Section('conversation')
-);
-
-$store = $store->withSection('system')
-    ->appendMessageToSection('system', [
-        'role' => 'system', 
-        'content' => 'You are helpful'
-    ]);
-
-$store = $store->withSection('conversation')
-    ->appendMessageToSection('conversation', [
-        'role' => 'user', 
-        'content' => 'Hello <|name|>'
-    ]);
-
-$store->withParams(['name' => 'World']);
-$messages = $store->toFlatArray();
-```
-
-### Configuration & Engine Selection
-```php
-// Engine-specific factory methods
-$template = Template::twig();
-$template = Template::blade(); 
-$template = Template::arrowpipe();
-
-// Custom configuration
-$config = TemplateEngineConfig::twig('/path/to/templates', '/tmp/cache');
-$template = (new Template())->withConfig($config);
-```
-
-## Template Engine Features
-
-### Twig
-- Full Twig syntax support
-- File-based template loading
-- Template inheritance and blocks
-- Requires: `composer require twig/twig`
-
-### Blade  
-- Laravel Blade syntax
-- Directive support (@if, @foreach, etc.)
-- Template compilation and caching
-- Requires: `composer require eftec/bladeone`
-
-### Arrowpipe
-- Custom lightweight syntax
-- Built-in engine (no external dependencies)
-- Simple variable substitution
-
-## Architecture
-
-The package follows a clean architecture with:
-- **Template**: User-facing API with fluent interface
-- **TemplateProvider**: Engine abstraction and configuration management  
-- **Drivers**: Engine-specific implementations (TwigDriver, BladeDriver, ArrowpipeDriver)
-- **Config**: Configuration management with preset support
-- **Utils**: Helper utilities for string templating and message conversion
-
-The system supports both simple string templating and complex multi-section script generation, making it suitable for everything from basic variable substitution to sophisticated LLM conversation management.

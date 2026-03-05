@@ -113,7 +113,7 @@ it('ExecutionTimeLimitHook passes through non-matching trigger types', function 
 
 it('HookStack runs time limit hook via BeforeExecution then BeforeStep', function () {
     $hook = new ExecutionTimeLimitHook(maxSeconds: 60);
-    $triggers = HookTriggers::with(HookTrigger::BeforeExecution, HookTrigger::BeforeStep);
+    $triggers = HookTriggers::of(HookTrigger::BeforeExecution, HookTrigger::BeforeStep);
 
     $stack = (new HookStack(new RegisteredHooks()))
         ->with($hook, $triggers, priority: 100);

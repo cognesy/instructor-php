@@ -7,7 +7,7 @@ it('creates immutable error lists and merges them', function () {
     $first = new RuntimeException('first');
     $second = new InvalidArgumentException('second');
 
-    $errors = ErrorList::with($first)->withAppendedExceptions($second);
+    $errors = ErrorList::fromErrors($first)->withAppendedExceptions($second);
     $merged = ErrorList::empty()->withMergedErrorList($errors);
 
     expect($errors->count())->toBe(2)

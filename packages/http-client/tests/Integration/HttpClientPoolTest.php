@@ -1,6 +1,7 @@
 <?php
 
 use Cognesy\Http\Collections\HttpRequestList;
+use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Data\HttpRequest;
@@ -148,7 +149,7 @@ test('different drivers can be used for pooling', function() {
         new HttpRequest($this->baseUrl . '/get?driver=guzzle', 'GET', [], [], []),
     );
 
-    $guzzleClient = HttpClient::using('guzzle');
+    $guzzleClient = HttpClient::fromConfig(new HttpClientConfig(driver: 'guzzle'));
     $results = $guzzleClient->pool($requests);
     $resultArray = $results->all();
 
@@ -158,7 +159,7 @@ test('different drivers can be used for pooling', function() {
 
 test('withPool uses matching pool handler for selected driver', function() {
     $curlPendingPool = HttpClient::default()->withPool(HttpRequestList::empty());
-    $guzzlePendingPool = HttpClient::using('guzzle')->withPool(HttpRequestList::empty());
+    $guzzlePendingPool = HttpClient::fromConfig(new HttpClientConfig(driver: 'guzzle'))->withPool(HttpRequestList::empty());
 
     $poolHandlerProperty = new \ReflectionProperty(PendingHttpPool::class, 'poolHandler');
 

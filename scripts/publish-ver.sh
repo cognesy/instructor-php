@@ -46,8 +46,8 @@ mkdir -p "$DOCS_BUNDLE_DIR"
 MINTLIFY_BUNDLE="$DOCS_BUNDLE_DIR/docs-build-v$VERSION.tar.gz"
 MKDOCS_BUNDLE="$DOCS_BUNDLE_DIR/docs-mkdocs-v$VERSION.tar.gz"
 
-tar -czf "$MINTLIFY_BUNDLE" docs-build
-tar -czf "$MKDOCS_BUNDLE" docs-mkdocs
+tar -czf "$MINTLIFY_BUNDLE" builds/docs-build
+tar -czf "$MKDOCS_BUNDLE" builds/docs-mkdocs
 
 echo "✅ Prepared docs bundles:"
 ls -lh "$DOCS_BUNDLE_DIR"
@@ -71,7 +71,7 @@ echo "Step 1: Updating package versions..."
 #         echo "⚠️ Warning: Directory $dir does not exist, skipping..."
 #     fi
 # done
-echo "Step 2: Skipping release notes distribution (now centralized in docs-build)"
+echo "Step 2: Skipping release notes distribution (now centralized in builds/docs-build)"
 
 # 3. Check for uncommitted changes
 if [ -n "$(git status --porcelain)" ]; then

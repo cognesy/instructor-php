@@ -43,7 +43,8 @@ final readonly class DefinitionLoopFactory implements CanInstantiateAgentLoop
     private function withLLMConfig(AgentBuilder $builder, AgentDefinition $definition): AgentBuilder {
         $llm = match (true) {
             $definition->llmConfig instanceof LLMConfig => LLMProvider::new()->withLLMConfig($definition->llmConfig),
-            is_string($definition->llmConfig) && $definition->llmConfig !== '' => LLMProvider::using($definition->llmConfig),
+            is_string($definition->llmConfig) && $definition->llmConfig !== '' => LLMProvider::new()
+                ->withConfigOverrides(['driver' => $definition->llmConfig]),
             default => null,
         };
 

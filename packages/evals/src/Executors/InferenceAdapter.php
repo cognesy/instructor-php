@@ -3,9 +3,11 @@
 namespace Cognesy\Evals\Executors;
 
 use Closure;
+use Cognesy\Http\Config\DebugConfig;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Evals\Executors\Data\InferenceSchema;
 use Cognesy\Http\Creation\HttpClientBuilder;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -15,16 +17,12 @@ use Cognesy\Polyglot\Inference\PendingInference;
 
 class InferenceAdapter
 {
-    private ?string $debugPreset = null;
+    private ?DebugConfig $debugConfig = null;
     /** @var Closure(object):void|null */
     private ?Closure $wiretap = null;
 
-    public function withDebugPreset(?string $preset) : self {
-        return $this->withHttpDebugPreset($preset);
-    }
-
-    public function withHttpDebugPreset(?string $preset) : self {
-        $this->debugPreset = $preset;
+    public function withDebugConfig(DebugConfig $debugConfig) : self {
+        $this->debugConfig = $debugConfig;
         return $this;
     }
 
@@ -39,7 +37,7 @@ class InferenceAdapter
     }
 
     public function callInferenceFor(
-        string          $preset,
+        LLMConfig       $llmConfig,
         OutputMode      $mode,
         bool            $isStreamed,
         string|array    $messages,
@@ -52,17 +50,17 @@ class InferenceAdapter
             'stream' => $isStreamed
         ];
         $inference = match($mode) {
-            OutputMode::Tools => $this->forModeTools($preset, $messages, $evalSchema, $options),
-            OutputMode::JsonSchema => $this->forModeJsonSchema($preset, $messages, $evalSchema, $options),
-            OutputMode::Json => $this->forModeJson($preset, $messages, $evalSchema, $options),
-            OutputMode::MdJson => $this->forModeMdJson($preset, $messages, $evalSchema, $options),
-            OutputMode::Text => $this->forModeText($preset, $messages, $options),
-            OutputMode::Unrestricted => $this->forModeUnrestricted($preset, $messages, $evalSchema, $options),
+            OutputMode::Tools => $this->forModeTools($llmConfig, $messages, $evalSchema, $options),
+            OutputMode::JsonSchema => $this->forModeJsonSchema($llmConfig, $messages, $evalSchema, $options),
+            OutputMode::Json => $this->forModeJson($llmConfig, $messages, $evalSchema, $options),
+            OutputMode::MdJson => $this->forModeMdJson($llmConfig, $messages, $evalSchema, $options),
+            OutputMode::Text => $this->forModeText($llmConfig, $messages, $options),
+            OutputMode::Unrestricted => $this->forModeUnrestricted($llmConfig, $messages, $evalSchema, $options),
         };
         return $inference->response();
     }
 
-    public function forModeTools(string $preset, string|array $messages, InferenceSchema $schema, array $options) : PendingInference {
+    public function forModeTools(LLMConfig $llmConfig, string|array $messages, InferenceSchema $schema, array $options) : PendingInference {
         $request = new InferenceRequest(
             messages: $messages,
             tools: $schema->tools(),
@@ -70,10 +68,10 @@ class InferenceAdapter
             options: $options,
             mode: OutputMode::Tools,
         );
-        return $this->runtime($preset)->create($request);
+        return $this->runtime($llmConfig)->create($request);
     }
 
-    public function forModeJsonSchema(string $preset, string|array $messages, InferenceSchema $schema, array $options) : PendingInference {
+    public function forModeJsonSchema(LLMConfig $llmConfig, string|array $messages, InferenceSchema $schema, array $options) : PendingInference {
         $messagesArray = is_array($messages) ? $messages : [['role' => 'user', 'content' => $messages]];
         $request = new InferenceRequest(
             messages: array_merge($messagesArray, [
@@ -84,10 +82,10 @@ class InferenceAdapter
             options: $options,
             mode: OutputMode::JsonSchema,
         );
-        return $this->runtime($preset)->create($request);
+        return $this->runtime($llmConfig)->create($request);
     }
 
-    public function forModeJson(string $preset, string|array $messages, InferenceSchema $schema, array $options) : PendingInference {
+    public function forModeJson(LLMConfig $llmConfig, string|array $messages, InferenceSchema $schema, array $options) : PendingInference {
         $messagesArray = is_array($messages) ? $messages : [['role' => 'user', 'content' => $messages]];
         $request = new InferenceRequest(
             messages: array_merge($messagesArray, [
@@ -98,10 +96,10 @@ class InferenceAdapter
             options: $options,
             mode: OutputMode::Json,
         );
-        return $this->runtime($preset)->create($request);
+        return $this->runtime($llmConfig)->create($request);
     }
 
-    public function forModeMdJson(string $preset, string|array $messages, InferenceSchema $schema, array $options) : PendingInference {
+    public function forModeMdJson(LLMConfig $llmConfig, string|array $messages, InferenceSchema $schema, array $options) : PendingInference {
         $messagesArray = is_array($messages) ? $messages : [['role' => 'user', 'content' => $messages]];
         $request = new InferenceRequest(
             messages: array_merge($messagesArray, [
@@ -112,19 +110,19 @@ class InferenceAdapter
             options: $options,
             mode: OutputMode::MdJson,
         );
-        return $this->runtime($preset)->create($request);
+        return $this->runtime($llmConfig)->create($request);
     }
 
-    public function forModeText(?string $preset, string|array $messages, array $options) : PendingInference {
+    public function forModeText(LLMConfig $llmConfig, string|array $messages, array $options) : PendingInference {
         $request = new InferenceRequest(
             messages: $messages,
             options: $options,
             mode: OutputMode::Text,
         );
-        return $this->runtime($preset ?? 'openai')->create($request);
+        return $this->runtime($llmConfig)->create($request);
     }
 
-    public function forModeUnrestricted(string $preset, array $messages, InferenceSchema $schema, array $options) : PendingInference {
+    public function forModeUnrestricted(LLMConfig $llmConfig, array $messages, InferenceSchema $schema, array $options) : PendingInference {
         $request = new InferenceRequest(
             messages: array_merge($messages, [
                 ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema->schema())],
@@ -137,21 +135,21 @@ class InferenceAdapter
             options: $options,
             mode: OutputMode::Unrestricted,
         );
-        return $this->runtime($preset)->create($request);
+        return $this->runtime($llmConfig)->create($request);
     }
 
-    private function runtime(string $preset): CanCreateInference {
+    private function runtime(LLMConfig $config): CanCreateInference {
         $events = new EventDispatcher(name: 'evals.inference.adapter');
         if ($this->wiretap !== null) {
             $events->wiretap($this->wiretap);
         }
 
         $httpClient = (new HttpClientBuilder(events: $events))
-            ->withHttpDebugPreset($this->debugPreset)
+            ->withDebugConfig($this->debugConfig ?? new DebugConfig())
             ->create();
 
-        return InferenceRuntime::using(
-            preset: $preset,
+        return InferenceRuntime::fromLLMConfig(
+            config: $config,
             events: $events,
             httpClient: $httpClient,
         );

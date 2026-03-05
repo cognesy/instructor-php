@@ -12,17 +12,19 @@ Instructor supports Meta LLM inference API. You can find the details on how to c
 ```php
 <?php
 
+use Cognesy\Http\Config\DebugConfig;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Utils\Str;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 require 'examples/boot.php';
 
-$http = (new HttpClientBuilder())->withHttpDebugPreset('on')->create();
+$http = (new HttpClientBuilder())->withDebugConfig(DebugConfig::fromPreset('on'))->create();
 
-$answer = Inference::fromRuntime(InferenceRuntime::using(
-        preset: 'meta', // see /config/llm.php
+$answer = Inference::fromRuntime(InferenceRuntime::fromConfig(
+        config: LLMConfig::fromPreset('meta'),
         httpClient: $http,
     ))
     ->with(

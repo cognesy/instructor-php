@@ -1,48 +1,40 @@
 ---
 title: Configuration Path
-description: 'How to set up location of Instructor configuration directory for your project'
+description: 'How to locate Instructor YAML config at the application edge'
 ---
 
-Instructor comes with a set of configuration files and prompt templates that you can publish to your project directory.
+Instructor does not use global config-path state in core code.
 
-There are 2 ways to set up the location of Instructor's configuration directory:
-- Using `Settings` class method `setPath()`
-- Using environment variable (recommended)
+Pass explicit base paths to `Config` / `ConfigLoader` at your application edge and map raw arrays to typed config objects.
 
 <Info>
-To check how to publish configuration files to your project see [Setup](/setup) section.
+To publish configuration files to your project see [Setup](/setup).
 </Info>
 
-
-### Setting Configuration Path via `Settings` Class
-
-You can set Instructor configuration path using the `Settings::setPath()` method:
+### Recommended Pattern
 
 ```php
 <?php
-use Cognesy\Config\Settings;
+use Cognesy\Config\Config;
+use Cognesy\Config\ConfigLoader;
 
-Settings::setPath('/path/to/config');
-?>
+$llmData = Config::fromPaths(__DIR__ . '/config')
+    ->load('llm/presets/openai.yaml')
+    ->toArray();
+
+$loader = ConfigLoader::fromPaths(
+    __DIR__ . '/config',
+);
+
+$llmEntry = $loader->load('llm/presets/openai.yaml');
+$llmDataFromLoader = $llmEntry->toArray();
 ```
 
+## Resolution Rule
 
-### Setting Configuration Path via Environment Variable
+Configuration path resolution is an edge concern:
+- your bootstrap chooses where config lives,
+- `Config` / `ConfigLoader` reads raw YAML/PHP arrays,
+- `XxxConfig::fromArray()` performs typing/validation.
 
-You can set the path to Instructor's configuration directory in your `.env` file:
-
-```ini
-INSTRUCTOR_CONFIG_PATHS='/path/to/config/,another/path'
-```
-
-
-
-## Configuration Location Resolution
-
-Instructor uses a configuration directory with a set of `.php` files to store its settings, e.g. LLM provider configurations.
-
-Instructor will look for its configuration location in the following order:
-- If `Settings::setPath()` has been called, it will use that custom path list,
-- If `INSTRUCTOR_CONFIG_PATHS` (or `INSTRUCTOR_CONFIG_PATH`) environment variable is set, it will use that value,
-- Finally, it will default to the directory, which is bundled with Instructor package (under `/config`) and contains default set of configuration files.
-
+Core runtime classes should receive typed config objects and should not discover config files themselves.

@@ -22,7 +22,7 @@ final class UseSkills implements CanProvideAgentCapability
         $library = $this->library;
 
         $agent = $agent->withTools(
-            $agent->tools()->merge(new Tools(LoadSkillTool::withLibrary($library)))
+            $agent->tools()->merge(new Tools(LoadSkillTool::fromLibrary($library)))
         );
         $hooks = $agent->hooks()->with(
             hook: new AppendSkillMetadataHook($library),

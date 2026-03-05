@@ -25,7 +25,7 @@ it('returns content for OpenAI chat completions (non-streaming)', function () {
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $content = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'openai', httpClient: $http))
+    $content = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http))
         ->withModel('gpt-4o-mini')
         ->withMessages('Hello')
         ->get();
@@ -52,7 +52,7 @@ it('supports runtime-style create with explicit request', function () {
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $content = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'openai', httpClient: $http))
+    $content = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http))
         ->create(new InferenceRequest(
             messages: 'Hello',
             model: 'gpt-4o-mini',
@@ -85,7 +85,7 @@ it('supports facade runtime extraction and runtime static factories', function (
         model: 'gpt-4o-mini',
     );
 
-    $fromFacadeRuntime = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'openai', httpClient: $http))
+    $fromFacadeRuntime = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http))
         ->runtime()
         ->create($request)
         ->get();
@@ -107,8 +107,8 @@ it('supports facade runtime extraction and runtime static factories', function (
             ],
         ]);
 
-    $fromStaticRuntime = InferenceRuntime::using(
-        preset: 'openai',
+    $fromStaticRuntime = InferenceRuntime::fromLLMConfig(
+        config: \Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'),
         httpClient: $http,
     )->create($request)->get();
 

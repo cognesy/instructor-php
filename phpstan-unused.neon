@@ -3,7 +3,7 @@ includes:
 
 services:
 	-
-		class: Cognesy\Config\PHPStan\PublicMethodEntrypointProvider
+		class: Cognesy\Qa\PHPStan\PublicMethodEntrypointProvider
 		tags:
 			- shipmonk.deadCode.entrypointProvider
 

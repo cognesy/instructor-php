@@ -1,0 +1,72 @@
+rules:
+  - id: global-config-no-settings-in-core-runtime
+    message: "Core runtime must not use Settings::*; resolve config at edges and inject typed config."
+    severity: ERROR
+    languages: [php]
+    paths:
+      include:
+        - "/packages/polyglot/src/**/*.php"
+        - "/packages/http-client/src/**/*.php"
+        - "/packages/instructor/src/**/*.php"
+        - "/packages/templates/src/**/*.php"
+        - "/packages/agents/src/**/*.php"
+        - "/packages/auxiliary/src/**/*.php"
+    pattern-regex: "\\bSettings::[A-Za-z_][A-Za-z0-9_]*\\s*\\("
+
+  - id: global-config-no-config-read-contracts-in-core-runtime
+    message: "Core runtime must be source-agnostic; CanReadConfig/ConfigView are edge-only."
+    severity: ERROR
+    languages: [php]
+    paths:
+      include:
+        - "/packages/polyglot/src/**/*.php"
+        - "/packages/http-client/src/**/*.php"
+        - "/packages/instructor/src/**/*.php"
+        - "/packages/templates/src/**/*.php"
+        - "/packages/agents/src/**/*.php"
+        - "/packages/auxiliary/src/**/*.php"
+    pattern-regex: "\\b(CanReadConfig|ConfigView)\\b"
+
+  - id: global-config-no-preset-selector-methods-in-core-runtime
+    message: "Preset/profile/connection selectors are edge concerns; core runtime APIs must consume typed config."
+    severity: ERROR
+    languages: [php]
+    paths:
+      include:
+        - "/packages/polyglot/src/**/*.php"
+        - "/packages/http-client/src/**/*.php"
+        - "/packages/instructor/src/**/*.php"
+        - "/packages/templates/src/**/*.php"
+        - "/packages/agents/src/**/*.php"
+        - "/packages/auxiliary/src/**/*.php"
+    pattern-regex: "\\b(withLLMPreset|withPreset|withConnection|withProfile)\\s*\\("
+
+  - id: global-config-no-static-using-selector-in-core-runtime
+    message: "Core runtime static constructors must use typed config (`fromXxxConfig(...)`), not `using(string ...)` selectors."
+    severity: ERROR
+    languages: [php]
+    paths:
+      include:
+        - "/packages/polyglot/src/**/*.php"
+        - "/packages/http-client/src/**/*.php"
+        - "/packages/instructor/src/**/*.php"
+        - "/packages/templates/src/**/*.php"
+        - "/packages/agents/src/**/*.php"
+        - "/packages/auxiliary/src/**/*.php"
+    pattern-regex: "public\\s+static\\s+function\\s+using\\s*\\(\\s*\\??string\\s+\\$[A-Za-z_][A-Za-z0-9_]*"
+
+  - id: global-config-no-with-config-mutators-in-core-runtime
+    message: "Core runtime services should not expose `with*Config(...)` mutators; keep these on edge builders only."
+    severity: ERROR
+    languages: [php]
+    paths:
+      include:
+        - "/packages/polyglot/src/**/*.php"
+        - "/packages/http-client/src/**/*.php"
+        - "/packages/instructor/src/**/*.php"
+        - "/packages/templates/src/**/*.php"
+        - "/packages/agents/src/**/*.php"
+        - "/packages/auxiliary/src/**/*.php"
+      exclude:
+        - "/packages/**/src/**/*Builder.php"
+    pattern-regex: "public\\s+function\\s+with[A-Za-z0-9_]*Config\\s*\\("

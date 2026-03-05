@@ -18,7 +18,7 @@ it('streams partial responses and assembles final content (OpenAI Responses SSE)
         ], addDone: false);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'openai-responses', httpClient: $http))
+    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai-responses'), httpClient: $http))
         ->withModel('gpt-4o-mini')
         ->withMessages('Greet me')
         ->withStreaming(true)
@@ -62,7 +62,7 @@ it('handles streaming function call arguments', function () {
         ], addDone: false);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'openai-responses', httpClient: $http))
+    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai-responses'), httpClient: $http))
         ->withModel('gpt-4o-mini')
         ->withMessages('Weather in Paris?')
         ->withStreaming(true)
@@ -94,7 +94,7 @@ it('streams reasoning content with response.reasoning_text.delta', function () {
         ], addDone: false);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'openai-responses', httpClient: $http))
+    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai-responses'), httpClient: $http))
         ->withModel('gpt-4o-mini')
         ->withMessages('What is the meaning of life?')
         ->withStreaming(true)

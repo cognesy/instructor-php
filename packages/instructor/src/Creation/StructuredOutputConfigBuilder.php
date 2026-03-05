@@ -2,8 +2,6 @@
 
 namespace Cognesy\Instructor\Creation;
 
-use Cognesy\Config\ConfigPresets;
-use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
@@ -26,9 +24,7 @@ class StructuredOutputConfigBuilder
     private ?bool $throwOnTransformationFailure = null;
     private ?ResponseCachePolicy $responseCachePolicy = null;
 
-    private ?string $configPreset = null;
     private ?StructuredOutputConfig $explicitConfig = null;
-    private ConfigPresets $presets;
 
     public function __construct(
         ?OutputMode       $outputMode = null,
@@ -42,7 +38,6 @@ class StructuredOutputConfigBuilder
         ?string           $toolDescription = null,
         ?array            $chatStructure = null,
         ?string           $defaultOutputClass = null,
-        ?CanProvideConfig $configProvider = null,
     ) {
         $this->outputMode = $outputMode;
         $this->useObjectReferences = $useObjectReferences;
@@ -55,13 +50,6 @@ class StructuredOutputConfigBuilder
         $this->toolDescription = $toolDescription;
         $this->chatStructure = $chatStructure ?? [];
         $this->defaultOutputClass = $defaultOutputClass;
-
-        $this->presets = ConfigPresets::using($configProvider)->for(StructuredOutputConfig::group());
-    }
-
-    public function withConfigProvider(CanProvideConfig $configProvider) : self {
-        $this->presets = $this->presets->withConfigProvider($configProvider);
-        return $this;
     }
 
     public function withOutputMode(?OutputMode $outputMode) : static {
@@ -144,11 +132,6 @@ class StructuredOutputConfigBuilder
         return $this;
     }
 
-    public function withConfigPreset(string $preset) : self {
-        $this->configPreset = $preset;
-        return $this;
-    }
-
     public function with(
         ?OutputMode $outputMode = null,
         ?bool $useObjectReferences = null,
@@ -176,23 +159,13 @@ class StructuredOutputConfigBuilder
         return $this;
     }
 
-    public function withPreset(string $preset) : self {
-        $this->configPreset = $preset;
-        return $this;
-    }
-
     public function withConfig(StructuredOutputConfig $config) : self {
         $this->explicitConfig = $config;
         return $this;
     }
 
     public function create() : StructuredOutputConfig {
-        $data = $this->presets->getOrDefault($this->configPreset);
-        $defaults = StructuredOutputConfig::fromArray($data);
-
-        if ($this->explicitConfig) {
-            $defaults = $defaults->withOverrides($this->explicitConfig->toArray());
-        }
+        $defaults = $this->explicitConfig ?? new StructuredOutputConfig();
 
         $config = new StructuredOutputConfig(
             outputMode: $this->outputMode ?? $defaults->outputMode(),

@@ -168,7 +168,7 @@ describe('Streaming-Aware Extraction', function () {
 
     describe('ExtractingBuffer with custom extractors', function () {
         it('applies custom extractor during streaming', function () {
-            $buffer = ExtractingBuffer::withExtractors(OutputMode::Json, new XmlWrapperExtractor());
+            $buffer = ExtractingBuffer::fromExtractors(OutputMode::Json, new XmlWrapperExtractor());
 
             $buffer = $buffer->assemble('<json>{"name":"John"}</json>');
 
@@ -176,7 +176,7 @@ describe('Streaming-Aware Extraction', function () {
         });
 
         it('applies delimiter extractor during streaming', function () {
-            $buffer = ExtractingBuffer::withExtractors(OutputMode::Json, new DelimiterExtractor());
+            $buffer = ExtractingBuffer::fromExtractors(OutputMode::Json, new DelimiterExtractor());
 
             $buffer = $buffer->assemble('Some text ---JSON_START--- {"id": 42} ---JSON_END--- more text');
 
@@ -185,7 +185,7 @@ describe('Streaming-Aware Extraction', function () {
 
         it('tries extractors in order until success', function () {
             // DelimiterExtractor will fail, XmlWrapperExtractor will succeed
-            $buffer = ExtractingBuffer::withExtractors(
+            $buffer = ExtractingBuffer::fromExtractors(
                 OutputMode::Json,
                 new DelimiterExtractor(),
                 new XmlWrapperExtractor(),
@@ -197,7 +197,7 @@ describe('Streaming-Aware Extraction', function () {
         });
 
         it('falls back to partial JSON when all extractors fail', function () {
-            $buffer = ExtractingBuffer::withExtractors(
+            $buffer = ExtractingBuffer::fromExtractors(
                 OutputMode::Json,
                 new XmlWrapperExtractor(),
                 new PartialJsonExtractor(),
@@ -211,7 +211,7 @@ describe('Streaming-Aware Extraction', function () {
         });
 
         it('accumulates deltas and re-extracts each time', function () {
-            $buffer = ExtractingBuffer::withExtractors(OutputMode::Json, new BracketMatchingExtractor());
+            $buffer = ExtractingBuffer::fromExtractors(OutputMode::Json, new BracketMatchingExtractor());
 
             // Feed in chunks with surrounding text
             $buffer = $buffer->assemble('Response: {"na');
@@ -224,7 +224,7 @@ describe('Streaming-Aware Extraction', function () {
         });
 
         it('works with streaming chunks progressively', function () {
-            $buffer = ExtractingBuffer::withExtractors(
+            $buffer = ExtractingBuffer::fromExtractors(
                 OutputMode::Json,
                 new DirectJsonExtractor(),
                 new BracketMatchingExtractor(),
@@ -244,7 +244,7 @@ describe('Streaming-Aware Extraction', function () {
     describe('Integration: custom extractors in streaming pipeline', function () {
         it('integrates custom buffer with ExtractDeltaReducer', function () {
             $collector = makeStreamingFrameCollector();
-            $factory = fn(OutputMode $mode) => ExtractingBuffer::withExtractors(
+            $factory = fn(OutputMode $mode) => ExtractingBuffer::fromExtractors(
                 $mode,
                 new BracketMatchingExtractor(),
             );
@@ -275,7 +275,7 @@ describe('Streaming-Aware Extraction', function () {
 
         it('preserves buffer state across streaming frames', function () {
             $collector = makeStreamingFrameCollector();
-            $factory = fn(OutputMode $mode) => ExtractingBuffer::withExtractors(
+            $factory = fn(OutputMode $mode) => ExtractingBuffer::fromExtractors(
                 $mode,
                 new XmlWrapperExtractor(),
                 new DirectJsonExtractor(),
@@ -341,7 +341,7 @@ describe('Streaming-Aware Extraction', function () {
                 }
             };
 
-            $buffer = ExtractingBuffer::withExtractors(OutputMode::Json, $commentStripper);
+            $buffer = ExtractingBuffer::fromExtractors(OutputMode::Json, $commentStripper);
             $buffer = $buffer->assemble('{"name":"John"} // this is a comment');
 
             expect($buffer->normalized())->toBe('{"name":"John"}');

@@ -22,7 +22,7 @@ final class UseSubagents implements CanProvideAgentCapability
         $this->policy = $policy ?? SubagentPolicy::default();
     }
 
-    public static function withDepth(
+    public static function forDepth(
         int $maxDepth,
         ?CanManageAgentDefinitions $provider = null,
         ?SkillLibrary $skillLibrary = null,

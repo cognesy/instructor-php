@@ -9,7 +9,7 @@ use Symfony\Component\Filesystem\Path;
 final readonly class RulesDiscovery
 {
     public function __construct(
-        private string $profilesDir = __DIR__ . '/../../../config/quality/profiles',
+        private string $profilesDir = __DIR__ . '/../../../resources/config/quality/profiles',
     ) {}
 
     /**
@@ -80,4 +80,3 @@ final readonly class RulesDiscovery
         return array_keys($unique);
     }
 }
-

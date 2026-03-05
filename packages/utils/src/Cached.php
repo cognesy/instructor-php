@@ -51,7 +51,7 @@ final class Cached
      * @param TValue $value
      * @return self<TValue>
      */
-    public static function withValue(mixed $value): self {
+    public static function fromValue(mixed $value): self {
         return new self(producer: null, value: $value, isResolved: true);
     }
 

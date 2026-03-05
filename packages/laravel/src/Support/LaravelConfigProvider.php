@@ -8,10 +8,7 @@ use Cognesy\Config\Contracts\CanProvideConfig;
 use Illuminate\Contracts\Container\Container;
 
 /**
- * Laravel Config Provider
- *
- * Bridges Laravel's configuration system to Instructor's config provider interface.
- * Maps Laravel's instructor.php config to Instructor's expected preset format.
+ * Bridges Laravel configuration to Instructor's edge-facing config provider contract.
  */
 final class LaravelConfigProvider implements CanProvideConfig
 {
@@ -19,265 +16,218 @@ final class LaravelConfigProvider implements CanProvideConfig
         private readonly Container $app,
     ) {}
 
-    /**
-     * Get configuration value by path.
-     *
-     * Supports both:
-     * - Direct path: 'instructor.default'
-     * - Preset path: 'llm.presets.openai' (maps to instructor.connections.openai)
-     */
     #[\Override]
     public function get(string $path, mixed $default = null): mixed
     {
-        // Handle preset lookups (e.g., 'llm.presets.openai')
-        if (str_starts_with($path, 'llm.')) {
-            return $this->getLLMConfig($path, $default);
+        $normalizedPath = $this->normalizePath($path);
+
+        if (str_starts_with($normalizedPath, 'llm.')) {
+            return $this->getLLMConfig($normalizedPath, $default);
         }
 
-        if (str_starts_with($path, 'embed.')) {
-            return $this->getEmbedConfig($path, $default);
+        if (str_starts_with($normalizedPath, 'embed.')) {
+            return $this->getEmbedConfig($normalizedPath, $default);
         }
 
-        if (str_starts_with($path, 'http.')) {
-            return $this->getHttpConfig($path, $default);
+        if (str_starts_with($normalizedPath, 'http.')) {
+            return $this->getHttpConfig($normalizedPath, $default);
         }
 
-        // Direct config access
-        return $this->config()->get($path, $default);
+        return $this->config()->get($normalizedPath, $default);
     }
 
-    /**
-     * Check if configuration path exists.
-     */
     #[\Override]
     public function has(string $path): bool
     {
-        if (str_starts_with($path, 'llm.')) {
-            return $this->hasLLMConfig($path);
+        $normalizedPath = $this->normalizePath($path);
+
+        if (str_starts_with($normalizedPath, 'llm.')) {
+            return $this->hasLLMConfig($normalizedPath);
         }
 
-        if (str_starts_with($path, 'embed.')) {
-            return $this->hasEmbedConfig($path);
+        if (str_starts_with($normalizedPath, 'embed.')) {
+            return $this->hasEmbedConfig($normalizedPath);
         }
 
-        if (str_starts_with($path, 'http.')) {
-            return $this->hasHttpConfig($path);
+        if (str_starts_with($normalizedPath, 'http.')) {
+            return $this->hasHttpConfig($normalizedPath);
         }
 
-        return $this->config()->has($path);
+        return $this->config()->has($normalizedPath);
     }
 
-    /**
-     * Get LLM preset configuration.
-     */
     private function getLLMConfig(string $path, mixed $default): mixed
     {
-        // Handle 'llm.presets' or 'llm.presets.{name}'
-        if ($path === 'llm' || $path === 'llm.presets') {
-            return $this->buildAllLLMPresets();
+        if ($path === 'llm') {
+            return [
+                'default' => $this->llmDefaultConnection(),
+                'connections' => $this->llmConnections(),
+            ];
         }
 
-        if (str_starts_with($path, 'llm.presets.')) {
-            $presetName = substr($path, strlen('llm.presets.'));
-            return $this->buildLLMPreset($presetName);
+        if ($path === 'llm.default') {
+            return $this->llmDefaultConnection();
         }
 
-        if ($path === 'llm.defaultPreset') {
-            return $this->config()->get('instructor.default', 'openai');
+        if ($path === 'llm.connections') {
+            return $this->llmConnections();
         }
 
-        return $default;
+        if (!str_starts_with($path, 'llm.connections.')) {
+            return $default;
+        }
+
+        $connection = substr($path, strlen('llm.connections.'));
+        return $this->llmConnections()[$connection] ?? $default;
     }
 
-    /**
-     * Get embeddings preset configuration.
-     */
     private function getEmbedConfig(string $path, mixed $default): mixed
     {
-        if ($path === 'embed' || $path === 'embed.presets') {
-            return $this->buildAllEmbedPresets();
+        if ($path === 'embed') {
+            return [
+                'default' => $this->embedDefaultConnection(),
+                'connections' => $this->embedConnections(),
+            ];
         }
 
-        if (str_starts_with($path, 'embed.presets.')) {
-            $presetName = substr($path, strlen('embed.presets.'));
-            return $this->buildEmbedPreset($presetName);
+        if ($path === 'embed.default') {
+            return $this->embedDefaultConnection();
         }
 
-        if ($path === 'embed.defaultPreset') {
-            return $this->config()->get('instructor.embeddings.default', 'openai');
+        if ($path === 'embed.connections') {
+            return $this->embedConnections();
         }
 
-        return $default;
+        if (!str_starts_with($path, 'embed.connections.')) {
+            return $default;
+        }
+
+        $connection = substr($path, strlen('embed.connections.'));
+        return $this->embedConnections()[$connection] ?? $default;
     }
 
-    /**
-     * Get HTTP configuration.
-     */
     private function getHttpConfig(string $path, mixed $default): mixed
     {
         if ($path === 'http') {
-            return $this->buildHttpPresets();
+            return [
+                'default' => 'default',
+                'connections' => [
+                    'default' => $this->httpConnection(),
+                ],
+            ];
         }
 
-        if ($path === 'http.presets') {
-            return $this->buildHttpPresets()['presets'];
+        if ($path === 'http.default') {
+            return 'default';
         }
 
-        if ($path === 'http.defaultPreset') {
-            return $this->buildHttpPresets()['defaultPreset'];
+        if ($path === 'http.connections') {
+            return ['default' => $this->httpConnection()];
         }
 
-        if (str_starts_with($path, 'http.presets.')) {
-            $presetName = substr($path, strlen('http.presets.'));
-            $presets = $this->buildHttpPresets()['presets'];
-            return $presets[$presetName] ?? $default;
+        if ($path === 'http.connections.default') {
+            return $this->httpConnection();
         }
 
         return $default;
     }
 
-    /**
-     * Check if LLM config exists.
-     */
     private function hasLLMConfig(string $path): bool
     {
-        if ($path === 'llm' || $path === 'llm.presets' || $path === 'llm.defaultPreset') {
+        if ($path === 'llm' || $path === 'llm.default' || $path === 'llm.connections') {
             return true;
         }
 
-        if (str_starts_with($path, 'llm.presets.')) {
-            $presetName = substr($path, strlen('llm.presets.'));
-            return $this->config()->has("instructor.connections.{$presetName}");
+        if (!str_starts_with($path, 'llm.connections.')) {
+            return false;
         }
 
-        return false;
+        $connection = substr($path, strlen('llm.connections.'));
+        return array_key_exists($connection, $this->llmConnections());
     }
 
-    /**
-     * Check if embed config exists.
-     */
     private function hasEmbedConfig(string $path): bool
     {
-        if ($path === 'embed' || $path === 'embed.presets' || $path === 'embed.defaultPreset') {
+        if ($path === 'embed' || $path === 'embed.default' || $path === 'embed.connections') {
             return true;
         }
 
-        if (str_starts_with($path, 'embed.presets.')) {
-            $presetName = substr($path, strlen('embed.presets.'));
-            return $this->config()->has("instructor.embeddings.connections.{$presetName}");
+        if (!str_starts_with($path, 'embed.connections.')) {
+            return false;
         }
 
-        return false;
+        $connection = substr($path, strlen('embed.connections.'));
+        return array_key_exists($connection, $this->embedConnections());
     }
 
-    /**
-     * Check if HTTP config exists.
-     */
     private function hasHttpConfig(string $path): bool
     {
-        if ($path === 'http' || $path === 'http.presets' || $path === 'http.defaultPreset') {
-            return true;
-        }
-
-        if (str_starts_with($path, 'http.presets.')) {
-            $presetName = substr($path, strlen('http.presets.'));
-            return array_key_exists($presetName, $this->buildHttpPresets()['presets']);
-        }
-
-        return false;
+        return in_array($path, ['http', 'http.default', 'http.connections', 'http.connections.default'], true);
     }
 
-    /**
-     * Build all LLM presets from Laravel config.
-     */
-    private function buildAllLLMPresets(): array
+    private function llmDefaultConnection(): string
     {
-        $connections = $this->config()->get('instructor.connections', []);
-        $presets = [];
-
-        foreach ($connections as $name => $config) {
-            $presets[$name] = $this->normalizeConnectionConfig($config);
-        }
-
-        return [
-            'defaultPreset' => $this->config()->get('instructor.default', 'openai'),
-            'presets' => $presets,
-        ];
+        return (string) $this->config()->get('instructor.default', 'openai');
     }
 
-    /**
-     * Build a single LLM preset.
-     */
-    private function buildLLMPreset(string $name): ?array
+    private function embedDefaultConnection(): string
     {
-        $config = $this->config()->get("instructor.connections.{$name}");
-
-        if ($config === null) {
-            return null;
-        }
-
-        return $this->normalizeConnectionConfig($config);
+        return (string) $this->config()->get('instructor.embeddings.default', 'openai');
     }
 
-    /**
-     * Build all embed presets from Laravel config.
-     */
-    private function buildAllEmbedPresets(): array
+    private function llmConnections(): array
     {
-        $connections = $this->config()->get('instructor.embeddings.connections', []);
-        $presets = [];
-
-        foreach ($connections as $name => $config) {
-            $presets[$name] = $this->normalizeEmbedConfig($config);
+        $raw = $this->config()->get('instructor.connections', []);
+        if (!is_array($raw)) {
+            return [];
         }
 
-        return [
-            'defaultPreset' => $this->config()->get('instructor.embeddings.default', 'openai'),
-            'presets' => $presets,
-        ];
+        $connections = [];
+        foreach ($raw as $name => $config) {
+            if (!is_array($config)) {
+                continue;
+            }
+            $connections[(string) $name] = $this->normalizeConnectionConfig($config);
+        }
+        return $connections;
     }
 
-    /**
-     * Build a single embed preset.
-     */
-    private function buildEmbedPreset(string $name): ?array
+    private function embedConnections(): array
     {
-        $config = $this->config()->get("instructor.embeddings.connections.{$name}");
-
-        if ($config === null) {
-            return null;
+        $raw = $this->config()->get('instructor.embeddings.connections', []);
+        if (!is_array($raw)) {
+            return [];
         }
 
-        return $this->normalizeEmbedConfig($config);
+        $connections = [];
+        foreach ($raw as $name => $config) {
+            if (!is_array($config)) {
+                continue;
+            }
+            $connections[(string) $name] = $this->normalizeEmbedConfig($config);
+        }
+        return $connections;
     }
 
-    /**
-     * Build HTTP presets.
-     */
-    private function buildHttpPresets(): array
+    private function httpConnection(): array
     {
         $http = $this->config()->get('instructor.http', []);
+        $config = is_array($http) ? $http : [];
 
         return [
-            'defaultPreset' => 'default',
-            'presets' => [
-                'default' => [
-                    'driver' => $http['driver'] ?? 'laravel',
-                    'requestTimeout' => $http['timeout'] ?? 120,
-                    'connectTimeout' => $http['connect_timeout'] ?? 30,
-                ],
-            ],
+            'driver' => $config['driver'] ?? 'laravel',
+            'requestTimeout' => $config['timeout'] ?? 120,
+            'connectTimeout' => $config['connect_timeout'] ?? 30,
         ];
     }
 
-    /**
-     * Normalize Laravel connection config to Instructor preset format.
-     */
     private function normalizeConnectionConfig(array $config): array
     {
+        $driver = (string) ($config['driver'] ?? 'openai');
+
         return [
-            'driver' => $config['driver'] ?? 'openai',
-            'apiUrl' => $config['api_url'] ?? $this->getDefaultApiUrl($config['driver'] ?? 'openai'),
+            'driver' => $driver,
+            'apiUrl' => $config['api_url'] ?? $this->getDefaultApiUrl($driver),
             'apiKey' => $config['api_key'] ?? '',
             'endpoint' => $config['endpoint'] ?? '/chat/completions',
             'model' => $config['model'] ?? '',
@@ -286,14 +236,13 @@ final class LaravelConfigProvider implements CanProvideConfig
         ];
     }
 
-    /**
-     * Normalize embed connection config.
-     */
     private function normalizeEmbedConfig(array $config): array
     {
+        $driver = (string) ($config['driver'] ?? 'openai');
+
         return [
-            'driver' => $config['driver'] ?? 'openai',
-            'apiUrl' => $config['api_url'] ?? $this->getDefaultApiUrl($config['driver'] ?? 'openai'),
+            'driver' => $driver,
+            'apiUrl' => $config['api_url'] ?? $this->getDefaultApiUrl($driver),
             'apiKey' => $config['api_key'] ?? '',
             'endpoint' => $config['endpoint'] ?? '/embeddings',
             'model' => $config['model'] ?? '',
@@ -301,9 +250,6 @@ final class LaravelConfigProvider implements CanProvideConfig
         ];
     }
 
-    /**
-     * Build metadata from config.
-     */
     private function buildMetadata(array $config): array
     {
         $metadata = [];
@@ -327,9 +273,6 @@ final class LaravelConfigProvider implements CanProvideConfig
         return $metadata;
     }
 
-    /**
-     * Get default API URL for a driver.
-     */
     private function getDefaultApiUrl(string $driver): string
     {
         return match ($driver) {
@@ -348,7 +291,25 @@ final class LaravelConfigProvider implements CanProvideConfig
         };
     }
 
-    private function config(): object {
+    private function normalizePath(string $path): string
+    {
+        if (str_contains($path, '.presets.')) {
+            return str_replace('.presets.', '.connections.', $path);
+        }
+
+        if (str_ends_with($path, '.presets')) {
+            return str_replace('.presets', '.connections', $path);
+        }
+
+        if (str_ends_with($path, '.defaultPreset')) {
+            return str_replace('.defaultPreset', '.default', $path);
+        }
+
+        return $path;
+    }
+
+    private function config(): object
+    {
         return $this->app->make('config');
     }
 }

@@ -27,8 +27,8 @@ $httpClient = (new HttpClientBuilder())
     ->create();
 
 // Use the custom HTTP client with Inference
-$inference = Inference::fromRuntime(InferenceRuntime::using(
-    preset: 'openai',
+$inference = Inference::fromRuntime(InferenceRuntime::fromConfig(
+    config: LLMConfig::fromArray(['driver' => 'openai']),
     httpClient: $httpClient,
 ));
 

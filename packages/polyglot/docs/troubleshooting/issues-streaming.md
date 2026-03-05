@@ -32,8 +32,8 @@ $config = new HttpClientConfig(
 $httpClient = (new HttpClientBuilder())
     ->withConfig($config->withOverrides(['driver' => 'guzzle']))
     ->create();
-$inference = Inference::fromRuntime(InferenceRuntime::using(
-    preset: 'openai',
+$inference = Inference::fromRuntime(InferenceRuntime::fromConfig(
+    config: LLMConfig::fromArray(['driver' => 'openai']),
     httpClient: $httpClient,
 ));
 

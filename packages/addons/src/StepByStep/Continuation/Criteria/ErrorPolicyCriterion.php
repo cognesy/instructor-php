@@ -24,7 +24,7 @@ final readonly class ErrorPolicyCriterion implements CanEvaluateContinuation
         private CanResolveErrorContext $contextResolver,
     ) {}
 
-    public static function withPolicy(ErrorPolicy $policy, CanResolveErrorContext $contextResolver): self {
+    public static function fromPolicy(ErrorPolicy $policy, CanResolveErrorContext $contextResolver): self {
         return new self($policy, $contextResolver);
     }
 
