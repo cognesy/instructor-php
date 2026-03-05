@@ -23,7 +23,7 @@ final readonly class ResultEvent extends StreamEvent
     public static function fromArray(array $data): self
     {
         return new self(
-            result: $data['result'] ?? '',
+            result: StreamValueNormalizer::toString($data['result'] ?? ''),
         );
     }
 }

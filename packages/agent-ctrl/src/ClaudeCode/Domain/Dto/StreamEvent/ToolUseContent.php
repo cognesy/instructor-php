@@ -28,9 +28,9 @@ final readonly class ToolUseContent extends MessageContent
     public static function fromArray(array $data): self
     {
         return new self(
-            id: $data['id'] ?? '',
-            name: $data['name'] ?? 'unknown',
-            input: $data['input'] ?? [],
+            id: StreamValueNormalizer::toString($data['id'] ?? ''),
+            name: StreamValueNormalizer::toString($data['name'] ?? 'unknown', 'unknown'),
+            input: StreamValueNormalizer::toArray($data['input'] ?? []),
         );
     }
 }

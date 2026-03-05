@@ -14,7 +14,7 @@ abstract readonly class MessageContent
      */
     public static function fromArray(array $data): self
     {
-        $type = $data['type'] ?? 'unknown';
+        $type = StreamValueNormalizer::toString($data['type'] ?? 'unknown', 'unknown');
 
         return match ($type) {
             'text' => TextContent::fromArray($data),

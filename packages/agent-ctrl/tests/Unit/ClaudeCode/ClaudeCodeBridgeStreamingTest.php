@@ -100,6 +100,51 @@ SH);
     }
 });
 
+it('normalizes structured tool_result and error payloads in streaming mode', function () {
+    $binDir = sys_get_temp_dir() . '/agent-ctrl-claude-bin-' . uniqid('', true);
+    mkdir($binDir);
+    $scriptPath = $binDir . '/claude';
+    file_put_contents($scriptPath, <<<'SH'
+#!/bin/sh
+printf '%s\n' '{"type":"assistant","session_id":"claude_session_2","message":{"role":"assistant","content":[{"type":"tool_result","tool_use_id":"tool_2","content":[{"type":"text","text":"array payload"}],"is_error":"1"}]}}'
+printf '%s\n' '{"type":"error","error":{"code":"rate_limit","retry":1}}'
+exit 0
+SH);
+    chmod($scriptPath, 0755);
+
+    $previousPath = getenv('PATH');
+    $previousStdbuf = getenv('COGNESY_STDBUF');
+    putenv('PATH=' . $binDir . ':' . ($previousPath === false ? '' : $previousPath));
+    putenv('COGNESY_STDBUF=0');
+
+    $streamErrors = [];
+
+    try {
+        $bridge = new ClaudeCodeBridge();
+        $handler = new CallbackStreamHandler(
+            onError: function (StreamError $error) use (&$streamErrors): void {
+                $streamErrors[] = $error;
+            },
+        );
+
+        $response = $bridge->executeStreaming('ignored prompt', $handler);
+    } finally {
+        restoreClaudeEnv('PATH', $previousPath);
+        restoreClaudeEnv('COGNESY_STDBUF', $previousStdbuf);
+        @unlink($scriptPath);
+        @rmdir($binDir);
+    }
+
+    expect($response->sessionId())->toBeInstanceOf(AgentSessionId::class)
+        ->and((string) ($response->sessionId() ?? ''))->toBe('claude_session_2')
+        ->and($response->toolCalls)->toHaveCount(1)
+        ->and($response->toolCalls[0]->tool)->toBe('tool_result')
+        ->and($response->toolCalls[0]->output)->toBe('[{"type":"text","text":"array payload"}]')
+        ->and($response->toolCalls[0]->isError)->toBeTrue()
+        ->and($streamErrors)->toHaveCount(1)
+        ->and($streamErrors[0]->message)->toBe('{"code":"rate_limit","retry":1}');
+});
+
 function restoreClaudeEnv(string $key, string|false $value): void
 {
     if ($value === false) {

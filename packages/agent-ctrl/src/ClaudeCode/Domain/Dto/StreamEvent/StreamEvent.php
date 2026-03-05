@@ -16,7 +16,7 @@ abstract readonly class StreamEvent
      */
     public static function fromArray(array $data): self
     {
-        $type = $data['type'] ?? 'unknown';
+        $type = StreamValueNormalizer::toString($data['type'] ?? 'unknown', 'unknown');
 
         return match ($type) {
             'stream_event', 'assistant', 'user' => MessageEvent::fromArray($data),

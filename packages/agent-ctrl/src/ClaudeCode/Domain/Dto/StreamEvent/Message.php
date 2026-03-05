@@ -20,10 +20,7 @@ final readonly class Message
      */
     public static function fromArray(array $data): self
     {
-        $contentData = $data['content'] ?? [];
-        if (!is_array($contentData)) {
-            $contentData = [];
-        }
+        $contentData = StreamValueNormalizer::toArray($data['content'] ?? []);
 
         $content = [];
         foreach ($contentData as $item) {
@@ -33,7 +30,7 @@ final readonly class Message
         }
 
         return new self(
-            role: $data['role'] ?? 'unknown',
+            role: StreamValueNormalizer::toString($data['role'] ?? 'unknown', 'unknown'),
             content: $content,
         );
     }

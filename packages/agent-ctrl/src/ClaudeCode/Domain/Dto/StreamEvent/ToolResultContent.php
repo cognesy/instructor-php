@@ -25,9 +25,9 @@ final readonly class ToolResultContent extends MessageContent
     public static function fromArray(array $data): self
     {
         return new self(
-            toolUseId: $data['tool_use_id'] ?? '',
-            content: $data['content'] ?? '',
-            isError: $data['is_error'] ?? false,
+            toolUseId: StreamValueNormalizer::toString($data['tool_use_id'] ?? ''),
+            content: StreamValueNormalizer::toString($data['content'] ?? ''),
+            isError: StreamValueNormalizer::toBool($data['is_error'] ?? false),
         );
     }
 }

@@ -23,7 +23,7 @@ final readonly class ErrorEvent extends StreamEvent
     public static function fromArray(array $data): self
     {
         return new self(
-            error: $data['error'] ?? '',
+            error: StreamValueNormalizer::toString($data['error'] ?? ''),
         );
     }
 }

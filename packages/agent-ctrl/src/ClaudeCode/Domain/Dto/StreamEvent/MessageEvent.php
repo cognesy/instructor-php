@@ -22,10 +22,7 @@ final readonly class MessageEvent extends StreamEvent
      */
     public static function fromArray(array $data): self
     {
-        $messageData = $data['message'] ?? [];
-        if (!is_array($messageData)) {
-            $messageData = [];
-        }
+        $messageData = StreamValueNormalizer::toArray($data['message'] ?? []);
 
         return new self(
             message: Message::fromArray($messageData),

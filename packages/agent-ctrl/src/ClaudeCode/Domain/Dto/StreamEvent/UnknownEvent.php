@@ -17,7 +17,7 @@ final readonly class UnknownEvent extends StreamEvent
     #[\Override]
     public function type(): string
     {
-        return $this->rawData['type'] ?? 'unknown';
+        return StreamValueNormalizer::toString($this->rawData['type'] ?? 'unknown', 'unknown');
     }
 
     /**

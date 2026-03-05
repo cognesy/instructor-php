@@ -23,7 +23,7 @@ final readonly class TextContent extends MessageContent
     public static function fromArray(array $data): self
     {
         return new self(
-            text: $data['text'] ?? '',
+            text: StreamValueNormalizer::toString($data['text'] ?? ''),
         );
     }
 }
