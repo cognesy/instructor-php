@@ -52,7 +52,7 @@ use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 
 require_once __DIR__ . '/../Support/FakeInferenceDriver.php';
 
@@ -200,11 +200,10 @@ final class MemoryProfileBench
         $peakBefore = memory_get_peak_usage(true);
 
         $so = (new StructuredOutput)
-            ->withRuntime(makeStructuredRuntime(driver: $driver))
+            ->withRuntime(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json))
             ->with(
                 messages: 'Emit sequence',
                 responseModel: $this->responseModel(),
-                mode: OutputMode::Json,
             );
 
         $stream = $so->stream();
@@ -235,11 +234,10 @@ final class MemoryProfileBench
         $peakBefore = memory_get_peak_usage(true);
 
         $so = (new StructuredOutput)
-            ->withRuntime(makeStructuredRuntime(driver: $driver))
+            ->withRuntime(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json))
             ->with(
                 messages: 'Emit sequence',
                 responseModel: $this->responseModel(),
-                mode: OutputMode::Json,
             );
 
         $result = $so->get();

@@ -16,9 +16,8 @@ use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Errors\ProviderErrorClassifier;
 use Cognesy\Polyglot\Inference\Events\InferenceFailed;
 use Cognesy\Polyglot\Inference\Events\InferenceRequested;
@@ -46,16 +45,14 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest
         return $this->httpResponseToInference($httpResponse);
     }
 
-    /**
-     * @return iterable<PartialInferenceResponse>
-     */
+    /** @return iterable<PartialInferenceDelta> */
     #[\Override]
-    public function makeStreamResponsesFor(InferenceRequest $request): iterable {
+    public function makeStreamDeltasFor(InferenceRequest $request): iterable {
         $httpRequest = $this->toHttpRequest($request);
         $httpResponse = $this->makeHttpResponse($httpRequest);
         $cachePolicy = $this->toStreamCachePolicy($request->responseCachePolicy());
         $httpResponse = $this->streamCacheManager()->manage($httpResponse, $cachePolicy);
-        return $this->httpResponseToInferenceStream($httpResponse);
+        return $this->httpResponseToInferenceDeltas($httpResponse);
     }
 
     public function withStreamCacheManager(?CanManageStreamCache $streamCacheManager): static {
@@ -72,13 +69,7 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest
      */
     #[\Override]
     public function capabilities(?string $model = null): DriverCapabilities {
-        return new DriverCapabilities(
-            outputModes: OutputMode::cases(),
-            streaming: true,
-            toolCalling: true,
-            jsonSchema: true,
-            responseFormatWithTools: true,
-        );
+        return new DriverCapabilities();
     }
 
     // INTERNAL //////////////////////////////////////////////
@@ -104,15 +95,16 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest
     }
 
     /**
-     * @return iterable<PartialInferenceResponse>
+     * @return iterable<PartialInferenceDelta>
      */
-    protected function httpResponseToInferenceStream(HttpResponse $httpResponse): iterable {
+    protected function httpResponseToInferenceDeltas(HttpResponse $httpResponse): iterable {
         $reader = new EventStreamReader(
             events: $this->events,
             parser: $this->toEventBody(...),
         );
+
         try {
-            yield from $this->responseTranslator->fromStreamResponses(
+            yield from $this->responseTranslator->fromStreamDeltas(
                 $reader->eventsFrom($httpResponse->stream()),
                 $httpResponse,
             );

@@ -4,7 +4,7 @@ use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 
 // Guards regression from instructor-v8iv (sequence() leaking get_class TypeError on scalar values).
 it('throws explicit sequence contract error for non-sequenceable streamed values', function () {
@@ -16,11 +16,10 @@ it('throws explicit sequence contract error for non-sequenceable streamed values
     );
 
     $stream = (new StructuredOutput)
-        ->withRuntime(makeStructuredRuntime(driver: $driver))
+        ->withRuntime(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json))
         ->with(
             messages: 'Extract user age',
             responseModel: Scalar::integer('age'),
-            mode: OutputMode::Json,
         )
         ->stream();
 

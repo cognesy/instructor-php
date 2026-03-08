@@ -2,7 +2,6 @@
 
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Inference;
 
 it('respects JSON mode for Gemini', function () {
@@ -16,12 +15,11 @@ it('respects JSON mode for Gemini', function () {
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $data = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('gemini'), httpClient: $http))
+    $data = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('gemini'), httpClient: $http))
         ->withModel('gemini-1.5-flash')
-        ->withOutputMode(OutputMode::Json)
+        ->withResponseFormat(['type' => 'json_object'])
         ->withMessages('Q?')
         ->asJsonData();
 
     expect($data)->toBe(['answer' => 'ok']);
 });
-

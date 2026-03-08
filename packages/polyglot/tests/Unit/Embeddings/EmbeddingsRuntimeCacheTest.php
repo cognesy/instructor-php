@@ -1,16 +1,24 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
+use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
+use Cognesy\Polyglot\Embeddings\Data\EmbeddingsResponse;
 use Cognesy\Polyglot\Embeddings\Contracts\CanCreateEmbeddings;
 use Cognesy\Polyglot\Embeddings\Embeddings;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
+use Cognesy\Polyglot\Embeddings\EmbeddingsRuntime;
 use Cognesy\Polyglot\Embeddings\PendingEmbeddings;
 use Cognesy\Polyglot\Tests\Support\TestConfig;
 use Cognesy\Config\Dsn;
+use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Http\Data\HttpResponse;
 
 it('uses provided runtime and preserves it across request mutations', function () {
     $runtime = new class implements CanCreateEmbeddings {
+        public int $calls = 0;
+
         public function create(EmbeddingsRequest $request): PendingEmbeddings {
+            $this->calls++;
             throw new RuntimeException('test');
         }
     };
@@ -18,20 +26,27 @@ it('uses provided runtime and preserves it across request mutations', function (
     $embeddings = new Embeddings($runtime);
     $derived = $embeddings->withInputs(['hello']);
 
-    expect($embeddings->runtime())->toBe($runtime);
-    expect($derived->runtime())->toBe($runtime);
     expect($derived)->not->toBe($embeddings);
+    expect(fn() => $embeddings->create())->toThrow(RuntimeException::class, 'test');
+    expect(fn() => $derived->create())->toThrow(RuntimeException::class, 'test');
+    expect($runtime->calls)->toBe(2);
 });
 
 it('withRuntime returns new facade with replaced runtime', function () {
     $firstRuntime = new class implements CanCreateEmbeddings {
+        public int $calls = 0;
+
         public function create(EmbeddingsRequest $request): PendingEmbeddings {
+            $this->calls++;
             throw new RuntimeException('test');
         }
     };
 
     $secondRuntime = new class implements CanCreateEmbeddings {
+        public int $calls = 0;
+
         public function create(EmbeddingsRequest $request): PendingEmbeddings {
+            $this->calls++;
             throw new RuntimeException('test');
         }
     };
@@ -40,8 +55,10 @@ it('withRuntime returns new facade with replaced runtime', function () {
     $updated = $embeddings->withRuntime($secondRuntime);
 
     expect($updated)->not->toBe($embeddings);
-    expect($updated->runtime())->toBe($secondRuntime);
-    expect($embeddings->runtime())->toBe($firstRuntime);
+    expect(fn() => $updated->create())->toThrow(RuntimeException::class, 'test');
+    expect(fn() => $embeddings->create())->toThrow(RuntimeException::class, 'test');
+    expect($secondRuntime->calls)->toBe(1);
+    expect($firstRuntime->calls)->toBe(1);
 });
 
 it('delegates create to runtime with built request', function () {
@@ -87,8 +104,26 @@ it('supports request hydration and typed constructor sugar', function () {
     expect(fn() => $facade->create())->toThrow(RuntimeException::class, 'stop');
     expect($runtime->captured?->inputs())->toBe(['hydrated']);
     expect($runtime->captured?->model())->toBe('embed-small');
-    expect(Embeddings::fromEmbeddingsConfig(TestConfig::embeddings('openai')))->toBeInstanceOf(Embeddings::class);
+    expect(Embeddings::fromConfig(TestConfig::embeddings('openai')))->toBeInstanceOf(Embeddings::class);
 
     $raw = Dsn::fromString('driver=openai,model=text-embedding-3-small')->toArray();
-    expect(Embeddings::fromEmbeddingsConfig(EmbeddingsConfig::fromArray($raw)))->toBeInstanceOf(Embeddings::class);
+    expect(Embeddings::fromConfig(EmbeddingsConfig::fromArray($raw)))->toBeInstanceOf(Embeddings::class);
+});
+
+it('rejects execution when request has no inputs', function () {
+    $runtime = new EmbeddingsRuntime(
+        driver: new class implements CanHandleVectorization {
+            public function handle(EmbeddingsRequest $request): HttpResponse {
+                throw new RuntimeException('not reached');
+            }
+
+            public function fromData(array $data): ?EmbeddingsResponse {
+                return null;
+            }
+        },
+        events: new EventDispatcher(name: 'test.embeddings.runtime'),
+    );
+
+    expect(fn() => $runtime->create(EmbeddingsRequest::empty()))
+        ->toThrow(InvalidArgumentException::class, 'Input data is required');
 });

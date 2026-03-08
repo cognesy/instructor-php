@@ -26,24 +26,22 @@ final class CircuitBreakerMiddleware implements HttpMiddleware
         $key = $this->keyFor($request);
         $circuit = $this->store->load($key) ?? $this->newCircuit();
 
-        if ($circuit['state'] === 'open') {
+        if ($circuit->isOpen()) {
             if ($this->isOpenExpired($circuit)) {
-                $circuit['state'] = 'half_open';
-                $circuit['halfOpenRequests'] = 0;
-                $circuit['halfOpenSuccesses'] = 0;
+                $circuit = $circuit->asHalfOpen();
             } else {
                 $this->store->save($key, $circuit);
                 throw new CircuitBreakerOpenException("Circuit open for {$key}", $request);
             }
         }
 
-        if ($circuit['state'] === 'half_open' && $circuit['halfOpenRequests'] >= $this->policy->halfOpenMaxRequests) {
+        if ($circuit->isHalfOpen() && $circuit->halfOpenRequests >= $this->policy->halfOpenMaxRequests) {
             $this->store->save($key, $circuit);
             throw new CircuitBreakerOpenException("Circuit half-open limit reached for {$key}", $request);
         }
 
-        if ($circuit['state'] === 'half_open') {
-            $circuit['halfOpenRequests']++;
+        if ($circuit->isHalfOpen()) {
+            $circuit = $circuit->withHalfOpenRequests($circuit->halfOpenRequests + 1);
         }
 
         try {
@@ -73,45 +71,36 @@ final class CircuitBreakerMiddleware implements HttpMiddleware
         return $host;
     }
 
-    private function newCircuit(): array {
-        return [
-            'state' => 'closed',
-            'failures' => 0,
-            'lastFailure' => 0,
-            'halfOpenRequests' => 0,
-            'halfOpenSuccesses' => 0,
-        ];
+    private function newCircuit(): CircuitBreakerState {
+        return CircuitBreakerState::fresh();
     }
 
-    private function isOpenExpired(array $circuit): bool {
-        return (time() - $circuit['lastFailure']) >= $this->policy->openForSec;
+    private function isOpenExpired(CircuitBreakerState $circuit): bool {
+        return (time() - $circuit->lastFailure) >= $this->policy->openForSec;
     }
 
-    private function recordFailure(array $circuit): array {
-        $circuit['failures']++;
-        $circuit['lastFailure'] = time();
+    private function recordFailure(CircuitBreakerState $circuit): CircuitBreakerState {
+        $updatedCircuit = $circuit
+            ->withFailures($circuit->failures + 1)
+            ->withLastFailure(time());
 
-        if ($circuit['state'] === 'half_open' || $circuit['failures'] >= $this->policy->failureThreshold) {
-            $circuit['state'] = 'open';
+        if ($updatedCircuit->isHalfOpen() || $updatedCircuit->failures >= $this->policy->failureThreshold) {
+            return $updatedCircuit->withState(CircuitBreakerState::STATE_OPEN);
         }
 
-        return $circuit;
+        return $updatedCircuit;
     }
 
-    private function recordSuccess(array $circuit): array {
-        if ($circuit['state'] === 'half_open') {
-            $circuit['halfOpenSuccesses']++;
-            if ($circuit['halfOpenSuccesses'] >= $this->policy->successThreshold) {
-                $circuit['state'] = 'closed';
-                $circuit['failures'] = 0;
-                $circuit['halfOpenRequests'] = 0;
-                $circuit['halfOpenSuccesses'] = 0;
+    private function recordSuccess(CircuitBreakerState $circuit): CircuitBreakerState {
+        if ($circuit->isHalfOpen()) {
+            $updatedCircuit = $circuit->withHalfOpenSuccesses($circuit->halfOpenSuccesses + 1);
+            if ($updatedCircuit->halfOpenSuccesses >= $this->policy->successThreshold) {
+                return $updatedCircuit->asClosed();
             }
-            return $circuit;
+            return $updatedCircuit;
         }
 
-        $circuit['failures'] = 0;
-        return $circuit;
+        return $circuit->withFailures(0);
     }
 
     private static function defaultStateStore(): CanStoreCircuitBreakerState {

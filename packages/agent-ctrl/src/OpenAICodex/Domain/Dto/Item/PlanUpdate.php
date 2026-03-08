@@ -2,6 +2,8 @@
 
 namespace Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\Item;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
+
 /**
  * Plan modification item
  *
@@ -28,9 +30,9 @@ final readonly class PlanUpdate extends Item
     public static function fromArray(array $data): self
     {
         return new self(
-            id: (string)($data['id'] ?? ''),
-            status: (string)($data['status'] ?? 'completed'),
-            plan: (string)($data['plan'] ?? ''),
+            id: Normalize::toString($data['id'] ?? ''),
+            status: Normalize::toString($data['status'] ?? 'completed', 'completed'),
+            plan: Normalize::toString($data['plan'] ?? ''),
         );
     }
 }

@@ -16,7 +16,7 @@ we receive the expected final fields.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Utils\Cli\Console;
 use Cognesy\Utils\Str;
 

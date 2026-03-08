@@ -35,9 +35,9 @@ assert(Str::contains($answer, 'Berlin'));
 
 // EXAMPLE 2: Load prompt from file
 
-// use default template language, prompt files are in /prompts/twig/<prompt>.twig
+// DSN now uses engine aliases (twig/blade/arrowpipe), so point twig at a concrete template path
 $prompt = Template::text(
-    pathOrDsn: 'demo-twig:capital',
+    pathOrDsn: 'twig:packages/templates/prompts/demo-twig/capital',
     variables: ['country' => 'Germany'],
 );
 

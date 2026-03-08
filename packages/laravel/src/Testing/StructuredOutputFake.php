@@ -9,7 +9,7 @@ use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use PHPUnit\Framework\Assert as PHPUnit;
 
 /**

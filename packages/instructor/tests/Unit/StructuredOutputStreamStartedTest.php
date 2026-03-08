@@ -1,54 +1,54 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Instructor\Collections\StructuredOutputAttemptList;
-use Cognesy\Instructor\Contracts\CanHandleStructuredOutputAttempts;
-use Cognesy\Instructor\Data\StructuredOutputAttempt;
+use Cognesy\Instructor\Contracts\CanEmitStreamingUpdates;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
+use Cognesy\Instructor\Data\StructuredOutputResponse;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted;
 use Cognesy\Instructor\StructuredOutputStream;
-use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Tests\Instructor\Support\TestEventDispatcher;
 
 require_once __DIR__ . '/../Support/TestEventDispatcher.php';
 
-class SingleUpdateAttemptHandler implements CanHandleStructuredOutputAttempts
+class SingleUpdateEmitter implements CanEmitStreamingUpdates
 {
     private bool $done = false;
 
     public function __construct(
-        private StructuredOutputExecution $update,
+        private StructuredOutputExecution $execution,
+        private StructuredOutputResponse $emission,
     ) {}
 
-    public function hasNext(StructuredOutputExecution $execution): bool {
+    public function hasNextEmission(): bool {
         return !$this->done;
     }
 
-    public function nextUpdate(StructuredOutputExecution $execution): StructuredOutputExecution {
+    public function nextEmission(): ?StructuredOutputResponse {
         $this->done = true;
-        return $this->update;
+        return $this->emission;
+    }
+
+    public function execution(): StructuredOutputExecution {
+        return $this->execution;
     }
 }
 
 it('dispatches StructuredOutputStarted once across multiple stream reads', function () {
     $dispatcher = new TestEventDispatcher();
 
-    $response = (new InferenceResponse())->withValue('ok');
-    $inferenceExecution = InferenceExecution::empty()->withSuccessfulAttempt($response);
-    $attempt = new StructuredOutputAttempt(inferenceExecution: $inferenceExecution);
-    $attempts = StructuredOutputAttemptList::of($attempt);
+    $response = new InferenceResponse(content: 'ok');
     $request = new StructuredOutputRequest(messages: 'dummy', requestedSchema: []);
 
-    $execution = new StructuredOutputExecution(
-        request: $request,
-        attempts: $attempts,
-        currentAttempt: $attempt,
-        isFinalized: false,
-    );
+    $execution = (new StructuredOutputExecution(request: $request))
+        ->withStartedAttempt()
+        ->withSuccessfulAttempt($response, 'ok');
 
-    $handler = new SingleUpdateAttemptHandler($execution);
-    $stream = new StructuredOutputStream($execution, $handler, $dispatcher);
+    $emitter = new SingleUpdateEmitter(
+        $execution,
+        StructuredOutputResponse::final(value: 'ok', rawResponse: $response),
+    );
+    $stream = new StructuredOutputStream($execution, $emitter, $dispatcher);
 
     $stream->finalResponse();
     $stream->finalResponse();
@@ -64,21 +64,18 @@ it('dispatches StructuredOutputStarted once across multiple stream reads', funct
 it('does not emit additional start events when reading the raw iterator', function () {
     $dispatcher = new TestEventDispatcher();
 
-    $response = (new InferenceResponse())->withValue('ok');
-    $inferenceExecution = InferenceExecution::empty()->withSuccessfulAttempt($response);
-    $attempt = new StructuredOutputAttempt(inferenceExecution: $inferenceExecution);
-    $attempts = StructuredOutputAttemptList::of($attempt);
+    $response = new InferenceResponse(content: 'ok');
     $request = new StructuredOutputRequest(messages: 'dummy', requestedSchema: []);
 
-    $execution = new StructuredOutputExecution(
-        request: $request,
-        attempts: $attempts,
-        currentAttempt: $attempt,
-        isFinalized: false,
-    );
+    $execution = (new StructuredOutputExecution(request: $request))
+        ->withStartedAttempt()
+        ->withSuccessfulAttempt($response, 'ok');
 
-    $handler = new SingleUpdateAttemptHandler($execution);
-    $stream = new StructuredOutputStream($execution, $handler, $dispatcher);
+    $emitter = new SingleUpdateEmitter(
+        $execution,
+        StructuredOutputResponse::final(value: 'ok', rawResponse: $response),
+    );
+    $stream = new StructuredOutputStream($execution, $emitter, $dispatcher);
 
     iterator_to_array($stream->getIterator());
 

@@ -4,6 +4,9 @@ Instructor validates results of LLM response against validation rules specified 
 
 ```php
 <?php
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class Person {
@@ -44,10 +47,12 @@ class Person {
 
 $text = "His name is JX, aka Jason, he is -28 years old.";
 
-$person = (new StructuredOutput)->with(
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withMaxRetries(3);
+
+$person = (new StructuredOutput($runtime))->with(
     messages: $text,
     responseModel: Person::class,
-    maxRetries: 3,
 )->get();
 
 // if all LLM's attempts to self-correct the results fail, Instructor throws an exception
@@ -60,6 +65,9 @@ and defining validation logic in ```validate()``` method.
 
 ```php
 <?php
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Instructor\Validation\Traits\ValidationMixin;
 
 class UserDetails
@@ -81,10 +89,12 @@ class UserDetails
     }
 }
 
-$user = (new StructuredOutput)->with(
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withMaxRetries(2);
+
+$user = (new StructuredOutput($runtime))->with(
     messages: [['role' => 'user', 'content' => 'jason is 25 years old']],
     responseModel: UserDetails::class,
-    maxRetries: 2
 )->get();
 
 assert($user->name === "JASON");
@@ -117,6 +127,8 @@ You can use ```#[Assert/Callback]``` annotation to build fully customized valida
 ```php
 <?php
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
@@ -136,11 +148,13 @@ class UserDetails
     }
 }
     
-$user = (new StructuredOutput)
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withMaxRetries(2);
+
+$user = (new StructuredOutput($runtime))
     ->with(
         messages: [['role' => 'user', 'content' => 'jason is 25 years old']],
         responseModel: UserDetails::class,
-        maxRetries: 2
     )
     ->get();
 

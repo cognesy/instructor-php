@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Extraction;
 
 use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use JsonException;
 
 final class ResponseContent

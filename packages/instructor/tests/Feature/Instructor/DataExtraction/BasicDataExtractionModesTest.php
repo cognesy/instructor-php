@@ -1,6 +1,5 @@
 <?php
 
-use Cognesy\Instructor\Extras\Mixin\HandlesSelfInference;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\MockHttp;
 use Cognesy\Schema\Attributes\Description;
@@ -102,14 +101,6 @@ class UserWithSetters
     public function getPassword(): string {
         return $this->password ?? '';
     }
-}
-
-class UserWithMixin
-{
-    use HandlesSelfInference;
-
-    public int $age;
-    public string $name;
 }
 
 // Test cases
@@ -229,22 +220,6 @@ it('handles setter default values and nullable parameters', function () {
     expect($user->getAge())->toBe(0); // nullable, not set
     expect($user->getLocation())->toBe('Boston');
     expect($user->getPassword())->toBe('123admin'); // default value from setter for empty password
-});
-
-it('works with self-inference mixin', function () {
-    $mockHttp = MockHttp::get([
-        '{"name":"Alex","age":32}',
-    ]);
-
-    $user = UserWithMixin::infer(
-        messages: "Alex is 32 years old and works as an engineer.",
-        llm: \Cognesy\Polyglot\Inference\LLMProvider::new(),
-        httpClient: $mockHttp,
-    );
-
-    expect($user)->toBeInstanceOf(UserWithMixin::class);
-    expect($user->name)->toBe('Alex');
-    expect($user->age)->toBe(32);
 });
 
 it('compares extraction modes with same data', function () {

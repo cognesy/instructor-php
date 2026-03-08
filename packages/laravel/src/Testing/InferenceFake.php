@@ -7,7 +7,6 @@ namespace Cognesy\Instructor\Laravel\Testing;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use PHPUnit\Framework\Assert as PHPUnit;
 
 /**
@@ -66,8 +65,6 @@ class InferenceFake
     /** @var array */
     protected array $options = [];
 
-    /** @var OutputMode|null */
-    protected ?OutputMode $mode = null;
 
     /** @var bool */
     protected bool $streaming = false;
@@ -121,7 +118,6 @@ class InferenceFake
         string|array $toolChoice = [],
         array $responseFormat = [],
         array $options = [],
-        ?OutputMode $mode = null,
     ): self {
         $this->messages = $messages;
         $this->model = $model ?: null;
@@ -129,7 +125,6 @@ class InferenceFake
         $this->toolChoice = $toolChoice;
         $this->responseFormat = $responseFormat;
         $this->options = $options;
-        $this->mode = $mode;
         return $this;
     }
 
@@ -169,11 +164,6 @@ class InferenceFake
         return $this;
     }
 
-    public function withOutputMode(OutputMode $mode): self
-    {
-        $this->mode = $mode;
-        return $this;
-    }
 
     public function withStreaming(bool $streaming = true): self
     {

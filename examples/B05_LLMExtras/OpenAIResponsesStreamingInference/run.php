@@ -27,18 +27,18 @@ $stream = Inference::using('openai-responses')
     ->withOptions(['max_output_tokens' => 256])
     ->withStreaming()
     ->stream()
-    ->onPartialResponse(fn($partial) => print($partial->contentDelta));
+    ->onDelta(fn($delta) => print($delta->contentDelta));
 
 $assembled = '';
 $deltaCount = 0;
 
-foreach ($stream->responses() as $partial) {
-    $delta = $partial->contentDelta;
-    if ($delta === '') {
+foreach ($stream->deltas() as $delta) {
+    $contentDelta = $delta->contentDelta;
+    if ($contentDelta === '') {
         continue;
     }
     $deltaCount += 1;
-    $assembled .= $delta;
+    $assembled .= $contentDelta;
 }
 
 $final = $stream->final();

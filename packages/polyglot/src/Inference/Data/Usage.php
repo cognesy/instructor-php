@@ -2,8 +2,12 @@
 
 namespace Cognesy\Polyglot\Inference\Data;
 
+use Cognesy\Utils\Profiler\TracksObjectCreation;
+
 class Usage
 {
+    use TracksObjectCreation;
+
     public function __construct(
         public int $inputTokens = 0,
         public int $outputTokens = 0,
@@ -11,7 +15,9 @@ class Usage
         public int $cacheReadTokens = 0,
         public int $reasoningTokens = 0,
         public ?Pricing $pricing = null,
-    ) {}
+    ) {
+        $this->trackObjectCreation();
+    }
 
     // CONSTRUCTORS ///////////////////////////////////////////////////////
 

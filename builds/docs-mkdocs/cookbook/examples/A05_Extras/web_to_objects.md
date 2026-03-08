@@ -34,7 +34,7 @@ require 'examples/boot.php';
 use Cognesy\Auxiliary\Web\Webpage;
 use Cognesy\Config\BasePath;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Schema\Attributes\Instructions;
 class Company {
     public string $name = '';

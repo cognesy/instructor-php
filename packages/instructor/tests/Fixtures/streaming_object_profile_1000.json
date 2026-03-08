@@ -1,0 +1,31 @@
+{
+    "chunks": 1000,
+    "emissions": 1000,
+    "finalContentLength": 1000,
+    "finalCreatedByClass": {
+        "Cognesy\\Instructor\\Data\\StructuredOutputAttempt": 2,
+        "Cognesy\\Instructor\\Data\\StructuredOutputExecution": 4,
+        "Cognesy\\Instructor\\Data\\StructuredOutputResponse": 1001,
+        "Cognesy\\Instructor\\Streaming\\StructuredOutputStreamState": 2,
+        "Cognesy\\Polyglot\\Inference\\Data\\InferenceAttempt": 2,
+        "Cognesy\\Polyglot\\Inference\\Data\\InferenceExecution": 3,
+        "Cognesy\\Polyglot\\Inference\\Data\\InferenceResponse": 1003,
+        "Cognesy\\Polyglot\\Inference\\Data\\PartialInferenceDelta": 1000,
+        "Cognesy\\Polyglot\\Inference\\Data\\Usage": 1004,
+        "Cognesy\\Polyglot\\Inference\\Streaming\\InferenceStreamState": 1
+    },
+    "finalLiveByClass": {
+        "Cognesy\\Instructor\\Data\\StructuredOutputAttempt": 1,
+        "Cognesy\\Instructor\\Data\\StructuredOutputExecution": 1,
+        "Cognesy\\Instructor\\Data\\StructuredOutputResponse": 1,
+        "Cognesy\\Instructor\\Streaming\\StructuredOutputStreamState": 1,
+        "Cognesy\\Polyglot\\Inference\\Data\\InferenceAttempt": 2,
+        "Cognesy\\Polyglot\\Inference\\Data\\InferenceExecution": 2,
+        "Cognesy\\Polyglot\\Inference\\Data\\InferenceResponse": 2,
+        "Cognesy\\Polyglot\\Inference\\Data\\PartialInferenceDelta": 1,
+        "Cognesy\\Polyglot\\Inference\\Data\\Usage": 3,
+        "Cognesy\\Polyglot\\Inference\\Streaming\\InferenceStreamState": 1
+    },
+    "finalValueType": "StreamProfilePayload1000",
+    "finalTextLength": 989
+}

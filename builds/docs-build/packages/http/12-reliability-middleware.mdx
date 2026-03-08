@@ -15,7 +15,7 @@ $client = (new HttpClientBuilder())
         baseDelayMs: 200,
     ))
     ->create();
-// @doctest id="0502"
+// @doctest id="be1e"
 ```
 
 `Retry-After` is respected only for numeric seconds or RFC7231 HTTP-date values (`D, d M Y H:i:s T`).
@@ -36,7 +36,7 @@ $client = (new HttpClientBuilder())
         new ApcuCircuitBreakerStateStore(),
     )
     ->create();
-// @doctest id="2362"
+// @doctest id="5a68"
 ```
 
 Use a shared state store for circuit breaker in multi-request runtimes (for example PHP-FPM). Without APCu, middleware falls back to in-process memory only.
@@ -53,7 +53,7 @@ $client = (new HttpClientBuilder())
         methods: ['POST'],
     ))
     ->create();
-// @doctest id="e17d"
+// @doctest id="8d34"
 ```
 
 ## Combine Policies
@@ -69,7 +69,7 @@ $client = (new HttpClientBuilder())
     ->withCircuitBreakerPolicy(new CircuitBreakerPolicy())
     ->withIdempotencyMiddleware(new IdempotencyMiddleware())
     ->create();
-// @doctest id="baaa"
+// @doctest id="336b"
 ```
 
 ## See Also

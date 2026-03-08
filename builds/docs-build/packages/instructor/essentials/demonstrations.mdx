@@ -24,14 +24,19 @@ array data rendered as JSON text.
 <?php
 use Cognesy\Instructor\Extras\Example\Example;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 class User {
     public int $age;
     public string $name;
 }
 
-$user = (new StructuredOutput)->with(
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withOutputMode(OutputMode::Json);
+
+$user = (new StructuredOutput($runtime))->with(
     messages: "Our user Jason is 25 years old.",
     responseModel: User::class,
     examples: [
@@ -44,10 +49,9 @@ $user = (new StructuredOutput)->with(
             output: ['name' => 'Ian', 'age' => 27]
         ),
     ],
-    mode: OutputMode::Json
 )->get();
 ?>
-// @doctest id="f31e"
+// @doctest id="b24e"
 ```
 
 ## Modifying the example template
@@ -64,7 +68,10 @@ In case input or output data is an array, Instructor will automatically convert 
 a JSON string before replacing the placeholders.
 
 ```php
-$user = (new StructuredOutput)->with(
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withOutputMode(OutputMode::Json);
+
+$user = (new StructuredOutput($runtime))->with(
     messages: "Our user Jason is 25 years old.",
     responseModel: User::class,
     examples: [
@@ -74,9 +81,8 @@ $user = (new StructuredOutput)->with(
             template: "EXAMPLE:\n{input} => {output}\n",
         ),
     ],
-    mode: OutputMode::Json
 )->get();
-// @doctest id="3c62"
+// @doctest id="7de1"
 ```
 
 
@@ -96,7 +102,7 @@ $example = Example::fromText(
     input: 'Ian is 27 yo',
     output: ['name' => 'Ian', 'age' => 27]
 );
-// @doctest id="54b1"
+// @doctest id="0d1f"
 ```
 
 ### Make example from chat
@@ -109,7 +115,7 @@ $example = Example::fromChat(
     input: [['role' => 'user', 'content' => 'Ian is 27 yo']],
     output: ['name' => 'Ian', 'age' => 27]
 );
-// @doctest id="357a"
+// @doctest id="5ea3"
 ```
 
 ### Make example from data
@@ -123,5 +129,5 @@ $example = Example::fromData(
     input: ['firstName' => 'Ian', 'lastName' => 'Brown', 'birthData' => '1994-01-01'],
     output: ['name' => 'Ian', 'age' => 27]
 );
-// @doctest id="bcc6"
+// @doctest id="1614"
 ```

@@ -2,6 +2,8 @@
 
 namespace Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\Item;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
+
 /**
  * Web search result item
  *
@@ -32,9 +34,9 @@ final readonly class WebSearch extends Item
     public static function fromArray(array $data): self
     {
         return new self(
-            id: (string)($data['id'] ?? ''),
-            status: (string)($data['status'] ?? 'in_progress'),
-            query: (string)($data['query'] ?? ''),
+            id: Normalize::toString($data['id'] ?? ''),
+            status: Normalize::toString($data['status'] ?? 'in_progress', 'in_progress'),
+            query: Normalize::toString($data['query'] ?? ''),
             results: isset($data['results']) && is_array($data['results']) ? $data['results'] : null,
         );
     }

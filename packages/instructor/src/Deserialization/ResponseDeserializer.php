@@ -8,6 +8,7 @@ use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
+use Cognesy\Instructor\Enums\ReturnTarget;
 use Cognesy\Instructor\Events\Response\CustomResponseDeserializationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseDeserializationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseDeserializationFailed;
@@ -27,28 +28,26 @@ class ResponseDeserializer implements CanDeserializeResponse
 
     #[\Override]
     public function deserialize(array $data, ResponseModel $responseModel) : Result {
-        // If OutputFormat is array, return data directly (skip deserialization)
-        if ($responseModel->shouldReturnArray()) {
-            $response = $this->config->defaultToStdClass()
-                ? $this->toAnonymousObject($data)
-                : $data;
+        $returnTarget = $responseModel->returnTarget();
+        if ($returnTarget === ReturnTarget::Array) {
+            $this->events->dispatch(new ResponseDeserialized(['response' => json_encode($data)]));
+            return Result::success($data);
+        }
+        if ($returnTarget === ReturnTarget::UntypedObject) {
+            $response = $this->toAnonymousObject($data);
             $this->events->dispatch(new ResponseDeserialized(['response' => json_encode($response)]));
             return Result::success($response);
         }
 
-        // Determine target class from OutputFormat or fall back to schema class
         $outputFormat = $responseModel->outputFormat();
         $targetClass = $outputFormat?->targetClass() ?? $responseModel->returnedClass();
         $instance = $responseModel->instance();
 
-        // Dynamic structure is a record model with schema-aware normalization.
-        // Keep tool-call internals out of its public API.
         if ($instance instanceof DynamicStructure) {
             return Result::try(fn() => $instance->fromArray($data));
         }
 
-        // Self-deserializing object with fromArray support
-        if ($outputFormat?->isObject()) {
+        if ($returnTarget === ReturnTarget::SelfDeserializingObject) {
             $instance = $outputFormat->targetInstance();
             if ($instance !== null && method_exists($instance, 'fromArray')) {
                 $this->events->dispatch(new CustomResponseDeserializationAttempt([
@@ -60,14 +59,12 @@ class ResponseDeserializer implements CanDeserializeResponse
             }
         }
 
-        // CanDeserializeSelf (fromArray)
         if ($this->canDeserializeSelf($responseModel)) {
             return $this->deserializeSelf($data, $responseModel->instance());
         }
 
-        // Use deserializers
         /** @var class-string $targetClass */
-        return $this->deserializeAny($data, $targetClass, $responseModel);
+        return $this->deserializeAny($data, $targetClass, $responseModel, $returnTarget);
     }
 
     /** @param CanDeserializeClass[] $deserializers */
@@ -97,7 +94,12 @@ class ResponseDeserializer implements CanDeserializeResponse
      * @param array<string, mixed> $data
      * @param class-string $targetClass
      */
-    protected function deserializeAny(array $data, string $targetClass, ResponseModel $responseModel): Result {
+    protected function deserializeAny(
+        array $data,
+        string $targetClass,
+        ResponseModel $responseModel,
+        ReturnTarget $returnTarget,
+    ): Result {
         $this->events->dispatch(new ResponseDeserializationAttempt([
             'responseModel' => $responseModel->toArray(),
             'json' => json_encode($data),
@@ -123,7 +125,7 @@ class ResponseDeserializer implements CanDeserializeResponse
         // No deserializer succeeded
         $this->events->dispatch(new ResponseDeserializationFailed(['error' => $result->errorMessage()]));
         return match (true) {
-            $this->config->defaultToStdClass() => Result::success($this->toAnonymousObject($data)),
+            $returnTarget === ReturnTarget::UntypedObject => Result::success($this->toAnonymousObject($data)),
             default => Result::failure($this->makeFailureMessage($this->config->deserializationErrorPrompt(), [
                 'json' => json_encode($data),
                 'error' => $result->errorMessage(),

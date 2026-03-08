@@ -21,7 +21,7 @@ When working with different LLM models, you may encounter issues that are specif
 
 2. **Context Length**: Be aware of each model's maximum context length
 ```php
-// In config/llm.php, check contextLength for each model
+// In config/llm/presets/*.yaml, check contextLength for each model
 // Example: OpenAI models have different context windows
 // - gpt-3.5-turbo: 16K tokens
 // - gpt-4-turbo: 128K tokens

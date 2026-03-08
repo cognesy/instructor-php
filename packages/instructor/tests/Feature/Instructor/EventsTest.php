@@ -28,13 +28,13 @@ it('handles events for simple case w/reattempt on validation - success', functio
         '{"name": "Jason", "age":28}',
     ]);
     $events = new EventSink();
-    $person = (new StructuredOutput)->withRuntime(makeStructuredRuntime(httpClient: $mockHttp))
-        ->onEvent($event, fn($e) => $events->onEvent($e))
+    $runtime = makeStructuredRuntime(httpClient: $mockHttp, maxRetries: 2)
+        ->onEvent($event, fn($e) => $events->onEvent($e));
+    $person = (new StructuredOutput)->withRuntime($runtime)
         //->wiretap(fn($e) => dump($e))
         ->with(
             messages: [['role' => 'user', 'content' => $text]],
             responseModel: Person::class,
-            maxRetries: 2,
         )->get();
     expect($person)->toBeInstanceOf(Person::class);
     expect($person->name)->toBe('Jason');
@@ -84,12 +84,12 @@ it('handles events for simple case - validation failure', function ($event) use 
 
     // expect exception
     $this->expectException(\Exception::class);
-    $person = (new StructuredOutput)->withRuntime(makeStructuredRuntime(httpClient: $mockHttp))
-        ->onEvent($event, fn($e) => $events->onEvent($e))
+    $runtime = makeStructuredRuntime(httpClient: $mockHttp, maxRetries: 1)
+        ->onEvent($event, fn($e) => $events->onEvent($e));
+    $person = (new StructuredOutput)->withRuntime($runtime)
         ->with(
             messages: [['role' => 'user', 'content' => $text]],
             responseModel: Person::class,
-            maxRetries: 1,
         )->get();
 
     expect($person)->toBeNull();
@@ -134,8 +134,9 @@ it('handles events for custom case', function ($event) use ($text) {
         '{"age":28}'
     ]);
     $events = new EventSink();
-    $age = (new StructuredOutput)->withRuntime(makeStructuredRuntime(httpClient: $mockHttp))
-        ->onEvent($event, fn($e) => $events->onEvent($e))
+    $runtime = makeStructuredRuntime(httpClient: $mockHttp)
+        ->onEvent($event, fn($e) => $events->onEvent($e));
+    $age = (new StructuredOutput)->withRuntime($runtime)
         ->with(
             messages: [['role' => 'user', 'content' => $text]],
             responseModel: Scalar::integer('age'),

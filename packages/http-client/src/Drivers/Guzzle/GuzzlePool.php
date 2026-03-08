@@ -8,10 +8,10 @@ use Cognesy\Http\Collections\HttpResponseList;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleRequestPool;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
 use Cognesy\Http\Exceptions\HttpRequestException;
-use Cognesy\Utils\Collection\ArrayList;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Result;
 use GuzzleHttp\ClientInterface;
@@ -46,9 +46,10 @@ class GuzzlePool implements CanHandleRequestPool
         $responses = [];
         $concurrency = $maxConcurrent ?? $this->config->maxConcurrent;
 
+        $requestArray = $requests->all();
         $pool = new Pool($this->client,
-            $this->createRequestGenerator($requests->all())(),
-            $this->createPoolConfiguration($responses, $concurrency)
+            $this->createRequestGenerator($requestArray)(),
+            $this->createPoolConfiguration($responses, $requestArray, $concurrency)
         );
 
         // Execute the pool with a timeout
@@ -85,14 +86,14 @@ class GuzzlePool implements CanHandleRequestPool
         );
     }
 
-    private function createPoolConfiguration(array &$responses, int $concurrency): array {
+    private function createPoolConfiguration(array &$responses, array $requests, int $concurrency): array {
         return [
             'concurrency' => $concurrency,
             'fulfilled' => function(ResponseInterface $response, $index) use (&$responses) {
                 $responses[$index] = $this->handleFulfilledResponse($response);
             },
-            'rejected' => function($reason, $index) use (&$responses) {
-                $responses[$index] = $this->handleRejectedResponse($reason);
+            'rejected' => function($reason, $index) use (&$responses, $requests) {
+                $responses[$index] = $this->handleRejectedResponse($reason, $requests[$index] ?? null);
             },
         ];
     }
@@ -109,31 +110,23 @@ class GuzzlePool implements CanHandleRequestPool
         ));
     }
 
-    /**
-     * @param mixed $reason
-     */
-    private function handleRejectedResponse(mixed $reason): Failure {
-        if ($this->config->failOnError) {
-            $errorMessage = match(true) {
-                is_string($reason) => $reason,
-                $reason instanceof \Throwable => $reason->getMessage(),
-                default => 'Unknown error',
-            };
-            throw new HttpRequestException($errorMessage);
-        }
-        // TODO: we don't know how to handle this atm
-//        $this->events->dispatch(new HttpRequestFailed([
-//            'url' => $request->url(),
-//            'method' => $request->method(),
-//            'headers' => $request->headers(),
-//            'body' => $request->body()->toArray(),
-//            'errors' => $e->getMessage(),
-//        ]));
+    private function handleRejectedResponse(mixed $reason, ?HttpRequest $request): Failure {
         $errorMessage = match(true) {
             is_string($reason) => $reason,
             $reason instanceof \Throwable => $reason->getMessage(),
             default => 'Unknown error',
         };
+
+        $this->events->dispatch(new HttpRequestFailed([
+            'url' => $request?->url() ?? '',
+            'method' => $request?->method() ?? '',
+            'errors' => $errorMessage,
+        ]));
+
+        if ($this->config->failOnError) {
+            throw new HttpRequestException($errorMessage);
+        }
+
         return Result::failure($errorMessage);
     }
 

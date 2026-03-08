@@ -6,7 +6,7 @@ use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 
 class IdempotencyStruct { public string $name; public int $age; }
 
@@ -42,11 +42,10 @@ it('emits StructuredOutputResponseGenerated exactly once across stream and respo
         streamBatches: [$chunks],
     );
 
-    $pending = (new StructuredOutput(makeStructuredRuntime(driver: $driver, events: $events)))
+    $pending = (new StructuredOutput(makeStructuredRuntime(driver: $driver, events: $events, outputMode: OutputMode::Json)))
         ->with(
             messages: 'Extract user',
             responseModel: IdempotencyStruct::class,
-            mode: OutputMode::Json,
         )
         ->create();
 

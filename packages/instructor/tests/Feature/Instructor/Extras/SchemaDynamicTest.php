@@ -3,7 +3,7 @@
 use Cognesy\Dynamic\Structure;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\MockHttp;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Schema\SchemaBuilder;
 
 it('returns array output for dynamic schema when intoArray is used', function () {
@@ -20,11 +20,10 @@ it('returns array output for dynamic schema when intoArray is used', function ()
     ]);
 
     $data = (new StructuredOutput)
-        ->withRuntime(makeStructuredRuntime(httpClient: $mockHttp))
+        ->withRuntime(makeStructuredRuntime(httpClient: $mockHttp, outputMode: OutputMode::JsonSchema))
         ->intoArray()
         ->withMessages([['role' => 'user', 'content' => 'What is the capital of France?']])
         ->withResponseJsonSchema($city->toJsonSchema())
-        ->withOutputMode(OutputMode::JsonSchema)
         ->get();
 
     expect($data)->toBeArray();

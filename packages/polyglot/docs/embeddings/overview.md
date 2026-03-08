@@ -50,10 +50,11 @@ Use constructor sugar for common paths:
 
 ```php
 <?php
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
 $embeddings = Embeddings::using('openai');
-$embeddings = Embeddings::fromDsn('driver=openai,model=text-embedding-3-small');
+$embeddings = Embeddings::fromConfig(EmbeddingsConfig::fromDsn('driver=openai,model=text-embedding-3-small'));
 ```
 
 Inject a fully assembled runtime for advanced setup:
@@ -70,7 +71,7 @@ $http = (new HttpClientBuilder())
     ->withDriver(new MockHttpDriver())
     ->create();
 
-$runtime = EmbeddingsRuntime::fromEmbeddingsConfig(
+$runtime = EmbeddingsRuntime::fromConfig(
     config: EmbeddingsConfig::fromArray(['driver' => 'openai']),
     httpClient: $http,
 );

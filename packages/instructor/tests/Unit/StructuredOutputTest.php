@@ -1,11 +1,12 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\Data\StructuredOutputResponse;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 
 
@@ -21,11 +22,10 @@ it('deserializes basic JSON into response class', function () {
     ]);
 
     $user = (new StructuredOutput)
-        ->withRuntime(makeStructuredRuntime(driver: $driver))
+        ->withRuntime(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json))
         ->with(
             messages: 'Extract user',
             responseModel: TestUserStruct::class,
-            mode: OutputMode::Json,
         )
         ->get();
 
@@ -43,11 +43,10 @@ it('uses tool call args in Tools mode when present', function () {
     ]);
 
     $user = (new StructuredOutput)
-        ->withRuntime(makeStructuredRuntime(driver: $driver))
+        ->withRuntime(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Tools))
         ->with(
             messages: 'Extract user',
             responseModel: TestUserStruct::class,
-            mode: OutputMode::Tools,
         )
         ->get();
 
@@ -62,11 +61,10 @@ it('caches processed response within the same PendingStructuredOutput', function
     ]);
 
     $pending = (new StructuredOutput)
-        ->withRuntime(makeStructuredRuntime(driver: $driver))
+        ->withRuntime(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json))
         ->with(
             messages: 'Extract user',
             responseModel: TestUserStruct::class,
-            mode: OutputMode::Json,
         )
         ->create();
 
@@ -75,7 +73,9 @@ it('caches processed response within the same PendingStructuredOutput', function
 
     expect($driver->responseCalls)->toBe(1);
     expect($first)->toBeInstanceOf(TestUserStruct::class);
+    expect($secondResponse)->toBeInstanceOf(StructuredOutputResponse::class);
     expect($secondResponse->value())->toBeInstanceOf(TestUserStruct::class);
+    expect($secondResponse->rawResponse())->toBeInstanceOf(InferenceResponse::class);
 });
 
 it('returns stdClass when defaultToStdClass is enabled for JSON schema output', function () {
@@ -95,13 +95,15 @@ it('returns stdClass when defaultToStdClass is enabled for JSON schema output', 
     ]);
 
     $user = (new StructuredOutput)
-        ->withRuntime(makeStructuredRuntime(driver: $driver))
+        ->withRuntime(makeStructuredRuntime(
+            driver: $driver,
+            outputMode: OutputMode::Tools,
+            defaultToStdClass: true,
+        ))
         ->with(
             messages: 'Extract user',
             responseModel: $schema,
-            mode: OutputMode::Tools,
         )
-        ->withDefaultToStdClass()
         ->get();
 
     expect($user)->toBeInstanceOf(stdClass::class);
@@ -115,8 +117,7 @@ it('supports runtime-style create with explicit request', function () {
     ]);
 
     $pending = (new StructuredOutput)
-        ->withRuntime(makeStructuredRuntime(driver: $driver))
-        ->withOutputMode(OutputMode::Json)
+        ->withRuntime(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json))
         ->create(new StructuredOutputRequest(
             messages: 'Extract user',
             requestedSchema: TestUserStruct::class,

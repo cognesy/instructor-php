@@ -2,6 +2,8 @@
 
 namespace Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\StreamEvent;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
+
 /**
  * Event emitted when a turn fails
  *
@@ -24,9 +26,14 @@ final readonly class TurnFailedEvent extends StreamEvent
      */
     public static function fromArray(array $data): self
     {
+        $error = $data['error'] ?? 'Unknown error';
+        $errorData = Normalize::toArray($error);
+
         return new self(
-            error: (string)($data['error'] ?? 'Unknown error'),
-            code: isset($data['code']) ? (string)$data['code'] : null,
+            error: is_string($error)
+                ? $error
+                : Normalize::toString($errorData['message'] ?? $error, 'Unknown error'),
+            code: Normalize::toNullableString($data['code'] ?? null),
         );
     }
 }

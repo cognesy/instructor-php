@@ -64,10 +64,10 @@ it('does not map tool call deltas into contentDelta', function () {
         ]],
     ]);
 
-    $partial = iterator_to_array($adapter->fromStreamResponses([$event]))[0] ?? null;
-    expect($partial)->not->toBeNull();
-    expect($partial->contentDelta)->toBe('');
-    expect($partial->toolArgs)->toContain('Hello');
+    $delta = iterator_to_array($adapter->fromStreamDeltas([$event]))[0] ?? null;
+    expect($delta)->not->toBeNull();
+    expect($delta->contentDelta)->toBe('');
+    expect($delta->toolArgs)->toContain('Hello');
 });
 
 it('maps reasoning tokens from completion_tokens_details', function () {

@@ -31,7 +31,7 @@ class MakeLesson extends Command
         $config = new LessonConfig();
         $this->lessonService = new LessonService(
             config: $config,
-            inference: InferenceRuntime::fromLLMConfig(
+            inference: InferenceRuntime::fromConfig(
                 LLMConfig::fromArray(['driver' => $config->llmDriver]),
             ),
         );

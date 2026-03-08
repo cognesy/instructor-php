@@ -2,6 +2,8 @@
 
 namespace Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\Item;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
+
 /**
  * Fallback item for unrecognized item types
  */
@@ -30,9 +32,9 @@ final readonly class UnknownItem extends Item
     public static function fromArray(array $data): self
     {
         return new self(
-            id: (string)($data['id'] ?? ''),
-            status: (string)($data['status'] ?? 'unknown'),
-            rawType: (string)($data['type'] ?? 'unknown'),
+            id: Normalize::toString($data['id'] ?? ''),
+            status: Normalize::toString($data['status'] ?? 'unknown', 'unknown'),
+            rawType: Normalize::toString($data['type'] ?? 'unknown', 'unknown'),
             rawData: $data,
         );
     }

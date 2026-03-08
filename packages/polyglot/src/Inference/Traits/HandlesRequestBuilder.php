@@ -6,7 +6,6 @@ use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 
 trait HandlesRequestBuilder
@@ -64,12 +63,6 @@ trait HandlesRequestBuilder
     public function withStreaming(bool $stream = true): static {
         $copy = $this->cloneWithRequestBuilder();
         $copy->requestBuilder->withStreaming($stream);
-        return $copy;
-    }
-
-    public function withOutputMode(?OutputMode $mode): static {
-        $copy = $this->cloneWithRequestBuilder();
-        $copy->requestBuilder->withOutputMode($mode);
         return $copy;
     }
 

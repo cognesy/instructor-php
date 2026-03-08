@@ -4,6 +4,9 @@ Instructor validates results of LLM response against validation rules specified 
 
 ```php
 <?php
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class Person {
@@ -20,7 +23,7 @@ $person = (new StructuredOutput)->with(
 )->get();
 
 // if the resulting object does not validate, Instructor throws an exception
-// @doctest id="7ea7"
+// @doctest id="3b99"
 ```
 
 > NOTE: For further details on available validation rules, check [Symfony Validation constraints](https://symfony.com/doc/current/validation.html#constraints).
@@ -45,14 +48,16 @@ class Person {
 
 $text = "His name is JX, aka Jason, he is -28 years old.";
 
-$person = (new StructuredOutput)->with(
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withMaxRetries(3);
+
+$person = (new StructuredOutput($runtime))->with(
     messages: $text,
     responseModel: Person::class,
-    maxRetries: 3,
 )->get();
 
 // if all LLM's attempts to self-correct the results fail, Instructor throws an exception
-// @doctest id="43c9"
+// @doctest id="0ab1"
 ```
 
 ## Custom Validation
@@ -62,6 +67,9 @@ and defining validation logic in ```validate()``` method.
 
 ```php
 <?php
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Instructor\Validation\Traits\ValidationMixin;
 
 class UserDetails
@@ -83,14 +91,16 @@ class UserDetails
     }
 }
 
-$user = (new StructuredOutput)->with(
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withMaxRetries(2);
+
+$user = (new StructuredOutput($runtime))->with(
     messages: [['role' => 'user', 'content' => 'jason is 25 years old']],
     responseModel: UserDetails::class,
-    maxRetries: 2
 )->get();
 
 assert($user->name === "JASON");
-// @doctest id="55e5"
+// @doctest id="3466"
 ```
 
 Note that method ```validate()``` has to return:
@@ -108,7 +118,7 @@ $violations = [
     ],
     // ...other violations
 ];
-// @doctest id="129b"
+// @doctest id="235a"
 ``` 
 
 
@@ -121,6 +131,8 @@ You can use ```#[Assert/Callback]``` annotation to build fully customized valida
 ```php
 <?php
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
@@ -140,16 +152,18 @@ class UserDetails
     }
 }
     
-$user = (new StructuredOutput)
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withMaxRetries(2);
+
+$user = (new StructuredOutput($runtime))
     ->with(
         messages: [['role' => 'user', 'content' => 'jason is 25 years old']],
         responseModel: UserDetails::class,
-        maxRetries: 2
     )
     ->get();
 
 assert($user->name === "JASON");
-// @doctest id="d956"
+// @doctest id="1c0a"
 ```
 
 > NOTE: See [Symfony docs](https://symfony.com/doc/current/reference/constraints/Callback.html) for more details on how to use Callback constraint.

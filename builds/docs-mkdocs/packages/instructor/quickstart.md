@@ -14,7 +14,7 @@ Run following command in your terminal:
 
 ```bash
 composer require cognesy/instructor-php
-# @doctest id="27f8"
+# @doctest id="0883"
 ```
 
 
@@ -53,7 +53,7 @@ $city = StructuredOutput::using('openai')
     ->get();
 
 var_dump($city);
-// @doctest id="617b"
+// @doctest id="c2ad"
 ```
 
 <Warning>
@@ -76,7 +76,7 @@ php test-instructor.php
 #   ["population"]=>
 #   int(2148000)
 # }
-# @doctest id="2d6e"
+# @doctest id="54dd"
 ```
 
 

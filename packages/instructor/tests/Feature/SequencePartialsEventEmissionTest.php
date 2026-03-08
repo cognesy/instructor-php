@@ -5,7 +5,7 @@ use Cognesy\Instructor\Events\Request\SequenceUpdated;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 
 class EvtPartialUser
@@ -25,17 +25,17 @@ it('emits PartialResponseGenerated events while streaming partial updates', func
     );
 
     $seen = [];
-    $stream = (new StructuredOutput(makeStructuredRuntime(driver: $driver)))
-        ->withMessages('ignored')
-        ->withResponseClass(EvtPartialUser::class)
-        ->withOutputMode(OutputMode::Json)
-        ->withStreaming()
+    $runtime = makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json)
         ->onEvent(PartialResponseGenerated::class, function (PartialResponseGenerated $event) use (&$seen): void {
             $partial = $event->partialResponse;
             if ($partial instanceof EvtPartialUser) {
                 $seen[] = $partial->count;
             }
-        })
+        });
+    $stream = (new StructuredOutput($runtime))
+        ->withMessages('ignored')
+        ->withResponseClass(EvtPartialUser::class)
+        ->withStreaming()
         ->create()
         ->stream();
 
@@ -60,14 +60,14 @@ it('emits SequenceUpdated events including final sequence item', function () {
     $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $chunks ]);
 
     $seen = [];
-    $pending = (new StructuredOutput(makeStructuredRuntime(driver: $driver)))
+    $runtime = makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json)
+        ->onEvent(SequenceUpdated::class, function (SequenceUpdated $event) use (&$seen): void {
+            $item = $event->completedItem();
+            $seen[] = $item->name ?? null;
+        });
+    $pending = (new StructuredOutput($runtime))
         ->withMessages('ignored')
         ->withResponseObject(Sequence::of('EvtPerson'))
-        ->withOutputMode(OutputMode::Json)
-        ->onEvent(SequenceUpdated::class, function (SequenceUpdated $event) use (&$seen): void {
-            $last = $event->sequence->last();
-            $seen[] = $last->name ?? null;
-        })
         ->create();
 
     $result = $pending->stream()->finalValue();

@@ -8,7 +8,6 @@ use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 
 class InferenceRequestBuilder
@@ -19,7 +18,6 @@ class InferenceRequestBuilder
     private null|string|array $toolChoice;
     private ?ResponseFormat $responseFormat;
     private ?array $options;
-    private ?OutputMode $mode;
     private ?ResponseCachePolicy $responseCachePolicy;
     private ?InferenceRetryPolicy $retryPolicy;
 
@@ -35,7 +33,6 @@ class InferenceRequestBuilder
         null|string|array       $toolChoice = null,
         ?ResponseFormat         $responseFormat = null,
         ?array                  $options = null,
-        ?OutputMode             $mode = null,
         ?CachedInferenceContext $cachedContext = null,
         ?bool                   $streaming = null,
         ?int                    $maxTokens = null,
@@ -48,7 +45,6 @@ class InferenceRequestBuilder
         $this->toolChoice = $toolChoice;
         $this->responseFormat = $responseFormat;
         $this->options = $options;
-        $this->mode = $mode;
         $this->streaming = $streaming;
         $this->maxTokens = $maxTokens;
         $this->cachedContext = $cachedContext ?? new CachedInferenceContext();
@@ -65,7 +61,6 @@ class InferenceRequestBuilder
      * @param string|array $toolChoice The choice of tools for the inference.
      * @param array $responseFormat The format of the response.
      * @param array $options Additional options for the inference.
-     * @param OutputMode $mode The mode of operation for the inference.
      */
     public function with(
         null|string|array|Message|Messages $messages = null,
@@ -74,7 +69,6 @@ class InferenceRequestBuilder
         null|string|array $toolChoice = null,
         ?array        $responseFormat = null,
         ?array        $options = null,
-        ?OutputMode  $mode = null,
     ) : static {
         $this->messages = $messages !== null ? Messages::fromAny($messages) : $this->messages;
         $this->model = $model ?? $this->model;
@@ -82,7 +76,6 @@ class InferenceRequestBuilder
         $this->toolChoice = $toolChoice ?? $this->toolChoice;
         $this->responseFormat = $responseFormat !== null ? ResponseFormat::fromArray($responseFormat) : $this->responseFormat;
         $this->options = $options ?? $this->options;
-        $this->mode = $mode ?? $this->mode;
         return $this;
     }
 
@@ -126,11 +119,6 @@ class InferenceRequestBuilder
         return $this;
     }
 
-    public function withOutputMode(?OutputMode $mode): static {
-        $this->mode = $mode;
-        return $this;
-    }
-
     public function withResponseCachePolicy(ResponseCachePolicy $policy): static {
         $this->responseCachePolicy = $policy;
         return $this;
@@ -171,7 +159,6 @@ class InferenceRequestBuilder
         $this->responseFormat = $request->responseFormat();
         $this->options = array_merge($this->options ?? [], $request->options());
         $this->streaming = $request->isStreamed();
-        $this->mode = $request->outputMode();
         $this->cachedContext = $request->cachedContext();
         $this->responseCachePolicy = $request->responseCachePolicy();
         $this->retryPolicy = $request->retryPolicy();
@@ -190,7 +177,6 @@ class InferenceRequestBuilder
             toolChoice: $this->toolChoice,
             responseFormat: $this->responseFormat,
             options: $options,
-            mode: $this->mode,
             cachedContext: $this->cachedContext,
             responseCachePolicy: $this->responseCachePolicy,
             retryPolicy: $this->retryPolicy,

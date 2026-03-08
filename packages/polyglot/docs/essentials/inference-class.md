@@ -11,10 +11,11 @@ Use it to build requests fluently, then execute as text, response object, JSON, 
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 $default = new Inference();
 $openai = Inference::using('openai');
-$fromDsn = Inference::fromDsn('driver=openai,model=gpt-4.1-nano');
+$fromDsnConfig = Inference::fromConfig(LLMConfig::fromDsn('driver=openai,model=gpt-4.1-nano'));
 ```
 
 ## Build a Request
@@ -39,6 +40,8 @@ $text = $inference->get();          // string
 $response = $inference->response(); // InferenceResponse
 $json = $inference->asJson();       // JSON string
 $data = $inference->asJsonData();   // array
+$toolJson = $inference->asToolCallJson();     // tool call args as JSON string
+$toolData = $inference->asToolCallJsonData(); // tool call args as array
 $stream = $inference->stream();     // InferenceStream
 ```
 
@@ -46,15 +49,13 @@ $stream = $inference->stream();     // InferenceStream
 
 ```php
 <?php
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
-
-$text = (new Inference())
+$data = (new Inference())
     ->with(
         messages: 'Return valid JSON with key "status".',
+        responseFormat: ['type' => 'json_object'],
         options: ['temperature' => 0],
-        mode: OutputMode::Json,
     )
-    ->get();
+    ->asJsonData();
 ```
 
 ## Runtime-First Usage
@@ -63,8 +64,9 @@ $text = (new Inference())
 <?php
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 
-$runtime = Inference::using('openai')->runtime();
+$runtime = InferenceRuntime::fromConfig(LLMConfig::fromPreset('openai'));
 
 $pending = $runtime->create(new InferenceRequest(messages: 'Ping', model: 'gpt-4.1-nano'));
 $text = $pending->get();

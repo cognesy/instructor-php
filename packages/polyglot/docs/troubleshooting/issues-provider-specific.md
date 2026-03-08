@@ -9,13 +9,10 @@ Each LLM provider has unique quirks and issues. This section covers common provi
 ## OpenAI
 
 1. **Organization IDs**: Set the organization ID if using a shared account
-```php
-// In config/llm.php
-return [
-    'metadata' => [
-        'organization' => 'org-your-organization-id',
-    ],
-];
+```yaml
+# In config/llm/presets/openai.yaml
+metadata:
+  organization: org-your-organization-id
 ```
 
 2. **API Versions**: Pay attention to API version changes

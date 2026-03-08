@@ -2,8 +2,8 @@
 
 use Cognesy\Evals\Executors\Data\InferenceCases;
 use Cognesy\Evals\Executors\Data\InferenceCaseParams;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 describe('InferenceCases capability filtering', function () {
 

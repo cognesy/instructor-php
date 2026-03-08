@@ -35,7 +35,7 @@ $agent = AgentBuilder::base()
     ->withCapability(new UseBash())
     ->withCapability(new UseGuards(maxSteps: 10))
     ->build();
-// @doctest id="0cd3"
+// @doctest id="1364"
 ```
 
 ## Package Structure
@@ -59,7 +59,7 @@ Interception/         # CanInterceptAgentLifecycle, PassThroughInterceptor
 Template/             # Agent definitions, parsers, registry
 Session/              # AgentSession, SessionRuntime, actions, repositories, stores
 Tool/                 # ToolInterface, BaseTool, FunctionTool, ToolExecutor
-// @doctest id="2f0f"
+// @doctest id="1e88"
 ```
 
 ## Minimal Example
@@ -73,7 +73,7 @@ $state = AgentState::empty()->withUserMessage('Hello!');
 $result = $loop->execute($state);
 
 echo $result->finalResponse()->toString();
-// @doctest id="7c1c"
+// @doctest id="d9f2"
 ```
 
 ## Recommended Path

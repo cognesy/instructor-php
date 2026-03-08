@@ -9,7 +9,7 @@ use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 
 describe('RequestMaterializer', function () {
     function makeConfig(): StructuredOutputConfig {

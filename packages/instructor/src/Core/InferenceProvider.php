@@ -27,7 +27,6 @@ class InferenceProvider
             toolChoice: $responseModel->toolChoice(),
             responseFormat: $responseModel->responseFormat(),
             options: $request->options(),
-            mode: $execution->outputMode(),
             responseCachePolicy: $execution->config()->responseCachePolicy(),
         ));
     }

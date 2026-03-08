@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Extraction\Buffers;
 
 use Cognesy\Instructor\Extraction\Contracts\CanBufferContent;
 use Cognesy\Utils\Json\Json;
+use Cognesy\Utils\Profiler\TracksObjectCreation;
 
 /**
  * Tools mode content buffer for tool arguments.
@@ -13,10 +14,14 @@ use Cognesy\Utils\Json\Json;
  */
 final readonly class ToolsBuffer implements CanBufferContent
 {
+    use TracksObjectCreation;
+
     private function __construct(
         private string $raw,
         private string $normalized,
-    ) {}
+    ) {
+        $this->trackObjectCreation();
+    }
 
     public static function empty(): self {
         return new self('', '');

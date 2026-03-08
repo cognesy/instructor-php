@@ -39,7 +39,7 @@ $person = $stream->finalValue();
 
 // Here you get completed and validated Person object
 $this->db->save($person); // ...for example: save to DB
-// @doctest id="3792"
+// @doctest id="ed97"
 ```
 
 Partially updated data is not validated while it is received and deserialized.
@@ -60,7 +60,7 @@ $stream = $structuredOutput->stream();
 // Or via create() method
 $pending = $structuredOutput->create();
 $stream = $pending->stream();
-// @doctest id="a16f"
+// @doctest id="d3fe"
 ```
 
 Both approaches return a `StructuredOutputStream` object, which gives you access to the response streamed from LLM and processed by Instructor into structured data.
@@ -72,7 +72,8 @@ The `StructuredOutputStream` class provides comprehensive methods for processing
 ### Core Streaming Methods
 - `partials()`: Returns an iterable of partial updates from the stream. Only final update is validated, partial updates are only deserialized and transformed.
 - `sequence()`: Dedicated to processing `Sequence` response models - returns only completed items in the sequence.
-- `responses()`: Generator of partial LLM responses as they are received.
+- `responses()`: Generator of Instructor-owned partial response snapshots followed by the final response.
+  Instructor rebuilds these snapshots from Polyglot stream deltas.
 
 ### Result Access Methods
 - `finalValue()`: Get the final parsed result (blocks until completion).
@@ -106,7 +107,7 @@ foreach ($stream->partials() as $update) {
 $person = $stream->finalValue();
 // ...and for example save it to the database
 $db->savePerson($person);
-// @doctest id="f853"
+// @doctest id="352d"
 ```
 
 
@@ -133,7 +134,7 @@ foreach ($stream->sequence() as $update) {
 $participants = $stream->finalValue();
 // ...and for example save it to the database
 $db->saveParticipants($participants->toArray());
-// @doctest id="8993"
+// @doctest id="3d97"
 ```
 
 ## Stream replay contract
@@ -147,19 +148,24 @@ $db->saveParticipants($participants->toArray());
 ```php
 <?php
 use Cognesy\Instructor\Config\StructuredOutputConfig;
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 
-$stream = (new StructuredOutput)
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
     ->withConfig(new StructuredOutputConfig(
         responseCachePolicy: ResponseCachePolicy::Memory,
-    ))
+    ));
+
+$stream = (new StructuredOutput($runtime))
     ->with(
         messages: 'Extract user data',
         responseModel: Person::class,
         options: ['stream' => true],
     )
     ->stream();
-// @doctest id="3497"
+// @doctest id="ece4"
 ```
 
 Replay reuses captured stream data, not a fresh LLM execution.
@@ -178,5 +184,5 @@ foreach ($stream->getIterator() as $execution) {
     $usage = $execution->usage();
     // custom metrics/observability logic
 }
-// @doctest id="5ed2"
+// @doctest id="137c"
 ```

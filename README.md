@@ -177,6 +177,8 @@ Instructor uses validation errors to inform LLM on the problems identified in th
 
 ```php
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class Person {
@@ -187,11 +189,13 @@ class Person {
 }
 
 $text = "His name is JX, aka Jason, he is -28 years old.";
-$person = (new StructuredOutput)
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withMaxRetries(3);
+
+$person = (new StructuredOutput($runtime))
     ->with(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
-        maxRetries: 3,
     )
     ->get();
 
@@ -201,7 +205,7 @@ $person = (new StructuredOutput)
 
 ### Output Modes
 
-Instructor supports multiple output modes to allow working with various models depending on their capabilities.
+Instructor supports multiple output modes through `Cognesy\Instructor\Enums\OutputMode` to allow working with various models depending on their capabilities.
 - `OutputMode::Json` - generate structured output via LLM's native JSON generation 
 - `OutputMode::JsonSchema` - use LLM's strict JSON Schema mode to enforce JSON Schema
 - `OutputMode::Tools` - use tool calling API to get LLM follow provided schema
@@ -239,10 +243,10 @@ $stream = (new Inference)
     ->withOptions(['max_tokens' => 256])
     ->withStreaming()
     ->stream()
-    ->responses();
+    ->deltas();
 
-foreach ($stream as $partial) {
-    echo $partial->contentDelta;
+foreach ($stream as $delta) {
+    echo $delta->contentDelta;
 }
 ```
 
@@ -291,7 +295,7 @@ Check out the [documentation website](https://docs.instructorphp.com/) for more 
 
 ### Various extraction modes
 
-- Supports multiple extraction modes to allow working with various models depending on their capabilities
+- Supports multiple extraction modes through `Cognesy\Instructor\Enums\OutputMode`
 - `OutputMode::Json` - use response_format to get LLM follow provided JSON Schema
 - `OutputMode::JsonSchema` - use strict JSON Schema mode to get LLM follow provided JSON Schema
 - `OutputMode::Tools` - use tool calling API to get LLM follow provided JSON Schema
@@ -420,4 +424,3 @@ If you want to help, check out some of the issues. All contributions are welcome
 <a href="https://github.com/cognesy/instructor-php/graphs/contributors">
   <img alt="Contributors" src="https://contrib.rocks/image?repo=cognesy/instructor-php" />
 </a>
-

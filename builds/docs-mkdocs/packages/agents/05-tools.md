@@ -17,7 +17,7 @@ use Cognesy\Agents\Tool\Tools\MockTool;
 
 $calculator = MockTool::returning('calculator', 'Performs math', '42');
 $tools = new Tools($calculator);
-// @doctest id="2aaa"
+// @doctest id="ac7d"
 ```
 
 ## Using FunctionTool
@@ -34,7 +34,7 @@ function get_weather(string $city): string {
 $tool = FunctionTool::fromCallable(get_weather(...));
 
 $tools = new Tools($tool);
-// @doctest id="2d84"
+// @doctest id="75c9"
 ```
 
 ## Multiple Tools
@@ -60,7 +60,7 @@ $tools = new Tools(
     FunctionTool::fromCallable(get_weather(...)),
     FunctionTool::fromCallable(calculate(...)),
 );
-// @doctest id="9b64"
+// @doctest id="9f6e"
 ```
 
 ## Agent with Tools
@@ -74,7 +74,7 @@ $loop = AgentLoop::default()->withTools($tools);
 $state = AgentState::empty()->withUserMessage('What is the weather in Paris?');
 $result = $loop->execute($state);
 // LLM calls the weather tool, gets result, then responds
-// @doctest id="88aa"
+// @doctest id="6d3c"
 ```
 
 ## Tool Contracts
@@ -91,7 +91,7 @@ interface ToolInterface {
     public function toToolSchema(): array;           // JSON schema sent to LLM
     public function descriptor(): CanDescribeTool;   // metadata accessor
 }
-// @doctest id="1581"
+// @doctest id="f471"
 ```
 
 ### CanDescribeTool
@@ -105,7 +105,7 @@ interface CanDescribeTool {
     public function metadata(): array;       // summary for browsing/discovery
     public function instructions(): array;   // full specification with parameters
 }
-// @doctest id="609d"
+// @doctest id="61cf"
 ```
 
 `metadata()` returns lightweight info (name, summary, namespace) for tool listings. `instructions()` returns the complete specification including parameters and return type.
@@ -148,7 +148,7 @@ class WeatherTool extends BaseTool
         )->toArray();
     }
 }
-// @doctest id="e7ea"
+// @doctest id="4397"
 ```
 
 See [Building Tools](06-building-tools.md) for the quick path, then [Building Tools: Advanced Patterns](17-building-tools-advanced.md) for lower-level patterns.

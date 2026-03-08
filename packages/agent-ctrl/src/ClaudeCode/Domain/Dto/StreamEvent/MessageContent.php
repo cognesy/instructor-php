@@ -2,6 +2,8 @@
 
 namespace Cognesy\AgentCtrl\ClaudeCode\Domain\Dto\StreamEvent;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
+
 /**
  * Base class for message content items
  */
@@ -14,7 +16,7 @@ abstract readonly class MessageContent
      */
     public static function fromArray(array $data): self
     {
-        $type = StreamValueNormalizer::toString($data['type'] ?? 'unknown', 'unknown');
+        $type = Normalize::toString($data['type'] ?? 'unknown', 'unknown');
 
         return match ($type) {
             'text' => TextContent::fromArray($data),

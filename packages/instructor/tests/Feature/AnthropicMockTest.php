@@ -3,7 +3,7 @@
 use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\MockHttp;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Drivers\Anthropic\AnthropicDriver;
 use Cognesy\Polyglot\Inference\Drivers\Anthropic\AnthropicUsageFormat;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
@@ -40,10 +40,9 @@ it('works with Anthropic mock responses in tools mode', function () {
         events: new EventDispatcher()
     );
 
-    $obj = (new StructuredOutput(makeStructuredRuntime(driver: $driver)))
+    $obj = (new StructuredOutput(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Tools)))
         ->withMessages([['role' => 'user', 'content' => 'test']])
         ->withResponseClass(AnthropicTestUser::class)
-        ->withOutputMode(OutputMode::Tools)
         ->getObject();
 
     expect($obj)->toBeInstanceOf(AnthropicTestUser::class);
@@ -77,11 +76,10 @@ it('works with Anthropic mock responses for scalars', function () {
         events: new EventDispatcher()
     );
 
-    $v1 = (new StructuredOutput(makeStructuredRuntime(driver: $driver)))
+    $v1 = (new StructuredOutput(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Tools)))
         ->with(
             messages: [['role'=>'user','content'=>'age?']],
             responseModel: Scalar::integer('age'),
-            mode: OutputMode::Tools,
         )
         ->get();
 

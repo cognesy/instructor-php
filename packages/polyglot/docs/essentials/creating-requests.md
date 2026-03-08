@@ -17,8 +17,6 @@ It accepts several parameters:
 
 ```php
 <?php
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
-
 $inference = $inference->with(
     messages: 'Summarize this text',
     model: 'gpt-4o-mini',
@@ -26,7 +24,6 @@ $inference = $inference->with(
     toolChoice: [],
     responseFormat: [],
     options: [],
-    mode: OutputMode::Text
 );
 ```
 

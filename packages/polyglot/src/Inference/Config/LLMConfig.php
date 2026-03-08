@@ -4,6 +4,7 @@ namespace Cognesy\Polyglot\Inference\Config;
 
 use Cognesy\Config\BasePath;
 use Cognesy\Config\Config;
+use Cognesy\Config\Dsn;
 use Cognesy\Polyglot\Inference\Data\Pricing;
 use InvalidArgumentException;
 use Throwable;
@@ -67,6 +68,10 @@ final class LLMConfig
             );
         }
         return $instance;
+    }
+
+    public static function fromDsn(string $dsn): self {
+        return self::fromArray(Dsn::fromString($dsn)->toArray());
     }
 
     public function withOverrides(array $overrides) : self {

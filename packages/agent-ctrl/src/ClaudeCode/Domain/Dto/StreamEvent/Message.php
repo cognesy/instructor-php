@@ -2,6 +2,8 @@
 
 namespace Cognesy\AgentCtrl\ClaudeCode\Domain\Dto\StreamEvent;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
+
 /**
  * Message containing role and content items
  */
@@ -20,7 +22,7 @@ final readonly class Message
      */
     public static function fromArray(array $data): self
     {
-        $contentData = StreamValueNormalizer::toArray($data['content'] ?? []);
+        $contentData = Normalize::toArray($data['content'] ?? []);
 
         $content = [];
         foreach ($contentData as $item) {
@@ -30,7 +32,7 @@ final readonly class Message
         }
 
         return new self(
-            role: StreamValueNormalizer::toString($data['role'] ?? 'unknown', 'unknown'),
+            role: Normalize::toString($data['role'] ?? 'unknown', 'unknown'),
             content: $content,
         );
     }

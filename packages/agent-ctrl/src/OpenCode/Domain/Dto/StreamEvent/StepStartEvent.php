@@ -2,6 +2,7 @@
 
 namespace Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
 use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodeMessageId;
 use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodePartId;
 use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodeSessionId;
@@ -52,14 +53,14 @@ final readonly class StepStartEvent extends StreamEvent
 
     public static function fromArray(array $data): self
     {
-        $part = $data['part'] ?? [];
+        $part = Normalize::toArray($data['part'] ?? []);
 
         return new self(
-            timestamp: $data['timestamp'] ?? 0,
-            sessionId: $data['sessionID'] ?? '',
-            messageId: $part['messageID'] ?? '',
-            partId: $part['id'] ?? '',
-            snapshot: $part['snapshot'] ?? '',
+            timestamp: Normalize::toInt($data['timestamp'] ?? 0),
+            sessionId: Normalize::toString($data['sessionID'] ?? ''),
+            messageId: Normalize::toString($part['messageID'] ?? ''),
+            partId: Normalize::toString($part['id'] ?? ''),
+            snapshot: Normalize::toString($part['snapshot'] ?? ''),
         );
     }
 }

@@ -70,17 +70,19 @@ The `StructuredOutputStream` class provides comprehensive methods for processing
 ### Core Streaming Methods
 - `partials()`: Returns an iterable of partial updates from the stream. Only final update is validated, partial updates are only deserialized and transformed.
 - `sequence()`: Dedicated to processing `Sequence` response models - returns only completed items in the sequence.
-- `responses()`: Generator of partial LLM responses as they are received.
+- `responses()`: Generator of Instructor-owned partial response snapshots followed by the final response.
+  Instructor rebuilds these snapshots from Polyglot stream deltas.
 
 ### Result Access Methods
 - `finalValue()`: Get the final parsed result (blocks until completion).
-- `finalResponse()`: Get the final LLM response (blocks until completion).
+- `finalResponse()`: Get the final `StructuredOutputResponse` (blocks until completion).
 - `lastUpdate()`: Returns the last object received and processed by Instructor.
-- `lastResponse()`: Returns the last received LLM response.
+- `lastResponse()`: Returns the last received `StructuredOutputResponse`.
+- `finalRawResponse()`: Get the nested raw `InferenceResponse` when you need transport-level metadata.
 
 ### Utility Methods
 - `usage()`: Get token usage statistics from the streaming response.
-- `getIterator()`: Low-level stream of `StructuredOutputExecution` updates.
+- `getIterator()`: Low-level stream of `StructuredOutputResponse` updates.
 
 
 ### Example: streaming partial responses
@@ -143,12 +145,17 @@ $db->saveParticipants($participants->toArray());
 ```php
 <?php
 use Cognesy\Instructor\Config\StructuredOutputConfig;
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 
-$stream = (new StructuredOutput)
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
     ->withConfig(new StructuredOutputConfig(
         responseCachePolicy: ResponseCachePolicy::Memory,
-    ))
+    ));
+
+$stream = (new StructuredOutput($runtime))
     ->with(
         messages: 'Extract user data',
         responseModel: Person::class,

@@ -10,7 +10,6 @@ use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIMessageFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIRequestAdapter;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIResponseAdapter;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIUsageFormat;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 class A21Driver extends BaseInferenceRequestDriver
@@ -43,16 +42,11 @@ class A21Driver extends BaseInferenceRequestDriver
     #[\Override]
     public function capabilities(?string $model = null): DriverCapabilities {
         return new DriverCapabilities(
-            outputModes: [
-                OutputMode::Tools,
-                OutputMode::Json,
-                OutputMode::MdJson,
-                OutputMode::Text,
-                OutputMode::Unrestricted,
-            ],
             streaming: true,
             toolCalling: true,
-            jsonSchema: false,
+            toolChoice: true,
+            responseFormatJsonObject: true,
+            responseFormatJsonSchema: false,
             responseFormatWithTools: true,
         );
     }

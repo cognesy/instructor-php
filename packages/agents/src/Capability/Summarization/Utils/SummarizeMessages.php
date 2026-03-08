@@ -7,7 +7,6 @@ use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 class SummarizeMessages implements CanSummarizeMessages
 {
@@ -31,7 +30,6 @@ class SummarizeMessages implements CanSummarizeMessages
             messages: $messages->prependMessages(new Message(content: $this->prompt)),
             model: $this->model,
             options: ['max_tokens' => $tokenLimit],
-            mode: OutputMode::Text,
         );
 
         return $this->inference->create($request)->get();

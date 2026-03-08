@@ -14,7 +14,7 @@ it('handles tool calls in non-streaming Anthropic response', function () {
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $response = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('anthropic'), httpClient: $http))
+    $response = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('anthropic'), httpClient: $http))
         ->withModel('claude-3-haiku-20240307')
         ->withMessages('Weather')
         ->response();

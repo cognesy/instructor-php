@@ -2,6 +2,8 @@
 
 namespace Cognesy\AgentCtrl\OpenAICodex\Domain\Value;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
+
 /**
  * Token usage statistics from Codex execution
  */
@@ -19,9 +21,9 @@ final readonly class UsageStats
     public static function fromArray(array $data): self
     {
         return new self(
-            inputTokens: (int)($data['input_tokens'] ?? 0),
-            cachedInputTokens: (int)($data['cached_input_tokens'] ?? 0),
-            outputTokens: (int)($data['output_tokens'] ?? 0),
+            inputTokens: Normalize::toInt($data['input_tokens'] ?? 0),
+            cachedInputTokens: Normalize::toInt($data['cached_input_tokens'] ?? 0),
+            outputTokens: Normalize::toInt($data['output_tokens'] ?? 0),
         );
     }
 

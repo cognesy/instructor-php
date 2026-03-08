@@ -4,8 +4,6 @@ namespace Cognesy\Polyglot\Inference\Drivers\Fireworks;
 
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
-
 class FireworksBodyFormat extends OpenAICompatibleBodyFormat
 {
     // CAPABILITIES ///////////////////////////////////////////
@@ -19,8 +17,8 @@ class FireworksBodyFormat extends OpenAICompatibleBodyFormat
 
     #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
-        $mode = $this->toResponseFormatMode($request);
-        if ($mode === null) {
+        $type = $this->toResponseFormatType($request);
+        if ($type === null) {
             return [];
         }
 
@@ -32,6 +30,6 @@ class FireworksBodyFormat extends OpenAICompatibleBodyFormat
                 'schema' => $this->removeDisallowedEntries($request->responseFormat()->schema()),
             ]);
 
-        return $responseFormat->as($mode);
+        return $this->renderResponseFormatForType($responseFormat, $type);
     }
 }

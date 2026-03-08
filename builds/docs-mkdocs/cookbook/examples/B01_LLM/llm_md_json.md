@@ -25,7 +25,7 @@ to guide the model in generating the correct response.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Inference;
 
 $data = Inference::using('openai')

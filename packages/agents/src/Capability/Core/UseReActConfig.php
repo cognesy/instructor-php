@@ -6,8 +6,8 @@ use Cognesy\Agents\Builder\Contracts\CanConfigureAgent;
 use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
 use Cognesy\Agents\Drivers\ReAct\ReActDriver;
 use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 final readonly class UseReActConfig implements CanProvideAgentCapability

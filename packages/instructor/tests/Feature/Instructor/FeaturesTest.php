@@ -25,10 +25,9 @@ it('self-corrects values extracted by LLM based on validation results', function
     ]);
 
     $text = "His name is JX, aka Jason, is -28 years old.";
-    $person = (new StructuredOutput)->withRuntime(makeStructuredRuntime(httpClient: $mockHttp))->with(
+    $person = (new StructuredOutput)->withRuntime(makeStructuredRuntime(httpClient: $mockHttp, maxRetries: 2))->with(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
-        maxRetries: 2,
     )->get();
     expect($person)->toBeInstanceOf(Person::class);
     expect($person->name)->toBe('Jason');

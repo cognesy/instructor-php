@@ -2,16 +2,14 @@
 
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Creation\InferenceResponseFactory;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
-use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIBodyFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIMessageFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIRequestAdapter;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIResponseAdapter;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIUsageFormat;
+use Cognesy\Polyglot\Inference\Streaming\InferenceStreamState;
 
 it('OpenAI golden adapter: complex request + streaming response assembly', function () {
     $config = new LLMConfig(
@@ -55,11 +53,11 @@ it('OpenAI golden adapter: complex request + streaming response assembly', funct
         json_encode(['choices' => [['delta' => ['content' => 'lo']]]]),
         json_encode(['choices' => [[ 'delta' => [ 'tool_calls' => [[ 'id' => 'c1', 'function' => [ 'name' => 'search', 'arguments' => '{"q":"Hello"}' ] ]] ] ]]]),
     ];
-    $acc = PartialInferenceResponse::empty();
-    foreach ($resAdapter->fromStreamResponses($chunks) as $p) {
-        $acc = $p->withAccumulatedContent($acc);
+    $state = new InferenceStreamState();
+    foreach ($resAdapter->fromStreamDeltas($chunks) as $delta) {
+        $state->applyDelta($delta);
     }
-    $final = InferenceResponse::fromAccumulatedPartial($acc);
+    $final = $state->finalResponse();
     expect(str_starts_with($final->content(), 'Hello'))->toBeTrue();
     $tool = $final->toolCalls()->first();
     expect($tool->name())->toBe('search');

@@ -28,7 +28,7 @@ $loader = ConfigLoader::fromPaths(
 
 $llmEntry = $loader->load('llm/presets/openai.yaml');
 $llmDataFromLoader = $llmEntry->toArray();
-// @doctest id="e268"
+// @doctest id="b646"
 ```
 
 ## Resolution Rule

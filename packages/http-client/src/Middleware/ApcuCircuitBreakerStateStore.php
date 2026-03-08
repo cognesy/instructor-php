@@ -18,27 +18,36 @@ final readonly class ApcuCircuitBreakerStateStore implements CanStoreCircuitBrea
     }
 
     #[\Override]
-    public function load(string $key): ?array {
+    public function load(string $key): ?CircuitBreakerState {
         if (!self::isSupported()) {
             return null;
         }
 
         $success = false;
-        /** @var mixed $state */
-        $state = apcu_fetch($this->cacheKey($key), $success);
-        if (!$success || !is_array($state)) {
+        /** @var mixed $storedState */
+        $storedState = apcu_fetch($this->cacheKey($key), $success);
+        if (!$success) {
             return null;
         }
-        return $state;
+
+        if ($storedState instanceof CircuitBreakerState) {
+            return $storedState;
+        }
+
+        if (!is_array($storedState)) {
+            return null;
+        }
+
+        return CircuitBreakerState::fromArray($storedState);
     }
 
     #[\Override]
-    public function save(string $key, array $state): void {
+    public function save(string $key, CircuitBreakerState $state): void {
         if (!self::isSupported()) {
             return;
         }
 
-        apcu_store($this->cacheKey($key), $state);
+        apcu_store($this->cacheKey($key), $state->toArray());
     }
 
     private function cacheKey(string $key): string {

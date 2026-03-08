@@ -7,6 +7,19 @@ Polyglot uses an event system to generate internal notifications at the various 
 
 It has been built primarily to ensure observability of the internal components of the library.
 
+Inference and embeddings listener registration lives on concrete runtimes:
+
+```php
+$inferenceRuntime = InferenceRuntime::fromConfig($config)
+    ->onEvent(InferenceCompleted::class, $listener)
+    ->wiretap($tap);
+
+$embeddingsRuntime = EmbeddingsRuntime::fromConfig($config)
+    ->onEvent(EmbeddingsResponseReceived::class, $listener)
+    ->wiretap($tap);
+// @doctest id="da80"
+```
+
 ```php
 namespace Cognesy\Events\Dispatchers;
 
@@ -24,7 +37,7 @@ class InferenceRequested extends Event {}
 
 class InferenceResponseCreated extends Event {}
 
-class PartialInferenceResponseCreated extends Event {}
+class PartialInferenceDeltaCreated extends Event {}
 
 class InferenceStarted extends Event {}
 
@@ -35,5 +48,5 @@ class InferenceAttemptStarted extends Event {}
 class InferenceAttemptSucceeded extends Event {}
 
 class InferenceAttemptFailed extends Event {}
-// @doctest id="e053"
+// @doctest id="2f53"
 ```

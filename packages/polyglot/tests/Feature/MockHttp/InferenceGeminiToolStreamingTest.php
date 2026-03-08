@@ -22,7 +22,7 @@ it('handles tool call during streaming for Gemini', function () {
 
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $final = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('gemini'), httpClient: $http))
+    $final = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('gemini'), httpClient: $http))
         ->withModel('gemini-1.5-flash')
         ->withMessages('Search')
         ->withStreaming(true)
@@ -36,3 +36,39 @@ it('handles tool call during streaming for Gemini', function () {
     expect($tool->value('q'))->toBe('Hello');
 });
 
+it('handles parallel tool calls during streaming for Gemini', function () {
+    $mock = new MockHttpDriver();
+    $mock->on()
+        ->post(null)
+        ->urlStartsWith('https://generativelanguage.googleapis.com/v1beta')
+        ->withStream(true)
+        ->replySSEFromJson([
+            ['candidates' => [[
+                'id' => 'cand_1',
+                'content' => ['parts' => [
+                    ['functionCall' => ['name' => 'search', 'args' => ['q' => 'Hello']]],
+                    ['functionCall' => ['name' => 'calculate', 'args' => ['n' => 42]]],
+                ]],
+                'finishReason' => 'STOP',
+            ]]],
+        ], addDone: true);
+
+    $http = (new HttpClientBuilder())->withDriver($mock)->create();
+
+    $final = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('gemini'), httpClient: $http))
+        ->withModel('gemini-1.5-flash')
+        ->withMessages('Search')
+        ->withStreaming(true)
+        ->stream()
+        ->final();
+
+    expect($final)->not->toBeNull();
+    expect($final->hasToolCalls())->toBeTrue();
+    expect($final->toolCalls()->count())->toBe(2);
+
+    $tools = $final->toolCalls()->all();
+    expect($tools[0]->name())->toBe('search');
+    expect($tools[0]->value('q'))->toBe('Hello');
+    expect($tools[1]->name())->toBe('calculate');
+    expect($tools[1]->value('n'))->toBe(42);
+});

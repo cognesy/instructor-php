@@ -20,13 +20,13 @@ Each Instructor event offers following methods, which make interacting with them
 
 Instructor allows you to receive detailed information at every stage of request and response processing via events.
 
- * `(new StructuredOutput)->onEvent(string $class, callable $callback)` method - receive callback when specified type of event is dispatched
- * `(new StructuredOutput)->wiretap(callable $callback)` method - receive any event dispatched by Instructor, may be useful for debugging or performance analysis
+ * `StructuredOutputRuntime->onEvent(string $class, callable $callback)` - receive callback when specified type of event is dispatched
+ * `StructuredOutputRuntime->wiretap(callable $callback)` - receive any event dispatched by Instructor, may be useful for debugging or performance analysis
 
 Receiving events can help you to monitor the execution process and makes it easier for a developer to understand and resolve any processing issues.
 
 ```php
-$structuredOutput = (new StructuredOutput)
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
     // see requests to LLM
     ->onEvent(HttpRequestSent::class, fn($e) => dump($e))
     // see responses from LLM
@@ -36,7 +36,7 @@ $structuredOutput = (new StructuredOutput)
     // log all events in log-friendly format
     ->wiretap(fn($event) => YourLogger::log($event->asLog()));
 
-$structuredOutput->with(
+(new StructuredOutput)->withRuntime($runtime)->with(
     messages: "What is the population of Paris?",
     responseModel: Scalar::integer(),
 )->get();
@@ -53,5 +53,5 @@ $structuredOutput->with(
 
 You can also subscribe to event bus notifications:
 
- * `onEvent(PartialResponseGenerated::class, callable $callback)`
- * `onEvent(SequenceUpdated::class, callable $callback)`
+ * `StructuredOutputRuntime->onEvent(PartialResponseGenerated::class, callable $callback)`
+ * `StructuredOutputRuntime->onEvent(SequenceUpdated::class, callable $callback)`

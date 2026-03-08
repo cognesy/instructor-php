@@ -14,7 +14,7 @@ use Cognesy\Instructor\Extraction\Extractors\MarkdownBlockExtractor;
 use Cognesy\Instructor\Extraction\Extractors\PartialJsonExtractor;
 use Cognesy\Instructor\Extraction\Extractors\ResilientJsonExtractor;
 use Cognesy\Instructor\Extraction\Extractors\SmartBraceExtractor;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**

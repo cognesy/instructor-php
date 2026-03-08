@@ -2,6 +2,8 @@
 
 namespace Cognesy\AgentCtrl\ClaudeCode\Domain\Dto\StreamEvent;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
+
 /**
  * Text content from the agent
  */
@@ -23,7 +25,7 @@ final readonly class TextContent extends MessageContent
     public static function fromArray(array $data): self
     {
         return new self(
-            text: StreamValueNormalizer::toString($data['text'] ?? ''),
+            text: Normalize::toString($data['text'] ?? ''),
         );
     }
 }

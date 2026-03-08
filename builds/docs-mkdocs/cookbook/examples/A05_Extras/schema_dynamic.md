@@ -17,7 +17,7 @@ require 'examples/boot.php';
 
 use Cognesy\Dynamic\Structure;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Schema\SchemaBuilder;
 $citySchema = SchemaBuilder::define('city')
     ->string('name', 'City name')

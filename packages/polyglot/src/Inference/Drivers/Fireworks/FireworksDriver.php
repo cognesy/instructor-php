@@ -10,7 +10,6 @@ use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIMessageFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIRequestAdapter;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIResponseAdapter;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIUsageFormat;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 class FireworksDriver extends BaseInferenceRequestDriver
@@ -43,10 +42,11 @@ class FireworksDriver extends BaseInferenceRequestDriver
     #[\Override]
     public function capabilities(?string $model = null): DriverCapabilities {
         return new DriverCapabilities(
-            outputModes: OutputMode::cases(),
             streaming: true,
             toolCalling: true,
-            jsonSchema: true,
+            toolChoice: true,
+            responseFormatJsonObject: true,
+            responseFormatJsonSchema: true,
             responseFormatWithTools: false,
         );
     }

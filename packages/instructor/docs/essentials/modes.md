@@ -19,31 +19,37 @@ Those modes are not useful for `StructuredOutput` class (as it is focused on str
 
 ### Example of Using Modes
 
-Mode can be set via the `mode` parameter of `StructuredOutput->with(...)`.
+Mode is configured on `StructuredOutputRuntime`.
 
 The default mode is `OutputMode::Tools`, which leverages OpenAI-style tool calls.
 
 ```php
 <?php
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Instructor\Enums\OutputMode;
 
-$structuredOutput = new StructuredOutput();
+$structuredOutput = new StructuredOutput(
+    StructuredOutputRuntime::fromProvider(LLMProvider::new())
+        ->withOutputMode(OutputMode::Json)
+);
 
 $response = $structuredOutput->with(
     messages: "Jason is 25 years old.",
     responseModel: Person::class,
-    mode: OutputMode::Json
 )->get();
 ```
-Mode, like other parameters can also be set via fluent API methods.
+Request data still stays on the facade.
 
 ```php
 <?php
-$response = $structuredOutput
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withOutputMode(OutputMode::Json);
+
+$response = (new StructuredOutput($runtime))
     ->withMessages("Jason is 25 years old.")
     ->withResponseModel(Person::class)
-    ->withOutputMode(OutputMode::Json)
     ->get();
 ```
 

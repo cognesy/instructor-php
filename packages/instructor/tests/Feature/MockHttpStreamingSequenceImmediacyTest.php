@@ -6,7 +6,7 @@ use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\Stream\IterableStream;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 
 if (!class_exists('MockStreamSeqPerson')) {
     eval('class MockStreamSeqPerson { public string $name; public int $age; }');
@@ -54,8 +54,7 @@ it('streams sequence updates incrementally without waiting for full stream compl
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
     $stream = (new StructuredOutput)
-        ->withRuntime(makeStructuredRuntime(httpClient: $http, llmDriver: 'openai'))
-        ->withOutputMode(OutputMode::Json)
+        ->withRuntime(makeStructuredRuntime(httpClient: $http, llmDriver: 'openai', outputMode: OutputMode::Json))
         ->with(
             messages: 'Extract people',
             responseModel: Sequence::of('MockStreamSeqPerson'),

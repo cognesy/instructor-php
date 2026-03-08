@@ -88,7 +88,7 @@ Instructor allows you to define multiple `template libraries` in your app. Libra
 prompt templates which is stored under a specific directory. Library can have a nested structure, which allows
 you to organize your prompts in a way that makes sense for your application.
 
-Library properties are specified in `config/prompt.php` configuration file.
+Library properties are specified in package-scoped YAML config (for example `templates/config/prompt/default.yaml`).
 
 where you can define:
  - `templateEngine` - template engine used for prompts in this library,

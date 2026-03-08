@@ -21,7 +21,7 @@ it('returns embeddings for OpenAI (single input)', function () {
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
     $vectors = Embeddings::fromRuntime(
-        EmbeddingsRuntime::fromEmbeddingsConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::embeddings('openai'), httpClient: $http)
+        EmbeddingsRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::embeddings('openai'), httpClient: $http)
     )
         ->withModel('text-embedding-3-small')
         ->withInputs(['hello'])
@@ -46,7 +46,7 @@ it('supports runtime-style create with explicit request', function () {
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
     $vectors = Embeddings::fromRuntime(
-        EmbeddingsRuntime::fromEmbeddingsConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::embeddings('openai'), httpClient: $http)
+        EmbeddingsRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::embeddings('openai'), httpClient: $http)
     )
         ->create(new EmbeddingsRequest(
             input: ['hello'],
@@ -77,10 +77,11 @@ it('supports facade runtime extraction and runtime static factories', function (
         model: 'text-embedding-3-small',
     );
 
-    $fromFacadeRuntime = Embeddings::fromRuntime(
-        EmbeddingsRuntime::fromEmbeddingsConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::embeddings('openai'), httpClient: $http)
-    )
-        ->runtime()
+    $runtime = EmbeddingsRuntime::fromConfig(
+        \Cognesy\Polyglot\Tests\Support\TestConfig::embeddings('openai'),
+        httpClient: $http,
+    );
+    $fromFacadeRuntime = Embeddings::fromRuntime($runtime)
         ->create($request)
         ->get()
         ->vectors();
@@ -100,7 +101,7 @@ it('supports facade runtime extraction and runtime static factories', function (
         ]);
     $http2 = (new HttpClientBuilder())->withDriver($mock2)->create();
 
-    $fromStaticRuntime = EmbeddingsRuntime::fromEmbeddingsConfig(
+    $fromStaticRuntime = EmbeddingsRuntime::fromConfig(
         config: \Cognesy\Polyglot\Tests\Support\TestConfig::embeddings('openai'),
         httpClient: $http2,
     )->create($request)->get()->vectors();

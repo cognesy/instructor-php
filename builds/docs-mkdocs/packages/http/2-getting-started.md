@@ -10,14 +10,14 @@ use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\HttpClient;
 
 $client = HttpClient::default(); // default driver from HttpClientConfig defaults (curl)
-// @doctest id="7321"
+// @doctest id="3c4d"
 ```
 
 Select a specific driver via typed config when needed:
 
 ```php
 $client = HttpClient::fromConfig(new HttpClientConfig(driver: 'guzzle'));
-// @doctest id="0bf1"
+// @doctest id="7538"
 ```
 
 ## 2. Create and Execute a Request
@@ -37,14 +37,14 @@ $response = $client->withRequest($request)->get();
 
 echo $response->statusCode();
 echo $response->body();
-// @doctest id="8c21"
+// @doctest id="5a10"
 ```
 
 ## 3. Add Middleware (Immutable)
 
 ```php
 $client = $client->withMiddleware($middleware);
-// @doctest id="5a49"
+// @doctest id="fdac"
 ```
 
 Do not rely on in-place mutation.
@@ -64,7 +64,7 @@ $client = (new HttpClientBuilder())
         );
     })
     ->create();
-// @doctest id="71c4"
+// @doctest id="70ab"
 ```
 
 This is the recommended default for deterministic examples and tests.

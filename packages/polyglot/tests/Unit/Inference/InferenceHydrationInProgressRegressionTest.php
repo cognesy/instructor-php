@@ -3,7 +3,6 @@
 use Cognesy\Polyglot\Inference\Data\InferenceAttempt;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 
@@ -40,33 +39,39 @@ it('hydrates inference response safely when responseData key is missing', functi
         ->and($response->responseData()->isStreamed())->toBeFalse();
 });
 
-it('round-trips in-progress attempt with accumulated partial state', function () {
-    $p1 = (new PartialInferenceResponse(
+it('failed attempt without response preserves durable usage metadata', function () {
+    $state = new \Cognesy\Polyglot\Inference\Streaming\InferenceStreamState();
+    $state->applyDelta(new \Cognesy\Polyglot\Inference\Data\PartialInferenceDelta(
         contentDelta: 'Hel',
         toolName: 'search',
         toolArgs: '{"q":"hel',
         usage: new Usage(inputTokens: 1, outputTokens: 1),
-    ))->withAccumulatedContent(PartialInferenceResponse::empty());
-    $accumulated = (new PartialInferenceResponse(
+    ));
+    $state->applyDelta(new \Cognesy\Polyglot\Inference\Data\PartialInferenceDelta(
         contentDelta: 'lo',
         toolArgs: 'lo"}',
         usage: new Usage(inputTokens: 1, outputTokens: 1),
-    ))->withAccumulatedContent($p1);
+    ));
+    $response = $state->finalResponse();
 
-    $attempt = InferenceAttempt::started()->withNewPartialResponse($accumulated);
-    $rehydrated = InferenceAttempt::fromArray($attempt->toArray());
+    $failed = InferenceAttempt::fromFailedResponse(
+        response: null,
+        usage: $state->usage(),
+        errors: ['boom'],
+    );
+    $rehydratedFailed = InferenceAttempt::fromArray($failed->toArray());
 
-    expect($rehydrated->partialResponse())->not->toBeNull()
-        ->and($rehydrated->partialResponse()?->content())->toBe('Hello')
-        ->and($rehydrated->partialResponse()?->toolCalls()->count())->toBe(1)
-        ->and($rehydrated->partialResponse()?->toolCalls()->first()?->name())->toBe('search')
-        ->and($rehydrated->partialResponse()?->toolCalls()->first()?->value('q'))->toBe('hello')
-        ->and($rehydrated->usage()->input())->toBe(2)
-        ->and($rehydrated->usage()->output())->toBe(2);
+    expect($rehydratedFailed->response())->toBeNull()
+        ->and($rehydratedFailed->usage()->input())->toBe(2)
+        ->and($rehydratedFailed->usage()->output())->toBe(2)
+        ->and($rehydratedFailed->errors())->toBe(['boom']);
 
-    $finalized = $rehydrated->withFinalizedPartialResponse();
-    expect($finalized->response())->not->toBeNull()
-        ->and($finalized->response()?->content())->toBe('Hello')
-        ->and($finalized->response()?->toolCalls()->count())->toBe(1)
-        ->and($finalized->response()?->toolCalls()->first()?->value('q'))->toBe('hello');
+    $completed = InferenceAttempt::fromResponse($response);
+    $rehydratedCompleted = InferenceAttempt::fromArray($completed->toArray());
+    expect($rehydratedCompleted->response())->not->toBeNull()
+        ->and($rehydratedCompleted->response()?->content())->toBe('Hello')
+        ->and($rehydratedCompleted->response()?->toolCalls()->count())->toBe(1)
+        ->and($rehydratedCompleted->response()?->toolCalls()->first()?->value('q'))->toBe('hello')
+        ->and($rehydratedCompleted->usage()->input())->toBe(2)
+        ->and($rehydratedCompleted->usage()->output())->toBe(2);
 });

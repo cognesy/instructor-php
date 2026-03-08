@@ -143,7 +143,7 @@ class RequestMaterializer implements CanMaterializeRequest
     }
 
     protected function addRetryMessages(StructuredOutputExecution $execution, MessageStore $store) : MessageStore {
-        if (!$execution->isFinalFailed()) {
+        if ($execution->attempts()->isEmpty()) {
             return $store;
         }
 

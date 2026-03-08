@@ -2,6 +2,7 @@
 
 namespace Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\StreamEvent;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\Item\Item;
 
 /**
@@ -25,7 +26,7 @@ final readonly class ItemStartedEvent extends StreamEvent
      */
     public static function fromArray(array $data): self
     {
-        $itemData = $data['item'] ?? [];
+        $itemData = Normalize::toArray($data['item'] ?? []);
 
         return new self(
             item: Item::fromArray($itemData),

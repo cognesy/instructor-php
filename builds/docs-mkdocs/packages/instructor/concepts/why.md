@@ -30,7 +30,7 @@ class UserDetail {
     public string $name;
     public int $age;
 }
-// @doctest id="b2ee"
+// @doctest id="c001"
 ```
 
 #### Step 2: Extract
@@ -47,7 +47,7 @@ $user = (new StructuredOutput)->with(
 
 assert($user->name === 'Jason');
 assert($user->age === 25);
-// @doctest id="15da"
+// @doctest id="bb9b"
 ```
 
 It's helpful to annotate the variable with the type of the response model, which will help your IDE provide autocomplete and spell check.
@@ -66,6 +66,8 @@ Here, the `LeadReport` model is passed as the `$responseModel`, and `$maxRetries
 
 ```php
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class UserDetails
@@ -75,14 +77,16 @@ class UserDetails
     public string $email;
 }
 
-$user = (new StructuredOutput)->with(
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withMaxRetries(2);
+
+$user = (new StructuredOutput($runtime))->with(
     messages: [['role' => 'user', 'content' => "you can reply to me via jason@gmailcom -- Jason"]],
     responseModel: UserDetails::class,
-    maxRetries: 2
 )->get();
 
 assert($user->email === "jason@gmail.com");
-// @doctest id="909e"
+// @doctest id="7572"
 ```
 
 !!! note "More about Validation"
@@ -98,6 +102,8 @@ See [Symfony docs](https://symfony.com/doc/current/reference/constraints/Callbac
 
 ```php
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
     
@@ -117,12 +123,14 @@ class UserDetails
     }
 }
     
-$user = (new StructuredOutput)->with(
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withMaxRetries(2);
+
+$user = (new StructuredOutput($runtime))->with(
     messages: [['role' => 'user', 'content' => 'jason is 25 years old']],
     responseModel: UserDetails::class,
-    maxRetries: 2
 )->get();
 
 assert($user->name === "JASON");
-// @doctest id="9cf4"
+// @doctest id="825d"
 ```

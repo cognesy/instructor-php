@@ -4,15 +4,20 @@ namespace Cognesy\Instructor\Extraction\Data;
 
 use Cognesy\Instructor\Extraction\ResponseContent;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Utils\Profiler\TracksObjectCreation;
 
 final readonly class ExtractionInput
 {
+    use TracksObjectCreation;
+
     public function __construct(
         public string $content,
         public OutputMode $mode,
         public ?InferenceResponse $response = null,
-    ) {}
+    ) {
+        $this->trackObjectCreation();
+    }
 
     public static function fromResponse(InferenceResponse $response, OutputMode $mode): self
     {

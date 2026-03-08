@@ -66,10 +66,15 @@ When validation fails, Instructor automatically retries:
 
 ```php
 <?php
-$result = (new StructuredOutput)
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
+
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withMaxRetries(3);
+
+$result = (new StructuredOutput($runtime))
     ->withResponseClass(User::class)
     ->withMessages($text)
-    ->withMaxRetries(3)
     ->get();
 ```
 
@@ -147,7 +152,12 @@ Uses LLM function/tool calling:
 
 ```php
 <?php
-->withOutputMode(OutputMode::Tools)
+use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
+
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withOutputMode(OutputMode::Tools);
 ```
 
 Best for: OpenAI, Anthropic, most modern models
@@ -158,7 +168,8 @@ Strict schema enforcement:
 
 ```php
 <?php
-->withOutputMode(OutputMode::JsonSchema)
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withOutputMode(OutputMode::JsonSchema);
 ```
 
 Best for: GPT-4, models with strict JSON Schema support
@@ -169,7 +180,8 @@ Basic JSON response format:
 
 ```php
 <?php
-->withOutputMode(OutputMode::Json)
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withOutputMode(OutputMode::Json);
 ```
 
 Best for: Models supporting JSON mode without strict schemas
@@ -180,7 +192,8 @@ Prompting-based extraction:
 
 ```php
 <?php
-->withOutputMode(OutputMode::MdJson)
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withOutputMode(OutputMode::MdJson);
 ```
 
 Best for: Models without JSON mode, fallback option
@@ -293,8 +306,11 @@ Or subscribe to streaming events:
 <?php
 use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated;
 
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->onEvent(PartialResponseGenerated::class, fn(PartialResponseGenerated $event) => updateUI($event->partialResponse));
+
 $stream = (new StructuredOutput)
-    ->onEvent(PartialResponseGenerated::class, fn(PartialResponseGenerated $event) => updateUI($event->partialResponse))
+    ->withRuntime($runtime)
     ->with(
         responseModel: Article::class,
         messages: $text,
@@ -364,7 +380,9 @@ $structuredOutput = StructuredOutput::using('anthropic');
 
 // Or configure runtime explicitly (advanced)
 $structuredOutput = (new StructuredOutput)->withRuntime(
-    StructuredOutputRuntime::fromDsn('preset=anthropic,model=claude-3-5-sonnet-latest')
+    StructuredOutputRuntime::fromConfig(
+        \Cognesy\Polyglot\Inference\Config\LLMConfig::fromDsn('preset=anthropic,model=claude-3-5-sonnet-latest')
+    )
 );
 ```
 
@@ -479,13 +497,13 @@ Monitor internal processing:
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputRequestReceived;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
 
-$instructor = new StructuredOutput();
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new());
 
-$instructor->onEvent(StructuredOutputRequestReceived::class, function($event) {
+$runtime->onEvent(StructuredOutputRequestReceived::class, function($event) {
     logger()->info('Request received', $event->toArray());
 });
 
-$instructor->onEvent(StructuredOutputResponseGenerated::class, function($event) {
+$runtime->onEvent(StructuredOutputResponseGenerated::class, function($event) {
     logger()->info('Response generated', $event->toArray());
 });
 ```
@@ -496,7 +514,7 @@ See all LLM interactions:
 
 ```php
 <?php
-->wiretap(fn($event) => logger()->debug((string) $event))
+$runtime->wiretap(fn($event) => logger()->debug((string) $event))
 ```
 
 Outputs:
@@ -590,7 +608,7 @@ echo $response->timing->total; // Total processing time
 
 ```php
 <?php
-$instructor->onEvent('*', function($event) {
+$runtime->onEvent('*', function($event) {
     $logger->log($event->name(), $event->toArray());
 });
 ```

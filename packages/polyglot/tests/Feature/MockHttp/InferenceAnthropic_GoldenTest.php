@@ -33,7 +33,7 @@ it('Anthropic golden: streaming text + tool_use aggregation', function () {
         ]
     ]];
 
-    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('anthropic'), httpClient: $http))
+    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('anthropic'), httpClient: $http))
         ->withModel('claude-3-haiku-20240307')
         ->withTools($tools)
         ->withToolChoice('auto')
@@ -44,7 +44,7 @@ it('Anthropic golden: streaming text + tool_use aggregation', function () {
         ->withStreaming(true)
         ->stream();
 
-    iterator_to_array($stream->responses());
+    iterator_to_array($stream->deltas());
     $final = $stream->final();
 
     expect($final)->not->toBeNull();
@@ -54,4 +54,3 @@ it('Anthropic golden: streaming text + tool_use aggregation', function () {
     expect($tool->name())->toBe('get_weather');
     expect($tool->value('city'))->toBe('Paris');
 });
-

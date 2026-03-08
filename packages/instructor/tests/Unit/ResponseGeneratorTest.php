@@ -11,7 +11,7 @@ use Cognesy\Instructor\Extraction\ResponseExtractor;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Utils\Result\Result;
 
 // Lightweight fakes for pipeline dependencies

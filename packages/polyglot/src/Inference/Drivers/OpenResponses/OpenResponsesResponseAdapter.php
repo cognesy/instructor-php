@@ -8,7 +8,6 @@ use Cognesy\Polyglot\Inference\Contracts\CanMapUsage;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\ToolCallId;
 use JsonException;
@@ -50,9 +49,8 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
     }
 
     #[\Override]
-    public function fromStreamResponses(iterable $eventBodies, ?HttpResponse $responseData = null): iterable {
+    public function fromStreamDeltas(iterable $eventBodies, ?HttpResponse $responseData = null): iterable {
         $ctx = new OpenResponsesStreamContext();
-        $previous = PartialInferenceResponse::empty();
 
         foreach ($eventBodies as $eventBody) {
             if (trim($eventBody) === '') {
@@ -79,9 +77,7 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
                 responseData: $responseData,
             );
 
-            $partial = PartialInferenceResponse::fromDelta($previous, $delta);
-            $previous = $partial;
-            yield $partial;
+            yield $delta;
         }
     }
 

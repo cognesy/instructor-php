@@ -4,7 +4,7 @@ description: 'Command line tools included with Instructor'
 ---
 
 Instructor comes with command line tools:
- - `./vendor/bin/instructor-setup publish`: Publishes configuration files and prompt templates to your project directory
+ - `./vendor/bin/instructor-setup publish <target-dir>`: Publishes `packages/*/resources` into your project directory
  - `./vendor/bin/instructor-hub`: Displays and executes Instructor examples
 
 Additional tool included with Instructor (under development):

@@ -29,7 +29,7 @@ that we want to extract or generate based on README file.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Schema\Attributes\Description;
 class Project {
     public string $name;

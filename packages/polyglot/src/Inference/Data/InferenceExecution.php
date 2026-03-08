@@ -5,11 +5,14 @@ namespace Cognesy\Polyglot\Inference\Data;
 use Cognesy\Polyglot\Inference\Collections\InferenceAttemptList;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Utils\Arrays;
+use Cognesy\Utils\Profiler\TracksObjectCreation;
 use DateTimeImmutable;
 use Throwable;
 
 class InferenceExecution
 {
+    use TracksObjectCreation;
+
     public readonly InferenceExecutionId $id;
     public readonly DateTimeImmutable $createdAt;
     public readonly DateTimeImmutable $updatedAt;
@@ -38,6 +41,7 @@ class InferenceExecution
         $this->id = $id ?? InferenceExecutionId::generate();
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
         $this->updatedAt = $updatedAt ?? $this->createdAt;
+        $this->trackObjectCreation();
     }
 
     public static function fromRequest(InferenceRequest $request): self {
@@ -70,18 +74,6 @@ class InferenceExecution
         return $this->currentAttempt?->response()?->finishReason();
     }
 
-    public function partialResponse(): ?PartialInferenceResponse {
-        return $this->currentAttempt?->partialResponse();
-    }
-
-    /**
-     * Deprecated shim for compatibility; returns list with single aggregated partial.
-     * @deprecated Use partialResponse() instead.
-     */
-    public function partialResponses(): PartialInferenceResponse {
-        return $this->currentAttempt?->partialResponse() ?? PartialInferenceResponse::empty();
-    }
-
     public function usage(): Usage {
         $attemptsUsage = $this->attempts->usage();
         $current = $this->currentAttempt;
@@ -96,7 +88,7 @@ class InferenceExecution
             // Already counted via attempts->usage()
             return $attemptsUsage;
         }
-        // Include current attempt's usage (whether finalized or streaming)
+        // Include current attempt usage when it is not yet part of attempts list.
         return $attemptsUsage->withAccumulated($current->usage());
     }
 
@@ -234,51 +226,26 @@ class InferenceExecution
 
     public function withFailedAttempt(
         ?InferenceResponse $response = null,
-        ?PartialInferenceResponse $partialResponse = null,
+        ?Usage $usage = null,
         string|Throwable ...$errors,
     ): self {
+        $attemptUsage = $usage
+            ?? $response?->usage()
+            ?? $this->currentAttempt?->usage()
+            ?? Usage::none();
         $newAttempt = $this->currentAttempt !== null && !$this->currentAttempt->isFinalized()
             ? $this->currentAttempt->with(
                 response: $response,
-                accumulatedPartial: $partialResponse ?? $this->currentAttempt->partialResponse(),
+                usage: $attemptUsage,
                 isFinalized: true,
                 errors: array_merge($this->currentAttempt->errors(), $errors),
             )
             : InferenceAttempt::fromFailedResponse(
                 response: $response,
-                accumulatedPartial: $partialResponse,
+                usage: $attemptUsage,
                 errors: $errors,
             );
         return $this->withFinalizedAttempt($newAttempt);
-    }
-
-    public function withNewPartialResponse(PartialInferenceResponse $partialResponse): self {
-        $currentAttempt = match (true) {
-            $this->currentAttempt === null => InferenceAttempt::started(),
-            $this->currentAttempt->isFinalized() => InferenceAttempt::started(),
-            default => $this->currentAttempt,
-        };
-        return $this->with(
-            currentAttempt: $currentAttempt->withNewPartialResponse($partialResponse),
-            isFinalized: false,
-        );
-    }
-
-    public function withFinalizedPartialResponse(): self {
-        // Prefer finalizing from the single accumulated partial when available
-        $curr = $this->currentAttempt;
-        if ($curr !== null && $curr->partialResponse() !== null) {
-            $newAttempt = $curr->withFinalizedPartialResponse();
-        } else {
-            $partial = $curr?->partialResponse() ?? PartialInferenceResponse::empty();
-            $response = InferenceResponse::fromAccumulatedPartial($partial);
-            $newAttempt = InferenceAttempt::fromResponse($response);
-        }
-        return $this->with(
-            attempts: $this->attempts->withNewAttempt($newAttempt),
-            currentAttempt: $newAttempt,
-            isFinalized: true,
-        );
     }
 
     /**

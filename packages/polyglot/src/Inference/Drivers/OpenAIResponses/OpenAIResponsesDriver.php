@@ -10,7 +10,6 @@ use Cognesy\Polyglot\Inference\Drivers\OpenResponses\OpenResponsesBodyFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenResponses\OpenResponsesMessageFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenResponses\OpenResponsesResponseAdapter;
 use Cognesy\Polyglot\Inference\Drivers\OpenResponses\OpenResponsesUsageFormat;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -60,10 +59,11 @@ class OpenAIResponsesDriver extends BaseInferenceRequestDriver
     #[\Override]
     public function capabilities(?string $model = null): DriverCapabilities {
         return new DriverCapabilities(
-            outputModes: OutputMode::cases(),
             streaming: true,
             toolCalling: true,
-            jsonSchema: true,
+            toolChoice: true,
+            responseFormatJsonObject: true,
+            responseFormatJsonSchema: true,
             responseFormatWithTools: true,
         );
     }

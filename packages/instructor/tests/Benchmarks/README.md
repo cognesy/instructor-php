@@ -195,9 +195,11 @@ Clean driver should demonstrate:
 Each benchmark explicitly sets the streaming driver:
 
 ```php
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withConfig((new StructuredOutputConfig())->with(responseIterator: 'modular'));
+
 $so = (new StructuredOutput)
-    ->withDriver($driver)
-    ->withConfig((new StructuredOutputConfig())->with(streamingDriver: 'modular'))
+    ->withRuntime($runtime)
     ->with(...);
 ```
 

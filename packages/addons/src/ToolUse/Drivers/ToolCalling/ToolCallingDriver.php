@@ -16,7 +16,6 @@ use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\PendingInference;
 
 /**
@@ -30,7 +29,6 @@ class ToolCallingDriver implements CanUseTools
     private string|array $toolChoice;
     private string $model;
     private array $responseFormat;
-    private OutputMode $mode;
     private array $options;
     private ?InferenceRetryPolicy $retryPolicy;
     private bool $parallelToolCalls = false;
@@ -43,14 +41,12 @@ class ToolCallingDriver implements CanUseTools
         array        $responseFormat = [],
         string       $model = '',
         array        $options = [],
-        OutputMode   $mode = OutputMode::Tools,
         ?InferenceRetryPolicy $retryPolicy = null,
     ) {
         $this->inference = $inference;
         $this->toolChoice = $toolChoice;
         $this->model = $model;
         $this->responseFormat = $responseFormat;
-        $this->mode = $mode;
         $this->options = $options;
         $this->retryPolicy = $retryPolicy;
         $this->formatter = new ToolExecutionFormatter();
@@ -103,7 +99,6 @@ class ToolCallingDriver implements CanUseTools
             toolChoice: $toolChoice,
             responseFormat: $this->responseFormat,
             options: array_merge($this->options, ['parallel_tool_calls' => $this->parallelToolCalls]),
-            mode: $this->mode,
             retryPolicy: $this->retryPolicy,
         );
 

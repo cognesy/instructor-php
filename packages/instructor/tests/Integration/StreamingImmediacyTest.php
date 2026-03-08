@@ -5,7 +5,7 @@ use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseUpdated;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 
@@ -27,11 +27,10 @@ it('dispatches per-chunk updates immediately when streaming', function () {
     $captured = [];
     $events->wiretap(function ($e) use (&$captured) { $captured[] = $e; });
 
-    $stream = (new StructuredOutput(makeStructuredRuntime(driver: $driver, events: $events)))
+    $stream = (new StructuredOutput(makeStructuredRuntime(driver: $driver, events: $events, outputMode: OutputMode::Json)))
         ->with(
             messages: 'Extract user',
             responseModel: StreamUserStructA::class,
-            mode: OutputMode::Json,
         )
         ->stream();
 

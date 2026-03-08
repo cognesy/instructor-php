@@ -85,6 +85,7 @@
         "dead-code": "@php ./vendor/bin/phpstan analyse -c phpstan-unused.neon --no-progress --error-format=table",
         "dead-code-debug": "@php ./vendor/bin/phpstan analyse -c phpstan-unused.neon --no-progress --error-format=table -vvv",
         "unused-deps": "@php ./vendor/bin/composer-unused",
+        "publish": "bin/instructor-setup publish",
         "setup": "bin/instructor-setup",
         "make-package": "scripts/make-package",
         "pint": "@php ./vendor/bin/pint --config packages/agents/pint.json packages/agents/src/",

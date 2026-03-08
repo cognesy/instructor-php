@@ -8,8 +8,10 @@ use Cognesy\Polyglot\Inference\Contracts\CanMapUsage;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\ToolCallId;
+use Cognesy\Polyglot\Inference\Data\ToolCallIdByStreamIndex;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Polyglot\Inference\Data\ToolCallDelta;
 use JsonException;
 use RuntimeException;
 
@@ -32,24 +34,47 @@ class OpenAIResponseAdapter implements CanTranslateInferenceResponse
     }
 
     #[\Override]
-    public function fromStreamResponses(iterable $eventBodies, ?HttpResponse $responseData = null): iterable {
-        $previous = PartialInferenceResponse::empty();
+    public function fromStreamDeltas(iterable $eventBodies, ?HttpResponse $responseData = null): iterable {
+        $toolIdByIndex = new ToolCallIdByStreamIndex();
         foreach ($eventBodies as $eventBody) {
-            $delta = $this->fromStreamResponse($eventBody, $responseData);
-            if ($delta === null) {
+            $data = $this->decodeJsonData($eventBody, 'OpenAI stream payload');
+            if (empty($data)) {
                 continue;
             }
-            $partial = PartialInferenceResponse::fromDelta($previous, $delta);
-            $previous = $partial;
-            yield $partial;
+
+            $delta = $this->fromDecodedStreamData($data, $responseData);
+            $toolDeltas = $this->extractStreamToolDeltas($data, $toolIdByIndex);
+
+            if ($toolDeltas === []) {
+                yield $delta;
+                continue;
+            }
+
+            $first = $toolDeltas[0];
+            yield new PartialInferenceDelta(
+                contentDelta: $delta->contentDelta,
+                reasoningContentDelta: $delta->reasoningContentDelta,
+                toolId: $first->id,
+                toolName: $first->name,
+                toolArgs: $first->args,
+                finishReason: $delta->finishReason,
+                usage: $delta->usage,
+                usageIsCumulative: $delta->usageIsCumulative,
+                responseData: $delta->responseData,
+                value: $delta->value,
+            );
+
+            foreach (array_slice($toolDeltas, 1) as $tool) {
+                yield new PartialInferenceDelta(
+                    toolId: $tool->id,
+                    toolName: $tool->name,
+                    toolArgs: $tool->args,
+                );
+            }
         }
     }
 
-    protected function fromStreamResponse(string $eventBody, ?HttpResponse $responseData = null): ?PartialInferenceDelta {
-        $data = $this->decodeJsonData($eventBody, 'OpenAI stream payload');
-        if (empty($data)) {
-            return null;
-        }
+    protected function fromDecodedStreamData(array $data, ?HttpResponse $responseData = null): PartialInferenceDelta {
         return new PartialInferenceDelta(
             contentDelta: $this->makeContentDelta($data),
             toolId: $this->makeToolId($data),
@@ -112,6 +137,63 @@ class OpenAIResponseAdapter implements CanTranslateInferenceResponse
 
     protected function makeToolArgsDelta(array $data) : string {
         return $data['choices'][0]['delta']['tool_calls'][0]['function']['arguments'] ?? '';
+    }
+
+    /**
+     * @return list<ToolCallDelta>
+     */
+    protected function extractStreamToolDeltas(
+        array $data,
+        ?ToolCallIdByStreamIndex $toolIdByIndex = null,
+    ): array {
+        $toolIdByIndex = $toolIdByIndex ?? new ToolCallIdByStreamIndex();
+        $calls = $data['choices'][0]['delta']['tool_calls'] ?? [];
+        if (!is_array($calls) || $calls === []) {
+            return [];
+        }
+
+        $toolDeltas = [];
+        foreach ($calls as $call) {
+            if (!is_array($call)) {
+                continue;
+            }
+
+            $function = $call['function'] ?? [];
+            $toolDeltas[] = new ToolCallDelta(
+                id: $this->resolveStreamToolId($call, $toolIdByIndex),
+                name: is_array($function) ? (string)($function['name'] ?? '') : '',
+                args: is_array($function) ? (string)($function['arguments'] ?? '') : '',
+            );
+        }
+
+        return $toolDeltas;
+    }
+
+    protected function resolveStreamToolId(array $call, ToolCallIdByStreamIndex $toolIdByIndex): string {
+        $id = (string)($call['id'] ?? '');
+        $index = $call['index'] ?? '';
+        $hasIndex = is_int($index) || is_float($index) || is_string($index);
+        $indexKey = $hasIndex ? (string)$index : '';
+
+        if ($id !== '') {
+            if ($indexKey !== '') {
+                $toolIdByIndex->remember($indexKey, ToolCallId::fromString($id));
+            }
+            return $id;
+        }
+
+        if ($indexKey !== '') {
+            $remembered = $toolIdByIndex->forIndex($indexKey);
+            if ($remembered !== null) {
+                return $remembered->toString();
+            }
+        }
+
+        if ($indexKey !== '') {
+            return 'idx:' . $indexKey;
+        }
+
+        return '';
     }
 
     /**

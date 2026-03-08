@@ -13,8 +13,10 @@ Main responsibilities:
 - delegate execution to runtime through `create()`
 - expose convenience execution methods (`get()`, `response()`, `stream()`)
 
+`PendingStructuredOutput` stays as the public lazy handle, while mutable execution orchestration is kept behind an internal execution session so the pending wrapper itself stays narrow.
+
 Advanced access:
-- `runtime()` - returns current runtime object
+- `withRuntime(CanCreateStructuredOutput $runtime)` - inject an already configured runtime
 - `withRequest(StructuredOutputRequest $request)` - replace the full request object
 
 ## Dispatched events
@@ -30,8 +32,7 @@ of the request and response:
 
 ## Event listeners
 
-`StructuredOutput` class provides several methods allowing client code to plug
-into Instructor event system, including:
+`StructuredOutputRuntime` provides event registration methods for client code:
  - `onEvent()` - to receive a callback when specified type of event is dispatched
  - `wiretap()` - to receive any event dispatched by Instructor
 
@@ -42,7 +43,10 @@ into Instructor event system, including:
 
  - `stream()->partials()` - for partial model updates
  - `stream()->sequence()` - for sequence updates
- - `onEvent()` with `PartialResponseGenerated` / `SequenceUpdated` for event-bus handling
+ - `StructuredOutputRuntime->onEvent()` with `PartialResponseGenerated` / `SequenceUpdated` for event-bus handling
+
+Internally, Instructor now accumulates streaming deltas inside
+`StructuredOutputStreamState` and derives partial snapshots from that mutable state.
 
 
 ## Error handling
@@ -51,6 +55,5 @@ into Instructor event system, including:
 Errors bubble to the caller unless your code handles them.
 
 For observability and diagnostics, prefer:
-- `onEvent(...)`
-- `wiretap(...)`
-- `dispatch(new Event(...))` for custom instrumentation events
+- `StructuredOutputRuntime->onEvent(...)`
+- `StructuredOutputRuntime->wiretap(...)`

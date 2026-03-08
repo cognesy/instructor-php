@@ -2,6 +2,7 @@
 
 namespace Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
 use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodeSessionId;
 
 /**
@@ -27,9 +28,9 @@ final readonly class UnknownEvent extends StreamEvent
     public static function fromArray(array $data): self
     {
         return new self(
-            timestamp: $data['timestamp'] ?? 0,
-            sessionId: $data['sessionID'] ?? '',
-            rawType: $data['type'] ?? 'unknown',
+            timestamp: Normalize::toInt($data['timestamp'] ?? 0),
+            sessionId: Normalize::toString($data['sessionID'] ?? ''),
+            rawType: Normalize::toString($data['type'] ?? 'unknown', 'unknown'),
             rawData: $data,
         );
     }

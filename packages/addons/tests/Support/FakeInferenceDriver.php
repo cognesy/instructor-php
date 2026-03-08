@@ -6,6 +6,7 @@ use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 
 class FakeInferenceDriver implements CanProcessInferenceRequest
@@ -32,12 +33,12 @@ class FakeInferenceDriver implements CanProcessInferenceRequest
         return new InferenceResponse(content: '');
     }
 
-    /** @return iterable<PartialInferenceResponse> */
-    public function makeStreamResponsesFor(InferenceRequest $request): iterable
+    /** @return iterable<PartialInferenceDelta> */
+    public function makeStreamDeltasFor(InferenceRequest $request): iterable
     {
         $this->streamCalls++;
         $batch = !empty($this->streamBatches) ? array_shift($this->streamBatches) : [];
-        yield from $this->emitAccumulatedBatch($batch);
+        yield from $this->emitDeltas($batch);
     }
 
     public function capabilities(?string $model = null): DriverCapabilities
@@ -46,22 +47,20 @@ class FakeInferenceDriver implements CanProcessInferenceRequest
     }
 
     /** @param PartialInferenceResponse[] $batch */
-    private function emitAccumulatedBatch(array $batch): iterable
+    private function emitDeltas(array $batch): iterable
     {
-        $previous = PartialInferenceResponse::empty();
         foreach ($batch as $item) {
-            $current = $this->isAccumulated($item)
-                ? $item
-                : $item->withAccumulatedContent($previous);
-            $previous = $current;
-            yield $current;
+            yield new PartialInferenceDelta(
+                contentDelta: $item->contentDelta,
+                reasoningContentDelta: $item->reasoningContentDelta,
+                toolId: $item->toolId(),
+                toolName: $item->toolName(),
+                toolArgs: $item->toolArgs(),
+                finishReason: $item->finishReason(),
+                usage: $item->usage(),
+                usageIsCumulative: $item->isUsageCumulative(),
+                value: $item->value(),
+            );
         }
-    }
-
-    private function isAccumulated(PartialInferenceResponse $item): bool
-    {
-        return $item->hasContent()
-            || $item->hasReasoningContent()
-            || $item->toolCalls()->hasAny();
     }
 }

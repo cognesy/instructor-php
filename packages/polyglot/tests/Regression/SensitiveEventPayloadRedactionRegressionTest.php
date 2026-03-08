@@ -97,7 +97,7 @@ it('redacts request headers and body in InferenceFailed event payload', function
         }
 
         #[\Override]
-        public function fromStreamResponses(iterable $eventBodies, ?HttpResponse $responseData = null): iterable {
+        public function fromStreamDeltas(iterable $eventBodies, ?HttpResponse $responseData = null): iterable {
             return [];
         }
 

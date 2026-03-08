@@ -13,7 +13,7 @@ $request = (new HttpRequest(
     body: '',
     options: [],
 ))->withStreaming(true);
-// @doctest id="93c3"
+// @doctest id="43fa"
 ```
 
 ## Consume Chunks
@@ -23,7 +23,7 @@ foreach ($client->withRequest($request)->stream() as $chunk) {
     // parse or forward chunk
     echo $chunk;
 }
-// @doctest id="1b5b"
+// @doctest id="4fe0"
 ```
 
 ## Middleware + Streaming
@@ -32,7 +32,7 @@ You can transform stream chunks in middleware before downstream consumers receiv
 
 ```php
 $client = $client->withMiddleware($myStreamMiddleware);
-// @doctest id="909c"
+// @doctest id="04fa"
 ```
 
 Keep stream middleware focused and cheap; avoid heavy buffering unless required.
@@ -46,7 +46,7 @@ $client = $client->withMiddleware(
     (new EventSourceMiddleware())
         ->withParser(static fn(string $payload): string|bool => $payload)
 );
-// @doctest id="38e5"
+// @doctest id="bd1d"
 ```
 
 `withParser()` receives assembled SSE `data:` payloads.

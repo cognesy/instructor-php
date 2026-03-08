@@ -3,8 +3,8 @@
 namespace Cognesy\Evals\Executors\Data;
 
 use Cognesy\Evals\Contracts\CanMapValues;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 /**
  * @implements CanMapValues<self>

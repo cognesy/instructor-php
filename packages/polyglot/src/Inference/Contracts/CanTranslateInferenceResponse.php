@@ -4,16 +4,14 @@ namespace Cognesy\Polyglot\Inference\Contracts;
 
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 
 interface CanTranslateInferenceResponse
 {
     public function fromResponse(HttpResponse $response): ?InferenceResponse;
-    /**
-     * Yields cumulative partial snapshots preserving provider deltas.
-     *
-     * @return iterable<PartialInferenceResponse>
-     */
-    public function fromStreamResponses(iterable $eventBodies, ?HttpResponse $responseData = null): iterable;
+
+    /** @return iterable<PartialInferenceDelta> */
+    public function fromStreamDeltas(iterable $eventBodies, ?HttpResponse $responseData = null): iterable;
+
     public function toEventBody(string $data): string|bool;
 }

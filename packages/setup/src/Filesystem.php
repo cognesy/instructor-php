@@ -34,6 +34,27 @@ class Filesystem
         return self::RESULT_OK;
     }
 
+    public function removePath(string $path): int {
+        if (!$this->exists($path)) {
+            return self::RESULT_NOOP;
+        }
+
+        if ($this->noOp) {
+            $this->output->out("<yellow>Would remove path:</yellow>\n $path");
+            return self::RESULT_NOOP;
+        }
+
+        try {
+            $this->fs->remove($path);
+        } catch (IOExceptionInterface $e) {
+            $this->output->out("<red>Failed to remove path:</red>\n $path\n - {$e->getMessage()}", 'error');
+            return self::RESULT_ERROR;
+        }
+
+        $this->output->out("Removed path:\n $path");
+        return self::RESULT_OK;
+    }
+
     public function copyDir(string $source, string $dest): int {
         if ($this->noOp) {
             $this->output->out("<yellow>Would copy directory:</yellow>\n from $source\n to $dest");

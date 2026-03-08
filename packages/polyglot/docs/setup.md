@@ -57,9 +57,15 @@ GEMINI_API_KEY=your-gemini-key
 
 ### Configuration Files
 
-Polyglot loads its configuration from PHP files.
+Polyglot loads configuration from package-scoped YAML files.
 
-The default configuration files are located in the Instructor package, but you can publish and customize them:
+The default configuration files are located under package resources, for example:
+- `packages/polyglot/resources/config/llm/default.yaml`
+- `packages/polyglot/resources/config/llm/presets/*.yaml`
+- `packages/polyglot/resources/config/embed/default.yaml`
+- `packages/polyglot/resources/config/embed/presets/*.yaml`
+
+You can publish and customize them:
 
 1. Create a `config` directory in your project if it doesn't exist
 2. Copy the configuration files from the Instructor package:
@@ -68,8 +74,9 @@ The default configuration files are located in the Instructor package, but you c
 # Create config directory if it doesn't exist
 mkdir -p config
 
-# Copy configuration files
-cp vendor/cognesy/instructor-polyglot/config/* config/
+# Copy polyglot YAML config trees
+cp -r vendor/cognesy/instructor-php/packages/polyglot/resources/config/llm config/llm
+cp -r vendor/cognesy/instructor-php/packages/polyglot/resources/config/embed config/embed
 ```
 
 3. Customize the configuration files as needed
@@ -77,71 +84,29 @@ cp vendor/cognesy/instructor-polyglot/config/* config/
 
 #### LLM Configuration
 
-The `llm.php` configuration file contains settings for LLM providers:
+The `llm/presets/*.yaml` files contain provider presets. Example (`config/llm/presets/openai.yaml`):
 
-```php
-<?php
-// Example of a simplified config/llm.php
-
-use Cognesy\Config\Env;
-
-return [
-    'defaultPreset' => 'openai',  // Default connection to use
-
-    'presets' => [
-        'openai' => [
-            'driver' => 'openai',
-            'apiUrl' => 'https://api.openai.com/v1',
-            'apiKey' => Env::get('OPENAI_API_KEY', ''),
-            'endpoint' => '/chat/completions',
-            'model' => 'gpt-4o-mini',
-            'maxTokens' => 1024,
-        ],
-
-        'anthropic' => [
-            'driver' => 'anthropic',
-            'apiUrl' => 'https://api.anthropic.com/v1',
-            'apiKey' => Env::get('ANTHROPIC_API_KEY', ''),
-            'endpoint' => '/messages',
-            'metadata' => [
-                'apiVersion' => '2023-06-01',
-            ],
-            'model' => 'claude-3-haiku-20240307',
-            'maxTokens' => 1024,
-        ],
-
-        // Other connections...
-    ],
-];
+```yaml
+driver: openai
+apiUrl: 'https://api.openai.com/v1'
+apiKey: '${OPENAI_API_KEY}'
+endpoint: /chat/completions
+model: gpt-4.1-nano
+maxTokens: 1024
 ```
 
 #### Embeddings Configuration
 
-The `embed.php` configuration file contains settings for embeddings providers:
+The `embed/presets/*.yaml` files contain embeddings presets. Example (`config/embed/presets/openai.yaml`):
 
-```php
-<?php
-// Example of a simplified config/embed.php
-
-use Cognesy\Config\Env;
-
-return [
-    'defaultPreset' => 'openai',
-
-    'presets' => [
-        'openai' => [
-            'driver' => 'openai',
-            'apiUrl' => 'https://api.openai.com/v1',
-            'apiKey' => Env::get('OPENAI_API_KEY', ''),
-            'endpoint' => '/embeddings',
-            'model' => 'text-embedding-3-small',
-            'dimensions' => 1536,
-            'maxInputs' => 16,
-        ],
-
-        // Other connections...
-    ],
-];
+```yaml
+driver: openai
+apiUrl: 'https://api.openai.com/v1'
+apiKey: '${OPENAI_API_KEY}'
+endpoint: /embeddings
+model: text-embedding-3-small
+dimensions: 1536
+maxInputs: 2048
 ```
 
 ### Custom Configuration Location

@@ -179,7 +179,9 @@ it('can process a closure task', function() {
 //    private Predict $translate;
 //
 //    public function __construct() {
-//        $structuredOutput = (new StructuredOutput);//->withClient(new AnthropicClient(Env::get('ANTHROPIC_API_KEY')));//->wiretap(fn($e) => $e->printDump());
+//        $runtime = StructuredOutputRuntime::fromProvider(LLMProvider::using('anthropic'));
+//        $runtime->wiretap(fn($e) => $e->printDump());
+//        $structuredOutput = (new StructuredOutput)->withRuntime($runtime);
 //
 //        $this->parse = new Predict(signature: ParsedEmail::class, structuredOutput: $structuredOutput);
 //        $this->fix = new Predict(signature: FixedEmail::class, structuredOutput: $structuredOutput);

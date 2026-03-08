@@ -40,7 +40,10 @@ In 2.0, stream iterators are one-shot by default (`ResponseCachePolicy::None`).
 
 ## Step 6: Mixin inference traits
 
-`HandlesInference` and `HandlesSelfInference` are deprecated in 2.0.
+`HandlesInference` and `HandlesSelfInference` were removed in 2.0.
+
+Use `StructuredOutput::fromConfig(...)->with(...)->get()` or
+`StructuredOutputRuntime::fromProvider(...)->create(...)->getInstanceOf(...)` instead.
 
 Use `StructuredOutput::using()` with a named preset instead:
 
@@ -55,6 +58,22 @@ $user = StructuredOutput::using('openai')
     )
     ->getObject();
 ```
+
+## Step 6a: OutputMode ownership
+
+`OutputMode` is now an Instructor enum:
+
+```php
+use Cognesy\Instructor\Enums\OutputMode;
+```
+
+If your code previously imported `Cognesy\Polyglot\Inference\Enums\OutputMode`, switch it to the Instructor namespace.
+
+Raw Polyglot inference no longer accepts mode-based APIs. Replace them with explicit request data:
+
+- `withOutputMode(...)` on `Inference` -> `withResponseFormat(...)`, `withTools(...)`, `withToolChoice(...)`
+- `mode:` in `Inference::with(...)` -> `responseFormat`, `tools`, `toolChoice`
+- `PendingInference::asJsonData()` for tool-call args -> `asToolCallJsonData()`
 
 ## Step 7: Events 2.0 explicit wiring
 

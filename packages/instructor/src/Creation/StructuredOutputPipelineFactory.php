@@ -32,7 +32,7 @@ final readonly class StructuredOutputPipelineFactory
         private array $extractors = [],
     ) {}
 
-    public function createIteratorFactory(): ResponseIteratorFactory {
+    public function createExecutionDriverFactory(): ExecutionDriverFactory {
         $responseDeserializer = new ResponseDeserializer(
             events: $this->events,
             deserializers: $this->resolveDeserializers(),
@@ -53,7 +53,7 @@ final readonly class StructuredOutputPipelineFactory
 
         $extractor = $this->resolveExtractor();
 
-        return new ResponseIteratorFactory(
+        return new ExecutionDriverFactory(
             inference: $this->inference,
             responseDeserializer: $responseDeserializer,
             responseValidator: $responseValidator,

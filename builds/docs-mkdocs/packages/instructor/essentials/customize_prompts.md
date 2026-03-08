@@ -22,22 +22,26 @@ as tools are not used in these modes.
 <?php
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 $config = (new StructuredOutputConfig)
     ->withOutputMode(OutputMode::Tools)
     ->withToolName('extract')
     ->withToolDescription('Extract information from provided content');
 
-$user = (new StructuredOutput)
-    ->withConfig($config)
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withConfig($config);
+
+$user = (new StructuredOutput($runtime))
     ->with(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
         prompt: "\nYour task is to extract correct and accurate data from the messages using provided tools.\n",
     )
     ->get();
-// @doctest id="a67c"
+// @doctest id="c33e"
 ```
 
 
@@ -51,13 +55,15 @@ respond in JSON format rather than plain text.
 
 ```php
 <?php
-$user = (new StructuredOutput)->with(
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withOutputMode(OutputMode::Json);
+
+$user = (new StructuredOutput($runtime))->with(
     messages: "Our user Jason is 25 years old.",
     responseModel: User::class,
     prompt: "\nYour task is to respond correctly with JSON object.",
-    mode: OutputMode::Json
 )->get();
-// @doctest id="e9c3"
+// @doctest id="11e3"
 ```
 Note that various models and API providers have specific requirements
 on the input format, e.g. for OpenAI JSON mode you are required to include
@@ -92,15 +98,17 @@ $jsonSchema = json_encode([
     "required" => ["name", "age"],
 ]);
 
-$user = (new StructuredOutput)
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withOutputMode(OutputMode::Json);
+
+$user = (new StructuredOutput($runtime))
     ->with(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
         prompt: "\nYour task is to respond correctly with JSON object. Response must follow JSONSchema: {$jsonSchema}\n",
-        mode: OutputMode::Json,
     )
     ->get();
-// @doctest id="8639"
+// @doctest id="a716"
 ```
 
 The example above demonstrates how to manually create JSON Schema, but
@@ -121,15 +129,17 @@ Example below demonstrates how to use a template string as a prompt:
 
 ```php
 <?php
-$user = (new StructuredOutput)
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withOutputMode(OutputMode::Json);
+
+$user = (new StructuredOutput($runtime))
     ->with(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
         prompt: "\nYour task is to respond correctly with JSON object. Response must follow JSONSchema:\n<|json_schema|>\n",
-        mode: OutputMode::Json,
     )
     ->get();
-// @doctest id="71b8"
+// @doctest id="0df7"
 ```
 
 
@@ -151,13 +161,15 @@ is correctly structured and contains the expected data.
 
 ```php
 <?php
-$user = (new StructuredOutput)
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withOutputMode(OutputMode::MdJson);
+
+$user = (new StructuredOutput($runtime))
     ->with(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
         prompt: "\nYour task is to respond correctly with strict JSON object in a fenced json code block. Object must validate against this JSONSchema:\n<|json_schema|>\n",
-        mode: OutputMode::MdJson,
     )
     ->get();
-// @doctest id="a462"
+// @doctest id="a919"
 ```

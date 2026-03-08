@@ -8,6 +8,7 @@ use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Tests\MockHttp;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 /**
@@ -125,12 +126,11 @@ it('intoArray() works with JSON Schema mode', function () use ($mockHttp) {
     $text = "His name is John, he is 30 years old.";
 
     $result = (new StructuredOutput())
-        ->withRuntime(StructuredOutputRuntime::fromDefaults(httpClient: $mockHttp))
+        ->withRuntime(StructuredOutputRuntime::fromDefaults(httpClient: $mockHttp)->withOutputMode(OutputMode::JsonSchema))
         ->withResponseClass(IntoArrayUser::class)
         ->intoArray()
         ->with(
             messages: [['role' => 'user', 'content' => $text]],
-            mode: \Cognesy\Polyglot\Inference\Enums\OutputMode::JsonSchema,
         )
         ->get();
 
@@ -179,7 +179,7 @@ it('streaming with intoArray() returns array as final value', function () {
             model: 'gpt-4o-mini',
         )),
         httpClient: $http,
-    );
+    )->withOutputMode(OutputMode::Json);
 
     $result = (new StructuredOutput($runtime))
         ->withResponseClass(IntoArrayUser::class)
@@ -187,7 +187,6 @@ it('streaming with intoArray() returns array as final value', function () {
         ->with(
             messages: 'Extract user info',
             model: 'gpt-4o-mini',
-            mode: \Cognesy\Polyglot\Inference\Enums\OutputMode::Json,
         )
         ->withStreaming(true)
         ->stream()

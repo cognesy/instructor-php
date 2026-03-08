@@ -7,8 +7,8 @@ use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Utils\Collection\ArrayList;
 use Cognesy\Utils\Str;
 
@@ -60,17 +60,18 @@ final class RecordingInferenceRequestDriver implements CanProcessInferenceReques
         };
     }
 
-    /** @return iterable<PartialInferenceResponse> */
-    public function makeStreamResponsesFor(InferenceRequest $request): iterable {
+    /** @return iterable<PartialInferenceDelta> */
+    public function makeStreamDeltasFor(InferenceRequest $request): iterable {
         return [];
     }
 
     public function capabilities(?string $model = null): DriverCapabilities {
         return new DriverCapabilities(
-            outputModes: OutputMode::cases(),
             streaming: false,
             toolCalling: true,
-            jsonSchema: true,
+            toolChoice: true,
+            responseFormatJsonObject: true,
+            responseFormatJsonSchema: true,
             responseFormatWithTools: true,
         );
     }
@@ -119,11 +120,13 @@ it('includes validation errors in retry messages for the next LLM attempt', func
     ];
     $driver = new RecordingInferenceRequestDriver($responses);
 
-    $result = (new StructuredOutput(makeStructuredRuntime(driver: $driver)))
+    $result = (new StructuredOutput(makeStructuredRuntime(
+        driver: $driver,
+        outputMode: OutputMode::Json,
+        maxRetries: 1,
+    )))
         ->withMessages('Extract details.')
         ->withResponseClass(ValidationRetryUser::class)
-        ->withOutputMode(OutputMode::Json)
-        ->withMaxRetries(1)
         ->getObject();
 
     expect($result)->toBeInstanceOf(ValidationRetryUser::class);

@@ -25,7 +25,7 @@ $config = new LLMConfig(
     driver: 'openai',
     options: ['temperature' => 0.2],
 );
-// @doctest id="c40b"
+// @doctest id="57bb"
 ```
 
 Key fields:
@@ -50,7 +50,7 @@ $config = new EmbeddingsConfig(
     maxInputs: 2048,
     driver: 'openai',
 );
-// @doctest id="0aa9"
+// @doctest id="caa1"
 ```
 
 Key fields:
@@ -71,7 +71,7 @@ $provider = LLMProvider::using('openai')
 
 $config = $provider->resolveConfig();          // LLMConfig
 $runtime = InferenceRuntime::fromProvider($provider);
-// @doctest id="021d"
+// @doctest id="26bc"
 ```
 
 Embeddings flow is equivalent via `EmbeddingsProvider` and `EmbeddingsRuntime`.
@@ -86,7 +86,7 @@ use Cognesy\Polyglot\Inference\LLMProvider;
 
 $provider = LLMProvider::dsn('driver=openai,model=gpt-4o-mini,maxTokens=512');
 $config = $provider->resolveConfig();
-// @doctest id="dfb2"
+// @doctest id="9236"
 ```
 
 ## Notes

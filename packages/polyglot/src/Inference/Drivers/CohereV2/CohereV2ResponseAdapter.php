@@ -6,7 +6,10 @@ use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
+use Cognesy\Polyglot\Inference\Data\ToolCallId;
+use Cognesy\Polyglot\Inference\Data\ToolCallIdByStreamIndex;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Polyglot\Inference\Data\ToolCallDelta;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIResponseAdapter;
 use RuntimeException;
 
@@ -29,11 +32,7 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
     }
 
     #[\Override]
-    protected function fromStreamResponse(string $eventBody, ?HttpResponse $responseData = null): ?PartialInferenceDelta {
-        $data = $this->decodeJsonData($eventBody, 'Cohere V2 stream payload');
-        if (empty($data)) {
-            return null;
-        }
+    protected function fromDecodedStreamData(array $data, ?HttpResponse $responseData = null): PartialInferenceDelta {
         return new PartialInferenceDelta(
             contentDelta: $this->makeContentDelta($data),
             toolId: $data['delta']['message']['tool_calls']['function']['id'] ?? '',
@@ -97,5 +96,57 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
 
     protected function normalizeContent(array|string $content) : string {
         return is_array($content) ? $content['text'] : $content;
+    }
+
+    /**
+     * @return list<ToolCallDelta>
+     */
+    #[\Override]
+    protected function extractStreamToolDeltas(
+        array $data,
+        ?ToolCallIdByStreamIndex $toolIdByIndex = null,
+    ): array {
+        $toolIdByIndex = $toolIdByIndex ?? new ToolCallIdByStreamIndex();
+        $toolCalls = $data['delta']['message']['tool_calls'] ?? [];
+        if (!is_array($toolCalls) || $toolCalls === []) {
+            return [];
+        }
+
+        // Cohere may send one tool call object or an array of tool calls.
+        if (array_key_exists('function', $toolCalls)) {
+            $toolCalls = [$toolCalls];
+        }
+
+        $toolDeltas = [];
+        foreach ($toolCalls as $index => $call) {
+            if (!is_array($call)) {
+                continue;
+            }
+
+            $function = $call['function'] ?? [];
+            if (!is_array($function)) {
+                continue;
+            }
+
+            $indexKey = (string)$index;
+            $id = (string)($function['id'] ?? $call['id'] ?? '');
+            if ($id !== '' && $indexKey !== '') {
+                $toolIdByIndex->remember($indexKey, ToolCallId::fromString($id));
+            }
+
+            $remembered = $indexKey !== '' ? $toolIdByIndex->forIndex($indexKey) : null;
+            $resolvedId = match (true) {
+                $id !== '' => $id,
+                $remembered !== null => $remembered->toString(),
+                default => 'idx:' . $indexKey,
+            };
+            $toolDeltas[] = new ToolCallDelta(
+                id: $resolvedId,
+                name: (string)($function['name'] ?? ''),
+                args: (string)($function['arguments'] ?? ''),
+            );
+        }
+
+        return $toolDeltas;
     }
 }

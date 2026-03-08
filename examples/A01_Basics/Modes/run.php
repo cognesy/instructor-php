@@ -26,7 +26,9 @@ Mode can be set via parameter of `StructuredOutput::create()` method.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 class User {
     public int $age;
@@ -38,44 +40,48 @@ $text = "Jason is 25 years old and works as an engineer.";
 print("Input text:\n");
 print($text . "\n\n");
 
-$structuredOutput = StructuredOutput::using('openai');
+$provider = LLMProvider::using('openai');
 
 // CASE 1 - OutputMode::Tools
 print("\n1. Extracting structured data using LLM - OutputMode::Tools\n");
-$user = $structuredOutput->with(
+$user = (new StructuredOutput(
+    StructuredOutputRuntime::fromProvider($provider)->withOutputMode(OutputMode::Tools)
+))->with(
     messages: $text,
     responseModel: User::class,
-    mode: OutputMode::Tools,
 )->get();
 check($user);
 dump($user);
 
 // CASE 2 - OutputMode::JsonSchema
 print("\n2. Extracting structured data using LLM - OutputMode::JsonSchema\n");
-$user = $structuredOutput->with(
+$user = (new StructuredOutput(
+    StructuredOutputRuntime::fromProvider($provider)->withOutputMode(OutputMode::JsonSchema)
+))->with(
     messages: $text,
     responseModel: User::class,
-    mode: OutputMode::JsonSchema,
 )->get();
 check($user);
 dump($user);
 
 // CASE 3 - OutputMode::Json
 print("\n3. Extracting structured data using LLM - OutputMode::Json\n");
-$user = $structuredOutput->with(
+$user = (new StructuredOutput(
+    StructuredOutputRuntime::fromProvider($provider)->withOutputMode(OutputMode::Json)
+))->with(
     messages: $text,
     responseModel: User::class,
-    mode: OutputMode::Json,
 )->get();
 check($user);
 dump($user);
 
 // CASE 4 - OutputMode::MdJson
 print("\n4. Extracting structured data using LLM - OutputMode::MdJson\n");
-$user = $structuredOutput->with(
+$user = (new StructuredOutput(
+    StructuredOutputRuntime::fromProvider($provider)->withOutputMode(OutputMode::MdJson)
+))->with(
     messages: $text,
     responseModel: User::class,
-    mode: OutputMode::MdJson,
 )->get();
 check($user);
 dump($user);

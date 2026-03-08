@@ -17,7 +17,6 @@ use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 final readonly class LLMParticipant implements CanParticipateInChat
 {
@@ -47,7 +46,6 @@ final readonly class LLMParticipant implements CanParticipateInChat
 
         $request = new InferenceRequest(
             messages: $messages,
-            mode: OutputMode::Text,
         );
         $response = $this->inference->create($request)->response();
         $this->emitChatInferenceResponseReceived($response);

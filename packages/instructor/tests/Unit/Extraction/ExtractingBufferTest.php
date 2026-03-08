@@ -7,7 +7,7 @@ namespace Cognesy\Instructor\Tests\Unit\Extraction;
 use Cognesy\Instructor\Extraction\Buffers\ExtractingBuffer;
 use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
 use Cognesy\Instructor\Extraction\Extractors\ResilientJsonExtractor;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 
 describe('ExtractingBuffer', function () {
     it('creates empty buffer with default extractors', function () {

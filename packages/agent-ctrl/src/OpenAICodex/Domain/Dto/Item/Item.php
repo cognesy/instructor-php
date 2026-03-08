@@ -2,6 +2,8 @@
 
 namespace Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\Item;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
+
 /**
  * Base class for all item types in Codex CLI streaming
  *
@@ -30,7 +32,7 @@ abstract readonly class Item
      */
     public static function fromArray(array $data): self
     {
-        $type = $data['type'] ?? 'unknown';
+        $type = Normalize::toString($data['type'] ?? 'unknown', 'unknown');
 
         return match ($type) {
             'agent_message' => AgentMessage::fromArray($data),

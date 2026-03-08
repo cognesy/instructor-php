@@ -4,14 +4,13 @@ namespace Cognesy\Polyglot\Inference\Data;
 
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 use DateTimeImmutable;
 use InvalidArgumentException;
 
 /**
  * Represents a request for an inference operation, holding configuration parameters
- * such as messages, model, tools, tool choices, response format, options, mode,
+ * such as messages, model, tools, tool choices, response format, and options,
  * and a cached context if applicable.
  */
 class InferenceRequest
@@ -27,7 +26,6 @@ class InferenceRequest
 
     protected string $model;
     protected array $options; // options may contain additional inference parameters like temperature, max tokens, etc.
-    protected ?OutputMode $mode;
 
     protected ?CachedInferenceContext $cachedContext;
     protected ResponseCachePolicy $responseCachePolicy;
@@ -40,7 +38,6 @@ class InferenceRequest
         null|string|array          $toolChoice = null,
         ResponseFormat|array|null  $responseFormat = null,
         ?array                     $options = null,
-        ?OutputMode                $mode = null,
         ?CachedInferenceContext    $cachedContext = null,
         ?ResponseCachePolicy       $responseCachePolicy = null,
         ?InferenceRetryPolicy      $retryPolicy = null,
@@ -58,7 +55,6 @@ class InferenceRequest
         $this->model = $model ?? '';
         $this->options = $options ?? [];
         $this->assertNoRetryPolicyInOptions($this->options);
-        $this->mode = $mode ?? OutputMode::Unrestricted;
         $this->retryPolicy = $retryPolicy;
 
         $this->tools = $tools ?? [];
@@ -103,18 +99,18 @@ class InferenceRequest
     }
 
     /**
-     * Retrieves the list of tools based on the current mode.
+     * Retrieves the configured tool definitions.
      *
-     * @return array An array of tools if the mode is set to Tools, otherwise an empty array.
+     * @return array The tool definitions configured on the request or cached context.
      */
     public function tools() : array {
         return $this->tools;
      }
 
     /**
-     * Retrieves the tool choice based on the current mode.
+     * Retrieves the configured tool selection.
      *
-     * @return string|array The tool choice if the mode is set to 'Tools', otherwise an empty array.
+     * @return string|array The configured tool choice.
      */
     public function toolChoice() : string|array {
         return $this->toolChoice;
@@ -127,15 +123,6 @@ class InferenceRequest
      */
     public function options() : array {
         return $this->options;
-    }
-
-    /**
-     * Retrieves the current mode of the object.
-     *
-     * @return OutputMode The current mode instance.
-     */
-    public function outputMode() : ?OutputMode {
-        return $this->mode;
     }
 
     /**
@@ -156,11 +143,7 @@ class InferenceRequest
     }
 
     /**
-     * Retrieves the response format configuration based on the current mode.
-     *
-     * @return ResponseFormat Represents the response format, varying depending on the mode.
-     *               Includes schema details for JSON or JSON schema modes, or defaults to the
-     *               existing response format configuration for other modes.
+     * Retrieves the configured response format.
      */
     public function responseFormat() : ResponseFormat {
         return $this->responseFormat;
@@ -227,7 +210,6 @@ class InferenceRequest
         string|array|null          $toolChoice = null,
         ResponseFormat|array|null  $responseFormat = null,
         ?array                     $options = null,
-        ?OutputMode                $mode = null,
         ?CachedInferenceContext    $cachedContext = null,
         ?ResponseCachePolicy       $responseCachePolicy = null,
         ?InferenceRetryPolicy      $retryPolicy = null,
@@ -245,7 +227,6 @@ class InferenceRequest
             toolChoice: $toolChoice ?? $this->toolChoice,
             responseFormat: $responseFormat instanceof ResponseFormat ? $responseFormat : ($responseFormat !== null ? ResponseFormat::fromArray($responseFormat) : $this->responseFormat),
             options: $options ?? $this->options,
-            mode: $mode ?? $this->mode,
             cachedContext: $cachedContext ?? $this->cachedContext,
             responseCachePolicy: $responseCachePolicy ?? $this->responseCachePolicy,
             retryPolicy: $retryPolicy ?? $this->retryPolicy,
@@ -285,10 +266,6 @@ class InferenceRequest
         return $this->with(options: $options);
     }
 
-    public function withOutputMode(OutputMode $mode) : self {
-        return $this->with(mode: $mode);
-    }
-
     public function withCachedContext(?CachedInferenceContext $cachedContext) : self {
         return $this->with(cachedContext: $cachedContext);
     }
@@ -320,7 +297,6 @@ class InferenceRequest
                 ? $this->cachedContext->responseFormat()
                 : $this->responseFormat,
             options: $this->options,
-            mode: $this->mode,
             cachedContext: new CachedInferenceContext(),
             responseCachePolicy: $this->responseCachePolicy,
             retryPolicy: $this->retryPolicy,
@@ -344,7 +320,6 @@ class InferenceRequest
             'tool_choice' => $this->toolChoice,
             'response_format' => $this->responseFormat->toArray(),
             'options' => $this->options,
-            'mode' => $this->mode?->value,
             'cached_context' => $this->cachedContext?->toArray(),
             'response_cache_policy' => $this->responseCachePolicy->value,
             'retry_policy' => $this->retryPolicy?->toArray(),
@@ -362,7 +337,6 @@ class InferenceRequest
             toolChoice: $data['tool_choice'] ?? [],
             responseFormat: $data['response_format'] ?? [],
             options: $data['options'] ?? [],
-            mode: isset($data['mode']) ? OutputMode::from($data['mode']) : null,
             cachedContext: is_array($cachedContext) ? CachedInferenceContext::fromArray($cachedContext) : null,
             responseCachePolicy: isset($data['response_cache_policy']) ? ResponseCachePolicy::from($data['response_cache_policy']) : null,
             retryPolicy: is_array($retryPolicy) ? InferenceRetryPolicy::fromArray($retryPolicy) : null,

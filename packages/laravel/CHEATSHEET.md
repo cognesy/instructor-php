@@ -32,19 +32,19 @@ Provided by `InstructorServiceProvider::provides()`:
 
 `StructuredOutput` facade:
 - `StructuredOutput::connection(string $name): Cognesy\Instructor\StructuredOutput|StructuredOutputFake`
-- `StructuredOutput::fromLLMConfig(LLMConfig $config): Cognesy\Instructor\StructuredOutput|StructuredOutputFake`
+- `StructuredOutput::fromConfig(LLMConfig $config): Cognesy\Instructor\StructuredOutput|StructuredOutputFake`
 - `StructuredOutput::fake(array $responses = []): StructuredOutputFake`
 - forwards to `Cognesy\Instructor\StructuredOutput` (for example: `with(...)->get()`)
 
 `Inference` facade:
 - `Inference::connection(string $name): Cognesy\Polyglot\Inference\Inference|InferenceFake`
-- `Inference::fromLLMConfig(LLMConfig $config): Cognesy\Polyglot\Inference\Inference|InferenceFake`
+- `Inference::fromConfig(LLMConfig $config): Cognesy\Polyglot\Inference\Inference|InferenceFake`
 - `Inference::fake(array $responses = []): InferenceFake`
 - forwards to `Cognesy\Polyglot\Inference\Inference` (for example: `with(...)->get()`)
 
 `Embeddings` facade:
 - `Embeddings::connection(string $name): Cognesy\Polyglot\Embeddings\Embeddings|EmbeddingsFake`
-- `Embeddings::fromEmbeddingsConfig(EmbeddingsConfig $config): Cognesy\Polyglot\Embeddings\Embeddings|EmbeddingsFake`
+- `Embeddings::fromConfig(EmbeddingsConfig $config): Cognesy\Polyglot\Embeddings\Embeddings|EmbeddingsFake`
 - `Embeddings::fake(array $responses = []): EmbeddingsFake`
 - forwards to `Cognesy\Polyglot\Embeddings\Embeddings` (for example: `withInputs(...)->first()`)
 

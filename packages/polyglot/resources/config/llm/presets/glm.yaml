@@ -1,0 +1,8 @@
+driver: glm
+apiUrl: 'https://open.bigmodel.cn/api/paas/v4'
+apiKey: '${GLM_API_KEY}'
+endpoint: /chat/completions
+model: glm-4.5
+maxTokens: 1024
+contextLength: 128000
+maxOutputLength: 8192

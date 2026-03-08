@@ -3,9 +3,11 @@
 namespace Cognesy\Polyglot\Tests\Unit\Drivers\OpenResponses;
 
 use Cognesy\Http\Data\HttpResponse;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Drivers\OpenResponses\OpenResponsesResponseAdapter;
 use Cognesy\Polyglot\Inference\Drivers\OpenResponses\OpenResponsesUsageFormat;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Streaming\InferenceStreamState;
 use PHPUnit\Framework\TestCase;
 
 class OpenResponsesResponseAdapterTest extends TestCase
@@ -25,24 +27,29 @@ class OpenResponsesResponseAdapterTest extends TestCase
     }
 
     /**
-     * Helper: send a single event body through fromStreamResponses and return the first result.
+     * Helper: send a single event body through the adapter and return the first delta.
      */
-    private function streamOne(string $eventBody): ?PartialInferenceResponse
+    private function streamOne(string $eventBody): ?PartialInferenceDelta
     {
-        foreach ($this->adapter->fromStreamResponses([$eventBody]) as $partial) {
-            return $partial;
+        foreach ($this->adapter->fromStreamDeltas([$eventBody]) as $delta) {
+            return $delta;
         }
         return null;
     }
 
     /**
-     * Helper: send multiple event bodies through fromStreamResponses and return all results.
+     * Helper: send multiple event bodies through delta accumulation and return the assembled response.
      * @param string[] $eventBodies
-     * @return PartialInferenceResponse[]
      */
-    private function streamAll(array $eventBodies): array
+    private function streamAll(array $eventBodies): InferenceResponse
     {
-        return iterator_to_array($this->adapter->fromStreamResponses($eventBodies), false);
+        $state = new InferenceStreamState();
+
+        foreach ($this->adapter->fromStreamDeltas($eventBodies) as $delta) {
+            $state->applyDelta($delta);
+        }
+
+        return $state->finalResponse();
     }
 
     public function test_parses_basic_response(): void
@@ -344,7 +351,7 @@ class OpenResponsesResponseAdapterTest extends TestCase
 
         $result = $this->streamOne($eventBody);
 
-        $this->assertEquals('stop', $result->finishReason());
+        $this->assertEquals('stop', $result->finishReason);
     }
 
     public function test_parses_stream_failed_event(): void
@@ -355,7 +362,7 @@ class OpenResponsesResponseAdapterTest extends TestCase
 
         $result = $this->streamOne($eventBody);
 
-        $this->assertEquals('error', $result->finishReason());
+        $this->assertEquals('error', $result->finishReason);
     }
 
     public function test_handles_null_event_body(): void
@@ -402,16 +409,8 @@ class OpenResponsesResponseAdapterTest extends TestCase
             ]),
         ];
 
-        $prior = PartialInferenceResponse::empty();
-        $last = null;
-
-        foreach ($this->adapter->fromStreamResponses($eventBodies) as $partial) {
-            $last = $partial->withAccumulatedContent($prior);
-            $prior = $last;
-        }
-
-        $this->assertNotNull($last);
-        $toolCalls = $last->toolCalls();
+        $result = $this->streamAll($eventBodies);
+        $toolCalls = $result->toolCalls();
         $this->assertTrue($toolCalls->hasAny());
         $toolCall = $toolCalls->first();
         $this->assertEquals('call_1', $toolCall->id()?->toString());
@@ -434,10 +433,9 @@ class OpenResponsesResponseAdapterTest extends TestCase
 
         $result = $this->streamOne($eventBody);
         $this->assertNotNull($result);
-        $accumulated = $result->withAccumulatedContent(PartialInferenceResponse::empty());
 
-        $this->assertEquals(21, $accumulated->usage()->inputTokens);
-        $this->assertEquals(9, $accumulated->usage()->outputTokens);
+        $this->assertEquals(21, $result->usage?->inputTokens);
+        $this->assertEquals(9, $result->usage?->outputTokens);
     }
 
     public function test_parses_response_with_mixed_output_items(): void

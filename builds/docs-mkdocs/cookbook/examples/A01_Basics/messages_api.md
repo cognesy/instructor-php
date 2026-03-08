@@ -18,7 +18,7 @@ require 'examples/boot.php';
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Utils\Str;
 
 class Code {

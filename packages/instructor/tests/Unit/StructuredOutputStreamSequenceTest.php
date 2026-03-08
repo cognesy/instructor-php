@@ -1,37 +1,48 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Instructor\Collections\StructuredOutputAttemptList;
-use Cognesy\Instructor\Contracts\CanHandleStructuredOutputAttempts;
+use Cognesy\Instructor\Contracts\CanEmitStreamingUpdates;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
+use Cognesy\Instructor\Data\StructuredOutputResponse;
+use Cognesy\Instructor\Enums\ExecutionStatus;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\StructuredOutputStream;
-use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Tests\Instructor\Support\TestEventDispatcher;
 
 require_once __DIR__ . '/../Support/TestEventDispatcher.php';
 
-// Minimal stub to feed a predefined sequence of execution updates
-class FakeAttemptHandlerForSequence implements CanHandleStructuredOutputAttempts {
+// Minimal stub to feed a predefined sequence of emissions
+class FakeEmitterForSequence implements CanEmitStreamingUpdates {
     private \Generator $gen;
     private bool $started = false;
+    private StructuredOutputExecution $execution;
 
-    public function __construct(\Generator $gen) { $this->gen = $gen; }
+    public function __construct(\Generator $gen, StructuredOutputExecution $execution) {
+        $this->gen = $gen;
+        $this->execution = $execution;
+    }
 
-    public function hasNext(StructuredOutputExecution $execution): bool {
+    public function hasNextEmission(): bool {
         if (!$this->started) {
             return true;
         }
         return $this->gen->valid();
     }
 
-    public function nextUpdate(StructuredOutputExecution $execution): StructuredOutputExecution {
+    public function nextEmission(): ?StructuredOutputResponse {
         if (!$this->started) {
             $this->started = true;
+        }
+        if (!$this->gen->valid()) {
+            return null;
         }
         $current = $this->gen->current();
         $this->gen->next();
         return $current;
+    }
+
+    public function execution(): StructuredOutputExecution {
+        return $this->execution;
     }
 }
 
@@ -41,55 +52,21 @@ it('yields sequence updates only when new items complete and dispatches events',
     $seq = new Sequence();
 
     $generator = (function () use ($seq) {
-        // helper to wrap a value into a StructuredOutputExecution carrying an InferenceResponse
-        $wrap = function($value) {
-            $response = (new InferenceResponse())->withValue($value);
-            $infExec = InferenceExecution::empty()->withSuccessfulAttempt($response);
-            $attempt = new \Cognesy\Instructor\Data\StructuredOutputAttempt(
-                inferenceExecution: $infExec,
-                isFinalized: false,
-            );
-            $attempts = StructuredOutputAttemptList::of($attempt);
-            $request = new Cognesy\Instructor\Data\StructuredOutputRequest(messages: 'dummy', requestedSchema: []);
-            return new StructuredOutputExecution(
-                request: $request,
-                attempts: $attempts,
-                currentAttempt: $attempt,
-                isFinalized: false,
-            );
-        };
-
         // first partial: 1 item
         $seq->push(['x' => 1]);
-        yield $wrap($seq);
+        yield StructuredOutputResponse::partial($seq, new InferenceResponse(isPartial: true));
         // second partial: same count (no new item), should not yield via sequence()
-        yield $wrap($seq);
+        yield StructuredOutputResponse::partial($seq, new InferenceResponse(isPartial: true));
         // third partial: new item (2nd)
         $seq->push(['x' => 2]);
-        yield $wrap($seq);
+        yield StructuredOutputResponse::partial($seq, new InferenceResponse(isPartial: true));
     })();
 
-    // Provide initial execution and a request handler stub that yields our updates
-    $initial = (function () {
-        $seq = new Sequence();
-        $response = (new InferenceResponse())->withValue($seq);
-        $infExec = InferenceExecution::empty()->withSuccessfulAttempt($response);
-        $attempt = new \Cognesy\Instructor\Data\StructuredOutputAttempt(
-            inferenceExecution: $infExec,
-            isFinalized: false,
-        );
-        $attempts = StructuredOutputAttemptList::of($attempt);
-        $request = new Cognesy\Instructor\Data\StructuredOutputRequest(messages: 'dummy', requestedSchema: []);
-        return new StructuredOutputExecution(
-            request: $request,
-            attempts: $attempts,
-            currentAttempt: $attempt,
-            isFinalized: false,
-        );
-    })();
+    $request = new Cognesy\Instructor\Data\StructuredOutputRequest(messages: 'dummy', requestedSchema: []);
+    $initial = new StructuredOutputExecution(request: $request, status: ExecutionStatus::Pending);
 
-    $handler = new FakeAttemptHandlerForSequence($generator);
-    $stream = new StructuredOutputStream($initial, $handler, $dispatcher);
+    $emitter = new FakeEmitterForSequence($generator, $initial);
+    $stream = new StructuredOutputStream($initial, $emitter, $dispatcher);
 
     $updates = iterator_to_array($stream->sequence());
     // Expect: yields previous sequence when new item completes, then final sequence at end
@@ -105,4 +82,31 @@ it('yields sequence updates only when new items complete and dispatches events',
     expect(array_filter($types, fn($t) => str_contains($t, 'StructuredOutputStarted')))->not()->toBeEmpty();
     expect(array_filter($types, fn($t) => str_contains($t, 'StructuredOutputResponseUpdated')))->not()->toBeEmpty();
     expect(array_filter($types, fn($t) => str_contains($t, 'StructuredOutputResponseGenerated')))->toBeEmpty();
+});
+
+it('skips partial responses without parsed values before sequence snapshots appear', function () {
+    $dispatcher = new TestEventDispatcher();
+
+    $generator = (function () {
+        yield StructuredOutputResponse::partial(null, new InferenceResponse(isPartial: true));
+
+        $sequence = new Sequence();
+        $sequence->push(['x' => 1]);
+        yield StructuredOutputResponse::partial($sequence, new InferenceResponse(isPartial: true));
+    })();
+
+    $request = new Cognesy\Instructor\Data\StructuredOutputRequest(messages: 'dummy', requestedSchema: []);
+    $initial = new StructuredOutputExecution(request: $request, status: ExecutionStatus::Pending);
+
+    $stream = new StructuredOutputStream(
+        $initial,
+        new FakeEmitterForSequence($generator, $initial),
+        $dispatcher,
+    );
+
+    $updates = iterator_to_array($stream->sequence(), false);
+
+    expect($updates)->toHaveCount(1);
+    expect($updates[0])->toBeInstanceOf(Sequence::class);
+    expect($updates[0]->count())->toBe(1);
 });

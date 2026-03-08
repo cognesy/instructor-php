@@ -2,7 +2,7 @@
 
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\MockHttp;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 
 enum TaskStatus : string {
     case Pending = 'pending';
@@ -37,11 +37,10 @@ JSON;
 
     $mockHttp = MockHttp::get([$json]);
     $tasks = (new StructuredOutput)
-        ->withRuntime(makeStructuredRuntime(httpClient: $mockHttp))
+        ->withRuntime(makeStructuredRuntime(httpClient: $mockHttp, outputMode: OutputMode::JsonSchema))
         ->with(
             messages: 'Transcription text',
             responseModel: Tasks::class,
-            mode: OutputMode::JsonSchema,
         )
         ->get();
 

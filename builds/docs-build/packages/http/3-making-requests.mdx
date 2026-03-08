@@ -17,7 +17,7 @@ $request = new HttpRequest(
 );
 
 $response = $client->withRequest($request)->get();
-// @doctest id="0c08"
+// @doctest id="d028"
 ```
 
 `string|array` request bodies are supported. Arrays are JSON-encoded. If encoding fails (for example because a value is not serializable), `HttpRequestBody` throws `InvalidArgumentException`.
@@ -34,7 +34,7 @@ $request = new HttpRequest(
 );
 
 $response = $client->withRequest($request)->get();
-// @doctest id="84d5"
+// @doctest id="a4dc"
 ```
 
 ## Request Mutation Is Immutable
@@ -43,7 +43,7 @@ $response = $client->withRequest($request)->get();
 $request = $request
     ->withHeader('Authorization', 'Bearer ' . $token)
     ->withStreaming(false);
-// @doctest id="a32b"
+// @doctest id="bd17"
 ```
 
 Each `with*()` call returns a new request.
@@ -62,7 +62,7 @@ $client = (new HttpClientBuilder())
         failOnError: true,
     ))
     ->create();
-// @doctest id="edd5"
+// @doctest id="9da3"
 ```
 
 ## Error Strategy

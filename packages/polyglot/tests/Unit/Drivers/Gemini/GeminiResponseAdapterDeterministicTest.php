@@ -62,9 +62,9 @@ it('Gemini native: parses streaming partial with text and tool args', function (
         ]],
     ]);
 
-    $p1 = iterator_to_array($adapter->fromStreamResponses([$event]))[0] ?? null;
-    expect($p1)->not->toBeNull();
-    expect($p1->contentDelta)->toBe('Hel');
+    $delta1 = iterator_to_array($adapter->fromStreamDeltas([$event]))[0] ?? null;
+    expect($delta1)->not->toBeNull();
+    expect($delta1->contentDelta)->toBe('Hel');
 
     $event2 = json_encode([
         'candidates' => [[
@@ -75,11 +75,32 @@ it('Gemini native: parses streaming partial with text and tool args', function (
             ],
         ]],
     ]);
-    $p2 = iterator_to_array($adapter->fromStreamResponses([$event2]))[0] ?? null;
-    expect($p2)->not->toBeNull();
-    expect($p2->contentDelta)->toBe('');
-    expect($p2->toolName)->toBe('search');
-    expect($p2->toolArgs)->toContain('Hello');
+    $delta2 = iterator_to_array($adapter->fromStreamDeltas([$event2]))[0] ?? null;
+    expect($delta2)->not->toBeNull();
+    expect($delta2->contentDelta)->toBe('');
+    expect($delta2->toolId)->toBe('part:0');
+    expect($delta2->toolName)->toBe('search');
+    expect($delta2->toolArgs)->toContain('Hello');
+});
+
+it('Gemini native: uses extracted per-part tool id even for single tool delta in chunk', function () {
+    $adapter = new GeminiResponseAdapter(new GeminiUsageFormat());
+    $event = json_encode([
+        'candidates' => [[
+            'id' => 'cand_1',
+            'content' => [
+                'parts' => [
+                    ['functionCall' => ['name' => 'search', 'args' => ['q' => 'Hello']]],
+                ],
+            ],
+        ]],
+    ]);
+
+    $delta = iterator_to_array($adapter->fromStreamDeltas([$event]))[0] ?? null;
+    expect($delta)->not->toBeNull();
+    expect($delta->toolId)->toBe('cand_1:part:0');
+    expect($delta->toolName)->toBe('search');
+    expect($delta->toolArgs)->toContain('Hello');
 });
 
 it('Gemini native: sets usageIsCumulative=true for streaming responses with usage data', function () {
@@ -94,16 +115,16 @@ it('Gemini native: sets usageIsCumulative=true for streaming responses with usag
         'usageMetadata' => ['promptTokenCount' => 120, 'candidatesTokenCount' => 3]
     ]);
 
-    $partial = iterator_to_array($adapter->fromStreamResponses([$eventWithUsage]))[0] ?? null;
-    expect($partial)->not->toBeNull();
-    expect($partial->contentDelta)->toBe('Hello');
+    $delta = iterator_to_array($adapter->fromStreamDeltas([$eventWithUsage]))[0] ?? null;
+    expect($delta)->not->toBeNull();
+    expect($delta->contentDelta)->toBe('Hello');
 
     // CRITICAL: Verify that usageIsCumulative is set to true
     // This prevents exponential token growth during accumulation
-    expect($partial->isUsageCumulative())->toBeTrue();
+    expect($delta->usageIsCumulative)->toBeTrue();
 
     // Verify usage values are parsed correctly
-    $usage = $partial->usage();
+    $usage = $delta->usage;
     expect($usage)->not->toBeNull();
     expect($usage->inputTokens)->toBe(120);
     expect($usage->outputTokens)->toBe(3);

@@ -4,6 +4,7 @@ namespace Cognesy\Polyglot\Embeddings\Config;
 
 use Cognesy\Config\BasePath;
 use Cognesy\Config\Config;
+use Cognesy\Config\Dsn;
 use InvalidArgumentException;
 use Throwable;
 
@@ -60,6 +61,10 @@ final class EmbeddingsConfig
             );
         }
         return $instance;
+    }
+
+    public static function fromDsn(string $dsn): self {
+        return self::fromArray(Dsn::fromString($dsn)->toArray());
     }
 
     public function withOverrides(array $values) : self {

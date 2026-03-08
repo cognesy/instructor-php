@@ -2,6 +2,7 @@
 
 namespace Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\StreamEvent;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\ValueObject\CodexThreadId;
 
 /**
@@ -39,7 +40,7 @@ final readonly class ThreadStartedEvent extends StreamEvent
     public static function fromArray(array $data): self
     {
         return new self(
-            threadId: (string) ($data['thread_id'] ?? ''),
+            threadId: Normalize::toString($data['thread_id'] ?? ''),
         );
     }
 }

@@ -2,6 +2,8 @@
 
 namespace Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\StreamEvent;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
+
 /**
  * Fallback event for unrecognized event types
  */
@@ -26,7 +28,7 @@ final readonly class UnknownEvent extends StreamEvent
     public static function fromArray(array $data): self
     {
         return new self(
-            rawType: (string)($data['type'] ?? 'unknown'),
+            rawType: Normalize::toString($data['type'] ?? 'unknown', 'unknown'),
             rawData: $data,
         );
     }

@@ -3,12 +3,13 @@ namespace Cognesy\Instructor\Data;
 
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Creation\StructuredOutputSchemaRenderer;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Instructor\Enums\ReturnTarget;
 use Cognesy\Schema\Data\Schema;
 use Cognesy\Schema\TypeInfo;
 use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 
-class ResponseModel implements CanProvideJsonSchema
+final class ResponseModel implements CanProvideJsonSchema
 {
     private mixed $instance;
 
@@ -115,8 +116,23 @@ class ResponseModel implements CanProvideJsonSchema
         return $this->outputFormat;
     }
 
-    public function shouldReturnArray(): bool {
-        return $this->outputFormat?->isArray() ?? false;
+    public function returnTarget(): ReturnTarget {
+        if ($this->outputFormat?->isArray() ?? false) {
+            return ReturnTarget::Array;
+        }
+
+        if ($this->outputFormat?->isObject() ?? false) {
+            return ReturnTarget::SelfDeserializingObject;
+        }
+
+        if (($this->outputFormat?->isClass() ?? false) || $this->returnedClass() !== '') {
+            return ReturnTarget::TypedObject;
+        }
+
+        return match (true) {
+            $this->config->defaultToStdClass() => ReturnTarget::UntypedObject,
+            default => ReturnTarget::Array,
+        };
     }
 
     // MUTATORS ////////////////////////////////////////////////////////

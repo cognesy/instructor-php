@@ -7,11 +7,11 @@ use Cognesy\Http\Config\DebugConfig;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Evals\Executors\Data\InferenceSchema;
 use Cognesy\Http\Creation\HttpClientBuilder;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\PendingInference;
 
@@ -66,7 +66,6 @@ class InferenceAdapter
             tools: $schema->tools(),
             toolChoice: $schema->toolChoice(),
             options: $options,
-            mode: OutputMode::Tools,
         );
         return $this->runtime($llmConfig)->create($request);
     }
@@ -80,7 +79,6 @@ class InferenceAdapter
             ]),
             responseFormat: $schema->responseFormatJsonSchema(),
             options: $options,
-            mode: OutputMode::JsonSchema,
         );
         return $this->runtime($llmConfig)->create($request);
     }
@@ -94,7 +92,6 @@ class InferenceAdapter
             ]),
             responseFormat: $schema->responseFormatJson(),
             options: $options,
-            mode: OutputMode::Json,
         );
         return $this->runtime($llmConfig)->create($request);
     }
@@ -108,7 +105,6 @@ class InferenceAdapter
                 ['role' => 'user', 'content' => '```json'],
             ]),
             options: $options,
-            mode: OutputMode::MdJson,
         );
         return $this->runtime($llmConfig)->create($request);
     }
@@ -117,7 +113,6 @@ class InferenceAdapter
         $request = new InferenceRequest(
             messages: $messages,
             options: $options,
-            mode: OutputMode::Text,
         );
         return $this->runtime($llmConfig)->create($request);
     }
@@ -133,7 +128,6 @@ class InferenceAdapter
             toolChoice: $schema->toolChoice(),
             responseFormat: $schema->responseFormatJson(),
             options: $options,
-            mode: OutputMode::Unrestricted,
         );
         return $this->runtime($llmConfig)->create($request);
     }
@@ -148,7 +142,7 @@ class InferenceAdapter
             ->withDebugConfig($this->debugConfig ?? new DebugConfig())
             ->create();
 
-        return InferenceRuntime::fromLLMConfig(
+        return InferenceRuntime::fromConfig(
             config: $config,
             events: $events,
             httpClient: $httpClient,

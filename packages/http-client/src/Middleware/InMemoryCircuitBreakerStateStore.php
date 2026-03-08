@@ -4,16 +4,16 @@ namespace Cognesy\Http\Middleware;
 
 final class InMemoryCircuitBreakerStateStore implements CanStoreCircuitBreakerState
 {
-    /** @var array<string, array{state: string, failures: int, lastFailure: int, halfOpenRequests: int, halfOpenSuccesses: int}> */
+    /** @var array<string, CircuitBreakerState> */
     private array $circuits = [];
 
     #[\Override]
-    public function load(string $key): ?array {
+    public function load(string $key): ?CircuitBreakerState {
         return $this->circuits[$key] ?? null;
     }
 
     #[\Override]
-    public function save(string $key, array $state): void {
+    public function save(string $key, CircuitBreakerState $state): void {
         $this->circuits[$key] = $state;
     }
 }

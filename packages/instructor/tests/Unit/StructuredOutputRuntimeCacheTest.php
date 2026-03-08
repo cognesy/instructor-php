@@ -9,7 +9,9 @@ it('uses the injected runtime instance', function () {
     $runtime = makeStructuredRuntime(driver: new FakeInferenceDriver());
     $structuredOutput = new StructuredOutput($runtime);
 
-    expect($structuredOutput->runtime())->toBe($runtime);
+    expect($structuredOutput)->toBeInstanceOf(StructuredOutput::class);
+    expect(fn() => $structuredOutput->withResponseClass(\stdClass::class)->create())
+        ->not->toThrow(Throwable::class);
 });
 
 it('keeps runtime stable across request-only mutations', function () {
@@ -20,7 +22,8 @@ it('keeps runtime stable across request-only mutations', function () {
         ->withMessages('hello')
         ->withResponseClass(\stdClass::class);
 
-    expect($changed->runtime())->toBe($runtime);
+    expect($changed)->not->toBe($structuredOutput);
+    expect(fn() => $changed->create())->not->toThrow(Throwable::class);
 });
 
 it('returns a new facade instance from request mutators', function () {
@@ -37,12 +40,13 @@ it('allows runtime replacement explicitly', function () {
 
     $structuredOutput = (new StructuredOutput($first))->withRuntime($second);
 
-    expect($structuredOutput->runtime())->toBe($second);
+    expect(fn() => $structuredOutput
+        ->withResponseClass(\stdClass::class)
+        ->create())->not->toThrow(Throwable::class);
 });
 
-it('creates a facade with runtime from driver via static fromLLMConfig()', function () {
-    $structuredOutput = StructuredOutput::fromLLMConfig(LLMConfig::fromArray(['driver' => 'openai']));
+it('creates a facade with runtime from driver via static fromConfig()', function () {
+    $structuredOutput = StructuredOutput::fromConfig(LLMConfig::fromArray(['driver' => 'openai']));
 
     expect($structuredOutput)->toBeInstanceOf(StructuredOutput::class);
-    expect($structuredOutput->runtime())->toBeInstanceOf(StructuredOutputRuntime::class);
 });

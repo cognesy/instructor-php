@@ -14,7 +14,7 @@ Instructor supports Meta LLM inference API. You can find the details on how to c
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 
 enum UserType : string {
     case Guest = 'guest';

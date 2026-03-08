@@ -2,6 +2,7 @@
 
 namespace Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
 use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodeMessageId;
 use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodePartId;
 use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodeSessionId;
@@ -54,17 +55,17 @@ final readonly class TextEvent extends StreamEvent
 
     public static function fromArray(array $data): self
     {
-        $part = $data['part'] ?? [];
-        $time = $part['time'] ?? [];
+        $part = Normalize::toArray($data['part'] ?? []);
+        $time = Normalize::toArray($part['time'] ?? []);
 
         return new self(
-            timestamp: $data['timestamp'] ?? 0,
-            sessionId: $data['sessionID'] ?? '',
-            messageId: $part['messageID'] ?? '',
-            partId: $part['id'] ?? '',
-            text: $part['text'] ?? '',
-            startTime: $time['start'] ?? null,
-            endTime: $time['end'] ?? null,
+            timestamp: Normalize::toInt($data['timestamp'] ?? 0),
+            sessionId: Normalize::toString($data['sessionID'] ?? ''),
+            messageId: Normalize::toString($part['messageID'] ?? ''),
+            partId: Normalize::toString($part['id'] ?? ''),
+            text: Normalize::toString($part['text'] ?? ''),
+            startTime: Normalize::toNullableInt($time['start'] ?? null),
+            endTime: Normalize::toNullableInt($time['end'] ?? null),
         );
     }
 }

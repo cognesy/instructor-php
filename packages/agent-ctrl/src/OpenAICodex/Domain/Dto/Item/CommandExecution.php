@@ -2,6 +2,8 @@
 
 namespace Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\Item;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
+
 /**
  * Shell command execution
  *
@@ -36,11 +38,11 @@ final readonly class CommandExecution extends Item
     public static function fromArray(array $data): self
     {
         return new self(
-            id: (string)($data['id'] ?? ''),
-            status: (string)($data['status'] ?? 'in_progress'),
-            command: (string)($data['command'] ?? ''),
-            output: isset($data['output']) ? (string)$data['output'] : null,
-            exitCode: isset($data['exit_code']) ? (int)$data['exit_code'] : null,
+            id: Normalize::toString($data['id'] ?? ''),
+            status: Normalize::toString($data['status'] ?? 'in_progress', 'in_progress'),
+            command: Normalize::toString($data['command'] ?? ''),
+            output: Normalize::toNullableString($data['output'] ?? null),
+            exitCode: Normalize::toNullableInt($data['exit_code'] ?? null),
         );
     }
 }

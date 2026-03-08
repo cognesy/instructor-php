@@ -7,7 +7,7 @@ use Cognesy\Evals\Executors\Data\StructuredOutputData;
 use Cognesy\Evals\Executors\RunStructuredOutputInference;
 use Cognesy\Evals\Experiment;
 use Cognesy\Evals\Observers\Aggregate\AggregateExperimentObserver;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Evals\ComplexExtraction\ProjectEvents;
 use Evals\ComplexExtraction\ProjectsEval;
 

@@ -20,7 +20,7 @@ use Cognesy\Metrics\Data\Metric;
 use Cognesy\Metrics\Exporters\CallbackExporter;
 use Cognesy\Metrics\Metrics;
 use Cognesy\Polyglot\Inference\Events\InferenceCompleted;
-use Cognesy\Polyglot\Inference\Events\PartialInferenceResponseCreated;
+use Cognesy\Polyglot\Inference\Events\PartialInferenceDeltaCreated;
 use Cognesy\Polyglot\Inference\Events\StreamFirstChunkReceived;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
@@ -33,7 +33,7 @@ final class StreamMetricsCollector extends MetricsCollector
     protected function listeners(): array {
         return [
             StreamFirstChunkReceived::class => 'onFirstChunk',
-            PartialInferenceResponseCreated::class => 'onChunk',
+            PartialInferenceDeltaCreated::class => 'onChunk',
             InferenceCompleted::class => 'onCompleted',
         ];
     }
@@ -44,7 +44,7 @@ final class StreamMetricsCollector extends MetricsCollector
         ]);
     }
 
-    public function onChunk(PartialInferenceResponseCreated $event): void {
+    public function onChunk(PartialInferenceDeltaCreated $event): void {
         $this->chunkCount += 1;
     }
 
@@ -89,12 +89,12 @@ $stream = Inference::fromRuntime($runtime)
     ->withOptions(['max_tokens' => 64])
     ->withStreaming()
     ->stream()
-    ->responses();
+    ->deltas();
 
 echo "USER: {$prompt}\n";
 echo "ASSISTANT: ";
-foreach ($stream as $partial) {
-    echo $partial->contentDelta;
+foreach ($stream as $delta) {
+    echo $delta->contentDelta;
 }
 echo "\n\n";
 

@@ -2,6 +2,8 @@
 
 namespace Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\StreamEvent;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
+
 /**
  * Base class for all streaming events from Codex CLI
  *
@@ -25,7 +27,7 @@ abstract readonly class StreamEvent
      */
     public static function fromArray(array $data): self
     {
-        $type = $data['type'] ?? 'unknown';
+        $type = Normalize::toString($data['type'] ?? 'unknown', 'unknown');
 
         return match ($type) {
             'thread.started' => ThreadStartedEvent::fromArray($data),

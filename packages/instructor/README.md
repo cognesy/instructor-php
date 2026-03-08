@@ -17,7 +17,7 @@ class Person {
     public int $age;
 }
 
-$person = StructuredOutput::fromLLMConfig(LLMConfig::fromArray(['driver' => 'openai']))
+$person = StructuredOutput::fromConfig(LLMConfig::fromArray(['driver' => 'openai']))
     ->with(
         messages: 'His name is Jason and he is 28 years old.',
         responseModel: Person::class,

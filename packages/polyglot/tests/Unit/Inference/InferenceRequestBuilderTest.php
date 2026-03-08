@@ -1,9 +1,8 @@
 <?php
 
 use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
-it('builds request with messages, model, options, streaming, max tokens and mode', function () {
+it('builds request with messages, model, options, streaming, max tokens and response format', function () {
     $b = new InferenceRequestBuilder();
     $req = $b
         ->withMessages('Hello')
@@ -11,7 +10,7 @@ it('builds request with messages, model, options, streaming, max tokens and mode
         ->withOptions(['temperature' => 0.1])
         ->withStreaming(true)
         ->withMaxTokens(50)
-        ->withOutputMode(OutputMode::Json)
+        ->withResponseFormat(['type' => 'json_object'])
         ->create();
 
     expect($req->messages()[0]['content'])->toBe('Hello');
@@ -19,7 +18,7 @@ it('builds request with messages, model, options, streaming, max tokens and mode
     expect($req->options()['temperature'] ?? null)->toBe(0.1);
     expect($req->options()['max_tokens'] ?? null)->toBe(50);
     expect($req->isStreamed())->toBeTrue();
-    expect($req->outputMode())->toBe(OutputMode::Json);
+    expect($req->responseFormat()->toArray())->toBe(['type' => 'json_object']);
 });
 
 it('applies cached context when set', function () {
@@ -65,14 +64,14 @@ it('with() does not reset options when options param is null', function () {
     expect($req->options()['temperature'])->toBe(0.5);
 });
 
-it('with() does not reset outputMode when mode param is null', function () {
+it('with() does not reset response format when responseFormat param is null', function () {
     $b = new InferenceRequestBuilder();
     $req = $b
-        ->withOutputMode(OutputMode::Json)
+        ->withResponseFormat(['type' => 'json_object'])
         ->with(messages: 'Hello') // mode not specified, should preserve previous
         ->create();
 
-    expect($req->outputMode())->toBe(OutputMode::Json);
+    expect($req->responseFormat()->toArray())->toBe(['type' => 'json_object']);
 });
 
 it('with() allows overriding previously set values', function () {

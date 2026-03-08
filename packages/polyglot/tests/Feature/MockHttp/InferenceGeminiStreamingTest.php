@@ -17,13 +17,13 @@ it('streams partial responses and assembles final content (Gemini SSE)', functio
         ], addDone: true);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('gemini'), httpClient: $http))
+    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('gemini'), httpClient: $http))
         ->withModel('gemini-1.5-flash')
         ->withMessages('Greet')
         ->withStreaming(true)
         ->stream();
 
-    iterator_to_array($stream->responses());
+    iterator_to_array($stream->deltas());
     $final = $stream->final();
     expect($final)->not->toBeNull();
     expect($final->content())->toBe('Hello!');
@@ -64,14 +64,14 @@ it('correctly accumulates cumulative token usage in streaming (regression test)'
 
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('gemini'), httpClient: $http))
+    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('gemini'), httpClient: $http))
         ->withModel('gemini-1.5-flash')
         ->withMessages('Test cumulative usage')
         ->withStreaming(true)
         ->stream();
 
-    // Collect all partial responses to verify accumulation behavior
-    $partials = iterator_to_array($stream->responses());
+    // Collect all visible deltas to verify accumulation behavior
+    $deltas = iterator_to_array($stream->deltas());
     $final = $stream->final();
 
     // Verify final content is assembled correctly
@@ -92,14 +92,13 @@ it('correctly accumulates cumulative token usage in streaming (regression test)'
         ->and($finalUsage->outputTokens)->toBeLessThan(100);
 
     // Verify intermediate accumulation doesn't cause exponential growth
-    expect(count($partials))->toBeGreaterThan(1);  // We should have multiple chunks
+    expect(count($deltas))->toBeGreaterThan(1);  // We should have multiple chunks
 
-    // Each partial should have reasonable token counts (not exponentially growing)
-    foreach ($partials as $partial) {
-        if ($partial->usage() !== null) {
-            expect($partial->usage()->inputTokens)->toBeLessThanOrEqual(125)
-                ->and($partial->usage()->outputTokens)->toBeLessThanOrEqual(4);
+    // Each delta should have reasonable token counts (not exponentially growing)
+    foreach ($deltas as $delta) {
+        if ($delta->usage !== null) {
+            expect($delta->usage->inputTokens)->toBeLessThanOrEqual(125)
+                ->and($delta->usage->outputTokens)->toBeLessThanOrEqual(4);
         }
     }
 });
-

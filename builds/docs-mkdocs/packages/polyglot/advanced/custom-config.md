@@ -6,51 +6,31 @@ description: 'How to define presets and build runtime configs safely.'
 Use presets for normal app usage.
 Use runtime config objects when you need dynamic overrides.
 
-## Minimal `config/llm.php`
+## Minimal `config/llm/presets/openai.yaml`
 
-```php
-<?php
-use Cognesy\Config\Env;
-
-return [
-    'defaultPreset' => 'openai',
-    'presets' => [
-        'openai' => [
-            'driver' => 'openai',
-            'apiUrl' => 'https://api.openai.com/v1',
-            'apiKey' => Env::get('OPENAI_API_KEY', ''),
-            'endpoint' => '/chat/completions',
-            'model' => 'gpt-4.1-nano',
-            'maxTokens' => 1024,
-        ],
-    ],
-];
-// @doctest id="70d7"
+```yaml
+driver: openai
+apiUrl: 'https://api.openai.com/v1'
+apiKey: '${OPENAI_API_KEY}'
+endpoint: /chat/completions
+model: gpt-4.1-nano
+maxTokens: 1024
+# @doctest id="f477"
 ```
 
 Required fields for an LLM preset are `driver`, `apiUrl`, `apiKey`, `endpoint`, and `model`.
 
-## Minimal `config/embed.php`
+## Minimal `config/embed/presets/openai.yaml`
 
-```php
-<?php
-use Cognesy\Config\Env;
-
-return [
-    'defaultPreset' => 'openai',
-    'presets' => [
-        'openai' => [
-            'driver' => 'openai',
-            'apiUrl' => 'https://api.openai.com/v1',
-            'apiKey' => Env::get('OPENAI_API_KEY', ''),
-            'endpoint' => '/embeddings',
-            'model' => 'text-embedding-3-small',
-            'dimensions' => 1536,
-            'maxInputs' => 2048,
-        ],
-    ],
-];
-// @doctest id="0d89"
+```yaml
+driver: openai
+apiUrl: 'https://api.openai.com/v1'
+apiKey: '${OPENAI_API_KEY}'
+endpoint: /embeddings
+model: text-embedding-3-small
+dimensions: 1536
+maxInputs: 2048
+# @doctest id="dc76"
 ```
 
 ## Build Config at Runtime
@@ -73,19 +53,20 @@ $config = new LLMConfig(
 $text = Inference::fromRuntime(InferenceRuntime::fromConfig($config))
     ->withMessages('Explain blue-green deployment in one paragraph.')
     ->get();
-// @doctest id="8031"
+// @doctest id="5d32"
 ```
 
 ## Use DSN for Lightweight Overrides
 
 ```php
 <?php
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 
-$text = Inference::fromDsn('driver=openai,model=gpt-4.1-nano,maxTokens=256')
+$text = Inference::fromConfig(LLMConfig::fromDsn('driver=openai,model=gpt-4.1-nano,maxTokens=256'))
     ->withMessages('Write a commit message for a bugfix.')
     ->get();
-// @doctest id="8ae0"
+// @doctest id="8654"
 ```
 
 ## Register and Use a Custom Driver Alias
@@ -98,20 +79,19 @@ use App\LLM\AcmeDriver;
 Inference::registerDriver('acme', AcmeDriver::class);
 
 // Use "driver" => "acme" in an LLM preset or LLMConfig.
-// @doctest id="5176"
+// @doctest id="5238"
 ```
 
-## Environment-Based Default Preset
+## Environment-Based Preset Selection
+
+Set provider keys in `.env`, then select presets at runtime:
 
 ```php
-<?php
-use Cognesy\Config\Env;
-
-return [
-    'defaultPreset' => Env::get('APP_ENV', 'prod') === 'prod' ? 'openai' : 'ollama',
-    'presets' => [/* ... */],
-];
-// @doctest id="dbb9"
+$preset = getenv('APP_ENV') === 'prod' ? 'openai' : 'ollama';
+$text = \Cognesy\Polyglot\Inference\Inference::using($preset)
+    ->withMessages('hello')
+    ->get();
+// @doctest id="0d3a"
 ```
 
 ## See Also

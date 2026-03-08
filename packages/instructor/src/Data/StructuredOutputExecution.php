@@ -4,16 +4,17 @@ namespace Cognesy\Instructor\Data;
 
 use Cognesy\Instructor\Collections\StructuredOutputAttemptList;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
-use Cognesy\Polyglot\Inference\Data\InferenceAttempt;
-use Cognesy\Polyglot\Inference\Data\InferenceExecution;
+use Cognesy\Instructor\Enums\ExecutionStatus;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Utils\Profiler\TracksObjectCreation;
 use DateTimeImmutable;
 
 final readonly class StructuredOutputExecution
 {
+    use TracksObjectCreation;
+
     private StructuredOutputExecutionId $id;
     private DateTimeImmutable $createdAt;
     private DateTimeImmutable $updatedAt;
@@ -23,21 +24,17 @@ final readonly class StructuredOutputExecution
     private StructuredOutputConfig $config;
     private ?ResponseModel $responseModel;
 
-    private StructuredOutputAttemptList $attempts;
-    private StructuredOutputAttempt $currentAttempt;
-    private bool $isFinalized;
-    private ?StructuredOutputAttemptState $attemptState;
+    private StructuredOutputAttemptList $attemptHistory;
+    private ?StructuredOutputAttempt $activeAttempt;
+    private ExecutionStatus $status;
 
     public function __construct(
         ?StructuredOutputRequest $request = null,
         ?StructuredOutputConfig $config = null,
         ?ResponseModel $responseModel = null,
-        //
-        ?StructuredOutputAttemptList $attempts = null,
-        ?StructuredOutputAttempt $currentAttempt = null,
-        ?bool $isFinalized = null,
-        ?StructuredOutputAttemptState $attemptState = null,
-        //
+        ?StructuredOutputAttemptList $attemptHistory = null,
+        ?StructuredOutputAttempt $activeAttempt = null,
+        ?ExecutionStatus $status = null,
         ?StructuredOutputExecutionId $id = null,
         ?int $step = null,
         ?DateTimeImmutable $createdAt = null,
@@ -51,252 +48,217 @@ final readonly class StructuredOutputExecution
         $this->request = $request ?? new StructuredOutputRequest();
         $this->config = $config ?? new StructuredOutputConfig();
         $this->responseModel = $responseModel;
-
-        $this->attempts = $attempts ?? new StructuredOutputAttemptList();
-        $this->currentAttempt = $currentAttempt ?? new StructuredOutputAttempt();
-        $this->isFinalized = $isFinalized ?? false;
-        $this->attemptState = $attemptState;
+        $this->attemptHistory = $attemptHistory ?? StructuredOutputAttemptList::empty();
+        $this->activeAttempt = $activeAttempt;
+        $this->status = $status ?? $this->resolveStatus(
+            activeAttempt: $this->activeAttempt,
+            attemptHistory: $this->attemptHistory,
+        );
+        $this->assertInvariants();
+        $this->trackObjectCreation();
     }
 
-    // ACCESSORS /////////////////////////////////////////////////////////
-
-    public function request(): StructuredOutputRequest {
+    public function request(): StructuredOutputRequest
+    {
         return $this->request;
     }
 
-    public function id(): StructuredOutputExecutionId {
+    public function id(): StructuredOutputExecutionId
+    {
         return $this->id;
     }
 
-    public function responseModel(): ?ResponseModel {
+    public function responseModel(): ?ResponseModel
+    {
         return $this->responseModel;
     }
 
-    public function config(): StructuredOutputConfig {
+    public function config(): StructuredOutputConfig
+    {
         return $this->config;
     }
 
-    public function outputMode() : OutputMode {
+    public function outputMode(): OutputMode
+    {
         return $this->config->outputMode();
     }
 
-    public function attempts(): StructuredOutputAttemptList {
-        return $this->attempts;
+    public function status(): ExecutionStatus
+    {
+        return $this->status;
     }
 
-    public function attemptCount(): int {
-        return $this->attempts->count();
+    public function attempts(): StructuredOutputAttemptList
+    {
+        return $this->attemptHistory;
     }
 
-    public function currentAttempt(): ?StructuredOutputAttempt {
-        return $this->currentAttempt;
+    public function attemptHistory(): StructuredOutputAttemptList
+    {
+        return $this->attemptHistory;
     }
 
-    public function inferenceResponse(): ?InferenceResponse {
-        return $this->currentAttempt->inferenceResponse();
+    public function attemptCount(): int
+    {
+        return $this->attemptHistory->count();
     }
 
-    public function lastFinalizedAttempt(): ?StructuredOutputAttempt {
-        return $this->attempts->last();
+    public function activeAttempt(): ?StructuredOutputAttempt
+    {
+        return $this->activeAttempt;
     }
 
-    public function maxRetriesReached(): bool {
-        return $this->attempts->count() > $this->config->maxRetries();
+    public function inferenceResponse(): ?InferenceResponse
+    {
+        return $this->activeAttempt?->inferenceResponse()
+            ?? $this->lastFinalizedAttempt()?->inferenceResponse();
     }
 
-    public function isFinalized(): bool {
-        return $this->isFinalized;
+    public function output(): mixed
+    {
+        return $this->activeAttempt?->output()
+            ?? $this->lastFinalizedAttempt()?->output();
     }
 
-    public function isStreamed(): bool {
+    public function hasOutput(): bool
+    {
+        return $this->output() !== null;
+    }
+
+    public function lastFinalizedAttempt(): ?StructuredOutputAttempt
+    {
+        return $this->attemptHistory->last();
+    }
+
+    public function maxRetriesReached(): bool
+    {
+        return $this->attemptCount() > $this->config->maxRetries();
+    }
+
+    public function isFinalized(): bool
+    {
+        return $this->status->isTerminal();
+    }
+
+    public function isStreamed(): bool
+    {
         return $this->request->isStreamed();
     }
 
-    public function attemptState(): ?StructuredOutputAttemptState {
-        return $this->attemptState;
+    public function isAttemptActive(): bool
+    {
+        return $this->activeAttempt !== null;
     }
 
-    /**
-     * Check if there is an active attempt in progress (sync or streaming).
-     */
-    public function isAttemptActive(): bool {
-        return $this->attemptState !== null
-            && $this->attemptState->hasMoreChunks();
+    public function usage(): Usage
+    {
+        $usage = $this->attemptHistory->usage();
+        return match (true) {
+            $this->activeAttempt === null => $usage,
+            default => $usage->withAccumulated($this->activeAttempt->usage()),
+        };
     }
 
-    /**
-     * Backward-compat alias for older code/tests.
-     * Prefer isAttemptActive().
-     */
-    public function isCurrentlyStreaming(): bool { return $this->isAttemptActive(); }
-
-    public function usage(): Usage {
-        $usage = $this->attempts->usage();
-        if (!$this->currentAttempt->isFinalized()) {
-            // include partial usage from current attempt (partials only)
-            $partial = $this->currentAttempt->partialResponse();
-            $partialUsage = $partial !== null ? $partial->usage() : Usage::none();
-            $usage = $usage->withAccumulated($partialUsage);
-        }
-        return $usage;
-    }
-
-    /**
-     * Aggregate errors from finalized attempts and the current one (if present).
-     */
-    public function errors(): array {
+    public function errors(): array
+    {
         $all = [];
-        foreach ($this->attempts as $attempt) {
+        foreach ($this->attemptHistory as $attempt) {
             $all = [...$all, ...$attempt->errors()];
         }
-        if ($this->currentAttempt->hasErrors()) {
-            $all = array_merge($all, $this->currentAttempt->errors());
-        }
-        return $all;
+
+        return match (true) {
+            $this->activeAttempt?->hasErrors() ?? false => array_merge($all, $this->activeAttempt->errors()),
+            default => $all,
+        };
     }
 
-    /**
-     * Errors for the in‑flight attempt (if any).
-     */
-    public function currentErrors(): array {
-        return $this->currentAttempt->errors();
+    public function currentErrors(): array
+    {
+        return $this->activeAttempt?->errors() ?? [];
     }
 
-    /**
-     * True if the latest finalized attempt succeeded.
-     */
-    public function isSuccessful(): bool {
-        if (!$this->currentAttempt->isFinalized()) {
-            return false;
-        }
-        $last = $this->attempts->last();
-        if ($last === null) {
-            return false;
-        }
-        $response = $last->inferenceResponse();
-        if ($last->hasErrors() || $response === null) {
-            return false;
-        }
-        return !$response->hasFinishedWithFailure();
+    public function isSuccessful(): bool
+    {
+        return $this->status->isSuccessful();
     }
 
-    /**
-     * True if the latest finalized attempt failed.
-     */
-    public function isFinalFailed(): bool {
-        $last = $this->attempts->last();
-        if ($last === null) {
-            return false;
-        }
-        if ($last->hasErrors()) {
-            return true;
-        }
-        $response = $last->inferenceResponse();
-        return $response !== null && $response->hasFinishedWithFailure();
+    public function isFinalFailed(): bool
+    {
+        return $this->status->isFailed();
     }
 
-    // MUTATORS //////////////////////////////////////////////////////////
-
-    public function withStreamed(bool $isStreamed = true) : self {
+    public function withStreamed(bool $isStreamed = true): self
+    {
         return $this->with(request: $this->request->withStreamed($isStreamed));
     }
 
-    public function withCurrentAttempt(
-        ?InferenceResponse $inferenceResponse,
-        ?PartialInferenceResponse $partialInferenceResponse,
-        array $errors
-    ) : self {
-        $existingExecution = $this->currentAttempt->inferenceExecution();
-        $inferenceAttempt = new InferenceAttempt(
-            response: $inferenceResponse,
-            accumulatedPartial: $partialInferenceResponse,
-            isFinalized: false,
-            errors: $errors,
-        );
-        $inferenceExecution = $existingExecution->with(
-            currentAttempt: $inferenceAttempt,
-            isFinalized: false,
-        );
-        $attempt = $this->currentAttempt->with(
-            inferenceExecution: $inferenceExecution,
-            errors: $errors,
-        );
-        return $this->with(
-            currentAttempt: $attempt,
-            isFinalized: false,
-        );
+    public function withStartedAttempt(): self
+    {
+        return match (true) {
+            $this->isFinalized() => throw new \LogicException('Cannot start a new attempt on a terminal execution.'),
+            $this->activeAttempt !== null => $this,
+            default => $this->copy(
+                request: $this->request,
+                config: $this->config,
+                responseModel: $this->responseModel,
+                attemptHistory: $this->attemptHistory,
+                activeAttempt: new StructuredOutputAttempt(),
+                status: ExecutionStatus::Running,
+            ),
+        };
     }
 
     public function withFailedAttempt(
         InferenceResponse $inferenceResponse,
-        ?PartialInferenceResponse $partialInferenceResponse = null,
         mixed $returnedValue = null,
         array $errors = [],
     ): self {
-        if ($this->isFinalized && !$this->currentAttempt->hasErrors()) {
-            throw new \LogicException('Cannot record a failed attempt on an execution that has already succeeded.');
+        if ($this->isFinalized()) {
+            throw new \LogicException('Cannot record a failed attempt on a terminal execution.');
         }
-        $inferenceExecution = new InferenceExecution();
-        $inferenceAttempt = InferenceAttempt::fromFailedResponse(
-            response: $inferenceResponse,
-            accumulatedPartial: $partialInferenceResponse,
+
+        $attempt = ($this->activeAttempt ?? new StructuredOutputAttempt())->withCompletion(
+            inferenceResponse: $inferenceResponse,
             errors: $errors,
+            output: $returnedValue,
         );
-        $inferenceExecution = $inferenceExecution->with(
-            attempts: $inferenceExecution->attempts()->withNewAttempt($inferenceAttempt),
-            currentAttempt: $inferenceAttempt,
-            isFinalized: true,
-        );
-        $attempt = new StructuredOutputAttempt(
-            inferenceExecution: $inferenceExecution,
-            isFinalized: true,
-            errors: $errors,
-        );
-        // IMPORTANT: Do not use with() here because it coalesces null values.
-        // We need to explicitly reset attemptState to null to start a fresh attempt.
-        return new self(
+        $attemptHistory = $this->attemptHistory->withNewAttempt($attempt);
+        $status = match (true) {
+            $attemptHistory->count() > $this->config->maxRetries() => ExecutionStatus::Failed,
+            default => ExecutionStatus::Pending,
+        };
+
+        return $this->copy(
             request: $this->request,
             config: $this->config,
             responseModel: $this->responseModel,
-            attempts: $this->attempts->withNewAttempt($attempt),
-            currentAttempt: $attempt,
-            isFinalized: false,
-            attemptState: null,
-            id: $this->id,
-            step: $this->step + 1,
-            createdAt: $this->createdAt,
-            updatedAt: new DateTimeImmutable(),
+            attemptHistory: $attemptHistory,
+            activeAttempt: null,
+            status: $status,
         );
     }
 
     public function withSuccessfulAttempt(
         InferenceResponse $inferenceResponse,
-        ?PartialInferenceResponse $partialInferenceResponse = null,
         mixed $returnedValue = null,
     ): self {
-        if ($this->isFinalized && !$this->currentAttempt->hasErrors()) {
-            throw new \LogicException('Cannot record a successful attempt on an execution that has already completed (succeeded).');
+        if ($this->isFinalized()) {
+            throw new \LogicException('Cannot record a successful attempt on a terminal execution.');
         }
-        $existingExecution = $this->currentAttempt->inferenceExecution();
-        $inferenceAttempt = InferenceAttempt::fromResponse($inferenceResponse);
-        if ($partialInferenceResponse !== null) {
-            $inferenceAttempt = $inferenceAttempt->with(accumulatedPartial: $partialInferenceResponse);
-        }
-        $inferenceExecution = $existingExecution->with(
-            currentAttempt: $inferenceAttempt,
-            isFinalized: true,
-        );
-        $attempt = $this->currentAttempt->with(
-            inferenceExecution: $inferenceExecution,
-            isFinalized: true,
+
+        $attempt = ($this->activeAttempt ?? new StructuredOutputAttempt())->withCompletion(
+            inferenceResponse: $inferenceResponse,
             errors: [],
             output: $returnedValue,
         );
-        return $this->with(
-            attempts: $this->attempts->withNewAttempt($attempt),
-            currentAttempt: $attempt,
-            isFinalized: true, // successful attempt finalizes the execution
-            attemptState: StructuredOutputAttemptState::cleared(), // Clear streaming state (exhausted)
+
+        return $this->copy(
+            request: $this->request,
+            config: $this->config,
+            responseModel: $this->responseModel,
+            attemptHistory: $this->attemptHistory->withNewAttempt($attempt),
+            activeAttempt: null,
+            status: ExecutionStatus::Succeeded,
         );
     }
 
@@ -304,20 +266,52 @@ final readonly class StructuredOutputExecution
         ?StructuredOutputRequest $request = null,
         ?StructuredOutputConfig $config = null,
         ?ResponseModel $responseModel = null,
-        ?StructuredOutputAttemptList $attempts = null,
-        ?StructuredOutputAttempt $currentAttempt = null,
-        ?bool $isFinalized = null,
-        ?StructuredOutputAttemptState $attemptState = null,
-    ) : self {
-        return new self(
+        ?StructuredOutputAttemptList $attemptHistory = null,
+        ?StructuredOutputAttempt $activeAttempt = null,
+        ?ExecutionStatus $status = null,
+    ): self {
+        return $this->copy(
             request: $request ?? $this->request,
             config: $config ?? $this->config,
             responseModel: $responseModel ?? $this->responseModel,
-            attempts: $attempts ?? $this->attempts,
-            currentAttempt: $currentAttempt ?? $this->currentAttempt,
-            isFinalized: $isFinalized ?? $this->isFinalized,
-            attemptState: $attemptState ?? $this->attemptState,
-            //
+            attemptHistory: $attemptHistory ?? $this->attemptHistory,
+            activeAttempt: $activeAttempt ?? $this->activeAttempt,
+            status: $status ?? $this->status,
+        );
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id->toString(),
+            'createdAt' => $this->createdAt->format(DATE_ATOM),
+            'updatedAt' => $this->updatedAt->format(DATE_ATOM),
+            'step' => $this->step,
+            'status' => $this->status->value,
+            'request' => $this->request->toArray(),
+            'attempts' => $this->attemptHistory->toArray(),
+            'activeAttempt' => $this->activeAttempt?->toArray(),
+            'response' => $this->inferenceResponse()?->toArray(),
+            'responseModel' => $this->responseModel?->toArray(),
+            'config' => $this->config->toArray(),
+        ];
+    }
+
+    private function copy(
+        StructuredOutputRequest $request,
+        StructuredOutputConfig $config,
+        ?ResponseModel $responseModel,
+        StructuredOutputAttemptList $attemptHistory,
+        ?StructuredOutputAttempt $activeAttempt,
+        ExecutionStatus $status,
+    ): self {
+        return new self(
+            request: $request,
+            config: $config,
+            responseModel: $responseModel,
+            attemptHistory: $attemptHistory,
+            activeAttempt: $activeAttempt,
+            status: $status,
             id: $this->id,
             step: $this->step + 1,
             createdAt: $this->createdAt,
@@ -325,25 +319,36 @@ final readonly class StructuredOutputExecution
         );
     }
 
-    public function withAttemptState(?StructuredOutputAttemptState $state): self {
-        return $this->with(attemptState: $state);
+    private function resolveStatus(
+        ?StructuredOutputAttempt $activeAttempt = null,
+        ?StructuredOutputAttemptList $attemptHistory = null,
+    ): ExecutionStatus {
+        $activeAttempt = $activeAttempt ?? $this->activeAttempt;
+        $attemptHistory = $attemptHistory ?? $this->attemptHistory;
+        $lastAttempt = $attemptHistory->last();
+
+        return match (true) {
+            $activeAttempt !== null => ExecutionStatus::Running,
+            $lastAttempt === null => ExecutionStatus::Pending,
+            $attemptHistory->count() > $this->config->maxRetries() => ExecutionStatus::Failed,
+            default => ExecutionStatus::Pending,
+        };
     }
 
-    // SERIALIZATION /////////////////////////////////////////////////////
+    private function assertInvariants(): void
+    {
+        if ($this->activeAttempt?->isFinalized() ?? false) {
+            throw new \LogicException('Active attempt cannot be finalized.');
+        }
 
-    public function toArray(): array {
-        return [
-            'id' => $this->id->toString(),
-            'createdAt' => $this->createdAt->format(DATE_ATOM),
-            'updatedAt' => $this->updatedAt->format(DATE_ATOM),
-            'step' => $this->step,
-            'request' => $this->request->toArray(),
-            'attempts' => $this->attempts->toArray(),
-            'response' => $this->inferenceResponse()?->toArray(),
-            'responseModel' => $this->responseModel?->toArray(),
-            'config' => $this->config->toArray(),
-        ];
+        foreach ($this->attemptHistory as $attempt) {
+            if (!$attempt->isFinalized()) {
+                throw new \LogicException('Attempt history can only contain finalized attempts.');
+            }
+        }
+
+        if ($this->status->isTerminal() && $this->activeAttempt !== null) {
+            throw new \LogicException('Terminal execution cannot have an active attempt.');
+        }
     }
-
-    // INTERNAL //////////////////////////////////////////////////////////
 }

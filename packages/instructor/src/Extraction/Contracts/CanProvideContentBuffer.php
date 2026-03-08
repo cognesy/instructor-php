@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extraction\Contracts;
 
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 
 /**
  * Contract for extractors that can provide streaming content buffers.

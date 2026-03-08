@@ -7,11 +7,11 @@ id: 'e416'
 
 Support for DeepSeek API which provides strong models at affordable price.
 
-Mode compatibility:
-- OutputMode::Tools (supported)
-- OutputMode::Json (supported)
-- OutputMode::JsonSchema (supported)
-- OutputMode::MdJson (fallback)
+Inference feature compatibility:
+- tool calling (supported)
+- native JSON object response_format (supported)
+- native JSON schema response_format (supported)
+- Instructor markdown-JSON fallback (fallback)
 
 ## Example
 

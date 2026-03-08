@@ -21,12 +21,10 @@ class Inference {
 
     // Runtime selection
     public static function using(string $preset): self { ... }
-    public static function fromLLMConfig(LLMConfig $config): self { ... }
-    public static function fromLLMProvider(LLMProvider $provider): self { ... }
-    public static function fromDsn(string $dsn): self { ... }
+    public static function fromConfig(LLMConfig $config): self { ... }
+    public static function fromProvider(LLMProvider $provider): self { ... }
     public static function fromRuntime(CanCreateInference $runtime): self { ... }
     public function withRuntime(CanCreateInference $runtime): self { ... }
-    public function runtime(): CanCreateInference { ... }
 
     // Request building and execution
     public function with(...): self { ... }
@@ -62,12 +60,10 @@ class Embeddings {
 
     // Runtime selection
     public static function using(string $preset): self { ... }
-    public static function fromEmbeddingsConfig(EmbeddingsConfig $config): self { ... }
-    public static function fromEmbeddingsProvider(EmbeddingsProvider $provider): self { ... }
-    public static function fromDsn(string $dsn): self { ... }
+    public static function fromConfig(EmbeddingsConfig $config): self { ... }
+    public static function fromProvider(EmbeddingsProvider $provider): self { ... }
     public static function fromRuntime(CanCreateEmbeddings $runtime): self { ... }
     public function withRuntime(CanCreateEmbeddings $runtime): self { ... }
-    public function runtime(): CanCreateEmbeddings { ... }
 
     // Request building and execution
     public function with(...): self { ... }
@@ -87,7 +83,7 @@ Similarity-search helper methods are provided by `EmbedUtils`, not by the `Embed
 use Cognesy\Polyglot\Embeddings\Utils\EmbedUtils;
 
 $matches = EmbedUtils::findSimilar(
-    embeddings: Embeddings::using('openai')->runtime(),
+    embeddings: EmbeddingsRuntime::fromConfig(EmbeddingsConfig::fromPreset('openai')),
     query: $query,
     documents: $documents,
     topK: 5,

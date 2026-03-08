@@ -61,7 +61,7 @@ final class AuditingTool extends ContextAwareTool
         )->toArray();
     }
 }
-// @doctest id="6127"
+// @doctest id="9339"
 ```
 
 ## SimpleTool: Full Control
@@ -102,7 +102,7 @@ final class EchoTool extends SimpleTool
         )->toArray();
     }
 }
-// @doctest id="e810"
+// @doctest id="e869"
 ```
 
 ## Descriptors as Separate Classes
@@ -133,7 +133,7 @@ final readonly class BashLikeDescriptor extends ToolDescriptor
         );
     }
 }
-// @doctest id="bfc1"
+// @doctest id="2b10"
 ```
 
 ## Schema Strategy Matrix
@@ -154,7 +154,7 @@ Use `$this->arg()` to support named and positional arguments in one line:
 
 ```php
 $path = (string) $this->arg($args, 'path', 0, '');
-// @doctest id="4563"
+// @doctest id="47b8"
 ```
 
 Lookup order is: named key, positional index, then default.

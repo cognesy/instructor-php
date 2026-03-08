@@ -30,7 +30,7 @@ order:
   - internals
   - upgrade
   - cli_tools
-# @doctest id="de3c"
+# @doctest id="63cf"
 ```
 
 ### Key Points
@@ -55,7 +55,7 @@ packages/instructor/docs/
 │   └── modes.md
 └── advanced/
     └── ...
-// @doctest id="dbbe"
+// @doctest id="baf3"
 ```
 
 Root `_meta.yaml`:
@@ -66,7 +66,7 @@ order:
   - setup
   - essentials
   - advanced
-# @doctest id="4218"
+# @doctest id="2b78"
 ```
 
 Essentials `_meta.yaml`:
@@ -75,7 +75,7 @@ order:
   - usage
   - validation
   - modes
-# @doctest id="4469"
+# @doctest id="d09a"
 ```
 
 ## Using Front Matter
@@ -89,7 +89,7 @@ sidebarPosition: 5
 ---
 
 # My Page Content
-# @doctest id="bf5d"
+# @doctest id="7f79"
 ```
 
 Lower numbers appear first. Files with `sidebarPosition` are sorted before files without it.
@@ -180,5 +180,5 @@ After changing `_meta.yaml`, regenerate:
 ```bash
 composer docs gen:mintlify
 composer docs gen:mkdocs
-# @doctest id="dda8"
+# @doctest id="ca86"
 ```

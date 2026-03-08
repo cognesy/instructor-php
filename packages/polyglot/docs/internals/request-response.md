@@ -10,13 +10,11 @@ description: 'Core request/response types used by inference and embeddings.'
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 $request = new InferenceRequest(
     messages: 'Summarize this text',
     model: 'gpt-4o-mini',
     options: ['temperature' => 0.2],
-    mode: OutputMode::Text,
 );
 ```
 
@@ -27,7 +25,6 @@ Most used accessors:
 - `tools()`, `toolChoice()`
 - `responseFormat()`
 - `options()`
-- `outputMode()`
 - `cachedContext()`
 - `responseCachePolicy()`
 - `retryPolicy()`
@@ -41,14 +38,13 @@ Most used mutators:
 - `withToolChoice(...)`
 - `withResponseFormat(...)`
 - `withOptions(...)`
-- `withOutputMode(...)`
 - `withCachedContext(...)`
 - `withResponseCachePolicy(...)`
 - `withRetryPolicy(...)`
 
 ## PendingInference
 
-`PendingInference` defers execution until you read output.
+`PendingInference` defers execution until you read output. It is the raw pending-operation handle, not a base abstraction for higher layers.
 
 ```php
 <?php
@@ -60,6 +56,7 @@ $pending = Inference::using('openai')
 
 $text = $pending->get();
 $json = $pending->asJsonData();
+$toolData = $pending->asToolCallJsonData();
 $response = $pending->response();
 ```
 
@@ -67,13 +64,21 @@ Core methods:
 
 - `get()`: text content
 - `asJson()`, `asJsonData()`
+- `asToolCallJson()`, `asToolCallJsonData()`
 - `response()`: full `InferenceResponse`
 - `stream()`: `InferenceStream` (only when streaming is enabled)
 - `isStreamed()`
 
+Contract:
+
+- lazy until first read
+- one pending request coordinates one raw execution lifecycle
+- mutable execution bookkeeping lives in an internal `InferenceExecutionSession`
+- structured extraction/validation belongs outside Polyglot
+
 ## InferenceStream
 
-`InferenceStream` exposes partial snapshots during streaming.
+`InferenceStream` exposes visible deltas during streaming.
 
 ```php
 <?php
@@ -82,8 +87,8 @@ $stream = Inference::using('openai')
     ->withStreaming(true)
     ->stream();
 
-foreach ($stream->responses() as $partial) {
-    echo $partial->contentDelta;
+foreach ($stream->deltas() as $delta) {
+    echo $delta->contentDelta;
 }
 
 $final = $stream->final();
@@ -91,22 +96,21 @@ $final = $stream->final();
 
 Core methods:
 
-- `responses()`: generator of `PartialInferenceResponse`
-- `all()`: collect all partial responses
+- `deltas()`: generator of `PartialInferenceDelta`
+- `all()`: collect all visible deltas
 - `final()`: materialized final `InferenceResponse`
-- `onPartialResponse(callable)`
+- `onDelta(callable)`
 - `map(...)`, `filter(...)`, `reduce(...)`
 
-## PartialInferenceResponse
+## PartialInferenceDelta
 
-Each streamed chunk is represented as a cumulative snapshot:
+Each streamed chunk is represented as an ephemeral delta:
 
-- `contentDelta` / `content()`
-- `reasoningContentDelta` / `reasoningContent()`
+- `contentDelta`
+- `reasoningContentDelta`
 - `toolId`, `toolName`, `toolArgs`
-- `toolCalls()`
-- `finishReason()`
-- `usage()`
+- `finishReason`
+- `usage`
 
 ## EmbeddingsRequest and EmbeddingsResponse
 
@@ -128,6 +132,25 @@ $usage = $response->usage();
 
 `EmbeddingsResponse` also provides `last()`, `split(...)`, `toValuesArray()`, and `toArray()`.
 
+## ResponseFormat
+
+`ResponseFormat` is the explicit Polyglot value object for response-shape requests.
+
+```php
+<?php
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
+
+$text = ResponseFormat::text();
+$jsonObject = ResponseFormat::jsonObject();
+$jsonSchema = ResponseFormat::jsonSchema(
+    schema: ['type' => 'object'],
+    name: 'schema',
+    strict: true,
+);
+```
+
+Drivers map these response-format values to provider-native request bodies.
+
 ## Identity Types
 
 IDs are value objects serialized as strings at boundaries:
@@ -136,5 +159,4 @@ IDs are value objects serialized as strings at boundaries:
 - `InferenceExecutionId`
 - `InferenceAttemptId`
 - `InferenceResponseId`
-- `PartialInferenceResponseId`
 - `ToolCallId`

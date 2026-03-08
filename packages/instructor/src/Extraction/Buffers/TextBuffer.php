@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Extraction\Buffers;
 
 use Cognesy\Instructor\Extraction\Contracts\CanBufferContent;
+use Cognesy\Utils\Profiler\TracksObjectCreation;
 
 /**
  * Text content buffer for text-based modes.
@@ -11,9 +12,13 @@ use Cognesy\Instructor\Extraction\Contracts\CanBufferContent;
  */
 final readonly class TextBuffer implements CanBufferContent
 {
+    use TracksObjectCreation;
+
     private function __construct(
         private string $content,
-    ) {}
+    ) {
+        $this->trackObjectCreation();
+    }
 
     public static function empty(): self {
         return new self('');

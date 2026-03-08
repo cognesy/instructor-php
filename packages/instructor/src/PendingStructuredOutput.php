@@ -3,39 +3,47 @@
 namespace Cognesy\Instructor;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Instructor\Contracts\CanHandleStructuredOutputAttempts;
-use Cognesy\Instructor\Creation\ResponseIteratorFactory;
+use Cognesy\Instructor\Creation\ExecutionDriverFactory;
+use Cognesy\Instructor\Core\StructuredOutputExecutionSession;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
+use Cognesy\Instructor\Data\StructuredOutputResponse;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
-use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted;
 use Cognesy\Instructor\Traits\HandlesResultTypecasting;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Utils\Json\Json;
-use RuntimeException;
 
 /**
+ * Public lazy handle for one structured-output operation.
+ *
+ * Responsibilities:
+ * - trigger execution only when result data is requested
+ * - coordinate one-shot access across `get()`, `response()`, `rawResponse()`, and `stream()`
+ * - cache the finalized structured/raw result for repeated reads when allowed
+ *
+ * Non-responsibilities:
+ * - it is not the owner of long-lived streaming state
+ * - it is not a generic lifecycle abstraction shared with Polyglot
+ * - it should not materialize per-chunk snapshots beyond the dedicated stream/state objects
+ *
  * @template TResponse
  */
 class PendingStructuredOutput
 {
     use HandlesResultTypecasting;
 
-    private readonly CanHandleEvents $events;
-    private readonly ResponseIteratorFactory $executorFactory;
-    private StructuredOutputExecution $execution;
-    private ?CanHandleStructuredOutputAttempts $attemptHandler = null;
-    private ?InferenceResponse $cachedResponse = null;
-    private ?StructuredOutputStream $cachedStream = null;
+    private readonly StructuredOutputExecutionSession $session;
 
     public function __construct(
         StructuredOutputExecution $execution,
-        ResponseIteratorFactory $executorFactory,
+        ExecutionDriverFactory $executionDriverFactory,
         CanHandleEvents $events,
     ) {
-        $this->execution = $execution;
-        $this->executorFactory = $executorFactory;
-        $this->events = $events;
+        $this->session = new StructuredOutputExecutionSession(
+            execution: $execution,
+            executionDriverFactory: $executionDriverFactory,
+            events: $events,
+        );
     }
 
     /**
@@ -45,15 +53,15 @@ class PendingStructuredOutput
      */
     public function get() : mixed {
         return match(true) {
-            $this->execution->isStreamed() => $this->stream()->finalValue(),
-            default => $this->getResponse()->value(),
+            $this->execution()->isStreamed() => $this->stream()->finalValue(),
+            default => $this->session->output(),
         };
     }
 
     public function toJsonObject() : Json {
         return match(true) {
-            $this->execution->isStreamed() => $this->stream()->finalResponse()->findJsonData($this->execution->outputMode()),
-            default => $this->getResponse()->findJsonData($this->execution->outputMode())
+            $this->execution()->isStreamed() => $this->toJsonObjectFromResponse($this->stream()->finalRawResponse()),
+            default => $this->toJsonObjectFromResponse($this->session->rawResponse()),
         };
     }
 
@@ -66,14 +74,22 @@ class PendingStructuredOutput
     }
 
     /**
-     * Executes the request and returns LLM response object
+     * Executes the request and returns Instructor response object
      */
-    public function response() : InferenceResponse {
-        return $this->getResponse();
+    public function response() : StructuredOutputResponse {
+        return new StructuredOutputResponse(
+            value: $this->session->output(),
+            rawResponse: $this->session->rawResponse(),
+            isPartial: false,
+        );
+    }
+
+    public function rawResponse() : InferenceResponse {
+        return $this->session->rawResponse();
     }
 
     public function execution() : StructuredOutputExecution {
-        return $this->execution;
+        return $this->session->execution();
     }
 
     /**
@@ -82,63 +98,13 @@ class PendingStructuredOutput
      * @return StructuredOutputStream<TResponse>
      */
     public function stream() : StructuredOutputStream {
-        if ($this->cachedStream !== null) {
-            return $this->cachedStream;
-        }
-        $this->execution = $this->execution->withStreamed();
-        $handler = $this->executorFactory->makeExecutor($this->execution);
-        $stream = new StructuredOutputStream($this->execution, $handler, $this->events);
-        $this->cachedStream = $stream;
-        return $stream;
+        return $this->session->stream();
     }
 
-    // INTERNAL /////////////////////////////////////////////////
-
-    private function getResponse() : InferenceResponse {
-        $existingResponse = $this->execution->inferenceResponse();
-        if ($existingResponse !== null) {
-            return $existingResponse;
-        }
-        if ($this->cachedResponse !== null) {
-            return $this->cachedResponse;
-        }
-
-        // If a stream was already created, delegate to it — do not re-execute
-        if ($this->cachedStream !== null) {
-            $response = $this->cachedStream->finalResponse();
-            $this->cachedResponse = $response;
-            return $response;
-        }
-
-        $this->events->dispatch(new StructuredOutputStarted(['request' => $this->execution->request()->toArray()]));
-
-        $handler = $this->getAttemptHandler();
-        while ($handler->hasNext($this->execution)) {
-            $this->execution = $handler->nextUpdate($this->execution);
-        }
-        $response = $this->execution->inferenceResponse();
-        if ($response === null) {
-            throw new RuntimeException('Failed to get inference response');
-        }
-        if ($this->shouldCache()) {
-            $this->cachedResponse = $response;
-        }
-        $this->events->dispatch(new StructuredOutputResponseGenerated(['response' => $response]));
-        return $response;
-    }
-
-    private function getAttemptHandler(): CanHandleStructuredOutputAttempts {
-        if ($this->attemptHandler === null) {
-            $this->attemptHandler = $this->executorFactory->makeExecutor($this->execution);
-        }
-        return $this->attemptHandler;
-    }
-
-    private function shouldCache(): bool {
-        return $this->cachePolicy()->shouldCache();
-    }
-
-    private function cachePolicy(): ResponseCachePolicy {
-        return $this->execution->config()->responseCachePolicy();
+    private function toJsonObjectFromResponse(InferenceResponse $response) : Json {
+        return match ($this->execution()->outputMode()) {
+            OutputMode::Tools => $response->findToolCallJsonData(),
+            default => $response->findJsonData(),
+        };
     }
 }

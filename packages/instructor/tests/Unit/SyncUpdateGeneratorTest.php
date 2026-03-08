@@ -4,15 +4,22 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\InferenceProvider;
 use Cognesy\Instructor\Core\RequestMaterializer;
+use Cognesy\Instructor\Core\ResponseGenerator;
+use Cognesy\Instructor\Core\SyncExecutionDriver;
 use Cognesy\Instructor\Creation\ResponseModelFactory;
 use Cognesy\Instructor\Creation\StructuredOutputSchemaRenderer;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
-use Cognesy\Instructor\ResponseIterators\Sync\SyncUpdateGenerator;
+use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
+use Cognesy\Instructor\Deserialization\ResponseDeserializer;
+use Cognesy\Instructor\Extraction\ResponseExtractor;
+use Cognesy\Instructor\RetryPolicy\DefaultRetryPolicy;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
+use Cognesy\Instructor\Transformation\ResponseTransformer;
+use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
@@ -31,26 +38,8 @@ function makeSyncResponseModel(): ResponseModel {
     return $factory->fromAny(SyncModel::class);
 }
 
-it('makes single inference request and marks as exhausted', function () {
-    $response = InferenceResponse::empty()->withContent('{"name":"Alice","age":30}');
-
-    $driver = new FakeInferenceDriver(
-        responses: [$response]
-    );
-
-    $events = new EventDispatcher();
-    $llmProvider = LLMProvider::new()->withDriver($driver);
-
-    $inferenceProvider = new InferenceProvider(
-        inference: InferenceRuntime::fromProvider($llmProvider),
-        requestMaterializer: new RequestMaterializer(),
-    );
-
-    $generator = new SyncUpdateGenerator(
-        inferenceProvider: $inferenceProvider,
-    );
-
-    $execution = (new StructuredOutputExecution())
+function makeSyncExecution(): StructuredOutputExecution {
+    return (new StructuredOutputExecution())
         ->with(
             request: (new StructuredOutputRequest())
                 ->withMessages([['role' => 'user', 'content' => 'Test']])
@@ -58,129 +47,111 @@ it('makes single inference request and marks as exhausted', function () {
             responseModel: makeSyncResponseModel(),
             config: (new StructuredOutputConfig())->with(outputMode: OutputMode::Json)
         );
+}
 
-    // Before first call: hasNext is true, no attempt state
-    expect($generator->hasNext($execution))->toBeTrue();
-    expect($execution->attemptState())->toBeNull();
+function makeSyncDriver(
+    EventDispatcher $events,
+    InferenceProvider $inferenceProvider,
+    StructuredOutputExecution $execution,
+): SyncExecutionDriver {
+    return new SyncExecutionDriver(
+        execution: $execution,
+        inferenceProvider: $inferenceProvider,
+        responseGenerator: new ResponseGenerator(
+            responseDeserializer: new ResponseDeserializer(
+                events: $events,
+                deserializers: [SymfonyDeserializer::class],
+                config: new StructuredOutputConfig(),
+            ),
+            responseValidator: new ResponseValidator($events, [], new StructuredOutputConfig()),
+            responseTransformer: new ResponseTransformer($events, [], new StructuredOutputConfig()),
+            events: $events,
+            extractor: new ResponseExtractor(events: $events),
+        ),
+        retryPolicy: new DefaultRetryPolicy($events),
+    );
+}
 
-    // First (and only) call: gets inference, marks as exhausted
-    $updated = $generator->nextChunk($execution);
+function makeInferenceProvider(FakeInferenceDriver $fakeDriver): InferenceProvider {
+    return new InferenceProvider(
+        inference: InferenceRuntime::fromProvider(LLMProvider::new()->withDriver($fakeDriver)),
+        requestMaterializer: new RequestMaterializer(),
+    );
+}
 
-    expect($updated->attemptState())->not->toBeNull();
-    expect($updated->attemptState()->hasMoreChunks())->toBeFalse();
-    expect($updated->isCurrentlyStreaming())->toBeFalse();
+it('makes single inference request and marks as exhausted', function () {
+    $response = InferenceResponse::empty()->withContent('{"name":"Alice","age":30}');
+    $fakeDriver = new FakeInferenceDriver(responses: [$response]);
+    $events = new EventDispatcher();
+    $execution = makeSyncExecution();
+
+    $driver = makeSyncDriver($events, makeInferenceProvider($fakeDriver), $execution);
+
+    expect($driver->hasNextEmission())->toBeTrue();
+
+    $emission = $driver->nextEmission();
+    expect($emission)->not->toBeNull();
+    expect($emission->isFinal())->toBeTrue();
+
+    $updated = $driver->execution();
+    expect($updated->isFinalized())->toBeTrue();
     expect($updated->inferenceResponse())->not->toBeNull();
     expect($updated->inferenceResponse()->content())->toBe('{"name":"Alice","age":30}');
 
-    // After first call: hasNext is false (exhausted)
-    expect($generator->hasNext($updated))->toBeFalse();
+    expect($driver->hasNextEmission())->toBeFalse();
 });
 
-it('returns single chunk with empty partials list', function () {
+it('finalizes sync execution with an empty partial response snapshot', function () {
     $response = InferenceResponse::empty()->withContent('{"name":"Bob","age":25}');
-
-    $driver = new FakeInferenceDriver(
-        responses: [$response]
-    );
-
+    $fakeDriver = new FakeInferenceDriver(responses: [$response]);
     $events = new EventDispatcher();
-    $llmProvider = LLMProvider::new()->withDriver($driver);
+    $execution = makeSyncExecution();
 
-    $inferenceProvider = new InferenceProvider(
-        inference: InferenceRuntime::fromProvider($llmProvider),
-        requestMaterializer: new RequestMaterializer(),
-    );
+    $driver = makeSyncDriver($events, makeInferenceProvider($fakeDriver), $execution);
 
-    $generator = new SyncUpdateGenerator(
-        inferenceProvider: $inferenceProvider,
-    );
+    $emission = $driver->nextEmission();
+    expect($emission)->not->toBeNull();
 
-    $execution = (new StructuredOutputExecution())
-        ->with(
-            request: (new StructuredOutputRequest())
-                ->withMessages([['role' => 'user', 'content' => 'Test']])
-                ->withStreamed(false),
-            responseModel: makeSyncResponseModel(),
-            config: (new StructuredOutputConfig())->with(outputMode: OutputMode::Json)
-        );
-
-    $updated = $generator->nextChunk($execution);
-
-    // Sync execution has final response (partials may or may not be tracked)
-    expect($updated->attemptState())->not->toBeNull();
+    $updated = $driver->execution();
     expect($updated->inferenceResponse())->not->toBeNull();
+    expect($updated->activeAttempt())->toBeNull();
+    expect($updated->lastFinalizedAttempt())->not->toBeNull();
+    expect($updated->lastFinalizedAttempt()?->isFinalized())->toBeTrue();
+    expect($updated->lastFinalizedAttempt()?->inferenceResponse()?->content())->toBe('{"name":"Bob","age":25}');
 });
 
 it('normalizes content based on output mode', function () {
     $response = InferenceResponse::empty()->withContent('  {"name":"Charlie","age":35}  ');
-
-    $driver = new FakeInferenceDriver(
-        responses: [$response]
-    );
-
+    $fakeDriver = new FakeInferenceDriver(responses: [$response]);
     $events = new EventDispatcher();
-    $llmProvider = LLMProvider::new()->withDriver($driver);
+    $execution = makeSyncExecution();
 
-    $inferenceProvider = new InferenceProvider(
-        inference: InferenceRuntime::fromProvider($llmProvider),
-        requestMaterializer: new RequestMaterializer(),
-    );
+    $driver = makeSyncDriver($events, makeInferenceProvider($fakeDriver), $execution);
 
-    $generator = new SyncUpdateGenerator(
-        inferenceProvider: $inferenceProvider,
-    );
+    $emission = $driver->nextEmission();
+    expect($emission)->not->toBeNull();
 
-    $execution = (new StructuredOutputExecution())
-        ->with(
-            request: (new StructuredOutputRequest())
-                ->withMessages([['role' => 'user', 'content' => 'Test']])
-                ->withStreamed(false),
-            responseModel: makeSyncResponseModel(),
-            config: (new StructuredOutputConfig())->with(outputMode: OutputMode::Json)
-        );
-
-    $updated = $generator->nextChunk($execution);
-
-    // Content should be normalized (whitespace trimmed via Json normalization)
+    $updated = $driver->execution();
     $content = $updated->inferenceResponse()->content();
     expect($content)->toBeString();
     expect($content)->toContain('name');
     expect($content)->toContain('Charlie');
 });
 
-it('does not call nextChunk when already exhausted', function () {
+it('returns no emission when already completed', function () {
     $response = InferenceResponse::empty()->withContent('{"name":"Dave","age":40}');
-
-    $driver = new FakeInferenceDriver(
-        responses: [$response]
-    );
-
+    $fakeDriver = new FakeInferenceDriver(responses: [$response]);
     $events = new EventDispatcher();
-    $llmProvider = LLMProvider::new()->withDriver($driver);
+    $execution = makeSyncExecution();
 
-    $inferenceProvider = new InferenceProvider(
-        inference: InferenceRuntime::fromProvider($llmProvider),
-        requestMaterializer: new RequestMaterializer(),
-    );
+    $driver = makeSyncDriver($events, makeInferenceProvider($fakeDriver), $execution);
 
-    $generator = new SyncUpdateGenerator(
-        inferenceProvider: $inferenceProvider,
-    );
+    // First emission
+    $emission = $driver->nextEmission();
+    expect($emission)->not->toBeNull();
+    expect($driver->hasNextEmission())->toBeFalse();
 
-    $execution = (new StructuredOutputExecution())
-        ->with(
-            request: (new StructuredOutputRequest())
-                ->withMessages([['role' => 'user', 'content' => 'Test']])
-                ->withStreamed(false),
-            responseModel: makeSyncResponseModel(),
-            config: (new StructuredOutputConfig())->with(outputMode: OutputMode::Json)
-        );
-
-    // First call
-    $updated = $generator->nextChunk($execution);
-    expect($generator->hasNext($updated))->toBeFalse();
-
-    // Second call should be a no-op (returns same execution)
-    $secondCall = $generator->nextChunk($updated);
-    expect($secondCall)->toBe($updated);
+    // Second call returns null
+    $second = $driver->nextEmission();
+    expect($second)->toBeNull();
 });

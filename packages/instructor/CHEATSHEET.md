@@ -27,14 +27,13 @@ use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 $so = new StructuredOutput();
-$so = StructuredOutput::fromLLMConfig(LLMConfig::fromArray(['driver' => 'openai']));
+$so = StructuredOutput::fromConfig(LLMConfig::fromArray(['driver' => 'openai']));
 ```
 
 ## Request Configuration (`StructuredOutput`)
 
 ```php
 $so = (new StructuredOutput)
-    ->withConfig($config)
     ->withMessages($messages)
     ->withInput($input)
     ->withRequest($request)
@@ -54,7 +53,7 @@ $so = (new StructuredOutput)
 Single-call variant:
 
 ```php
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 
 $so = (new StructuredOutput)->with(
     messages: $messages,
@@ -63,9 +62,7 @@ $so = (new StructuredOutput)->with(
     prompt: '...',
     examples: $examples,
     model: 'gpt-4o-mini',
-    maxRetries: 2,
     options: ['temperature' => 0],
-    mode: OutputMode::Json,
 );
 ```
 
@@ -75,38 +72,51 @@ $so = (new StructuredOutput)->with(
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Instructor\Enums\OutputMode;
 
-$so = StructuredOutput::fromLLMConfig(LLMConfig::fromArray(['driver' => 'openai']));
+$so = StructuredOutput::fromConfig(LLMConfig::fromArray(['driver' => 'openai']));
 
-$runtime = StructuredOutputRuntime::fromDsn('driver=openai,model=gpt-4o-mini');
+$runtime = StructuredOutputRuntime::fromConfig(LLMConfig::fromDsn('driver=openai,model=gpt-4o-mini'))
+    ->withOutputMode(OutputMode::Json)
+    ->withMaxRetries(2);
 $so = (new StructuredOutput)->withRuntime($runtime);
 ```
 
 ## Pipeline Overrides
 
 ```php
-$so = (new StructuredOutput)
-    ->withValidators(...$validators)
-    ->withTransformers(...$transformers)
-    ->withDeserializers(...$deserializers)
-    ->withExtractors(...$extractors);
+$runtime = StructuredOutputRuntime::fromConfig(LLMConfig::fromDsn('driver=openai,model=gpt-4o-mini'))
+    ->withValidators($validators)
+    ->withTransformers($transformers)
+    ->withDeserializers($deserializers)
+    ->withExtractors($extractors);
+
+$so = (new StructuredOutput)->withRuntime($runtime);
 ```
 
 ## Execution
 
 ```php
 $result = $so->get();          // parsed value
-$response = $so->response();   // InferenceResponse
+$response = $so->response();   // StructuredOutputResponse
+$raw = $so->rawResponse();     // InferenceResponse
 $stream = $so->stream();       // StructuredOutputStream
 
 $pending = $so->create();
 $result = $pending->get();
 $response = $pending->response();
+$raw = $pending->rawResponse();
 $stream = $pending->stream();
 $array = $pending->toArray();
 $json = $pending->toJson();
 $execution = $pending->execution();
 ```
+
+`PendingStructuredOutput` is a lazy handle:
+- no provider call happens until one of the read methods above is used
+- `get()`, `response()`, `rawResponse()`, and `stream()` coordinate one execution
+- mutable lifecycle bookkeeping sits behind the internal execution session, not on the facade-facing handle
+- long-lived streaming state stays in the dedicated stream/state objects
 
 Type helpers (available on `StructuredOutput` and `PendingStructuredOutput`):
 
@@ -133,7 +143,7 @@ foreach ($stream->sequence() as $sequenceUpdate) {
 }
 
 foreach ($stream->responses() as $responseUpdate) {
-    // PartialInferenceResponse | InferenceResponse
+    // StructuredOutputResponse, partial or final
 }
 
 $latestValue = $stream->lastUpdate();
@@ -142,6 +152,9 @@ $usage = $stream->usage();
 $finalValue = $stream->finalValue();
 $finalResponse = $stream->finalResponse();
 ```
+
+`lastResponse()` / `finalResponse()` return `StructuredOutputResponse`.
+Use `->rawResponse()` when you need the nested raw `InferenceResponse`.
 
 ## Response Model Helpers
 
@@ -202,12 +215,14 @@ $error = $maybeUser->error();
 
 ```php
 use Cognesy\Instructor\Extras\Scalar\Scalar;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 
-$so = (new StructuredOutput)
+$runtime = StructuredOutputRuntime::fromConfig(LLMConfig::fromDsn('driver=openai,model=gpt-4o-mini'))
     ->withOutputMode(OutputMode::Json)
     ->withMaxRetries(3)
     ->withDefaultToStdClass(true);
+
+$so = (new StructuredOutput)->withRuntime($runtime);
 
 $asArray = (new StructuredOutput)->intoArray();
 $asClass = (new StructuredOutput)->intoInstanceOf(User::class);
@@ -250,13 +265,16 @@ $result = (new StructuredOutput)
 ```php
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputRequestReceived;
 
-$result = (new StructuredOutput)
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
     ->onEvent(StructuredOutputRequestReceived::class, function (object $event): void {
         // handle selected event
     })
     ->wiretap(function (object $event): void {
         // handle all events
-    })
+    });
+
+$result = (new StructuredOutput)
+    ->withRuntime($runtime)
     ->with(messages: $text, responseModel: User::class)
     ->get();
 ```

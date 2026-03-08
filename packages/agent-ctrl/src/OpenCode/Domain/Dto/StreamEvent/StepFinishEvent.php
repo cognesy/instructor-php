@@ -2,6 +2,7 @@
 
 namespace Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
 use Cognesy\AgentCtrl\OpenCode\Domain\Value\TokenUsage;
 use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodeMessageId;
 use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodePartId;
@@ -74,18 +75,18 @@ final readonly class StepFinishEvent extends StreamEvent
 
     public static function fromArray(array $data): self
     {
-        $part = $data['part'] ?? [];
+        $part = Normalize::toArray($data['part'] ?? []);
         $tokensData = $part['tokens'] ?? null;
 
         return new self(
-            timestamp: $data['timestamp'] ?? 0,
-            sessionId: $data['sessionID'] ?? '',
-            messageId: $part['messageID'] ?? '',
-            partId: $part['id'] ?? '',
-            reason: $part['reason'] ?? 'unknown',
-            snapshot: $part['snapshot'] ?? '',
-            cost: (float) ($part['cost'] ?? 0.0),
-            tokens: $tokensData !== null ? TokenUsage::fromArray($tokensData) : null,
+            timestamp: Normalize::toInt($data['timestamp'] ?? 0),
+            sessionId: Normalize::toString($data['sessionID'] ?? ''),
+            messageId: Normalize::toString($part['messageID'] ?? ''),
+            partId: Normalize::toString($part['id'] ?? ''),
+            reason: Normalize::toString($part['reason'] ?? 'unknown', 'unknown'),
+            snapshot: Normalize::toString($part['snapshot'] ?? ''),
+            cost: Normalize::toFloat($part['cost'] ?? 0.0),
+            tokens: is_array($tokensData) ? TokenUsage::fromArray($tokensData) : null,
         );
     }
 }

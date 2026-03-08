@@ -22,7 +22,7 @@ Before:
 
 ```php
 $client = HttpClient::default()->withSSEStream();
-// @doctest id="187b"
+// @doctest id="b15d"
 ```
 
 After:
@@ -35,7 +35,7 @@ $client = HttpClient::default()->withMiddleware(
         static fn(string $payload): string|bool => $payload
     )
 );
-// @doctest id="c46e"
+// @doctest id="548e"
 ```
 
 ## 2) `Middleware\ServerSideEvents\*`
@@ -46,7 +46,7 @@ Before:
 use Cognesy\Http\Middleware\ServerSideEvents\StreamSSEsMiddleware;
 
 $client = $client->withMiddleware(new StreamSSEsMiddleware());
-// @doctest id="08ba"
+// @doctest id="0e17"
 ```
 
 After:
@@ -59,7 +59,7 @@ $client = $client->withMiddleware(
         static fn(string $payload): string|bool => $payload
     )
 );
-// @doctest id="e357"
+// @doctest id="e3f9"
 ```
 
 Additional import migrations:

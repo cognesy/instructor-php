@@ -15,10 +15,12 @@ Simple PSR-3 logging integration using Instructor's functional pipeline.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Logging\Filters\LogLevelFilter;
 use Cognesy\Logging\Formatters\MessageTemplateFormatter;
 use Cognesy\Logging\Pipeline\LoggingPipeline;
 use Cognesy\Logging\Writers\PsrLoggerWriter;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 // Create PSR-3 logger
@@ -48,8 +50,10 @@ class User
 }
 
 // Extract data with logging
-$user = StructuredOutput::using('openai')
-    ->wiretap($pipeline)
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
+    ->wiretap($pipeline);
+
+$user = (new StructuredOutput($runtime))
     ->withMessages("Jason is 25 years old.")
     ->withResponseClass(User::class)
     ->get();

@@ -2,7 +2,6 @@
 
 namespace Cognesy\Instructor;
 
-use Cognesy\Config\Dsn;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\HttpClient;
 use Cognesy\Events\Contracts\CanHandleEvents;
@@ -18,7 +17,6 @@ use Cognesy\Instructor\Transformation\Contracts\CanTransformData;
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
-use Cognesy\Polyglot\Inference\Contracts\CanResolveLLMConfig;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
@@ -70,49 +68,21 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
         );
     }
 
-    public static function fromResolver(
-        CanResolveLLMConfig $resolver,
-        ?CanHandleEvents $events = null,
-        ?HttpClient $httpClient = null,
-        ?StructuredOutputConfig $structuredConfig = null,
-    ): self {
-        $events = self::resolveEvents($events);
-        return new self(
-            inference: InferenceRuntime::fromResolver(
-                resolver: $resolver,
-                events: $events,
-                httpClient: $httpClient,
-            ),
-            events: $events,
-            config: self::resolveStructuredConfig($structuredConfig),
-        );
-    }
-
     public static function fromProvider(
         LLMProvider $provider,
         ?CanHandleEvents $events = null,
         ?HttpClient $httpClient = null,
         ?StructuredOutputConfig $structuredConfig = null,
     ): self {
-        return self::fromResolver(
-            resolver: $provider,
+        $events = self::resolveEvents($events);
+        return new self(
+            inference: InferenceRuntime::fromProvider(
+                provider: $provider,
+                events: $events,
+                httpClient: $httpClient,
+            ),
             events: $events,
-            httpClient: $httpClient,
-            structuredConfig: $structuredConfig,
-        );
-    }
-
-    public static function fromDsn(
-        string $dsn,
-        ?CanHandleEvents $events = null,
-        ?HttpClient $httpClient = null,
-        ?StructuredOutputConfig $structuredConfig = null,
-    ): self {
-        return self::fromConfig(
-            config: LLMConfig::fromArray(Dsn::fromString($dsn)->toArray()),
-            events: $events,
-            httpClient: $httpClient,
-            structuredConfig: $structuredConfig,
+            config: self::resolveStructuredConfig($structuredConfig),
         );
     }
 
@@ -148,13 +118,23 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
 
         return new PendingStructuredOutput(
             execution: $execution,
-            executorFactory: $pipelineFactory->createIteratorFactory(),
+            executionDriverFactory: $pipelineFactory->createExecutionDriverFactory(),
             events: $this->events,
         );
     }
 
     public function events(): CanHandleEvents {
         return $this->events;
+    }
+
+    public function onEvent(string $class, callable $listener, int $priority = 0): self {
+        $this->events->addListener($class, $listener, $priority);
+        return $this;
+    }
+
+    public function wiretap(callable $listener): self {
+        $this->events->wiretap($listener);
+        return $this;
     }
 
     public function config(): StructuredOutputConfig {
@@ -183,6 +163,18 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
 
     public function withConfig(StructuredOutputConfig $config): self {
         return $this->with(config: $config);
+    }
+
+    public function withDefaultToStdClass(bool $defaultToStdClass = true): self {
+        return $this->withConfig($this->config->with(defaultToStdClass: $defaultToStdClass));
+    }
+
+    public function withOutputMode(\Cognesy\Instructor\Enums\OutputMode $outputMode): self {
+        return $this->withConfig($this->config->withOutputMode($outputMode));
+    }
+
+    public function withMaxRetries(int $maxRetries): self {
+        return $this->withConfig($this->config->withMaxRetries($maxRetries));
     }
 
     /** @param array<CanValidateObject|class-string<CanValidateObject>> $validators */

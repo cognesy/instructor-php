@@ -5,7 +5,6 @@ namespace Cognesy\Polyglot\Inference\Drivers\Deepseek;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\Str;
 
 class DeepseekBodyFormat extends OpenAICompatibleBodyFormat
@@ -65,6 +64,12 @@ class DeepseekBodyFormat extends OpenAICompatibleBodyFormat
         return !Str::contains($model, 'reasoner');
     }
 
+    #[\Override]
+    protected function supportsNonTextResponseForTools(InferenceRequest $request) : bool
+    {
+        return false;
+    }
+
     // INTERNAL ///////////////////////////////////////////////
 
     #[\Override]
@@ -73,8 +78,8 @@ class DeepseekBodyFormat extends OpenAICompatibleBodyFormat
             return ['type' => 'text'];
         }
 
-        $mode = $this->toResponseFormatMode($request);
-        if ($mode === null) {
+        $type = $this->toResponseFormatType($request);
+        if ($type === null) {
             return [];
         }
 
@@ -83,6 +88,6 @@ class DeepseekBodyFormat extends OpenAICompatibleBodyFormat
             ->withToJsonObjectHandler(fn() => ['type' => 'json_object'])
             ->withToJsonSchemaHandler(fn() => ['type' => 'json_object']); // Falls back to json_object
 
-        return $responseFormat->as($mode);
+        return $this->renderResponseFormatForType($responseFormat, $type);
     }
 }

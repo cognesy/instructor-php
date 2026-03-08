@@ -4,7 +4,7 @@ namespace Cognesy\Agents\Capability\StructuredOutput;
 
 use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 final readonly class StructuredOutputPolicy

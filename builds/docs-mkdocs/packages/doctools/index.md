@@ -32,7 +32,7 @@ composer docs gen:llms
 
 # Generate and deploy LLM docs to website
 composer docs gen:llms --deploy
-# @doctest id="2c32"
+# @doctest id="0938"
 ```
 
 ## Documentation Structure
@@ -54,7 +54,7 @@ packages/*/docs/         # Package documentation (autodiscovered)
 
 examples/                # Cookbook examples
 └── ...
-// @doctest id="0971"
+// @doctest id="cac0"
 ```
 
 ## Topics

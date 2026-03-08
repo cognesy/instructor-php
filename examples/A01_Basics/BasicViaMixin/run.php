@@ -1,35 +1,12 @@
 ---
-title: 'Basic use via mixin'
+title: 'Basic use via StructuredOutput'
 docname: 'basic_use_mixin'
 id: '068c'
 ---
 ## Overview
 
-`HandlesSelfInference` is deprecated in 2.0.
-Prefer runtime-first usage via `StructuredOutput::using('openai')->with(...)->getObject()`.
-
-Legacy mixin usage is still available and shown below for migration reference.
-
-`infer()` method returns an instance of the class with the data extracted
-using the Instructor.
-
-`infer()` method has following signature (you can also find it in the
-`CanSelfInfer` interface):
-
-```php
-static public function infer(
-    string|array $messages, // (required) The message(s) to infer data from
-    string $prompt = '',    // (optional) The prompt to use for inference
-    array $examples = [],   // (optional) Examples to include in the prompt
-    string $model = '',     // (optional) The model to use for inference (otherwise - use default)
-    int $maxRetries = 2,    // (optional) The number of retries in case of validation failure
-    array $options = [],    // (optional) Additional data to pass to the Instructor or LLM API
-    Mode $mode = OutputMode::Tools, // (optional) The mode to use for inference
-    ?LLM $llm = null         // (optional) LLM instance to use for inference
-) : static;
-```
-
-Recommended replacement:
+Mixin-based inference was removed in 2.0.
+Use `StructuredOutput` directly:
 
 ```php
 use Cognesy\Instructor\StructuredOutput;
@@ -48,20 +25,19 @@ $user = StructuredOutput::using('openai')
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Extras\Mixin\HandlesSelfInference;
-use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Instructor\StructuredOutput;
 
 class User {
-    use HandlesSelfInference;
-
     public int $age;
     public string $name;
 }
 
-$user = User::infer(
-    messages: "Jason is 25 years old and works as an engineer.",
-    llm: LLMProvider::using('openai'),
-);
+$user = StructuredOutput::using('openai')
+    ->with(
+        messages: "Jason is 25 years old and works as an engineer.",
+        responseModel: User::class,
+    )
+    ->getObject();
 
 dump($user);
 

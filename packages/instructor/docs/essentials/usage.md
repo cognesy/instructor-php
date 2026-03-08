@@ -132,11 +132,13 @@ See: [Output Formats Guide](../advanced/output_formats.md) for comprehensive doc
 
 ### Configuration and Behavior
 ```php
-$structuredOutput = (new StructuredOutput)
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
     ->withMaxRetries(3)                 // Set retry count
     ->withOutputMode($mode)             // Set output mode
     ->withConfig($config)               // Set configuration object
     ->withDefaultToStdClass(true);      // Use stdClass fallback for schema-less data
+
+$structuredOutput = (new StructuredOutput)->withRuntime($runtime);
 ```
 
 ### LLM Provider Configuration
@@ -150,7 +152,9 @@ $structuredOutput = StructuredOutput::using('openai');
 
 // Via DSN string
 $structuredOutput = (new StructuredOutput)->withRuntime(
-    StructuredOutputRuntime::fromDsn('driver=openai,model=gpt-4o-mini')
+    StructuredOutputRuntime::fromConfig(
+        \Cognesy\Polyglot\Inference\Config\LLMConfig::fromDsn('driver=openai,model=gpt-4o-mini')
+    )
 );
 
 // Via a customized provider
@@ -163,11 +167,13 @@ $structuredOutput = (new StructuredOutput)->withRuntime(
 
 ### Processing Overrides
 ```php
-$structuredOutput = (new StructuredOutput)
-    ->withValidators(...$validators)    // Override validators
-    ->withTransformers(...$transformers) // Override transformers
-    ->withDeserializers(...$deserializers) // Override deserializers
-    ->withExtractors(...$extractors);   // Override extractors
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withValidators($validators)        // Override validators
+    ->withTransformers($transformers)    // Override transformers
+    ->withDeserializers($deserializers)  // Override deserializers
+    ->withExtractors($extractors);       // Override extractors
+
+$structuredOutput = (new StructuredOutput)->withRuntime($runtime);
 ```
 
 
@@ -189,8 +195,10 @@ $structuredOutput = (new StructuredOutput)->with(
 // Get structured result directly
 $person = $structuredOutput->get();
 
-// Get raw LLM response
-$llmResponse = $structuredOutput->response();
+// Get structured response object
+$response = $structuredOutput->response();
+$person = $response->value();
+$llmResponse = $response->rawResponse();
 
 // Get streaming interface
 $stream = $structuredOutput->stream();
@@ -199,7 +207,13 @@ $stream = $structuredOutput->stream();
 
 ### Pending Execution with `create()`
 
-The `create()` method returns a `PendingStructuredOutput` instance, which acts as an execution handler that provides the same access methods:
+The `create()` method returns a `PendingStructuredOutput` instance. Treat it as a lazy operation handle:
+
+- it does not execute anything until you ask for `get()`, `response()`, `rawResponse()`, `toJson*()`, or `stream()`
+- it coordinates those access paths so one pending request is executed once
+- it exposes the same read methods without turning the facade itself into a lifecycle engine
+
+It provides the same access methods:
 
 ```php
 <?php
@@ -208,8 +222,10 @@ $pending = $structuredOutput->create();
 // Execute and get structured result
 $person = $pending->get();
 
-// Execute and get raw LLM response
-$llmResponse = $pending->response();
+// Execute and get structured response object
+$response = $pending->response();
+$person = $response->value();
+$llmResponse = $response->rawResponse();
 
 // Execute and get streaming interface
 $stream = $pending->stream();
@@ -258,10 +274,11 @@ $person = $creator->create($request)->get();
 ### Response Types Explained
 
 - **`get()`**: Returns the parsed and validated structured result (e.g., `Person` object)
-- **`response()`**: Returns the raw LLM response object with metadata like tokens, model info, etc.
+- **`response()`**: Returns `StructuredOutputResponse`, the package-native structured response wrapper
+- **`rawResponse()`**: Returns the underlying raw `InferenceResponse` with tokens, finish reason, and provider metadata
 - **`stream()`**: Returns `StructuredOutputStream` for real-time processing of streaming responses
 
-The `PendingStructuredOutput` class serves as a flexible execution interface that lets you choose how to process the LLM response based on your specific needs.
+`PendingStructuredOutput` is intentionally narrow: it is the public lazy handle for one structured-output operation, while mutable lifecycle coordination lives behind the internal execution session.
 
 ### Typed convenience getters
 
@@ -284,23 +301,22 @@ $user = (new StructuredOutput)
 
 Available methods: `getString()`, `getInt()`, `getFloat()`, `getBoolean()`, `getObject()`, `getArray()`.
 
-### Runtime access
+### Runtime-first setup
 
-For advanced integration, you can access runtime and dispatch custom events:
+For advanced integration, configure `StructuredOutputRuntime` first and then pass it into `StructuredOutput`:
 
 ```php
 <?php
-use Cognesy\Events\Event;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 
-$structuredOutput = StructuredOutput::using('openai');
-$runtime = $structuredOutput->runtime();
+$runtime = StructuredOutputRuntime::fromConfig(
+    \Cognesy\Polyglot\Inference\Config\LLMConfig::fromPreset('openai')
+)->wiretap(fn($event) => dump($event));
 
-$structuredOutput->dispatch(new Event(['source' => 'app']));
+$structuredOutput = new StructuredOutput($runtime);
 ?>
 ```
-
-`dispatch()`, `onEvent()`, and `wiretap()` require `StructuredOutputRuntime`.
 
 
 ## String as Input
@@ -411,7 +427,8 @@ Once configured, you can execute your request using different methods depending 
 ```php
 // Direct execution methods
 $result = $structuredOutput->get();       // Get structured result
-$response = $structuredOutput->response(); // Get raw LLM response  
+$response = $structuredOutput->response(); // Get StructuredOutputResponse
+$raw = $structuredOutput->rawResponse();   // Get raw InferenceResponse
 $stream = $structuredOutput->stream();     // Get streaming interface
 
 // Or use create() to get PendingStructuredOutput for flexible execution
@@ -421,6 +438,10 @@ $json = $pending->toJson();               // Plus utility methods
 ```
 
 - **`get()`**: Returns the parsed and validated structured result
-- **`response()`**: Returns the raw LLM response with metadata
+- **`response()`**: Returns `StructuredOutputResponse` with the parsed value plus raw response access
+- **`rawResponse()`**: Returns the raw LLM response with metadata and raw content/tool calls only
 - **`stream()`**: Returns `StructuredOutputStream` for real-time processing
 - **`create()`**: Returns `PendingStructuredOutput` for flexible execution control
+
+Instructor keeps the parsed structured result separate from the raw `InferenceResponse`.
+Use `response()` when you want both in one place, or `rawResponse()` when you only need transport-level data.

@@ -7,7 +7,6 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Drivers\BaseInferenceRequestDriver;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIMessageFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIRequestAdapter;
-use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIResponseAdapter;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIUsageFormat;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -29,7 +28,7 @@ class MinimaxiDriver extends BaseInferenceRequestDriver
                     new OpenAIMessageFormat(),
                 )
             ),
-            responseTranslator: new OpenAIResponseAdapter(
+            responseTranslator: new MinimaxiResponseAdapter(
                 new OpenAIUsageFormat()
             ),
         );

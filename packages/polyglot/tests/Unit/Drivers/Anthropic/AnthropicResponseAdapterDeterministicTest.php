@@ -46,19 +46,19 @@ it('Anthropic: parses streaming text and tool args deltas', function () {
     $adapter = new AnthropicResponseAdapter(new AnthropicUsageFormat());
 
     $eventText = json_encode(['delta' => ['text' => 'Hel']]);
-    $p1 = iterator_to_array($adapter->fromStreamResponses([$eventText]))[0] ?? null;
-    expect($p1)->not->toBeNull();
-    expect($p1->contentDelta)->toBe('Hel');
+    $delta1 = iterator_to_array($adapter->fromStreamDeltas([$eventText]))[0] ?? null;
+    expect($delta1)->not->toBeNull();
+    expect($delta1->contentDelta)->toBe('Hel');
 
     $eventTool = json_encode([
         'content_block' => ['id' => 'c1', 'name' => 'search'],
         'delta' => ['partial_json' => json_encode(['q' => 'Hello'])],
     ]);
-    $p2 = iterator_to_array($adapter->fromStreamResponses([$eventTool]))[0] ?? null;
-    expect($p2)->not->toBeNull();
-    expect($p2->contentDelta)->toBe('');
-    expect($p2->toolName)->toBe('search');
-    expect($p2->toolArgs)->toContain('Hello');
+    $delta2 = iterator_to_array($adapter->fromStreamDeltas([$eventTool]))[0] ?? null;
+    expect($delta2)->not->toBeNull();
+    expect($delta2->contentDelta)->toBe('');
+    expect($delta2->toolName)->toBe('search');
+    expect($delta2->toolArgs)->toContain('Hello');
 });
 
 it('Anthropic: sets usageIsCumulative=true for streaming responses with usage data', function () {
@@ -70,17 +70,54 @@ it('Anthropic: sets usageIsCumulative=true for streaming responses with usage da
         'usage' => ['input_tokens' => 100, 'output_tokens' => 2]
     ]);
 
-    $partial = iterator_to_array($adapter->fromStreamResponses([$eventWithUsage]))[0] ?? null;
-    expect($partial)->not->toBeNull();
-    expect($partial->contentDelta)->toBe('Hello');
+    $delta = iterator_to_array($adapter->fromStreamDeltas([$eventWithUsage]))[0] ?? null;
+    expect($delta)->not->toBeNull();
+    expect($delta->contentDelta)->toBe('Hello');
 
     // CRITICAL: Verify that usageIsCumulative is set to true
     // This prevents exponential token growth during accumulation
-    expect($partial->isUsageCumulative())->toBeTrue();
+    expect($delta->usageIsCumulative)->toBeTrue();
 
     // Verify usage values are parsed correctly
-    $usage = $partial->usage();
+    $usage = $delta->usage;
     expect($usage)->not->toBeNull();
     expect($usage->inputTokens)->toBe(100);
     expect($usage->outputTokens)->toBe(2);
+});
+
+it('Anthropic: propagates tool id by content block index for delta events', function () {
+    $adapter = new AnthropicResponseAdapter(new AnthropicUsageFormat());
+
+    $events = [
+        json_encode([
+            'type' => 'content_block_start',
+            'index' => 0,
+            'content_block' => ['type' => 'tool_use', 'id' => 'tool_1', 'name' => 'search'],
+        ]),
+        json_encode([
+            'type' => 'content_block_start',
+            'index' => 1,
+            'content_block' => ['type' => 'tool_use', 'id' => 'tool_2', 'name' => 'search'],
+        ]),
+        json_encode([
+            'type' => 'content_block_delta',
+            'index' => 1,
+            'delta' => ['type' => 'input_json_delta', 'partial_json' => '{"q":"Ber'],
+        ]),
+        json_encode([
+            'type' => 'content_block_delta',
+            'index' => 0,
+            'delta' => ['type' => 'input_json_delta', 'partial_json' => '{"q":"Par'],
+        ]),
+    ];
+
+    $deltas = array_values(iterator_to_array($adapter->fromStreamDeltas($events)));
+
+    expect($deltas)->toHaveCount(4);
+    expect($deltas[2]->toolId)->toBe('tool_2');
+    expect($deltas[2]->toolName)->toBe('');
+    expect($deltas[2]->toolArgs)->toContain('Ber');
+    expect($deltas[3]->toolId)->toBe('tool_1');
+    expect($deltas[3]->toolName)->toBe('');
+    expect($deltas[3]->toolArgs)->toContain('Par');
 });

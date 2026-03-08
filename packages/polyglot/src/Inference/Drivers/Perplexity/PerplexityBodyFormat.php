@@ -5,8 +5,6 @@ namespace Cognesy\Polyglot\Inference\Drivers\Perplexity;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
-
 class PerplexityBodyFormat extends OpenAICompatibleBodyFormat
 {
     #[\Override]
@@ -34,8 +32,8 @@ class PerplexityBodyFormat extends OpenAICompatibleBodyFormat
 
     #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
-        $mode = $this->toResponseFormatMode($request);
-        if ($mode === null) {
+        $type = $this->toResponseFormatType($request);
+        if ($type === null) {
             return [];
         }
 
@@ -51,7 +49,7 @@ class PerplexityBodyFormat extends OpenAICompatibleBodyFormat
                 'json_schema' => ['schema' => $this->removeDisallowedEntries($request->responseFormat()->schema())],
             ]);
 
-        return $responseFormat->as($mode);
+        return $this->renderResponseFormatForType($responseFormat, $type);
     }
 }
 

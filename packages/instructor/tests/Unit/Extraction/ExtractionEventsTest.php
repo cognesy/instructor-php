@@ -16,7 +16,7 @@ use Cognesy\Instructor\Extraction\Data\ExtractionInput;
 use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 use Cognesy\Instructor\Extraction\ResponseExtractor;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**

@@ -5,8 +5,8 @@ namespace Cognesy\Polyglot\Inference\Data;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\Json\Json;
+use Cognesy\Utils\Profiler\TracksObjectCreation;
 use DateTimeImmutable;
 
 /**
@@ -14,14 +14,14 @@ use DateTimeImmutable;
  */
 final readonly class InferenceResponse
 {
+    use TracksObjectCreation;
+
     private const THINK_START_TAG = '<think>';
     private const THINK_END_TAG = '</think>';
 
     public InferenceResponseId $id;
     public DateTimeImmutable $createdAt;
     public DateTimeImmutable $updatedAt;
-
-    private mixed $value;
 
     private string $content;
     private string $reasoningContent;
@@ -41,7 +41,6 @@ final readonly class InferenceResponse
         ?Usage $usage = null,
         ?HttpResponse $responseData = null,
         bool $isPartial = false,
-        mixed $value = null, // processed / transformed value
         //
         ?InferenceResponseId $id = null, // for deserialization
         ?DateTimeImmutable $createdAt = null, // for deserialization
@@ -50,7 +49,6 @@ final readonly class InferenceResponse
         $this->id = $id ?? InferenceResponseId::generate();
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
         $this->updatedAt = $updatedAt ?? $this->createdAt;
-        $this->value = $value;
 
         $this->content = $content;
         $this->finishReason = $finishReason;
@@ -60,30 +58,14 @@ final readonly class InferenceResponse
         $this->usage = $usage ?? new Usage();
 
         $this->isPartial = $isPartial;
+        $this->trackObjectCreation();
     }
 
     public static function empty() : self {
         return new self();
     }
 
-    public static function fromAccumulatedPartial(PartialInferenceResponse $partial): InferenceResponse {
-        $response = new InferenceResponse(
-            content: $partial->content(),
-            finishReason: $partial->finishReason(),
-            toolCalls: $partial->toolCalls(),
-            reasoningContent: $partial->reasoningContent(),
-            usage: $partial->usage(),
-            responseData: $partial->responseData,
-            isPartial: false,
-        );
-        return $response->withReasoningContentFallbackFromContent();
-    }
-
     // ACCESSORS /////////////////////////////////////////////
-
-    public function value(): mixed {
-        return $this->value;
-    }
 
     public function content(): string {
         return $this->content;
@@ -115,10 +97,6 @@ final readonly class InferenceResponse
 
     // HAS/IS ////////////////////////////////////////////////
 
-    public function hasValue(): bool {
-        return $this->value !== null;
-    }
-
     public function hasContent(): bool {
         return $this->content !== '';
     }
@@ -135,21 +113,15 @@ final readonly class InferenceResponse
         return $this->finishReason !== '';
     }
 
-    /**
-     * Find the JSON data in the response - try checking for tool calls (if any are present)
-     * or find and extract JSON from the returned content.
-     *
-     * @return Json
-     */
-    public function findJsonData(?OutputMode $mode = null): Json {
+    public function findJsonData(): Json {
+        return Json::fromString($this->content);
+    }
+
+    public function findToolCallJsonData(): Json {
         return match (true) {
-            is_null($mode) => Json::fromString($this->content),
-            OutputMode::Tools->is($mode) && $this->hasToolCalls() => match (true) {
-                $this->toolCalls->hasSingle() => Json::fromArray($this->toolCalls->first()?->args() ?? []),
-                default => Json::fromArray($this->toolCalls->toArray()),
-            },
-            //$this->hasContent() => Json::fromString($this->content),
-            default => Json::fromString($this->content),
+            !$this->hasToolCalls() => Json::fromArray([]),
+            $this->toolCalls->hasSingle() => Json::fromArray($this->toolCalls->first()?->args() ?? []),
+            default => Json::fromArray($this->toolCalls->toArray()),
         };
     }
 
@@ -163,7 +135,6 @@ final readonly class InferenceResponse
         ?Usage $usage = null,
         ?HttpResponse $responseData = null,
         ?bool $isPartial = null,
-        mixed $value = null,
     ): self {
         return new self(
             content: $content ?? $this->content,
@@ -173,21 +144,10 @@ final readonly class InferenceResponse
             usage: $usage ?? $this->usage,
             responseData: $responseData ?? $this->responseData,
             isPartial: $isPartial ?? $this->isPartial,
-            value: $value ?? $this->value,
             id: $this->id,
             createdAt: $this->createdAt,
             updatedAt: new DateTimeImmutable(),
         );
-    }
-
-    /**
-     * Set the processed / transformed value of the response.
-     *
-     * @param mixed $value
-     * @return static
-     */
-    public function withValue(mixed $value): static {
-        return $this->with(value: $value);
     }
 
     public function withContent(string $content): self {

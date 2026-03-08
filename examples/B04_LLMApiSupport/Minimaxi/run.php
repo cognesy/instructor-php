@@ -7,11 +7,11 @@ id: '89a2'
 
 Support for Minimaxi's API.
 
-Mode compatibility:
-- OutputMode::MdJson (supported)
-- OutputMode::Tools (not supported)
-- OutputMode::Json (not supported)
-- OutputMode::JsonSchema (not supported)
+Inference feature compatibility:
+- Instructor markdown-JSON fallback (supported)
+- tool calling (not supported)
+- native JSON object response_format (not supported)
+- native JSON schema response_format (not supported)
 
 ## Example
 

@@ -8,6 +8,13 @@ It provides methods to access the response in different formats, but also
 provides access to streaming responses. It does not execute the request to
 underlying LLM until you actually access the response data.
 
+Treat `PendingInference` as a lazy handle for one raw inference operation:
+
+- `create()` configures the operation but does not execute it
+- `get()`, `response()`, and `stream()` coordinate one raw execution path
+- mutable retry/stream/cache bookkeeping lives behind the internal `InferenceExecutionSession`
+- repeated reads reuse the finalized raw response/stream state instead of reissuing the request
+
 It is returned by the `Inference` class when you call the `create()` method.
 
 ## Basic Response Handling
@@ -56,13 +63,13 @@ $response = $inference
     ->withStreaming()
     ->create();
 
-// Get a generator that yields partial responses
-$stream = $response->stream()->responses();
+// Get a generator that yields visible deltas
+$stream = $response->stream()->deltas();
 
 echo "Story: ";
-foreach ($stream as $partialResponse) {
+foreach ($stream as $delta) {
     // Output each chunk as it arrives
-    echo $partialResponse->contentDelta;
+    echo $delta->contentDelta;
 
     // Flush the output buffer to show progress in real-time
     if (ob_get_level() > 0) {
@@ -84,7 +91,6 @@ For models that support function calling or tools:
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 $tools = [
     [
@@ -116,12 +122,12 @@ $response = $inference->with(
     messages: 'What is the weather in Paris?',
     tools: $tools,
     toolChoice: 'auto',  // Let the model decide when to use tools
-    mode: OutputMode::Tools    // Enable tools mode
 )->response();
 
 // Check if there are tool calls
 if ($response->hasToolCalls()) {
     $toolCalls = $response->toolCalls();
+    $toolData = $response->findToolCallJsonData()->toArray();
     foreach ($toolCalls->all() as $call) {
         echo "Tool called: " . $call->name() . "\n";
         echo "Arguments: " . $call->argsAsJson() . "\n";
@@ -167,4 +173,12 @@ if ($response->hasToolCalls()) {
 } else {
     echo "Response: " . $response->content() . "\n";
 }
+```
+
+For convenience, `PendingInference` also exposes explicit tool-call helpers:
+
+```php
+<?php
+$toolJson = $inference->asToolCallJson();
+$toolData = $inference->asToolCallJsonData();
 ```

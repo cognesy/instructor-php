@@ -1,22 +1,17 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Streaming\InferenceStreamState;
 
 it('keeps distinct no-id tool calls when the same tool name appears again later', function () {
-    $partials = [
-        new PartialInferenceResponse(toolName: 'search', toolArgs: '{"q":"alpha"}', usage: new Usage()),
-        new PartialInferenceResponse(toolName: 'calculate', toolArgs: '{"n":1}', usage: new Usage()),
-        new PartialInferenceResponse(toolName: 'search', toolArgs: '{"q":"beta"}', usage: new Usage()),
-    ];
+    $state = new InferenceStreamState();
+    $state->applyDelta(new PartialInferenceDelta(toolName: 'search', toolArgs: '{"q":"alpha"}'));
+    $state->applyDelta(new PartialInferenceDelta(toolName: 'calculate', toolArgs: '{"n":1}'));
+    $state->applyDelta(new PartialInferenceDelta(toolName: 'search', toolArgs: '{"q":"beta"}'));
 
-    $acc = PartialInferenceResponse::empty();
-    foreach ($partials as $partial) {
-        $acc = $partial->withAccumulatedContent($acc);
-    }
-
-    $response = InferenceResponse::fromAccumulatedPartial($acc);
+    $response = $state->finalResponse();
     $tools = $response->toolCalls()->all();
 
     expect($response->toolCalls()->count())->toBe(3)

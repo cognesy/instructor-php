@@ -2,39 +2,36 @@
 
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
+use Cognesy\Polyglot\Inference\Streaming\InferenceStreamState;
 
-it('with mutators return new instances and do not mutate original', function () {
+it('withValue returns new instance and does not mutate original', function () {
     $partial = new PartialInferenceResponse(contentDelta: 'x');
 
-    $withContent = $partial->withContent('content');
-    $withReasoning = $partial->withReasoningContent('reasoning');
-    $withFinishReason = $partial->withFinishReason('stop');
     $withValue = $partial->withValue(['ok' => true]);
-    $withUsageCumulative = $partial->withUsageCumulative(true);
 
-    expect($withContent)->not->toBe($partial)
-        ->and($withReasoning)->not->toBe($partial)
-        ->and($withFinishReason)->not->toBe($partial)
-        ->and($withValue)->not->toBe($partial)
-        ->and($withUsageCumulative)->not->toBe($partial);
-
-    expect($partial->content())->toBe('')
-        ->and($partial->reasoningContent())->toBe('')
-        ->and($partial->finishReason())->toBe('')
+    expect($withValue)->not->toBe($partial)
         ->and($partial->hasValue())->toBeFalse()
-        ->and($partial->isUsageCumulative())->toBeFalse();
+        ->and($withValue->hasValue())->toBeTrue()
+        ->and($withValue->value())->toBe(['ok' => true]);
 });
 
-it('withAccumulatedContent returns new instance and does not mutate source partial', function () {
-    $previous = (new PartialInferenceResponse(contentDelta: 'prev', usage: new Usage(outputTokens: 1)))
-        ->withAccumulatedContent(PartialInferenceResponse::empty());
+it('InferenceStreamState accumulates without mutating source delta objects', function () {
+    $delta1 = new PartialInferenceResponse(contentDelta: 'prev', usage: new Usage(outputTokens: 1));
+    $delta2 = new PartialInferenceResponse(contentDelta: 'next', usage: new Usage(outputTokens: 1));
 
-    $delta = new PartialInferenceResponse(contentDelta: 'next', usage: new Usage(outputTokens: 1));
-    $result = $delta->withAccumulatedContent($previous);
+    $state = new InferenceStreamState();
+    $state->applyDelta(new PartialInferenceDelta(
+        contentDelta: 'prev', usage: new Usage(outputTokens: 1),
+    ));
+    $state->applyDelta(new PartialInferenceDelta(
+        contentDelta: 'next', usage: new Usage(outputTokens: 1),
+    ));
+    $result = $state->finalResponse();
 
-    expect($result)->not->toBe($delta)
-        ->and($delta->content())->toBe('')
-        ->and($delta->reasoningContent())->toBe('')
+    // Source deltas remain unmutated
+    expect($delta1->content())->toBe('')
+        ->and($delta2->content())->toBe('')
         ->and($result->content())->toBe('prevnext')
         ->and($result->usage()->output())->toBe(2);
 });

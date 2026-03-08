@@ -48,7 +48,7 @@ use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 
 final class MemoryAnalyzer
 {
@@ -108,12 +108,14 @@ final class MemoryAnalyzer
         $peakBefore = memory_get_peak_usage(true);
 
         $so = (new StructuredOutput)
-            ->withRuntime(makeStructuredRuntime(driver: $fakeDriver))
-            ->withConfig((new StructuredOutputConfig())->with(responseIterator: $driver))
+            ->withRuntime(makeStructuredRuntime(
+                driver: $fakeDriver,
+                config: (new StructuredOutputConfig())->with(responseIterator: $driver),
+                outputMode: OutputMode::Json,
+            ))
             ->with(
                 messages: 'Test',
                 responseModel: new Sequence(\stdClass::class),
-                mode: OutputMode::Json,
             );
 
         $stream = $so->stream();
@@ -144,12 +146,14 @@ final class MemoryAnalyzer
         $peakBefore = memory_get_peak_usage(true);
 
         $so = (new StructuredOutput)
-            ->withRuntime(makeStructuredRuntime(driver: $fakeDriver))
-            ->withConfig((new StructuredOutputConfig())->with(responseIterator: $driver))
+            ->withRuntime(makeStructuredRuntime(
+                driver: $fakeDriver,
+                config: (new StructuredOutputConfig())->with(responseIterator: $driver),
+                outputMode: OutputMode::Json,
+            ))
             ->with(
                 messages: 'Test',
                 responseModel: new Sequence(\stdClass::class),
-                mode: OutputMode::Json,
             );
 
         $result = $so->get();

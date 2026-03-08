@@ -8,9 +8,9 @@ id: '821d'
 Google offers Gemini models which perform well in benchmarks.
 
 Supported modes:
- - OutputMode::MdJson - fallback mode
- - OutputMode::Json - recommended
- - OutputMode::Tools - supported
+ - Instructor markdown-JSON fallback - fallback mode
+ - native JSON object response_format - recommended
+ - tool calling - supported
 
 Here's how you can use Instructor with Gemini API in OpenAI-compatible mode.
 

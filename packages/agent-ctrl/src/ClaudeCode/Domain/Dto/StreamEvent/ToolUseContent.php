@@ -2,6 +2,8 @@
 
 namespace Cognesy\AgentCtrl\ClaudeCode\Domain\Dto\StreamEvent;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
+
 /**
  * Tool use request from the agent
  */
@@ -28,9 +30,9 @@ final readonly class ToolUseContent extends MessageContent
     public static function fromArray(array $data): self
     {
         return new self(
-            id: StreamValueNormalizer::toString($data['id'] ?? ''),
-            name: StreamValueNormalizer::toString($data['name'] ?? 'unknown', 'unknown'),
-            input: StreamValueNormalizer::toArray($data['input'] ?? []),
+            id: Normalize::toString($data['id'] ?? ''),
+            name: Normalize::toString($data['name'] ?? 'unknown', 'unknown'),
+            input: Normalize::toArray($data['input'] ?? []),
         );
     }
 }

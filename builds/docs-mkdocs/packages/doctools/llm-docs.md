@@ -39,7 +39,7 @@ instructor-php/
     ├── llms.txt              # Deployed here with --deploy
     ├── llms-full.txt         # Deployed here with --deploy
     └── docs/                 # Full docs deployed here
-// @doctest id="6108"
+// @doctest id="0f8c"
 ```
 
 ## Commands
@@ -55,7 +55,7 @@ composer docs gen:llms --index-only
 
 # Generate only the full file
 composer docs gen:llms --full-only
-# @doctest id="78a5"
+# @doctest id="84df"
 ```
 
 ### With Deployment
@@ -66,7 +66,7 @@ composer docs gen:llms --deploy
 
 # Deploy to custom target
 composer docs gen:llms --deploy --target=/path/to/website/public
-# @doctest id="8a8c"
+# @doctest id="6826"
 ```
 
 ### Combined with MkDocs
@@ -74,7 +74,7 @@ composer docs gen:llms --deploy --target=/path/to/website/public
 ```bash
 # Generate MkDocs first, then LLM docs (to docs-mkdocs/)
 composer docs gen:mkdocs --with-llms
-# @doctest id="1faf"
+# @doctest id="972f"
 ```
 
 **Note:** `--with-llms` does NOT deploy to the website. It only generates files in `docs-mkdocs/`.
@@ -89,7 +89,7 @@ composer docs gen:mkdocs --with-llms
 
 # Files are now in docs-mkdocs/
 ls docs-mkdocs/llms*.txt
-# @doctest id="af8b"
+# @doctest id="565f"
 ```
 
 ### Production: Generate and Deploy
@@ -101,7 +101,7 @@ composer docs gen:llms --deploy
 
 # Option 2: Generate fresh and deploy
 composer docs gen:llms --deploy
-# @doctest id="2039"
+# @doctest id="8c41"
 ```
 
 ### CI/CD Pipeline
@@ -110,7 +110,7 @@ composer docs gen:llms --deploy
 # In your deployment script:
 composer docs gen:mkdocs --with-llms
 composer docs gen:llms --deploy --target=/var/www/html/public
-# @doctest id="ba1c"
+# @doctest id="51b3"
 ```
 
 ## Output Files
@@ -140,7 +140,7 @@ A markdown index file with links to all documentation:
 ## Cookbook
 - [Introduction](cookbook/introduction.md)
 ...
-// @doctest id="9973"
+// @doctest id="3237"
 ```
 
 ### llms-full.txt
@@ -168,7 +168,7 @@ FILE: getting-started.md
 
 # Getting Started
 ...
-// @doctest id="11c6"
+// @doctest id="4642"
 ```
 
 Features:
@@ -204,7 +204,7 @@ llms:
     target: '../instructor-www/public'
     # Subfolder for markdown files (llms.txt goes to target root)
     docs_folder: 'docs'
-# @doctest id="5037"
+# @doctest id="fd6c"
 ```
 
 ### Configuration Options
@@ -234,7 +234,7 @@ instructor-www/public/          # deploy.target
     │   ├── instructor/
     │   └── polyglot/
     └── cookbook/
-// @doctest id="719b"
+// @doctest id="a767"
 ```
 
 The deployment:
@@ -264,7 +264,7 @@ $result = $generator->generateFull(
     '/path/to/llms-full.txt',
     excludePatterns: ['release-notes/'],
 );
-// @doctest id="2693"
+// @doctest id="1231"
 ```
 
 ### GenerationResult
@@ -276,7 +276,7 @@ $result->isSuccess();        // bool
 $result->filesProcessed;     // int
 $result->message;            // string (includes file size and token estimate)
 $result->errors;             // array
-// @doctest id="a598"
+// @doctest id="aaa9"
 ```
 
 ## Command Reference
@@ -292,7 +292,7 @@ Options:
   -t, --target=TARGET   Custom deployment target path (overrides config)
   -i, --index-only      Generate only llms.txt index file
   -f, --full-only       Generate only llms-full.txt file
-// @doctest id="0224"
+// @doctest id="7f47"
 ```
 
 ### gen:mkdocs --with-llms
@@ -305,5 +305,5 @@ Options:
   -p, --packages-only   Generate only package documentation
   -e, --examples-only   Generate only example documentation
   -l, --with-llms       Also generate LLM-friendly documentation
-// @doctest id="a3d9"
+// @doctest id="b6c4"
 ```

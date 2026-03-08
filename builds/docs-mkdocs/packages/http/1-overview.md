@@ -52,7 +52,7 @@ HttpClient
   -> middleware stack
   -> driver
   -> HttpResponse (sync) or stream (chunked)
-// @doctest id="64bc"
+// @doctest id="7116"
 ```
 
 For pooling:
@@ -61,7 +61,7 @@ For pooling:
 HttpRequestList
   -> HttpClient::pool() or withPool()->all()
   -> HttpResponseList (Result<Success|Failure>)
-// @doctest id="4f2c"
+// @doctest id="8ecc"
 ```
 
 ## Immutability Rules

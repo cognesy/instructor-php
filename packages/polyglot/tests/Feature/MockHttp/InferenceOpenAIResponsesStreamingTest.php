@@ -18,15 +18,15 @@ it('streams partial responses and assembles final content (OpenAI Responses SSE)
         ], addDone: false);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai-responses'), httpClient: $http))
+    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai-responses'), httpClient: $http))
         ->withModel('gpt-4o-mini')
         ->withMessages('Greet me')
         ->withStreaming(true)
         ->stream();
 
-    // Collect all partials to drive the stream consumption
-    $partials = iterator_to_array($stream->responses());
-    expect($partials)->not->toBeEmpty();
+    // Collect all visible deltas to drive the stream consumption
+    $deltas = iterator_to_array($stream->deltas());
+    expect($deltas)->not->toBeEmpty();
 
     $final = $stream->final();
     expect($final)->not->toBeNull();
@@ -62,15 +62,15 @@ it('handles streaming function call arguments', function () {
         ], addDone: false);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai-responses'), httpClient: $http))
+    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai-responses'), httpClient: $http))
         ->withModel('gpt-4o-mini')
         ->withMessages('Weather in Paris?')
         ->withStreaming(true)
         ->stream();
 
     // Consume the stream
-    $partials = iterator_to_array($stream->responses());
-    expect($partials)->not->toBeEmpty();
+    $deltas = iterator_to_array($stream->deltas());
+    expect($deltas)->not->toBeEmpty();
 
     $final = $stream->final();
     expect($final)->not->toBeNull();
@@ -94,14 +94,14 @@ it('streams reasoning content with response.reasoning_text.delta', function () {
         ], addDone: false);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai-responses'), httpClient: $http))
+    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai-responses'), httpClient: $http))
         ->withModel('gpt-4o-mini')
         ->withMessages('What is the meaning of life?')
         ->withStreaming(true)
         ->stream();
 
-    $partials = iterator_to_array($stream->responses());
-    expect($partials)->not->toBeEmpty();
+    $deltas = iterator_to_array($stream->deltas());
+    expect($deltas)->not->toBeEmpty();
 
     $final = $stream->final();
     expect($final)->not->toBeNull();

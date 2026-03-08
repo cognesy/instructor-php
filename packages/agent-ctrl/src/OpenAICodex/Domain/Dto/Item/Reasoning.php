@@ -2,6 +2,8 @@
 
 namespace Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\Item;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
+
 /**
  * Internal reasoning step
  *
@@ -28,9 +30,9 @@ final readonly class Reasoning extends Item
     public static function fromArray(array $data): self
     {
         return new self(
-            id: (string)($data['id'] ?? ''),
-            status: (string)($data['status'] ?? 'completed'),
-            text: (string)($data['text'] ?? ''),
+            id: Normalize::toString($data['id'] ?? ''),
+            status: Normalize::toString($data['status'] ?? 'completed', 'completed'),
+            text: Normalize::toString($data['text'] ?? ''),
         );
     }
 }

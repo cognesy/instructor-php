@@ -2,7 +2,7 @@
 
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 
 
@@ -37,11 +37,10 @@ it('deserializes via public properties', function () {
     ]);
 
     $user = (new StructuredOutput)
-        ->withRuntime(makeStructuredRuntime(driver: $driver))
+        ->withRuntime(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json))
         ->with(
             messages: 'Extract user',
             responseModel: SO_PublicProps_User::class,
-            mode: OutputMode::Json,
         )
         ->get();
 
@@ -56,11 +55,10 @@ it('deserializes via setters', function () {
     ]);
 
     $user = (new StructuredOutput)
-        ->withRuntime(makeStructuredRuntime(driver: $driver))
+        ->withRuntime(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json))
         ->with(
             messages: 'Extract user',
             responseModel: SO_Setter_User::class,
-            mode: OutputMode::Json,
         )
         ->get();
 
@@ -75,11 +73,10 @@ it('deserializes via constructor args', function () {
     ]);
 
     $user = (new StructuredOutput)
-        ->withRuntime(makeStructuredRuntime(driver: $driver))
+        ->withRuntime(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json))
         ->with(
             messages: 'Extract user',
             responseModel: SO_Constructor_User::class,
-            mode: OutputMode::Json,
         )
         ->get();
 
@@ -87,4 +84,3 @@ it('deserializes via constructor args', function () {
     expect($user->name())->toBe('Cara');
     expect($user->age())->toBe(33);
 });
-

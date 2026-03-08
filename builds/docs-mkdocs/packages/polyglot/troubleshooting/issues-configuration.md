@@ -44,7 +44,7 @@ $presets = ['openai', 'anthropic', 'mistral'];
 foreach ($presets as $preset) {
     testApiKey($preset);
 }
-// @doctest id="b050"
+// @doctest id="c8c8"
 ```
 
 
@@ -69,7 +69,7 @@ $inference = Inference::fromRuntime(InferenceRuntime::fromConfig(
 $response = $inference->with(
     messages: 'Test message with debug enabled'
 )->get();
-// @doctest id="cfa1"
+// @doctest id="e222"
 ```
 
 
@@ -117,5 +117,5 @@ foreach ($presets as $preset) {
     verifyConfig($preset);
     echo "\n";
 }
-// @doctest id="8bcf"
+// @doctest id="4462"
 ```

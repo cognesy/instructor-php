@@ -13,7 +13,7 @@ require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Illuminate\Http\Client\Factory;
@@ -38,12 +38,11 @@ $user = (new StructuredOutput(
     runtime: StructuredOutputRuntime::fromProvider(
         provider: $provider,
         httpClient: $customClient,
-    ),
+    )->withOutputMode(OutputMode::Tools),
 ))
     //->wiretap(fn($e) => $e->print())
     ->withMessages("Our user Jason is 25 years old.")
     ->withResponseClass(User::class)
-    ->withOutputMode(OutputMode::Tools)
     //->withStreaming()
     ->get();
 

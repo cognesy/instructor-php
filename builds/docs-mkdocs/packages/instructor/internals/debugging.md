@@ -28,7 +28,7 @@ $result = (new StructuredOutput(
         responseModel: User::class,
     )
     ->get();
-// @doctest id="132b"
+// @doctest id="114d"
 ```
 
 It displays detailed information about the request being sent to LLM API and response received from it,

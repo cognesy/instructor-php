@@ -20,7 +20,9 @@ Mode compatibility:
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 enum UserType : string {
     case Guest = 'guest';
@@ -37,7 +39,10 @@ class User {
     public array $hobbies;
 }
 
-$structuredOutput = StructuredOutput::using('anthropic');
+$structuredOutput = new StructuredOutput(
+    StructuredOutputRuntime::fromProvider(LLMProvider::using('anthropic'))
+        ->withOutputMode(OutputMode::Tools)
+);
 
 $user = $structuredOutput->with(
     messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
@@ -47,7 +52,6 @@ $user = $structuredOutput->with(
         'output' => ['age' => 30, 'name' => 'Frank', 'username' => 'frank@hk.ch', 'role' => 'developer', 'hobbies' => ['playing drums'],],
     ]],
     model: 'claude-3-haiku-20240307',
-    mode: OutputMode::Tools,
 )->get();
 
 print("Completed response model:\n\n");

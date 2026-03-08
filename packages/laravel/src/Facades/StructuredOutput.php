@@ -13,13 +13,9 @@ use Illuminate\Support\Facades\Facade;
  * Facade for StructuredOutput
  *
  * @method static \Cognesy\Instructor\StructuredOutput connection(string $name)
- * @method static \Cognesy\Instructor\StructuredOutput fromLLMConfig(\Cognesy\Polyglot\Inference\Config\LLMConfig $config)
+ * @method static \Cognesy\Instructor\StructuredOutput fromConfig(\Cognesy\Polyglot\Inference\Config\LLMConfig $config)
  * @method static \Cognesy\Instructor\StructuredOutput withRuntime(\Cognesy\Instructor\Contracts\CanCreateStructuredOutput $runtime)
- * @method static \Cognesy\Instructor\StructuredOutput withConfig(\Cognesy\Instructor\Config\StructuredOutputConfig $config)
- * @method static \Cognesy\Instructor\StructuredOutput withDefaultToStdClass(bool $defaultToStdClass = true)
- * @method static \Cognesy\Instructor\StructuredOutput withOutputMode(\Cognesy\Polyglot\Inference\Enums\OutputMode $mode)
- * @method static \Cognesy\Instructor\StructuredOutput withMaxRetries(int $maxRetries)
- * @method static \Cognesy\Instructor\StructuredOutput with(string|array|\Cognesy\Messages\Message|\Cognesy\Messages\Messages|null $messages = null, string|array|object|null $responseModel = null, ?string $system = null, ?string $prompt = null, ?array $examples = null, ?string $model = null, ?int $maxRetries = null, ?array $options = null, ?\Cognesy\Polyglot\Inference\Enums\OutputMode $mode = null)
+ * @method static \Cognesy\Instructor\StructuredOutput with(string|array|\Cognesy\Messages\Message|\Cognesy\Messages\Messages|null $messages = null, string|array|object|null $responseModel = null, ?string $system = null, ?string $prompt = null, ?array $examples = null, ?string $model = null, ?array $options = null)
  * @method static \Cognesy\Instructor\StructuredOutput withMessages(string|array|\Cognesy\Messages\Message|\Cognesy\Messages\Messages $messages)
  * @method static \Cognesy\Instructor\StructuredOutput withInput(mixed $input)
  * @method static \Cognesy\Instructor\StructuredOutput withResponseModel(string|array|object $responseModel)
@@ -37,16 +33,11 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Cognesy\Instructor\StructuredOutput intoArray()
  * @method static \Cognesy\Instructor\StructuredOutput intoInstanceOf(string $class)
  * @method static \Cognesy\Instructor\StructuredOutput intoObject(\Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf $object)
- * @method static \Cognesy\Instructor\StructuredOutput withValidators(\Cognesy\Instructor\Validation\Contracts\CanValidateObject|string ...$validators)
- * @method static \Cognesy\Instructor\StructuredOutput withTransformers(\Cognesy\Instructor\Transformation\Contracts\CanTransformData|string ...$transformers)
- * @method static \Cognesy\Instructor\StructuredOutput withDeserializers(\Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass|string ...$deserializers)
- * @method static \Cognesy\Instructor\StructuredOutput withExtractors(\Cognesy\Instructor\Extraction\Contracts\CanExtractResponse|string ...$extractors)
- * @method static \Cognesy\Instructor\StructuredOutput wiretap(?callable $listener)
- * @method static \Cognesy\Instructor\StructuredOutput onEvent(string $class, ?callable $listener)
  * @method static \Cognesy\Instructor\PendingStructuredOutput create(?\Cognesy\Instructor\Data\StructuredOutputRequest $request = null)
  * @method static mixed get()
  * @method static \Cognesy\Instructor\StructuredOutputStream stream()
- * @method static \Cognesy\Polyglot\Inference\Data\InferenceResponse response()
+ * @method static \Cognesy\Instructor\Data\StructuredOutputResponse response()
+ * @method static \Cognesy\Polyglot\Inference\Data\InferenceResponse rawResponse()
  * @method static string getString()
  * @method static float getFloat()
  * @method static int getInt()
@@ -61,7 +52,7 @@ class StructuredOutput extends Facade
     /**
      * Create facade instance from explicit typed LLM config.
      */
-    public static function fromLLMConfig(LLMConfig $config): BaseStructuredOutput|StructuredOutputFake
+    public static function fromConfig(LLMConfig $config): BaseStructuredOutput|StructuredOutputFake
     {
         $root = static::getFacadeRoot();
         if ($root instanceof StructuredOutputFake) {
@@ -80,7 +71,7 @@ class StructuredOutput extends Facade
      */
     public static function connection(string $name): BaseStructuredOutput|StructuredOutputFake
     {
-        return static::fromLLMConfig(static::resolveLLMConfig($name));
+        return static::fromConfig(static::resolveLLMConfig($name));
     }
 
     /**

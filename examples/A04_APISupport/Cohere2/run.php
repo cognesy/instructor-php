@@ -29,7 +29,7 @@ use Cognesy\Http\Config\DebugConfig;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 enum UserType : string {
@@ -54,7 +54,7 @@ $structuredOutput = new StructuredOutput(
     StructuredOutputRuntime::fromConfig(
         config: LLMConfig::fromPreset('cohere'),
         httpClient: $debugHttpClient,
-    )
+    )->withOutputMode(OutputMode::Json)
 );
 
 $user = $structuredOutput->with(
@@ -65,7 +65,6 @@ $user = $structuredOutput->with(
         'output' => ['age' => 30, 'name' => 'Frank', 'username' => 'frank@hk.ch', 'role' => 'developer', 'hobbies' => ['playing drums'],],
     ]],
     model: 'command-r-plus-08-2024',
-    mode: OutputMode::Json,
 )->get();
 
 print("Completed response model:\n\n");

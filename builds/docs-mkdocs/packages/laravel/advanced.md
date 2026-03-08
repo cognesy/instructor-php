@@ -23,7 +23,7 @@ foreach ($stream->partials() as $partial) {
 
 // Get final complete result
 $company = $stream->finalValue();
-// @doctest id="36ae"
+// @doctest id="04f5"
 ```
 
 ### Streaming with `partials()`
@@ -41,7 +41,7 @@ foreach ($stream->partials() as $partial) {
 }
 
 $result = $stream->finalValue();
-// @doctest id="0ab8"
+// @doctest id="806c"
 ```
 
 ### Streaming Sequences
@@ -62,7 +62,7 @@ $stream = StructuredOutput::with(
 foreach ($stream->sequence() as $items) {
     echo "Found: {$items->last()->name}\n";
 }
-// @doctest id="750d"
+// @doctest id="8e30"
 ```
 
 ---
@@ -97,7 +97,7 @@ $user = StructuredOutput::with(
     responseModel: UserData::class,
     maxRetries: 3,
 )->get();
-// @doctest id="d188"
+// @doctest id="d134"
 ```
 
 ### Custom Validators
@@ -127,7 +127,7 @@ $order = StructuredOutput::with(
 )
 ->withValidators(BusinessRulesValidator::class)
 ->get();
-// @doctest id="63e4"
+// @doctest id="92ba"
 ```
 
 ### Custom Retry Prompt
@@ -139,7 +139,7 @@ $result = StructuredOutput::with(
     maxRetries: 3,
     retryPrompt: 'The extraction failed validation. Errors: {errors}. Please correct and try again.',
 )->get();
-// @doctest id="912f"
+// @doctest id="a272"
 ```
 
 ---
@@ -175,7 +175,7 @@ $contact = StructuredOutput::with(
 ->get();
 
 // $contact->phone === '+15551234567'
-// @doctest id="1c58"
+// @doctest id="253d"
 ```
 
 ---
@@ -185,28 +185,42 @@ $contact = StructuredOutput::with(
 Different LLMs support different output modes:
 
 ```php
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
+
+$jsonSchemaRuntime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withOutputMode(OutputMode::JsonSchema);
+
+$toolsRuntime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withOutputMode(OutputMode::Tools);
+
+$jsonRuntime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withOutputMode(OutputMode::Json);
+
+$mdJsonRuntime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withOutputMode(OutputMode::MdJson);
 
 // JSON Schema mode (recommended for OpenAI)
-$result = StructuredOutput::with(...)
-    ->withOutputMode(OutputMode::JsonSchema)
+$result = StructuredOutput::withRuntime($jsonSchemaRuntime)
+    ->with(...)
     ->get();
 
 // Tool/Function calling mode
-$result = StructuredOutput::with(...)
-    ->withOutputMode(OutputMode::Tools)
+$result = StructuredOutput::withRuntime($toolsRuntime)
+    ->with(...)
     ->get();
 
 // Simple JSON mode
-$result = StructuredOutput::with(...)
-    ->withOutputMode(OutputMode::Json)
+$result = StructuredOutput::withRuntime($jsonRuntime)
+    ->with(...)
     ->get();
 
 // Markdown JSON (for Gemini)
-$result = StructuredOutput::with(...)
-    ->withOutputMode(OutputMode::MdJson)
+$result = StructuredOutput::withRuntime($mdJsonRuntime)
+    ->with(...)
     ->get();
-// @doctest id="5bbb"
+// @doctest id="84ba"
 ```
 
 ---
@@ -238,7 +252,7 @@ $person = StructuredOutput::with(
         ],
     ],
 )->get();
-// @doctest id="737a"
+// @doctest id="9ebd"
 ```
 
 ---
@@ -258,7 +272,7 @@ $medical = StructuredOutput::with(
         If information is unclear, mark as null rather than guessing.
         PROMPT,
 )->get();
-// @doctest id="a1f2"
+// @doctest id="7bb9"
 ```
 
 ---
@@ -274,7 +288,7 @@ $result = StructuredOutput::with(
     toolName: 'extract_invoice',
     toolDescription: 'Extracts structured invoice data including line items, totals, and payment terms.',
 )->get();
-// @doctest id="c662"
+// @doctest id="e52f"
 ```
 
 ---
@@ -311,7 +325,7 @@ class AIService
             ->get();
     }
 }
-// @doctest id="1328"
+// @doctest id="1583"
 ```
 
 ---
@@ -337,7 +351,7 @@ class CachedExtractor
         });
     }
 }
-// @doctest id="b767"
+// @doctest id="adf0"
 ```
 
 ### Semantic Caching
@@ -369,7 +383,7 @@ class SemanticCache
         return $result;
     }
 }
-// @doctest id="02a4"
+// @doctest id="47b9"
 ```
 
 ---
@@ -404,7 +418,7 @@ class BatchExtractor
             ->dispatch();
     }
 }
-// @doctest id="a0ed"
+// @doctest id="9b48"
 ```
 
 ---
@@ -435,7 +449,7 @@ class ResilientExtractor
         }
     }
 }
-// @doctest id="e49a"
+// @doctest id="5260"
 ```
 
 ### Fallback Providers
@@ -463,7 +477,7 @@ class FallbackExtractor
         throw new RuntimeException('All providers failed');
     }
 }
-// @doctest id="55c3"
+// @doctest id="e074"
 ```
 
 ---
@@ -484,7 +498,7 @@ $result = StructuredOutput::with(
 $result = StructuredOutput::withModel('gpt-4o-mini')
     ->with(messages: $text, responseModel: SimpleModel::class)
     ->get();
-// @doctest id="2057"
+// @doctest id="d783"
 ```
 
 ### Parallel Extraction
@@ -497,5 +511,5 @@ $results = Concurrency::run([
     fn () => StructuredOutput::with(messages: $text2, responseModel: Model::class)->get(),
     fn () => StructuredOutput::with(messages: $text3, responseModel: Model::class)->get(),
 ]);
-// @doctest id="5a87"
+// @doctest id="5261"
 ```

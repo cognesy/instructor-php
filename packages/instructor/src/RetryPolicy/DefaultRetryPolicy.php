@@ -9,7 +9,6 @@ use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\Request\StructuredOutputRecoveryLimitReached;
 use Cognesy\Instructor\Exceptions\StructuredOutputRecoveryException;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Utils\Result\Result;
 
 /**
@@ -38,7 +37,6 @@ final readonly class DefaultRetryPolicy implements CanDetermineRetry
         StructuredOutputExecution $execution,
         Result $validationResult,
         InferenceResponse $inference,
-        PartialInferenceResponse $partial,
     ): StructuredOutputExecution {
         $error = $validationResult->error();
         $errors = is_array($error) ? $error : [$error];
@@ -46,7 +44,6 @@ final readonly class DefaultRetryPolicy implements CanDetermineRetry
         // Record failed attempt in execution
         $updated = $execution->withFailedAttempt(
             inferenceResponse: $inference,
-            partialInferenceResponse: $partial,
             errors: $errors,
         );
         // Emit retry event only if another retry is still allowed

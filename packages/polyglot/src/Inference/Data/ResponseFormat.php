@@ -3,41 +3,48 @@
 namespace Cognesy\Polyglot\Inference\Data;
 
 use Closure;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
-class ResponseFormat
+readonly final class ResponseFormat
 {
-    private ?string $name;
-    private ?array $schema;
-    private ?string $type;
-    private ?bool $strict;
-
-    /** @var (Closure(): array)|null */
-    private ?Closure $toTextHandler = null;
-    /** @var (Closure(): array)|null */
-    private ?Closure $toJsonObjectHandler = null;
-    /** @var (Closure(): array)|null */
-    private ?Closure $toJsonSchemaHandler = null;
-
+    /**
+     * @param (Closure(): array)|null $toTextHandler
+     * @param (Closure(): array)|null $toJsonObjectHandler
+     * @param (Closure(): array)|null $toJsonSchemaHandler
+     */
     public function __construct(
-        ?string $type = null,
-        ?array $schema = null,
-        ?string $name = null,
-        ?bool $strict = null,
-    ) {
-        $this->type = $type;
-        $this->schema = $schema;
-        $this->name = $name;
-        $this->strict = $strict;
-    }
-
-    // CONSTRUCTORS ///////////////////////////////////////////////////
+        private ?string $type = null,
+        private ?array $schema = null,
+        private ?string $name = null,
+        private ?bool $strict = null,
+        private ?Closure $toTextHandler = null,
+        private ?Closure $toJsonObjectHandler = null,
+        private ?Closure $toJsonSchemaHandler = null,
+    ) {}
 
     public static function empty(): self {
         return new self();
     }
 
-    // ACCESSORS //////////////////////////////////////////////////////
+    public static function text(): self {
+        return new self(type: 'text');
+    }
+
+    public static function jsonObject(): self {
+        return new self(type: 'json_object');
+    }
+
+    public static function jsonSchema(
+        array $schema,
+        string $name = 'schema',
+        bool $strict = true,
+    ): self {
+        return new self(
+            type: 'json_schema',
+            schema: $schema,
+            name: $name,
+            strict: $strict,
+        );
+    }
 
     public function schemaName(): string {
         return $this->name ?? 'schema';
@@ -63,73 +70,78 @@ class ResponseFormat
     }
 
     public function isEmpty() : bool {
-        return is_null($this->type)
-            && is_null($this->schema)
-            && is_null($this->name)
-            && is_null($this->strict);
-    }
-
-    // TRANSFORMATION AND CONVERSION //////////////////////////////////
-
-    public function as(OutputMode $mode): array {
-        return match ($mode) {
-            OutputMode::Json => $this->asJsonObject(),
-            OutputMode::JsonSchema => $this->asJsonSchema(),
-            OutputMode::Text,
-            OutputMode::MdJson => $this->asText(),
-            OutputMode::Tools,
-            OutputMode::Unrestricted => $this->asText(),
-        };
+        return $this->type === null
+            && $this->schema === null
+            && $this->name === null
+            && $this->strict === null;
     }
 
     public function asText(): array {
-        return match(true) {
-            is_null($this->toTextHandler) => $this->defaultAsText(),
+        return match (true) {
+            $this->toTextHandler === null => $this->defaultAsText(),
             default => ($this->toTextHandler)(),
         };
     }
 
     public function asJsonObject(): array {
-        return match(true) {
-            is_null($this->toJsonObjectHandler) => $this->defaultAsJsonObject(),
+        return match (true) {
+            $this->toJsonObjectHandler === null => $this->defaultAsJsonObject(),
             default => ($this->toJsonObjectHandler)(),
         };
     }
 
     public function asJsonSchema(): array {
-        return match(true) {
-            is_null($this->toJsonSchemaHandler) => $this->defaultAsJsonSchema(),
+        return match (true) {
+            $this->toJsonSchemaHandler === null => $this->defaultAsJsonSchema(),
             default => ($this->toJsonSchemaHandler)(),
         };
     }
-
-    // MUTATORS ///////////////////////////////////////////////////////
 
     /**
      * @param Closure(): array $callback
      */
     public function withToTextHandler(Closure $callback): self {
-        $this->toTextHandler = $callback;
-        return $this;
+        return new self(
+            type: $this->type,
+            schema: $this->schema,
+            name: $this->name,
+            strict: $this->strict,
+            toTextHandler: $callback,
+            toJsonObjectHandler: $this->toJsonObjectHandler,
+            toJsonSchemaHandler: $this->toJsonSchemaHandler,
+        );
     }
 
     /**
      * @param Closure(): array $callback
      */
     public function withToJsonObjectHandler(Closure $callback): self {
-        $this->toJsonObjectHandler = $callback;
-        return $this;
+        return new self(
+            type: $this->type,
+            schema: $this->schema,
+            name: $this->name,
+            strict: $this->strict,
+            toTextHandler: $this->toTextHandler,
+            toJsonObjectHandler: $callback,
+            toJsonSchemaHandler: $this->toJsonSchemaHandler,
+        );
     }
 
     /**
      * @param Closure(): array $callback
      */
     public function withToJsonSchemaHandler(Closure $callback): self {
-        $this->toJsonSchemaHandler = $callback;
-        return $this;
+        return new self(
+            type: $this->type,
+            schema: $this->schema,
+            name: $this->name,
+            strict: $this->strict,
+            toTextHandler: $this->toTextHandler,
+            toJsonObjectHandler: $this->toJsonObjectHandler,
+            toJsonSchemaHandler: $callback,
+        );
     }
 
-    // SERIALIZATION //////////////////////////////////////////////////
     public function toArray(): array {
         if ($this->isEmpty()) {
             return [];
@@ -152,8 +164,6 @@ class ResponseFormat
         );
     }
 
-    // INTERNAL //////////////////////////////////////////////////////
-
     private function defaultAsText(): array {
         return ['type' => 'text'];
     }
@@ -166,14 +176,14 @@ class ResponseFormat
         return [
             'type' => 'json_schema',
             'json_schema' => $this->filterEmptyValues([
-                'name' => $this->name ?? 'schema',
-                'schema' => $this->schema ?? [],
-                'strict' => $this->strict ?? true,
+                'name' => $this->schemaName(),
+                'schema' => $this->schema(),
+                'strict' => $this->strict(),
             ]),
         ];
     }
 
-    protected function filterEmptyValues(array $data) : array {
+    private function filterEmptyValues(array $data) : array {
         return array_filter($data, fn($value) => $value !== null && $value !== [] && $value !== '');
     }
 }

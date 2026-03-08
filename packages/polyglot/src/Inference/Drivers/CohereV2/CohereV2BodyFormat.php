@@ -4,7 +4,6 @@ namespace Cognesy\Polyglot\Inference\Drivers\CohereV2;
 
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\Arrays;
 
 class CohereV2BodyFormat extends OpenAICompatibleBodyFormat
@@ -38,8 +37,8 @@ class CohereV2BodyFormat extends OpenAICompatibleBodyFormat
 
     #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
-        $mode = $this->toResponseFormatMode($request);
-        if ($mode === null) {
+        $type = $this->toResponseFormatType($request);
+        if ($type === null) {
             return [];
         }
 
@@ -47,14 +46,18 @@ class CohereV2BodyFormat extends OpenAICompatibleBodyFormat
         $responseFormat = $request->responseFormat()
             ->withToJsonObjectHandler(fn() => [
                 'type' => 'json_object',
-                'schema' => $this->removeDisallowedEntries($request->responseFormat()->schema()),
+                'schema' => $this->normalizeSchemaForCohere(
+                    $this->removeDisallowedEntries($request->responseFormat()->schema()),
+                ),
             ])
             ->withToJsonSchemaHandler(fn() => [
                 'type' => 'json_object',
-                'schema' => $this->removeDisallowedEntries($request->responseFormat()->schema()),
+                'schema' => $this->normalizeSchemaForCohere(
+                    $this->removeDisallowedEntries($request->responseFormat()->schema()),
+                ),
             ]);
 
-        return $responseFormat->as($mode);
+        return $this->renderResponseFormatForType($responseFormat, $type);
     }
 
     #[\Override]
@@ -65,7 +68,59 @@ class CohereV2BodyFormat extends OpenAICompatibleBodyFormat
                 'x-title',
                 'x-php-class',
                 'additionalProperties',
+                'nullable',
             ],
         );
+    }
+
+    protected function normalizeSchemaForCohere(array $schema): array {
+        $properties = $schema['properties'] ?? null;
+        if (is_array($properties)) {
+            $normalizedProperties = [];
+            foreach ($properties as $name => $propertySchema) {
+                $normalizedProperties[$name] = is_array($propertySchema)
+                    ? $this->normalizeSchemaForCohere($propertySchema)
+                    : $propertySchema;
+            }
+            $schema['properties'] = $normalizedProperties;
+            $schema['required'] = array_keys($normalizedProperties);
+        }
+
+        $items = $schema['items'] ?? null;
+        if (is_array($items)) {
+            $schema['items'] = $this->normalizeSchemaForCohere($items);
+        }
+
+        foreach (['$defs', 'definitions'] as $key) {
+            $definitions = $schema[$key] ?? null;
+            if (!is_array($definitions)) {
+                continue;
+            }
+
+            $normalizedDefinitions = [];
+            foreach ($definitions as $definitionName => $definitionSchema) {
+                $normalizedDefinitions[$definitionName] = is_array($definitionSchema)
+                    ? $this->normalizeSchemaForCohere($definitionSchema)
+                    : $definitionSchema;
+            }
+            $schema[$key] = $normalizedDefinitions;
+        }
+
+        foreach (['anyOf', 'oneOf', 'allOf', 'prefixItems'] as $key) {
+            $variants = $schema[$key] ?? null;
+            if (!is_array($variants)) {
+                continue;
+            }
+
+            $normalizedVariants = [];
+            foreach ($variants as $variant) {
+                $normalizedVariants[] = is_array($variant)
+                    ? $this->normalizeSchemaForCohere($variant)
+                    : $variant;
+            }
+            $schema[$key] = $normalizedVariants;
+        }
+
+        return $schema;
     }
 }

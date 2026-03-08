@@ -65,6 +65,8 @@ Here, the `LeadReport` model is passed as the `$responseModel`, and `$maxRetries
 
 ```php
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class UserDetails
@@ -74,10 +76,12 @@ class UserDetails
     public string $email;
 }
 
-$user = (new StructuredOutput)->with(
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withMaxRetries(2);
+
+$user = (new StructuredOutput($runtime))->with(
     messages: [['role' => 'user', 'content' => "you can reply to me via jason@gmailcom -- Jason"]],
     responseModel: UserDetails::class,
-    maxRetries: 2
 )->get();
 
 assert($user->email === "jason@gmail.com");
@@ -96,6 +100,8 @@ See [Symfony docs](https://symfony.com/doc/current/reference/constraints/Callbac
 
 ```php
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
     
@@ -115,10 +121,12 @@ class UserDetails
     }
 }
     
-$user = (new StructuredOutput)->with(
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withMaxRetries(2);
+
+$user = (new StructuredOutput($runtime))->with(
     messages: [['role' => 'user', 'content' => 'jason is 25 years old']],
     responseModel: UserDetails::class,
-    maxRetries: 2
 )->get();
 
 assert($user->name === "JASON");

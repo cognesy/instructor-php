@@ -2,149 +2,191 @@
 
 namespace Cognesy\Setup;
 
-use Cognesy\Setup\Assets\ConfigurationsDirAsset;
-use Cognesy\Setup\Assets\EnvFileAsset;
-use Cognesy\Setup\Assets\PromptsDirAsset;
-use Exception;
+use Cognesy\Setup\Resources\PackageResource;
+use Cognesy\Setup\Resources\PackageResourceLocator;
 use InvalidArgumentException;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class PublishCommand extends Command
+final class PublishCommand extends Command
 {
     protected static ?string $defaultName = 'publish';
 
     private bool $noOp = true;
-    private bool $stopOnError = true;
-    private string $targetConfigDir = '';
-    private string $targetPromptsDir = '';
-    private string $targetEnvFile = '';
+    private bool $force = false;
+    private string $targetRoot = '';
+    private string $packagesRoot = '';
 
     private ?Output $output = null;
     private ?Filesystem $filesystem = null;
-    private ?EnvFile $envFile = null;
+    private ?PackageResourceLocator $locator = null;
 
     #[\Override]
     protected function configure(): void {
         $this->setName(self::$defaultName ?? 'publish')
-            ->setDescription('Publishes or updates assets for the Instructor library.')
-            ->addOption('target-config-dir', 'c', InputOption::VALUE_REQUIRED, 'Target directory for configuration files')
-            ->addOption('target-prompts-dir', 'p', InputOption::VALUE_REQUIRED, 'Target directory for prompt files')
-            ->addOption('target-env-file', 'e', InputOption::VALUE_REQUIRED, 'Target .env file')
+            ->setDescription('Publishes package resources from packages/*/resources into target directory.')
+            ->addArgument('target', InputArgument::OPTIONAL, 'Target directory where package resources will be published')
+            ->addOption('target-dir', 't', InputOption::VALUE_REQUIRED, 'Target directory (alternative to <target> argument)')
+            ->addOption('source-root', 's', InputOption::VALUE_OPTIONAL, 'Packages root to scan for resources', 'packages')
+            ->addOption('package', 'p', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Publish only selected package(s)')
+            ->addOption('exclude-package', 'x', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Exclude package(s) from publishing')
+            ->addOption('force', 'f', InputOption::VALUE_NONE, 'Overwrite existing destination package directories')
             ->addOption('log-file', 'l', InputOption::VALUE_OPTIONAL, 'Log file path')
-            ->addOption('no-op', 'no', InputOption::VALUE_NONE, 'Do not perform any actions, only log what would be done');
+            ->addOption('no-op', null, InputOption::VALUE_NONE, 'Dry run: show actions without modifying files');
     }
 
     #[\Override]
     protected function initialize(InputInterface $input, OutputInterface $output): void {
-        $this->noOp = (bool)$input->getOption('no-op');
-        $this->stopOnError = !$this->noOp;
+        $this->noOp = (bool) $input->getOption('no-op');
+        $this->force = (bool) $input->getOption('force');
         $this->output = new Output($input, $output);
         $this->filesystem = new Filesystem($this->noOp, $this->output);
-        $this->envFile = new EnvFile($this->noOp, $this->output, $this->filesystem);
+        $this->locator = new PackageResourceLocator();
 
-        // Ensure the command is run from the project root
-        $projectRoot = getcwd();
-        if (!file_exists($projectRoot . '/composer.json')) {
-            throw new InvalidArgumentException("This command must be run from your project root directory.");
-        }
+        $this->ensureProjectRoot();
+        $this->targetRoot = Path::resolve($this->resolveTargetRoot($input));
+        $this->packagesRoot = Path::resolve((string) $input->getOption('source-root'));
     }
 
     #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int {
         assert($this->output !== null);
         assert($this->filesystem !== null);
-        assert($this->envFile !== null);
+        assert($this->locator !== null);
 
-        $this->output->out("");
+        $onlyPackages = $this->normalizePackageList($input->getOption('package'));
+        $excludedPackages = $this->normalizePackageList($input->getOption('exclude-package'));
+
+        $resources = $this->locator->locate(
+            packagesRoot: $this->packagesRoot,
+            targetRoot: $this->targetRoot,
+            onlyPackages: $onlyPackages,
+            excludedPackages: $excludedPackages,
+        );
+
+        if ($resources === []) {
+            $this->output->out("<red>No package resources found to publish.</red>", 'error');
+            return Command::FAILURE;
+        }
+
+        $this->printHeader($resources);
+        $summary = new PublishSummary();
+
+        foreach ($resources as $resource) {
+            $summary->add($this->publishResource($resource));
+        }
+
+        $this->printSummary($summary);
+        return $summary->hasErrors()
+            ? Command::FAILURE
+            : Command::SUCCESS;
+    }
+
+    private function ensureProjectRoot(): void {
+        $projectRoot = getcwd();
+        if (!is_string($projectRoot) || !is_file($projectRoot . DIRECTORY_SEPARATOR . 'composer.json')) {
+            throw new InvalidArgumentException('This command must be run from a project root containing composer.json.');
+        }
+    }
+
+    private function resolveTargetRoot(InputInterface $input): string {
+        $target = (string) ($input->getArgument('target') ?? '');
+        if ($target !== '') {
+            return $target;
+        }
+
+        $fromOption = (string) ($input->getOption('target-dir') ?? '');
+        if ($fromOption !== '') {
+            return $fromOption;
+        }
+
+        throw new InvalidArgumentException('Missing publish target. Pass <target> argument or --target-dir option.');
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function normalizePackageList(mixed $raw): array {
+        if (!is_array($raw)) {
+            return [];
+        }
+
+        $list = array_map(static fn(mixed $value): string => trim((string) $value), $raw);
+        $list = array_values(array_filter($list, static fn(string $value): bool => $value !== ''));
+        $list = array_values(array_unique($list));
+
+        return $list;
+    }
+
+    /**
+     * @param list<PackageResource> $resources
+     */
+    private function printHeader(array $resources): void {
+        assert($this->output !== null);
+
+        $this->output->out('');
         $this->output->out("<white>{$this->getApplication()?->getName()}</white> v{$this->getApplication()?->getVersion()}");
-
-        $this->targetConfigDir = $input->getOption('target-config-dir') ?? throw new InvalidArgumentException('Missing target-config-dir option');
-        $this->targetPromptsDir = $input->getOption('target-prompts-dir') ?? throw new InvalidArgumentException('Missing target-prompts-dir option');
-        $this->targetEnvFile = $input->getOption('target-env-file') ?? throw new InvalidArgumentException('Missing target-env-file option');
-
-        $assets = $this->getAssets($input);
-        if (empty($assets)) {
-            $this->output->out(" <gray>...</gray> <yellow>(!)</yellow> <red>No assets to publish</red>", 'error');
-            return Command::FAILURE;
-        }
-
-        $this->output->out("");
-        $this->output->out("Publishing Instructor assets...");
-
-        $totalAssets = count($assets);
-        $step = 0;
-        try {
-            foreach ($assets as $asset) {
-                $step += 1;
-                $this->output->out("");
-                $this->output->out("<blue>(step $step of $totalAssets)</blue> Processing asset: <white>{$asset->name}</white> ({$asset->description})");
-                $success = $asset->publish();
-                if (!$success && $this->stopOnError) {
-                    return Command::FAILURE;
-                }
-            }
-
-            $this->output->out("");
-            $this->output->out(" <gray>...</gray> <green>DONE</green>");
-            $this->output->out("");
-            return Command::SUCCESS;
-        } catch (Exception $e) {
-            $this->handleError('command execution', $e);
-            return Command::FAILURE;
-        }
+        $this->output->out("Source root: <blue>{$this->packagesRoot}</blue>");
+        $this->output->out("Target root: <blue>{$this->targetRoot}</blue>");
+        $this->output->out('Mode: ' . ($this->noOp ? '<yellow>no-op</yellow>' : '<green>apply</green>'));
+        $this->output->out('Force overwrite: ' . ($this->force ? '<yellow>yes</yellow>' : '<green>no</green>'));
+        $this->output->out('Packages to publish: <white>' . count($resources) . '</white>');
+        $this->output->out('');
     }
 
-    private function handleError(string $context, Exception $e): void {
+    private function publishResource(PackageResource $resource): PublishStatus {
         assert($this->output !== null);
-
-        $this->output->out(" <gray>...</gray> <yellow>(!)</yellow> <red>Error in</red> $context: " . $e->getMessage(), 'error');
-
-        if ($this->stopOnError) {
-            $this->output->out("");
-            $this->output->out(" <red>STOPPED</red> - Error details:");
-            $this->output->out($e->getMessage());
-            $this->output->out($e->getTraceAsString());
-            $this->output->out("");
-        }
-    }
-
-    private function getAssets(InputInterface $input) : array {
         assert($this->filesystem !== null);
+
+        $this->output->out("Publishing <white>{$resource->package}</white>");
+
+        if ($this->filesystem->exists($resource->destinationPath) && !$this->force) {
+            $this->output->out(
+                "<yellow>Skipped</yellow> {$resource->package} - destination exists: {$resource->destinationPath}",
+                'warning',
+            );
+            return PublishStatus::Skipped;
+        }
+
+        if (!$this->prepareDestination($resource->destinationPath)) {
+            return PublishStatus::Error;
+        }
+
+        $copied = $this->filesystem->copyDir($resource->sourcePath, $resource->destinationPath);
+        if ($copied === Filesystem::RESULT_ERROR) {
+            $this->output->out("<red>Failed</red> {$resource->package}", 'error');
+            return PublishStatus::Error;
+        }
+
+        $this->output->out("<green>Published</green> {$resource->package}");
+        return PublishStatus::Published;
+    }
+
+    private function prepareDestination(string $destinationPath): bool {
+        assert($this->filesystem !== null);
+
+        if ($this->force) {
+            $removed = $this->filesystem->removePath($destinationPath);
+            if ($removed === Filesystem::RESULT_ERROR) {
+                return false;
+            }
+        }
+
+        $created = $this->filesystem->createDirectory($destinationPath);
+        return $created !== Filesystem::RESULT_ERROR;
+    }
+
+    private function printSummary(PublishSummary $summary): void {
         assert($this->output !== null);
-        assert($this->envFile !== null);
 
-        $assets = [];
-        if ($input->getOption('target-config-dir')) {
-            $assets[] = new ConfigurationsDirAsset(
-                __DIR__ . '/../resources/config',
-                $this->targetConfigDir,
-                $this->filesystem,
-                $this->output,
-            );
-        }
-
-        if ($input->getOption('target-prompts-dir')) {
-            $assets[] = new PromptsDirAsset(
-                __DIR__ . '/../prompts',
-                $this->targetPromptsDir,
-                $this->filesystem,
-                $this->output,
-            );
-        }
-
-        if ($input->getOption('target-env-file')) {
-            $assets[] = new EnvFileAsset(
-                __DIR__ . '/../.env-dist',
-                $this->targetEnvFile, $this->targetConfigDir,
-                $this->filesystem,
-                $this->output,
-                $this->envFile,
-            );
-        }
-
-        return $assets;
+        $this->output->out('');
+        $this->output->out('Summary:');
+        $this->output->out("  published: <green>{$summary->published()}</green>");
+        $this->output->out("  skipped: <yellow>{$summary->skipped()}</yellow>");
+        $this->output->out("  errors: <red>{$summary->errors()}</red>");
+        $this->output->out('');
     }
 }

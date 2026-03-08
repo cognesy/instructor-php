@@ -8,7 +8,6 @@ use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenResponses\OpenResponsesBodyFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenResponses\OpenResponsesMessageFormat;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use PHPUnit\Framework\TestCase;
 
 class OpenResponsesBodyFormatTest extends TestCase
@@ -187,7 +186,6 @@ class OpenResponsesBodyFormatTest extends TestCase
         $request = new InferenceRequest(
             messages: [['role' => 'user', 'content' => 'Give me a person']],
             responseFormat: $responseFormat,
-            mode: OutputMode::JsonSchema,
         );
 
         $body = $this->bodyFormat->toRequestBody($request);
@@ -197,6 +195,7 @@ class OpenResponsesBodyFormatTest extends TestCase
         $this->assertEquals('json_schema', $body['text']['format']['type']);
         $this->assertEquals('Person', $body['text']['format']['name']);
         $this->assertTrue($body['text']['format']['strict']);
+        $this->assertEquals(['name'], $body['text']['format']['schema']['required']);
     }
 
     public function test_json_object_response_format(): void
@@ -208,7 +207,6 @@ class OpenResponsesBodyFormatTest extends TestCase
         $request = new InferenceRequest(
             messages: [['role' => 'user', 'content' => 'Give me JSON']],
             responseFormat: $responseFormat,
-            mode: OutputMode::Json,
         );
 
         $body = $this->bodyFormat->toRequestBody($request);
@@ -362,7 +360,6 @@ class OpenResponsesBodyFormatTest extends TestCase
         $request = new InferenceRequest(
             messages: [['role' => 'user', 'content' => 'Test']],
             responseFormat: $responseFormat,
-            mode: OutputMode::JsonSchema,
         );
 
         $body = $this->bodyFormat->toRequestBody($request);
@@ -371,5 +368,36 @@ class OpenResponsesBodyFormatTest extends TestCase
         $this->assertArrayNotHasKey('x-title', $schema);
         $this->assertArrayNotHasKey('x-php-class', $schema);
         $this->assertArrayNotHasKey('x-title', $schema['properties']['name']);
+    }
+
+    public function test_json_schema_normalizes_required_recursively(): void
+    {
+        $responseFormat = new ResponseFormat(
+            type: 'json_schema',
+            schema: [
+                'type' => 'object',
+                'properties' => [
+                    'name' => ['type' => 'string'],
+                    'address' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'city' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+            name: 'Person',
+        );
+
+        $request = new InferenceRequest(
+            messages: [['role' => 'user', 'content' => 'Test']],
+            responseFormat: $responseFormat,
+        );
+
+        $body = $this->bodyFormat->toRequestBody($request);
+        $schema = $body['text']['format']['schema'];
+
+        $this->assertEquals(['name', 'address'], $schema['required']);
+        $this->assertEquals(['city'], $schema['properties']['address']['required']);
     }
 }

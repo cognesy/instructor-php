@@ -15,9 +15,8 @@ use Illuminate\Support\Facades\Facade;
  * Facade for Embeddings
  *
  * @method static \Cognesy\Polyglot\Embeddings\Embeddings connection(string $name)
- * @method static \Cognesy\Polyglot\Embeddings\Embeddings fromEmbeddingsConfig(\Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig $config)
+ * @method static \Cognesy\Polyglot\Embeddings\Embeddings fromConfig(\Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig $config)
  * @method static \Cognesy\Polyglot\Embeddings\Embeddings withRuntime(\Cognesy\Polyglot\Embeddings\Contracts\CanCreateEmbeddings $runtime)
- * @method static \Cognesy\Polyglot\Embeddings\Contracts\CanCreateEmbeddings runtime()
  * @method static \Cognesy\Polyglot\Embeddings\Embeddings withInputs(string|array $inputs)
  * @method static \Cognesy\Polyglot\Embeddings\Embeddings withModel(string $model)
  * @method static \Cognesy\Polyglot\Embeddings\Embeddings withOptions(array $options)
@@ -37,7 +36,7 @@ class Embeddings extends Facade
     /**
      * Create facade instance from explicit typed embeddings config.
      */
-    public static function fromEmbeddingsConfig(EmbeddingsConfig $config): BaseEmbeddings|EmbeddingsFake
+    public static function fromConfig(EmbeddingsConfig $config): BaseEmbeddings|EmbeddingsFake
     {
         $root = static::getFacadeRoot();
         if ($root instanceof EmbeddingsFake) {
@@ -56,7 +55,7 @@ class Embeddings extends Facade
      */
     public static function connection(string $name): BaseEmbeddings|EmbeddingsFake
     {
-        return static::fromEmbeddingsConfig(static::resolveEmbeddingsConfig($name));
+        return static::fromConfig(static::resolveEmbeddingsConfig($name));
     }
 
     /**

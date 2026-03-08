@@ -9,6 +9,7 @@ use Cognesy\Polyglot\Inference\Drivers\CohereV2\CohereV2UsageFormat;
 use Cognesy\Polyglot\Inference\Drivers\Deepseek\DeepseekResponseAdapter;
 use Cognesy\Polyglot\Inference\Drivers\Gemini\GeminiResponseAdapter;
 use Cognesy\Polyglot\Inference\Drivers\Gemini\GeminiUsageFormat;
+use Cognesy\Polyglot\Inference\Drivers\Minimaxi\MinimaxiResponseAdapter;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIResponseAdapter;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIUsageFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenResponses\OpenResponsesResponseAdapter;
@@ -20,6 +21,7 @@ dataset('malformed_response_adapters', [
     'gemini' => [fn() => new GeminiResponseAdapter(new GeminiUsageFormat())],
     'cohere-v2' => [fn() => new CohereV2ResponseAdapter(new CohereV2UsageFormat())],
     'deepseek' => [fn() => new DeepseekResponseAdapter(new OpenAIUsageFormat())],
+    'minimaxi' => [fn() => new MinimaxiResponseAdapter(new OpenAIUsageFormat())],
     'openresponses' => [fn() => new OpenResponsesResponseAdapter(new OpenResponsesUsageFormat())],
 ]);
 
@@ -40,7 +42,7 @@ it('throws on invalid JSON stream payload in response adapters', function (calla
     /** @var CanTranslateInferenceResponse $adapter */
     $adapter = $makeAdapter();
 
-    expect(fn() => iterator_to_array($adapter->fromStreamResponses(['{invalid-json'])))
+    expect(fn() => iterator_to_array($adapter->fromStreamDeltas(['{invalid-json'])))
         ->toThrow(RuntimeException::class);
 })->with('malformed_response_adapters');
 

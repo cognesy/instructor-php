@@ -17,17 +17,17 @@ When working with different LLM models, you may encounter issues that are specif
 ```php
 // Check available models for each provider in their documentation
 // Example: For OpenAI 'gpt-4o-mini' is valid, but 'gpt5' is not
-// @doctest id="4948"
+// @doctest id="291b"
 ```
 
 2. **Context Length**: Be aware of each model's maximum context length
 ```php
-// In config/llm.php, check contextLength for each model
+// In config/llm/presets/*.yaml, check contextLength for each model
 // Example: OpenAI models have different context windows
 // - gpt-3.5-turbo: 16K tokens
 // - gpt-4-turbo: 128K tokens
 // - claude-3-opus: 200K tokens
-// @doctest id="f29a"
+// @doctest id="4c97"
 ```
 
 3. **Feature Support**: Different models support different features
@@ -43,7 +43,7 @@ $modelSupportsVision = in_array($model, [
 if (!$modelSupportsVision) {
     echo "Warning: The selected model doesn't support vision capabilities\n";
 }
-// @doctest id="69b5"
+// @doctest id="2e24"
 ```
 
 4. **Fallback Models**: Implement fallbacks to other models when preferred models fail
@@ -83,5 +83,5 @@ try {
 } catch (\Exception $e) {
     echo "Error: " . $e->getMessage() . "\n";
 }
-// @doctest id="f9c0"
+// @doctest id="3a42"
 ```

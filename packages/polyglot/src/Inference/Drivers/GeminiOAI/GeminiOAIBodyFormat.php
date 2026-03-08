@@ -4,8 +4,6 @@ namespace Cognesy\Polyglot\Inference\Drivers\GeminiOAI;
 
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
-
 class GeminiOAIBodyFormat extends OpenAICompatibleBodyFormat
 {
     // CAPABILITIES /////////////////////////////////////////
@@ -20,8 +18,8 @@ class GeminiOAIBodyFormat extends OpenAICompatibleBodyFormat
 
     #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
-        $mode = $this->toResponseFormatMode($request);
-        if ($mode === null) {
+        $type = $this->toResponseFormatType($request);
+        if ($type === null) {
             return [];
         }
 
@@ -30,7 +28,7 @@ class GeminiOAIBodyFormat extends OpenAICompatibleBodyFormat
             ->withToJsonObjectHandler(fn() => ['type' => 'json_object'])
             ->withToJsonSchemaHandler(fn() => ['type' => 'json_object']); // Falls back to json_object
 
-        return $responseFormat->as($mode);
+        return $this->renderResponseFormatForType($responseFormat, $type);
     }
 
     #[\Override]

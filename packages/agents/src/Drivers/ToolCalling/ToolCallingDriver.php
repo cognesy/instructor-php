@@ -29,7 +29,6 @@ use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Polyglot\Inference\PendingInference;
@@ -50,7 +49,6 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
     private string|array $toolChoice;
     private string $model;
     private array $responseFormat;
-    private OutputMode $mode;
     private array $options;
     private CanCompileMessages $messageCompiler;
     private ?InferenceRetryPolicy $retryPolicy;
@@ -69,7 +67,6 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         array        $responseFormat = [],
         string       $model = '',
         array        $options = [],
-        OutputMode   $mode = OutputMode::Tools,
         ?CanCompileMessages $messageCompiler = null,
         ?InferenceRetryPolicy $retryPolicy = null,
         ?CanHandleEvents $events = null,
@@ -82,7 +79,6 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         $this->toolChoice = $toolChoice;
         $this->model = $model;
         $this->responseFormat = $responseFormat;
-        $this->mode = $mode;
         $this->options = $options;
         $this->messageCompiler = $messageCompiler ?? new ConversationWithCurrentToolTrace();
         $this->retryPolicy = $retryPolicy;
@@ -150,7 +146,6 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         ?array $responseFormat = null,
         ?string $model = null,
         ?array $options = null,
-        ?OutputMode $mode = null,
         ?CanCompileMessages $messageCompiler = null,
         ?InferenceRetryPolicy $retryPolicy = null,
         ?CanCreateInference $inference = null,
@@ -165,7 +160,6 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
             responseFormat: $responseFormat ?? $this->responseFormat,
             model: $model ?? $this->model,
             options: $options ?? $this->options,
-            mode: $mode ?? $this->mode,
             messageCompiler: $messageCompiler ?? $this->messageCompiler,
             retryPolicy: $retryPolicy ?? $this->retryPolicy,
             events: $this->events,
@@ -211,7 +205,6 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
             toolChoice: $hasTools ? $toolChoice : '',
             responseFormat: $this->responseFormat,
             options: $options,
-            mode: $this->mode,
             cachedContext: $cache,
             retryPolicy: $this->retryPolicy,
         );

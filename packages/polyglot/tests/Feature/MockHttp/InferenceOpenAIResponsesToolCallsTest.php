@@ -27,7 +27,7 @@ it('handles function_call items in OpenAI Responses API', function () {
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $response = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai-responses'), httpClient: $http))
+    $response = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai-responses'), httpClient: $http))
         ->withModel('gpt-4o-mini')
         ->withMessages('Weather please')
         ->response();
@@ -68,7 +68,7 @@ it('handles multiple function_call items', function () {
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $response = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai-responses'), httpClient: $http))
+    $response = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai-responses'), httpClient: $http))
         ->withModel('gpt-4o-mini')
         ->withMessages('Weather and time please')
         ->response();
@@ -105,7 +105,7 @@ it('handles mixed message and function_call items', function () {
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $response = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai-responses'), httpClient: $http))
+    $response = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai-responses'), httpClient: $http))
         ->withModel('gpt-4o-mini')
         ->withMessages('What is the weather in London?')
         ->response();

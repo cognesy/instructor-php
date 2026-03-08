@@ -2,6 +2,7 @@
 
 namespace Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
 use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodeSessionId;
 
 /**
@@ -44,9 +45,7 @@ abstract readonly class StreamEvent
      */
     public static function fromArray(array $data): self
     {
-        $type = $data['type'] ?? 'unknown';
-        $timestamp = $data['timestamp'] ?? 0;
-        $sessionId = $data['sessionID'] ?? '';
+        $type = Normalize::toString($data['type'] ?? 'unknown', 'unknown');
 
         return match ($type) {
             'step_start' => StepStartEvent::fromArray($data),

@@ -2,6 +2,8 @@
 
 namespace Cognesy\AgentCtrl\OpenCode\Domain\Value;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
+
 /**
  * Token usage statistics from OpenCode step_finish event
  */
@@ -23,13 +25,13 @@ final readonly class TokenUsage
      */
     public static function fromArray(array $data): self
     {
-        $cache = $data['cache'] ?? [];
+        $cache = Normalize::toArray($data['cache'] ?? []);
         return new self(
-            input: $data['input'] ?? 0,
-            output: $data['output'] ?? 0,
-            reasoning: $data['reasoning'] ?? 0,
-            cacheRead: $cache['read'] ?? 0,
-            cacheWrite: $cache['write'] ?? 0,
+            input: Normalize::toInt($data['input'] ?? 0),
+            output: Normalize::toInt($data['output'] ?? 0),
+            reasoning: Normalize::toInt($data['reasoning'] ?? 0),
+            cacheRead: Normalize::toInt($cache['read'] ?? 0),
+            cacheWrite: Normalize::toInt($cache['write'] ?? 0),
         );
     }
 

@@ -8,7 +8,6 @@ use Cognesy\Polyglot\Inference\Contracts\CanMapMessages;
 use Cognesy\Polyglot\Inference\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\Arrays;
 
 class GeminiBodyFormat implements CanMapRequestBody
@@ -73,11 +72,11 @@ class GeminiBodyFormat implements CanMapRequestBody
     ) : array {
         $options = array_merge($this->config->options, $request->options());
         $responseFormat = $request->responseFormat();
-        $mode = $request->outputMode() ?? OutputMode::Unrestricted;
+        $type = $this->toResponseFormatType($request);
 
         return $this->filterEmptyValues([
-            "responseMimeType" => $this->toResponseMimeType($mode),
-            "responseSchema" => $this->toResponseSchema($responseFormat, $mode),
+            "responseMimeType" => $this->toResponseMimeType($type),
+            "responseSchema" => $this->toResponseSchema($responseFormat, $type),
             // candidateCount is a top-level param in some API versions; omit here for compatibility
             "maxOutputTokens" => $options['max_tokens'] ?? $this->config->maxTokens,
             "temperature" => $options['temperature'] ?? 1.0,
@@ -124,29 +123,23 @@ class GeminiBodyFormat implements CanMapRequestBody
         };
     }
 
-    protected function toResponseMimeType(?OutputMode $mode): string {
-        return match($mode) {
-            OutputMode::Text => "text/plain",
-            OutputMode::MdJson => "text/plain", // we prompt-format to JSON within text
-            OutputMode::Tools => "text/plain",
-            OutputMode::Json => "application/json",
-            OutputMode::JsonSchema => "application/json",
-            default => "text/plain", // Unrestricted and any other defaults to plain text
+    protected function toResponseMimeType(?string $type): string {
+        return match($type) {
+            'json',
+            'json_object',
+            'json_schema' => 'application/json',
+            default => 'text/plain',
         };
     }
 
-    protected function toResponseSchema(ResponseFormat $responseFormat, ?OutputMode $mode) : array {
+    protected function toResponseSchema(ResponseFormat $responseFormat, ?string $type) : array {
         $schema = $responseFormat->schemaFilteredWith($this->removeDisallowedEntries(...));
-        $responseSchema = match($mode) {
-            OutputMode::Json,
-            OutputMode::JsonSchema => $schema,
-            OutputMode::Unrestricted,
-            OutputMode::Text,
-            OutputMode::MdJson,
-            OutputMode::Tools => [],
-            default  => [],
+        return match($type) {
+            'json',
+            'json_object',
+            'json_schema' => $schema,
+            default => [],
         };
-        return $responseSchema;
     }
 
     protected function removeDisallowedEntries(array $jsonSchema) : array {
@@ -162,5 +155,19 @@ class GeminiBodyFormat implements CanMapRequestBody
 
     protected function filterEmptyValues(array $data) : array {
         return array_filter($data, fn($value) => $value !== null && $value !== [] && $value !== '');
+    }
+
+    protected function toResponseFormatType(InferenceRequest $request) : ?string {
+        if (!$request->hasResponseFormat()) {
+            return null;
+        }
+
+        return match ($request->responseFormat()->type()) {
+            'text' => 'text',
+            'json',
+            'json_object' => 'json_object',
+            'json_schema' => 'json_schema',
+            default => null,
+        };
     }
 }

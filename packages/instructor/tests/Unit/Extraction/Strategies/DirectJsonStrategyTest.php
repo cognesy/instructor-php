@@ -7,7 +7,7 @@ namespace Cognesy\Instructor\Tests\Unit\Extraction\Strategies;
 use Cognesy\Instructor\Extraction\Data\ExtractionInput;
 use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 
 describe('DirectJsonExtractor', function () {
     beforeEach(function () {

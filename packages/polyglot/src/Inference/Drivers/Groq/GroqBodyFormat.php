@@ -4,8 +4,6 @@ namespace Cognesy\Polyglot\Inference\Drivers\Groq;
 
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
-
 class GroqBodyFormat extends OpenAICompatibleBodyFormat
 {
     #[\Override]
@@ -29,8 +27,8 @@ class GroqBodyFormat extends OpenAICompatibleBodyFormat
 
     #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
-        $mode = $this->toResponseFormatMode($request);
-        if ($mode === null) {
+        $type = $this->toResponseFormatType($request);
+        if ($type === null) {
             return [];
         }
 
@@ -46,6 +44,6 @@ class GroqBodyFormat extends OpenAICompatibleBodyFormat
                 ],
             ]);
 
-        return $responseFormat->as($mode);
+        return $this->renderResponseFormatForType($responseFormat, $type);
     }
 }

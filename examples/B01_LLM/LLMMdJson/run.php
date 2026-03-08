@@ -1,5 +1,5 @@
 ---
-title: 'Working directly with LLMs and JSON - MdJSON mode'
+title: 'Working directly with LLMs and JSON - Markdown JSON prompting'
 docname: 'llm_md_json'
 id: 'b490'
 ---
@@ -12,8 +12,8 @@ elements of the response in a database.
 
 ## Example
 
-In this example we will use emulation mode - MdJson, which tries to
-force the model to generate a JSON output by asking it to respond
+In this example we explicitly ask the model to generate a JSON output
+by responding
 with a JSON object within a Markdown code block.
 
 This is useful for the models which do not support JSON output directly.
@@ -25,7 +25,6 @@ to guide the model in generating the correct response.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Inference;
 
 $data = Inference::using('openai')
@@ -35,7 +34,6 @@ $data = Inference::using('openai')
            Use integer values for population and founded year (negative for BC). Do not include extra text. \
            Example: {"name":"Paris","population":2139000,"founded":-250}']],
         options: ['max_tokens' => 64, 'temperature' => 0],
-        mode: OutputMode::MdJson,
     )
     ->asJsonData();
 

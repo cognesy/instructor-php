@@ -17,6 +17,7 @@ use Cognesy\Polyglot\Inference\Drivers\Deepseek\DeepseekDriver;
 use Cognesy\Polyglot\Inference\Drivers\Fireworks\FireworksDriver;
 use Cognesy\Polyglot\Inference\Drivers\Gemini\GeminiDriver;
 use Cognesy\Polyglot\Inference\Drivers\GeminiOAI\GeminiOAIDriver;
+use Cognesy\Polyglot\Inference\Drivers\Glm\GlmDriver;
 use Cognesy\Polyglot\Inference\Drivers\Groq\GroqDriver;
 use Cognesy\Polyglot\Inference\Drivers\HuggingFace\HuggingFaceDriver;
 use Cognesy\Polyglot\Inference\Drivers\Inception\InceptionDriver;
@@ -29,6 +30,7 @@ use Cognesy\Polyglot\Inference\Drivers\OpenAIResponses\OpenAIResponsesDriver;
 use Cognesy\Polyglot\Inference\Drivers\OpenResponses\OpenResponsesDriver;
 use Cognesy\Polyglot\Inference\Drivers\OpenRouter\OpenRouterDriver;
 use Cognesy\Polyglot\Inference\Drivers\Perplexity\PerplexityDriver;
+use Cognesy\Polyglot\Inference\Drivers\Qwen\QwenDriver;
 use Cognesy\Polyglot\Inference\Drivers\SambaNova\SambaNovaDriver;
 use Cognesy\Polyglot\Inference\Drivers\XAI\XAiDriver;
 use Cognesy\Polyglot\Inference\Drivers\BaseInferenceRequestDriver;
@@ -165,6 +167,7 @@ class InferenceDriverFactory
             'fireworks' => fn($config, $httpClient, $events) => new FireworksDriver($config, $httpClient, $events),
             'gemini' => fn($config, $httpClient, $events) => new GeminiDriver($config, $httpClient, $events),
             'gemini-oai' => fn($config, $httpClient, $events) => new GeminiOAIDriver($config, $httpClient, $events),
+            'glm' => fn($config, $httpClient, $events) => new GlmDriver($config, $httpClient, $events),
             'groq' => fn($config, $httpClient, $events) => new GroqDriver($config, $httpClient, $events),
             'huggingface' => fn($config, $httpClient, $events) => new HuggingFaceDriver($config, $httpClient, $events),
             'inception' => fn($config, $httpClient, $events) => new InceptionDriver($config, $httpClient, $events),
@@ -176,6 +179,7 @@ class InferenceDriverFactory
             'openresponses' => fn($config, $httpClient, $events) => new OpenResponsesDriver($config, $httpClient, $events),
             'openrouter' => fn($config, $httpClient, $events) => new OpenRouterDriver($config, $httpClient, $events),
             'perplexity' => fn($config, $httpClient, $events) => new PerplexityDriver($config, $httpClient, $events),
+            'qwen' => fn($config, $httpClient, $events) => new QwenDriver($config, $httpClient, $events),
             'sambanova' => fn($config, $httpClient, $events) => new SambaNovaDriver($config, $httpClient, $events),
             'xai' => fn($config, $httpClient, $events) => new XAiDriver($config, $httpClient, $events),
             // OpenAI compatible driver for generic OAI providers

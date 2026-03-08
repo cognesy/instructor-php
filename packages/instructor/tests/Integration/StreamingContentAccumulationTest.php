@@ -3,7 +3,7 @@
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 
 class StreamUserStructB { public int $age; public string $name; }
@@ -18,11 +18,10 @@ it('updates lastResponse content cumulatively per chunk', function () {
     $driver = new FakeInferenceDriver(streamBatches: [ $chunks ]);
 
     $stream = (new StructuredOutput)
-        ->withRuntime(makeStructuredRuntime(driver: $driver))
+        ->withRuntime(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json))
         ->with(
             messages: 'Extract user',
             responseModel: StreamUserStructB::class,
-            mode: OutputMode::Json,
         )
         ->stream();
 
@@ -48,4 +47,3 @@ it('updates lastResponse content cumulatively per chunk', function () {
     $c3 = $stream->lastResponse()->content();
     expect(strlen($c3))->toBeGreaterThan(strlen($c2));
 });
-

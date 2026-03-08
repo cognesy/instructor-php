@@ -8,7 +8,6 @@ use Cognesy\Instructor\Events\Request\StructuredOutputRecoveryLimitReached;
 use Cognesy\Instructor\Exceptions\StructuredOutputRecoveryException;
 use Cognesy\Instructor\RetryPolicy\DefaultRetryPolicy;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Utils\Result\Result;
 
 class RetryPolicyTestModel {
@@ -95,18 +94,18 @@ it('records failure and dispatches event', function () {
         ->with(
             responseModel: makeAnyResponseModel(RetryPolicyTestModel::class),
             config: (new StructuredOutputConfig())->with(maxRetries: 2)
-        );
+    );
 
     $validationResult = Result::failure('Validation failed');
     $inference = new InferenceResponse(content: '{"value": "not a number"}');
-    $partial = PartialInferenceResponse::empty();
 
-    $updated = $policy->recordFailure($execution, $validationResult, $inference, $partial);
+    $updated = $policy->recordFailure($execution, $validationResult, $inference);
 
     expect($eventFired)->toBeTrue();
     expect($updated->attemptCount())->toBe(1);
-    // Note: errors() counts from both attempts list and currentAttempt, so we expect the same error twice
     expect($updated->attempts()->last()->errors())->toHaveCount(1);
+    expect($updated->errors())->toBe(['Validation failed']);
+    expect($updated->activeAttempt())->toBeNull();
 });
 
 it('prepareRetry returns execution unchanged by default', function () {

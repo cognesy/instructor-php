@@ -2,8 +2,6 @@
 
 namespace Cognesy\Polyglot\Inference\Data;
 
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
-
 /**
  * Describes the capabilities of an inference driver.
  *
@@ -13,27 +11,25 @@ use Cognesy\Polyglot\Inference\Enums\OutputMode;
 readonly class DriverCapabilities
 {
     /**
-     * @param OutputMode[] $outputModes Native supported output modes (empty = all modes supported)
      * @param bool $streaming Whether streaming responses are supported
      * @param bool $toolCalling Whether tool/function calling is supported
-     * @param bool $jsonSchema Whether native JSON schema mode is supported
+     * @param bool $toolChoice Whether explicit tool choice is supported
+     * @param bool $responseFormatJsonObject Whether native JSON object response format is supported
+     * @param bool $responseFormatJsonSchema Whether native JSON schema response format is supported
      * @param bool $responseFormatWithTools Whether response_format works alongside tools
+     * @param ?int $maxContextTokens Maximum supported input context, if known
+     * @param ?int $maxOutputTokens Maximum supported output tokens, if known
      */
     public function __construct(
-        public array $outputModes = [],
         public bool $streaming = true,
         public bool $toolCalling = true,
-        public bool $jsonSchema = true,
+        public bool $toolChoice = true,
+        public bool $responseFormatJsonObject = true,
+        public bool $responseFormatJsonSchema = true,
         public bool $responseFormatWithTools = true,
+        public ?int $maxContextTokens = null,
+        public ?int $maxOutputTokens = null,
     ) {}
-
-    /**
-     * Check if a specific output mode is supported.
-     * If outputModes is empty, all modes are considered supported.
-     */
-    public function supportsOutputMode(OutputMode $mode): bool {
-        return empty($this->outputModes) || in_array($mode, $this->outputModes, true);
-    }
 
     /**
      * Check if streaming responses are supported.
@@ -50,10 +46,24 @@ readonly class DriverCapabilities
     }
 
     /**
-     * Check if native JSON schema mode is supported.
+     * Check if explicit tool choice is supported.
      */
-    public function supportsJsonSchema(): bool {
-        return $this->jsonSchema;
+    public function supportsToolChoice(): bool {
+        return $this->toolChoice;
+    }
+
+    /**
+     * Check if native JSON object response format is supported.
+     */
+    public function supportsResponseFormatJsonObject(): bool {
+        return $this->responseFormatJsonObject;
+    }
+
+    /**
+     * Check if native JSON schema response format is supported.
+     */
+    public function supportsResponseFormatJsonSchema(): bool {
+        return $this->responseFormatJsonSchema;
     }
 
     /**
@@ -61,23 +71,5 @@ readonly class DriverCapabilities
      */
     public function supportsResponseFormatWithTools(): bool {
         return $this->responseFormatWithTools;
-    }
-
-    /**
-     * Check if a specific mode + streaming combination is supported.
-     */
-    public function supports(OutputMode $mode, bool $streaming): bool {
-        return $this->supportsOutputMode($mode)
-            && (!$streaming || $this->supportsStreaming());
-    }
-
-    /**
-     * Get the list of explicitly supported output modes.
-     * Returns empty array if all modes are supported.
-     *
-     * @return OutputMode[]
-     */
-    public function getOutputModes(): array {
-        return $this->outputModes;
     }
 }

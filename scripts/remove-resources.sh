@@ -1,55 +1,30 @@
 #!/bin/bash
-# Remove shared resource files from all packages
-set -e
+# Cleanup helper for legacy 1.x mirrored assets.
+# 2.x canonical resources live under packages/*/resources.
+set -euo pipefail
 
-echo "Removing shared resource files from all packages..."
+echo "Removing legacy mirrored resource artifacts..."
 
-# Find all package directories with composer.json files
 for package_dir in packages/*/; do
-    if [ -f "${package_dir}composer.json" ]; then
-        package_name=$(basename "$package_dir")
-        echo "Processing package: $package_name"
-        
-        # Remove prompts directory
-        if [ -d "${package_dir}prompts" ]; then
-            rm -rf "${package_dir}prompts"
-            echo "  ✓ Removed prompts directory"
-        fi
-        
-        # Remove .env-dist file
-        if [ -f "${package_dir}.env-dist" ]; then
-            rm -f "${package_dir}.env-dist"
-            echo "  ✓ Removed .env-dist file"
-        fi
-        
-        # Remove bin directory contents (but keep the directory)
-        # TODO: We need to figure out a better way to handle bin files
-        #       Some packages have important bin files that are needed for
-        #       the package to function properly and are not stored in main
-        #       ./bin or ./scripts directories.
-        #if [ -d "${package_dir}bin" ]; then
-        #    rm -rf "${package_dir}bin/"*
-        #    echo "  ✓ Removed bin files"
-        #fi
-        
-        # Remove examples directory contents (but keep the directory)
-        if [ -d "${package_dir}examples" ]; then
-            rm -rf "${package_dir}examples/"*
-            echo "  ✓ Removed examples"
-        fi
-        
-        # Remove release notes contents (but keep the directory)
-        if [ -d "${package_dir}release_notes" ]; then
-            rm -rf "${package_dir}release_notes/"*
-            echo "  ✓ Removed release notes"
-        fi
-    fi
+  if [[ ! -f "${package_dir}composer.json" ]]; then
+    continue
+  fi
+
+  package_name=$(basename "$package_dir")
+  echo "Processing package: ${package_name}"
+
+  if [[ -d "${package_dir}prompts" ]]; then
+    rm -rf "${package_dir}prompts"
+    echo "  ✓ Removed legacy prompts directory"
+  fi
+
+  legacy_configs=$(find "${package_dir}resources/config" -maxdepth 1 -type f -name '*.php' ! -name 'instructor.php' 2>/dev/null || true)
+  if [[ -n "$legacy_configs" ]]; then
+    echo "$legacy_configs" | while IFS= read -r file; do
+      rm -f "$file"
+      echo "  ✓ Removed legacy PHP config: $file"
+    done
+  fi
 done
 
-# Clean up builds/docs-build directory if it exists
-if [ -d "builds/docs-build" ]; then
-    rm -rf builds/docs-build/*
-    echo "✓ Cleaned builds/docs-build directory"
-fi
-
-echo "✅ Done! All shared resource files have been removed from packages."
+echo "✅ Legacy mirrored assets removed."

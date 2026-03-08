@@ -35,7 +35,7 @@ it('aggregates tool call arguments across streaming deltas', function () {
 
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $final = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http))
+    $final = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http))
         ->withModel('gpt-4o-mini')
         ->withMessages('Find it')
         ->withStreaming(true)
@@ -49,3 +49,49 @@ it('aggregates tool call arguments across streaming deltas', function () {
     expect($tool->value('q'))->toBe('Hello');
 });
 
+it('supports parallel tool calls across streaming deltas', function () {
+    $mock = new MockHttpDriver();
+    $mock->on()
+        ->post('https://api.openai.com/v1/chat/completions')
+        ->withStream(true)
+        ->withJsonSubset(['stream' => true])
+        ->replySSEFromJson([
+            [
+                'choices' => [[
+                    'delta' => [
+                        'tool_calls' => [
+                            [
+                                'id' => 'call_1',
+                                'index' => 0,
+                                'function' => [ 'name' => 'search', 'arguments' => '{"q":"Hello"}' ],
+                            ],
+                            [
+                                'id' => 'call_2',
+                                'index' => 1,
+                                'function' => [ 'name' => 'calculate', 'arguments' => '{"expr":"2+2"}' ],
+                            ],
+                        ],
+                    ],
+                ]],
+            ],
+        ], addDone: true);
+
+    $http = (new HttpClientBuilder())->withDriver($mock)->create();
+
+    $final = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http))
+        ->withModel('gpt-4o-mini')
+        ->withMessages('Find it')
+        ->withStreaming(true)
+        ->stream()
+        ->final();
+
+    expect($final)->not->toBeNull();
+    expect($final->hasToolCalls())->toBeTrue();
+    expect($final->toolCalls()->count())->toBe(2);
+
+    $tools = $final->toolCalls()->all();
+    expect($tools[0]->name())->toBe('search');
+    expect($tools[0]->value('q'))->toBe('Hello');
+    expect($tools[1]->name())->toBe('calculate');
+    expect($tools[1]->value('expr'))->toBe('2+2');
+});

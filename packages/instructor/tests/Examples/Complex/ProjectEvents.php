@@ -1,11 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Tests\Examples\Complex;
 
-use Cognesy\Instructor\Extras\Mixin\HandlesSelfInference;
-
 class ProjectEvents {
-    use HandlesSelfInference;
-
     /**
      * List of events extracted from the text
      * @var ProjectEvent[]

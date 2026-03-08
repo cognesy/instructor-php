@@ -30,10 +30,12 @@ $structuredOutput = (new StructuredOutput)
 Define how Instructor should process and validate responses:
 
 ```php
-$structuredOutput = (new StructuredOutput)
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
     ->withMaxRetries(3)                 // Set retry count for failed validations
     ->withOutputMode(OutputMode::Tools) // Set output mode (Tools, Json, JsonSchema, MdJson)
     ->withDefaultToStdClass(true);      // Fallback to stdClass for schema-less payloads
+
+$structuredOutput = (new StructuredOutput)->withRuntime($runtime);
 ```
 
 Stream replay policy is configured through `StructuredOutputConfig`:
@@ -42,10 +44,12 @@ Stream replay policy is configured through `StructuredOutputConfig`:
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 
-$structuredOutput = (new StructuredOutput)
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
     ->withConfig(new StructuredOutputConfig(
         responseCachePolicy: ResponseCachePolicy::None, // default in 2.0
     ));
+
+$structuredOutput = (new StructuredOutput)->withRuntime($runtime);
 ```
 
 Use `ResponseCachePolicy::Memory` if you need second-pass replay of streamed updates.
@@ -55,9 +59,11 @@ Use `ResponseCachePolicy::Memory` if you need second-pass replay of streamed upd
 Fine-tune Instructor's internal processing:
 
 ```php
-$structuredOutput = (new StructuredOutput)
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
     ->withConfig($configObject)         // Use custom StructuredOutputConfig instance
     ->withDefaultToStdClass(true);      // Default to stdClass for unknown types
+
+$structuredOutput = (new StructuredOutput)->withRuntime($runtime);
 ```
 
 ## LLM Provider Configuration
@@ -74,7 +80,9 @@ $structuredOutput = StructuredOutput::using('openai');
 
 // Via DSN string
 $structuredOutput = (new StructuredOutput)->withRuntime(
-    StructuredOutputRuntime::fromDsn('driver=openai,model=gpt-4o-mini')
+    StructuredOutputRuntime::fromConfig(
+        \Cognesy\Polyglot\Inference\Config\LLMConfig::fromDsn('driver=openai,model=gpt-4o-mini')
+    )
 );
 
 // Via a customized provider
@@ -87,7 +95,7 @@ $structuredOutput = (new StructuredOutput)->withRuntime(
 
 `StructuredOutputRuntime` also supports:
 - `fromConfig(LLMConfig $config)` - start from explicit `LLMConfig`
-- `fromResolver(CanResolveLLMConfig $resolver)` - plug your own resolver
+- `fromProvider(LLMProvider $provider)` - start from a configured provider
 - `fromDefaults()` - use defaults with optional event/http overrides
 
 Runtime accessors are useful for diagnostics and DI wiring:
@@ -100,11 +108,13 @@ Runtime accessors are useful for diagnostics and DI wiring:
 Customize validation, transformation, and deserialization:
 
 ```php
-$structuredOutput = (new StructuredOutput)
-    ->withValidators(...$validators)    // Override response validators
-    ->withTransformers(...$transformers) // Override response transformers  
-    ->withDeserializers(...$deserializers) // Override response deserializers
-    ->withExtractors(...$extractors);    // Override response extractors
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withValidators($validators)        // Override response validators
+    ->withTransformers($transformers)    // Override response transformers
+    ->withDeserializers($deserializers)  // Override response deserializers
+    ->withExtractors($extractors);       // Override response extractors
+
+$structuredOutput = (new StructuredOutput)->withRuntime($runtime);
 ```
 
 ## StructuredOutputConfig Knobs
@@ -125,7 +135,7 @@ Example:
 ```php
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 
 $config = new StructuredOutputConfig(
@@ -136,8 +146,10 @@ $config = new StructuredOutputConfig(
     responseCachePolicy: ResponseCachePolicy::Memory,
 );
 
-$result = (new StructuredOutput)
-    ->withConfig($config)
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withConfig($config);
+
+$result = (new StructuredOutput($runtime))
     ->withMessages('Extract person data')
     ->withResponseClass(Person::class)
     ->get();
@@ -162,18 +174,22 @@ foreach ($stream->sequence() as $sequence) {
     processItem($sequence->last());
 }
 
-$structuredOutput = (new StructuredOutput)
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
     ->onEvent(\Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated::class, $callback)
     ->onEvent(\Cognesy\Instructor\Events\Request\SequenceUpdated::class, $callback);
+
+$structuredOutput = (new StructuredOutput)->withRuntime($runtime);
 ```
 
 ## Configuration Examples
 
 ### Basic OpenAI Configuration
 ```php
-$result = StructuredOutput::using('openai')
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
+    ->withMaxRetries(3);
+
+$result = (new StructuredOutput($runtime))
     ->withModel('gpt-4')
-    ->withMaxRetries(3)
     ->withMessages("Extract person data from: John is 25 years old")
     ->withResponseClass(Person::class)
     ->get();
@@ -202,8 +218,10 @@ $config = new StructuredOutputConfig(
     retryPrompt: "Please fix the validation errors and try again."
 );
 
-$result = (new StructuredOutput)
-    ->withConfig($config)
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withConfig($config);
+
+$result = (new StructuredOutput($runtime))
     ->withMessages($input)
     ->withResponseClass(Person::class)
     ->get();

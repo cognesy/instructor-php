@@ -23,7 +23,7 @@ use Cognesy\Http\Config\DebugConfig;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 enum UserType : string {
@@ -48,7 +48,7 @@ $structuredOutput = new StructuredOutput(
     StructuredOutputRuntime::fromConfig(
         config: LLMConfig::fromPreset('minimaxi'),
         httpClient: $debugHttpClient,
-    )
+    )->withOutputMode(OutputMode::MdJson)
 );
 
 $user = $structuredOutput
@@ -60,7 +60,6 @@ $user = $structuredOutput
             'output' => ['age' => 30, 'name' => 'Frank', 'username' => '@frankch', 'role' => 'developer', 'hobbies' => ['playing drums'],],
         ]],
         model: 'MiniMax-Text-01', // set your own value/source
-        mode: OutputMode::MdJson,
     )
     ->get();
 

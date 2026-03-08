@@ -2,7 +2,6 @@
 
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Inference;
 
 it('extracts tool call arguments as json data', function () {
@@ -32,11 +31,23 @@ it('extracts tool call arguments as json data', function () {
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $data = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http))
+    $data = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http))
         ->withModel('gpt-4o-mini')
-        ->withOutputMode(OutputMode::Tools)
+        ->withTools([[
+            'type' => 'function',
+            'function' => [
+                'name' => 'provide_data',
+                'description' => 'Provide city data',
+                'parameters' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'name' => ['type' => 'string'],
+                    ],
+                ],
+            ],
+        ]])
         ->withMessages('Provide city data')
-        ->asJsonData();
+        ->asToolCallJsonData();
 
     expect($data)->toBe([
         'name' => 'Paris',

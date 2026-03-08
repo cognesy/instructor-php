@@ -86,7 +86,7 @@ $items = StructuredOutput::with(...)->getArray();
 |--------|-------------|
 | `connection(string $name)` | Switch to a different configured connection |
 | `using(string $preset)` | Use a named LLM preset (e.g. `'anthropic'`, `'openai'`) |
-| `fromLLMConfig(LLMConfig $config)` | Use explicit typed LLM config |
+| `fromConfig(LLMConfig $config)` | Use explicit typed LLM config |
 | `withRuntime(CanCreateStructuredOutput)` | Replace runtime directly (advanced) |
 | `with(...)` | Configure extraction with all parameters |
 | `withMessages(...)` | Set input messages |
@@ -95,16 +95,12 @@ $items = StructuredOutput::with(...)->getArray();
 | `withPrompt(string)` | Set user prompt template |
 | `withExamples(array)` | Set few-shot examples |
 | `withModel(string)` | Override the model |
-| `withMaxRetries(int)` | Set max retry attempts |
 | `withOptions(array)` | Set additional options |
-| `withOutputMode(OutputMode)` | Set output mode |
 | `withStreaming(bool)` | Enable streaming |
-| `withValidators(...)` | Add custom validators |
-| `withTransformers(...)` | Add data transformers |
-| `withDeserializers(...)` | Add custom deserializers |
-| `withExtractors(...)` | Add custom extractors |
 | `get()` | Execute and return result |
 | `stream()` | Execute and return stream |
+
+Runtime policy such as retries, output mode, validators, transformers, deserializers, and extractors is configured on `StructuredOutputRuntime` and then passed via `withRuntime(...)`.
 
 ---
 
@@ -160,7 +156,7 @@ $response = Inference::connection('groq')->with(
 |--------|-------------|
 | `connection(string $name)` | Switch connection |
 | `using(string $preset)` | Use a named LLM preset (e.g. `'anthropic'`, `'openai'`) |
-| `fromLLMConfig(LLMConfig $config)` | Use explicit typed LLM config |
+| `fromConfig(LLMConfig $config)` | Use explicit typed LLM config |
 | `with(...)` | Configure with all parameters |
 | `withMessages(...)` | Set messages |
 | `withModel(string)` | Override model |
@@ -228,7 +224,7 @@ $usage = $response->usage();
 |--------|-------------|
 | `connection(string $name)` | Switch connection |
 | `using(string $preset)` | Use a named embeddings preset (e.g. `'openai'`, `'cohere'`) |
-| `fromEmbeddingsConfig(EmbeddingsConfig $config)` | Use explicit typed embeddings config |
+| `fromConfig(EmbeddingsConfig $config)` | Use explicit typed embeddings config |
 | `withInputs(string\|array)` | Set input text(s) |
 | `withModel(string)` | Override model |
 | `withOptions(array)` | Set options |

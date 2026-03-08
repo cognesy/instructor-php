@@ -2,23 +2,16 @@
 
 namespace Cognesy\Instructor;
 
-use Cognesy\Events\Event;
-use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
-use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Data\CachedContext;
 use Cognesy\Instructor\Data\OutputFormat;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
-use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
+use Cognesy\Instructor\Data\StructuredOutputResponse;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
-use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
-use Cognesy\Instructor\Transformation\Contracts\CanTransformData;
-use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 
 /**
@@ -31,15 +24,8 @@ final class StructuredOutput implements CanCreateStructuredOutput
 
     public function __construct(
         ?CanCreateStructuredOutput $runtime = null,
-        ?CanHandleEvents $events = null,
     ) {
-        if ($runtime === null) {
-            $this->runtime = StructuredOutputRuntime::fromDefaults(
-                events: $events,
-            );
-        } else {
-            $this->runtime = $runtime;
-        }
+        $this->runtime = $runtime ?? StructuredOutputRuntime::fromDefaults();
         $this->request = new StructuredOutputRequest();
     }
 
@@ -49,106 +35,12 @@ final class StructuredOutput implements CanCreateStructuredOutput
         return $copy;
     }
 
-    public static function fromLLMConfig(LLMConfig $config): self {
+    public static function fromConfig(LLMConfig $config): self {
         return new self(StructuredOutputRuntime::fromConfig($config));
     }
 
     public static function using(string $preset, ?string $basePath = null): self {
-        return self::fromLLMConfig(LLMConfig::fromPreset($preset, $basePath));
-    }
-
-    public function runtime(): CanCreateStructuredOutput {
-        return $this->runtime;
-    }
-
-    public function withConfig(StructuredOutputConfig $config): self {
-        $runtime = $this->runtimeOrFail()->withConfig($config);
-        return $this->withRuntime($runtime);
-    }
-
-    public function withDefaultToStdClass(bool $defaultToStdClass = true): self {
-        $runtime = $this->runtimeOrFail();
-        $updatedConfig = $runtime->config()->with(defaultToStdClass: $defaultToStdClass);
-        $updatedRuntime = $runtime->withConfig($updatedConfig);
-        return $this->withRuntime($updatedRuntime);
-    }
-
-    public function withOutputMode(OutputMode $outputMode): self {
-        $runtime = $this->runtimeOrFail();
-        $updated = $runtime->withConfig($runtime->config()->withOutputMode($outputMode));
-        return $this->withRuntime($updated);
-    }
-
-    public function withMaxRetries(int $maxRetries): self {
-        $runtime = $this->runtimeOrFail();
-        $updated = $runtime->withConfig($runtime->config()->withMaxRetries($maxRetries));
-        return $this->withRuntime($updated);
-    }
-
-    /** @param CanExtractResponse|class-string<CanExtractResponse> ...$extractors */
-    public function withExtractors(CanExtractResponse|string ...$extractors): self {
-        $runtime = $this->runtimeOrFail()->withExtractors($extractors);
-        return $this->withRuntime($runtime);
-    }
-
-    public function withValidators(CanValidateObject|string ...$validators): self {
-        $validatorList = [];
-        foreach (array_values($validators) as $validator) {
-            if (!is_string($validator)) {
-                $validatorList[] = $validator;
-                continue;
-            }
-
-            if (!class_exists($validator) || !is_subclass_of($validator, CanValidateObject::class)) {
-                throw new \InvalidArgumentException("Validator class must implement " . CanValidateObject::class . ": {$validator}");
-            }
-
-            /** @var class-string<CanValidateObject> $validator */
-            $validatorList[] = $validator;
-        }
-
-        $runtime = $this->runtimeOrFail()->withValidators($validatorList);
-        return $this->withRuntime($runtime);
-    }
-
-    public function withTransformers(CanTransformData|string ...$transformers): self {
-        $transformerList = [];
-        foreach (array_values($transformers) as $transformer) {
-            if (!is_string($transformer)) {
-                $transformerList[] = $transformer;
-                continue;
-            }
-
-            if (!class_exists($transformer) || !is_subclass_of($transformer, CanTransformData::class)) {
-                throw new \InvalidArgumentException("Transformer class must implement " . CanTransformData::class . ": {$transformer}");
-            }
-
-            /** @var class-string<CanTransformData> $transformer */
-            $transformerList[] = $transformer;
-        }
-
-        $runtime = $this->runtimeOrFail()->withTransformers($transformerList);
-        return $this->withRuntime($runtime);
-    }
-
-    public function withDeserializers(CanDeserializeClass|string ...$deserializers): self {
-        $deserializerList = [];
-        foreach (array_values($deserializers) as $deserializer) {
-            if (!is_string($deserializer)) {
-                $deserializerList[] = $deserializer;
-                continue;
-            }
-
-            if (!class_exists($deserializer) || !is_subclass_of($deserializer, CanDeserializeClass::class)) {
-                throw new \InvalidArgumentException("Deserializer class must implement " . CanDeserializeClass::class . ": {$deserializer}");
-            }
-
-            /** @var class-string<CanDeserializeClass> $deserializer */
-            $deserializerList[] = $deserializer;
-        }
-
-        $runtime = $this->runtimeOrFail()->withDeserializers($deserializerList);
-        return $this->withRuntime($runtime);
+        return self::fromConfig(LLMConfig::fromPreset($preset, $basePath));
     }
 
     public function withMessages(string|array|Message|Messages $messages): self {
@@ -285,9 +177,7 @@ final class StructuredOutput implements CanCreateStructuredOutput
         ?string $prompt = null,
         ?array $examples = null,
         ?string $model = null,
-        ?int $maxRetries = null,
         ?array $options = null,
-        ?OutputMode $mode = null,
     ): self {
         $copy = clone $this;
         $copy->request = $copy->request->with(
@@ -299,12 +189,6 @@ final class StructuredOutput implements CanCreateStructuredOutput
             model: $model,
             options: $options,
         );
-        if ($maxRetries !== null) {
-            $copy = $copy->withMaxRetries($maxRetries);
-        }
-        if ($mode !== null) {
-            $copy = $copy->withOutputMode($mode);
-        }
         return $copy;
     }
 
@@ -317,39 +201,12 @@ final class StructuredOutput implements CanCreateStructuredOutput
         return $this->runtime->create($request);
     }
 
-    /** @param callable(object):void|null $listener */
-    public function wiretap(?callable $listener): self {
-        if ($listener === null) {
-            return $this;
-        }
-        if (!$this->runtime instanceof StructuredOutputRuntime) {
-            throw new \LogicException('wiretap() is only available when using StructuredOutputRuntime.');
-        }
-        $this->runtime->events()->wiretap($listener);
-        return $this;
-    }
-
-    /** @param callable(object):void|null $listener */
-    public function onEvent(string $class, ?callable $listener): self {
-        if ($listener === null) {
-            return $this;
-        }
-        if (!$this->runtime instanceof StructuredOutputRuntime) {
-            throw new \LogicException('onEvent() is only available when using StructuredOutputRuntime.');
-        }
-        $this->runtime->events()->addListener($class, $listener);
-        return $this;
-    }
-
-    public function dispatch(Event $event): object {
-        if (!$this->runtime instanceof StructuredOutputRuntime) {
-            throw new \LogicException('dispatch() is only available when using StructuredOutputRuntime.');
-        }
-        return $this->runtime->events()->dispatch($event);
-    }
-
-    public function response(): InferenceResponse {
+    public function response(): StructuredOutputResponse {
         return $this->create()->response();
+    }
+
+    public function rawResponse(): InferenceResponse {
+        return $this->create()->rawResponse();
     }
 
     public function stream(): StructuredOutputStream {
@@ -382,12 +239,5 @@ final class StructuredOutput implements CanCreateStructuredOutput
 
     public function getArray(): array {
         return $this->create()->getArray();
-    }
-
-    private function runtimeOrFail(): StructuredOutputRuntime {
-        if ($this->runtime instanceof StructuredOutputRuntime) {
-            return $this->runtime;
-        }
-        throw new \LogicException('This operation requires StructuredOutputRuntime. Build runtime explicitly and pass it to the facade.');
     }
 }

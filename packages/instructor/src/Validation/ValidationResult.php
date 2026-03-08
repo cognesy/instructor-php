@@ -2,8 +2,12 @@
 
 namespace Cognesy\Instructor\Validation;
 
+use Cognesy\Utils\Profiler\TracksObjectCreation;
+
 class ValidationResult
 {
+    use TracksObjectCreation;
+
     private readonly bool $isValid;
 
     public function __construct(
@@ -15,6 +19,7 @@ class ValidationResult
         if ($this->isValid) {
             $this->message = '';
         }
+        $this->trackObjectCreation();
     }
 
     /// FACTORY METHODS //////////////////////////////////////////////////////////////////////

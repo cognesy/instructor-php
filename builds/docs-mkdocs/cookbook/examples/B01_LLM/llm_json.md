@@ -31,7 +31,7 @@ this feature in JSON mode (only in JSON Schema mode).
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Inference;
 
 $data = Inference::using('openai')

@@ -8,10 +8,10 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\HttpClient;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Creation\InferenceDriverFactory;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Generator;
 
 class InferenceCases
@@ -184,15 +184,14 @@ class InferenceCases
             }
 
             $capabilities = $driver->capabilities();
-            if (!$capabilities->supportsOutputMode($case->mode)) {
-                return false;
-            }
+            $supportsMode = match ($case->mode) {
+                OutputMode::Json => $capabilities->supportsResponseFormatJsonObject(),
+                OutputMode::JsonSchema => $capabilities->supportsResponseFormatJsonSchema(),
+                OutputMode::Tools => $capabilities->supportsToolCalling(),
+                default => true,
+            };
 
-            if ($case->mode === OutputMode::JsonSchema && !$capabilities->supportsJsonSchema()) {
-                return false;
-            }
-
-            if ($case->mode === OutputMode::Tools && !$capabilities->supportsToolCalling()) {
+            if (!$supportsMode) {
                 return false;
             }
 

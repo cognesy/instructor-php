@@ -4,7 +4,6 @@ use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceExecutionId;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 
 it('computes usage from finalized attempts only (no double count)', function () {
@@ -30,18 +29,26 @@ it('includes current attempt usage until finalized', function () {
     // One finalized response
     $exec = $exec->withSuccessfulAttempt(new InferenceResponse(usage: new Usage(inputTokens: 1, outputTokens: 1)));
 
-    // Simulate streaming with cumulative snapshots: (2,3) then (3,5)
-    $p1 = new PartialInferenceResponse(usage: new Usage(inputTokens: 2, outputTokens: 3));
-    $p2 = (new PartialInferenceResponse(usage: new Usage(inputTokens: 1, outputTokens: 2)))
-        ->withAccumulatedContent($p1);
-    $exec = $exec->withNewPartialResponse($p1);
-    $exec = $exec->withNewPartialResponse($p2);
+    $currentAttempt = new \Cognesy\Polyglot\Inference\Data\InferenceAttempt(
+        response: null,
+        usage: new Usage(inputTokens: 3, outputTokens: 5),
+        isFinalized: false,
+        errors: [],
+    );
+    $exec = new InferenceExecution(
+        request: new InferenceRequest(),
+        attempts: $exec->attempts(),
+        currentAttempt: $currentAttempt,
+        isFinalized: false,
+        id: $exec->id,
+        createdAt: $exec->createdAt,
+        updatedAt: $exec->updatedAt,
+    );
 
     $usageDuring = $exec->usage();
-    // Expect finalized (2) + current partials ( (2+3)+(1+2) = 8 ) = 10 total
-    expect($usageDuring->input())->toBe(1 + 2 + 1)
-        ->and($usageDuring->output())->toBe(1 + 3 + 2)
-        ->and($usageDuring->total())->toBe(2 + 8);
+    expect($usageDuring->input())->toBe(1 + 3)
+        ->and($usageDuring->output())->toBe(1 + 5)
+        ->and($usageDuring->total())->toBe(10);
 });
 
 it('uses typed execution id and serializes it to string', function () {

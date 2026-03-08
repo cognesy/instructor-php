@@ -7,7 +7,7 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanMapMessages;
 use Cognesy\Polyglot\Inference\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Utils\Arrays;
 
 class OpenAIBodyFormat implements CanMapRequestBody
@@ -79,8 +79,8 @@ class OpenAIBodyFormat implements CanMapRequestBody
     // INTERNAL ///////////////////////////////////////////////
 
     protected function toResponseFormat(InferenceRequest $request) : array {
-        $mode = $this->toResponseFormatMode($request);
-        if ($mode === null) {
+        $type = $this->toResponseFormatType($request);
+        if ($type === null) {
             return [];
         }
 
@@ -96,7 +96,7 @@ class OpenAIBodyFormat implements CanMapRequestBody
                 ],
             ]);
 
-        $result = $responseFormat->as($mode);
+        $result = $this->renderResponseFormatForType($responseFormat, $type);
         return $this->filterEmptyValues($result);
     }
 
@@ -144,38 +144,26 @@ class OpenAIBodyFormat implements CanMapRequestBody
         return array_filter($data, fn($value) => $value !== null && $value !== [] && $value !== '');
     }
 
-    protected function toSchemaData(InferenceRequest $request) : array {
-        $responseFormat = $request->responseFormat();
-        if (!($responseFormat instanceof \Cognesy\Polyglot\Inference\Data\ResponseFormat)) {
-            return [];
-        }
-        return [
-            $responseFormat->schemaFilteredWith($this->removeDisallowedEntries(...)),
-            $responseFormat->schemaName(),
-            $responseFormat->strict(),
-        ];
+    protected function renderResponseFormatForType(ResponseFormat $responseFormat, ?string $type) : array {
+        return match ($type) {
+            'json',
+            'json_object' => $responseFormat->asJsonObject(),
+            'json_schema' => $responseFormat->asJsonSchema(),
+            'text' => $responseFormat->asText(),
+            default => [],
+        };
     }
 
-    protected function toResponseFormatMode(InferenceRequest $request) : ?OutputMode {
-        if (!$request->outputMode()?->is(OutputMode::Unrestricted)) {
-            return $request->outputMode();
-        }
-        if ($request->hasTextResponseFormat()) {
-            return OutputMode::Text;
-        }
+    protected function toResponseFormatType(InferenceRequest $request) : ?string {
         if (!$request->hasResponseFormat()) {
             return null;
         }
 
-        $responseFormat = $request->responseFormat();
-        if (!($responseFormat instanceof \Cognesy\Polyglot\Inference\Data\ResponseFormat)) {
-            return null;
-        }
-        $type = $responseFormat->type();
-        return match($type) {
-            'json' => OutputMode::Json,
-            'json_object' => OutputMode::Json,
-            'json_schema' => OutputMode::JsonSchema,
+        return match ($request->responseFormat()->type()) {
+            'text' => 'text',
+            'json',
+            'json_object' => 'json_object',
+            'json_schema' => 'json_schema',
             default => null,
         };
     }

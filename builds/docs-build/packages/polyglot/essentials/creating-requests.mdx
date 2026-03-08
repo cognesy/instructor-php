@@ -16,8 +16,6 @@ It accepts several parameters:
 
 ```php
 <?php
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
-
 $inference = $inference->with(
     messages: 'Summarize this text',
     model: 'gpt-4o-mini',
@@ -25,9 +23,8 @@ $inference = $inference->with(
     toolChoice: [],
     responseFormat: [],
     options: [],
-    mode: OutputMode::Text
 );
-// @doctest id="0a03"
+// @doctest id="6053"
 ```
 
 
@@ -48,7 +45,7 @@ $response = $inference
     ->get();   // get the data - here it executes the request
 
 echo "Response: $response";
-// @doctest id="9503"
+// @doctest id="d925"
 ```
 
 
@@ -71,7 +68,7 @@ $response = $inference
     ->get();
 
 echo "Response: $response";
-// @doctest id="910b"
+// @doctest id="b961"
 ```
 
 ## Using `Messages` Class
@@ -95,7 +92,7 @@ $response = Inference::using('openai')
     ->withModel('gpt-4o')
     ->withMessages($messages)
     ->get();
-// @doctest id="f5a4"
+// @doctest id="e36f"
 ```
 
 ## Message Formats
@@ -135,7 +132,7 @@ $response = Inference::using('openai')
     ->withModel('gpt-4o') // use multimodal model
     ->with(messages: $messages)
     ->get();
-// @doctest id="6140"
+// @doctest id="993d"
 ```
 
 Instructor library offers `Cognesy\Messages\Utils\Image` class for easier conversion of image files to the message format.

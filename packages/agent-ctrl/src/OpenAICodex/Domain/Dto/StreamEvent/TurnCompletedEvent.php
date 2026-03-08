@@ -28,7 +28,7 @@ final readonly class TurnCompletedEvent extends StreamEvent
         $usageData = $data['usage'] ?? null;
 
         return new self(
-            usage: $usageData !== null ? UsageStats::fromArray($usageData) : null,
+            usage: is_array($usageData) ? UsageStats::fromArray($usageData) : null,
         );
     }
 }

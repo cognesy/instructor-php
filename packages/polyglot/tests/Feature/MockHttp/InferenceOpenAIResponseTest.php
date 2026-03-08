@@ -25,7 +25,7 @@ it('returns content for OpenAI chat completions (non-streaming)', function () {
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $content = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http))
+    $content = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http))
         ->withModel('gpt-4o-mini')
         ->withMessages('Hello')
         ->get();
@@ -52,7 +52,7 @@ it('supports runtime-style create with explicit request', function () {
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $content = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http))
+    $content = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http))
         ->create(new InferenceRequest(
             messages: 'Hello',
             model: 'gpt-4o-mini',
@@ -85,8 +85,11 @@ it('supports facade runtime extraction and runtime static factories', function (
         model: 'gpt-4o-mini',
     );
 
-    $fromFacadeRuntime = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http))
-        ->runtime()
+    $runtime = \Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(
+        \Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'),
+        httpClient: $http,
+    );
+    $fromFacadeRuntime = Inference::fromRuntime($runtime)
         ->create($request)
         ->get();
 
@@ -107,7 +110,7 @@ it('supports facade runtime extraction and runtime static factories', function (
             ],
         ]);
 
-    $fromStaticRuntime = InferenceRuntime::fromLLMConfig(
+    $fromStaticRuntime = InferenceRuntime::fromConfig(
         config: \Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'),
         httpClient: $http,
     )->create($request)->get();

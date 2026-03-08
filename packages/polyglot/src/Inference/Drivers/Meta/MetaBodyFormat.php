@@ -4,16 +4,14 @@ namespace Cognesy\Polyglot\Inference\Drivers\Meta;
 
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
-
 class MetaBodyFormat extends OpenAICompatibleBodyFormat
 {
     // INTERNAL //////////////////////////////////////////////
 
     #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
-        $mode = $this->toResponseFormatMode($request);
-        if ($mode === null) {
+        $type = $this->toResponseFormatType($request);
+        if ($type === null) {
             return [];
         }
 
@@ -36,6 +34,6 @@ class MetaBodyFormat extends OpenAICompatibleBodyFormat
                 ],
             ]);
 
-        return $responseFormat->as($mode);
+        return $this->renderResponseFormatForType($responseFormat, $type);
     }
 }

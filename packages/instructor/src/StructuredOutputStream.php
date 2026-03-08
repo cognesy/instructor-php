@@ -2,19 +2,18 @@
 
 namespace Cognesy\Instructor;
 
-use Cognesy\Instructor\Contracts\CanHandleStructuredOutputAttempts;
+use Cognesy\Instructor\Contracts\CanEmitStreamingUpdates;
 use Cognesy\Instructor\Contracts\Sequenceable;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
+use Cognesy\Instructor\Data\StructuredOutputResponse;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseUpdated;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\SequenceTracker;
+use Cognesy\Instructor\Streaming\Sequence\SequenceTracker;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
-use Cognesy\Utils\Collection\ArrayList;
 use Generator;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use RuntimeException;
@@ -24,32 +23,32 @@ use RuntimeException;
  */
 class StructuredOutputStream
 {
-    private CanHandleStructuredOutputAttempts $attemptHandler;
+    private CanEmitStreamingUpdates $emitter;
     private EventDispatcherInterface $events;
 
     private StructuredOutputExecution $execution;
-    private InferenceResponse|null $lastResponse = null;
-    private ?InferenceResponse $finalizedResponse = null;
+    private ?StructuredOutputResponse $lastResponse = null;
+    private ?StructuredOutputResponse $finalizedResponse = null;
+    private mixed $lastValue = null;
     private bool $streamCompleted = false;
     private ResponseCachePolicy $cachePolicy;
-    /** @var ArrayList<InferenceResponse> */
-    private ArrayList $cachedResponses;
+    /** @var list<StructuredOutputResponse> */
+    private array $cachedResponses = [];
 
     /**
      * @param StructuredOutputExecution $execution
-     * @param CanHandleStructuredOutputAttempts $attemptHandler
+     * @param CanEmitStreamingUpdates $emitter
      * @param EventDispatcherInterface $events
      */
     public function __construct(
         StructuredOutputExecution $execution,
-        CanHandleStructuredOutputAttempts $attemptHandler,
+        CanEmitStreamingUpdates $emitter,
         EventDispatcherInterface $events,
     ) {
         $this->execution = $execution;
-        $this->attemptHandler = $attemptHandler;
+        $this->emitter = $emitter;
         $this->events = $events;
         $this->cachePolicy = $execution->config()->responseCachePolicy();
-        $this->cachedResponses = ArrayList::empty();
         $this->events->dispatch(new StructuredOutputStarted(['request' => $execution->request()->toArray()]));
     }
 
@@ -59,18 +58,18 @@ class StructuredOutputStream
      * @return TResponse
      */
     public function lastUpdate() : mixed {
-        return $this->lastResponse?->value();
+        return $this->lastValue;
     }
 
     /**
-     * Returns last received LLM response object, which contains
-     * detailed information from LLM API response
+     * Returns the last Instructor response snapshot emitted by the stream.
      */
-    public function lastResponse() : InferenceResponse {
-        if ($this->lastResponse === null) {
+    public function lastResponse() : StructuredOutputResponse {
+        $response = $this->currentResponse();
+        if ($response === null) {
             throw new \RuntimeException('No response available yet');
         }
-        return $this->lastResponse;
+        return $response;
     }
 
     /**
@@ -80,8 +79,12 @@ class StructuredOutputStream
      */
     public function partials() : Generator {
         foreach ($this->streamResponses() as $partialResponse) {
-            $result = $partialResponse->value();
-            yield $result;
+            $value = $this->responseValue($partialResponse);
+            if ($value === null) {
+                continue;
+            }
+
+            yield $value;
         }
     }
 
@@ -96,8 +99,16 @@ class StructuredOutputStream
         $tracker = SequenceTracker::empty();
 
         foreach ($this->streamResponses() as $partialResponse) {
-            $value = $partialResponse->value();
+            $value = $this->responseValue($partialResponse);
+            if ($value === null) {
+                continue;
+            }
+
             if (!($value instanceof Sequenceable)) {
+                if ($partialResponse->isPartial()) {
+                    continue;
+                }
+
                 $type = get_debug_type($value);
                 throw new RuntimeException("Expected Sequenceable value in sequence() stream, got {$type}.");
             }
@@ -117,10 +128,9 @@ class StructuredOutputStream
     }
 
     /**
-     * Returns a generator of streamed LLM responses (partials) and final response,
-     * which contain more detailed information, including usage data.
+     * Returns streamed Instructor response snapshots, including partials and the final response.
      *
-     * @return Generator<PartialInferenceResponse|InferenceResponse>
+     * @return Generator<StructuredOutputResponse>
      */
     public function responses() : Generator {
         foreach ($this->streamResponses() as $partialResponse) {
@@ -134,14 +144,15 @@ class StructuredOutputStream
      * @return TResponse
      */
     public function finalValue() : mixed {
-        return $this->finalResponse()->value();
+        $this->finalResponse();
+        return $this->execution->output();
     }
 
     /**
-     * Processes response stream and returns only the final response.
+     * Processes response stream and returns the final Instructor response.
      * Memoized: drains the stream on first call, returns cached result on subsequent calls.
      */
-    public function finalResponse() : InferenceResponse {
+    public function finalResponse() : StructuredOutputResponse {
         if ($this->finalizedResponse !== null) {
             return $this->finalizedResponse;
         }
@@ -153,8 +164,8 @@ class StructuredOutputStream
                     'Final response is unavailable: stream completed without finalized inference response.'
                 );
             }
-            $this->lastResponse = $response;
             $this->finalizedResponse = $response;
+            $this->lastValue = $this->execution->output();
             $this->events->dispatch(new StructuredOutputResponseGenerated(['response' => $response]));
             return $this->finalizedResponse;
         }
@@ -170,29 +181,36 @@ class StructuredOutputStream
             );
         }
 
-        $this->lastResponse = $response;
         $this->finalizedResponse = $response;
+        $this->lastValue = $this->execution->output();
         $this->events->dispatch(new StructuredOutputResponseGenerated(['response' => $response]));
 
         return $this->finalizedResponse;
     }
 
     /**
-     * Returns raw stream for custom processing.
+     * Returns raw stream of Instructor response emissions for custom processing.
      * StructuredOutputStarted is dispatched when the stream is created.
      * Processing with this method does not emit response update events or usage updates.
      *
-     * @return Generator<StructuredOutputExecution>
+     * @return Generator<StructuredOutputResponse>
      */
     public function getIterator() : Generator {
-        return $this->makeStream($this->execution);
+        while ($this->emitter->hasNextEmission()) {
+            $response = $this->emitter->nextEmission();
+            if ($response !== null) {
+                yield $response;
+            }
+        }
+        $this->execution = $this->emitter->execution();
+        $this->streamCompleted = true;
     }
 
     /**
      * Convenience: aggregated usage for the last response seen on the stream.
      */
     public function usage() : Usage {
-        return $this->execution->usage();
+        return $this->currentResponse()?->usage() ?? $this->execution->usage();
     }
 
     // INTERNAL ///////////////////////////////////////////////////////////
@@ -201,13 +219,13 @@ class StructuredOutputStream
      * Handles stream iteration, usage accumulation, and last response tracking.
      * Dispatches per-item StructuredOutputResponseUpdated events.
      *
-     * @return Generator<InferenceResponse> Yields inference responses (partials and final).
+     * @return Generator<StructuredOutputResponse> Yields partial and final responses.
      */
     private function streamResponses(): Generator {
         if ($this->streamCompleted) {
             if ($this->shouldCache()) {
                 foreach ($this->cachedResponses as $response) {
-                    $this->lastResponse = $response;
+                    $this->rememberResponse($response);
                     $this->events->dispatch(new StructuredOutputResponseUpdated(['response' => $response]));
                     yield $response;
                 }
@@ -217,43 +235,23 @@ class StructuredOutputStream
                 'Stream is exhausted and cannot be replayed. Enable response stream caching to iterate again.'
             );
         }
-        /** @var StructuredOutputExecution $execution */
-        foreach ($this->makeStream($this->execution) as $execution) {
-            // Update execution reference to capture accumulated state (including usage)
-            $this->execution = $execution;
-            $response = $execution->inferenceResponse();
+
+        while ($this->emitter->hasNextEmission()) {
+            $response = $this->emitter->nextEmission();
             if ($response === null) {
                 continue;
             }
+
             if ($this->shouldCache()) {
-                $this->cachedResponses = $this->cachedResponses->withAppended($response);
+                $this->cachedResponses[] = $response;
             }
-            $this->lastResponse = $execution->inferenceResponse();
+            $this->rememberResponse($response);
+            $this->syncExecutionState($response);
             $this->events->dispatch(new StructuredOutputResponseUpdated(['response' => $response]));
             yield $response;
         }
-    }
 
-    /**
-     * Creates a new stream of execution updates from the attempt handler.
-     *
-     * @return Generator<StructuredOutputExecution>
-     */
-    private function makeStream(StructuredOutputExecution $execution) : Generator {
-        return $this->streamWithoutCaching($execution);
-    }
-
-    /**
-     * Streams execution updates without caching.
-     *
-     * @return Generator<StructuredOutputExecution>
-     */
-    private function streamWithoutCaching(StructuredOutputExecution $execution): Generator {
-        while ($this->attemptHandler->hasNext($execution)) {
-            $execution = $this->attemptHandler->nextUpdate($execution);
-            yield $execution;
-        }
-        $this->execution = $execution;
+        $this->execution = $this->emitter->execution();
         $this->streamCompleted = true;
     }
 
@@ -261,15 +259,51 @@ class StructuredOutputStream
         return $this->cachePolicy->shouldCache();
     }
 
-    private function resolveFinalResponse(): ?InferenceResponse {
-        if ($this->lastResponse !== null) {
+    private function resolveFinalResponse(): ?StructuredOutputResponse {
+        if ($this->lastResponse !== null && !$this->lastResponse->isPartial()) {
             return $this->lastResponse;
         }
 
         if ($this->execution->isFinalized()) {
-            return $this->execution->inferenceResponse();
+            $rawResponse = $this->execution->inferenceResponse();
+            if ($rawResponse === null) {
+                return null;
+            }
+
+            return StructuredOutputResponse::final(
+                value: $this->execution->output(),
+                rawResponse: $rawResponse,
+            );
         }
 
         return null;
+    }
+
+    public function finalRawResponse() : InferenceResponse {
+        return $this->finalResponse()->rawResponse();
+    }
+
+    private function currentResponse(): ?StructuredOutputResponse {
+        return $this->lastResponse;
+    }
+
+    private function responseValue(StructuredOutputResponse $response): mixed
+    {
+        return $response->value();
+    }
+
+    private function rememberResponse(StructuredOutputResponse $response): void {
+        $this->lastResponse = $response;
+        $this->lastValue = $response->value();
+    }
+
+    private function syncExecutionState(StructuredOutputResponse $response): void
+    {
+        if ($response->isPartial()) {
+            return;
+        }
+
+        $this->execution = $this->emitter->execution();
+        $this->lastValue = $this->execution->output();
     }
 }

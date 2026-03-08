@@ -5,7 +5,7 @@ use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 
 class PendingModeSwitchUser {
@@ -21,21 +21,21 @@ it('reuses finalized response when stream is requested after non-stream response
     );
 
     $pending = (new StructuredOutput)
-        ->withRuntime(makeStructuredRuntime(driver: $driver))
+        ->withRuntime(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json))
         ->with(
             messages: 'Extract user',
             responseModel: PendingModeSwitchUser::class,
-            mode: OutputMode::Json,
         )
         ->create();
 
     $syncResponse = $pending->response();
     $streamResponse = $pending->stream()->finalResponse();
+    $streamValue = $pending->stream()->finalValue();
 
     expect($driver->responseCalls)->toBe(1);
     expect($driver->streamCalls)->toBe(0);
     expect($streamResponse->content())->toBe($syncResponse->content());
-    expect($streamResponse->value())->toBeInstanceOf(PendingModeSwitchUser::class);
+    expect($streamValue)->toBeInstanceOf(PendingModeSwitchUser::class);
 });
 
 it('resolves final response after getIterator consumption for all cache policies', function (ResponseCachePolicy $policy) {
@@ -48,23 +48,26 @@ it('resolves final response after getIterator consumption for all cache policies
     );
 
     $stream = (new StructuredOutput)
-        ->withRuntime(makeStructuredRuntime(driver: $driver))
-        ->withConfig(new StructuredOutputConfig(responseCachePolicy: $policy))
+        ->withRuntime(makeStructuredRuntime(
+            driver: $driver,
+            config: new StructuredOutputConfig(responseCachePolicy: $policy),
+            outputMode: OutputMode::Json,
+        ))
         ->with(
             messages: 'Extract user',
             responseModel: PendingModeSwitchUser::class,
-            mode: OutputMode::Json,
         )
         ->stream();
 
     foreach ($stream->getIterator() as $_) {
-        // consume raw execution updates only
+        // consume raw emissions only
     }
 
     $final = $stream->finalResponse();
+    $finalValue = $stream->finalValue();
 
     expect($driver->streamCalls)->toBe(1);
-    expect($final->value())->toBeInstanceOf(PendingModeSwitchUser::class);
+    expect($finalValue)->toBeInstanceOf(PendingModeSwitchUser::class);
     expect($final->content())->toContain('"age":30');
 })->with([
     'no-cache' => [ResponseCachePolicy::None],

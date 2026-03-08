@@ -2,7 +2,7 @@
 
 use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Tests\Addons\Support\FakeInferenceDriver;
 

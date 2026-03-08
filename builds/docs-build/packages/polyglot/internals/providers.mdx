@@ -22,7 +22,7 @@ $provider = LLMProvider::using('openai')
     ->withConfigOverrides(['model' => 'gpt-4o']);
 
 $config = $provider->resolveConfig();
-// @doctest id="5aa4"
+// @doctest id="268a"
 ```
 
 Common methods:
@@ -43,7 +43,7 @@ $provider = EmbeddingsProvider::using('openai')
     ->withConfigProvider($configProvider);
 
 $config = $provider->resolveConfig();
-// @doctest id="b3ab"
+// @doctest id="7bb4"
 ```
 
 Common methods:
@@ -59,18 +59,15 @@ Common methods:
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 
 $runtime = InferenceRuntime::fromProvider($provider);
-// @doctest id="1326"
+// @doctest id="16c4"
 ```
 
 Inference runtime factories:
 
 - `fromProvider(...)`
-- `fromResolver(...)`
 - `fromConfig(...)`
-- `fromLLMConfig(...)`, `using(...)`
-- `fromDsn(...)`
 
-Embeddings runtime provides the same entry points via `EmbeddingsRuntime`.
+Embeddings runtime provides the same public entry points via `EmbeddingsRuntime`.
 
 ## Driver Contracts
 
@@ -82,7 +79,7 @@ interface CanProcessInferenceRequest {
     public function makeStreamResponsesFor(InferenceRequest $request): iterable;
     public function capabilities(?string $model = null): DriverCapabilities;
 }
-// @doctest id="472f"
+// @doctest id="56e1"
 ```
 
 Embeddings:
@@ -92,7 +89,7 @@ interface CanHandleVectorization {
     public function handle(EmbeddingsRequest $request): HttpResponse;
     public function fromData(array $data): ?EmbeddingsResponse;
 }
-// @doctest id="7782"
+// @doctest id="41b6"
 ```
 
 ## Adapter Contracts
@@ -130,7 +127,7 @@ use Cognesy\Polyglot\Inference\Inference;
 Inference::registerDriver('my-driver', MyInferenceDriver::class);
 Inference::unregisterDriver('my-driver');
 Inference::resetDrivers();
-// @doctest id="f1e4"
+// @doctest id="92e5"
 ```
 
 Embeddings drivers are selected by `EmbeddingsConfig::$driver` in `EmbeddingsDriverFactory`.
@@ -141,5 +138,5 @@ Custom registration is available via:
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
 Embeddings::registerDriver('my-embed-driver', MyEmbeddingsDriver::class);
-// @doctest id="6ea8"
+// @doctest id="14bc"
 ```

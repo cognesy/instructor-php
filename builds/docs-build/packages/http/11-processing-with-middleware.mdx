@@ -17,7 +17,7 @@ final class AddRequestIdMiddleware implements HttpMiddleware
         return $next->handle($request->withHeader('X-Request-Id', uniqid('req_', true)));
     }
 }
-// @doctest id="e98b"
+// @doctest id="3454"
 ```
 
 ## Base Middleware Hooks
@@ -37,7 +37,7 @@ final class AuthMiddleware extends BaseMiddleware
         return $response;
     }
 }
-// @doctest id="ddd2"
+// @doctest id="77f4"
 ```
 
 ## Decorate Streaming Responses
@@ -58,7 +58,7 @@ final class TrimChunkMiddleware extends BaseMiddleware
         return BaseResponseDecorator::decorate($response, static fn(string $chunk): string => trim($chunk));
     }
 }
-// @doctest id="903f"
+// @doctest id="14bb"
 ```
 
 ## Process SSE Payloads
@@ -70,7 +70,7 @@ $client = $client->withMiddleware(
     (new EventSourceMiddleware())
         ->withParser(static fn(string $payload): string|bool => $payload)
 );
-// @doctest id="7b42"
+// @doctest id="d00a"
 ```
 
 The parser runs on assembled SSE `data:` payloads.
@@ -80,7 +80,7 @@ The parser runs on assembled SSE `data:` payloads.
 ```php
 $client = $client->withMiddleware(new AddRequestIdMiddleware(), 'request-id');
 $client = $client->withoutMiddleware('request-id');
-// @doctest id="de24"
+// @doctest id="99b5"
 ```
 
 Both methods are immutable and return a new `HttpClient` instance.

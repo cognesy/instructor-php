@@ -15,9 +15,14 @@ it('accepts array inputs', function () {
     expect($req->inputs())->toBe(['a', 'b']);
 });
 
-it('throws on empty inputs', function () {
-    $act = fn() => new EmbeddingsRequest(input: []);
-    expect($act)->toThrow(InvalidArgumentException::class);
+it('supports empty request as a staged specification', function () {
+    $req = EmbeddingsRequest::empty()
+        ->withModel('text-embedding-3-small')
+        ->withOptions(['user' => 'u1']);
+
+    expect($req->hasInputs())->toBeFalse();
+    expect($req->model())->toBe('text-embedding-3-small');
+    expect($req->options()['user'] ?? null)->toBe('u1');
 });
 
 it('accepts retry policy via constructor named args', function () {

@@ -10,7 +10,7 @@ use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 
 /**
  * Test-first validation for ResponseExtractor.

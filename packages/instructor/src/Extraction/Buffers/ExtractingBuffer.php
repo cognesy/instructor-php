@@ -15,7 +15,8 @@ use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
 use Cognesy\Instructor\Extraction\Extractors\PartialJsonExtractor;
 use Cognesy\Instructor\Extraction\Extractors\ResilientJsonExtractor;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Utils\Profiler\TracksObjectCreation;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 
@@ -27,6 +28,8 @@ use Throwable;
  */
 final readonly class ExtractingBuffer implements CanBufferContent
 {
+    use TracksObjectCreation;
+
     /** @var CanExtractResponse[] */
     private array $extractors;
 
@@ -45,6 +48,7 @@ final readonly class ExtractingBuffer implements CanBufferContent
     ) {
         $this->extractors = $extractors;
         $this->errors = $errors;
+        $this->trackObjectCreation();
     }
 
     /**

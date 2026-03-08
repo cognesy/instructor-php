@@ -41,7 +41,7 @@ $result = Embeddings::using('openai')
 
 $vector = $result->first()?->values() ?? [];
 echo count($vector);
-// @doctest id="e8a2"
+// @doctest id="da14"
 ```
 
 
@@ -51,11 +51,12 @@ Use constructor sugar for common paths:
 
 ```php
 <?php
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
 $embeddings = Embeddings::using('openai');
-$embeddings = Embeddings::fromDsn('driver=openai,model=text-embedding-3-small');
-// @doctest id="4f63"
+$embeddings = Embeddings::fromConfig(EmbeddingsConfig::fromDsn('driver=openai,model=text-embedding-3-small'));
+// @doctest id="eae9"
 ```
 
 Inject a fully assembled runtime for advanced setup:
@@ -72,13 +73,13 @@ $http = (new HttpClientBuilder())
     ->withDriver(new MockHttpDriver())
     ->create();
 
-$runtime = EmbeddingsRuntime::fromEmbeddingsConfig(
+$runtime = EmbeddingsRuntime::fromConfig(
     config: EmbeddingsConfig::fromArray(['driver' => 'openai']),
     httpClient: $http,
 );
 
 $embeddings = Embeddings::fromRuntime($runtime);
-// @doctest id="f2cc"
+// @doctest id="97f7"
 ```
 
 
@@ -95,7 +96,7 @@ $embeddings->with(
     options: ['dimensions' => 1536],
     model: 'text-embedding-3-large',
 );
-// @doctest id="36b8"
+// @doctest id="6bc3"
 ```
 
 
@@ -105,7 +106,7 @@ $embeddings->with(
 $response = $embeddings->get();
 $vectors = $embeddings->vectors();
 $first = $embeddings->first();
-// @doctest id="5d85"
+// @doctest id="5551"
 ```
 
 
@@ -124,7 +125,7 @@ $cohere = Embeddings::using('cohere')
     ->withModel('embed-english-v3.0')
     ->withInputs(['Document 1', 'Document 2'])
     ->vectors();
-// @doctest id="a8f9"
+// @doctest id="3ea8"
 ```
 
 
@@ -139,5 +140,5 @@ For explicit config/provider wiring, assemble runtime via `EmbeddingsRuntime::fr
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
 Embeddings::registerDriver('custom-provider', CustomEmbeddingsDriver::class);
-// @doctest id="8490"
+// @doctest id="41d3"
 ```

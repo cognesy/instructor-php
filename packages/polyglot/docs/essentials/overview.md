@@ -19,7 +19,7 @@ $text = (new Inference())
 
 ## Use a Specific Preset
 
-Presets come from `config/llm.php`.
+Presets come from `config/llm/presets/*.yaml`.
 
 ```php
 <?php
@@ -56,8 +56,8 @@ $stream = (new Inference())
     ->withStreaming()
     ->stream();
 
-foreach ($stream->responses() as $partial) {
-    echo $partial->contentDelta;
+foreach ($stream->deltas() as $delta) {
+    echo $delta->contentDelta;
 }
 ```
 

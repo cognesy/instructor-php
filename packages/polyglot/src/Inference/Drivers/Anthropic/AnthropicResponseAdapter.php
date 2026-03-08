@@ -8,7 +8,8 @@ use Cognesy\Polyglot\Inference\Contracts\CanMapUsage;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\ToolCallId;
+use Cognesy\Polyglot\Inference\Data\ToolCallIdByStreamIndex;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use JsonException;
 use RuntimeException;
@@ -35,30 +36,37 @@ class AnthropicResponseAdapter implements CanTranslateInferenceResponse
     }
 
     #[\Override]
-    public function fromStreamResponses(iterable $eventBodies, ?HttpResponse $responseData = null): iterable {
-        $previous = PartialInferenceResponse::empty();
+    public function fromStreamDeltas(iterable $eventBodies, ?HttpResponse $responseData = null): iterable {
+        $toolIdByIndex = new ToolCallIdByStreamIndex();
         foreach ($eventBodies as $eventBody) {
-            $delta = $this->fromStreamResponse($eventBody, $responseData);
+            $delta = $this->fromStreamResponse($eventBody, $responseData, $toolIdByIndex);
             if ($delta === null) {
                 continue;
             }
-            $partial = PartialInferenceResponse::fromDelta($previous, $delta);
-            $previous = $partial;
-            yield $partial;
+            yield $delta;
         }
     }
 
-    protected function fromStreamResponse(string $eventBody, ?HttpResponse $responseData = null): ?PartialInferenceDelta {
+    protected function fromStreamResponse(
+        string $eventBody,
+        ?HttpResponse $responseData = null,
+        ?ToolCallIdByStreamIndex $toolIdByIndex = null,
+    ): ?PartialInferenceDelta {
         //$eventBody = $this->normalizeUnknownValues($responseBody);
         $data = $this->decodeJsonData($eventBody, 'Anthropic stream payload');
         if (empty($data)) {
             return null;
         }
+
+        $toolIdByIndex = $toolIdByIndex ?? new ToolCallIdByStreamIndex();
+        $blockIndex = $this->extractBlockIndex($data);
+        $toolId = $this->resolveToolId($data, $blockIndex, $toolIdByIndex);
+
         return new PartialInferenceDelta(
             contentDelta: $this->makeContentDelta($data),
             reasoningContentDelta: $data['delta']['thinking_delta'] ?? '',
-            toolId: $data['content_block']['id'] ?? '',
-            toolName: $data['content_block']['name'] ?? '',
+            toolId: $toolId,
+            toolName: (string) ($data['content_block']['name'] ?? ''),
             toolArgs: $data['delta']['partial_json'] ?? '',
             finishReason: $data['delta']['stop_reason'] ?? $data['message']['stop_reason'] ?? '',
             usage: $this->usageFormat->fromData($data),
@@ -128,6 +136,38 @@ class AnthropicResponseAdapter implements CanTranslateInferenceResponse
             $nl = PHP_EOL;
         }
         return $content;
+    }
+
+    private function extractBlockIndex(array $data): ?string {
+        $index = $data['index'] ?? null;
+        if (!is_int($index) && !is_float($index) && !is_string($index)) {
+            return null;
+        }
+        return (string) $index;
+    }
+
+    private function resolveToolId(
+        array $data,
+        ?string $blockIndex,
+        ToolCallIdByStreamIndex $toolIdByIndex,
+    ): string {
+        $explicitId = (string) ($data['content_block']['id'] ?? '');
+        if ($explicitId !== '') {
+            if ($blockIndex !== null) {
+                $toolIdByIndex->remember($blockIndex, ToolCallId::fromString($explicitId));
+            }
+            return $explicitId;
+        }
+
+        if ($blockIndex === null) {
+            return '';
+        }
+
+        $toolCallId = $toolIdByIndex->forIndex($blockIndex);
+        return match ($toolCallId) {
+            null => '',
+            default => $toolCallId->toString(),
+        };
     }
 
     /**

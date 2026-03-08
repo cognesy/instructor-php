@@ -186,8 +186,8 @@ $stream = (new Inference())
     ->withStreaming(true)
     ->stream();
 
-foreach ($stream->responses() as $partial) {
-    echo $partial->contentDelta();
+foreach ($stream->deltas() as $delta) {
+    echo $delta->contentDelta;
 }
 
 $final = $stream->final();
@@ -196,29 +196,34 @@ $final = $stream->final();
 ### Structured Output
 
 ```php
-$user = (new StructuredOutput())
-    ->using('openai-responses')
+use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
+
+$runtime = StructuredOutputRuntime::fromProvider(
+    LLMProvider::using('openai-responses')
+)->withOutputMode(OutputMode::JsonSchema);
+
+$user = (new StructuredOutput($runtime))
     ->with(
         messages: 'Extract user info from: John is 25 years old',
         responseModel: User::class,
-        mode: OutputMode::JsonSchema,
     )
     ->get();
 ```
 
 ## Configuration
 
-The `openai-responses` preset in `config/llm.php`:
+The `openai-responses` preset in `config/llm/presets/openai-responses.yaml`:
 
-```php
-'openai-responses' => [
-    'driver' => 'openai-responses',
-    'apiUrl' => 'https://api.openai.com/v1',
-    'apiKey' => Env::get('OPENAI_API_KEY', ''),
-    'endpoint' => '/responses',
-    'model' => 'gpt-4.1-nano',
-    'maxTokens' => 1024,
-],
+```yaml
+driver: openai-responses
+apiUrl: 'https://api.openai.com/v1'
+apiKey: '${OPENAI_API_KEY}'
+endpoint: /responses
+model: gpt-4.1-nano
+maxTokens: 1024
 ```
 
 ## Tests

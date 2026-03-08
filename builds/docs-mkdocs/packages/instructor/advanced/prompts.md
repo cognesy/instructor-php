@@ -31,7 +31,7 @@ you can use Blade syntax in your prompts if you prefer it.
 Example prompt template in Twig:
 ```
 Hello, world.
-// @doctest id="2389"
+// @doctest id="ac3e"
 ```
 
 ### Prompt Template with Variables
@@ -40,7 +40,7 @@ You can define variables in your prompt templates and inject values when renderi
 
 ```twig
 Hello, {{ name }}!
-// @doctest id="abae"
+// @doctest id="8f49"
 ```
 
 ### Chat Messages
@@ -53,7 +53,7 @@ for LLM chat APIs.
     <message role="system">You are a helpful assistant.</message>
     <message role="user">What is the capital of {{ country }}?</message>
 </chat>
-// @doctest id="6f4e"
+// @doctest id="b8bc"
 ```
 
 ### Prompt Template Metadata
@@ -82,7 +82,7 @@ schema:
     <message role="system">You are a helpful assistant.</message>
     <message role="user">What is the capital of {{ country }}?</message>
 </chat>
-// @doctest id="b234"
+// @doctest id="cdda"
 ```
 
 
@@ -92,7 +92,7 @@ Instructor allows you to define multiple `template libraries` in your app. Libra
 prompt templates which is stored under a specific directory. Library can have a nested structure, which allows
 you to organize your prompts in a way that makes sense for your application.
 
-Library properties are specified in `config/prompt.php` configuration file.
+Library properties are specified in package-scoped YAML config (for example `templates/config/prompt/default.yaml`).
 
 where you can define:
  - `templateEngine` - template engine used for prompts in this library,
@@ -127,7 +127,7 @@ $prompt = Template::using('demo-twig')->get('hello')->with(['name' => 'World']);
 
 echo $prompt->toText(); // Outputs: "Hello, World!"
 ?>
-// @doctest id="b641"
+// @doctest id="321b"
 ```
 Or, using the shorthand `make()` syntax:
 
@@ -137,7 +137,7 @@ $prompt = Template::make('demo-twig:hello')->with(['name' => 'World']);
 
 echo $prompt->toText(); // Outputs: "Hello, World!"
 ?>
-// @doctest id="9c47"
+// @doctest id="5a14"
 ```
 
 ### Rendering a Chat Template
@@ -154,7 +154,7 @@ print_r($messages->toArray());
 //     ['role' => 'user', 'content' => 'Hello, World!']
 // ]
 ?>
-// @doctest id="b7cb"
+// @doctest id="9db5"
 ```
 
 ### Custom Configuration and Template Content
@@ -180,7 +180,7 @@ $prompt->withConfig($config)
 
 echo $prompt->toText(); // Outputs: "Hello, World!"
 ?>
-// @doctest id="9e13"
+// @doctest id="a3d3"
 ```
 
 ### In Memory Templates
@@ -194,7 +194,7 @@ $prompt = Template::twig() // or Template::blade() for Blade syntax
     ->withValues(['name' => 'World'])
     ->toText();
 ?>
-// @doctest id="9f19"
+// @doctest id="e4ce"
 ```
 
 There's shorter syntax for creating in-memory prompts:
@@ -206,7 +206,7 @@ $prompt = Template::twig() // or Template::blade() for Blade syntax
     ->with(['name' => 'World'])
     ->toText();
 ?>
-// @doctest id="76a1"
+// @doctest id="4c34"
 ```
 
 ### Handling Template Variables
@@ -223,7 +223,7 @@ $variables = $prompt->variables();
 
 print_r($variables); // Outputs: ['name']
 ?>
-// @doctest id="27e8"
+// @doctest id="f567"
 ```
 
 ### Loading Templates by Name and Using DSNs
@@ -240,7 +240,7 @@ echo $prompt->template();
 $prompt = Template::fromDsn('demo-blade:hello')->with(['name' => 'World']);
 echo $prompt->toText(); // Outputs: "Hello, World!"
 ?>
-// @doctest id="d68f"
+// @doctest id="e065"
 ```
 
 ### Converting to Messages with Markup
@@ -253,7 +253,7 @@ Here is an example XML that can be used to generate a sequence of chat messages:
     <message role="system">You are a helpful assistant.</message>
     <message role="user">Hello, {{ name }}</message>
 </chat>
-<!-- @doctest id="4b27"
+<!-- @doctest id="c92b"
 ```
 
 And here is how you use `Prompt` class to convert XML template into a sequence of messages:
@@ -274,5 +274,5 @@ echo $messages->toArray();
 //     ['role' => 'user', 'content' => 'Hello, assistant']
 // ]
 ?>
-// @doctest id="9d46"
+// @doctest id="278f"
 ```

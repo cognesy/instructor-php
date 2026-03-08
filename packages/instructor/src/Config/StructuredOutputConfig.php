@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Config;
 
 use Cognesy\Config\Dsn;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 use InvalidArgumentException;
 use Throwable;

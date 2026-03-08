@@ -24,7 +24,7 @@ class OpenAIRequestAdapter implements CanTranslateInferenceRequest {
     protected function toHeaders(InferenceRequest $request): array { ... }
     protected function toUrl(InferenceRequest $request): string { ... }
 }
-// @doctest id="d0de"
+// @doctest id="fd6c"
 ```
 
 ### Message Formatters
@@ -41,7 +41,7 @@ class OpenAIMessageFormat implements CanMapMessages {
     protected function toNativeToolCall(array $message): array { ... }
     protected function toNativeToolResult(array $message): array { ... }
 }
-// @doctest id="cbe4"
+// @doctest id="6da2"
 ```
 
 
@@ -60,7 +60,7 @@ class OpenAIBodyFormat implements CanMapRequestBody {
 
     public function toRequestBody(InferenceRequest $request): array { ... }
 }
-// @doctest id="d912"
+// @doctest id="43bb"
 ```
 
 
@@ -77,8 +77,8 @@ class OpenAIResponseAdapter implements CanTranslateInferenceResponse {
     ) { ... }
 
     public function fromResponse(HttpResponse $response): ?InferenceResponse { ... }
-    /** @return iterable<PartialInferenceResponse> */
-    public function fromStreamResponses(iterable $eventBodies, ?HttpResponse $responseData = null): iterable { ... }
+    /** @return iterable<PartialInferenceDelta> */
+    public function fromStreamDeltas(iterable $eventBodies, ?HttpResponse $responseData = null): iterable { ... }
     public function toEventBody(string $data): string|bool { ... }
 
     protected function makeToolCalls(array $data): ToolCalls { ... }
@@ -88,7 +88,7 @@ class OpenAIResponseAdapter implements CanTranslateInferenceResponse {
     protected function makeToolNameDelta(array $data): string { ... }
     protected function makeToolArgsDelta(array $data): string { ... }
 }
-// @doctest id="0e79"
+// @doctest id="0a1d"
 ```
 
 
@@ -103,8 +103,7 @@ namespace Cognesy\Polyglot\Inference\Drivers\OpenAI;
 class OpenAIUsageFormat implements CanMapUsage {
     public function fromData(array $data): Usage { ... }
 }
-// @doctest id="c813"
+// @doctest id="1608"
 ```
-
 
 

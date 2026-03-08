@@ -2,6 +2,7 @@
 
 namespace Cognesy\Polyglot\Embeddings;
 
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsRetryPolicy;
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanCreateEmbeddings;
@@ -15,22 +16,23 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  */
 final class Embeddings implements CanCreateEmbeddings
 {
-    use Traits\HandlesFluentMethods;
     use Traits\HandlesShortcuts;
 
+    private EmbeddingsRequest $request;
     private CanCreateEmbeddings $runtime;
 
     public function __construct(
         ?CanCreateEmbeddings $runtime = null,
     ) {
+        $this->request = EmbeddingsRequest::empty();
         $this->runtime = $runtime ?? EmbeddingsRuntime::fromProvider(EmbeddingsProvider::new());
     }
 
-    public static function fromEmbeddingsConfig(EmbeddingsConfig $config): self {
-        return new self(EmbeddingsRuntime::fromEmbeddingsConfig($config));
+    public static function fromConfig(EmbeddingsConfig $config): self {
+        return new self(EmbeddingsRuntime::fromConfig($config));
     }
 
-    public static function fromEmbeddingsProvider(EmbeddingsProvider $provider): self {
+    public static function fromProvider(EmbeddingsProvider $provider): self {
         return new self(EmbeddingsRuntime::fromProvider($provider));
     }
 
@@ -39,7 +41,7 @@ final class Embeddings implements CanCreateEmbeddings
     }
 
     public static function using(string $preset, ?string $basePath = null): self {
-        return self::fromEmbeddingsConfig(EmbeddingsConfig::fromPreset($preset, $basePath));
+        return self::fromConfig(EmbeddingsConfig::fromPreset($preset, $basePath));
     }
 
     public function withRuntime(CanCreateEmbeddings $runtime): self {
@@ -48,16 +50,33 @@ final class Embeddings implements CanCreateEmbeddings
         return $copy;
     }
 
-    public function runtime(): CanCreateEmbeddings {
-        return $this->runtime;
-    }
-
     public function withRequest(EmbeddingsRequest $request): static {
         $copy = clone $this;
-        $copy->inputs = $request->inputs();
-        $copy->options = $request->options();
-        $copy->model = $request->model();
-        $copy->retryPolicy = $request->retryPolicy();
+        $copy->request = $request;
+        return $copy;
+    }
+
+    public function withInputs(string|array $input) : static {
+        $copy = clone $this;
+        $copy->request = $copy->request->withInputs($input);
+        return $copy;
+    }
+
+    public function withModel(string $model) : static {
+        $copy = clone $this;
+        $copy->request = $copy->request->withModel($model);
+        return $copy;
+    }
+
+    public function withOptions(array $options) : static {
+        $copy = clone $this;
+        $copy->request = $copy->request->withOptions($options);
+        return $copy;
+    }
+
+    public function withRetryPolicy(EmbeddingsRetryPolicy $retryPolicy) : static {
+        $copy = clone $this;
+        $copy->request = $copy->request->withRetryPolicy($retryPolicy);
         return $copy;
     }
 
@@ -70,23 +89,15 @@ final class Embeddings implements CanCreateEmbeddings
         array $options = [],
         string $model = '',
     ) : static {
-        $copy = clone $this;
-        $copy->inputs = $input;
-        $copy->options = $options;
-        $copy->model = $model;
-        return $copy;
+        return $this
+            ->withInputs($input)
+            ->withOptions($options)
+            ->withModel($model);
     }
 
     #[\Override]
     public function create(?EmbeddingsRequest $request = null): PendingEmbeddings {
-        $request ??= new EmbeddingsRequest(
-            input: $this->inputs,
-            options: $this->options,
-            model: $this->model,
-            retryPolicy: $this->retryPolicy,
-        );
-
-        return $this->runtime->create($request);
+        return $this->runtime->create($request ?? $this->request);
     }
 
     /** @param string|callable(EmbeddingsConfig,HttpClient,EventDispatcherInterface):CanHandleVectorization $driver */

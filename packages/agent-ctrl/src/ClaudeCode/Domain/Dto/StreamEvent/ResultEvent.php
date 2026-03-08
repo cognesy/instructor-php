@@ -2,6 +2,8 @@
 
 namespace Cognesy\AgentCtrl\ClaudeCode\Domain\Dto\StreamEvent;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
+
 /**
  * Final result event from agent
  */
@@ -23,7 +25,7 @@ final readonly class ResultEvent extends StreamEvent
     public static function fromArray(array $data): self
     {
         return new self(
-            result: StreamValueNormalizer::toString($data['result'] ?? ''),
+            result: Normalize::toString($data['result'] ?? ''),
         );
     }
 }

@@ -4,13 +4,7 @@ namespace Cognesy\Http\Middleware;
 
 interface CanStoreCircuitBreakerState
 {
-    /**
-     * @return array{state: string, failures: int, lastFailure: int, halfOpenRequests: int, halfOpenSuccesses: int}|null
-     */
-    public function load(string $key): ?array;
+    public function load(string $key): ?CircuitBreakerState;
 
-    /**
-     * @param array{state: string, failures: int, lastFailure: int, halfOpenRequests: int, halfOpenSuccesses: int} $state
-     */
-    public function save(string $key, array $state): void;
+    public function save(string $key, CircuitBreakerState $state): void;
 }

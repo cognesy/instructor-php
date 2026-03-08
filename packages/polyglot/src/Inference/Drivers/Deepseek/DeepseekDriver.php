@@ -9,7 +9,6 @@ use Cognesy\Polyglot\Inference\Drivers\BaseInferenceRequestDriver;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIMessageFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIRequestAdapter;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIUsageFormat;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\Str;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -45,21 +44,13 @@ class DeepseekDriver extends BaseInferenceRequestDriver
     public function capabilities(?string $model = null): DriverCapabilities {
         $model = $model ?? $this->config->model;
         $isReasoner = Str::contains($model, 'reasoner');
-        $outputModes = match(true) {
-            $isReasoner => [
-                OutputMode::Json,
-                OutputMode::MdJson,
-                OutputMode::Text,
-                OutputMode::Unrestricted,
-            ],
-            default => OutputMode::cases(),
-        };
 
         return new DriverCapabilities(
-            outputModes: $outputModes,
             streaming: true,
             toolCalling: !$isReasoner,
-            jsonSchema: !$isReasoner,
+            toolChoice: !$isReasoner,
+            responseFormatJsonObject: true,
+            responseFormatJsonSchema: !$isReasoner,
             responseFormatWithTools: false,
         );
     }

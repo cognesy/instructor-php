@@ -42,6 +42,7 @@
     "tests": "@php vendor/bin/pest",
     "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
     "psalm": "@php vendor/bin/psalm",
+    "publish": "bin/instructor-setup publish",
     "setup": "bin/instructor-setup"
   },
   "bin": [

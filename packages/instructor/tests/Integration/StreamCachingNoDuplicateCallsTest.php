@@ -3,7 +3,7 @@
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 
 class StreamUserStructC { public int $age; public string $name; }
@@ -21,11 +21,10 @@ it('does not re-start driver when accessing final after partials', function () {
     );
 
     $stream = (new StructuredOutput)
-        ->withRuntime(makeStructuredRuntime(driver: $driver))
+        ->withRuntime(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json))
         ->with(
             messages: 'Extract user',
             responseModel: StreamUserStructC::class,
-            mode: OutputMode::Json,
         )
         ->stream();
 
@@ -37,4 +36,3 @@ it('does not re-start driver when accessing final after partials', function () {
     $final = $stream->finalResponse();
     expect($driver->streamCalls)->toBe($callsAfterPartials);
 });
-

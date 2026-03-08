@@ -3,28 +3,20 @@
 use Cognesy\Instructor\Collections\StructuredOutputAttemptList;
 use Cognesy\Instructor\Data\StructuredOutputAttempt;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
-use Cognesy\Instructor\Tests\Support\FakeStreamFactory;
-use Cognesy\Polyglot\Inference\Data\InferenceExecution as PgInferenceExecution;
-use Cognesy\Polyglot\Inference\Data\InferenceRequest as PgInferenceRequest;
+use Cognesy\Instructor\Enums\ExecutionStatus;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse as PgInferenceResponse;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse as PgPartial;
 use Cognesy\Polyglot\Inference\Data\Usage as PgUsage;
 
 it('accumulates usage for synchronous finalized attempts only', function () {
-    // Build a finalized Polyglot execution with usage 2 in, 3 out
-    $pg = PgInferenceExecution::fromRequest(new PgInferenceRequest());
-    $pg = $pg->withSuccessfulAttempt(new PgInferenceResponse(usage: new PgUsage(inputTokens: 2, outputTokens: 3)));
-
     $attempt = new StructuredOutputAttempt(
-        inferenceExecution: $pg,
+        inferenceResponse: new PgInferenceResponse(usage: new PgUsage(inputTokens: 2, outputTokens: 3)),
         isFinalized: true,
     );
 
     $exec = new StructuredOutputExecution(
         request: new \Cognesy\Instructor\Data\StructuredOutputRequest(messages: '', requestedSchema: []),
-        attempts: StructuredOutputAttemptList::of($attempt),
-        currentAttempt: $attempt,
-        isFinalized: true,
+        attemptHistory: StructuredOutputAttemptList::of($attempt),
+        status: ExecutionStatus::Succeeded,
     );
 
     $usage = $exec->usage();
@@ -33,39 +25,27 @@ it('accumulates usage for synchronous finalized attempts only', function () {
         ->and($usage->total())->toBe(5);
 });
 
-it('accumulates usage for finalized attempts plus current partials until finalized', function () {
-    // Finalized previous attempt: 1 in, 1 out
-    $pg1 = PgInferenceExecution::fromRequest(new PgInferenceRequest());
-    $pg1 = $pg1->withSuccessfulAttempt(new PgInferenceResponse(usage: new PgUsage(inputTokens: 1, outputTokens: 1)));
+it('accumulates usage for finalized attempts plus current in-flight usage until finalized', function () {
     $attempt1 = new StructuredOutputAttempt(
-        inferenceExecution: $pg1,
+        inferenceResponse: new PgInferenceResponse(usage: new PgUsage(inputTokens: 1, outputTokens: 1)),
         isFinalized: true,
     );
 
-    // Current in-progress attempt with cumulative partial snapshots: (2,3) then (3,5)
-    $pg2 = PgInferenceExecution::fromRequest(new PgInferenceRequest());
-    [$p1, $p2] = FakeStreamFactory::from(
-        new PgPartial(usage: new PgUsage(inputTokens: 2, outputTokens: 3)),
-        new PgPartial(usage: new PgUsage(inputTokens: 1, outputTokens: 2)),
-    );
-    $pg2 = $pg2->withNewPartialResponse($p1);
-    $pg2 = $pg2->withNewPartialResponse($p2);
     $attemptCurrent = new StructuredOutputAttempt(
-        inferenceExecution: $pg2,
+        usage: new PgUsage(inputTokens: 3, outputTokens: 5),
         isFinalized: false,
     );
 
     $exec = new StructuredOutputExecution(
         request: new \Cognesy\Instructor\Data\StructuredOutputRequest(messages: '', requestedSchema: []),
-        attempts: StructuredOutputAttemptList::of($attempt1, $attemptCurrent),
-        currentAttempt: $attemptCurrent,
-        isFinalized: false,
+        attemptHistory: StructuredOutputAttemptList::of($attempt1),
+        activeAttempt: $attemptCurrent,
+        status: ExecutionStatus::Running,
     );
 
     $usage = $exec->usage();
-    // Expect finalized (2 total) + current partials (8 total) = 10 total; input 4, output 6
-    expect($usage->input())->toBe(1 + 2 + 1)
-        ->and($usage->output())->toBe(1 + 3 + 2)
+    expect($usage->input())->toBe(4)
+        ->and($usage->output())->toBe(6)
         ->and($usage->total())->toBe(10);
 });
 

@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Creation;
 
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Data\SchemaRendering;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Schema\Data\Schema;
 use Cognesy\Schema\JsonSchemaParser;
 use Cognesy\Schema\JsonSchemaRenderer;

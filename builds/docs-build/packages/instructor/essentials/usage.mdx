@@ -46,7 +46,7 @@ var_dump($person);
 //     age: 28
 // }
 ?>
-// @doctest id="491c"
+// @doctest id="fbc6"
 ```
 
 !!! note
@@ -70,7 +70,7 @@ $structuredOutput = (new StructuredOutput)
     ->withModel($modelName)             // Set LLM model
     ->withOptions($options)             // Set LLM options
     ->withStreaming(true);              // Enable streaming
-// @doctest id="ad1f"
+// @doctest id="369e"
 ```
 
 You can also pass a prebuilt request object:
@@ -86,7 +86,7 @@ $request = new StructuredOutputRequest(
 $user = (new StructuredOutput)
     ->withRequest($request)
     ->get();
-// @doctest id="089c"
+// @doctest id="a2f8"
 ```
 
 ### Response Model Configuration
@@ -96,7 +96,7 @@ $structuredOutput = (new StructuredOutput)
     ->withResponseClass($className)     // Set response class specifically
     ->withResponseObject($object)       // Set response object instance
     ->withResponseJsonSchema($schema);  // Set JSON schema directly
-// @doctest id="9253"
+// @doctest id="c83b"
 ```
 
 ### Output Formats
@@ -108,7 +108,7 @@ $structuredOutput = (new StructuredOutput)
     ->intoArray()                       // Return as associative array
     ->intoInstanceOf($className)        // Return as different class
     ->intoObject($selfDeserializing);   // Return as self-deserializing object
-// @doctest id="57e1"
+// @doctest id="3d92"
 ```
 
 **Example - Get raw arrays:**
@@ -120,7 +120,7 @@ $userData = (new StructuredOutput)
     ->get();
 
 // Result: ['name' => 'John Doe', 'age' => 30]
-// @doctest id="1722"
+// @doctest id="b771"
 ```
 
 **Example - Use different output class:**
@@ -132,19 +132,21 @@ $dto = (new StructuredOutput)
     ->get();
 
 // Schema defines 5 fields, output has 2 fields
-// @doctest id="3c9c"
+// @doctest id="22ff"
 ```
 
 See: [Output Formats Guide](../advanced/output_formats) for comprehensive documentation.
 
 ### Configuration and Behavior
 ```php
-$structuredOutput = (new StructuredOutput)
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
     ->withMaxRetries(3)                 // Set retry count
     ->withOutputMode($mode)             // Set output mode
     ->withConfig($config)               // Set configuration object
     ->withDefaultToStdClass(true);      // Use stdClass fallback for schema-less data
-// @doctest id="71a6"
+
+$structuredOutput = (new StructuredOutput)->withRuntime($runtime);
+// @doctest id="44b9"
 ```
 
 ### LLM Provider Configuration
@@ -158,7 +160,9 @@ $structuredOutput = StructuredOutput::using('openai');
 
 // Via DSN string
 $structuredOutput = (new StructuredOutput)->withRuntime(
-    StructuredOutputRuntime::fromDsn('driver=openai,model=gpt-4o-mini')
+    StructuredOutputRuntime::fromConfig(
+        \Cognesy\Polyglot\Inference\Config\LLMConfig::fromDsn('driver=openai,model=gpt-4o-mini')
+    )
 );
 
 // Via a customized provider
@@ -167,17 +171,19 @@ $provider = LLMProvider::using('openai')
 $structuredOutput = (new StructuredOutput)->withRuntime(
     StructuredOutputRuntime::fromProvider(provider: $provider)
 );
-// @doctest id="4613"
+// @doctest id="d04a"
 ```
 
 ### Processing Overrides
 ```php
-$structuredOutput = (new StructuredOutput)
-    ->withValidators(...$validators)    // Override validators
-    ->withTransformers(...$transformers) // Override transformers
-    ->withDeserializers(...$deserializers) // Override deserializers
-    ->withExtractors(...$extractors);   // Override extractors
-// @doctest id="bf2d"
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withValidators($validators)        // Override validators
+    ->withTransformers($transformers)    // Override transformers
+    ->withDeserializers($deserializers)  // Override deserializers
+    ->withExtractors($extractors);       // Override extractors
+
+$structuredOutput = (new StructuredOutput)->withRuntime($runtime);
+// @doctest id="3ce7"
 ```
 
 
@@ -199,18 +205,26 @@ $structuredOutput = (new StructuredOutput)->with(
 // Get structured result directly
 $person = $structuredOutput->get();
 
-// Get raw LLM response
-$llmResponse = $structuredOutput->response();
+// Get structured response object
+$response = $structuredOutput->response();
+$person = $response->value();
+$llmResponse = $response->rawResponse();
 
 // Get streaming interface
 $stream = $structuredOutput->stream();
 ?>
-// @doctest id="ced5"
+// @doctest id="e668"
 ```
 
 ### Pending Execution with `create()`
 
-The `create()` method returns a `PendingStructuredOutput` instance, which acts as an execution handler that provides the same access methods:
+The `create()` method returns a `PendingStructuredOutput` instance. Treat it as a lazy operation handle:
+
+- it does not execute anything until you ask for `get()`, `response()`, `rawResponse()`, `toJson*()`, or `stream()`
+- it coordinates those access paths so one pending request is executed once
+- it exposes the same read methods without turning the facade itself into a lifecycle engine
+
+It provides the same access methods:
 
 ```php
 <?php
@@ -219,8 +233,10 @@ $pending = $structuredOutput->create();
 // Execute and get structured result
 $person = $pending->get();
 
-// Execute and get raw LLM response
-$llmResponse = $pending->response();
+// Execute and get structured response object
+$response = $pending->response();
+$person = $response->value();
+$llmResponse = $response->rawResponse();
 
 // Execute and get streaming interface
 $stream = $pending->stream();
@@ -230,7 +246,7 @@ $json = $pending->toJson();      // Convert result to JSON string
 $array = $pending->toArray();    // Convert result to array
 $jsonObj = $pending->toJsonObject(); // Convert result to Json object
 ?>
-// @doctest id="f4c5"
+// @doctest id="a714"
 ```
 
 You can inspect execution metadata from `PendingStructuredOutput`:
@@ -243,7 +259,7 @@ $execution = $pending->execution();
 $executionId = $execution->id()->toString();
 $requestId = $execution->request()->id()->toString();
 ?>
-// @doctest id="0b81"
+// @doctest id="2916"
 ```
 
 ### Runtime-First Execution (`CanCreateStructuredOutput`)
@@ -266,16 +282,17 @@ $request = new StructuredOutputRequest(
 $requestId = $request->id()->toString(); // StructuredOutputRequestId at boundary
 $person = $creator->create($request)->get();
 ?>
-// @doctest id="7b72"
+// @doctest id="9cd0"
 ```
 
 ### Response Types Explained
 
 - **`get()`**: Returns the parsed and validated structured result (e.g., `Person` object)
-- **`response()`**: Returns the raw LLM response object with metadata like tokens, model info, etc.
+- **`response()`**: Returns `StructuredOutputResponse`, the package-native structured response wrapper
+- **`rawResponse()`**: Returns the underlying raw `InferenceResponse` with tokens, finish reason, and provider metadata
 - **`stream()`**: Returns `StructuredOutputStream` for real-time processing of streaming responses
 
-The `PendingStructuredOutput` class serves as a flexible execution interface that lets you choose how to process the LLM response based on your specific needs.
+`PendingStructuredOutput` is intentionally narrow: it is the public lazy handle for one structured-output operation, while mutable lifecycle coordination lives behind the internal execution session.
 
 ### Typed convenience getters
 
@@ -294,29 +311,28 @@ $user = (new StructuredOutput)
     ->with(messages: 'Jason is 28 years old', responseModel: Person::class)
     ->getObject();
 ?>
-// @doctest id="e011"
+// @doctest id="e480"
 ```
 
 Available methods: `getString()`, `getInt()`, `getFloat()`, `getBoolean()`, `getObject()`, `getArray()`.
 
-### Runtime access
+### Runtime-first setup
 
-For advanced integration, you can access runtime and dispatch custom events:
+For advanced integration, configure `StructuredOutputRuntime` first and then pass it into `StructuredOutput`:
 
 ```php
 <?php
-use Cognesy\Events\Event;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 
-$structuredOutput = StructuredOutput::using('openai');
-$runtime = $structuredOutput->runtime();
+$runtime = StructuredOutputRuntime::fromConfig(
+    \Cognesy\Polyglot\Inference\Config\LLMConfig::fromPreset('openai')
+)->wiretap(fn($event) => dump($event));
 
-$structuredOutput->dispatch(new Event(['source' => 'app']));
+$structuredOutput = new StructuredOutput($runtime);
 ?>
-// @doctest id="27ec"
+// @doctest id="af35"
 ```
-
-`dispatch()`, `onEvent()`, and `wiretap()` require `StructuredOutputRuntime`.
 
 
 ## String as Input
@@ -334,7 +350,7 @@ $value = (new StructuredOutput)
     )
     ->get();
 ?>
-// @doctest id="521f"
+// @doctest id="f012"
 ```
 
 
@@ -373,7 +389,7 @@ $translation = (new StructuredOutput)
     )
     ->get();
 ?>
-// @doctest id="b6c7"
+// @doctest id="829c"
 ```
 
 
@@ -404,7 +420,7 @@ $person = $stream->lastUpdate();
 // ...to, for example, save it to the database
 $db->save($person);
 ?>
-// @doctest id="b7d0"
+// @doctest id="0742"
 ```
 
 
@@ -430,17 +446,22 @@ Once configured, you can execute your request using different methods depending 
 ```php
 // Direct execution methods
 $result = $structuredOutput->get();       // Get structured result
-$response = $structuredOutput->response(); // Get raw LLM response  
+$response = $structuredOutput->response(); // Get StructuredOutputResponse
+$raw = $structuredOutput->rawResponse();   // Get raw InferenceResponse
 $stream = $structuredOutput->stream();     // Get streaming interface
 
 // Or use create() to get PendingStructuredOutput for flexible execution
 $pending = $structuredOutput->create();
 $result = $pending->get();                 // Same methods available
 $json = $pending->toJson();               // Plus utility methods
-// @doctest id="8a9f"
+// @doctest id="c2af"
 ```
 
 - **`get()`**: Returns the parsed and validated structured result
-- **`response()`**: Returns the raw LLM response with metadata
+- **`response()`**: Returns `StructuredOutputResponse` with the parsed value plus raw response access
+- **`rawResponse()`**: Returns the raw LLM response with metadata and raw content/tool calls only
 - **`stream()`**: Returns `StructuredOutputStream` for real-time processing
 - **`create()`**: Returns `PendingStructuredOutput` for flexible execution control
+
+Instructor keeps the parsed structured result separate from the raw `InferenceResponse`.
+Use `response()` when you want both in one place, or `rawResponse()` when you only need transport-level data.

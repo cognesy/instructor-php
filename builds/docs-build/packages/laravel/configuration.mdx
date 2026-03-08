@@ -6,7 +6,7 @@ After publishing the configuration file, you'll find it at `config/instructor.ph
 
 ```php
 'default' => env('INSTRUCTOR_CONNECTION', 'openai'),
-// @doctest id="437a"
+// @doctest id="2b90"
 ```
 
 Set the default LLM connection. Can be overridden at runtime with `->connection('name')`.
@@ -60,7 +60,7 @@ Configure multiple LLM provider connections:
         'max_tokens' => env('OLLAMA_MAX_TOKENS', 4096),
     ],
 ],
-// @doctest id="6a48"
+// @doctest id="f17f"
 ```
 
 ### Supported Drivers
@@ -92,7 +92,7 @@ Configure multiple LLM provider connections:
         'max_tokens' => 4096,
     ],
 ],
-// @doctest id="8fd6"
+// @doctest id="9f98"
 ```
 
 ## Embeddings Connections
@@ -121,7 +121,7 @@ Configure embedding model connections:
         ],
     ],
 ],
-// @doctest id="bfe2"
+// @doctest id="f572"
 ```
 
 ## Extraction Settings
@@ -139,7 +139,7 @@ Configure structured output extraction defaults:
     // Prompt template for retry attempts
     'retry_prompt' => 'The response did not pass validation. Please fix the following errors and try again: {errors}',
 ],
-// @doctest id="79a3"
+// @doctest id="0649"
 ```
 
 ### Output Modes
@@ -166,7 +166,7 @@ Configure the HTTP client:
     // Connection timeout in seconds
     'connect_timeout' => env('INSTRUCTOR_HTTP_CONNECT_TIMEOUT', 30),
 ],
-// @doctest id="746f"
+// @doctest id="7280"
 ```
 
 ## Logging Settings
@@ -192,7 +192,7 @@ Configure logging:
         // Cognesy\Http\Events\DebugRequestBodyUsed::class,
     ],
 ],
-// @doctest id="6c42"
+// @doctest id="054e"
 ```
 
 ### Logging Presets
@@ -217,7 +217,7 @@ Configure event dispatching:
         // \Cognesy\Instructor\Events\ExtractionComplete::class,
     ],
 ],
-// @doctest id="4985"
+// @doctest id="3a05"
 ```
 
 ## Cache Settings
@@ -238,7 +238,7 @@ Configure response caching:
     // Cache key prefix
     'prefix' => 'instructor',
 ],
-// @doctest id="4d01"
+// @doctest id="a0f7"
 ```
 
 ## Environment Variables Reference
@@ -274,5 +274,5 @@ $result = StructuredOutput::connection('anthropic')  // Switch connection
         responseModel: MyModel::class,
     )
     ->get();
-// @doctest id="152e"
+// @doctest id="a852"
 ```

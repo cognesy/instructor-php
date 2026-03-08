@@ -9,13 +9,13 @@ Together.ai hosts a number of language models and offers inference API with supp
 chat completion, JSON completion, and tools call. You can use Instructor with Together.ai
 as demonstrated below.
 
-Please note that some Together.ai models support OutputMode::Tools or OutputMode::Json, which are much
-more reliable than OutputMode::MdJson.
+Please note that some Together.ai models support tool calling or native JSON object response_format, which are much
+more reliable than Instructor markdown-JSON fallback.
 
-Mode compatibility:
-- OutputMode::Tools - supported for selected models
-- OutputMode::Json - supported for selected models
-- OutputMode::MdJson - fallback mode
+Inference feature compatibility:
+- tool calling - supported for selected models
+- native JSON object response_format - supported for selected models
+- Instructor markdown-JSON fallback - fallback mode
 
 
 ## Example

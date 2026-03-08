@@ -43,18 +43,18 @@ $response = $inference->with(
     options: ['stream' => true]
 );
 
-$stream = $response->stream()->responses();
-foreach ($stream as $partial) {
-    echo $partial->contentDelta;
+$stream = $response->stream()->deltas();
+foreach ($stream as $delta) {
+    echo $delta->contentDelta;
     flush();
 }
-// @doctest id="9712"
+// @doctest id="d075"
 ```
 
 2. **Buffer Flushing**: Ensure output buffers are properly flushed during streaming
 ```php
-foreach ($stream as $partial) {
-    echo $partial->contentDelta;
+foreach ($stream as $delta) {
+    echo $delta->contentDelta;
 
     // Flush output buffer to ensure content is sent immediately
     if (ob_get_level() > 0) {
@@ -62,7 +62,7 @@ foreach ($stream as $partial) {
     }
     flush();
 }
-// @doctest id="55b3"
+// @doctest id="f29a"
 ```
 
 3. **Error Handling in Streams**: Implement specific error handling for streams
@@ -75,18 +75,18 @@ try {
     );
 
     try {
-        $stream = $response->stream()->responses();
+        $stream = $response->stream()->deltas();
         $content = '';
 
-        foreach ($stream as $partial) {
-            $content .= $partial->contentDelta;
-            echo $partial->contentDelta;
+        foreach ($stream as $delta) {
+            $content .= $delta->contentDelta;
+            echo $delta->contentDelta;
             flush();
         }
     } catch (\Exception $streamException) {
         echo "\nStream error: " . $streamException->getMessage() . "\n";
 
-        // If we got a partial response before the error, use it
+        // If we got partial content before the error, use it
         if (!empty($content)) {
             echo "Partial content received: " . strlen($content) . " characters\n";
         }
@@ -94,7 +94,7 @@ try {
 } catch (\Throwable $e) {
     echo "Request failed: " . $e->getMessage() . "\n";
 }
-// @doctest id="0d98"
+// @doctest id="fbb3"
 ```
 
 4. **Fallback to Non-streaming**: Implement a fallback to non-streaming mode
@@ -112,8 +112,8 @@ function getResponse(string $prompt, bool $preferStreaming = true): string {
             );
 
             $content = '';
-            foreach ($response->stream()->responses() as $partial) {
-                $content .= $partial->contentDelta;
+            foreach ($response->stream()->deltas() as $delta) {
+                $content .= $delta->contentDelta;
                 // Output can be done here if needed
             }
 
@@ -126,5 +126,5 @@ function getResponse(string $prompt, bool $preferStreaming = true): string {
     // Fallback to non-streaming
     return $inference->with(messages: $prompt)->get();
 }
-// @doctest id="1d15"
+// @doctest id="d4ba"
 ```

@@ -2,17 +2,20 @@
 
 namespace Cognesy\Polyglot\Inference\Data;
 
+use Cognesy\Utils\Profiler\TracksObjectCreation;
 use DateTimeImmutable;
 use Throwable;
 
 class InferenceAttempt
 {
+    use TracksObjectCreation;
+
     public readonly InferenceAttemptId $id;
     public readonly DateTimeImmutable $createdAt;
     public readonly DateTimeImmutable $updatedAt;
 
     private ?InferenceResponse $response;
-    private ?PartialInferenceResponse $accumulatedPartial;
+    private Usage $usage;
 
     private array $errors;
     private ?bool $isFinalized = null;
@@ -21,7 +24,7 @@ class InferenceAttempt
 
     public function __construct(
         ?InferenceResponse $response = null,
-        ?PartialInferenceResponse $accumulatedPartial = null,
+        ?Usage $usage = null,
         ?bool $isFinalized = null,
         ?array $errors = null,
         //
@@ -34,43 +37,30 @@ class InferenceAttempt
         $this->updatedAt = $updatedAt ?? $this->createdAt;
 
         $this->response = $response;
-        $this->accumulatedPartial = $accumulatedPartial;
+        $this->usage = $usage ?? $response?->usage() ?? Usage::none();
         $this->isFinalized = $isFinalized;
         $this->errors = $errors ?? [];
+        $this->trackObjectCreation();
     }
 
     public static function fromResponse(InferenceResponse $response) : self {
-        return new self(response: $response, isFinalized: true);
+        return new self(response: $response, usage: $response->usage(), isFinalized: true);
     }
 
     public static function started(): self {
-        return new self(isFinalized: false);
+        return new self(usage: Usage::none(), isFinalized: false);
     }
 
     public static function fromFailedResponse(
         ?InferenceResponse $response = null,
-        ?PartialInferenceResponse $accumulatedPartial = null,
+        ?Usage $usage = null,
         array $errors = [],
     ) : self {
         return new self(
             response: $response,
-            accumulatedPartial: $accumulatedPartial,
+            usage: $usage ?? $response?->usage() ?? Usage::none(),
             isFinalized: true,
             errors: $errors,
-        );
-    }
-
-    public static function fromPartialResponses(PartialInferenceResponse $accumulatedPartial, bool $isFinalized = false) : self {
-        // Backward compatibility: accept list, keep only the last aggregated partial
-        $response = null;
-        if ($isFinalized) {
-            // Legacy finalization path via list-based factory
-            $response = InferenceResponse::fromAccumulatedPartial($accumulatedPartial);
-        }
-        return new self(
-            response: $response,
-            accumulatedPartial: $accumulatedPartial,
-            isFinalized: $isFinalized
         );
     }
 
@@ -78,10 +68,6 @@ class InferenceAttempt
 
     public function response(): ?InferenceResponse {
         return $this->response;
-    }
-
-    public function partialResponse(): ?PartialInferenceResponse {
-        return $this->accumulatedPartial;
     }
 
     public function errors(): array {
@@ -94,10 +80,6 @@ class InferenceAttempt
 
     public function hasResponse(): bool {
         return $this->response !== null;
-    }
-
-    public function hasPartialResponses(): bool {
-        return $this->accumulatedPartial !== null;
     }
 
     public function hasErrors(): bool {
@@ -115,24 +97,20 @@ class InferenceAttempt
     }
 
     public function usage(): Usage {
-        return match (true) {
-            $this->response !== null => $this->response->usage(),
-            $this->accumulatedPartial !== null => $this->accumulatedPartial->usage(),
-            default => Usage::none(),
-        };
+        return $this->usage;
     }
 
     // MUTATORS //////////////////////////////////////////////////////////
 
     public function with(
         ?InferenceResponse $response = null,
-        ?PartialInferenceResponse $accumulatedPartial = null,
+        ?Usage $usage = null,
         ?bool $isFinalized = null,
         ?array $errors = null
     ): self {
         return new self(
             response: $response ?? $this->response,
-            accumulatedPartial: $accumulatedPartial ?? $this->accumulatedPartial,
+            usage: $usage ?? $this->usage,
             isFinalized: $isFinalized ?? $this->isFinalized,
             errors: $errors ?? $this->errors,
             id: $this->id,
@@ -144,28 +122,7 @@ class InferenceAttempt
     public function withResponse(InferenceResponse $response): self {
         return $this->with(
             response: $response,
-            isFinalized: true
-        );
-    }
-
-    public function withNewPartialResponse(PartialInferenceResponse $partialResponse): self {
-        return $this->with(
-            accumulatedPartial: $partialResponse,
-            isFinalized: false,
-        );
-    }
-
-    public function withFinalizedPartialResponse(): self {
-        // Prefer accumulated single partial when available
-        if ($this->accumulatedPartial !== null) {
-            return $this->with(
-                response: InferenceResponse::fromAccumulatedPartial($this->accumulatedPartial),
-                isFinalized: true
-            );
-        }
-        $partial = $this->partialResponse() ?? PartialInferenceResponse::empty();
-        return $this->with(
-            response: InferenceResponse::fromAccumulatedPartial($partial),
+            usage: $response->usage(),
             isFinalized: true
         );
     }
@@ -178,7 +135,7 @@ class InferenceAttempt
             'createdAt' => $this->createdAt->format(DATE_ATOM),
             'updatedAt' => $this->updatedAt->format(DATE_ATOM),
             'response' => $this->response?->toArray(),
-            'accumulatedPartial' => $this->accumulatedPartial?->toArray(),
+            'usage' => $this->usage->toArray(),
             'isFinalized' => $this->isFinalized,
             'errors' => $this->errorsToStringArray($this->errors),
         ];
@@ -186,13 +143,12 @@ class InferenceAttempt
 
     public static function fromArray(array $data) : self {
         $response = $data['response'] ?? null;
-        $partial = $data['accumulatedPartial'] ?? $data['partialResponse'] ?? $data['partial_response'] ?? null;
         return new self(
             response: (is_array($response) && $response !== [])
                 ? InferenceResponse::fromArray($response)
                 : null,
-            accumulatedPartial: (is_array($partial) && $partial !== [])
-                ? PartialInferenceResponse::fromArray($partial)
+            usage: isset($data['usage']) && is_array($data['usage'])
+                ? Usage::fromArray($data['usage'])
                 : null,
             isFinalized: $data['isFinalized'] ?? null,
             errors: $data['errors'] ?? [],

@@ -32,6 +32,7 @@ use Cognesy\Http\HttpClient;
 use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\Data\CachedContext as StructuredCachedContext;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
 use Cognesy\Instructor\PendingStructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
@@ -47,7 +48,6 @@ use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\Usage;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Polyglot\Inference\PendingInference;
@@ -395,7 +395,6 @@ final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
             messages: $finalMessages,
             model: $this->finalModel ?: $this->model,
             options: $this->finalOptions ?: $this->options,
-            mode: OutputMode::Text,
             cachedContext: $cachedContext,
         );
 

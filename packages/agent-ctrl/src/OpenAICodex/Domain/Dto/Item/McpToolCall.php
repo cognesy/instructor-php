@@ -2,6 +2,8 @@
 
 namespace Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\Item;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
+
 /**
  * MCP tool invocation
  *
@@ -41,13 +43,13 @@ final readonly class McpToolCall extends Item
     public static function fromArray(array $data): self
     {
         return new self(
-            id: (string)($data['id'] ?? ''),
-            status: (string)($data['status'] ?? 'in_progress'),
-            server: (string)($data['server'] ?? ''),
-            tool: (string)($data['tool'] ?? ''),
+            id: Normalize::toString($data['id'] ?? ''),
+            status: Normalize::toString($data['status'] ?? 'in_progress', 'in_progress'),
+            server: Normalize::toString($data['server'] ?? ''),
+            tool: Normalize::toString($data['tool'] ?? ''),
             arguments: isset($data['arguments']) && is_array($data['arguments']) ? $data['arguments'] : null,
             result: isset($data['result']) && is_array($data['result']) ? $data['result'] : null,
-            error: isset($data['error']) ? (string)$data['error'] : null,
+            error: Normalize::toNullableString($data['error'] ?? null),
         );
     }
 }

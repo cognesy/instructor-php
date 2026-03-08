@@ -20,7 +20,7 @@ model generate a JSON object with specific structure of parameters.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Inference;
 
 $response = Inference::using('openai')

@@ -3,8 +3,9 @@
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 
 /**
@@ -24,13 +25,13 @@ it('[modular] partials() yields multiple updates per sequence item as chunks arr
     // Item 3: Built across chunks 3-4
     $chunks = [
         // Chunk 1: Start of sequence, partial first item (name only)
-        new PartialInferenceResponse(contentDelta: '{"list":[{"name":"Alice"'),
+        new PartialInferenceDelta(contentDelta: '{"list":[{"name":"Alice"'),
         // Chunk 2: Complete first item, start second item (name only)
-        new PartialInferenceResponse(contentDelta: ',"age":25},{"name":"Bob"'),
+        new PartialInferenceDelta(contentDelta: ',"age":25},{"name":"Bob"'),
         // Chunk 3: Complete second item, start third item (name only)
-        new PartialInferenceResponse(contentDelta: ',"age":30},{"name":"Carol"'),
+        new PartialInferenceDelta(contentDelta: ',"age":30},{"name":"Carol"'),
         // Chunk 4: Complete third item and close sequence
-        new PartialInferenceResponse(contentDelta: ',"age":35}]}', finishReason: 'stop'),
+        new PartialInferenceDelta(contentDelta: ',"age":35}]}', finishReason: 'stop'),
     ];
 
     $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $chunks ]);
@@ -38,11 +39,11 @@ it('[modular] partials() yields multiple updates per sequence item as chunks arr
     $pending = (new StructuredOutput(makeStructuredRuntime(
         driver: $driver,
         config: new StructuredOutputConfig(),
+        outputMode: OutputMode::Json,
     )))
         ->with(
             messages: 'test',
             responseModel: Sequence::of('ModularPerson'),
-            mode: OutputMode::Json,
         );
 
     // Collect all partial updates
@@ -79,10 +80,10 @@ it('[modular] partials() yields multiple updates per sequence item as chunks arr
 it('[modular] sequence() yields single update per COMPLETED sequence item only', function () {
     // Same chunks as previous test - items built across multiple chunks
     $chunks = [
-        new PartialInferenceResponse(contentDelta: '{"list":[{"name":"Alice"'),
-        new PartialInferenceResponse(contentDelta: ',"age":25},{"name":"Bob"'),
-        new PartialInferenceResponse(contentDelta: ',"age":30},{"name":"Carol"'),
-        new PartialInferenceResponse(contentDelta: ',"age":35}]}', finishReason: 'stop'),
+        new PartialInferenceDelta(contentDelta: '{"list":[{"name":"Alice"'),
+        new PartialInferenceDelta(contentDelta: ',"age":25},{"name":"Bob"'),
+        new PartialInferenceDelta(contentDelta: ',"age":30},{"name":"Carol"'),
+        new PartialInferenceDelta(contentDelta: ',"age":35}]}', finishReason: 'stop'),
     ];
 
     $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $chunks ]);
@@ -90,11 +91,11 @@ it('[modular] sequence() yields single update per COMPLETED sequence item only',
     $pending = (new StructuredOutput(makeStructuredRuntime(
         driver: $driver,
         config: new StructuredOutputConfig(),
+        outputMode: OutputMode::Json,
     )))
         ->with(
             messages: 'test',
             responseModel: Sequence::of('ModularPerson'),
-            mode: OutputMode::Json,
         );
 
     // Collect sequence updates
@@ -141,11 +142,11 @@ it('[modular] sequence() does not yield incomplete items even if many chunks arr
     $pending = (new StructuredOutput(makeStructuredRuntime(
         driver: $driver,
         config: new StructuredOutputConfig(),
+        outputMode: OutputMode::Json,
     )))
         ->with(
             messages: 'test',
             responseModel: Sequence::of('ModularPerson'),
-            mode: OutputMode::Json,
         );
 
     $sequenceUpdates = iterator_to_array($pending->stream()->sequence());
@@ -178,11 +179,11 @@ it('[modular] partials() yields MORE updates than sequence() for same stream', f
     $pending = (new StructuredOutput(makeStructuredRuntime(
         driver: $driver,
         config: new StructuredOutputConfig(),
+        outputMode: OutputMode::Json,
     )))
         ->with(
             messages: 'test',
             responseModel: Sequence::of('ModularPerson'),
-            mode: OutputMode::Json,
         );
 
     $partialCount = 0;
@@ -195,11 +196,11 @@ it('[modular] partials() yields MORE updates than sequence() for same stream', f
     $pending2 = (new StructuredOutput(makeStructuredRuntime(
         driver: $driver2,
         config: new StructuredOutputConfig(),
+        outputMode: OutputMode::Json,
     )))
         ->with(
             messages: 'test',
             responseModel: Sequence::of('ModularPerson'),
-            mode: OutputMode::Json,
         );
 
     $sequenceCount = 0;

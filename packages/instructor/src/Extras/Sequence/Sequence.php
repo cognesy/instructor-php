@@ -71,6 +71,7 @@ final class Sequence implements
         return $this->items->count();
     }
 
+    #[\Override]
     public function get(int $index) : mixed {
         return $this->items->getOrNull($index);
     }

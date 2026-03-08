@@ -15,10 +15,9 @@ runtime.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Http\Config\DebugConfig;
-use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 
 $schema = JsonSchema::object(
@@ -29,15 +28,13 @@ $schema = JsonSchema::object(
     requiredProperties: ['name', 'age'],
 );
 
-$debugHttpClient = (new HttpClientBuilder)->withDebugConfig(DebugConfig::fromPreset('on'))->create();
-
-$user = (new StructuredOutput(
-    StructuredOutputRuntime::fromDefaults(httpClient: $debugHttpClient)
-))
+$user = new StructuredOutput(
+        StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
+            ->withDeserializers([])
+            ->withDefaultToStdClass()
+    )
     ->withMessages("Jason is 25 years old and works as an engineer")
     ->withResponseJsonSchema($schema)
-    ->withDeserializers()
-    ->withDefaultToStdClass()
     ->get();
 
 dump($user);

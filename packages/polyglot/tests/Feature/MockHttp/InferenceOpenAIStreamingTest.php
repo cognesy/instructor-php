@@ -17,15 +17,15 @@ it('streams partial responses and assembles final content (OpenAI SSE)', functio
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http))
+    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http))
         ->withModel('gpt-4o-mini')
         ->withMessages('Greet me')
         ->withStreaming(true)
         ->stream();
 
-    // Collect all partials to drive the stream consumption
-    $partials = iterator_to_array($stream->responses());
-    expect($partials)->not->toBeEmpty();
+    // Collect all visible deltas to drive the stream consumption
+    $deltas = iterator_to_array($stream->deltas());
+    expect($deltas)->not->toBeEmpty();
 
     $final = $stream->final();
     expect($final)->not->toBeNull();

@@ -37,14 +37,14 @@ $response = $inference->with(
 Once you have a streaming-enabled response, you can access the stream using the `stream()` method:
 
 ```php
-// Get the stream of partial responses
+// Get the stream of visible deltas
 $stream = $response->stream();
 ```
 
 
 ## Basic Stream Processing
 
-The most common way to process a stream is to iterate through the partial responses:
+The most common way to process a stream is to iterate through the visible deltas:
 
 ```php
 <?php
@@ -56,13 +56,13 @@ $response = $inference->with(
     options: ['stream' => true]
 );
 
-// Get a generator that yields partial responses
-$stream = $response->stream()->responses();
+// Get a generator that yields visible deltas
+$stream = $response->stream()->deltas();
 
 echo "Story: ";
-foreach ($stream as $partialResponse) {
+foreach ($stream as $delta) {
     // Output each chunk as it arrives
-    echo $partialResponse->contentDelta;
+    echo $delta->contentDelta;
 
     // Flush the output buffer to show progress in real-time (for CLI or streaming HTTP responses)
     if (ob_get_level() > 0) {
@@ -73,26 +73,22 @@ foreach ($stream as $partialResponse) {
 echo "\n";
 ```
 
-### Understanding Partial Responses
+### Understanding Stream Deltas
 
-Each iteration of the stream yields a `PartialInferenceResponse` object with these key properties:
+Each iteration of the stream yields a `PartialInferenceDelta` object with these key properties:
 
 - `contentDelta`: The new content received in this chunk
-- `content`: The accumulated content up to this point
 - `finishReason`: The reason why the response finished (empty until the final chunk)
 - `usage`: Token usage statistics
 
 ```php
-foreach ($stream as $partialResponse) {
+foreach ($stream as $delta) {
     // The new content in this chunk
-    echo "New content: " . $partialResponse->contentDelta . "\n";
-
-    // The total content received so far
-    echo "Total content so far: " . $partialResponse->content() . "\n";
+    echo "New content: " . $delta->contentDelta . "\n";
 
     // Check if this is the final chunk
-    if ($partialResponse->finishReason !== '') {
-        echo "Response finished: " . $partialResponse->finishReason . "\n";
+    if ($delta->finishReason !== '') {
+        echo "Response finished: " . $delta->finishReason . "\n";
     }
 }
 ```
@@ -112,7 +108,7 @@ $completeText = $finalResponse->content();
 
 ## Stream Replay Contract
 
-`stream()->responses()` is one-shot by default. Once fully consumed, iterating again raises an exception.
+`stream()->deltas()` is one-shot by default. Once fully consumed, iterating again raises an exception.
 
 - Use `final()` to get the terminal response safely and idempotently.
 - If you need replay, opt in with `ResponseCachePolicy::Memory`:
@@ -128,11 +124,11 @@ $inference = (new Inference())
     ->withResponseCachePolicy(ResponseCachePolicy::Memory);
 
 $stream = $inference->stream();
-foreach ($stream->responses() as $partial) {
+foreach ($stream->deltas() as $delta) {
     // first pass
 }
 
-foreach ($stream->responses() as $partial) {
+foreach ($stream->deltas() as $delta) {
     // replayed pass
 }
 

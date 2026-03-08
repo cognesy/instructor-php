@@ -11,11 +11,12 @@ Use it to build requests fluently, then execute as text, response object, JSON, 
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 $default = new Inference();
 $openai = Inference::using('openai');
-$fromDsn = Inference::fromDsn('driver=openai,model=gpt-4.1-nano');
-// @doctest id="2586"
+$fromDsnConfig = Inference::fromConfig(LLMConfig::fromDsn('driver=openai,model=gpt-4.1-nano'));
+// @doctest id="92b9"
 ```
 
 ## Build a Request
@@ -30,7 +31,7 @@ $inference = (new Inference())
     ->withOptions(['temperature' => 0.2])
     ->withMaxTokens(120)
     ->withStreaming(false);
-// @doctest id="7ecb"
+// @doctest id="1f77"
 ```
 
 ## Execute
@@ -41,24 +42,24 @@ $text = $inference->get();          // string
 $response = $inference->response(); // InferenceResponse
 $json = $inference->asJson();       // JSON string
 $data = $inference->asJsonData();   // array
+$toolJson = $inference->asToolCallJson();     // tool call args as JSON string
+$toolData = $inference->asToolCallJsonData(); // tool call args as array
 $stream = $inference->stream();     // InferenceStream
-// @doctest id="436b"
+// @doctest id="f218"
 ```
 
 ## One-Call Configuration
 
 ```php
 <?php
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
-
-$text = (new Inference())
+$data = (new Inference())
     ->with(
         messages: 'Return valid JSON with key "status".',
+        responseFormat: ['type' => 'json_object'],
         options: ['temperature' => 0],
-        mode: OutputMode::Json,
     )
-    ->get();
-// @doctest id="fc55"
+    ->asJsonData();
+// @doctest id="f067"
 ```
 
 ## Runtime-First Usage
@@ -67,12 +68,13 @@ $text = (new Inference())
 <?php
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 
-$runtime = Inference::using('openai')->runtime();
+$runtime = InferenceRuntime::fromConfig(LLMConfig::fromPreset('openai'));
 
 $pending = $runtime->create(new InferenceRequest(messages: 'Ping', model: 'gpt-4.1-nano'));
 $text = $pending->get();
-// @doctest id="f958"
+// @doctest id="082a"
 ```
 
 ## Register Custom Drivers
@@ -99,7 +101,7 @@ Inference::registerDriver(
 
 Inference::unregisterDriver('openai-custom');
 Inference::resetDrivers();
-// @doctest id="d46b"
+// @doctest id="27dd"
 ```
 
 ## See Also

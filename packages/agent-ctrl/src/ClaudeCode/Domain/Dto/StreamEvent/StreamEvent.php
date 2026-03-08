@@ -2,6 +2,8 @@
 
 namespace Cognesy\AgentCtrl\ClaudeCode\Domain\Dto\StreamEvent;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
+
 /**
  * Base class for all streaming events from Claude CLI
  */
@@ -16,7 +18,7 @@ abstract readonly class StreamEvent
      */
     public static function fromArray(array $data): self
     {
-        $type = StreamValueNormalizer::toString($data['type'] ?? 'unknown', 'unknown');
+        $type = Normalize::toString($data['type'] ?? 'unknown', 'unknown');
 
         return match ($type) {
             'stream_event', 'assistant', 'user' => MessageEvent::fromArray($data),

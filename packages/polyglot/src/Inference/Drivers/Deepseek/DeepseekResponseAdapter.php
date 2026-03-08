@@ -24,11 +24,7 @@ class DeepseekResponseAdapter extends OpenAIResponseAdapter
     }
 
     #[\Override]
-    protected function fromStreamResponse(string $eventBody, ?HttpResponse $responseData = null): ?PartialInferenceDelta {
-        $data = $this->decodeJsonData($eventBody, 'Deepseek stream payload');
-        if (empty($data)) {
-            return null;
-        }
+    protected function fromDecodedStreamData(array $data, ?HttpResponse $responseData = null): PartialInferenceDelta {
         return new PartialInferenceDelta(
             contentDelta: $this->makeContentDelta($data),
             reasoningContentDelta: $this->makeReasoningContentDelta($data),

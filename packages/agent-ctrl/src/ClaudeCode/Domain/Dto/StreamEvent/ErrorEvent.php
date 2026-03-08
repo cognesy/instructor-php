@@ -2,6 +2,8 @@
 
 namespace Cognesy\AgentCtrl\ClaudeCode\Domain\Dto\StreamEvent;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
+
 /**
  * Error event from agent
  */
@@ -23,7 +25,7 @@ final readonly class ErrorEvent extends StreamEvent
     public static function fromArray(array $data): self
     {
         return new self(
-            error: StreamValueNormalizer::toString($data['error'] ?? ''),
+            error: Normalize::toString($data['error'] ?? ''),
         );
     }
 }

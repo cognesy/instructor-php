@@ -8,8 +8,8 @@ use Cognesy\Polyglot\Inference\Contracts\CanMapUsage;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Polyglot\Inference\Data\ToolCallDelta;
 use Cognesy\Utils\Json\Json;
 use JsonException;
 use RuntimeException;
@@ -33,24 +33,46 @@ class GeminiResponseAdapter implements CanTranslateInferenceResponse
     }
 
     #[\Override]
-    public function fromStreamResponses(iterable $eventBodies, ?HttpResponse $responseData = null): iterable {
-        $previous = PartialInferenceResponse::empty();
+    public function fromStreamDeltas(iterable $eventBodies, ?HttpResponse $responseData = null): iterable {
         foreach ($eventBodies as $eventBody) {
-            $delta = $this->fromStreamResponse($eventBody, $responseData);
-            if ($delta === null) {
+            $data = $this->decodeJsonData($eventBody, 'Gemini stream payload');
+            if (empty($data)) {
                 continue;
             }
-            $partial = PartialInferenceResponse::fromDelta($previous, $delta);
-            $previous = $partial;
-            yield $partial;
+
+            $delta = $this->fromDecodedStreamData($data, $responseData);
+            $toolDeltas = $this->extractStreamToolDeltas($data);
+
+            if ($toolDeltas === []) {
+                yield $delta;
+                continue;
+            }
+
+            $first = $toolDeltas[0];
+            yield new PartialInferenceDelta(
+                contentDelta: $delta->contentDelta,
+                reasoningContentDelta: $delta->reasoningContentDelta,
+                toolId: $first->id,
+                toolName: $first->name,
+                toolArgs: $first->args,
+                finishReason: $delta->finishReason,
+                usage: $delta->usage,
+                usageIsCumulative: $delta->usageIsCumulative,
+                responseData: $delta->responseData,
+                value: $delta->value,
+            );
+
+            foreach (array_slice($toolDeltas, 1) as $tool) {
+                yield new PartialInferenceDelta(
+                    toolId: $tool->id,
+                    toolName: $tool->name,
+                    toolArgs: $tool->args,
+                );
+            }
         }
     }
 
-    protected function fromStreamResponse(string $eventBody, ?HttpResponse $responseData = null): ?PartialInferenceDelta {
-        $data = $this->decodeJsonData($eventBody, 'Gemini stream payload');
-        if (empty($data)) {
-            return null;
-        }
+    protected function fromDecodedStreamData(array $data, ?HttpResponse $responseData = null): PartialInferenceDelta {
         return new PartialInferenceDelta(
             contentDelta: $this->makeContentDelta($data),
             toolId: $data['candidates'][0]['id'] ?? '',
@@ -139,12 +161,67 @@ class GeminiResponseAdapter implements CanTranslateInferenceResponse
     }
 
     private function makeToolName(array $data) : string {
-        return $data['candidates'][0]['content']['parts'][0]['functionCall']['name'] ?? '';
+        $parts = $data['candidates'][0]['content']['parts'] ?? [];
+        foreach ($parts as $part) {
+            if (!is_array($part)) {
+                continue;
+            }
+            $name = $part['functionCall']['name'] ?? '';
+            if ($name !== '') {
+                return (string)$name;
+            }
+        }
+        return '';
     }
 
     private function makeToolArgs(array $data) : string {
-        $value = $data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? '';
-        return is_array($value) ? Json::encode($value) : '';
+        $parts = $data['candidates'][0]['content']['parts'] ?? [];
+        foreach ($parts as $part) {
+            if (!is_array($part)) {
+                continue;
+            }
+            $value = $part['functionCall']['args'] ?? '';
+            if (is_array($value)) {
+                return Json::encode($value);
+            }
+        }
+        return '';
+    }
+
+    /**
+     * @return list<ToolCallDelta>
+     */
+    private function extractStreamToolDeltas(array $data): array {
+        $parts = $data['candidates'][0]['content']['parts'] ?? [];
+        if (!is_array($parts) || $parts === []) {
+            return [];
+        }
+
+        $candidateId = (string)($data['candidates'][0]['id'] ?? '');
+        $toolDeltas = [];
+        foreach ($parts as $index => $part) {
+            if (!is_array($part) || !isset($part['functionCall']) || !is_array($part['functionCall'])) {
+                continue;
+            }
+            $functionCall = $part['functionCall'];
+            $args = $functionCall['args'] ?? '';
+            $explicitId = (string)($functionCall['id'] ?? '');
+            $toolDeltas[] = new ToolCallDelta(
+                id: $explicitId !== '' ? $explicitId : $this->resolveToolId($candidateId, $index),
+                name: (string)($functionCall['name'] ?? ''),
+                args: is_array($args) ? Json::encode($args) : '',
+            );
+        }
+
+        return $toolDeltas;
+    }
+
+    private function resolveToolId(string $candidateId, int|string $index): string {
+        if ($candidateId !== '') {
+            return $candidateId . ':part:' . (string)$index;
+        }
+
+        return 'part:' . (string)$index;
     }
 
     /**

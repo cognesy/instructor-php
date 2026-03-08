@@ -4,13 +4,12 @@ namespace Cognesy\Polyglot\Inference\Streaming;
 
 use Closure;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
-use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
+use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Events\PartialInferenceDeltaCreated;
 use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;
-use Cognesy\Polyglot\Inference\Events\PartialInferenceResponseCreated;
 use Cognesy\Polyglot\Inference\Events\StreamFirstChunkReceived;
 use DateTimeImmutable;
 use Generator;
@@ -26,17 +25,16 @@ class InferenceStream
 {
     protected readonly EventDispatcherInterface $events;
     protected readonly CanProcessInferenceRequest $driver;
-    /** @var (Closure(PartialInferenceResponse): void)|null */
-    protected ?Closure $onPartialResponse = null;
+    /** @var (Closure(PartialInferenceDelta): void)|null */
+    protected ?Closure $onDelta = null;
 
-    /** @var iterable<PartialInferenceResponse> */
-    protected iterable $stream;
+    /** @var iterable<PartialInferenceDelta> */
+    private iterable $deltaStream;
+    private InferenceStreamState $state;
+    private VisibilityTracker $visibility;
+    private ?PartialInferenceDelta $lastDelta = null;
 
     protected InferenceExecution $execution;
-    private ResponseCachePolicy $cachePolicy;
-    private PartialInferenceResponseList $cachedResponses;
-    /** @var list<PartialInferenceResponse> */
-    private array $cachedResponsesBuffer = [];
     private bool $streamConsumed = false;
 
     private ?DateTimeImmutable $startedAt;
@@ -58,112 +56,99 @@ class InferenceStream
         $this->driver = $driver;
         $this->events = $eventDispatcher;
         $this->startedAt = $startedAt ?? new DateTimeImmutable();
-        $this->stream = $driver->makeStreamResponsesFor($execution->request());
-        $this->cachePolicy = $execution->request()->responseCachePolicy();
-        $this->cachedResponses = PartialInferenceResponseList::empty();
+        $this->deltaStream = $driver->makeStreamDeltasFor($execution->request());
+        $this->state = new InferenceStreamState();
+        $this->visibility = new VisibilityTracker();
         $this->decorateFinalResponse = $decorateFinalResponse;
     }
 
     /**
-     * Generates and yields partial LLM responses from the given stream.
+     * Generates and yields visible inference deltas from the given stream.
      *
-     * @return Generator<PartialInferenceResponse> A generator yielding partial LLM responses.
+     * @return Generator<PartialInferenceDelta>
      */
-    public function responses(): Generator {
+    public function deltas(): Generator {
         if ($this->streamConsumed) {
-            if ($this->shouldCache()) {
-                foreach ($this->cachedResponses as $partialInferenceResponse) {
-                    yield $partialInferenceResponse;
-                }
-                return;
-            }
             throw new LogicException(
-                'Stream is exhausted and cannot be replayed. Enable response stream caching to iterate again.'
+                'Stream is exhausted and cannot be replayed.'
             );
         }
 
-        foreach ($this->makePartialResponses($this->stream) as $partialInferenceResponse) {
-            if ($this->shouldCache()) {
-                $this->cachedResponsesBuffer[] = $partialInferenceResponse;
-            }
-            yield $partialInferenceResponse;
+        foreach ($this->makeDeltas() as $delta) {
+            yield $delta;
         }
-        $this->materializeCachedResponses();
         $this->streamConsumed = true;
     }
 
     /**
      * @template T
-     * @param callable(PartialInferenceResponse):T $mapper
+     * @param callable(PartialInferenceDelta):T $mapper
      * @return iterable<T>
      */
     public function map(callable $mapper): iterable {
-        foreach ($this->responses() as $partialInferenceResponse) {
-            yield $mapper($partialInferenceResponse);
+        foreach ($this->deltas() as $delta) {
+            yield $mapper($delta);
         }
     }
 
     /**
      * @template T
-     * @param callable(T, PartialInferenceResponse):T $reducer
+     * @param callable(T, PartialInferenceDelta):T $reducer
      * @param mixed|null $initial
      * @return T
      */
     public function reduce(callable $reducer, mixed $initial = null): mixed {
         $carry = $initial;
-        foreach ($this->responses() as $partialInferenceResponse) {
-            $carry = $reducer($carry, $partialInferenceResponse);
+        foreach ($this->deltas() as $delta) {
+            $carry = $reducer($carry, $delta);
         }
         return $carry;
     }
 
     /**
-     * @param callable(PartialInferenceResponse):bool $filter
-     * @return iterable<PartialInferenceResponse>
+     * @param callable(PartialInferenceDelta):bool $filter
+     * @return iterable<PartialInferenceDelta>
      */
     public function filter(callable $filter): iterable {
-        foreach ($this->responses() as $partialInferenceResponse) {
-            if ($filter($partialInferenceResponse)) {
-                yield $partialInferenceResponse;
+        foreach ($this->deltas() as $delta) {
+            if ($filter($delta)) {
+                yield $delta;
             }
         }
     }
 
     /**
-     * Retrieves all partial LLM responses from the given stream.
+     * Retrieves all visible deltas from the given stream.
      *
-     * @return array<PartialInferenceResponse> An array of all partial LLM responses.
+     * @return array<PartialInferenceDelta>
      */
     public function all(): array {
-        $responses = [];
-        foreach ($this->responses() as $partialResponse) {
-            $responses[] = $partialResponse;
+        $deltas = [];
+        foreach ($this->deltas() as $delta) {
+            $deltas[] = $delta;
         }
-        return $responses;
+        return $deltas;
     }
 
     /**
-     * Returns the last partial response for the stream.
-     * It will contain accumulated content and finish reason.
-     *
-     * @return ?InferenceResponse
+     * Returns the finalized response assembled from stream state.
      */
     public function final(): ?InferenceResponse {
         if ($this->execution->response() === null && !$this->execution->isFinalized()) {
             // Drain the stream to ensure all deltas are processed and the final
             // response + events are produced even if the caller stopped early.
-            foreach ($this->responses() as $_) {}
+            foreach ($this->deltas() as $_) {}
         }
         return $this->execution->response();
     }
 
     /**
-     * Sets a callback to be called when a partial response is received.
+     * Sets a callback to be called when a visible delta is received.
      *
-     * @param callable(PartialInferenceResponse): void $callback
+     * @param callable(PartialInferenceDelta): void $callback
      */
-    public function onPartialResponse(callable $callback): self {
-        $this->onPartialResponse = $callback(...);
+    public function onDelta(callable $callback): self {
+        $this->onDelta = $callback(...);
         return $this;
     }
 
@@ -171,39 +156,49 @@ class InferenceStream
         return $this->execution;
     }
 
+    public function lastDelta(): ?PartialInferenceDelta {
+        return $this->lastDelta;
+    }
+
+    public function usage(): Usage {
+        return $this->state->usage();
+    }
+
     // INTERNAL //////////////////////////////////////////////
 
     /**
-     * Processes the given stream to generate partial LLM responses and enriches them with accumulated content and finish reason.
-     *
-     * @param iterable<PartialInferenceResponse> $stream The stream to be processed to extract and enrich partial LLM responses.
-     * @return Generator<PartialInferenceResponse> A generator yielding enriched PartialInferenceResponse objects.
+     * @return Generator<PartialInferenceDelta>
      */
-    private function makePartialResponses(iterable $stream): Generator {
-        /** @var PartialInferenceResponse $partialResponse */
-        foreach ($stream as $partialResponse) {
-            if ($partialResponse === null) {
+    private function makeDeltas(): Generator {
+        yield from $this->emitVisibleDeltas();
+    }
+
+    /**
+     * @return Generator<PartialInferenceDelta>
+     */
+    private function emitVisibleDeltas(): Generator {
+        foreach ($this->deltaStream as $delta) {
+            $visibleDelta = $this->advanceState($delta);
+            if ($visibleDelta === null) {
                 continue;
             }
 
-            // Dispatch first chunk event for TTFC measurement
             if (!$this->firstChunkReceived) {
-                $this->dispatchFirstChunkReceived($partialResponse);
+                $this->dispatchFirstChunkReceived($visibleDelta);
                 $this->firstChunkReceived = true;
             }
 
-            // Stream translator already yields accumulated snapshots.
-            $this->notifyOnPartialResponse($partialResponse);
-            yield $partialResponse;
+            $this->notifyOnDelta($visibleDelta);
+            yield $visibleDelta;
         }
 
-        $this->finalizeStream();
+        $this->finalizeDeltaStream();
     }
 
     /**
      * Dispatches the first chunk received event for TTFC measurement.
      */
-    private function dispatchFirstChunkReceived(PartialInferenceResponse $partialResponse): void {
+    private function dispatchFirstChunkReceived(PartialInferenceDelta $delta): void {
         $now = new DateTimeImmutable();
         $startedAt = $this->startedAt ?? $now;
 
@@ -211,57 +206,77 @@ class InferenceStream
             executionId: $this->execution->id->toString(),
             requestStartedAt: $startedAt,
             model: $this->execution->request()->model(),
-            initialContent: $partialResponse->contentDelta,
+            initialContent: $delta->contentDelta,
         ));
     }
 
     /**
-     * Dispatches events and calls callback for partial response.
+     * Dispatches events and calls callback for the visible delta.
      */
-    private function notifyOnPartialResponse(PartialInferenceResponse $enrichedResponse): void {
-        $this->events->dispatch(new PartialInferenceResponseCreated($enrichedResponse));
-        $this->execution = $this->execution->withNewPartialResponse($enrichedResponse);
+    private function notifyOnDelta(PartialInferenceDelta $delta): void {
+        $this->events->dispatch(new PartialInferenceDeltaCreated($delta));
 
-        if ($this->onPartialResponse !== null) {
-            ($this->onPartialResponse)($enrichedResponse);
+        if ($this->onDelta !== null) {
+            ($this->onDelta)($delta);
         }
     }
 
-    /**
-     * Finalizes the stream by creating final response and dispatching event.
-     */
-    private function finalizeStream(): void {
+    private function finalizeDeltaStream(): void {
         if ($this->execution->isFinalized()) {
             return;
         }
-        $this->execution = $this->execution->withFinalizedPartialResponse();
-        $response = $this->execution->response();
 
-        if ($response !== null && $this->decorateFinalResponse !== null) {
+        $response = $this->state->finalResponse();
+
+        if ($this->decorateFinalResponse !== null) {
             $response = ($this->decorateFinalResponse)($response);
-            $this->execution = $this->execution->withUpdatedResponse($response);
         }
 
-        if ($response !== null) {
-            $this->events->dispatch(new InferenceResponseCreated($response));
-        }
+        $this->execution = match (true) {
+            $response->hasFinishedWithFailure() => $this->execution->withFailedAttempt(
+                response: $response,
+                usage: $response->usage(),
+            ),
+            default => $this->execution->withSuccessfulAttempt($response),
+        };
+
+        $this->events->dispatch(new InferenceResponseCreated($response));
     }
 
-    private function shouldCache(): bool
+    private function advanceState(PartialInferenceDelta $delta): ?PartialInferenceDelta
     {
-        return $this->cachePolicy->shouldCache();
+        $this->state->applyDelta($delta);
+        if (!$this->visibility->hasVisibleChange($this->state)) {
+            return null;
+        }
+
+        $this->visibility->remember($this->state);
+        $this->lastDelta = $delta;
+        return $this->lastDelta;
     }
 
-    private function materializeCachedResponses(): void {
-        if (!$this->shouldCache()) {
-            return;
-        }
+    /**
+     * @deprecated Use deltas() instead.
+     *
+     * @return Generator<PartialInferenceDelta>
+     */
+    public function responses(): Generator {
+        yield from $this->deltas();
+    }
 
-        if ($this->cachedResponsesBuffer === []) {
-            return;
-        }
+    /**
+     * @deprecated Use onDelta() instead.
+     *
+     * @param callable(PartialInferenceDelta): void $callback
+     */
+    public function onPartialResponse(callable $callback): self {
+        return $this->onDelta($callback);
+    }
 
-        $this->cachedResponses = PartialInferenceResponseList::of(...$this->cachedResponsesBuffer);
-        $this->cachedResponsesBuffer = [];
+    /**
+     * @deprecated Use lastDelta() instead.
+     */
+    public function partialResponse(): ?PartialInferenceDelta {
+        return $this->lastDelta();
     }
 }

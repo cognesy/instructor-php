@@ -8,9 +8,9 @@ id: 'ee3f'
 Instructor supports Anthropic API - you can find the details on how to configure
 the client in the example below.
 
-Mode compatibility:
-- OutputMode::MdJson, OutputMode::Json - supported
-- OutputMode::Tools - not supported yet
+Inference feature compatibility:
+- Instructor markdown-JSON fallback, native JSON object response_format - supported
+- tool calling - not supported yet
 
 
 ## Example

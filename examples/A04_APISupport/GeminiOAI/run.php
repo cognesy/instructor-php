@@ -19,7 +19,9 @@ Here's how you can use Instructor with Gemini's OpenAI compatible API.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 enum UserType : string {
     case Guest = 'guest';
@@ -36,7 +38,10 @@ class User {
     public array $hobbies;
 }
 
-$structuredOutput = StructuredOutput::using('gemini-oai');
+$structuredOutput = new StructuredOutput(
+    StructuredOutputRuntime::fromProvider(LLMProvider::using('gemini-oai'))
+        ->withOutputMode(OutputMode::MdJson)
+);
 
 $user = $structuredOutput
     ->with(
@@ -47,7 +52,6 @@ $user = $structuredOutput
             'output' => ['age' => 30, 'name' => 'Frank', 'username' => 'frank@hk.ch', 'role' => 'developer', 'hobbies' => ['playing drums'],],
         ]],
         //options: ['stream' => true],
-        mode: OutputMode::MdJson,
     )
     ->get();
 

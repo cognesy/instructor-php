@@ -4,7 +4,7 @@ use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 
 class StreamReplayUser { public int $age; public string $name; }
@@ -19,14 +19,16 @@ it('replays responses when memory cache policy is enabled without new provider c
     );
 
     $stream = (new StructuredOutput)
-        ->withRuntime(makeStructuredRuntime(driver: $driver))
-        ->withConfig(new StructuredOutputConfig(
-            responseCachePolicy: ResponseCachePolicy::Memory,
+        ->withRuntime(makeStructuredRuntime(
+            driver: $driver,
+            config: new StructuredOutputConfig(
+                responseCachePolicy: ResponseCachePolicy::Memory,
+            ),
+            outputMode: OutputMode::Json,
         ))
         ->with(
             messages: 'Extract user',
             responseModel: StreamReplayUser::class,
-            mode: OutputMode::Json,
         )
         ->stream();
 
@@ -39,4 +41,3 @@ it('replays responses when memory cache policy is enabled without new provider c
     expect($second)->toHaveCount(2);
     expect($stream->finalValue())->toBeInstanceOf(StreamReplayUser::class);
 });
-

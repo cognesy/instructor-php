@@ -9,7 +9,7 @@ use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 
 /**
  * Memory Diagnostics - Lean memory profiling tool
@@ -105,9 +105,8 @@ final class MemoryDiagnostics
         $driver = new FakeInferenceDriver(responses: [new InferenceResponse(content: $json)]);
 
         $so = (new StructuredOutput)
-            ->withRuntime(makeStructuredRuntime(driver: $driver))
-            ->withConfig(new StructuredOutputConfig())
-            ->with(messages: 'Test', responseModel: new Sequence(\stdClass::class), mode: OutputMode::Json);
+            ->withRuntime(makeStructuredRuntime(driver: $driver, config: new StructuredOutputConfig(), outputMode: OutputMode::Json))
+            ->with(messages: 'Test', responseModel: new Sequence(\stdClass::class));
 
         $result = $so->get();
         $peak = memory_get_peak_usage(false);
@@ -130,9 +129,8 @@ final class MemoryDiagnostics
         $driver = new FakeInferenceDriver(streamBatches: [$chunks]);
 
         $so = (new StructuredOutput)
-            ->withRuntime(makeStructuredRuntime(driver: $driver))
-            ->withConfig(new StructuredOutputConfig())
-            ->with(messages: 'Test', responseModel: new Sequence(\stdClass::class), mode: OutputMode::Json);
+            ->withRuntime(makeStructuredRuntime(driver: $driver, config: new StructuredOutputConfig(), outputMode: OutputMode::Json))
+            ->with(messages: 'Test', responseModel: new Sequence(\stdClass::class));
 
         $stream = $so->stream();
         $result = $stream->finalValue();
@@ -176,8 +174,8 @@ final class MemoryDiagnostics
         $before = memory_get_usage(false);
         $buffer = '';
         $request = new \Cognesy\Polyglot\Inference\Data\InferenceRequest();
-        foreach ($driver->makeStreamResponsesFor($request) as $partial) {
-            $buffer .= $partial->contentDelta;
+        foreach ($driver->makeStreamDeltasFor($request) as $delta) {
+            $buffer .= $delta->contentDelta;
         }
         $after = memory_get_usage(false);
         gc_enable();
@@ -191,9 +189,8 @@ final class MemoryDiagnostics
         $before = memory_get_usage(false);
 
         $so = (new StructuredOutput)
-            ->withRuntime(makeStructuredRuntime(driver: $driver))
-            ->withConfig(new StructuredOutputConfig())
-            ->with(messages: 'Test', responseModel: new Sequence(\stdClass::class), mode: OutputMode::Json);
+            ->withRuntime(makeStructuredRuntime(driver: $driver, config: new StructuredOutputConfig(), outputMode: OutputMode::Json))
+            ->with(messages: 'Test', responseModel: new Sequence(\stdClass::class));
 
         $stream = $so->stream();
         $result = $stream->finalValue();
@@ -247,11 +244,11 @@ final class MemoryDiagnostics
         gc_collect_cycles();
         echo "  After withDriver():        " . self::formatDelta($baseline) . "\n";
 
-        $so = $so->withConfig(new StructuredOutputConfig());
+        $so = $so->withRuntime(makeStructuredRuntime(driver: $driver, config: new StructuredOutputConfig(), outputMode: OutputMode::Json));
         gc_collect_cycles();
         echo "  After withConfig():        " . self::formatDelta($baseline) . "\n";
 
-        $so = $so->with(messages: 'Test', responseModel: new Sequence(\stdClass::class), mode: OutputMode::Json);
+        $so = $so->with(messages: 'Test', responseModel: new Sequence(\stdClass::class));
         gc_collect_cycles();
         echo "  After with():              " . self::formatDelta($baseline) . "\n";
 
@@ -290,21 +287,19 @@ final class MemoryDiagnostics
         $gcBefore = gc_status();
 
         // This is the ACTUAL production code path:
-        // BaseInferenceDriver::httpResponseToInferenceStream()
+        // BaseInferenceDriver creates PartialInferenceDelta per chunk
         $responseData = $httpResponse;
 
         $partialCount = 0;
         $bodyGrowth = [];
         foreach ($responseData->stream() as $chunk) {
-            // Simulate what BaseInferenceDriver does
             $partial = new PartialInferenceResponse(
                 contentDelta: $chunk,
-                responseData: $responseData, // ← Must be same reference
             );
 
-            // Track body accumulation
+            // Track body accumulation via httpResponse directly
             if ($partialCount % 100 === 0) {
-                $bodyGrowth[] = strlen($partial->responseData->body());
+                $bodyGrowth[] = strlen($responseData->body());
             }
 
             $partialCount++;
@@ -382,9 +377,8 @@ final class MemoryDiagnostics
             $driver = new FakeInferenceDriver(streamBatches: [$chunks]);
 
             $so = (new StructuredOutput)
-                ->withRuntime(makeStructuredRuntime(driver: $driver))
-                ->withConfig(new StructuredOutputConfig())
-                ->with(messages: 'Test', responseModel: new Sequence(\stdClass::class), mode: OutputMode::Json);
+                ->withRuntime(makeStructuredRuntime(driver: $driver, config: new StructuredOutputConfig(), outputMode: OutputMode::Json))
+                ->with(messages: 'Test', responseModel: new Sequence(\stdClass::class));
 
             $stream = $so->stream();
             $result = $stream->finalValue();
@@ -452,9 +446,8 @@ final class MemoryDiagnostics
         $syncDriver = new FakeInferenceDriver(responses: [new InferenceResponse(content: $json)]);
 
         $soSync = (new StructuredOutput)
-            ->withRuntime(makeStructuredRuntime(driver: $syncDriver))
-            ->withConfig(new StructuredOutputConfig())
-            ->with(messages: 'Test', responseModel: new Sequence(\stdClass::class), mode: OutputMode::Json);
+            ->withRuntime(makeStructuredRuntime(driver: $syncDriver, config: new StructuredOutputConfig(), outputMode: OutputMode::Json))
+            ->with(messages: 'Test', responseModel: new Sequence(\stdClass::class));
 
         $syncResult = $soSync->get();
         $syncPeak = memory_get_peak_usage(false);
@@ -468,9 +461,8 @@ final class MemoryDiagnostics
 
         // Invariant 1: Stream peak ≤ Sync peak (for same payload)
         $so = (new StructuredOutput)
-            ->withRuntime(makeStructuredRuntime(driver: $driver))
-            ->withConfig(new StructuredOutputConfig())
-            ->with(messages: 'Test', responseModel: new Sequence(\stdClass::class), mode: OutputMode::Json);
+            ->withRuntime(makeStructuredRuntime(driver: $driver, config: new StructuredOutputConfig(), outputMode: OutputMode::Json))
+            ->with(messages: 'Test', responseModel: new Sequence(\stdClass::class));
 
         $stream = $so->stream();
         $partialCount = 0;

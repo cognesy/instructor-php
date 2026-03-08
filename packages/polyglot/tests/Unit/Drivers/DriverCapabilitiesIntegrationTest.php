@@ -4,22 +4,23 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIDriver;
-use Cognesy\Polyglot\Inference\Drivers\Anthropic\AnthropicDriver;
-use Cognesy\Polyglot\Inference\Drivers\Deepseek\DeepseekDriver;
-use Cognesy\Polyglot\Inference\Drivers\Gemini\GeminiDriver;
-use Cognesy\Polyglot\Inference\Drivers\Groq\GroqDriver;
-use Cognesy\Polyglot\Inference\Drivers\Mistral\MistralDriver;
-use Cognesy\Polyglot\Inference\Drivers\Perplexity\PerplexityDriver;
-use Cognesy\Polyglot\Inference\Drivers\CohereV2\CohereV2Driver;
-use Cognesy\Polyglot\Inference\Drivers\OpenRouter\OpenRouterDriver;
-use Cognesy\Polyglot\Inference\Drivers\Fireworks\FireworksDriver;
-use Cognesy\Polyglot\Inference\Drivers\SambaNova\SambaNovaDriver;
-use Cognesy\Polyglot\Inference\Drivers\Cerebras\CerebrasDriver;
-use Cognesy\Polyglot\Inference\Drivers\GeminiOAI\GeminiOAIDriver;
-use Cognesy\Polyglot\Inference\Drivers\HuggingFace\HuggingFaceDriver;
 use Cognesy\Polyglot\Inference\Drivers\A21\A21Driver;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Drivers\Anthropic\AnthropicDriver;
+use Cognesy\Polyglot\Inference\Drivers\Cerebras\CerebrasDriver;
+use Cognesy\Polyglot\Inference\Drivers\CohereV2\CohereV2Driver;
+use Cognesy\Polyglot\Inference\Drivers\Deepseek\DeepseekDriver;
+use Cognesy\Polyglot\Inference\Drivers\Fireworks\FireworksDriver;
+use Cognesy\Polyglot\Inference\Drivers\Gemini\GeminiDriver;
+use Cognesy\Polyglot\Inference\Drivers\GeminiOAI\GeminiOAIDriver;
+use Cognesy\Polyglot\Inference\Drivers\Glm\GlmDriver;
+use Cognesy\Polyglot\Inference\Drivers\Groq\GroqDriver;
+use Cognesy\Polyglot\Inference\Drivers\HuggingFace\HuggingFaceDriver;
+use Cognesy\Polyglot\Inference\Drivers\Mistral\MistralDriver;
+use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIDriver;
+use Cognesy\Polyglot\Inference\Drivers\OpenRouter\OpenRouterDriver;
+use Cognesy\Polyglot\Inference\Drivers\Perplexity\PerplexityDriver;
+use Cognesy\Polyglot\Inference\Drivers\Qwen\QwenDriver;
+use Cognesy\Polyglot\Inference\Drivers\SambaNova\SambaNovaDriver;
 
 beforeEach(function () {
     $this->events = new EventDispatcher();
@@ -29,309 +30,184 @@ beforeEach(function () {
 });
 
 describe('OpenAIDriver capabilities', function () {
-
-    it('supports all output modes', function () {
-        $config = LLMConfig::fromArray(['driver' => 'openai', 'model' => 'gpt-4o']);
-        $driver = new OpenAIDriver($config, $this->httpClient, $this->events);
+    it('supports native response formats, tools, and streaming', function () {
+        $driver = new OpenAIDriver(
+            LLMConfig::fromArray(['driver' => 'openai', 'model' => 'gpt-4o']),
+            $this->httpClient,
+            $this->events,
+        );
 
         $caps = $driver->capabilities();
 
-        expect($caps->supportsOutputMode(OutputMode::Tools))->toBeTrue();
-        expect($caps->supportsOutputMode(OutputMode::JsonSchema))->toBeTrue();
-        expect($caps->supportsOutputMode(OutputMode::Json))->toBeTrue();
-        expect($caps->supportsOutputMode(OutputMode::MdJson))->toBeTrue();
-        expect($caps->supportsOutputMode(OutputMode::Text))->toBeTrue();
+        expect($caps->supportsStreaming())->toBeTrue();
+        expect($caps->supportsToolCalling())->toBeTrue();
+        expect($caps->supportsToolChoice())->toBeTrue();
+        expect($caps->supportsResponseFormatJsonObject())->toBeTrue();
+        expect($caps->supportsResponseFormatJsonSchema())->toBeTrue();
+        expect($caps->supportsResponseFormatWithTools())->toBeTrue();
     });
-
-    it('supports streaming', function () {
-        $config = LLMConfig::fromArray(['driver' => 'openai', 'model' => 'gpt-4o']);
-        $driver = new OpenAIDriver($config, $this->httpClient, $this->events);
-
-        expect($driver->capabilities()->supportsStreaming())->toBeTrue();
-    });
-
-    it('supports tool calling', function () {
-        $config = LLMConfig::fromArray(['driver' => 'openai', 'model' => 'gpt-4o']);
-        $driver = new OpenAIDriver($config, $this->httpClient, $this->events);
-
-        expect($driver->capabilities()->supportsToolCalling())->toBeTrue();
-    });
-
-    it('supports response format with tools', function () {
-        $config = LLMConfig::fromArray(['driver' => 'openai', 'model' => 'gpt-4o']);
-        $driver = new OpenAIDriver($config, $this->httpClient, $this->events);
-
-        expect($driver->capabilities()->supportsResponseFormatWithTools())->toBeTrue();
-    });
-
 });
 
 describe('AnthropicDriver capabilities', function () {
-
-    it('does not support JsonSchema output mode', function () {
-        $config = LLMConfig::fromArray(['driver' => 'anthropic', 'model' => 'claude-3-opus']);
-        $driver = new AnthropicDriver($config, $this->httpClient, $this->events);
+    it('supports tools but no native response formats', function () {
+        $driver = new AnthropicDriver(
+            LLMConfig::fromArray(['driver' => 'anthropic', 'model' => 'claude-3-opus']),
+            $this->httpClient,
+            $this->events,
+        );
 
         $caps = $driver->capabilities();
 
-        expect($caps->supportsOutputMode(OutputMode::Tools))->toBeTrue();
-        expect($caps->supportsOutputMode(OutputMode::MdJson))->toBeTrue();
-        expect($caps->supportsOutputMode(OutputMode::Text))->toBeTrue();
-        expect($caps->supportsOutputMode(OutputMode::JsonSchema))->toBeFalse();
-        expect($caps->supportsOutputMode(OutputMode::Json))->toBeFalse();
+        expect($caps->supportsToolCalling())->toBeTrue();
+        expect($caps->supportsToolChoice())->toBeTrue();
+        expect($caps->supportsResponseFormatJsonObject())->toBeFalse();
+        expect($caps->supportsResponseFormatJsonSchema())->toBeFalse();
+        expect($caps->supportsResponseFormatWithTools())->toBeFalse();
     });
-
-    it('does not support native JSON schema', function () {
-        $config = LLMConfig::fromArray(['driver' => 'anthropic', 'model' => 'claude-3-opus']);
-        $driver = new AnthropicDriver($config, $this->httpClient, $this->events);
-
-        expect($driver->capabilities()->supportsJsonSchema())->toBeFalse();
-    });
-
-    it('does not support response format with tools', function () {
-        $config = LLMConfig::fromArray(['driver' => 'anthropic', 'model' => 'claude-3-opus']);
-        $driver = new AnthropicDriver($config, $this->httpClient, $this->events);
-
-        expect($driver->capabilities()->supportsResponseFormatWithTools())->toBeFalse();
-    });
-
-    it('supports tool calling', function () {
-        $config = LLMConfig::fromArray(['driver' => 'anthropic', 'model' => 'claude-3-opus']);
-        $driver = new AnthropicDriver($config, $this->httpClient, $this->events);
-
-        expect($driver->capabilities()->supportsToolCalling())->toBeTrue();
-    });
-
 });
 
 describe('DeepseekDriver model-specific capabilities', function () {
-
-    it('supports tools for chat models', function () {
-        $config = LLMConfig::fromArray(['driver' => 'deepseek', 'model' => 'deepseek-chat']);
-        $driver = new DeepseekDriver($config, $this->httpClient, $this->events);
+    it('supports native response formats and tools for chat models', function () {
+        $driver = new DeepseekDriver(
+            LLMConfig::fromArray(['driver' => 'deepseek', 'model' => 'deepseek-chat']),
+            $this->httpClient,
+            $this->events,
+        );
 
         $caps = $driver->capabilities();
 
         expect($caps->supportsToolCalling())->toBeTrue();
-        expect($caps->supportsJsonSchema())->toBeTrue();
+        expect($caps->supportsToolChoice())->toBeTrue();
+        expect($caps->supportsResponseFormatJsonObject())->toBeTrue();
+        expect($caps->supportsResponseFormatJsonSchema())->toBeTrue();
     });
 
-    it('disables tools for reasoner models via config', function () {
-        $config = LLMConfig::fromArray(['driver' => 'deepseek', 'model' => 'deepseek-reasoner']);
-        $driver = new DeepseekDriver($config, $this->httpClient, $this->events);
+    it('disables tools and JSON schema for reasoner models via config', function () {
+        $driver = new DeepseekDriver(
+            LLMConfig::fromArray(['driver' => 'deepseek', 'model' => 'deepseek-reasoner']),
+            $this->httpClient,
+            $this->events,
+        );
 
         $caps = $driver->capabilities();
 
         expect($caps->supportsToolCalling())->toBeFalse();
-        expect($caps->supportsJsonSchema())->toBeFalse();
+        expect($caps->supportsToolChoice())->toBeFalse();
+        expect($caps->supportsResponseFormatJsonObject())->toBeTrue();
+        expect($caps->supportsResponseFormatJsonSchema())->toBeFalse();
     });
 
-    it('disables tools for reasoner models via parameter override', function () {
-        $config = LLMConfig::fromArray(['driver' => 'deepseek', 'model' => 'deepseek-chat']);
-        $driver = new DeepseekDriver($config, $this->httpClient, $this->events);
+    it('lets the model parameter override the configured model', function () {
+        $driver = new DeepseekDriver(
+            LLMConfig::fromArray(['driver' => 'deepseek', 'model' => 'deepseek-chat']),
+            $this->httpClient,
+            $this->events,
+        );
 
-        // Config says chat, but we query for reasoner specifically
         $caps = $driver->capabilities('deepseek-reasoner');
 
         expect($caps->supportsToolCalling())->toBeFalse();
-        expect($caps->supportsJsonSchema())->toBeFalse();
+        expect($caps->supportsToolChoice())->toBeFalse();
+        expect($caps->supportsResponseFormatJsonSchema())->toBeFalse();
     });
 
-    it('allows model parameter to override config model', function () {
-        $config = LLMConfig::fromArray(['driver' => 'deepseek', 'model' => 'deepseek-reasoner']);
-        $driver = new DeepseekDriver($config, $this->httpClient, $this->events);
+    it('does not support combining response format with tools', function () {
+        $driver = new DeepseekDriver(
+            LLMConfig::fromArray(['driver' => 'deepseek', 'model' => 'deepseek-chat']),
+            $this->httpClient,
+            $this->events,
+        );
 
-        // Config says reasoner, but we query for chat specifically
-        $caps = $driver->capabilities('deepseek-chat');
+        expect($driver->capabilities()->supportsResponseFormatWithTools())->toBeFalse();
+    });
+});
+
+describe('Gemini-family and OpenAI-compatible drivers', function () {
+    it('Gemini supports native response formats but not response_format with tools', function () {
+        $caps = (new GeminiDriver(
+            LLMConfig::fromArray(['driver' => 'gemini', 'model' => 'gemini-pro']),
+            $this->httpClient,
+            $this->events,
+        ))->capabilities();
+
+        expect($caps->supportsResponseFormatJsonObject())->toBeTrue();
+        expect($caps->supportsResponseFormatJsonSchema())->toBeTrue();
+        expect($caps->supportsResponseFormatWithTools())->toBeFalse();
+    });
+
+    it('Gemini OAI supports JSON object but not JSON schema', function () {
+        $caps = (new GeminiOAIDriver(
+            LLMConfig::fromArray(['driver' => 'gemini-oai', 'model' => 'gemini-1.5-flash']),
+            $this->httpClient,
+            $this->events,
+        ))->capabilities();
 
         expect($caps->supportsToolCalling())->toBeTrue();
-        expect($caps->supportsJsonSchema())->toBeTrue();
+        expect($caps->supportsResponseFormatJsonObject())->toBeTrue();
+        expect($caps->supportsResponseFormatJsonSchema())->toBeFalse();
+        expect($caps->supportsResponseFormatWithTools())->toBeFalse();
     });
 
-    it('does not support response format with tools', function () {
-        $config = LLMConfig::fromArray(['driver' => 'deepseek', 'model' => 'deepseek-chat']);
-        $driver = new DeepseekDriver($config, $this->httpClient, $this->events);
+    it('A21 supports JSON object but not JSON schema', function () {
+        $caps = (new A21Driver(
+            LLMConfig::fromArray(['driver' => 'a21', 'model' => 'jamba-1.5']),
+            $this->httpClient,
+            $this->events,
+        ))->capabilities();
 
-        expect($driver->capabilities()->supportsResponseFormatWithTools())->toBeFalse();
+        expect($caps->supportsResponseFormatJsonObject())->toBeTrue();
+        expect($caps->supportsResponseFormatJsonSchema())->toBeFalse();
+        expect($caps->supportsResponseFormatWithTools())->toBeTrue();
     });
 
-});
+    it('SambaNova supports JSON object but not JSON schema', function () {
+        $caps = (new SambaNovaDriver(
+            LLMConfig::fromArray(['driver' => 'sambanova', 'model' => 'llama-3']),
+            $this->httpClient,
+            $this->events,
+        ))->capabilities();
 
-describe('GeminiDriver capabilities', function () {
-
-    it('supports all output modes', function () {
-        $config = LLMConfig::fromArray(['driver' => 'gemini', 'model' => 'gemini-pro']);
-        $driver = new GeminiDriver($config, $this->httpClient, $this->events);
-
-        $caps = $driver->capabilities();
-
-        expect($caps->supportsOutputMode(OutputMode::Tools))->toBeTrue();
-        expect($caps->supportsOutputMode(OutputMode::JsonSchema))->toBeTrue();
-        expect($caps->supportsOutputMode(OutputMode::Json))->toBeTrue();
+        expect($caps->supportsToolCalling())->toBeTrue();
+        expect($caps->supportsResponseFormatJsonObject())->toBeTrue();
+        expect($caps->supportsResponseFormatJsonSchema())->toBeFalse();
+        expect($caps->supportsResponseFormatWithTools())->toBeFalse();
     });
-
-    it('does not support response format with tools', function () {
-        $config = LLMConfig::fromArray(['driver' => 'gemini', 'model' => 'gemini-pro']);
-        $driver = new GeminiDriver($config, $this->httpClient, $this->events);
-
-        expect($driver->capabilities()->supportsResponseFormatWithTools())->toBeFalse();
-    });
-
-});
-
-describe('GroqDriver capabilities', function () {
-
-    it('does not support response format with tools', function () {
-        $config = LLMConfig::fromArray(['driver' => 'groq', 'model' => 'llama-3']);
-        $driver = new GroqDriver($config, $this->httpClient, $this->events);
-
-        expect($driver->capabilities()->supportsResponseFormatWithTools())->toBeFalse();
-    });
-
-});
-
-describe('MistralDriver capabilities', function () {
-
-    it('does not support response format with tools', function () {
-        $config = LLMConfig::fromArray(['driver' => 'mistral', 'model' => 'mistral-large']);
-        $driver = new MistralDriver($config, $this->httpClient, $this->events);
-
-        expect($driver->capabilities()->supportsResponseFormatWithTools())->toBeFalse();
-    });
-
 });
 
 describe('PerplexityDriver capabilities', function () {
+    it('supports native response formats but no tools', function () {
+        $caps = (new PerplexityDriver(
+            LLMConfig::fromArray(['driver' => 'perplexity', 'model' => 'sonar']),
+            $this->httpClient,
+            $this->events,
+        ))->capabilities();
 
-    it('does not support tool calling', function () {
-        $config = LLMConfig::fromArray(['driver' => 'perplexity', 'model' => 'sonar']);
-        $driver = new PerplexityDriver($config, $this->httpClient, $this->events);
-
-        expect($driver->capabilities()->supportsToolCalling())->toBeFalse();
+        expect($caps->supportsToolCalling())->toBeFalse();
+        expect($caps->supportsToolChoice())->toBeFalse();
+        expect($caps->supportsResponseFormatJsonObject())->toBeTrue();
+        expect($caps->supportsResponseFormatJsonSchema())->toBeTrue();
+        expect($caps->supportsResponseFormatWithTools())->toBeFalse();
     });
-
-    it('does not support Tools output mode', function () {
-        $config = LLMConfig::fromArray(['driver' => 'perplexity', 'model' => 'sonar']);
-        $driver = new PerplexityDriver($config, $this->httpClient, $this->events);
-
-        expect($driver->capabilities()->supportsOutputMode(OutputMode::Tools))->toBeFalse();
-    });
-
 });
 
-describe('CohereV2Driver capabilities', function () {
+describe('Drivers that do not combine response_format with tools', function () {
+    it('reports the expected compatibility limits', function (string $driverClass, string $driverName, string $model) {
+        $caps = (new $driverClass(
+            LLMConfig::fromArray(['driver' => $driverName, 'model' => $model]),
+            $this->httpClient,
+            $this->events,
+        ))->capabilities();
 
-    it('does not support response format with tools', function () {
-        $config = LLMConfig::fromArray(['driver' => 'cohere2', 'model' => 'command-r']);
-        $driver = new CohereV2Driver($config, $this->httpClient, $this->events);
-
-        expect($driver->capabilities()->supportsResponseFormatWithTools())->toBeFalse();
-    });
-
-    it('supports tool calling and JSON schema', function () {
-        $config = LLMConfig::fromArray(['driver' => 'cohere2', 'model' => 'command-r']);
-        $driver = new CohereV2Driver($config, $this->httpClient, $this->events);
-
-        expect($driver->capabilities()->supportsToolCalling())->toBeTrue();
-        expect($driver->capabilities()->supportsJsonSchema())->toBeTrue();
-    });
-
-});
-
-describe('OpenRouterDriver capabilities', function () {
-
-    it('does not support response format with tools', function () {
-        $config = LLMConfig::fromArray(['driver' => 'openrouter', 'model' => 'openai/gpt-4']);
-        $driver = new OpenRouterDriver($config, $this->httpClient, $this->events);
-
-        expect($driver->capabilities()->supportsResponseFormatWithTools())->toBeFalse();
-    });
-
-});
-
-describe('FireworksDriver capabilities', function () {
-
-    it('does not support response format with tools', function () {
-        $config = LLMConfig::fromArray(['driver' => 'fireworks', 'model' => 'llama-v3']);
-        $driver = new FireworksDriver($config, $this->httpClient, $this->events);
-
-        expect($driver->capabilities()->supportsResponseFormatWithTools())->toBeFalse();
-    });
-
-});
-
-describe('SambaNovaDriver capabilities', function () {
-
-    it('does not support response format with tools', function () {
-        $config = LLMConfig::fromArray(['driver' => 'sambanova', 'model' => 'llama-3']);
-        $driver = new SambaNovaDriver($config, $this->httpClient, $this->events);
-
-        expect($driver->capabilities()->supportsResponseFormatWithTools())->toBeFalse();
-    });
-
-    it('does not support native JSON schema', function () {
-        $config = LLMConfig::fromArray(['driver' => 'sambanova', 'model' => 'llama-3']);
-        $driver = new SambaNovaDriver($config, $this->httpClient, $this->events);
-
-        expect($driver->capabilities()->supportsJsonSchema())->toBeFalse();
-    });
-
-});
-
-describe('CerebrasDriver capabilities', function () {
-
-    it('does not support response format with tools', function () {
-        $config = LLMConfig::fromArray(['driver' => 'cerebras', 'model' => 'llama3.1-8b']);
-        $driver = new CerebrasDriver($config, $this->httpClient, $this->events);
-
-        expect($driver->capabilities()->supportsResponseFormatWithTools())->toBeFalse();
-    });
-
-});
-
-describe('GeminiOAIDriver capabilities', function () {
-
-    it('does not support response format with tools', function () {
-        $config = LLMConfig::fromArray(['driver' => 'gemini-oai', 'model' => 'gemini-1.5-flash']);
-        $driver = new GeminiOAIDriver($config, $this->httpClient, $this->events);
-
-        expect($driver->capabilities()->supportsResponseFormatWithTools())->toBeFalse();
-    });
-
-    it('does not support native JSON schema', function () {
-        $config = LLMConfig::fromArray(['driver' => 'gemini-oai', 'model' => 'gemini-1.5-flash']);
-        $driver = new GeminiOAIDriver($config, $this->httpClient, $this->events);
-
-        expect($driver->capabilities()->supportsJsonSchema())->toBeFalse();
-    });
-
-});
-
-describe('HuggingFaceDriver capabilities', function () {
-
-    it('does not support response format with tools', function () {
-        $config = LLMConfig::fromArray(['driver' => 'huggingface', 'model' => 'mistralai/Mistral-7B']);
-        $driver = new HuggingFaceDriver($config, $this->httpClient, $this->events);
-
-        expect($driver->capabilities()->supportsResponseFormatWithTools())->toBeFalse();
-    });
-
-});
-
-describe('A21Driver capabilities', function () {
-
-    it('does not support native JSON schema', function () {
-        $config = LLMConfig::fromArray(['driver' => 'a21', 'model' => 'jamba-1.5']);
-        $driver = new A21Driver($config, $this->httpClient, $this->events);
-
-        expect($driver->capabilities()->supportsJsonSchema())->toBeFalse();
-    });
-
-    it('supports response format with tools', function () {
-        $config = LLMConfig::fromArray(['driver' => 'a21', 'model' => 'jamba-1.5']);
-        $driver = new A21Driver($config, $this->httpClient, $this->events);
-
-        expect($driver->capabilities()->supportsResponseFormatWithTools())->toBeTrue();
-    });
-
+        expect($caps->supportsResponseFormatWithTools())->toBeFalse();
+    })->with([
+        [QwenDriver::class, 'qwen', 'qwen3-max-preview'],
+        [GlmDriver::class, 'glm', 'glm-4.5'],
+        [GroqDriver::class, 'groq', 'llama-3'],
+        [MistralDriver::class, 'mistral', 'mistral-large'],
+        [CohereV2Driver::class, 'cohere2', 'command-r'],
+        [OpenRouterDriver::class, 'openrouter', 'openai/gpt-4'],
+        [FireworksDriver::class, 'fireworks', 'llama-v3'],
+        [CerebrasDriver::class, 'cerebras', 'llama3.1-8b'],
+        [HuggingFaceDriver::class, 'huggingface', 'mistralai/Mistral-7B'],
+    ]);
 });

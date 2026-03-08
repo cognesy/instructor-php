@@ -43,17 +43,17 @@ $response = $inference->with(
     options: ['stream' => true]
 );
 
-$stream = $response->stream()->responses();
-foreach ($stream as $partial) {
-    echo $partial->contentDelta;
+$stream = $response->stream()->deltas();
+foreach ($stream as $delta) {
+    echo $delta->contentDelta;
     flush();
 }
 ```
 
 2. **Buffer Flushing**: Ensure output buffers are properly flushed during streaming
 ```php
-foreach ($stream as $partial) {
-    echo $partial->contentDelta;
+foreach ($stream as $delta) {
+    echo $delta->contentDelta;
 
     // Flush output buffer to ensure content is sent immediately
     if (ob_get_level() > 0) {
@@ -73,18 +73,18 @@ try {
     );
 
     try {
-        $stream = $response->stream()->responses();
+        $stream = $response->stream()->deltas();
         $content = '';
 
-        foreach ($stream as $partial) {
-            $content .= $partial->contentDelta;
-            echo $partial->contentDelta;
+        foreach ($stream as $delta) {
+            $content .= $delta->contentDelta;
+            echo $delta->contentDelta;
             flush();
         }
     } catch (\Exception $streamException) {
         echo "\nStream error: " . $streamException->getMessage() . "\n";
 
-        // If we got a partial response before the error, use it
+        // If we got partial content before the error, use it
         if (!empty($content)) {
             echo "Partial content received: " . strlen($content) . " characters\n";
         }
@@ -109,8 +109,8 @@ function getResponse(string $prompt, bool $preferStreaming = true): string {
             );
 
             $content = '';
-            foreach ($response->stream()->responses() as $partial) {
-                $content .= $partial->contentDelta;
+            foreach ($response->stream()->deltas() as $delta) {
+                $content .= $delta->contentDelta;
                 // Output can be done here if needed
             }
 

@@ -1,0 +1,21 @@
+{
+    "chunks": 1000,
+    "emissions": 1000,
+    "finalContentLength": 1000,
+    "finalCreatedByClass": {
+        "Cognesy\\Polyglot\\Inference\\Data\\InferenceAttempt": 3,
+        "Cognesy\\Polyglot\\Inference\\Data\\InferenceExecution": 4,
+        "Cognesy\\Polyglot\\Inference\\Data\\InferenceResponse": 1,
+        "Cognesy\\Polyglot\\Inference\\Data\\PartialInferenceDelta": 1000,
+        "Cognesy\\Polyglot\\Inference\\Data\\Usage": 1002,
+        "Cognesy\\Polyglot\\Inference\\Streaming\\InferenceStreamState": 1
+    },
+    "finalLiveByClass": {
+        "Cognesy\\Polyglot\\Inference\\Data\\InferenceAttempt": 2,
+        "Cognesy\\Polyglot\\Inference\\Data\\InferenceExecution": 2,
+        "Cognesy\\Polyglot\\Inference\\Data\\InferenceResponse": 1,
+        "Cognesy\\Polyglot\\Inference\\Data\\PartialInferenceDelta": 1,
+        "Cognesy\\Polyglot\\Inference\\Data\\Usage": 3,
+        "Cognesy\\Polyglot\\Inference\\Streaming\\InferenceStreamState": 1
+    }
+}

@@ -5,7 +5,7 @@ namespace Cognesy\Polyglot\Embeddings\Data;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsRetryPolicy;
 use InvalidArgumentException;
 
-class EmbeddingsRequest
+final class EmbeddingsRequest
 {
     protected array $inputs = [];
     protected array $options = [];
@@ -27,10 +27,10 @@ class EmbeddingsRequest
         $this->options = $options;
         $this->assertNoRetryPolicyInOptions($this->options);
         $this->retryPolicy = $retryPolicy;
+    }
 
-        if (empty($this->inputs)) {
-            throw new InvalidArgumentException("Input data is required");
-        }
+    public static function empty(): self {
+        return new self();
     }
 
     // ACCESSORS
@@ -49,6 +49,46 @@ class EmbeddingsRequest
 
     public function retryPolicy() : ?EmbeddingsRetryPolicy {
         return $this->retryPolicy;
+    }
+
+    public function hasInputs() : bool {
+        return $this->inputs !== [];
+    }
+
+    public function withInputs(string|array $input) : self {
+        return new self(
+            input: $input,
+            options: $this->options,
+            model: $this->model,
+            retryPolicy: $this->retryPolicy,
+        );
+    }
+
+    public function withModel(string $model) : self {
+        return new self(
+            input: $this->inputs,
+            options: $this->options,
+            model: $model,
+            retryPolicy: $this->retryPolicy,
+        );
+    }
+
+    public function withOptions(array $options) : self {
+        return new self(
+            input: $this->inputs,
+            options: $options,
+            model: $this->model,
+            retryPolicy: $this->retryPolicy,
+        );
+    }
+
+    public function withRetryPolicy(?EmbeddingsRetryPolicy $retryPolicy) : self {
+        return new self(
+            input: $this->inputs,
+            options: $this->options,
+            model: $this->model,
+            retryPolicy: $retryPolicy,
+        );
     }
 
     // TRANSFORMATIONS

@@ -24,14 +24,19 @@ array data rendered as JSON text.
 <?php
 use Cognesy\Instructor\Extras\Example\Example;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 class User {
     public int $age;
     public string $name;
 }
 
-$user = (new StructuredOutput)->with(
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withOutputMode(OutputMode::Json);
+
+$user = (new StructuredOutput($runtime))->with(
     messages: "Our user Jason is 25 years old.",
     responseModel: User::class,
     examples: [
@@ -44,7 +49,6 @@ $user = (new StructuredOutput)->with(
             output: ['name' => 'Ian', 'age' => 27]
         ),
     ],
-    mode: OutputMode::Json
 )->get();
 ?>
 ```
@@ -63,7 +67,10 @@ In case input or output data is an array, Instructor will automatically convert 
 a JSON string before replacing the placeholders.
 
 ```php
-$user = (new StructuredOutput)->with(
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withOutputMode(OutputMode::Json);
+
+$user = (new StructuredOutput($runtime))->with(
     messages: "Our user Jason is 25 years old.",
     responseModel: User::class,
     examples: [
@@ -73,7 +80,6 @@ $user = (new StructuredOutput)->with(
             template: "EXAMPLE:\n{input} => {output}\n",
         ),
     ],
-    mode: OutputMode::Json
 )->get();
 ```
 

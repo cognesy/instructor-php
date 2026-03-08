@@ -74,8 +74,8 @@ class OpenAIResponseAdapter implements CanTranslateInferenceResponse {
     ) { ... }
 
     public function fromResponse(HttpResponse $response): ?InferenceResponse { ... }
-    /** @return iterable<PartialInferenceResponse> */
-    public function fromStreamResponses(iterable $eventBodies, ?HttpResponse $responseData = null): iterable { ... }
+    /** @return iterable<PartialInferenceDelta> */
+    public function fromStreamDeltas(iterable $eventBodies, ?HttpResponse $responseData = null): iterable { ... }
     public function toEventBody(string $data): string|bool { ... }
 
     protected function makeToolCalls(array $data): ToolCalls { ... }
@@ -100,6 +100,5 @@ class OpenAIUsageFormat implements CanMapUsage {
     public function fromData(array $data): Usage { ... }
 }
 ```
-
 
 

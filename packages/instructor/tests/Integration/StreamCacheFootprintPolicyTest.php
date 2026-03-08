@@ -4,7 +4,7 @@ use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 
 class StreamCacheFootprintUser { public int $age; public string $name; }
@@ -19,14 +19,16 @@ it('keeps structured stream replay cache empty with none policy', function () {
     );
 
     $stream = (new StructuredOutput)
-        ->withRuntime(makeStructuredRuntime(driver: $driver))
-        ->withConfig(new StructuredOutputConfig(
-            responseCachePolicy: ResponseCachePolicy::None,
+        ->withRuntime(makeStructuredRuntime(
+            driver: $driver,
+            config: new StructuredOutputConfig(
+                responseCachePolicy: ResponseCachePolicy::None,
+            ),
+            outputMode: OutputMode::Json,
         ))
         ->with(
             messages: 'Extract user',
             responseModel: StreamCacheFootprintUser::class,
-            mode: OutputMode::Json,
         )
         ->stream();
 
@@ -36,7 +38,7 @@ it('keeps structured stream replay cache empty with none policy', function () {
     $property = $reflection->getProperty('cachedResponses');
     $cached = $property->getValue($stream);
 
-    expect($cached->count())->toBe(0);
+    expect(count($cached))->toBe(0);
 });
 
 it('stores structured stream replay cache with memory policy', function () {
@@ -49,14 +51,16 @@ it('stores structured stream replay cache with memory policy', function () {
     );
 
     $stream = (new StructuredOutput)
-        ->withRuntime(makeStructuredRuntime(driver: $driver))
-        ->withConfig(new StructuredOutputConfig(
-            responseCachePolicy: ResponseCachePolicy::Memory,
+        ->withRuntime(makeStructuredRuntime(
+            driver: $driver,
+            config: new StructuredOutputConfig(
+                responseCachePolicy: ResponseCachePolicy::Memory,
+            ),
+            outputMode: OutputMode::Json,
         ))
         ->with(
             messages: 'Extract user',
             responseModel: StreamCacheFootprintUser::class,
-            mode: OutputMode::Json,
         )
         ->stream();
 
@@ -66,5 +70,5 @@ it('stores structured stream replay cache with memory policy', function () {
     $property = $reflection->getProperty('cachedResponses');
     $cached = $property->getValue($stream);
 
-    expect($cached->count())->toBe(2);
+    expect(count($cached))->toBe(2);
 });

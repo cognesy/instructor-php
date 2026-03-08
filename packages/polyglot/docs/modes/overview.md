@@ -1,64 +1,101 @@
 ---
-title: Overview of Output Modes
-description: 'Learn how to work with different output modes in Polyglot.'
+title: Response Shaping Overview
+description: 'Learn how to shape Polyglot inference responses explicitly in 2.0.'
 ---
 
-One of Polyglot's key strengths is its ability to support various output formats from LLM providers. This flexibility allows you to structure responses in the format that best suits your application, whether you need plain text, structured JSON data, or function/tool calls. This chapter explores the different output modes supported by Polyglot and how to implement them effectively.
+In Polyglot 2.0, response shaping is explicit.
 
-Polyglot's support for different output formats gives you the flexibility to work with LLM responses in the way that best suits your application's needs. Whether you need simple text, structured JSON, or interactive tool calls, you can configure the output format to match your requirements.
+Polyglot no longer exposes `OutputMode`. Raw inference requests are built from plain request data:
 
-## Understanding Output Modes
+- `responseFormat` for native text, JSON object, or JSON schema response formats
+- `tools` for tool definitions
+- `toolChoice` for tool selection policy
 
-Polyglot supports multiple output modes through the `OutputMode` enum:
+## Default behavior
+
+If you do not set `responseFormat`, Polyglot requests plain text output.
 
 ```php
 <?php
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Inference;
 
-// Available modes
-// OutputMode::Text       - Plain text output (default)
-// OutputMode::Json       - JSON output
-// OutputMode::JsonSchema - JSON output validated against a schema (native support required)
-// OutputMode::MdJson     - JSON wrapped in Markdown code blocks
-// OutputMode::Tools      - Function/tool calling
+$text = Inference::using('openai')
+    ->with(messages: 'Say hello in one sentence.')
+    ->get();
 ```
 
-Each mode influences:
-1. How the request is formatted and sent to the provider
-2. How the provider's response is processed
-3. What extraction or validation is applied to the response
+## Native JSON object
 
+```php
+<?php
+use Cognesy\Polyglot\Inference\Inference;
 
-## Output Modes Overview
+$data = Inference::using('openai')
+    ->with(
+        messages: 'Return JSON with name and population for Paris.',
+        responseFormat: ['type' => 'json_object'],
+    )
+    ->asJsonData();
+```
 
-| Mode            | Description                                                                 | Best For                                      |
-|-----------------|-----------------------------------------------------------------------------|-----------------------------------------------|
-| `OutputMode::Text`     | Default mode, returns unstructured text                                     | Simple text generation                        |
-| `OutputMode::Json`     | Returns structured JSON data                                                | Structured data processing                    |
-| `OutputMode::JsonSchema` | Returns JSON data validated against a schema (native support required)     | Strictly typed data                           |
-| `OutputMode::MdJson`   | Returns JSON wrapped in Markdown code blocks                                | Compatibility across providers                |
-| `OutputMode::Tools`    | Returns function/tool calls                                                 | Function calling/external actions             |
+## Native JSON schema
 
-JSON Schema guarantees apply only when the provider supports native schema validation; otherwise use
-`OutputMode::Json` or `OutputMode::MdJson` for best-effort structured output.
+```php
+<?php
+use Cognesy\Polyglot\Inference\Inference;
 
+$data = Inference::using('openai')
+    ->with(
+        messages: 'Return city data as JSON.',
+        responseFormat: [
+            'type' => 'json_schema',
+            'json_schema' => [
+                'name' => 'city_data',
+                'schema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'name' => ['type' => 'string'],
+                        'population' => ['type' => 'integer'],
+                    ],
+                    'required' => ['name', 'population'],
+                ],
+                'strict' => true,
+            ],
+        ],
+    )
+    ->asJsonData();
+```
 
-### Choosing the Right Format
+## Tool calling
 
-Consider these factors when selecting an output format:
+```php
+<?php
+use Cognesy\Polyglot\Inference\Inference;
 
-1. **Complexity of the data**: More complex data structures benefit from JSON Schema
-2. **Provider support**: Check which formats are natively supported by your provider
-3. **Consistency requirements**: Stricter format requirements favor JSON Schema or Tools
-4. **Application needs**: Consider how the data will be used in your application
+$response = Inference::using('openai')
+    ->with(
+        messages: 'Look up the weather in Paris.',
+        tools: [[
+            'type' => 'function',
+            'function' => [
+                'name' => 'get_weather',
+                'description' => 'Get current weather for a city',
+                'parameters' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'city' => ['type' => 'string'],
+                    ],
+                    'required' => ['city'],
+                ],
+            ],
+        ]],
+        toolChoice: 'auto',
+    )
+    ->response();
+```
 
+## Markdown JSON fallback
 
-### Improving Format Reliability
+Markdown JSON fallback is not a Polyglot concept in 2.0.
 
-For better results:
-
-1. **Be explicit in prompts**: Clearly describe the expected format
-2. **Provide examples**: Show what good responses look like
-3. **Use constraints**: Specify limits and requirements
-4. **Test across providers**: Verify formats work with all providers you use
-5. **Implement fallbacks**: Have backup strategies for format failures
+If you need that behavior, use Instructor and `Cognesy\Instructor\Enums\OutputMode::MdJson`.

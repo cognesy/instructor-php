@@ -2,6 +2,7 @@
 
 namespace Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
 use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodeCallId;
 use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodeMessageId;
 use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodePartId;
@@ -89,41 +90,23 @@ final readonly class ToolUseEvent extends StreamEvent
 
     public static function fromArray(array $data): self
     {
-        $part = $data['part'] ?? [];
-        $state = $part['state'] ?? [];
-        $time = $state['time'] ?? [];
+        $part = Normalize::toArray($data['part'] ?? []);
+        $state = Normalize::toArray($part['state'] ?? []);
+        $time = Normalize::toArray($state['time'] ?? []);
 
         return new self(
-            timestamp: $data['timestamp'] ?? 0,
-            sessionId: $data['sessionID'] ?? '',
-            messageId: $part['messageID'] ?? '',
-            partId: $part['id'] ?? '',
-            callId: $part['callID'] ?? '',
-            tool: $part['tool'] ?? '',
-            status: $state['status'] ?? 'unknown',
-            input: $state['input'] ?? [],
-            output: self::normalizeOutput($state['output'] ?? ''),
-            title: $state['title'] ?? null,
-            startTime: $time['start'] ?? null,
-            endTime: $time['end'] ?? null,
+            timestamp: Normalize::toInt($data['timestamp'] ?? 0),
+            sessionId: Normalize::toString($data['sessionID'] ?? ''),
+            messageId: Normalize::toString($part['messageID'] ?? ''),
+            partId: Normalize::toString($part['id'] ?? ''),
+            callId: Normalize::toString($part['callID'] ?? ''),
+            tool: Normalize::toString($part['tool'] ?? ''),
+            status: Normalize::toString($state['status'] ?? 'unknown', 'unknown'),
+            input: Normalize::toArray($state['input'] ?? []),
+            output: Normalize::toString($state['output'] ?? ''),
+            title: Normalize::toNullableString($state['title'] ?? null),
+            startTime: Normalize::toNullableInt($time['start'] ?? null),
+            endTime: Normalize::toNullableInt($time['end'] ?? null),
         );
-    }
-
-    private static function normalizeOutput(mixed $output): string
-    {
-        return match (true) {
-            is_string($output) => $output,
-            is_int($output), is_float($output) => (string)$output,
-            is_bool($output) => $output ? 'true' : 'false',
-            is_null($output) => '',
-            is_array($output), is_object($output) => self::encodeOutput($output),
-            default => '',
-        };
-    }
-
-    private static function encodeOutput(mixed $output): string
-    {
-        $encoded = json_encode($output);
-        return is_string($encoded) ? $encoded : '';
     }
 }

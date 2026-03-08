@@ -17,7 +17,7 @@ using Azure OpenAI service console.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 
 enum UserType : string {
     case Guest = 'guest';

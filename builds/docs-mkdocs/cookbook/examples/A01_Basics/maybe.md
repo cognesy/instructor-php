@@ -17,7 +17,7 @@ require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Maybe\Maybe;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 
 class User
 {

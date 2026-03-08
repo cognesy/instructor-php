@@ -67,7 +67,6 @@ $driver = new ToolCallingDriver(
     llm: $llm,
     model: 'gpt-4o',
     toolChoice: 'auto',          // 'auto', 'required', or specific tool
-    mode: OutputMode::Tools,
 );
 ```
 

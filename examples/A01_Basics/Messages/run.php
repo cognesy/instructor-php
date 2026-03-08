@@ -16,9 +16,11 @@ messages and their sequences.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Str;
 
 class Code {
@@ -43,10 +45,12 @@ $lastMessageId = $messages->last()->id()->toString();
 print("Last message ID: {$lastMessageId}\n");
 
 print("Extracting structured data using LLM...\n\n");
-$code = StructuredOutput::using('openai')
+$code = (new StructuredOutput(
+    StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
+        ->withOutputMode(OutputMode::MdJson)
+))
     ->withMessages($messages)
     ->withResponseModel(Code::class)
-    ->withOutputMode(OutputMode::MdJson)
     ->get();
 
 print("Extracted data:\n");

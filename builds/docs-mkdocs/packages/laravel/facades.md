@@ -15,7 +15,7 @@ $person = StructuredOutput::with(
     messages: 'John Smith is 30 years old',
     responseModel: PersonData::class,
 )->get();
-// @doctest id="4d92"
+// @doctest id="deda"
 ```
 
 ### With System Prompt
@@ -26,7 +26,7 @@ $person = StructuredOutput::with(
     responseModel: PersonData::class,
     system: 'You are a data extraction assistant.',
 )->get();
-// @doctest id="d864"
+// @doctest id="5b65"
 ```
 
 ### With Examples (Few-Shot Learning)
@@ -39,7 +39,7 @@ $person = StructuredOutput::with(
         ['input' => 'Bob is 40', 'output' => new PersonData(name: 'Bob', age: 40)],
     ],
 )->get();
-// @doctest id="d95d"
+// @doctest id="a85c"
 ```
 
 ### Switching Connections
@@ -49,7 +49,7 @@ $person = StructuredOutput::connection('anthropic')->with(
     messages: 'Extract person data...',
     responseModel: PersonData::class,
 )->get();
-// @doctest id="c04f"
+// @doctest id="d25f"
 ```
 
 ### Fluent API
@@ -60,7 +60,7 @@ $person = StructuredOutput::withMessages('John is 30')
     ->withModel('gpt-4o')
     ->withMaxRetries(3)
     ->get();
-// @doctest id="4962"
+// @doctest id="e963"
 ```
 
 ### Return Types
@@ -83,7 +83,7 @@ $valid = StructuredOutput::with(...)->getBoolean();
 
 // Get as array
 $items = StructuredOutput::with(...)->getArray();
-// @doctest id="69c7"
+// @doctest id="5da7"
 ```
 
 ### Available Methods
@@ -92,7 +92,7 @@ $items = StructuredOutput::with(...)->getArray();
 |--------|-------------|
 | `connection(string $name)` | Switch to a different configured connection |
 | `using(string $preset)` | Use a named LLM preset (e.g. `'anthropic'`, `'openai'`) |
-| `fromLLMConfig(LLMConfig $config)` | Use explicit typed LLM config |
+| `fromConfig(LLMConfig $config)` | Use explicit typed LLM config |
 | `withRuntime(CanCreateStructuredOutput)` | Replace runtime directly (advanced) |
 | `with(...)` | Configure extraction with all parameters |
 | `withMessages(...)` | Set input messages |
@@ -101,16 +101,12 @@ $items = StructuredOutput::with(...)->getArray();
 | `withPrompt(string)` | Set user prompt template |
 | `withExamples(array)` | Set few-shot examples |
 | `withModel(string)` | Override the model |
-| `withMaxRetries(int)` | Set max retry attempts |
 | `withOptions(array)` | Set additional options |
-| `withOutputMode(OutputMode)` | Set output mode |
 | `withStreaming(bool)` | Enable streaming |
-| `withValidators(...)` | Add custom validators |
-| `withTransformers(...)` | Add data transformers |
-| `withDeserializers(...)` | Add custom deserializers |
-| `withExtractors(...)` | Add custom extractors |
 | `get()` | Execute and return result |
 | `stream()` | Execute and return stream |
+
+Runtime policy such as retries, output mode, validators, transformers, deserializers, and extractors is configured on `StructuredOutputRuntime` and then passed via `withRuntime(...)`.
 
 ---
 
@@ -128,7 +124,7 @@ $response = Inference::with(
 )->get();
 
 echo $response; // "The capital of France is Paris."
-// @doctest id="45ea"
+// @doctest id="c7d4"
 ```
 
 ### With System Message
@@ -140,7 +136,7 @@ $response = Inference::with(
         ['role' => 'user', 'content' => 'Hello!'],
     ],
 )->get();
-// @doctest id="0ae2"
+// @doctest id="1f47"
 ```
 
 ### JSON Response
@@ -152,7 +148,7 @@ $data = Inference::with(
 )->asJsonData();
 
 // ['colors' => ['red', 'green', 'blue']]
-// @doctest id="e91b"
+// @doctest id="c872"
 ```
 
 ### Switching Connections
@@ -161,7 +157,7 @@ $data = Inference::with(
 $response = Inference::connection('groq')->with(
     messages: 'Explain quantum computing',
 )->get();
-// @doctest id="bde8"
+// @doctest id="4986"
 ```
 
 ### Available Methods
@@ -170,7 +166,7 @@ $response = Inference::connection('groq')->with(
 |--------|-------------|
 | `connection(string $name)` | Switch connection |
 | `using(string $preset)` | Use a named LLM preset (e.g. `'anthropic'`, `'openai'`) |
-| `fromLLMConfig(LLMConfig $config)` | Use explicit typed LLM config |
+| `fromConfig(LLMConfig $config)` | Use explicit typed LLM config |
 | `with(...)` | Configure with all parameters |
 | `withMessages(...)` | Set messages |
 | `withModel(string)` | Override model |
@@ -205,7 +201,7 @@ $embeddings = Embeddings::withInputs([
     'First text',
     'Second text',
 ])->vectors();
-// @doctest id="b810"
+// @doctest id="9040"
 ```
 
 ### Switching Connections
@@ -214,7 +210,7 @@ $embeddings = Embeddings::withInputs([
 $embedding = Embeddings::connection('ollama')
     ->withInputs('Local embedding test')
     ->first();
-// @doctest id="3d99"
+// @doctest id="f7ff"
 ```
 
 ### With Custom Model
@@ -223,7 +219,7 @@ $embedding = Embeddings::connection('ollama')
 $embedding = Embeddings::withInputs('Test')
     ->withModel('text-embedding-3-large')
     ->first();
-// @doctest id="44cb"
+// @doctest id="fdf0"
 ```
 
 ### Full Response
@@ -233,7 +229,7 @@ $response = Embeddings::withInputs('Test')->get();
 
 $vectors = $response->vectors();
 $usage = $response->usage();
-// @doctest id="2c1b"
+// @doctest id="5b66"
 ```
 
 ### Available Methods
@@ -242,7 +238,7 @@ $usage = $response->usage();
 |--------|-------------|
 | `connection(string $name)` | Switch connection |
 | `using(string $preset)` | Use a named embeddings preset (e.g. `'openai'`, `'cohere'`) |
-| `fromEmbeddingsConfig(EmbeddingsConfig $config)` | Use explicit typed embeddings config |
+| `fromConfig(EmbeddingsConfig $config)` | Use explicit typed embeddings config |
 | `withInputs(string\|array)` | Set input text(s) |
 | `withModel(string)` | Override model |
 | `withOptions(array)` | Set options |
@@ -268,7 +264,7 @@ $response = AgentCtrl::claudeCode()
 if ($response->isSuccess()) {
     echo $response->text();
 }
-// @doctest id="1a6e"
+// @doctest id="d26f"
 ```
 
 ### Agent Selection
@@ -293,7 +289,7 @@ use Cognesy\Auxiliary\Agents\Enum\AgentType;
 
 $response = AgentCtrl::make(AgentType::ClaudeCode)
     ->execute('Generate API documentation');
-// @doctest id="3b93"
+// @doctest id="bdae"
 ```
 
 ### Configuration
@@ -306,7 +302,7 @@ $response = AgentCtrl::claudeCode()
     ->withSandboxDriver(SandboxDriver::Host)  // Sandbox isolation
     ->withMaxRetries(3)                       // Retry on failure
     ->execute('Your prompt');
-// @doctest id="46bf"
+// @doctest id="47d6"
 ```
 
 ### Streaming
@@ -323,7 +319,7 @@ $response = AgentCtrl::claudeCode()
         echo "Done! Exit code: " . $response->exitCode;
     })
     ->executeStreaming('Generate a REST API');
-// @doctest id="7814"
+// @doctest id="9e43"
 ```
 
 ### Response Object
@@ -352,7 +348,7 @@ foreach ($response->toolCalls as $call) {
     $call->output;           // Tool output
     $call->isError;          // If tool failed
 }
-// @doctest id="ba81"
+// @doctest id="ecf7"
 ```
 
 ### Session Management
@@ -368,7 +364,7 @@ $sessionId = $response->sessionId;
 $response = AgentCtrl::claudeCode()
     ->resumeSession($sessionId)
     ->execute('Continue with the Address model');
-// @doctest id="14f3"
+// @doctest id="c5c5"
 ```
 
 ### Available Methods
@@ -418,7 +414,7 @@ class MyService
             ->get();
     }
 }
-// @doctest id="32b6"
+// @doctest id="69d5"
 ```
 
 This is useful for:
@@ -436,5 +432,5 @@ All facades proxy to the underlying service classes. The facades resolve fresh i
 // Each call gets a fresh instance
 StructuredOutput::connection('openai')->with(...)->get();
 StructuredOutput::connection('anthropic')->with(...)->get();
-// @doctest id="d6b8"
+// @doctest id="3b3c"
 ```

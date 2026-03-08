@@ -3,7 +3,7 @@
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 
 class StreamOneShotUser { public int $age; public string $name; }
 
@@ -17,11 +17,10 @@ it('throws when iterating responses a second time after stream completion', func
     );
 
     $stream = (new StructuredOutput)
-        ->withRuntime(makeStructuredRuntime(driver: $driver))
+        ->withRuntime(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json))
         ->with(
             messages: 'Extract user',
             responseModel: StreamOneShotUser::class,
-            mode: OutputMode::Json,
         )
         ->stream();
 

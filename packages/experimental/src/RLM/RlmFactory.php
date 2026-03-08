@@ -39,7 +39,7 @@ final class RlmFactory
         $repl = $repl ?? new BasicReplEnvironment();
         if ($driver === null) {
             $events = new EventDispatcher(name: 'experimental.rlm');
-            $inference = InferenceRuntime::fromLLMConfig(new LLMConfig(
+            $inference = InferenceRuntime::fromConfig(new LLMConfig(
                 driver: 'openai',
                 apiUrl: 'https://api.openai.com/v1',
                 apiKey: '',

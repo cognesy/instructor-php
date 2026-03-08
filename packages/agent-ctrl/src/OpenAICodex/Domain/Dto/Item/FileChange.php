@@ -2,6 +2,8 @@
 
 namespace Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\Item;
 
+use Cognesy\AgentCtrl\Common\Value\Normalize;
+
 /**
  * File modification item
  *
@@ -31,12 +33,12 @@ final readonly class FileChange extends Item
     public static function fromArray(array $data): self
     {
         return new self(
-            id: (string)($data['id'] ?? ''),
-            status: (string)($data['status'] ?? 'completed'),
-            path: (string)($data['path'] ?? ''),
-            action: (string)($data['action'] ?? 'modify'),
-            content: isset($data['content']) ? (string)$data['content'] : null,
-            diff: isset($data['diff']) ? (string)$data['diff'] : null,
+            id: Normalize::toString($data['id'] ?? ''),
+            status: Normalize::toString($data['status'] ?? 'completed', 'completed'),
+            path: Normalize::toString($data['path'] ?? ''),
+            action: Normalize::toString($data['action'] ?? 'modify', 'modify'),
+            content: Normalize::toNullableString($data['content'] ?? null),
+            diff: Normalize::toNullableString($data['diff'] ?? null),
         );
     }
 }

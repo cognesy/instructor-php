@@ -13,7 +13,7 @@ $personSchema = SchemaBuilder::define('person')
     ->schema();
 
 $personModel = Structure::fromSchema($personSchema);
-// @doctest id="09db"
+// @doctest id="7c36"
 ```
 
 ## Schema Definition
@@ -35,7 +35,7 @@ $schema = SchemaBuilder::define('person')
         ->string('zip', required: false)
     )
     ->schema();
-// @doctest id="6722"
+// @doctest id="3da5"
 ```
 
 ## Extraction
@@ -51,7 +51,7 @@ $person = (new StructuredOutput)->with(
 )->get();
 
 $data = $person->toArray();
-// @doctest id="8f35"
+// @doctest id="8466"
 ```
 
 ## Runtime Value API

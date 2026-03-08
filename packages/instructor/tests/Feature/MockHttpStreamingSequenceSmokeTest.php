@@ -3,7 +3,7 @@
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Instructor\Extras\Sequence\Sequence as SequenceModel;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use PHPUnit\Framework\TestCase;
 
 final class MockHttpStreamingSequenceSmokeTest extends TestCase
@@ -34,8 +34,7 @@ final class MockHttpStreamingSequenceSmokeTest extends TestCase
         $sequenceModel = SequenceModel::of('SeqItem');
 
         $stream = (new StructuredOutput)
-            ->withRuntime(makeStructuredRuntime(httpClient: $http, llmDriver: 'openai'))
-            ->withOutputMode(OutputMode::Json)
+            ->withRuntime(makeStructuredRuntime(httpClient: $http, llmDriver: 'openai', outputMode: OutputMode::Json))
             ->with(
                 messages: 'Extract list of items',
                 responseModel: $sequenceModel,

@@ -3,7 +3,7 @@
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 
 
@@ -22,11 +22,10 @@ it('assembles streamed content into final typed value and accumulates usage', fu
     );
 
     $stream = (new StructuredOutput)
-        ->withRuntime(makeStructuredRuntime(driver: $driver))
+        ->withRuntime(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json))
         ->with(
             messages: 'Extract user',
             responseModel: StreamUserStruct::class,
-            mode: OutputMode::Json,
         )
         ->stream();
 
@@ -52,11 +51,10 @@ it('accumulates usage correctly via stream->usage() after iterating responses', 
     );
 
     $stream = (new StructuredOutput)
-        ->withRuntime(makeStructuredRuntime(driver: $driver))
+        ->withRuntime(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json))
         ->with(
             messages: 'Extract user',
             responseModel: StreamUserStruct::class,
-            mode: OutputMode::Json,
         )
         ->stream();
 

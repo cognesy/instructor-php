@@ -107,7 +107,7 @@ class InstructorTestCommand extends Command
     ): int {
         $ok = $this->components->task('Testing raw inference', function () use ($connection, $configProvider, $events, $httpClient) {
             try {
-                $response = InferenceRuntime::fromLLMConfig(
+                $response = InferenceRuntime::fromConfig(
                     config: $this->resolveLLMConfig($connection, $configProvider),
                     events: $events,
                     httpClient: $httpClient,

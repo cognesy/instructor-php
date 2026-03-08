@@ -2,10 +2,12 @@
 
 use Cognesy\Addons\Image\Image;
 use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\PendingStructuredOutput;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\StructuredOutputRuntime;
 
 it('should properly use toData() method on Image', function () {
     // Create a mock base64 image data
@@ -70,7 +72,11 @@ it('reproduces the missing messages parameter issue', function () {
     expect($messagesArray)->not->toBeEmpty();
     
     // Create StructuredOutput like toData() does
-    $structuredOutput = new StructuredOutput();
+    $structuredOutput = new StructuredOutput(
+        StructuredOutputRuntime::fromDefaults(
+            structuredConfig: (new StructuredOutputConfig())->withOutputMode(OutputMode::Tools),
+        ),
+    );
     
     // This is what toData() calls - verify it doesn't lose messages
     $pending = $structuredOutput->with(
@@ -79,7 +85,6 @@ it('reproduces the missing messages parameter issue', function () {
         prompt: 'Identify and assess damage',
         model: 'gpt-4o-mini',
         options: ['max_tokens' => 4096],
-        mode: OutputMode::Tools,
     );
     
     // Messages should still be present

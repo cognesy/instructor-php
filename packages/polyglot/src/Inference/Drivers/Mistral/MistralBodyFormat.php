@@ -6,7 +6,6 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanMapMessages;
 use Cognesy\Polyglot\Inference\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\Arrays;
 
 class MistralBodyFormat implements CanMapRequestBody
@@ -57,8 +56,8 @@ class MistralBodyFormat implements CanMapRequestBody
     // INTERNAL /////////////////////////////////////////////
 
     protected function toResponseFormat(InferenceRequest $request) : array {
-        $mode = $this->toResponseFormatMode($request);
-        if ($mode === null) {
+        $type = $this->toResponseFormatType($request);
+        if ($type === null) {
             return [];
         }
 
@@ -74,7 +73,13 @@ class MistralBodyFormat implements CanMapRequestBody
                 ],
             ]);
 
-        $result = $responseFormat->as($mode);
+        $result = match ($type) {
+            'json',
+            'json_object' => $responseFormat->asJsonObject(),
+            'json_schema' => $responseFormat->asJsonSchema(),
+            'text' => $responseFormat->asText(),
+            default => [],
+        };
         return array_filter($result, fn($value) => $value !== null && $value !== [] && $value !== '');
     }
 
@@ -106,36 +111,18 @@ class MistralBodyFormat implements CanMapRequestBody
         );
     }
 
-    protected function toResponseFormatMode(InferenceRequest $request) : ?OutputMode {
-        if (!$request->outputMode()?->is(OutputMode::Unrestricted)) {
-            return $request->outputMode();
-        }
-        if ($request->hasTextResponseFormat()) {
-            return OutputMode::Text;
-        }
+    protected function toResponseFormatType(InferenceRequest $request) : ?string {
         if (!$request->hasResponseFormat()) {
             return null;
         }
 
-        $responseFormat = $request->responseFormat();
-        $type = $responseFormat->type();
-        return match($type) {
-            'json' => OutputMode::Json,
-            'json_object' => OutputMode::Json,
-            'json_schema' => OutputMode::JsonSchema,
+        return match($request->responseFormat()->type()) {
+            'text' => 'text',
+            'json',
+            'json_object' => 'json_object',
+            'json_schema' => 'json_schema',
             default => null,
         };
     }
 
-    /**
-     * @return array{0: array<string, mixed>, 1: string, 2: bool}
-     */
-    protected function toSchemaData(InferenceRequest $request) : array {
-        $responseFormat = $request->responseFormat();
-        return [
-            $responseFormat->schemaFilteredWith($this->removeDisallowedEntries(...)),
-            $responseFormat->schemaName(),
-            $responseFormat->strict(),
-        ];
-    }
 }

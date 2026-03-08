@@ -256,15 +256,19 @@ For direct access to all events without Laravel's dispatcher:
 
 ```php
 use Cognesy\Instructor\Laravel\Facades\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
-$person = StructuredOutput::with(
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->wiretap(function ($event) {
+        // Called for every event
+        logger()->debug('Event: ' . get_class($event));
+    });
+
+$person = StructuredOutput::withRuntime($runtime)->with(
     messages: 'Extract person data...',
     responseModel: PersonData::class,
 )
-->wiretap(function ($event) {
-    // Called for every event
-    logger()->debug('Event: ' . get_class($event));
-})
 ->get();
 ```
 

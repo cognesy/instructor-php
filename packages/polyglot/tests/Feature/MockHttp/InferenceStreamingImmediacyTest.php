@@ -33,27 +33,27 @@ it('does not pre-buffer SSE stream before yielding first partial', function () {
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
     $stream = Inference::fromRuntime(
-        \Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http),
+        \Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http),
     )
         ->withModel('gpt-4o-mini')
         ->withMessages('Greet me')
         ->withStreaming(true)
         ->stream();
 
-    $iter = $stream->responses();
+    $iter = $stream->deltas();
     expect($iter->valid())->toBeTrue();
-    expect($iter->current()->content())->toBe('Hel');
+    expect($iter->current()->contentDelta)->toBe('Hel');
 
     // If stream is pre-buffered, the gated source would already throw above.
     $allowThirdChunk = true;
 
     $iter->next();
     expect($iter->valid())->toBeTrue();
-    expect($iter->current()->content())->toBe('Hello');
+    expect($iter->current()->contentDelta)->toBe('lo');
 
     $iter->next();
     expect($iter->valid())->toBeTrue();
-    expect($iter->current()->content())->toBe('Hello!');
+    expect($iter->current()->contentDelta)->toBe('!');
 
     $iter->next();
     expect($iter->valid())->toBeFalse();

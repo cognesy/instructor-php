@@ -21,6 +21,7 @@ use Cognesy\Logging\Pipeline\LoggingPipeline;
 use Cognesy\Logging\Writers\PsrLoggerWriter;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Polyglot\Embeddings\Embeddings;
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\EmbeddingsRuntime;
 use Illuminate\Http\Request;
 use Monolog\Handler\StreamHandler;
@@ -56,7 +57,7 @@ $events = new EventDispatcher();
 $events->wiretap($pipeline);
 
 $embeddings = Embeddings::fromRuntime(
-    EmbeddingsRuntime::fromEmbeddingsConfig(config: EmbeddingsConfig::fromPreset('openai'), events: $events)
+    EmbeddingsRuntime::fromConfig(config: EmbeddingsConfig::fromPreset('openai'), events: $events)
 );
 
 echo "🚀 Starting Embeddings generation...\n";

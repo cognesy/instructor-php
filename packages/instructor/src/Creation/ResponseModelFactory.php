@@ -222,7 +222,7 @@ class ResponseModelFactory
             $schemaClass === null => true,
             $schemaClass === \stdClass::class => true,
             $schemaClass === Structure::class => true,
-            is_string($schemaClass) && is_subclass_of($schemaClass, Structure::class) => true,
+            is_subclass_of($schemaClass, Structure::class) => true,
             default => false,
         };
         [$class, $instance] = match (true) {
@@ -455,10 +455,6 @@ class ResponseModelFactory
     }
 
     private function resolveOutputFormat(?OutputFormat $outputFormat, Schema $schema) : ?OutputFormat {
-        if ($outputFormat !== null) {
-            return $outputFormat;
-        }
-        $returnedClass = TypeInfo::className($schema->type) ?? '';
-        return $returnedClass === '' ? OutputFormat::array() : null;
+        return $outputFormat;
     }
 }

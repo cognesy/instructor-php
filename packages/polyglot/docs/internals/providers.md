@@ -62,12 +62,9 @@ $runtime = InferenceRuntime::fromProvider($provider);
 Inference runtime factories:
 
 - `fromProvider(...)`
-- `fromResolver(...)`
 - `fromConfig(...)`
-- `fromLLMConfig(...)`, `using(...)`
-- `fromDsn(...)`
 
-Embeddings runtime provides the same entry points via `EmbeddingsRuntime`.
+Embeddings runtime provides the same public entry points via `EmbeddingsRuntime`.
 
 ## Driver Contracts
 

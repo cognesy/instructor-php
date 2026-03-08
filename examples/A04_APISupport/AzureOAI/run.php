@@ -17,7 +17,9 @@ using Azure OpenAI service console.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 enum UserType : string {
     case Guest = 'guest';
@@ -34,7 +36,10 @@ class User {
     public array $hobbies;
 }
 
-$structuredOutput = StructuredOutput::using('azure');
+$structuredOutput = new StructuredOutput(
+    StructuredOutputRuntime::fromProvider(LLMProvider::using('azure'))
+        ->withOutputMode(OutputMode::Json)
+);
 
 // Call with your model name and preferred execution mode
 $user = $structuredOutput->with(
@@ -45,7 +50,6 @@ $user = $structuredOutput->with(
         'output' => ['age' => 30, 'name' => 'Frank', 'username' => 'frank@hk.ch', 'role' => 'developer', 'hobbies' => ['playing drums'],],
     ]],
     model: 'gpt-4o-mini', // set your own value/source
-    mode: OutputMode::Json,
 )->get();
 
 print("Completed response model:\n\n");

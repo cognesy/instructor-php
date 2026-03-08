@@ -178,26 +178,40 @@ $contact = StructuredOutput::with(
 Different LLMs support different output modes:
 
 ```php
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
+
+$jsonSchemaRuntime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withOutputMode(OutputMode::JsonSchema);
+
+$toolsRuntime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withOutputMode(OutputMode::Tools);
+
+$jsonRuntime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withOutputMode(OutputMode::Json);
+
+$mdJsonRuntime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withOutputMode(OutputMode::MdJson);
 
 // JSON Schema mode (recommended for OpenAI)
-$result = StructuredOutput::with(...)
-    ->withOutputMode(OutputMode::JsonSchema)
+$result = StructuredOutput::withRuntime($jsonSchemaRuntime)
+    ->with(...)
     ->get();
 
 // Tool/Function calling mode
-$result = StructuredOutput::with(...)
-    ->withOutputMode(OutputMode::Tools)
+$result = StructuredOutput::withRuntime($toolsRuntime)
+    ->with(...)
     ->get();
 
 // Simple JSON mode
-$result = StructuredOutput::with(...)
-    ->withOutputMode(OutputMode::Json)
+$result = StructuredOutput::withRuntime($jsonRuntime)
+    ->with(...)
     ->get();
 
 // Markdown JSON (for Gemini)
-$result = StructuredOutput::with(...)
-    ->withOutputMode(OutputMode::MdJson)
+$result = StructuredOutput::withRuntime($mdJsonRuntime)
+    ->with(...)
     ->get();
 ```
 

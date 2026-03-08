@@ -16,7 +16,7 @@ to a large language model (LLM) for various tasks, including search and text gen
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 
 enum UserType : string {
     case Guest = 'guest';

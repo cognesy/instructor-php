@@ -15,10 +15,9 @@ use Illuminate\Support\Facades\Facade;
  * Facade for Inference
  *
  * @method static \Cognesy\Polyglot\Inference\Inference connection(string $name)
- * @method static \Cognesy\Polyglot\Inference\Inference fromLLMConfig(\Cognesy\Polyglot\Inference\Config\LLMConfig $config)
+ * @method static \Cognesy\Polyglot\Inference\Inference fromConfig(\Cognesy\Polyglot\Inference\Config\LLMConfig $config)
  * @method static \Cognesy\Polyglot\Inference\Inference withRuntime(\Cognesy\Polyglot\Inference\Contracts\CanCreateInference $runtime)
- * @method static \Cognesy\Polyglot\Inference\Contracts\CanCreateInference runtime()
- * @method static \Cognesy\Polyglot\Inference\Inference with(string|array $messages = [], string $model = '', array $tools = [], string|array $toolChoice = [], array $responseFormat = [], array $options = [], ?\Cognesy\Polyglot\Inference\Enums\OutputMode $mode = null)
+ * @method static \Cognesy\Polyglot\Inference\Inference with(string|array $messages = [], string $model = '', array $tools = [], string|array $toolChoice = [], array $responseFormat = [], array $options = [])
  * @method static \Cognesy\Polyglot\Inference\Inference withMessages(string|array|\Cognesy\Messages\Message|\Cognesy\Messages\Messages $messages)
  * @method static \Cognesy\Polyglot\Inference\Inference withModel(string $model)
  * @method static \Cognesy\Polyglot\Inference\Inference withTools(array $tools)
@@ -26,7 +25,6 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Cognesy\Polyglot\Inference\Inference withResponseFormat(array $responseFormat)
  * @method static \Cognesy\Polyglot\Inference\Inference withMaxTokens(int $maxTokens)
  * @method static \Cognesy\Polyglot\Inference\Inference withOptions(array $options)
- * @method static \Cognesy\Polyglot\Inference\Inference withOutputMode(\Cognesy\Polyglot\Inference\Enums\OutputMode $mode)
  * @method static \Cognesy\Polyglot\Inference\Inference withStreaming(bool $streaming = true)
  * @method static \Cognesy\Polyglot\Inference\Inference withRetryPolicy(\Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy $retryPolicy)
  * @method static \Cognesy\Polyglot\Inference\Inference withResponseCachePolicy(\Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy $policy)
@@ -47,7 +45,7 @@ class Inference extends Facade
     /**
      * Create facade instance from explicit typed LLM config.
      */
-    public static function fromLLMConfig(LLMConfig $config): BaseInference|InferenceFake
+    public static function fromConfig(LLMConfig $config): BaseInference|InferenceFake
     {
         $root = static::getFacadeRoot();
         if ($root instanceof InferenceFake) {
@@ -66,7 +64,7 @@ class Inference extends Facade
      */
     public static function connection(string $name): BaseInference|InferenceFake
     {
-        return static::fromLLMConfig(static::resolveLLMConfig($name));
+        return static::fromConfig(static::resolveLLMConfig($name));
     }
 
     /**

@@ -2,7 +2,6 @@
 
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Inference;
 
 it('Gemini golden: tools + JSON mode + streaming functionCall', function () {
@@ -33,11 +32,11 @@ it('Gemini golden: tools + JSON mode + streaming functionCall', function () {
         ]
     ]];
 
-    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromLLMConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('gemini'), httpClient: $http))
+    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('gemini'), httpClient: $http))
         ->withModel('gemini-1.5-flash')
         ->withTools($tools)
         ->withToolChoice('auto')
-        ->withOutputMode(OutputMode::Json)
+        ->withResponseFormat(['type' => 'json_object'])
         ->withMessages([
             ['role' => 'system', 'content' => 'You are helpful.'],
             ['role' => 'user', 'content' => 'Search hello']
@@ -45,7 +44,7 @@ it('Gemini golden: tools + JSON mode + streaming functionCall', function () {
         ->withStreaming(true)
         ->stream();
 
-    iterator_to_array($stream->responses());
+    iterator_to_array($stream->deltas());
     $final = $stream->final();
 
     expect($final)->not->toBeNull();
@@ -55,4 +54,3 @@ it('Gemini golden: tools + JSON mode + streaming functionCall', function () {
     expect($tool->name())->toBe('search');
     expect($tool->value('q'))->toBe('Hello');
 });
-

@@ -6,6 +6,8 @@ use Cognesy\Instructor\Extraction\Data\ExtractionInput;
 use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 /**
  * Custom extractor that extracts JSON from XML-like wrappers.
@@ -61,17 +63,20 @@ class Person {
 
 echo "=== Example 2: Custom extractor with streaming updates ===\n\n";
 
-$stream = StructuredOutput::using('openai')
-    ->withResponseClass(Person::class)
-    ->withExtractors(
-        new DirectJsonExtractor(),
-        new XmlJsonExtractor('json'),
+$stream = new StructuredOutput(
+        StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
+            ->withExtractors([
+                new DirectJsonExtractor(),
+                new XmlJsonExtractor('json'),
+            ])
     )
+    ->withResponseClass(Person::class)
     ->withMessages("Extract person data...")
     ->stream();
 
 foreach ($stream->responses() as $partial) {
-    $name = $partial->name ?? '...';
+    $value = $partial->value();
+    $name = is_object($value) ? ($value->name ?? '...') : '...';
     echo "Partial: {$name}\n";
 }
 

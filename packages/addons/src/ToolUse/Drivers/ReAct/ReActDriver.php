@@ -27,7 +27,6 @@ use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\Usage;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\PendingInference;
 use Cognesy\Utils\Result\Result;
 
@@ -230,7 +229,6 @@ final class ReActDriver implements CanUseTools
             messages: $finalMessages,
             model: $this->finalModel ?: $this->model,
             options: $this->finalOptions ?: $this->options,
-            mode: OutputMode::Text,
         );
 
         return $this->inference->create($request);

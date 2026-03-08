@@ -6,7 +6,9 @@ use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Instructor\Enums\OutputMode;
 
 /**
  * Test-only driver that returns a provided iterator for streaming
@@ -27,19 +29,29 @@ class ProbeStreamDriver implements CanProcessInferenceRequest
         return $this->syncResponse ?? new InferenceResponse(content: '');
     }
 
-    public function makeStreamResponsesFor(InferenceRequest $request): iterable {
+    public function makeStreamDeltasFor(InferenceRequest $request): iterable {
         $this->streamCalls++;
-        return $this->iterator; // single live iterator instance
+        foreach ($this->iterator as $item) {
+            yield match (true) {
+                $item instanceof PartialInferenceDelta => $item,
+                $item instanceof PartialInferenceResponse => new PartialInferenceDelta(
+                    contentDelta: $item->contentDelta,
+                    reasoningContentDelta: $item->reasoningContentDelta,
+                    toolId: $item->toolId(),
+                    toolName: $item->toolName(),
+                    toolArgs: $item->toolArgs(),
+                    finishReason: $item->finishReason(),
+                    usage: $item->usage(),
+                    usageIsCumulative: $item->isUsageCumulative(),
+                    value: $item->value(),
+                ),
+                default => throw new \InvalidArgumentException('ProbeStreamDriver expects partial responses or deltas.'),
+            };
+        }
     }
 
     public function capabilities(?string $model = null): DriverCapabilities
     {
-        return new DriverCapabilities(
-            outputModes: OutputMode::cases(),
-            streaming: true,
-            toolCalling: true,
-            jsonSchema: true,
-            responseFormatWithTools: true,
-        );
+        return new DriverCapabilities();
     }
 }

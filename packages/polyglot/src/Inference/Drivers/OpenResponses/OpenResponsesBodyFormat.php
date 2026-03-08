@@ -8,7 +8,6 @@ use Cognesy\Polyglot\Inference\Contracts\CanMapMessages;
 use Cognesy\Polyglot\Inference\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\Arrays;
 
 /**
@@ -100,10 +99,6 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
         return true;
     }
 
-    protected function supportsStructuredOutput(InferenceRequest $request): bool {
-        return true;
-    }
-
     protected function supportsAlternatingRoles(InferenceRequest $request): bool {
         return true;
     }
@@ -150,24 +145,23 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
      * Convert response format to OpenResponses text.format structure.
      */
     protected function toTextFormat(InferenceRequest $request): array {
-        $mode = $this->toResponseFormatMode($request);
-        if ($mode === null) {
+        $type = $this->toResponseFormatType($request);
+        if ($type === null) {
             return [];
         }
 
         $responseFormat = $request->responseFormat();
-        if (!($responseFormat instanceof ResponseFormat)) {
-            return [];
-        }
-
-        return match($mode) {
-            OutputMode::Text => ['format' => ['type' => 'text']],
-            OutputMode::Json => ['format' => ['type' => 'json_object']],
-            OutputMode::JsonSchema => [
+        return match($type) {
+            'text' => ['format' => ['type' => 'text']],
+            'json',
+            'json_object' => ['format' => ['type' => 'json_object']],
+            'json_schema' => [
                 'format' => [
                     'type' => 'json_schema',
                     'name' => $responseFormat->schemaName(),
-                    'schema' => $this->removeDisallowedEntries($responseFormat->schema()),
+                    'schema' => $this->normalizeSchemaForResponses(
+                        $this->removeDisallowedEntries($responseFormat->schema()),
+                    ),
                     'strict' => $responseFormat->strict(),
                 ],
             ],
@@ -220,6 +214,62 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
         );
     }
 
+    protected function normalizeSchemaForResponses(array $schema): array {
+        $properties = $schema['properties'] ?? null;
+        if (is_array($properties)) {
+            $normalizedProperties = [];
+            foreach ($properties as $name => $propertySchema) {
+                $normalizedProperties[$name] = is_array($propertySchema)
+                    ? $this->normalizeSchemaForResponses($propertySchema)
+                    : $propertySchema;
+            }
+            $schema['properties'] = $normalizedProperties;
+            $schema['required'] = array_keys($normalizedProperties);
+        }
+
+        $items = $schema['items'] ?? null;
+        if (is_array($items)) {
+            $schema['items'] = $this->normalizeSchemaForResponses($items);
+        }
+
+        $additionalProperties = $schema['additionalProperties'] ?? null;
+        if (is_array($additionalProperties)) {
+            $schema['additionalProperties'] = $this->normalizeSchemaForResponses($additionalProperties);
+        }
+
+        foreach (['$defs', 'definitions'] as $key) {
+            $definitions = $schema[$key] ?? null;
+            if (!is_array($definitions)) {
+                continue;
+            }
+
+            $normalizedDefinitions = [];
+            foreach ($definitions as $definitionName => $definitionSchema) {
+                $normalizedDefinitions[$definitionName] = is_array($definitionSchema)
+                    ? $this->normalizeSchemaForResponses($definitionSchema)
+                    : $definitionSchema;
+            }
+            $schema[$key] = $normalizedDefinitions;
+        }
+
+        foreach (['anyOf', 'oneOf', 'allOf', 'prefixItems'] as $key) {
+            $variants = $schema[$key] ?? null;
+            if (!is_array($variants)) {
+                continue;
+            }
+
+            $normalizedVariants = [];
+            foreach ($variants as $variant) {
+                $normalizedVariants[] = is_array($variant)
+                    ? $this->normalizeSchemaForResponses($variant)
+                    : $variant;
+            }
+            $schema[$key] = $normalizedVariants;
+        }
+
+        return $schema;
+    }
+
     protected function resolveMaxOutputTokens(array $options): ?int {
         $resolved = $options['max_output_tokens']
             ?? $options['max_completion_tokens']
@@ -249,27 +299,16 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
         return $requestBody;
     }
 
-    protected function toResponseFormatMode(InferenceRequest $request): ?OutputMode {
-        if (!$request->outputMode()?->is(OutputMode::Unrestricted)) {
-            return $request->outputMode();
-        }
-        if ($request->hasTextResponseFormat()) {
-            return OutputMode::Text;
-        }
+    protected function toResponseFormatType(InferenceRequest $request): ?string {
         if (!$request->hasResponseFormat()) {
             return null;
         }
 
-        $responseFormat = $request->responseFormat();
-        if (!($responseFormat instanceof ResponseFormat)) {
-            return null;
-        }
-
-        $type = $responseFormat->type();
-        return match($type) {
-            'json' => OutputMode::Json,
-            'json_object' => OutputMode::Json,
-            'json_schema' => OutputMode::JsonSchema,
+        return match($request->responseFormat()->type()) {
+            'text' => 'text',
+            'json',
+            'json_object' => 'json_object',
+            'json_schema' => 'json_schema',
             default => null,
         };
     }

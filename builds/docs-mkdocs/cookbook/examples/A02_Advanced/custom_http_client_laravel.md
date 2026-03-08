@@ -13,7 +13,7 @@ require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Illuminate\Http\Client\Factory;

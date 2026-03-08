@@ -5,6 +5,7 @@ use Cognesy\Http\Collections\HttpRequestList;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Drivers\Guzzle\GuzzlePool;
+use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Success;
@@ -169,6 +170,66 @@ test('pool with empty request array', function() {
 test('pool with invalid request type', function() {
     expect(fn() => HttpRequestList::of('invalid-request'))
         ->toThrow(\TypeError::class);
+});
+
+test('pool dispatches HttpRequestFailed event on rejection', function() {
+    $this->mockHandler->append(
+        new Response(200, [], 'OK'),
+        new RequestException('Connection refused', new Request('GET', $this->baseUrl . '/get?test=2')),
+    );
+
+    $requests = HttpRequestList::of(
+        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], []),
+    );
+
+    $captured = [];
+    $this->events->addListener(HttpRequestFailed::class, function(HttpRequestFailed $e) use (&$captured) {
+        $captured[] = $e;
+    });
+
+    $results = $this->pool->pool($requests);
+    $resultArray = $results->all();
+
+    expect($resultArray[0])->toBeInstanceOf(Success::class);
+    expect($resultArray[1])->toBeInstanceOf(Failure::class);
+    expect($captured)->toHaveCount(1);
+    expect($captured[0]->data['url'])->toBe($this->baseUrl . '/get?test=2');
+    expect($captured[0]->data['method'])->toBe('GET');
+    expect($captured[0]->data['errors'])->toBe('Connection refused');
+});
+
+test('pool dispatches HttpRequestFailed event even when failOnError is true', function() {
+    $config = new HttpClientConfig(
+        driver: 'guzzle',
+        maxConcurrent: 3,
+        poolTimeout: 30,
+        failOnError: true,
+    );
+
+    $events = new EventDispatcher();
+    $pool = new GuzzlePool(
+        $config,
+        new Client(['handler' => HandlerStack::create($this->mockHandler)]),
+        $events,
+    );
+
+    $this->mockHandler->append(
+        new RequestException('Server error', new Request('POST', $this->baseUrl . '/post')),
+    );
+
+    $requests = HttpRequestList::of(
+        new HttpRequest($this->baseUrl . '/post', 'POST', [], '{}', []),
+    );
+
+    $captured = [];
+    $events->addListener(HttpRequestFailed::class, function(HttpRequestFailed $e) use (&$captured) {
+        $captured[] = $e;
+    });
+
+    expect(fn() => $pool->pool($requests))->toThrow(HttpRequestException::class);
+    expect($captured)->toHaveCount(1);
+    expect($captured[0]->data['errors'])->toBe('Server error');
 });
 
 // Clean up server after all tests complete

@@ -16,7 +16,7 @@ You can install it using Composer:
 
 ```bash
 composer require cognesy/instructor-polyglot
-# @doctest id="d39d"
+# @doctest id="4841"
 ```
 
 This will install Polyglot along with its dependencies.
@@ -53,14 +53,20 @@ ANTHROPIC_API_KEY=sk-ant-your-anthropic-key
 MISTRAL_API_KEY=your-mistral-key
 GEMINI_API_KEY=your-gemini-key
 # etc.
-# @doctest id="973e"
+# @doctest id="0f6e"
 ```
 
 ### Configuration Files
 
-Polyglot loads its configuration from PHP files.
+Polyglot loads configuration from package-scoped YAML files.
 
-The default configuration files are located in the Instructor package, but you can publish and customize them:
+The default configuration files are located under package resources, for example:
+- `packages/polyglot/resources/config/llm/default.yaml`
+- `packages/polyglot/resources/config/llm/presets/*.yaml`
+- `packages/polyglot/resources/config/embed/default.yaml`
+- `packages/polyglot/resources/config/embed/presets/*.yaml`
+
+You can publish and customize them:
 
 1. Create a `config` directory in your project if it doesn't exist
 2. Copy the configuration files from the Instructor package:
@@ -69,9 +75,10 @@ The default configuration files are located in the Instructor package, but you c
 # Create config directory if it doesn't exist
 mkdir -p config
 
-# Copy configuration files
-cp vendor/cognesy/instructor-polyglot/config/* config/
-# @doctest id="e468"
+# Copy polyglot YAML config trees
+cp -r vendor/cognesy/instructor-php/packages/polyglot/resources/config/llm config/llm
+cp -r vendor/cognesy/instructor-php/packages/polyglot/resources/config/embed config/embed
+# @doctest id="e5ee"
 ```
 
 3. Customize the configuration files as needed
@@ -79,73 +86,31 @@ cp vendor/cognesy/instructor-polyglot/config/* config/
 
 #### LLM Configuration
 
-The `llm.php` configuration file contains settings for LLM providers:
+The `llm/presets/*.yaml` files contain provider presets. Example (`config/llm/presets/openai.yaml`):
 
-```php
-<?php
-// Example of a simplified config/llm.php
-
-use Cognesy\Config\Env;
-
-return [
-    'defaultPreset' => 'openai',  // Default connection to use
-
-    'presets' => [
-        'openai' => [
-            'driver' => 'openai',
-            'apiUrl' => 'https://api.openai.com/v1',
-            'apiKey' => Env::get('OPENAI_API_KEY', ''),
-            'endpoint' => '/chat/completions',
-            'model' => 'gpt-4o-mini',
-            'maxTokens' => 1024,
-        ],
-
-        'anthropic' => [
-            'driver' => 'anthropic',
-            'apiUrl' => 'https://api.anthropic.com/v1',
-            'apiKey' => Env::get('ANTHROPIC_API_KEY', ''),
-            'endpoint' => '/messages',
-            'metadata' => [
-                'apiVersion' => '2023-06-01',
-            ],
-            'model' => 'claude-3-haiku-20240307',
-            'maxTokens' => 1024,
-        ],
-
-        // Other connections...
-    ],
-];
-// @doctest id="9a37"
+```yaml
+driver: openai
+apiUrl: 'https://api.openai.com/v1'
+apiKey: '${OPENAI_API_KEY}'
+endpoint: /chat/completions
+model: gpt-4.1-nano
+maxTokens: 1024
+# @doctest id="da3d"
 ```
 
 #### Embeddings Configuration
 
-The `embed.php` configuration file contains settings for embeddings providers:
+The `embed/presets/*.yaml` files contain embeddings presets. Example (`config/embed/presets/openai.yaml`):
 
-```php
-<?php
-// Example of a simplified config/embed.php
-
-use Cognesy\Config\Env;
-
-return [
-    'defaultPreset' => 'openai',
-
-    'presets' => [
-        'openai' => [
-            'driver' => 'openai',
-            'apiUrl' => 'https://api.openai.com/v1',
-            'apiKey' => Env::get('OPENAI_API_KEY', ''),
-            'endpoint' => '/embeddings',
-            'model' => 'text-embedding-3-small',
-            'dimensions' => 1536,
-            'maxInputs' => 16,
-        ],
-
-        // Other connections...
-    ],
-];
-// @doctest id="1b5f"
+```yaml
+driver: openai
+apiUrl: 'https://api.openai.com/v1'
+apiKey: '${OPENAI_API_KEY}'
+endpoint: /embeddings
+model: text-embedding-3-small
+dimensions: 1536
+maxInputs: 2048
+# @doctest id="b9c7"
 ```
 
 ### Custom Configuration Location
@@ -154,7 +119,7 @@ By default, Polyglot looks for custom configuration files in the `config` direct
 
 ```shell
 INSTRUCTOR_CONFIG_PATHS='/path/to/your/config,alternative/path'
-# @doctest id="2f01"
+# @doctest id="bcbe"
 ```
 
 ### Overriding Configuration Location
@@ -168,7 +133,7 @@ $loader = ConfigLoader::fromPaths(
     __DIR__ . '/config/llm/presets/openai.yaml',
     __DIR__ . '/config/embed/presets/openai.yaml',
 );
-// @doctest id="fdd8"
+// @doctest id="14ec"
 ```
 
 
@@ -194,7 +159,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $result = (new Inference)
     ->withMessages('Say hello.')
     ->get();
-// @doctest id="cc51"
+// @doctest id="7ae3"
 ```
 
 If you see a friendly greeting, your installation is working correctly!

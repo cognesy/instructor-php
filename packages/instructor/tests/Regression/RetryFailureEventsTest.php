@@ -8,7 +8,7 @@ use Cognesy\Instructor\Exceptions\StructuredOutputRecoveryException;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Tests\Addons\Support\FakeInferenceDriver;
 
 // Minimal DTOs

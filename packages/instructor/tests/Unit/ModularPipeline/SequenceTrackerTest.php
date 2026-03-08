@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Instructor\Contracts\Sequenceable;
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\SequenceTracker;
+use Cognesy\Instructor\Streaming\Sequence\SequenceTracker;
 
 final class CountingSequence implements Sequenceable
 {
@@ -31,6 +31,11 @@ final class CountingSequence implements Sequenceable
     #[\Override]
     public function toArray(): array {
         return $this->items;
+    }
+
+    #[\Override]
+    public function get(int $index): mixed {
+        return $this->items[$index] ?? null;
     }
 
     #[\Override]

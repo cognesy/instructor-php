@@ -28,6 +28,9 @@ if (!function_exists('makeStructuredRuntime')) {
         ?\Cognesy\Http\HttpClient $httpClient = null,
         ?string $llmDriver = null,
         ?\Cognesy\Instructor\Config\StructuredOutputConfig $config = null,
+        ?\Cognesy\Instructor\Enums\OutputMode $outputMode = null,
+        ?int $maxRetries = null,
+        ?bool $defaultToStdClass = null,
         array $extractors = [],
         array $validators = [],
         array $transformers = [],
@@ -41,11 +44,22 @@ if (!function_exists('makeStructuredRuntime')) {
             $provider = $provider->withDriver($driver);
         }
 
+        $structuredConfig = $config ?? new \Cognesy\Instructor\Config\StructuredOutputConfig();
+        if ($outputMode !== null) {
+            $structuredConfig = $structuredConfig->withOutputMode($outputMode);
+        }
+        if ($maxRetries !== null) {
+            $structuredConfig = $structuredConfig->withMaxRetries($maxRetries);
+        }
+        if ($defaultToStdClass !== null) {
+            $structuredConfig = $structuredConfig->with(defaultToStdClass: $defaultToStdClass);
+        }
+
         $runtime = \Cognesy\Instructor\StructuredOutputRuntime::fromProvider(
             provider: $provider,
             events: $events,
             httpClient: $httpClient,
-            structuredConfig: $config,
+            structuredConfig: $structuredConfig,
         );
 
         if (!empty($validators)) {

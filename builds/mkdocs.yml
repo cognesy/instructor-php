@@ -159,6 +159,7 @@ nav:
           - { Overview: packages/polyglot/overview.md }
           - { Quickstart: packages/polyglot/quickstart.md }
           - { Setup: packages/polyglot/setup.md }
+          - { Upgrade: packages/polyglot/upgrade.md }
           - { Essentials: [{ Overview: packages/polyglot/essentials/overview.md }, { 'Inference Class': packages/polyglot/essentials/inference-class.md }, { 'Creating Requests': packages/polyglot/essentials/creating-requests.md }, { 'Request Options': packages/polyglot/essentials/request-options.md }, { 'Response Handling': packages/polyglot/essentials/response-handling.md }] }
           - { Modes: [{ Overview: packages/polyglot/modes/overview.md }, { Tools: packages/polyglot/modes/tools.md }, { 'Json Schema': packages/polyglot/modes/json-schema.md }, { Json: packages/polyglot/modes/json.md }, { 'Md Json': packages/polyglot/modes/md-json.md }, { Text: packages/polyglot/modes/text.md }] }
           - { Streaming: [{ Overview: packages/polyglot/streaming/overview.md }, { Misc: packages/polyglot/streaming/misc.md }] }

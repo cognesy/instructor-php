@@ -15,12 +15,12 @@ use Cognesy\Polyglot\Inference\Inference;
 $text = (new Inference())
     ->withMessages('What is the capital of France?')
     ->get();
-// @doctest id="d635"
+// @doctest id="b1b5"
 ```
 
 ## Use a Specific Preset
 
-Presets come from `config/llm.php`.
+Presets come from `config/llm/presets/*.yaml`.
 
 ```php
 <?php
@@ -29,7 +29,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $text = Inference::using('openai')
     ->withMessages('Give me three deployment checklist items.')
     ->get();
-// @doctest id="0fc2"
+// @doctest id="64cf"
 ```
 
 ## Override Model and Options Per Request
@@ -45,7 +45,7 @@ $text = (new Inference())
         options: ['temperature' => 0.2, 'max_tokens' => 120],
     )
     ->get();
-// @doctest id="0acc"
+// @doctest id="b7d3"
 ```
 
 ## Stream Output
@@ -59,10 +59,10 @@ $stream = (new Inference())
     ->withStreaming()
     ->stream();
 
-foreach ($stream->responses() as $partial) {
-    echo $partial->contentDelta;
+foreach ($stream->deltas() as $delta) {
+    echo $delta->contentDelta;
 }
-// @doctest id="688c"
+// @doctest id="6f17"
 ```
 
 ## Switch Providers at Runtime
@@ -78,7 +78,7 @@ foreach ($presets as $preset) {
         ->withMessages('One sentence: what is dependency injection?')
         ->get();
 }
-// @doctest id="823f"
+// @doctest id="522e"
 ```
 
 ## See Also

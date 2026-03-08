@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Creation;
 
 use Cognesy\Instructor\Config\StructuredOutputConfig;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 
 class StructuredOutputConfigBuilder

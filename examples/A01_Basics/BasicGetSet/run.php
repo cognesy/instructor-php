@@ -19,6 +19,8 @@ and default value to determine if property is required.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Schema\Attributes\Description;
 
 class UserWithSetter
@@ -72,10 +74,12 @@ $text = <<<TEXT
     TEXT;
 
 
-$user = StructuredOutput::using('openai')
+$user = new StructuredOutput(
+        StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
+            ->withMaxRetries(2)
+    )
     ->withMessages($text)
     ->withResponseClass(UserWithSetter::class)
-    ->withMaxRetries(2)
     ->get();
 
 dump($user);

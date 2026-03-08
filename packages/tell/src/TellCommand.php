@@ -40,8 +40,8 @@ class TellCommand extends Command
             default => $this->inferenceUsingDSN($dsn, $prompt),
         };
 
-        foreach ($response->stream()->responses() as $partialResponse) {
-            $output->write($partialResponse->contentDelta);
+        foreach ($response->stream()->deltas() as $delta) {
+            $output->write($delta->contentDelta);
         }
         $output->writeln('');
 
@@ -51,7 +51,7 @@ class TellCommand extends Command
     protected function inferenceUsingDSN(string $dsn, string $prompt) : PendingInference {
         $config = LLMConfig::fromArray(Dsn::fromString($dsn)->toArray());
 
-        return InferenceRuntime::fromLLMConfig($config)->create(new InferenceRequest(
+        return InferenceRuntime::fromConfig($config)->create(new InferenceRequest(
             messages: $prompt,
             options: ['stream' => true],
         ));
@@ -63,7 +63,7 @@ class TellCommand extends Command
             'model' => $model,
         ]);
 
-        return InferenceRuntime::fromLLMConfig($config)->create(new InferenceRequest(
+        return InferenceRuntime::fromConfig($config)->create(new InferenceRequest(
             messages: $prompt,
             options: ['stream' => true],
         ));

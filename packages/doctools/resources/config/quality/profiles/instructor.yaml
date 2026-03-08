@@ -9,8 +9,8 @@ rules:
   - id: instructor.no_structuredoutput_fromdsn
     engine: regex
     scope: markdown
-    pattern: '/\bStructuredOutput::fromDsn\s*\(/'
-    message: 'Use StructuredOutputRuntime::fromDsn(...) and pass runtime to StructuredOutput.'
+    pattern: '/\bStructuredOutputRuntime::fromDsn\s*\(/'
+    message: 'Use LLMConfig::fromDsn(...), then pass StructuredOutputRuntime::fromConfig(...) into StructuredOutput.'
 
   - id: instructor.no_structuredoutput_fromruntime
     engine: regex
@@ -47,4 +47,3 @@ rules:
     scope: markdown
     pattern: '/\bwithLLMConfigOverrides\s*\(/'
     message: 'Use `withConfigOverrides(...)` on LLMProvider.'
-

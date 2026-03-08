@@ -6,7 +6,6 @@ use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Drivers\BaseInferenceRequestDriver;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 class GeminiDriver extends BaseInferenceRequestDriver
@@ -39,10 +38,11 @@ class GeminiDriver extends BaseInferenceRequestDriver
     #[\Override]
     public function capabilities(?string $model = null): DriverCapabilities {
         return new DriverCapabilities(
-            outputModes: OutputMode::cases(),
             streaming: true,
             toolCalling: true,
-            jsonSchema: true,
+            toolChoice: true,
+            responseFormatJsonObject: true,
+            responseFormatJsonSchema: true,
             responseFormatWithTools: false,
         );
     }

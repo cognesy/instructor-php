@@ -18,8 +18,8 @@ class HuggingFaceBodyFormat extends OpenAICompatibleBodyFormat
 
     #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
-        $mode = $this->toResponseFormatMode($request);
-        if ($mode === null) {
+        $type = $this->toResponseFormatType($request);
+        if ($type === null) {
             return [];
         }
 
@@ -30,6 +30,6 @@ class HuggingFaceBodyFormat extends OpenAICompatibleBodyFormat
                 'value' => $this->removeDisallowedEntries($request->responseFormat()->schema()),
             ]);
 
-        return $responseFormat->as($mode);
+        return $this->renderResponseFormatForType($responseFormat, $type);
     }
 }
