@@ -8,12 +8,9 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Streaming\StreamingUsageState;
-use Cognesy\Utils\Profiler\TracksObjectCreation;
 
 final class StructuredOutputStreamState
 {
-    use TracksObjectCreation;
-
     private string $content = '';
     private string $reasoningContent = '';
     private string $finishReason = '';
@@ -35,7 +32,6 @@ final class StructuredOutputStreamState
     public function __construct()
     {
         $this->usage = new StreamingUsageState();
-        $this->trackObjectCreation();
     }
 
     public static function empty(): self

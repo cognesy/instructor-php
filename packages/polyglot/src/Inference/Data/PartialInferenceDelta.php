@@ -3,15 +3,12 @@
 namespace Cognesy\Polyglot\Inference\Data;
 
 use Cognesy\Http\Data\HttpResponse;
-use Cognesy\Utils\Profiler\TracksObjectCreation;
 
 /**
  * Typed delta payload parsed from one streaming event.
  */
 final readonly class PartialInferenceDelta
 {
-    use TracksObjectCreation;
-
     public function __construct(
         public string $contentDelta = '',
         public string $reasoningContentDelta = '',
@@ -23,7 +20,5 @@ final readonly class PartialInferenceDelta
         public bool $usageIsCumulative = false,
         public ?HttpResponse $responseData = null,
         public mixed $value = null,
-    ) {
-        $this->trackObjectCreation();
-    }
+    ) {}
 }

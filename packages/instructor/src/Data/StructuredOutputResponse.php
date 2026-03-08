@@ -7,12 +7,9 @@ use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
-use Cognesy\Utils\Profiler\TracksObjectCreation;
 
 final readonly class StructuredOutputResponse
 {
-    use TracksObjectCreation;
-
     public static function partial(
         mixed $value,
         InferenceResponse $rawResponse,
@@ -44,9 +41,7 @@ final readonly class StructuredOutputResponse
         private InferenceResponse $rawResponse,
         private bool $isPartial = false,
         private string $toolArgsSnapshot = '',
-    ) {
-        $this->trackObjectCreation();
-    }
+    ) {}
 
     public function value(): mixed
     {

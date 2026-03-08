@@ -7,12 +7,9 @@ use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Data\Usage;
-use Cognesy\Utils\Profiler\TracksObjectCreation;
 
 final class InferenceStreamState
 {
-    use TracksObjectCreation;
-
     private string $content = '';
     private int $contentLength = 0;
     private string $reasoningContent = '';
@@ -40,7 +37,6 @@ final class InferenceStreamState
     public function __construct()
     {
         $this->usage = new StreamingUsageState();
-        $this->trackObjectCreation();
     }
 
     public function applyDelta(PartialInferenceDelta $delta): void
