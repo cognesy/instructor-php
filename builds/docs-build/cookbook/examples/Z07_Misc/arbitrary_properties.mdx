@@ -15,7 +15,9 @@ When you need to extract undefined attributes, use a list of key-value pairs.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 class Property
 {
@@ -43,10 +45,12 @@ $text = <<<TEXT
     in a small house in Alamo. He likes to play guitar.
     TEXT;
 
-$user = StructuredOutput::using('openai')->with(
+$user = new StructuredOutput(
+    StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
+        ->withOutputMode(OutputMode::Json)
+)->with(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: UserDetail::class,
-    mode: OutputMode::Json,
 )->get();
 
 dump($user);

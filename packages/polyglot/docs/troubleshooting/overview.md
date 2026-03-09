@@ -1,16 +1,14 @@
 ---
-title: Overview of Troubleshooting
-description: 'Learn how to troubleshoot issues with Polyglot.'
+title: Troubleshooting
+description: Common causes of broken requests in Polyglot.
 ---
 
-This chapter covers common issues you might encounter when working with Polyglot, along with best practices for effectively using LLMs in your applications.
+Most issues come from a small set of causes:
 
-## Common Issues and Solutions
+- missing API keys
+- wrong preset names or file paths
+- model capabilities that do not match the request
+- provider-specific request fields in `options`
+- consuming a stream twice
 
-1. Authentication Issues
-2. Connection Issues
-3. Rate Limiting
-4. Model-Specific Issues
-5. Streaming Issues
-6. Provider-Specific Issues
-7. Debugging and Logging
+Use the pages in this section to narrow the problem quickly.

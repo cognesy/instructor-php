@@ -1,18 +1,22 @@
 ---
 title: 'Getting Started'
-description: 'Run your first prompt with AgentCtrl.'
+description: 'Send a prompt to any supported code agent.'
 ---
 
 ## Install
 
 ```bash
 composer require cognesy/agent-ctrl
-# @doctest id="5334"
+# @doctest id="a8a7"
 ```
 
-You need at least one CLI binary installed and authenticated (`claude`, `codex`, or `opencode`).
+You also need at least one authenticated CLI installed in `PATH`:
 
-## Minimal Execution
+- `claude`
+- `codex`
+- `opencode`
+
+## First Request
 
 ```php
 use Cognesy\AgentCtrl\AgentCtrl;
@@ -20,16 +24,45 @@ use Cognesy\AgentCtrl\AgentCtrl;
 $response = AgentCtrl::codex()->execute('Summarize this repository.');
 
 echo $response->text();
-// @doctest id="ccc0"
+// @doctest id="ea07"
 ```
 
-## Runtime Agent Selection
+## Choose a Different Agent
+
+```php
+use Cognesy\AgentCtrl\AgentCtrl;
+
+$response = AgentCtrl::claudeCode()->execute('List the main packages in this monorepo.');
+// @doctest id="0494"
+```
+
+## Select the Agent at Runtime
 
 ```php
 use Cognesy\AgentCtrl\AgentCtrl;
 use Cognesy\AgentCtrl\Enum\AgentType;
 
-$agent = AgentType::from('codex');
-$response = AgentCtrl::make($agent)->execute('List top risks in this code.');
-// @doctest id="ec9d"
+$agent = AgentType::from('opencode');
+
+$response = AgentCtrl::make($agent)->execute('Explain the package layout.');
+// @doctest id="c799"
+```
+
+## Common Configuration
+
+All builders support the same core methods:
+
+- `withModel()`
+- `withTimeout()`
+- `inDirectory()`
+- `withSandboxDriver()`
+
+```php
+use Cognesy\AgentCtrl\AgentCtrl;
+
+$response = AgentCtrl::codex()
+    ->withTimeout(300)
+    ->inDirectory(__DIR__)
+    ->execute('Review the current directory.');
+// @doctest id="5f23"
 ```

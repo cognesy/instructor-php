@@ -1,134 +1,60 @@
 ---
 title: Creating Requests
-description: 'Learn how to create requests to LLM providers using Polyglot.'
+description: Build inference requests with explicit request fields.
 meta:
   - name: 'has_code'
     content: true
 ---
 
-This section covers how to create requests to LLM providers using the Polyglot library. It includes examples of basic requests, handling multiple messages, and using different message formats.
+Polyglot 2.0 builds requests from explicit fields instead of synthetic modes.
 
-
-## Creating Requests
-
-The `with()` method is the main way to set the parameters of the requests to LLM providers.
-
-It accepts several parameters:
+The main method is `with(...)`:
 
 ```php
 <?php
-$inference = $inference->with(
-    messages: 'Summarize this text',
-    model: 'gpt-4o-mini',
-    tools: [],
-    toolChoice: [],
-    responseFormat: [],
-    options: [],
-);
-```
 
-
-## Basic Request Example
-
-Here's a simple example of creating a request:
-
-```php
-<?php
 use Cognesy\Polyglot\Inference\Inference;
 
-$inference = new Inference();
-$response = $inference
+$text = Inference::using('openai')
     ->with(
-        messages: 'What is the capital of France?'
+        messages: [
+            ['role' => 'system', 'content' => 'Answer briefly.'],
+            ['role' => 'user', 'content' => 'What is CQRS?'],
+        ],
+        model: 'gpt-4.1-nano',
+        options: ['temperature' => 0.2],
     )
-    ->create() // create pending inference
-    ->get();   // get the data - here it executes the request
-
-echo "Response: $response";
-```
-
-
-## Request with Multiple Messages
-
-For chat-based interactions, you can pass an array of messages:
-
-```php
-<?php
-use Cognesy\Polyglot\Inference\Inference;
-
-$inference = new Inference();
-$response = $inference
-    ->withMessages([
-        ['role' => 'system', 'content' => 'You are a helpful assistant who provides concise answers.'],
-        ['role' => 'user', 'content' => 'What is the capital of France?'],
-        ['role' => 'assistant', 'content' => 'Paris.'],
-        ['role' => 'user', 'content' => 'And what about Germany?']
-    ])
-    ->get();
-
-echo "Response: $response";
-```
-
-## Using `Messages` Class
-
-You can also use the `Messages` class to create message sequences more conveniently:
-
-```php
-<?php
-use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Inference;
-
-$messages = (new Messages)
-    ->asSystem('You are a senior PHP8 backend developer.')
-    ->asDeveloper('Be concise and use modern PHP8.3+ features.') // OpenAI developer role is supported and normalized for other providers
-    ->asUser([
-        'What is the best way to handle errors in PHP8?',
-        'Provide a code example.',
-    ]); // you can pass array of strings to create multiple content parts
-
-$response = Inference::using('openai')
-    ->withModel('gpt-4o')
-    ->withMessages($messages)
     ->get();
 ```
 
-## Message Formats
+## Use the Focused Helpers
 
-Polyglot supports different message formats depending on the provider:
+Use the dedicated helpers when you want requests to stay readable:
 
-- **String**: A simple string will be converted to a user message
-- **Array of messages**: Each message should have a `role` and `content` field
-- **Multimodal content**: Some providers support images in messages
+- `withMessages(...)`
+- `withModel(...)`
+- `withTools(...)`
+- `withToolChoice(...)`
+- `withResponseFormat(...)`
+- `withOptions(...)`
 
-Example with image (for providers that support it):
+## Use `InferenceRequest` Directly
+
+If your app already builds request objects, pass them in directly:
 
 ```php
 <?php
+
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Inference;
 
-$imageData = base64_encode(file_get_contents('image.jpg'));
-$messages = [
-    [
-        'role' => 'user',
-        'content' => [
-            [
-                'type' => 'text',
-                'text' => 'What\'s in this image?'
-            ],
-            [
-                'type' => 'image_url',
-                'image_url' => [
-                    'url' => "data:image/jpeg;base64,$imageData"
-                ]
-            ]
-        ]
-    ]
-];
+$request = new InferenceRequest(
+    messages: 'Return one deployment tip.',
+    model: 'gpt-4.1-nano',
+    options: ['temperature' => 0],
+);
 
-$response = Inference::using('openai')
-    ->withModel('gpt-4o') // use multimodal model
-    ->with(messages: $messages)
+$text = Inference::using('openai')
+    ->withRequest($request)
     ->get();
 ```
-
-Instructor library offers `Cognesy\Messages\Utils\Image` class for easier conversion of image files to the message format.

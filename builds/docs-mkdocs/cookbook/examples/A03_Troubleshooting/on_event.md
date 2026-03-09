@@ -5,7 +5,7 @@ id: '379f'
 ---
 ## Overview
 
-`StructuredOutput::using('openai')->onEvent(string $class, callable $callback)` method allows
+`StructuredOutputRuntime::fromProvider(...)->onEvent(string $class, callable $callback)` method allows
 you to receive callback when specified type of event is dispatched by Instructor.
 
 This way you can plug into the execution process and monitor it, for example logging
@@ -28,6 +28,8 @@ use Cognesy\Events\Event;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 class User
 {
@@ -44,9 +46,11 @@ $logger = new class {
     }
 };
 
-$user = StructuredOutput::using('openai')
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
     ->onEvent(HttpRequestSent::class, fn($event) => $logger->log($event))
-    ->onEvent(HttpResponseReceived::class, fn($event) => $logger->log($event))
+    ->onEvent(HttpResponseReceived::class, fn($event) => $logger->log($event));
+
+$user = (new StructuredOutput($runtime))
     ->with(
         messages: "Jason is 28 years old",
         responseModel: User::class,

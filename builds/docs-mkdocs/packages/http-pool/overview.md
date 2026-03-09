@@ -23,7 +23,7 @@ Keep using `http-client` when you only need one request.
 use Cognesy\HttpPool\HttpPool;
 
 $pool = HttpPool::default();
-// @doctest id="c5e0"
+// @doctest id="285a"
 ```
 
 ## Core Types

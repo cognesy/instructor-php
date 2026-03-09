@@ -1,9 +1,11 @@
 ---
 title: Changing Client Config
-description: Configure driver behavior with typed config or DSN overrides.
+description: Configure the client with typed options or a DSN string.
 ---
 
-## Configure via `HttpClientConfig`
+Use `HttpClientConfig` when you want readable, typed configuration.
+
+## Typed Config
 
 ```php
 use Cognesy\Http\Config\HttpClientConfig;
@@ -23,7 +25,17 @@ $client = (new HttpClientBuilder())
     ->create();
 ```
 
-## Configure via DSN
+Core options:
+
+- `driver`
+- `connectTimeout`
+- `requestTimeout`
+- `idleTimeout`
+- `streamChunkSize`
+- `streamHeaderTimeout`
+- `failOnError`
+
+## DSN
 
 ```php
 use Cognesy\Http\Creation\HttpClientBuilder;
@@ -35,7 +47,7 @@ $client = (new HttpClientBuilder())
 
 DSN values are coerced to the typed `HttpClientConfig` fields (`int`, `bool`, `string`).
 
-## Config + Override Pattern
+## Override an Existing Config
 
 ```php
 use Cognesy\Http\Config\HttpClientConfig;
@@ -50,14 +62,6 @@ $client = (new HttpClientBuilder())
 ```
 
 When `withConfig(...)` is provided, that config is authoritative.
-
-## Error and Stream Behavior
-
-`HttpClientConfig` also controls:
-
-- `failOnError` for exception-on-4xx/5xx behavior
-- `streamChunkSize` for adapter streaming chunk size
-- `streamHeaderTimeout` for streaming header priming timeout (curl driver)
 
 ## See Also
 

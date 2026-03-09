@@ -20,6 +20,7 @@ This is useful for debugging the request and response when you are not getting t
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Http\Config\DebugConfig;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Http\Creation\HttpClientBuilder;
@@ -33,10 +34,10 @@ class User {
 
 // CASE 1.1 - normal flow, sync request
 
-$debugHttpClient = (new HttpClientBuilder)->withDebugConfig(ExampleConfig::debugPreset('on'))->create();
+$debugHttpClient = (new HttpClientBuilder)->withDebugConfig(DebugConfig::fromPreset('on'))->create();
 $structuredOutput = new StructuredOutput(
     StructuredOutputRuntime::fromConfig(
-        config: ExampleConfig::llmPreset('openai'),
+        config: LLMConfig::fromPreset('openai'),
         httpClient: $debugHttpClient,
     )
 );

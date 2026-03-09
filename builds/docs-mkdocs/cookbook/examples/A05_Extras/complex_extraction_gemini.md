@@ -16,7 +16,9 @@ require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 $report = <<<'EOT'
     [2021-09-01]
     Acme Insurance project to implement SalesTech CRM solution is currently
@@ -94,7 +96,10 @@ enum StakeholderRole: string {
     case Other = 'other';
 }
 
-$structuredOutput = StructuredOutput::using('gemini');
+$structuredOutput = new StructuredOutput(
+    StructuredOutputRuntime::fromProvider(LLMProvider::using('gemini'))
+        ->withOutputMode(OutputMode::Json)
+);
 
 echo "PROJECT EVENTS:\n\n";
 
@@ -111,7 +116,6 @@ $stream = $structuredOutput
             'max_tokens' => 2048,
             'stream' => true,
         ],
-        mode: OutputMode::Json,
     )->stream();
 
 foreach ($stream->sequence() as $sequence) {

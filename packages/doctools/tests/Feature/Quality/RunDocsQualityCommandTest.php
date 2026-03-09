@@ -30,7 +30,7 @@ it('reports anti-patterns, broken links, and snippet lint failures', function ()
     writeDocsQualityFile($docsDir . '/index.md', <<<'MD'
 See [broken](./missing-page).
 
-StructuredOutput::fromConfig([]);
+StructuredOutput::withConfig([]);
 
 ```php
 echo ;
@@ -46,9 +46,52 @@ MD);
     $display = $tester->getDisplay();
     expect($exitCode)->toBe(1);
     expect($display)->toContain('docs-qa: failed');
-    expect($display)->toContain('StructuredOutput::fromConfig(');
+    expect($display)->toContain('StructuredOutput::withConfig(');
     expect($display)->toContain('broken local link `./missing-page`');
     expect($display)->toContain('php snippet lint failed');
+});
+
+it('applies the http-client profile anti-drift rules', function () {
+    $docsDir = $this->tempDir . '/docs';
+    writeDocsQualityFile($docsDir . '/index.md', <<<'MD'
+Use HttpClient::fromRuntime($runtime).
+
+Use StreamSSEsMiddleware for SSE parsing.
+MD);
+
+    $tester = new CommandTester(new RunDocsQualityCommand());
+    $exitCode = $tester->execute([
+        '--source-dir' => $docsDir,
+        '--profile' => 'http-client',
+    ], ['decorated' => false]);
+
+    $display = $tester->getDisplay();
+    expect($exitCode)->toBe(1);
+    expect($display)->toContain('http-client.no_httpclient_fromruntime');
+    expect($display)->toContain('http-client.no_streamsses_middleware');
+});
+
+it('applies the polyglot profile anti-drift rules', function () {
+    $docsDir = $this->tempDir . '/docs';
+    writeDocsQualityFile($docsDir . '/index.md', <<<'MD'
+Use OutputMode::Json for JSON responses.
+
+Call $stream->responses() for partial snapshots.
+
+EmbeddingsProvider::using('openai');
+MD);
+
+    $tester = new CommandTester(new RunDocsQualityCommand());
+    $exitCode = $tester->execute([
+        '--source-dir' => $docsDir,
+        '--profile' => 'polyglot',
+    ], ['decorated' => false]);
+
+    $display = $tester->getDisplay();
+    expect($exitCode)->toBe(1);
+    expect($display)->toContain('polyglot.no_outputmode_enum');
+    expect($display)->toContain('polyglot.no_stream_responses');
+    expect($display)->toContain('polyglot.no_embeddingsprovider_using');
 });
 
 it('passes with valid docs and skips explicitly marked snippets', function () {

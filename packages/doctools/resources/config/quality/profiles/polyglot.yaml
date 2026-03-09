@@ -1,0 +1,55 @@
+version: 1
+rules:
+  - id: polyglot.no_outputmode_enum
+    engine: regex
+    scope: markdown
+    pattern: '/\bOutputMode\b/'
+    message: 'Polyglot 2.0 removed output modes. Use `responseFormat`, `tools`, and `toolChoice` explicitly.'
+
+  - id: polyglot.no_withoutputmode
+    engine: regex
+    scope: markdown
+    pattern: '/\bwithOutputMode\s*\(/'
+    message: 'Polyglot 2.0 has no `withOutputMode(...)`. Use `withResponseFormat(...)`, `withTools(...)`, or `withToolChoice(...)`.'
+
+  - id: polyglot.no_partialinferenceresponse
+    engine: regex
+    scope: markdown
+    pattern: '/\bPartialInferenceResponse(?:Created)?\b/'
+    message: 'Polyglot 2.0 streams `PartialInferenceDelta` values, not `PartialInferenceResponse` snapshots.'
+
+  - id: polyglot.no_stream_responses
+    engine: regex
+    scope: markdown
+    pattern: '/->responses\s*\(/'
+    message: 'Use `stream()->deltas()` or `stream()->final()`. `stream()->responses()` is not part of the 2.0 API.'
+
+  - id: polyglot.no_onpartialresponse
+    engine: regex
+    scope: markdown
+    pattern: '/\bonPartialResponse\s*\(/'
+    message: 'Use `stream()->onDelta(...)`. `onPartialResponse(...)` was removed from the public API.'
+
+  - id: polyglot.no_partialresponse_accessor
+    engine: regex
+    scope: markdown
+    pattern: '/\bpartialResponse\s*\(/'
+    message: 'Use `stream()->lastDelta()` or `stream()->final()`. `partialResponse()` is not part of the 2.0 API.'
+
+  - id: polyglot.no_embeddingsprovider_using
+    engine: regex
+    scope: markdown
+    pattern: '/\bEmbeddingsProvider::using\s*\(/'
+    message: 'EmbeddingsProvider has no `using(...)` shortcut. Use `Embeddings::using(...)` or `EmbeddingsProvider::fromEmbeddingsConfig(...)`.'
+
+  - id: polyglot.no_provider_withdsn
+    engine: regex
+    scope: markdown
+    pattern: '/\b(?:LLMProvider|EmbeddingsProvider)::withDsn\s*\(|->withDsn\s*\(/'
+    message: 'Provider objects have no `withDsn(...)`. Use `LLMConfig::fromDsn(...)` or `EmbeddingsConfig::fromDsn(...)`, then build the provider or runtime from config.'
+
+  - id: polyglot.no_provider_type_key
+    engine: regex
+    scope: markdown
+    pattern: '/\bproviderType\b/'
+    message: 'Configuration key is `driver`, not `providerType`.'

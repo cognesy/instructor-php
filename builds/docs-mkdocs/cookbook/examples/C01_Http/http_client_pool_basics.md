@@ -5,8 +5,8 @@ id: 'bb83'
 ---
 ## Overview
 
-Deterministic pool example using an in-memory pool handler. In production, call
-`$client->pool($requests, $maxConcurrent)` with a built-in HTTP driver.
+Deterministic pool example using an in-memory pool handler and the dedicated
+`packages/http-pool` API.
 
 ## Example
 
@@ -16,10 +16,10 @@ require 'examples/boot.php';
 
 use Cognesy\Http\Collections\HttpRequestList;
 use Cognesy\Http\Collections\HttpResponseList;
-use Cognesy\Http\Contracts\CanHandleRequestPool;
+use Cognesy\HttpPool\Contracts\CanHandleRequestPool;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
-use Cognesy\Http\PendingHttpPool;
+use Cognesy\HttpPool\PendingHttpPool;
 use Cognesy\Utils\Result\Result;
 
 final class InMemoryPool implements CanHandleRequestPool

@@ -1,39 +1,40 @@
 ---
 title: Overview
-description: 'Small transport layer for sync and streaming HTTP requests.'
+description: 'A small HTTP transport for requests, streaming, and middleware.'
 ---
 
-`packages/http-client` gives the rest of the stack one HTTP API.
+The HTTP client package gives the rest of the stack one small transport API.
 
-## Core Types
+It is built around a few focused types:
 
 - `CanSendHttpRequests`: top-level transport contract
 - `HttpClient`: default implementation of `CanSendHttpRequests`
-- `HttpRequest`: immutable request object (`with*()` returns a new request)
-- `PendingHttpResponse`: deferred response execution (`get()` / `stream()`)
+- `HttpRequest`: immutable request value
+- `PendingHttpResponse`: deferred execution wrapper
 - `HttpResponse`: buffered or streamed response value
-- `MiddlewareStack`: immutable middleware chain
+- `HttpClientBuilder`: explicit composition entry point
+- `HttpClientConfig`: typed driver configuration
 
-## Scope
+## Core Capabilities
 
-- sync requests
-- streaming requests
-- middleware composition
+- send synchronous requests
+- stream response bodies
+- switch drivers without changing request code
+- add middleware around the transport layer
 
 Pooling lives in `packages/http-pool`.
 
-## Shape
+## Typical Flow
 
 ```text
-CanSendHttpRequests
-  -> HttpClient
+HttpClient
+  -> send(HttpRequest)
   -> PendingHttpResponse
-  -> middleware stack
-  -> driver
+  -> get() or stream()
   -> HttpResponse
-// @doctest id="217a"
+// @doctest id="9733"
 ```
 
-## Rule
+## Immutability
 
 Reassign after every `with*()` call.

@@ -15,11 +15,11 @@ Key features:
 - Server-side conversation state via `previous_response_id`
 - Semantic streaming events
 
-Mode compatibility:
- - OutputMode::Tools (supported)
- - OutputMode::Json (supported)
- - OutputMode::JsonSchema (recommended)
- - OutputMode::MdJson (fallback)
+Inference feature compatibility:
+ - tool calling (supported)
+ - native JSON object response_format (supported)
+ - native JSON schema response_format (recommended)
+ - Instructor markdown-JSON fallback (fallback)
 
 ## Example
 

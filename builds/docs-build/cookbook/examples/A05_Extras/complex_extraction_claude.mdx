@@ -16,7 +16,9 @@ require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 $report = <<<'EOT'
     [2021-09-01]
     Acme Insurance project to implement SalesTech CRM solution is currently
@@ -102,7 +104,10 @@ enum StakeholderRole: string {
     case Other = 'other';
 }
 
-$structuredOutput = StructuredOutput::using('anthropic');
+$structuredOutput = new StructuredOutput(
+    StructuredOutputRuntime::fromProvider(LLMProvider::using('anthropic'))
+        ->withOutputMode(OutputMode::Tools)
+);
 
 echo "PROJECT EVENTS:\n\n";
 
@@ -112,7 +117,6 @@ $stream = $structuredOutput
         responseModel: Sequence::of(ProjectEvent::class),
         model: 'claude-haiku-4-5', // 'claude-3-haiku-20240307'
         prompt: 'Extract a list of project events with all the details from the provided input in JSON format using schema: <|json_schema|>',
-        mode: OutputMode::Tools,
         examples: [['input' => 'Acme Insurance project to implement SalesTech CRM solution is currently in RED status due to delayed delivery of document production system, led by 3rd party vendor - Alfatech. Customer (Acme) is discussing the resolution with the vendor. Production deployment plan has been finalized on Aug 15th and awaiting customer approval.', 'output' => [["type" => "object", "title" => "sequenceOfProjectEvent", "description" => "A sequence of ProjectEvent", "properties" => ["list" => [["title" => "Absorbing delay by deploying extra resources", "description" => "System integrator (SysCorp) are working to absorb some of the delay by deploying extra resources to speed up development when the doc production is done.", "type" => "action", "status" => "open", "stakeholders" => [["name" => "SysCorp", "role" => "system integrator", "details" => "System integrator",],], "date" => "2021-09-01",], ["title" => "Finalization of production deployment plan", "description" => "Production deployment plan has been finalized on Aug 15th and awaiting customer approval.", "type" => "progress", "status" => "open", "stakeholders" => [["name" => "Acme", "role" => "customer", "details" => "Customer",],], "date" => "2021-08-15",],],]]]]],
         options: [
             'max_tokens' => 4096,

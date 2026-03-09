@@ -16,7 +16,9 @@ to a large language model (LLM) for various tasks, including search and text gen
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 enum UserType : string {
     case Guest = 'guest';
@@ -33,7 +35,10 @@ class User {
     public array $hobbies;
 }
 
-$structuredOutput = StructuredOutput::using('perplexity');
+$structuredOutput = new StructuredOutput(
+    StructuredOutputRuntime::fromProvider(LLMProvider::using('perplexity'))
+        ->withOutputMode(OutputMode::Json)
+);
 
 $user = $structuredOutput->with(
     messages: "Jason (@jxnlco) is 25 years old. He is the admin of this project. He likes playing football and reading books.",
@@ -46,7 +51,6 @@ $user = $structuredOutput->with(
         'input' => 'We have a meeting with John, our new admin who likes surfing. He is 19 years old - check his profile: @jig.',
         'output' => ['age' => 19, 'name' => 'John', 'username' => 'jig', 'role' => 'admin', 'hobbies' => ['surfing'],],
     ]],
-    mode: OutputMode::Json,
 )->get();
 
 print("Completed response model:\n\n");

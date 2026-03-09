@@ -43,7 +43,7 @@ $stream = StructuredOutput::using('openai')
     ->withMessages("Extract: 'Introduction to PHP 8.4' by Jane Doe, 1500 words, tags: php, tutorial, programming")
     ->stream();
 
-// During streaming, partials are objects (for validation)
+// During streaming, responses are StructuredOutputResponse snapshots
 foreach ($stream->responses() as $response) {
     dump($response);
 }

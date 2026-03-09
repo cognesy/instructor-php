@@ -34,7 +34,9 @@ require 'examples/boot.php';
 use Cognesy\Auxiliary\Web\Webpage;
 use Cognesy\Config\BasePath;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Schema\Attributes\Instructions;
 class Company {
     public string $name = '';
@@ -62,11 +64,13 @@ echo "Extracting company data from:\n\n";
 foreach($companyGen as $companyDiv) {
     /** @var string $companyDiv */
     echo " > " . substr($companyDiv, 0, 32) . "...\n\n";
-    $company = StructuredOutput::using('openai')
+    $company = new StructuredOutput(
+            StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
+                ->withOutputMode(OutputMode::Json)
+        )
         ->with(
             messages: $companyDiv,
             responseModel: Company::class,
-            mode: OutputMode::Json
         )->get();
     $companies[] = $company;
     dump($company);

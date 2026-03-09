@@ -23,7 +23,6 @@ supported by all language model providers.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Inference;
 
 $data = Inference::using('openai')
@@ -59,7 +58,6 @@ $data = Inference::using('openai')
             ],
         ],
         options: ['max_tokens' => 64],
-        mode: OutputMode::JsonSchema,
     )
     ->asJsonData();
 

@@ -1,81 +1,45 @@
 ---
 title: Request Options
-description: 'Learn how to customize request options for LLM inference in Polyglot.'
+description: Customize provider-native request fields safely.
 ---
 
-The `options` parameter allows you to customize various aspects of the request.
-
-> NOTE: Except for `max_tokens`, all option parameters are provider-specific and may not be available or compatible with all providers.
-> Check the provider's API documentation for details.
-
-
-## Common Options
-
-```php
-$options = [
-    // Generation parameters
-    'temperature' => 0.7,         // Controls randomness (0.0 to 1.0)
-    'max_tokens' => 1000,         // Maximum tokens to generate
-    'top_p' => 0.95,              // Nucleus sampling parameter
-    'frequency_penalty' => 0.0,   // Penalize repeated tokens
-    'presence_penalty' => 0.0,    // Penalize repeated topics
-    'stream' => false,            // Enable streaming responses
-    'stop' => ["\n\n", "User:"],  // Stop sequences
-
-    // Provider-specific options
-    'top_k' => 40,                // For some providers
-    'response_format' => [        // OpenAI-specific format control
-        'type' => 'json_object'
-    ],
-    // Additional provider-specific options...
-];
-
-$inference = new Inference();
-$response = $inference->with(
-    messages: 'Write a short poem about programming.',
-    options: $options
-)->get();
-```
-
-
-
-## Provider-Specific Options
-
-Different providers may support additional options. Consult the provider's documentation for details:
-
-```php
-// Anthropic-specific options
-$anthropicOptions = [
-    'temperature' => 0.7,
-    'max_tokens' => 1000,
-    'top_p' => 0.9,
-    'stop_sequences' => ["\n\nHuman:"],
-    'stream' => true,
-];
-
-$inference = Inference::using('openai');
-$response = $inference->with(
-    messages: 'Write a short poem about programming.',
-    options: $anthropicOptions
-)->get();
-```
-
-## Response Stream Cache Policy
-
-You can control stream replay behavior explicitly:
-
-- `ResponseCachePolicy::None` (default): one-shot stream, lowest memory usage.
-- `ResponseCachePolicy::Memory`: enable stream replay from captured data.
+`options` is the escape hatch for provider-specific request fields.
 
 ```php
 <?php
-use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
+
 use Cognesy\Polyglot\Inference\Inference;
 
-$inference = (new Inference())
-    ->withMessages('Summarize this transcript')
-    ->withStreaming(true)
-    ->withResponseCachePolicy(ResponseCachePolicy::Memory);
+$text = Inference::using('openai')
+    ->withMessages('Write one short sentence about PHP.')
+    ->withOptions([
+        'temperature' => 0.2,
+        'top_p' => 0.9,
+    ])
+    ->get();
 ```
 
-With `None`, stream iterators remain one-shot. With `Memory`, second-pass iteration replays captured chunks without making a new provider call.
+## Prefer Dedicated Helpers for Common Behavior
+
+Use these helpers instead of manually shaping the same values in `options`:
+
+- `withStreaming(true)`
+- `withMaxTokens(256)`
+- `withRetryPolicy($policy)`
+- `withResponseCachePolicy($policy)`
+
+## Cached Context
+
+Use `withCachedContext(...)` for stable context you want attached to later requests:
+
+- shared messages
+- shared tools
+- shared tool choice
+- shared response format
+
+Drivers can use that context to map provider-native caching features when available.
+
+## Retry Policy
+
+Do not put `retryPolicy` inside `options`.
+Retry is configured explicitly with `withRetryPolicy(...)` or on the request object.

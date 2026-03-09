@@ -1,33 +1,37 @@
 ---
 title: Session Management
-description: 'Continue the latest session or resume a specific session ID.'
+description: 'Continue the latest session or resume a specific session.'
 ---
 
-All bridges support continuing and resuming sessions.
+All supported bridges can keep working within an existing session.
 
-## Continue Latest Session
+## Continue the Latest Session
 
 ```php
 use Cognesy\AgentCtrl\AgentCtrl;
 
 $response = AgentCtrl::codex()
     ->continueSession()
-    ->execute('Continue from the previous plan and apply step 2.');
+    ->execute('Continue from the previous task.');
 ```
 
-## Resume Specific Session
+## Resume a Specific Session
 
 ```php
 use Cognesy\AgentCtrl\AgentCtrl;
 
-$first = AgentCtrl::codex()->execute('Create a migration plan.');
+$first = AgentCtrl::claudeCode()->execute('Create a short plan.');
 $sessionId = $first->sessionId();
 
 if ($sessionId !== null) {
-    $next = AgentCtrl::codex()
+    $next = AgentCtrl::claudeCode()
         ->resumeSession((string) $sessionId)
-        ->execute('Now implement the first migration.');
+        ->execute('Now apply the first step.');
 }
 ```
 
-`sessionId()` returns `AgentSessionId|null`.
+## Reading the Session ID
+
+`AgentResponse::sessionId()` returns `AgentSessionId|null`.
+
+Keep that value if you want to continue the same conversation later.

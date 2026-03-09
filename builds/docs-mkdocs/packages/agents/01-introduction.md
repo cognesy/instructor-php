@@ -35,7 +35,7 @@ $agent = AgentBuilder::base()
     ->withCapability(new UseBash())
     ->withCapability(new UseGuards(maxSteps: 10))
     ->build();
-// @doctest id="40de"
+// @doctest id="8041"
 ```
 
 ## Package Structure
@@ -46,7 +46,7 @@ CanControlAgentLoop   # Loop interface (execute/iterate)
 Broadcasting/         # AgentEventBroadcaster, BroadcastConfig, CanBroadcastAgentEvents
 Builder/              # AgentBuilder, AgentConfigurator, capability contracts
 Capability/           # Use* capabilities (Core, Bash, File, Subagent, etc.)
-Collections/          # Tools, AgentSteps, StepExecutions, ErrorList, etc.
+Collections/          # Tools, AgentSteps, StepExecutions, ToolExecutions, NameList
 Context/              # AgentContext, message compilers (CanCompileMessages)
 Continuation/         # StopSignal, StopReason, ExecutionContinuation
 Data/                 # AgentState, ExecutionState, AgentStep, ExecutionBudget
@@ -59,7 +59,7 @@ Interception/         # CanInterceptAgentLifecycle, PassThroughInterceptor
 Template/             # Agent definitions, parsers, registry
 Session/              # AgentSession, SessionRuntime, actions, repositories, stores
 Tool/                 # ToolInterface, BaseTool, FunctionTool, ToolExecutor
-// @doctest id="902e"
+// @doctest id="a4b0"
 ```
 
 ## Minimal Example
@@ -73,7 +73,7 @@ $state = AgentState::empty()->withUserMessage('Hello!');
 $result = $loop->execute($state);
 
 echo $result->finalResponse()->toString();
-// @doctest id="8213"
+// @doctest id="63f2"
 ```
 
 ## Recommended Path

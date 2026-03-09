@@ -21,7 +21,9 @@ Mode compatibility:
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 enum UserType : string {
     case Guest = 'guest';
@@ -38,7 +40,10 @@ class User {
     public array $hobbies;
 }
 
-$structuredOutput = StructuredOutput::using('fireworks');
+$structuredOutput = new StructuredOutput(
+    StructuredOutputRuntime::fromProvider(LLMProvider::using('fireworks'))
+        ->withOutputMode(OutputMode::Json)
+);
 
 $user = $structuredOutput
     ->with(
@@ -49,7 +54,6 @@ $user = $structuredOutput
             'output' => ['age' => 30, 'name' => 'Frank', 'username' => 'frank@hk.ch', 'role' => 'developer', 'hobbies' => ['playing drums'],],
         ]],
         model: 'accounts/fireworks/models/llama4-maverick-instruct-basic',
-        mode: OutputMode::Json,
     )->get();
 
 print("Completed response model:\n\n");

@@ -29,7 +29,7 @@ class Education {
     public Degree $degree;
     public string $school;
     public string $topic;
-    public int $year;
+    public ?int $year = null;
 }
 
 class FinalResponse { public string $school; }
@@ -59,7 +59,13 @@ TXT;
     }
 
     public function finalAnswer(Stepback $s, array $education) : FinalResponse {
-        $eduSummary = array_map(fn(Education $e) => "{$e->degree->value}, {$e->school}, {$e->topic}, {$e->year}", $education);
+        $eduSummary = array_map(
+            fn(Education $e) => match (true) {
+                $e->year !== null => "{$e->degree->value}, {$e->school}, {$e->topic}, {$e->year}",
+                default => "{$e->degree->value}, {$e->school}, {$e->topic}",
+            },
+            $education,
+        );
         $msg = "Q: {$s->abstract_question}\nA: " . implode("; ", $eduSummary) . "\nQ: {$s->original_question}\nA:";
         return StructuredOutput::using('openai')->with(
             messages: [['role'=>'user','content'=>$msg]],

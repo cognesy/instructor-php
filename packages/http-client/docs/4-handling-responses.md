@@ -1,6 +1,6 @@
 ---
 title: Handling Responses
-description: 'How to read pending and final responses.'
+description: 'Read pending responses as buffered content or as a stream.'
 ---
 
 `CanSendHttpRequests::send()` returns `PendingHttpResponse`.
@@ -16,14 +16,28 @@ Core methods:
 - `content()`
 - `stream()`
 
-### Final response
+## Buffered Responses
+
+For a normal request, call `get()` and read the final `HttpResponse`:
 
 ```php
-$response = $pending->get(); // default request mode is non-streamed
+$response = $pending->get();
 
 $status = $response->statusCode();
 $headers = $response->headers();
 $body = $response->body();
 ```
+
+## Streaming Responses
+
+For a streamed request, call `stream()` on the pending response:
+
+```php
+foreach ($pending->stream() as $chunk) {
+    echo $chunk;
+}
+```
+
+Use `content()` and `body()` for buffered responses. Use `stream()` for streamed responses.
 
 With `failOnError: true`, HTTP 4xx and 5xx throw typed exceptions.

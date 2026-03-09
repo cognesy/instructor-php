@@ -5,36 +5,57 @@ description: 'Define agents as data using markdown, YAML, or JSON files and inst
 
 # Agent Templates
 
-Agent templates let you define agents as data — in markdown, YAML, or JSON files — and instantiate them at runtime. This separates agent configuration from code and enables dynamic agent loading.
+Agent templates let you define agents as data and build them at runtime.
+They are the simplest way to keep agent setup out of PHP code.
 
 ## AgentDefinition
 
-`AgentDefinition` is a data class that describes an agent's configuration:
+`AgentDefinition` is the core template object.
+The fields you will use most often are:
+
+- `name`
+- `description`
+- `systemPrompt`
+- `llmConfig`
+- `capabilities`
+- `tools`
+- `toolsDeny`
+- `skills`
+- `budget`
+- `metadata`
+
+Minimal example:
 
 ```php
-use Cognesy\Agents\Template\Data\AgentDefinition;
-use Cognesy\Agents\Data\ExecutionBudget;
 use Cognesy\Agents\Collections\NameList;
+use Cognesy\Agents\Data\ExecutionBudget;
+use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 $definition = new AgentDefinition(
     name: 'researcher',
     description: 'Searches for information on a topic',
     systemPrompt: 'You are a research assistant. Find and summarize information.',
-    label: 'Research Agent',           // optional display name
-    llmConfig: LLMConfig::fromArray(['driver' => 'anthropic']), // optional LLMConfig
+    label: 'Research Agent',
+    llmConfig: LLMConfig::fromArray(['driver' => 'anthropic']),
     budget: new ExecutionBudget(maxSteps: 10, maxTokens: 8000),
-    tools: new NameList(['bash', 'read_file']),        // optional tool allow-list
-    toolsDeny: new NameList(['write_file']),           // optional tool deny-list
-    capabilities: new NameList(['use_bash']),          // capability names to install
+    tools: new NameList('bash', 'read_file'),
+    toolsDeny: new NameList('write_file'),
+    capabilities: new NameList('use_bash'),
 );
 ```
 
 All fields except `name`, `description`, and `systemPrompt` are optional.
 
+## Tool Rules
+
+- `tools: null` means inherit all available tools
+- `tools` means allow only those tools
+- `toolsDeny` removes tools from the inherited or allowed set
+
 ## Definition Files
 
-### Markdown (with YAML frontmatter)
+### Markdown
 
 ```markdown
 ---
@@ -54,10 +75,9 @@ capabilities:
 ---
 
 You are a research assistant. Find and summarize information accurately.
-Use available tools to search and verify your findings.
 ```
 
-The body after the frontmatter becomes the `systemPrompt`.
+The body becomes `systemPrompt`.
 
 ### YAML
 
@@ -84,16 +104,9 @@ budget:
 }
 ```
 
-### Tool List Semantics in File Definitions
-
-For file-loaded definitions, declare `tools` explicitly when subagents need tools.
-In current parsing behavior, omitted tool lists are normalized to empty lists.
-
 ## Loading Definitions
 
 ### AgentDefinitionLoader
-
-Loads a single file and returns an `AgentDefinition`:
 
 ```php
 use Cognesy\Agents\Template\AgentDefinitionLoader;
@@ -106,98 +119,61 @@ Supported extensions: `.md`, `.json`, `.yaml`, `.yml`.
 
 ### AgentDefinitionRegistry
 
-Stores definitions by name and supports bulk loading:
-
 ```php
 use Cognesy\Agents\Template\AgentDefinitionRegistry;
 
 $registry = new AgentDefinitionRegistry();
 
-// Register programmatically
 $registry->register($definition);
 $registry->registerMany($def1, $def2, $def3);
 
-// Load from files
 $registry->loadFromFile('/agents/researcher.md');
-$registry->loadFromDirectory('/agents/', recursive: true);
+$registry->loadFromDirectory('/agents', recursive: true);
 
-// Auto-discover from conventional locations
-$registry->autoDiscover(projectPath: '/my/project');
-// Looks in: $projectPath/.claude/agents/
+// Load order is: userPath, packagePath, projectPath/.claude/agents.
+$registry->autoDiscover('/my/project', '/package/agents', '/user/agents');
 
-// Query
-$registry->get('researcher');    // AgentDefinition (throws if not found)
-$registry->has('researcher');    // bool
-$registry->names();              // ['researcher', 'writer', ...]
-$registry->count();              // int
+$registry->get('researcher');
+$registry->has('researcher');
+$registry->names();
+$registry->count();
 ```
 
-Loading errors are collected silently — check `$registry->errors()` for any files that failed to parse.
-
-## Custom Parsers
-
-Implement `CanParseAgentDefinition` for custom formats:
-
-```php
-use Cognesy\Agents\Template\Parsers\CanParseAgentDefinition;
-use Cognesy\Agents\Template\Data\AgentDefinition;
-
-class TomlDefinitionParser implements CanParseAgentDefinition
-{
-    public function parse(mixed $data): AgentDefinition
-    {
-        $data = toml_parse($data);
-        return AgentDefinition::fromArray($data);
-    }
-}
-
-// Register with custom extension
-$loader = new AgentDefinitionLoader([
-    'toml' => new TomlDefinitionParser(),
-    'md' => new MarkdownDefinitionParser(),   // keep defaults
-]);
-```
+Loading errors are collected during directory scans.
+Check `$registry->errors()` when you want to inspect skipped files.
 
 ## Instantiation Factories
 
-Templates provide factories to convert definitions into runtime objects:
-
 ### DefinitionStateFactory
-
-Creates an `AgentState` from a definition:
 
 ```php
 use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
 
 $factory = new DefinitionStateFactory();
 $state = $factory->instantiateAgentState($definition);
-// AgentState with systemPrompt and metadata from definition
 ```
 
 ### DefinitionLoopFactory
 
-Creates an `AgentLoop` from a definition using `AgentBuilder` and a capability registry:
-
 ```php
-use Cognesy\Agents\Template\Factory\DefinitionLoopFactory;
 use Cognesy\Agents\Capability\AgentCapabilityRegistry;
 use Cognesy\Agents\Capability\Bash\UseBash;
+use Cognesy\Agents\Template\Factory\DefinitionLoopFactory;
 
 $capabilities = new AgentCapabilityRegistry();
-// register capabilities that definitions can reference by name
 $capabilities->register('use_bash', new UseBash());
 
 $factory = new DefinitionLoopFactory($capabilities);
 $loop = $factory->instantiateAgentLoop($definition);
 ```
 
-If definitions reference named tools (`tools` / `toolsDeny`), provide a tool registry to `DefinitionLoopFactory`:
+If the definition uses named tools, provide a tool registry:
 
 ```php
 use Cognesy\Agents\Tool\ToolRegistry;
 
 $tools = new ToolRegistry();
-$tools->register($searchTool); // name is derived from the tool's descriptor
+$tools->register($searchTool);
 
 $factory = new DefinitionLoopFactory(
     capabilities: $capabilities,
@@ -205,37 +181,21 @@ $factory = new DefinitionLoopFactory(
 );
 ```
 
+If a definition references tools and no registry is provided, `DefinitionLoopFactory` throws.
+
 ## Using with Subagents
 
-The registry implements `CanManageAgentDefinitions`, making it the standard provider for `UseSubagents`:
+`AgentDefinitionRegistry` is the standard provider for `UseSubagents`:
 
 ```php
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Subagent\UseSubagents;
+use Cognesy\Agents\Template\AgentDefinitionRegistry;
+
 $registry = new AgentDefinitionRegistry();
-$registry->loadFromDirectory('/agents/');
+$registry->loadFromDirectory('/agents');
 
 $agent = AgentBuilder::base()
     ->withCapability(new UseSubagents(provider: $registry))
     ->build();
-```
-
-When the agent spawns a subagent by name, the registry provides the definition, and the factory creates the corresponding loop and state.
-
-## Runtime Boundary
-
-Templates are stateless configuration. They answer:
-- which system prompt / budget / model to use
-- which capabilities and tools should be installed
-
-Templates do not persist run state. To persist and resume executions over time, combine templates with sessions:
-1. Load/resolve `AgentDefinition`.
-2. Create initial `AgentSession` with `SessionFactory`.
-3. Execute actions through `SessionRuntime` (e.g. `SendMessage`).
-
-## Serialization
-
-`AgentDefinition` supports `toArray()` / `fromArray()` for serialization:
-
-```php
-$data = $definition->toArray();
-$restored = AgentDefinition::fromArray($data);
 ```

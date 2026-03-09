@@ -1,136 +1,42 @@
 ---
-title: Provider Abstraction Layer
-description: 'How provider config, runtime assembly, and drivers fit together.'
+title: Providers
+description: Provider objects are small config resolvers with optional explicit drivers.
 ---
 
-Provider abstraction has four parts:
+Provider objects sit between config and runtime assembly.
 
-1. Provider builders (`LLMProvider`, `EmbeddingsProvider`)
-2. Runtime assembly (`InferenceRuntime`, `EmbeddingsRuntime`)
-3. Driver registries and factories (`CanProvideInferenceDrivers`, `EmbeddingsDriverFactory`)
-4. Driver + adapter contracts
+## `LLMProvider`
 
-## Provider Builders
+Use it when you want a reusable inference provider object.
 
-### LLMProvider
+Factories:
 
-```php
-<?php
-use Cognesy\Polyglot\Inference\LLMProvider;
+- `LLMProvider::new()`
+- `LLMProvider::using(...)`
+- `LLMProvider::fromLLMConfig(...)`
+- `LLMProvider::fromArray(...)`
 
-$provider = LLMProvider::using('openai')
-    ->withConfigOverrides(['model' => 'gpt-4o']);
+Mutators:
 
-$config = $provider->resolveConfig();
-```
-
-Common methods:
-
-- `using(...)`, `fromLLMConfig(...)`, `fromArray(...)`, `new(...)`
 - `withLLMConfig(...)`
 - `withConfigOverrides(...)`
 - `withModel(...)`
-- `withDriver(...)` (explicit inference driver instance)
+- `withDriver(...)`
 
-### EmbeddingsProvider
+## `EmbeddingsProvider`
 
-```php
-<?php
-use Cognesy\Polyglot\Embeddings\EmbeddingsProvider;
+Use it for the same role on the embeddings side.
 
-$provider = EmbeddingsProvider::using('openai')
-    ->withConfigProvider($configProvider);
+Factories:
 
-$config = $provider->resolveConfig();
-```
+- `EmbeddingsProvider::new()`
+- `EmbeddingsProvider::fromEmbeddingsConfig(...)`
+- `EmbeddingsProvider::fromArray(...)`
 
-Common methods:
+Mutators:
 
-- `using(...)`, `fromEmbeddingsConfig(...)`, `fromArray(...)`, `new(...)`
 - `withConfig(...)`
-- `withDriver(...)` (explicit embeddings driver instance)
+- `withConfigOverrides(...)`
+- `withDriver(...)`
 
-## Runtime Assembly
-
-```php
-<?php
-use Cognesy\Polyglot\Inference\InferenceRuntime;
-
-$runtime = InferenceRuntime::fromProvider($provider);
-```
-
-Inference runtime factories:
-
-- `fromProvider(...)`
-- `fromConfig(...)`
-
-Embeddings runtime provides the same public entry points via `EmbeddingsRuntime`.
-
-## Driver Contracts
-
-Inference:
-
-```php
-interface CanProcessInferenceRequest {
-    public function makeResponseFor(InferenceRequest $request): InferenceResponse;
-    public function makeStreamResponsesFor(InferenceRequest $request): iterable;
-    public function capabilities(?string $model = null): DriverCapabilities;
-}
-```
-
-Embeddings:
-
-```php
-interface CanHandleVectorization {
-    public function handle(EmbeddingsRequest $request): HttpResponse;
-    public function fromData(array $data): ?EmbeddingsResponse;
-}
-```
-
-## Adapter Contracts
-
-Inference adapter boundary:
-
-- `CanTranslateInferenceRequest::toHttpRequest(...)`
-- `CanTranslateInferenceResponse::fromResponse(...)`
-- `CanTranslateInferenceResponse::fromStreamResponses(...)`
-- `CanTranslateInferenceResponse::toEventBody(...)`
-
-Embeddings adapter boundary:
-
-- `EmbedRequestAdapter::toHttpClientRequest(...)`
-- `EmbedResponseAdapter::fromResponse(...)`
-
-## Base Drivers
-
-`BaseInferenceRequestDriver` and `BaseEmbedDriver` implement the transport pipeline:
-
-1. map domain request to `HttpRequest`
-2. execute through shared `HttpClient`
-3. map raw response payload back to domain response
-4. emit events on request/response/failure
-
-## Driver Registry
-
-Inference drivers are selected by `LLMConfig::$driver` through `CanProvideInferenceDrivers`.
-Bundled drivers are exposed by `BundledInferenceDrivers::registry()`.
-Custom drivers are added by deriving a runtime-local registry:
-
-```php
-<?php
-use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
-use Cognesy\Polyglot\Inference\InferenceRuntime;
-
-$drivers = BundledInferenceDrivers::registry()->withDriver('my-driver', MyInferenceDriver::class);
-$runtime = InferenceRuntime::fromConfig($config, drivers: $drivers);
-```
-
-Embeddings drivers are selected by `EmbeddingsConfig::$driver` in `EmbeddingsDriverFactory`.
-Custom registration is available via:
-
-```php
-<?php
-use Cognesy\Polyglot\Embeddings\Embeddings;
-
-Embeddings::registerDriver('my-embed-driver', MyEmbeddingsDriver::class);
-```
+Unlike `LLMProvider`, `EmbeddingsProvider` does not have a `using(...)` shortcut.

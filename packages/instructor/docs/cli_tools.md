@@ -1,11 +1,14 @@
 ---
-title: 'CLI Tools'
-description: 'Command line tools included with Instructor'
+title: CLI Tools
+description: 'Command-line tools related to the broader InstructorPHP project.'
 ---
 
-Instructor comes with command line tools:
- - `./vendor/bin/instructor-setup publish <target-dir>`: Publishes `packages/*/resources` into your project directory
- - `./vendor/bin/instructor-hub`: Displays and executes Instructor examples
+The structured-output package does not require a CLI tool to work.
 
-Additional tool included with Instructor (under development):
- - `./vendor/bin/tell "<prompt to LLM>"`: Interacts with LLMs from the command line
+In the monorepo and broader InstructorPHP stack, companion tools include:
+
+- `bin/instructor-docs` for documentation workflows
+- `bin/instructor-setup` for resource publishing in larger setups
+- `bin/instructor-hub` for example and demo workflows
+
+Treat those as project tooling, not as part of the core request API.

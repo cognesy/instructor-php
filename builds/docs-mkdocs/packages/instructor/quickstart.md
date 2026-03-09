@@ -1,92 +1,46 @@
 ---
 title: Quickstart
-description: 'Start processing your data with LLMs in under 5 minutes'
+description: 'Start extracting typed data in a few minutes.'
 ---
 
-This guide will help you get started with Instructor in your PHP project in under 5 minutes.
-
-For detailed setup instructions, see [Setup](setup).
-
-
-## Install Instructor with Composer
-
-Run following command in your terminal:
+## Install
 
 ```bash
-composer require cognesy/instructor-php
-# @doctest id="4809"
+composer require cognesy/instructor-struct
+# @doctest id="a855"
 ```
 
+## Extract A Typed Object
 
-## Create and Run Example
-
-### Step 1: Prepare your OpenAI API Key
-
-In this example, we'll use OpenAI as the LLM provider. You can get it from the [OpenAI dashboard](https://platform.openai.com/).
-
-### Step 2: Create a New PHP File
-
-In your project directory, create a new PHP file `test-instructor.php`:
+Set your provider credentials in the environment, then make a request:
 
 ```php
-<?php
-require __DIR__ . '/vendor/autoload.php';
-
 use Cognesy\Instructor\StructuredOutput;
 
-// Set up OpenAI API key
-$apiKey = 'your-openai-api-key';
-putenv("OPENAI_API_KEY=" . $apiKey);
-// WARNING: In real project you should set up API key in .env file.
-
-// Step 1: Define target data structure(s)
-class City {
+final class City {
     public string $name;
     public string $country;
-    public int $population;
 }
 
-// Step 2: Use Instructor to run LLM inference
 $city = StructuredOutput::using('openai')
-    ->withResponseClass(City::class)
-    ->withMessages('What is the capital of France?')
+    ->with(
+        messages: 'What is the capital of France?',
+        responseModel: City::class,
+    )
     ->get();
-
-var_dump($city);
-// @doctest id="d5b7"
+// @doctest id="1f55"
 ```
 
-<Warning>
-You should never put your API keys directly in your real project code to avoid getting them compromised. Set them up in your .env file.
-</Warning>
+`$city` is a `City` instance. Public typed properties define the shape Instructor asks the model to return.
 
-### Step 3: Run the Example
+## Keep It Simple
 
-Now, you can run the example:
+- Use `StructuredOutput::using('<preset>')` when a preset is enough
+- Use `StructuredOutput::fromConfig(...)` when you want an explicit `LLMConfig`
+- Use `StructuredOutputRuntime` when you need retries, events, or custom pipeline behavior
 
-```bash
-php test-instructor.php
+## Next
 
-# Output:
-# object(City)#1 (3) {
-#   ["name"]=>
-#   string(5) "Paris"
-#   ["country"]=>
-#   string(6) "France"
-#   ["population"]=>
-#   int(2148000)
-# }
-# @doctest id="5129"
-```
-
-
-## Next Steps
-
-You can start using Instructor in your project right away after installation.
-
-But it's recommended to publish configuration files and prompt templates to your project directory, so you can
-customize the library's behavior and use your own prompt templates.
-
-You should also set up LLM provider API keys in your `.env` file instead of putting them directly in your code.
-
-See [Setup Instructions](setup) for more details.
+- [Setup](setup)
+- [Usage](essentials/usage)
+- [Data Model](essentials/data_model)

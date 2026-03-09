@@ -1,56 +1,41 @@
 ---
-title: Claude Code Bridge (Internals)
-description: 'Low-level Claude Code CLI bridge flow for advanced use cases.'
+title: Claude Code
+description: 'Use the Claude Code bridge for general coding workflows.'
 ---
 
-> Most users should use `AgentCtrl::claudeCode()` from the high-level API.
-> Use this page when you need direct request/command/parser control.
+Use `AgentCtrl::claudeCode()` when you want Claude Code behind the unified `agent-ctrl` API.
 
-## Core Flow
-
-```php
-use Cognesy\AgentCtrl\ClaudeCode\Application\Builder\ClaudeCommandBuilder;
-use Cognesy\AgentCtrl\ClaudeCode\Application\Dto\ClaudeRequest;
-use Cognesy\AgentCtrl\ClaudeCode\Application\Parser\ResponseParser;
-use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\OutputFormat;
-use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
-
-$request = new ClaudeRequest(
-    prompt: 'Summarize this repository.',
-    outputFormat: OutputFormat::Json,
-);
-
-$spec = (new ClaudeCommandBuilder())->buildHeadless($request);
-$result = SandboxCommandExecutor::forClaudeCode()->execute($spec);
-$response = (new ResponseParser())->parse($result, OutputFormat::Json);
-
-echo $response->messageText();
-```
-
-## Streaming
-
-For incremental events, use `OutputFormat::StreamJson` and `includePartialMessages: true`.
+## Typical Use
 
 ```php
-$request = new ClaudeRequest(
-    prompt: 'Explain the current architecture.',
-    outputFormat: OutputFormat::StreamJson,
-    includePartialMessages: true,
-);
+use Cognesy\AgentCtrl\AgentCtrl;
+
+$response = AgentCtrl::claudeCode()
+    ->withModel('claude-sonnet-4-5')
+    ->execute('Review this package and summarize the design.');
 ```
 
-## Key Types
+## Main Options
 
-- Request DTO: `ClaudeRequest`
-- Command builder: `ClaudeCommandBuilder`
-- Parser: `ResponseParser`
-- Stream events: `MessageEvent`, `ResultEvent`, `ErrorEvent`
+- `withSystemPrompt()`
+- `appendSystemPrompt()`
+- `withMaxTurns()`
+- `withPermissionMode()`
+- `continueSession()`
+- `resumeSession()`
+- `withAdditionalDirs()`
 
 ## Permission Modes
 
-Current values:
+Claude Code supports these permission modes:
 
 - `PermissionMode::DefaultMode`
 - `PermissionMode::Plan`
 - `PermissionMode::AcceptEdits`
 - `PermissionMode::BypassPermissions`
+
+## Notes
+
+- Streaming uses the same builder and callback API as the other bridges
+- Responses are normalized into `AgentResponse`
+- Session IDs from Claude Code are exposed through `sessionId()`

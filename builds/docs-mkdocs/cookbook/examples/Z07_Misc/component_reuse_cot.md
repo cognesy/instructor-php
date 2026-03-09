@@ -19,6 +19,8 @@ the accuracy of the response.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 class TimeRange
 {
@@ -30,10 +32,12 @@ class TimeRange
     public int $endTime;
 }
 
-$timeRange = StructuredOutput::using('openai')->with(
+$timeRange = new StructuredOutput(
+    StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
+        ->withMaxRetries(2)
+)->with(
     messages: [['role' => 'user', 'content' => "Workshop with Apex Industries started 9 and it took us 6 hours to complete."]],
     responseModel: TimeRange::class,
-    maxRetries: 2
 )->get();
 
 dump($timeRange);

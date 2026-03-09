@@ -28,7 +28,9 @@ require 'examples/boot.php';
 
 use Cognesy\Addons\Image\Image;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 class Vendor {
     public ?string $name = '';
     public ?string $address = '';
@@ -51,12 +53,14 @@ class Receipt {
     public float|int $total;
 }
 
-$receipt = StructuredOutput::using('anthropic')->with(
+$receipt = new StructuredOutput(
+    StructuredOutputRuntime::fromProvider(LLMProvider::using('anthropic'))
+        ->withOutputMode(OutputMode::Json)
+)->with(
     messages: Image::fromFile(__DIR__ . '/receipt.png')->toMessage(),
     responseModel: Receipt::class,
     prompt: 'Extract structured data from the receipt. Return result as JSON following this schema: <|json_schema|>',
     model: 'claude-haiku-4-5',
-    mode: OutputMode::Json,
     options: ['max_tokens' => 4096]
 )->get();
 

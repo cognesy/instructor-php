@@ -1,84 +1,43 @@
 ---
 title: Overview of Inference
-description: Quick, practical patterns for running inference with Polyglot.
+description: Quick, practical usage of the `Inference` facade.
 ---
 
-`Inference` is the main facade for text generation and structured outputs.
-Use it for one-off calls, provider switching, and streaming.
+`Inference` is the main facade for raw model responses.
 
-## Quick Start
+Most code follows one small pattern:
 
-```php
-<?php
-use Cognesy\Polyglot\Inference\Inference;
-
-$text = (new Inference())
-    ->withMessages('What is the capital of France?')
-    ->get();
-```
-
-## Use a Specific Preset
-
-Presets come from `config/llm/presets/*.yaml`.
+1. resolve a preset or runtime
+2. add messages
+3. optionally shape the response
+4. execute
 
 ```php
 <?php
+
 use Cognesy\Polyglot\Inference\Inference;
 
 $text = Inference::using('openai')
-    ->withMessages('Give me three deployment checklist items.')
+    ->withMessages('Summarize event sourcing in two sentences.')
     ->get();
 ```
 
-## Override Model and Options Per Request
+## Core Request Fields
 
-```php
-<?php
-use Cognesy\Polyglot\Inference\Inference;
+- `messages`
+- `model`
+- `tools`
+- `toolChoice`
+- `responseFormat`
+- `options`
 
-$text = (new Inference())
-    ->with(
-        messages: 'Write a 2-line product summary.',
-        model: 'gpt-4.1-nano',
-        options: ['temperature' => 0.2, 'max_tokens' => 120],
-    )
-    ->get();
-```
+## Core Execution Paths
 
-## Stream Output
+- `get()` for text
+- `response()` for `InferenceResponse`
+- `asJsonData()` for decoded JSON
+- `stream()` for `InferenceStream`
 
-```php
-<?php
-use Cognesy\Polyglot\Inference\Inference;
+## Builder Style
 
-$stream = (new Inference())
-    ->withMessages('Explain event sourcing in simple terms.')
-    ->withStreaming()
-    ->stream();
-
-foreach ($stream->deltas() as $delta) {
-    echo $delta->contentDelta;
-}
-```
-
-## Switch Providers at Runtime
-
-```php
-<?php
-use Cognesy\Polyglot\Inference\Inference;
-
-$presets = ['openai', 'anthropic', 'ollama'];
-
-foreach ($presets as $preset) {
-    $text = Inference::using($preset)
-        ->withMessages('One sentence: what is dependency injection?')
-        ->get();
-}
-```
-
-## See Also
-
-- [Inference class](./inference-class.md)
-- [Request options](./request-options.md)
-- [Streaming overview](../streaming/overview.md)
-- [Custom configuration](../advanced/custom-config.md)
+`Inference` is immutable from the caller's point of view. Each `with...()` call returns a new configured instance.

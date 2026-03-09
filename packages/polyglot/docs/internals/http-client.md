@@ -1,52 +1,13 @@
 ---
-title: HTTP Client Layer
-description: 'Understanding the HTTP client layer in Polyglot'
+title: HTTP Client
+description: Polyglot depends on the shared Instructor HTTP transport.
 ---
 
-Polyglot talks to providers through `packages/http-client`.
+Polyglot does not implement a provider transport from scratch.
+It builds on the shared HTTP package and depends on the transport contract:
 
-What matters at the Polyglot boundary:
+- `Cognesy\Http\Contracts\CanSendHttpRequests`
 
-1. One transport contract: `Cognesy\Http\Contracts\CanSendHttpRequests`
-2. One request type: `Cognesy\Http\Data\HttpRequest`
-3. One response type: `Cognesy\Http\Data\HttpResponse`
+When you call `InferenceRuntime::fromConfig(...)` or `EmbeddingsRuntime::fromConfig(...)`, Polyglot creates a default client with `HttpClientBuilder` unless you inject one.
 
-## Runtime Boundary
-
-Polyglot depends on the public HTTP transport contract, not on a specific driver:
-
-```php
-use Cognesy\Http\Contracts\CanSendHttpRequests;
-use Cognesy\Http\Data\HttpRequest;
-
-final class ExampleRuntime
-{
-    public function __construct(
-        private readonly CanSendHttpRequests $http,
-    ) {}
-
-    public function request(HttpRequest $request): string
-    {
-        return $this->http->send($request)->get()->body();
-    }
-}
-```
-
-## Streaming
-
-Streaming still returns `HttpResponse`. The response decides whether it is buffered or streamed:
-
-```php
-$response = $http->send($request)->get();
-
-if ($response->isStreamed()) {
-    foreach ($response->stream() as $chunk) {
-        // consume chunks
-    }
-}
-```
-
-## Drivers
-
-Bundled HTTP drivers are resolved by `packages/http-client`.
-Laravel-specific HTTP transport lives in `packages/laravel`, not in the baseline HTTP package.
+That keeps transport concerns separate from request and response normalization.

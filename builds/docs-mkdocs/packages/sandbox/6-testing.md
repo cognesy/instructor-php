@@ -16,7 +16,7 @@ $sandbox = MockSandbox::withResponses([
         new ExecResult(stdout: 'PHP 8.3', stderr: '', exitCode: 0, duration: 0.01),
     ],
 ]);
-// @doctest id="3785"
+// @doctest id="7088"
 ```
 
 ## Execute and Assert
@@ -25,12 +25,12 @@ $sandbox = MockSandbox::withResponses([
 $result = $sandbox->execute(['php', '-v']);
 
 echo $result->stdout();
-// @doctest id="1a49"
+// @doctest id="66bd"
 ```
 
 ## Inspect Recorded Commands
 
 ```php
 $commands = $sandbox->commands();
-// @doctest id="e7ff"
+// @doctest id="c6bc"
 ```

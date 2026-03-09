@@ -1,32 +1,30 @@
 ---
 title: JSON Schema Responses
-description: 'Request native JSON schema responses with Polyglot.'
+description: Request native schema-constrained JSON when the provider supports it.
 ---
 
-Use `responseFormat: ['type' => 'json_schema', ...]` when the provider supports native schema-constrained output.
+Use `responseFormat` with `type: json_schema` for native schema-aware output.
 
 ```php
 <?php
-use Cognesy\Polyglot\Inference\Inference;
 
-$schema = [
-    'type' => 'object',
-    'properties' => [
-        'name' => ['type' => 'string'],
-        'population' => ['type' => 'integer'],
-        'founded' => ['type' => 'integer'],
-    ],
-    'required' => ['name', 'population', 'founded'],
-];
+use Cognesy\Polyglot\Inference\Inference;
 
 $data = Inference::using('openai')
     ->with(
-        messages: 'Return city data for Paris as JSON.',
+        messages: 'Return a city record as JSON.',
         responseFormat: [
             'type' => 'json_schema',
             'json_schema' => [
-                'name' => 'city_data',
-                'schema' => $schema,
+                'name' => 'city_record',
+                'schema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'name' => ['type' => 'string'],
+                        'country' => ['type' => 'string'],
+                    ],
+                    'required' => ['name', 'country'],
+                ],
                 'strict' => true,
             ],
         ],
@@ -34,4 +32,4 @@ $data = Inference::using('openai')
     ->asJsonData();
 ```
 
-If the provider does not support native JSON schema response formats, Polyglot does not emulate them. Use Instructor for higher-level fallback strategies.
+Polyglot forwards the native schema request. It does not emulate schema enforcement for providers that lack it.

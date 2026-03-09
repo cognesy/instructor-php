@@ -249,6 +249,7 @@
                 "packages/polyglot/overview",
                 "packages/polyglot/quickstart",
                 "packages/polyglot/setup",
+                "packages/polyglot/upgrade",
                 {
                     "group": "Essentials",
                     "pages": [
@@ -360,11 +361,15 @@
                 "packages/http/10-middleware",
                 "packages/http/7-changing-client",
                 "packages/http/8-changing-client-config",
-                "packages/http/9-1-custom-clients",
-                "packages/http/11-processing-with-middleware",
-                "packages/http/12-reliability-middleware",
-                "packages/http/13-record-replay",
-                "packages/http/14-upgrade-guide"
+                "packages/http/9-1-custom-clients"
+            ]
+        },
+        {
+            "group": "Http-pool",
+            "pages": [
+                "packages/http-pool/overview",
+                "packages/http-pool/quickstart",
+                "packages/http-pool/custom-handlers"
             ]
         },
         {

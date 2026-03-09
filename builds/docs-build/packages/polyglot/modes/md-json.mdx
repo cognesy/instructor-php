@@ -1,10 +1,9 @@
 ---
 title: Markdown JSON Fallback
-description: 'Markdown JSON fallback is handled above Polyglot in 2.0.'
+description: 'Markdown-wrapped JSON is not a Polyglot 2.0 feature.'
 ---
 
-Polyglot 2.0 does not expose a markdown-JSON mode.
+Polyglot 2.0 does not expose a markdown-JSON response mode.
 
-Prompting the model to emit JSON inside markdown code fences is a structured-output fallback strategy, not a transport-level inference feature. That strategy belongs to Instructor.
-
-If you need that behavior, use Instructor and configure `Cognesy\Instructor\Enums\OutputMode::MdJson` on `StructuredOutputRuntime`.
+If you want prompt-based JSON fallback strategies, use Instructor above Polyglot.
+Polyglot itself only models native provider request fields.

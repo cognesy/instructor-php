@@ -61,7 +61,7 @@ $agent = AgentBuilder::base()
     ))
     ->withCapability(new UseSelfCritique(
         structuredOutput: StructuredOutputRuntime::fromProvider(
-            provider: LLMProvider::fromLLMConfig(ExampleConfig::llmPreset('openai')),
+            provider: LLMProvider::using('openai'),
         ),
         maxIterations: 2,  // Allow up to 2 critique iterations
     ))

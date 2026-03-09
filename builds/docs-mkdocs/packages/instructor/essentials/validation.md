@@ -1,169 +1,45 @@
-## Basic validation
+---
+title: Validation
+description: 'Validate extracted data before you use it.'
+---
 
-Instructor validates results of LLM response against validation rules specified in your data model.
+Validation runs after deserialization and before the result is considered valid.
+
+## Symfony Validation Attributes
+
+Use Symfony validation attributes on your response model when you want field-level rules.
 
 ```php
-<?php
-use Cognesy\Instructor\StructuredOutput;
+use Symfony\Component\Validator\Constraints as Assert;
+
+final class User {
+    #[Assert\NotBlank]
+    public string $name;
+
+    #[Assert\GreaterThan(17)]
+    public int $age;
+}
+// @doctest id="6e94"
+```
+
+## Retries
+
+Retries are configured on the runtime, not on the request.
+
+```php
 use Cognesy\Instructor\StructuredOutputRuntime;
-use Cognesy\Polyglot\Inference\LLMProvider;
-use Symfony\Component\Validator\Constraints as Assert;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
-class Person {
-    public string $name;
-    #[Assert\PositiveOrZero]
-    public int $age;
-}
-
-$text = "His name is Jason, he is -28 years old.";
-
-$person = (new StructuredOutput)->with(
-    messages: $text,
-    responseModel: Person::class,
-)->get();
-
-// if the resulting object does not validate, Instructor throws an exception
-// @doctest id="3132"
+$runtime = StructuredOutputRuntime::fromConfig(
+    LLMConfig::fromPreset('openai')
+)->withMaxRetries(2);
+// @doctest id="0474"
 ```
 
-> NOTE: For further details on available validation rules, check [Symfony Validation constraints](https://symfony.com/doc/current/validation.html#constraints).
-
-
-## Max Retries
-
-In case maxRetries parameter is provided and LLM response does not meet validation criteria, Instructor will make subsequent inference attempts until results meet the requirements or maxRetries is reached.
-
-Instructor uses validation errors to inform LLM on the problems identified in the response, so that LLM can try self-correcting in the next attempt.
-
-```php
-<?php
-use Symfony\Component\Validator\Constraints as Assert;
-
-class Person {
-    #[Assert\Length(min: 3)]
-    public string $name;
-    #[Assert\PositiveOrZero]
-    public int $age;
-}
-
-$text = "His name is JX, aka Jason, he is -28 years old.";
-
-$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
-    ->withMaxRetries(3);
-
-$person = (new StructuredOutput($runtime))->with(
-    messages: $text,
-    responseModel: Person::class,
-)->get();
-
-// if all LLM's attempts to self-correct the results fail, Instructor throws an exception
-// @doctest id="2716"
-```
+If validation fails, Instructor can ask the model again until the retry limit is reached.
 
 ## Custom Validation
 
-You can easily add custom validation code to your response model by using ```ValidationTrait```
-and defining validation logic in ```validate()``` method.
+If you need object-level validation, use `ValidationMixin` and return a `ValidationResult` from your model.
 
-```php
-<?php
-use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Instructor\StructuredOutputRuntime;
-use Cognesy\Polyglot\Inference\LLMProvider;
-use Cognesy\Instructor\Validation\Traits\ValidationMixin;
-
-class UserDetails
-{
-    use ValidationMixin;
-
-    public string $name;
-    public int $age;
-
-    public function validate() : array {
-        if ($this->name === strtoupper($this->name)) {
-            return [];
-        }
-        return [[
-            'message' => "Name must be in uppercase.",
-            'path' => 'name',
-            'value' => $this->name
-        ]];
-    }
-}
-
-$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
-    ->withMaxRetries(2);
-
-$user = (new StructuredOutput($runtime))->with(
-    messages: [['role' => 'user', 'content' => 'jason is 25 years old']],
-    responseModel: UserDetails::class,
-)->get();
-
-assert($user->name === "JASON");
-// @doctest id="20da"
-```
-
-Note that method ```validate()``` has to return:
- * an **empty array** if the object is valid,
- * or an array of validation violations.
-
-This information will be used by LLM to make subsequent attempts to correct the response.
-
-```php
-$violations = [
-    [
-        'message' => "Error message with violation details.",
-        'path' => 'path.to.property',
-        'value' => '' // invalid value
-    ],
-    // ...other violations
-];
-// @doctest id="0f9c"
-``` 
-
-
-## Custom Validation via Symfony `#[Assert/Callback]`
-
-Instructor uses Symfony validation component to validate extracted data.
-
-You can use ```#[Assert/Callback]``` annotation to build fully customized validation logic.
-
-```php
-<?php
-use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Instructor\StructuredOutputRuntime;
-use Cognesy\Polyglot\Inference\LLMProvider;
-use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
-
-class UserDetails
-{
-    public string $name;
-    public int $age;
-    
-    #[Assert\Callback]
-    public function validateName(ExecutionContextInterface $context, mixed $payload) {
-        if ($this->name !== strtoupper($this->name)) {
-            $context->buildViolation("Name must be in uppercase.")
-                ->atPath('name')
-                ->setInvalidValue($this->name)
-                ->addViolation();
-        }
-    }
-}
-    
-$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
-    ->withMaxRetries(2);
-
-$user = (new StructuredOutput($runtime))
-    ->with(
-        messages: [['role' => 'user', 'content' => 'jason is 25 years old']],
-        responseModel: UserDetails::class,
-    )
-    ->get();
-
-assert($user->name === "JASON");
-// @doctest id="9457"
-```
-
-> NOTE: See [Symfony docs](https://symfony.com/doc/current/reference/constraints/Callback.html) for more details on how to use Callback constraint.
+That keeps validation in one place without changing the extraction flow.

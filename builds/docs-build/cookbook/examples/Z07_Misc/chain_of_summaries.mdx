@@ -59,9 +59,9 @@ class Summary {
 /** Increasingly denser, expanded summaries */
 class ChainOfSummaries {
     /** simplified, executive view with no details, just a single statement of overall situation */
-    public string $overview;
+    public string $overview = '';
     /** @var Summary[] contains at least 3 gradually more expanded summaries of the content */
-    public array $summaries;
+    public array $summaries = [];
 }
 
 $summaries = StructuredOutput::using('openai')

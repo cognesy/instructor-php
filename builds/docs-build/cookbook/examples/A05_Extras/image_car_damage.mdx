@@ -71,7 +71,7 @@ $assessment = Image::fromFile(__DIR__ . '/car-damage.jpg')
         responseModel: DamageAssessment::class,
         prompt: 'Identify and assess each car damage location and severity separately.',
         structuredOutput: StructuredOutputRuntime::fromProvider(
-            provider: LLMProvider::fromLLMConfig(ExampleConfig::llmPreset('openai')),
+            provider: LLMProvider::using('openai'),
         ),
         model: 'gpt-4o-mini',
         options: ['max_tokens' => 4096]

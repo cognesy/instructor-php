@@ -19,8 +19,10 @@ a manageable set of properties.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Validation\Traits\ValidationMixin;
 use Cognesy\Instructor\Validation\ValidationResult;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 class Property
 {
@@ -57,10 +59,13 @@ $text = <<<TEXT
     a small house in Alamo. He likes to play guitar.
     TEXT;
 
-$user = StructuredOutput::using('openai')->with(
+$user = new StructuredOutput(
+    StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
+        ->withMaxRetries(1)
+)->with(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: UserDetail::class,
-    maxRetries: 1 // change to 0 to see validation error
+    // change runtime maxRetries to 0 to see validation error
 )->get();
 
 dump($user);

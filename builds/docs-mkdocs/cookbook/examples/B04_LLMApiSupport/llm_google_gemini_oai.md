@@ -8,15 +8,16 @@ id: '821d'
 Google offers Gemini models which perform well in benchmarks.
 
 Supported modes:
- - OutputMode::MdJson - fallback mode
- - OutputMode::Json - recommended
- - OutputMode::Tools - supported
+ - Instructor markdown-JSON fallback - fallback mode
+ - native JSON object response_format - recommended
+ - tool calling - supported
 
 Here's how you can use Instructor with Gemini API in OpenAI-compatible mode.
 
 ```php
 <?php
 
+use Cognesy\Http\Config\DebugConfig;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
@@ -25,10 +26,10 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 require 'examples/boot.php';
 
-$http = (new HttpClientBuilder())->withDebugConfig(ExampleConfig::debugPreset('detailed'))->create();
+$http = (new HttpClientBuilder())->withDebugConfig(DebugConfig::fromPreset('detailed'))->create();
 
 $answer = Inference::fromRuntime(InferenceRuntime::fromConfig(
-        config: ExampleConfig::llmPreset('gemini-oai'), // use OpenAI-compatible Gemini config (v1beta/openai)
+        config: LLMConfig::fromPreset('gemini-oai'), // use OpenAI-compatible Gemini config (v1beta/openai)
         httpClient: $http,
     ))
     ->with(

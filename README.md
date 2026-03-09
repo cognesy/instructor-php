@@ -13,6 +13,89 @@ This monorepo contains a set of dev-friendly, framework agnostic components offe
 - Docs website (Mintlify) https://docs.instructorphp.com
 - Docs (Github Pages) https://cognesy.github.io/instructor-php/
 
+## Overview of Capabilities
+
+The library offers a set of small, focused building blocks.
+
+### Structured output
+
+Purpose: turn messy model output into typed PHP data.
+Benefit: you stop hand-parsing JSON or text before using LLM results.
+
+```php
+use Cognesy\Instructor\StructuredOutput;
+
+final class Person {
+    public string $name;
+    public int $age;
+}
+
+$person = StructuredOutput::using('openai')
+    ->with(messages: 'Jason is 28 years old.', responseModel: Person::class)
+    ->get();
+```
+
+Detailed docs: [packages/instructor/docs/](packages/instructor/docs/)
+
+### Unified inference
+
+Purpose: call different LLM providers through one API.
+Benefit: switch providers without rewriting request code.
+
+```php
+use Cognesy\Polyglot\Inference\Inference;
+
+$text = Inference::using('openai')
+    ->withMessages('Say hello in one sentence.')
+    ->get();
+```
+
+Detailed docs: [packages/polyglot/docs/](packages/polyglot/docs/)
+
+### Embeddings
+
+Purpose: generate vectors through the same provider layer.
+Benefit: keep retrieval and inference in one stack.
+
+```php
+use Cognesy\Polyglot\Embeddings\Embeddings;
+
+$vectors = Embeddings::using('openai')
+    ->withInputs(['hello world'])
+    ->vectors();
+```
+
+Detailed docs: [packages/polyglot/docs/](packages/polyglot/docs/)
+
+### Agents SDK
+
+Purpose: build tool-using agents as a simple loop over state.
+Benefit: add tools and control flow without inventing your own agent runtime first.
+
+```php
+use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Data\AgentState;
+
+$result = AgentLoop::default()->execute(
+    AgentState::empty()->withUserMessage('What is 2+2?')
+);
+```
+
+Detailed docs: [packages/agents/docs/](packages/agents/docs/)
+
+### Code agent bridges
+
+Purpose: drive external coding agents like Codex, Claude Code, and OpenCode from PHP.
+Benefit: automate reviews, summaries, and coding workflows through one interface.
+
+```php
+use Cognesy\AgentCtrl\AgentCtrl;
+
+$response = AgentCtrl::codex()->execute('Summarize this repository.');
+```
+
+Detailed docs: [packages/agent-ctrl/docs/](packages/agent-ctrl/docs/)
+
 
 ## What is Instructor?
 
@@ -149,6 +232,7 @@ Instructor validates results of LLM response against validation rules specified 
 > For further details on available validation rules, check [Symfony Validation constraints](https://symfony.com/doc/current/validation.html#constraints).
 
 ```php
+use Cognesy\Instructor\StructuredOutput;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class Person {
@@ -226,8 +310,9 @@ Polyglot takes care of translation of familiar OpenAI chat completion API conven
 ### Example (using sync API)
 
 ```php
-$answer = (new Inference)
-    ->using('openai') // specify LLM connection preset (defined in config)
+use Cognesy\Polyglot\Inference\Inference;
+
+$answer = Inference::using('openai') // specify LLM connection preset (defined in config)
     ->with(messages: 'What is capital of Germany')
     ->get();
 
@@ -237,8 +322,9 @@ echo $answer;
 ### Example (using streaming API)
 
 ```php
-$stream = (new Inference)
-    ->using('anthropic') // specify LLM connection preset (defined in config)
+use Cognesy\Polyglot\Inference\Inference;
+
+$stream = Inference::using('anthropic') // specify LLM connection preset (defined in config)
     ->withMessages([['role' => 'user', 'content' => 'Describe capital of Brasil']])
     ->withOptions(['max_tokens' => 256])
     ->withStreaming()
@@ -253,20 +339,17 @@ foreach ($stream as $delta) {
 ### Example (customize LLM connection)
 
 ```php
-$config = new LLMConfig(
-    apiUrl  : 'https://api.deepseek.com',
-    apiKey  : Env::get('DEEPSEEK_API_KEY'),
-    endpoint: '/chat/completions',
-    model: 'deepseek-chat',
-    maxTokens: 128,
-    driver: 'deepseek',
-);
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Inference;
 
-$answer = (new Inference)
-    ->withConfig($config)
+$answer = Inference::fromConfig(LLMConfig::fromArray([
+    'driver' => 'deepseek',
+    'apiUrl' => 'https://api.deepseek.com',
+    'endpoint' => '/chat/completions',
+    'model' => 'deepseek-chat',
+]))
     ->withMessages([['role' => 'user', 'content' => 'What is the capital of France']])
     ->withOptions(['max_tokens' => 64])
-    ->withStreaming()
     ->get();
 
 echo $answer;

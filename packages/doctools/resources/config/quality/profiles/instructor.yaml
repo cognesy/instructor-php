@@ -1,16 +1,46 @@
 version: 1
 rules:
-  - id: instructor.no_structuredoutput_fromconfig
+  - id: instructor.no_old_package_name_require
     engine: regex
     scope: markdown
-    pattern: '/\bStructuredOutput::fromConfig\s*\(/'
-    message: 'Use runtime configuration APIs (StructuredOutputRuntime::fromConfig(...) or StructuredOutput::withConfig(...)).'
+    pattern: '/\bcomposer\s+require\s+cognesy\/instructor-php\b/'
+    message: 'Install the core package with `composer require cognesy/instructor-struct`.'
+
+  - id: instructor.no_old_package_name_update
+    engine: regex
+    scope: markdown
+    pattern: '/\bcomposer\s+update\s+cognesy\/instructor-php\b/'
+    message: 'Update the core package with `composer update cognesy/instructor-struct`.'
+
+  - id: instructor.no_structuredoutput_withconfig
+    engine: regex
+    scope: markdown
+    pattern: '/\bStructuredOutput::withConfig\s*\(/'
+    message: 'StructuredOutput has no withConfig(...) factory. Use StructuredOutput::fromConfig(...), StructuredOutput::using(...), or StructuredOutputRuntime::withConfig(...).'
+
+  - id: instructor.no_structuredoutput_fromprovider
+    engine: regex
+    scope: markdown
+    pattern: '/\bStructuredOutput::fromProvider\s*\(/'
+    message: 'StructuredOutput has no fromProvider(...) factory. Use StructuredOutputRuntime::fromProvider(...), then inject it with new StructuredOutput($runtime) or ->withRuntime(...).'
 
   - id: instructor.no_structuredoutput_fromdsn
     engine: regex
     scope: markdown
+    pattern: '/\bStructuredOutput::fromDsn\s*\(/'
+    message: 'StructuredOutput has no fromDsn(...) factory. Build an LLMConfig with LLMConfig::fromDsn(...), then use StructuredOutput::fromConfig(...) or StructuredOutputRuntime::fromConfig(...).'
+
+  - id: instructor.no_structuredoutputruntime_fromdsn
+    engine: regex
+    scope: markdown
     pattern: '/\bStructuredOutputRuntime::fromDsn\s*\(/'
     message: 'Use LLMConfig::fromDsn(...), then pass StructuredOutputRuntime::fromConfig(...) into StructuredOutput.'
+
+  - id: instructor.no_structuredoutputruntime_using
+    engine: regex
+    scope: markdown
+    pattern: '/\bStructuredOutputRuntime::using\s*\(/'
+    message: 'StructuredOutputRuntime has no using(...) shortcut. Use StructuredOutput::using(...), or build the runtime with StructuredOutputRuntime::fromConfig(LLMConfig::fromPreset(...)).'
 
   - id: instructor.no_structuredoutput_fromruntime
     engine: regex

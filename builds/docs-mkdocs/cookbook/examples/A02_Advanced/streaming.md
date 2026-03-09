@@ -16,7 +16,9 @@ generated.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Cli\Console;
 
 class UserRole
@@ -63,12 +65,14 @@ $text = <<<TEXT
     San Francisco. He likes to play soccer and climb mountains.
     TEXT;
 
-$stream = StructuredOutput::using('openai')
+$stream = (new StructuredOutput(
+    StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
+        ->withOutputMode(OutputMode::Json)
+))
     //->wiretap(fn(Event $e) => $e->print())
     ->withMessages($text)
     ->withResponseClass(UserDetail::class)
     ->withStreaming()
-    ->withOutputMode(OutputMode::Json)
     ->stream();
 
 foreach ($stream->partials() as $partial) {

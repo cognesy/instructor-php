@@ -14,7 +14,7 @@ $result = $sandbox->execute(
         echo $chunk;
     }
 );
-// @doctest id="c8cc"
+// @doctest id="c88a"
 ```
 
 ## Result API
@@ -34,5 +34,5 @@ $result = $sandbox->execute(
 if ($result->success()) {
     echo $result->stdout();
 }
-// @doctest id="42ac"
+// @doctest id="a502"
 ```

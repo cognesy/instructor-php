@@ -1,0 +1,31 @@
+version: 1
+rules:
+  - id: agents.no_namelist_array_constructor
+    engine: regex
+    scope: markdown
+    pattern: '/\bnew\s+NameList\s*\(\s*\[/'
+    message: 'NameList is variadic. Use `new NameList(''a'', ''b'')` or `NameList::fromArray([...])`.'
+
+  - id: agents.no_omitted_tools_empty_lists
+    engine: regex
+    scope: markdown
+    pattern: '/omitted tool lists are normalized to empty lists|omitted tool lists? (?:is|are) normalized to empty/i'
+    message: 'Omitted `tools` stay `null` and mean inherit-all tools; they are not normalized to empty lists.'
+
+  - id: agents.no_explicit_tools_required_for_subagents
+    engine: regex
+    scope: markdown
+    pattern: '/declare\s+`?tools`?\s+explicitly\s+when\s+subagents\s+need\s+tools/i'
+    message: 'Subagents inherit all tools when `tools` is omitted. Document explicit allow-lists only when restricting tools.'
+
+  - id: agents.no_driver_with_event_handler
+    engine: regex
+    scope: markdown
+    pattern: '/\b(?:ToolCallingDriver|ReActDriver|FakeAgentDriver)::withEventHandler\s*\(/'
+    message: 'Drivers do not expose `withEventHandler(...)`. Wire events through AgentLoop or AgentBuilder runtime composition.'
+
+  - id: agents.no_usefiletools_implies_search_tools
+    engine: regex
+    scope: markdown
+    pattern: '/\bUseFileTools\b(?:\s+capability)?\s+(?:includes?|installs?|provides?)\b[\s\S]{0,120}\b(?:search_files|list_dir)\b/i'
+    message: 'UseFileTools installs `read_file`, `write_file`, and `edit_file` only. Add `SearchFilesTool` or `ListDirTool` separately.'

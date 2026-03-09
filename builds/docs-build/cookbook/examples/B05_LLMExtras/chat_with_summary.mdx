@@ -60,7 +60,7 @@ $student = new ScriptedParticipant(
 $expert = new LLMParticipant(
     name: 'expert',
     inference: InferenceRuntime::fromProvider(
-        provider: LLMProvider::fromLLMConfig(ExampleConfig::llmPreset('openai')),
+        provider: LLMProvider::using('openai'),
     ),
     systemPrompt: 'You are a helpful assistant explaining Challenger Sale. Be very brief (one sentence), pragmatic and focused on practical bizdev problems.'
 );
@@ -90,7 +90,7 @@ $chat = ChatFactory::default(
             summarySection: 'summary',
             summarizer: new SummarizeMessages(
                 inference: InferenceRuntime::fromProvider(
-                    provider: LLMProvider::fromLLMConfig(ExampleConfig::llmPreset('openai')),
+                    provider: LLMProvider::using('openai'),
                 ),
             ),
             events: $events,

@@ -16,7 +16,9 @@ we receive the expected final fields.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Cli\Console;
 use Cognesy\Utils\Str;
 
@@ -41,9 +43,12 @@ $onPartialUpdate = function (object $partial) use (&$partialsCount): void {
     dump($partial);
 };
 
-$stream = StructuredOutput::using('openai-responses')
+$runtime = StructuredOutputRuntime::fromProvider(
+    LLMProvider::using('openai-responses'),
+)->withOutputMode(OutputMode::JsonSchema);
+
+$stream = (new StructuredOutput($runtime))
     // ->withHttpClient(...) // pass a debug-enabled HTTP client when needed
-    ->withOutputMode(OutputMode::JsonSchema)
     ->withResponseClass(PersonProfile::class)
     ->withMessages($text)
     ->withOptions(['max_output_tokens' => 384])

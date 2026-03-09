@@ -1,63 +1,14 @@
-## Dynamic Structures
+---
+title: Structures
+description: 'Use schema-driven output when you do not want a PHP class.'
+---
 
-Use dynamic structures when output shape is decided at runtime.
+Dynamic structure objects are not a core feature of `cognesy/instructor-struct`.
 
-```php
-<?php
-use Cognesy\Dynamic\Structure;
-use Cognesy\Schema\SchemaBuilder;
+In this package, the direct options are:
 
-$personSchema = SchemaBuilder::define('person')
-    ->string('name')
-    ->int('age', required: false)
-    ->schema();
+- a PHP class
+- a JSON schema array
+- a helper response model such as `Scalar`, `Sequence`, or `Maybe`
 
-$personModel = Structure::fromSchema($personSchema);
-// @doctest id="e0eb"
-```
-
-## Schema Definition
-
-Define shape with `SchemaBuilder` (not with `Structure`):
-
-- scalars: `string()`, `int()`, `float()`, `bool()`, `array()`
-- constrained values: `enum()`, `option()`
-- nested values: `shape()`, `collection()`, `object()`
-
-```php
-<?php
-use Cognesy\Schema\SchemaBuilder;
-
-$schema = SchemaBuilder::define('person')
-    ->string('name')
-    ->shape('address', fn(SchemaBuilder $builder) => $builder
-        ->string('city')
-        ->string('zip', required: false)
-    )
-    ->schema();
-// @doctest id="1289"
-```
-
-## Extraction
-
-```php
-<?php
-use Cognesy\Dynamic\Structure;
-use Cognesy\Instructor\StructuredOutput;
-
-$person = (new StructuredOutput)->with(
-    messages: 'Jane Doe is 25 years old.',
-    responseModel: Structure::fromSchema($schema),
-)->get();
-
-$data = $person->toArray();
-// @doctest id="a46e"
-```
-
-## Runtime Value API
-
-`Structure` is immutable:
-
-- `set()` and `withData()` return new instances
-- `get()` reads value or schema default
-- `validate()` checks schema compliance
+If you need a fully dynamic structure object, use a schema array here or add the companion dynamic package in the broader InstructorPHP stack.

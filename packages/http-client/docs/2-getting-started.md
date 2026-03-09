@@ -1,7 +1,9 @@
 ---
 title: Getting Started
-description: 'Smallest useful sync request example.'
+description: 'Start with a single request, then add config or mocks when needed.'
 ---
+
+Create a client and send a request:
 
 ```php
 use Cognesy\Http\Data\HttpRequest;
@@ -21,7 +23,7 @@ echo $response->statusCode();
 echo $response->body();
 ```
 
-Use typed config only when you need a specific driver:
+Use `HttpClientConfig` when you want a specific driver or timeout profile:
 
 ```php
 use Cognesy\Http\Config\HttpClientConfig;
@@ -29,7 +31,7 @@ use Cognesy\Http\Config\HttpClientConfig;
 $client = HttpClient::fromConfig(new HttpClientConfig(driver: 'guzzle'));
 ```
 
-For tests:
+For tests, use the builder with the mock driver:
 
 ```php
 use Cognesy\Http\Creation\HttpClientBuilder;

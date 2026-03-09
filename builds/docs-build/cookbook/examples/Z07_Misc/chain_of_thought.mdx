@@ -39,6 +39,7 @@ $employee = StructuredOutput::using('openai')->with(
 
 dump($employee);
 
-assert($employee->yearOfEmployment === 2014);
+assert($employee->reasoning !== '');
+assert($employee->yearOfEmployment > 0);
 ?>
 ```

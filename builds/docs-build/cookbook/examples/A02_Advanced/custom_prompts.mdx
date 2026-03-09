@@ -20,46 +20,49 @@ require 'examples/boot.php';
 
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 class User {
     public int $age;
     public string $name;
 }
 
-$structuredOutput = StructuredOutput::using('openai')
-    // let's dump the request data to see how customized prompts look like in requests
-    ->onEvent(HttpRequestSent::class, fn(HttpRequestSent $event) => dump($event));
+$provider = LLMProvider::using('openai');
+$toolsRuntime = StructuredOutputRuntime::fromProvider($provider)->withOutputMode(OutputMode::Tools);
+$jsonRuntime = StructuredOutputRuntime::fromProvider($provider)->withOutputMode(OutputMode::Json);
+$mdJsonRuntime = StructuredOutputRuntime::fromProvider($provider)->withOutputMode(OutputMode::MdJson);
 
 print("\n# Request for OutputMode::Tools:\n\n");
-$user = $structuredOutput
+$toolsRuntime->onEvent(HttpRequestSent::class, fn(HttpRequestSent $event) => dump($event));
+$user = (new StructuredOutput($toolsRuntime))
     ->with(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
         prompt: "\nYour task is to extract correct and accurate data from the messages using provided tools.\n",
-        mode: OutputMode::Tools
     )->get();
 echo "\nRESPONSE:\n";
 dump($user);
 
 print("\n# Request for OutputMode::Json:\n\n");
-$user = $structuredOutput
+$jsonRuntime->onEvent(HttpRequestSent::class, fn(HttpRequestSent $event) => dump($event));
+$user = (new StructuredOutput($jsonRuntime))
     ->with(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
         prompt: "\nYour task is to respond correctly with JSON object. Response must follow JSONSchema:\n<|json_schema|>\n",
-        mode: OutputMode::Json
     )->get();
 echo "\nRESPONSE:\n";
 dump($user);
 
 print("\n# Request for OutputMode::MdJson:\n\n");
-$user = $structuredOutput
+$mdJsonRuntime->onEvent(HttpRequestSent::class, fn(HttpRequestSent $event) => dump($event));
+$user = (new StructuredOutput($mdJsonRuntime))
     ->with(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
         prompt: "\nYour task is to respond correctly with strict JSON object containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n<|json_schema|>\n",
-        mode: OutputMode::MdJson
     )->get();
 echo "\nRESPONSE:\n";
 dump($user);

@@ -18,7 +18,7 @@ use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\HttpClient;
-use Cognesy\Http\Middleware\Base\BaseMiddleware;
+use Cognesy\Http\Extras\Support\BaseMiddleware;
 
 // Scenario: Add a request header and uppercase a JSON field in a sync response
 
@@ -57,7 +57,7 @@ $driver->addResponse(
     method: 'POST'
 );
 
-$client = new HttpClient(driver: $driver);
+$client = HttpClient::fromDriver($driver);
 $client = $client->withMiddleware(new UppercaseBodyMiddleware());
 
 $request = new HttpRequest(
@@ -68,7 +68,7 @@ $request = new HttpRequest(
     options: [],
 );
 
-$response = $client->withRequest($request)->get();
+$response = $client->send($request)->get();
 
 echo "Status: {$response->statusCode()}\n";
 echo "Body:   {$response->body()}\n";

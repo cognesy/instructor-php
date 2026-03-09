@@ -1,106 +1,28 @@
-## Extracting Sequences of Objects
+---
+title: Sequences
+description: 'Extract collections of objects.'
+---
 
-Sequence is a wrapper class that can be used to represent a list of objects to
-be extracted by Instructor from provided context.
-
-It is usually more convenient not create a dedicated class with a single array
-property just to handle a list of objects of a given class.
-
-```php
-<?php
-class Person
-{
-    public string $name;
-    public int $age;
-}
-
-$text = <<<TEXT
-    Jason is 25 years old. Jane is 18 yo. John is 30 years old
-    and Anna is 2 years younger than him.
-TEXT;
-
-$list = (new StructuredOutput)
-    ->withResponseModel(Sequence::of(Person::class))
-    ->with(
-        messages: [['role' => 'user', 'content' => $text]],
-    )->get();
-// @doctest id="8d8c"
-```
-
-
-## Streaming Sequences
-
-Additional, unique feature of sequences is that they can be streamed per each
-completed item in a sequence, rather than on any property update.
-
-> **NOTE** This feature requires streaming to be enabled.
-
-To receive sequence updates iterate `stream()->sequence()`.
-
-Each yielded value is the current sequence snapshot. You can get the last added
-object from the sequence via `$sequence->last()`.
-
-Remember that while the sequence is being updated, the data is not validated -
-only when the sequence is fully extracted, the objects are validated and a full
-sequence is returned (see example below).
+Use `Sequence` when the result is a list of typed objects.
 
 ```php
-<?php
-class Person
-{
-    public string $name;
-    public int $age;
-}
+use Cognesy\Instructor\Extras\Sequence\Sequence;
 
-function updateUI(Person $person) {
-    // add newly extracted person to the UI list
-    $this->ui->appendToList($person);
-    // remember those objects are not validated yet
-}
-
-$text = <<<TEXT
-    Jason is 25 years old. Jane is 18 yo. John is 30 years old
-    and Anna is 2 years younger than him.
-TEXT;
-
-$stream = (new StructuredOutput)
-    ->withResponseModel(Sequence::of(Person::class))
-    ->with(
-        messages: [['role' => 'user', 'content' => $text]],
-        options: ['stream' => true],
-    )
-    ->stream();
-
-foreach ($stream->sequence() as $sequence) {
-    updateUI($sequence->last()); // get last added object
-}
-
-$list = $stream->finalValue();
-
-// now the list is fully extracted and validated
-foreach ($list as $person) {
-    // do something with each person
-    $this->db->save($person);
-}
-// @doctest id="7c22"
+$people = (new StructuredOutput)
+    ->with(messages: $text, responseModel: Sequence::of(Person::class))
+    ->get();
+// @doctest id="32ed"
 ```
 
+`Sequence` gives you collection-style helpers such as `count()`, `first()`, `last()`, `get()`, and `all()`.
 
-## Working with Sequences
+## Stream Completed Items
 
-Sequences offer array access (via ArrayAccess) and convenience methods
-to work with the list of extracted objects.
+When streaming a sequence, `sequence()` yields completed items as they become stable:
 
 ```php
-<?php
-$sequence->count();   // returns the number of extracted items
-$sequence->first();   // returns the first extracted item
-$sequence->last();    // returns the last extracted item
-$sequence->get(1);    // returns the second extracted item
-$sequence->toArray(); // returns the list of extracted items as an array
-// @doctest id="20b2"
+foreach ($stream->sequence() as $person) {
+    // completed item
+}
+// @doctest id="a7f3"
 ```
-
-## Streaming sequence updates
-
-See: [Streaming and partial updates](/advanced/partials) for more information on how to get partial updates and streaming of sequences.

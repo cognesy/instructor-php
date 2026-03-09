@@ -1,21 +1,19 @@
 ---
 title: JSON Object Responses
-description: 'Request native JSON object responses with Polyglot.'
+description: Ask the provider for native JSON object output.
 ---
 
-Use `responseFormat: ['type' => 'json_object']` when the provider supports native JSON object output.
+Use `responseFormat(['type' => 'json_object'])` when the provider supports native JSON object responses.
 
 ```php
 <?php
+
 use Cognesy\Polyglot\Inference\Inference;
 
 $data = Inference::using('openai')
-    ->with(
-        messages: 'Return JSON with name, population, and founded year for Paris.',
-        responseFormat: ['type' => 'json_object'],
-        options: ['max_tokens' => 128],
-    )
+    ->withMessages('Return JSON with keys "name" and "role".')
+    ->withResponseFormat(['type' => 'json_object'])
     ->asJsonData();
 ```
 
-This requests JSON output, but strict schema enforcement depends on provider support. Use native JSON schema response formats when you need strict schema validation.
+`asJsonData()` only decodes the returned content. Validation rules still depend on the provider and your prompt.

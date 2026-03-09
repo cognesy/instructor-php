@@ -5,13 +5,13 @@ id: 'dc10'
 ---
 ## Overview
 
-Please note that the larger Mistral models support OutputMode::Json, which is much more
-reliable than OutputMode::MdJson.
+Please note that the larger Mistral models support native JSON object response_format, which is much more
+reliable than Instructor markdown-JSON fallback.
 
-Mode compatibility:
-- OutputMode::Tools - selected models
-- OutputMode::Json - selected models
-- OutputMode::MdJson
+Inference feature compatibility:
+- tool calling - selected models
+- native JSON object response_format - selected models
+- Instructor markdown-JSON fallback
 
 
 ## Example

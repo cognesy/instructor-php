@@ -24,7 +24,7 @@ use Cognesy\Utils\Str;
 $xaiApiKey = (string) Env::get('XAI_API_KEY', '');
 $dsn = "driver=xai,apiUrl=https://api.x.ai/v1,endpoint=/chat/completions,apiKey={$xaiApiKey},model=grok-3";
 
-$answer = Inference::fromLLMConfig(LLMConfig::fromArray(Dsn::fromString($dsn)->toArray()))
+$answer = Inference::fromConfig(LLMConfig::fromArray(Dsn::fromString($dsn)->toArray()))
     ->with(
         messages: [['role' => 'user', 'content' => 'What is the capital of France']],
         options: ['max_tokens' => 64]

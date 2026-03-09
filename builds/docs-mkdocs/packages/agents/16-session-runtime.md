@@ -8,17 +8,17 @@ id: session-runtime
 ## Overview
 
 `SessionRuntime` manages persisted agent sessions.
-It loads a session, applies an action, saves, and returns the persisted result.
+It loads a session, applies an action, saves, and returns the new session state.
 
-Use it when you need multi-request workflows, resumable conversations, or cross-process execution.
+Use it for multi-request workflows, resumable conversations, and cross-process execution.
 
 ## Core Types
 
-- `AgentSession` - aggregate: session header + `AgentDefinition` + `AgentState`
-- `SessionId` - session identifier value object
+- `AgentSession` - session info, definition, and current `AgentState`
+- `SessionId` - session identifier
 - `SessionRepository` - repository over a store
 - `CanStoreSessions` - persistence contract
-- `CanExecuteSessionAction` - action contract
+- `CanExecuteSessionAction` - write action contract
 - `CanManageAgentSessions` - runtime contract
 
 ## Runtime Contract
@@ -31,7 +31,7 @@ interface CanManageAgentSessions
     public function getSession(SessionId $sessionId): AgentSession;
     public function execute(SessionId $sessionId, CanExecuteSessionAction $action): AgentSession;
 }
-// @doctest id="40e6"
+// @doctest id="df54"
 ```
 
 Read methods do not persist mutations.
@@ -61,34 +61,17 @@ $updated = $runtime->execute(
     $session->sessionId(),
     new SendMessage('Hello', $loopFactory),
 );
-// @doctest id="9554"
+// @doctest id="7ec1"
 ```
 
-## Session Management APIs
-
-### Load one session
+## Core Operations
 
 ```php
 $session = $runtime->getSession($sessionId);
 $info = $runtime->getSessionInfo($sessionId);
-// @doctest id="3ccb"
-```
-
-### List all sessions
-
-```php
 $list = $runtime->listSessions();
-foreach ($list->all() as $header) {
-    echo $header->sessionId()->value . "\n";
-}
-// @doctest id="e7e7"
-```
-
-### Execute an action
-
-```php
 $next = $runtime->execute($sessionId, $action);
-// @doctest id="1544"
+// @doctest id="08ec"
 ```
 
 Always use the returned session version for the next write.
@@ -101,21 +84,19 @@ Lifecycle:
 - `SuspendSession`
 - `ClearSession`
 
-Configuration/state:
+Configuration and state:
 
 - `ChangeModel`
 - `ChangeSystemPrompt`
 - `WriteMetadata`
 - `UpdateTask`
 
-Execution/branching:
+Execution and branching:
 
 - `SendMessage`
-- `ForkSession` (create a new branch session object)
+- `ForkSession`
 
-## Management Recipes
-
-### Suspend or resume a session
+## Common Actions
 
 ```php
 use Cognesy\Agents\Session\Actions\ResumeSession;
@@ -123,19 +104,15 @@ use Cognesy\Agents\Session\Actions\SuspendSession;
 
 $runtime->execute($sessionId, new SuspendSession());
 $runtime->execute($sessionId, new ResumeSession());
-// @doctest id="e187"
+// @doctest id="52f1"
 ```
-
-### Clear conversation state
 
 ```php
 use Cognesy\Agents\Session\Actions\ClearSession;
 
 $runtime->execute($sessionId, new ClearSession());
-// @doctest id="6e1f"
+// @doctest id="abe4"
 ```
-
-### Fork to a new session branch
 
 ```php
 use Cognesy\Agents\Session\Actions\ForkSession;
@@ -143,13 +120,8 @@ use Cognesy\Agents\Session\Actions\ForkSession;
 $source = $runtime->getSession($sessionId);
 $forked = (new ForkSession())->executeOn($source);
 $forked = $repo->create($forked);
-// @doctest id="99d5"
+// @doctest id="732a"
 ```
-
-`SessionRuntime::execute()` persists updates to the loaded session ID.
-For a new branch ID, create the fork and persist it via repository `create()`.
-
-### Update prompt or metadata
 
 ```php
 use Cognesy\Agents\Session\Actions\ChangeSystemPrompt;
@@ -159,7 +131,7 @@ use Cognesy\Agents\Session\Actions\WriteMetadata;
 $runtime->execute($sessionId, new ChangeSystemPrompt('You are concise and direct.'));
 $runtime->execute($sessionId, new ChangeModel($llmConfig));
 $runtime->execute($sessionId, new WriteMetadata('ticket_id', 'OPS-142'));
-// @doctest id="ea07"
+// @doctest id="8909"
 ```
 
 ## Versioning and Conflicts
@@ -167,20 +139,20 @@ $runtime->execute($sessionId, new WriteMetadata('ticket_id', 'OPS-142'));
 Stores use optimistic locking.
 
 - `create()` requires version `0` and persists as version `1`
-- `save()` requires incoming version == stored version
-- persisted result is returned with incremented version
+- `save()` requires incoming version to match the stored version
+- the persisted session is returned with the next version
 
 Errors:
 
 - `SessionNotFoundException`
 - `SessionConflictException`
-- `InvalidSessionFileException` (file store)
+- `InvalidSessionFileException`
 
 ## Session Lifecycle vs Execution Lifecycle
 
 Session lifecycle (`AgentSession`): `active`, `suspended`, `completed`, `failed`, `deleted`.
 
-Execution lifecycle (`AgentState`): one run at a time, resettable via `forNextExecution()`.
+Execution lifecycle (`AgentState`): one execution at a time, reset between runs.
 
 `AgentSession::withState()` does not derive session status from execution status.
 Session status transitions are explicit.
@@ -211,7 +183,7 @@ $hook = new class implements CanControlAgentSession {
 
 $hooks = SessionHookStack::empty()->with($hook, priority: 100);
 $runtime = new SessionRuntime($repo, $events, $hooks);
-// @doctest id="47ee"
+// @doctest id="9b70"
 ```
 
 ## Events
@@ -223,11 +195,3 @@ $runtime = new SessionRuntime($repo, $events, $hooks);
 - `SessionSaved`
 - `SessionLoadFailed`
 - `SessionSaveFailed`
-
-Attach listeners (or `wiretap()`) on the injected event handler to observe session activity.
-
-## Related
-
-- [Agent Templates](14-agent-templates.md)
-- [Subagents](15-subagents.md)
-- [Testing Agents](10-testing.md)

@@ -55,7 +55,7 @@ function printCostBreakdown(Usage $usage, Pricing $pricing): void {
 //
 // Then calculateCost() works automatically:
 //
-// $response = StructuredOutput::fromLLMConfig($llmConfig)
+// $response = StructuredOutput::fromConfig($llmConfig)
 //     ->with(messages: $text, responseModel: User::class)
 //     ->response();
 // $cost = $response->usage()->calculateCost();

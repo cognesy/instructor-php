@@ -104,9 +104,30 @@ foreach ($client->stream($request) as $chunk) {
 - Streaming-first design
 - Middleware pipeline
 - Multiple backends
-- Connection pooling
+- Single-request transport only
 
 [**→ HTTP Client Documentation**](/packages/http-client/introduction)
+
+---
+
+### HTTP Pool
+
+**Use this when you need concurrent request execution.**
+
+`http-pool` handles fan-out workloads. It uses the same request and response objects as `http-client`, but the execution model is separate and focused on batching.
+
+```php
+<?php
+$pool = HttpPool::default();
+$responses = $pool->pool($requests, maxConcurrent: 4);
+```
+
+**Why use it:**
+- Concurrent request execution
+- Typed request and response collections
+- Separate from single-request transport
+
+[**→ HTTP Pool Documentation**](/packages/http-pool/overview)
 
 ---
 

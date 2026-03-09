@@ -19,7 +19,7 @@ $result = $loop->execute($state);
 
 echo $result->finalResponse()->toString();
 // "2 + 2 equals 4."
-// @doctest id="7352"
+// @doctest id="7378"
 ```
 
 ## What Happens
@@ -51,7 +51,7 @@ $result = $loop->execute($state);
 
 echo $result->finalResponse()->toString();
 // "The weather in Paris is 72°F and sunny."
-// @doctest id="7bbd"
+// @doctest id="d55d"
 ```
 
 ## Customizing the Loop
@@ -60,7 +60,7 @@ Add a tool to a default loop:
 
 ```php
 $loop = AgentLoop::default()->withTool($myTool);
-// @doctest id="ae18"
+// @doctest id="8437"
 ```
 
 Swap the driver to use ReAct reasoning:
@@ -85,7 +85,7 @@ $loop = AgentLoop::default()->withDriver(new ReActDriver(
     structuredOutput: $structuredOutput,
     model: 'gpt-4o',
 ));
-// @doctest id="1a1f"
+// @doctest id="dfd9"
 ```
 
 ## System Prompt
@@ -94,7 +94,7 @@ $loop = AgentLoop::default()->withDriver(new ReActDriver(
 $state = AgentState::empty()
     ->withSystemPrompt('You are a helpful assistant.')
     ->withUserMessage('Hello!');
-// @doctest id="e8b0"
+// @doctest id="c429"
 ```
 
 ## Using AgentBuilder
@@ -117,7 +117,7 @@ $agent = AgentBuilder::base()
     ->build();
 
 $result = $agent->execute($state);
-// @doctest id="0333"
+// @doctest id="a04b"
 ```
 
 See [AgentBuilder & Capabilities](13-agent-builder.md) for details.

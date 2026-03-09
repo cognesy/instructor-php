@@ -1,239 +1,35 @@
 ---
 title: Configuration
-description: 'Configure Instructor behavior and processing options'
+description: 'Keep provider, runtime, and request configuration separate.'
 ---
 
-# Configuration Options
+There are three useful layers of configuration.
 
-Instructor provides extensive configuration options through fluent API methods to customize its behavior, processing, and integration with various LLM providers.
+## Provider
 
-## Request Configuration
+Use `LLMConfig` to choose the provider and model baseline.
 
-Configure how Instructor processes your input and builds requests:
+## Runtime
 
-```php
-$structuredOutput = (new StructuredOutput)
-    ->withMessages($messages)           // Set chat messages
-    ->withInput($input)                 // Set input (converted to messages)
-    ->withSystem($systemPrompt)         // Set system prompt
-    ->withPrompt($prompt)               // Set additional prompt
-    ->withExamples($examples)           // Set example data for context
-    ->withModel($modelName)             // Set LLM model name
-    ->withOptions($options)             // Set LLM-specific options
-    ->withOption($key, $value)          // Set individual LLM option
-    ->withStreaming(true)               // Enable streaming responses
-    ->withCachedContext($messages, $system, $prompt, $examples); // Use cached context
-// @doctest id="5766"
-```
+Use `StructuredOutputRuntime` for behavior shared across requests:
 
-## Response Configuration
+- retries
+- output mode
+- events
+- validators
+- transformers
+- deserializers
+- extractors
 
-Define how Instructor should process and validate responses:
+## Request
 
-```php
-$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
-    ->withMaxRetries(3)                 // Set retry count for failed validations
-    ->withOutputMode(OutputMode::Tools) // Set output mode (Tools, Json, JsonSchema, MdJson)
-    ->withDefaultToStdClass(true);      // Fallback to stdClass for schema-less payloads
+Use `StructuredOutput` for one request:
 
-$structuredOutput = (new StructuredOutput)->withRuntime($runtime);
-// @doctest id="728a"
-```
+- messages
+- response model
+- system text
+- prompt text
+- examples
+- per-call model and options
 
-Stream replay policy is configured through `StructuredOutputConfig`:
-
-```php
-use Cognesy\Instructor\Config\StructuredOutputConfig;
-use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
-
-$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
-    ->withConfig(new StructuredOutputConfig(
-        responseCachePolicy: ResponseCachePolicy::None, // default in 2.0
-    ));
-
-$structuredOutput = (new StructuredOutput)->withRuntime($runtime);
-// @doctest id="392f"
-```
-
-Use `ResponseCachePolicy::Memory` if you need second-pass replay of streamed updates.
-
-## Advanced Configuration
-
-Fine-tune Instructor's internal processing:
-
-```php
-$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
-    ->withConfig($configObject)         // Use custom StructuredOutputConfig instance
-    ->withDefaultToStdClass(true);      // Default to stdClass for unknown types
-
-$structuredOutput = (new StructuredOutput)->withRuntime($runtime);
-// @doctest id="5c87"
-```
-
-## LLM Provider Configuration
-
-Configure connection and communication with LLM providers:
-
-```php
-use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Instructor\StructuredOutputRuntime;
-use Cognesy\Polyglot\Inference\LLMProvider;
-
-// Quickest way — use a named preset (matches config/llm/presets/*.yaml)
-$structuredOutput = StructuredOutput::using('openai');
-
-// Via DSN string
-$structuredOutput = (new StructuredOutput)->withRuntime(
-    StructuredOutputRuntime::fromConfig(
-        \Cognesy\Polyglot\Inference\Config\LLMConfig::fromDsn('driver=openai,model=gpt-4o-mini')
-    )
-);
-
-// Via a customized provider
-$provider = LLMProvider::using('openai')
-    ->withConfigOverrides(['temperature' => 0.2]);
-$structuredOutput = (new StructuredOutput)->withRuntime(
-    StructuredOutputRuntime::fromProvider(provider: $provider)
-);
-// @doctest id="c37c"
-```
-
-`StructuredOutputRuntime` also supports:
-- `fromConfig(LLMConfig $config)` - start from explicit `LLMConfig`
-- `fromProvider(LLMProvider $provider)` - start from a configured provider
-- `fromDefaults()` - use defaults with optional event/http overrides
-
-Runtime accessors are useful for diagnostics and DI wiring:
-- `config()`
-- `events()`
-- `validators()`, `transformers()`, `deserializers()`, `extractors()`
-
-## Processing Pipeline Overrides
-
-Customize validation, transformation, and deserialization:
-
-```php
-$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
-    ->withValidators($validators)        // Override response validators
-    ->withTransformers($transformers)    // Override response transformers
-    ->withDeserializers($deserializers)  // Override response deserializers
-    ->withExtractors($extractors);       // Override response extractors
-
-$structuredOutput = (new StructuredOutput)->withRuntime($runtime);
-// @doctest id="e4a9"
-```
-
-## StructuredOutputConfig Knobs
-
-Besides `outputMode`, `maxRetries`, and `responseCachePolicy`, you can tune:
-
-- `schemaName` / `schemaDescription` - schema metadata sent to the model
-- `toolName` / `toolDescription` - tool-call metadata in `OutputMode::Tools`
-- `retryPrompt` - feedback prompt used for recovery attempts
-- `modePrompts` - per-mode prompt templates
-- `useObjectReferences` - schema rendering behavior for object references
-- `defaultToStdClass` - fallback type for schema-less payloads
-- `throwOnTransformationFailure` - fail-fast behavior for transform step
-- `chatStructure` - order of template sections used to build final prompt
-
-Example:
-
-```php
-use Cognesy\Instructor\Config\StructuredOutputConfig;
-use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Instructor\Enums\OutputMode;
-use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
-
-$config = new StructuredOutputConfig(
-    outputMode: OutputMode::Tools,
-    toolName: 'extract_person',
-    toolDescription: 'Extract person attributes from user content',
-    maxRetries: 2,
-    responseCachePolicy: ResponseCachePolicy::Memory,
-);
-
-$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
-    ->withConfig($config);
-
-$result = (new StructuredOutput($runtime))
-    ->withMessages('Extract person data')
-    ->withResponseClass(Person::class)
-    ->get();
-// @doctest id="f2c6"
-```
-
-## Streaming Updates And Events
-
-Handle incremental updates via stream iterators or event subscribers:
-
-```php
-$stream = (new StructuredOutput)
-    ->withStreaming(true)
-    ->withMessages("Generate a list of tasks")
-    ->withResponseModel(Sequence::of(Task::class))
-    ->stream();
-
-foreach ($stream->partials() as $partial) {
-    updateUI($partial);
-}
-
-foreach ($stream->sequence() as $sequence) {
-    processItem($sequence->last());
-}
-
-$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
-    ->onEvent(\Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated::class, $callback)
-    ->onEvent(\Cognesy\Instructor\Events\Request\SequenceUpdated::class, $callback);
-
-$structuredOutput = (new StructuredOutput)->withRuntime($runtime);
-// @doctest id="251c"
-```
-
-## Configuration Examples
-
-### Basic OpenAI Configuration
-```php
-$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
-    ->withMaxRetries(3);
-
-$result = (new StructuredOutput($runtime))
-    ->withModel('gpt-4')
-    ->withMessages("Extract person data from: John is 25 years old")
-    ->withResponseClass(Person::class)
-    ->get();
-// @doctest id="fb78"
-```
-
-### Streaming with partials()
-```php
-$stream = StructuredOutput::using('openai')
-    ->withStreaming(true)
-    ->withMessages("Generate a list of tasks")
-    ->withResponseModel(Sequence::of(Task::class))
-    ->stream();
-
-foreach ($stream->partials() as $partial) {
-    updateUI($partial);
-}
-
-$result = $stream->finalValue();
-// @doctest id="08d8"
-```
-
-### Custom Configuration Object
-```php
-$config = new StructuredOutputConfig(
-    maxRetries: 5,
-    outputMode: OutputMode::JsonSchema,
-    retryPrompt: "Please fix the validation errors and try again."
-);
-
-$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
-    ->withConfig($config);
-
-$result = (new StructuredOutput($runtime))
-    ->withMessages($input)
-    ->withResponseClass(Person::class)
-    ->get();
-// @doctest id="91d4"
-```
+This split keeps most applications simple: one runtime, many small requests.

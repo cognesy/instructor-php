@@ -33,6 +33,8 @@ use Cognesy\Instructor\Extraction\Data\ExtractionInput;
 use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 /**
  * Custom extractor that extracts JSON from XML-like wrappers.
@@ -111,12 +113,14 @@ echo str_repeat('-', 50) . "\n\n";
 
 // Use custom extractors
 // DirectJson is tried first (will fail), then XmlJsonExtractor (will succeed)
-$person = StructuredOutput::using('openai')
-    ->withResponseClass(Person::class)
-    ->withExtractors(
-        new DirectJsonExtractor(),      // Try direct parsing first
-        new XmlJsonExtractor('json'),   // Fall back to XML wrapper extraction
+$person = new StructuredOutput(
+        StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
+            ->withExtractors([
+                new DirectJsonExtractor(),
+                new XmlJsonExtractor('json'),
+            ])
     )
+    ->withResponseClass(Person::class)
     ->withMessages("Extract: Alice Johnson, 28 years old, lives in San Francisco")
     ->get();
 
@@ -170,17 +174,21 @@ of extractors optimized for streaming (fast extractors by default).
 ```php
 <?php
 // Custom extractors work for streaming too
-$stream = StructuredOutput::using('openai')
-    ->withResponseClass(Person::class)
-    ->withExtractors(
-        new DirectJsonExtractor(),
-        new XmlJsonExtractor('json'),
+$stream = new StructuredOutput(
+        StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
+            ->withExtractors([
+                new DirectJsonExtractor(),
+                new XmlJsonExtractor('json'),
+            ])
     )
+    ->withResponseClass(Person::class)
     ->withMessages("Extract person data...")
     ->stream();
 
 foreach ($stream->responses() as $partial) {
-    echo "Partial: " . ($partial->name ?? '...') . "\n";
+    $value = $partial->value();
+    $name = is_object($value) ? ($value->name ?? '...') : '...';
+    echo "Partial: " . $name . "\n";
 }
 
 $person = $stream->finalValue();

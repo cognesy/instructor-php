@@ -13,114 +13,69 @@ description: 'Run agents to completion with execute() or step through with itera
 $finalState = $loop->execute($state);
 ```
 
-`iterate()` yields state after each step, giving you full control:
+`iterate()` yields state after each step:
 
 ```php
 foreach ($loop->iterate($state) as $stepState) {
     $step = $stepState->lastStep();
     echo "Step {$stepState->stepCount()}: {$step->stepType()->value}\n";
-
-    // Access tool executions from this step
-    foreach ($step->toolExecutions()->all() as $exec) {
-        echo "  Tool: {$exec->name()} -> {$exec->value()}\n";
-    }
 }
 ```
+
+Use `execute()` for normal application code.
+Use `iterate()` when you need progress updates or step-level inspection.
 
 ## Inspecting State
 
-After execution, query the state for results:
-
 ```php
-$state->stepCount();                    // total steps executed
-$state->lastStepType();                 // AgentStepType enum
-$state->lastStopReason();               // StopReason enum
-$state->usage();                        // token usage
-$state->executionDuration();            // seconds elapsed
+$state->stepCount();
+$state->lastStepType();
+$state->lastStopReason();
+$state->usage();
+$state->executionDuration();
 
-// Access all steps
 foreach ($state->steps()->all() as $step) {
-    echo $step->stepType()->value . ': ';
     echo $step->outputMessages()->toString() . "\n";
 }
 
-// Last tool execution
 $toolExec = $state->lastToolExecution();
-$toolExec?->name();     // 'weather'
-$toolExec?->value();    // '72F, sunny'
-$toolExec?->hasError(); // false
+$toolExec?->name();
+$toolExec?->hasError();
 ```
 
-## Reading the Agent's Response
+## Reading the Response
 
-`AgentState` provides two methods for accessing the agent's text output.
-They differ in strictness — choose the one that fits your use case.
+`AgentState` exposes two response helpers:
 
-### finalResponse()
-
-Returns the agent's output **only** when the agent completed naturally
-(the LLM's last step had no tool calls). Returns empty `Messages` in
-all other cases: forced stops, errors, budget exhaustion, etc.
+- `finalResponse()` returns the last natural assistant answer
+- `currentResponse()` returns the latest visible output
 
 ```php
-$state->hasFinalResponse();             // true only on natural completion
-$state->finalResponse()->toString();    // strict: empty when interrupted
+$state->hasFinalResponse();
+$state->finalResponse()->toString();
+$state->currentResponse()->toString();
 ```
 
-Use `finalResponse()` when you need to distinguish between a genuine
-answer and an incomplete execution. This is the right choice when
-the agent's response is only meaningful if the LLM finished on its own terms.
-
-### currentResponse()
-
-Returns the best available text output: `finalResponse()` if present,
-otherwise the last step's output messages regardless of step type.
-
-```php
-$state->currentResponse()->toString();  // pragmatic: last output text
-```
-
-Use `currentResponse()` when you want to show *something* to the user
-even if the agent was interrupted — for example in a UI that always
-needs to display the most recent LLM output.
-
-### When the agent is stopped externally
-
-When a tool throws `AgentStopException` or a budget limit is hit, the
-last step is typically a `ToolExecution` (not `FinalResponse`), so
-`finalResponse()` returns empty. In these cases:
-
-- **Stop via exception** — the answer is usually in metadata or the
-  stop signal context, not in the LLM's text output. Check
-  `$state->lastStopSignal()` and `$state->metadata()`.
-- **Budget exhaustion** — the agent was interrupted mid-work.
-  `currentResponse()` gives you the last LLM output, but it may
-  be incomplete or reference pending tool calls.
-- **Error** — inspect `$state->lastStepErrors()` for details.
+A simple pattern is:
 
 ```php
 if ($state->hasFinalResponse()) {
-    echo $state->finalResponse()->toString();
+    $text = $state->finalResponse()->toString();
 } else {
-    $reason = $state->lastStopReason();
-    echo "Agent stopped: {$reason->value}\n";
-    echo $state->currentResponse()->toString();
+    $text = $state->currentResponse()->toString();
 }
 ```
 
 ## Listening to Events
 
-Attach listeners to monitor execution:
-
 ```php
 use Cognesy\Agents\Events\AgentStepCompleted;
 
 $loop->onEvent(AgentStepCompleted::class, function (AgentStepCompleted $event) {
-    echo "Step {$event->stepNumber} completed (tokens: {$event->usage->total()})\n";
+    echo "Step {$event->stepNumber} completed\n";
 });
 
-// Or listen to all events
-$loop->wiretap(function ($event) {
+$loop->wiretap(function (object $event) {
     echo get_class($event) . "\n";
 });
 ```

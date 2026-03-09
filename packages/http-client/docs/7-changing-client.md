@@ -1,9 +1,11 @@
 ---
 title: Changing Client
-description: Switch HTTP drivers and runtime clients without changing request code.
+description: Switch drivers without changing request code.
 ---
 
-## Switch by Typed Config
+You can change how requests are executed without changing how requests are built.
+
+## Choose a Driver
 
 ```php
 use Cognesy\Http\Config\HttpClientConfig;
@@ -13,7 +15,7 @@ $client = HttpClient::fromConfig(new HttpClientConfig(driver: 'guzzle'));
 $client = HttpClient::fromConfig(new HttpClientConfig(driver: 'symfony'));
 ```
 
-Equivalent builder form:
+The builder gives you the same choice in a more explicit form:
 
 ```php
 use Cognesy\Http\Config\HttpClientConfig;
@@ -24,7 +26,7 @@ $client = (new HttpClientBuilder())
     ->create();
 ```
 
-## Inject an Explicit Driver
+## Inject a Driver
 
 ```php
 use Cognesy\Http\Creation\HttpClientBuilder;
@@ -35,7 +37,9 @@ $client = (new HttpClientBuilder())
     ->create();
 ```
 
-## Use an Existing Vendor Client Instance
+`HttpClient::fromDriver($driver)` is the shortest way to wrap a driver directly.
+
+## Reuse a Vendor Client
 
 ```php
 use Cognesy\Http\Creation\HttpClientBuilder;
@@ -46,7 +50,7 @@ $client = (new HttpClientBuilder())
     ->create();
 ```
 
-`withClientInstance()` sets the driver name and passes the instance to that driver.
+`withClientInstance()` selects the driver name and passes the vendor client instance to it.
 
 ## See Also
 

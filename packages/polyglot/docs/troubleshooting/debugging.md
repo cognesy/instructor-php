@@ -1,155 +1,30 @@
 ---
-title: Debugging Requests and Responses
-description: 'Debugging LLM interactions is essential for troubleshooting and optimizing your applications.'
+title: Debugging
+description: Use runtime events and your own HTTP client to inspect requests.
 ---
 
-Polyglot debug mode provides a simple way to enable HTTP-level debugging for
-LLM interactions. Debugging is essential for troubleshooting and optimizing your
-applications. It allows you to inspect the requests sent to the LLM and the
-responses received, helping you identify issues and improve performance.
-
-
-
-## Enabling Debug Mode
-
-Polyglot provides a simple way to enable HTTP debug mode:
+The simplest debugging path is to attach listeners to the runtime.
 
 ```php
 <?php
-use Cognesy\Http\Creation\HttpClientBuilder;
+
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 
-// Enable HTTP debug middleware in the HTTP client used by runtime
-$http = (new HttpClientBuilder())->withHttpDebugPreset('on')->create();
-$inference = Inference::fromRuntime(InferenceRuntime::fromConfig(
-    config: LLMConfig::fromArray(['driver' => 'openai']),
-    httpClient: $http,
-));
-
-// Make a request - debug output will show the request and response details
-$response = $inference->with(messages: 'What is the capital of France?')->get();
-```
-
-
-
-
-### HTTP Debug Events
-
-When HTTP debug mode is enabled, the HTTP middleware stack dispatches debug
-events through the shared event bus.
-
-```php
-<?php
-use Cognesy\Http\Events\DebugRequestURLUsed;
-use Cognesy\Http\Events\DebugResponseBodyReceived;
-use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Http\Creation\HttpClientBuilder;
-use Cognesy\Polyglot\Inference\Inference;
-use Cognesy\Polyglot\Inference\InferenceRuntime;
-
-$events = new EventDispatcher();
-$events->addListener(DebugRequestURLUsed::class, fn(DebugRequestURLUsed $e) => dump($e->toArray()));
-$events->addListener(DebugResponseBodyReceived::class, fn(DebugResponseBodyReceived $e) => dump($e->toArray()));
-$http = (new HttpClientBuilder(events: $events))->withHttpDebugPreset('url-only')->create();
-$inference = Inference::fromRuntime(InferenceRuntime::fromConfig(
-    config: LLMConfig::fromArray(['driver' => 'openai']),
-    events: $events,
-    httpClient: $http,
-));
-
-$response = $inference->with(messages: 'What is the capital of France?')->get();
-```
-
-
-
-
-### Event Listeners
-
-Use event listeners to trace the flow of requests and responses:
-
-```php
-<?php
-use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Polyglot\Inference\Events\InferenceRequested;
-use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;
-use Cognesy\Polyglot\Inference\Inference;
-use Cognesy\Polyglot\Inference\InferenceRuntime;
-
-// Create an event dispatcher
-$events = new EventDispatcher();
-
-// Add listeners
-$events->addListener(InferenceRequested::class, function (InferenceRequested $event): void {
-    echo "Request sent: " . json_encode($event->data['request'] ?? []) . "\n";
+$runtime = InferenceRuntime::fromConfig(new LLMConfig(
+    driver: 'openai',
+    apiUrl: 'https://api.openai.com/v1',
+    apiKey: (string) getenv('OPENAI_API_KEY'),
+    endpoint: '/chat/completions',
+    model: 'gpt-4.1-nano',
+))->wiretap(function ($event): void {
+    echo get_class($event) . PHP_EOL;
 });
 
-$events->addListener(InferenceResponseCreated::class, function (InferenceResponseCreated $event): void {
-    $response = $event->data['response'] ?? $event->data;
-    echo "Response received: " . substr((string) json_encode($response), 0, 120) . "...\n";
-});
-
-// Create an inference object with the event dispatcher
-$inference = Inference::fromRuntime(InferenceRuntime::fromConfig(
-    config: LLMConfig::fromArray(['driver' => 'openai']),
-    events: $events,
-));
-
-// Make a request
-$response = $inference->with(
-    messages: 'What is the capital of France?'
-)->get();
+$text = Inference::fromRuntime($runtime)
+    ->withMessages('Say hello.')
+    ->get();
 ```
 
-
-
-
-
-
-## Logging to Files
-
-For more persistent debugging, you can log to files:
-
-```php
-<?php
-use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Polyglot\Inference\Events\InferenceRequested;
-use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;
-use Cognesy\Polyglot\Inference\Inference;
-use Cognesy\Polyglot\Inference\InferenceRuntime;
-
-// Create a function to log to file
-function logToFile(string $message, string $filename = 'llm_debug.log'): void {
-    $timestamp = date('Y-m-d H:i:s');
-    file_put_contents(
-        $filename,
-        "[$timestamp] $message" . PHP_EOL,
-        FILE_APPEND
-    );
-}
-
-// Create a custom event dispatcher
-$events = new EventDispatcher();
-
-// Listen for request events
-$events->addListener(InferenceRequested::class, function (InferenceRequested $event): void {
-    logToFile("REQUEST: " . json_encode($event->data['request'] ?? []));
-});
-
-// Listen for response events
-$events->addListener(InferenceResponseCreated::class, function (InferenceResponseCreated $event): void {
-    $response = $event->data['response'] ?? $event->data;
-    logToFile("RESPONSE: " . json_encode($response));
-});
-
-// Create an inference object with the custom event dispatcher
-$inference = Inference::fromRuntime(InferenceRuntime::fromConfig(
-    config: LLMConfig::fromArray(['driver' => 'openai']),
-    events: $events,
-));
-
-// Make a request
-$response = $inference->with(
-    messages: 'What is artificial intelligence?'
-)->get();
-```
+If you already own the HTTP client, inject it into the runtime and enable transport-level debugging there.

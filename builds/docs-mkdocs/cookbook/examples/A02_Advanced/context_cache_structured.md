@@ -31,7 +31,9 @@ that we want to extract or generate based on README file.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Schema\Attributes\Description;
 class Project {
     public string $name;
@@ -59,12 +61,13 @@ multiple requests.
 ```php
 <?php
 $content = file_get_contents(__DIR__ . '/../../../README.md');
-
-$cached = StructuredOutput::using('anthropic')->withCachedContext(
-    system: 'Your goal is to respond questions about the project described in the README.md file'
-        . "\n\n# README.md\n\n" . $content,
-    prompt: 'Respond with strict JSON object using schema:\n<|json_schema|>',
-);
+$cachedSystem = 'Your goal is to respond questions about the project described in the README.md file'
+    . "\n\n# README.md\n\n" . $content;
+$cachedPrompt = 'Respond with strict JSON object using schema:' . "\n<|json_schema|>";
+$mdJsonRuntime = StructuredOutputRuntime::fromProvider(LLMProvider::using('anthropic'))
+    ->withOutputMode(OutputMode::MdJson);
+$jsonRuntime = StructuredOutputRuntime::fromProvider(LLMProvider::using('anthropic'))
+    ->withOutputMode(OutputMode::Json);
 ?>
 ```
 At this point we can use Instructor structured output processing to extract the project
@@ -75,12 +78,16 @@ Let's start by asking the user to describe the project for a specific audience: 
 ```php
 <?php
 // get StructuredOutputResponse object to get access to usage and other metadata
-$response1 = $cached->with(
-    messages: 'Describe the project in a way compelling to my audience: P&C insurance CIOs.',
-    responseModel: Project::class,
-    options: ['max_tokens' => 4096],
-    mode: OutputMode::MdJson,
-)->create();
+$response1 = (new StructuredOutput($mdJsonRuntime))
+    ->withCachedContext(
+        system: $cachedSystem,
+        prompt: $cachedPrompt,
+    )
+    ->with(
+        messages: 'Describe the project in a way compelling to my audience: P&C insurance CIOs.',
+        responseModel: Project::class,
+        options: ['max_tokens' => 4096],
+    )->create();
 
 // get processed value - instance of Project class
 $project1 = $response1->get();
@@ -89,8 +96,8 @@ assert($project1 instanceof Project);
 assert($project1->name !== '');
 assert($project1->description !== '');
 
-// get usage information from response() method which returns raw InferenceResponse object
-$usage1 = $response1->response()->usage();
+// get usage information from rawResponse() when you need transport-level metadata
+$usage1 = $response1->rawResponse()->usage();
 echo "Usage: {$usage1->inputTokens} prompt tokens, {$usage1->cacheWriteTokens} cache write tokens\n";
 ?>
 ```
@@ -103,12 +110,16 @@ which results in faster processing and lower costs.
 ```php
 <?php
 // get StructuredOutputResponse object to get access to usage and other metadata
-$response2 = $cached->with(
-    messages: "Describe the project in a way compelling to my audience: boutique CMS consulting company owner.",
-    responseModel: Project::class,
-    options: ['max_tokens' => 4096],
-    mode: OutputMode::Json,
-)->create();
+$response2 = (new StructuredOutput($jsonRuntime))
+    ->withCachedContext(
+        system: $cachedSystem,
+        prompt: $cachedPrompt,
+    )
+    ->with(
+        messages: "Describe the project in a way compelling to my audience: boutique CMS consulting company owner.",
+        responseModel: Project::class,
+        options: ['max_tokens' => 4096],
+    )->create();
 
 // get the processed value - instance of Project class
 $project2 = $response2->get();
@@ -117,8 +128,8 @@ assert($project2 instanceof Project);
 assert($project2->name !== '');
 assert($project2->description !== '');
 
-// get usage information from response() method which returns raw InferenceResponse object
-$usage2 = $response2->response()->usage();
+// get usage information from rawResponse() when you need transport-level metadata
+$usage2 = $response2->rawResponse()->usage();
 echo "Usage: {$usage2->inputTokens} prompt tokens, {$usage2->cacheReadTokens} cache read tokens\n";
 if ($usage2->cacheReadTokens === 0) {
     echo "Note: cacheReadTokens is 0. Cache hits depend on model/provider eligibility.\n";

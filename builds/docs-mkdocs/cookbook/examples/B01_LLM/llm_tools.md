@@ -1,5 +1,5 @@
 ---
-title: 'Working directly with LLMs and JSON - Tools mode'
+title: 'Working directly with LLMs and JSON - Tool calling'
 docname: 'llm_tools'
 id: '3778'
 ---
@@ -12,7 +12,7 @@ elements of the response in a database.
 
 ## Example
 
-In this example we will use OpenAI tools mode, in which model will generate
+In this example we will use OpenAI tool calling, in which model will generate
 a JSON containing arguments for a function call. This way we can make the
 model generate a JSON object with specific structure of parameters.
 
@@ -20,7 +20,6 @@ model generate a JSON object with specific structure of parameters.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Inference;
 
 $response = Inference::using('openai')
@@ -61,11 +60,10 @@ $response = Inference::using('openai')
             ]
         ],
         options: ['max_tokens' => 64],
-        mode: OutputMode::Tools,
     )
     ->response();
 
-$data = $response->findJsonData(OutputMode::Tools)->toArray();
+$data = $response->toolCalls()->first()?->args() ?? [];
 
 echo "USER: What is capital of France\n";
 echo "ASSISTANT:\n";

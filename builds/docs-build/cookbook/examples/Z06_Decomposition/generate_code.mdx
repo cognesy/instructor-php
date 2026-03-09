@@ -53,32 +53,57 @@ function solver() {
     // variables:';
     
     public function __invoke(string $query, array $options): string {
-        $reasoning = $this->generateIntermediateReasoning($query);
-        $answer = $this->executeProgram($reasoning->program_code);
+        $answer = $this->solveWithGeneratedProgram($query);
         $prediction = $this->generatePrediction($answer, $options, $query);
         return $prediction->choice->value;
     }
+
+    private function solveWithGeneratedProgram(string $query): mixed {
+        $reasoning = $this->generateIntermediateReasoning($query);
+
+        try {
+            return $this->executeProgram($reasoning->program_code);
+        } catch (Throwable $e) {
+            $retry = $this->generateIntermediateReasoning($query, $reasoning->program_code, $e->getMessage());
+            return $this->executeProgram($retry->program_code);
+        }
+    }
     
-    private function generateIntermediateReasoning(string $query): ProgramExecution {
-        return StructuredOutput::using('openai')->with(
-            messages: [
-                [
-                    'role' => 'system',
-                    'content' => 'You are a world class AI system that excels at answering user queries in a systematic and detailed manner. Generate a valid PHP program that can be executed to answer the user query.
+    private function generateIntermediateReasoning(
+        string $query,
+        ?string $previousCode = null,
+        ?string $error = null,
+    ): ProgramExecution {
+        $messages = [
+            [
+                'role' => 'system',
+                'content' => 'You are a world class AI system that excels at answering user queries in a systematic and detailed manner. Generate a valid PHP program that can be executed to answer the user query.
+
+Return only valid PHP code as a string value for program_code.
+Do not include Markdown fences.
+Use valid PHP variable syntax with `$` prefixes.
 
 Make sure to begin your generated program with the following structure:
-```php
 <?php
 function solver() {
     // Your step-by-step logic here
     // Define variables, perform calculations
     // Return the final answer
 }
-return solver();
-```'
-                ],
-                ['role' => 'user', 'content' => $query],
+return solver();'
             ],
+            ['role' => 'user', 'content' => $query],
+        ];
+
+        if ($previousCode !== null && $error !== null) {
+            $messages[] = [
+                'role' => 'user',
+                'content' => "The previous program had an execution error: {$error}\n\nPrevious program:\n{$previousCode}\n\nReturn a corrected version as valid PHP code only.",
+            ];
+        }
+
+        return StructuredOutput::using('openai')->with(
+            messages: $messages,
             responseModel: ProgramExecution::class,
         )->get();
     }

@@ -1,8 +1,7 @@
 version: 1
 rules:
-  - id: instructor.docs.no_structuredoutput_fromconfig
+  - id: instructor.docs.no_structuredoutput_withconfig
     engine: regex
     scope: markdown
-    pattern: '/\bStructuredOutput::fromConfig\s*\(/'
-    message: 'Use StructuredOutputRuntime::fromConfig(...) or StructuredOutput::withConfig(...).'
-
+    pattern: '/\bStructuredOutput::withConfig\s*\(/'
+    message: 'StructuredOutput has no withConfig(...) factory. Use StructuredOutput::fromConfig(...), StructuredOutput::using(...), or StructuredOutputRuntime::withConfig(...).'

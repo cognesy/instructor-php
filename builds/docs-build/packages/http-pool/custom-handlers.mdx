@@ -23,7 +23,7 @@ final class MyPool implements CanHandleRequestPool
 $pool = (new HttpPoolBuilder())
     ->withPoolHandler(new MyPool())
     ->create();
-// @doctest id="62b9"
+// @doctest id="2cc7"
 ```
 
 If you want a named reusable driver, register it in `HttpPoolRegistry`.

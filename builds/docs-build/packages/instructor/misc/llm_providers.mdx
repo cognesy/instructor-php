@@ -1,30 +1,14 @@
 ---
-title: LLM API Providers
-description: 'Instructor supports a number of LLM API providers.'
+title: LLM Providers
+description: 'Provider selection lives in the runtime layer.'
 ---
 
-The following list shows the supported providers:
+Provider selection is handled through `LLMConfig` and the Polyglot runtime used underneath this package.
 
-- A21
-- Anthropic
-- Azure
-- Cerebras
-- Cohere
-- Cohere (OpenAI compatible API)
-- DeepSeek
-- Fireworks
-- Gemini
-- Gemini (OpenAI compatible API)
-- Groq
-- MiniMaxi
-- Mistral
-- Moonshot
-- Ollama
-- OpenAI
-- OpenRouter
-- Perplexity
-- SambaNova
-- Together
-- XAI
+For everyday use, choose one of these paths:
 
-Check [the cookbook](/cookbook/introduction) for examples of how to use them.
+- `StructuredOutput::using('<preset>')`
+- `StructuredOutput::fromConfig(LLMConfig::fromPreset(...))`
+- `StructuredOutputRuntime::fromConfig(...)`
+
+This package stays provider-agnostic once the config is resolved.

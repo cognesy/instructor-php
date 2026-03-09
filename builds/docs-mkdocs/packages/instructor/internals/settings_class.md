@@ -1,8 +1,12 @@
-## Config Access in 2.0
+---
+title: Settings Class
+description: 'There is no single global settings object in this package.'
+---
 
-Config access is edge-only:
-- load raw data with `Cognesy\Config\Config` or `Cognesy\Config\ConfigLoader`,
-- map raw arrays to typed objects via `XxxConfig::fromArray()`.
+Configuration is split on purpose:
 
-Core packages should not rely on global config state.
-Use immutable typed config objects as constructor/runtime inputs.
+- `LLMConfig` for provider setup
+- `StructuredOutputConfig` for structured-output behavior
+- `StructuredOutputRuntime` for assembled runtime state
+
+That keeps request configuration local and shared behavior reusable.

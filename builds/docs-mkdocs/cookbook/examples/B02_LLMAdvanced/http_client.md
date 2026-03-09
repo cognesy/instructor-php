@@ -20,7 +20,7 @@ use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Utils\Str;
 
 // check with default HTTP client facade
-$httpClient = new HttpClient();
+$httpClient = HttpClient::default();
 
 $openAiApiKey = (string) Env::get('OPENAI_API_KEY', '');
 $dsn = "driver=openai,apiUrl=https://api.openai.com/v1,endpoint=/chat/completions,apiKey={$openAiApiKey},model=gpt-4.1-nano";

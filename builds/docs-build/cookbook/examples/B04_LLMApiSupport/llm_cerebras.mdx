@@ -8,11 +8,11 @@ id: '134c'
 Support for Cerebras API which uses custom hardware for super fast inference.
 Cerebras provides Llama models.
 
-Mode compatibility:
-- OutputMode::Tools (supported)
-- OutputMode::Json (supported)
-- OutputMode::JsonSchema (supported)
-- OutputMode::MdJson (fallback)
+Inference feature compatibility:
+- tool calling (supported)
+- native JSON object response_format (supported)
+- native JSON schema response_format (supported)
+- Instructor markdown-JSON fallback (fallback)
 
 ## Example
 

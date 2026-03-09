@@ -1,64 +1,12 @@
 ---
-title: 'Provider-Specific Issues'
-description: 'Learn how to troubleshoot provider-specific issues when using Polyglot.'
+title: Provider-Specific Issues
+description: Keep the request shape close to the selected driver.
 ---
 
-Each LLM provider has unique quirks and issues. This section covers common provider-specific issues and how to resolve them.
+If a request works on one provider and fails on another:
 
+- remove provider-specific fields from `options`
+- test again with plain text output
+- add `responseFormat`, tools, or streaming back one feature at a time
 
-## OpenAI
-
-1. **Organization IDs**: Set the organization ID if using a shared account
-```yaml
-# In config/llm/presets/openai.yaml
-metadata:
-  organization: org-your-organization-id
-# @doctest id="6070"
-```
-
-2. **API Versions**: Pay attention to API version changes
-```php
-// Updates to OpenAI API may require changes to your code
-// Monitor OpenAI's release notes for changes
-// @doctest id="f953"
-```
-
-## Anthropic
-
-1. **Message Format**: Anthropic uses a different message format
-```php
-// Polyglot handles this automatically, but be aware when debugging
-// @doctest id="77b9"
-```
-
-2. **Tool Support**: Tool support has specific requirements
-```php
-// When using tools with Anthropic, check their latest documentation
-// for supported features and limitations
-// @doctest id="ac2d"
-```
-
-## Mistral
-
-1. **Rate Limits**: Mistral has strict rate limits on free tier
-```php
-// Implement more aggressive rate limiting for Mistral
-// @doctest id="54e6"
-```
-
-
-## Ollama
-
-1. **Local Setup**: Ensure Ollama is properly installed and running
-```bash
-# Check if Ollama is running
-curl http://localhost:11434/api/version
-# @doctest id="30be"
-```
-
-2. **Model Availability**: Download models before using them
-```bash
-# Pull a model before using it
-ollama pull llama2
-# @doctest id="5f9c"
-```
+Polyglot normalizes many differences, but it does not erase real provider capability differences.

@@ -39,8 +39,6 @@ $httpConfig = new HttpClientConfig(
     connectTimeout: 30,
     requestTimeout: 60,
     idleTimeout: -1,
-    maxConcurrent: 5,
-    poolTimeout: 60,
     failOnError: true,
 );
 
@@ -65,21 +63,18 @@ $llmConfig = new LLMConfig(
 
 // Get Instructor with the default client component overridden with your own
 
-$structuredOutput = new StructuredOutput(
-    StructuredOutputRuntime::fromConfig(
-        config: $llmConfig,
-        events: $events,
-        httpClient: $customClient,
-    )
-);
+$runtime = StructuredOutputRuntime::fromConfig(
+    config: $llmConfig,
+    events: $events,
+    httpClient: $customClient,
+)->withOutputMode(OutputMode::Tools);
+$runtime->wiretap(fn($e) => $e->print());
 
-// Call with custom model and execution mode
+$structuredOutput = new StructuredOutput($runtime);
 
 $user = $structuredOutput
-    ->wiretap(fn($e) => $e->print())
     ->with("Our user Jason is 25 years old.")
     ->withResponseClass(User::class)
-    ->withOutputMode(OutputMode::Tools)
     ->withStreaming()
     ->get();
 

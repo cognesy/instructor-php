@@ -24,7 +24,9 @@ Mode compatibility:
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 enum UserType : string {
     case Guest = 'guest';
@@ -41,7 +43,10 @@ class User {
     public array $hobbies;
 }
 
-$structuredOutput = StructuredOutput::using('mistral');
+$structuredOutput = new StructuredOutput(
+    StructuredOutputRuntime::fromProvider(LLMProvider::using('mistral'))
+        ->withOutputMode(OutputMode::Json)
+);
 
 $user = $structuredOutput->with(
     messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
@@ -54,7 +59,6 @@ $user = $structuredOutput->with(
         'output' => ['name' => 'John', 'role' => 'admin', 'hobbies' => [], 'username' => 'jx90', 'age' => 30],
     ]],
     model: 'mistral-small-latest', //'open-mixtral-8x7b',
-    mode: OutputMode::Json,
 )->get();
 
 print("Completed response model:\n\n");

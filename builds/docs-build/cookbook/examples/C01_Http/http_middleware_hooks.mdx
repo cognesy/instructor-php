@@ -18,7 +18,7 @@ use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\HttpClient;
-use Cognesy\Http\Middleware\Base\BaseMiddleware;
+use Cognesy\Http\Extras\Support\BaseMiddleware;
 
 class RequestIdMiddleware extends BaseMiddleware
 {
@@ -43,7 +43,7 @@ $driver->addResponse(
     method: 'GET'
 );
 
-$client = (new HttpClient(driver: $driver))
+$client = HttpClient::fromDriver($driver)
     ->withMiddleware(new RequestIdMiddleware());
 
 $request = new HttpRequest(
@@ -54,7 +54,7 @@ $request = new HttpRequest(
     options: [],
 );
 
-$response = $client->withRequest($request)->get();
+$response = $client->send($request)->get();
 echo $response->body() . "\n";
 ?>
 ```

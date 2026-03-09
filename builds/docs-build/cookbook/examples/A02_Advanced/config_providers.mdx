@@ -22,7 +22,7 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 final class CustomConfigSource
@@ -79,24 +79,24 @@ $httpClient = (new HttpClientBuilder(events: $events))
 $llmConfig = LLMConfig::fromArray($configSource->llmConnection($connection));
 $provider = LLMProvider::fromLLMConfig($llmConfig);
 
-$structuredOutput = new StructuredOutput(
-    StructuredOutputRuntime::fromProvider(
-        provider: $provider,
-        events: $events,
-        httpClient: $httpClient,
-    )
-);
+$runtime = StructuredOutputRuntime::fromProvider(
+    provider: $provider,
+    events: $events,
+    httpClient: $httpClient,
+)->withOutputMode(OutputMode::Tools);
 
 class User {
     public int $age;
     public string $name;
 }
 
+$runtime->wiretap(fn($e) => $e->print());
+
+$structuredOutput = new StructuredOutput($runtime);
+
 $user = $structuredOutput
-    ->wiretap(fn($e) => $e->print())
     ->withMessages('Our user Jason is 25 years old.')
     ->withResponseClass(User::class)
-    ->withOutputMode(OutputMode::Tools)
     ->withStreaming()
     ->get();
 

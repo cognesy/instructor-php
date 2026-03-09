@@ -6,20 +6,27 @@
 use Cognesy\AgentCtrl\AgentCtrl;
 use Cognesy\AgentCtrl\Enum\AgentType;
 
-$builder = AgentCtrl::make(AgentType::Codex);
 $builder = AgentCtrl::claudeCode();
 $builder = AgentCtrl::codex();
 $builder = AgentCtrl::openCode();
+$builder = AgentCtrl::make(AgentType::Codex);
 ```
 
-## Key Enums
+`AgentType` values:
 
-- `Cognesy\AgentCtrl\Enum\AgentType`
-- `Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\PermissionMode`
-- `Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\SandboxMode`
-- `Cognesy\Sandbox\Enums\SandboxDriver`
+- `AgentType::ClaudeCode`
+- `AgentType::Codex`
+- `AgentType::OpenCode`
 
-## Common Builder API (All Agents)
+Backed values:
+
+- `claude-code`
+- `codex`
+- `opencode`
+
+## Common Builder API
+
+All builders support:
 
 - `withModel(string $model): static`
 - `withTimeout(int $seconds): static`
@@ -40,13 +47,7 @@ Callback signatures:
 - `onComplete(fn(AgentResponse $response): void)`
 - `onError(fn(string $message, ?string $code): void)`
 
-Event hooks available on builders:
-
-- `withEventHandler(CanHandleEvents $events): static`
-- `wiretap(?callable $listener): self`
-- `onEvent(string $class, ?callable $listener): self`
-
-## Claude Code Builder
+## Claude Code
 
 - `withSystemPrompt(string $prompt): static`
 - `appendSystemPrompt(string $prompt): static`
@@ -57,7 +58,7 @@ Event hooks available on builders:
 - `resumeSession(string $sessionId): static`
 - `withAdditionalDirs(array $paths): static`
 
-## Codex Builder
+## Codex
 
 - `withSandbox(SandboxMode $mode): static`
 - `disableSandbox(): static`
@@ -69,7 +70,7 @@ Event hooks available on builders:
 - `withAdditionalDirs(array $paths): static`
 - `withImages(array $imagePaths): static`
 
-## OpenCode Builder
+## OpenCode
 
 - `withAgent(string $agentName): static`
 - `withFiles(array $filePaths): static`
@@ -78,19 +79,19 @@ Event hooks available on builders:
 - `shareSession(): static`
 - `withTitle(string $title): static`
 
-## Session Management
+## Sessions
 
 ```php
-// start run
+use Cognesy\AgentCtrl\AgentCtrl;
+
 $response = AgentCtrl::codex()->execute('Create a plan.');
 
-// continue recent session
 $next = AgentCtrl::codex()
     ->continueSession()
     ->execute('Apply step 1.');
 
-// resume by session id
 $sessionId = $response->sessionId();
+
 if ($sessionId !== null) {
     $again = AgentCtrl::codex()
         ->resumeSession((string) $sessionId)
@@ -100,20 +101,20 @@ if ($sessionId !== null) {
 
 `sessionId()` returns `AgentSessionId|null`.
 
-## Response API (`AgentResponse`)
+## Response
 
-Public properties:
+`AgentResponse` public properties:
 
-- `agentType` (`AgentType`)
-- `text` (`string`)
-- `exitCode` (`int`)
-- `usage` (`TokenUsage|null`)
-- `cost` (`float|null`)
-- `toolCalls` (`list<ToolCall>`)
-- `rawResponse` (`mixed`)
-- `parseFailures` (`int`)
+- `agentType`
+- `text`
+- `exitCode`
+- `usage`
+- `cost`
+- `toolCalls`
+- `rawResponse`
+- `parseFailures`
 
-Methods:
+`AgentResponse` methods:
 
 - `sessionId(): ?AgentSessionId`
 - `isSuccess(): bool`
@@ -127,32 +128,40 @@ Methods:
 
 `ToolCall`:
 
-- `tool` (`string`)
-- `input` (`array`)
-- `output` (`?string`)
-- `isError` (`bool`)
+- `tool`
+- `input`
+- `output`
+- `isError`
 - `callId(): ?AgentToolCallId`
 - `isCompleted(): bool`
 
 `TokenUsage`:
 
-- `input` (`int`)
-- `output` (`int`)
-- `cacheRead` (`?int`)
-- `cacheWrite` (`?int`)
-- `reasoning` (`?int`)
+- `input`
+- `output`
+- `cacheRead`
+- `cacheWrite`
+- `reasoning`
 - `total(): int`
 
-## Minimal Streaming Example
+## Events
+
+Concrete builders also expose event wiring through `HandlesEvents`:
+
+- `withEventHandler(CanHandleEvents $events): static`
+- `wiretap(?callable $listener): self`
+- `onEvent(string $class, ?callable $listener): self`
+
+## Streaming
 
 ```php
 use Cognesy\AgentCtrl\AgentCtrl;
+use Cognesy\AgentCtrl\Dto\AgentResponse;
 
 $response = AgentCtrl::openCode()
     ->onText(fn(string $text) => print($text))
-    ->onToolUse(fn(string $tool, array $input, ?string $output) => print("\n[tool:$tool]\n"))
-    ->onError(fn(string $message) => print("\n[error:$message]\n"))
+    ->onToolUse(fn(string $tool, array $input, ?string $output) => print("[{$tool}]"))
+    ->onComplete(fn(AgentResponse $response) => print("\nDone\n"))
+    ->onError(fn(string $message, ?string $code) => print("\nError: {$message}\n"))
     ->executeStreaming('Explain this project structure.');
-
-echo "\nExit code: {$response->exitCode}\n";
 ```

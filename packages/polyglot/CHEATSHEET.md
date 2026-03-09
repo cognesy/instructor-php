@@ -14,11 +14,13 @@ $embeddings = new Embeddings();
 
 ## Inference Quick Start
 
+Use a preset for the normal path:
+
 ```php
 use Cognesy\Polyglot\Inference\Inference;
 
-$responseText = Inference::fromConfig(LLMConfig::fromArray(['driver' => 'openai']))
-    ->withModel('gpt-4o-mini')
+$text = Inference::using('openai')
+    ->withModel('gpt-4.1-nano')
     ->withMessages('Say hello in one sentence.')
     ->get();
 ```
@@ -26,24 +28,31 @@ $responseText = Inference::fromConfig(LLMConfig::fromArray(['driver' => 'openai'
 Get parsed JSON:
 
 ```php
-$data = Inference::fromConfig(LLMConfig::fromArray(['driver' => 'openai']))
-    ->withModel('gpt-4o-mini')
+$data = Inference::using('openai')
+    ->withModel('gpt-4.1-nano')
     ->withResponseFormat(['type' => 'json_object'])
-    ->withMessages('Return {"ok": true}')
+    ->withMessages('Return JSON with key "ok".')
     ->asJsonData();
 ```
 
 ## Inference Constructors
 
 ```php
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 $inference = new Inference();
-$inference = Inference::fromConfig(LLMConfig::fromArray(['driver' => 'openai']));
-$inference = Inference::fromConfig(LLMConfig::fromDsn('driver=openai,model=gpt-4o-mini'));
-$inference = Inference::fromRuntime(InferenceRuntime::fromConfig(LLMConfig::fromArray(['driver' => 'openai'])));
-$inference = $inference->withRuntime(InferenceRuntime::fromConfig(LLMConfig::fromDsn('driver=openai,model=gpt-4o-mini')));
+$inference = Inference::using('openai');
+$inference = Inference::fromConfig(LLMConfig::fromPreset('openai'));
+$inference = Inference::fromProvider(LLMProvider::using('openai'));
+$inference = Inference::fromRuntime(
+    InferenceRuntime::fromConfig(LLMConfig::fromPreset('openai')),
+);
+$inference = $inference->withRuntime(
+    InferenceRuntime::fromConfig(LLMConfig::fromPreset('openai')),
+);
 ```
 
 ## Inference Request Builder Methods
@@ -52,9 +61,9 @@ $inference = $inference->withRuntime(InferenceRuntime::fromConfig(LLMConfig::fro
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 
-$inference = (new Inference)
+$inference = Inference::using('openai')
     ->withMessages($messages)
-    ->withModel('gpt-4o-mini')
+    ->withModel('gpt-4.1-nano')
     ->withMaxTokens(800)
     ->withTools($tools)
     ->withToolChoice('auto')
@@ -74,9 +83,9 @@ $inference = (new Inference)
 Single-call variant:
 
 ```php
-$inference = (new Inference)->with(
+$inference = Inference::using('openai')->with(
     messages: $messages,
-    model: 'gpt-4o-mini',
+    model: 'gpt-4.1-nano',
     tools: $tools,
     toolChoice: 'auto',
     responseFormat: $responseFormat,
@@ -91,11 +100,12 @@ use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 
 $request = new InferenceRequest(
     messages: 'Hello',
-    model: 'gpt-4o-mini',
+    model: 'gpt-4.1-nano',
 );
 
-$inference = (new Inference)->withRequest($request);
-$pending = $inference->create();
+$pending = Inference::using('openai')
+    ->withRequest($request)
+    ->create();
 ```
 
 ## Inference Execution Surfaces
@@ -135,33 +145,36 @@ foreach ($stream->deltas() as $delta) {
 
 $mapped = $stream->map(fn($delta) => $delta->contentDelta);
 $filtered = $stream->filter(fn($delta) => $delta->contentDelta !== '');
-$total = $stream->reduce(fn($carry, $delta) => $carry + strlen($delta->contentDelta), 0);
+$total = $stream->reduce(
+    fn($carry, $delta) => $carry + strlen($delta->contentDelta),
+    0,
+);
 
 $allDeltas = $stream->all();
 $final = $stream->final(); // ?InferenceResponse
 
 $stream->onDelta(function ($delta): void {
-    // callback for each delta
+    // callback for each visible delta
 });
 
+$lastDelta = $stream->lastDelta();
+$usage = $stream->usage();
 $execution = $stream->execution();
 ```
 
 ## Inference Runtime / Provider Setup
 
 ```php
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
-$runtime = InferenceRuntime::fromConfig(LLMConfig::fromArray(['driver' => 'openai']));
-$runtime = InferenceRuntime::fromConfig(LLMConfig::fromDsn('driver=openai,model=gpt-4o-mini'));
-$runtime = InferenceRuntime::fromProvider(LLMProvider::fromLLMConfig(LLMConfig::fromArray(['driver' => 'openai'])));
+$runtime = InferenceRuntime::fromConfig(LLMConfig::fromPreset('openai'));
+$runtime = InferenceRuntime::fromProvider(LLMProvider::using('openai'));
 
-$provider = LLMProvider::new()
-    ->withLLMConfig(LLMConfig::fromArray(['driver' => 'openai']))
-    ->withDsn('driver=openai,model=gpt-4o-mini')
-    ->withConfigOverrides(['temperature' => 0])
-    ->withModel('gpt-4o-mini');
+$provider = LLMProvider::using('openai')
+    ->withConfigOverrides(['model' => 'gpt-4.1-nano'])
+    ->withModel('gpt-4.1-mini');
 ```
 
 Driver registry helpers:
@@ -169,9 +182,16 @@ Driver registry helpers:
 ```php
 use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
 
-$drivers = BundledInferenceDrivers::registry()->withDriver('custom', $driverFactory);
+$drivers = BundledInferenceDrivers::registry()
+    ->withDriver('custom', $driverFactory);
+
 $runtime = InferenceRuntime::fromConfig(
-    LLMConfig::fromArray(['driver' => 'custom']),
+    LLMConfig::fromArray([
+        'driver' => 'custom',
+        'apiUrl' => 'https://example.test',
+        'endpoint' => '/v1/chat',
+        'model' => 'custom-model',
+    ]),
     drivers: $drivers,
 );
 ```
@@ -181,7 +201,7 @@ $runtime = InferenceRuntime::fromConfig(
 ```php
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
-$vectors = Embeddings::fromConfig(EmbeddingsConfig::fromArray(['driver' => 'openai']))
+$vectors = Embeddings::using('openai')
     ->withModel('text-embedding-3-small')
     ->withInputs(['hello world'])
     ->vectors();
@@ -190,14 +210,21 @@ $vectors = Embeddings::fromConfig(EmbeddingsConfig::fromArray(['driver' => 'open
 ## Embeddings Constructors and Builder Methods
 
 ```php
-use Cognesy\Polyglot\Embeddings\Embeddings;
-use Cognesy\Polyglot\Embeddings\EmbeddingsRuntime;
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsRetryPolicy;
+use Cognesy\Polyglot\Embeddings\Embeddings;
+use Cognesy\Polyglot\Embeddings\EmbeddingsProvider;
+use Cognesy\Polyglot\Embeddings\EmbeddingsRuntime;
 
 $embeddings = new Embeddings();
-$embeddings = Embeddings::fromConfig(EmbeddingsConfig::fromArray(['driver' => 'openai']));
-$embeddings = Embeddings::fromConfig(EmbeddingsConfig::fromDsn('driver=openai,model=text-embedding-3-small'));
-$embeddings = Embeddings::fromRuntime(EmbeddingsRuntime::fromConfig(EmbeddingsConfig::fromArray(['driver' => 'openai'])));
+$embeddings = Embeddings::using('openai');
+$embeddings = Embeddings::fromConfig(EmbeddingsConfig::fromPreset('openai'));
+$embeddings = Embeddings::fromProvider(
+    EmbeddingsProvider::fromEmbeddingsConfig(EmbeddingsConfig::fromPreset('openai')),
+);
+$embeddings = Embeddings::fromRuntime(
+    EmbeddingsRuntime::fromConfig(EmbeddingsConfig::fromPreset('openai')),
+);
 
 $embeddings = $embeddings
     ->withInputs(['a', 'b'])
@@ -209,7 +236,7 @@ $embeddings = $embeddings
 Single-call variant:
 
 ```php
-$embeddings = (new Embeddings)->with(
+$embeddings = Embeddings::using('openai')->with(
     input: ['hello'],
     options: ['dimensions' => 512],
     model: 'text-embedding-3-small',
@@ -226,7 +253,7 @@ $request = new EmbeddingsRequest(
     model: 'text-embedding-3-small',
 );
 
-$pending = (new Embeddings)
+$pending = Embeddings::using('openai')
     ->withRequest($request)
     ->create();
 ```
@@ -246,34 +273,19 @@ $response = $pending->get();
 ## Embeddings Runtime / Provider Setup
 
 ```php
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
+use Cognesy\Polyglot\Embeddings\Embeddings;
 use Cognesy\Polyglot\Embeddings\EmbeddingsProvider;
 use Cognesy\Polyglot\Embeddings\EmbeddingsRuntime;
 
-$runtime = EmbeddingsRuntime::fromConfig(EmbeddingsConfig::fromArray(['driver' => 'openai']));
-$runtime = EmbeddingsRuntime::fromConfig(EmbeddingsConfig::fromDsn('driver=openai,model=text-embedding-3-small'));
-$runtime = EmbeddingsRuntime::fromProvider(EmbeddingsProvider::fromEmbeddingsConfig(EmbeddingsConfig::fromArray(['driver' => 'openai'])));
+$runtime = EmbeddingsRuntime::fromConfig(EmbeddingsConfig::fromPreset('openai'));
+$runtime = EmbeddingsRuntime::fromProvider(
+    EmbeddingsProvider::fromEmbeddingsConfig(EmbeddingsConfig::fromPreset('openai')),
+);
 
 $provider = EmbeddingsProvider::new()
-    ->withConfig(EmbeddingsConfig::fromArray(['driver' => 'openai']))
-    ->withDsn('driver=openai,model=text-embedding-3-small');
-```
+    ->withConfig(EmbeddingsConfig::fromPreset('openai'))
+    ->withConfigOverrides(['model' => 'text-embedding-3-small']);
 
-Driver registry helper:
-
-```php
 Embeddings::registerDriver('custom', $driverFactory);
-```
-
-## Useful Types
-
-```php
-use Cognesy\Polyglot\Inference\Data\ResponseFormat;
-use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
-
-ResponseFormat::text();
-ResponseFormat::jsonObject();
-ResponseFormat::jsonSchema(['type' => 'object']);
-
-ResponseCachePolicy::None;
-ResponseCachePolicy::Memory;
 ```

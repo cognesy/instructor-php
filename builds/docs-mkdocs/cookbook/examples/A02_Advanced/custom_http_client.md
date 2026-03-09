@@ -34,7 +34,7 @@ class User {
 
 $yourSymfonyClientInstance = HttpClient::create(['http_version' => '2.0']);
 $yourSymfonyEventDispatcher = new SymfonyEventDispatcher(new EventDispatcher());
-$provider = LLMProvider::fromLLMConfig(ExampleConfig::llmPreset('openai'))
+$provider = LLMProvider::using('openai')
     ->withConfigOverrides(['apiUrl' => 'https://api.openai.com/v1']);
 $customClient = (new HttpClientBuilder(events: $yourSymfonyEventDispatcher))
     ->withClientInstance(
@@ -48,12 +48,11 @@ $user = (new StructuredOutput(
         provider: $provider,
         events: $yourSymfonyEventDispatcher,
         httpClient: $customClient,
-    ),
+    )->withOutputMode(OutputMode::Tools),
 ))
     //->wiretap(fn($e) => $e->print())
     ->withMessages("Our user Jason is 25 years old.")
     ->withResponseClass(User::class)
-    ->withOutputMode(OutputMode::Tools)
     //->withStreaming()
     ->get();
 

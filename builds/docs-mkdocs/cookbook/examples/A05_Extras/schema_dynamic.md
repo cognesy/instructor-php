@@ -17,7 +17,9 @@ require 'examples/boot.php';
 
 use Cognesy\Dynamic\Structure;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Schema\SchemaBuilder;
 $citySchema = SchemaBuilder::define('city')
     ->string('name', 'City name')
@@ -27,13 +29,16 @@ $citySchema = SchemaBuilder::define('city')
 
 $city = Structure::fromSchema($citySchema);
 
-$data = StructuredOutput::using('openai')
+$runtime = StructuredOutputRuntime::fromProvider(
+    LLMProvider::using('openai'),
+)->withOutputMode(OutputMode::JsonSchema);
+
+$data = (new StructuredOutput($runtime))
     ->intoArray()
     ->withMessages([['role' => 'user', 'content' => 'What is capital of France? \
         Respond with JSON data.']])
     ->withResponseJsonSchema($city->toJsonSchema())
     ->withOptions(['max_tokens' => 64])
-    ->withOutputMode(OutputMode::JsonSchema)
     ->get();
 
 echo "USER: What is capital of France\n";

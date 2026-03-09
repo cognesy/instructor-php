@@ -22,7 +22,9 @@ Here's how you can use Instructor with Groq API.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 enum UserType : string {
     case Guest = 'guest';
@@ -39,7 +41,11 @@ class User {
     public ?int $age;
 }
 
-$structuredOutput = StructuredOutput::using('groq');
+$structuredOutput = new StructuredOutput(
+    StructuredOutputRuntime::fromProvider(LLMProvider::using('groq'))
+        ->withOutputMode(OutputMode::Json)
+        ->withMaxRetries(2)
+);
 
 $user = $structuredOutput
     ->with(
@@ -54,9 +60,7 @@ $user = $structuredOutput
             'output' => ['name' => 'John', 'role' => 'admin', 'hobbies' => ['surfing'], 'username' => 'jx90', 'age' => 19],
         ]],
         model: 'llama-3.3-70b-versatile', //'gemma2-9b-it',
-        maxRetries: 2,
         options: ['temperature' => 0.5],
-        mode: OutputMode::Json,
     )->get();
 
 print("Completed response model:\n\n");

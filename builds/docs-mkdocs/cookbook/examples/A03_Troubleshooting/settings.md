@@ -29,8 +29,9 @@ class UserDetail
     public ?string $lastName;
 }
 
-$llmData = (new Config(__DIR__ . '/config/llm/openai.yaml'))->load()->toArray();
-$debugData = (new Config(__DIR__ . '/config/debug/on.yaml'))->load()->toArray();
+$config = new Config([__DIR__ . '/config']);
+$llmData = $config->load('llm/openai.yaml')->toArray();
+$debugData = $config->load('debug/on.yaml')->toArray();
 
 $httpClient = (new HttpClientBuilder())
     ->withDebugConfig(DebugConfig::fromArray($debugData))

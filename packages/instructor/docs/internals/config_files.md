@@ -1,16 +1,8 @@
+---
+title: Config Files
+description: 'What configuration files do and do not belong to this package.'
+---
 
-## Configuration Groups
+`cognesy/instructor-struct` works without published config files.
 
-Instructor's configuration is organized into groups. Each group contains a set of settings that are related to a specific aspect of Instructor's functionality.
-
-Instructor comes with the following default settings groups:
-- `debug`: Debugging settings
-- `embed`: Embedding provider connections
-- `http`: HTTP client configurations
-- `llm`: LLM provider connections
-- `prompt`: Prompt libraries and their settings
-- `structured`: Structured-output defaults (mode, retries, prompts, stream cache policy)
-- `web`: Web service providers (e.g. scraper API configurations)
-
-Each group is stored in a separate file in the configuration directory. The file name corresponds to the group name.
-
+When config files exist in a larger InstructorPHP setup, they usually feed provider presets or companion packages. The structured-output package itself consumes typed configuration objects in code.

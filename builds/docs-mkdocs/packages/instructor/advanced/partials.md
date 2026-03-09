@@ -1,189 +1,28 @@
-## Partial updates
+---
+title: Partials
+description: 'Read streaming updates as the response is built.'
+---
 
-Instructor can process LLM's streamed responses to provide partial updates that you
-can use to update the model with new data as the response is being generated.
-
-You can use it to improve user experience by updating the UI with partial data before
-the full response is received.
-
-> This feature requires streaming to be enabled.
-
-To receive partial results iterate `stream()->partials()`.
-
-Instructor is smart about updates, it calculates and compares hashes of the previous
-and newly deserialized version of the model, so you won't get them on every token
-received, but only when any property of the object is updated.
-
+Use streaming when you want updates before the final object is complete.
 
 ```php
-<?php
-use Cognesy\Instructor\StructuredOutput;
-
-function updateUI($person) {
-    // Here you get partially completed Person object update UI with the partial result
-}
-
 $stream = (new StructuredOutput)
-    ->withResponseClass(Person::class)
-    ->with(
-        messages: "His name is Jason, he is 28 years old.",
-        options: ['stream' => true],
-    )
+    ->with(messages: $text, responseModel: Report::class)
+    ->withStreaming()
     ->stream();
 
 foreach ($stream->partials() as $partial) {
-    updateUI($partial);
+    // latest parsed value
 }
-
-$person = $stream->finalValue();
-
-// Here you get completed and validated Person object
-$this->db->save($person); // ...for example: save to DB
-// @doctest id="5ed8"
+// @doctest id="bf04"
 ```
 
-Partially updated data is not validated while it is received and deserialized.
+## Stream Views
 
-The object returned from `get()` call is fully validated, so you can safely work
-with it, e.g. save it to the database.
+- `partials()` yields parsed partial values
+- `responses()` yields `StructuredOutputResponse` snapshots
+- `finalValue()` drains the stream and returns the final value
+- `finalResponse()` returns the final response object
+- `usage()` returns the latest usage data
 
-
-
-## Streaming responses
-
-You can get a stream of responses by calling the `stream()` method instead of `get()`. The `stream()` method is available on both `StructuredOutput` and `PendingStructuredOutput` instances.
-
-```php
-// Direct streaming
-$stream = $structuredOutput->stream();
-
-// Or via create() method
-$pending = $structuredOutput->create();
-$stream = $pending->stream();
-// @doctest id="7d69"
-```
-
-Both approaches return a `StructuredOutputStream` object, which gives you access to the response streamed from LLM and processed by Instructor into structured data.
-
-## StructuredOutputStream Methods
-
-The `StructuredOutputStream` class provides comprehensive methods for processing streaming responses:
-
-### Core Streaming Methods
-- `partials()`: Returns an iterable of partial updates from the stream. Only final update is validated, partial updates are only deserialized and transformed.
-- `sequence()`: Dedicated to processing `Sequence` response models - returns only completed items in the sequence.
-- `responses()`: Generator of Instructor-owned partial response snapshots followed by the final response.
-  Instructor rebuilds these snapshots from Polyglot stream deltas.
-
-### Result Access Methods
-- `finalValue()`: Get the final parsed result (blocks until completion).
-- `finalResponse()`: Get the final `StructuredOutputResponse` (blocks until completion).
-- `lastUpdate()`: Returns the last object received and processed by Instructor.
-- `lastResponse()`: Returns the last received `StructuredOutputResponse`.
-- `finalRawResponse()`: Get the nested raw `InferenceResponse` when you need transport-level metadata.
-
-### Utility Methods
-- `usage()`: Get token usage statistics from the streaming response.
-- `getIterator()`: Low-level stream of `StructuredOutputResponse` updates.
-
-
-### Example: streaming partial responses
-
-```php
-<?php
-use Cognesy\Instructor\StructuredOutput;
-
-$stream = (new StructuredOutput)->with(
-    messages: "His name is Jason, he is 28 years old.",
-    responseModel: Person::class,
-)->stream();
-
-foreach ($stream->partials() as $update) {
-    // render updated person view
-    // for example:
-    $view->updateView($update); // render the updated person view
-}
-
-// now you can get final, fully processed person object
-$person = $stream->finalValue();
-// ...and for example save it to the database
-$db->savePerson($person);
-// @doctest id="b1d5"
-```
-
-
-### Example: streaming sequence items
-
-```php
-<?php
-use Cognesy\Instructor\StructuredOutput;
-
-$stream = (new StructuredOutput)
-    ->with(
-        messages: "Jason is 28 years old, Amanda is 26 and John (CEO) is 40.",
-        responseModel: Sequence::of(Participant::class),
-    )
-    ->stream();
-
-foreach ($stream->sequence() as $update) {
-    // append last completed item from the sequence
-    // for example:
-    $view->appendParticipant($update->last());
-}
-
-// now you can get final, fully processed sequence of participants
-$participants = $stream->finalValue();
-// ...and for example save it to the database
-$db->saveParticipants($participants->toArray());
-// @doctest id="ed89"
-```
-
-## Stream replay contract
-
-`StructuredOutputStream` iterators (`partials()`, `responses()`, `sequence()`) are one-shot by default.
-
-- After full consumption, a second pass throws an exception.
-- `finalResponse()` and `finalValue()` remain idempotent and safe to call repeatedly.
-- If you need replay, opt in with `ResponseCachePolicy::Memory`:
-
-```php
-<?php
-use Cognesy\Instructor\Config\StructuredOutputConfig;
-use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Instructor\StructuredOutputRuntime;
-use Cognesy\Polyglot\Inference\LLMProvider;
-use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
-
-$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
-    ->withConfig(new StructuredOutputConfig(
-        responseCachePolicy: ResponseCachePolicy::Memory,
-    ));
-
-$stream = (new StructuredOutput($runtime))
-    ->with(
-        messages: 'Extract user data',
-        responseModel: Person::class,
-        options: ['stream' => true],
-    )
-    ->stream();
-// @doctest id="a31a"
-```
-
-Replay reuses captured stream data, not a fresh LLM execution.
-
-## Low-level execution stream
-
-Use `getIterator()` only when you need raw execution objects:
-
-```php
-<?php
-$stream = (new StructuredOutput)
-    ->with(messages: 'Extract person', responseModel: Person::class)
-    ->stream();
-
-foreach ($stream->getIterator() as $execution) {
-    $usage = $execution->usage();
-    // custom metrics/observability logic
-}
-// @doctest id="47a5"
-```
+For sequence response models, see [Sequences](sequences).

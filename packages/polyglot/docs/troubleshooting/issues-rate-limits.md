@@ -1,99 +1,13 @@
 ---
 title: Rate Limits
-description: 'Learn how to handle rate limiting issues when using Polyglot.'
+description: Use explicit retry policies for temporary provider pressure.
 ---
 
-Provider rate limits can cause request failures during high traffic periods.
+Polyglot can retry transient failures, but retries are opt-in and explicit.
 
-## Symptoms
+Use:
 
-- Error messages containing "rate limit exceeded," "too many requests," or "quota exceeded"
-- HTTP status code 429
+- `InferenceRetryPolicy` for inference
+- `EmbeddingsRetryPolicy` for embeddings
 
-## Solutions
-
-1. **Use built-in retry policy**: Configure automatic retries with backoff/jitter
-
-```php
-<?php
-use Cognesy\Polyglot\Inference\Inference;
-use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
-
-$inference = new Inference();
-$retryPolicy = new InferenceRetryPolicy(
-    maxAttempts: 4,
-    baseDelayMs: 250,
-    maxDelayMs: 8000,
-    jitter: 'full',
-    retryOnStatus: [429, 500, 502, 503, 504],
-);
-
-$response = $inference->with(
-    messages: 'What is the capital of France?',
-)->withRetryPolicy($retryPolicy)
-    ->get();
-
-echo "Response: $response\n";
-```
-
-2. **Request Throttling**: Limit the rate of requests from your application
-```php
-<?php
-class RateLimiter {
-    private $lastRequestTime = 0;
-    private $requestsPerMinute;
-    private $minTimeBetweenRequests;
-
-    public function __construct(int $requestsPerMinute = 60) {
-        $this->requestsPerMinute = $requestsPerMinute;
-        $this->minTimeBetweenRequests = 60 / $requestsPerMinute;
-    }
-
-    public function waitIfNeeded(): void {
-        $currentTime = microtime(true);
-        $timeSinceLastRequest = $currentTime - $this->lastRequestTime;
-
-        if ($timeSinceLastRequest < $this->minTimeBetweenRequests) {
-            $waitTime = $this->minTimeBetweenRequests - $timeSinceLastRequest;
-            usleep($waitTime * 1000000);
-        }
-
-        $this->lastRequestTime = microtime(true);
-    }
-}
-
-// Usage
-$limiter = new RateLimiter(30); // 30 requests per minute
-$inference = new Inference();
-
-for ($i = 0; $i < 10; $i++) {
-    $limiter->waitIfNeeded();
-    $response = $inference->with(
-        messages: "This is request $i"
-    )->get();
-    echo "Response $i: $response\n";
-}
-```
-
-3. **Request Batching**: Combine multiple requests into batches when possible
-
-```php
-<?php
-// Instead of making many small requests
-$responses = [];
-foreach ($questions as $question) {
-    // This would hit rate limits quickly
-    $responses[] = $inference->with(messages: $question)->get();
-}
-
-// Better: Use a context-aware batch approach
-$batchedQuestions = "Please answer the following questions:\n";
-foreach ($questions as $i => $question) {
-    $batchedQuestions .= ($i + 1) . ". $question\n";
-}
-
-$batchResponse = $inference->with(messages: $batchedQuestions)->get();
-// Then parse the batch response into individual answers
-```
-
-4. **Upgrade API Plan**: Consider upgrading to a higher tier with increased rate limits
+If rate limits are frequent, reduce request volume or switch models and providers in application code.

@@ -1,0 +1,43 @@
+version: 1
+rules:
+  - id: http-client.no_httpclient_fromruntime
+    engine: regex
+    scope: markdown
+    pattern: '/\bHttpClient::fromRuntime\s*\(/'
+    message: 'HttpClient has no fromRuntime(...) factory. Use HttpClient::fromConfig(...), HttpClient::fromDriver(...), or HttpClientRuntime::fromConfig(...)->client().'
+
+  - id: http-client.no_httpclient_withconfig
+    engine: regex
+    scope: markdown
+    pattern: '/\bHttpClient::withConfig\s*\(/'
+    message: 'HttpClient has no static withConfig(...) factory. Use HttpClient::fromConfig(...) or HttpClientBuilder::withConfig(...)->create().'
+
+  - id: http-client.no_httpclient_withdsn
+    engine: regex
+    scope: markdown
+    pattern: '/\bHttpClient::withDsn\s*\(/'
+    message: 'Use HttpClientBuilder::withDsn(...)->create() or HttpClientConfig::fromDsn(...).'
+
+  - id: http-client.no_httpclient_registerdriver
+    engine: regex
+    scope: markdown
+    pattern: '/\bHttpClient::registerDriver\s*\(/'
+    message: 'Custom drivers are registered via HttpDriverRegistry::withDriver(...) and passed through HttpClientBuilder::withDrivers(...).'
+
+  - id: http-client.no_httpclientbuilder_registerdriver
+    engine: regex
+    scope: markdown
+    pattern: '/\bHttpClientBuilder::registerDriver\s*\(/'
+    message: 'HttpClientBuilder has no registerDriver(...). Use HttpDriverRegistry::withDriver(...) plus HttpClientBuilder::withDrivers(...).'
+
+  - id: http-client.no_streamsses_middleware
+    engine: regex
+    scope: markdown
+    pattern: '/\bStreamSSEsMiddleware\b/'
+    message: 'Use EventSourceMiddleware. StreamSSEsMiddleware is a deprecated compatibility alias.'
+
+  - id: http-client.no_serversideevents_namespace
+    engine: regex
+    scope: markdown
+    pattern: '/\bServerSideEvents\\\\|\bServerSideEvent(?:Stream|ResponseDecorator)\b/'
+    message: 'Use the EventSource middleware/stream classes. ServerSideEvents compatibility classes are deprecated.'

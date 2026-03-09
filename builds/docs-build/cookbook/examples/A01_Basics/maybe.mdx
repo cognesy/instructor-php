@@ -17,7 +17,9 @@ require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Maybe\Maybe;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 class User
 {
@@ -29,11 +31,13 @@ class User
 $text = 'We have no information about our new developer.';
 echo "\nINPUT:\n$text\n";
 
-$maybeUser = StructuredOutput::using('openai')->with(
+$maybeUser = (new StructuredOutput(
+    StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
+        ->withOutputMode(OutputMode::MdJson)
+))->with(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Maybe::is(User::class),
     model: 'gpt-4o-mini',
-    mode: OutputMode::MdJson,
 )->get();
 
 echo "\nOUTPUT:\n";

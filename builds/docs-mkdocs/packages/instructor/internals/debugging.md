@@ -1,40 +1,14 @@
-Instructor offers several ways to debug its internal state and execution flow.
+---
+title: Debugging
+description: 'The fastest ways to inspect what happened.'
+---
 
-## Events
+When a request does not behave as expected, start with the smallest useful inspection point.
 
-Instructor emits events at various points in its lifecycle, which you can listen to
-and react to. You can use these events to debug execution flow and to inspect
-data at various stages of processing.
+- `response()` for parsed value plus raw response
+- `rawResponse()` for provider output
+- `execution()` on `PendingStructuredOutput` for execution metadata
+- `responses()` on `StructuredOutputStream` for streaming snapshots
+- runtime events for deeper tracing
 
-For more details see the [Events](events.md) section.
-
-
-## HTTP Debugging
-
-Enable HTTP debug middleware while constructing runtime:
-
-```php
-use Cognesy\Http\Creation\HttpClientBuilder;
-use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Instructor\StructuredOutputRuntime;
-
-$debugHttpClient = (new HttpClientBuilder)->withHttpDebugPreset('on')->create();
-
-$result = (new StructuredOutput(
-    StructuredOutputRuntime::fromDefaults(httpClient: $debugHttpClient)
-))
-    ->with(
-        messages: "Jason is 25 years old",
-        responseModel: User::class,
-    )
-    ->get();
-// @doctest id="0e9a"
-```
-
-It displays detailed information about the request being sent to LLM API and response received from it,
-including:
-
- - request headers, URI, method and body,
- - response status, headers, and body.
-
-This is useful for debugging the request and response when you are not getting the expected results.
+In most cases, `response()` or a runtime wiretap is enough.

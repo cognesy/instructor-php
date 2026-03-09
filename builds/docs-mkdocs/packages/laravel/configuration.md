@@ -6,7 +6,7 @@ After publishing the configuration file, you'll find it at `config/instructor.ph
 
 ```php
 'default' => env('INSTRUCTOR_CONNECTION', 'openai'),
-// @doctest id="5b4b"
+// @doctest id="a8c5"
 ```
 
 Set the default LLM connection. Can be overridden at runtime with `->connection('name')`.
@@ -60,7 +60,7 @@ Configure multiple LLM provider connections:
         'max_tokens' => env('OLLAMA_MAX_TOKENS', 4096),
     ],
 ],
-// @doctest id="5b06"
+// @doctest id="8f95"
 ```
 
 ### Supported Drivers
@@ -92,7 +92,7 @@ Configure multiple LLM provider connections:
         'max_tokens' => 4096,
     ],
 ],
-// @doctest id="db68"
+// @doctest id="ca08"
 ```
 
 ## Embeddings Connections
@@ -121,7 +121,7 @@ Configure embedding model connections:
         ],
     ],
 ],
-// @doctest id="b247"
+// @doctest id="a114"
 ```
 
 ## Extraction Settings
@@ -139,7 +139,7 @@ Configure structured output extraction defaults:
     // Prompt template for retry attempts
     'retry_prompt' => 'The response did not pass validation. Please fix the following errors and try again: {errors}',
 ],
-// @doctest id="d774"
+// @doctest id="7129"
 ```
 
 ### Output Modes
@@ -166,7 +166,7 @@ Configure the HTTP client:
     // Connection timeout in seconds
     'connect_timeout' => env('INSTRUCTOR_HTTP_CONNECT_TIMEOUT', 30),
 ],
-// @doctest id="7ea5"
+// @doctest id="ed53"
 ```
 
 The Laravel package owns the `laravel` HTTP client and pool drivers. They are not part of the generic `http-client` or `http-pool` bundled driver sets.
@@ -197,7 +197,7 @@ Configure logging:
         // Cognesy\Http\Events\DebugRequestBodyUsed::class,
     ],
 ],
-// @doctest id="7bcb"
+// @doctest id="e062"
 ```
 
 ### Logging Presets
@@ -222,7 +222,7 @@ Configure event dispatching:
         // \Cognesy\Instructor\Events\ExtractionComplete::class,
     ],
 ],
-// @doctest id="5908"
+// @doctest id="f30c"
 ```
 
 ## Cache Settings
@@ -243,7 +243,7 @@ Configure response caching:
     // Cache key prefix
     'prefix' => 'instructor',
 ],
-// @doctest id="5cb2"
+// @doctest id="7694"
 ```
 
 ## Environment Variables Reference
@@ -279,5 +279,5 @@ $result = StructuredOutput::connection('anthropic')  // Switch connection
         responseModel: MyModel::class,
     )
     ->get();
-// @doctest id="5bbe"
+// @doctest id="e13b"
 ```

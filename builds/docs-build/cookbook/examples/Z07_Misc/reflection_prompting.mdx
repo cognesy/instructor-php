@@ -17,9 +17,11 @@ potentially leading to higher quality and more reliable outputs.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
 use Cognesy\Instructor\Validation\ValidationResult;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Schema\Attributes\Instructions;
 
 class ReflectiveResponse implements CanValidateSelf {
@@ -52,10 +54,12 @@ class ReflectiveResponse implements CanValidateSelf {
 }
 
 $problem = 'Solve the equation x+y=x-y';
-$solution = StructuredOutput::using('anthropic')->with(
+$solution = new StructuredOutput(
+    StructuredOutputRuntime::fromProvider(LLMProvider::using('anthropic'))
+        ->withOutputMode(OutputMode::MdJson)
+)->with(
     messages: $problem,
     responseModel: ReflectiveResponse::class,
-    mode: OutputMode::MdJson,
     options: ['max_tokens' => 2048]
 )->get();
 

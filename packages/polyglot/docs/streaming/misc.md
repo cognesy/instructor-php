@@ -1,20 +1,32 @@
-# Streaming Miscellaneous
+---
+title: Streaming Helpers
+description: Additional helpers on `InferenceStream`.
+---
 
-## Streaming JSON
+`InferenceStream` also gives you a few convenience helpers around the delta stream:
 
-You can stream a request that asks for native JSON object output by setting `responseFormat` explicitly.
+- `onDelta(...)`
+- `map(...)`
+- `filter(...)`
+- `reduce(...)`
+- `all()`
+- `lastDelta()`
+- `usage()`
+- `execution()`
+
+Example:
 
 ```php
 <?php
+
 use Cognesy\Polyglot\Inference\Inference;
 
-$stream = Inference::using('openai')
-    ->with(
-        messages: 'Return JSON with name and population for Paris.',
-        responseFormat: ['type' => 'json_object'],
-        options: ['stream' => true],
-    )
-    ->stream();
+$text = Inference::using('openai')
+    ->withMessages('Write three short lines about queues.')
+    ->withStreaming()
+    ->stream()
+    ->reduce(
+        fn(string $carry, $delta) => $carry . $delta->contentDelta,
+        '',
+    );
 ```
-
-For tool-call streaming, use `tools` and `toolChoice` instead of any mode flag.

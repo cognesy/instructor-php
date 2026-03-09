@@ -20,7 +20,7 @@ Configure event bridging in `config/instructor.php`:
         \Cognesy\Instructor\Events\ExtractionFailed::class,
     ],
 ],
-// @doctest id="4c7c"
+// @doctest id="3ead"
 ```
 
 ## Available Events
@@ -74,7 +74,7 @@ class LogExtractionComplete
         ]);
     }
 }
-// @doctest id="3d2f"
+// @doctest id="01ea"
 ```
 
 Register in `EventServiceProvider`:
@@ -95,7 +95,7 @@ class EventServiceProvider extends ServiceProvider
         ],
     ];
 }
-// @doctest id="5d54"
+// @doctest id="818f"
 ```
 
 ### Using Closures
@@ -118,7 +118,7 @@ public function boot(): void
         // Handle failed extraction
     });
 }
-// @doctest id="deea"
+// @doctest id="c61a"
 ```
 
 ### Using Event Subscribers
@@ -163,7 +163,7 @@ class InstructorEventSubscriber
 protected $subscribe = [
     InstructorEventSubscriber::class,
 ];
-// @doctest id="c65c"
+// @doctest id="7487"
 ```
 
 ## Common Use Cases
@@ -189,7 +189,7 @@ Event::listen(ExtractionFailed::class, function ($event) {
         'model' => $event->model,
     ]);
 });
-// @doctest id="ee65"
+// @doctest id="bdf2"
 ```
 
 ### Metrics and Analytics
@@ -206,7 +206,7 @@ Event::listen(ExtractionComplete::class, function ($event) {
         'success' => true,
     ]);
 });
-// @doctest id="41fa"
+// @doctest id="d976"
 ```
 
 ### Alerting on Failures
@@ -222,7 +222,7 @@ Event::listen(ExtractionFailed::class, function ($event) {
             ->notify(new ExtractionFailedNotification($event));
     }
 });
-// @doctest id="ef49"
+// @doctest id="5eaa"
 ```
 
 ### Caching Responses
@@ -236,7 +236,7 @@ Event::listen(ExtractionComplete::class, function ($event) {
 
     Cache::put($cacheKey, $event->result, now()->addHours(24));
 });
-// @doctest id="d8e9"
+// @doctest id="c170"
 ```
 
 ### Queued Event Listeners
@@ -259,7 +259,7 @@ class ProcessExtractionAnalytics implements ShouldQueue
         // Heavy analytics processing
     }
 }
-// @doctest id="f389"
+// @doctest id="7374"
 ```
 
 ## Wiretap (Direct Event Handling)
@@ -282,7 +282,7 @@ $person = StructuredOutput::withRuntime($runtime)->with(
     responseModel: PersonData::class,
 )
 ->get();
-// @doctest id="fbed"
+// @doctest id="33aa"
 ```
 
 ## Disabling Event Bridge
@@ -294,14 +294,14 @@ To disable event bridging (e.g., for performance):
 'events' => [
     'dispatch_to_laravel' => false,
 ],
-// @doctest id="53ce"
+// @doctest id="6879"
 ```
 
 Or via environment variable:
 
 ```env
 INSTRUCTOR_DISPATCH_EVENTS=false
-// @doctest id="4e58"
+// @doctest id="71bf"
 ```
 
 ## Testing Events
@@ -323,7 +323,7 @@ public function test_dispatches_extraction_event(): void
 
     Event::assertDispatched(ExtractionComplete::class);
 }
-// @doctest id="b38e"
+// @doctest id="d36f"
 ```
 
 Assert event properties:
@@ -333,5 +333,5 @@ Event::assertDispatched(ExtractionComplete::class, function ($event) {
     return $event->responseModel === PersonData::class
         && $event->tokensUsed > 0;
 });
-// @doctest id="3956"
+// @doctest id="8574"
 ```

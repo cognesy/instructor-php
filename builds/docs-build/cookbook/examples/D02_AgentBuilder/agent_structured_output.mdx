@@ -162,10 +162,10 @@ $agent = AgentBuilder::base()
     ->withCapability(new UseStructuredOutputs(
         schemas: $schemas,
         structuredOutput: StructuredOutputRuntime::fromProvider(
-            provider: LLMProvider::fromLLMConfig(ExampleConfig::llmPreset('openai')),
+            provider: LLMProvider::using('openai'),
         ),
         policy: new StructuredOutputPolicy(
-            llm: LLMProvider::fromLLMConfig(ExampleConfig::llmPreset('openai')),
+            llm: LLMProvider::using('openai'),
             defaultMaxRetries: 3,
         ),
     ))

@@ -16,6 +16,8 @@ offers you #[Assert/Callback] annotation to build fully customized validation lo
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
@@ -35,12 +37,14 @@ class UserDetails
     }
 }
 
-$user = StructuredOutput::using('openai')
-    ->wiretap(fn($e) => $e->print())
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
+    ->withMaxRetries(2)
+    ->wiretap(fn($e) => $e->print());
+
+$user = (new StructuredOutput($runtime))
     ->with(
         messages: [['role' => 'user', 'content' => 'jason is 25 years old']],
         responseModel: UserDetails::class,
-        maxRetries: 2
     )
     ->get();
 

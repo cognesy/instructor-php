@@ -19,7 +19,7 @@ $requests = HttpRequestList::of(
 );
 
 $responses = $pool->pool($requests, maxConcurrent: 2);
-// @doctest id="6ef3"
+// @doctest id="e441"
 ```
 
 ## Deferred Execution
@@ -27,7 +27,7 @@ $responses = $pool->pool($requests, maxConcurrent: 2);
 ```php
 $pending = $pool->withRequests($requests);
 $responses = $pending->all(maxConcurrent: 2);
-// @doctest id="7841"
+// @doctest id="3b12"
 ```
 
 ## Result Shape

@@ -1,7 +1,9 @@
 ---
 title: Middleware
-description: 'The small core middleware API.'
+description: 'Add small transport behaviors around request execution.'
 ---
+
+Middleware lets you change request and response behavior without changing drivers.
 
 ## Middleware Contract
 
@@ -20,11 +22,29 @@ final class AddHeaderMiddleware implements HttpMiddleware
 }
 ```
 
-## Register Middleware (Immutable)
+## Register Middleware
 
 ```php
 $client = $client->withMiddleware(new AddHeaderMiddleware(), 'request-id');
 $client = $client->withoutMiddleware('request-id');
 ```
+
+You can also register middleware while building the client:
+
+```php
+use Cognesy\Http\Creation\HttpClientBuilder;
+
+$client = (new HttpClientBuilder())
+    ->withMiddleware(new AddHeaderMiddleware())
+    ->create();
+```
+
+The builder also has focused helpers for the built-in middleware:
+
+- `withRetryPolicy(...)`
+- `withCircuitBreakerPolicy(...)`
+- `withIdempotencyMiddleware(...)`
+
+For streaming event payloads, add `EventSourceMiddleware` with `withMiddleware(...)`.
 
 Keep middleware small and deterministic.

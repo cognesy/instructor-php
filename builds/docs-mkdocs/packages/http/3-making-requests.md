@@ -1,9 +1,11 @@
 ---
 title: 'Making Requests'
-description: 'Short request patterns.'
+description: 'Create requests with plain values and send them through the client.'
 ---
 
-### GET
+`HttpRequest` keeps request data explicit: URL, method, headers, body, and options.
+
+## GET
 
 ```php
 $request = new HttpRequest(
@@ -15,12 +17,12 @@ $request = new HttpRequest(
 );
 
 $response = $client->send($request)->get();
-// @doctest id="aa98"
+// @doctest id="df6c"
 ```
 
-Arrays are JSON-encoded automatically.
+Array bodies are JSON-encoded automatically.
 
-### POST JSON
+## POST JSON
 
 ```php
 $request = new HttpRequest(
@@ -32,19 +34,19 @@ $request = new HttpRequest(
 );
 
 $response = $client->send($request)->get();
-// @doctest id="c0eb"
+// @doctest id="468b"
 ```
 
-### Immutable mutation
+## Change a Request
 
 ```php
 $request = $request
     ->withHeader('Authorization', 'Bearer ' . $token)
     ->withStreaming(false);
-// @doctest id="2d76"
+// @doctest id="c547"
 ```
 
-### Build with config
+## Build with Config
 
 ```php
 use Cognesy\Http\Config\HttpClientConfig;
@@ -58,5 +60,5 @@ $client = (new HttpClientBuilder())
         failOnError: true,
     ))
     ->create();
-// @doctest id="5077"
+// @doctest id="04e9"
 ```

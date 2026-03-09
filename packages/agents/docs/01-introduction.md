@@ -45,7 +45,7 @@ CanControlAgentLoop   # Loop interface (execute/iterate)
 Broadcasting/         # AgentEventBroadcaster, BroadcastConfig, CanBroadcastAgentEvents
 Builder/              # AgentBuilder, AgentConfigurator, capability contracts
 Capability/           # Use* capabilities (Core, Bash, File, Subagent, etc.)
-Collections/          # Tools, AgentSteps, StepExecutions, ErrorList, etc.
+Collections/          # Tools, AgentSteps, StepExecutions, ToolExecutions, NameList
 Context/              # AgentContext, message compilers (CanCompileMessages)
 Continuation/         # StopSignal, StopReason, ExecutionContinuation
 Data/                 # AgentState, ExecutionState, AgentStep, ExecutionBudget

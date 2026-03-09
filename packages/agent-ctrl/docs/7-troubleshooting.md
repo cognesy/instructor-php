@@ -1,33 +1,45 @@
 ---
 title: Troubleshooting
-description: 'Common setup and runtime issues.'
+description: 'Common setup and execution problems.'
 ---
 
-## Missing CLI Binary
+## CLI Not Found
 
-If `claude`, `codex`, or `opencode` is missing from `PATH`, execution fails early with a runtime error.
+`agent-ctrl` fails early when the selected CLI binary is not available.
 
-Fix:
+Check that:
 
-- install the CLI
-- authenticate it
-- verify it is available in `PATH`
+- the CLI is installed
+- the CLI is authenticated
+- the binary is available in `PATH`
 
-## Invalid Working Directory
+## Working Directory Problems
 
-When using `inDirectory('/path')`, the directory must exist.
+If you call `inDirectory()`, make sure the directory exists and is accessible to the selected sandbox driver.
 
 ```php
+use Cognesy\AgentCtrl\AgentCtrl;
+
 $response = AgentCtrl::claudeCode()
-    ->inDirectory('/existing/path')
-    ->execute('List top 3 refactors.');
+    ->inDirectory(__DIR__)
+    ->execute('List the main files here.');
 ```
 
-## Stream Parse Failures
+## Non-Zero Exit Codes
 
-Malformed streaming JSON is fail-fast by default.
+The process can finish without throwing an exception and still return a failed response.
 
-Use response helpers to inspect tolerant-mode parsing (advanced bridge usage):
+Use `isSuccess()` or inspect `exitCode` when you need to decide whether the run completed successfully.
+
+## Streaming Errors
+
+`onError()` only handles streamed agent errors during `executeStreaming()`.
+
+Process failures such as missing binaries, invalid configuration, or execution exceptions are still thrown.
+
+## Parse Failures
+
+If the CLI returns malformed JSON lines, the response keeps a parse failure count and sample payloads:
 
 - `parseFailures()`
 - `parseFailureSamples()`

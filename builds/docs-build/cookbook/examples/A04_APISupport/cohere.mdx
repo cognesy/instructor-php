@@ -25,10 +25,11 @@ Reasons OutputMode::Tools is not recommended:
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Http\Config\DebugConfig;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 enum UserType : string {
@@ -48,12 +49,12 @@ class User {
 
 // Get Instructor with specified LLM client connection
 // Adjust provider credentials and model in the LLMConfig::fromArray([...]) values below.
-$debugHttpClient = (new HttpClientBuilder)->withDebugConfig(ExampleConfig::debugPreset('on'))->create();
+$debugHttpClient = (new HttpClientBuilder)->withDebugConfig(DebugConfig::fromPreset('on'))->create();
 $structuredOutput = new StructuredOutput(
     StructuredOutputRuntime::fromConfig(
-        config: ExampleConfig::llmPreset('cohere'),
+        config: LLMConfig::fromPreset('cohere'),
         httpClient: $debugHttpClient,
-    )
+    )->withOutputMode(OutputMode::Json)
 );
 
 $user = $structuredOutput->with(
@@ -64,7 +65,6 @@ $user = $structuredOutput->with(
         'output' => ['age' => 30, 'name' => 'Frank', 'username' => 'frank@hk.ch', 'role' => 'developer', 'hobbies' => ['playing drums'],],
     ]],
     model: 'command-r-plus-08-2024',
-    mode: OutputMode::Json,
 )->get();
 
 print("Completed response model:\n\n");

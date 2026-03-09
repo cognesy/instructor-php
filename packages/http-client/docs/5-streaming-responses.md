@@ -1,9 +1,9 @@
 ---
 title: Streaming Responses
-description: 'Short streaming examples.'
+description: 'Turn on streaming for a request and consume chunks as they arrive.'
 ---
 
-Enable streaming on the request:
+Set the request to streaming mode:
 
 ```php
 $request = (new HttpRequest(
@@ -15,7 +15,7 @@ $request = (new HttpRequest(
 ))->withStreaming(true);
 ```
 
-Consume chunks:
+Then consume the response as chunks:
 
 ```php
 foreach ($client->send($request)->stream() as $chunk) {
@@ -23,4 +23,4 @@ foreach ($client->send($request)->stream() as $chunk) {
 }
 ```
 
-Streaming is one-pass.
+If you need to parse server-sent events, add `EventSourceMiddleware` before sending the request.

@@ -7,22 +7,28 @@ description: 'Manage conversation data with AgentContext and control message com
 
 ## AgentContext
 
-`AgentContext` holds the conversation data: messages, system prompt, metadata, and an optional response format.
+`AgentContext` is the low-level container for:
+
+- message store
+- metadata
+- system prompt
+- response format
 
 ```php
 $state = AgentState::empty()
     ->withSystemPrompt('You are a helpful assistant.')
     ->withMetadata('session_id', 'abc');
 
-// Access
 $state->context()->systemPrompt();
 $state->context()->messages();
 $state->context()->metadata();
 ```
 
+In normal usage, update context through `AgentState`.
+
 ## Message Compilers
 
-Before each LLM call, the driver uses a `CanCompileMessages` implementation to transform `AgentState` into the final `Messages` sent to the LLM.
+Before each model call, the driver asks a `CanCompileMessages` implementation for the messages it should send:
 
 ```php
 interface CanCompileMessages
@@ -31,11 +37,10 @@ interface CanCompileMessages
 }
 ```
 
-The default compiler assembles messages from the agent's context. You can replace it to control exactly what the LLM sees.
+The default compiler is `ConversationWithCurrentToolTrace`.
+It sends the conversation plus trace messages from the current execution.
 
 ## Custom Compiler
-
-Implement `CanCompileMessages` for custom message assembly:
 
 ```php
 use Cognesy\Agents\Context\CanCompileMessages;
@@ -46,13 +51,12 @@ class MyCompiler implements CanCompileMessages
 {
     public function compile(AgentState $state): Messages
     {
-        // Custom logic to build messages from state
-        return $state->messages();
+        return $state->store()->toMessages();
     }
 }
 ```
 
-Inject it into the loop's driver:
+Use it directly with a driver:
 
 ```php
 $inference = InferenceRuntime::fromProvider(LLMProvider::new());
@@ -63,7 +67,7 @@ $driver = new ToolCallingDriver(
 $loop = AgentLoop::default()->withDriver($driver);
 ```
 
-Or via `AgentBuilder`:
+Or install it with `AgentBuilder`:
 
 ```php
 use Cognesy\Agents\Builder\AgentBuilder;
@@ -74,18 +78,13 @@ $agent = AgentBuilder::base()
     ->build();
 ```
 
-## Use Cases
+## Common Uses
 
-Custom compilers give you full control over what the LLM sees on each step. Common patterns include:
+- trim older messages
+- inject temporary context
+- restrict the model to selected message-store sections
 
-- **Context window management** — trim or summarize older messages when the conversation exceeds the model's token limit, keeping the most recent and most relevant exchanges
-- **Filtering** — exclude internal tool traces, metadata messages, or debug output that the LLM doesn't need
-- **Injection** — prepend dynamic instructions, inject retrieved context (RAG), or append reminders based on the current state
-- **Format transformation** — restructure messages for a specific model's expected format or optimize token usage
-
-### Example: Trimming to Token Limit
-
-A compiler that keeps only the most recent messages within a token budget:
+### Example: Keep Only Recent Messages
 
 ```php
 class TokenLimitCompiler implements CanCompileMessages
@@ -101,7 +100,6 @@ class TokenLimitCompiler implements CanCompileMessages
         $kept = [];
         $tokens = 0;
 
-        // Walk backwards, keeping recent messages first
         foreach (array_reverse($messages->all()) as $message) {
             $estimate = (int) ceil(strlen($message->content()->toString()) / 4);
             if ($tokens + $estimate > $this->maxTokens) {
@@ -116,7 +114,7 @@ class TokenLimitCompiler implements CanCompileMessages
 }
 ```
 
-Use as a decorator via `UseContextCompilerDecorator`:
+Wrap the default compiler with `UseContextCompilerDecorator`:
 
 ```php
 use Cognesy\Agents\Capability\Core\UseContextCompilerDecorator;
@@ -127,5 +125,3 @@ $agent = AgentBuilder::base()
     ))
     ->build();
 ```
-
-The decorator pattern wraps the default compiler, so you get standard message assembly plus your custom logic on top.

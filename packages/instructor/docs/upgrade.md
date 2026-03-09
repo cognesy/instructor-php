@@ -1,98 +1,25 @@
 ---
-title: Upgrading Instructor
-description: 'Learn how to upgrade your Instructor installation.'
+title: Upgrade
+description: 'What to expect in the 2.0-era API.'
 ---
 
-Recent changes to the Instructor package may require some manual fixes in your codebase.
+The current docs are written for the refactored structured-output API.
 
+## The Main Shape
 
-## Step 1: Update the package
+The core flow is now:
 
-Run the following command in your CLI:
+- `StructuredOutput` for request construction
+- `StructuredOutputRuntime` for runtime behavior
+- `PendingStructuredOutput` for lazy execution
+- `StructuredOutputStream` for streaming reads
 
-```bash
-composer update cognesy/instructor-php
-```
+## Important Differences From Older Docs
 
-## Step 2: Config files
+- configuration belongs on the runtime, not on a global instructor object
+- `create()` returns a lazy handle
+- `stream()` returns a dedicated stream object
+- `StructuredOutput::fromConfig(...)` and `StructuredOutput::using(...)` are valid entry points
+- published config files are optional, not required for normal usage
 
-Correct your config files to use new namespaces.
-
-
-## Step 3: Instructor config path
-
-Correct INSTRUCTOR_CONFIG_PATHS in .env file to `config/instructor` (or your custom path).
-
-
-## Step 4: Codebase
-
-Make sure that your code follows new namespaces.
-
-Suggestion: use IDE search and replace to find and replace old namespaces with new ones.
-
-## Step 5: Streaming replay behavior
-
-In 2.0, stream iterators are one-shot by default (`ResponseCachePolicy::None`).
-
-- If your code iterates `partials()`, `responses()` or `sequence()` more than once, it will now throw.
-- `finalResponse()` and `finalValue()` are still safe to call repeatedly.
-- To enable replay, configure `ResponseCachePolicy::Memory` explicitly.
-
-## Step 6: Mixin inference traits
-
-`HandlesInference` and `HandlesSelfInference` were removed in 2.0.
-
-Use `StructuredOutput::fromConfig(...)->with(...)->get()` or
-`StructuredOutputRuntime::fromProvider(...)->create(...)->getInstanceOf(...)` instead.
-
-Use `StructuredOutput::using()` with a named preset instead:
-
-```php
-<?php
-use Cognesy\Instructor\StructuredOutput;
-
-$user = StructuredOutput::using('openai')
-    ->with(
-        messages: 'Jason is 25 years old and works as an engineer.',
-        responseModel: User::class,
-    )
-    ->getObject();
-```
-
-## Step 6a: OutputMode ownership
-
-`OutputMode` is now an Instructor enum:
-
-```php
-use Cognesy\Instructor\Enums\OutputMode;
-```
-
-If your code previously imported `Cognesy\Polyglot\Inference\Enums\OutputMode`, switch it to the Instructor namespace.
-
-Raw Polyglot inference no longer accepts mode-based APIs. Replace them with explicit request data:
-
-- `withOutputMode(...)` on `Inference` -> `withResponseFormat(...)`, `withTools(...)`, `withToolChoice(...)`
-- `mode:` in `Inference::with(...)` -> `responseFormat`, `tools`, `toolChoice`
-- `PendingInference::asJsonData()` for tool-call args -> `asToolCallJsonData()`
-
-## Step 7: Events 2.0 explicit wiring
-
-If your code previously relied on resolver-style event wiring, migrate to explicit shared bus injection.
-
-Before:
-
-```php
-$events = EventBusResolver::using($events);
-```
-
-After:
-
-```php
-use Cognesy\Events\Dispatchers\EventDispatcher;
-
-$events = $events ?? new EventDispatcher(name: 'instructor.runtime');
-```
-
-Pass the same `$events` instance into related runtimes/builders (for example `HttpClientBuilder`, `InferenceRuntime`, `StructuredOutputRuntime`) so listeners and wiretaps observe the full flow.
-
-For full details, see: `packages/events/MIGRATION-2.0.md`.
+If you are updating older examples, start by rewriting them around `StructuredOutput->with(...)->get()`.

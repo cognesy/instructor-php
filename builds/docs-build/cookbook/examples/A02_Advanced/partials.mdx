@@ -19,8 +19,10 @@ require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Cli\Console;
 class UserRole
 {
@@ -66,12 +68,14 @@ $text = <<<TEXT
     San Francisco. He likes to play soccer and climb mountains.
     TEXT;
 
-$stream = StructuredOutput::using('openai')->withConfig(new StructuredOutputConfig(
-        responseCachePolicy: ResponseCachePolicy::None, // use Memory if you need replay
-    ))
-    ->withMessages($text)
+$stream = (new StructuredOutput(
+    StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
+        ->withConfig(new StructuredOutputConfig(
+            responseCachePolicy: ResponseCachePolicy::None, // use Memory if you need replay
+        ))
+        ->withOutputMode(OutputMode::Json)
+))->withMessages($text)
     ->withResponseClass(UserDetail::class)
-    ->withOutputMode(OutputMode::Json)
     ->withStreaming()
     ->stream();
 

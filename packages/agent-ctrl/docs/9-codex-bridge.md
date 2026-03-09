@@ -1,49 +1,43 @@
 ---
-title: Codex Bridge (Internals)
-description: 'Low-level Codex CLI bridge flow for advanced use cases.'
+title: Codex
+description: 'Use the Codex bridge when you need Codex sandbox and image options.'
 ---
 
-> Most users should use `AgentCtrl::codex()` from the high-level API.
-> Use this page when you need direct request/command/parser control.
+Use `AgentCtrl::codex()` when you want OpenAI Codex through the same fluent API as the other bridges.
 
-## Core Flow
+## Typical Use
 
 ```php
-use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
-use Cognesy\AgentCtrl\OpenAICodex\Application\Builder\CodexCommandBuilder;
-use Cognesy\AgentCtrl\OpenAICodex\Application\Dto\CodexRequest;
-use Cognesy\AgentCtrl\OpenAICodex\Application\Parser\ResponseParser;
-use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\OutputFormat;
+use Cognesy\AgentCtrl\AgentCtrl;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\SandboxMode;
 
-$request = new CodexRequest(
-    prompt: 'List top code risks in this project.',
-    outputFormat: OutputFormat::Json,
-    sandboxMode: SandboxMode::ReadOnly,
-);
-
-$spec = (new CodexCommandBuilder())->buildExec($request);
-$result = SandboxCommandExecutor::forCodex()->execute($spec);
-$response = (new ResponseParser())->parse($result, OutputFormat::Json);
-
-echo $response->messageText();
+$response = AgentCtrl::codex()
+    ->withSandbox(SandboxMode::WorkspaceWrite)
+    ->execute('Write tests for this service.');
 ```
 
-## Streaming
+## Main Options
 
-Codex emits JSONL events in `OutputFormat::Json`.
+- `withSandbox()`
+- `disableSandbox()`
+- `fullAuto()`
+- `dangerouslyBypass()`
+- `skipGitRepoCheck()`
+- `continueSession()`
+- `resumeSession()`
+- `withAdditionalDirs()`
+- `withImages()`
 
-Common event types:
+## Sandbox Modes
 
-- `thread.started`
-- `turn.started`
-- `turn.completed`
-- `item.completed`
-- `error`
+Codex supports:
 
-## Key Types
+- `SandboxMode::ReadOnly`
+- `SandboxMode::WorkspaceWrite`
+- `SandboxMode::DangerFullAccess`
 
-- Request DTO: `CodexRequest`
-- Command builder: `CodexCommandBuilder`
-- Parser: `ResponseParser`
-- Output enums: `OutputFormat`, `SandboxMode`
+## Notes
+
+- Codex returns usage data when available
+- Session IDs are normalized from Codex thread IDs
+- Tool activity is normalized into `ToolCall` objects

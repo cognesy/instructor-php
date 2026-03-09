@@ -10,27 +10,93 @@ Immutability rule: `with*()` methods return new instances.
 ### `HttpClient`
 - `HttpClient::default(): HttpClient`
 - `HttpClient::fromConfig(HttpClientConfig $config): HttpClient`
+- `HttpClient::fromDriver(CanHandleHttpRequest $driver): HttpClient`
 - implements `CanSendHttpRequests`
+- `send(HttpRequest $request): PendingHttpResponse`
 - `withMiddleware(HttpMiddleware $middleware, ?string $name = null): HttpClient`
 - `withoutMiddleware(string $name): HttpClient`
 - `withMiddlewareStack(MiddlewareStack $stack): HttpClient`
+- `runtime(): HttpClientRuntime`
+- `config(): HttpClientConfig`
+- `withSSEStream(): HttpClient` is deprecated
+
+### `HttpClientRuntime`
+- `HttpClientRuntime::fromConfig(...): HttpClientRuntime`
+- `client(): HttpClient`
+- `send(HttpRequest $request): PendingHttpResponse`
+- `withMiddleware(HttpMiddleware $middleware, ?string $name = null): self`
+- `withoutMiddleware(string $name): self`
+- `withMiddlewareStack(MiddlewareStack $stack): self`
+- `driver(): CanHandleHttpRequest`
+- `middlewareStack(): MiddlewareStack`
+- `events(): CanHandleEvents`
+- `config(): HttpClientConfig`
 
 ### `HttpClientBuilder`
 - `withConfig(HttpClientConfig $config): self`
 - `withDsn(string $dsn): self`
+- `withDebugConfig(DebugConfig $debugConfig): self`
 - `withDriver(CanHandleHttpRequest $driver): self`
+- `withDrivers(CanProvideHttpDrivers $drivers): self`
 - `withClientInstance(string $driverName, object $clientInstance): self`
 - `withMiddleware(HttpMiddleware ...$middleware): self`
+- `withRetryPolicy(RetryPolicy $policy): self`
+- `withCircuitBreakerPolicy(CircuitBreakerPolicy $policy, ?CanStoreCircuitBreakerState $stateStore = null): self`
+- `withIdempotencyMiddleware(IdempotencyMiddleware $middleware): self`
 - `withMock(?callable $configure = null): self`
 - `withEventBus(CanHandleEvents $events): self`
 - `create(): HttpClient`
+- `createRuntime(): HttpClientRuntime`
+
+## Config
+
+### `HttpClientConfig`
+Constructor fields:
+- `driver`
+- `connectTimeout`
+- `requestTimeout`
+- `idleTimeout`
+- `streamChunkSize`
+- `streamHeaderTimeout`
+- `failOnError`
+
+Methods:
+- `HttpClientConfig::group(): string`
+- `HttpClientConfig::fromDsn(string $dsn): HttpClientConfig`
+- `HttpClientConfig::fromArray(array $config): HttpClientConfig`
+- `withOverrides(array $overrides): self`
+- `toArray(): array`
+
+### `DebugConfig`
+Constructor fields:
+- `httpEnabled`
+- `httpTrace`
+- `httpRequestUrl`
+- `httpRequestHeaders`
+- `httpRequestBody`
+- `httpResponseHeaders`
+- `httpResponseBody`
+- `httpResponseStream`
+- `httpResponseStreamByLine`
+
+Methods:
+- `DebugConfig::group(): string`
+- `DebugConfig::fromPreset(string $preset, ?string $basePath = null): DebugConfig`
+- `DebugConfig::fromArray(array $config): DebugConfig`
+- `withOverrides(array $overrides): self`
+- `toArray(): array`
 
 ## Data Types
 
 ### `HttpRequest`
 Constructor:
-- `new HttpRequest(string $url, string $method, array $headers, string|array $body, array $options)`
-- array bodies are JSON-encoded; encoding failures throw `InvalidArgumentException` (no silent empty-body fallback)
+- `new HttpRequest(string $url, string $method, array $headers, string|array $body, array $options, ?string $id = null, ?DateTimeImmutable $createdAt = null, ?DateTimeImmutable $updatedAt = null, ?Metadata $metadata = null)`
+
+Readonly lifecycle fields:
+- `id`
+- `createdAt`
+- `updatedAt`
+- `metadata`
 
 Methods:
 - `url(): string`
@@ -41,7 +107,15 @@ Methods:
 - `isStreamed(): bool`
 - `withHeader(string $key, string $value): self`
 - `withStreaming(bool $streaming): self`
-- lifecycle fields are readonly (`id`, `createdAt`, `updatedAt`, `metadata`)
+- `toArray(): array`
+- `HttpRequest::fromArray(array $data): HttpRequest`
+
+### `HttpRequestBody`
+- `new HttpRequestBody(string|array $body)`
+- arrays are JSON-encoded
+- JSON encoding failures throw `InvalidArgumentException`
+- `toString(): string`
+- `toArray(): array`
 
 ### `HttpResponse`
 Factories:
@@ -52,80 +126,153 @@ Factories:
 Methods:
 - `statusCode(): int`
 - `headers(): array`
-- `body(): string` (throws for streamed responses)
+- `body(): string`
 - `isStreamed(): bool`
 - `isStreaming(): bool`
 - `stream(): Generator`
 - `rawStream(): StreamInterface`
 - `withStream(StreamInterface $stream): HttpResponse`
+- `toArray(): array`
+- `HttpResponse::fromArray(array $data): HttpResponse`
+
+Note:
+- `body()` throws for streamed responses
 
 ### `PendingHttpResponse`
-- `get(): HttpResponse` (uses request mode)
+- `get(): HttpResponse`
 - `statusCode(): int`
 - `headers(): array`
-- `content(): string` (non-streamed path)
+- `content(): string`
 - `stream(): Generator`
+
+Notes:
+- sync and streamed execution are cached separately
+- `get()` follows the request streaming flag
 
 ## Collections
 
 ### `HttpRequestList`
-- `empty()`, `of(...)`, `fromArray(...)`
-- `all()`, `first()`, `last()`, `isEmpty()`, `count()`
+- stores `HttpRequest`
+- `empty()`, `of(...)`, `fromArray(...)`, `fromSerializedArray(...)`
+- `all()`, `first()`, `last()`, `isEmpty()`, `count()`, `getIterator()`
 - `withAppended()`, `withPrepended()`, `filter()`
+- `toArray()`
 
 ### `HttpResponseList`
-- `empty()`, `of(...)`, `fromArray(...)`
-- `all()`, `first()`, `last()`, `isEmpty()`, `count()`
-- `successful()`, `failed()`, `hasFailures()`, `hasSuccesses()`
+- stores `Result<HttpResponse, mixed>`
+- `empty()`, `of(...)`, `fromArray(...)`, `fromSerializedArray(...)`
+- `all()`, `first()`, `last()`, `isEmpty()`, `count()`, `getIterator()`
+- `successful(): list<HttpResponse>`
+- `failed(): list<mixed>`
+- `hasFailures()`, `hasSuccesses()`
 - `successCount()`, `failureCount()`
-- `withAppended()`, `filter()`, `map()`
-- For pooled request results, see `packages/http-pool`.
+- `withAppended(Result $response)`, `filter()`, `map()`
+- `toArray()`
+- pooled request results live in `packages/http-pool`
 
 ## Middleware
 
 ### Contracts and Stack
 - `HttpMiddleware::handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse`
-- `MiddlewareStack`: `append`, `appendMany`, `prepend`, `prependMany`, `remove`, `replace`, `clear`, `all`, `has`, `get`, `filter`, `decorate`
+- `MiddlewareStack`: `append`, `appendMany`, `prepend`, `prependMany`, `remove`, `replace`, `clear`, `all`, `has`, `get`, `filter`, `decorate`, `toDebugArray`
+
+### Built-in Middleware
+- `RetryMiddleware`
+- `CircuitBreakerMiddleware`
+- `IdempotencyMiddleware`
+- `EventSourceMiddleware`
 
 ## Drivers
 
-Built-in driver names:
+### Driver Contract
+- `CanHandleHttpRequest::handle(HttpRequest $request): HttpResponse`
+
+### Driver Registry
+- `HttpDriverRegistry::make(): HttpDriverRegistry`
+- `HttpDriverRegistry::fromArray(array $drivers): HttpDriverRegistry`
+- `withDriver(string $name, string|callable $driver): self`
+- `withoutDriver(string $name): self`
+- `has(string $name): bool`
+- `driverNames(): array`
+- `makeDriver(string $name, HttpClientConfig $config, CanHandleEvents $events, ?object $clientInstance = null): CanHandleHttpRequest`
+
+### Built-in Driver Names
 - `curl`
 - `exthttp`
 - `guzzle`
 - `symfony`
 
+## Mock Driver
+
+### `MockHttpDriver`
+- `addResponse(HttpResponse|callable $response, string|callable|null $url = null, ?string $method = null, string|callable|null $body = null): self`
+- `expect(): MockExpectation`
+- `on(): MockExpectation`
+- `getReceivedRequests(): array`
+- `getLastRequest(): ?HttpRequest`
+- `reset(): self`
+- `clearResponses(): self`
+
+### `MockExpectation`
+Matchers:
+- `method()`, `get()`, `post()`, `put()`, `patch()`, `delete()`
+- `url()`, `urlStartsWith()`, `urlMatches()`, `path()`
+- `header()`, `headers()`
+- `withStream()`
+- `bodyEquals()`, `bodyContains()`, `bodyMatchesRegex()`, `withJsonSubset()`, `body()`
+- `times()`
+
+Replies:
+- `reply(HttpResponse|callable $response): MockHttpDriver`
+- `replyJson(array|string|\JsonSerializable $data, int $status = 200, array $headers = []): MockHttpDriver`
+- `replyText(string $text, int $status = 200, array $headers = []): MockHttpDriver`
+- `replyStreamChunks(array $chunks, int $status = 200, array $headers = []): MockHttpDriver`
+- `replySSEFromJson(array $payloads, bool $addDone = true, int $status = 200, array $headers = []): MockHttpDriver`
+
+### `MockHttpResponseFactory`
+- `success(...)`
+- `error(...)`
+- `streaming(...)`
+- `json(...)`
+- `sse(...)`
+
 ## Exceptions
 
 - Base: `HttpRequestException`
 - Network: `NetworkException`, `ConnectionException`, `TimeoutException`
-- HTTP status: `HttpClientErrorException` (4xx), `ServerErrorException` (5xx)
-- `HttpExceptionFactory::fromStatusCode(...)`
+- HTTP status: `HttpClientErrorException`, `ServerErrorException`
+- Middleware-related: `CircuitBreakerOpenException`
+- Factory: `HttpExceptionFactory::fromStatusCode(...)`
+
+Useful exception methods:
+- `getRequest(): ?HttpRequest`
+- `getResponse(): ?HttpResponse`
+- `getDuration(): ?float`
+- `getStatusCode(): ?int`
+- `isRetriable(): bool`
 
 ## Minimal Usage
 
-### Basic request
+### Basic Request
 
 ```php
-use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\HttpClient;
 
-$client = HttpClient::default(); // default CanSendHttpRequests implementation
+$client = HttpClient::default();
 
-$request = new HttpRequest(
+$response = $client->send(new HttpRequest(
     url: 'https://api.example.com/health',
     method: 'GET',
     headers: ['Accept' => 'application/json'],
     body: '',
     options: [],
-);
+))->get();
 
-$response = $client->send($request)->get();
 echo $response->statusCode();
 ```
 
-### Streaming request
+### Streaming Request
 
 ```php
 $request = (new HttpRequest(
@@ -141,11 +288,7 @@ foreach ($client->send($request)->stream() as $chunk) {
 }
 ```
 
-### Request pooling
-
-Use `packages/http-pool`.
-
-### Mock driver
+### Mock Driver
 
 ```php
 use Cognesy\Http\Creation\HttpClientBuilder;
@@ -159,8 +302,8 @@ $client = (new HttpClientBuilder())
     ->create();
 ```
 
-## DSN Note
+## Notes
 
-`withDsn()` supports typed fields and coerces values to `HttpClientConfig` types.
-
-Example: `driver=symfony,connectTimeout=2,requestTimeout=20,streamHeaderTimeout=5,failOnError=true`
+- pooling lives in `packages/http-pool`
+- `withDsn()` coerces values to `HttpClientConfig` field types
+- `EventSourceMiddleware` is the current SSE middleware path

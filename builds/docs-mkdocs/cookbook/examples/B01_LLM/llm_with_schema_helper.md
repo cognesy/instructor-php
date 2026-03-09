@@ -15,7 +15,6 @@ runtime.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 
@@ -39,7 +38,6 @@ $data = Inference::using('openai')
             strict: true,
         ),
         options: ['max_tokens' => 64],
-        mode: OutputMode::JsonSchema,
     )
     ->asJsonData();
 

@@ -20,6 +20,7 @@ in case of extraction issues.
 ```php
 <?php
 
+use Cognesy\Http\Config\DebugConfig;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
@@ -28,10 +29,10 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 require 'examples/boot.php';
 
-$http = (new HttpClientBuilder())->withDebugConfig(ExampleConfig::debugPreset('on'))->create();
+$http = (new HttpClientBuilder())->withDebugConfig(DebugConfig::fromPreset('on'))->create();
 
 $answer = Inference::fromRuntime(InferenceRuntime::fromConfig(
-        config: ExampleConfig::llmPreset('openrouter'), // adjust values directly in LLMConfig::fromArray([...])
+        config: LLMConfig::fromPreset('openrouter'),
         httpClient: $http,
     ))
     ->with(

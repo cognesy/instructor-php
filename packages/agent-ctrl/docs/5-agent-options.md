@@ -1,18 +1,24 @@
 ---
 title: Agent Options
-description: 'Agent-specific builder methods for Claude Code, Codex, and OpenCode.'
+description: 'Configure shared and provider-specific builder options.'
 ---
 
-All builders share:
+## Shared Options
+
+Every builder supports:
 
 - `withModel()`
 - `withTimeout()`
 - `inDirectory()`
 - `withSandboxDriver()`
+- `onText()`
+- `onToolUse()`
+- `onComplete()`
+- `onError()`
 
 ## Claude Code
 
-Extra options:
+Claude Code adds:
 
 - `withSystemPrompt()`
 - `appendSystemPrompt()`
@@ -30,12 +36,12 @@ use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\PermissionMode;
 $response = AgentCtrl::claudeCode()
     ->withPermissionMode(PermissionMode::BypassPermissions)
     ->withMaxTurns(10)
-    ->execute('Refactor this service to remove duplication.');
+    ->execute('Refactor this service.');
 ```
 
 ## Codex
 
-Extra options:
+Codex adds:
 
 - `withSandbox()`
 - `disableSandbox()`
@@ -53,13 +59,13 @@ use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\SandboxMode;
 
 $response = AgentCtrl::codex()
     ->withSandbox(SandboxMode::WorkspaceWrite)
-    ->fullAuto()
-    ->execute('Write tests for this controller.');
+    ->withImages(['/tmp/mockup.png'])
+    ->execute('Review this screenshot and describe the UI.');
 ```
 
 ## OpenCode
 
-Extra options:
+OpenCode adds:
 
 - `withAgent()`
 - `withFiles()`
@@ -73,6 +79,6 @@ use Cognesy\AgentCtrl\AgentCtrl;
 
 $response = AgentCtrl::openCode()
     ->withAgent('coder')
-    ->withTitle('Repository cleanup')
-    ->execute('Find dead code and propose removals.');
+    ->withTitle('Repository review')
+    ->execute('Summarize the architecture.');
 ```

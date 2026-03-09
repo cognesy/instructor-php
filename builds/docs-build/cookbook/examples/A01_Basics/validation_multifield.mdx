@@ -23,8 +23,10 @@ is `1010` instead of `2010`) and respond with correct graduation year.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Validation\Traits\ValidationMixin;
 use Cognesy\Instructor\Validation\ValidationResult;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 class UserDetails
 {
@@ -46,13 +48,15 @@ class UserDetails
     }
 }
 
-$user = StructuredOutput::using('openai')
-    ->wiretap(fn($e) => $e->print())
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
+    ->withMaxRetries(2)
+    ->wiretap(fn($e) => $e->print());
+
+$user = (new StructuredOutput($runtime))
     ->withResponseClass(UserDetails::class)
     ->with(
         messages: [['role' => 'user', 'content' => 'Jason was born in 2000 and graduated in 18.']],
         model: 'gpt-4o-mini',
-        maxRetries: 2,
     )->get();
 
 

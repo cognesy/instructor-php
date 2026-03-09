@@ -50,7 +50,7 @@ final class RunDocsQualityCommand extends Command
                 'profile',
                 'p',
                 InputOption::VALUE_OPTIONAL,
-                'Rule profile to apply: instructor|none',
+                'Rule profile to apply (for example: none, agents, http-client, instructor)',
                 'instructor',
             )
             ->addOption(

@@ -7,11 +7,11 @@ id: '2e9b'
 
 This is the default client used by Instructor.
 
-Mode compatibility:
- - OutputMode::Tools (supported)
- - OutputMode::Json (supported)
- - OutputMode::JsonSchema (recommended for new models)
- - OutputMode::MdJson (fallback)
+Inference feature compatibility:
+ - tool calling (supported)
+ - native JSON object response_format (supported)
+ - native JSON schema response_format (recommended for new models)
+ - Instructor markdown-JSON fallback (fallback)
 
 ## Example
 

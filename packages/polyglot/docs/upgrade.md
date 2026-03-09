@@ -1,44 +1,26 @@
 ---
 title: Upgrading Polyglot
-description: 'Migrate Polyglot raw inference code to the explicit 2.0 request shape.'
+description: 'Polyglot 2.0 uses explicit request fields instead of output modes.'
 ---
 
-Polyglot 2.0 removes mode-based response shaping.
-Polyglot 2.0 also removes snapshot-style partial streaming from its public API.
+Polyglot 2.0 is centered around explicit request fields.
 
-## Removed APIs
+The important migration is simple:
 
-- `Cognesy\Polyglot\Inference\Enums\OutputMode`
-- `Inference::withOutputMode(...)`
-- `mode:` in `Inference::with(...)`
-- `mode` on `InferenceRequest`
-- `PartialInferenceResponseCreated`
-- `PartialInferenceResponse` as the public stream payload
-- `stream()->responses()`
-- `stream()->onPartialResponse(...)`
-- `stream()->partialResponse()`
-
-## Use instead
-
-Build raw inference requests from explicit provider-facing fields:
-
-- `responseFormat` for native JSON object or JSON schema response formats
-- `tools` for tool definitions
-- `toolChoice` for tool selection
-- `stream()->deltas()` for streaming chunks
-- `stream()->onDelta(...)` / `stream()->lastDelta()` for stream observation
+- remove old output mode usage
+- set `responseFormat` for native JSON or JSON schema
+- set `tools` and `toolChoice` for tool calling
+- use `stream()->deltas()` for streaming
 
 ## Before
 
 ```php
 <?php
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Polyglot\Inference\Inference;
 
-$data = Inference::using('openai')
+$data = $inference
     ->with(
-        messages: 'Return JSON for Paris.',
-        mode: OutputMode::Json,
+        messages: 'Return JSON.',
+        mode: $oldMode,
     )
     ->asJsonData();
 ```
@@ -47,25 +29,16 @@ $data = Inference::using('openai')
 
 ```php
 <?php
+
 use Cognesy\Polyglot\Inference\Inference;
 
 $data = Inference::using('openai')
     ->with(
-        messages: 'Return JSON for Paris.',
+        messages: 'Return JSON.',
         responseFormat: ['type' => 'json_object'],
     )
     ->asJsonData();
 ```
 
-## Tool calls
-
-If you want tool-call arguments as JSON, use:
-
-```php
-<?php
-$args = Inference::using('openai')
-    ->with(messages: 'Call the weather tool.', tools: $tools, toolChoice: 'auto')
-    ->asToolCallJsonData();
-```
-
-Markdown-JSON fallback and other structured-output strategies now belong to Instructor, not Polyglot.
+Markdown-JSON fallback is no longer a Polyglot concern.
+Use Instructor when you need higher-level structured output strategies.

@@ -31,7 +31,10 @@ package_is_selected() {
 profile_for_package() {
   local package="$1"
   case "$package" in
+    agents) echo "agents" ;;
+    agent-ctrl) echo "agent-ctrl" ;;
     instructor) echo "instructor" ;;
+    http-client) echo "http-client" ;;
     *) echo "none" ;;
   esac
 }
@@ -73,4 +76,3 @@ if [[ "$failed" -gt 0 ]]; then
 fi
 
 echo "docs:qa passed for all $total package(s)."
-

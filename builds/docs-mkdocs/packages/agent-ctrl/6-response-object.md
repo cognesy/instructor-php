@@ -1,21 +1,22 @@
 ---
 title: 'Response Object'
-description: 'Understand AgentResponse, ToolCall, and TokenUsage.'
+description: 'Read text, session, usage, and tool activity from AgentResponse.'
 ---
 
-Every execution returns `AgentResponse`.
+Every execution returns an `AgentResponse`.
 
 ## Core Data
 
-- `agentType` (`AgentType`)
-- `text` (`string`)
-- `exitCode` (`int`)
-- `usage` (`TokenUsage|null`)
-- `cost` (`float|null`)
-- `toolCalls` (`list<ToolCall>`)
-- `rawResponse` (`mixed`)
+- `agentType`
+- `text`
+- `exitCode`
+- `usage`
+- `cost`
+- `toolCalls`
+- `rawResponse`
+- `parseFailures`
 
-## Methods
+## Common Methods
 
 - `isSuccess(): bool`
 - `text(): string`
@@ -25,18 +26,39 @@ Every execution returns `AgentResponse`.
 - `parseFailures(): int`
 - `parseFailureSamples(): array`
 
-## Minimal Checks
-
 ```php
 use Cognesy\AgentCtrl\AgentCtrl;
 
-$response = AgentCtrl::codex()->execute('Create a short changelog from git diff.');
+$response = AgentCtrl::codex()->execute('Create a short summary.');
 
 if ($response->isSuccess()) {
     echo $response->text();
 }
-
-echo $response->exitCode;
-echo $response->sessionId() !== null ? 'has session' : 'no session';
-// @doctest id="1b21"
+// @doctest id="427f"
 ```
+
+## Tool Calls
+
+`toolCalls` contains normalized `ToolCall` objects across all bridges.
+
+Each tool call gives you:
+
+- `tool`
+- `input`
+- `output`
+- `isError`
+- `callId()`
+- `isCompleted()`
+
+## Token Usage
+
+When the underlying CLI exposes usage data, `usage()` returns `TokenUsage`.
+
+You can read:
+
+- `input`
+- `output`
+- `cacheRead`
+- `cacheWrite`
+- `reasoning`
+- `total()`

@@ -1,22 +1,22 @@
 ---
 title: Tool Calling
-description: 'Use tools and toolChoice explicitly with Polyglot.'
+description: Request native tool calls with explicit tool definitions.
 ---
 
-Tool calling in Polyglot is configured through `tools` and `toolChoice`.
+Tool use is controlled by `tools` and `toolChoice`.
 
 ```php
 <?php
+
 use Cognesy\Polyglot\Inference\Inference;
 
 $response = Inference::using('openai')
     ->with(
-        messages: 'Get the weather in Paris.',
+        messages: 'Get the weather for Paris.',
         tools: [[
             'type' => 'function',
             'function' => [
                 'name' => 'get_weather',
-                'description' => 'Get current weather for a city',
                 'parameters' => [
                     'type' => 'object',
                     'properties' => [
@@ -29,8 +29,10 @@ $response = Inference::using('openai')
         toolChoice: 'auto',
     )
     ->response();
-
-$toolCalls = $response->toolCalls();
 ```
 
-If you want tool-call arguments as JSON data, use `asToolCallJsonData()`.
+Read the result from:
+
+- `response()->toolCalls()`
+- `asToolCallJson()`
+- `asToolCallJsonData()`

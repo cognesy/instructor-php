@@ -10,7 +10,7 @@ id: '83b1'
 Instructor allows you to receive detailed information at every stage of request
 and response processing via events.
 
-`StructuredOutput::using('openai')->wiretap(callable $callback)` method allows you to receive all
+`StructuredOutputRuntime::fromProvider(...)->wiretap(callable $callback)` method allows you to receive all
 events dispatched by Instructor.
 
 Example below demonstrates how `wiretap()` can help you to monitor the execution
@@ -27,6 +27,8 @@ console-formatted information about each event.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 enum Role : string {
     case CEO = 'ceo';
@@ -42,8 +44,10 @@ class UserDetail
     public int $age;
 }
 
-$user = StructuredOutput::using('openai')
-    ->wiretap(fn($event) => $event->print())
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
+    ->wiretap(fn($event) => $event->print());
+
+$user = (new StructuredOutput($runtime))
     ->with(
         messages: [["role" => "user",  "content" => "Contact our CTO, Jason is 28 years old -- Best regards, Tom"]],
         responseModel: UserDetail::class,

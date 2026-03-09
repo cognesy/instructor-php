@@ -21,7 +21,9 @@ require 'examples/boot.php';
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Instructor\Extras\Example\Example;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 class User {
     public int $age;
@@ -29,9 +31,11 @@ class User {
 }
 
 echo "\nREQUEST:\n";
-$user = StructuredOutput::using('openai')
-    // let's dump the request data to see how examples are used in requests
-    ->onEvent(HttpRequestSent::class, fn($event) => dump($event))
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
+    ->withOutputMode(OutputMode::Json)
+    ->onEvent(HttpRequestSent::class, fn($event) => dump($event));
+
+$user = (new StructuredOutput($runtime))
     ->withMessages("Our user Jason is 25 years old.")
     ->withResponseClass(User::class)
     ->withExamples([
@@ -45,7 +49,6 @@ $user = StructuredOutput::using('openai')
             template: "example input:\n<|input|>\noutput:\n```json\n<|output|>\n```\n",
         ),
     ])
-    ->withOutputMode(OutputMode::Json)
     ->get();
 
 echo "\nOUTPUT:\n";

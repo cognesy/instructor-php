@@ -27,6 +27,7 @@ use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 $so = new StructuredOutput();
+$so = StructuredOutput::using('openai');
 $so = StructuredOutput::fromConfig(LLMConfig::fromArray(['driver' => 'openai']));
 ```
 
@@ -53,8 +54,6 @@ $so = (new StructuredOutput)
 Single-call variant:
 
 ```php
-use Cognesy\Instructor\Enums\OutputMode;
-
 $so = (new StructuredOutput)->with(
     messages: $messages,
     responseModel: User::class,
@@ -85,6 +84,10 @@ $so = (new StructuredOutput)->withRuntime($runtime);
 ## Pipeline Overrides
 
 ```php
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
+
 $runtime = StructuredOutputRuntime::fromConfig(LLMConfig::fromDsn('driver=openai,model=gpt-4o-mini'))
     ->withValidators($validators)
     ->withTransformers($transformers)
@@ -109,6 +112,7 @@ $raw = $pending->rawResponse();
 $stream = $pending->stream();
 $array = $pending->toArray();
 $json = $pending->toJson();
+$jsonObject = $pending->toJsonObject();
 $execution = $pending->execution();
 ```
 
@@ -127,6 +131,7 @@ $so->getFloat();
 $so->getBoolean();
 $so->getObject();
 $so->getArray();
+$so->getInstanceOf(User::class);
 ```
 
 ## Streaming (`StructuredOutputStream`)
@@ -139,11 +144,15 @@ foreach ($stream->partials() as $partial) {
 }
 
 foreach ($stream->sequence() as $sequenceUpdate) {
-    // one update per completed sequence item
+    // one update per completed sequence item (Sequence responses only)
 }
 
 foreach ($stream->responses() as $responseUpdate) {
     // StructuredOutputResponse, partial or final
+}
+
+foreach ($stream->getIterator() as $rawUpdate) {
+    // raw emitted StructuredOutputResponse snapshots
 }
 
 $latestValue = $stream->lastUpdate();
@@ -151,6 +160,7 @@ $latestResponse = $stream->lastResponse();
 $usage = $stream->usage();
 $finalValue = $stream->finalValue();
 $finalResponse = $stream->finalResponse();
+$finalRaw = $stream->finalRawResponse();
 ```
 
 `lastResponse()` / `finalResponse()` return `StructuredOutputResponse`.
@@ -215,7 +225,10 @@ $error = $maybeUser->error();
 
 ```php
 use Cognesy\Instructor\Extras\Scalar\Scalar;
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 $runtime = StructuredOutputRuntime::fromConfig(LLMConfig::fromDsn('driver=openai,model=gpt-4o-mini'))
     ->withOutputMode(OutputMode::Json)
@@ -263,7 +276,10 @@ $result = (new StructuredOutput)
 ## Events
 
 ```php
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputRequestReceived;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 $runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
     ->onEvent(StructuredOutputRequestReceived::class, function (object $event): void {

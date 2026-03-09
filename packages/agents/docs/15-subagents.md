@@ -5,14 +5,16 @@ description: 'Delegate work to isolated child agents with their own tools and li
 
 # Subagents
 
-Subagents let a parent agent delegate focused tasks to child agents.
-Each child runs with isolated state, tool visibility, and execution budget.
+Subagents let one agent delegate part of the work to another agent definition.
+Each child runs with its own state, budget, and tool visibility.
 
 ## Quick Start
 
 ```php
 use Cognesy\Agents\Builder\AgentBuilder;
 use Cognesy\Agents\Capability\Core\UseGuards;
+use Cognesy\Agents\Capability\Core\UseTools;
+use Cognesy\Agents\Capability\File\SearchFilesTool;
 use Cognesy\Agents\Capability\File\UseFileTools;
 use Cognesy\Agents\Capability\Subagent\UseSubagents;
 use Cognesy\Agents\Collections\NameList;
@@ -25,11 +27,12 @@ $registry->register(new AgentDefinition(
     name: 'reviewer',
     description: 'Review one file and report important issues.',
     systemPrompt: 'You review code and report only high-signal findings.',
-    tools: new NameList(['read_file']),
+    tools: new NameList('read_file'),
 ));
 
 $agent = AgentBuilder::base()
     ->withCapability(new UseFileTools('/my/project'))
+    ->withCapability(new UseTools(SearchFilesTool::inDirectory('/my/project')))
     ->withCapability(new UseSubagents(provider: $registry))
     ->withCapability(new UseGuards(maxSteps: 20))
     ->build();
@@ -40,66 +43,55 @@ $state = AgentState::empty()->withUserMessage(
 $result = $agent->execute($state);
 ```
 
-The parent LLM decides when to call `spawn_subagent`.
+The parent model decides when to call `spawn_subagent`.
 
 ## What Happens
 
 1. parent calls `spawn_subagent(subagent, prompt)`
-2. registry resolves `AgentDefinition`
+2. registry resolves the `AgentDefinition`
 3. child `AgentLoop` is created from the definition
 4. child runs to completion
 5. child result is returned as tool output to parent
 
-The parent does not receive the child internal trace by default. It receives the child outcome.
-
 ## Defining Subagents
-
-### Programmatic definitions
 
 ```php
 use Cognesy\Agents\Collections\NameList;
 use Cognesy\Agents\Data\ExecutionBudget;
-use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 
 $registry->register(new AgentDefinition(
     name: 'researcher',
     description: 'Search and analyze source files',
     systemPrompt: 'Find relevant evidence and summarize it.',
-    tools: new NameList(['read_file', 'search_files']),
+    tools: new NameList('read_file', 'search_files'),
     budget: new ExecutionBudget(maxSteps: 8, maxTokens: 4000),
 ));
 ```
 
-### File-based definitions
-
-```php
-$registry->loadFromDirectory('/agents', recursive: true);
-```
-
-See [Agent Templates](14-agent-templates.md) for markdown/yaml/json formats.
+You can also load definitions from files with `AgentDefinitionRegistry`.
 
 ## Tool Visibility
 
-Child tools are controlled by `AgentDefinition`.
+Child tools are controlled by `AgentDefinition`:
 
-- Programmatic definitions: omitting `tools` (constructor default `null`) inherits all parent tools
-- `tools` means allow-list
-- `toolsDeny` means remove tools from inherited/allowed set
+- omit `tools` to inherit all parent tools
+- set `tools` to create an allow-list
+- use `toolsDeny` to remove tools from the inherited or allowed set
 
 ```php
 new AgentDefinition(
     name: 'safe_editor',
     description: 'Edit files without shell access',
     systemPrompt: 'Edit files safely.',
-    tools: new NameList(['read_file', 'write_file', 'edit_file']),
-    toolsDeny: new NameList(['write_file']),
+    tools: new NameList('read_file', 'write_file', 'edit_file'),
+    toolsDeny: new NameList('write_file'),
 );
 ```
 
 ## Depth Control
 
-Use `SubagentPolicy` or `UseSubagents::forDepth()` to cap recursion.
+Use `SubagentPolicy` or `UseSubagents::forDepth()` to cap recursion:
 
 ```php
 use Cognesy\Agents\Builder\AgentBuilder;
@@ -113,20 +105,20 @@ $agent = AgentBuilder::base()
     ))
     ->build();
 
-// Equivalent shortcut:
 $agent = AgentBuilder::base()
     ->withCapability(UseSubagents::forDepth(2, provider: $registry))
     ->build();
 ```
 
-If depth is exceeded, subagent tool execution fails with `SubagentDepthExceededException`.
+If depth is exceeded, subagent execution fails with `SubagentDepthExceededException`.
 
 ## Child Budgets and Models
 
-Each child can set its own budget and model via definition fields.
+Each child can declare its own budget and model in the definition:
 
 ```php
 use Cognesy\Agents\Data\ExecutionBudget;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 new AgentDefinition(
     name: 'quick_reviewer',
@@ -140,14 +132,11 @@ new AgentDefinition(
 );
 ```
 
-Parent limits are separate and configured on the parent builder (for example `UseGuards`).
+Parent limits stay on the parent builder, usually via `UseGuards`.
 
 ## Events
 
-Subagent lifecycle emits:
-
-- `SubagentSpawning`
-- `SubagentCompleted`
+Subagent lifecycle emits `SubagentSpawning` and `SubagentCompleted`:
 
 ```php
 use Cognesy\Agents\Events\SubagentCompleted;
@@ -161,63 +150,3 @@ $agent->onEvent(SubagentCompleted::class, function (SubagentCompleted $e) {
     echo "Completed {$e->subagentName} in {$e->steps} steps\n";
 });
 ```
-
-## Testing
-
-Use `FakeAgentDriver` and child steps.
-
-```php
-use Cognesy\Agents\Builder\AgentBuilder;
-use Cognesy\Agents\Capability\Core\UseDriver;
-use Cognesy\Agents\Capability\Subagent\UseSubagents;
-use Cognesy\Agents\Data\AgentState;
-use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
-use Cognesy\Agents\Drivers\Testing\ScenarioStep;
-
-$driver = (new FakeAgentDriver([
-    ScenarioStep::toolCall('spawn_subagent', [
-        'subagent' => 'reviewer',
-        'prompt' => 'Review this file',
-    ], executeTools: true),
-    ScenarioStep::final('Review complete.'),
-]))->withChildSteps([
-    ScenarioStep::final('Found one issue.'),
-]);
-
-$agent = AgentBuilder::base()
-    ->withCapability(new UseDriver($driver))
-    ->withCapability(new UseSubagents(provider: $registry))
-    ->build();
-
-$result = $agent->execute(AgentState::empty());
-```
-
-## ResearchSubagentTool
-
-`ResearchSubagentTool` is a ready-made tool for simple research use cases.
-
-```php
-use Cognesy\Agents\Builder\AgentBuilder;
-use Cognesy\Agents\Capability\Core\UseTools;
-use Cognesy\Agents\Capability\Subagent\ResearchSubagentTool;
-
-$tool = ResearchSubagentTool::inDirectory('/my/project');
-
-$agent = AgentBuilder::base()
-    ->withCapability(new UseTools($tool))
-    ->build();
-```
-
-## Troubleshooting
-
-- `SubagentNotFoundException`: subagent name missing in registry
-- `SubagentDepthExceededException`: recursion limit reached
-- `SubagentExecutionException`: child execution failed
-
-If a child fails, the parent sees it as a tool failure and can decide how to continue.
-
-## Related
-
-- [Agent Templates](14-agent-templates.md)
-- [Tool Calling Internals](12-tool-calling-internals.md)
-- [Session Runtime](16-session-runtime.md)

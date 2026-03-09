@@ -55,7 +55,7 @@ echo "📋 About to demonstrate Inference logging with Symfony...\n\n";
 $events = new EventDispatcher();
 $events->wiretap($pipeline);
 $inference = Inference::fromRuntime(InferenceRuntime::fromConfig(
-    config: ExampleConfig::llmPreset('openai'),
+    config: LLMConfig::fromPreset('openai'),
     events: $events,
 ));
 

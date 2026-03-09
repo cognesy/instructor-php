@@ -1,8 +1,7 @@
 version: 1
 rules:
-  - id: polyglot.docs.no_provider_type_key
+  - id: polyglot.no_provider_type_key
     engine: regex
     scope: markdown
     pattern: '/\bproviderType\b/'
     message: 'Configuration key is `driver`, not `providerType`.'
-

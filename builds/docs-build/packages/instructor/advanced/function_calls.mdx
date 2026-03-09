@@ -1,87 +1,10 @@
-## FunctionCall helper class
+---
+title: Function Calls
+description: 'How tool-calling fits into structured output.'
+---
 
-Instructor offers FunctionCall class to extract arguments of a function
-or method from content.
+Instructor uses tool-calling internally when the runtime is in `OutputMode::Tools`, which is the default.
 
-This is useful when you want to build tool use capability, e.g. for AI
-chatbots or agents.
+For most applications, this is an implementation detail. You define a response model and read the result.
 
-
-
-## Extracting arguments for a function
-
-```php
-<?php
-use Cognesy\Addons\FunctionCall\FunctionCallFactory;
-use Cognesy\Instructor\StructuredOutput;
-
-/** Save user data to storage */
-function saveUser(string $name, int $age, string $country) {
-    // ...
-}
-
-$text = "His name is Jason, he is 28 years old and he lives in Germany.";
-$args = (new StructuredOutput)->with(
-    messages: $text,
-    responseModel: FunctionCallFactory::fromFunctionName('saveUser'),
-)->get();
-
-// call the function with the extracted arguments
-saveUser(...$args);
-?>
-// @doctest id="238c"
-```
-
-
-
-## Extracting arguments for a method call
-
-```php
-<?php
-use Cognesy\Addons\FunctionCall\FunctionCallFactory;
-use Cognesy\Instructor\StructuredOutput;
-
-class DataStore {
-    /** Save user data to storage */
-    public function saveUser(string $name, int $age, string $country) {
-        // ...
-    }
-}
-
-$text = "His name is Jason, he is 28 years old and he lives in Germany.";
-$args = (new StructuredOutput)->with(
-    messages: $text,
-    responseModel: FunctionCallFactory::fromMethodName(DataStore::class, 'saveUser'),
-)->get();
-
-// call the function with the extracted arguments
-(new DataStore)->saveUser(...$args);
-?>
-// @doctest id="aa82"
-```
-
-
-
-## Extracting arguments for a callable
-
-```php
-<?php
-use Cognesy\Addons\FunctionCall\FunctionCallFactory;
-use Cognesy\Instructor\StructuredOutput;
-
-/** Save user data to storage */
-$callable = function (string $name, int $age, string $country): void {
-    // ...
-};
-
-$text = "His name is Jason, he is 28 years old and he lives in Germany.";
-$args = (new StructuredOutput)->with(
-    messages: $text,
-    responseModel: FunctionCallFactory::fromCallable($callable),
-)->get();
-
-// call the function with the extracted arguments
-$callable(...$args);
-?>
-// @doctest id="50b6"
-```
+Change the mode only when a provider or workflow needs JSON output instead of tool-calling.

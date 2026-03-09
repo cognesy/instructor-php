@@ -18,8 +18,10 @@ require 'examples/boot.php';
 use Cognesy\Events\Event;
 use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Validation\Traits\ValidationMixin;
 use Cognesy\Instructor\Validation\ValidationResult;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Schema\Attributes\Description;
 use Cognesy\Utils\Str;
 
@@ -59,12 +61,14 @@ $text = <<<TEXT
     My phone number is +1 123 34 45 and social security number is 123-45-6789
     TEXT;
 
-$user = StructuredOutput::using('openai')
-    ->wiretap(fn(Event $e) => $e->print()) // let's check the internals of Instructor processing
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
+    ->withMaxRetries(2)
+    ->wiretap(fn(Event $e) => $e->print()); // let's check the internals of Instructor processing
+
+$user = (new StructuredOutput($runtime))
     ->with(
         messages: $text,
         responseModel: UserDetails::class,
-        maxRetries: 2
     )->get();
 
 dump($user);

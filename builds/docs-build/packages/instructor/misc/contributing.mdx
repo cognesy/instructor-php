@@ -1,11 +1,12 @@
-## Contributing
+---
+title: Contributing
+description: 'Where to look when changing this package or its docs.'
+---
 
-If you want to help, check out some of the issues. They could be anything from code improvements, a guest blog post, or a new cookbook.
+For contribution workflow, quality gates, and repository conventions, use the repository root `CONTRIBUTOR_GUIDE.md`.
 
-Before opening a PR for docs changes, run:
+For this package in particular:
 
-```bash
-cd packages/instructor
-composer docs:qa
-# @doctest id="c68e"
-```
+- keep docs aligned with the public API in `packages/instructor/src`
+- prefer short, task-oriented examples
+- run the package docs QA after documentation changes

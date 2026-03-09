@@ -11,6 +11,8 @@ For narrative guidance and examples, use `packages/agents/docs/*.md`.
   - main orchestrator
   - key API: `default()`, `execute()`, `iterate()`
   - composition API: `withTool()`, `withTools()`, `withDriver()`, `withToolExecutor()`, `withInterceptor()`, `withEventHandler()`
+  - event API: `wiretap()`, `onEvent()`
+  - note: terminal executions are auto-reset on entry to `execute()` / `iterate()`
 - `CanControlAgentLoop`
   - contract: `execute(AgentState): AgentState`, `iterate(AgentState): iterable`
 
@@ -18,7 +20,8 @@ For narrative guidance and examples, use `packages/agents/docs/*.md`.
 
 - `Data\AgentState`
   - immutable runtime state
-  - constructors/mutators: `empty()`, `withUserMessage()`, `withSystemPrompt()`, `withMetadata()`, `withLLMConfig()`
+  - common mutators: `empty()`, `withUserMessage()`, `withSystemPrompt()`, `withMetadata()`, `withMessages()`, `withMessageStore()`, `withLLMConfig()`
+  - context access: `context()`, `store()`, `messages()`, `metadata()`
   - result access: `finalResponse()`, `currentResponse()`, `hasFinalResponse()`
   - execution access: `execution()`, `status()`, `stepCount()`, `steps()`, `usage()`, `errors()`
   - control: `shouldStop()`, `forNextExecution()`
@@ -37,7 +40,7 @@ For narrative guidance and examples, use `packages/agents/docs/*.md`.
 
 - `Collections\Tools`
   - immutable named tool collection
-  - key API: `has()`, `get()`, `names()`, `withTool()`, `withTools()`, `merge()`, `toToolSchema()`
+  - key API: `has()`, `get()`, `names()`, `descriptions()`, `withTool()`, `withTools()`, `withToolRemoved()`, `merge()`, `toToolSchema()`
 - `Collections\AgentSteps`
 - `Collections\StepExecutions`
 - `Collections\ToolExecutions`
@@ -155,6 +158,8 @@ Domain capabilities:
 
 - `Capability\Bash\UseBash`
 - `Capability\File\UseFileTools`
+  - installs: `read_file`, `write_file`, `edit_file`
+  - standalone file tools also available: `SearchFilesTool`, `ListDirTool`
 - `Capability\Metadata\UseMetadataTools`
 - `Capability\Subagent\UseSubagents`
 - `Capability\PlanningSubagent\UsePlanningSubagent`
@@ -170,6 +175,8 @@ Domain capabilities:
 ## 10. Templates
 
 - `Template\Data\AgentDefinition`
+  - core fields: `name`, `description`, `systemPrompt`, `label`, `llmConfig`, `capabilities`, `tools`, `toolsDeny`, `skills`, `budget`, `metadata`
+  - tool semantics: `tools === null` means inherit all available tools
 - `Template\AgentDefinitionLoader`
 - `Template\AgentDefinitionRegistry`
 - `Template\Contracts\CanManageAgentDefinitions`
@@ -184,6 +191,7 @@ Core:
 - `Session\Data\SessionId`
 - `Session\Data\AgentSessionInfo`
 - `Session\Data\AgentSession`
+  - access: `info()`, `definition()`, `state()`, `sessionId()`, `status()`, `version()`
 - `Session\SessionFactory`
 - `Session\SessionRepository`
 - `Session\SessionRuntime`
@@ -203,7 +211,7 @@ Stores:
 Actions:
 
 - `Session\Actions\SendMessage`
-- `Session\Actions\ForkSession`
+- `Session\Actions\ForkSession` (returns a new branch session object; persist via repository `create()`)
 - `Session\Actions\ResumeSession`
 - `Session\Actions\SuspendSession`
 - `Session\Actions\ClearSession`
@@ -223,6 +231,7 @@ Agent events include:
 
 - `AgentExecutionStarted`, `AgentStepStarted`, `AgentStepCompleted`
 - `AgentExecutionStopped`, `AgentExecutionCompleted`, `AgentExecutionFailed`
+- `AgentStateUpdated`
 - `ContinuationEvaluated`, `StopSignalReceived`, `TokenUsageReported`
 - `ToolCallStarted`, `ToolCallCompleted`, `ToolCallBlocked`
 - `InferenceRequestStarted`, `InferenceResponseReceived`

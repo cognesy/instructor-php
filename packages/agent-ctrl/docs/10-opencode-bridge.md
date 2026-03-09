@@ -1,42 +1,31 @@
 ---
-title: OpenCode Bridge (Internals)
-description: 'Low-level OpenCode CLI bridge flow for advanced use cases.'
+title: OpenCode
+description: 'Use the OpenCode bridge for flexible model selection and session sharing.'
 ---
 
-> Most users should use `AgentCtrl::openCode()` from the high-level API.
-> Use this page when you need direct request/command/parser control.
+Use `AgentCtrl::openCode()` when you want OpenCode behind the shared `agent-ctrl` API.
 
-## Core Flow
+## Typical Use
 
 ```php
-use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
-use Cognesy\AgentCtrl\OpenCode\Application\Builder\OpenCodeCommandBuilder;
-use Cognesy\AgentCtrl\OpenCode\Application\Dto\OpenCodeRequest;
-use Cognesy\AgentCtrl\OpenCode\Application\Parser\ResponseParser;
-use Cognesy\AgentCtrl\OpenCode\Domain\Enum\OutputFormat;
+use Cognesy\AgentCtrl\AgentCtrl;
 
-$request = new OpenCodeRequest(
-    prompt: 'Summarize the architecture in short bullets.',
-    outputFormat: OutputFormat::Json,
-);
-
-$spec = (new OpenCodeCommandBuilder())->buildRun($request);
-$result = SandboxCommandExecutor::forOpenCode()->execute($spec);
-$response = (new ResponseParser())->parse($result, OutputFormat::Json);
-
-echo $response->messageText();
+$response = AgentCtrl::openCode()
+    ->withModel('anthropic/claude-sonnet-4-5')
+    ->execute('Explain the architecture in short paragraphs.');
 ```
 
-## Session Handling
+## Main Options
 
-`OpenCodeRequest` supports:
+- `withAgent()`
+- `withFiles()`
+- `continueSession()`
+- `resumeSession()`
+- `shareSession()`
+- `withTitle()`
 
-- `continueSession: true` (resume most recent)
-- `sessionId: '...'` (resume a specific session)
+## Notes
 
-## Key Types
-
-- Request DTO: `OpenCodeRequest`
-- Command builder: `OpenCodeCommandBuilder`
-- Parser: `ResponseParser`
-- Stream events: `TextEvent`, `ToolUseEvent`, `StepFinishEvent`, `ErrorEvent`
+- OpenCode supports provider-style model IDs such as `anthropic/claude-sonnet-4-5`
+- Responses can include both usage and cost data
+- Streamed text and tool events use the same callback API as the other bridges

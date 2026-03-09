@@ -7,11 +7,11 @@ id: '83d1'
 
 Support for MoonshotAI's API.
 
-Mode compatibility:
-- OutputMode::MdJson (supported)
-- OutputMode::Tools (supported)
-- OutputMode::Json (supported)
-- OutputMode::JsonSchema (not supported)
+Inference feature compatibility:
+- Instructor markdown-JSON fallback (supported)
+- tool calling (supported)
+- native JSON object response_format (supported)
+- native JSON schema response_format (not supported)
 
 ## Example
 

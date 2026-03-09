@@ -54,12 +54,12 @@ $stream = Inference::using('openai')
     ->withOptions(['max_tokens' => 128])
     ->withStreaming()
     ->stream()
-    ->responses();
+    ->deltas();
 
 echo "USER: Describe capital of Brasil\n";
 echo "ASSISTANT: ";
-foreach ($stream as $partial) {
-    echo $partial->contentDelta;
+foreach ($stream as $delta) {
+    echo $delta->contentDelta;
 }
 echo "\n";
 ?>

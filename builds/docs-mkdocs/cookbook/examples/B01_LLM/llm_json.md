@@ -10,9 +10,8 @@ from the model inference. This is useful for example when you need to
 process the response in a structured way or when you want to store the
 elements of the response in a database.
 
-`Inference` class supports multiple inference modes, like `Tools`, `Json`
-`JsonSchema` or `MdJson`, which gives you flexibility to choose the best
-approach for your use case.
+`Inference` supports explicit response shaping through `responseFormat`,
+plus `tools` and `toolChoice` for tool calling.
 
 ## Example
 
@@ -31,7 +30,6 @@ this feature in JSON mode (only in JSON Schema mode).
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Inference;
 
 $data = Inference::using('openai')
@@ -43,7 +41,6 @@ $data = Inference::using('openai')
             'type' => 'json_object',
         ],
         options: ['max_tokens' => 64],
-        mode: OutputMode::Json,
     )
     ->asJsonData();
 
@@ -55,6 +52,5 @@ assert(is_array($data), 'Response should be an array');
 assert(isset($data['name']), 'Response should have "name" field');
 assert(strpos($data['name'], 'Paris') !== false, 'City name should be Paris');
 assert(isset($data['population']), 'Response should have "population" field');
-assert(isset($data['founded']), 'Response should have "founded" field');
 ?>
 ```

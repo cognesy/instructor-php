@@ -18,6 +18,7 @@ require 'examples/boot.php';
 use Cognesy\Config\Env;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 class User {
     public int $age;
@@ -27,7 +28,7 @@ class User {
 $xaiApiKey = (string) Env::get('XAI_API_KEY', '');
 $dsn = "driver=xai,apiUrl=https://api.x.ai/v1,endpoint=/chat/completions,apiKey={$xaiApiKey},model=grok-3";
 
-$user = (new StructuredOutput(StructuredOutputRuntime::fromDsn($dsn)))
+$user = (new StructuredOutput(StructuredOutputRuntime::fromConfig(LLMConfig::fromDsn($dsn))))
     //->wiretap(fn($e) => $e->print())
     ->withMessages("Our user Jason is 25 years old.")
     ->withResponseClass(User::class)

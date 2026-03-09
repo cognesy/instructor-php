@@ -1,52 +1,42 @@
 ---
-title: 'Events System'
-description: 'Learn about the events system in Polyglot.'
+title: Events
+description: 'Runtime events are available for observability and debugging.'
 ---
 
-Polyglot uses an event system to generate internal notifications at the various stages of the execution process.
+Inference and embeddings runtimes expose two event hooks:
 
-It has been built primarily to ensure observability of the internal components of the library.
+- `onEvent($class, $listener)`
+- `wiretap($listener)`
 
-Inference and embeddings listener registration lives on concrete runtimes:
-
-```php
-$inferenceRuntime = InferenceRuntime::fromConfig($config)
-    ->onEvent(InferenceCompleted::class, $listener)
-    ->wiretap($tap);
-
-$embeddingsRuntime = EmbeddingsRuntime::fromConfig($config)
-    ->onEvent(EmbeddingsResponseReceived::class, $listener)
-    ->wiretap($tap);
-// @doctest id="1d8a"
-```
+Example:
 
 ```php
-namespace Cognesy\Events\Dispatchers;
+<?php
 
-use Cognesy\Events\Event;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 
-class EventDispatcher {
-    public function dispatch(Event $event): void { ... }
-    public function wiretap(callable $listener): void { ... }
-    public function addListener(string $eventClass, callable $listener, int $priority = 0): void { ... }
-}
-
-namespace Cognesy\Polyglot\Inference\Events;
-
-class InferenceRequested extends Event {}
-
-class InferenceResponseCreated extends Event {}
-
-class PartialInferenceDeltaCreated extends Event {}
-
-class InferenceStarted extends Event {}
-
-class InferenceCompleted extends Event {}
-
-class InferenceAttemptStarted extends Event {}
-
-class InferenceAttemptSucceeded extends Event {}
-
-class InferenceAttemptFailed extends Event {}
-// @doctest id="35fb"
+$runtime = InferenceRuntime::fromConfig(
+    new LLMConfig(
+        driver: 'openai',
+        apiUrl: 'https://api.openai.com/v1',
+        apiKey: (string) getenv('OPENAI_API_KEY'),
+        endpoint: '/chat/completions',
+        model: 'gpt-4.1-nano',
+    ),
+)->onEvent(InferenceResponseCreated::class, function ($event): void {
+    // inspect event payload
+});
+// @doctest id="19b0"
 ```
+
+Common inference events include:
+
+- `InferenceStarted`
+- `InferenceAttemptStarted`
+- `InferenceResponseCreated`
+- `PartialInferenceDeltaCreated`
+- `InferenceCompleted`
+
+Embeddings runtimes expose matching embeddings events such as `EmbeddingsRequested` and `EmbeddingsResponseReceived`.

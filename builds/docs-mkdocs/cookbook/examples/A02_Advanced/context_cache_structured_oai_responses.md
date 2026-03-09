@@ -26,7 +26,9 @@ that we want to extract or generate based on README file.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Schema\Attributes\Description;
 class Project {
     public string $name;
@@ -56,11 +58,11 @@ multiple requests.
 $content = file_get_contents(__DIR__ . '/../../../README.md');
 $cacheKey = 'context_cache_structured_oai_responses_readme_v1';
 
-$cached = StructuredOutput::using('openai-responses')->withCachedContext(
-    system: 'Your goal is to respond questions about the project described in the README.md file'
-        . "\n\n# README.md\n\n" . $content,
-    prompt: 'Respond with strict JSON object using schema:\n<|json_schema|>',
-);
+$cachedSystem = 'Your goal is to respond questions about the project described in the README.md file'
+    . "\n\n# README.md\n\n" . $content;
+$cachedPrompt = 'Respond with strict JSON object using schema:' . "\n<|json_schema|>";
+$jsonSchemaRuntime = StructuredOutputRuntime::fromProvider(LLMProvider::using('openai-responses'))
+    ->withOutputMode(OutputMode::JsonSchema);
 ?>
 ```
 At this point we can use Instructor structured output processing to extract the project
@@ -79,13 +81,17 @@ $optionsBase = [
 ];
 
 // get StructuredOutputResponse object to get access to usage and other metadata
-$response1 = $cached->with(
-    messages: 'Describe the project in a way compelling to my audience: P&C insurance CIOs.',
-    responseModel: Project::class,
-    model: 'gpt-4.1',
-    options: $optionsBase,
-    mode: OutputMode::JsonSchema,
-)->create();
+$response1 = (new StructuredOutput($jsonSchemaRuntime))
+    ->withCachedContext(
+        system: $cachedSystem,
+        prompt: $cachedPrompt,
+    )
+    ->with(
+        messages: 'Describe the project in a way compelling to my audience: P&C insurance CIOs.',
+        responseModel: Project::class,
+        model: 'gpt-4.1',
+        options: $optionsBase,
+    )->create();
 
 // get processed value - instance of Project class
 $project1 = $response1->get();
@@ -95,14 +101,14 @@ assert($project1->name !== '');
 assert($project1->description !== '');
 
 // Extract response id for Responses API server-side chaining
-$body1 = json_decode($response1->response()->responseData()->body(), true);
+$body1 = json_decode($response1->rawResponse()->responseData()->body(), true);
 $previousResponseId = is_array($body1) ? ($body1['id'] ?? '') : '';
 if ($previousResponseId === '') {
     echo "Warning: previous_response_id not available; chaining will be skipped.\n";
 }
 
-// get usage information from response() method which returns raw InferenceResponse object
-$usage1 = $response1->response()->usage();
+// get usage information from rawResponse() when you need transport-level metadata
+$usage1 = $response1->rawResponse()->usage();
 echo "Usage #1: {$usage1->inputTokens} prompt tokens, {$usage1->cacheWriteTokens} cache write tokens\n";
 ?>
 ```
@@ -120,13 +126,17 @@ if ($previousResponseId !== '') {
     $options2['previous_response_id'] = $previousResponseId;
 }
 
-$response2 = $cached->with(
-    messages: "Describe the project in a way compelling to my audience: boutique CMS consulting company owner.",
-    responseModel: Project::class,
-    model: 'gpt-4.1',
-    options: $options2,
-    mode: OutputMode::JsonSchema,
-)->create();
+$response2 = (new StructuredOutput($jsonSchemaRuntime))
+    ->withCachedContext(
+        system: $cachedSystem,
+        prompt: $cachedPrompt,
+    )
+    ->with(
+        messages: "Describe the project in a way compelling to my audience: boutique CMS consulting company owner.",
+        responseModel: Project::class,
+        model: 'gpt-4.1',
+        options: $options2,
+    )->create();
 
 // get the processed value - instance of Project class
 $project2 = $response2->get();
@@ -135,8 +145,8 @@ assert($project2 instanceof Project);
 assert($project2->name !== '');
 assert($project2->description !== '');
 
-// get usage information from response() method which returns raw InferenceResponse object
-$usage2 = $response2->response()->usage();
+// get usage information from rawResponse() when you need transport-level metadata
+$usage2 = $response2->rawResponse()->usage();
 echo "Usage #2: {$usage2->inputTokens} prompt tokens, {$usage2->cacheReadTokens} cache read tokens\n";
 if ($usage2->cacheReadTokens === 0) {
     echo "Note: cacheReadTokens is 0. Cache hits depend on model/provider eligibility.\n";

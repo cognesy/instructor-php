@@ -1,64 +1,20 @@
-## Changing LLM model and options
+---
+title: 'Model Options'
+description: 'Control the provider model and request options.'
+---
 
-You can specify model and other options that will be passed to LLM endpoint.
-
-Commonly used option supported by many providers is `temperature`, which controls randomness of the output.
-
-Lower values make the output more deterministic, while higher values make it more random.
-
-```php
-<?php
-$person = (new StructuredOutput)->with(
-    messages: [['role' => 'user', 'content' => $text]],
-    responseModel: Person::class,
-    model: 'gpt-3.5-turbo',
-    options: [
-        // custom temperature setting
-        'temperature' => 0.0,
-        // ... other options - e.g. provider or model specific
-    ],
-)->get();
-// @doctest id="91ff"
-```
-
-> NOTE: Please note that many options might be specific to the provider or even some model that you are using.
-
-## Customizing configuration
-
-You can pass a custom LLM configuration to the Instructor.
-
-This allows you to specify your own API key, base URI or,
-which might be helpful in the case you are using OpenAI - organization.
+Use the request for per-call model changes:
 
 ```php
-<?php
-use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Instructor\StructuredOutputRuntime;
-use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\LLMProvider;
-
-// Create instance of OpenAI client initialized with custom parameters
-$config = new LLMConfig(
-    apiUrl: 'https://api.openai.com/v1',
-    apiKey: $yourApiKey,
-    endpoint: '/chat/completions',
-    metadata: ['organization' => ''],
-    model: 'gpt-4o-mini',
-    maxTokens: 128,
-    // configure HTTP via HttpClientBuilder or facade-level methods
-    driver: 'openai',
-);
-
-// Get Instructor with the default configuration overridden with your own
-$runtime = StructuredOutputRuntime::fromProvider(
-    provider: LLMProvider::new()->withLLMConfig($config),
-);
-$structuredOutput = new StructuredOutput($runtime);
-
-$person = $structuredOutput->with(
-    messages: [['role' => 'user', 'content' => $text]],
-    responseModel: Person::class,
-    options: ['temperature' => 0.0],
-)->get();
-// @doctest id="534d"
+$result = (new StructuredOutput)
+    ->with(
+        messages: $text,
+        responseModel: Person::class,
+        model: 'gpt-4o-mini',
+        options: ['temperature' => 0],
+    )
+    ->get();
+// @doctest id="e446"
 ```
+
+Use `LLMConfig` or a runtime when the choice should apply more broadly than one request.

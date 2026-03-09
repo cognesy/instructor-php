@@ -26,17 +26,17 @@ use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Cognesy\Polyglot\Inference\Config\LLMConfig;
+
 
 function add_numbers(int $a, int $b) : int { return $a + $b; }
 function subtract_numbers(int $a, int $b) : int { return $a - $b; }
 
 $driver = new ReActDriver(
     inference: InferenceRuntime::fromProvider(
-        provider: LLMProvider::fromLLMConfig(ExampleConfig::llmPreset('openai')),
+        provider: LLMProvider::using('openai'),
     ),
     structuredOutput: StructuredOutputRuntime::fromProvider(
-        provider: LLMProvider::fromLLMConfig(ExampleConfig::llmPreset('openai')),
+        provider: LLMProvider::using('openai'),
     ),
     finalViaInference: true,
 );

@@ -19,7 +19,7 @@ use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\HttpClient;
-use Cognesy\Http\Middleware\Base\BaseResponseDecorator;
+use Cognesy\Http\Extras\Support\BaseResponseDecorator;
 use Cognesy\Http\Stream\ArrayStream;
 
 class TagStreamChunks implements HttpMiddleware
@@ -46,7 +46,7 @@ $driver->addResponse(
     method: 'GET',
 );
 
-$client = (new HttpClient(driver: $driver))
+$client = HttpClient::fromDriver($driver)
     ->withMiddleware(new TagStreamChunks());
 
 $request = new HttpRequest(
@@ -57,7 +57,7 @@ $request = new HttpRequest(
     options: ['stream' => true],
 );
 
-foreach ($client->withRequest($request)->stream() as $chunk) {
+foreach ($client->send($request)->stream() as $chunk) {
     echo $chunk;
 }
 ?>

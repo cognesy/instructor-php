@@ -15,11 +15,13 @@ Symfony integration with Instructor's functional logging pipeline.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Logging\Enrichers\LazyEnricher;
 use Cognesy\Logging\Filters\LogLevelFilter;
 use Cognesy\Logging\Formatters\MessageTemplateFormatter;
 use Cognesy\Logging\Pipeline\LoggingPipeline;
 use Cognesy\Logging\Writers\PsrLoggerWriter;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Symfony\Component\DependencyInjection\Container;
@@ -61,8 +63,10 @@ class User
 
 // Extract data with logging
 echo "🚀 Starting StructuredOutput extraction...\n";
-$user = StructuredOutput::using('openai')
-    ->wiretap($pipeline)
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
+    ->wiretap($pipeline);
+
+$user = (new StructuredOutput($runtime))
     ->withMessages("Jason is 25 years old.")
     ->withResponseClass(User::class)
     ->get();

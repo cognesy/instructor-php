@@ -1,23 +1,26 @@
 ---
 title: Custom Clients
-description: Add custom HTTP drivers with an explicit registry.
+description: Register your own drivers when the bundled ones are not enough.
 ---
 
-## Add a Custom Driver
+For custom integrations, register a driver factory and point the client at that driver name.
+
+## Register a Driver
 
 ```php
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Creation\BundledHttpDrivers;
+use Cognesy\Events\Contracts\CanHandleEvents;
 
 $drivers = BundledHttpDrivers::registry()->withDriver(
     'acme',
-    static fn(HttpClientConfig $config, $events, ?object $clientInstance): CanHandleHttpRequest
+    static fn(HttpClientConfig $config, CanHandleEvents $events, ?object $clientInstance): CanHandleHttpRequest
         => new AcmeHttpDriver($config, $events, $clientInstance),
 );
 ```
 
-## Build a Client with That Driver
+## Build a Client
 
 ```php
 use Cognesy\Http\Config\HttpClientConfig;
@@ -29,7 +32,7 @@ $client = (new HttpClientBuilder())
     ->create();
 ```
 
-## Reuse an Existing Vendor Client
+## Reuse a Vendor Client
 
 ```php
 use Cognesy\Http\Creation\HttpClientBuilder;

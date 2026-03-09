@@ -70,9 +70,9 @@ $workDir = dirname(__DIR__, 3);
 // to the system prompt via BeforeExecution hook — no manual prompt setup needed.
 $agent = AgentBuilder::base()
     ->withCapability(new UseLLMConfig(
-        llm: LLMProvider::fromLLMConfig(ExampleConfig::llmPreset('openai')->withOverrides([
+        llm: LLMProvider::using('openai')->withConfigOverrides([
             'model' => 'gpt-5.2',
-        ])),
+        ]),
     ))
     ->withCapability(new UseContextConfig(
         systemPrompt: <<<'SYSTEM'

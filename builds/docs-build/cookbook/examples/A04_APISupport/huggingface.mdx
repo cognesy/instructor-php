@@ -16,7 +16,9 @@ JSON Schema.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 enum UserType : string {
     case Guest = 'guest';
@@ -33,7 +35,11 @@ class User {
     public ?int $age;
 }
 
-$structuredOutput = StructuredOutput::using('huggingface');
+$structuredOutput = new StructuredOutput(
+    StructuredOutputRuntime::fromProvider(LLMProvider::using('huggingface'))
+        ->withOutputMode(OutputMode::Json)
+        ->withMaxRetries(2)
+);
 
 $user = $structuredOutput
     ->with(
@@ -48,9 +54,7 @@ $user = $structuredOutput
                       'output' => ['firstName' => 'John', 'role' => 'admin', 'hobbies' => ['surfing'], 'username' => 'jx90', 'age' => 19],
                   ]],
         //model: 'deepseek-ai/DeepSeek-R1-0528-Qwen3-8B',
-        maxRetries: 2,
         options: ['temperature' => 0.5],
-        mode: OutputMode::Json,
     )->get();
 
 print("Completed response model:\n\n");

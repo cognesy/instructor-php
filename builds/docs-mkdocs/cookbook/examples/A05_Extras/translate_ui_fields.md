@@ -19,7 +19,9 @@ structure-to-structure processing with LLM.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 class TextElementModel
 {
@@ -35,14 +37,16 @@ $sourceModel = new TextElementModel(
     text: '<p>This is some WYSIWYG HTML content.</p>'
 );
 
-$transformedModel = StructuredOutput::using('openai')
+$transformedModel = new StructuredOutput(
+        StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
+            ->withMaxRetries(2)
+            ->withValidators([SymfonyValidator::class])
+    )
     ->withInput($sourceModel)
     ->withResponseClass(get_class($sourceModel))
     ->withPrompt('Translate the headline and text fields to German. Keep HTML tags unchanged. Keep the url field unchanged.')
     ->withModel('gpt-4o-mini')
-    ->withMaxRetries(2)
     ->withOptions(['temperature' => 0])
-    ->withValidators(SymfonyValidator::class)
     ->get();
 
 print_r($transformedModel);

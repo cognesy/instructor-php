@@ -43,7 +43,7 @@ Doctest commands:
 - `validate`: `--source` or `--source-dir`, `--extensions` (default: `md,mdx`), `--show-all`, `--show-progress`, `--show-paths`
 
 Quality command:
-- `qa`: `--source-dir` (default: `docs`), `--repo-root`, `--profile` (default: `instructor`), `--extensions` (default: `md`), `--rules`, `--ast-grep-bin` (default: `ast-grep`), `--format` (`text|json`), `--strict/--no-strict`
+- `qa`: `--source-dir` (default: `docs`), `--repo-root`, `--profile` (`instructor|http-client|polyglot|none`, default: `instructor`), `--extensions` (default: `md`), `--rules`, `--ast-grep-bin` (default: `ast-grep`), `--format` (`text|json`), `--strict/--no-strict`
 
 Docgen commands:
 - `gen:mintlify`: `--packages-only`, `--examples-only`

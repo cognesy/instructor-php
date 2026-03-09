@@ -1,184 +1,61 @@
 ---
 title: Response Handling
-description: 'Learn how to handle responses from Polyglot.'
+description: Work with `PendingInference`, `InferenceResponse`, and streams.
 ---
 
-Polyglot's `PendingInference` class represents pending inference execution.
-It provides methods to access the response in different formats, but also
-provides access to streaming responses. It does not execute the request to
-underlying LLM until you actually access the response data.
+`create()` returns `PendingInference`, a lazy handle for one inference operation.
 
-Treat `PendingInference` as a lazy handle for one raw inference operation:
+It does not call the provider until you ask for data.
 
-- `create()` configures the operation but does not execute it
-- `get()`, `response()`, and `stream()` coordinate one raw execution path
-- mutable retry/stream/cache bookkeeping lives behind the internal `InferenceExecutionSession`
-- repeated reads reuse the finalized raw response/stream state instead of reissuing the request
+## The Main Accessors
 
-It is returned by the `Inference` class when you call the `create()` method.
-
-## Basic Response Handling
+- `get()` returns response text
+- `response()` returns `InferenceResponse`
+- `asJsonData()` decodes `content()` as JSON
+- `asToolCallJsonData()` extracts tool-call arguments as arrays
+- `stream()` returns `InferenceStream`
 
 ```php
 <?php
+
 use Cognesy\Polyglot\Inference\Inference;
 
-$inference = new Inference();
-$response = $inference
-    ->withMessages('What is the capital of France?')
+$pending = Inference::using('openai')
+    ->withMessages('Return JSON with a single "status" field.')
+    ->withResponseFormat(['type' => 'json_object'])
     ->create();
 
-// Get the response as plain text
-$text = $response->get();
-echo "Text response: $text\n";
-
-// Get the response as a JSON object (for JSON responses)
-$json = $response->asJsonData();
-echo "JSON response: " . json_encode($json) . "\n";
-
-// Get the full response object
-$fullResponse = $response->response();
-
-// Access specific information
-echo "Content: " . $fullResponse->content() . "\n";
-echo "Finish reason: " . $fullResponse->finishReason() . "\n";
-echo "Usage - Total tokens: " . $fullResponse->usage()->total() . "\n";
-echo "Usage - Input tokens: " . $fullResponse->usage()->input() . "\n";
-echo "Usage - Output tokens: " . $fullResponse->usage()->output() . "\n";
+$data = $pending->asJsonData();
 ```
 
+## `InferenceResponse`
 
+The normalized response object exposes the fields most apps need:
 
-## Working with Streaming Responses
+- `content()`
+- `reasoningContent()`
+- `toolCalls()`
+- `usage()`
+- `finishReason()`
+- `responseData()`
 
-For streaming responses, use the `stream()` method:
+## Streaming
+
+If the request is streamed, iterate over visible deltas:
 
 ```php
 <?php
-use Cognesy\Polyglot\Inference\Inference;
 
-$inference = new Inference();
-$response = $inference
-    ->withMessages('Write a short story about a robot.')
+$stream = Inference::using('openai')
+    ->withMessages('Explain queues in simple terms.')
     ->withStreaming()
-    ->create();
+    ->stream();
 
-// Get a generator that yields visible deltas
-$stream = $response->stream()->deltas();
-
-echo "Story: ";
-foreach ($stream as $delta) {
-    // Output each chunk as it arrives
+foreach ($stream->deltas() as $delta) {
     echo $delta->contentDelta;
-
-    // Flush the output buffer to show progress in real-time
-    if (ob_get_level() > 0) {
-        ob_flush();
-        flush();
-    }
 }
 
-echo "\n\nComplete response: " . $response->get();
+$final = $stream->final();
 ```
 
-
-
-
-## Handling Tool Calls
-
-For models that support function calling or tools:
-
-```php
-<?php
-use Cognesy\Polyglot\Inference\Inference;
-
-$tools = [
-    [
-        'type' => 'function',
-        'function' => [
-            'name' => 'get_weather',
-            'description' => 'Get the current weather in a location',
-            'parameters' => [
-                'type' => 'object',
-                'properties' => [
-                    'location' => [
-                        'type' => 'string',
-                        'description' => 'The city and state, e.g. San Francisco, CA',
-                    ],
-                    'unit' => [
-                        'type' => 'string',
-                        'enum' => ['celsius', 'fahrenheit'],
-                        'description' => 'The temperature unit to use',
-                    ],
-                ],
-                'required' => ['location'],
-            ],
-        ],
-    ],
-];
-
-$inference = Inference::using('openai');
-$response = $inference->with(
-    messages: 'What is the weather in Paris?',
-    tools: $tools,
-    toolChoice: 'auto',  // Let the model decide when to use tools
-)->response();
-
-// Check if there are tool calls
-if ($response->hasToolCalls()) {
-    $toolCalls = $response->toolCalls();
-    $toolData = $response->findToolCallJsonData()->toArray();
-    foreach ($toolCalls->all() as $call) {
-        echo "Tool called: " . $call->name() . "\n";
-        echo "Arguments: " . $call->argsAsJson() . "\n";
-
-        // In a real application, you would call the actual function here
-        // and then send the result back to the model
-        $result = ['temperature' => 22, 'unit' => 'celsius', 'condition' => 'sunny'];
-
-        // Continue the conversation with the tool result
-        $newMessages = [
-            ['role' => 'user', 'content' => 'What is the weather in Paris?'],
-            [
-                'role' => 'assistant',
-                'content' => '',
-                '_metadata' => [
-                    'tool_calls' => [
-                        [
-                            'id' => $call->id()?->toString() ?? '',
-                            'function' => [
-                                'name' => $call->name(),
-                                'arguments' => $call->argsAsJson(),
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-            [
-                'role' => 'tool',
-                'content' => json_encode($result),
-                '_metadata' => [
-                    'tool_call_id' => $call->id()?->toString() ?? '',
-                    'tool_name' => $call->name(),
-                ],
-            ],
-        ];
-
-        $finalResponse = $inference->with(
-            messages: $newMessages
-        )->get();
-
-        echo "Final response: $finalResponse\n";
-    }
-} else {
-    echo "Response: " . $response->content() . "\n";
-}
-```
-
-For convenience, `PendingInference` also exposes explicit tool-call helpers:
-
-```php
-<?php
-$toolJson = $inference->asToolCallJson();
-$toolData = $inference->asToolCallJsonData();
-```
+`deltas()` is one-shot. If you need replay, opt into `ResponseCachePolicy::Memory`.

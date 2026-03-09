@@ -41,7 +41,7 @@ $logger = new AgentEventConsoleObserver(
 
 // Build a basic agent
 $agent = AgentBuilder::base()
-    ->withCapability(new UseLLMConfig(llm: LLMProvider::fromLLMConfig(ExampleConfig::llmPreset('anthropic'))))
+    ->withCapability(new UseLLMConfig(llm: LLMProvider::using('anthropic')))
     ->withCapability(new UseGuards(maxSteps: 3, maxTokens: 4096, maxExecutionTime: 30))
     ->build()
     ->wiretap($logger->wiretap());

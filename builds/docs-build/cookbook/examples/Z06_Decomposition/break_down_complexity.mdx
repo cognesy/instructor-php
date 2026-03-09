@@ -22,6 +22,7 @@ require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 
 enum ActionType: string {
     case Split = 'split';
@@ -60,19 +61,55 @@ class Merge {
 }
 
 class Action {
-    public function __construct(
-        public int $id,
-        public ActionType $type,
-        public string|int $parameter
-    ) {}
+    public int $id;
+    public ActionType $type;
+    public string|int $parameter;
 }
 
-class ActionPlan {
-    public function __construct(
-        public string $initial_data,
-        /** @var Action[] */
-        public array $plan
-    ) {}
+class ActionPlan implements CanProvideJsonSchema {
+    public string $initial_data = '';
+    /** @var Action[] */
+    public array $plan = [];
+
+    public function toJsonSchema() : array {
+        return [
+            'type' => 'object',
+            'x-title' => 'ActionPlan',
+            'x-php-class' => self::class,
+            'properties' => [
+                'initial_data' => ['type' => 'string'],
+                'plan' => [
+                    'type' => 'array',
+                    'items' => [
+                        'type' => 'object',
+                        'x-title' => 'Action',
+                        'x-php-class' => Action::class,
+                        'properties' => [
+                            'id' => ['type' => 'integer'],
+                            'type' => [
+                                'type' => 'string',
+                                'enum' => array_map(
+                                    static fn(ActionType $type): string => $type->value,
+                                    ActionType::cases(),
+                                ),
+                                'x-php-class' => ActionType::class,
+                            ],
+                            'parameter' => [
+                                'anyOf' => [
+                                    ['type' => 'string'],
+                                    ['type' => 'integer'],
+                                ],
+                            ],
+                        ],
+                        'required' => ['id', 'type', 'parameter'],
+                        'additionalProperties' => false,
+                    ],
+                ],
+            ],
+            'required' => ['initial_data', 'plan'],
+            'additionalProperties' => false,
+        ];
+    }
 }
 
 class DecomposedTaskSolver {
