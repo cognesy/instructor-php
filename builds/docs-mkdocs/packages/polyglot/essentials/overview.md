@@ -20,7 +20,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $text = Inference::using('openai')
     ->withMessages('Summarize event sourcing in two sentences.')
     ->get();
-// @doctest id="f2b7"
+// @doctest id="93e4"
 ```
 
 ## Core Request Fields

@@ -12,7 +12,7 @@ use Cognesy\Instructor\StructuredOutput;
 $age = (new StructuredOutput)
     ->with(messages: 'Jason is 28 years old.', responseModel: Scalar::integer('age'))
     ->get();
-// @doctest id="6dd3"
+// @doctest id="1ef0"
 ```
 
 Helpers available on `Scalar`:

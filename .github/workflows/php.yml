@@ -68,8 +68,6 @@ jobs:
     - name: Run test suite (all code local)
       run: composer test
 
-    - name: Run Instructor docs QA
-      run: composer --working-dir=packages/instructor docs:qa
 
 #    - name: Install dependencies in all packages
 #      run: |

@@ -14,7 +14,7 @@ $stream = (new StructuredOutput)
 foreach ($stream->partials() as $partial) {
     // latest parsed value
 }
-// @doctest id="bf04"
+// @doctest id="e249"
 ```
 
 ## Stream Views

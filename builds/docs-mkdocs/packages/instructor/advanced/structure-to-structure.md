@@ -10,7 +10,7 @@ $result = (new StructuredOutput)
     ->withInput(['name' => 'Jane', 'bio' => 'Engineer from Berlin'])
     ->withResponseClass(Profile::class)
     ->get();
-// @doctest id="8354"
+// @doctest id="0fd6"
 ```
 
 Use it when your source data is already structured but you still want a model-driven transformation.

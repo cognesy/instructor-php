@@ -29,7 +29,7 @@ $response = Inference::using('openai')
         toolChoice: 'auto',
     )
     ->response();
-// @doctest id="c8e5"
+// @doctest id="05c4"
 ```
 
 Read the result from:

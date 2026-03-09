@@ -34,7 +34,7 @@ $response = AgentCtrl::codex()->execute('Create a short summary.');
 if ($response->isSuccess()) {
     echo $response->text();
 }
-// @doctest id="427f"
+// @doctest id="858d"
 ```
 
 ## Tool Calls

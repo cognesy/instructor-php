@@ -25,7 +25,7 @@ $config = new LLMConfig(
 $text = Inference::fromConfig($config)
     ->withMessages('Say hello.')
     ->get();
-// @doctest id="1264"
+// @doctest id="fd69"
 ```
 
 ## Embeddings Config
@@ -43,7 +43,7 @@ $embeddings = Embeddings::fromConfig(new EmbeddingsConfig(
     endpoint: '/embeddings',
     model: 'text-embedding-3-small',
 ));
-// @doctest id="4c71"
+// @doctest id="b499"
 ```
 
 ## DSN Input

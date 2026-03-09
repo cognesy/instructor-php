@@ -26,7 +26,7 @@ $pending = Inference::using('openai')
     ->create();
 
 $data = $pending->asJsonData();
-// @doctest id="17c0"
+// @doctest id="56ef"
 ```
 
 ## `InferenceResponse`
@@ -57,7 +57,7 @@ foreach ($stream->deltas() as $delta) {
 }
 
 $final = $stream->final();
-// @doctest id="29be"
+// @doctest id="f20f"
 ```
 
 `deltas()` is one-shot. If you need replay, opt into `ResponseCachePolicy::Memory`.

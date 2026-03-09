@@ -9,7 +9,7 @@ meta:
 
 ```bash
 composer require cognesy/instructor-polyglot
-# @doctest id="5c7f"
+# @doctest id="cc61"
 ```
 
 Polyglot requires PHP 8.3+.
@@ -22,7 +22,7 @@ For many apps, the bundled presets are enough. Set the matching environment vari
 export OPENAI_API_KEY=...
 export ANTHROPIC_API_KEY=...
 export GEMINI_API_KEY=...
-# @doctest id="8b13"
+# @doctest id="f356"
 ```
 
 ```php
@@ -33,7 +33,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $text = Inference::using('openai')
     ->withMessages('Say hello.')
     ->get();
-// @doctest id="5bc7"
+// @doctest id="6736"
 ```
 
 ## Override Presets in Your App
@@ -52,7 +52,7 @@ apiKey: '${OPENAI_API_KEY}'
 endpoint: /chat/completions
 model: gpt-4.1-nano
 maxTokens: 1024
-# @doctest id="8751"
+# @doctest id="13ac"
 ```
 
 Example `config/embed/presets/openai.yaml`:
@@ -65,7 +65,7 @@ endpoint: /embeddings
 model: text-embedding-3-small
 dimensions: 1536
 maxInputs: 2048
-# @doctest id="af6c"
+# @doctest id="bd19"
 ```
 
 Once the file exists, `Inference::using('openai')` and `Embeddings::using('openai')` will resolve it automatically.
@@ -87,5 +87,5 @@ $inference = Inference::fromConfig(new LLMConfig(
     endpoint: '/chat/completions',
     model: 'gpt-4.1-nano',
 ));
-// @doctest id="fdea"
+// @doctest id="adb8"
 ```

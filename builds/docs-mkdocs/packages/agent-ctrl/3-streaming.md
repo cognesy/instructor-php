@@ -22,7 +22,7 @@ $response = AgentCtrl::openCode()
     ->onComplete(fn(AgentResponse $response) => print("\nDone\n"))
     ->onError(fn(string $message, ?string $code) => print("\nError: {$message}\n"))
     ->executeStreaming('Explain this package.');
-// @doctest id="4dd7"
+// @doctest id="c0db"
 ```
 
 `executeStreaming()` still returns the final `AgentResponse`, so you can stream output and inspect the result afterward.

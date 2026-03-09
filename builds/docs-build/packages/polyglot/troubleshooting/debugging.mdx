@@ -25,7 +25,7 @@ $runtime = InferenceRuntime::fromConfig(new LLMConfig(
 $text = Inference::fromRuntime($runtime)
     ->withMessages('Say hello.')
     ->get();
-// @doctest id="ad33"
+// @doctest id="9e7b"
 ```
 
 If you already own the HTTP client, inject it into the runtime and enable transport-level debugging there.

@@ -24,7 +24,7 @@ $text = Inference::using('openai')
         options: ['temperature' => 0.2],
     )
     ->get();
-// @doctest id="6b1a"
+// @doctest id="69ae"
 ```
 
 ## Use the Focused Helpers
@@ -57,5 +57,5 @@ $request = new InferenceRequest(
 $text = Inference::using('openai')
     ->withRequest($request)
     ->get();
-// @doctest id="1a18"
+// @doctest id="6342"
 ```

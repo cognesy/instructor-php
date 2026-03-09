@@ -23,7 +23,7 @@ $config = new HttpClientConfig(
 $client = (new HttpClientBuilder())
     ->withConfig($config)
     ->create();
-// @doctest id="5cf6"
+// @doctest id="6735"
 ```
 
 Core options:
@@ -44,7 +44,7 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 $client = (new HttpClientBuilder())
     ->withDsn('driver=symfony,connectTimeout=2,requestTimeout=20,streamHeaderTimeout=5,failOnError=true')
     ->create();
-// @doctest id="a508"
+// @doctest id="30b3"
 ```
 
 DSN values are coerced to the typed `HttpClientConfig` fields (`int`, `bool`, `string`).
@@ -61,7 +61,7 @@ $strict = $base->withOverrides(['failOnError' => true]);
 $client = (new HttpClientBuilder())
     ->withConfig($strict)
     ->create();
-// @doctest id="9077"
+// @doctest id="d48f"
 ```
 
 When `withConfig(...)` is provided, that config is authoritative.

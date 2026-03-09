@@ -6,6 +6,7 @@ use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Exceptions\CircuitBreakerOpenException;
 use Cognesy\Http\Extras\Middleware\CircuitBreakerMiddleware;
 use Cognesy\Http\Extras\Support\CircuitBreakerPolicy;
+use Cognesy\Http\Extras\Support\InMemoryCircuitBreakerStateStore;
 
 final class AlwaysFailingHttpHandler implements CanHandleHttpRequest
 {
@@ -30,9 +31,10 @@ it('shares circuit failure state across middleware instances for the same host',
         failureThreshold: 2,
         openForSec: 60,
     );
+    $store = new InMemoryCircuitBreakerStateStore();
     $next = new AlwaysFailingHttpHandler();
-    $first = new CircuitBreakerMiddleware($policy);
-    $second = new CircuitBreakerMiddleware($policy);
+    $first = new CircuitBreakerMiddleware($policy, $store);
+    $second = new CircuitBreakerMiddleware($policy, $store);
 
     expect($first->handle($request, $next)->statusCode())->toBe(503);
     expect($second->handle($request, $next)->statusCode())->toBe(503);

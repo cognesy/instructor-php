@@ -41,7 +41,7 @@ $state = AgentState::empty()->withUserMessage(
     'Review src/AgentLoop.php and summarize key issues.'
 );
 $result = $agent->execute($state);
-// @doctest id="a52f"
+// @doctest id="746d"
 ```
 
 The parent model decides when to call `spawn_subagent`.
@@ -68,7 +68,7 @@ $registry->register(new AgentDefinition(
     tools: new NameList('read_file', 'search_files'),
     budget: new ExecutionBudget(maxSteps: 8, maxTokens: 4000),
 ));
-// @doctest id="f877"
+// @doctest id="5c5b"
 ```
 
 You can also load definitions from files with `AgentDefinitionRegistry`.
@@ -89,7 +89,7 @@ new AgentDefinition(
     tools: new NameList('read_file', 'write_file', 'edit_file'),
     toolsDeny: new NameList('write_file'),
 );
-// @doctest id="291f"
+// @doctest id="9ab3"
 ```
 
 ## Depth Control
@@ -111,7 +111,7 @@ $agent = AgentBuilder::base()
 $agent = AgentBuilder::base()
     ->withCapability(UseSubagents::forDepth(2, provider: $registry))
     ->build();
-// @doctest id="6ad0"
+// @doctest id="1202"
 ```
 
 If depth is exceeded, subagent execution fails with `SubagentDepthExceededException`.
@@ -134,7 +134,7 @@ new AgentDefinition(
     ]),
     budget: new ExecutionBudget(maxSteps: 5, maxTokens: 2500, maxSeconds: 20.0),
 );
-// @doctest id="d425"
+// @doctest id="3bca"
 ```
 
 Parent limits stay on the parent builder, usually via `UseGuards`.
@@ -154,5 +154,5 @@ $agent->onEvent(SubagentSpawning::class, function (SubagentSpawning $e) {
 $agent->onEvent(SubagentCompleted::class, function (SubagentCompleted $e) {
     echo "Completed {$e->subagentName} in {$e->steps} steps\n";
 });
-// @doctest id="8863"
+// @doctest id="006b"
 ```

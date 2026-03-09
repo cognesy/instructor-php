@@ -12,7 +12,7 @@ Most applications need only two things:
 
 ```bash
 composer require cognesy/instructor-struct
-# @doctest id="b1b3"
+# @doctest id="b59b"
 ```
 
 ## Preset-Based Setup
@@ -23,7 +23,7 @@ If your app already provides provider credentials through environment variables,
 use Cognesy\Instructor\StructuredOutput;
 
 $structured = StructuredOutput::using('openai');
-// @doctest id="5cfe"
+// @doctest id="c5de"
 ```
 
 ## Explicit Provider Configuration
@@ -37,7 +37,7 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 $structured = StructuredOutput::fromConfig(
     LLMConfig::fromDsn('driver=openai,model=gpt-4o-mini')
 );
-// @doctest id="57c5"
+// @doctest id="9de7"
 ```
 
 ## Runtime Configuration
@@ -54,7 +54,7 @@ $runtime = StructuredOutputRuntime::fromConfig(
 )->withMaxRetries(2);
 
 $structured = (new StructuredOutput)->withRuntime($runtime);
-// @doctest id="d73c"
+// @doctest id="295e"
 ```
 
 ## What Belongs Where

@@ -14,7 +14,7 @@ $prompt = 'Explain dependency injection in one sentence.';
 
 $openai = Inference::using('openai')->withMessages($prompt)->get();
 $anthropic = Inference::using('anthropic')->withMessages($prompt)->get();
-// @doctest id="4679"
+// @doctest id="5e78"
 ```
 
 This is the main provider-switching story in Polyglot:

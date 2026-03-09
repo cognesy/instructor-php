@@ -11,7 +11,7 @@ Use an enum-backed or string-backed field in a response model, then ask the mode
 final class TicketLabel {
     public string $category;
 }
-// @doctest id="e9e1"
+// @doctest id="d8ab"
 ```
 
 Keep the schema narrow. Classification quality usually improves when the model has fewer valid shapes to choose from.

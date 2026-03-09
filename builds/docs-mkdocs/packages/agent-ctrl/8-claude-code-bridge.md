@@ -13,7 +13,7 @@ use Cognesy\AgentCtrl\AgentCtrl;
 $response = AgentCtrl::claudeCode()
     ->withModel('claude-sonnet-4-5')
     ->execute('Review this package and summarize the design.');
-// @doctest id="9c5f"
+// @doctest id="5e04"
 ```
 
 ## Main Options

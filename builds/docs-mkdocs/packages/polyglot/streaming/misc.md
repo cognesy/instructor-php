@@ -29,5 +29,5 @@ $text = Inference::using('openai')
         fn(string $carry, $delta) => $carry . $delta->contentDelta,
         '',
     );
-// @doctest id="f57a"
+// @doctest id="e6b9"
 ```

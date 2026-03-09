@@ -15,7 +15,7 @@ $response = Embeddings::using('openai')
     ->get();
 
 $vector = $response->first()?->values() ?? [];
-// @doctest id="4307"
+// @doctest id="a9c2"
 ```
 
 ## Multiple Inputs
@@ -31,7 +31,7 @@ $response = Embeddings::using('openai')
     ->get();
 
 $vectors = $response->toValuesArray();
-// @doctest id="2eec"
+// @doctest id="ddae"
 ```
 
 ## Response Helpers

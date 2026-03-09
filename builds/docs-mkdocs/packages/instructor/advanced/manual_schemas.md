@@ -18,7 +18,7 @@ $schema = [
 $data = (new StructuredOutput)
     ->with(messages: 'Jane is 31 years old.', responseModel: $schema)
     ->getArray();
-// @doctest id="f04a"
+// @doctest id="281d"
 ```
 
 Use this path when the shape is dynamic or not worth modeling as a class.

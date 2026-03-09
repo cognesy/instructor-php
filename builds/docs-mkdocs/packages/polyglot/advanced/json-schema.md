@@ -32,7 +32,7 @@ $data = Inference::using('openai')
         ],
     )
     ->asJsonData();
-// @doctest id="5875"
+// @doctest id="c53b"
 ```
 
 This only helps you build the schema payload.

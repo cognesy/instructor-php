@@ -18,7 +18,7 @@ $drivers = BundledHttpDrivers::registry()->withDriver(
     static fn(HttpClientConfig $config, CanHandleEvents $events, ?object $clientInstance): CanHandleHttpRequest
         => new AcmeHttpDriver($config, $events, $clientInstance),
 );
-// @doctest id="e030"
+// @doctest id="c121"
 ```
 
 ## Build a Client
@@ -31,7 +31,7 @@ $client = (new HttpClientBuilder())
     ->withDrivers($drivers)
     ->withConfig(new HttpClientConfig(driver: 'acme'))
     ->create();
-// @doctest id="a335"
+// @doctest id="9dd6"
 ```
 
 ## Reuse a Vendor Client
@@ -43,7 +43,7 @@ use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
 $client = (new HttpClientBuilder())
     ->withClientInstance('symfony', SymfonyHttpClient::create())
     ->create();
-// @doctest id="95b7"
+// @doctest id="85f0"
 ```
 
 ## Inject a Driver Directly
@@ -54,7 +54,7 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 $client = (new HttpClientBuilder())
     ->withDriver($myDriver) // CanHandleHttpRequest
     ->create();
-// @doctest id="09d2"
+// @doctest id="c4b5"
 ```
 
 If you need request pooling, use `packages/http-pool`.

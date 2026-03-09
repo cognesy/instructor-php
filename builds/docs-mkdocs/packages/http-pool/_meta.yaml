@@ -1,5 +1,0 @@
-# Navigation order for HTTP Pool documentation
-order:
-  - overview
-  - quickstart
-  - custom-handlers

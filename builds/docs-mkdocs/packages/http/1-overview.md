@@ -32,7 +32,7 @@ HttpClient
   -> PendingHttpResponse
   -> get() or stream()
   -> HttpResponse
-// @doctest id="9733"
+// @doctest id="5da9"
 ```
 
 ## Immutability

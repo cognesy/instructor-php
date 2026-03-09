@@ -13,7 +13,7 @@ $request = (new HttpRequest(
     body: '',
     options: [],
 ))->withStreaming(true);
-// @doctest id="752c"
+// @doctest id="d629"
 ```
 
 Then consume the response as chunks:
@@ -22,7 +22,7 @@ Then consume the response as chunks:
 foreach ($client->send($request)->stream() as $chunk) {
     echo $chunk;
 }
-// @doctest id="1238"
+// @doctest id="684b"
 ```
 
 If you need to parse server-sent events, add `EventSourceMiddleware` before sending the request.

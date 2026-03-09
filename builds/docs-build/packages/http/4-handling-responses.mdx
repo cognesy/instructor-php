@@ -7,7 +7,7 @@ description: 'Read pending responses as buffered content or as a stream.'
 
 ```php
 $pending = $client->send($request);
-// @doctest id="8043"
+// @doctest id="4ed0"
 ```
 
 Core methods:
@@ -27,7 +27,7 @@ $response = $pending->get();
 $status = $response->statusCode();
 $headers = $response->headers();
 $body = $response->body();
-// @doctest id="1d96"
+// @doctest id="0342"
 ```
 
 ## Streaming Responses
@@ -38,7 +38,7 @@ For a streamed request, call `stream()` on the pending response:
 foreach ($pending->stream() as $chunk) {
     echo $chunk;
 }
-// @doctest id="d21c"
+// @doctest id="42c3"
 ```
 
 Use `content()` and `body()` for buffered responses. Use `stream()` for streamed responses.

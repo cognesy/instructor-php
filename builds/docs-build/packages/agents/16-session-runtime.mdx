@@ -31,7 +31,7 @@ interface CanManageAgentSessions
     public function getSession(SessionId $sessionId): AgentSession;
     public function execute(SessionId $sessionId, CanExecuteSessionAction $action): AgentSession;
 }
-// @doctest id="0c25"
+// @doctest id="07c7"
 ```
 
 Read methods do not persist mutations.
@@ -61,7 +61,7 @@ $updated = $runtime->execute(
     $session->sessionId(),
     new SendMessage('Hello', $loopFactory),
 );
-// @doctest id="5dd6"
+// @doctest id="3e8c"
 ```
 
 ## Core Operations
@@ -71,7 +71,7 @@ $session = $runtime->getSession($sessionId);
 $info = $runtime->getSessionInfo($sessionId);
 $list = $runtime->listSessions();
 $next = $runtime->execute($sessionId, $action);
-// @doctest id="68e2"
+// @doctest id="0077"
 ```
 
 Always use the returned session version for the next write.
@@ -104,14 +104,14 @@ use Cognesy\Agents\Session\Actions\SuspendSession;
 
 $runtime->execute($sessionId, new SuspendSession());
 $runtime->execute($sessionId, new ResumeSession());
-// @doctest id="35bf"
+// @doctest id="9a7a"
 ```
 
 ```php
 use Cognesy\Agents\Session\Actions\ClearSession;
 
 $runtime->execute($sessionId, new ClearSession());
-// @doctest id="4cc6"
+// @doctest id="ee66"
 ```
 
 ```php
@@ -120,7 +120,7 @@ use Cognesy\Agents\Session\Actions\ForkSession;
 $source = $runtime->getSession($sessionId);
 $forked = (new ForkSession())->executeOn($source);
 $forked = $repo->create($forked);
-// @doctest id="8f2d"
+// @doctest id="e29f"
 ```
 
 ```php
@@ -131,7 +131,7 @@ use Cognesy\Agents\Session\Actions\WriteMetadata;
 $runtime->execute($sessionId, new ChangeSystemPrompt('You are concise and direct.'));
 $runtime->execute($sessionId, new ChangeModel($llmConfig));
 $runtime->execute($sessionId, new WriteMetadata('ticket_id', 'OPS-142'));
-// @doctest id="7997"
+// @doctest id="acc3"
 ```
 
 ## Versioning and Conflicts
@@ -183,7 +183,7 @@ $hook = new class implements CanControlAgentSession {
 
 $hooks = SessionHookStack::empty()->with($hook, priority: 100);
 $runtime = new SessionRuntime($repo, $events, $hooks);
-// @doctest id="fc9e"
+// @doctest id="cdaf"
 ```
 
 ## Events

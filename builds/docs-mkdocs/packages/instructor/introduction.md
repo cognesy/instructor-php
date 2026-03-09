@@ -33,7 +33,7 @@ $city = StructuredOutput::using('openai')
         responseModel: City::class,
     )
     ->get();
-// @doctest id="18b0"
+// @doctest id="0944"
 ```
 
 ## What This Package Covers

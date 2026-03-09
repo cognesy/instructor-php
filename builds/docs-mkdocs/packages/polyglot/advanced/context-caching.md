@@ -27,7 +27,7 @@ $inference = Inference::using('openai')->withCachedContext(
 $text = $inference
     ->withMessages('Give me one practical tip.')
     ->get();
-// @doctest id="20f6"
+// @doctest id="680c"
 ```
 
 This is request-level context modeling.

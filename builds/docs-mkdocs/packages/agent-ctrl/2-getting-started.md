@@ -7,7 +7,7 @@ description: 'Send a prompt to any supported code agent.'
 
 ```bash
 composer require cognesy/agent-ctrl
-# @doctest id="a8a7"
+# @doctest id="44b1"
 ```
 
 You also need at least one authenticated CLI installed in `PATH`:
@@ -24,7 +24,7 @@ use Cognesy\AgentCtrl\AgentCtrl;
 $response = AgentCtrl::codex()->execute('Summarize this repository.');
 
 echo $response->text();
-// @doctest id="ea07"
+// @doctest id="dd6a"
 ```
 
 ## Choose a Different Agent
@@ -33,7 +33,7 @@ echo $response->text();
 use Cognesy\AgentCtrl\AgentCtrl;
 
 $response = AgentCtrl::claudeCode()->execute('List the main packages in this monorepo.');
-// @doctest id="0494"
+// @doctest id="dca4"
 ```
 
 ## Select the Agent at Runtime
@@ -45,7 +45,7 @@ use Cognesy\AgentCtrl\Enum\AgentType;
 $agent = AgentType::from('opencode');
 
 $response = AgentCtrl::make($agent)->execute('Explain the package layout.');
-// @doctest id="c799"
+// @doctest id="d40f"
 ```
 
 ## Common Configuration
@@ -64,5 +64,5 @@ $response = AgentCtrl::codex()
     ->withTimeout(300)
     ->inDirectory(__DIR__)
     ->execute('Review the current directory.');
-// @doctest id="5f23"
+// @doctest id="ccec"
 ```

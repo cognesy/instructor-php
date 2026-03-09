@@ -11,7 +11,7 @@ use Cognesy\Instructor\Extras\Sequence\Sequence;
 $people = (new StructuredOutput)
     ->with(messages: $text, responseModel: Sequence::of(Person::class))
     ->get();
-// @doctest id="30c0"
+// @doctest id="4b85"
 ```
 
 `Sequence` gives you collection-style helpers such as `count()`, `first()`, `last()`, `get()`, and `all()`.
@@ -24,5 +24,5 @@ When streaming a sequence, `sequence()` yields completed items as they become st
 foreach ($stream->sequence() as $person) {
     // completed item
 }
-// @doctest id="e7f2"
+// @doctest id="ab7b"
 ```

@@ -29,13 +29,16 @@ packages:
     - instructor
     - polyglot
     - agents
+    - agent-ctrl
+    - sandbox
     - http-client
-    - http-pool
     - laravel
   # Internal packages (excluded from public docs for Mkdocs and Mintlify)
   internal:
     - addons
     - doctor
+    - doctools
+    - http-pool
     - hub
     - tell
 
@@ -55,9 +58,11 @@ output:
   mintlify:
     target: './builds/docs-build'
     source_index: './docs/mint.json'
+    config_file: './docs/mint.json'
   mkdocs:
     target: './builds/docs-mkdocs'
     template: './docs/mkdocs.yml.template'
+    config_file: './mkdocs.yml'
 
 # LLM-friendly documentation (llms.txt standard)
 llms:

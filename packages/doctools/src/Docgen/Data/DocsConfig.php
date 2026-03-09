@@ -26,8 +26,10 @@ readonly class DocsConfig
         // Output targets
         public string $mintlifyTarget,
         public string $mintlifySourceIndex,
+        public string $mintlifyConfigFile,
         public string $mkdocsTarget,
         public string $mkdocsTemplate,
+        public string $mkdocsConfigFile,
         // LLMs documentation
         public bool $llmsEnabled = true,
         public string $llmsIndexFile = 'llms.txt',
@@ -78,8 +80,10 @@ readonly class DocsConfig
             // Output targets
             mintlifyTarget: $config['output']['mintlify']['target'] ?? './builds/docs-build',
             mintlifySourceIndex: $config['output']['mintlify']['source_index'] ?? './docs/mint.json',
+            mintlifyConfigFile: $config['output']['mintlify']['config_file'] ?? '',
             mkdocsTarget: $config['output']['mkdocs']['target'] ?? './builds/docs-mkdocs',
             mkdocsTemplate: $config['output']['mkdocs']['template'] ?? './docs/mkdocs.yml.template',
+            mkdocsConfigFile: $config['output']['mkdocs']['config_file'] ?? '',
             // LLMs documentation
             llmsEnabled: $config['llms']['enabled'] ?? true,
             llmsIndexFile: $config['llms']['index_file'] ?? 'llms.txt',
@@ -110,8 +114,10 @@ readonly class DocsConfig
             changelogSource: './docs/release-notes',
             mintlifyTarget: './builds/docs-build',
             mintlifySourceIndex: './docs/mint.json',
+            mintlifyConfigFile: '',
             mkdocsTarget: './builds/docs-mkdocs',
             mkdocsTemplate: './docs/mkdocs.yml.template',
+            mkdocsConfigFile: '',
             llmsEnabled: true,
             llmsIndexFile: 'llms.txt',
             llmsFullFile: 'llms-full.txt',

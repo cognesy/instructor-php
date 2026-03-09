@@ -9,14 +9,14 @@ Install the package:
 
 ```bash
 composer require cognesy/instructor-polyglot
-# @doctest id="c11b"
+# @doctest id="f356"
 ```
 
 Set an API key for a bundled preset such as OpenAI:
 
 ```bash
 export OPENAI_API_KEY=...
-# @doctest id="58ae"
+# @doctest id="b1f2"
 ```
 
 Then run a request:
@@ -29,7 +29,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $text = Inference::using('openai')
     ->withMessages('Explain dependency injection in one short paragraph.')
     ->get();
-// @doctest id="16e0"
+// @doctest id="660e"
 ```
 
 That is the standard flow:

@@ -14,7 +14,7 @@ $result = (new StructuredOutput)
         options: ['temperature' => 0],
     )
     ->get();
-// @doctest id="e446"
+// @doctest id="e3bc"
 ```
 
 Use `LLMConfig` or a runtime when the choice should apply more broadly than one request.

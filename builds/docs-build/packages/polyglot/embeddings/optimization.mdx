@@ -20,7 +20,7 @@ $response = Embeddings::using('openai')
         'Document two',
     ])
     ->get();
-// @doctest id="85bf"
+// @doctest id="50a5"
 ```
 
 ## Configure Retries Explicitly
@@ -35,5 +35,5 @@ $response = Embeddings::using('openai')
     ->withInputs(['Document one'])
     ->withRetryPolicy(new EmbeddingsRetryPolicy(maxAttempts: 3))
     ->get();
-// @doctest id="77ec"
+// @doctest id="db81"
 ```

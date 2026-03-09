@@ -282,6 +282,27 @@ nav:
           - { 'Session Runtime': packages/agents/16-session-runtime.md }
           - { 'Building Tools Advanced': packages/agents/17-building-tools-advanced.md }
       -
+        Agent-ctrl:
+          - { Overview: packages/agent-ctrl/1-overview.md }
+          - { 'Getting Started': packages/agent-ctrl/2-getting-started.md }
+          - { Streaming: packages/agent-ctrl/3-streaming.md }
+          - { 'Session Management': packages/agent-ctrl/4-session-management.md }
+          - { 'Agent Options': packages/agent-ctrl/5-agent-options.md }
+          - { 'Response Object': packages/agent-ctrl/6-response-object.md }
+          - { Troubleshooting: packages/agent-ctrl/7-troubleshooting.md }
+          - { 'Claude Code Bridge': packages/agent-ctrl/8-claude-code-bridge.md }
+          - { 'Codex Bridge': packages/agent-ctrl/9-codex-bridge.md }
+          - { 'Opencode Bridge': packages/agent-ctrl/10-opencode-bridge.md }
+      -
+        Sandbox:
+          - { Overview: packages/sandbox/1-overview.md }
+          - { 'Getting Started': packages/sandbox/2-getting-started.md }
+          - { 'Execution Policy': packages/sandbox/3-execution-policy.md }
+          - { Drivers: packages/sandbox/4-drivers.md }
+          - { 'Streaming And Results': packages/sandbox/5-streaming-and-results.md }
+          - { Testing: packages/sandbox/6-testing.md }
+          - { Troubleshooting: packages/sandbox/7-troubleshooting.md }
+      -
         'HTTP Client':
           - { Overview: packages/http/1-overview.md }
           - { 'Getting Started': packages/http/2-getting-started.md }
@@ -293,11 +314,6 @@ nav:
           - { 'Changing Client': packages/http/7-changing-client.md }
           - { 'Changing Client Config': packages/http/8-changing-client-config.md }
           - { 'Custom Clients': packages/http/9-1-custom-clients.md }
-      -
-        Http-pool:
-          - { Overview: packages/http-pool/overview.md }
-          - { Quickstart: packages/http-pool/quickstart.md }
-          - { 'Custom Handlers': packages/http-pool/custom-handlers.md }
       -
         Laravel:
           - { Overview: packages/laravel/index.md }
@@ -311,35 +327,6 @@ nav:
           - { Testing: packages/laravel/testing.md }
           - { Advanced: packages/laravel/advanced.md }
           - { Troubleshooting: packages/laravel/troubleshooting.md }
-      -
-        Agent-ctrl:
-          - { Overview: packages/agent-ctrl/1-overview.md }
-          - { 'Getting Started': packages/agent-ctrl/2-getting-started.md }
-          - { Streaming: packages/agent-ctrl/3-streaming.md }
-          - { 'Session Management': packages/agent-ctrl/4-session-management.md }
-          - { 'Agent Options': packages/agent-ctrl/5-agent-options.md }
-          - { 'Response Object': packages/agent-ctrl/6-response-object.md }
-          - { Troubleshooting: packages/agent-ctrl/7-troubleshooting.md }
-          - { 'Claude Code Bridge': packages/agent-ctrl/8-claude-code-bridge.md }
-          - { 'Codex Bridge': packages/agent-ctrl/9-codex-bridge.md }
-          - { 'Opencode Bridge': packages/agent-ctrl/10-opencode-bridge.md }
-      -
-        Doctools:
-          - { Overview: packages/doctools/index.md }
-          - { 'Navigation Ordering': packages/doctools/navigation-ordering.md }
-          - { 'Package Discovery': packages/doctools/package-discovery.md }
-          - { 'Quality Rules': packages/doctools/quality-rules.md }
-          - { 'Examples Configuration': packages/doctools/examples-configuration.md }
-          - { 'Llm Docs': packages/doctools/llm-docs.md }
-      -
-        Sandbox:
-          - { Overview: packages/sandbox/1-overview.md }
-          - { 'Getting Started': packages/sandbox/2-getting-started.md }
-          - { 'Execution Policy': packages/sandbox/3-execution-policy.md }
-          - { Drivers: packages/sandbox/4-drivers.md }
-          - { 'Streaming And Results': packages/sandbox/5-streaming-and-results.md }
-          - { Testing: packages/sandbox/6-testing.md }
-          - { Troubleshooting: packages/sandbox/7-troubleshooting.md }
   -
     Cookbook:
       -

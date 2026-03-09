@@ -13,7 +13,7 @@ use Cognesy\Http\HttpClient;
 
 $client = HttpClient::fromConfig(new HttpClientConfig(driver: 'guzzle'));
 $client = HttpClient::fromConfig(new HttpClientConfig(driver: 'symfony'));
-// @doctest id="d164"
+// @doctest id="2e33"
 ```
 
 The builder gives you the same choice in a more explicit form:
@@ -25,7 +25,7 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 $client = (new HttpClientBuilder())
     ->withConfig(new HttpClientConfig(driver: 'guzzle'))
     ->create();
-// @doctest id="7a43"
+// @doctest id="c7bc"
 ```
 
 ## Inject a Driver
@@ -37,7 +37,7 @@ use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 $client = (new HttpClientBuilder())
     ->withDriver(new MockHttpDriver())
     ->create();
-// @doctest id="12b2"
+// @doctest id="5b35"
 ```
 
 `HttpClient::fromDriver($driver)` is the shortest way to wrap a driver directly.
@@ -51,7 +51,7 @@ use GuzzleHttp\Client;
 $client = (new HttpClientBuilder())
     ->withClientInstance('guzzle', new Client(['timeout' => 10]))
     ->create();
-// @doctest id="98ca"
+// @doctest id="5ccf"
 ```
 
 `withClientInstance()` selects the driver name and passes the vendor client instance to it.

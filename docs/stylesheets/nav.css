@@ -1,12 +1,36 @@
 /* Navigation section titles styling */
 
-/* Style section headers (parent items with children) */
-.md-nav__item--nested > .md-nav__link {
-  font-weight: 600;
-  color: var(--md-primary-fg-color);
+/*
+ * Top-level package headers (Instructor, Polyglot, etc.) use <label> tags
+ * with the [for] attribute. Sub-sections (Concepts, Essentials, etc.) use <a> tags.
+ * MkDocs Material sets all section labels to gray via:
+ *   .md-nav__item--section>.md-nav__link[for] { color: --light }
+ * We override top-level ones to be black/bold.
+ */
+
+/* Top-level package headers - override gray to black */
+.md-nav__item--section.md-nav__item--nested > label.md-nav__link[for] {
+  color: var(--md-default-fg-color) !important;
+  font-weight: 700;
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.025em;
+}
+
+/* Active lifted section title (e.g. "Laravel" when viewing Laravel pages) */
+.md-nav--lifted > .md-nav__list > .md-nav__item--active > .md-nav__link {
+  color: var(--md-default-fg-color) !important;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+/* Sub-section headers (Concepts, Essentials, etc.) - gray, normal case */
+.md-nav__item--pruned.md-nav__item--nested > a.md-nav__link {
+  font-weight: 600;
+  color: var(--md-default-fg-color--light);
+  font-size: 0.85rem;
 }
 
 /* Add subtle left border to section headers */
@@ -35,9 +59,9 @@
   font-size: 0.75rem;
 }
 
-/* Add vertical space between package groups (top-level nested sections) */
-.md-nav__item--nested + .md-nav__item--nested {
-  margin-top: 0.8rem;
+/* Add vertical space before top-level package sections */
+.md-nav__item--section.md-nav__item--nested + .md-nav__item--section.md-nav__item--nested {
+  margin-top: 2rem;
 }
 
 /* Hover effect for section headers */

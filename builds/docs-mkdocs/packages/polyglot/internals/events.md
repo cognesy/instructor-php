@@ -28,7 +28,7 @@ $runtime = InferenceRuntime::fromConfig(
 )->onEvent(InferenceResponseCreated::class, function ($event): void {
     // inspect event payload
 });
-// @doctest id="19b0"
+// @doctest id="7e9b"
 ```
 
 Common inference events include:

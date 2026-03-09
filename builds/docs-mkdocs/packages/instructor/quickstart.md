@@ -7,7 +7,7 @@ description: 'Start extracting typed data in a few minutes.'
 
 ```bash
 composer require cognesy/instructor-struct
-# @doctest id="a855"
+# @doctest id="1006"
 ```
 
 ## Extract A Typed Object
@@ -28,7 +28,7 @@ $city = StructuredOutput::using('openai')
         responseModel: City::class,
     )
     ->get();
-// @doctest id="1f55"
+// @doctest id="78df"
 ```
 
 `$city` is a `City` instance. Public typed properties define the shape Instructor asks the model to return.

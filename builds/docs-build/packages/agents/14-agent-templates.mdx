@@ -43,7 +43,7 @@ $definition = new AgentDefinition(
     toolsDeny: new NameList('write_file'),
     capabilities: new NameList('use_bash'),
 );
-// @doctest id="42bb"
+// @doctest id="92d5"
 ```
 
 All fields except `name`, `description`, and `systemPrompt` are optional.
@@ -76,7 +76,7 @@ capabilities:
 ---
 
 You are a research assistant. Find and summarize information accurately.
-// @doctest id="4a4a"
+// @doctest id="0b7d"
 ```
 
 The body becomes `systemPrompt`.
@@ -92,7 +92,7 @@ llmConfig:
   driver: anthropic
 budget:
   maxSteps: 10
-# @doctest id="aec9"
+# @doctest id="4217"
 ```
 
 ### JSON
@@ -105,7 +105,7 @@ budget:
   "llmConfig": { "driver": "anthropic" },
   "budget": { "maxSteps": 10 }
 }
-// @doctest id="f5a5"
+// @doctest id="3478"
 ```
 
 ## Loading Definitions
@@ -117,7 +117,7 @@ use Cognesy\Agents\Template\AgentDefinitionLoader;
 
 $loader = new AgentDefinitionLoader();
 $definition = $loader->loadFile('/path/to/researcher.md');
-// @doctest id="47fe"
+// @doctest id="edb6"
 ```
 
 Supported extensions: `.md`, `.json`, `.yaml`, `.yml`.
@@ -142,7 +142,7 @@ $registry->get('researcher');
 $registry->has('researcher');
 $registry->names();
 $registry->count();
-// @doctest id="b4a5"
+// @doctest id="55dc"
 ```
 
 Loading errors are collected during directory scans.
@@ -157,7 +157,7 @@ use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
 
 $factory = new DefinitionStateFactory();
 $state = $factory->instantiateAgentState($definition);
-// @doctest id="1614"
+// @doctest id="56c6"
 ```
 
 ### DefinitionLoopFactory
@@ -172,7 +172,7 @@ $capabilities->register('use_bash', new UseBash());
 
 $factory = new DefinitionLoopFactory($capabilities);
 $loop = $factory->instantiateAgentLoop($definition);
-// @doctest id="9a77"
+// @doctest id="bdd9"
 ```
 
 If the definition uses named tools, provide a tool registry:
@@ -187,7 +187,7 @@ $factory = new DefinitionLoopFactory(
     capabilities: $capabilities,
     tools: $tools,
 );
-// @doctest id="42dc"
+// @doctest id="3967"
 ```
 
 If a definition references tools and no registry is provided, `DefinitionLoopFactory` throws.
@@ -207,5 +207,5 @@ $registry->loadFromDirectory('/agents');
 $agent = AgentBuilder::base()
     ->withCapability(new UseSubagents(provider: $registry))
     ->build();
-// @doctest id="2836"
+// @doctest id="d607"
 ```

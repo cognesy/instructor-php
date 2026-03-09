@@ -17,7 +17,7 @@ $request = new HttpRequest(
 );
 
 $response = $client->send($request)->get();
-// @doctest id="5d52"
+// @doctest id="130d"
 ```
 
 Array bodies are JSON-encoded automatically.
@@ -34,7 +34,7 @@ $request = new HttpRequest(
 );
 
 $response = $client->send($request)->get();
-// @doctest id="de2c"
+// @doctest id="e890"
 ```
 
 ## Change a Request
@@ -43,7 +43,7 @@ $response = $client->send($request)->get();
 $request = $request
     ->withHeader('Authorization', 'Bearer ' . $token)
     ->withStreaming(false);
-// @doctest id="180e"
+// @doctest id="a2a7"
 ```
 
 ## Build with Config
@@ -60,5 +60,5 @@ $client = (new HttpClientBuilder())
         failOnError: true,
     ))
     ->create();
-// @doctest id="57ba"
+// @doctest id="f391"
 ```

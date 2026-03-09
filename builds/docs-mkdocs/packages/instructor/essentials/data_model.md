@@ -14,7 +14,7 @@ final class OrderSummary {
     public string $customer;
     public int $itemCount;
 }
-// @doctest id="ab38"
+// @doctest id="02bf"
 ```
 
 That is usually enough. Instructor builds a schema from the class and deserializes the response back into it.

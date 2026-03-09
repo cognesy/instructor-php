@@ -18,7 +18,7 @@ $result = (new StructuredOutput)
     ->withPrompt('Extract the contact details.')
     ->with(messages: $text, responseModel: Contact::class)
     ->get();
-// @doctest id="c328"
+// @doctest id="4380"
 ```
 
 Use system text for stable behavior and prompt text for task-specific instructions.

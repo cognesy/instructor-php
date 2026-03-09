@@ -17,7 +17,7 @@ $text = Inference::using('openai')
         'top_p' => 0.9,
     ])
     ->get();
-// @doctest id="a7d9"
+// @doctest id="fa69"
 ```
 
 ## Prefer Dedicated Helpers for Common Behavior

@@ -13,5 +13,5 @@ use Cognesy\Polyglot\Inference\Inference;
 $text = Inference::using('openai')
     ->withMessages('What is the single responsibility principle?')
     ->get();
-// @doctest id="2c13"
+// @doctest id="eaf0"
 ```

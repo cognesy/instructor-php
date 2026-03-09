@@ -20,7 +20,7 @@ final class AddHeaderMiddleware implements HttpMiddleware
         return $next->handle($request);
     }
 }
-// @doctest id="8d67"
+// @doctest id="17f3"
 ```
 
 ## Register Middleware
@@ -28,7 +28,7 @@ final class AddHeaderMiddleware implements HttpMiddleware
 ```php
 $client = $client->withMiddleware(new AddHeaderMiddleware(), 'request-id');
 $client = $client->withoutMiddleware('request-id');
-// @doctest id="212d"
+// @doctest id="a0e5"
 ```
 
 You can also register middleware while building the client:
@@ -39,7 +39,7 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 $client = (new HttpClientBuilder())
     ->withMiddleware(new AddHeaderMiddleware())
     ->create();
-// @doctest id="8623"
+// @doctest id="e755"
 ```
 
 The builder also has focused helpers for the built-in middleware:

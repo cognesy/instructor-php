@@ -19,7 +19,7 @@ final class User {
     #[Assert\GreaterThan(17)]
     public int $age;
 }
-// @doctest id="6e94"
+// @doctest id="e2ec"
 ```
 
 ## Retries
@@ -33,7 +33,7 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 $runtime = StructuredOutputRuntime::fromConfig(
     LLMConfig::fromPreset('openai')
 )->withMaxRetries(2);
-// @doctest id="0474"
+// @doctest id="e2d0"
 ```
 
 If validation fails, Instructor can ask the model again until the retry limit is reached.

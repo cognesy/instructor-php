@@ -13,7 +13,7 @@ use Cognesy\AgentCtrl\AgentCtrl;
 $response = AgentCtrl::openCode()
     ->withModel('anthropic/claude-sonnet-4-5')
     ->execute('Explain the architecture in short paragraphs.');
-// @doctest id="bc89"
+// @doctest id="faf9"
 ```
 
 ## Main Options

@@ -23,7 +23,7 @@ use Cognesy\AgentCtrl\AgentCtrl;
 $response = AgentCtrl::claudeCode()
     ->inDirectory(__DIR__)
     ->execute('List the main files here.');
-// @doctest id="c80f"
+// @doctest id="4c2b"
 ```
 
 ## Non-Zero Exit Codes

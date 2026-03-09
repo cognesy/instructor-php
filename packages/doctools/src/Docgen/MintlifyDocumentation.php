@@ -320,6 +320,12 @@ class MintlifyDocumentation
 
             $result = $index->saveFile($this->config->mintlifyTargetIndexFile);
 
+            // Also update the source config file if configured
+            if ($this->docsConfig->mintlifyConfigFile) {
+                $configFilePath = BasePath::get($this->docsConfig->mintlifyConfigFile);
+                $index->saveFile($configFilePath);
+            }
+
             return $result
                 ? GenerationResult::success(message: 'Hub index updated')
                 : GenerationResult::failure(['Failed to save hub index file']);

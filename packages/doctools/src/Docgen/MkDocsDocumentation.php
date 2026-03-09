@@ -255,7 +255,9 @@ class MkDocsDocumentation
     public function updateMkDocsConfig(): GenerationResult {
         try {
             $templatePath = BasePath::get($this->docsConfig->mkdocsTemplate);
-            $configPath = dirname(BasePath::get($this->docsConfig->mkdocsTarget)) . '/mkdocs.yml';
+            $configPath = $this->docsConfig->mkdocsConfigFile
+                ? BasePath::get($this->docsConfig->mkdocsConfigFile)
+                : dirname(BasePath::get($this->docsConfig->mkdocsTarget)) . '/mkdocs.yml';
 
             // Load template for theme/plugins config (ignoring its nav)
             $config = $this->loadTemplateConfig($templatePath);

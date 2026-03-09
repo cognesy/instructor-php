@@ -19,7 +19,7 @@ use Cognesy\Polyglot\Inference\InferenceRuntime;
 
 $drivers = BundledInferenceDrivers::registry()
     ->withDriver('acme', AcmeInferenceDriver::class);
-// @doctest id="f377"
+// @doctest id="7ed9"
 ```
 
 Pass that registry into `InferenceRuntime::fromConfig(...)`.
@@ -33,7 +33,7 @@ use App\Polyglot\AcmeEmbeddingsDriver;
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
 Embeddings::registerDriver('acme', AcmeEmbeddingsDriver::class);
-// @doctest id="633d"
+// @doctest id="12ea"
 ```
 
 Inference drivers must implement `CanProcessInferenceRequest`.

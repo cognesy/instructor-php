@@ -11,7 +11,7 @@ description: 'Run agents to completion with execute() or step through with itera
 
 ```php
 $finalState = $loop->execute($state);
-// @doctest id="4b1b"
+// @doctest id="ecf9"
 ```
 
 `iterate()` yields state after each step:
@@ -21,7 +21,7 @@ foreach ($loop->iterate($state) as $stepState) {
     $step = $stepState->lastStep();
     echo "Step {$stepState->stepCount()}: {$step->stepType()->value}\n";
 }
-// @doctest id="d6c8"
+// @doctest id="fcaf"
 ```
 
 Use `execute()` for normal application code.
@@ -43,7 +43,7 @@ foreach ($state->steps()->all() as $step) {
 $toolExec = $state->lastToolExecution();
 $toolExec?->name();
 $toolExec?->hasError();
-// @doctest id="3d7a"
+// @doctest id="aac9"
 ```
 
 ## Reading the Response
@@ -57,7 +57,7 @@ $toolExec?->hasError();
 $state->hasFinalResponse();
 $state->finalResponse()->toString();
 $state->currentResponse()->toString();
-// @doctest id="bc3b"
+// @doctest id="8409"
 ```
 
 A simple pattern is:
@@ -68,7 +68,7 @@ if ($state->hasFinalResponse()) {
 } else {
     $text = $state->currentResponse()->toString();
 }
-// @doctest id="e1ad"
+// @doctest id="bea9"
 ```
 
 ## Listening to Events
@@ -83,5 +83,5 @@ $loop->onEvent(AgentStepCompleted::class, function (AgentStepCompleted $event) {
 $loop->wiretap(function (object $event) {
     echo get_class($event) . "\n";
 });
-// @doctest id="69cb"
+// @doctest id="3bfa"
 ```

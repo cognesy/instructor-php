@@ -350,6 +350,33 @@
             ]
         },
         {
+            "group": "Agent-ctrl",
+            "pages": [
+                "packages/agent-ctrl/1-overview",
+                "packages/agent-ctrl/2-getting-started",
+                "packages/agent-ctrl/3-streaming",
+                "packages/agent-ctrl/4-session-management",
+                "packages/agent-ctrl/5-agent-options",
+                "packages/agent-ctrl/6-response-object",
+                "packages/agent-ctrl/7-troubleshooting",
+                "packages/agent-ctrl/8-claude-code-bridge",
+                "packages/agent-ctrl/9-codex-bridge",
+                "packages/agent-ctrl/10-opencode-bridge"
+            ]
+        },
+        {
+            "group": "Sandbox",
+            "pages": [
+                "packages/sandbox/1-overview",
+                "packages/sandbox/2-getting-started",
+                "packages/sandbox/3-execution-policy",
+                "packages/sandbox/4-drivers",
+                "packages/sandbox/5-streaming-and-results",
+                "packages/sandbox/6-testing",
+                "packages/sandbox/7-troubleshooting"
+            ]
+        },
+        {
             "group": "HTTP Client",
             "pages": [
                 "packages/http/1-overview",
@@ -362,14 +389,6 @@
                 "packages/http/7-changing-client",
                 "packages/http/8-changing-client-config",
                 "packages/http/9-1-custom-clients"
-            ]
-        },
-        {
-            "group": "Http-pool",
-            "pages": [
-                "packages/http-pool/overview",
-                "packages/http-pool/quickstart",
-                "packages/http-pool/custom-handlers"
             ]
         },
         {
@@ -386,44 +405,6 @@
                 "packages/laravel/testing",
                 "packages/laravel/advanced",
                 "packages/laravel/troubleshooting"
-            ]
-        },
-        {
-            "group": "Agent-ctrl",
-            "pages": [
-                "packages/agent-ctrl/1-overview",
-                "packages/agent-ctrl/2-getting-started",
-                "packages/agent-ctrl/3-streaming",
-                "packages/agent-ctrl/4-session-management",
-                "packages/agent-ctrl/5-agent-options",
-                "packages/agent-ctrl/6-response-object",
-                "packages/agent-ctrl/7-troubleshooting",
-                "packages/agent-ctrl/8-claude-code-bridge",
-                "packages/agent-ctrl/9-codex-bridge",
-                "packages/agent-ctrl/10-opencode-bridge"
-            ]
-        },
-        {
-            "group": "Doctools",
-            "pages": [
-                "packages/doctools/index",
-                "packages/doctools/navigation-ordering",
-                "packages/doctools/package-discovery",
-                "packages/doctools/quality-rules",
-                "packages/doctools/examples-configuration",
-                "packages/doctools/llm-docs"
-            ]
-        },
-        {
-            "group": "Sandbox",
-            "pages": [
-                "packages/sandbox/1-overview",
-                "packages/sandbox/2-getting-started",
-                "packages/sandbox/3-execution-policy",
-                "packages/sandbox/4-drivers",
-                "packages/sandbox/5-streaming-and-results",
-                "packages/sandbox/6-testing",
-                "packages/sandbox/7-troubleshooting"
             ]
         },
         {

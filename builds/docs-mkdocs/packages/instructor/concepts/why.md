@@ -26,5 +26,5 @@ final class User {
 $user = (new StructuredOutput)
     ->with(messages: 'John is 34 years old.', responseModel: User::class)
     ->get();
-// @doctest id="3de5"
+// @doctest id="ab7a"
 ```

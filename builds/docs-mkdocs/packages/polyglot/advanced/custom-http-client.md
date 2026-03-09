@@ -30,7 +30,7 @@ $runtime = InferenceRuntime::fromConfig(
 $text = Inference::fromRuntime($runtime)
     ->withMessages('Say hello.')
     ->get();
-// @doctest id="ccdb"
+// @doctest id="00aa"
 ```
 
 The same pattern works for `EmbeddingsRuntime`.

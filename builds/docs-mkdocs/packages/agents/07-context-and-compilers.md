@@ -22,7 +22,7 @@ $state = AgentState::empty()
 $state->context()->systemPrompt();
 $state->context()->messages();
 $state->context()->metadata();
-// @doctest id="ecb5"
+// @doctest id="fd83"
 ```
 
 In normal usage, update context through `AgentState`.
@@ -36,7 +36,7 @@ interface CanCompileMessages
 {
     public function compile(AgentState $state): Messages;
 }
-// @doctest id="cfed"
+// @doctest id="fd04"
 ```
 
 The default compiler is `ConversationWithCurrentToolTrace`.
@@ -56,7 +56,7 @@ class MyCompiler implements CanCompileMessages
         return $state->store()->toMessages();
     }
 }
-// @doctest id="68cc"
+// @doctest id="c5b5"
 ```
 
 Use it directly with a driver:
@@ -68,7 +68,7 @@ $driver = new ToolCallingDriver(
     messageCompiler: new MyCompiler(),
 );
 $loop = AgentLoop::default()->withDriver($driver);
-// @doctest id="e3cd"
+// @doctest id="a96f"
 ```
 
 Or install it with `AgentBuilder`:
@@ -80,7 +80,7 @@ use Cognesy\Agents\Capability\Core\UseContextCompiler;
 $agent = AgentBuilder::base()
     ->withCapability(new UseContextCompiler(new MyCompiler()))
     ->build();
-// @doctest id="4919"
+// @doctest id="c0d2"
 ```
 
 ## Common Uses
@@ -117,7 +117,7 @@ class TokenLimitCompiler implements CanCompileMessages
         return new Messages(...$kept);
     }
 }
-// @doctest id="1899"
+// @doctest id="c3cd"
 ```
 
 Wrap the default compiler with `UseContextCompilerDecorator`:
@@ -130,5 +130,5 @@ $agent = AgentBuilder::base()
         fn(CanCompileMessages $inner) => new TokenLimitCompiler($inner, maxTokens: 4000)
     ))
     ->build();
-// @doctest id="4383"
+// @doctest id="91f1"
 ```

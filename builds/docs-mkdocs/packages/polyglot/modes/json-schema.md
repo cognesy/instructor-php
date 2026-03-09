@@ -30,7 +30,7 @@ $data = Inference::using('openai')
         ],
     )
     ->asJsonData();
-// @doctest id="92e0"
+// @doctest id="3e0c"
 ```
 
 Polyglot forwards the native schema request. It does not emulate schema enforcement for providers that lack it.

@@ -12,7 +12,7 @@ $structured = (new StructuredOutput)
     ->withExamples([
         Example::fromText('Jane, 31', ['name' => 'Jane', 'age' => 31]),
     ]);
-// @doctest id="5962"
+// @doctest id="c5e0"
 ```
 
 Keep examples short and representative. They should clarify the task, not replace the prompt.

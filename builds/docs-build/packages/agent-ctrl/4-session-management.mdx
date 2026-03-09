@@ -13,7 +13,7 @@ use Cognesy\AgentCtrl\AgentCtrl;
 $response = AgentCtrl::codex()
     ->continueSession()
     ->execute('Continue from the previous task.');
-// @doctest id="9f3b"
+// @doctest id="1a1c"
 ```
 
 ## Resume a Specific Session
@@ -29,7 +29,7 @@ if ($sessionId !== null) {
         ->resumeSession((string) $sessionId)
         ->execute('Now apply the first step.');
 }
-// @doctest id="a57c"
+// @doctest id="318c"
 ```
 
 ## Reading the Session ID

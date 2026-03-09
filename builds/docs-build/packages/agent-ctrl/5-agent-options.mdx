@@ -37,7 +37,7 @@ $response = AgentCtrl::claudeCode()
     ->withPermissionMode(PermissionMode::BypassPermissions)
     ->withMaxTurns(10)
     ->execute('Refactor this service.');
-// @doctest id="53fa"
+// @doctest id="93c7"
 ```
 
 ## Codex
@@ -62,7 +62,7 @@ $response = AgentCtrl::codex()
     ->withSandbox(SandboxMode::WorkspaceWrite)
     ->withImages(['/tmp/mockup.png'])
     ->execute('Review this screenshot and describe the UI.');
-// @doctest id="63e0"
+// @doctest id="5f35"
 ```
 
 ## OpenCode
@@ -83,5 +83,5 @@ $response = AgentCtrl::openCode()
     ->withAgent('coder')
     ->withTitle('Repository review')
     ->execute('Summarize the architecture.');
-// @doctest id="e3e8"
+// @doctest id="74e5"
 ```

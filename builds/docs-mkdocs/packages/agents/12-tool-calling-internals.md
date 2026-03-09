@@ -21,7 +21,7 @@ AgentLoop
   |
   |-- CanExecuteToolCalls (executor) # runs the actual tools
       |-- ToolExecutor              # default implementation
-// @doctest id="eb3c"
+// @doctest id="8e93"
 ```
 
 ## The Two Contracts
@@ -34,7 +34,7 @@ Sends state to the LLM (with tools injected via `withToolRuntime()`), gets back 
 interface CanUseTools {
     public function useTools(AgentState $state): AgentState;
 }
-// @doctest id="2b88"
+// @doctest id="7bdc"
 ```
 
 ### CanExecuteToolCalls (Executor)
@@ -45,7 +45,7 @@ Runs tool calls and returns execution results:
 interface CanExecuteToolCalls {
     public function executeTools(ToolCalls $toolCalls, AgentState $state): ToolExecutions;
 }
-// @doctest id="7a78"
+// @doctest id="1f43"
 ```
 
 ## ToolCallingDriver
@@ -71,7 +71,7 @@ $driver = new ToolCallingDriver(
     model: 'gpt-4o',
     toolChoice: 'auto',          // 'auto', 'required', or specific tool
 );
-// @doctest id="64fc"
+// @doctest id="ff40"
 ```
 
 The LLM natively understands tools and returns structured `tool_calls` in its response.
@@ -109,7 +109,7 @@ $driver = new ReActDriver(
     maxRetries: 2,               // retries on extraction failure
     finalViaInference: false,    // optionally use separate LLM call for final answer
 );
-// @doctest id="f5b3"
+// @doctest id="540a"
 ```
 
 The LLM doesn't need native tool support - it outputs JSON with `type`, `tool`, `args`, and `thought` fields.
@@ -138,7 +138,7 @@ $executor = new ToolExecutor(
 );
 
 $loop = AgentLoop::default()->withTools($tools)->withToolExecutor($executor);
-// @doctest id="87b9"
+// @doctest id="0429"
 ```
 
 ## When to Use Which Driver

@@ -11,7 +11,7 @@ description: 'Configure timeout, memory, paths, environment, network, and output
 use Cognesy\Sandbox\Config\ExecutionPolicy;
 
 $policy = ExecutionPolicy::in(__DIR__);
-// @doctest id="45b3"
+// @doctest id="2c2b"
 ```
 
 ## Common Overrides
@@ -26,7 +26,7 @@ $policy = $policy
     ->withReadablePaths('/data/shared')
     ->withWritablePaths('/tmp/work')
     ->withEnv(['APP_ENV' => 'test'], inherit: true);
-// @doctest id="07d6"
+// @doctest id="7971"
 ```
 
 ## Key Notes

@@ -20,7 +20,7 @@ foreach ($stream->deltas() as $delta) {
 }
 
 $final = $stream->final();
-// @doctest id="a303"
+// @doctest id="c45f"
 ```
 
 ## What a Delta Contains

@@ -21,7 +21,7 @@ $response = $client->send(new HttpRequest(
 
 echo $response->statusCode();
 echo $response->body();
-// @doctest id="0916"
+// @doctest id="4889"
 ```
 
 Use `HttpClientConfig` when you want a specific driver or timeout profile:
@@ -30,7 +30,7 @@ Use `HttpClientConfig` when you want a specific driver or timeout profile:
 use Cognesy\Http\Config\HttpClientConfig;
 
 $client = HttpClient::fromConfig(new HttpClientConfig(driver: 'guzzle'));
-// @doctest id="d3f6"
+// @doctest id="c2f2"
 ```
 
 For tests, use the builder with the mock driver:
@@ -48,5 +48,5 @@ $client = (new HttpClientBuilder())
         );
     })
     ->create();
-// @doctest id="b79c"
+// @doctest id="7fe6"
 ```

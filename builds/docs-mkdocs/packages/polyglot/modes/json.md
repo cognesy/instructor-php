@@ -14,7 +14,7 @@ $data = Inference::using('openai')
     ->withMessages('Return JSON with keys "name" and "role".')
     ->withResponseFormat(['type' => 'json_object'])
     ->asJsonData();
-// @doctest id="75d5"
+// @doctest id="6a9f"
 ```
 
 `asJsonData()` only decodes the returned content. Validation rules still depend on the provider and your prompt.

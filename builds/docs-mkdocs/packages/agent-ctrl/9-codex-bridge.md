@@ -14,7 +14,7 @@ use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\SandboxMode;
 $response = AgentCtrl::codex()
     ->withSandbox(SandboxMode::WorkspaceWrite)
     ->execute('Write tests for this service.');
-// @doctest id="d0cf"
+// @doctest id="f3a3"
 ```
 
 ## Main Options

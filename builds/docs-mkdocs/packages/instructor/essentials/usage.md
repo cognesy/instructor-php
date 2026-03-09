@@ -21,7 +21,7 @@ $person = (new StructuredOutput)
         responseModel: Person::class,
     )
     ->get();
-// @doctest id="7d4f"
+// @doctest id="b2fc"
 ```
 
 ## Build The Request
@@ -65,7 +65,7 @@ $result = (new StructuredOutput)
     ->withRuntime($runtime)
     ->with(messages: 'Jason is 28 years old.', responseModel: Person::class)
     ->get();
-// @doctest id="58d7"
+// @doctest id="3abb"
 ```
 
 ## Use `create()` When You Need Control
@@ -78,5 +78,5 @@ $pending = (new StructuredOutput)
     ->create();
 
 $person = $pending->get();
-// @doctest id="ae0f"
+// @doctest id="4213"
 ```
