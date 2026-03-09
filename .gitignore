@@ -77,6 +77,7 @@ build/
 
 # Python venvs
 .venv/
+.venv-*/
 
 # OS generated files
 .DS_Store
