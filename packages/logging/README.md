@@ -8,10 +8,10 @@ Use it to turn events into structured log entries using composable:
 - formatters
 - writers
 
-Laravel and Symfony integrations are included.
+Symfony integration is included.
 
 Framework integration wiring is explicit in 2.0:
-- Laravel uses `instructor-logging.event_bus_binding` (default `CanHandleEvents::class`).
+- Laravel integration lives in `packages/laravel`.
 - Symfony uses `instructor_logging.event_bus_service` (default `Cognesy\Events\Contracts\CanHandleEvents`).
 
 ## Example

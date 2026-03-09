@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Embeddings\Drivers;
 
-use Cognesy\Http\HttpClient;
+use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
 use Cognesy\Polyglot\Embeddings\Drivers\Azure\AzureOpenAIDriver;
@@ -27,7 +27,7 @@ class EmbeddingsDriverFactory
     }
 
     /**
-     * @param callable(EmbeddingsConfig, HttpClient, EventDispatcherInterface): CanHandleVectorization|string $driver
+     * @param callable(EmbeddingsConfig, CanSendHttpRequests, EventDispatcherInterface): CanHandleVectorization|string $driver
      */
     public static function registerDriver(string $name, string|callable $driver) : void {
         self::$drivers[$name] = match(true) {
@@ -40,10 +40,10 @@ class EmbeddingsDriverFactory
      * Returns the driver for the specified configuration.
      *
      * @param \Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig $config
-     * @param HttpClient $httpClient
+     * @param CanSendHttpRequests $httpClient
      * @return CanHandleVectorization
      */
-    public function makeDriver(EmbeddingsConfig $config, HttpClient $httpClient) : CanHandleVectorization {
+    public function makeDriver(EmbeddingsConfig $config, CanSendHttpRequests $httpClient) : CanHandleVectorization {
         $type = $config->driver ?? 'openai';
 
         $driver = self::$drivers[$type] ?? $this->getBundledDriver($type);
@@ -63,7 +63,7 @@ class EmbeddingsDriverFactory
     // INTERNAL ////////////////////////////////////////////////////
 
     /**
-     * @return (callable(EmbeddingsConfig, HttpClient, EventDispatcherInterface): CanHandleVectorization)|null
+     * @return (callable(EmbeddingsConfig, CanSendHttpRequests, EventDispatcherInterface): CanHandleVectorization)|null
      */
     protected function getBundledDriver(string $type) : ?callable {
         return match ($type) {

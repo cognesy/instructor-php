@@ -2,7 +2,6 @@
 
 namespace Cognesy\HttpPool\Drivers\Curl\Pool;
 
-use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Drivers\Curl\CurlErrorMapper;
@@ -10,6 +9,7 @@ use Cognesy\Http\Drivers\Curl\CurlFactory;
 use Cognesy\Http\Drivers\Curl\HeaderParser;
 use Cognesy\Http\Exceptions\HttpExceptionFactory;
 use Cognesy\Http\Exceptions\HttpRequestException;
+use Cognesy\HttpPool\Config\HttpPoolConfig;
 use Cognesy\Utils\Result\Result;
 use CurlMultiHandle;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -31,7 +31,7 @@ final class CurlMultiRunner
 
     public function __construct(
         private readonly CurlFactory $factory,
-        private readonly HttpClientConfig $config,
+        private readonly HttpPoolConfig $config,
         private readonly EventDispatcherInterface $events,
     ) {
         $this->errorMapper = new CurlErrorMapper();

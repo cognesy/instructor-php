@@ -8,17 +8,11 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 
 class MiddlewareStack
 {
-    private EventDispatcherInterface $events;
-    /** @var HttpMiddleware[] */
-    private array $stack;
-
     public function __construct(
-        EventDispatcherInterface $events,
-        array $middlewares = [],
-    ) {
-        $this->events = $events;
-        $this->stack = $middlewares;
-    }
+        private readonly EventDispatcherInterface $events,
+        /** @var HttpMiddleware[] */
+        private readonly array $stack = [],
+    ) {}
 
     /**
      * Adds middleware to the stack
@@ -171,7 +165,7 @@ class MiddlewareStack
         if (empty($this->stack)) {
             return $driver;
         }
-        return new MiddlewareHandler($driver, array_values($this->stack), $this->events);
+        return new MiddlewareHandler($driver, array_values($this->stack));
     }
 
     public function toDebugArray(): array {

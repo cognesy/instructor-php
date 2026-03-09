@@ -53,7 +53,7 @@ test('HTTP client with mock driver', function() {
     );
 
     // Act
-    $response = $httpClient->withRequest($request)->get();
+    $response = $httpClient->send($request)->get();
 
     // Assert
     expect($response->statusCode())->toBe(200);
@@ -99,7 +99,7 @@ test('HTTP client with middleware', function() {
     );
 
     // Act
-    $httpClient->withRequest($request)->get();
+    $httpClient->send($request)->get();
 
     // Assert - Verify the middleware modified the request
     expect($mockDriver->getLastRequest()->headers())->toHaveKey('X-Test');

@@ -5,11 +5,9 @@ use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Drivers\Guzzle\GuzzleDriver;
-use Cognesy\Http\Drivers\Laravel\LaravelDriver;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\Drivers\Mock\MockHttpResponseFactory;
 use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
-use Illuminate\Http\Client\Factory as HttpFactory;
 
 beforeEach(function() {
     $this->config = new HttpClientConfig(
@@ -23,7 +21,6 @@ beforeEach(function() {
 function createDriver(string $type, HttpClientConfig $config, EventDispatcher $events) {
     return match($type) {
         'guzzle' => new GuzzleDriver($config, $events),
-        'laravel' => new LaravelDriver($config, $events, new HttpFactory()),
         'symfony' => new SymfonyDriver($config, $events),
         'mock' => new MockHttpDriver(),
         default => throw new InvalidArgumentException("Unknown driver type: $type")
@@ -35,7 +32,6 @@ test('all drivers implement consistent interface', function () {
     $drivers = [
         'mock' => createDriver('mock', $this->config, $this->events),
         'guzzle' => createDriver('guzzle', $this->config, $this->events),
-        'laravel' => createDriver('laravel', $this->config, $this->events),
         'symfony' => createDriver('symfony', $this->config, $this->events),
     ];
     
@@ -154,11 +150,10 @@ test('all real drivers can be instantiated', function (string $driverType) {
     // Each driver should be a different concrete implementation
     $expectedClass = match($driverType) {
         'guzzle' => GuzzleDriver::class,
-        'laravel' => LaravelDriver::class,
         'symfony' => SymfonyDriver::class,
         'mock' => MockHttpDriver::class
     };
     
     expect($driver)->toBeInstanceOf($expectedClass);
     
-})->with(['mock', 'guzzle', 'laravel', 'symfony']);
+})->with(['mock', 'guzzle', 'symfony']);

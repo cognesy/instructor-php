@@ -39,8 +39,6 @@ $httpConfig = new HttpClientConfig(
     connectTimeout: 30,
     requestTimeout: 60,
     idleTimeout: -1,
-    maxConcurrent: 5,
-    poolTimeout: 60,
     failOnError: true,
 );
 

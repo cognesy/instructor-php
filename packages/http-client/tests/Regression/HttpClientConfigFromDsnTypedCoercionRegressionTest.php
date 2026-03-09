@@ -4,7 +4,7 @@ use Cognesy\Http\Config\HttpClientConfig;
 
 it('coerces typed http client config values from dsn', function () {
     $config = HttpClientConfig::fromDsn(
-        'driver=symfony,connectTimeout=1,requestTimeout=20,idleTimeout=-1,streamChunkSize=512,maxConcurrent=7,poolTimeout=60,failOnError=true'
+        'driver=symfony,connectTimeout=1,requestTimeout=20,idleTimeout=-1,streamChunkSize=512,streamHeaderTimeout=4,failOnError=true'
     );
 
     expect($config->driver)->toBe('symfony')
@@ -12,8 +12,7 @@ it('coerces typed http client config values from dsn', function () {
         ->and($config->requestTimeout)->toBe(20)
         ->and($config->idleTimeout)->toBe(-1)
         ->and($config->streamChunkSize)->toBe(512)
-        ->and($config->maxConcurrent)->toBe(7)
-        ->and($config->poolTimeout)->toBe(60)
+        ->and($config->streamHeaderTimeout)->toBe(4)
         ->and($config->failOnError)->toBeTrue();
 });
 

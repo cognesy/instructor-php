@@ -24,7 +24,7 @@ $inference = $inference->with(
     responseFormat: [],
     options: [],
 );
-// @doctest id="ae73"
+// @doctest id="42fe"
 ```
 
 
@@ -45,7 +45,7 @@ $response = $inference
     ->get();   // get the data - here it executes the request
 
 echo "Response: $response";
-// @doctest id="fdcc"
+// @doctest id="aced"
 ```
 
 
@@ -68,7 +68,7 @@ $response = $inference
     ->get();
 
 echo "Response: $response";
-// @doctest id="eadb"
+// @doctest id="a987"
 ```
 
 ## Using `Messages` Class
@@ -92,7 +92,7 @@ $response = Inference::using('openai')
     ->withModel('gpt-4o')
     ->withMessages($messages)
     ->get();
-// @doctest id="2be8"
+// @doctest id="372f"
 ```
 
 ## Message Formats
@@ -132,7 +132,7 @@ $response = Inference::using('openai')
     ->withModel('gpt-4o') // use multimodal model
     ->with(messages: $messages)
     ->get();
-// @doctest id="ea8d"
+// @doctest id="474e"
 ```
 
 Instructor library offers `Cognesy\Messages\Utils\Image` class for easier conversion of image files to the message format.

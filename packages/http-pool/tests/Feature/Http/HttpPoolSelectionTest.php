@@ -1,46 +1,37 @@
-<?php
+<?php declare(strict_types=1);
 
-use Cognesy\Http\Collections\HttpRequestList;
-use Cognesy\Http\Config\HttpClientConfig;
-use Cognesy\Http\Creation\HttpClientBuilder;
+use Cognesy\HttpPool\Config\HttpPoolConfig;
+use Cognesy\HttpPool\Creation\HttpPoolBuilder;
 use Cognesy\HttpPool\Drivers\Guzzle\GuzzlePool;
-use Cognesy\Http\Drivers\Mock\MockHttpDriver;
-use Cognesy\Http\HttpClient;
 use Cognesy\HttpPool\PendingHttpPool;
+use Cognesy\Http\Collections\HttpRequestList;
 
-test('withPool selects pool handler matching active driver', function() {
-    $client = HttpClient::fromConfig(new HttpClientConfig(driver: 'guzzle'));
-    $pendingPool = $client->withPool(HttpRequestList::empty());
+test('withRequests selects pool handler matching configured driver', function () {
+    $pool = (new HttpPoolBuilder())
+        ->withConfig(new HttpPoolConfig(driver: 'guzzle'))
+        ->create();
 
-    $poolHandlerProperty = new \ReflectionProperty(PendingHttpPool::class, 'poolHandler');
+    $pendingPool = $pool->withRequests(HttpRequestList::empty());
+
+    $poolHandlerProperty = new ReflectionProperty(PendingHttpPool::class, 'poolHandler');
     $poolHandler = $poolHandlerProperty->getValue($pendingPool);
 
     expect($poolHandler)->toBeInstanceOf(GuzzlePool::class);
 });
 
-test('withPool passes configured settings to pool handler', function() {
-    $config = new HttpClientConfig(driver: 'guzzle', maxConcurrent: 17, poolTimeout: 77);
-    $client = (new HttpClientBuilder())
-        ->withConfig($config)
+test('configured settings are passed to pool handler', function () {
+    $pool = (new HttpPoolBuilder())
+        ->withConfig(new HttpPoolConfig(driver: 'guzzle', maxConcurrent: 17, poolTimeout: 77))
         ->create();
-    $pendingPool = $client->withPool(HttpRequestList::empty());
 
-    $poolHandlerProperty = new \ReflectionProperty(PendingHttpPool::class, 'poolHandler');
+    $pendingPool = $pool->withRequests(HttpRequestList::empty());
+
+    $poolHandlerProperty = new ReflectionProperty(PendingHttpPool::class, 'poolHandler');
     $poolHandler = $poolHandlerProperty->getValue($pendingPool);
-
-    $configProperty = new \ReflectionProperty($poolHandler, 'config');
+    $configProperty = new ReflectionProperty($poolHandler, 'config');
     $poolConfig = $configProperty->getValue($poolHandler);
 
-    expect($poolConfig->driver)->toBe('guzzle');
-    expect($poolConfig->maxConcurrent)->toBe(17);
-    expect($poolConfig->poolTimeout)->toBe(77);
-});
-
-test('pooling is rejected for external non-pooling drivers', function() {
-    $client = (new HttpClientBuilder())
-        ->withDriver(new MockHttpDriver())
-        ->create();
-
-    expect(fn() => $client->withPool(HttpRequestList::empty()))
-        ->toThrow(\InvalidArgumentException::class, 'does not support request pooling');
+    expect($poolConfig->driver)->toBe('guzzle')
+        ->and($poolConfig->maxConcurrent)->toBe(17)
+        ->and($poolConfig->poolTimeout)->toBe(77);
 });

@@ -2,12 +2,10 @@
 
 namespace Cognesy\Http\Middleware;
 
-use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpMiddleware;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
-use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Wraps HTTP driver with a stack of middleware which can pre-
@@ -25,46 +23,30 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  */
 class MiddlewareHandler implements CanHandleHttpRequest
 {
-    /**
-     * @param CanHandleHttpRequest $driver The actual underlying driver (e.g. GuzzleDriver)
-     * @param HttpMiddleware[] $middleware The list of middlewares
-     * @param EventDispatcherInterface|null $events Event dispatcher for middleware events
-     */
+    private readonly CanHandleHttpRequest $handler;
+
+    /** @param HttpMiddleware[] $middleware */
     public function __construct(
-        protected CanHandleHttpRequest $driver,
-        protected array $middleware = [],
-        protected ?EventDispatcherInterface $events = null,
+        CanHandleHttpRequest $driver,
+        array $middleware = [],
     ) {
-        $this->events = $events ?? new EventDispatcher();
+        $this->handler = array_reduce(
+            array_reverse($middleware),
+            fn(CanHandleHttpRequest $next, HttpMiddleware $middleware): CanHandleHttpRequest => $this->wrap($middleware, $next),
+            $driver,
+        );
     }
 
-    /**
-     * Run all middlewares in sequence, then the final driver.
-     */
     #[\Override]
     public function handle(HttpRequest $request): HttpResponse {
-        // We'll build a chain in reverse so the first middleware is called first.
-        $chainedHandler = array_reduce(
-            array_reverse($this->middleware),
-            function (CanHandleHttpRequest $next, HttpMiddleware $middleware) {
-                return $this->makeInstance($middleware, $next);
-            },
-            $this->driver,
-        );
-
-        // Now $chainedHandler is a single object implementing CanHandleHttp
-        // that internally calls all middlewares, then final driver.
-        return $chainedHandler->handle($request);
+        return $this->handler->handle($request);
     }
 
-    /**
-     * Create handler instance with next middleware in the chain
-     */
-    private function makeInstance(HttpMiddleware $middleware, CanHandleHttpRequest $next): CanHandleHttpRequest {
+    private function wrap(HttpMiddleware $middleware, CanHandleHttpRequest $next): CanHandleHttpRequest {
         return new class($middleware, $next) implements CanHandleHttpRequest {
             public function __construct(
-                private HttpMiddleware $middleware,
-                private CanHandleHttpRequest $next,
+                private readonly HttpMiddleware $middleware,
+                private readonly CanHandleHttpRequest $next,
             ) {}
 
             #[\Override]

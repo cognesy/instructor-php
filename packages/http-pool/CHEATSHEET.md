@@ -3,7 +3,10 @@
 ## Start Here
 
 ```php
-$pool = HttpPool::fromConfig(new HttpClientConfig(driver: 'symfony'));
+use Cognesy\HttpPool\Config\HttpPoolConfig;
+use Cognesy\HttpPool\HttpPool;
+
+$pool = HttpPool::fromConfig(new HttpPoolConfig(driver: 'symfony'));
 $responses = $pool->pool($requests, maxConcurrent: 4);
 ```
 
@@ -20,7 +23,6 @@ $responses = $pool->pool($requests, maxConcurrent: 4);
 - `exthttp`
 - `guzzle`
 - `symfony`
-- `laravel`
 
 ## Notes
 

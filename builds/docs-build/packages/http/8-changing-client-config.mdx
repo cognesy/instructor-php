@@ -21,7 +21,7 @@ $config = new HttpClientConfig(
 $client = (new HttpClientBuilder())
     ->withConfig($config)
     ->create();
-// @doctest id="6743"
+// @doctest id="bb08"
 ```
 
 ## Configure via DSN
@@ -32,7 +32,7 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 $client = (new HttpClientBuilder())
     ->withDsn('driver=symfony,connectTimeout=2,requestTimeout=20,streamHeaderTimeout=5,failOnError=true')
     ->create();
-// @doctest id="cc04"
+// @doctest id="7943"
 ```
 
 DSN values are coerced to the typed `HttpClientConfig` fields (`int`, `bool`, `string`).
@@ -49,16 +49,15 @@ $strict = $base->withOverrides(['failOnError' => true]);
 $client = (new HttpClientBuilder())
     ->withConfig($strict)
     ->create();
-// @doctest id="ffe1"
+// @doctest id="0780"
 ```
 
 When `withConfig(...)` is provided, that config is authoritative.
 
-## Pool and Error Behavior
+## Error and Stream Behavior
 
 `HttpClientConfig` also controls:
 
-- `maxConcurrent` and `poolTimeout` for pooling defaults
 - `failOnError` for exception-on-4xx/5xx behavior
 - `streamChunkSize` for adapter streaming chunk size
 - `streamHeaderTimeout` for streaming header priming timeout (curl driver)

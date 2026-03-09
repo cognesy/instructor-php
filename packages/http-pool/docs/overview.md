@@ -37,4 +37,3 @@ $pool = HttpPool::default();
 - `exthttp`
 - `guzzle`
 - `symfony`
-- `laravel`

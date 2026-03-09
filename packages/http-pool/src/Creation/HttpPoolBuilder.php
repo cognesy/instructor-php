@@ -4,7 +4,7 @@ namespace Cognesy\HttpPool\Creation;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\HttpPool\Config\HttpPoolConfig;
 use Cognesy\HttpPool\Contracts\CanHandleRequestPool;
 use Cognesy\HttpPool\Contracts\CanProvideHttpPools;
 use Cognesy\HttpPool\HttpPool;
@@ -13,7 +13,7 @@ use InvalidArgumentException;
 final class HttpPoolBuilder
 {
     private CanHandleEvents $events;
-    private ?HttpClientConfig $config = null;
+    private ?HttpPoolConfig $config = null;
     private ?CanHandleRequestPool $poolHandler = null;
     private ?CanProvideHttpPools $pools = null;
 
@@ -23,13 +23,13 @@ final class HttpPoolBuilder
         $this->events = $events ?? new EventDispatcher(name: 'http.pool.builder');
     }
 
-    public function withConfig(HttpClientConfig $config): self {
+    public function withConfig(HttpPoolConfig $config): self {
         $this->config = $config;
         return $this;
     }
 
     public function withDsn(string $dsn): self {
-        $this->config = HttpClientConfig::fromDsn($dsn);
+        $this->config = HttpPoolConfig::fromDsn($dsn);
         return $this;
     }
 
@@ -49,7 +49,7 @@ final class HttpPoolBuilder
     }
 
     public function create(): HttpPool {
-        $config = $this->config ?? new HttpClientConfig(driver: 'curl');
+        $config = $this->config ?? new HttpPoolConfig();
         $handler = $this->poolHandler ?? $this->buildPoolHandler($config);
 
         return new HttpPool(
@@ -59,8 +59,8 @@ final class HttpPoolBuilder
         );
     }
 
-    private function buildPoolHandler(HttpClientConfig $config): CanHandleRequestPool {
-        $name = $config->driver ?: 'curl';
+    private function buildPoolHandler(HttpPoolConfig $config): CanHandleRequestPool {
+        $name = $config->driver;
         $registry = $this->pools ?? BundledHttpPools::registry();
 
         if (!$registry->has($name)) {

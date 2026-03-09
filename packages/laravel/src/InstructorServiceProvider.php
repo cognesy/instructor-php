@@ -7,13 +7,16 @@ namespace Cognesy\Instructor\Laravel;
 use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Events\Event;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\Dispatchers\LaravelEventDispatcher;
 use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\HttpClient;
+use Cognesy\Instructor\Laravel\HttpClient\LaravelDriver;
 use Cognesy\Instructor\Laravel\Console\InstructorInstallCommand;
 use Cognesy\Instructor\Laravel\Console\InstructorTestCommand;
 use Cognesy\Instructor\Laravel\Console\MakeResponseModelCommand;
+use Cognesy\Instructor\Laravel\Events\LaravelEventDispatcher;
+use Cognesy\Instructor\Laravel\Logging\LaravelLoggingFactory;
 use Cognesy\Instructor\Laravel\Support\LaravelConfigProvider;
 use Cognesy\Instructor\Laravel\Testing\AgentCtrlFake;
 use Cognesy\Instructor\Laravel\Testing\StructuredOutputFake;
@@ -21,7 +24,6 @@ use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
-use Cognesy\Logging\Factories\LaravelLoggingFactory;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanCreateEmbeddings;
 use Cognesy\Polyglot\Embeddings\Embeddings;
@@ -122,9 +124,16 @@ class InstructorServiceProvider extends ServiceProvider
             ]);
 
             return (new HttpClientBuilder(events: $app->make(CanHandleEvents::class)))
-                ->withConfig($httpConfig)
-                ->withClientInstance('laravel', $app->make(LaravelHttpFactory::class))
+                ->withDriver(new LaravelDriver(
+                    config: $httpConfig,
+                    events: $app->make(CanHandleEvents::class),
+                    clientInstance: $app->make(LaravelHttpFactory::class),
+                ))
                 ->create();
+        });
+
+        $this->app->singleton(CanSendHttpRequests::class, function (Container $app) {
+            return $app->make(HttpClient::class);
         });
     }
 
@@ -137,7 +146,7 @@ class InstructorServiceProvider extends ServiceProvider
             $runtime = InferenceRuntime::fromProvider(
                 provider: LLMProvider::fromLLMConfig($this->resolveLLMConfig($app)),
                 events: $app->make(CanHandleEvents::class),
-                httpClient: $app->make(HttpClient::class),
+                httpClient: $app->make(CanSendHttpRequests::class),
             );
             $inference = new Inference($runtime);
 
@@ -159,7 +168,7 @@ class InstructorServiceProvider extends ServiceProvider
             $runtime = EmbeddingsRuntime::fromProvider(
                 provider: EmbeddingsProvider::fromEmbeddingsConfig($this->resolveEmbeddingsConfig($app)),
                 events: $app->make(CanHandleEvents::class),
-                httpClient: $app->make(HttpClient::class),
+                httpClient: $app->make(CanSendHttpRequests::class),
             );
             $embeddings = new Embeddings($runtime);
 
@@ -181,7 +190,7 @@ class InstructorServiceProvider extends ServiceProvider
             $runtime = StructuredOutputRuntime::fromProvider(
                 provider: LLMProvider::fromLLMConfig($this->resolveLLMConfig($app)),
                 events: $app->make(CanHandleEvents::class),
-                httpClient: $app->make(HttpClient::class),
+                httpClient: $app->make(CanSendHttpRequests::class),
                 structuredConfig: $this->resolveStructuredOutputConfig($app),
             );
             $instructor = new StructuredOutput($runtime);
@@ -204,7 +213,7 @@ class InstructorServiceProvider extends ServiceProvider
             return InferenceRuntime::fromProvider(
                 provider: LLMProvider::fromLLMConfig($this->resolveLLMConfig($app)),
                 events: $app->make(CanHandleEvents::class),
-                httpClient: $app->make(HttpClient::class),
+                httpClient: $app->make(CanSendHttpRequests::class),
             );
         });
 
@@ -212,7 +221,7 @@ class InstructorServiceProvider extends ServiceProvider
             return EmbeddingsRuntime::fromProvider(
                 provider: EmbeddingsProvider::fromEmbeddingsConfig($this->resolveEmbeddingsConfig($app)),
                 events: $app->make(CanHandleEvents::class),
-                httpClient: $app->make(HttpClient::class),
+                httpClient: $app->make(CanSendHttpRequests::class),
             );
         });
 
@@ -220,7 +229,7 @@ class InstructorServiceProvider extends ServiceProvider
             return StructuredOutputRuntime::fromProvider(
                 provider: LLMProvider::fromLLMConfig($this->resolveLLMConfig($app)),
                 events: $app->make(CanHandleEvents::class),
-                httpClient: $app->make(HttpClient::class),
+                httpClient: $app->make(CanSendHttpRequests::class),
                 structuredConfig: $this->resolveStructuredOutputConfig($app),
             );
         });
@@ -412,6 +421,7 @@ class InstructorServiceProvider extends ServiceProvider
             CanHandleEvents::class,
             CanProvideConfig::class,
             HttpClient::class,
+            CanSendHttpRequests::class,
             Inference::class,
             Embeddings::class,
             StructuredOutput::class,

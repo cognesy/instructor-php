@@ -5,6 +5,8 @@ Laravel integration for InstructorPHP.
 It provides:
 - Laravel service provider and config
 - Facades for `StructuredOutput`, `Inference`, `Embeddings`, and `AgentCtrl`
+- Laravel-specific HTTP client and HTTP pool drivers
+- a Laravel-bound `CanSendHttpRequests` transport implementation
 - testing fakes for facade-based tests
 - Artisan commands for install, smoke-test, and response-model scaffolding
 

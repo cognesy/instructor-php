@@ -22,8 +22,6 @@ final class HttpClientConfig
         'idleTimeout',
         'streamChunkSize',
         'streamHeaderTimeout',
-        'maxConcurrent',
-        'poolTimeout',
     ];
     /** @var list<string> */
     private const BOOL_FIELDS = ['failOnError'];
@@ -39,20 +37,15 @@ final class HttpClientConfig
      * @param int $connectTimeout Max time to connect in seconds.
      * @param int $requestTimeout Max total request execution time in seconds.
      * @param int $idleTimeout Idle timeout in seconds (if supported by the driver).
-     * @param int $maxConcurrent Maximum number of concurrent connections.
-     * @param int $poolTimeout Pool timeout in seconds.
      * @param bool $failOnError Whether to fail on error.
      */
     public function __construct(
-        public readonly string $driver = '',
+        public readonly string $driver = 'curl',
         public readonly int    $connectTimeout = 3,
         public readonly int    $requestTimeout = 30,
         public readonly int    $idleTimeout = -1,
         public readonly int    $streamChunkSize = 256,
         public readonly int    $streamHeaderTimeout = 5,
-        // Concurrency-related properties
-        public readonly int    $maxConcurrent = 5,
-        public readonly int    $poolTimeout = 120,
         public readonly bool   $failOnError = false,
     ) {}
 
@@ -93,8 +86,6 @@ final class HttpClientConfig
             'idleTimeout' => $this->idleTimeout,
             'streamChunkSize' => $this->streamChunkSize,
             'streamHeaderTimeout' => $this->streamHeaderTimeout,
-            'maxConcurrent' => $this->maxConcurrent,
-            'poolTimeout' => $this->poolTimeout,
             'failOnError' => $this->failOnError,
         ];
     }

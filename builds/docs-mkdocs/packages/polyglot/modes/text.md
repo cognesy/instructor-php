@@ -17,5 +17,5 @@ $answer = Inference::using('openai')
         options: ['max_tokens' => 64],
     )
     ->get();
-// @doctest id="a4d0"
+// @doctest id="b167"
 ```

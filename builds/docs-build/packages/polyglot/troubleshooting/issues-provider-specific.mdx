@@ -13,14 +13,14 @@ Each LLM provider has unique quirks and issues. This section covers common provi
 # In config/llm/presets/openai.yaml
 metadata:
   organization: org-your-organization-id
-# @doctest id="9e67"
+# @doctest id="969c"
 ```
 
 2. **API Versions**: Pay attention to API version changes
 ```php
 // Updates to OpenAI API may require changes to your code
 // Monitor OpenAI's release notes for changes
-// @doctest id="f023"
+// @doctest id="372c"
 ```
 
 ## Anthropic
@@ -28,14 +28,14 @@ metadata:
 1. **Message Format**: Anthropic uses a different message format
 ```php
 // Polyglot handles this automatically, but be aware when debugging
-// @doctest id="8469"
+// @doctest id="6be1"
 ```
 
 2. **Tool Support**: Tool support has specific requirements
 ```php
 // When using tools with Anthropic, check their latest documentation
 // for supported features and limitations
-// @doctest id="0dc5"
+// @doctest id="c191"
 ```
 
 ## Mistral
@@ -43,7 +43,7 @@ metadata:
 1. **Rate Limits**: Mistral has strict rate limits on free tier
 ```php
 // Implement more aggressive rate limiting for Mistral
-// @doctest id="06b8"
+// @doctest id="7235"
 ```
 
 
@@ -53,12 +53,12 @@ metadata:
 ```bash
 # Check if Ollama is running
 curl http://localhost:11434/api/version
-# @doctest id="f972"
+# @doctest id="41b4"
 ```
 
 2. **Model Availability**: Download models before using them
 ```bash
 # Pull a model before using it
 ollama pull llama2
-# @doctest id="d212"
+# @doctest id="4d86"
 ```

@@ -18,7 +18,7 @@ test('pending response executes sync and stream modes independently', function()
         ->replyStreamChunks(['chunk-1', 'chunk-2']);
 
     $client = (new HttpClientBuilder())->withDriver($driver)->create();
-    $pending = $client->withRequest(new HttpRequest(
+    $pending = $client->send(new HttpRequest(
         'https://api.example.com/messages',
         'GET',
         [],
@@ -49,7 +49,7 @@ test('pending response can stream first and still resolve sync content', functio
         ->replyText('sync-body');
 
     $client = (new HttpClientBuilder())->withDriver($driver)->create();
-    $pending = $client->withRequest(new HttpRequest(
+    $pending = $client->send(new HttpRequest(
         'https://api.example.com/messages',
         'GET',
         [],
@@ -75,7 +75,7 @@ test('pending response reuses cached sync response for sync accessors', function
         ->replyText('sync-body');
 
     $client = (new HttpClientBuilder())->withDriver($driver)->create();
-    $pending = $client->withRequest(new HttpRequest(
+    $pending = $client->send(new HttpRequest(
         'https://api.example.com/messages',
         'GET',
         [],

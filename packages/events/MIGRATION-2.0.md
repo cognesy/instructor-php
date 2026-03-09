@@ -67,6 +67,7 @@ $service->onEvent(MyEvent::class, fn(object $event) => null);
 
 ### Laravel logging integration
 
+- Laravel-specific logging and event bridge wiring now live in `packages/laravel`.
 - Uses explicit bus binding: `instructor-logging.event_bus_binding`
 - Default: `Cognesy\Events\Contracts\CanHandleEvents::class`
 

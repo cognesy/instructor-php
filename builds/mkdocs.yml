@@ -198,10 +198,11 @@ nav:
           - { 'Changing Client': packages/http/7-changing-client.md }
           - { 'Changing Client Config': packages/http/8-changing-client-config.md }
           - { 'Custom Clients': packages/http/9-1-custom-clients.md }
-          - { 'Processing With Middleware': packages/http/11-processing-with-middleware.md }
-          - { 'Reliability Middleware': packages/http/12-reliability-middleware.md }
-          - { 'Record Replay': packages/http/13-record-replay.md }
-          - { 'Upgrade Guide': packages/http/14-upgrade-guide.md }
+      -
+        Http-pool:
+          - { Overview: packages/http-pool/overview.md }
+          - { Quickstart: packages/http-pool/quickstart.md }
+          - { 'Custom Handlers': packages/http-pool/custom-handlers.md }
       -
         Laravel:
           - { Overview: packages/laravel/index.md }

@@ -25,7 +25,7 @@ if (!function_exists('makeStructuredRuntime')) {
     function makeStructuredRuntime(
         ?\Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest $driver = null,
         ?\Cognesy\Events\Contracts\CanHandleEvents $events = null,
-        ?\Cognesy\Http\HttpClient $httpClient = null,
+        ?\Cognesy\Http\Contracts\CanSendHttpRequests $httpClient = null,
         ?string $llmDriver = null,
         ?\Cognesy\Instructor\Config\StructuredOutputConfig $config = null,
         ?\Cognesy\Instructor\Enums\OutputMode $outputMode = null,

@@ -4,8 +4,8 @@ use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Exceptions\CircuitBreakerOpenException;
-use Cognesy\Http\Middleware\CircuitBreakerMiddleware;
-use Cognesy\Http\Middleware\CircuitBreakerPolicy;
+use Cognesy\Http\Extras\Middleware\CircuitBreakerMiddleware;
+use Cognesy\Http\Extras\Support\CircuitBreakerPolicy;
 
 final class AlwaysFailingHttpHandler implements CanHandleHttpRequest
 {

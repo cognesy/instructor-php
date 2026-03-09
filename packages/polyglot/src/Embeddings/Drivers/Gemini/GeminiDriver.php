@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Embeddings\Drivers\Gemini;
 
-use Cognesy\Http\HttpClient;
+use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\EmbedRequestAdapter;
 use Cognesy\Polyglot\Embeddings\Contracts\EmbedResponseAdapter;
@@ -17,7 +17,7 @@ class GeminiDriver extends BaseEmbedDriver
 
     public function __construct(
         protected EmbeddingsConfig $config,
-        protected HttpClient $httpClient,
+        protected CanSendHttpRequests $httpClient,
         protected EventDispatcherInterface $events,
     ) {
         $this->usageFormat = new GeminiUsageFormat();

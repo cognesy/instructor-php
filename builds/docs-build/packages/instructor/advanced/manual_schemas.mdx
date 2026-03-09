@@ -34,7 +34,7 @@ $schema = JsonSchema::object(
     requiredProperties: ['name', 'age'],
     additionalProperties: false,
 );
-// @doctest id="a3fb"
+// @doctest id="88cd"
 ```
 
 ### Primitive Schemas
@@ -63,7 +63,7 @@ JsonSchema::boolean(
     name: 'verified',
     description: 'Is verified',
 );
-// @doctest id="e870"
+// @doctest id="3542"
 ```
 
 ### Array Schemas
@@ -86,7 +86,7 @@ JsonSchema::collection(
     ),
     description: 'List of users',
 );
-// @doctest id="396e"
+// @doctest id="c1fa"
 ```
 
 ### Enum Schemas
@@ -97,7 +97,7 @@ JsonSchema::enum(
     enumValues: ['pending', 'active', 'completed'],
     description: 'Order status',
 );
-// @doctest id="d1d7"
+// @doctest id="e7e8"
 ```
 
 ### From Array
@@ -111,7 +111,7 @@ $schema = JsonSchema::fromArray([
     ],
     'required' => ['name'],
 ]);
-// @doctest id="fcde"
+// @doctest id="6ad4"
 ```
 
 ## Fluent Builder Pattern
@@ -123,7 +123,7 @@ $schema = JsonSchema::object('User')
         JsonSchema::integer('age'),
     ])
     ->withRequiredProperties(['name']);
-// @doctest id="9c29"
+// @doctest id="3b01"
 ```
 
 ## Using Manual Schemas with StructuredOutput
@@ -148,7 +148,7 @@ $user = (new StructuredOutput)
         responseModel: $userSchema,
     )
     ->get();
-// @doctest id="fd2a"
+// @doctest id="d721"
 ```
 
 ## Comparison: Reflection vs Manual
@@ -179,7 +179,7 @@ $user = (new StructuredOutput)
         responseModel: User::class,
     )
     ->get();
-// @doctest id="0fec"
+// @doctest id="956d"
 ```
 
 ### Manual (Explicit)
@@ -207,7 +207,7 @@ $user = (new StructuredOutput)
         responseModel: $schema,
     )
     ->get();
-// @doctest id="4dfc"
+// @doctest id="e7ef"
 ```
 
 ## Complex Example
@@ -258,7 +258,7 @@ $order = (new StructuredOutput)
         responseModel: $orderSchema,
     )
     ->get();
-// @doctest id="9d61"
+// @doctest id="a8ad"
 ```
 
 ## Best Practices

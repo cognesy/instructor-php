@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor;
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Http\HttpClient;
+use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
@@ -39,7 +39,7 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
     public static function fromConfig(
         LLMConfig $config,
         ?CanHandleEvents $events = null,
-        ?HttpClient $httpClient = null,
+        ?CanSendHttpRequests $httpClient = null,
         ?StructuredOutputConfig $structuredConfig = null,
     ): self {
         $events = self::resolveEvents($events);
@@ -56,7 +56,7 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
 
     public static function fromDefaults(
         ?CanHandleEvents $events = null,
-        ?HttpClient $httpClient = null,
+        ?CanSendHttpRequests $httpClient = null,
         ?StructuredOutputConfig $structuredConfig = null,
         ?LLMConfig $llmConfig = null,
     ): self {
@@ -71,7 +71,7 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
     public static function fromProvider(
         LLMProvider $provider,
         ?CanHandleEvents $events = null,
-        ?HttpClient $httpClient = null,
+        ?CanSendHttpRequests $httpClient = null,
         ?StructuredOutputConfig $structuredConfig = null,
     ): self {
         $events = self::resolveEvents($events);

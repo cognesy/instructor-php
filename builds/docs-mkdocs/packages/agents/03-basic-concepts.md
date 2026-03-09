@@ -11,7 +11,7 @@ The orchestrator. Runs a step-based loop: call LLM, execute tools, check stop co
 
 ```
 BeforeExecution -> [ BeforeStep -> UseTools -> AfterStep -> ShouldStop? ] -> AfterExecution
-// @doctest id="0e10"
+// @doctest id="fa02"
 ```
 
 ## AgentState
@@ -31,7 +31,7 @@ Immutable value object holding everything about an agent's session and execution
 $state = AgentState::empty()
     ->withSystemPrompt('You are helpful.')
     ->withUserMessage('Hello');
-// @doctest id="34e4"
+// @doctest id="5f8d"
 ```
 
 ## AgentContext
@@ -42,7 +42,7 @@ Holds the conversation data: messages, system prompt, metadata, and response for
 $state = AgentState::empty()
     ->withSystemPrompt('You are helpful.')
     ->withMetadata('user_id', 123);
-// @doctest id="7a37"
+// @doctest id="a58c"
 ```
 
 ## AgentStep
@@ -67,5 +67,5 @@ Tracks the current execution's transient state: status, completed steps, current
 $state->execution()->status();        // ExecutionStatus::InProgress
 $state->execution()->stepCount();     // 3
 $state->execution()->shouldStop();    // false
-// @doctest id="8162"
+// @doctest id="d364"
 ```

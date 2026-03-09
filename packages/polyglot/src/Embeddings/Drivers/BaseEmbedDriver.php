@@ -4,7 +4,7 @@ namespace Cognesy\Polyglot\Embeddings\Drivers;
 
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
-use Cognesy\Http\HttpClient;
+use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
 use Cognesy\Polyglot\Embeddings\Contracts\EmbedRequestAdapter;
@@ -21,7 +21,7 @@ class BaseEmbedDriver implements CanHandleVectorization
 {
     public function __construct(
         protected EmbeddingsConfig $config,
-        protected HttpClient $httpClient,
+        protected CanSendHttpRequests $httpClient,
         protected EventDispatcherInterface $events,
         protected EmbedRequestAdapter $requestAdapter,
         protected EmbedResponseAdapter $responseAdapter
@@ -45,7 +45,7 @@ class BaseEmbedDriver implements CanHandleVectorization
 
     protected function makeHttpResponse(HttpRequest $request): HttpResponse {
         try {
-            $httpResponse = $this->httpClient->withRequest($request)->get();
+            $httpResponse = $this->httpClient->send($request)->get();
         } catch (Exception $e) {
             $this->events->dispatch(new EmbeddingsFailed([
                 'exception' => $e->getMessage(),

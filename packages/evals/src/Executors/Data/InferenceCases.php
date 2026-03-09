@@ -5,9 +5,9 @@ namespace Cognesy\Evals\Executors\Data;
 use Cognesy\Evals\Utils\Combination;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
-use Cognesy\Http\HttpClient;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
@@ -37,7 +37,7 @@ class InferenceCases
     private array $connectionConfigs = [];
 
     private ?CanProvideInferenceDrivers $drivers = null;
-    private ?HttpClient $httpClient = null;
+    private ?CanSendHttpRequests $httpClient = null;
     private ?CanHandleEvents $events = null;
 
     /**
@@ -226,7 +226,7 @@ class InferenceCases
         return $this->drivers;
     }
 
-    private function getHttpClient() : HttpClient {
+    private function getHttpClient() : CanSendHttpRequests {
         if ($this->httpClient === null) {
             $this->httpClient = (new HttpClientBuilder())
                 ->withDriver(new MockHttpDriver())
@@ -293,7 +293,7 @@ class InferenceCases
         return $this;
     }
 
-    public function withHttpClient(HttpClient $httpClient) : self {
+    public function withHttpClient(CanSendHttpRequests $httpClient) : self {
         $this->httpClient = $httpClient;
         return $this;
     }

@@ -11,11 +11,11 @@ Concurrent HTTP request execution for Instructor.
 
 ```php
 use Cognesy\Http\Collections\HttpRequestList;
-use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\HttpPool\Config\HttpPoolConfig;
 use Cognesy\HttpPool\HttpPool;
 
-$pool = HttpPool::fromConfig(new HttpClientConfig(driver: 'guzzle'));
+$pool = HttpPool::fromConfig(new HttpPoolConfig(driver: 'guzzle'));
 
 $responses = $pool->pool(
     HttpRequestList::of(

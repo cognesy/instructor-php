@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Http\Data\HttpResponse;
-use Cognesy\Http\Middleware\RetryPolicy;
+use Cognesy\Http\Extras\Support\RetryPolicy;
 
 it('uses numeric retry-after seconds when provided', function() {
     $policy = new RetryPolicy(

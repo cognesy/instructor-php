@@ -6,7 +6,7 @@ namespace Cognesy\Instructor\Laravel\Console;
 
 use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Http\HttpClient;
+use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\StructuredOutputRuntime;
@@ -46,7 +46,7 @@ class InstructorTestCommand extends Command
     public function handle(
         CanProvideConfig $configProvider,
         CanHandleEvents $events,
-        HttpClient $httpClient,
+        CanSendHttpRequests $httpClient,
     ): int
     {
         $this->components->info('Testing Instructor installation...');
@@ -103,7 +103,7 @@ class InstructorTestCommand extends Command
         string $connection,
         CanProvideConfig $configProvider,
         CanHandleEvents $events,
-        HttpClient $httpClient,
+        CanSendHttpRequests $httpClient,
     ): int {
         $ok = $this->components->task('Testing raw inference', function () use ($connection, $configProvider, $events, $httpClient) {
             try {
@@ -136,7 +136,7 @@ class InstructorTestCommand extends Command
         string $connection,
         CanProvideConfig $configProvider,
         CanHandleEvents $events,
-        HttpClient $httpClient,
+        CanSendHttpRequests $httpClient,
     ): int {
         $ok = $this->components->task('Testing structured output extraction', function () use ($connection, $configProvider, $events, $httpClient) {
             try {

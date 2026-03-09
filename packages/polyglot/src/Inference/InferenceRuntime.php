@@ -6,7 +6,7 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Contracts\CanManageStreamCache;
-use Cognesy\Http\HttpClient;
+use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
@@ -42,7 +42,7 @@ final class InferenceRuntime implements CanCreateInference
     public static function fromConfig(
         LLMConfig $config,
         ?CanHandleEvents $events = null,
-        ?HttpClient $httpClient = null,
+        ?CanSendHttpRequests $httpClient = null,
         ?CanManageStreamCache $streamCacheManager = null,
         ?CanProvideInferenceDrivers $drivers = null,
     ): self {
@@ -65,7 +65,7 @@ final class InferenceRuntime implements CanCreateInference
     private static function fromResolver(
         CanResolveLLMConfig $resolver,
         ?CanHandleEvents $events = null,
-        ?HttpClient $httpClient = null,
+        ?CanSendHttpRequests $httpClient = null,
         ?CanManageStreamCache $streamCacheManager = null,
         ?CanProvideInferenceDrivers $drivers = null,
     ): self {
@@ -94,7 +94,7 @@ final class InferenceRuntime implements CanCreateInference
     public static function fromProvider(
         LLMProvider $provider,
         ?CanHandleEvents $events = null,
-        ?HttpClient $httpClient = null,
+        ?CanSendHttpRequests $httpClient = null,
         ?CanManageStreamCache $streamCacheManager = null,
         ?CanProvideInferenceDrivers $drivers = null,
     ): self {
@@ -119,8 +119,8 @@ final class InferenceRuntime implements CanCreateInference
 
     private static function resolveHttpClient(
         CanHandleEvents $events,
-        ?HttpClient $httpClient,
-    ): HttpClient {
+        ?CanSendHttpRequests $httpClient,
+    ): CanSendHttpRequests {
         if ($httpClient !== null) {
             return $httpClient;
         }
@@ -155,7 +155,7 @@ final class InferenceRuntime implements CanCreateInference
     private static function makeDriver(
         LLMConfig $config,
         CanHandleEvents $events,
-        HttpClient $httpClient,
+        CanSendHttpRequests $httpClient,
         ?CanManageStreamCache $streamCacheManager,
         ?CanProvideInferenceDrivers $drivers,
     ): CanProcessInferenceRequest {

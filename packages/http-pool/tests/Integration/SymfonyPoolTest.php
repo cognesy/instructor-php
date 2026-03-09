@@ -1,7 +1,7 @@
 <?php
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\HttpPool\Config\HttpPoolConfig;
 use Cognesy\Http\Collections\HttpRequestList;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\HttpPool\Drivers\Symfony\SymfonyPool;
@@ -26,7 +26,7 @@ beforeEach(function() {
     
     $this->events = new EventDispatcher();
     
-    $this->config = new HttpClientConfig(
+    $this->config = new HttpPoolConfig(
         driver: 'symfony',
         maxConcurrent: 3,
         poolTimeout: 30,
@@ -83,7 +83,7 @@ test('pool with error handling', function() {
 
 test('pool with fail on error true', function() {
     $this->responseIndex = 0;
-    $config = new HttpClientConfig(
+    $config = new HttpPoolConfig(
         driver: 'symfony',
         maxConcurrent: 3,
         poolTimeout: 30,
@@ -179,7 +179,7 @@ test('pool with invalid request type', function() {
 
 test('pool with timeout handling', function() {
     $this->responseIndex = 0;
-    $config = new HttpClientConfig(
+    $config = new HttpPoolConfig(
         driver: 'symfony',
         maxConcurrent: 3,
         poolTimeout: 1,

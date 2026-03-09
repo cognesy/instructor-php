@@ -15,7 +15,7 @@ apiKey: '${OPENAI_API_KEY}'
 endpoint: /chat/completions
 model: gpt-4.1-nano
 maxTokens: 1024
-# @doctest id="fbf1"
+# @doctest id="8c6a"
 ```
 
 Required fields for an LLM preset are `driver`, `apiUrl`, `apiKey`, `endpoint`, and `model`.
@@ -30,7 +30,7 @@ endpoint: /embeddings
 model: text-embedding-3-small
 dimensions: 1536
 maxInputs: 2048
-# @doctest id="2e72"
+# @doctest id="d1d5"
 ```
 
 ## Build Config at Runtime
@@ -53,7 +53,7 @@ $config = new LLMConfig(
 $text = Inference::fromRuntime(InferenceRuntime::fromConfig($config))
     ->withMessages('Explain blue-green deployment in one paragraph.')
     ->get();
-// @doctest id="1141"
+// @doctest id="f600"
 ```
 
 ## Use DSN for Lightweight Overrides
@@ -66,7 +66,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $text = Inference::fromConfig(LLMConfig::fromDsn('driver=openai,model=gpt-4.1-nano,maxTokens=256'))
     ->withMessages('Write a commit message for a bugfix.')
     ->get();
-// @doctest id="2d47"
+// @doctest id="b752"
 ```
 
 ## Register and Use a Custom Driver Alias
@@ -84,7 +84,7 @@ $runtime = InferenceRuntime::fromConfig(
 );
 
 // Use "driver" => "acme" in an LLM preset or LLMConfig.
-// @doctest id="2b53"
+// @doctest id="23f9"
 ```
 
 ## Environment-Based Preset Selection
@@ -96,7 +96,7 @@ $preset = getenv('APP_ENV') === 'prod' ? 'openai' : 'ollama';
 $text = \Cognesy\Polyglot\Inference\Inference::using($preset)
     ->withMessages('hello')
     ->get();
-// @doctest id="bffe"
+// @doctest id="178c"
 ```
 
 ## See Also

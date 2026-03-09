@@ -6,6 +6,7 @@ use Cognesy\Http\Collections\HttpRequestList;
 use Cognesy\Http\Collections\HttpResponseList;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\HttpPool\Contracts\CanHandleRequestPool;
+use Cognesy\HttpPool\Config\HttpPoolConfig;
 use Cognesy\Http\Drivers\Curl\CurlFactory;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -35,7 +36,7 @@ final class CurlPool implements CanHandleRequestPool
     private readonly CurlMultiRunner $runner;
 
     public function __construct(
-        private readonly HttpClientConfig $config,
+        private readonly HttpPoolConfig $config,
         private readonly EventDispatcherInterface $events,
         ?object $clientInstance = null,
     ) {
@@ -48,7 +49,14 @@ final class CurlPool implements CanHandleRequestPool
         }
 
         $this->runner = new CurlMultiRunner(
-            factory: new CurlFactory($config),
+            factory: new CurlFactory(new HttpClientConfig(
+                driver: $config->driver,
+                connectTimeout: $config->connectTimeout,
+                requestTimeout: $config->requestTimeout,
+                idleTimeout: $config->idleTimeout,
+                streamChunkSize: $config->streamChunkSize,
+                failOnError: $config->failOnError,
+            )),
             config: $config,
             events: $events,
         );

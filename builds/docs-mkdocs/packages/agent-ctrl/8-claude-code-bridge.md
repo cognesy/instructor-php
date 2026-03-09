@@ -25,7 +25,7 @@ $result = SandboxCommandExecutor::forClaudeCode()->execute($spec);
 $response = (new ResponseParser())->parse($result, OutputFormat::Json);
 
 echo $response->messageText();
-// @doctest id="62ac"
+// @doctest id="378e"
 ```
 
 ## Streaming
@@ -38,7 +38,7 @@ $request = new ClaudeRequest(
     outputFormat: OutputFormat::StreamJson,
     includePartialMessages: true,
 );
-// @doctest id="0ab1"
+// @doctest id="9b0f"
 ```
 
 ## Key Types

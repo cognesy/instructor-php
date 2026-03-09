@@ -2,6 +2,8 @@
 
 Instructor dispatches events throughout the extraction lifecycle. These events are bridged to Laravel's event system, allowing you to listen and respond using standard Laravel patterns.
 
+The Laravel bridge is implemented by `Cognesy\Instructor\Laravel\Events\LaravelEventDispatcher` and is part of `packages/laravel`, not `packages/events`.
+
 ## Event Bridge Configuration
 
 Configure event bridging in `config/instructor.php`:

@@ -37,7 +37,6 @@ use RuntimeException;
  * - Automatic compression support
  * - Cookie management
  *
- * @deprecated Planned as optional extension in v2 scope. Prefer curl/guzzle/symfony/laravel drivers in core.
  */
 final class ExtHttpDriver implements CanHandleHttpRequest
 {

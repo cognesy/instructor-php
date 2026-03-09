@@ -32,7 +32,7 @@ $data = Inference::using('openai')
         ],
     )
     ->asJsonData();
-// @doctest id="432e"
+// @doctest id="2d81"
 ```
 
 If the provider does not support native JSON schema response formats, Polyglot does not emulate them. Use Instructor for higher-level fallback strategies.

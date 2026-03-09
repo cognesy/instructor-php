@@ -10,6 +10,7 @@ This package provides seamless integration between Instructor PHP and Laravel, g
 - **Dependency Injection** - Inject services directly into your classes
 - **Testing Fakes** - Mock LLM responses with `StructuredOutput::fake()` and assertions
 - **Laravel HTTP Client** - Uses `Http::` internally, enabling `Http::fake()` in tests
+- **Laravel HTTP Pool** - Includes the Laravel-specific pool driver for concurrent requests
 - **Event Bridge** - Instructor events dispatched to Laravel's event system
 - **Artisan Commands** - Generate response models and test your configuration
 - **Configuration Publishing** - Laravel-style config with environment variables

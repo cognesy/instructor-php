@@ -10,6 +10,7 @@ This package provides seamless integration between Instructor PHP and Laravel, g
 - **Dependency Injection** - Inject services directly into your classes
 - **Testing Fakes** - Mock LLM responses with `StructuredOutput::fake()` and assertions
 - **Laravel HTTP Client** - Uses `Http::` internally, enabling `Http::fake()` in tests
+- **Laravel HTTP Pool** - Includes the Laravel-specific pool driver for concurrent requests
 - **Event Bridge** - Instructor events dispatched to Laravel's event system
 - **Artisan Commands** - Generate response models and test your configuration
 - **Configuration Publishing** - Laravel-style config with environment variables
@@ -20,7 +21,7 @@ This package provides seamless integration between Instructor PHP and Laravel, g
 
 ```bash
 composer require cognesy/instructor-laravel
-# @doctest id="12f6"
+# @doctest id="aed5"
 ```
 
 ### 2. Configure API Key
@@ -29,7 +30,7 @@ Add to your `.env`:
 
 ```env
 OPENAI_API_KEY=your-openai-api-key
-// @doctest id="aaf3"
+// @doctest id="cf39"
 ```
 
 ### 3. Extract Structured Data
@@ -54,7 +55,7 @@ $person = StructuredOutput::with(
 
 echo $person->name; // "John Smith"
 echo $person->age;  // 30
-// @doctest id="2df6"
+// @doctest id="5599"
 ```
 
 ## Documentation
@@ -107,7 +108,7 @@ public function test_extracts_invoice_data(): void
     $this->assertEquals('INV-001', $invoice->invoiceNumber);
     $fake->assertExtracted(InvoiceData::class);
 }
-// @doctest id="3571"
+// @doctest id="03c3"
 ```
 
 ## Requirements

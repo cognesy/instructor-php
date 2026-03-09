@@ -31,7 +31,7 @@ interface CanManageAgentSessions
     public function getSession(SessionId $sessionId): AgentSession;
     public function execute(SessionId $sessionId, CanExecuteSessionAction $action): AgentSession;
 }
-// @doctest id="6e6e"
+// @doctest id="40e6"
 ```
 
 Read methods do not persist mutations.
@@ -61,7 +61,7 @@ $updated = $runtime->execute(
     $session->sessionId(),
     new SendMessage('Hello', $loopFactory),
 );
-// @doctest id="19c9"
+// @doctest id="9554"
 ```
 
 ## Session Management APIs
@@ -71,7 +71,7 @@ $updated = $runtime->execute(
 ```php
 $session = $runtime->getSession($sessionId);
 $info = $runtime->getSessionInfo($sessionId);
-// @doctest id="681d"
+// @doctest id="3ccb"
 ```
 
 ### List all sessions
@@ -81,14 +81,14 @@ $list = $runtime->listSessions();
 foreach ($list->all() as $header) {
     echo $header->sessionId()->value . "\n";
 }
-// @doctest id="5dbd"
+// @doctest id="e7e7"
 ```
 
 ### Execute an action
 
 ```php
 $next = $runtime->execute($sessionId, $action);
-// @doctest id="4c2d"
+// @doctest id="1544"
 ```
 
 Always use the returned session version for the next write.
@@ -123,7 +123,7 @@ use Cognesy\Agents\Session\Actions\SuspendSession;
 
 $runtime->execute($sessionId, new SuspendSession());
 $runtime->execute($sessionId, new ResumeSession());
-// @doctest id="36f4"
+// @doctest id="e187"
 ```
 
 ### Clear conversation state
@@ -132,7 +132,7 @@ $runtime->execute($sessionId, new ResumeSession());
 use Cognesy\Agents\Session\Actions\ClearSession;
 
 $runtime->execute($sessionId, new ClearSession());
-// @doctest id="8238"
+// @doctest id="6e1f"
 ```
 
 ### Fork to a new session branch
@@ -143,7 +143,7 @@ use Cognesy\Agents\Session\Actions\ForkSession;
 $source = $runtime->getSession($sessionId);
 $forked = (new ForkSession())->executeOn($source);
 $forked = $repo->create($forked);
-// @doctest id="d683"
+// @doctest id="99d5"
 ```
 
 `SessionRuntime::execute()` persists updates to the loaded session ID.
@@ -159,7 +159,7 @@ use Cognesy\Agents\Session\Actions\WriteMetadata;
 $runtime->execute($sessionId, new ChangeSystemPrompt('You are concise and direct.'));
 $runtime->execute($sessionId, new ChangeModel($llmConfig));
 $runtime->execute($sessionId, new WriteMetadata('ticket_id', 'OPS-142'));
-// @doctest id="44af"
+// @doctest id="ea07"
 ```
 
 ## Versioning and Conflicts
@@ -211,7 +211,7 @@ $hook = new class implements CanControlAgentSession {
 
 $hooks = SessionHookStack::empty()->with($hook, priority: 100);
 $runtime = new SessionRuntime($repo, $events, $hooks);
-// @doctest id="c1d1"
+// @doctest id="47ee"
 ```
 
 ## Events

@@ -12,7 +12,7 @@ Run the following command in your CLI:
 
 ```bash
 composer update cognesy/instructor-php
-# @doctest id="a9fb"
+# @doctest id="aed5"
 ```
 
 ## Step 2: Config files
@@ -58,7 +58,7 @@ $user = StructuredOutput::using('openai')
         responseModel: User::class,
     )
     ->getObject();
-// @doctest id="d137"
+// @doctest id="97ec"
 ```
 
 ## Step 6a: OutputMode ownership
@@ -67,7 +67,7 @@ $user = StructuredOutput::using('openai')
 
 ```php
 use Cognesy\Instructor\Enums\OutputMode;
-// @doctest id="dd86"
+// @doctest id="758d"
 ```
 
 If your code previously imported `Cognesy\Polyglot\Inference\Enums\OutputMode`, switch it to the Instructor namespace.
@@ -86,7 +86,7 @@ Before:
 
 ```php
 $events = EventBusResolver::using($events);
-// @doctest id="198d"
+// @doctest id="684b"
 ```
 
 After:
@@ -95,7 +95,7 @@ After:
 use Cognesy\Events\Dispatchers\EventDispatcher;
 
 $events = $events ?? new EventDispatcher(name: 'instructor.runtime');
-// @doctest id="7848"
+// @doctest id="63b3"
 ```
 
 Pass the same `$events` instance into related runtimes/builders (for example `HttpClientBuilder`, `InferenceRuntime`, `StructuredOutputRuntime`) so listeners and wiretaps observe the full flow.

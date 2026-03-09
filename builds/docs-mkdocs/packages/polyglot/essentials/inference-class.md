@@ -16,7 +16,7 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 $default = new Inference();
 $openai = Inference::using('openai');
 $fromDsnConfig = Inference::fromConfig(LLMConfig::fromDsn('driver=openai,model=gpt-4.1-nano'));
-// @doctest id="3c44"
+// @doctest id="284a"
 ```
 
 ## Build a Request
@@ -31,7 +31,7 @@ $inference = (new Inference())
     ->withOptions(['temperature' => 0.2])
     ->withMaxTokens(120)
     ->withStreaming(false);
-// @doctest id="9a27"
+// @doctest id="dd08"
 ```
 
 ## Execute
@@ -45,7 +45,7 @@ $data = $inference->asJsonData();   // array
 $toolJson = $inference->asToolCallJson();     // tool call args as JSON string
 $toolData = $inference->asToolCallJsonData(); // tool call args as array
 $stream = $inference->stream();     // InferenceStream
-// @doctest id="910f"
+// @doctest id="4458"
 ```
 
 ## One-Call Configuration
@@ -59,7 +59,7 @@ $data = (new Inference())
         options: ['temperature' => 0],
     )
     ->asJsonData();
-// @doctest id="a42b"
+// @doctest id="0939"
 ```
 
 ## Runtime-First Usage
@@ -74,7 +74,7 @@ $runtime = InferenceRuntime::fromConfig(LLMConfig::fromPreset('openai'));
 
 $pending = $runtime->create(new InferenceRequest(messages: 'Ping', model: 'gpt-4.1-nano'));
 $text = $pending->get();
-// @doctest id="0be1"
+// @doctest id="5351"
 ```
 
 ## Extend Drivers Per Runtime
@@ -104,7 +104,7 @@ $runtime = InferenceRuntime::fromConfig(
     config: LLMConfig::fromArray(['driver' => 'openai-custom']),
     drivers: $drivers,
 );
-// @doctest id="4f8b"
+// @doctest id="9c77"
 ```
 
 ## See Also

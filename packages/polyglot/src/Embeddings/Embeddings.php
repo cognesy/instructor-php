@@ -3,7 +3,7 @@
 namespace Cognesy\Polyglot\Embeddings;
 
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsRetryPolicy;
-use Cognesy\Http\HttpClient;
+use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanCreateEmbeddings;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
@@ -100,7 +100,7 @@ final class Embeddings implements CanCreateEmbeddings
         return $this->runtime->create($request ?? $this->request);
     }
 
-    /** @param string|callable(EmbeddingsConfig,HttpClient,EventDispatcherInterface):CanHandleVectorization $driver */
+    /** @param string|callable(EmbeddingsConfig,CanSendHttpRequests,EventDispatcherInterface):CanHandleVectorization $driver */
     public static function registerDriver(string $name, string|callable $driver) : void {
         EmbeddingsDriverFactory::registerDriver($name, $driver);
     }

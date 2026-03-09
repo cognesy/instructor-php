@@ -28,7 +28,7 @@ $agent = AgentBuilder::base()
 
 $state = AgentState::empty()->withUserMessage('List files in /tmp');
 $result = $agent->execute($state);
-// @doctest id="3b2b"
+// @doctest id="8225"
 ```
 
 ## API
@@ -37,7 +37,7 @@ $result = $agent->execute($state);
 $builder = AgentBuilder::base();
 $builder = $builder->withCapability($capability);
 $agent = $builder->build(); // AgentLoop
-// @doctest id="3341"
+// @doctest id="b53c"
 ```
 
 `AgentBuilder` is immutable. Every `withCapability()` call returns a new builder.
@@ -52,7 +52,7 @@ use Cognesy\Agents\Capability\Core\UseTools;
 $agent = AgentBuilder::base()
     ->withCapability(new UseTools($myTool))
     ->build();
-// @doctest id="e757"
+// @doctest id="57c9"
 ```
 
 ### Replace the driver
@@ -63,7 +63,7 @@ use Cognesy\Agents\Capability\Core\UseDriver;
 $agent = AgentBuilder::base()
     ->withCapability(new UseDriver($driver))
     ->build();
-// @doctest id="5fa1"
+// @doctest id="4055"
 ```
 
 ### Add a hook
@@ -81,7 +81,7 @@ $agent = AgentBuilder::base()
         name: 'after_step_noop',
     ))
     ->build();
-// @doctest id="484c"
+// @doctest id="2dec"
 ```
 
 ### Wrap the default message compiler
@@ -95,7 +95,7 @@ $agent = AgentBuilder::base()
         fn(CanCompileMessages $inner) => new TokenLimitCompiler($inner, maxTokens: 4000)
     ))
     ->build();
-// @doctest id="599e"
+// @doctest id="72d6"
 ```
 
 ### Enable subagents
@@ -106,7 +106,7 @@ use Cognesy\Agents\Capability\Subagent\UseSubagents;
 $agent = AgentBuilder::base()
     ->withCapability(new UseSubagents(provider: $registry))
     ->build();
-// @doctest id="cdca"
+// @doctest id="596d"
 ```
 
 ## Built-in Capabilities

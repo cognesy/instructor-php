@@ -1,59 +1,37 @@
 ---
 title: 'Custom Clients'
-description: 'Register custom drivers and pool handlers for non-standard transports.'
+description: 'Add custom HTTP drivers with an explicit registry.'
 ---
 
-## Register a Custom Driver
+## Add a Custom Driver
 
 ```php
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Creation\HttpClientDriverFactory;
-use Psr\EventDispatcher\EventDispatcherInterface;
+use Cognesy\Http\Creation\BundledHttpDrivers;
 
-HttpClientDriverFactory::registerDriver(
+$drivers = BundledHttpDrivers::registry()->withDriver(
     'acme',
-    static function (HttpClientConfig $config, EventDispatcherInterface $events): CanHandleHttpRequest {
-        return new AcmeHttpDriver($config, $events);
-    }
+    static fn(HttpClientConfig $config, $events, ?object $clientInstance): CanHandleHttpRequest
+        => new AcmeHttpDriver($config, $events, $clientInstance),
 );
-// @doctest id="3d1a"
+// @doctest id="a1f9"
 ```
 
-## Build Client with Custom Driver
+## Build a Client with That Driver
 
 ```php
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Creation\HttpClientBuilder;
 
 $client = (new HttpClientBuilder())
+    ->withDrivers($drivers)
     ->withConfig(new HttpClientConfig(driver: 'acme'))
     ->create();
-// @doctest id="4d1e"
+// @doctest id="c62f"
 ```
 
-## Register a Custom Pool Handler (Optional)
-
-```php
-use Cognesy\Http\Config\HttpClientConfig;
-use Cognesy\Http\Contracts\CanHandleRequestPool;
-use Cognesy\Http\Creation\HttpClientDriverFactory;
-use Psr\EventDispatcher\EventDispatcherInterface;
-
-HttpClientDriverFactory::registerPoolHandler(
-    'acme',
-    static function (HttpClientConfig $config, EventDispatcherInterface $events): CanHandleRequestPool {
-        return new AcmePoolHandler($config, $events);
-    }
-);
-// @doctest id="e616"
-```
-
-Register this when your custom driver should support `HttpClient::pool()`.
-
-If you skip this, `pool()` fails for that custom driver.
-
-## Reuse Existing Vendor Clients
+## Reuse an Existing Vendor Client
 
 ```php
 use Cognesy\Http\Creation\HttpClientBuilder;
@@ -62,20 +40,21 @@ use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
 $client = (new HttpClientBuilder())
     ->withClientInstance('symfony', SymfonyHttpClient::create())
     ->create();
-// @doctest id="a96e"
+// @doctest id="f815"
 ```
 
-## Direct Driver Injection (No Global Registration)
+## Inject a Driver Directly
 
 ```php
 use Cognesy\Http\Creation\HttpClientBuilder;
 
 $client = (new HttpClientBuilder())
     ->withDriver($myDriver) // CanHandleHttpRequest
-    ->withPoolHandler($myPoolHandler) // CanHandleRequestPool (optional)
     ->create();
-// @doctest id="abba"
+// @doctest id="3c5d"
 ```
+
+If you need request pooling, use `packages/http-pool`.
 
 ## See Also
 

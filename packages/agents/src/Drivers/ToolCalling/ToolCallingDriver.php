@@ -18,7 +18,7 @@ use Cognesy\Agents\Events\InferenceResponseReceived;
 use Cognesy\Agents\Tool\Contracts\CanExecuteToolCalls;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Http\HttpClient;
+use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
@@ -45,7 +45,7 @@ use Override;
 class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptLLMConfig, CanAcceptMessageCompiler
 {
     private LLMProvider $llm;
-    private ?HttpClient $httpClient = null;
+    private ?CanSendHttpRequests $httpClient = null;
     private string|array $toolChoice;
     private string $model;
     private array $responseFormat;
@@ -62,7 +62,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
     public function __construct(
         CanCreateInference $inference,
         ?LLMProvider $llm = null,
-        ?HttpClient  $httpClient = null,
+        ?CanSendHttpRequests $httpClient = null,
         string|array $toolChoice = 'auto',
         array        $responseFormat = [],
         string       $model = '',
@@ -141,7 +141,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
 
     private function with(
         ?LLMProvider $llm = null,
-        ?HttpClient $httpClient = null,
+        ?CanSendHttpRequests $httpClient = null,
         string|array|null $toolChoice = null,
         ?array $responseFormat = null,
         ?string $model = null,

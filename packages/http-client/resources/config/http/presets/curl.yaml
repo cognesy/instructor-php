@@ -3,6 +3,4 @@ connectTimeout: 5
 requestTimeout: 60
 idleTimeout: -1
 streamChunkSize: 256
-maxConcurrent: 5
-poolTimeout: 60
 failOnError: false

@@ -14,6 +14,7 @@
   },
   "require": {
     "php": "^8.3",
+    "cognesy/instructor-config": "^1.22",
     "cognesy/instructor-events": "^1.22",
     "cognesy/instructor-http-client": "^1.22",
     "cognesy/instructor-utils": "^1.22"
@@ -22,7 +23,6 @@
     "guzzlehttp/guzzle": "^7.4",
     "guzzlehttp/psr7": "^2.7",
     "icanhazstring/composer-unused": "^0.9.0",
-    "illuminate/http": "^12.20",
     "jetbrains/phpstorm-attributes": "^1.2",
     "maglnet/composer-require-checker": "^4.16",
     "mockery/mockery": "^1.6",
@@ -39,7 +39,6 @@
   },
   "suggest": {
     "symfony/http-client": "For Symfony HTTP pool support",
-    "illuminate/http": "For Laravel HTTP pool support",
     "guzzlehttp/guzzle": "For Guzzle HTTP pool support"
   },
   "config": {

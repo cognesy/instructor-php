@@ -28,7 +28,7 @@ use Cognesy\Agents\Tool\ToolExecutor;
 use Cognesy\Agents\Tool\Contracts\CanExecuteToolCalls;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Http\HttpClient;
+use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\Data\CachedContext as StructuredCachedContext;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
@@ -57,7 +57,7 @@ use DateTimeImmutable;
 final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptLLMConfig, CanAcceptMessageCompiler
 {
     private LLMProvider $llm;
-    private ?HttpClient $httpClient = null;
+    private ?CanSendHttpRequests $httpClient = null;
     private string $model;
     private array $options;
     private bool $finalViaInference;
@@ -76,7 +76,7 @@ final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         CanCreateInference $inference,
         CanCreateStructuredOutput $structuredOutput,
         ?LLMProvider $llm = null,
-        ?HttpClient $httpClient = null,
+        ?CanSendHttpRequests $httpClient = null,
         string $model = '',
         array $options = [],
         bool $finalViaInference = false,
@@ -231,7 +231,7 @@ final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
 
     private function with(
         ?LLMProvider $llm = null,
-        ?HttpClient $httpClient = null,
+        ?CanSendHttpRequests $httpClient = null,
         ?string $model = null,
         ?array $options = null,
         ?bool $finalViaInference = null,

@@ -4,30 +4,24 @@ This document tracks public surface pruning decisions for `packages/http-client`
 
 ## Keep (Core)
 
-- `HttpClient` request flow: `default()`, `using()`, `withRequest()`, `withMiddleware()`, `withoutMiddleware()`
-- `HttpClientBuilder` core setup: `withPreset()`, `withConfig()`, `withDriver()`, `withMock()`, `withMiddleware()`, `create()`
+- `HttpClient` request flow: `default()`, `fromConfig()`, `send()`, `withMiddleware()`, `withoutMiddleware()`
+- `HttpClientRuntime`
+- `HttpClientBuilder` setup: `withConfig()`, `withDsn()`, `withDriver()`, `withDrivers()`, `withClientInstance()`, `withMock()`, `withMiddleware()`, `withEventBus()`, `create()`, `createRuntime()`
+- Driver registry: `CanProvideHttpDrivers`, `HttpDriverRegistry`, `BundledHttpDrivers`
 - Core data objects: `HttpRequest`, `HttpResponse`
 - Core collections: `HttpRequestList`, `HttpResponseList`
-- Core middleware runtime: `MiddlewareStack`, retry/circuit-breaker/idempotency middleware
-- Streaming core path: `EventSourceMiddleware`, `EventSourceResponseDecorator`, `EventSourceStream`
-- Record/replay core path: `RecordReplayMiddleware`, `RecordingMiddleware`, `ReplayMiddleware`, request records
+- Core middleware runtime: `MiddlewareStack`
 
 ## Deprecated (Compatibility Layer)
 
 - `HttpClient::withSSEStream()`
-  Migration: `withMiddleware((new EventSourceMiddleware())->withParser(...))`
-
-- `HttpClientBuilder::using()`
-  Migration: `withPreset()`
-
-- `HttpClientBuilder::withDebugPreset()`
-  Migration: `withHttpDebugPreset()`
+  Migration: explicit streaming middleware under `Extras`
 
 - `StreamedRequestRecord::createAppropriateRecord()`
   Migration: `RequestRecord::createAppropriate()`
 
 - `Middleware\ServerSideEvents\*`
-  Migration: `Middleware\EventSource\*`
+  Migration: `Extras\Middleware\EventSource\*`
 
 ## Remove (Next Breaking Window)
 
@@ -36,10 +30,9 @@ Candidates to remove after deprecation window:
 - `Middleware\ServerSideEvents\ServerSideEventStream`
 - `Middleware\ServerSideEvents\ServerSideEventResponseDecorator`
 - `Middleware\ServerSideEvents\StreamSSEsMiddleware`
-- Legacy alias methods listed above
 
 ## Scope Notes
 
 - Core v2 keeps first-class support for: default driver path, streaming, mock/testing.
 - Pooling now lives in `packages/http-pool`.
-- Optionalization candidate list (separate task): ext-http driver and niche middleware modules.
+- Optional middleware and support helpers live under `Extras`.

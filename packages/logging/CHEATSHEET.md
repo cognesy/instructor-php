@@ -100,11 +100,6 @@ Template placeholders supported by `MessageTemplateFormatter`:
 
 ## Framework Factories
 
-`LaravelLoggingFactory`:
-- `create(Application $app, array $config = []): callable`
-- `defaultSetup(Application $app): callable`
-- `productionSetup(Application $app): callable`
-
 Config keys:
 - `channel` (string)
 - `level` (string)
@@ -120,8 +115,7 @@ Config keys:
 ## Framework Integrations
 
 Laravel:
-- `Cognesy\Logging\Integrations\Laravel\InstructorLoggingServiceProvider`
-- Reads `instructor-logging` config and wires pipeline explicitly to the configured event bus binding (`event_bus_binding`, default `Cognesy\Events\Contracts\CanHandleEvents`).
+- Laravel-specific logging integration lives in `packages/laravel`.
 
 Symfony:
 - `Cognesy\Logging\Integrations\Symfony\InstructorLoggingBundle`

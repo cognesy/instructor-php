@@ -1,6 +1,6 @@
 ---
 title: Middleware
-description: 'Core middleware contract and practical usage patterns.'
+description: 'The small core middleware API.'
 ---
 
 ## Middleware Contract
@@ -18,7 +18,7 @@ final class AddHeaderMiddleware implements HttpMiddleware
         return $next->handle($request);
     }
 }
-// @doctest id="8092"
+// @doctest id="5250"
 ```
 
 ## Register Middleware (Immutable)
@@ -26,25 +26,7 @@ final class AddHeaderMiddleware implements HttpMiddleware
 ```php
 $client = $client->withMiddleware(new AddHeaderMiddleware(), 'request-id');
 $client = $client->withoutMiddleware('request-id');
-// @doctest id="885a"
+// @doctest id="9dfb"
 ```
 
-## Typical Middleware Use Cases
-
-- Request decoration (auth headers, tracing IDs)
-- Response normalization (small shape adaptations)
-- Lightweight validation or policy checks
-
-Use the event bus for debug/observability rather than embedding verbose logging directly in middleware logic.
-
-## Keep Middleware Practical
-
-- Keep logic deterministic and focused
-- Avoid hidden I/O side effects in transformation middleware
-- Prefer one responsibility per middleware
-
-## See Also
-
-- [Processing with middleware](11-processing-with-middleware.md)
-- [Reliability middleware (extras)](12-reliability-middleware.md)
-- [Record and replay (extras)](13-record-replay.md)
+Keep middleware small and deterministic.

@@ -6,12 +6,10 @@ use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Drivers\Curl\CurlDriver;
 use Cognesy\Http\Drivers\Guzzle\GuzzleDriver;
-use Cognesy\Http\Drivers\Laravel\LaravelDriver;
 use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
-use Cognesy\Http\Middleware\ServerSideEvents\StreamSSEsMiddleware;
+use Cognesy\Http\Extras\Middleware\ServerSideEvents\StreamSSEsMiddleware;
 use Cognesy\Http\Tests\Support\IntegrationTestServer;
 use GuzzleHttp\Client;
-use Illuminate\Http\Client\Factory as HttpFactory;
 use Symfony\Component\HttpClient\HttpClient;
 
 beforeEach(function() {
@@ -31,7 +29,6 @@ afterEach(function() {
 function createStreamingDriver(string $type, HttpClientConfig $config, EventDispatcher $events) {
     return match($type) {
         'guzzle' => new GuzzleDriver($config, $events, new Client()),
-        'laravel' => new LaravelDriver($config, $events, new HttpFactory()),
         'symfony' => new SymfonyDriver($config, $events, HttpClient::create()),
         'curl' => new CurlDriver($config, $events),
         default => throw new InvalidArgumentException("Unknown driver type: $type")
@@ -68,7 +65,7 @@ test('driver handles streaming responses', function (string $driverType) {
         expect($data['data'])->toBe("stream data $i");
     }
     
-})->with(['guzzle', 'laravel', 'symfony', 'curl']);
+})->with(['guzzle', 'symfony', 'curl']);
 
 // Test EventSource (Server-Sent Events) streaming
 test('driver handles EventSource/SSE responses', function (string $driverType) {
@@ -94,7 +91,7 @@ test('driver handles EventSource/SSE responses', function (string $driverType) {
     expect($allData)->toContain('"event_id":0');
     expect($allData)->toContain('SSE event');
     
-})->with(['guzzle', 'laravel', 'symfony', 'curl']);
+})->with(['guzzle', 'symfony', 'curl']);
 
 // Test streaming with chunk size control
 test('driver respects chunk size in streaming', function (string $driverType) {
@@ -116,7 +113,7 @@ test('driver respects chunk size in streaming', function (string $driverType) {
     expect($chunks)->toBeArray();
     expect(count($chunks))->toBeGreaterThan(0);
     
-})->with(['guzzle', 'laravel', 'symfony', 'curl']);
+})->with(['guzzle', 'symfony', 'curl']);
 
 // Test streaming performance and timing
 test('streaming provides data progressively', function (string $driverType) {
@@ -144,7 +141,7 @@ test('streaming provides data progressively', function (string $driverType) {
     expect($firstChunkTime)->toBeLessThan(0.5); // More lenient timing
     expect(count($chunkTimes))->toBeGreaterThanOrEqual(2);
     
-})->with(['guzzle', 'laravel', 'symfony', 'curl']);
+})->with(['guzzle', 'symfony', 'curl']);
 
 // Test non-streamed request handling
 test('driver handles non-streamed requests normally', function (string $driverType) {
@@ -163,7 +160,7 @@ test('driver handles non-streamed requests normally', function (string $driverTy
     expect($body)->toContain('"line":1');
     expect($body)->toContain('"line":2');
     
-})->with(['guzzle', 'laravel', 'symfony']);
+})->with(['guzzle', 'symfony']);
 
 // Test streaming middleware integration
 test('StreamByLine middleware processes streaming data', function () {
@@ -204,7 +201,7 @@ test('streaming works for valid endpoints', function (string $driverType) {
     expect($allData)->toContain('"line":0');
     expect($allData)->toContain('"line":1');
     
-})->with(['guzzle', 'laravel', 'symfony']);
+})->with(['guzzle', 'symfony']);
 
 // Clean up server after all tests complete
 register_shutdown_function(function() {

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Inference\Drivers\CohereV2;
 
-use Cognesy\Http\HttpClient;
+use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Drivers\BaseInferenceRequestDriver;
@@ -13,7 +13,7 @@ class CohereV2Driver extends BaseInferenceRequestDriver
 {
     public function __construct(
         LLMConfig $config,
-        HttpClient $httpClient,
+        CanSendHttpRequests $httpClient,
         EventDispatcherInterface $events,
     ) {
         parent::__construct(

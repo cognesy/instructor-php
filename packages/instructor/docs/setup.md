@@ -90,7 +90,8 @@ For Laravel applications, it's recommended to align with the framework's directo
 
 This will place package resources under `config/instructor/<package>/...`.
 
-After publishing, you can load Instructor configuration in your `config/app.php` or create a dedicated service provider.
+Laravel-specific service providers, facades, and transport integration live in `packages/laravel`.
+Use that package when wiring Instructor into a Laravel application.
 
 
 ### Symfony Projects

@@ -13,7 +13,7 @@ use Cognesy\AgentCtrl\AgentCtrl;
 $response = AgentCtrl::codex()
     ->continueSession()
     ->execute('Continue from the previous plan and apply step 2.');
-// @doctest id="ac3e"
+// @doctest id="203f"
 ```
 
 ## Resume Specific Session
@@ -29,7 +29,7 @@ if ($sessionId !== null) {
         ->resumeSession((string) $sessionId)
         ->execute('Now implement the first migration.');
 }
-// @doctest id="e23f"
+// @doctest id="69a4"
 ```
 
 `sessionId()` returns `AgentSessionId|null`.

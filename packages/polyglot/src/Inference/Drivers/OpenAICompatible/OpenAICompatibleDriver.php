@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Inference\Drivers\OpenAICompatible;
 
-use Cognesy\Http\HttpClient;
+use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Drivers\BaseInferenceRequestDriver;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIMessageFormat;
@@ -15,7 +15,7 @@ class OpenAICompatibleDriver extends BaseInferenceRequestDriver
 {
     public function __construct(
         LLMConfig $config,
-        HttpClient $httpClient,
+        CanSendHttpRequests $httpClient,
         EventDispatcherInterface $events,
     ) {
         parent::__construct(

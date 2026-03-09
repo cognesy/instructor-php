@@ -16,7 +16,7 @@ $request = new InferenceRequest(
     model: 'gpt-4o-mini',
     options: ['temperature' => 0.2],
 );
-// @doctest id="f989"
+// @doctest id="de5b"
 ```
 
 Most used accessors:
@@ -59,7 +59,7 @@ $text = $pending->get();
 $json = $pending->asJsonData();
 $toolData = $pending->asToolCallJsonData();
 $response = $pending->response();
-// @doctest id="e3dc"
+// @doctest id="ece3"
 ```
 
 Core methods:
@@ -94,7 +94,7 @@ foreach ($stream->deltas() as $delta) {
 }
 
 $final = $stream->final();
-// @doctest id="1c39"
+// @doctest id="b0ec"
 ```
 
 Core methods:
@@ -131,7 +131,7 @@ $response = $pending->get();
 $first = $response->first();
 $vectors = $response->vectors();
 $usage = $response->usage();
-// @doctest id="e230"
+// @doctest id="164c"
 ```
 
 `EmbeddingsResponse` also provides `last()`, `split(...)`, `toValuesArray()`, and `toArray()`.
@@ -151,7 +151,7 @@ $jsonSchema = ResponseFormat::jsonSchema(
     name: 'schema',
     strict: true,
 );
-// @doctest id="bb3a"
+// @doctest id="5e11"
 ```
 
 Drivers map these response-format values to provider-native request bodies.

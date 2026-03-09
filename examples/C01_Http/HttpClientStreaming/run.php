@@ -44,7 +44,7 @@ $request = new HttpRequest(
     options: ['stream' => true],
 );
 
-foreach ($client->withRequest($request)->stream() as $chunk) {
+foreach ($client->send($request)->stream() as $chunk) {
     echo $chunk; // handle streamed data incrementally
 }
 ?>

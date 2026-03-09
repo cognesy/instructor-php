@@ -17,7 +17,7 @@ $inferenceRuntime = InferenceRuntime::fromConfig($config)
 $embeddingsRuntime = EmbeddingsRuntime::fromConfig($config)
     ->onEvent(EmbeddingsResponseReceived::class, $listener)
     ->wiretap($tap);
-// @doctest id="dd86"
+// @doctest id="1d8a"
 ```
 
 ```php
@@ -48,5 +48,5 @@ class InferenceAttemptStarted extends Event {}
 class InferenceAttemptSucceeded extends Event {}
 
 class InferenceAttemptFailed extends Event {}
-// @doctest id="17a1"
+// @doctest id="35fb"
 ```

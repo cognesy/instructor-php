@@ -26,7 +26,7 @@ rules:
     language: php
     pattern: '$OBJ->request($$$ARGS)'
     message: 'Avoid direct request() calls in examples.'
-# @doctest id="80f5"
+# @doctest id="cda2"
 ```
 
 ### Required fields
@@ -46,7 +46,7 @@ php bin/instructor-docs qa \
   --source-dir packages/instructor/docs \
   --profile instructor \
   --rules packages/instructor/docs/.qa/rules.yaml
-# @doctest id="dd85"
+# @doctest id="6bf1"
 ```
 
 JSON output for CI:
@@ -56,7 +56,7 @@ php bin/instructor-docs qa \
   --source-dir packages/instructor/docs \
   --profile instructor \
   --format json
-# @doctest id="eadb"
+# @doctest id="d069"
 ```
 
 If `ast-grep` rules are configured, missing binary fails by default.  

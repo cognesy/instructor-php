@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Inference\Drivers\SambaNova;
-use Cognesy\Http\HttpClient;
+use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Drivers\BaseInferenceRequestDriver;
@@ -15,7 +15,7 @@ class SambaNovaDriver extends BaseInferenceRequestDriver
 {
     public function __construct(
         LLMConfig $config,
-        HttpClient $httpClient,
+        CanSendHttpRequests $httpClient,
         EventDispatcherInterface $events,
     ) {
         parent::__construct(

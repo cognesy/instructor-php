@@ -1,12 +1,10 @@
 <?php
 
-use Cognesy\Http\Drivers\ExtHttp\ExtHttpDriver;
-use Cognesy\Http\Drivers\ExtHttp\ExtHttpPool;
 use Cognesy\Http\HttpClient;
-use Cognesy\Http\Middleware\RecordReplay\StreamedRequestRecord;
-use Cognesy\Http\Middleware\ServerSideEvents\ServerSideEventResponseDecorator;
-use Cognesy\Http\Middleware\ServerSideEvents\ServerSideEventStream;
-use Cognesy\Http\Middleware\ServerSideEvents\StreamSSEsMiddleware;
+use Cognesy\Http\Extras\Support\RecordReplay\StreamedRequestRecord;
+use Cognesy\Http\Extras\Support\ServerSideEvents\ServerSideEventResponseDecorator;
+use Cognesy\Http\Extras\Support\ServerSideEvents\ServerSideEventStream;
+use Cognesy\Http\Extras\Middleware\ServerSideEvents\StreamSSEsMiddleware;
 
 it('marks compatibility aliases as deprecated', function() {
     $targets = [
@@ -26,19 +24,6 @@ it('marks ServerSideEvents compatibility classes as deprecated', function() {
         StreamSSEsMiddleware::class,
         ServerSideEventStream::class,
         ServerSideEventResponseDecorator::class,
-    ];
-
-    foreach ($classes as $class) {
-        $reflection = new ReflectionClass($class);
-        $comment = $reflection->getDocComment() ?: '';
-        expect($comment)->toContain('@deprecated');
-    }
-});
-
-it('marks optionalization candidates as deprecated', function() {
-    $classes = [
-        ExtHttpDriver::class,
-        ExtHttpPool::class,
     ];
 
     foreach ($classes as $class) {

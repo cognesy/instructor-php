@@ -163,6 +163,11 @@ Configure the HTTP client:
 ],
 ```
 
+The Laravel package owns the `laravel` HTTP client and pool drivers. They are not part of the generic `http-client` or `http-pool` bundled driver sets.
+
+The service provider binds `Cognesy\Http\Contracts\CanSendHttpRequests` to the default Laravel-backed HTTP transport.
+Higher layers should depend on that contract, not on the concrete `HttpClient`.
+
 ## Logging Settings
 
 Configure logging:

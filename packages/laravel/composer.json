@@ -23,13 +23,23 @@
   ],
   "require": {
     "php": "^8.3",
-    "cognesy/instructor-php": "^1.13",
+    "cognesy/agent-ctrl": "^1.22",
+    "cognesy/instructor-config": "^1.22",
+    "cognesy/instructor-events": "^1.22",
+    "cognesy/instructor-http-client": "^1.22",
+    "cognesy/instructor-http-pool": "^1.22",
+    "cognesy/instructor-messages": "^1.22",
+    "cognesy/instructor-polyglot": "^1.22",
+    "cognesy/instructor-struct": "^1.22",
+    "cognesy/instructor-utils": "^1.22",
+    "cognesy/logging": "^1.22",
     "illuminate/contracts": "^10.0|^11.0|^12.0",
     "illuminate/support": "^10.0|^11.0|^12.0",
     "illuminate/console": "^10.0|^11.0|^12.0",
     "illuminate/http": "^10.0|^11.0|^12.0"
   },
   "require-dev": {
+    "mockery/mockery": "^1.6",
     "orchestra/testbench": "^8.0|^9.0|^10.0",
     "pestphp/pest": "^2.0|^3.0",
     "phpstan/phpstan": "^1.10"

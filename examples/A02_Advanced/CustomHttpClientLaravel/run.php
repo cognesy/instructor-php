@@ -14,10 +14,13 @@ require 'examples/boot.php';
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Instructor\Laravel\HttpClient\LaravelDriver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Cognesy\Http\Creation\HttpClientBuilder;
+use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\Http\HttpClient;
 use Illuminate\Http\Client\Factory;
-use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 class User {
     public int $age;
@@ -27,12 +30,14 @@ class User {
 $yourLaravelClientInstance = new Factory();
 $provider = LLMProvider::using('openai')
     ->withConfigOverrides(['apiUrl' => 'https://api.openai.com/v1']);
-$customClient = (new HttpClientBuilder)
-    ->withClientInstance(
-        driverName: 'laravel',
+$customClient = HttpClient::fromDriver(
+    new LaravelDriver(
+        config: new HttpClientConfig(),
+        events: new EventDispatcher(),
         clientInstance: $yourLaravelClientInstance,
     )
-    ->create();
+);
+assert($customClient instanceof CanSendHttpRequests);
 
 $user = (new StructuredOutput(
     runtime: StructuredOutputRuntime::fromProvider(

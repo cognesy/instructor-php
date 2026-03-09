@@ -7,5 +7,5 @@ Before opening a PR for docs changes, run:
 ```bash
 cd packages/instructor
 composer docs:qa
-# @doctest id="7ae7"
+# @doctest id="07c7"
 ```

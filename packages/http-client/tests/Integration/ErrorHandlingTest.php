@@ -4,7 +4,6 @@ use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Drivers\Curl\CurlDriver;
 use Cognesy\Http\Drivers\Guzzle\GuzzleDriver;
-use Cognesy\Http\Drivers\Laravel\LaravelDriver;
 use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
 use Cognesy\Http\Exceptions\HttpClientErrorException;
 use Cognesy\Http\Exceptions\HttpRequestException;
@@ -25,7 +24,6 @@ function createErrorDriver(string $type, bool $failOnError = true): object {
     return match ($type) {
         'curl' => new CurlDriver($config, $events),
         'guzzle' => new GuzzleDriver($config, $events),
-        'laravel' => new LaravelDriver($config, $events),
         'symfony' => new SymfonyDriver($config, $events),
         default => throw new InvalidArgumentException("Unknown driver type: {$type}"),
     };
@@ -43,7 +41,7 @@ it('throws consistent client error exceptions for all drivers', function (string
         expect($e->isRetriable())->toBeFalse();
         expect($e->getRequest())->toBe($request);
     }
-})->with(['curl', 'guzzle', 'laravel', 'symfony']);
+})->with(['curl', 'guzzle', 'symfony']);
 
 it('throws consistent server error exceptions for all drivers', function (string $driverType) {
     $driver = createErrorDriver($driverType);
@@ -57,7 +55,7 @@ it('throws consistent server error exceptions for all drivers', function (string
         expect($e->isRetriable())->toBeTrue();
         expect($e->getRequest())->toBe($request);
     }
-})->with(['curl', 'guzzle', 'laravel', 'symfony']);
+})->with(['curl', 'guzzle', 'symfony']);
 
 it('treats 429 rate limit error as retriable', function (string $driverType) {
     $driver = createErrorDriver($driverType);
@@ -70,7 +68,7 @@ it('treats 429 rate limit error as retriable', function (string $driverType) {
         expect($e->getStatusCode())->toBe(429);
         expect($e->isRetriable())->toBeTrue();
     }
-})->with(['curl', 'guzzle', 'laravel', 'symfony']);
+})->with(['curl', 'guzzle', 'symfony']);
 
 it('does not throw when fail on error is disabled', function (string $driverType) {
     $driver = createErrorDriver($driverType, failOnError: false);
@@ -78,7 +76,7 @@ it('does not throw when fail on error is disabled', function (string $driverType
 
     $response = $driver->handle($request);
     expect($response->statusCode())->toBe(404);
-})->with(['curl', 'guzzle', 'laravel', 'symfony']);
+})->with(['curl', 'guzzle', 'symfony']);
 
 it('handles network errors with invalid host', function () {
     $driver = createErrorDriver('guzzle');
@@ -108,10 +106,10 @@ it('catches all exceptions via backward compatible base class', function () {
 
 it('integrates http client with new exceptions', function () {
     $driver = createErrorDriver('guzzle');
-    $client = new HttpClient($driver);
+    $client = HttpClient::fromDriver($driver);
 
     try {
-        $client->withRequest(new HttpRequest($this->baseUrl . '/status/422', 'GET', [], '', []))->get();
+        $client->send(new HttpRequest($this->baseUrl . '/status/422', 'GET', [], '', []))->get();
         $this->fail('Expected exception to be thrown');
     } catch (HttpClientErrorException $e) {
         expect($e->getStatusCode())->toBe(422);

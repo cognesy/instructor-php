@@ -3,7 +3,7 @@
 namespace Cognesy\Polyglot\Inference\Creation;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Http\HttpClient;
+use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Contracts\CanProvideInferenceDrivers;
@@ -11,7 +11,7 @@ use InvalidArgumentException;
 
 final class InferenceDriverRegistry implements CanProvideInferenceDrivers
 {
-    /** @param array<string, callable(LLMConfig,HttpClient,CanHandleEvents):CanProcessInferenceRequest> $drivers */
+    /** @param array<string, callable(LLMConfig,CanSendHttpRequests,CanHandleEvents):CanProcessInferenceRequest> $drivers */
     private function __construct(
         private array $drivers = [],
     ) {}
@@ -21,7 +21,7 @@ final class InferenceDriverRegistry implements CanProvideInferenceDrivers
     }
 
     /**
-     * @param array<string, string|callable(LLMConfig,HttpClient,CanHandleEvents):CanProcessInferenceRequest> $drivers
+     * @param array<string, string|callable(LLMConfig,CanSendHttpRequests,CanHandleEvents):CanProcessInferenceRequest> $drivers
      */
     public static function fromArray(array $drivers): self {
         $registry = self::make();
@@ -34,7 +34,7 @@ final class InferenceDriverRegistry implements CanProvideInferenceDrivers
     }
 
     /**
-     * @param string|callable(LLMConfig,HttpClient,CanHandleEvents):CanProcessInferenceRequest $driver
+     * @param string|callable(LLMConfig,CanSendHttpRequests,CanHandleEvents):CanProcessInferenceRequest $driver
      */
     public function withDriver(string $name, string|callable $driver): self {
         $copy = clone $this;
@@ -63,7 +63,7 @@ final class InferenceDriverRegistry implements CanProvideInferenceDrivers
     public function makeDriver(
         string $name,
         LLMConfig $config,
-        HttpClient $httpClient,
+        CanSendHttpRequests $httpClient,
         CanHandleEvents $events,
     ): CanProcessInferenceRequest {
         $factory = $this->drivers[$name] ?? null;
@@ -75,12 +75,12 @@ final class InferenceDriverRegistry implements CanProvideInferenceDrivers
     }
 
     /**
-     * @param string|callable(LLMConfig,HttpClient,CanHandleEvents):CanProcessInferenceRequest $driver
-     * @return callable(LLMConfig,HttpClient,CanHandleEvents):CanProcessInferenceRequest
+     * @param string|callable(LLMConfig,CanSendHttpRequests,CanHandleEvents):CanProcessInferenceRequest $driver
+     * @return callable(LLMConfig,CanSendHttpRequests,CanHandleEvents):CanProcessInferenceRequest
      */
     private static function toDriverFactory(string|callable $driver): callable {
         return match (true) {
-            is_callable($driver) => static function (LLMConfig $config, HttpClient $httpClient, CanHandleEvents $events) use ($driver): CanProcessInferenceRequest {
+            is_callable($driver) => static function (LLMConfig $config, CanSendHttpRequests $httpClient, CanHandleEvents $events) use ($driver): CanProcessInferenceRequest {
                 $instance = $driver($config, $httpClient, $events);
                 if (!$instance instanceof CanProcessInferenceRequest) {
                     throw new InvalidArgumentException('Custom inference driver factory must return ' . CanProcessInferenceRequest::class);
@@ -88,7 +88,7 @@ final class InferenceDriverRegistry implements CanProvideInferenceDrivers
 
                 return $instance;
             },
-            is_string($driver) => static function (LLMConfig $config, HttpClient $httpClient, CanHandleEvents $events) use ($driver): CanProcessInferenceRequest {
+            is_string($driver) => static function (LLMConfig $config, CanSendHttpRequests $httpClient, CanHandleEvents $events) use ($driver): CanProcessInferenceRequest {
                 $instance = new $driver($config, $httpClient, $events);
                 if (!$instance instanceof CanProcessInferenceRequest) {
                     throw new InvalidArgumentException('Custom inference driver class must implement ' . CanProcessInferenceRequest::class);

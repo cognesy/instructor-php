@@ -46,7 +46,7 @@ OLLAMA_API_KEY=''
 OPENROUTER_API_KEY=''
 TOGETHER_API_KEY=''
 JINA_API_KEY=''
-# @doctest id="03ea"
+# @doctest id="6c2c"
 ```
 
 Only configure the services you plan to use; others can remain empty.
@@ -64,7 +64,7 @@ Instructor uses a configuration directory to store its settings, e.g. LLM provid
 You can set the path to this directory in your `.env` file:
 ```
 INSTRUCTOR_CONFIG_PATHS='/../../config/,another/path'
-// @doctest id="fc2b"
+// @doctest id="1b07"
 ```
 
 This value can be read by your bootstrap code to locate YAML config files before

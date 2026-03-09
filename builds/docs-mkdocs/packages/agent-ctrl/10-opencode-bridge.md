@@ -25,7 +25,7 @@ $result = SandboxCommandExecutor::forOpenCode()->execute($spec);
 $response = (new ResponseParser())->parse($result, OutputFormat::Json);
 
 echo $response->messageText();
-// @doctest id="cffe"
+// @doctest id="6028"
 ```
 
 ## Session Handling

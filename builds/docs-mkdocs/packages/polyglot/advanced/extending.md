@@ -20,7 +20,7 @@ use Acme\Polyglot\Drivers\AcmeInferenceDriver;
 
 $drivers = BundledInferenceDrivers::registry()
     ->withDriver('acme', AcmeInferenceDriver::class);
-// @doctest id="cf57"
+// @doctest id="ea89"
 ```
 
 Or register by factory callback:
@@ -44,7 +44,7 @@ $drivers = BundledInferenceDrivers::registry()->withDriver(
         return new OpenAIDriver($config, $httpClient, $events);
     },
 );
-// @doctest id="075d"
+// @doctest id="8d79"
 ```
 
 Use it by passing the registry to the runtime:
@@ -56,7 +56,7 @@ $runtime = InferenceRuntime::fromConfig(
     config: LLMConfig::fromArray(['driver' => 'openai-custom']),
     drivers: $drivers,
 );
-// @doctest id="ede4"
+// @doctest id="adb5"
 ```
 
 ## Register a Custom Embeddings Driver
@@ -67,7 +67,7 @@ use Cognesy\Polyglot\Embeddings\Embeddings;
 use Acme\Polyglot\Drivers\AcmeEmbeddingsDriver;
 
 Embeddings::registerDriver('acme-embed', AcmeEmbeddingsDriver::class);
-// @doctest id="5bb2"
+// @doctest id="7a5b"
 ```
 
 Embeddings driver constructors are expected to follow factory wiring:
@@ -107,7 +107,7 @@ $inference = Inference::fromRuntime(
         httpClient: $httpClient,
     )
 );
-// @doctest id="6e66"
+// @doctest id="5f46"
 ```
 
 `HttpClient` is immutable. Always keep the returned instance from `withMiddleware(...)`.

@@ -68,14 +68,12 @@ it('redacts request headers and body in InferenceFailed event payload', function
         $captured[] = $event;
     });
 
-    $httpClient = new HttpClient(
-        driver: new class implements CanHandleHttpRequest {
-            #[\Override]
-            public function handle(HttpRequest $request): HttpResponse {
-                throw new HttpRequestException('Network down', $request);
-            }
-        },
-    );
+    $httpClient = HttpClient::fromDriver(new class implements CanHandleHttpRequest {
+        #[\Override]
+        public function handle(HttpRequest $request): HttpResponse {
+            throw new HttpRequestException('Network down', $request);
+        }
+    });
 
     $requestTranslator = new class implements CanTranslateInferenceRequest {
         #[\Override]

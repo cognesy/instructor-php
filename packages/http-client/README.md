@@ -1,6 +1,6 @@
 # HTTP Client Package
 
-Framework-agnostic HTTP transport layer used by Instructor for sync and streaming requests.
+Minimal HTTP transport for sync and streaming requests.
 
 ## Example
 
@@ -10,28 +10,24 @@ use Cognesy\Http\HttpClient;
 
 $client = HttpClient::default();
 
-$request = new HttpRequest(
+$response = $client->send(new HttpRequest(
     url: 'https://api.example.com/health',
     method: 'GET',
     headers: ['Accept' => 'application/json'],
     body: '',
     options: [],
-);
+))->get();
 
-$response = $client->withRequest($request)->get();
 echo $response->statusCode();
 ```
 
-## Documentation
-
-For usage details, read the package docs:
+## Docs
 
 - `packages/http-client/docs/1-overview.md`
 - `packages/http-client/docs/2-getting-started.md`
-- `packages/http-client/docs/_meta.yaml` (navigation order)
+- `packages/http-client/docs/3-making-requests.md`
+- `packages/http-client/docs/4-handling-responses.md`
+- `packages/http-client/docs/5-streaming-responses.md`
+- `packages/http-client/docs/10-middleware.md`
 
-For concurrent request pooling, use `packages/http-pool`.
-
-2.0 API scope notes:
-- `packages/http-client/V2_API_SURFACE.md`
-- `packages/http-client/V2_CORE_SCOPE.md`
+Pooling lives in `packages/http-pool`.

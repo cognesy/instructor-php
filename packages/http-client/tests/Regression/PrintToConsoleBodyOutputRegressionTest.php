@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Http\Config\DebugConfig;
-use Cognesy\Http\Middleware\EventSource\Listeners\PrintToConsole;
+use Cognesy\Http\Extras\Support\EventSource\Listeners\PrintToConsole;
 
 it('prints JSON body using Console output without dump helper', function () {
     $listener = new class(new DebugConfig()) extends PrintToConsole {

@@ -91,25 +91,6 @@ $symfonyBridge->wiretap(fn(object $e) => null);
 $symfonyBridge->dispatch(new MyEvent());
 ```
 
-### Laravel Bridge
-
-```php
-use Cognesy\Events\Dispatchers\LaravelEventDispatcher;
-use Cognesy\Events\Event;
-
-final class MyEvent extends Event {}
-
-$laravelBridge = new LaravelEventDispatcher(
-    laravel: $laravelDispatcher,
-    dispatchToLaravel: true,
-    bridgedEvents: [],
-);
-
-$laravelBridge->addListener(MyEvent::class, fn(object $e) => null, priority: 50);
-$laravelBridge->wiretap(fn(object $e) => null);
-$laravelBridge->dispatch(new MyEvent());
-```
-
 ## `HandlesEvents` Trait
 
 ```php

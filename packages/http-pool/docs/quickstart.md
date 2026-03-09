@@ -7,11 +7,11 @@ description: The smallest useful pool example.
 
 ```php
 use Cognesy\Http\Collections\HttpRequestList;
-use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\HttpPool\Config\HttpPoolConfig;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\HttpPool\HttpPool;
 
-$pool = HttpPool::fromConfig(new HttpClientConfig(driver: 'guzzle'));
+$pool = HttpPool::fromConfig(new HttpPoolConfig(driver: 'guzzle'));
 
 $requests = HttpRequestList::of(
     new HttpRequest('https://example.com/a', 'GET', [], '', []),

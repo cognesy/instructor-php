@@ -3,7 +3,7 @@
 namespace Cognesy\Polyglot\Inference\Contracts;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Http\HttpClient;
+use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 interface CanProvideInferenceDrivers
@@ -16,7 +16,7 @@ interface CanProvideInferenceDrivers
     public function makeDriver(
         string $name,
         LLMConfig $config,
-        HttpClient $httpClient,
+        CanSendHttpRequests $httpClient,
         CanHandleEvents $events,
     ): CanProcessInferenceRequest;
 }

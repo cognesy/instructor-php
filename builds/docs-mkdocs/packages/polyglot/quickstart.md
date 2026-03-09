@@ -16,7 +16,7 @@ To install Polyglot in your project, run following command in your terminal:
 
 ```bash
 composer require cognesy/instructor-polyglot
-# @doctest id="6fec"
+# @doctest id="604a"
 ```
 
 > NOTE: Polyglot is already included in Instructor for PHP package, so if you have it installed, you don't need to install Polyglot separately.
@@ -49,7 +49,7 @@ $answer = (new Inference)
 
 echo "USER: What is capital of Germany\n";
 echo "ASSISTANT: $answer\n";
-// @doctest id="0aee"
+// @doctest id="d78f"
 ```
 
 <Warning>
@@ -66,7 +66,7 @@ php test-polyglot.php
 # Output:
 # USER: What is capital of Germany
 # ASSISTANT: Berlin
-# @doctest id="bda7"
+# @doctest id="bd1e"
 ```
 
 

@@ -51,7 +51,7 @@ $user = (new StructuredOutput($runtime))->with(
     ],
 )->get();
 ?>
-// @doctest id="8e2f"
+// @doctest id="0310"
 ```
 
 ## Modifying the example template
@@ -82,7 +82,7 @@ $user = (new StructuredOutput($runtime))->with(
         ),
     ],
 )->get();
-// @doctest id="d1ef"
+// @doctest id="db4b"
 ```
 
 
@@ -102,7 +102,7 @@ $example = Example::fromText(
     input: 'Ian is 27 yo',
     output: ['name' => 'Ian', 'age' => 27]
 );
-// @doctest id="9b5a"
+// @doctest id="75b6"
 ```
 
 ### Make example from chat
@@ -115,7 +115,7 @@ $example = Example::fromChat(
     input: [['role' => 'user', 'content' => 'Ian is 27 yo']],
     output: ['name' => 'Ian', 'age' => 27]
 );
-// @doctest id="a9d4"
+// @doctest id="fd62"
 ```
 
 ### Make example from data
@@ -129,5 +129,5 @@ $example = Example::fromData(
     input: ['firstName' => 'Ian', 'lastName' => 'Brown', 'birthData' => '1994-01-01'],
     output: ['name' => 'Ian', 'age' => 27]
 );
-// @doctest id="31f4"
+// @doctest id="a6dc"
 ```

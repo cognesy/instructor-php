@@ -31,7 +31,7 @@ $response = Inference::using('openai')
     ->response();
 
 $toolCalls = $response->toolCalls();
-// @doctest id="9f2a"
+// @doctest id="7bf3"
 ```
 
 If you want tool-call arguments as JSON data, use `asToolCallJsonData()`.

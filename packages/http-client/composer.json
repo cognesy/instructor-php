@@ -23,7 +23,6 @@
     "guzzlehttp/guzzle": "^7.4",
     "guzzlehttp/psr7": "^2.7",
     "icanhazstring/composer-unused": "^0.9.0",
-    "illuminate/http": "^12.20",
     "jetbrains/phpstorm-attributes": "^1.2",
     "maglnet/composer-require-checker": "^4.16",
     "mockery/mockery": "^1.6",
@@ -41,8 +40,7 @@
   "suggest": {
     "symfony/http-client": "For Symfony HTTP client support",
     "psr/http-message": "*",
-    "psr/http-client": "*",
-    "illuminate/http": "For Laravel HTTP client support"
+    "psr/http-client": "*"
   },
   "config": {
     "allow-plugins": {

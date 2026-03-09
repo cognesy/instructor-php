@@ -57,11 +57,11 @@ test('HttpClient withMiddleware does not mutate original client', function() {
 
     $request = new HttpRequest('https://api.example.com/items', 'GET', [], '', []);
 
-    $client->withRequest($request)->get();
+    $client->send($request)->get();
     $plainRequest = $driver->getLastRequest();
     expect($plainRequest->headers())->not()->toHaveKey('X-Test');
 
-    $decoratedClient->withRequest($request)->get();
+    $decoratedClient->send($request)->get();
     $decoratedRequest = $driver->getLastRequest();
     expect($decoratedRequest->headers())->toHaveKey('X-Test');
     expect($decoratedRequest->headers()['X-Test'])->toBe('middleware');

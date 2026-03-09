@@ -3,138 +3,50 @@ title: HTTP Client Layer
 description: 'Understanding the HTTP client layer in Polyglot'
 ---
 
-At the lowest level, Polyglot uses an HTTP client layer to communicate with provider APIs. This layer includes:
+Polyglot talks to providers through `packages/http-client`.
 
-1. A unified `HttpClient` interface
-2. Implementations for different HTTP libraries (Guzzle, Symfony, Laravel)
-3. A middleware system for extending functionality
+What matters at the Polyglot boundary:
 
+1. One transport contract: `Cognesy\Http\Contracts\CanSendHttpRequests`
+2. One request type: `Cognesy\Http\Data\HttpRequest`
+3. One response type: `Cognesy\Http\Data\HttpResponse`
 
-## HttpClient
+## Runtime Boundary
 
-The `HttpClient` class provides a unified interface for HTTP requests:
+Polyglot depends on the public HTTP transport contract, not on a specific driver:
 
 ```php
-namespace Cognesy\Http;
+use Cognesy\Http\Contracts\CanSendHttpRequests;
+use Cognesy\Http\Data\HttpRequest;
 
-use Cognesy\Http\Middleware\MiddlewareStack;class HttpClient implements CanHandleHttpRequest {
+final class ExampleRuntime
+{
     public function __construct(
-        string $client = '',
-        ?HttpClientConfig $config = null,
-        ?EventDispatcher $events = null
-    ) { ... }
+        private readonly CanSendHttpRequests $http,
+    ) {}
 
-    public static function make(
-        string $client = '',
-        ?HttpClientConfig $config = null,
-        ?EventDispatcher $events = null
-    ): self { ... }
-
-    public function withClient(string $client): self { ... }
-    public function withConfig(HttpClientConfig $config): self { ... }
-    public function withMiddleware(...$middleware): self { ... }
-    public function withDebugPreset(?string $preset): self { ... }
-
-    public function handle(HttpClientRequest $request): HttpResponse { ... }
-    public function middleware(): MiddlewareStack { ... }
+    public function request(HttpRequest $request): string
+    {
+        return $this->http->send($request)->get()->body();
+    }
 }
 ```
 
+## Streaming
 
-
-## HttpRequest and HttpResponse
-
-These classes represent HTTP requests and responses:
+Streaming still returns `HttpResponse`. The response decides whether it is buffered or streamed:
 
 ```php
-namespace Cognesy\Http\Data;
+$response = $http->send($request)->get();
 
-class HttpRequest {
-    public function __construct(
-        private string $url,
-        private string $method,
-        private array $headers,
-        private mixed $body,
-        private array $options
-    ) { ... }
-
-    public function url(): string { ... }
-    public function method(): string { ... }
-    public function headers(): array { ... }
-    public function body(): HttpRequestBody { ... }
-    public function options(): array { ... }
-    public function isStreamed(): bool { ... }
-
-    public function withStreaming(bool $streaming): self { ... }
-}
-
-interface HttpResponse {
-    public function statusCode(): int;
-    public function headers(): array;
-    public function body(): string;
-    public function stream(int $chunkSize = 1): Generator;
-    public function original(): mixed;
+if ($response->isStreamed()) {
+    foreach ($response->stream() as $chunk) {
+        // consume chunks
+    }
 }
 ```
 
+## Drivers
 
-
-## Middleware System
-
-The HTTP client layer includes a middleware system that allows extending functionality:
-
-```php
-namespace Cognesy\Http;
-
-interface HttpMiddleware {
-    public function handle(
-        HttpRequest $request,
-        CanHandleHttpRequest $next
-    ): HttpResponse;
-}
-
-abstract class BaseMiddleware implements HttpMiddleware {
-    public function handle(
-        HttpRequest $request,
-        CanHandleHttpRequest $next
-    ): HttpResponse { ... }
-
-    protected function beforeRequest(HttpClientRequest $request): void {}
-
-    protected function afterRequest(
-        HttpRequest $request,
-        HttpResponse $response
-    ): HttpResponse {
-        return $response;
-    }
-
-    protected function shouldDecorateResponse(
-        HttpRequest $request,
-        HttpResponse $response
-    ): bool {
-        return false;
-    }
-
-    protected function toResponse(
-        HttpRequest $request,
-        HttpResponse $response
-    ): HttpResponse {
-        return $response;
-    }
-}
-
-class MiddlewareStack {
-    public function append(HttpMiddleware $middleware, string $name = ''): self { ... }
-    public function prepend(HttpMiddleware $middleware, string $name = ''): self { ... }
-    public function remove(string $name): self { ... }
-    public function replace(string $name, HttpMiddleware $middleware): self { ... }
-    public function clear(): self { ... }
-    public function has(string $name): bool { ... }
-    public function get(string|int $nameOrIndex): ?HttpMiddleware { ... }
-    public function all(): array { ... }
-    public function process(
-        HttpRequest $request,
-        CanHandleHttpRequest $handler
-    ): HttpResponse { ... }
-}
-```
+Bundled HTTP drivers are resolved by `packages/http-client`.
+Laravel-specific HTTP transport lives in `packages/laravel`, not in the baseline HTTP package.

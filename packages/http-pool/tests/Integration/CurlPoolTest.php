@@ -6,7 +6,7 @@ namespace Cognesy\Http\Tests\Integration;
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Collections\HttpRequestList;
-use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\HttpPool\Config\HttpPoolConfig;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\HttpPool\Drivers\Curl\Pool\CurlPool;
 use Cognesy\Http\Tests\Support\IntegrationTestServer;
@@ -15,7 +15,7 @@ use Cognesy\Utils\Result\Success;
 beforeEach(function () {
     $this->baseUrl = IntegrationTestServer::start();
     $this->events = new EventDispatcher();
-    $this->config = new HttpClientConfig(
+    $this->config = new HttpPoolConfig(
         driver: 'curl',
         connectTimeout: 3,
         requestTimeout: 30,
@@ -185,7 +185,7 @@ it('handles pool with error responses when failOnError is false', function () {
 })->skip(fn() => !extension_loaded('curl'), 'cURL extension not available');
 
 it('throws exception for error responses when failOnError is true', function () {
-    $config = new HttpClientConfig(
+    $config = new HttpPoolConfig(
         driver: 'curl',
         connectTimeout: 3,
         requestTimeout: 30,

@@ -5,7 +5,7 @@ namespace Cognesy\HttpPool;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Http\Collections\HttpRequestList;
 use Cognesy\Http\Collections\HttpResponseList;
-use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\HttpPool\Config\HttpPoolConfig;
 use Cognesy\HttpPool\Contracts\CanHandleRequestPool;
 use Cognesy\HttpPool\Contracts\CanProvideHttpPools;
 use Cognesy\HttpPool\Creation\HttpPoolBuilder;
@@ -14,7 +14,7 @@ final class HttpPool
 {
     public function __construct(
         private readonly CanHandleRequestPool $poolHandler,
-        private readonly HttpClientConfig $config,
+        private readonly HttpPoolConfig $config,
         private readonly CanHandleEvents $events,
     ) {}
 
@@ -23,7 +23,7 @@ final class HttpPool
     }
 
     public static function fromConfig(
-        HttpClientConfig $config,
+        HttpPoolConfig $config,
         ?CanProvideHttpPools $pools = null,
     ): self {
         $builder = (new HttpPoolBuilder())->withConfig($config);
@@ -42,7 +42,7 @@ final class HttpPool
         return new PendingHttpPool($requests, $this->poolHandler);
     }
 
-    public function config(): HttpClientConfig {
+    public function config(): HttpPoolConfig {
         return $this->config;
     }
 

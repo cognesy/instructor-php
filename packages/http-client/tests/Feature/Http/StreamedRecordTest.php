@@ -2,7 +2,7 @@
 
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Drivers\Mock\MockHttpResponseFactory;
-use Cognesy\Http\Middleware\RecordReplay\StreamedRequestRecord;
+use Cognesy\Http\Extras\Support\RecordReplay\StreamedRequestRecord;
 
 test('creates from streamed HTTP interaction', function() {
     // Arrange

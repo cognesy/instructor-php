@@ -4,13 +4,14 @@ namespace Cognesy\HttpPool\Drivers\Symfony;
 
 use Cognesy\Http\Collections\HttpRequestList;
 use Cognesy\Http\Collections\HttpResponseList;
-use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\HttpPool\Contracts\CanHandleRequestPool;
+use Cognesy\HttpPool\Config\HttpPoolConfig;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
 use Cognesy\Http\Exceptions\HttpRequestException;
+use Cognesy\Http\Drivers\Symfony\SymfonyHttpResponseAdapter;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Result;
 use Exception;
@@ -24,7 +25,7 @@ readonly class SymfonyPool implements CanHandleRequestPool
 {
     public function __construct(
         private HttpClientInterface $client,
-        private HttpClientConfig $config,
+        private HttpPoolConfig $config,
         private EventDispatcherInterface $events,
     ) {}
 

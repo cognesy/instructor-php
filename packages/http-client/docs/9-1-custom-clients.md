@@ -1,36 +1,35 @@
 ---
 title: Custom Clients
-description: Register custom HTTP request drivers for non-standard transports.
+description: Add custom HTTP drivers with an explicit registry.
 ---
 
-## Register a Custom Driver
+## Add a Custom Driver
 
 ```php
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Creation\HttpClientDriverFactory;
-use Psr\EventDispatcher\EventDispatcherInterface;
+use Cognesy\Http\Creation\BundledHttpDrivers;
 
-HttpClientDriverFactory::registerDriver(
+$drivers = BundledHttpDrivers::registry()->withDriver(
     'acme',
-    static function (HttpClientConfig $config, EventDispatcherInterface $events): CanHandleHttpRequest {
-        return new AcmeHttpDriver($config, $events);
-    }
+    static fn(HttpClientConfig $config, $events, ?object $clientInstance): CanHandleHttpRequest
+        => new AcmeHttpDriver($config, $events, $clientInstance),
 );
 ```
 
-## Build Client with Custom Driver
+## Build a Client with That Driver
 
 ```php
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Creation\HttpClientBuilder;
 
 $client = (new HttpClientBuilder())
+    ->withDrivers($drivers)
     ->withConfig(new HttpClientConfig(driver: 'acme'))
     ->create();
 ```
 
-## Reuse Existing Vendor Clients
+## Reuse an Existing Vendor Client
 
 ```php
 use Cognesy\Http\Creation\HttpClientBuilder;
@@ -41,7 +40,7 @@ $client = (new HttpClientBuilder())
     ->create();
 ```
 
-## Direct Driver Injection
+## Inject a Driver Directly
 
 ```php
 use Cognesy\Http\Creation\HttpClientBuilder;
@@ -51,7 +50,7 @@ $client = (new HttpClientBuilder())
     ->create();
 ```
 
-If you need concurrent request execution, use the dedicated `packages/http-pool` APIs.
+If you need request pooling, use `packages/http-pool`.
 
 ## See Also
 

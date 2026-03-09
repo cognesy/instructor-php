@@ -2,7 +2,7 @@
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Collections\HttpRequestList;
-use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\HttpPool\Config\HttpPoolConfig;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\HttpPool\Drivers\Guzzle\GuzzlePool;
 use Cognesy\Http\Events\HttpRequestFailed;
@@ -26,7 +26,7 @@ beforeEach(function() {
     $this->client = new Client(['handler' => $handlerStack]);
     $this->events = new EventDispatcher();
 
-    $this->config = new HttpClientConfig(
+    $this->config = new HttpPoolConfig(
         driver: 'guzzle',
         maxConcurrent: 3,
         poolTimeout: 30,
@@ -83,7 +83,7 @@ test('pool with mixed results', function() {
 });
 
 test('pool with fail on error true', function() {
-    $config = new HttpClientConfig(
+    $config = new HttpPoolConfig(
         driver: 'guzzle',
         maxConcurrent: 3,
         poolTimeout: 30,
@@ -200,7 +200,7 @@ test('pool dispatches HttpRequestFailed event on rejection', function() {
 });
 
 test('pool dispatches HttpRequestFailed event even when failOnError is true', function() {
-    $config = new HttpClientConfig(
+    $config = new HttpPoolConfig(
         driver: 'guzzle',
         maxConcurrent: 3,
         poolTimeout: 30,

@@ -39,7 +39,7 @@ $person = $stream->finalValue();
 
 // Here you get completed and validated Person object
 $this->db->save($person); // ...for example: save to DB
-// @doctest id="963b"
+// @doctest id="5ed8"
 ```
 
 Partially updated data is not validated while it is received and deserialized.
@@ -60,7 +60,7 @@ $stream = $structuredOutput->stream();
 // Or via create() method
 $pending = $structuredOutput->create();
 $stream = $pending->stream();
-// @doctest id="51c3"
+// @doctest id="7d69"
 ```
 
 Both approaches return a `StructuredOutputStream` object, which gives you access to the response streamed from LLM and processed by Instructor into structured data.
@@ -108,7 +108,7 @@ foreach ($stream->partials() as $update) {
 $person = $stream->finalValue();
 // ...and for example save it to the database
 $db->savePerson($person);
-// @doctest id="1a33"
+// @doctest id="b1d5"
 ```
 
 
@@ -135,7 +135,7 @@ foreach ($stream->sequence() as $update) {
 $participants = $stream->finalValue();
 // ...and for example save it to the database
 $db->saveParticipants($participants->toArray());
-// @doctest id="248b"
+// @doctest id="ed89"
 ```
 
 ## Stream replay contract
@@ -166,7 +166,7 @@ $stream = (new StructuredOutput($runtime))
         options: ['stream' => true],
     )
     ->stream();
-// @doctest id="f5aa"
+// @doctest id="a31a"
 ```
 
 Replay reuses captured stream data, not a fresh LLM execution.
@@ -185,5 +185,5 @@ foreach ($stream->getIterator() as $execution) {
     $usage = $execution->usage();
     // custom metrics/observability logic
 }
-// @doctest id="1575"
+// @doctest id="47a5"
 ```

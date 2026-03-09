@@ -2,7 +2,7 @@
 
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Drivers\Mock\MockHttpResponseFactory;
-use Cognesy\Http\Middleware\RecordReplay\RequestRecords;
+use Cognesy\Http\Extras\Support\RecordReplay\RequestRecords;
 
 beforeEach(function() {
     $this->testStorageDir = sys_get_temp_dir() . '/http_test_records_' . uniqid();

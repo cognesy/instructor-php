@@ -3,9 +3,9 @@
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
-use Cognesy\Http\Middleware\RecordReplay\RecordingMiddleware;
-use Cognesy\Http\Middleware\RecordReplay\ReplayMiddleware;
-use Cognesy\Http\Middleware\RecordReplay\StreamedRequestRecord;
+use Cognesy\Http\Extras\Middleware\RecordReplay\RecordingMiddleware;
+use Cognesy\Http\Extras\Middleware\RecordReplay\ReplayMiddleware;
+use Cognesy\Http\Extras\Support\RecordReplay\StreamedRequestRecord;
 use Cognesy\Http\Stream\IterableStream;
 
 beforeEach(function() {

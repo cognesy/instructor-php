@@ -18,7 +18,7 @@ One of the most common issues when working with LLM APIs is authentication probl
 if (empty(getenv('OPENAI_API_KEY'))) {
 echo "API key is not set in environment variables\n";
 }
-// @doctest id="9712"
+// @doctest id="c209"
 ```
 
 2. **Check API Key Format**: Some providers require specific formats for API keys
@@ -32,7 +32,7 @@ echo "OpenAI API key format is incorrect\n";
 if (!str_starts_with(getenv('ANTHROPIC_API_KEY'), 'sk-ant-')) {
 echo "Anthropic API key format is incorrect\n";
 }
-// @doctest id="e640"
+// @doctest id="57eb"
 ```
 
 3. **Test Keys Directly**: Use a simple script to test your API keys
@@ -62,7 +62,7 @@ testApiKey('openai');
 testApiKey('anthropic');
 testApiKey('mistral');
 ?>
-// @doctest id="ba78"
+// @doctest id="4b9c"
 ```
 
 4. **Environment Variables**: Ensure your environment variables are being loaded correctly
@@ -73,5 +73,5 @@ $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 $dotenv->required(['OPENAI_API_KEY'])->notEmpty();
 ?>
-// @doctest id="b9c8"
+// @doctest id="e3e3"
 ```

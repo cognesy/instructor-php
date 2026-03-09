@@ -37,7 +37,7 @@ $data = Inference::using('openai')
         options: ['max_tokens' => 64],
     )
     ->asJsonData();
-// @doctest id="0697"
+// @doctest id="4b3e"
 ```
 
 ## Provider boundary

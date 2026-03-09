@@ -1,9 +1,7 @@
 ---
 title: Making Requests
-description: 'Practical request patterns for sync execution.'
+description: 'Short request patterns.'
 ---
-
-## Basic Request Patterns
 
 ### GET
 
@@ -16,10 +14,10 @@ $request = new HttpRequest(
     options: [],
 );
 
-$response = $client->withRequest($request)->get();
+$response = $client->send($request)->get();
 ```
 
-`string|array` request bodies are supported. Arrays are JSON-encoded. If encoding fails (for example because a value is not serializable), `HttpRequestBody` throws `InvalidArgumentException`.
+Arrays are JSON-encoded automatically.
 
 ### POST JSON
 
@@ -32,10 +30,10 @@ $request = new HttpRequest(
     options: [],
 );
 
-$response = $client->withRequest($request)->get();
+$response = $client->send($request)->get();
 ```
 
-## Request Mutation Is Immutable
+### Immutable mutation
 
 ```php
 $request = $request
@@ -43,9 +41,7 @@ $request = $request
     ->withStreaming(false);
 ```
 
-Each `with*()` call returns a new request.
-
-## Driver + Config via Builder
+### Build with config
 
 ```php
 use Cognesy\Http\Config\HttpClientConfig;
@@ -60,11 +56,3 @@ $client = (new HttpClientBuilder())
     ))
     ->create();
 ```
-
-## Error Strategy
-
-- `failOnError: false` (default): HTTP 4xx/5xx are returned as regular responses
-- `failOnError: true`: driver throws typed HTTP exceptions for 4xx/5xx
-
-> Migration note: default `HttpClientConfig` aligns to `failOnError: false`.
-> If you depended on throwing behavior by default, set `failOnError: true` explicitly.

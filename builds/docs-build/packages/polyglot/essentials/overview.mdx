@@ -15,7 +15,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $text = (new Inference())
     ->withMessages('What is the capital of France?')
     ->get();
-// @doctest id="7364"
+// @doctest id="ad83"
 ```
 
 ## Use a Specific Preset
@@ -29,7 +29,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $text = Inference::using('openai')
     ->withMessages('Give me three deployment checklist items.')
     ->get();
-// @doctest id="75de"
+// @doctest id="ee63"
 ```
 
 ## Override Model and Options Per Request
@@ -45,7 +45,7 @@ $text = (new Inference())
         options: ['temperature' => 0.2, 'max_tokens' => 120],
     )
     ->get();
-// @doctest id="1394"
+// @doctest id="b00e"
 ```
 
 ## Stream Output
@@ -62,7 +62,7 @@ $stream = (new Inference())
 foreach ($stream->deltas() as $delta) {
     echo $delta->contentDelta;
 }
-// @doctest id="757f"
+// @doctest id="ef81"
 ```
 
 ## Switch Providers at Runtime
@@ -78,7 +78,7 @@ foreach ($presets as $preset) {
         ->withMessages('One sentence: what is dependency injection?')
         ->get();
 }
-// @doctest id="937b"
+// @doctest id="8c40"
 ```
 
 ## See Also

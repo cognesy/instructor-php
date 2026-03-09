@@ -22,7 +22,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $text = Inference::using('openai')
     ->with(messages: 'Say hello in one sentence.')
     ->get();
-// @doctest id="fdca"
+// @doctest id="cb51"
 ```
 
 ## Native JSON object
@@ -37,7 +37,7 @@ $data = Inference::using('openai')
         responseFormat: ['type' => 'json_object'],
     )
     ->asJsonData();
-// @doctest id="252d"
+// @doctest id="5f5d"
 ```
 
 ## Native JSON schema
@@ -66,7 +66,7 @@ $data = Inference::using('openai')
         ],
     )
     ->asJsonData();
-// @doctest id="2976"
+// @doctest id="cbdb"
 ```
 
 ## Tool calling
@@ -95,7 +95,7 @@ $response = Inference::using('openai')
         toolChoice: 'auto',
     )
     ->response();
-// @doctest id="94a5"
+// @doctest id="5221"
 ```
 
 ## Markdown JSON fallback

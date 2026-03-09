@@ -17,7 +17,6 @@ $httpConfig = new HttpClientConfig(
     connectTimeout: 5,      // 5 seconds connection timeout
     requestTimeout: 60,     // 60 seconds request timeout
     idleTimeout: 120,       // 120 seconds idle timeout for streaming
-    maxConcurrent: 10,      // Maximum 10 concurrent requests
     failOnError: true,      // Throw exceptions on HTTP errors
 );
 
@@ -38,5 +37,5 @@ $response = $inference->with(
 )->get();
 
 echo $response;
-// @doctest id="d45e"
+// @doctest id="9088"
 ```

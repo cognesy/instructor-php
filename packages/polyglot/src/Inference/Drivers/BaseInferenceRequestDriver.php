@@ -4,7 +4,7 @@ namespace Cognesy\Polyglot\Inference\Drivers;
 
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
-use Cognesy\Http\HttpClient;
+use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Http\Contracts\CanManageStreamCache;
 use Cognesy\Http\Enums\StreamCachePolicy;
 use Cognesy\Http\Exceptions\HttpRequestException;
@@ -31,7 +31,7 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest
 {
     public function __construct(
         protected LLMConfig $config,
-        protected HttpClient $httpClient,
+        protected CanSendHttpRequests $httpClient,
         protected EventDispatcherInterface $events,
         protected CanTranslateInferenceRequest $requestTranslator,
         protected CanTranslateInferenceResponse $responseTranslator,
@@ -116,7 +116,7 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest
 
     protected function makeHttpResponse(HttpRequest $request): HttpResponse {
         try {
-            $httpResponse = $this->httpClient->withRequest($request)->get();
+            $httpResponse = $this->httpClient->send($request)->get();
         } catch (HttpRequestException $e) {
             $this->dispatchInferenceSendingFailed($request, $e);
             throw ProviderErrorClassifier::fromHttpException($e);

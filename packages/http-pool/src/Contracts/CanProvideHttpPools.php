@@ -3,7 +3,7 @@
 namespace Cognesy\HttpPool\Contracts;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\HttpPool\Config\HttpPoolConfig;
 
 interface CanProvideHttpPools
 {
@@ -14,7 +14,7 @@ interface CanProvideHttpPools
 
     public function makePool(
         string $name,
-        HttpClientConfig $config,
+        HttpPoolConfig $config,
         CanHandleEvents $events,
     ): CanHandleRequestPool;
 }

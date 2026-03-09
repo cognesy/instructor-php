@@ -1,17 +1,19 @@
 # HTTP Client Cheat Sheet
 
-Immutability rule: `with*()` methods return new instances. Reassign (`$client = $client->withMiddleware(...)`).
+Immutability rule: `with*()` methods return new instances.
 
 ## Core Entry Points
+
+### `CanSendHttpRequests`
+- `send(HttpRequest $request): PendingHttpResponse`
 
 ### `HttpClient`
 - `HttpClient::default(): HttpClient`
 - `HttpClient::fromConfig(HttpClientConfig $config): HttpClient`
-- `withRequest(HttpRequest $request): PendingHttpResponse`
+- implements `CanSendHttpRequests`
 - `withMiddleware(HttpMiddleware $middleware, ?string $name = null): HttpClient`
 - `withoutMiddleware(string $name): HttpClient`
 - `withMiddlewareStack(MiddlewareStack $stack): HttpClient`
-- `withSSEStream(): HttpClient` (deprecated)
 
 ### `HttpClientBuilder`
 - `withConfig(HttpClientConfig $config): self`
@@ -19,9 +21,6 @@ Immutability rule: `with*()` methods return new instances. Reassign (`$client = 
 - `withDriver(CanHandleHttpRequest $driver): self`
 - `withClientInstance(string $driverName, object $clientInstance): self`
 - `withMiddleware(HttpMiddleware ...$middleware): self`
-- `withRetryPolicy(RetryPolicy $policy): self`
-- `withCircuitBreakerPolicy(CircuitBreakerPolicy $policy, ?CanStoreCircuitBreakerState $stateStore = null): self`
-- `withIdempotencyMiddleware(IdempotencyMiddleware $middleware): self`
 - `withMock(?callable $configure = null): self`
 - `withEventBus(CanHandleEvents $events): self`
 - `create(): HttpClient`
@@ -88,23 +87,6 @@ Methods:
 - `HttpMiddleware::handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse`
 - `MiddlewareStack`: `append`, `appendMany`, `prepend`, `prependMany`, `remove`, `replace`, `clear`, `all`, `has`, `get`, `filter`, `decorate`
 
-### Built-in Middleware
-- `RetryMiddleware` + `RetryPolicy`
-- `RetryPolicy` honors `Retry-After` only for numeric seconds or RFC7231 HTTP-date values
-- `CircuitBreakerMiddleware` + `CircuitBreakerPolicy`
-- Circuit breaker state stores: `CanStoreCircuitBreakerState`, `InMemoryCircuitBreakerStateStore`, `ApcuCircuitBreakerStateStore`
-- `IdempotencyMiddleware`
-- `EventSource\EventSourceMiddleware`
-- `RecordReplay\RecordReplayMiddleware`
-
-Compatibility/deprecated path still present:
-- `ServerSideEvents\*`
-
-### `RecordReplayMiddleware` modes
-- `MODE_PASS`
-- `MODE_RECORD`
-- `MODE_REPLAY`
-
 ## Drivers
 
 Built-in driver names:
@@ -112,10 +94,6 @@ Built-in driver names:
 - `exthttp`
 - `guzzle`
 - `symfony`
-- `laravel`
-
-Custom registration:
-- `HttpClientDriverFactory::registerDriver(string $name, string|callable)`
 
 ## Exceptions
 
@@ -129,10 +107,11 @@ Custom registration:
 ### Basic request
 
 ```php
+use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\HttpClient;
 
-$client = HttpClient::default();
+$client = HttpClient::default(); // default CanSendHttpRequests implementation
 
 $request = new HttpRequest(
     url: 'https://api.example.com/health',
@@ -142,7 +121,7 @@ $request = new HttpRequest(
     options: [],
 );
 
-$response = $client->withRequest($request)->get();
+$response = $client->send($request)->get();
 echo $response->statusCode();
 ```
 
@@ -157,15 +136,14 @@ $request = (new HttpRequest(
     options: [],
 ))->withStreaming(true);
 
-foreach ($client->withRequest($request)->stream() as $chunk) {
+foreach ($client->send($request)->stream() as $chunk) {
     echo $chunk;
 }
 ```
 
 ### Request pooling
 
-Pooling moved to `packages/http-pool`.
-Use `Cognesy\HttpPool\HttpPool` and `Cognesy\HttpPool\PendingHttpPool`.
+Use `packages/http-pool`.
 
 ### Mock driver
 

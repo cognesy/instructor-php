@@ -38,7 +38,7 @@ class SearchQuery
         print("Searching for `{$this->title}` with query `{$this->query}` using `{$this->type->value}`\n");
     }
 }
-// @doctest id="6efb"
+// @doctest id="1f8c"
 ```
 
 
@@ -64,5 +64,5 @@ foreach (segment("Search for a picture of a cat and a video of a dog")->queries 
     $query->execute();
     // dump($query);
 }
-// @doctest id="ec80"
+// @doctest id="e120"
 ```

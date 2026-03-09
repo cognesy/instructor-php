@@ -5,13 +5,14 @@ namespace Cognesy\HttpPool\Drivers\Guzzle;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Collections\HttpRequestList;
 use Cognesy\Http\Collections\HttpResponseList;
-use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\HttpPool\Contracts\CanHandleRequestPool;
+use Cognesy\HttpPool\Config\HttpPoolConfig;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
 use Cognesy\Http\Exceptions\HttpRequestException;
+use Cognesy\Http\Drivers\Guzzle\PsrHttpResponseAdapter;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Result;
 use GuzzleHttp\ClientInterface;
@@ -26,7 +27,7 @@ class GuzzlePool implements CanHandleRequestPool
     protected EventDispatcherInterface $events;
 
     public function __construct(
-        protected HttpClientConfig $config,
+        protected HttpPoolConfig $config,
         protected ClientInterface $client,
         ?EventDispatcherInterface $events,
     ) {

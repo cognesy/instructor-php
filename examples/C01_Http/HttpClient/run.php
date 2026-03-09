@@ -44,7 +44,7 @@ $request = new HttpRequest(
     options: [],
 );
 
-$response = $client->withRequest($request)->get();
+$response = $client->send($request)->get();
 
 echo "Status:  " . $response->statusCode() . "\n";
 echo "Headers: " . json_encode($response->headers()) . "\n";

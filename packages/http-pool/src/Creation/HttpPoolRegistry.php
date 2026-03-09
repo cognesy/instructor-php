@@ -3,14 +3,14 @@
 namespace Cognesy\HttpPool\Creation;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\HttpPool\Config\HttpPoolConfig;
 use Cognesy\HttpPool\Contracts\CanHandleRequestPool;
 use Cognesy\HttpPool\Contracts\CanProvideHttpPools;
 use InvalidArgumentException;
 
 final class HttpPoolRegistry implements CanProvideHttpPools
 {
-    /** @param array<string, callable(HttpClientConfig,CanHandleEvents):CanHandleRequestPool> $pools */
+    /** @param array<string, callable(HttpPoolConfig,CanHandleEvents):CanHandleRequestPool> $pools */
     private function __construct(
         private array $pools = [],
     ) {}
@@ -20,7 +20,7 @@ final class HttpPoolRegistry implements CanProvideHttpPools
     }
 
     /**
-     * @param array<string, string|callable(HttpClientConfig,CanHandleEvents):CanHandleRequestPool> $pools
+     * @param array<string, string|callable(HttpPoolConfig,CanHandleEvents):CanHandleRequestPool> $pools
      */
     public static function fromArray(array $pools): self {
         $registry = self::make();
@@ -33,7 +33,7 @@ final class HttpPoolRegistry implements CanProvideHttpPools
     }
 
     /**
-     * @param string|callable(HttpClientConfig,CanHandleEvents):CanHandleRequestPool $pool
+     * @param string|callable(HttpPoolConfig,CanHandleEvents):CanHandleRequestPool $pool
      */
     public function withPool(string $name, string|callable $pool): self {
         $copy = clone $this;
@@ -61,7 +61,7 @@ final class HttpPoolRegistry implements CanProvideHttpPools
     #[\Override]
     public function makePool(
         string $name,
-        HttpClientConfig $config,
+        HttpPoolConfig $config,
         CanHandleEvents $events,
     ): CanHandleRequestPool {
         $factory = $this->pools[$name] ?? null;
@@ -73,12 +73,12 @@ final class HttpPoolRegistry implements CanProvideHttpPools
     }
 
     /**
-     * @param string|callable(HttpClientConfig,CanHandleEvents):CanHandleRequestPool $pool
-     * @return callable(HttpClientConfig,CanHandleEvents):CanHandleRequestPool
+     * @param string|callable(HttpPoolConfig,CanHandleEvents):CanHandleRequestPool $pool
+     * @return callable(HttpPoolConfig,CanHandleEvents):CanHandleRequestPool
      */
     private static function toPoolFactory(string|callable $pool): callable {
         return match (true) {
-            is_callable($pool) => static function (HttpClientConfig $config, CanHandleEvents $events) use ($pool): CanHandleRequestPool {
+            is_callable($pool) => static function (HttpPoolConfig $config, CanHandleEvents $events) use ($pool): CanHandleRequestPool {
                 $instance = $pool($config, $events);
                 if (!$instance instanceof CanHandleRequestPool) {
                     throw new InvalidArgumentException('Custom HTTP pool factory must return ' . CanHandleRequestPool::class);
@@ -86,7 +86,7 @@ final class HttpPoolRegistry implements CanProvideHttpPools
 
                 return $instance;
             },
-            is_string($pool) => static function (HttpClientConfig $config, CanHandleEvents $events) use ($pool): CanHandleRequestPool {
+            is_string($pool) => static function (HttpPoolConfig $config, CanHandleEvents $events) use ($pool): CanHandleRequestPool {
                 $instance = new $pool($config, $events);
                 if (!$instance instanceof CanHandleRequestPool) {
                     throw new InvalidArgumentException('Custom HTTP pool class must implement ' . CanHandleRequestPool::class);

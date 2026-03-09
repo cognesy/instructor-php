@@ -5,7 +5,7 @@ namespace Cognesy\Polyglot\Embeddings;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Creation\HttpClientBuilder;
-use Cognesy\Http\HttpClient;
+use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanCreateEmbeddings;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
@@ -37,7 +37,7 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
     public static function fromConfig(
         EmbeddingsConfig $config,
         ?CanHandleEvents $events = null,
-        ?HttpClient $httpClient = null,
+        ?CanSendHttpRequests $httpClient = null,
     ): self {
         $events = self::resolveEvents($events);
         $driver = (new EmbeddingsDriverFactory($events))->makeDriver(
@@ -50,7 +50,7 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
     private static function fromResolver(
         CanResolveEmbeddingsConfig $resolver,
         ?CanHandleEvents $events = null,
-        ?HttpClient $httpClient = null,
+        ?CanSendHttpRequests $httpClient = null,
     ): self {
         $events = self::resolveEvents($events);
         $config = $resolver->resolveConfig();
@@ -70,7 +70,7 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
     public static function fromProvider(
         EmbeddingsProvider $provider,
         ?CanHandleEvents $events = null,
-        ?HttpClient $httpClient = null,
+        ?CanSendHttpRequests $httpClient = null,
     ): self {
         return self::fromResolver(
             resolver: $provider,
@@ -91,8 +91,8 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
 
     private static function resolveHttpClient(
         CanHandleEvents $events,
-        ?HttpClient $httpClient,
-    ): HttpClient {
+        ?CanSendHttpRequests $httpClient,
+    ): CanSendHttpRequests {
         if ($httpClient !== null) {
             return $httpClient;
         }

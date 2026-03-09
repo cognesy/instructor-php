@@ -41,7 +41,7 @@ $data = Inference::using('openai')
         mode: OutputMode::Json,
     )
     ->asJsonData();
-// @doctest id="580b"
+// @doctest id="4078"
 ```
 
 ## After
@@ -56,7 +56,7 @@ $data = Inference::using('openai')
         responseFormat: ['type' => 'json_object'],
     )
     ->asJsonData();
-// @doctest id="9179"
+// @doctest id="f25e"
 ```
 
 ## Tool calls
@@ -68,7 +68,7 @@ If you want tool-call arguments as JSON, use:
 $args = Inference::using('openai')
     ->with(messages: 'Call the weather tool.', tools: $tools, toolChoice: 'auto')
     ->asToolCallJsonData();
-// @doctest id="ecd8"
+// @doctest id="36b4"
 ```
 
 Markdown-JSON fallback and other structured-output strategies now belong to Instructor, not Polyglot.

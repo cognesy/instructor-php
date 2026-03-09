@@ -5,11 +5,12 @@ namespace Cognesy\HttpPool\Drivers\ExtHttp;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Collections\HttpRequestList;
 use Cognesy\Http\Collections\HttpResponseList;
-use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\HttpPool\Contracts\CanHandleRequestPool;
+use Cognesy\HttpPool\Config\HttpPoolConfig;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
+use Cognesy\Http\Drivers\ExtHttp\ExtHttpResponseAdapter;
 use Cognesy\Http\Exceptions\HttpExceptionFactory;
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Http\Exceptions\NetworkException;
@@ -38,7 +39,7 @@ class ExtHttpPool implements CanHandleRequestPool
     private EventDispatcherInterface $events;
 
     public function __construct(
-        protected HttpClientConfig $config,
+        protected HttpPoolConfig $config,
         ?ExtHttpClient $client = null,
         ?EventDispatcherInterface $events = null,
     ) {

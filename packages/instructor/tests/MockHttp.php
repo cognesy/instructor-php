@@ -3,13 +3,14 @@
 namespace Cognesy\Instructor\Tests;
 
 use Cognesy\Config\Env;
+use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\HttpClient;
 
 class MockHttp
 {
-    static public function get(array $args, ?string $provider = null) : HttpClient {
+    static public function get(array $args, ?string $provider = null) : CanSendHttpRequests {
         $driver = new MockHttpDriver();
 
         // Auto-detect provider from config if not specified
@@ -36,7 +37,7 @@ class MockHttp
             ));
         }
 
-        return new HttpClient(driver: $driver);
+        return HttpClient::fromDriver($driver);
     }
 
     static private function detectProvider(): string {

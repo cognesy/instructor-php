@@ -1,55 +1,37 @@
 ---
 title: 'Getting Started'
-description: 'Quick start for sync requests with mock and real drivers.'
+description: 'Smallest useful sync request example.'
 ---
-
-## 1. Build a Client
-
-```php
-use Cognesy\Http\Config\HttpClientConfig;
-use Cognesy\Http\HttpClient;
-
-$client = HttpClient::default(); // default driver from HttpClientConfig defaults (curl)
-// @doctest id="32f4"
-```
-
-Select a specific driver via typed config when needed:
-
-```php
-$client = HttpClient::fromConfig(new HttpClientConfig(driver: 'guzzle'));
-// @doctest id="f088"
-```
-
-## 2. Create and Execute a Request
 
 ```php
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\HttpClient;
 
-$request = new HttpRequest(
+$client = HttpClient::default();
+
+$response = $client->send(new HttpRequest(
     url: 'https://api.example.com/health',
     method: 'GET',
     headers: ['Accept' => 'application/json'],
     body: '',
     options: [],
-);
-
-$response = $client->withRequest($request)->get();
+))->get();
 
 echo $response->statusCode();
 echo $response->body();
-// @doctest id="567b"
+// @doctest id="a552"
 ```
 
-## 3. Add Middleware (Immutable)
+Use typed config only when you need a specific driver:
 
 ```php
-$client = $client->withMiddleware($middleware);
-// @doctest id="070c"
+use Cognesy\Http\Config\HttpClientConfig;
+
+$client = HttpClient::fromConfig(new HttpClientConfig(driver: 'guzzle'));
+// @doctest id="d7d1"
 ```
 
-Do not rely on in-place mutation.
-
-## 4. Fast Local Testing with Mock Driver
+For tests:
 
 ```php
 use Cognesy\Http\Creation\HttpClientBuilder;
@@ -64,7 +46,5 @@ $client = (new HttpClientBuilder())
         );
     })
     ->create();
-// @doctest id="ff62"
+// @doctest id="4b86"
 ```
-
-This is the recommended default for deterministic examples and tests.

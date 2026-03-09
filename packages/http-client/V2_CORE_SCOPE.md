@@ -4,11 +4,13 @@ This file defines the intended minimal core for v2, based on current in-repo usa
 
 ## Core (First-Class)
 
-- `HttpClient` + `HttpClientBuilder`
-- Core drivers: `curl`, `guzzle`, `symfony`, `laravel`
-- Streaming via `EventSourceMiddleware` and request `withStreaming(true)`
+- `HttpClient` + `HttpClientRuntime` + `HttpClientBuilder`
+- `CanSendHttpRequests`
+- `CanHandleHttpRequest`
+- `HttpDriverRegistry` + `BundledHttpDrivers`
+- Core drivers: `curl`, `guzzle`, `symfony`, `exthttp`
+- Streaming via `HttpResponse` and request `withStreaming(true)`
 - Mock/testing path (`MockHttpDriver`, mock response factory)
-- Record/replay middleware path (kept in core for now)
 
 Pooling moved to `packages/http-pool`.
 
@@ -16,24 +18,20 @@ Pooling moved to `packages/http-pool`.
 
 - `HttpClient::withSSEStream()`
 - `Middleware\ServerSideEvents\*`
-- `HttpClientBuilder::using()`
-- `HttpClientBuilder::withDebugPreset()`
 - `StreamedRequestRecord::createAppropriateRecord()`
 
-## Optionalization Candidates
+## Extras
 
-- `Drivers\ExtHttp\ExtHttpDriver`
+- middleware and support helpers under `Extras`
 
-These are niche and extension-dependent (`pecl_http`), so they are planned to move to optional modules.
+These are available, but not part of the smallest core surface.
 
 ## Migration Matrix
 
 | Current API | v2 Recommendation |
 |---|---|
-| `withSSEStream()` | `withMiddleware((new EventSourceMiddleware())->withParser(...))` |
-| `StreamSSEsMiddleware` | `EventSourceMiddleware::withParser()` |
-| `ServerSideEventStream` | `EventSourceStream` with parser callback |
-| `HttpClientBuilder::using()` | `HttpClientBuilder::withPreset()` |
-| `HttpClientBuilder::withDebugPreset()` | `HttpClientBuilder::withHttpDebugPreset()` |
+| `withSSEStream()` | explicit middleware under `Extras` |
+| `StreamSSEsMiddleware` | explicit middleware under `Extras` |
+| `ServerSideEventStream` | explicit support class under `Extras` |
 | `StreamedRequestRecord::createAppropriateRecord()` | `RequestRecord::createAppropriate()` |
-| `exthttp` driver | Prefer core drivers, prepare for optional package |
+| `exthttp` driver | Keep when available; use another core driver if the extension is not installed |
