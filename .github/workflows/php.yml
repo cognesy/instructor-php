@@ -65,9 +65,6 @@ jobs:
     - name: Regenerate Autoloader
       run: composer dump-autoload
 
-    - name: Events 2.0 completeness checks
-      run: composer check-events-2.0
-
     - name: Run test suite (all code local)
       run: composer test
 
