@@ -377,6 +377,7 @@ Links to read-only repositories of the standalone package distributions:
 - [instructor-evals](https://github.com/cognesy/instructor-evals) - LLM output evaluation tools
 - [instructor-events](https://github.com/cognesy/instructor-events) - events and event listeners for Instructor
 - [instructor-http-client](https://github.com/cognesy/instructor-http-client) - easily switch between underlying HTTP client libraries (out-of-the-box support for Guzzle, Symfony, Laravel)
+- [instructor-http-pool](https://github.com/cognesy/instructor-http-pool) - concurrent HTTP request execution for fan-out workloads
 - [instructor-hub](https://github.com/cognesy/instructor-hub) - CLI tool for browsing and running Instructor examples
 - [instructor-messages](https://github.com/cognesy/instructor-messages) - chat message sequence handling for Instructor
 - [instructor-polyglot](https://github.com/cognesy/instructor-polyglot) - use single API for inference and embeddings across most of LLM providers, easily switch between them (e.g., develop on Ollama, switch to Groq in production)

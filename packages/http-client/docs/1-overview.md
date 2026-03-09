@@ -12,16 +12,16 @@ Primary goals:
 - Stable request/response API across drivers (`curl`, `guzzle`, `symfony`, `laravel`)
 - First-class streaming support for LLM responses
 - Predictable middleware pipeline for cross-cutting behavior
-- Concurrent request pooling with typed result handling
 - Deterministic test workflows via mock and record/replay middleware
 
 ## Core Building Blocks
 
-- `HttpClient`: entry point for request execution, middleware, and pooling
+- `HttpClient`: entry point for request execution and middleware
 - `HttpRequest`: immutable request object (`with*()` returns a new request)
 - `PendingHttpResponse`: deferred response execution (`get()` / `stream()`)
-- `HttpRequestList` / `HttpResponseList`: typed collections for pooling
 - `MiddlewareStack`: immutable middleware composition
+
+Pooling now lives in `packages/http-pool`.
 
 ## Docs Structure
 
@@ -32,7 +32,6 @@ Primary goals:
 - [Making Requests](3-making-requests.md)
 - [Handling Responses](4-handling-responses.md)
 - [Streaming Responses](5-streaming-responses.md)
-- [Request Pooling](6-pooling.md)
 - [Middleware](10-middleware.md)
 
 ### Extras
@@ -54,14 +53,6 @@ HttpClient
   -> HttpResponse (sync) or stream (chunked)
 ```
 
-For pooling:
-
-```text
-HttpRequestList
-  -> HttpClient::pool() or withPool()->all()
-  -> HttpResponseList (Result<Success|Failure>)
-```
-
 ## Immutability Rules
 
 `with*()` methods are immutable across core objects:
@@ -78,6 +69,7 @@ Use this package for:
 
 - LLM HTTP calls (sync or streaming)
 - Request/response middleware customization
-- Fan-out/fan-in workloads with pooled requests
+
+Use `packages/http-pool` for fan-out/fan-in workloads with concurrent requests.
 
 Avoid treating it as a full generic REST SDK abstraction. Keep it focused on reliable transport behavior.

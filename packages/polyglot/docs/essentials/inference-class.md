@@ -72,30 +72,33 @@ $pending = $runtime->create(new InferenceRequest(messages: 'Ping', model: 'gpt-4
 $text = $pending->get();
 ```
 
-## Register Custom Drivers
+## Extend Drivers Per Runtime
 
 ```php
 <?php
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
+use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIDriver;
-use Cognesy\Polyglot\Inference\Inference;
-use Psr\EventDispatcher\EventDispatcherInterface;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
+use Cognesy\Events\Contracts\CanHandleEvents;
 
-Inference::registerDriver(
+$drivers = BundledInferenceDrivers::registry()->withDriver(
     'openai-custom',
     function (
         LLMConfig $config,
         HttpClient $httpClient,
-        EventDispatcherInterface $events,
+        CanHandleEvents $events,
     ): CanProcessInferenceRequest {
         return new OpenAIDriver($config, $httpClient, $events);
-    }
+    },
 );
 
-Inference::unregisterDriver('openai-custom');
-Inference::resetDrivers();
+$runtime = InferenceRuntime::fromConfig(
+    config: LLMConfig::fromArray(['driver' => 'openai-custom']),
+    drivers: $drivers,
+);
 ```
 
 ## See Also

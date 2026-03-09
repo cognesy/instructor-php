@@ -1,5 +1,8 @@
 # HTTP Client Package - Internal Design
 
+Note: concurrent request pooling has been extracted to `packages/http-pool`.
+This document now describes the single-request transport layer only.
+
 ## Core Architecture
 
 **HttpClient** serves as the unified public API that abstracts underlying HTTP implementations (Guzzle, Laravel, Symfony, Curl) behind a consistent interface. The design enables seamless integration into diverse PHP environments without coupling to specific HTTP client libraries.
@@ -11,8 +14,6 @@
 - `withRequest(HttpRequest)` → `PendingHttpResponse` - Lazy execution model
 - `PendingHttpResponse` - Represents a pending execution, lets you choose and chain further operations (e.g., regular call vs streaming)
 - `withMiddleware()` / `withoutMiddleware()` - Stack manipulation
-- `pool(HttpRequestList, ?int)` → `HttpResponseList` - Concurrent request execution
-- `withPool(HttpRequestList)` → `PendingHttpPool` - Deferred concurrent execution
 - Internally wraps: `CanHandleHttpRequest` driver + `MiddlewareStack`
 
 **HttpClientBuilder** - Fluent configuration builder:
@@ -27,14 +28,6 @@
 - Each driver wraps native client (Guzzle\Client, Laravel\Factory, Symfony\Client, or raw cURL)
 - Standardizes config mapping (timeouts, headers, streaming)
 - Enhanced exception handling with timing measurement and rich context
-- Pool support: `CanHandleRequestPool` contract for concurrent execution
-
-**Pool Abstraction** - `CanHandleRequestPool` contract:
-- Method: `pool(HttpRequestList, ?int) → HttpResponseList`
-- Implementations: `GuzzlePool`, `LaravelPool`, `SymfonyPool`, `CurlPool`, `CurlNewPool`
-- Driver-optimized concurrent execution (native pools for Guzzle/Symfony, batching for Laravel)
-- Returns typed collection of Result objects (Success/Failure)
-- Note: `MockDriver` does NOT implement pools - sequential execution only
 
 **Collection Classes** - Type-safe request/response containers:
 - `HttpRequestList` - Immutable collection of HttpRequest objects
@@ -48,7 +41,7 @@
   - Query methods: `successful()`, `failed()`, `hasFailures()`, `successCount()`, `failureCount()`
   - Mutators: `withAppended()`, `filter()`, `map()`
 - Both use `ArrayList<T>` internally for storage
-- Eliminates raw array usage in pool APIs
+- Eliminates raw array usage in response-processing APIs
 
 **Middleware System** - Onion-pattern request/response processing:
 - `MiddlewareStack` - manages ordered collection with named middleware
@@ -63,7 +56,6 @@
 - `HttpRequestList` - typed collection of HttpRequest objects
 - `HttpResponseList` - typed collection of Result<HttpResponse> objects
 - `PendingHttpResponse` - lazy executor that triggers middleware stack + driver
-- `PendingHttpPool` - manages concurrent request execution with deferred execution model
 
 ## Exception Hierarchy (v1.7+)
 
@@ -102,17 +94,11 @@ HttpClient
 │           ├── Native HTTP Client
 │           └── HttpExceptionFactory (error mapping)
 ├── Events (debugging/monitoring)
-└── PendingHttpPool (concurrent execution)
-    └── PoolDriver (driver-specific pool implementation)
-        ├── HttpRequestList → [HttpRequest, ...]
-        └── HttpResponseList ← [Result<HttpResponse>, ...]
 ```
 
 **Request Flow**: `HttpRequest` → `MiddlewareStack.decorate(driver)` → `MiddlewareHandler` → `Driver.handle()` → `HttpResponse`
 
 **Error Flow**: Native Exception → `HttpExceptionFactory.fromDriverException()` → Custom Exception → Event Dispatch
-
-**Pool Flow**: `HttpRequestList` → `PendingHttpPool` → `PoolDriver.pool()` → Concurrent Execution → `HttpResponseList`
 
 **Collection Flow**:
 - Input: Array or variadic args → `HttpRequestList::of(...)` or `::fromArray()`
@@ -124,19 +110,6 @@ HttpClient
 **Immutability**: All client operations and collections return new instances, enabling safe concurrent usage and configuration sharing.
 
 ## Advanced Features
-
-### Concurrent Request Processing
-- **Pool Support**: All major drivers implement `CanHandleRequestPool` for concurrent execution
-- **Typed Collections**: `HttpRequestList` input, `HttpResponseList` output with Result monads
-- **Driver-Specific Pools**:
-  - `GuzzlePool` - Native Guzzle\Pool with promises
-  - `LaravelPool` - Batched execution using Laravel HTTP client pool
-  - `SymfonyPool` - Streaming response handling with Symfony HTTP client
-  - `CurlPool` / `CurlNewPool` - curl_multi based concurrent execution
-  - `MockDriver` - Does NOT support pools (sequential only via handle())
-- **Configurable Concurrency**: `maxConcurrent` parameter controls parallel request limits
-- **Mixed Results**: Pools handle success/failure combinations gracefully via Result monad
-- **Order Preservation**: Response order matches request order (normalized internally)
 
 ### Collection API Benefits
 - **Type Safety**: Compile-time checking for request/response collections
@@ -165,17 +138,12 @@ HttpClient
 - **Retry Indicators**: Built-in retry logic guidance via `isRetriable()` method
 - **Context Preservation**: Full request/response context in all exceptions
 - **Event Integration**: Error events for monitoring and logging integration
-- **Pool Error Handling**: Individual request failures don't abort entire pool
-  - Failed requests return `Result::failure()` in `HttpResponseList`
-  - Success/failure mixed results handled gracefully
-
 ## Integration Strategy
 
 The package eliminates HTTP client lock-in:
 - **Instance Injection**: Accepts pre-configured client instances from DI containers
 - **Middleware Compatibility**: Consistent processing layer regardless of underlying client
 - **Exception Consistency**: Same exception hierarchy across all HTTP implementations
-- **Pool Abstraction**: Concurrent request handling without driver coupling
 - **Collection Types**: Type-safe APIs eliminate array-related bugs
 - **Driver Flexibility**: Easy switching between Guzzle, Laravel, Symfony, Curl implementations
 
@@ -200,7 +168,7 @@ The package eliminates HTTP client lock-in:
 **Clean Code**:
 - Single responsibility for each class
 - Dependency injection throughout
-- Interface-based contracts (CanHandleHttpRequest, CanHandleRequestPool)
+- Interface-based contracts (CanHandleHttpRequest)
 - No nested control structures beyond 1-2 levels
 
 **SOLID Principles**:
@@ -210,4 +178,4 @@ The package eliminates HTTP client lock-in:
 - Interface Segregation: Separate contracts for request handling and pools
 - Dependency Inversion: Depend on interfaces, not concrete implementations
 
-This design allows InstructorPHP and Polyglot to integrate transparently into any PHP application stack while maintaining performance, type safety, leveraging existing HTTP infrastructure, and providing robust error handling with intelligent retry capabilities.
+For concurrent execution internals, see `packages/http-pool`.

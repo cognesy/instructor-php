@@ -15,7 +15,7 @@ $client = $client->withMiddleware(
     ),
     'record-replay'
 );
-// @doctest id="0c95"
+// @doctest id="f540"
 ```
 
 ## Replay Mode
@@ -31,7 +31,7 @@ $client = $client->withMiddleware(
     ),
     'record-replay'
 );
-// @doctest id="c991"
+// @doctest id="ee10"
 ```
 
 `fallbackToRealRequests: false` makes missing recordings fail fast.
@@ -46,7 +46,7 @@ $client = $client->withMiddleware(
         mode: RecordReplayMiddleware::MODE_PASS,
     )
 );
-// @doctest id="4bab"
+// @doctest id="9c8e"
 ```
 
 Use pass-through when you want to keep middleware wiring but disable recording and replay behavior.

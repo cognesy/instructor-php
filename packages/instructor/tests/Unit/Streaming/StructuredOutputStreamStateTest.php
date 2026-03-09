@@ -76,3 +76,32 @@ it('accumulates tool argument fragments and exposes the latest tool snapshot', f
         ->and($second->finishReason()->value)->toBe('stop')
         ->and($second->value())->toBe(['name' => 'Ann']);
 });
+
+it('memoizes derived tool calls and snapshot until state changes', function () {
+    $state = StructuredOutputStreamState::empty();
+
+    $state->applyDelta(new PartialInferenceDelta(
+        toolId: 'tool-1',
+        toolName: 'extract',
+        toolArgs: '{"name":"Ann"}',
+    ));
+    $state->setValue(['name' => 'Ann']);
+
+    $firstToolCalls = $state->toolCalls();
+    $secondToolCalls = $state->toolCalls();
+    $firstSnapshot = $state->snapshot();
+    $secondSnapshot = $state->snapshot();
+
+    $state->applyDelta(new PartialInferenceDelta(
+        toolId: 'tool-1',
+        toolArgs: ',"age":30}',
+    ));
+
+    $updatedToolCalls = $state->toolCalls();
+    $updatedSnapshot = $state->snapshot();
+
+    expect($firstToolCalls)->toBe($secondToolCalls)
+        ->and($firstSnapshot)->toBe($secondSnapshot)
+        ->and($updatedToolCalls)->not->toBe($firstToolCalls)
+        ->and($updatedSnapshot)->not->toBe($firstSnapshot);
+});

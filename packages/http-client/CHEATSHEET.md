@@ -8,19 +8,15 @@ Immutability rule: `with*()` methods return new instances. Reassign (`$client = 
 - `HttpClient::default(): HttpClient`
 - `HttpClient::fromConfig(HttpClientConfig $config): HttpClient`
 - `withRequest(HttpRequest $request): PendingHttpResponse`
-- `pool(HttpRequestList $requests, ?int $maxConcurrent = null): HttpResponseList`
-- `withPool(HttpRequestList $requests): PendingHttpPool`
 - `withMiddleware(HttpMiddleware $middleware, ?string $name = null): HttpClient`
 - `withoutMiddleware(string $name): HttpClient`
 - `withMiddlewareStack(MiddlewareStack $stack): HttpClient`
-- `withPoolHandler(CanHandleRequestPool $poolHandler): HttpClient`
 - `withSSEStream(): HttpClient` (deprecated)
 
 ### `HttpClientBuilder`
 - `withConfig(HttpClientConfig $config): self`
 - `withDsn(string $dsn): self`
 - `withDriver(CanHandleHttpRequest $driver): self`
-- `withPoolHandler(CanHandleRequestPool $poolHandler): self`
 - `withClientInstance(string $driverName, object $clientInstance): self`
 - `withMiddleware(HttpMiddleware ...$middleware): self`
 - `withRetryPolicy(RetryPolicy $policy): self`
@@ -71,9 +67,6 @@ Methods:
 - `content(): string` (non-streamed path)
 - `stream(): Generator`
 
-### `PendingHttpPool`
-- `all(?int $maxConcurrent = null): HttpResponseList`
-
 ## Collections
 
 ### `HttpRequestList`
@@ -87,7 +80,7 @@ Methods:
 - `successful()`, `failed()`, `hasFailures()`, `hasSuccesses()`
 - `successCount()`, `failureCount()`
 - `withAppended()`, `filter()`, `map()`
-- Pool entries are `Result` objects (`isSuccess()`, `unwrap()`, `error()`).
+- For pooled request results, see `packages/http-pool`.
 
 ## Middleware
 
@@ -121,11 +114,8 @@ Built-in driver names:
 - `symfony`
 - `laravel`
 
-Built-in pool handlers exist for the same names.
-
 Custom registration:
 - `HttpClientDriverFactory::registerDriver(string $name, string|callable)`
-- `HttpClientDriverFactory::registerPoolHandler(string $name, string|callable)`
 
 ## Exceptions
 
@@ -172,28 +162,10 @@ foreach ($client->withRequest($request)->stream() as $chunk) {
 }
 ```
 
-### Pooled requests
+### Request pooling
 
-```php
-use Cognesy\Http\Collections\HttpRequestList;
-use Cognesy\Http\Data\HttpRequest;
-
-$requests = HttpRequestList::of(
-    new HttpRequest('https://api.example.com/a', 'GET', [], '', []),
-    new HttpRequest('https://api.example.com/b', 'GET', [], '', []),
-);
-
-$results = $client->pool($requests, maxConcurrent: 2);
-
-foreach ($results as $result) {
-    if ($result->isSuccess()) {
-        $response = $result->unwrap();
-        continue;
-    }
-
-    $error = $result->error();
-}
-```
+Pooling moved to `packages/http-pool`.
+Use `Cognesy\HttpPool\HttpPool` and `Cognesy\HttpPool\PendingHttpPool`.
 
 ### Mock driver
 

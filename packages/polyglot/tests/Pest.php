@@ -24,12 +24,6 @@
 |
 */
 
-use Cognesy\Polyglot\Inference\Creation\InferenceDriverFactory;
-
-afterEach(function () {
-    InferenceDriverFactory::resetDrivers();
-});
-
 expect()->extend('toBeOne', function () {
     return $this->toBe(1);
 });

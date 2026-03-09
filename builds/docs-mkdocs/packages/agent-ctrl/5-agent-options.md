@@ -31,7 +31,7 @@ $response = AgentCtrl::claudeCode()
     ->withPermissionMode(PermissionMode::BypassPermissions)
     ->withMaxTurns(10)
     ->execute('Refactor this service to remove duplication.');
-// @doctest id="7efd"
+// @doctest id="20a0"
 ```
 
 ## Codex
@@ -56,7 +56,7 @@ $response = AgentCtrl::codex()
     ->withSandbox(SandboxMode::WorkspaceWrite)
     ->fullAuto()
     ->execute('Write tests for this controller.');
-// @doctest id="18db"
+// @doctest id="824a"
 ```
 
 ## OpenCode
@@ -77,5 +77,5 @@ $response = AgentCtrl::openCode()
     ->withAgent('coder')
     ->withTitle('Repository cleanup')
     ->execute('Find dead code and propose removals.');
-// @doctest id="b2ee"
+// @doctest id="2a73"
 ```

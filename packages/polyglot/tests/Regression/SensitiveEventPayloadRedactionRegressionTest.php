@@ -7,10 +7,11 @@ use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Http\HttpClient;
+use Cognesy\Polyglot\Inference\Creation\InferenceDriverRegistry;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceRequest;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
-use Cognesy\Polyglot\Inference\Creation\InferenceDriverFactory;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Drivers\BaseInferenceRequestDriver;
@@ -28,13 +29,6 @@ it('redacts sensitive config values in InferenceDriverBuilt event payload', func
         $captured[] = $event;
     });
 
-    InferenceDriverFactory::registerDriver(
-        'custom-redaction-test',
-        fn($config, $httpClient, $eventBus) => new FakeInferenceDriver(),
-    );
-
-    $factory = new InferenceDriverFactory($events);
-    $httpClient = (new HttpClientBuilder())->create();
     $config = new LLMConfig(
         apiUrl: 'https://api.example.com',
         apiKey: 'super-secret-api-key',
@@ -43,8 +37,17 @@ it('redacts sensitive config values in InferenceDriverBuilt event payload', func
         driver: 'custom-redaction-test',
         options: ['access_token' => 'internal-token'],
     );
+    $drivers = InferenceDriverRegistry::make()->withDriver(
+        'custom-redaction-test',
+        fn($driverConfig, $httpClient, $eventBus) => new FakeInferenceDriver(),
+    );
 
-    $factory->makeDriver($config, $httpClient);
+    InferenceRuntime::fromConfig(
+        config: $config,
+        events: $events,
+        httpClient: (new HttpClientBuilder())->create(),
+        drivers: $drivers,
+    );
 
     expect($captured)->toHaveCount(1);
     $payload = $captured[0]->data;

@@ -28,6 +28,7 @@ final class InferenceStreamState
     private array $tools = [];
     private int $toolsCount = 0;
     private string $lastToolKey = '';
+    private string $pendingToolArgs = '';
     private int $toolMutationCount = 0;
     private int $valueRevision = 0;
     private bool $hasValue = false;
@@ -180,12 +181,24 @@ final class InferenceStreamState
 
         $this->lastToolKey = $key;
 
-        if ($this->toolArgs === '' || $key === '' || !isset($this->tools[$key])) {
+        if ($key === '') {
+            $this->pendingToolArgs .= $this->toolArgs;
             return;
         }
 
-        $this->tools[$key]['args'] .= $this->toolArgs;
-        $this->recordToolEvent('args', $key, '', '', $this->toolArgs);
+        if (!isset($this->tools[$key])) {
+            return;
+        }
+
+        $toolArgs = $this->pendingToolArgs . $this->toolArgs;
+        $this->pendingToolArgs = '';
+
+        if ($toolArgs === '') {
+            return;
+        }
+
+        $this->tools[$key]['args'] .= $toolArgs;
+        $this->recordToolEvent('args', $key, '', '', $toolArgs);
     }
 
     private function hasToolDelta(): bool
@@ -200,6 +213,13 @@ final class InferenceStreamState
         }
 
         if ($toolName !== '') {
+            if ($this->lastToolKey !== '' && isset($this->tools[$this->lastToolKey])) {
+                $activeName = (string) ($this->tools[$this->lastToolKey]['name'] ?? '');
+                if ($activeName === $toolName) {
+                    return $this->lastToolKey;
+                }
+            }
+
             return 'name:' . $toolName . '#' . ($this->toolsCount + 1);
         }
 
@@ -222,7 +242,7 @@ final class InferenceStreamState
 
     private function shouldStartToolByName(string $key): bool
     {
-        return $this->toolId === '' && $this->toolName !== '' && $key !== $this->lastToolKey;
+        return $this->toolId === '' && $this->toolName !== '' && !isset($this->tools[$key]);
     }
 
     private function recordToolEvent(

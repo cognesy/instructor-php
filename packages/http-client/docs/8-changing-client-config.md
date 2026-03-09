@@ -55,7 +55,7 @@ When `withConfig(...)` is provided, that config is authoritative.
 
 `HttpClientConfig` also controls:
 
-- `maxConcurrent` and `poolTimeout` for pooling defaults
+- `maxConcurrent` and `poolTimeout` for `packages/http-pool` defaults
 - `failOnError` for exception-on-4xx/5xx behavior
 - `streamChunkSize` for adapter streaming chunk size
 - `streamHeaderTimeout` for streaming header priming timeout (curl driver)

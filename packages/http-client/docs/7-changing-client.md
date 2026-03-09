@@ -48,21 +48,8 @@ $client = (new HttpClientBuilder())
 
 `withClientInstance()` sets the driver name and passes the instance to that driver.
 
-## Override Pool Handling for Custom Drivers
-
-```php
-use Cognesy\Http\Creation\HttpClientBuilder;
-
-$client = (new HttpClientBuilder())
-    ->withDriver($customDriver)
-    ->withPoolHandler($customPoolHandler)
-    ->create();
-```
-
-Use this when your custom driver cannot use built-in pooling adapters.
-
 ## See Also
 
 - [Changing client config](8-changing-client-config.md)
 - [Custom clients](9-1-custom-clients.md)
-- [Request pooling](6-pooling.md)
+- `packages/http-pool/README.md`

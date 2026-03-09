@@ -16,16 +16,20 @@ fi
 echo "Updating split.yml matrix from packages.json..."
 
 # Generate new matrix content
-MATRIX_CONTENT=$("$SCRIPT_DIR/generate-split-matrix.sh" "$PROJECT_ROOT")
+MATRIX_FILE="$(mktemp)"
+"$SCRIPT_DIR/generate-split-matrix.sh" "$PROJECT_ROOT" > "$MATRIX_FILE"
 
 # Create backup
 cp "$SPLIT_YML" "$SPLIT_YML.bak"
 
 # Use awk to replace the matrix section
-awk -v matrix_content="$MATRIX_CONTENT" '
+awk -v matrix_file="$MATRIX_FILE" '
     /^[[:space:]]*package:[[:space:]]*$/ { 
         print $0
-        print matrix_content
+        while ((getline line < matrix_file) > 0) {
+            print line
+        }
+        close(matrix_file)
         # Skip until we find the next job or end of matrix
         while ((getline) > 0) {
             if (/^[[:space:]]*steps:[[:space:]]*$/ || /^[[:space:]]*[a-zA-Z][^:]*:[[:space:]]*$/) {
@@ -37,6 +41,8 @@ awk -v matrix_content="$MATRIX_CONTENT" '
     }
     { print }
 ' "$SPLIT_YML.bak" > "$SPLIT_YML"
+
+rm -f "$MATRIX_FILE"
 
 echo "✅ Updated split.yml matrix"
 echo "📝 Backup saved as split.yml.bak"

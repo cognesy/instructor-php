@@ -17,7 +17,7 @@ You can install Instructor via Composer by running:
 
 ```bash
 composer require cognesy/instructor-php
-# @doctest id="4131"
+# @doctest id="1b2b"
 ```
 
 ### Step 2: Publish Instructor Files to Your Project
@@ -34,7 +34,7 @@ You can publish these files to your project directory by running following comma
 
 ```bash
 ./vendor/bin/instructor-setup publish <target-dir>
-# @doctest id="7ad9"
+# @doctest id="2e24"
 ```
 
 You can also manually copy the required files to your project directory.
@@ -90,7 +90,7 @@ For Laravel applications, it's recommended to align with the framework's directo
 
 ```bash
 ./vendor/bin/instructor-setup publish config/instructor
-# @doctest id="3015"
+# @doctest id="a3f4"
 ```
 
 This will place package resources under `config/instructor/<package>/...`.
@@ -104,7 +104,7 @@ For Symfony applications, use the standard Symfony directory structure:
 
 ```bash
 ./vendor/bin/instructor-setup publish config/packages/instructor
-# @doctest id="0564"
+# @doctest id="7036"
 ```
 
 This will place package resources under `config/packages/instructor/<package>/...`.
@@ -117,7 +117,7 @@ For Symfony Flex applications, you may want to create a recipe to automate this 
 You can use environment variables to set the location of configuration files:
 ```
 INSTRUCTOR_CONFIG_PATHS=/path/to/config,another/path
-// @doctest id="0af4"
+// @doctest id="a2c5"
 ```
 
 This allows you to maintain consistent paths across your application without specifying them in each command.
@@ -133,7 +133,7 @@ manually or automatically using the provided CLI tool.
 
 ```bash
 ./vendor/bin/instructor-setup publish config/instructor
-# @doctest id="ae49"
+# @doctest id="5755"
 ```
 
 This command scans `vendor/cognesy/instructor-php/packages/*/resources` and mirrors each package resources tree into `<target-dir>/<package>/...`.
@@ -151,7 +151,7 @@ This command scans `vendor/cognesy/instructor-php/packages/*/resources` and mirr
 
 ```bash
 ./vendor/bin/instructor-setup publish ./config/instructor --package=polyglot --package=templates
-# @doctest id="45cb"
+# @doctest id="39e2"
 ```
 
 
@@ -169,7 +169,7 @@ mkdir -p config/instructor
 cp -r vendor/cognesy/instructor-php/packages/polyglot/resources config/instructor/polyglot
 cp -r vendor/cognesy/instructor-php/packages/http-client/resources config/instructor/http-client
 cp -r vendor/cognesy/instructor-php/packages/templates/resources config/instructor/templates
-# @doctest id="fb38"
+# @doctest id="5a8f"
 ```
 These resources contain YAML presets and templates used by Instructor modules.
 
@@ -181,7 +181,7 @@ mkdir -p config/instructor/templates
 
 # Copy template package resources
 cp -r vendor/cognesy/instructor-php/packages/templates/resources config/instructor/templates
-# @doctest id="5522"
+# @doctest id="ad61"
 ```
 Prompt templates define how Instructor communicates with LLMs for different tasks.
 
@@ -191,7 +191,7 @@ If `.env` doesn't exist, copy the environment template:
 
 ```bash
 [ ! -f .env ] && cp vendor/cognesy/instructor-php/packages/setup/.env-dist .env
-# @doctest id="31b5"
+# @doctest id="f116"
 ```
 
 Add key values to your .env:
@@ -203,5 +203,5 @@ OPENAI_API_KEY=your_api_key
 
 # Set up Instructor configuration path (optional)
 INSTRUCTOR_CONFIG_PATHS='<path/to/config>,<another/path>'
-# @doctest id="f495"
+# @doctest id="6f15"
 ```

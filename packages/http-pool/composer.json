@@ -1,0 +1,53 @@
+{
+  "name": "cognesy/instructor-http-pool",
+  "license": "MIT",
+  "description": "Concurrent HTTP request execution for Instructor",
+  "autoload": {
+    "psr-4": {
+      "Cognesy\\HttpPool\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Cognesy\\HttpPool\\Tests\\": "tests/"
+    }
+  },
+  "require": {
+    "php": "^8.3",
+    "cognesy/instructor-events": "^1.22",
+    "cognesy/instructor-http-client": "^1.22",
+    "cognesy/instructor-utils": "^1.22"
+  },
+  "require-dev": {
+    "guzzlehttp/guzzle": "^7.4",
+    "guzzlehttp/psr7": "^2.7",
+    "icanhazstring/composer-unused": "^0.9.0",
+    "illuminate/http": "^12.20",
+    "jetbrains/phpstorm-attributes": "^1.2",
+    "maglnet/composer-require-checker": "^4.16",
+    "mockery/mockery": "^1.6",
+    "pestphp/pest": "^2.34",
+    "phpstan/phpstan": "^1.11",
+    "roave/security-advisories": "dev-latest",
+    "symfony/http-client": "^7.3",
+    "vimeo/psalm": "^6.0"
+  },
+  "scripts": {
+    "tests": "@php vendor/bin/pest",
+    "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
+    "psalm": "@php vendor/bin/psalm"
+  },
+  "suggest": {
+    "symfony/http-client": "For Symfony HTTP pool support",
+    "illuminate/http": "For Laravel HTTP pool support",
+    "guzzlehttp/guzzle": "For Guzzle HTTP pool support"
+  },
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    },
+    "sort-packages": true
+  },
+  "minimum-stability": "RC",
+  "prefer-stable": true
+}

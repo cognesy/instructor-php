@@ -17,7 +17,7 @@ for ($i = 0; $i < count($allDocuments); $i += $batchSize) {
     $response = $embeddings->withInputs($batch)->get();
     $vectors = array_merge($vectors, $response->toValuesArray());
 }
-// @doctest id="4018"
+// @doctest id="62ef"
 ```
 
 ### Retry policy
@@ -40,7 +40,7 @@ $response = Embeddings::using('openai')
     ->withInputs(['doc one', 'doc two'])
     ->withRetryPolicy($retryPolicy)
     ->get();
-// @doctest id="5a63"
+// @doctest id="1952"
 ```
 
 ### Caching embeddings in-memory
@@ -73,5 +73,5 @@ final class CachedEmbeddings {
 $cachedEmbeddings = new CachedEmbeddings(Embeddings::using('openai'));
 $vector1 = $cachedEmbeddings->create('This is a test');
 $vector2 = $cachedEmbeddings->create('This is a test');
-// @doctest id="765f"
+// @doctest id="071b"
 ```

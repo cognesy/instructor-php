@@ -516,20 +516,20 @@ $embedProviderLayer = Layer::providesFrom(EmbeddingsProvider::class, fn(Context 
   - Prefer injecting providers (or fully built drivers) into higher-level services; avoid creating providers ad‑hoc.
   - For multiple named providers, add Keys: `Key::of('llm.provider.primary', LLMProvider::class)`; set presets via provider API before driver construction.
 
-### Inference: InferenceDriverFactory, BaseInferenceDriver, CanHandleInference
+### Inference: CanProvideInferenceDrivers, BaseInferenceDriver, CanHandleInference
 
 Refactor wiring so Inference receives ready collaborators from layers.
 
 - Layers
 
 ```php
-use Cognesy\Http\HttpClient;use Cognesy\Polyglot\Inference\Creation\InferenceDriverFactory;
+use Cognesy\Http\HttpClient;use Cognesy\Polyglot\Inference\Contracts\CanProvideInferenceDrivers;use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
 
 $inferenceLayers = $eventsLayer
   ->merge($configLayer)
   ->merge($httpLayer) // provides HttpClientBuilder
   ->merge(Layer::providesFrom(HttpClient::class, fn(Context $c) => $c->get(\Cognesy\Http\Creation\HttpClientBuilder::class)->create()))
-  ->merge(Layer::providesFrom(InferenceDriverFactory::class, fn(Context $c) => new InferenceDriverFactory($c->get(Psr\EventDispatcher\EventDispatcherInterface::class))))
+  ->merge(Layer::providesFrom(CanProvideInferenceDrivers::class, fn(Context $c) => BundledInferenceDrivers::registry()))
   ->merge($llmProviderLayer);
 ```
 
@@ -540,7 +540,8 @@ $provider = $ctx->get(Cognesy\Polyglot\Inference\LLMProvider::class)
     ->using('openai'); // or withDsn/withConfig
 $config = $provider->resolveConfig();
 $http = $ctx->get(Cognesy\Http\HttpClient::class);
-$driver = $ctx->get(InferenceDriverFactory::class)->makeDriver($config, $http);
+$events = $ctx->get(Psr\EventDispatcher\EventDispatcherInterface::class);
+$driver = $ctx->get(CanProvideInferenceDrivers::class)->makeDriver($config->driver, $config, $http, $events);
 ```
 
 - Guidelines

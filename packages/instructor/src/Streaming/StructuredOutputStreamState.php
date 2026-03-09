@@ -14,6 +14,7 @@ final class StructuredOutputStreamState
     private string $content = '';
     private string $reasoningContent = '';
     private string $finishReason = '';
+    private int $snapshotRevision = 0;
     private mixed $value = null;
 
     private string $contentDelta = '';
@@ -26,6 +27,8 @@ final class StructuredOutputStreamState
     private array $tools = [];
     private int $toolsCount = 0;
     private string $lastToolKey = '';
+    private ?ToolCalls $memoizedToolCalls = null;
+    private ?EmissionSnapshot $memoizedSnapshot = null;
 
     private StreamingUsageState $usage;
 
@@ -44,6 +47,7 @@ final class StructuredOutputStreamState
         $this->content = '';
         $this->reasoningContent = '';
         $this->finishReason = '';
+        $this->snapshotRevision = 0;
         $this->value = null;
         $this->contentDelta = '';
         $this->reasoningContentDelta = '';
@@ -53,6 +57,8 @@ final class StructuredOutputStreamState
         $this->tools = [];
         $this->toolsCount = 0;
         $this->lastToolKey = '';
+        $this->memoizedToolCalls = null;
+        $this->memoizedSnapshot = null;
         $this->usage = new StreamingUsageState();
     }
 
@@ -67,8 +73,11 @@ final class StructuredOutputStreamState
         };
         $this->toolName = $delta->toolName;
         $this->toolArgs = $delta->toolArgs;
+        $this->invalidateDerivedState();
 
+        $snapshotChanged = false;
         $this->content .= $this->contentDelta;
+        $snapshotChanged = $snapshotChanged || $this->contentDelta !== '';
         $this->reasoningContent .= $this->reasoningContentDelta;
         $this->finishReason = match ($delta->finishReason) {
             '' => $this->finishReason,
@@ -76,15 +85,21 @@ final class StructuredOutputStreamState
         };
         $this->usage->apply($delta->usage, $delta->usageIsCumulative);
         $this->accumulateToolDelta();
+
+        if ($snapshotChanged || $this->toolArgs !== '') {
+            $this->snapshotRevision += 1;
+        }
     }
 
     public function setValue(mixed $value): void
     {
+        $this->memoizedSnapshot = null;
         $this->value = $value;
     }
 
     public function clearValue(): void
     {
+        $this->memoizedSnapshot = null;
         $this->value = null;
     }
 
@@ -113,6 +128,11 @@ final class StructuredOutputStreamState
         return $this->finishReason;
     }
 
+    public function snapshotRevision(): int
+    {
+        return $this->snapshotRevision;
+    }
+
     public function usage(): Usage
     {
         return $this->usage->toUsage();
@@ -134,8 +154,12 @@ final class StructuredOutputStreamState
 
     public function toolCalls(): ToolCalls
     {
+        if ($this->memoizedToolCalls instanceof ToolCalls) {
+            return $this->memoizedToolCalls;
+        }
+
         if ($this->tools === []) {
-            return ToolCalls::empty();
+            return $this->memoizedToolCalls = ToolCalls::empty();
         }
 
         $items = [];
@@ -147,7 +171,22 @@ final class StructuredOutputStreamState
             ];
         }
 
-        return ToolCalls::fromArray($items);
+        return $this->memoizedToolCalls = ToolCalls::fromArray($items);
+    }
+
+    public function snapshot(): EmissionSnapshot
+    {
+        if ($this->memoizedSnapshot instanceof EmissionSnapshot) {
+            return $this->memoizedSnapshot;
+        }
+
+        return $this->memoizedSnapshot = new EmissionSnapshot(
+            content: $this->content,
+            finishReason: $this->finishReason,
+            toolKey: $this->lastToolKey,
+            toolArgsSnapshot: $this->toolArgsSnapshot(),
+            value: $this->value,
+        );
     }
 
     public function partialRawResponse(): InferenceResponse
@@ -231,6 +270,12 @@ final class StructuredOutputStreamState
             $this->lastToolKey !== '' && isset($this->tools[$this->lastToolKey]) => $this->lastToolKey,
             default => '',
         };
+    }
+
+    private function invalidateDerivedState(): void
+    {
+        $this->memoizedToolCalls = null;
+        $this->memoizedSnapshot = null;
     }
 
 }

@@ -438,6 +438,46 @@ class OpenResponsesResponseAdapterTest extends TestCase
         $this->assertEquals(9, $result->usage?->outputTokens);
     }
 
+    public function test_stream_function_call_done_prefers_canonical_final_arguments_when_not_prefix_extension(): void
+    {
+        $eventBodies = [
+            (string) json_encode([
+                'type' => 'response.output_item.added',
+                'item' => [
+                    'type' => 'function_call',
+                    'id' => 'item_1',
+                    'call_id' => 'call_1',
+                    'name' => 'rewrite_args',
+                ],
+            ]),
+            (string) json_encode([
+                'type' => 'response.function_call_arguments.delta',
+                'item_id' => 'item_1',
+                'delta' => '{"a":1',
+            ]),
+            (string) json_encode([
+                'type' => 'response.function_call_arguments.done',
+                'item_id' => 'item_1',
+                'name' => 'rewrite_args',
+                'arguments' => '{"b":2}',
+            ]),
+            (string) json_encode([
+                'type' => 'response.completed',
+                'response' => [
+                    'status' => 'completed',
+                ],
+            ]),
+        ];
+
+        $result = $this->streamAll($eventBodies);
+        $toolCall = $result->toolCalls()->first();
+
+        $this->assertNotNull($toolCall);
+        $this->assertEquals('rewrite_args', $toolCall->name());
+        $this->assertArrayNotHasKey('a', $toolCall->args());
+        $this->assertEquals(2, $toolCall->args()['b']);
+    }
+
     public function test_parses_response_with_mixed_output_items(): void
     {
         $responseData = [

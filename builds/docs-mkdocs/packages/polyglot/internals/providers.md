@@ -7,7 +7,7 @@ Provider abstraction has four parts:
 
 1. Provider builders (`LLMProvider`, `EmbeddingsProvider`)
 2. Runtime assembly (`InferenceRuntime`, `EmbeddingsRuntime`)
-3. Driver factories (`InferenceDriverFactory`, `EmbeddingsDriverFactory`)
+3. Driver registries and factories (`CanProvideInferenceDrivers`, `EmbeddingsDriverFactory`)
 4. Driver + adapter contracts
 
 ## Provider Builders
@@ -22,7 +22,7 @@ $provider = LLMProvider::using('openai')
     ->withConfigOverrides(['model' => 'gpt-4o']);
 
 $config = $provider->resolveConfig();
-// @doctest id="af46"
+// @doctest id="f0c7"
 ```
 
 Common methods:
@@ -43,7 +43,7 @@ $provider = EmbeddingsProvider::using('openai')
     ->withConfigProvider($configProvider);
 
 $config = $provider->resolveConfig();
-// @doctest id="8215"
+// @doctest id="9a58"
 ```
 
 Common methods:
@@ -59,7 +59,7 @@ Common methods:
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 
 $runtime = InferenceRuntime::fromProvider($provider);
-// @doctest id="e847"
+// @doctest id="5f7d"
 ```
 
 Inference runtime factories:
@@ -79,7 +79,7 @@ interface CanProcessInferenceRequest {
     public function makeStreamResponsesFor(InferenceRequest $request): iterable;
     public function capabilities(?string $model = null): DriverCapabilities;
 }
-// @doctest id="80b8"
+// @doctest id="c219"
 ```
 
 Embeddings:
@@ -89,7 +89,7 @@ interface CanHandleVectorization {
     public function handle(EmbeddingsRequest $request): HttpResponse;
     public function fromData(array $data): ?EmbeddingsResponse;
 }
-// @doctest id="71e2"
+// @doctest id="f827"
 ```
 
 ## Adapter Contracts
@@ -115,19 +115,20 @@ Embeddings adapter boundary:
 3. map raw response payload back to domain response
 4. emit events on request/response/failure
 
-## Driver Factories and Registry
+## Driver Registry
 
-Inference drivers are selected by `LLMConfig::$driver` in `InferenceDriverFactory`.
-Custom drivers can be registered at runtime:
+Inference drivers are selected by `LLMConfig::$driver` through `CanProvideInferenceDrivers`.
+Bundled drivers are exposed by `BundledInferenceDrivers::registry()`.
+Custom drivers are added by deriving a runtime-local registry:
 
 ```php
 <?php
-use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 
-Inference::registerDriver('my-driver', MyInferenceDriver::class);
-Inference::unregisterDriver('my-driver');
-Inference::resetDrivers();
-// @doctest id="5388"
+$drivers = BundledInferenceDrivers::registry()->withDriver('my-driver', MyInferenceDriver::class);
+$runtime = InferenceRuntime::fromConfig($config, drivers: $drivers);
+// @doctest id="219c"
 ```
 
 Embeddings drivers are selected by `EmbeddingsConfig::$driver` in `EmbeddingsDriverFactory`.
@@ -138,5 +139,5 @@ Custom registration is available via:
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
 Embeddings::registerDriver('my-embed-driver', MyEmbeddingsDriver::class);
-// @doctest id="4e54"
+// @doctest id="6191"
 ```

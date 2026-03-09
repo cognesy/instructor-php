@@ -69,10 +69,15 @@ $text = Inference::fromConfig(LLMConfig::fromDsn('driver=openai,model=gpt-4.1-na
 
 ```php
 <?php
-use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use App\LLM\AcmeDriver;
 
-Inference::registerDriver('acme', AcmeDriver::class);
+$drivers = BundledInferenceDrivers::registry()->withDriver('acme', AcmeDriver::class);
+$runtime = InferenceRuntime::fromConfig(
+    config: LLMConfig::fromArray(['driver' => 'acme']),
+    drivers: $drivers,
+);
 
 // Use "driver" => "acme" in an LLM preset or LLMConfig.
 ```

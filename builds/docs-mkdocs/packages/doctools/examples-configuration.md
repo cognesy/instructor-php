@@ -20,7 +20,7 @@ sources:
     path: ./packages/polyglot/examples
   - package: root
     path: ./examples
-# @doctest id="d9e4"
+# @doctest id="96e8"
 ```
 
 Notes:
@@ -46,7 +46,7 @@ groups:
         include:
           - source: instructor
             path: A01_Basics
-# @doctest id="a0a6"
+# @doctest id="f2ee"
 ```
 
 Notes:
@@ -67,7 +67,7 @@ Rules can optionally target a specific source:
 include:
   - source: http-client
     path: '*'
-# @doctest id="3e0c"
+# @doctest id="2f66"
 ```
 
 ### Exclusions
@@ -77,7 +77,7 @@ Use `exclude` to carve out subsets:
 exclude:
   - source: root
     path: C07_Misc/Http*
-# @doctest id="5ad2"
+# @doctest id="6283"
 ```
 
 ## Navigation Behavior

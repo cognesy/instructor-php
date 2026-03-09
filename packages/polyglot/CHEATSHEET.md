@@ -167,9 +167,13 @@ $provider = LLMProvider::new()
 Driver registry helpers:
 
 ```php
-Inference::registerDriver('custom', $driverFactory);
-Inference::unregisterDriver('custom');
-Inference::resetDrivers();
+use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
+
+$drivers = BundledInferenceDrivers::registry()->withDriver('custom', $driverFactory);
+$runtime = InferenceRuntime::fromConfig(
+    LLMConfig::fromArray(['driver' => 'custom']),
+    drivers: $drivers,
+);
 ```
 
 ## Embeddings Quick Start

@@ -79,6 +79,46 @@ it('does not rehydrate unchanged snapshots repeatedly', function () {
     expect($result[1]->hasValue())->toBeFalse();
 });
 
+it('does not rehydrate when only usage changes after a parsed snapshot', function () {
+    $calls = 0;
+    $deserializer = new class($calls) implements CanDeserializeResponse {
+        public function __construct(private int &$calls) {}
+
+        public function deserialize(array $data, ResponseModel $responseModel): Result {
+            $this->calls++;
+            return Result::success($data);
+        }
+    };
+
+    $responses = [
+        new PartialInferenceDelta(contentDelta: '{"name":"Ann","age":30}'),
+        new PartialInferenceDelta(usage: \Cognesy\Polyglot\Inference\Data\Usage::fromArray([
+            'inputTokens' => 1,
+            'outputTokens' => 2,
+            'cacheWriteTokens' => 0,
+            'cacheReadTokens' => 0,
+            'reasoningTokens' => 0,
+            'pricing' => [],
+        ])),
+    ];
+
+    $result = accumulateSnapshots(
+        TransformationStream::from($responses)->using(Transformation::define(
+            new AccumulatePartialResponses(
+                mode: OutputMode::Json,
+                deserializer: $deserializer,
+                transformer: accumulatingTransformer(),
+                responseModel: makeAnyResponseModel(AccumulatedUser::class),
+            ),
+        )),
+    );
+
+    expect($calls)->toBe(1);
+    expect($result)->toHaveCount(2);
+    expect($result[0]->hasValue())->toBeTrue();
+    expect($result[1]->hasValue())->toBeFalse();
+});
+
 it('hydrates recoverable tool argument partials and refines them as snapshots grow', function () {
     $responses = [
         new PartialInferenceDelta(toolId: 'tool-1', toolName: 'extract_data', toolArgs: '{"name"'),

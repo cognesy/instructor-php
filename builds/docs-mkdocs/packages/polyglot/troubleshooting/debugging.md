@@ -29,7 +29,7 @@ $inference = Inference::fromRuntime(InferenceRuntime::fromConfig(
 
 // Make a request - debug output will show the request and response details
 $response = $inference->with(messages: 'What is the capital of France?')->get();
-// @doctest id="2527"
+// @doctest id="0f6d"
 ```
 
 
@@ -60,7 +60,7 @@ $inference = Inference::fromRuntime(InferenceRuntime::fromConfig(
 ));
 
 $response = $inference->with(messages: 'What is the capital of France?')->get();
-// @doctest id="7a7e"
+// @doctest id="c42a"
 ```
 
 
@@ -101,7 +101,7 @@ $inference = Inference::fromRuntime(InferenceRuntime::fromConfig(
 $response = $inference->with(
     messages: 'What is the capital of France?'
 )->get();
-// @doctest id="7883"
+// @doctest id="589d"
 ```
 
 
@@ -155,5 +155,5 @@ $inference = Inference::fromRuntime(InferenceRuntime::fromConfig(
 $response = $inference->with(
     messages: 'What is artificial intelligence?'
 )->get();
-// @doctest id="d6d5"
+// @doctest id="44d0"
 ```

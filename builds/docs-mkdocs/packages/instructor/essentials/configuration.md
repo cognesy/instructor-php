@@ -23,7 +23,7 @@ $structuredOutput = (new StructuredOutput)
     ->withOption($key, $value)          // Set individual LLM option
     ->withStreaming(true)               // Enable streaming responses
     ->withCachedContext($messages, $system, $prompt, $examples); // Use cached context
-// @doctest id="b560"
+// @doctest id="dcdf"
 ```
 
 ## Response Configuration
@@ -37,7 +37,7 @@ $runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
     ->withDefaultToStdClass(true);      // Fallback to stdClass for schema-less payloads
 
 $structuredOutput = (new StructuredOutput)->withRuntime($runtime);
-// @doctest id="691f"
+// @doctest id="f625"
 ```
 
 Stream replay policy is configured through `StructuredOutputConfig`:
@@ -52,7 +52,7 @@ $runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
     ));
 
 $structuredOutput = (new StructuredOutput)->withRuntime($runtime);
-// @doctest id="fc28"
+// @doctest id="a687"
 ```
 
 Use `ResponseCachePolicy::Memory` if you need second-pass replay of streamed updates.
@@ -67,7 +67,7 @@ $runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
     ->withDefaultToStdClass(true);      // Default to stdClass for unknown types
 
 $structuredOutput = (new StructuredOutput)->withRuntime($runtime);
-// @doctest id="4c67"
+// @doctest id="c532"
 ```
 
 ## LLM Provider Configuration
@@ -95,7 +95,7 @@ $provider = LLMProvider::using('openai')
 $structuredOutput = (new StructuredOutput)->withRuntime(
     StructuredOutputRuntime::fromProvider(provider: $provider)
 );
-// @doctest id="8c77"
+// @doctest id="e6b2"
 ```
 
 `StructuredOutputRuntime` also supports:
@@ -120,7 +120,7 @@ $runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
     ->withExtractors($extractors);       // Override response extractors
 
 $structuredOutput = (new StructuredOutput)->withRuntime($runtime);
-// @doctest id="80e0"
+// @doctest id="5456"
 ```
 
 ## StructuredOutputConfig Knobs
@@ -159,7 +159,7 @@ $result = (new StructuredOutput($runtime))
     ->withMessages('Extract person data')
     ->withResponseClass(Person::class)
     ->get();
-// @doctest id="ce97"
+// @doctest id="4297"
 ```
 
 ## Streaming Updates And Events
@@ -186,7 +186,7 @@ $runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
     ->onEvent(\Cognesy\Instructor\Events\Request\SequenceUpdated::class, $callback);
 
 $structuredOutput = (new StructuredOutput)->withRuntime($runtime);
-// @doctest id="81ae"
+// @doctest id="72f2"
 ```
 
 ## Configuration Examples
@@ -201,7 +201,7 @@ $result = (new StructuredOutput($runtime))
     ->withMessages("Extract person data from: John is 25 years old")
     ->withResponseClass(Person::class)
     ->get();
-// @doctest id="a01d"
+// @doctest id="58a7"
 ```
 
 ### Streaming with partials()
@@ -217,7 +217,7 @@ foreach ($stream->partials() as $partial) {
 }
 
 $result = $stream->finalValue();
-// @doctest id="6da2"
+// @doctest id="9467"
 ```
 
 ### Custom Configuration Object
@@ -235,5 +235,5 @@ $result = (new StructuredOutput($runtime))
     ->withMessages($input)
     ->withResponseClass(Person::class)
     ->get();
-// @doctest id="b68e"
+// @doctest id="b1e3"
 ```

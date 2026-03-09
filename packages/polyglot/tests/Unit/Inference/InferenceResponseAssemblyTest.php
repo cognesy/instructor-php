@@ -81,21 +81,20 @@ it('accumulates multiple tools in sequence (name-based)', function () {
     expect($tools[1]->value('expr'))->toBe('2+2');
 });
 
-it('treats repeated same-name tool starts without id as separate calls', function () {
+it('treats repeated same-name tool deltas without id as one continuing call', function () {
     $partials = [
-        new PartialInferenceResponse(toolName: 'search', toolArgs: '{"q":"Paris"}', usage: new Usage()),
-        new PartialInferenceResponse(toolName: 'search', toolArgs: '{"q":"Berlin"}', usage: new Usage()),
+        new PartialInferenceResponse(toolName: 'search', toolArgs: '{"q":"Paris"', usage: new Usage()),
+        new PartialInferenceResponse(toolName: 'search', toolArgs: ',"lang":"en"}', usage: new Usage()),
     ];
 
     $res = applyDeltas($partials)->finalResponse();
     expect($res->hasToolCalls())->toBeTrue();
-    expect($res->toolCalls()->count())->toBe(2);
+    expect($res->toolCalls()->count())->toBe(1);
 
-    $tools = $res->toolCalls()->all();
-    expect($tools[0]->name())->toBe('search');
-    expect($tools[0]->value('q'))->toBe('Paris');
-    expect($tools[1]->name())->toBe('search');
-    expect($tools[1]->value('q'))->toBe('Berlin');
+    $tool = $res->toolCalls()->first();
+    expect($tool->name())->toBe('search');
+    expect($tool->value('q'))->toBe('Paris');
+    expect($tool->value('lang'))->toBe('en');
 });
 
 it('accumulates tools by ID with multiple deltas (ID-based preferred)', function () {

@@ -45,7 +45,7 @@ echo "Finish reason: " . $fullResponse->finishReason() . "\n";
 echo "Usage - Total tokens: " . $fullResponse->usage()->total() . "\n";
 echo "Usage - Input tokens: " . $fullResponse->usage()->input() . "\n";
 echo "Usage - Output tokens: " . $fullResponse->usage()->output() . "\n";
-// @doctest id="c023"
+// @doctest id="70a7"
 ```
 
 
@@ -80,7 +80,7 @@ foreach ($stream as $delta) {
 }
 
 echo "\n\nComplete response: " . $response->get();
-// @doctest id="cec8"
+// @doctest id="7b11"
 ```
 
 
@@ -175,7 +175,7 @@ if ($response->hasToolCalls()) {
 } else {
     echo "Response: " . $response->content() . "\n";
 }
-// @doctest id="e969"
+// @doctest id="8e6f"
 ```
 
 For convenience, `PendingInference` also exposes explicit tool-call helpers:
@@ -184,5 +184,5 @@ For convenience, `PendingInference` also exposes explicit tool-call helpers:
 <?php
 $toolJson = $inference->asToolCallJson();
 $toolData = $inference->asToolCallJsonData();
-// @doctest id="8497"
+// @doctest id="ea6a"
 ```

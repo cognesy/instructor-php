@@ -5,20 +5,21 @@ description: 'How to add custom inference/embeddings drivers and HTTP middleware
 
 Use these extension points:
 
-1. Register a custom inference driver
+1. Extend the inference driver registry for one runtime
 2. Register a custom embeddings driver
 3. Inject a custom HTTP client / middleware
 
-## Register a Custom Inference Driver
+## Extend the Inference Driver Registry
 
 Register by class-string:
 
 ```php
 <?php
-use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
 use Acme\Polyglot\Drivers\AcmeInferenceDriver;
 
-Inference::registerDriver('acme', AcmeInferenceDriver::class);
+$drivers = BundledInferenceDrivers::registry()
+    ->withDriver('acme', AcmeInferenceDriver::class);
 ```
 
 Or register by factory callback:
@@ -28,11 +29,11 @@ Or register by factory callback:
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
+use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIDriver;
-use Cognesy\Polyglot\Inference\Inference;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
-Inference::registerDriver(
+$drivers = BundledInferenceDrivers::registry()->withDriver(
     'openai-custom',
     function (
         LLMConfig $config,
@@ -40,17 +41,19 @@ Inference::registerDriver(
         EventDispatcherInterface $events
     ): CanProcessInferenceRequest {
         return new OpenAIDriver($config, $httpClient, $events);
-    }
+    },
 );
 ```
 
-Use it by setting `driver` in `LLMConfig` or by preset config.
-
-Cleanup helpers (important in tests/workers):
+Use it by passing the registry to the runtime:
 
 ```php
-Inference::unregisterDriver('openai-custom');
-Inference::resetDrivers();
+use Cognesy\Polyglot\Inference\InferenceRuntime;
+
+$runtime = InferenceRuntime::fromConfig(
+    config: LLMConfig::fromArray(['driver' => 'openai-custom']),
+    drivers: $drivers,
+);
 ```
 
 ## Register a Custom Embeddings Driver

@@ -17,7 +17,7 @@ HttpClientDriverFactory::registerDriver(
         return new AcmeHttpDriver($config, $events);
     }
 );
-// @doctest id="5ccf"
+// @doctest id="3d1a"
 ```
 
 ## Build Client with Custom Driver
@@ -29,7 +29,7 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 $client = (new HttpClientBuilder())
     ->withConfig(new HttpClientConfig(driver: 'acme'))
     ->create();
-// @doctest id="8d36"
+// @doctest id="4d1e"
 ```
 
 ## Register a Custom Pool Handler (Optional)
@@ -46,7 +46,7 @@ HttpClientDriverFactory::registerPoolHandler(
         return new AcmePoolHandler($config, $events);
     }
 );
-// @doctest id="57af"
+// @doctest id="e616"
 ```
 
 Register this when your custom driver should support `HttpClient::pool()`.
@@ -62,7 +62,7 @@ use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
 $client = (new HttpClientBuilder())
     ->withClientInstance('symfony', SymfonyHttpClient::create())
     ->create();
-// @doctest id="05e6"
+// @doctest id="a96e"
 ```
 
 ## Direct Driver Injection (No Global Registration)
@@ -74,7 +74,7 @@ $client = (new HttpClientBuilder())
     ->withDriver($myDriver) // CanHandleHttpRequest
     ->withPoolHandler($myPoolHandler) // CanHandleRequestPool (optional)
     ->create();
-// @doctest id="ee70"
+// @doctest id="abba"
 ```
 
 ## See Also

@@ -1,6 +1,6 @@
 ---
 title: Custom Clients
-description: Register custom drivers and pool handlers for non-standard transports.
+description: Register custom HTTP request drivers for non-standard transports.
 ---
 
 ## Register a Custom Driver
@@ -30,26 +30,6 @@ $client = (new HttpClientBuilder())
     ->create();
 ```
 
-## Register a Custom Pool Handler (Optional)
-
-```php
-use Cognesy\Http\Config\HttpClientConfig;
-use Cognesy\Http\Contracts\CanHandleRequestPool;
-use Cognesy\Http\Creation\HttpClientDriverFactory;
-use Psr\EventDispatcher\EventDispatcherInterface;
-
-HttpClientDriverFactory::registerPoolHandler(
-    'acme',
-    static function (HttpClientConfig $config, EventDispatcherInterface $events): CanHandleRequestPool {
-        return new AcmePoolHandler($config, $events);
-    }
-);
-```
-
-Register this when your custom driver should support `HttpClient::pool()`.
-
-If you skip this, `pool()` fails for that custom driver.
-
 ## Reuse Existing Vendor Clients
 
 ```php
@@ -61,16 +41,17 @@ $client = (new HttpClientBuilder())
     ->create();
 ```
 
-## Direct Driver Injection (No Global Registration)
+## Direct Driver Injection
 
 ```php
 use Cognesy\Http\Creation\HttpClientBuilder;
 
 $client = (new HttpClientBuilder())
     ->withDriver($myDriver) // CanHandleHttpRequest
-    ->withPoolHandler($myPoolHandler) // CanHandleRequestPool (optional)
     ->create();
 ```
+
+If you need concurrent request execution, use the dedicated `packages/http-pool` APIs.
 
 ## See Also
 

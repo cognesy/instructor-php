@@ -15,6 +15,15 @@ use RuntimeException;
 
 class CohereV2ResponseAdapter extends OpenAIResponseAdapter
 {
+    private int $generatedToolCallId = 0;
+
+    #[\Override]
+    public function fromStreamDeltas(iterable $eventBodies, ?HttpResponse $responseData = null): iterable {
+        $this->generatedToolCallId = 0;
+
+        yield from parent::fromStreamDeltas($eventBodies, $responseData);
+    }
+
     #[\Override]
     public function fromResponse(HttpResponse $response): InferenceResponse {
         $data = $this->decodeJsonData($response->body(), 'Cohere V2 response payload');
@@ -138,7 +147,7 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
             $resolvedId = match (true) {
                 $id !== '' => $id,
                 $remembered !== null => $remembered->toString(),
-                default => 'idx:' . $indexKey,
+                default => $this->nextGeneratedToolCallId(),
             };
             $toolDeltas[] = new ToolCallDelta(
                 id: $resolvedId,
@@ -148,5 +157,12 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
         }
 
         return $toolDeltas;
+    }
+
+    private function nextGeneratedToolCallId(): string
+    {
+        $this->generatedToolCallId += 1;
+
+        return 'cohere-stream:' . $this->generatedToolCallId;
     }
 }

@@ -32,7 +32,7 @@ $response = $inference->with(
     messages: 'Write a short story about a space explorer.',
     options: ['stream' => true]  // Enable streaming
 );
-// @doctest id="1fed"
+// @doctest id="393e"
 ```
 
 Once you have a streaming-enabled response, you can access the stream using the `stream()` method:
@@ -40,7 +40,7 @@ Once you have a streaming-enabled response, you can access the stream using the 
 ```php
 // Get the stream of visible deltas
 $stream = $response->stream();
-// @doctest id="85e0"
+// @doctest id="dd28"
 ```
 
 
@@ -73,7 +73,7 @@ foreach ($stream as $delta) {
     }
 }
 echo "\n";
-// @doctest id="e201"
+// @doctest id="d1c3"
 ```
 
 ### Understanding Stream Deltas
@@ -94,7 +94,7 @@ foreach ($stream as $delta) {
         echo "Response finished: " . $delta->finishReason . "\n";
     }
 }
-// @doctest id="d89e"
+// @doctest id="5f10"
 ```
 
 ## Retrieving the Final Response
@@ -108,7 +108,7 @@ $completeText = $response->get();
 // Method 2: Getting the final state from the stream
 $finalResponse = $response->stream()->final();
 $completeText = $finalResponse->content();
-// @doctest id="9109"
+// @doctest id="ea0e"
 ```
 
 ## Stream Replay Contract
@@ -138,7 +138,7 @@ foreach ($stream->deltas() as $delta) {
 }
 
 $final = $stream->final();
-// @doctest id="0af5"
+// @doctest id="3d63"
 ```
 
 Replay reuses captured stream data. It does not perform a fresh LLM call.

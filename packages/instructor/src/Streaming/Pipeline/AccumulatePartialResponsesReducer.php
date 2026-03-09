@@ -15,6 +15,7 @@ use Throwable;
 final class AccumulatePartialResponsesReducer implements Reducer
 {
     private string $lastSnapshot = '';
+    private int $lastSnapshotRevision = -1;
     private StructuredOutputStreamState $state;
 
     public function __construct(
@@ -30,6 +31,7 @@ final class AccumulatePartialResponsesReducer implements Reducer
     #[\Override]
     public function init(): mixed {
         $this->lastSnapshot = '';
+        $this->lastSnapshotRevision = -1;
         $this->state->reset();
         return $this->inner->init();
     }
@@ -61,7 +63,12 @@ final class AccumulatePartialResponsesReducer implements Reducer
             return $state;
         }
 
+        if ($state->snapshotRevision() === $this->lastSnapshotRevision) {
+            return $state;
+        }
+
         if ($snapshot === $this->lastSnapshot) {
+            $this->lastSnapshotRevision = $state->snapshotRevision();
             return $state;
         }
 
@@ -76,6 +83,7 @@ final class AccumulatePartialResponsesReducer implements Reducer
         }
 
         $this->lastSnapshot = $snapshot;
+        $this->lastSnapshotRevision = $state->snapshotRevision();
         $this->state->setValue($object);
         return $this->state;
     }

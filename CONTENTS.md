@@ -13,6 +13,7 @@ Contains all independent PHP packages that make up the Instructor ecosystem. Eac
 - **Agents SDK**: `agents` - SDK for building custom AI agents
 - **Observability**: `metrics`, `logging`
 - **HTTP client**: `http-client`
+- **HTTP pooling**: `http-pool`
 - **Pipeline processing**: `pipeline`
 - **Sandbox**: `sandbox` - Safe code execution environment
 

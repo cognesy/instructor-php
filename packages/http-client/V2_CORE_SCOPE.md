@@ -7,9 +7,10 @@ This file defines the intended minimal core for v2, based on current in-repo usa
 - `HttpClient` + `HttpClientBuilder`
 - Core drivers: `curl`, `guzzle`, `symfony`, `laravel`
 - Streaming via `EventSourceMiddleware` and request `withStreaming(true)`
-- Pooling via built-in pool handlers
 - Mock/testing path (`MockHttpDriver`, mock response factory)
 - Record/replay middleware path (kept in core for now)
+
+Pooling moved to `packages/http-pool`.
 
 ## Compatibility (Deprecated but Kept)
 
@@ -22,7 +23,6 @@ This file defines the intended minimal core for v2, based on current in-repo usa
 ## Optionalization Candidates
 
 - `Drivers\ExtHttp\ExtHttpDriver`
-- `Drivers\ExtHttp\ExtHttpPool`
 
 These are niche and extension-dependent (`pecl_http`), so they are planned to move to optional modules.
 
@@ -36,4 +36,4 @@ These are niche and extension-dependent (`pecl_http`), so they are planned to mo
 | `HttpClientBuilder::using()` | `HttpClientBuilder::withPreset()` |
 | `HttpClientBuilder::withDebugPreset()` | `HttpClientBuilder::withHttpDebugPreset()` |
 | `StreamedRequestRecord::createAppropriateRecord()` | `RequestRecord::createAppropriate()` |
-| `exthttp` driver/pool | Prefer core drivers, prepare for optional package |
+| `exthttp` driver | Prefer core drivers, prepare for optional package |

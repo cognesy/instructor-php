@@ -20,7 +20,7 @@ This package provides seamless integration between Instructor PHP and Laravel, g
 
 ```bash
 composer require cognesy/instructor-laravel
-# @doctest id="a76e"
+# @doctest id="12f6"
 ```
 
 ### 2. Configure API Key
@@ -29,7 +29,7 @@ Add to your `.env`:
 
 ```env
 OPENAI_API_KEY=your-openai-api-key
-// @doctest id="6741"
+// @doctest id="aaf3"
 ```
 
 ### 3. Extract Structured Data
@@ -54,7 +54,7 @@ $person = StructuredOutput::with(
 
 echo $person->name; // "John Smith"
 echo $person->age;  // 30
-// @doctest id="036b"
+// @doctest id="2df6"
 ```
 
 ## Documentation
@@ -107,7 +107,7 @@ public function test_extracts_invoice_data(): void
     $this->assertEquals('INV-001', $invoice->invoiceNumber);
     $fake->assertExtracted(InvoiceData::class);
 }
-// @doctest id="7c48"
+// @doctest id="3571"
 ```
 
 ## Requirements

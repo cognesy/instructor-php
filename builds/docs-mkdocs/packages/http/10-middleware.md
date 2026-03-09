@@ -18,7 +18,7 @@ final class AddHeaderMiddleware implements HttpMiddleware
         return $next->handle($request);
     }
 }
-// @doctest id="5b27"
+// @doctest id="8092"
 ```
 
 ## Register Middleware (Immutable)
@@ -26,7 +26,7 @@ final class AddHeaderMiddleware implements HttpMiddleware
 ```php
 $client = $client->withMiddleware(new AddHeaderMiddleware(), 'request-id');
 $client = $client->withoutMiddleware('request-id');
-// @doctest id="bd1a"
+// @doctest id="885a"
 ```
 
 ## Typical Middleware Use Cases

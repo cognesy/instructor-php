@@ -23,7 +23,7 @@ class Person {
     public ?int $age;
     public Address $address;
 }
-// @doctest id="5abe"
+// @doctest id="ca67"
 ```
 
 Instructor will only fill in the fields that are public. Private and protected fields are ignored and their values are not going to be extracted (they will be left empty, with default values set as defined in your class).
@@ -63,7 +63,7 @@ class Person {
     /** @var Address $address person's address */
     public $address;
 }
-// @doctest id="d138"
+// @doctest id="345d"
 ```
 
 See PHPDoc documentation for more details on DocBlock: https://docs.phpdoc.org/3.0/guide/getting-started/what-is-a-docblock.html#what-is-a-docblock
@@ -90,7 +90,7 @@ Using PHP DocBlocks instructions is not required, but sometimes you may want to 
         /** Directly quoted, full sentence mentioning person's skill */
         public string $context;
     }
-// @doctest id="26c1"
+// @doctest id="63ac"
 ```
 
 
@@ -124,7 +124,7 @@ class User {
     #[Instructions("Ignore hobbies, identify profession")]
     public string $job;
 }
-// @doctest id="22ae"
+// @doctest id="c11b"
 ```
 
 > NOTE: Technically both `#[Description]` and `#[Instructions]` attributes do the same thing - they provide additional context to the language model. Yet, providing them in separate attributes allows you to better organize your code and make it more readable. In the future, we may extend the functionality of these attributes to provide more specific instructions to the language model, so it is a good idea to use them now.
@@ -148,7 +148,7 @@ class Event {
     public array $participants;
     // ...
 }
-// @doctest id="cbfd"
+// @doctest id="d716"
 ```
 
 
@@ -220,7 +220,7 @@ var_dump($person);
 //         },
 //     ]
 // }
-// @doctest id="efb7"
+// @doctest id="8cb4"
 ```
 
 
@@ -262,7 +262,7 @@ if ($result->hasValue()) {
 } else {
     echo "No person found. Error: " . $result->error();
 }
-// @doctest id="0667"
+// @doctest id="728c"
 ```
 
 ### Maybe Methods

@@ -23,7 +23,7 @@ foreach ($stream->partials() as $partial) {
 
 // Get final complete result
 $company = $stream->finalValue();
-// @doctest id="04f5"
+// @doctest id="5643"
 ```
 
 ### Streaming with `partials()`
@@ -41,7 +41,7 @@ foreach ($stream->partials() as $partial) {
 }
 
 $result = $stream->finalValue();
-// @doctest id="806c"
+// @doctest id="1ea7"
 ```
 
 ### Streaming Sequences
@@ -62,7 +62,7 @@ $stream = StructuredOutput::with(
 foreach ($stream->sequence() as $items) {
     echo "Found: {$items->last()->name}\n";
 }
-// @doctest id="8e30"
+// @doctest id="a642"
 ```
 
 ---
@@ -97,7 +97,7 @@ $user = StructuredOutput::with(
     responseModel: UserData::class,
     maxRetries: 3,
 )->get();
-// @doctest id="d134"
+// @doctest id="7d81"
 ```
 
 ### Custom Validators
@@ -127,7 +127,7 @@ $order = StructuredOutput::with(
 )
 ->withValidators(BusinessRulesValidator::class)
 ->get();
-// @doctest id="92ba"
+// @doctest id="6a1f"
 ```
 
 ### Custom Retry Prompt
@@ -139,7 +139,7 @@ $result = StructuredOutput::with(
     maxRetries: 3,
     retryPrompt: 'The extraction failed validation. Errors: {errors}. Please correct and try again.',
 )->get();
-// @doctest id="a272"
+// @doctest id="0362"
 ```
 
 ---
@@ -175,7 +175,7 @@ $contact = StructuredOutput::with(
 ->get();
 
 // $contact->phone === '+15551234567'
-// @doctest id="253d"
+// @doctest id="8fdf"
 ```
 
 ---
@@ -220,7 +220,7 @@ $result = StructuredOutput::withRuntime($jsonRuntime)
 $result = StructuredOutput::withRuntime($mdJsonRuntime)
     ->with(...)
     ->get();
-// @doctest id="84ba"
+// @doctest id="d745"
 ```
 
 ---
@@ -252,7 +252,7 @@ $person = StructuredOutput::with(
         ],
     ],
 )->get();
-// @doctest id="9ebd"
+// @doctest id="5259"
 ```
 
 ---
@@ -272,7 +272,7 @@ $medical = StructuredOutput::with(
         If information is unclear, mark as null rather than guessing.
         PROMPT,
 )->get();
-// @doctest id="7bb9"
+// @doctest id="4ab8"
 ```
 
 ---
@@ -288,7 +288,7 @@ $result = StructuredOutput::with(
     toolName: 'extract_invoice',
     toolDescription: 'Extracts structured invoice data including line items, totals, and payment terms.',
 )->get();
-// @doctest id="e52f"
+// @doctest id="196d"
 ```
 
 ---
@@ -325,7 +325,7 @@ class AIService
             ->get();
     }
 }
-// @doctest id="1583"
+// @doctest id="80fa"
 ```
 
 ---
@@ -351,7 +351,7 @@ class CachedExtractor
         });
     }
 }
-// @doctest id="adf0"
+// @doctest id="0ec7"
 ```
 
 ### Semantic Caching
@@ -383,7 +383,7 @@ class SemanticCache
         return $result;
     }
 }
-// @doctest id="47b9"
+// @doctest id="9c08"
 ```
 
 ---
@@ -418,7 +418,7 @@ class BatchExtractor
             ->dispatch();
     }
 }
-// @doctest id="9b48"
+// @doctest id="cb80"
 ```
 
 ---
@@ -449,7 +449,7 @@ class ResilientExtractor
         }
     }
 }
-// @doctest id="5260"
+// @doctest id="ac97"
 ```
 
 ### Fallback Providers
@@ -477,7 +477,7 @@ class FallbackExtractor
         throw new RuntimeException('All providers failed');
     }
 }
-// @doctest id="e074"
+// @doctest id="984f"
 ```
 
 ---
@@ -498,7 +498,7 @@ $result = StructuredOutput::with(
 $result = StructuredOutput::withModel('gpt-4o-mini')
     ->with(messages: $text, responseModel: SimpleModel::class)
     ->get();
-// @doctest id="d783"
+// @doctest id="949f"
 ```
 
 ### Parallel Extraction
@@ -511,5 +511,5 @@ $results = Concurrency::run([
     fn () => StructuredOutput::with(messages: $text2, responseModel: Model::class)->get(),
     fn () => StructuredOutput::with(messages: $text3, responseModel: Model::class)->get(),
 ]);
-// @doctest id="5261"
+// @doctest id="ee39"
 ```

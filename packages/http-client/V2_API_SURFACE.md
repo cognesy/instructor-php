@@ -4,7 +4,7 @@ This document tracks public surface pruning decisions for `packages/http-client`
 
 ## Keep (Core)
 
-- `HttpClient` request flow: `default()`, `using()`, `withRequest()`, `pool()`, `withPool()`, `withMiddleware()`, `withoutMiddleware()`
+- `HttpClient` request flow: `default()`, `using()`, `withRequest()`, `withMiddleware()`, `withoutMiddleware()`
 - `HttpClientBuilder` core setup: `withPreset()`, `withConfig()`, `withDriver()`, `withMock()`, `withMiddleware()`, `create()`
 - Core data objects: `HttpRequest`, `HttpResponse`
 - Core collections: `HttpRequestList`, `HttpResponseList`
@@ -40,5 +40,6 @@ Candidates to remove after deprecation window:
 
 ## Scope Notes
 
-- Core v2 keeps first-class support for: default driver path, streaming, mock/testing, and pooling.
-- Optionalization candidate list (separate task): ext-http driver/pool and niche middleware modules.
+- Core v2 keeps first-class support for: default driver path, streaming, mock/testing.
+- Pooling now lives in `packages/http-pool`.
+- Optionalization candidate list (separate task): ext-http driver and niche middleware modules.

@@ -11,7 +11,7 @@ use Cognesy\Polyglot\Embeddings\Embeddings;
 
 $embeddings = new Embeddings();
 $openaiEmbeddings = Embeddings::using('openai');
-// @doctest id="0f3b"
+// @doctest id="1310"
 ```
 
 `Embeddings` is request-focused. Runtime/provider/http/event wiring belongs to `EmbeddingsRuntime`.
@@ -29,7 +29,7 @@ $result = Embeddings::using('openai')
 
 $vector = $result->first()?->values() ?? [];
 echo count($vector);
-// @doctest id="2c23"
+// @doctest id="116b"
 ```
 
 
@@ -52,7 +52,7 @@ $result = Embeddings::using('openai')
 foreach ($result->vectors() as $i => $vector) {
     echo "Document {$i} dimensions: " . count($vector->values()) . PHP_EOL;
 }
-// @doctest id="6371"
+// @doctest id="9d39"
 ```
 
 
@@ -64,7 +64,7 @@ $firstVector = $response->first();
 $allVectors = $response->vectors();
 $values = $response->toValuesArray();
 $usage = $response->usage();
-// @doctest id="af35"
+// @doctest id="ecbf"
 ```
 
 
@@ -83,7 +83,7 @@ $mistral = Embeddings::using('mistral')->with($text)->get();
 printf("OpenAI dims: %d\n", count($openai->first()?->values() ?? []));
 printf("Cohere dims: %d\n", count($cohere->first()?->values() ?? []));
 printf("Mistral dims: %d\n", count($mistral->first()?->values() ?? []));
-// @doctest id="8c45"
+// @doctest id="5796"
 ```
 
 
@@ -105,7 +105,7 @@ $cohereResponse = Embeddings::using('cohere')->with(
         'truncate' => 'END',
     ],
 )->get();
-// @doctest id="9c15"
+// @doctest id="c8bc"
 ```
 
 
@@ -121,5 +121,5 @@ $provider = EmbeddingsProvider::using('openai');
 $runtime = EmbeddingsRuntime::fromProvider($provider);
 
 $embeddings = Embeddings::fromRuntime($runtime);
-// @doctest id="8107"
+// @doctest id="1b9f"
 ```

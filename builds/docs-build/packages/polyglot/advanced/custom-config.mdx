@@ -15,7 +15,7 @@ apiKey: '${OPENAI_API_KEY}'
 endpoint: /chat/completions
 model: gpt-4.1-nano
 maxTokens: 1024
-# @doctest id="f0b1"
+# @doctest id="22ea"
 ```
 
 Required fields for an LLM preset are `driver`, `apiUrl`, `apiKey`, `endpoint`, and `model`.
@@ -30,7 +30,7 @@ endpoint: /embeddings
 model: text-embedding-3-small
 dimensions: 1536
 maxInputs: 2048
-# @doctest id="2a61"
+# @doctest id="92e3"
 ```
 
 ## Build Config at Runtime
@@ -53,7 +53,7 @@ $config = new LLMConfig(
 $text = Inference::fromRuntime(InferenceRuntime::fromConfig($config))
     ->withMessages('Explain blue-green deployment in one paragraph.')
     ->get();
-// @doctest id="29d2"
+// @doctest id="2faa"
 ```
 
 ## Use DSN for Lightweight Overrides
@@ -66,20 +66,25 @@ use Cognesy\Polyglot\Inference\Inference;
 $text = Inference::fromConfig(LLMConfig::fromDsn('driver=openai,model=gpt-4.1-nano,maxTokens=256'))
     ->withMessages('Write a commit message for a bugfix.')
     ->get();
-// @doctest id="d0be"
+// @doctest id="05b3"
 ```
 
 ## Register and Use a Custom Driver Alias
 
 ```php
 <?php
-use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use App\LLM\AcmeDriver;
 
-Inference::registerDriver('acme', AcmeDriver::class);
+$drivers = BundledInferenceDrivers::registry()->withDriver('acme', AcmeDriver::class);
+$runtime = InferenceRuntime::fromConfig(
+    config: LLMConfig::fromArray(['driver' => 'acme']),
+    drivers: $drivers,
+);
 
 // Use "driver" => "acme" in an LLM preset or LLMConfig.
-// @doctest id="285d"
+// @doctest id="6f3c"
 ```
 
 ## Environment-Based Preset Selection
@@ -91,7 +96,7 @@ $preset = getenv('APP_ENV') === 'prod' ? 'openai' : 'ollama';
 $text = \Cognesy\Polyglot\Inference\Inference::using($preset)
     ->withMessages('hello')
     ->get();
-// @doctest id="1068"
+// @doctest id="d50c"
 ```
 
 ## See Also

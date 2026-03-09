@@ -19,6 +19,7 @@ packages:
     polyglot: 'Unified LLM API abstraction layer'
     agents: 'SDK for building custom AI agents'
     http-client: 'Framework-agnostic HTTP client'
+    http-pool: 'Concurrent HTTP request execution'
     laravel: 'Laravel integration for Instructor'
   # Target directory names in output (defaults to package name)
   target_dirs:
@@ -29,6 +30,7 @@ packages:
     - polyglot
     - agents
     - http-client
+    - http-pool
     - laravel
   # Internal packages (excluded from public docs for Mkdocs and Mintlify)
   internal:

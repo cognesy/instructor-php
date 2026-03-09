@@ -18,15 +18,16 @@ use Cognesy\Config\Env;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIDriver;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Utils\Str;
 
 // we will use existing, bundled driver as an example, but you can provide any class that implements
-// a required interface (CanHandleInference)
+// the inference driver contract and inject it into a runtime-local registry
 
-Inference::registerDriver(
+$drivers = BundledInferenceDrivers::registry()->withDriver(
     name: 'custom-driver',
     driver: fn($config, $httpClient, $events) => new class($config, $httpClient, $events) extends OpenAIDriver {
         #[\Override]
@@ -35,7 +36,7 @@ Inference::registerDriver(
             echo ">>> Handling request...\n";
             return parent::makeHttpResponse($request);
         }
-    }
+    },
 );
 
 // Create instance of LLM client initialized with custom parameters
@@ -46,7 +47,7 @@ $config = new LLMConfig(
     driver          : 'custom-driver',
 );
 
-$answer = Inference::fromRuntime(InferenceRuntime::fromConfig($config))
+$answer = Inference::fromRuntime(InferenceRuntime::fromConfig($config, drivers: $drivers))
     ->withMessages([['role' => 'user', 'content' => 'What is the capital of France']])
     ->withOptions(['max_tokens' => 64])
     ->get();

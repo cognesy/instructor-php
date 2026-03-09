@@ -53,6 +53,7 @@ This project consists of several modular packages:
 - **[Instructor](./instructor/introduction.md)** - Main structured output library
 - **[Polyglot](./polyglot/overview.md)** - Low-level LLM abstraction layer  
 - **[HTTP Client](./http/1-overview.md)** - Flexible HTTP client for API calls
+- **[HTTP Pool](./http-pool/overview.md)** - Concurrent request execution for fan-out workloads
 
 ## Community
 

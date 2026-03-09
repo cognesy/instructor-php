@@ -39,7 +39,7 @@ $response = $structuredOutput->with(
     messages: "Jason is 25 years old.",
     responseModel: Person::class,
 )->get();
-// @doctest id="48fe"
+// @doctest id="95a1"
 ```
 Request data still stays on the facade.
 
@@ -52,7 +52,7 @@ $response = (new StructuredOutput($runtime))
     ->withMessages("Jason is 25 years old.")
     ->withResponseModel(Person::class)
     ->get();
-// @doctest id="1990"
+// @doctest id="3878"
 ```
 
 ## Modes

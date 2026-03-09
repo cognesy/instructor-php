@@ -27,7 +27,7 @@ $tool = FunctionTool::fromCallable(
         return "Weather in {$city}: 72F, sunny";
     }
 );
-// @doctest id="9655"
+// @doctest id="7ba9"
 ```
 
 ## Quick Path 2: BaseTool (state-aware class)
@@ -68,7 +68,7 @@ class WeatherTool extends BaseTool
         )->toArray();
     }
 }
-// @doctest id="16c8"
+// @doctest id="0137"
 ```
 
 ## Important PHP Constraint
@@ -85,7 +85,7 @@ Use `MockTool` when testing loop behavior:
 use Cognesy\Agents\Tool\Tools\MockTool;
 
 $tool = MockTool::returning('search', 'Search the web', 'result text');
-// @doctest id="185f"
+// @doctest id="32f5"
 ```
 
 ## Which Base Class Should I Use?

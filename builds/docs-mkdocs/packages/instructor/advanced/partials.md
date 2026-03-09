@@ -39,7 +39,7 @@ $person = $stream->finalValue();
 
 // Here you get completed and validated Person object
 $this->db->save($person); // ...for example: save to DB
-// @doctest id="ed97"
+// @doctest id="963b"
 ```
 
 Partially updated data is not validated while it is received and deserialized.
@@ -60,7 +60,7 @@ $stream = $structuredOutput->stream();
 // Or via create() method
 $pending = $structuredOutput->create();
 $stream = $pending->stream();
-// @doctest id="d3fe"
+// @doctest id="51c3"
 ```
 
 Both approaches return a `StructuredOutputStream` object, which gives you access to the response streamed from LLM and processed by Instructor into structured data.
@@ -77,13 +77,14 @@ The `StructuredOutputStream` class provides comprehensive methods for processing
 
 ### Result Access Methods
 - `finalValue()`: Get the final parsed result (blocks until completion).
-- `finalResponse()`: Get the final LLM response (blocks until completion).
+- `finalResponse()`: Get the final `StructuredOutputResponse` (blocks until completion).
 - `lastUpdate()`: Returns the last object received and processed by Instructor.
-- `lastResponse()`: Returns the last received LLM response.
+- `lastResponse()`: Returns the last received `StructuredOutputResponse`.
+- `finalRawResponse()`: Get the nested raw `InferenceResponse` when you need transport-level metadata.
 
 ### Utility Methods
 - `usage()`: Get token usage statistics from the streaming response.
-- `getIterator()`: Low-level stream of `StructuredOutputExecution` updates.
+- `getIterator()`: Low-level stream of `StructuredOutputResponse` updates.
 
 
 ### Example: streaming partial responses
@@ -107,7 +108,7 @@ foreach ($stream->partials() as $update) {
 $person = $stream->finalValue();
 // ...and for example save it to the database
 $db->savePerson($person);
-// @doctest id="352d"
+// @doctest id="1a33"
 ```
 
 
@@ -134,7 +135,7 @@ foreach ($stream->sequence() as $update) {
 $participants = $stream->finalValue();
 // ...and for example save it to the database
 $db->saveParticipants($participants->toArray());
-// @doctest id="3d97"
+// @doctest id="248b"
 ```
 
 ## Stream replay contract
@@ -165,7 +166,7 @@ $stream = (new StructuredOutput($runtime))
         options: ['stream' => true],
     )
     ->stream();
-// @doctest id="ece4"
+// @doctest id="f5aa"
 ```
 
 Replay reuses captured stream data, not a fresh LLM execution.
@@ -184,5 +185,5 @@ foreach ($stream->getIterator() as $execution) {
     $usage = $execution->usage();
     // custom metrics/observability logic
 }
-// @doctest id="137c"
+// @doctest id="1575"
 ```

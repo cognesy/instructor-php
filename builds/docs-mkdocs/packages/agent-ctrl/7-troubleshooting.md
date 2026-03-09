@@ -21,7 +21,7 @@ When using `inDirectory('/path')`, the directory must exist.
 $response = AgentCtrl::claudeCode()
     ->inDirectory('/existing/path')
     ->execute('List top 3 refactors.');
-// @doctest id="7c96"
+// @doctest id="6d7a"
 ```
 
 ## Stream Parse Failures

@@ -7,7 +7,6 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Config\DebugConfig;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Contracts\CanHandleRequestPool;
 use Cognesy\Http\Contracts\HttpMiddleware;
 use Cognesy\Http\Middleware\CanStoreCircuitBreakerState;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
@@ -33,7 +32,6 @@ final class HttpClientBuilder
     private ?HttpClientConfig $config = null;
     private ?DebugConfig $debugConfig = null;
     private ?CanHandleHttpRequest $driver = null;
-    private ?CanHandleRequestPool $poolHandler = null;
     private ?string $driverName = null;
     private ?object $clientInstance = null;
     /** @var HttpMiddleware[] */
@@ -62,11 +60,6 @@ final class HttpClientBuilder
 
     public function withDriver(CanHandleHttpRequest $driver): self {
         $this->driver = $driver;
-        return $this;
-    }
-
-    public function withPoolHandler(CanHandleRequestPool $poolHandler): self {
-        $this->poolHandler = $poolHandler;
         return $this;
     }
 
@@ -143,7 +136,6 @@ final class HttpClientBuilder
             middlewareStack: $middlewareStack,
             events: $this->events,
             config: $config,
-            poolHandler: $this->poolHandler,
         );
     }
 

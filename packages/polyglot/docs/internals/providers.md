@@ -7,7 +7,7 @@ Provider abstraction has four parts:
 
 1. Provider builders (`LLMProvider`, `EmbeddingsProvider`)
 2. Runtime assembly (`InferenceRuntime`, `EmbeddingsRuntime`)
-3. Driver factories (`InferenceDriverFactory`, `EmbeddingsDriverFactory`)
+3. Driver registries and factories (`CanProvideInferenceDrivers`, `EmbeddingsDriverFactory`)
 4. Driver + adapter contracts
 
 ## Provider Builders
@@ -110,18 +110,19 @@ Embeddings adapter boundary:
 3. map raw response payload back to domain response
 4. emit events on request/response/failure
 
-## Driver Factories and Registry
+## Driver Registry
 
-Inference drivers are selected by `LLMConfig::$driver` in `InferenceDriverFactory`.
-Custom drivers can be registered at runtime:
+Inference drivers are selected by `LLMConfig::$driver` through `CanProvideInferenceDrivers`.
+Bundled drivers are exposed by `BundledInferenceDrivers::registry()`.
+Custom drivers are added by deriving a runtime-local registry:
 
 ```php
 <?php
-use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 
-Inference::registerDriver('my-driver', MyInferenceDriver::class);
-Inference::unregisterDriver('my-driver');
-Inference::resetDrivers();
+$drivers = BundledInferenceDrivers::registry()->withDriver('my-driver', MyInferenceDriver::class);
+$runtime = InferenceRuntime::fromConfig($config, drivers: $drivers);
 ```
 
 Embeddings drivers are selected by `EmbeddingsConfig::$driver` in `EmbeddingsDriverFactory`.

@@ -10,13 +10,16 @@ use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
+use Cognesy\Polyglot\Inference\Contracts\CanProvideInferenceDrivers;
 use Cognesy\Polyglot\Inference\Contracts\CanResolveLLMConfig;
 use Cognesy\Polyglot\Inference\Data\Pricing;
 use Cognesy\Polyglot\Inference\Contracts\HasExplicitInferenceDriver;
-use Cognesy\Polyglot\Inference\Creation\InferenceDriverFactory;
+use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\BaseInferenceRequestDriver;
+use Cognesy\Polyglot\Inference\Events\InferenceDriverBuilt;
+use InvalidArgumentException;
 
 final class InferenceRuntime implements CanCreateInference
 {
@@ -41,12 +44,16 @@ final class InferenceRuntime implements CanCreateInference
         ?CanHandleEvents $events = null,
         ?HttpClient $httpClient = null,
         ?CanManageStreamCache $streamCacheManager = null,
+        ?CanProvideInferenceDrivers $drivers = null,
     ): self {
         $events = self::resolveEvents($events);
-        $driver = (new InferenceDriverFactory($events))->makeDriver(
+        $httpClient = self::resolveHttpClient($events, $httpClient);
+        $driver = self::makeDriver(
             config: $config,
-            httpClient: self::resolveHttpClient($events, $httpClient),
+            events: $events,
+            httpClient: $httpClient,
             streamCacheManager: $streamCacheManager,
+            drivers: $drivers,
         );
         return new self(
             driver: $driver,
@@ -60,16 +67,20 @@ final class InferenceRuntime implements CanCreateInference
         ?CanHandleEvents $events = null,
         ?HttpClient $httpClient = null,
         ?CanManageStreamCache $streamCacheManager = null,
+        ?CanProvideInferenceDrivers $drivers = null,
     ): self {
         $events = self::resolveEvents($events);
         $config = $resolver->resolveConfig();
+        $httpClient = self::resolveHttpClient($events, $httpClient);
         $driver = match (true) {
             $resolver instanceof HasExplicitInferenceDriver && $resolver->explicitInferenceDriver() !== null
                 => self::withStreamCacheManager($resolver->explicitInferenceDriver(), $streamCacheManager),
-            default => (new InferenceDriverFactory($events))->makeDriver(
+            default => self::makeDriver(
                 config: $config,
-                httpClient: self::resolveHttpClient($events, $httpClient),
+                events: $events,
+                httpClient: $httpClient,
                 streamCacheManager: $streamCacheManager,
+                drivers: $drivers,
             ),
         };
 
@@ -85,12 +96,14 @@ final class InferenceRuntime implements CanCreateInference
         ?CanHandleEvents $events = null,
         ?HttpClient $httpClient = null,
         ?CanManageStreamCache $streamCacheManager = null,
+        ?CanProvideInferenceDrivers $drivers = null,
     ): self {
         return self::fromResolver(
             resolver: $provider,
             events: $events,
             httpClient: $httpClient,
             streamCacheManager: $streamCacheManager,
+            drivers: $drivers,
         );
     }
 
@@ -136,6 +149,75 @@ final class InferenceRuntime implements CanCreateInference
         return match (true) {
             $pricing->hasAnyPricing() => $pricing,
             default => null,
+        };
+    }
+
+    private static function makeDriver(
+        LLMConfig $config,
+        CanHandleEvents $events,
+        HttpClient $httpClient,
+        ?CanManageStreamCache $streamCacheManager,
+        ?CanProvideInferenceDrivers $drivers,
+    ): CanProcessInferenceRequest {
+        $driverName = $config->driver;
+        if (empty($driverName)) {
+            throw new InvalidArgumentException('Provider type not specified in the configuration.');
+        }
+
+        $driver = self::withStreamCacheManager(
+            driver: self::resolveDrivers($drivers)->makeDriver($driverName, $config, $httpClient, $events),
+            streamCacheManager: $streamCacheManager,
+        );
+
+        $events->dispatch(new InferenceDriverBuilt([
+            'driverClass' => get_class($driver),
+            'config' => self::redactedConfig($config),
+            'httpClient' => get_class($httpClient),
+        ]));
+
+        return $driver;
+    }
+
+    private static function resolveDrivers(?CanProvideInferenceDrivers $drivers): CanProvideInferenceDrivers {
+        return $drivers ?? BundledInferenceDrivers::registry();
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    private static function redactedConfig(LLMConfig $config): array {
+        return self::redactSensitiveValues($config->toArray());
+    }
+
+    /**
+     * @param array<string,mixed> $data
+     * @return array<string,mixed>
+     */
+    private static function redactSensitiveValues(array $data): array {
+        $redacted = [];
+
+        foreach ($data as $key => $value) {
+            $redacted[$key] = match (true) {
+                self::isSensitiveKey((string) $key) => '[REDACTED]',
+                is_array($value) => self::redactSensitiveValues($value),
+                default => $value,
+            };
+        }
+
+        return $redacted;
+    }
+
+    private static function isSensitiveKey(string $key): bool {
+        $normalized = strtolower(str_replace(['-', '_'], '', $key));
+
+        return match (true) {
+            in_array($normalized, ['apikey', 'authorization', 'proxyauthorization', 'token', 'accesstoken', 'refreshtoken', 'secret', 'password', 'cookie', 'setcookie'], true) => true,
+            str_contains($normalized, 'apikey') => true,
+            str_contains($normalized, 'authorization') => true,
+            str_contains($normalized, 'cookie') => true,
+            default => str_contains($normalized, 'token')
+                || str_contains($normalized, 'secret')
+                || str_contains($normalized, 'password'),
         };
     }
 }

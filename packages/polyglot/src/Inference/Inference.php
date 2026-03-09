@@ -4,7 +4,7 @@ namespace Cognesy\Polyglot\Inference;
 
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
-use Cognesy\Polyglot\Inference\Creation\InferenceDriverFactory;
+use Cognesy\Polyglot\Inference\Contracts\CanProvideInferenceDrivers;
 use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -29,41 +29,26 @@ final class Inference implements CanCreateInference
         $this->runtime = $runtime ?? InferenceRuntime::fromProvider(LLMProvider::new());
     }
 
-    public static function fromConfig(LLMConfig $config): self {
-        return new self(InferenceRuntime::fromConfig($config));
+    public static function fromConfig(LLMConfig $config, ?CanProvideInferenceDrivers $drivers = null): self {
+        return new self(InferenceRuntime::fromConfig($config, drivers: $drivers));
     }
 
-    public static function fromProvider(LLMProvider $provider): self {
-        return new self(InferenceRuntime::fromProvider($provider));
+    public static function fromProvider(LLMProvider $provider, ?CanProvideInferenceDrivers $drivers = null): self {
+        return new self(InferenceRuntime::fromProvider($provider, drivers: $drivers));
     }
 
     public static function fromRuntime(CanCreateInference $runtime): self {
         return new self($runtime);
     }
 
-    public static function using(string $preset, ?string $basePath = null): self {
-        return self::fromConfig(LLMConfig::fromPreset($preset, $basePath));
+    public static function using(string $preset, ?string $basePath = null, ?CanProvideInferenceDrivers $drivers = null): self {
+        return self::fromConfig(LLMConfig::fromPreset($preset, $basePath), drivers: $drivers);
     }
 
     public function withRuntime(CanCreateInference $runtime): self {
         $copy = clone $this;
         $copy->runtime = $runtime;
         return $copy;
-    }
-
-    /**
-     * @param string|callable(\Cognesy\Polyglot\Inference\Config\LLMConfig,\Cognesy\Http\HttpClient,\Cognesy\Events\Contracts\CanHandleEvents):\Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest $driver
-     */
-    public static function registerDriver(string $name, string|callable $driver): void {
-        InferenceDriverFactory::registerDriver($name, $driver);
-    }
-
-    public static function unregisterDriver(string $name): void {
-        InferenceDriverFactory::unregisterDriver($name);
-    }
-
-    public static function resetDrivers(): void {
-        InferenceDriverFactory::resetDrivers();
     }
 
     // SHORTCUTS ///////////////////////////////////////////////////////////

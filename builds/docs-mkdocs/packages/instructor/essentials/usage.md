@@ -46,7 +46,7 @@ var_dump($person);
 //     age: 28
 // }
 ?>
-// @doctest id="caf8"
+// @doctest id="04fc"
 ```
 
 !!! note
@@ -70,7 +70,7 @@ $structuredOutput = (new StructuredOutput)
     ->withModel($modelName)             // Set LLM model
     ->withOptions($options)             // Set LLM options
     ->withStreaming(true);              // Enable streaming
-// @doctest id="7ddb"
+// @doctest id="f591"
 ```
 
 You can also pass a prebuilt request object:
@@ -86,7 +86,7 @@ $request = new StructuredOutputRequest(
 $user = (new StructuredOutput)
     ->withRequest($request)
     ->get();
-// @doctest id="ed77"
+// @doctest id="2896"
 ```
 
 ### Response Model Configuration
@@ -96,7 +96,7 @@ $structuredOutput = (new StructuredOutput)
     ->withResponseClass($className)     // Set response class specifically
     ->withResponseObject($object)       // Set response object instance
     ->withResponseJsonSchema($schema);  // Set JSON schema directly
-// @doctest id="2cf5"
+// @doctest id="4412"
 ```
 
 ### Output Formats
@@ -108,7 +108,7 @@ $structuredOutput = (new StructuredOutput)
     ->intoArray()                       // Return as associative array
     ->intoInstanceOf($className)        // Return as different class
     ->intoObject($selfDeserializing);   // Return as self-deserializing object
-// @doctest id="e06e"
+// @doctest id="9356"
 ```
 
 **Example - Get raw arrays:**
@@ -120,7 +120,7 @@ $userData = (new StructuredOutput)
     ->get();
 
 // Result: ['name' => 'John Doe', 'age' => 30]
-// @doctest id="38b6"
+// @doctest id="eee3"
 ```
 
 **Example - Use different output class:**
@@ -132,7 +132,7 @@ $dto = (new StructuredOutput)
     ->get();
 
 // Schema defines 5 fields, output has 2 fields
-// @doctest id="fb57"
+// @doctest id="d177"
 ```
 
 See: [Output Formats Guide](../advanced/output_formats.md) for comprehensive documentation.
@@ -146,7 +146,7 @@ $runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
     ->withDefaultToStdClass(true);      // Use stdClass fallback for schema-less data
 
 $structuredOutput = (new StructuredOutput)->withRuntime($runtime);
-// @doctest id="01da"
+// @doctest id="0ffa"
 ```
 
 ### LLM Provider Configuration
@@ -171,7 +171,7 @@ $provider = LLMProvider::using('openai')
 $structuredOutput = (new StructuredOutput)->withRuntime(
     StructuredOutputRuntime::fromProvider(provider: $provider)
 );
-// @doctest id="ad4c"
+// @doctest id="b5dd"
 ```
 
 ### Processing Overrides
@@ -183,7 +183,7 @@ $runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
     ->withExtractors($extractors);       // Override extractors
 
 $structuredOutput = (new StructuredOutput)->withRuntime($runtime);
-// @doctest id="a023"
+// @doctest id="b000"
 ```
 
 
@@ -213,7 +213,7 @@ $llmResponse = $response->rawResponse();
 // Get streaming interface
 $stream = $structuredOutput->stream();
 ?>
-// @doctest id="d7bb"
+// @doctest id="4d3e"
 ```
 
 ### Pending Execution with `create()`
@@ -246,7 +246,7 @@ $json = $pending->toJson();      // Convert result to JSON string
 $array = $pending->toArray();    // Convert result to array
 $jsonObj = $pending->toJsonObject(); // Convert result to Json object
 ?>
-// @doctest id="37bb"
+// @doctest id="3545"
 ```
 
 You can inspect execution metadata from `PendingStructuredOutput`:
@@ -259,7 +259,7 @@ $execution = $pending->execution();
 $executionId = $execution->id()->toString();
 $requestId = $execution->request()->id()->toString();
 ?>
-// @doctest id="9e7b"
+// @doctest id="af80"
 ```
 
 ### Runtime-First Execution (`CanCreateStructuredOutput`)
@@ -282,7 +282,7 @@ $request = new StructuredOutputRequest(
 $requestId = $request->id()->toString(); // StructuredOutputRequestId at boundary
 $person = $creator->create($request)->get();
 ?>
-// @doctest id="9d13"
+// @doctest id="0b71"
 ```
 
 ### Response Types Explained
@@ -311,7 +311,7 @@ $user = (new StructuredOutput)
     ->with(messages: 'Jason is 28 years old', responseModel: Person::class)
     ->getObject();
 ?>
-// @doctest id="4eb2"
+// @doctest id="0d56"
 ```
 
 Available methods: `getString()`, `getInt()`, `getFloat()`, `getBoolean()`, `getObject()`, `getArray()`.
@@ -331,7 +331,7 @@ $runtime = StructuredOutputRuntime::fromConfig(
 
 $structuredOutput = new StructuredOutput($runtime);
 ?>
-// @doctest id="7a8c"
+// @doctest id="3a55"
 ```
 
 
@@ -350,7 +350,7 @@ $value = (new StructuredOutput)
     )
     ->get();
 ?>
-// @doctest id="5c23"
+// @doctest id="8ef6"
 ```
 
 
@@ -389,7 +389,7 @@ $translation = (new StructuredOutput)
     )
     ->get();
 ?>
-// @doctest id="206a"
+// @doctest id="ca7e"
 ```
 
 
@@ -420,7 +420,7 @@ $person = $stream->lastUpdate();
 // ...to, for example, save it to the database
 $db->save($person);
 ?>
-// @doctest id="daea"
+// @doctest id="1d0d"
 ```
 
 
@@ -454,7 +454,7 @@ $stream = $structuredOutput->stream();     // Get streaming interface
 $pending = $structuredOutput->create();
 $result = $pending->get();                 // Same methods available
 $json = $pending->toJson();               // Plus utility methods
-// @doctest id="2723"
+// @doctest id="dae3"
 ```
 
 - **`get()`**: Returns the parsed and validated structured result

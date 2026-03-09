@@ -61,6 +61,12 @@
             "composer_name": "cognesy/instructor-http-client"
         },
         {
+            "local": "packages/http-pool",
+            "repo": "cognesy/instructor-http-pool",
+            "github_name": "instructor-http-pool",
+            "composer_name": "cognesy/instructor-http-pool"
+        },
+        {
             "local": "packages/hub",
             "repo": "cognesy/instructor-hub",
             "github_name": "instructor-hub",

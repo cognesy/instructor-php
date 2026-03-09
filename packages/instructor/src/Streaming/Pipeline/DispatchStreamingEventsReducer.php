@@ -82,7 +82,7 @@ final class DispatchStreamingEventsReducer implements Reducer
     // INTERNAL EVENT DISPATCH ///////////////////////////////////////////////
 
     private function dispatchPartialEvents(StructuredOutputStreamState $state): void {
-        $snapshot = EmissionSnapshot::fromState($state);
+        $snapshot = $state->snapshot();
 
         $this->events->dispatch(new ChunkReceived([
             'chunk' => $state,

@@ -11,7 +11,8 @@ use Cognesy\Http\HttpClient;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
-use Cognesy\Polyglot\Inference\Creation\InferenceDriverFactory;
+use Cognesy\Polyglot\Inference\Contracts\CanProvideInferenceDrivers;
+use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
 use Generator;
 
 class InferenceCases
@@ -35,7 +36,7 @@ class InferenceCases
     /** @var array<string, LLMConfig> */
     private array $connectionConfigs = [];
 
-    private ?InferenceDriverFactory $driverFactory = null;
+    private ?CanProvideInferenceDrivers $drivers = null;
     private ?HttpClient $httpClient = null;
     private ?CanHandleEvents $events = null;
 
@@ -144,7 +145,7 @@ class InferenceCases
             filterByCapabilities: $this->filterByCapabilities,
             connectionConfigs: $this->connectionConfigs,
         );
-        $instance->driverFactory = $this->driverFactory;
+        $instance->drivers = $this->drivers;
         $instance->httpClient = $this->httpClient;
         $instance->events = $this->events;
         return $instance;
@@ -210,14 +211,19 @@ class InferenceCases
             return null;
         }
 
-        return $this->getDriverFactory()->makeDriver($config, $this->getHttpClient());
+        return $this->getDrivers()->makeDriver(
+            name: $config->driver,
+            config: $config,
+            httpClient: $this->getHttpClient(),
+            events: $this->getEvents(),
+        );
     }
 
-    private function getDriverFactory() : InferenceDriverFactory {
-        if ($this->driverFactory === null) {
-            $this->driverFactory = new InferenceDriverFactory($this->getEvents());
+    private function getDrivers() : CanProvideInferenceDrivers {
+        if ($this->drivers === null) {
+            $this->drivers = BundledInferenceDrivers::registry();
         }
-        return $this->driverFactory;
+        return $this->drivers;
     }
 
     private function getHttpClient() : HttpClient {
@@ -282,8 +288,8 @@ class InferenceCases
         ];
     }
 
-    public function withDriverFactory(InferenceDriverFactory $factory) : self {
-        $this->driverFactory = $factory;
+    public function withDrivers(CanProvideInferenceDrivers $drivers) : self {
+        $this->drivers = $drivers;
         return $this;
     }
 

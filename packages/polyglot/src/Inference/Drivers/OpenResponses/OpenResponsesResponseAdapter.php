@@ -472,6 +472,6 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
             return substr($fullArgs, strlen($existing));
         }
 
-        return '';
+        return $fullArgs;
     }
 }

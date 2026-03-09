@@ -33,7 +33,7 @@ packages/
 └── some-package/
     ├── src/
     └── composer.json   # ✗ No docs/ - not included
-// @doctest id="1ad6"
+// @doctest id="23ad"
 ```
 
 ## Package Metadata
@@ -65,7 +65,7 @@ packages:
     - polyglot
     - http-client
     - laravel
-# @doctest id="3431"
+# @doctest id="a50c"
 ```
 
 Packages not in the list appear after listed ones, alphabetically.
@@ -79,7 +79,7 @@ packages:
   descriptions:
     instructor: 'Structured output extraction from LLMs'
     polyglot: 'Unified LLM API client'
-# @doctest id="436d"
+# @doctest id="2c0a"
 ```
 
 ### Target Directories
@@ -90,7 +90,7 @@ Map package names to different output directories:
 packages:
   target_dirs:
     http-client: http
-# @doctest id="ae8d"
+# @doctest id="611d"
 ```
 
 This would output `http-client` docs to `packages/http/` instead of `packages/http-client/`.
@@ -105,7 +105,7 @@ packages:
     - doctor
     - hub
     - tell
-# @doctest id="71c0"
+# @doctest id="c6eb"
 ```
 
 Internal packages:
@@ -176,7 +176,7 @@ docs/                          # MkDocs output
 │   ├── index.md
 │   ├── instructor/
 │   └── polyglot/
-// @doctest id="60d5"
+// @doctest id="ad2b"
 ```
 
 ## Packages Listing Page

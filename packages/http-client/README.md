@@ -1,6 +1,6 @@
 # HTTP Client Package
 
-Framework-agnostic HTTP transport layer used by Instructor for sync, streaming, and pooled requests.
+Framework-agnostic HTTP transport layer used by Instructor for sync and streaming requests.
 
 ## Example
 
@@ -29,6 +29,8 @@ For usage details, read the package docs:
 - `packages/http-client/docs/1-overview.md`
 - `packages/http-client/docs/2-getting-started.md`
 - `packages/http-client/docs/_meta.yaml` (navigation order)
+
+For concurrent request pooling, use `packages/http-pool`.
 
 2.0 API scope notes:
 - `packages/http-client/V2_API_SURFACE.md`

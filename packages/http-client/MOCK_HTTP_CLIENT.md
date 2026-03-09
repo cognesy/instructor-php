@@ -101,33 +101,14 @@ $mock->reset();           // clear received requests
 $mock->clearResponses();  // clear both expectations and legacy responses
 ```
 
-## Pool Requests (Note)
+## Pool Requests
 
-The `MockHttpDriver` does **not** implement pool functionality (`CanHandleRequestPool`). Pool-based tests should either:
-- Mock individual sequential requests (the pool will call `handle()` multiple times)
-- Use a different driver for integration tests that require actual concurrent execution
-- Test pool logic separately from HTTP mocking concerns
+Pooling now lives in `packages/http-pool`.
 
-If you need to test code that uses `HttpClient::pool()` or `HttpClient::withPool()`, the mock driver will handle each request in the pool individually through the standard `handle()` method. The mock simply needs expectations for each request in sequence.
-
-Example with sequential pool requests:
-
-```php
-use Cognesy\Http\Collections\HttpRequestList;
-
-$mock->on()->post('https://api.example.com/batch/1')->replyJson(['result' => 1]);
-$mock->on()->post('https://api.example.com/batch/2')->replyJson(['result' => 2]);
-$mock->on()->post('https://api.example.com/batch/3')->replyJson(['result' => 3]);
-
-$requests = HttpRequestList::of(
-    new HttpRequest('https://api.example.com/batch/1', 'POST'),
-    new HttpRequest('https://api.example.com/batch/2', 'POST'),
-    new HttpRequest('https://api.example.com/batch/3', 'POST'),
-);
-
-// This will call handle() for each request - mock doesn't execute concurrently
-$results = $http->pool($requests);
-```
+If you need to test concurrent request execution:
+- build a dedicated pool handler or `HttpPool`
+- keep `MockHttpDriver` focused on single-request transport tests
+- test pool orchestration separately from request mocking
 
 ## Using With Polyglot (LLMs)
 
@@ -252,30 +233,18 @@ $mock->on()
   - Loosen matchers using `withJsonSubset`, `urlStartsWith`, header predicates
 - Streaming not triggering: ensure your code sets request `options['stream'] = true` (Polyglot does this in `PendingHttpResponse->stream()`)
 - Multiple matches: expectations are evaluated in definition order; use `times()` to consume only N matches
-- Pool requests not working: Remember mock driver doesn't implement concurrent pools - it processes each request sequentially via `handle()`
+- Pool requests are now part of `packages/http-pool`; test them separately from `MockHttpDriver`
 
 ## API Changes (Latest)
 
 **Breaking Changes from Previous Versions:**
-- Pool methods now accept/return typed collections (`HttpRequestList`/`HttpResponseList`) instead of raw arrays
 - `MockHttpResponse` renamed to `MockHttpResponseFactory` for clarity
-- Pool functionality is not implemented in mock driver - sequential handling only
 
 **Migration Example:**
 ```php
-// Old (pre-collections):
-$results = $http->pool([$request1, $request2]);
-$first = $results[0];
+// Old mock construction:
+$http = (new HttpClientBuilder())->withDriver(new MockHttpDriver())->create();
 
-// New (with collections):
-use Cognesy\Http\Collections\HttpRequestList;
-
-$requests = HttpRequestList::of($request1, $request2);
-$results = $http->pool($requests);
-$first = $results->all()[0];
-// or iterate:
-foreach ($results as $result) {
-    // $result is a Result object
-}
+// Current mock construction remains the same:
+$http = (new HttpClientBuilder())->withDriver(new MockHttpDriver())->create();
 ```
-

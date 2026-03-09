@@ -16,7 +16,7 @@ $data = Inference::using('openai')
         options: ['max_tokens' => 128],
     )
     ->asJsonData();
-// @doctest id="8577"
+// @doctest id="a2b6"
 ```
 
 This requests JSON output, but strict schema enforcement depends on provider support. Use native JSON schema response formats when you need strict schema validation.

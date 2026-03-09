@@ -16,7 +16,7 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 $default = new Inference();
 $openai = Inference::using('openai');
 $fromDsnConfig = Inference::fromConfig(LLMConfig::fromDsn('driver=openai,model=gpt-4.1-nano'));
-// @doctest id="92b9"
+// @doctest id="3c44"
 ```
 
 ## Build a Request
@@ -31,7 +31,7 @@ $inference = (new Inference())
     ->withOptions(['temperature' => 0.2])
     ->withMaxTokens(120)
     ->withStreaming(false);
-// @doctest id="1f77"
+// @doctest id="9a27"
 ```
 
 ## Execute
@@ -45,7 +45,7 @@ $data = $inference->asJsonData();   // array
 $toolJson = $inference->asToolCallJson();     // tool call args as JSON string
 $toolData = $inference->asToolCallJsonData(); // tool call args as array
 $stream = $inference->stream();     // InferenceStream
-// @doctest id="f218"
+// @doctest id="910f"
 ```
 
 ## One-Call Configuration
@@ -59,7 +59,7 @@ $data = (new Inference())
         options: ['temperature' => 0],
     )
     ->asJsonData();
-// @doctest id="f067"
+// @doctest id="a42b"
 ```
 
 ## Runtime-First Usage
@@ -74,34 +74,37 @@ $runtime = InferenceRuntime::fromConfig(LLMConfig::fromPreset('openai'));
 
 $pending = $runtime->create(new InferenceRequest(messages: 'Ping', model: 'gpt-4.1-nano'));
 $text = $pending->get();
-// @doctest id="082a"
+// @doctest id="0be1"
 ```
 
-## Register Custom Drivers
+## Extend Drivers Per Runtime
 
 ```php
 <?php
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
+use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIDriver;
-use Cognesy\Polyglot\Inference\Inference;
-use Psr\EventDispatcher\EventDispatcherInterface;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
+use Cognesy\Events\Contracts\CanHandleEvents;
 
-Inference::registerDriver(
+$drivers = BundledInferenceDrivers::registry()->withDriver(
     'openai-custom',
     function (
         LLMConfig $config,
         HttpClient $httpClient,
-        EventDispatcherInterface $events,
+        CanHandleEvents $events,
     ): CanProcessInferenceRequest {
         return new OpenAIDriver($config, $httpClient, $events);
-    }
+    },
 );
 
-Inference::unregisterDriver('openai-custom');
-Inference::resetDrivers();
-// @doctest id="27dd"
+$runtime = InferenceRuntime::fromConfig(
+    config: LLMConfig::fromArray(['driver' => 'openai-custom']),
+    drivers: $drivers,
+);
+// @doctest id="4f8b"
 ```
 
 ## See Also

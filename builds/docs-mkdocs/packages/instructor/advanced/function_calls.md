@@ -29,7 +29,7 @@ $args = (new StructuredOutput)->with(
 // call the function with the extracted arguments
 saveUser(...$args);
 ?>
-// @doctest id="30ac"
+// @doctest id="1148"
 ```
 
 
@@ -57,7 +57,7 @@ $args = (new StructuredOutput)->with(
 // call the function with the extracted arguments
 (new DataStore)->saveUser(...$args);
 ?>
-// @doctest id="02d3"
+// @doctest id="2f98"
 ```
 
 
@@ -83,5 +83,5 @@ $args = (new StructuredOutput)->with(
 // call the function with the extracted arguments
 $callable(...$args);
 ?>
-// @doctest id="3735"
+// @doctest id="96fc"
 ```

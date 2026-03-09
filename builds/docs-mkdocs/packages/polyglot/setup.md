@@ -16,7 +16,7 @@ You can install it using Composer:
 
 ```bash
 composer require cognesy/instructor-polyglot
-# @doctest id="129e"
+# @doctest id="835b"
 ```
 
 This will install Polyglot along with its dependencies.
@@ -53,7 +53,7 @@ ANTHROPIC_API_KEY=sk-ant-your-anthropic-key
 MISTRAL_API_KEY=your-mistral-key
 GEMINI_API_KEY=your-gemini-key
 # etc.
-# @doctest id="a456"
+# @doctest id="a97a"
 ```
 
 ### Configuration Files
@@ -78,7 +78,7 @@ mkdir -p config
 # Copy polyglot YAML config trees
 cp -r vendor/cognesy/instructor-php/packages/polyglot/resources/config/llm config/llm
 cp -r vendor/cognesy/instructor-php/packages/polyglot/resources/config/embed config/embed
-# @doctest id="a499"
+# @doctest id="b33e"
 ```
 
 3. Customize the configuration files as needed
@@ -95,7 +95,7 @@ apiKey: '${OPENAI_API_KEY}'
 endpoint: /chat/completions
 model: gpt-4.1-nano
 maxTokens: 1024
-# @doctest id="94d8"
+# @doctest id="2a25"
 ```
 
 #### Embeddings Configuration
@@ -110,7 +110,7 @@ endpoint: /embeddings
 model: text-embedding-3-small
 dimensions: 1536
 maxInputs: 2048
-# @doctest id="966d"
+# @doctest id="08df"
 ```
 
 ### Custom Configuration Location
@@ -119,7 +119,7 @@ By default, Polyglot looks for custom configuration files in the `config` direct
 
 ```shell
 INSTRUCTOR_CONFIG_PATHS='/path/to/your/config,alternative/path'
-# @doctest id="7d47"
+# @doctest id="8922"
 ```
 
 ### Overriding Configuration Location
@@ -133,7 +133,7 @@ $loader = ConfigLoader::fromPaths(
     __DIR__ . '/config/llm/presets/openai.yaml',
     __DIR__ . '/config/embed/presets/openai.yaml',
 );
-// @doctest id="1299"
+// @doctest id="f6d7"
 ```
 
 
@@ -159,7 +159,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $result = (new Inference)
     ->withMessages('Say hello.')
     ->get();
-// @doctest id="4096"
+// @doctest id="f70b"
 ```
 
 If you see a friendly greeting, your installation is working correctly!

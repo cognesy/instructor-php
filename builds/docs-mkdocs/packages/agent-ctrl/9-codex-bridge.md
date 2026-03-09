@@ -27,7 +27,7 @@ $result = SandboxCommandExecutor::forCodex()->execute($spec);
 $response = (new ResponseParser())->parse($result, OutputFormat::Json);
 
 echo $response->messageText();
-// @doctest id="24a9"
+// @doctest id="dc32"
 ```
 
 ## Streaming

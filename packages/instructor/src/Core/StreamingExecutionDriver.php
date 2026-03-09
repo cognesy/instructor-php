@@ -81,7 +81,7 @@ final class StreamingExecutionDriver implements CanEmitStreamingUpdates
 
         /** @var StructuredOutputStreamState $currentState */
         $currentState = $this->stream->current();
-        $snapshot = EmissionSnapshot::fromState($currentState);
+        $snapshot = $currentState->snapshot();
         $response = $currentState->partialResponse();
         $this->state = $currentState;
         $this->stream->next();

@@ -10,7 +10,7 @@
 
 ```bash
 composer require cognesy/instructor-laravel
-# @doctest id="c52d"
+# @doctest id="d3d4"
 ```
 
 The package uses Laravel's auto-discovery, so the service provider and facades are registered automatically.
@@ -21,7 +21,7 @@ Publish the configuration file to customize settings:
 
 ```bash
 php artisan vendor:publish --tag=instructor-config
-# @doctest id="a17b"
+# @doctest id="0875"
 ```
 
 This creates `config/instructor.php` with all available options.
@@ -41,7 +41,7 @@ ANTHROPIC_API_KEY=sk-ant-...
 GEMINI_API_KEY=...
 GROQ_API_KEY=...
 MISTRAL_API_KEY=...
-// @doctest id="6640"
+// @doctest id="3147"
 ```
 
 ## Verify Installation
@@ -50,7 +50,7 @@ Run the installation command to verify everything is configured correctly:
 
 ```bash
 php artisan instructor:install
-# @doctest id="5fa0"
+# @doctest id="aa5b"
 ```
 
 This will:
@@ -64,14 +64,14 @@ Test that your API configuration is working:
 
 ```bash
 php artisan instructor:test
-# @doctest id="18cb"
+# @doctest id="e7ae"
 ```
 
 Or test a specific connection:
 
 ```bash
 php artisan instructor:test --connection=anthropic
-# @doctest id="7d89"
+# @doctest id="6b54"
 ```
 
 ## Optional: Publish Stubs
@@ -80,7 +80,7 @@ If you want to customize the response model stubs:
 
 ```bash
 php artisan vendor:publish --tag=instructor-stubs
-# @doctest id="fcf7"
+# @doctest id="7b47"
 ```
 
 This publishes stubs to `stubs/instructor/` in your application.
@@ -101,7 +101,7 @@ If you've disabled auto-discovery, manually register the service provider in `co
     'Inference' => Cognesy\Instructor\Laravel\Facades\Inference::class,
     'Embeddings' => Cognesy\Instructor\Laravel\Facades\Embeddings::class,
 ],
-// @doctest id="7f5e"
+// @doctest id="f0db"
 ```
 
 ## Upgrading
@@ -110,7 +110,7 @@ When upgrading to a new version, republish the configuration if there are new op
 
 ```bash
 php artisan vendor:publish --tag=instructor-config --force
-# @doctest id="ee7b"
+# @doctest id="2907"
 ```
 
 Review the [changelog](https://github.com/cognesy/instructor-php/blob/main/CHANGELOG.md) for breaking changes.

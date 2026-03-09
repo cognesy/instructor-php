@@ -15,7 +15,7 @@ $stream = Inference::using('openai')
         options: ['stream' => true],
     )
     ->stream();
-// @doctest id="f16d"
+// @doctest id="939a"
 ```
 
 For tool-call streaming, use `tools` and `toolChoice` instead of any mode flag.

@@ -7,7 +7,7 @@ description: 'Run your first prompt with AgentCtrl.'
 
 ```bash
 composer require cognesy/agent-ctrl
-# @doctest id="cd83"
+# @doctest id="c546"
 ```
 
 You need at least one CLI binary installed and authenticated (`claude`, `codex`, or `opencode`).
@@ -20,7 +20,7 @@ use Cognesy\AgentCtrl\AgentCtrl;
 $response = AgentCtrl::codex()->execute('Summarize this repository.');
 
 echo $response->text();
-// @doctest id="f636"
+// @doctest id="a2be"
 ```
 
 ## Runtime Agent Selection
@@ -31,5 +31,5 @@ use Cognesy\AgentCtrl\Enum\AgentType;
 
 $agent = AgentType::from('codex');
 $response = AgentCtrl::make($agent)->execute('List top risks in this code.');
-// @doctest id="37e8"
+// @doctest id="676f"
 ```

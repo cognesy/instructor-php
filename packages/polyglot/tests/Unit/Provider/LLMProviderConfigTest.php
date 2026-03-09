@@ -3,7 +3,7 @@
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Creation\InferenceDriverFactory;
+use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 it('creates driver from explicit config and resolves correct class', function () {
@@ -17,10 +17,14 @@ it('creates driver from explicit config and resolves correct class', function ()
 
     $provider = LLMProvider::new()->withLLMConfig($config);
     $httpClient = (new HttpClientBuilder())->create();
-    $factory = new InferenceDriverFactory(new EventDispatcher());
-    $driver = $factory->makeDriver($provider->resolveConfig(), $httpClient);
+    $driver = BundledInferenceDrivers::registry()->makeDriver(
+        'openai',
+        $provider->resolveConfig(),
+        $httpClient,
+        new EventDispatcher(),
+    );
 
-    // Should be OpenAI driver resolved via InferenceDriverFactory bundledDrivers
+    // Should be OpenAI driver resolved via bundled inference drivers
     expect(get_class($driver))->toContain('OpenAIDriver');
 });
 

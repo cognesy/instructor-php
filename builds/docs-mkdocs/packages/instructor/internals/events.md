@@ -41,7 +41,7 @@ $runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
     responseModel: Scalar::integer(),
 )->get();
 // check your console for the details on the Instructor execution
-// @doctest id="c887"
+// @doctest id="e71a"
 ```
 
 

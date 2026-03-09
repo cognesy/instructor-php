@@ -48,7 +48,7 @@ foreach ($stream as $delta) {
     echo $delta->contentDelta;
     flush();
 }
-// @doctest id="d075"
+// @doctest id="d585"
 ```
 
 2. **Buffer Flushing**: Ensure output buffers are properly flushed during streaming
@@ -62,7 +62,7 @@ foreach ($stream as $delta) {
     }
     flush();
 }
-// @doctest id="f29a"
+// @doctest id="20a1"
 ```
 
 3. **Error Handling in Streams**: Implement specific error handling for streams
@@ -94,7 +94,7 @@ try {
 } catch (\Throwable $e) {
     echo "Request failed: " . $e->getMessage() . "\n";
 }
-// @doctest id="fbb3"
+// @doctest id="c1b7"
 ```
 
 4. **Fallback to Non-streaming**: Implement a fallback to non-streaming mode
@@ -126,5 +126,5 @@ function getResponse(string $prompt, bool $preferStreaming = true): string {
     // Fallback to non-streaming
     return $inference->with(messages: $prompt)->get();
 }
-// @doctest id="d4ba"
+// @doctest id="4009"
 ```

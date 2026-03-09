@@ -12,6 +12,7 @@ This is a monorepo containing multiple independent packages under the `packages/
 - **Agent control**: `agent-ctrl` - Unified CLI bridge for code agents
 - **Observability**: `metrics` - metrics collection and export
 - **HTTP client**: `http-client`
+- **HTTP pooling**: `http-pool`
 - **Pipeline processing**: `pipeline`
 
 Each package is independently publishable to Packagist with its own `composer.json`, tests, and documentation.

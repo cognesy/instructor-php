@@ -41,7 +41,7 @@ $user = (new StructuredOutput($runtime))
         prompt: "\nYour task is to extract correct and accurate data from the messages using provided tools.\n",
     )
     ->get();
-// @doctest id="c33e"
+// @doctest id="5768"
 ```
 
 
@@ -63,7 +63,7 @@ $user = (new StructuredOutput($runtime))->with(
     responseModel: User::class,
     prompt: "\nYour task is to respond correctly with JSON object.",
 )->get();
-// @doctest id="11e3"
+// @doctest id="4405"
 ```
 Note that various models and API providers have specific requirements
 on the input format, e.g. for OpenAI JSON mode you are required to include
@@ -108,7 +108,7 @@ $user = (new StructuredOutput($runtime))
         prompt: "\nYour task is to respond correctly with JSON object. Response must follow JSONSchema: {$jsonSchema}\n",
     )
     ->get();
-// @doctest id="a716"
+// @doctest id="5a47"
 ```
 
 The example above demonstrates how to manually create JSON Schema, but
@@ -139,7 +139,7 @@ $user = (new StructuredOutput($runtime))
         prompt: "\nYour task is to respond correctly with JSON object. Response must follow JSONSchema:\n<|json_schema|>\n",
     )
     ->get();
-// @doctest id="0df7"
+// @doctest id="77b3"
 ```
 
 
@@ -171,5 +171,5 @@ $user = (new StructuredOutput($runtime))
         prompt: "\nYour task is to respond correctly with strict JSON object in a fenced json code block. Object must validate against this JSONSchema:\n<|json_schema|>\n",
     )
     ->get();
-// @doctest id="a919"
+// @doctest id="4ae7"
 ```
