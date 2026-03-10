@@ -80,7 +80,7 @@ echo "\nResponse: {$response3}\n";
 
 if ($state->status()->value !== 'completed') {
     echo "Skipping assertions because execution status is {$state->status()->value}.\n";
-    return;
+    exit(1);
 }
 
 // Assertions

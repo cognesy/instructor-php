@@ -4,6 +4,7 @@ namespace Cognesy\Events\Traits;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Event;
+use LogicException;
 
 trait HandlesEvents
 {
@@ -20,7 +21,7 @@ trait HandlesEvents
      * @param Event $event The event to be emitted
      */
     public function dispatch(Event $event) : object {
-        return $this->events->dispatch($event);
+        return $this->eventsOrFail()->dispatch($event);
     }
 
     /**
@@ -30,7 +31,7 @@ trait HandlesEvents
      */
     public function wiretap(?callable $listener) : self {
         if ($listener !== null) {
-            $this->events->wiretap($listener);
+            $this->eventsOrFail()->wiretap($listener);
         }
         return $this;
     }
@@ -43,8 +44,16 @@ trait HandlesEvents
      */
     public function onEvent(string $class, ?callable $listener) : self {
         if ($listener !== null) {
-            $this->events->addListener($class, $listener);
+            $this->eventsOrFail()->addListener($class, $listener);
         }
         return $this;
+    }
+
+    private function eventsOrFail() : CanHandleEvents {
+        if (isset($this->events)) {
+            return $this->events;
+        }
+
+        throw new LogicException('Event handler not configured. Call withEventHandler() before dispatching or registering listeners.');
     }
 }

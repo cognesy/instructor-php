@@ -53,6 +53,19 @@ it('round-trips tool definitions arrays', function () {
     expect(ToolDefinitions::fromArray($data)->toArray())->toBe($data);
 });
 
+it('serializes keyed tool definitions as a JSON list', function () {
+    $tools = new ToolDefinitions(...[
+        'search' => new ToolDefinition('search', 'Searches the index', ['type' => 'object']),
+        'lookup' => new ToolDefinition('lookup', 'Looks up a record', ['type' => 'object']),
+    ]);
+
+    $data = $tools->toArray();
+
+    expect(array_is_list($data))->toBeTrue()
+        ->and($data[0]['function']['name'])->toBe('search')
+        ->and($data[1]['function']['name'])->toBe('lookup');
+});
+
 it('provides a consistent empty collection', function () {
     $tools = ToolDefinitions::empty();
 

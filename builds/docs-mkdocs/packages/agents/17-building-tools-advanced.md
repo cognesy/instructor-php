@@ -30,7 +30,7 @@ SimpleTool (abstract)
         |
         +-- ContextAwareTool (abstract)
               Adds withToolCall() / $this->toolCall
-// @doctest id="5d60"
+// @doctest id="4baa"
 ```
 
 | Class | What it adds | When to use |
@@ -91,9 +91,9 @@ final class AuditingTool extends ContextAwareTool
         return "call_id={$callId}; steps={$stepCount}; input={$input}";
     }
 
-    public function toToolSchema(): array
+    public function toToolSchema(): ToolDefinition
     {
-        return ToolSchema::make(
+        return ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
             parameters: JsonSchema::object('parameters')
@@ -101,10 +101,10 @@ final class AuditingTool extends ContextAwareTool
                     JsonSchema::string('input', 'Input text to audit'),
                 ])
                 ->withRequiredProperties(['input'])
-        )->toArray();
+        )->toArray());
     }
 }
-// @doctest id="6cd4"
+// @doctest id="ecc3"
 ```
 
 ### Key Differences from BaseTool
@@ -154,9 +154,9 @@ final class EchoTool extends SimpleTool
         return (string) $this->arg($args, 'text', 0, '');
     }
 
-    public function toToolSchema(): array
+    public function toToolSchema(): ToolDefinition
     {
-        return ToolSchema::make(
+        return ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
             parameters: JsonSchema::object('parameters')
@@ -164,10 +164,10 @@ final class EchoTool extends SimpleTool
                     JsonSchema::string('text', 'Text to echo back'),
                 ])
                 ->withRequiredProperties(['text'])
-        )->toArray();
+        )->toArray());
     }
 }
-// @doctest id="2f01"
+// @doctest id="f017"
 ```
 
 ### The Result Wrapper
@@ -189,7 +189,7 @@ public function __invoke(mixed ...$args): string
     }
     return file_get_contents($path);
 }
-// @doctest id="a93f"
+// @doctest id="8c1a"
 ```
 
 The LLM receives the error message and can decide whether to retry with different arguments or take a different approach entirely.
@@ -216,7 +216,7 @@ public function __invoke(mixed ...$args): string
     }
     return "Processed: {$input}";
 }
-// @doctest id="258c"
+// @doctest id="501e"
 ```
 
 <a name="state-aware-tool"></a>
@@ -247,16 +247,16 @@ final class StepCounterTool extends StateAwareTool
         return (string) ($this->agentState?->stepCount() ?? 0);
     }
 
-    public function toToolSchema(): array
+    public function toToolSchema(): ToolDefinition
     {
-        return ToolSchema::make(
+        return ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
             parameters: JsonSchema::object('parameters')
-        )->toArray();
+        )->toArray());
     }
 }
-// @doctest id="84e0"
+// @doctest id="2f93"
 ```
 
 <a name="reflective-schema-tool"></a>
@@ -298,7 +298,7 @@ $descriptor = new ToolDescriptor(
         ],
     ],
 );
-// @doctest id="7dd1"
+// @doctest id="784a"
 ```
 
 The `metadata` and `instructions` arrays are merged with default values at read time:
@@ -345,7 +345,7 @@ final readonly class SearchToolDescriptor extends ToolDescriptor
         );
     }
 }
-// @doctest id="97fe"
+// @doctest id="d7dd"
 ```
 
 Then pass the descriptor to your tool's constructor:
@@ -360,7 +360,7 @@ final class SearchTool extends SimpleTool
 
     // ... __invoke() and toToolSchema()
 }
-// @doctest id="c040"
+// @doctest id="5e63"
 ```
 
 This pattern keeps tool runtime logic clean and makes documentation reusable across tools that share the same descriptor structure.
@@ -394,7 +394,7 @@ $registry->register($searchTool);
 $registry->registerFactory('heavy_tool', function () {
     return new HeavyTool(); // Only created when first needed
 });
-// @doctest id="3411"
+// @doctest id="cf52"
 ```
 
 ### Querying the Registry
@@ -405,7 +405,7 @@ $registry->get('search');         // ToolInterface (resolves factory on first ca
 $registry->names();               // ['search', 'heavy_tool']
 $registry->count();               // 2
 $registry->all();                 // Resolves all factories, returns keyed array
-// @doctest id="91fc"
+// @doctest id="80f6"
 ```
 
 When you call `get()` on a factory-registered tool, the factory is invoked once and the resulting instance is cached for subsequent calls. This makes `ToolRegistry` suitable for tools that are expensive to construct or that depend on runtime context.
@@ -434,7 +434,7 @@ $registry->register($fileTool);
 
 $toolsTool = new ToolsTool($registry);
 // Now add $toolsTool to the agent's Tools collection
-// @doctest id="fd54"
+// @doctest id="3c4a"
 ```
 
 <a name="deferred-tools"></a>
@@ -465,7 +465,7 @@ final class SubagentToolProvider implements CanProvideDeferredTools
         );
     }
 }
-// @doctest id="5216"
+// @doctest id="4a1d"
 ```
 
 The `DeferredToolContext` gives providers access to three things:
@@ -494,7 +494,7 @@ $loop = AgentBuilder::base()
         }
     ))
     ->build();
-// @doctest id="4508"
+// @doctest id="f73f"
 ```
 
 The factory callable receives the same three arguments that `DeferredToolContext` provides. The returned `ToolInterface` is wrapped in a `Tools` collection and merged into the agent's tool set.
@@ -521,9 +521,9 @@ All manual schemas use the `ToolSchema` and `JsonSchema` helpers:
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
 
-public function toToolSchema(): array
+public function toToolSchema(): ToolDefinition
 {
-    return ToolSchema::make(
+    return ToolDefinition::fromArray(ToolSchema::make(
         name: $this->name(),
         description: $this->description(),
         parameters: JsonSchema::object('parameters')
@@ -541,9 +541,9 @@ public function toToolSchema(): array
                     ]),
             ])
             ->withRequiredProperties(['query'])
-    )->toArray();
+    )->toArray());
 }
-// @doctest id="8c1f"
+// @doctest id="45bf"
 ```
 
 The resulting array follows the OpenAI function-calling format:
@@ -561,7 +561,7 @@ The resulting array follows the OpenAI function-calling format:
         ],
     ],
 ]
-// @doctest id="720d"
+// @doctest id="7768"
 ```
 
 <a name="parameter-extraction"></a>
@@ -571,7 +571,7 @@ The `arg()` method (from the `HasArgs` trait) resolves a parameter from the argu
 
 ```php
 $value = $this->arg($args, $name, $position, $default);
-// @doctest id="09d9"
+// @doctest id="7951"
 ```
 
 1. **Named key** -- checks `$args[$name]` (the typical case when the LLM passes an associative array)
@@ -587,7 +587,7 @@ $limit = (int) $this->arg($args, 'limit', 1, 10);
 
 // Extract 'verbose' by name, or position 2, or default to false
 $verbose = (bool) $this->arg($args, 'verbose', 2, false);
-// @doctest id="18b4"
+// @doctest id="f67c"
 ```
 
 Always cast the return value to the expected type, since the LLM may pass values as strings even for numeric parameters.
@@ -625,9 +625,9 @@ final class CustomTool implements ToolInterface
         }
     }
 
-    public function toToolSchema(): array
+    public function toToolSchema(): ToolDefinition
     {
-        return [
+        return ToolDefinition::fromArray([
             'type' => 'function',
             'function' => [
                 'name' => 'custom',
@@ -640,7 +640,7 @@ final class CustomTool implements ToolInterface
                     'required' => ['input'],
                 ],
             ],
-        ];
+        ]);
     }
 
     public function descriptor(): CanDescribeTool
@@ -653,7 +653,7 @@ final class CustomTool implements ToolInterface
         return 'Result: ' . ($args['input'] ?? '');
     }
 }
-// @doctest id="2077"
+// @doctest id="779b"
 ```
 
 If your custom tool needs state or tool call injection, also implement `CanAccessAgentState` and/or `CanAccessToolCall`. The framework checks for these interfaces during tool preparation and calls the appropriate `with*()` methods.
@@ -701,9 +701,9 @@ final class BashTool extends SimpleTool
         return $result->stdout();
     }
 
-    public function toToolSchema(): array
+    public function toToolSchema(): ToolDefinition
     {
-        return ToolSchema::make(
+        return ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
             parameters: JsonSchema::object('parameters')
@@ -711,10 +711,10 @@ final class BashTool extends SimpleTool
                     JsonSchema::string('command', 'The bash command to execute'),
                 ])
                 ->withRequiredProperties(['command'])
-        )->toArray();
+        )->toArray());
     }
 }
-// @doctest id="6b6d"
+// @doctest id="1162"
 ```
 
 This structure separates concerns cleanly: the descriptor owns documentation, the tool class owns behavior, and the schema is explicit.

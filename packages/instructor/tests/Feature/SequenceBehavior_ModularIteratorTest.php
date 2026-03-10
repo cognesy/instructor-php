@@ -4,7 +4,6 @@ use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 
@@ -130,11 +129,11 @@ it('[modular] sequence() yields single update per COMPLETED sequence item only',
 it('[modular] sequence() does not yield incomplete items even if many chunks arrive', function () {
     // Extreme case: Many chunks for a single item, then another item starts
     $chunks = [
-        new PartialInferenceResponse(contentDelta: '{"list":[{"na'),
-        new PartialInferenceResponse(contentDelta: 'me":"Da'),
-        new PartialInferenceResponse(contentDelta: 've","a'),
-        new PartialInferenceResponse(contentDelta: 'ge":40}'),
-        new PartialInferenceResponse(contentDelta: ',{"name":"Eve","age":45}]}', finishReason: 'stop'),
+        new PartialInferenceDelta(contentDelta: '{"list":[{"na'),
+        new PartialInferenceDelta(contentDelta: 'me":"Da'),
+        new PartialInferenceDelta(contentDelta: 've","a'),
+        new PartialInferenceDelta(contentDelta: 'ge":40}'),
+        new PartialInferenceDelta(contentDelta: ',{"name":"Eve","age":45}]}', finishReason: 'stop'),
     ];
 
     $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $chunks ]);
@@ -166,12 +165,12 @@ it('[modular] sequence() does not yield incomplete items even if many chunks arr
 it('[modular] partials() yields MORE updates than sequence() for same stream', function () {
     // Realistic scenario: LLM streams JSON with varying chunk sizes
     $chunks = [
-        new PartialInferenceResponse(contentDelta: '{"list":['),
-        new PartialInferenceResponse(contentDelta: '{"name":"John",'),
-        new PartialInferenceResponse(contentDelta: '"age":28},'),
-        new PartialInferenceResponse(contentDelta: '{"name":"Jane"'),
-        new PartialInferenceResponse(contentDelta: ',"age":32}'),
-        new PartialInferenceResponse(contentDelta: ',{"name":"Jake","age":29}]}', finishReason: 'stop'),
+        new PartialInferenceDelta(contentDelta: '{"list":['),
+        new PartialInferenceDelta(contentDelta: '{"name":"John",'),
+        new PartialInferenceDelta(contentDelta: '"age":28},'),
+        new PartialInferenceDelta(contentDelta: '{"name":"Jane"'),
+        new PartialInferenceDelta(contentDelta: ',"age":32}'),
+        new PartialInferenceDelta(contentDelta: ',{"name":"Jake","age":29}]}', finishReason: 'stop'),
     ];
 
     // Test partials()

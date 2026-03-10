@@ -87,6 +87,9 @@ $result = (new PlanAndSolveSolver)(
 );
 
 dump($result);
+
+assert(is_string($result));
+assert(!empty($result));
 ?>
 ```
 

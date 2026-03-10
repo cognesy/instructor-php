@@ -29,7 +29,7 @@ class SignatureFromString
         return new Signature(
             input: $this->schemaFromString('inputs', $inputs),
             output: $this->schemaFromString('outputs', $outputs),
-            description: $description,
+            description: $description ?? '',
         );
     }
 

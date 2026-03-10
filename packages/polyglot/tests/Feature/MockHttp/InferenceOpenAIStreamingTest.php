@@ -19,7 +19,7 @@ it('streams partial responses and assembles final content (OpenAI SSE)', functio
 
     $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http))
         ->withModel('gpt-4o-mini')
-        ->withMessages('Greet me')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Greet me'))
         ->withStreaming(true)
         ->stream();
 

@@ -4,6 +4,7 @@ use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Data\StructuredOutputResponse;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Messages\ToolCalls;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Messages\ToolCall;
 use Cognesy\Instructor\Enums\OutputMode;
@@ -119,7 +120,7 @@ it('supports runtime-style create with explicit request', function () {
     $pending = (new StructuredOutput)
         ->withRuntime(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json))
         ->create(new StructuredOutputRequest(
-            messages: 'Extract user',
+            messages: Messages::fromString('Extract user'),
             requestedSchema: TestUserStruct::class,
         ));
 

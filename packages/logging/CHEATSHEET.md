@@ -13,6 +13,8 @@ Code-verified reference for `packages/logging`.
 - `build(): callable` (`callable(Event): void`)
 - `__invoke(): callable` (returns `build()`)
 
+`build()` snapshots the current pipeline configuration. Later builder mutations do not affect an already-built callable.
+
 Minimal usage:
 
 ```php

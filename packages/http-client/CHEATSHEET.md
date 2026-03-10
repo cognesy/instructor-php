@@ -113,6 +113,7 @@ Methods:
 ### `HttpRequestBody`
 - `new HttpRequestBody(string|array $body)`
 - arrays are JSON-encoded
+- strings are sent verbatim
 - JSON encoding failures throw `InvalidArgumentException`
 - `toString(): string`
 - `toArray(): array`
@@ -181,6 +182,12 @@ Notes:
 - `CircuitBreakerMiddleware`
 - `IdempotencyMiddleware`
 - `EventSourceMiddleware`
+- `RecordReplayMiddleware`
+
+Record/replay notes:
+- request identity is `method + url + body`
+- headers and request options are not part of record/replay matching
+- recording streamed responses buffers the full upstream stream before returning a replayable stream
 
 ## Drivers
 
@@ -198,7 +205,6 @@ Notes:
 
 ### Built-in Driver Names
 - `curl`
-- `exthttp`
 - `guzzle`
 - `symfony`
 
@@ -235,6 +241,12 @@ Replies:
 - `streaming(...)`
 - `json(...)`
 - `sse(...)`
+
+Testing guidance:
+
+- use `withMock(...)` for most deterministic client tests
+- use `MockHttpDriver` directly when you need request inspection or reusable expectations
+- use `MockHttpResponseFactory` for richer JSON, error, streaming, or SSE reply shapes
 
 ## Exceptions
 

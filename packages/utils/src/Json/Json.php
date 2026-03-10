@@ -27,7 +27,7 @@ class Json
     }
 
     public static function fromArray(array $array) : Json {
-        return new Json(json_encode($array) ?: '');
+        return new Json(self::encodeValue($array));
     }
 
     public static function fromPartial(string $text) : Json {
@@ -65,11 +65,11 @@ class Json
 
     public function format(int $options = 0, ?int $depth = null) : string {
         if (is_null($depth)) {
-            return json_encode($this->toArray(), $options) ?: '';
+            return self::encodeValue($this->toArray(), $options);
         }
         $safeDepth = max(1, $depth);
         /** @var int<1, 2147483647> $safeDepth */
-        return json_encode($this->toArray(), $options, $safeDepth) ?: '';
+        return self::encodeValue($this->toArray(), $options, $safeDepth);
     }
 
     // STATIC /////////////////////////////////////////////////
@@ -90,6 +90,14 @@ class Json
     }
 
     public static function encode(mixed $json, int $options = 0) : string {
-        return json_encode($json, $options) ?: '';
+        return self::encodeValue($json, $options);
+    }
+
+    private static function encodeValue(mixed $value, int $options = 0, int $depth = 512) : string {
+        try {
+            return json_encode($value, $options | JSON_THROW_ON_ERROR, $depth);
+        } catch (JsonException $e) {
+            throw new InvalidArgumentException("Failed to encode JSON: {$e->getMessage()}", 0, $e);
+        }
     }
 }

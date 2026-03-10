@@ -56,5 +56,8 @@ $request = new HttpRequest(
 
 $response = $client->send($request)->get();
 echo $response->body() . "\n";
+
+assert($response->statusCode() === 200, 'Expected status code 200');
+assert(!empty($response->body()), 'Expected non-empty response body');
 ?>
 ```

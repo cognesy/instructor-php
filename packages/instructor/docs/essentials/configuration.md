@@ -120,7 +120,7 @@ $person = (new StructuredOutput)
 
 | Method | Purpose |
 |---|---|
-| `withMessages(...)` | Chat messages (string, array, or `Messages`) |
+| `withMessages(...)` | Set the chat messages |
 | `withInput(...)` | Input data (string, array, or object) |
 | `withResponseModel(...)` | Response model (class, instance, or schema) |
 | `withSystem(...)` | System prompt text |

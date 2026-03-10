@@ -7,6 +7,8 @@ use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
+use Cognesy\Instructor\Contracts\CanMaterializeRequest;
+use Cognesy\Instructor\Core\RequestMaterializer;
 use Cognesy\Instructor\Creation\StructuredOutputExecutionBuilder;
 use Cognesy\Instructor\Creation\StructuredOutputPipelineFactory;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
@@ -34,6 +36,7 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
         private readonly array $transformers = [],
         private readonly array $deserializers = [],
         private readonly array $extractors = [],
+        private readonly CanMaterializeRequest $requestMaterializer = new RequestMaterializer(),
     ) {}
 
     public static function fromConfig(
@@ -110,6 +113,7 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
             events: $this->events,
             config: $this->config,
             inference: $this->inference,
+            requestMaterializer: $this->requestMaterializer,
             validators: $this->validators,
             transformers: $this->transformers,
             deserializers: $this->deserializers,
@@ -161,6 +165,10 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
         return $this->extractors;
     }
 
+    public function requestMaterializer(): CanMaterializeRequest {
+        return $this->requestMaterializer;
+    }
+
     public function withConfig(StructuredOutputConfig $config): self {
         return $this->with(config: $config);
     }
@@ -197,6 +205,10 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
         return $this->with(extractors: $extractors);
     }
 
+    public function withRequestMaterializer(CanMaterializeRequest $requestMaterializer): self {
+        return $this->with(requestMaterializer: $requestMaterializer);
+    }
+
     private static function resolveStructuredConfig(?StructuredOutputConfig $config): StructuredOutputConfig {
         if ($config !== null) {
             return $config;
@@ -209,6 +221,7 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
      * @param array<CanTransformData|class-string<CanTransformData>>|null $transformers
      * @param array<CanDeserializeClass|class-string<CanDeserializeClass>>|null $deserializers
      * @param array<CanExtractResponse|class-string<CanExtractResponse>>|null $extractors
+     * @param CanMaterializeRequest|null $requestMaterializer
      */
     private function with(
         ?StructuredOutputConfig $config = null,
@@ -216,6 +229,7 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
         ?array $transformers = null,
         ?array $deserializers = null,
         ?array $extractors = null,
+        ?CanMaterializeRequest $requestMaterializer = null,
     ): self {
         return new self(
             inference: $this->inference,
@@ -225,6 +239,7 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
             transformers: $transformers ?? $this->transformers,
             deserializers: $deserializers ?? $this->deserializers,
             extractors: $extractors ?? $this->extractors,
+            requestMaterializer: $requestMaterializer ?? $this->requestMaterializer,
         );
     }
 }

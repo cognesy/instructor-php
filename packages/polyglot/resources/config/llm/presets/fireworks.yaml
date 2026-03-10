@@ -2,7 +2,7 @@ driver: fireworks
 apiUrl: 'https://api.fireworks.ai/inference/v1'
 apiKey: '${FIREWORKS_API_KEY}'
 endpoint: /chat/completions
-model: accounts/fireworks/models/llama4-maverick-instruct-basic
+model: accounts/fireworks/models/deepseek-v3p1
 maxTokens: 1024
 contextLength: 65000
 maxOutputLength: 4096

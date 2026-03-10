@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Cognesy\Instructor\Laravel\Testing;
 
-use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use PHPUnit\Framework\Assert as PHPUnit;
 
 /**
@@ -25,7 +27,7 @@ use PHPUnit\Framework\Assert as PHPUnit;
  *
  * // Your code calls Inference
  * $response = Inference::with(
- *     messages: 'What is 2+2?',
+ *     messages: Messages::fromString('What is 2+2?'),
  * )->get();
  *
  * // Make assertions
@@ -38,35 +40,26 @@ class InferenceFake
     /** @var array<string, string|array> */
     protected array $responses = [];
 
-    /** @var array<int, array{messages: mixed, model: ?string, connection: ?string, llmConfig: ?array, tools: array, options: array}> */
+    /** @var array<int, array{messages: mixed, model: ?string, connection: ?string, llmConfig: ?array, tools: ?ToolDefinitions, options: array}> */
     protected array $recorded = [];
 
-    /** @var string|null */
     protected ?string $connection = null;
 
     /** @var array<string,mixed>|null */
     protected ?array $llmConfig = null;
 
-    /** @var string|array|null */
-    protected string|array|null $messages = null;
+    protected ?Messages $messages = null;
 
-    /** @var string|null */
     protected ?string $model = null;
 
-    /** @var array */
-    protected array $tools = [];
+    protected ?ToolDefinitions $tools = null;
 
-    /** @var string|array */
-    protected string|array $toolChoice = [];
+    protected ?ToolChoice $toolChoice = null;
 
-    /** @var array */
-    protected array $responseFormat = [];
+    protected ?ResponseFormat $responseFormat = null;
 
-    /** @var array */
     protected array $options = [];
 
-
-    /** @var bool */
     protected bool $streaming = false;
 
     /**
@@ -112,23 +105,23 @@ class InferenceFake
     }
 
     public function with(
-        string|array $messages = [],
-        string $model = '',
-        array $tools = [],
-        string|array $toolChoice = [],
-        array $responseFormat = [],
-        array $options = [],
+        ?Messages $messages = null,
+        ?string $model = null,
+        ?ToolDefinitions $tools = null,
+        ?ToolChoice $toolChoice = null,
+        ?ResponseFormat $responseFormat = null,
+        ?array $options = null,
     ): self {
         $this->messages = $messages;
-        $this->model = $model ?: null;
-        $this->tools = $tools;
-        $this->toolChoice = $toolChoice;
-        $this->responseFormat = $responseFormat;
-        $this->options = $options;
+        $this->model = $model;
+        $this->tools = $tools ?? $this->tools;
+        $this->toolChoice = $toolChoice ?? $this->toolChoice;
+        $this->responseFormat = $responseFormat ?? $this->responseFormat;
+        $this->options = $options ?? $this->options;
         return $this;
     }
 
-    public function withMessages(string|array|Message|Messages $messages): self
+    public function withMessages(Messages $messages): self
     {
         $this->messages = $messages;
         return $this;
@@ -140,19 +133,19 @@ class InferenceFake
         return $this;
     }
 
-    public function withTools(array $tools): self
+    public function withTools(ToolDefinitions $tools): self
     {
         $this->tools = $tools;
         return $this;
     }
 
-    public function withToolChoice(string|array $toolChoice): self
+    public function withToolChoice(ToolChoice $toolChoice): self
     {
         $this->toolChoice = $toolChoice;
         return $this;
     }
 
-    public function withResponseFormat(array $responseFormat): self
+    public function withResponseFormat(ResponseFormat $responseFormat): self
     {
         $this->responseFormat = $responseFormat;
         return $this;
@@ -262,7 +255,9 @@ class InferenceFake
         $this->model = null;
         $this->connection = null;
         $this->llmConfig = null;
-        $this->tools = [];
+        $this->tools = null;
+        $this->toolChoice = null;
+        $this->responseFormat = null;
         $this->options = [];
 
         // Handle sequence responses
@@ -305,11 +300,11 @@ class InferenceFake
      */
     protected function getMessageString(): string
     {
-        if (is_string($this->messages)) {
-            return $this->messages;
+        if ($this->messages instanceof Messages) {
+            return $this->messages->toString();
         }
 
-        return json_encode($this->messages) ?: '';
+        return '';
     }
 
     protected function normalizeResponse(string|array $response): string
@@ -371,7 +366,13 @@ class InferenceFake
         $found = collect($this->recorded)
             ->contains(function ($record) use ($messages) {
                 if (is_string($messages)) {
-                    return str_contains(json_encode($record['messages']), $messages);
+                    $recorded = $record['messages'];
+                    $haystack = match (true) {
+                        $recorded instanceof Messages => $recorded->toString(),
+                        is_string($recorded) => $recorded,
+                        default => json_encode($recorded),
+                    };
+                    return str_contains($haystack, $messages);
                 }
                 return $record['messages'] === $messages;
             });
@@ -421,8 +422,12 @@ class InferenceFake
     {
         $found = collect($this->recorded)
             ->contains(function ($record) use ($toolNames) {
-                $recordedTools = array_column($record['tools'] ?? [], 'name');
-                return empty(array_diff($toolNames, $recordedTools));
+                $tools = $record['tools'];
+                if ($tools instanceof ToolDefinitions) {
+                    $recordedNames = $tools->names();
+                    return empty(array_diff($toolNames, $recordedNames));
+                }
+                return false;
             });
 
         PHPUnit::assertTrue(

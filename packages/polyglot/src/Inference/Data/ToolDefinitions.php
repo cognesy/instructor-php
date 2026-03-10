@@ -10,7 +10,7 @@ readonly final class ToolDefinitions
     private array $tools;
 
     public function __construct(ToolDefinition ...$tools) {
-        $this->tools = $tools;
+        $this->tools = array_values($tools);
     }
 
     public static function empty() : self {
@@ -44,9 +44,9 @@ readonly final class ToolDefinitions
     }
 
     public function toArray() : array {
-        return array_map(
+        return array_values(array_map(
             fn (ToolDefinition $tool) => $tool->toArray(),
             $this->tools,
-        );
+        ));
     }
 }

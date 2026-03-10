@@ -11,7 +11,7 @@ The package ships as part of the Instructor-PHP monorepo and can be installed st
 
 ```bash
 composer require cognesy/agent-ctrl
-# @doctest id="cbdc"
+# @doctest id="42a0"
 ```
 
 ## Entry Point
@@ -29,7 +29,7 @@ AgentCtrl::openCode();     // Returns OpenCodeBridgeBuilder
 
 // Runtime selection via enum
 AgentCtrl::make(AgentType::from('codex'));
-// @doctest id="020c"
+// @doctest id="be53"
 ```
 
 Each factory method returns a bridge builder -- a fluent configuration object that lets you set the model, timeout, working directory, streaming callbacks, and agent-specific options before calling `execute()` or `executeStreaming()`.
@@ -56,7 +56,7 @@ $response = AgentCtrl::claudeCode()
 if ($response->isSuccess()) {
     echo $response->text();
 }
-// @doctest id="ef89"
+// @doctest id="752e"
 ```
 
 ## Core Capabilities

@@ -74,6 +74,9 @@ $user = (new StructuredOutput($runtime))
 echo "\n✅ Extraction completed!\n";
 echo "📊 Result: User: {$user->name}, Age: {$user->age}\n";
 
+assert($user->name === 'Jason');
+assert($user->age === 25);
+
 // TODO: Add "Sample Output" section showing actual log messages
 // Example format:
 // ### Sample Output

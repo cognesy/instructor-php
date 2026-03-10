@@ -10,6 +10,8 @@ use Cognesy\AgentCtrl\Enum\AgentType;
 $builder = AgentCtrl::claudeCode();
 $builder = AgentCtrl::codex();
 $builder = AgentCtrl::openCode();
+$builder = AgentCtrl::pi();
+$builder = AgentCtrl::gemini();
 $builder = AgentCtrl::make(AgentType::Codex);
 ```
 
@@ -18,12 +20,16 @@ $builder = AgentCtrl::make(AgentType::Codex);
 - `AgentType::ClaudeCode`
 - `AgentType::Codex`
 - `AgentType::OpenCode`
+- `AgentType::Pi`
+- `AgentType::Gemini`
 
 Backed values:
 
 - `claude-code`
 - `codex`
 - `opencode`
+- `pi`
+- `gemini`
 
 ## Common Builder API
 
@@ -102,6 +108,41 @@ $builder = AgentCtrl::codex()->withConfig(AgentConfig::fromArray([
 - `shareSession(): static`
 - `withTitle(string $title): static`
 
+## Pi
+
+- `withProvider(string $provider): static`
+- `withThinking(ThinkingLevel $level): static`
+- `withSystemPrompt(string $prompt): static`
+- `appendSystemPrompt(string $prompt): static`
+- `withTools(array $tools): static`
+- `noTools(): static`
+- `withFiles(array $filePaths): static`
+- `withExtensions(array $extensions): static`
+- `noExtensions(): static`
+- `withSkills(array $skills): static`
+- `noSkills(): static`
+- `withApiKey(string $apiKey): static`
+- `continueSession(): static`
+- `resumeSession(string $sessionId): static`
+- `ephemeral(): static`
+- `withSessionDir(string $dir): static`
+- `verbose(bool $enabled = true): static`
+
+## Gemini
+
+- `withApprovalMode(ApprovalMode $mode): static`
+- `yolo(): static`
+- `planMode(): static`
+- `withSandbox(bool $enabled = true): static`
+- `withIncludeDirectories(array $paths): static`
+- `withExtensions(array $extensions): static`
+- `withAllowedTools(array $tools): static`
+- `withAllowedMcpServers(array $names): static`
+- `withPolicy(array $paths): static`
+- `continueSession(): static`
+- `resumeSession(string $sessionId): static`
+- `debug(bool $enabled = true): static`
+
 ## Sessions
 
 ```php
@@ -174,6 +215,19 @@ Concrete builders also expose event wiring through `HandlesEvents`:
 - `withEventHandler(CanHandleEvents $events): static`
 - `wiretap(?callable $listener): self`
 - `onEvent(string $class, ?callable $listener): self`
+
+## Testing
+
+Deterministic test seams:
+
+- core package logic
+  - test `AgentConfig`, command builders, parsers, and DTOs directly
+- `Cognesy\Sandbox\Testing\FakeSandbox`
+  - use for deterministic command execution without running a real CLI
+  - best for bridge execution paths, timeout behavior, and stdout/stderr handling
+- `Cognesy\Instructor\Laravel\Testing\AgentCtrlFake`
+  - use only when testing the Laravel facade layer
+  - queued responses and execution assertions live there, not in core `agent-ctrl`
 
 ## Streaming
 

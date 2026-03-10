@@ -90,9 +90,9 @@ final class AuditingTool extends ContextAwareTool
         return "call_id={$callId}; steps={$stepCount}; input={$input}";
     }
 
-    public function toToolSchema(): array
+    public function toToolSchema(): ToolDefinition
     {
-        return ToolSchema::make(
+        return ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
             parameters: JsonSchema::object('parameters')
@@ -100,7 +100,7 @@ final class AuditingTool extends ContextAwareTool
                     JsonSchema::string('input', 'Input text to audit'),
                 ])
                 ->withRequiredProperties(['input'])
-        )->toArray();
+        )->toArray());
     }
 }
 ```
@@ -152,9 +152,9 @@ final class EchoTool extends SimpleTool
         return (string) $this->arg($args, 'text', 0, '');
     }
 
-    public function toToolSchema(): array
+    public function toToolSchema(): ToolDefinition
     {
-        return ToolSchema::make(
+        return ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
             parameters: JsonSchema::object('parameters')
@@ -162,7 +162,7 @@ final class EchoTool extends SimpleTool
                     JsonSchema::string('text', 'Text to echo back'),
                 ])
                 ->withRequiredProperties(['text'])
-        )->toArray();
+        )->toArray());
     }
 }
 ```
@@ -242,13 +242,13 @@ final class StepCounterTool extends StateAwareTool
         return (string) ($this->agentState?->stepCount() ?? 0);
     }
 
-    public function toToolSchema(): array
+    public function toToolSchema(): ToolDefinition
     {
-        return ToolSchema::make(
+        return ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
             parameters: JsonSchema::object('parameters')
-        )->toArray();
+        )->toArray());
     }
 }
 ```
@@ -507,9 +507,9 @@ All manual schemas use the `ToolSchema` and `JsonSchema` helpers:
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
 
-public function toToolSchema(): array
+public function toToolSchema(): ToolDefinition
 {
-    return ToolSchema::make(
+    return ToolDefinition::fromArray(ToolSchema::make(
         name: $this->name(),
         description: $this->description(),
         parameters: JsonSchema::object('parameters')
@@ -527,7 +527,7 @@ public function toToolSchema(): array
                     ]),
             ])
             ->withRequiredProperties(['query'])
-    )->toArray();
+    )->toArray());
 }
 ```
 
@@ -607,9 +607,9 @@ final class CustomTool implements ToolInterface
         }
     }
 
-    public function toToolSchema(): array
+    public function toToolSchema(): ToolDefinition
     {
-        return [
+        return ToolDefinition::fromArray([
             'type' => 'function',
             'function' => [
                 'name' => 'custom',
@@ -622,7 +622,7 @@ final class CustomTool implements ToolInterface
                     'required' => ['input'],
                 ],
             ],
-        ];
+        ]);
     }
 
     public function descriptor(): CanDescribeTool
@@ -682,9 +682,9 @@ final class BashTool extends SimpleTool
         return $result->stdout();
     }
 
-    public function toToolSchema(): array
+    public function toToolSchema(): ToolDefinition
     {
-        return ToolSchema::make(
+        return ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
             parameters: JsonSchema::object('parameters')
@@ -692,7 +692,7 @@ final class BashTool extends SimpleTool
                     JsonSchema::string('command', 'The bash command to execute'),
                 ])
                 ->withRequiredProperties(['command'])
-        )->toArray();
+        )->toArray());
     }
 }
 ```

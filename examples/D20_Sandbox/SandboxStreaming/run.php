@@ -36,5 +36,7 @@ $result = Sandbox::host($policy)->execute(
 );
 
 echo "\nDone in {$result->duration()}s, exit={$result->exitCode()}\n";
+
+assert($result->exitCode() === 0, 'Streaming command should exit with code 0');
 ?>
 ```

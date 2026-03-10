@@ -13,7 +13,7 @@ use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Agents\Hook\Collections\HookTriggers;
 use Cognesy\Agents\Hook\Data\HookContext;
 use Cognesy\Agents\Hook\Hooks\CallableHook;
-use Cognesy\Agents\Tool\Tools\MockTool;
+use Cognesy\Agents\Tool\Tools\FakeTool;
 use Cognesy\Messages\Messages;
 
 describe('Deterministic agent execution', function () {
@@ -32,9 +32,9 @@ describe('Deterministic agent execution', function () {
         expect($final->messages()->toString())->toContain('Paris');
     });
 
-    it('executes mock tools via deterministic tool-call scenario', function () {
+    it('executes fake tools via deterministic tool-call scenario', function () {
         $toolCalls = [];
-        $tool = new MockTool(
+        $tool = new FakeTool(
             name: 'get_capital',
             description: 'Returns a capital for a country',
             handler: function (string $country) use (&$toolCalls): string {

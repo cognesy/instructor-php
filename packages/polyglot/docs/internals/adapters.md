@@ -14,7 +14,7 @@ Every inference driver is built from two main translators, each of which may use
 
 The request adapter converts a Polyglot `InferenceRequest` into an `HttpRequest`. It is responsible for:
 
-- **Message formatting** -- mapping Polyglot's message array (with roles, content parts, tool calls, and tool results) into the provider's expected structure
+- **Message formatting** -- mapping Polyglot's typed `Messages` (with roles, content parts, tool calls, and tool results) into the provider's expected structure
 - **Body formatting** -- assembling the full request body including model, tools, response format, and mode-specific adjustments
 - **HTTP request assembly** -- setting the URL, headers (including authentication), and body
 
@@ -22,7 +22,7 @@ These responsibilities are typically split across three classes:
 
 | Class Pattern | Contract | Purpose |
 |---|---|---|
-| `*MessageFormat` | `CanMapMessages` | Maps message arrays to provider format |
+| `*MessageFormat` | `CanMapMessages` | Maps `Messages` to provider format |
 | `*BodyFormat` | `CanMapRequestBody` | Assembles the full request body |
 | `*RequestAdapter` | `CanTranslateInferenceRequest` | Builds the final `HttpRequest` |
 
@@ -89,12 +89,12 @@ interface CanMapRequestBody
 }
 ```
 
-Message formatting is handled by `CanMapMessages`:
+Message formatting is handled by `CanMapMessages`, which receives typed `Messages` and returns a provider-native array. Implementations compose a `MessageMapper` utility for typed iteration instead of duplicating the loop:
 
 ```php
 interface CanMapMessages
 {
-    public function map(array $messages): array;
+    public function map(Messages $messages): array;
 }
 ```
 

@@ -37,6 +37,7 @@ use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
 use Cognesy\Agents\Tool\Tools\BaseTool;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ToolDefinition;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
 
@@ -73,12 +74,12 @@ class CounterTool extends BaseTool
     }
 
     #[\Override]
-    public function toToolSchema(): array {
-        return ToolSchema::make(
+    public function toToolSchema(): ToolDefinition {
+        return ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
             parameters: JsonSchema::object('parameters'),
-        )->toArray();
+        )->toArray());
     }
 }
 

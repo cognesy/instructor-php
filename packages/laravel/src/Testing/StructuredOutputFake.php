@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Cognesy\Instructor\Laravel\Testing;
 
-use Cognesy\Instructor\PendingStructuredOutput;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 use PHPUnit\Framework\Assert as PHPUnit;
 
 /**
@@ -41,25 +40,26 @@ class StructuredOutputFake
     /** @var array<class-string, mixed> */
     protected array $responses = [];
 
-    /** @var array<int, array{class: string, messages: mixed, model: ?string, connection: ?string, llmConfig: ?array}> */
+    /** @var array<int, array{class: string, messages: ?Messages, model: ?string, connection: ?string, llmConfig: ?array}> */
     protected array $recorded = [];
 
-    /** @var string|null */
     protected ?string $connection = null;
 
     /** @var array<string,mixed>|null */
     protected ?array $llmConfig = null;
 
-    /** @var string|array|null */
-    protected string|array|null $messages = null;
+    protected ?Messages $messages = null;
 
-    /** @var string|array|object|null */
     protected string|array|object|null $responseModel = null;
 
-    /** @var string|null */
+    protected ?string $system = null;
+
+    protected ?string $prompt = null;
+
+    protected ?array $examples = null;
+
     protected ?string $model = null;
 
-    /** @var array */
     protected array $options = [];
 
     /**
@@ -111,20 +111,27 @@ class StructuredOutputFake
         ?string $prompt = null,
         ?array $examples = null,
         ?string $model = null,
-        ?int $maxRetries = null,
         ?array $options = null,
-        ?OutputMode $mode = null,
     ): self {
-        $this->messages = $messages;
-        $this->responseModel = $responseModel;
-        $this->model = $model;
-        $this->options = $options ?? [];
+        $this->messages = $messages !== null ? Messages::fromAny($messages) : $this->messages;
+        $this->responseModel = $responseModel ?? $this->responseModel;
+        $this->system = $system ?? $this->system;
+        $this->prompt = $prompt ?? $this->prompt;
+        $this->examples = $examples ?? $this->examples;
+        $this->model = $model ?? $this->model;
+        $this->options = $options ?? $this->options;
         return $this;
     }
 
     public function withMessages(string|array|Message|Messages $messages): self
     {
-        $this->messages = $messages;
+        $this->messages = Messages::fromAny($messages);
+        return $this;
+    }
+
+    public function withInput(string|array|object $input): self
+    {
+        $this->messages = Messages::fromInput($input);
         return $this;
     }
 
@@ -134,15 +141,9 @@ class StructuredOutputFake
         return $this;
     }
 
-    public function withModel(string $model): self
+    public function withResponseJsonSchema(array|CanProvideJsonSchema $jsonSchema): self
     {
-        $this->model = $model;
-        return $this;
-    }
-
-    public function withOption(string $key, mixed $value): self
-    {
-        $this->options[$key] = $value;
+        $this->responseModel = $jsonSchema;
         return $this;
     }
 
@@ -158,23 +159,72 @@ class StructuredOutputFake
         return $this;
     }
 
+    public function withSystem(string $system): self
+    {
+        $this->system = $system;
+        return $this;
+    }
+
+    public function withPrompt(string $prompt): self
+    {
+        $this->prompt = $prompt;
+        return $this;
+    }
+
+    public function withExamples(array $examples): self
+    {
+        $this->examples = $examples;
+        return $this;
+    }
+
+    public function withModel(string $model): self
+    {
+        $this->model = $model;
+        return $this;
+    }
+
     public function withOptions(array $options): self
     {
         $this->options = $options;
         return $this;
     }
 
-    public function withMaxRetries(int $maxRetries): self
+    public function withOption(string $key, mixed $value): self
     {
-        return $this;
-    }
-
-    public function withOutputMode(OutputMode $mode): self
-    {
+        $this->options[$key] = $value;
         return $this;
     }
 
     public function withStreaming(bool $streaming = true): self
+    {
+        return $this;
+    }
+
+    public function withCachedContext(
+        string|array $messages = '',
+        string $system = '',
+        string $prompt = '',
+        array $examples = [],
+    ): self {
+        return $this;
+    }
+
+    public function intoArray(): self
+    {
+        return $this;
+    }
+
+    public function intoInstanceOf(string $class): self
+    {
+        return $this;
+    }
+
+    public function intoObject(CanDeserializeSelf $object): self
+    {
+        return $this;
+    }
+
+    public function withRuntime($runtime): self
     {
         return $this;
     }
@@ -200,6 +250,11 @@ class StructuredOutputFake
     }
 
     public function wiretap(callable $callback): self
+    {
+        return $this;
+    }
+
+    public function create(): self
     {
         return $this;
     }
@@ -243,6 +298,27 @@ class StructuredOutputFake
         return (array) $this->get();
     }
 
+    public function response(): object
+    {
+        return (object) [
+            'value' => $this->get(),
+        ];
+    }
+
+    public function inferenceResponse(): object
+    {
+        return (object) [
+            'content' => '',
+            'toolCalls' => [],
+            'finishReason' => 'stop',
+        ];
+    }
+
+    public function stream(): iterable
+    {
+        yield $this->get();
+    }
+
     /**
      * Resolve the fake response.
      */
@@ -265,6 +341,9 @@ class StructuredOutputFake
         $this->connection = null;
         $this->llmConfig = null;
         $this->responseModel = null;
+        $this->system = null;
+        $this->prompt = null;
+        $this->examples = null;
 
         // Find matching response
         if (isset($this->responses[$class])) {
@@ -350,15 +429,18 @@ class StructuredOutputFake
     /**
      * Assert extraction was called with specific messages.
      */
-    public function assertExtractedWith(string $class, string|array $messages): self
+    public function assertExtractedWith(string $class, string $messages): self
     {
         $found = collect($this->recorded)
             ->where('class', $class)
             ->contains(function ($record) use ($messages) {
-                if (is_string($messages)) {
-                    return str_contains(json_encode($record['messages']), $messages);
-                }
-                return $record['messages'] === $messages;
+                $recorded = $record['messages'];
+                $haystack = match (true) {
+                    $recorded instanceof Messages => $recorded->toString(),
+                    is_string($recorded) => $recorded,
+                    default => json_encode($recorded) ?: '',
+                };
+                return str_contains($haystack, $messages);
             });
 
         PHPUnit::assertTrue(

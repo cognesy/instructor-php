@@ -2,10 +2,13 @@
 
 namespace Cognesy\Polyglot\Tests\Unit\Drivers\OpenResponses;
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\Drivers\OpenResponses\OpenResponsesBodyFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenResponses\OpenResponsesMessageFormat;
 use PHPUnit\Framework\TestCase;
@@ -34,11 +37,9 @@ class OpenResponsesBodyFormatTest extends TestCase
 
     public function test_basic_request_body(): void
     {
-        $request = new InferenceRequest(
-            messages: [
-                ['role' => 'user', 'content' => 'Hello!'],
-            ],
-        );
+        $request = $this->request([
+            'messages' => [['role' => 'user', 'content' => 'Hello!']],
+        ]);
 
         $body = $this->bodyFormat->toRequestBody($request);
 
@@ -50,12 +51,12 @@ class OpenResponsesBodyFormatTest extends TestCase
 
     public function test_extracts_system_instructions(): void
     {
-        $request = new InferenceRequest(
-            messages: [
+        $request = $this->request([
+            'messages' => [
                 ['role' => 'system', 'content' => 'You are a helpful assistant.'],
                 ['role' => 'user', 'content' => 'Hello!'],
             ],
-        );
+        ]);
 
         $body = $this->bodyFormat->toRequestBody($request);
 
@@ -72,13 +73,13 @@ class OpenResponsesBodyFormatTest extends TestCase
 
     public function test_merges_multiple_system_messages(): void
     {
-        $request = new InferenceRequest(
-            messages: [
+        $request = $this->request([
+            'messages' => [
                 ['role' => 'system', 'content' => 'First instruction.'],
                 ['role' => 'system', 'content' => 'Second instruction.'],
                 ['role' => 'user', 'content' => 'Hello!'],
             ],
-        );
+        ]);
 
         $body = $this->bodyFormat->toRequestBody($request);
 
@@ -88,12 +89,12 @@ class OpenResponsesBodyFormatTest extends TestCase
 
     public function test_handles_developer_role_as_instructions(): void
     {
-        $request = new InferenceRequest(
-            messages: [
+        $request = $this->request([
+            'messages' => [
                 ['role' => 'developer', 'content' => 'Developer instruction.'],
                 ['role' => 'user', 'content' => 'Hello!'],
             ],
-        );
+        ]);
 
         $body = $this->bodyFormat->toRequestBody($request);
 
@@ -102,11 +103,9 @@ class OpenResponsesBodyFormatTest extends TestCase
 
     public function test_does_not_include_max_tokens_key(): void
     {
-        $request = new InferenceRequest(
-            messages: [
-                ['role' => 'user', 'content' => 'Hello!'],
-            ],
-        );
+        $request = $this->request([
+            'messages' => [['role' => 'user', 'content' => 'Hello!']],
+        ]);
 
         $body = $this->bodyFormat->toRequestBody($request);
 
@@ -133,10 +132,10 @@ class OpenResponsesBodyFormatTest extends TestCase
             ],
         ];
 
-        $request = new InferenceRequest(
-            messages: [['role' => 'user', 'content' => 'What is the weather?']],
-            tools: $tools,
-        );
+        $request = $this->request([
+            'messages' => [['role' => 'user', 'content' => 'What is the weather?']],
+            'tools' => $tools,
+        ]);
 
         $body = $this->bodyFormat->toRequestBody($request);
 
@@ -156,11 +155,11 @@ class OpenResponsesBodyFormatTest extends TestCase
             ],
         ];
 
-        $request = new InferenceRequest(
-            messages: [['role' => 'user', 'content' => 'What is the weather?']],
-            tools: $tools,
-            toolChoice: ['function' => ['name' => 'get_weather']],
-        );
+        $request = $this->request([
+            'messages' => [['role' => 'user', 'content' => 'What is the weather?']],
+            'tools' => $tools,
+            'tool_choice' => ['function' => ['name' => 'get_weather']],
+        ]);
 
         $body = $this->bodyFormat->toRequestBody($request);
 
@@ -184,7 +183,7 @@ class OpenResponsesBodyFormatTest extends TestCase
         );
 
         $request = new InferenceRequest(
-            messages: [['role' => 'user', 'content' => 'Give me a person']],
+            messages: Messages::fromArray([['role' => 'user', 'content' => 'Give me a person']]),
             responseFormat: $responseFormat,
         );
 
@@ -205,7 +204,7 @@ class OpenResponsesBodyFormatTest extends TestCase
         );
 
         $request = new InferenceRequest(
-            messages: [['role' => 'user', 'content' => 'Give me JSON']],
+            messages: Messages::fromArray([['role' => 'user', 'content' => 'Give me JSON']]),
             responseFormat: $responseFormat,
         );
 
@@ -217,13 +216,13 @@ class OpenResponsesBodyFormatTest extends TestCase
 
     public function test_includes_temperature_and_top_p(): void
     {
-        $request = new InferenceRequest(
-            messages: [['role' => 'user', 'content' => 'Hello!']],
-            options: [
+        $request = $this->request([
+            'messages' => [['role' => 'user', 'content' => 'Hello!']],
+            'options' => [
                 'temperature' => 0.7,
                 'top_p' => 0.9,
             ],
-        );
+        ]);
 
         $body = $this->bodyFormat->toRequestBody($request);
 
@@ -233,10 +232,10 @@ class OpenResponsesBodyFormatTest extends TestCase
 
     public function test_includes_stream_option(): void
     {
-        $request = new InferenceRequest(
-            messages: [['role' => 'user', 'content' => 'Hello!']],
-            options: ['stream' => true],
-        );
+        $request = $this->request([
+            'messages' => [['role' => 'user', 'content' => 'Hello!']],
+            'options' => ['stream' => true],
+        ]);
 
         $body = $this->bodyFormat->toRequestBody($request);
 
@@ -245,10 +244,10 @@ class OpenResponsesBodyFormatTest extends TestCase
 
     public function test_includes_previous_response_id(): void
     {
-        $request = new InferenceRequest(
-            messages: [['role' => 'user', 'content' => 'Continue...']],
-            options: ['previous_response_id' => 'resp_abc123'],
-        );
+        $request = $this->request([
+            'messages' => [['role' => 'user', 'content' => 'Continue...']],
+            'options' => ['previous_response_id' => 'resp_abc123'],
+        ]);
 
         $body = $this->bodyFormat->toRequestBody($request);
 
@@ -257,10 +256,10 @@ class OpenResponsesBodyFormatTest extends TestCase
 
     public function test_prefers_max_output_tokens_option_over_config(): void
     {
-        $request = new InferenceRequest(
-            messages: [['role' => 'user', 'content' => 'Hello!']],
-            options: ['max_output_tokens' => 222],
-        );
+        $request = $this->request([
+            'messages' => [['role' => 'user', 'content' => 'Hello!']],
+            'options' => ['max_output_tokens' => 222],
+        ]);
 
         $body = $this->bodyFormat->toRequestBody($request);
 
@@ -269,10 +268,10 @@ class OpenResponsesBodyFormatTest extends TestCase
 
     public function test_accepts_max_tokens_option_for_responses_api(): void
     {
-        $request = new InferenceRequest(
-            messages: [['role' => 'user', 'content' => 'Hello!']],
-            options: ['max_tokens' => 333],
-        );
+        $request = $this->request([
+            'messages' => [['role' => 'user', 'content' => 'Hello!']],
+            'options' => ['max_tokens' => 333],
+        ]);
 
         $body = $this->bodyFormat->toRequestBody($request);
 
@@ -282,13 +281,15 @@ class OpenResponsesBodyFormatTest extends TestCase
 
     public function test_cached_context_system_messages_become_instructions(): void
     {
-        $cachedContext = new CachedInferenceContext(messages: [
-            ['role' => 'system', 'content' => 'Cached system instruction'],
-            ['role' => 'user', 'content' => 'Cached user'],
+        $cachedContext = $this->cachedContext([
+            'messages' => [
+                ['role' => 'system', 'content' => 'Cached system instruction'],
+                ['role' => 'user', 'content' => 'Cached user'],
+            ],
         ]);
 
         $request = new InferenceRequest(
-            messages: [['role' => 'user', 'content' => 'New user']],
+            messages: Messages::fromArray([['role' => 'user', 'content' => 'New user']]),
             cachedContext: $cachedContext,
         );
 
@@ -302,35 +303,37 @@ class OpenResponsesBodyFormatTest extends TestCase
 
     public function test_cached_context_tool_flow_maps_to_function_call_items(): void
     {
-        $cachedContext = new CachedInferenceContext(messages: [
-            [
-                'role' => 'assistant',
-                'content' => '',
-                '_metadata' => [
-                    'tool_calls' => [
-                        [
-                            'id' => 'call_cached',
-                            'function' => [
-                                'name' => 'get_weather',
-                                'arguments' => '{"city":"Paris"}',
+        $cachedContext = $this->cachedContext([
+            'messages' => [
+                [
+                    'role' => 'assistant',
+                    'content' => '',
+                    '_metadata' => [
+                        'tool_calls' => [
+                            [
+                                'id' => 'call_cached',
+                                'function' => [
+                                    'name' => 'get_weather',
+                                    'arguments' => '{"city":"Paris"}',
+                                ],
                             ],
                         ],
                     ],
                 ],
-            ],
-            [
-                'role' => 'tool',
-                'content' => '{"temperature":72}',
-                'tool_result' => [
+                [
+                    'role' => 'tool',
                     'content' => '{"temperature":72}',
-                    'call_id' => 'call_cached',
-                    'tool_name' => 'get_weather',
+                    'tool_result' => [
+                        'content' => '{"temperature":72}',
+                        'call_id' => 'call_cached',
+                        'tool_name' => 'get_weather',
+                    ],
                 ],
             ],
         ]);
 
         $request = new InferenceRequest(
-            messages: [['role' => 'user', 'content' => 'Continue']],
+            messages: Messages::fromArray([['role' => 'user', 'content' => 'Continue']]),
             cachedContext: $cachedContext,
         );
 
@@ -360,7 +363,7 @@ class OpenResponsesBodyFormatTest extends TestCase
         );
 
         $request = new InferenceRequest(
-            messages: [['role' => 'user', 'content' => 'Test']],
+            messages: Messages::fromArray([['role' => 'user', 'content' => 'Test']]),
             responseFormat: $responseFormat,
         );
 
@@ -392,7 +395,7 @@ class OpenResponsesBodyFormatTest extends TestCase
         );
 
         $request = new InferenceRequest(
-            messages: [['role' => 'user', 'content' => 'Test']],
+            messages: Messages::fromArray([['role' => 'user', 'content' => 'Test']]),
             responseFormat: $responseFormat,
         );
 
@@ -401,5 +404,15 @@ class OpenResponsesBodyFormatTest extends TestCase
 
         $this->assertEquals(['name', 'address'], $schema['required']);
         $this->assertEquals(['city'], $schema['properties']['address']['required']);
+    }
+
+    private function request(array $data): InferenceRequest
+    {
+        return InferenceRequest::fromArray($data);
+    }
+
+    private function cachedContext(array $data): CachedInferenceContext
+    {
+        return CachedInferenceContext::fromArray($data);
     }
 }

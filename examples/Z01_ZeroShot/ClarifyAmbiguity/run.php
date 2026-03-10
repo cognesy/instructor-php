@@ -54,6 +54,10 @@ class Disambiguate {
 $response = (new Disambiguate)(query: "What is an object");
 
 dump($response);
+
+assert($response instanceof Response);
+assert(!empty($response->rephrasedQuestion));
+assert(!empty($response->answer));
 ?>
 ```
 

@@ -53,5 +53,11 @@ echo 'After work turn response: ' . ($worked->state()->finalResponse()->toString
 echo 'After suspend: ' . $suspended->status()->value . "\n";
 echo 'After resume: ' . $resumed->status()->value . "\n";
 echo 'Current version: ' . $resumed->version() . "\n";
+
+assert($created->status()->value === 'active', 'Initial status should be active');
+assert(!empty($worked->state()->finalResponse()->toString()), 'Work turn should produce a response');
+assert($suspended->status()->value === 'suspended', 'Status after suspend should be suspended');
+assert($resumed->status()->value === 'active', 'Status after resume should be active');
+assert($resumed->version() > $created->version(), 'Version should increment through lifecycle');
 ?>
 ```

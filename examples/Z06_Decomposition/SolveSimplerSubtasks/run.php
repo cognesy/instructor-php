@@ -109,6 +109,17 @@ foreach ($results as $result) {
 }
 
 dump($results);
+
+assert(is_array($results));
+assert(!empty($results));
+foreach ($results as $result) {
+    assert($result instanceof SubquestionWithAnswer);
+    assert(!empty($result->question));
+    assert(is_int($result->answer));
+}
+// The last answer should be Kody's age: � = 34
+$lastAnswer = end($results)->answer;
+assert($lastAnswer == 34, "Expected Kody to be 34, got: $lastAnswer");
 ?>
 ```
 

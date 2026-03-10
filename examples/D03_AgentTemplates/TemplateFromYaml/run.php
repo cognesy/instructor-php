@@ -46,6 +46,6 @@ echo 'Answer: ' . ($final->finalResponse()->toString() ?: 'No response') . "\n";
 echo 'Status: ' . $final->status()->value . "\n";
 
 assert($definition->name === 'yaml-agent');
-assert(in_array($final->status()->value, ['completed', 'failed'], true));
+assert($final->status()->value === 'completed', 'Expected completed status, got: ' . $final->status()->value);
 ?>
 ```

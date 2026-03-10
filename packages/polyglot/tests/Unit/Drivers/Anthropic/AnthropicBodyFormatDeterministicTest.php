@@ -4,6 +4,8 @@ use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\Drivers\Anthropic\AnthropicBodyFormat;
 use Cognesy\Polyglot\Inference\Drivers\Anthropic\AnthropicMessageFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIMessageFormat;
@@ -19,9 +21,9 @@ it('Anthropic: system + user mapping and cache_control on cached system', functi
 
     $body = new AnthropicBodyFormat($config, new OpenAIMessageFormat());
 
-    $cached = new CachedInferenceContext(
-        messages: [ ['role' => 'system', 'content' => 'Cached system.'] ],
-    );
+    $cached = CachedInferenceContext::fromArray([
+        'messages' => [['role' => 'system', 'content' => 'Cached system.']],
+    ]);
 
     $req = new InferenceRequest(
         messages: Messages::fromAny([
@@ -67,8 +69,8 @@ it('Anthropic: tool_choice includes disable_parallel_tool_use flag', function ()
     $req = new InferenceRequest(
         messages: Messages::fromAny([['role' => 'user', 'content' => 'Hi']]),
         model: 'claude-3-haiku',
-        tools: $tools,
-        toolChoice: 'auto',
+        tools: ToolDefinitions::fromArray($tools),
+        toolChoice: ToolChoice::auto(),
         options: ['parallel_tool_calls' => false],
     );
 
@@ -87,12 +89,12 @@ it('Anthropic: cache_control applied to last cached message', function () {
 
     $body = new AnthropicBodyFormat($config, new AnthropicMessageFormat());
 
-    $cached = new CachedInferenceContext(
-        messages: [
+    $cached = CachedInferenceContext::fromArray([
+        'messages' => [
             ['role' => 'user', 'content' => 'Cached one.'],
             ['role' => 'assistant', 'content' => 'Cached two.'],
         ],
-    );
+    ]);
 
     $req = new InferenceRequest(
         messages: Messages::fromAny([['role' => 'user', 'content' => 'Live message.']]),
@@ -128,16 +130,16 @@ it('Anthropic: toRequestBody does not leak parallel tool setting between calls',
     $first = new InferenceRequest(
         messages: Messages::fromAny([['role' => 'user', 'content' => 'First']]),
         model: 'claude-3-haiku',
-        tools: $tools,
-        toolChoice: 'auto',
+        tools: ToolDefinitions::fromArray($tools),
+        toolChoice: ToolChoice::auto(),
         options: ['parallel_tool_calls' => true],
     );
 
     $second = new InferenceRequest(
         messages: Messages::fromAny([['role' => 'user', 'content' => 'Second']]),
         model: 'claude-3-haiku',
-        tools: $tools,
-        toolChoice: 'auto',
+        tools: ToolDefinitions::fromArray($tools),
+        toolChoice: ToolChoice::auto(),
         options: [],
     );
 

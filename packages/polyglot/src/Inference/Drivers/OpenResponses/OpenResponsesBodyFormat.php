@@ -9,6 +9,8 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanMapMessages;
 use Cognesy\Polyglot\Inference\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Drivers\Support\RequestMessages;
+use Cognesy\Polyglot\Inference\Drivers\Support\RequestPayload;
 use Cognesy\Utils\Arrays;
 
 /**
@@ -37,10 +39,7 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
         $maxOutputTokens = $this->resolveMaxOutputTokens($options);
         unset($options['max_output_tokens'], $options['max_completion_tokens'], $options['max_tokens']);
 
-        $messages = match ($this->supportsAlternatingRoles($request)) {
-            false => $request->messages()->toMergedPerRole(),
-            true => $request->messages(),
-        };
+        $messages = RequestMessages::forMapping($request, $this->supportsAlternatingRoles($request));
 
         // Extract system instructions and non-system messages
         $systemInstructions = $this->extractSystemInstructions($messages);
@@ -114,27 +113,7 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
      */
     protected function extractSystemInstructions(Messages $messages): string
     {
-        $systemMessages = [];
-        foreach ($messages->toArray() as $message) {
-            $role = $message['role'] ?? '';
-            if ($role === 'system' || $role === 'developer') {
-                $content = $message['content'] ?? '';
-                if (is_array($content)) {
-                    // Handle content array format
-                    foreach ($content as $part) {
-                        if (isset($part['text'])) {
-                            $systemMessages[] = $part['text'];
-                        } elseif (is_string($part)) {
-                            $systemMessages[] = $part;
-                        }
-                    }
-                } else {
-                    $systemMessages[] = $content;
-                }
-            }
-        }
-
-        return implode("\n\n", $systemMessages);
+        return RequestMessages::textForRoles($messages, ['system', 'developer']);
     }
 
     /**
@@ -142,7 +121,7 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
      */
     protected function filterNonSystemMessages(Messages $messages): Messages
     {
-        return $messages->exceptRoles(['system', 'developer']);
+        return RequestMessages::exceptRoles($messages, ['system', 'developer']);
     }
 
     /**
@@ -213,13 +192,10 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
 
     protected function removeDisallowedEntries(array $jsonSchema): array
     {
-        return Arrays::removeRecursively(
-            array: $jsonSchema,
-            keys: [
-                'x-title',
-                'x-php-class',
-            ],
-        );
+        return RequestPayload::removeSchemaKeys($jsonSchema, [
+            'x-title',
+            'x-php-class',
+        ]);
     }
 
     protected function normalizeSchemaForResponses(array $schema): array
@@ -313,16 +289,6 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
 
     protected function toResponseFormatType(InferenceRequest $request): ?string
     {
-        if (! $request->hasResponseFormat()) {
-            return null;
-        }
-
-        return match ($request->responseFormat()->type()) {
-            'text' => 'text',
-            'json',
-            'json_object' => 'json_object',
-            'json_schema' => 'json_schema',
-            default => null,
-        };
+        return RequestPayload::responseFormatType($request);
     }
 }

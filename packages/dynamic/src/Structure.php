@@ -61,9 +61,7 @@ final class Structure implements CanProvideSchema, CanValidateSelf, CanTransform
 
     /** @return array<string,mixed> */
     public function toJsonSchema() : array {
-        $jsonSchema = SchemaFactory::default()->toJsonSchema($this->schema());
-        $jsonSchema['x-php-class'] = self::class;
-        return $jsonSchema;
+        return SchemaFactory::default()->toJsonSchema($this->schema());
     }
 
     public function withData(array $data) : self {
@@ -151,6 +149,19 @@ final class Structure implements CanProvideSchema, CanValidateSelf, CanTransform
     }
 
     public function __isset(string $name) : bool {
-        return isset($this->data[$name]) || $this->has($name);
+        if (!$this->has($name)) {
+            return false;
+        }
+
+        if (array_key_exists($name, $this->data)) {
+            return $this->data[$name] !== null;
+        }
+
+        $schema = $this->schema->getPropertySchema($name);
+        if (!$schema->hasDefaultValue()) {
+            return false;
+        }
+
+        return $schema->defaultValue() !== null;
     }
 }

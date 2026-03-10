@@ -3,6 +3,7 @@
 namespace Cognesy\Messages;
 
 use Cognesy\Messages\Enums\MessageRole;
+use Cognesy\Messages\Enums\MessageType;
 use Cognesy\Messages\ContentParts;
 use Cognesy\Messages\Support\MessageInput;
 use Cognesy\Messages\Utils\Image;
@@ -185,6 +186,14 @@ final readonly class Message
 
     public function hasRole(MessageRole ...$roles): bool {
         return $this->role()->oneOf(...$roles);
+    }
+
+    public function type(): MessageType {
+        return match (true) {
+            $this->isAssistant() && $this->hasToolCalls() => MessageType::AssistantToolCalls,
+            $this->isTool() && $this->hasToolResult() => MessageType::ToolResult,
+            default => MessageType::Text,
+        };
     }
 
     // TOOL ACCESSORS ///////////////////////////////////////

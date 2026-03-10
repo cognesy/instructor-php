@@ -94,6 +94,11 @@ $questions = [
 $selector = new COSPSelector(m: 3);
 $best = $selector->select($questions, k: 3);
 dump($best);
+
+assert(is_array($best));
+assert(count($best) > 0);
+assert($best[0] instanceof ScoredExample);
+assert(!empty($best[0]->query));
 ?>
 ```
 

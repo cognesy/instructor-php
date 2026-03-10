@@ -126,7 +126,7 @@ echo "Answer: {$response}\n";
 
 if ($finalState->status()->value !== 'completed') {
     echo "Skipping assertions because execution status is {$finalState->status()->value}.\n";
-    return;
+    exit(1);
 }
 
 // Assertions

@@ -5,7 +5,7 @@ use Cognesy\Instructor\Data\StructuredOutputResponse;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Instructor\Enums\OutputMode;
 
@@ -35,9 +35,9 @@ it('emits StructuredOutputResponseGenerated exactly once across stream and respo
     });
 
     $chunks = [
-        new PartialInferenceResponse(contentDelta: '{"name":"Alice"', usage: new Usage(outputTokens: 1)),
-        new PartialInferenceResponse(contentDelta: ',"age":', usage: new Usage(outputTokens: 1)),
-        new PartialInferenceResponse(contentDelta: '30}', finishReason: 'stop', usage: new Usage(outputTokens: 1)),
+        new PartialInferenceDelta(contentDelta: '{"name":"Alice"', usage: new Usage(outputTokens: 1)),
+        new PartialInferenceDelta(contentDelta: ',"age":', usage: new Usage(outputTokens: 1)),
+        new PartialInferenceDelta(contentDelta: '30}', finishReason: 'stop', usage: new Usage(outputTokens: 1)),
     ];
 
     $driver = new FakeInferenceDriver(

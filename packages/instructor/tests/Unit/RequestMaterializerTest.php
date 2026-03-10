@@ -27,7 +27,12 @@ describe('RequestMaterializer', function () {
         ?CachedContext $cached = null,
     ): StructuredOutputRequest {
         return new StructuredOutputRequest(
-            messages: $messages ?? '',
+            messages: match (true) {
+                $messages instanceof Messages => $messages,
+                is_array($messages) => Messages::fromArray($messages),
+                is_string($messages) && $messages !== '' => Messages::fromString($messages),
+                default => Messages::empty(),
+            },
             requestedSchema: [],
             system: $system,
             prompt: $prompt,
@@ -92,7 +97,7 @@ describe('RequestMaterializer', function () {
 
     it('includes cached system with cache_control only when present', function () {
         $materializer = new RequestMaterializer;
-        $cached = new CachedContext(messages: [], system: 'Cached system', prompt: '', examples: []);
+        $cached = new CachedContext(messages: Messages::empty(), system: 'Cached system', prompt: '', examples: []);
         $request = makeRequest(messages: null, system: '', prompt: 'Say hi.', cached: $cached);
         $execution = makeExecution(request: $request);
 
@@ -116,7 +121,7 @@ describe('RequestMaterializer', function () {
 
     it('uses cached prompt and removes original prompt, adding meta sections', function () {
         $materializer = new RequestMaterializer;
-        $cached = new CachedContext(messages: [], system: '', prompt: 'C_PROMPT', examples: []);
+        $cached = new CachedContext(messages: Messages::empty(), system: '', prompt: 'C_PROMPT', examples: []);
         $request = makeRequest(messages: null, system: '', prompt: 'REQ_PROMPT', cached: $cached);
         $execution = makeExecution(request: $request);
 

@@ -2,11 +2,11 @@
 
 use Cognesy\Agents\Exceptions\InvalidToolException;
 use Cognesy\Agents\Tool\ToolRegistry;
-use Cognesy\Agents\Tool\Tools\MockTool;
+use Cognesy\Agents\Tool\Tools\FakeTool;
 
 it('registers tool instances', function () {
     $registry = new ToolRegistry();
-    $alpha = MockTool::returning('alpha', 'Alpha tool', 'ok');
+    $alpha = FakeTool::returning('alpha', 'Alpha tool', 'ok');
     $registry->register($alpha);
 
     expect($registry->has('alpha'))->toBeTrue()
@@ -15,7 +15,7 @@ it('registers tool instances', function () {
 
 it('registers tool factories', function () {
     $registry = new ToolRegistry();
-    $registry->registerFactory('alpha', fn() => MockTool::returning('alpha', 'Alpha tool', 'ok'));
+    $registry->registerFactory('alpha', fn() => FakeTool::returning('alpha', 'Alpha tool', 'ok'));
 
     expect($registry->has('alpha'))->toBeTrue()
         ->and($registry->get('alpha')->name())->toBe('alpha');
@@ -23,8 +23,8 @@ it('registers tool factories', function () {
 
 it('returns registered names', function () {
     $registry = new ToolRegistry();
-    $registry->register(MockTool::returning('alpha', 'Alpha tool', 'ok'));
-    $registry->registerFactory('beta', fn() => MockTool::returning('beta', 'Beta tool', 'ok'));
+    $registry->register(FakeTool::returning('alpha', 'Alpha tool', 'ok'));
+    $registry->registerFactory('beta', fn() => FakeTool::returning('beta', 'Beta tool', 'ok'));
 
     expect($registry->names())->toEqual(['beta', 'alpha']);
 });

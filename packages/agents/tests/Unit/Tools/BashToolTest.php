@@ -5,7 +5,7 @@ namespace Cognesy\Agents\Tests\Unit\Tools;
 use Cognesy\Agents\Capability\Bash\BashPolicy;
 use Cognesy\Agents\Capability\Bash\BashTool;
 use Cognesy\Sandbox\Config\ExecutionPolicy;
-use Cognesy\Sandbox\Testing\MockSandbox;
+use Cognesy\Sandbox\Testing\FakeSandbox;
 
 describe('BashTool', function () {
 
@@ -137,8 +137,8 @@ describe('BashTool', function () {
         ]);
     });
 
-    it('executes using MockSandbox', function () {
-        $sandbox = new MockSandbox(
+    it('executes using FakeSandbox', function () {
+        $sandbox = new FakeSandbox(
             policy: ExecutionPolicy::in($this->tempDir),
             responses: [
                 'bash -c echo "Hello"' => [

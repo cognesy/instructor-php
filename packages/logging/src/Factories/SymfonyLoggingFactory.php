@@ -12,6 +12,7 @@ use Cognesy\Logging\Pipeline\LoggingPipeline;
 use Cognesy\Logging\Writers\PsrLoggerWriter;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
@@ -34,6 +35,8 @@ final class SymfonyLoggingFactory
         ], $config);
 
         $pipeline = LoggingPipeline::create();
+        $lastRequest = null;
+        $fallbackRequestId = null;
 
         // Add level filter
         if ($config['level']) {
@@ -49,7 +52,7 @@ final class SymfonyLoggingFactory
         }
 
         // Add Symfony-specific enrichment (lazy evaluation)
-        $pipeline->enrich(LazyEnricher::framework(function () use ($container) {
+        $pipeline->enrich(LazyEnricher::framework(function () use ($container, &$lastRequest, &$fallbackRequestId) {
             if (!$container->has('request_stack')) {
                 return [];
             }
@@ -62,8 +65,19 @@ final class SymfonyLoggingFactory
                 return [];
             }
 
+            if (!$lastRequest instanceof Request || $lastRequest !== $request) {
+                $lastRequest = $request;
+                $fallbackRequestId = null;
+            }
+
+            $requestId = $request->headers->get('X-Request-ID');
+            if (!is_string($requestId) || $requestId === '') {
+                $fallbackRequestId ??= uniqid('req_');
+                $requestId = $fallbackRequestId;
+            }
+
             return [
-                'request_id' => $request->headers->get('X-Request-ID') ?? uniqid('req_'),
+                'request_id' => $requestId,
                 'session_id' => $request->hasSession() ? $request->getSession()->getId() : null,
                 'route' => $request->attributes->get('_route'),
                 'method' => $request->getMethod(),
@@ -146,9 +160,9 @@ final class SymfonyLoggingFactory
                 ? 'debug'
                 : 'info',
             'templates' => [
-                \Cognesy\Instructor\Events\StructuredOutputStarted::class =>
+                \Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted::class =>
                     'Starting {responseClass} generation with {model}',
-                \Cognesy\Instructor\Events\ResponseValidationFailed::class =>
+                \Cognesy\Instructor\Events\Response\ResponseValidationFailed::class =>
                     'Validation failed for {responseClass}: {error}',
                 \Cognesy\Http\Events\HttpRequestSent::class =>
                     'HTTP {method} {url}',
@@ -169,7 +183,7 @@ final class SymfonyLoggingFactory
             'exclude_events' => [
                 \Cognesy\Http\Events\DebugRequestBodyUsed::class,
                 \Cognesy\Http\Events\DebugResponseBodyReceived::class,
-                \Cognesy\Instructor\Events\PartialResponseGenerated::class,
+                \Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated::class,
             ],
         ]);
     }

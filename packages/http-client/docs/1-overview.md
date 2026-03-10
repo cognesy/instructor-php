@@ -71,7 +71,6 @@ Your Code
 | `CurlDriver` | PHP cURL extension | None (built-in) |
 | `GuzzleDriver` | Guzzle HTTP | `guzzlehttp/guzzle` |
 | `SymfonyDriver` | Symfony HttpClient | `symfony/http-client` |
-| `ExtHttpDriver` | pecl_http | `pecl/http` |
 | `MockHttpDriver` | Built-in test double | None |
 
 ## Immutability

@@ -27,6 +27,7 @@ generating its summary for 2 target audiences.
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\Str;
 
@@ -39,56 +40,56 @@ $cacheNonce = bin2hex(random_bytes(8));
 // If cached content is below threshold, caching silently doesn't occur.
 $model = 'claude-sonnet-4-20250514'; // Using Sonnet for lower cache threshold (1,024 tokens)
 
-$data = file_get_contents(__DIR__ . '/../../../README.md');
+$data = file_get_contents(__DIR__.'/../../../README.md');
 
 $inference = Inference::using('anthropic')
     ->withCachedContext(
-        messages: [
+        messages: Messages::fromArray([
             ['role' => 'user', 'content' => 'Here is content of README.md file'],
             ['role' => 'user', 'content' => $data],
             ['role' => 'user', 'content' => 'Generate a short, very domain specific pitch of the project described in README.md. List relevant, domain specific problems that this project could solve. Use domain specific concepts and terminology to make the description resonate with the target audience.'],
             ['role' => 'assistant', 'content' => "For whom do you want to generate the pitch?\nCache nonce: {$cacheNonce}"],
-        ],
+        ]),
     );
 
 $response = $inference
     ->with(
-        messages: [['role' => 'user', 'content' => 'founder of lead gen SaaS startup']],
+        messages: Messages::fromString('founder of lead gen SaaS startup'),
         model: $model,
         options: ['max_tokens' => 512],
     )
     ->response();
 
-print("----------------------------------------\n");
-print("\n# Summary for CTO of lead gen vendor\n");
-print("  ({$response->usage()->cacheReadTokens} tokens read from cache)\n\n");
-print("----------------------------------------\n");
-print($response->content() . "\n");
+echo "----------------------------------------\n";
+echo "\n# Summary for CTO of lead gen vendor\n";
+echo "  ({$response->usage()->cacheReadTokens} tokens read from cache)\n\n";
+echo "----------------------------------------\n";
+echo $response->content()."\n";
 
-assert(!empty($response->content()));
+assert(! empty($response->content()));
 assert(Str::contains($response->content(), 'lead', false));
 if ($response->usage()->cacheWriteTokens === 0) {
-    print("Note: cacheWriteTokens is 0. Prompt caching depends on provider/model token thresholds.\n");
+    echo "Note: cacheWriteTokens is 0. Prompt caching depends on provider/model token thresholds.\n";
 }
 
 $response2 = $inference
     ->with(
-        messages: [['role' => 'user', 'content' => 'CIO of insurance company']],
+        messages: Messages::fromString('CIO of insurance company'),
         model: $model,
         options: ['max_tokens' => 512],
     )
     ->response();
 
-print("----------------------------------------\n");
-print("\n# Summary for CIO of insurance company\n");
-print("  ({$response2->usage()->cacheReadTokens} tokens read from cache)\n\n");
-print("----------------------------------------\n");
-print($response2->content() . "\n");
+echo "----------------------------------------\n";
+echo "\n# Summary for CIO of insurance company\n";
+echo "  ({$response2->usage()->cacheReadTokens} tokens read from cache)\n\n";
+echo "----------------------------------------\n";
+echo $response2->content()."\n";
 
-assert(!empty($response2->content()));
+assert(! empty($response2->content()));
 assert(Str::contains($response2->content(), 'insurance', false));
 if ($response2->usage()->cacheReadTokens === 0) {
-    print("Note: cacheReadTokens is 0. Prompt caching depends on provider/model token thresholds.\n");
+    echo "Note: cacheReadTokens is 0. Prompt caching depends on provider/model token thresholds.\n";
 }
 ?>
 ```

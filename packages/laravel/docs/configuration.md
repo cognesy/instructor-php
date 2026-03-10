@@ -269,10 +269,13 @@ Override any configuration at runtime using the fluent API on the facades:
 
 ```php
 use Cognesy\Instructor\Laravel\Facades\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 
 $result = StructuredOutput::connection('anthropic')  // Switch connection
     ->withModel('claude-3-opus-20240229')        // Override model
-    ->withMaxRetries(5)                          // Override retries
+    ->withRuntime(
+        StructuredOutputRuntime::fromDefaults()->withMaxRetries(5)
+    )                                            // Override retries
     ->with(
         messages: 'Extract data...',
         responseModel: MyModel::class,

@@ -49,7 +49,11 @@ final class StructureFactory
 
     /** @param array<string,mixed> $jsonSchema */
     public function fromJsonSchema(array $jsonSchema) : Structure {
-        $name = is_string($jsonSchema['x-title'] ?? null) ? $jsonSchema['x-title'] : 'schema';
+        $name = match (true) {
+            is_string($jsonSchema['title'] ?? null) && $jsonSchema['title'] !== '' => $jsonSchema['title'],
+            is_string($jsonSchema['x-title'] ?? null) && $jsonSchema['x-title'] !== '' => $jsonSchema['x-title'],
+            default => 'schema',
+        };
         $description = is_string($jsonSchema['description'] ?? null) ? $jsonSchema['description'] : '';
         $schema = $this->schemaFactory()->schemaParser()->parse(JsonSchema::fromArray($jsonSchema));
         return Structure::fromSchema(SchemaFactory::withMetadata($schema, $name, $description));
@@ -78,7 +82,7 @@ final class StructureFactory
             ? substr($trimmed, 6, -1)
             : $trimmed;
 
-        foreach (explode(',', $source) as $part) {
+        foreach ($this->splitTopLevel($source, ',') as $part) {
             $normalized = trim($part);
             if ($normalized === '') {
                 continue;
@@ -116,13 +120,95 @@ final class StructureFactory
             $definition = trim((string) preg_replace('/\s*\(.*?\)\s*$/', '', $definition));
         }
 
-        $chunks = explode(':', str_replace(' ', '', $definition));
+        [$fieldName, $fieldType] = $this->splitFieldDefinition($definition);
 
         return [
-            trim($chunks[0] ?? ''),
-            trim($chunks[1] ?? 'string'),
+            trim($fieldName),
+            trim($fieldType !== '' ? $fieldType : 'string'),
             $description,
         ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function splitTopLevel(string $source, string $delimiter) : array {
+        $parts = [];
+        $buffer = '';
+        $braceDepth = 0;
+        $parenDepth = 0;
+        $angleDepth = 0;
+        $length = strlen($source);
+
+        for ($index = 0; $index < $length; $index++) {
+            $character = $source[$index];
+            $braceDepth += match ($character) {
+                '{' => 1,
+                '}' => -1,
+                default => 0,
+            };
+            $parenDepth += match ($character) {
+                '(' => 1,
+                ')' => -1,
+                default => 0,
+            };
+            $angleDepth += match ($character) {
+                '<' => 1,
+                '>' => -1,
+                default => 0,
+            };
+
+            if ($character === $delimiter && $braceDepth === 0 && $parenDepth === 0 && $angleDepth === 0) {
+                $parts[] = $buffer;
+                $buffer = '';
+                continue;
+            }
+
+            $buffer .= $character;
+        }
+
+        if ($buffer !== '') {
+            $parts[] = $buffer;
+        }
+
+        return $parts;
+    }
+
+    /** @return array{string, string} */
+    private function splitFieldDefinition(string $definition) : array {
+        $fieldName = '';
+        $fieldType = '';
+        $braceDepth = 0;
+        $parenDepth = 0;
+        $angleDepth = 0;
+        $length = strlen($definition);
+
+        for ($index = 0; $index < $length; $index++) {
+            $character = $definition[$index];
+            $braceDepth += match ($character) {
+                '{' => 1,
+                '}' => -1,
+                default => 0,
+            };
+            $parenDepth += match ($character) {
+                '(' => 1,
+                ')' => -1,
+                default => 0,
+            };
+            $angleDepth += match ($character) {
+                '<' => 1,
+                '>' => -1,
+                default => 0,
+            };
+
+            if ($character === ':' && $braceDepth === 0 && $parenDepth === 0 && $angleDepth === 0) {
+                $fieldName = trim(substr($definition, 0, $index));
+                $fieldType = trim(substr($definition, $index + 1));
+                return [$fieldName, preg_replace('/\s+/', '', $fieldType) ?? $fieldType];
+            }
+        }
+
+        return [trim($definition), ''];
     }
 
 }

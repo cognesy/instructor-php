@@ -8,27 +8,26 @@ use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 
 /**
  * Lightweight fake inference driver for unit tests.
  * - Returns queued InferenceResponse objects for non-streaming
- * - Returns queued arrays of PartialInferenceDelta or PartialInferenceResponse fixtures for streaming
+ * - Returns queued arrays of PartialInferenceDelta fixtures for streaming
  */
 class FakeInferenceDriver implements CanProcessInferenceRequest
 {
     /** @var InferenceResponse[] */
     private array $responses;
-    /** @var array<int, array<PartialInferenceDelta|PartialInferenceResponse>> */
+    /** @var array<int, array<PartialInferenceDelta>> */
     private array $streamBatches;
-    /** @var null|Closure(InferenceRequest, self): iterable<PartialInferenceDelta|PartialInferenceResponse> */
+    /** @var null|Closure(InferenceRequest, self): iterable<PartialInferenceDelta> */
     private ?Closure $onStream;
     public int $responseCalls = 0;
     public int $streamCalls = 0;
 
     /**
      * @param InferenceResponse[] $responses
-     * @param array<int, array<PartialInferenceDelta|PartialInferenceResponse>> $streamBatches
+     * @param array<int, array<PartialInferenceDelta>> $streamBatches
      */
     public function __construct(
         array $responses = [],
@@ -64,35 +63,12 @@ class FakeInferenceDriver implements CanProcessInferenceRequest
         return new DriverCapabilities();
     }
 
-    /** @param iterable<PartialInferenceDelta|PartialInferenceResponse> $batch */
+    /** @param iterable<PartialInferenceDelta> $batch */
     private function emitBatch(iterable $batch): iterable
     {
-        $items = is_array($batch) ? $batch : iterator_to_array($batch, false);
-        if ($items === []) {
-            return;
-        }
-
-        if ($items[0] instanceof PartialInferenceDelta) {
-            foreach ($items as $delta) {
-                assert($delta instanceof PartialInferenceDelta);
-                yield $delta;
-            }
-            return;
-        }
-
-        foreach (FakeStreamFactory::from(...$items) as $partialResponse) {
-            yield new PartialInferenceDelta(
-                contentDelta: $partialResponse->contentDelta,
-                reasoningContentDelta: $partialResponse->reasoningContentDelta,
-                toolId: $partialResponse->toolId(),
-                toolName: $partialResponse->toolName(),
-                toolArgs: $partialResponse->toolArgs(),
-                finishReason: $partialResponse->finishReason(),
-                usage: $partialResponse->usage(),
-                usageIsCumulative: $partialResponse->isUsageCumulative(),
-                value: $partialResponse->value(),
-            );
+        foreach ($batch as $delta) {
+            assert($delta instanceof PartialInferenceDelta);
+            yield $delta;
         }
     }
-
 }

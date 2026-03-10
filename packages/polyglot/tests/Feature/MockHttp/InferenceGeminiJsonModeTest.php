@@ -17,8 +17,8 @@ it('respects JSON mode for Gemini', function () {
 
     $data = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('gemini'), httpClient: $http))
         ->withModel('gemini-1.5-flash')
-        ->withResponseFormat(['type' => 'json_object'])
-        ->withMessages('Q?')
+        ->withResponseFormat(\Cognesy\Polyglot\Inference\Data\ResponseFormat::jsonObject())
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Q?'))
         ->asJsonData();
 
     expect($data)->toBe(['answer' => 'ok']);

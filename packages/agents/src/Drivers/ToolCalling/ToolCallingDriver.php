@@ -66,7 +66,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         CanCreateInference $inference,
         ?LLMProvider $llm = null,
         ?CanSendHttpRequests $httpClient = null,
-        ToolChoice|string|array $toolChoice = 'auto',
+        ?ToolChoice $toolChoice = null,
         ResponseFormat|null $responseFormat = null,
         string       $model = '',
         array        $options = [],
@@ -79,7 +79,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         $this->inference = $inference;
         $this->llm = $llm ?? LLMProvider::new();
         $this->httpClient = $httpClient;
-        $this->toolChoice = ToolChoice::fromAny($toolChoice);
+        $this->toolChoice = $toolChoice ?? ToolChoice::auto();
         $this->model = $model;
         $this->responseFormat = $responseFormat ?? ResponseFormat::empty();
         $this->options = $options;
@@ -145,7 +145,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
     private function with(
         ?LLMProvider $llm = null,
         ?CanSendHttpRequests $httpClient = null,
-        ToolChoice|string|array|null $toolChoice = null,
+        ?ToolChoice $toolChoice = null,
         ?ResponseFormat $responseFormat = null,
         ?string $model = null,
         ?array $options = null,

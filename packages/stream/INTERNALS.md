@@ -248,6 +248,10 @@ This separation allows:
 
 **Role**: Provides lazy, iterator-based stream processing by wrapping Transformation with `ToQueueReducer`.
 
+`TransformationStream` intentionally materializes emitted stream items, not arbitrary sink results. When you pass a predefined `Transformation`, its sink is replaced with `ToQueueReducer` so the stream can yield values step by step.
+
+It is lazy about when work starts, not memory-bounded across the full run. As values are emitted they are appended to `materializedOutput` so `getCompleted()` and post-completion replay can return a stable snapshot.
+
 #### Lazy Evaluation Strategy
 
 ```php
@@ -290,6 +294,8 @@ private function iterate(TransformationExecution $transduction, SplQueue $queue)
 **Why the queue?**
 
 Some transducers emit multiple values per input (e.g., `FlatMap`, `Chunk`). The queue buffers these emissions, allowing the stream to yield them individually rather than as collections.
+
+This also means `TransformationStream` is not a general sink-preserving wrapper around `Transformation`. Its completion contract is “materialize emitted items,” not “return whatever sink the provided transformation would have produced.”
 
 **Execution Flow**:
 
@@ -788,7 +794,7 @@ final readonly class MyStream implements Stream {
 |-----------|-------------|-------|
 | Transformation (definition) | O(t) where t = # transducers | Just references |
 | TransformationExecution | O(1) | Single accumulator |
-| TransformationStream | O(q) where q = queue size | Bounded by emission rate |
+| TransformationStream | O(n + q) where n = emitted items, q = queue size | Queue is bounded by emission rate, but emitted values are retained for completion/replay |
 | BufferedTransformationIterator | O(n) where n = # steps | Stores all intermediates |
 | Tee split | O(d×b) where d=divergence, b=branches | Grows with spread |
 
@@ -800,9 +806,9 @@ final readonly class MyStream implements Stream {
 - Multiple operations on same data
 
 **TransformationStream** (Lazy):
-- Large datasets (files, HTTP streams)
+- When lazy start and incremental emission matter more than retaining completed output
 - When partial results are useful
-- Memory-constrained environments
+- Small to medium result sets, or flows where retaining emitted output is acceptable
 
 **Tee Split**:
 - Same data needs multiple different transformations

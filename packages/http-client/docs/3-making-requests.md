@@ -26,7 +26,7 @@ $request = new HttpRequest(
 | `url` | `string` | The full URL including any query parameters |
 | `method` | `string` | The HTTP method (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`, etc.) |
 | `headers` | `array` | Associative array of header name to value |
-| `body` | `string\|array` | Request body -- arrays are JSON-encoded automatically |
+| `body` | `string\|array` | Request body -- arrays are JSON-encoded automatically; strings are sent verbatim |
 | `options` | `array` | Driver-level options (e.g., `['stream' => true]`) |
 
 Each request is also assigned a unique `id` and timestamped with `createdAt` and `updatedAt` properties automatically.
@@ -69,7 +69,7 @@ $request = new HttpRequest(
 $response = $client->send($request)->get();
 ```
 
-You can also pass a pre-encoded JSON string if you need precise control over the encoding:
+You can also pass a pre-encoded JSON string if you need precise control over the encoding. String bodies are sent as-is; the drivers do not parse and reserialize them:
 
 ```php
 $request = new HttpRequest(
@@ -157,8 +157,8 @@ $request->isStreamed(); // Whether streaming is enabled
 The body is managed by `HttpRequestBody`, which provides `toString()` and `toArray()` conversions:
 
 ```php
-$bodyString = $request->body()->toString(); // JSON string
-$bodyArray  = $request->body()->toArray();  // Decoded array
+$bodyString = $request->body()->toString(); // Exact outbound body string
+$bodyArray  = $request->body()->toArray();  // Decoded array when the body contains valid JSON
 ```
 
 ## Streaming Option

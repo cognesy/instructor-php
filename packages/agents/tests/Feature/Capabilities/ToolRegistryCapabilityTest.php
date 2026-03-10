@@ -9,12 +9,12 @@ use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Agents\Tool\ToolRegistry;
-use Cognesy\Agents\Tool\Tools\MockTool;
+use Cognesy\Agents\Tool\Tools\FakeTool;
 
 describe('ToolRegistry Capability', function () {
     it('lists registry tools deterministically through the agent', function () {
         $registry = new ToolRegistry();
-        $registry->register(MockTool::returning('demo_tool', 'Demo tool', 'ok'));
+        $registry->register(FakeTool::returning('demo_tool', 'Demo tool', 'ok'));
 
         $agent = AgentBuilder::base()
             ->withCapability(new UseDriver(new FakeAgentDriver([

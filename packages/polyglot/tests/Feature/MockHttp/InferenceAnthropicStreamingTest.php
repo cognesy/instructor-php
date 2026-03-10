@@ -18,7 +18,7 @@ it('streams partial responses and assembles final content (Anthropic SSE)', func
 
     $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('anthropic'), httpClient: $http))
         ->withModel('claude-3-haiku-20240307')
-        ->withMessages('Greet')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Greet'))
         ->withStreaming(true)
         ->stream();
 
@@ -61,7 +61,7 @@ it('correctly accumulates cumulative token usage in streaming (regression test)'
 
     $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('anthropic'), httpClient: $http))
         ->withModel('claude-3-haiku-20240307')
-        ->withMessages('Test cumulative usage')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Test cumulative usage'))
         ->withStreaming(true)
         ->stream();
 

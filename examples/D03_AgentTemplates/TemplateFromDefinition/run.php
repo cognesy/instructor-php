@@ -56,7 +56,7 @@ echo 'Answer: ' . ($final->finalResponse()->toString() ?: 'No response') . "\n";
 echo 'Steps: ' . $final->stepCount() . "\n";
 echo 'Status: ' . $final->status()->value . "\n";
 
-assert(in_array($final->status()->value, ['completed', 'failed'], true));
-assert($final->stepCount() >= 0);
+assert($final->status()->value === 'completed', 'Expected completed status, got: ' . $final->status()->value);
+assert($final->stepCount() >= 1, 'Expected at least 1 step');
 ?>
 ```

@@ -153,3 +153,7 @@ tasks.json
 
 # QA tooling local caches
 .qa/.semgrep/
+
+# Dolt database files (added by bd init)
+.dolt/
+*.db

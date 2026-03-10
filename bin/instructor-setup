@@ -22,7 +22,10 @@ require findAutoload();
 use Symfony\Component\Console\Application;
 
 $application = new Application('Instructor setup tool', '1.0.0');
-$application->add(new Cognesy\Setup\PublishCommand());
+$application->addCommand(new Cognesy\Setup\ConfigPublishCommand());
+$application->addCommand(new Cognesy\Setup\ConfigValidateCommand());
+$application->addCommand(new Cognesy\Setup\ConfigCacheCommand());
+$application->addCommand(new Cognesy\Setup\PublishCommand());
 $application->run();
 
 exit(0);

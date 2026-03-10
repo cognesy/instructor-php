@@ -19,11 +19,12 @@ use Cognesy\Logging\Filters\LogLevelFilter;
 use Cognesy\Logging\Formatters\MessageTemplateFormatter;
 use Cognesy\Logging\Pipeline\LoggingPipeline;
 use Cognesy\Logging\Writers\MonologChannelWriter;
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
-use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 // Create Monolog logger
 $logger = new Logger('inference');
@@ -33,10 +34,8 @@ $logger->pushHandler(new StreamHandler('php://stdout', Logger::DEBUG));
 $pipeline = LoggingPipeline::create()
     ->filter(new LogLevelFilter('debug'))
     ->format(new MessageTemplateFormatter([
-        \Cognesy\Polyglot\Inference\Events\InferenceRequested::class =>
-            '🤖 Inference requested: {provider}/{model}',
-        \Cognesy\Polyglot\Inference\Events\InferenceResponseCreated::class =>
-            '✅ Inference completed: {provider}/{model}',
+        \Cognesy\Polyglot\Inference\Events\InferenceRequested::class => '🤖 Inference requested: {provider}/{model}',
+        \Cognesy\Polyglot\Inference\Events\InferenceResponseCreated::class => '✅ Inference completed: {provider}/{model}',
     ], channel: 'inference'))
     ->write(new MonologChannelWriter($logger))
     ->build();
@@ -44,7 +43,7 @@ $pipeline = LoggingPipeline::create()
 echo "📋 About to demonstrate Inference logging with Monolog...\n\n";
 
 // Create inference with logging
-$events = new EventDispatcher();
+$events = new EventDispatcher;
 $events->wiretap($pipeline);
 $inference = Inference::fromRuntime(InferenceRuntime::fromConfig(
     config: LLMConfig::fromPreset('openai'),
@@ -53,13 +52,13 @@ $inference = Inference::fromRuntime(InferenceRuntime::fromConfig(
 
 echo "🚀 Starting Inference request...\n";
 $response = $inference
-    ->withMessages([
-        ['role' => 'user', 'content' => 'What is the capital of France?']
-    ])
+    ->withMessages(Messages::fromString('What is the capital of France?'))
     ->withMaxTokens(50)
     ->get();
 
-echo "📊 Response: " . ($response ?: "Empty response") . "\n";
+echo '📊 Response: '.($response ?: 'Empty response')."\n";
+
+assert(!empty($response));
 ?>
 ```
 

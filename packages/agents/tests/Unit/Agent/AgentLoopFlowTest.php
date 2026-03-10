@@ -21,7 +21,7 @@ use Cognesy\Agents\Hook\Enums\HookTrigger;
 use Cognesy\Agents\Interception\CanInterceptAgentLifecycle;
 use Cognesy\Agents\Interception\PassThroughInterceptor;
 use Cognesy\Agents\Tool\ToolExecutor;
-use Cognesy\Agents\Tool\Tools\MockTool;
+use Cognesy\Agents\Tool\Tools\FakeTool;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\ToolCalls;
 use Cognesy\Messages\ToolCall;
@@ -233,7 +233,7 @@ describe('AgentLoop flow', function () {
     });
 
     it('uses new events in executor when withEventHandler() receives only events', function () {
-        $tool = MockTool::returning('test_tool', 'A test tool', 'ok');
+        $tool = FakeTool::returning('test_tool', 'A test tool', 'ok');
         $tools = new Tools($tool);
         $oldListener = new CountingEventListener();
         $newListener = new CountingEventListener();
@@ -271,7 +271,7 @@ describe('AgentLoop flow', function () {
     });
 
     it('uses new interceptor in executor when withInterceptor() receives only interceptor', function () {
-        $tool = MockTool::returning('test_tool', 'A test tool', 'ok');
+        $tool = FakeTool::returning('test_tool', 'A test tool', 'ok');
         $tools = new Tools($tool);
         $events = new EventDispatcher();
         $oldInterceptor = new PassThroughInterceptor();

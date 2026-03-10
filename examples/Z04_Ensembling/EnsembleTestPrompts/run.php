@@ -64,6 +64,11 @@ $prompts = [
 $question = 'If a store sold 93 in the morning and 39 in the afternoon from 200 baked, and 6 were returned, how many remain?';
 $scores = (new PromptEnsembler)->evaluate($prompts, $question);
 dump($scores);
+
+assert(is_array($scores));
+assert(count($scores) === 3);
+assert($scores[0] instanceof PromptScore);
+assert(!empty($scores[0]->prompt));
 ?>
 ```
 

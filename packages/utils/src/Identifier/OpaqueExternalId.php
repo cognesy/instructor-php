@@ -14,12 +14,20 @@ abstract readonly class OpaqueExternalId implements Stringable
         return new static($value);
     }
 
-    public static function null(): static {
+    public static function empty(): static {
         return new static('');
+    }
+
+    public static function null(): static {
+        return static::empty();
     }
 
     public function isEmpty(): bool {
         return trim($this->value) === '';
+    }
+
+    public function isPresent(): bool {
+        return !$this->isEmpty();
     }
 
     public function toString(): string {

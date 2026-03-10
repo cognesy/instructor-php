@@ -23,6 +23,10 @@ Json::decode('{"a":1}', [])          // → array with default fallback
 Json::encode(['a' => 1])             // → string
 ```
 
+Notes:
+- `Json::encode()` and `Json::fromArray()` throw `InvalidArgumentException` on encoding failure.
+- `Json::decode()` still supports an explicit default fallback for invalid input.
+
 ### Result - Monadic Error Handling
 ```php
 // Creation
@@ -104,7 +108,7 @@ Arrays::flattenToString($arrays, ' ') // Join nested arrays
 ```php
 // Directory operations
 Files::removeDirectory($path)        // Recursive delete → bool
-Files::copyDirectory($src, $dst)     // Recursive copy (throws on error)
+Files::copyDirectory($src, $dst)     // Recursive copy (throws on error, rejects symlinks)
 Files::renameFileExtensions($dir, 'md', 'mdx') // Batch rename
 
 // File operations
@@ -236,6 +240,10 @@ JsonSchema::array('users')
 
 // From existing data
 JsonSchema::fromArray($schemaArray, 'fieldName', true)
+
+// Composed schemas
+// `fromArray()` preserves raw `anyOf` / `oneOf` / `allOf` documents on roundtrip,
+// but the helper does not try to model full composition semantics as first-class objects.
 
 // Access methods
 $schema->toArray()                   // → array representation

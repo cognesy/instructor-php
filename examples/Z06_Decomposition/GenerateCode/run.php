@@ -157,6 +157,10 @@ $result = (new ProgramOfThoughtSolver)(
 );
 
 dump($result);
+
+assert(is_string($result));
+assert(!empty($result));
+assert(in_array($result, ['A', 'B', 'C', 'D', 'E']));
 ?>
 ```
 

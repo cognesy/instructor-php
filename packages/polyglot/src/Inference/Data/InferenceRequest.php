@@ -42,11 +42,11 @@ class InferenceRequest
     protected ?InferenceRetryPolicy $retryPolicy;
 
     public function __construct(
-        Messages|string|array|null $messages = null,
+        ?Messages $messages = null,
         ?string $model = null,
-        ToolDefinitions|array|null $tools = null,
-        ToolChoice|string|array|null $toolChoice = null,
-        ResponseFormat|array|null $responseFormat = null,
+        ?ToolDefinitions $tools = null,
+        ?ToolChoice $toolChoice = null,
+        ?ResponseFormat $responseFormat = null,
         ?array $options = null,
         ?CachedInferenceContext $cachedContext = null,
         ?ResponseCachePolicy $responseCachePolicy = null,
@@ -67,15 +67,10 @@ class InferenceRequest
         $this->assertNoRetryPolicyInOptions($this->options);
         $this->retryPolicy = $retryPolicy;
 
-        $this->tools = $this->normalizeTools($tools);
-        $this->toolChoice = $this->normalizeToolChoice($toolChoice);
-        $this->responseFormat = match (true) {
-            $responseFormat instanceof ResponseFormat => $responseFormat,
-            is_array($responseFormat) => ResponseFormat::fromArray($responseFormat),
-            default => new ResponseFormat,
-        };
-
-        $this->messages = $this->normalizeMessages($messages);
+        $this->tools = $tools ?? ToolDefinitions::empty();
+        $this->toolChoice = $toolChoice ?? ToolChoice::empty();
+        $this->responseFormat = $responseFormat ?? ResponseFormat::empty();
+        $this->messages = $messages ?? Messages::empty();
         $this->responseCachePolicy = $responseCachePolicy ?? ResponseCachePolicy::None;
     }
 
@@ -236,29 +231,22 @@ class InferenceRequest
     // MUTATORS //////////////////////////////////////
 
     public function with(
-        Messages|string|array|null $messages = null,
+        ?Messages $messages = null,
         ?string $model = null,
-        ToolDefinitions|array|null $tools = null,
-        ToolChoice|string|array|null $toolChoice = null,
-        ResponseFormat|array|null $responseFormat = null,
+        ?ToolDefinitions $tools = null,
+        ?ToolChoice $toolChoice = null,
+        ?ResponseFormat $responseFormat = null,
         ?array $options = null,
         ?CachedInferenceContext $cachedContext = null,
         ?ResponseCachePolicy $responseCachePolicy = null,
         ?InferenceRetryPolicy $retryPolicy = null,
     ): self {
-        $normalizedMessages = match (true) {
-            $messages instanceof Messages => $messages,
-            is_string($messages) => Messages::fromString($messages),
-            is_array($messages) => Messages::fromArray($messages),
-            default => $this->messages,
-        };
-
         return new self(
-            messages: $normalizedMessages,
+            messages: $messages ?? $this->messages,
             model: $model ?? $this->model,
             tools: $tools ?? $this->tools,
             toolChoice: $toolChoice ?? $this->toolChoice,
-            responseFormat: $responseFormat instanceof ResponseFormat ? $responseFormat : ($responseFormat !== null ? ResponseFormat::fromArray($responseFormat) : $this->responseFormat),
+            responseFormat: $responseFormat ?? $this->responseFormat,
             options: $options ?? $this->options,
             cachedContext: $cachedContext ?? $this->cachedContext,
             responseCachePolicy: $responseCachePolicy ?? $this->responseCachePolicy,
@@ -269,7 +257,7 @@ class InferenceRequest
         );
     }
 
-    public function withMessages(string|array $messages): self
+    public function withMessages(Messages $messages): self
     {
         return $this->with(messages: $messages);
     }
@@ -287,17 +275,17 @@ class InferenceRequest
         return $this->with(options: $options);
     }
 
-    public function withTools(ToolDefinitions|array $tools): self
+    public function withTools(ToolDefinitions $tools): self
     {
         return $this->with(tools: $tools);
     }
 
-    public function withToolChoice(ToolChoice|string|array $toolChoice): self
+    public function withToolChoice(ToolChoice $toolChoice): self
     {
         return $this->with(toolChoice: $toolChoice);
     }
 
-    public function withResponseFormat(array $responseFormat): self
+    public function withResponseFormat(ResponseFormat $responseFormat): self
     {
         return $this->with(responseFormat: $responseFormat);
     }
@@ -379,32 +367,34 @@ class InferenceRequest
         $retryPolicy = $data['retry_policy'] ?? $data['retryPolicy'] ?? null;
 
         return new self(
-            messages: $data['messages'] ?? [],
+            messages: self::messagesFromArray($data),
             model: $data['model'] ?? '',
-            tools: $data['tools'] ?? [],
-            toolChoice: $data['tool_choice'] ?? [],
-            responseFormat: $data['response_format'] ?? [],
-            options: $data['options'] ?? [],
-            cachedContext: is_array($cachedContext) ? CachedInferenceContext::fromArray($cachedContext) : null,
+            tools: self::toolsFromArray($data),
+            toolChoice: self::toolChoiceFromArray($data),
+            responseFormat: self::responseFormatFromArray($data),
+            options: is_array($data['options'] ?? null) ? $data['options'] : [],
+            cachedContext: self::cachedContextFromArray($cachedContext),
             responseCachePolicy: isset($data['response_cache_policy']) ? ResponseCachePolicy::from($data['response_cache_policy']) : null,
-            retryPolicy: is_array($retryPolicy) ? InferenceRetryPolicy::fromArray($retryPolicy) : null,
+            retryPolicy: self::retryPolicyFromArray($retryPolicy),
         );
     }
 
-    // INTERNAL /////////////////////////////////////////////////
-
-    private function normalizeMessages(null|array|string|Messages $messages): Messages
+    private static function messagesFromArray(array $data): Messages
     {
+        $messages = $data['messages'] ?? [];
+
         return match (true) {
             $messages instanceof Messages => $messages,
             is_string($messages) => Messages::fromString($messages),
             is_array($messages) => Messages::fromAnyArray($messages),
-            default => new Messages,
+            default => Messages::empty(),
         };
     }
 
-    private function normalizeTools(ToolDefinitions|array|null $tools): ToolDefinitions
+    private static function toolsFromArray(array $data): ToolDefinitions
     {
+        $tools = $data['tools'] ?? [];
+
         return match (true) {
             $tools instanceof ToolDefinitions => $tools,
             is_array($tools) => ToolDefinitions::fromArray($tools),
@@ -412,14 +402,47 @@ class InferenceRequest
         };
     }
 
-    private function normalizeToolChoice(ToolChoice|string|array|null $toolChoice): ToolChoice
+    private static function toolChoiceFromArray(array $data): ToolChoice
     {
+        $toolChoice = $data['tool_choice'] ?? $data['toolChoice'] ?? [];
+
         return match (true) {
             $toolChoice instanceof ToolChoice => $toolChoice,
             is_string($toolChoice), is_array($toolChoice) => ToolChoice::fromAny($toolChoice),
             default => ToolChoice::empty(),
         };
     }
+
+    private static function responseFormatFromArray(array $data): ResponseFormat
+    {
+        $responseFormat = $data['response_format'] ?? $data['responseFormat'] ?? [];
+
+        return match (true) {
+            $responseFormat instanceof ResponseFormat => $responseFormat,
+            is_array($responseFormat) => ResponseFormat::fromArray($responseFormat),
+            default => ResponseFormat::empty(),
+        };
+    }
+
+    private static function cachedContextFromArray(mixed $cachedContext): ?CachedInferenceContext
+    {
+        return match (true) {
+            $cachedContext instanceof CachedInferenceContext => $cachedContext,
+            is_array($cachedContext) => CachedInferenceContext::fromArray($cachedContext),
+            default => null,
+        };
+    }
+
+    private static function retryPolicyFromArray(mixed $retryPolicy): ?InferenceRetryPolicy
+    {
+        return match (true) {
+            $retryPolicy instanceof InferenceRetryPolicy => $retryPolicy,
+            is_array($retryPolicy) => InferenceRetryPolicy::fromArray($retryPolicy),
+            default => null,
+        };
+    }
+
+    // INTERNAL /////////////////////////////////////////////////
 
     private function assertNoRetryPolicyInOptions(array $options): void
     {

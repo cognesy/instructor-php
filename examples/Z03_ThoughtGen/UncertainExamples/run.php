@@ -51,6 +51,9 @@ class EstimateUncertainty {
 
 $score = (new EstimateUncertainty)(k: 5);
 dump($score);
+
+assert(is_float($score));
+assert($score >= 0.0 && $score <= 1.0);
 ?>
 ```
 

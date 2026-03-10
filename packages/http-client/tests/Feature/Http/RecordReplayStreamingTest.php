@@ -110,3 +110,41 @@ test('replay middleware restores streamed record with status headers and chunk b
     expect($response->headers())->toBe($headers);
     expect(iterator_to_array($response->stream()))->toBe($chunks);
 });
+
+test('recording middleware eagerly drains the upstream stream before returning', function() {
+    $request = new HttpRequest(
+        'https://api.example.com/stream',
+        'GET',
+        ['Accept' => 'text/event-stream'],
+        '',
+        ['stream' => true],
+    );
+
+    $driver = new class implements CanHandleHttpRequest {
+        public static int $yielded = 0;
+
+        public function handle(HttpRequest $request): HttpResponse {
+            $stream = new IterableStream((function() {
+                foreach (['a', 'b', 'c'] as $chunk) {
+                    self::$yielded++;
+                    yield $chunk;
+                }
+            })());
+
+            return HttpResponse::streaming(
+                statusCode: 200,
+                headers: ['Content-Type' => 'text/plain'],
+                stream: $stream,
+            );
+        }
+    };
+
+    $driver::$yielded = 0;
+
+    $recording = new RecordingMiddleware($this->storageDir);
+    $response = $recording->handle($request, $driver);
+
+    expect($driver::$yielded)->toBe(3)
+        ->and($response->isStreamed())->toBeTrue()
+        ->and(iterator_to_array($response->stream()))->toBe(['a', 'b', 'c']);
+});

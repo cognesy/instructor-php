@@ -15,6 +15,8 @@ runtime.
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 
@@ -29,14 +31,12 @@ $schema = JsonSchema::object(
 
 $data = Inference::using('openai')
     ->with(
-        messages: [
-            ['role' => 'user', 'content' => 'What is capital of France? Respond with JSON data.']
-        ],
-        responseFormat: $schema->toResponseFormat(
+        messages: Messages::fromString('What is capital of France? Respond with JSON data.'),
+        responseFormat: ResponseFormat::fromArray($schema->toResponseFormat(
             schemaName: 'city_data',
             schemaDescription: 'City data',
             strict: true,
-        ),
+        )),
         options: ['max_tokens' => 64],
     )
     ->asJsonData();

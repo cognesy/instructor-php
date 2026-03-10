@@ -124,6 +124,12 @@ $selected = $selector($questions);
 
 // Selected examples per cluster, each with limited reasoning steps
 dump($selected);
+
+assert(is_array($selected));
+assert(count($selected) > 0);
+assert($selected[0] instanceof ExampleItem);
+assert(!empty($selected[0]->question));
+assert(is_array($selected[0]->reasoning_steps));
 ?>
 ```
 

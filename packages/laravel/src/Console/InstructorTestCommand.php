@@ -10,6 +10,7 @@ use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
@@ -112,7 +113,7 @@ class InstructorTestCommand extends Command
                     events: $events,
                     httpClient: $httpClient,
                 )->create(new InferenceRequest(
-                    messages: 'Reply with just the word "pong".',
+                    messages: Messages::fromString('Reply with just the word "pong".'),
                 ))->get();
 
                 return str_contains(strtolower($response), 'pong');
@@ -147,7 +148,7 @@ class InstructorTestCommand extends Command
                     httpClient: $httpClient,
                     structuredConfig: $this->resolveStructuredOutputConfig($configProvider),
                 )->create(new StructuredOutputRequest(
-                    messages: 'Extract the name and age: John Smith is 30 years old.',
+                    messages: Messages::fromString('Extract the name and age: John Smith is 30 years old.'),
                     requestedSchema: [
                         'type' => 'object',
                         'properties' => [

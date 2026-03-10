@@ -22,7 +22,7 @@ it('parses markdown JSON responses into arrays', function () {
 
     $data = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http))
         ->withModel('gpt-4o-mini')
-        ->withMessages('Q?')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Q?'))
         ->asJsonData();
 
     expect($data)->toBe([

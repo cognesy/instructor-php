@@ -1,11 +1,11 @@
 ---
 title: 'Testing Agents'
-description: 'Test agents deterministically using FakeAgentDriver and MockTool without LLM calls'
+description: 'Test agents deterministically using FakeAgentDriver and FakeTool without LLM calls'
 ---
 
 # Testing Agents
 
-The Agents package ships with first-class testing primitives that let you exercise agent behavior without making real LLM calls. By combining `FakeAgentDriver` with `MockTool`, you can script deterministic scenarios, assert on individual steps, and verify that your agent's tool-calling logic, error handling, and multi-step loops behave exactly as expected.
+The Agents package ships with first-class testing primitives that let you exercise agent behavior without making real LLM calls. By combining `FakeAgentDriver` with `FakeTool`, you can script deterministic scenarios, assert on individual steps, and verify that your agent's tool-calling logic, error handling, and multi-step loops behave exactly as expected.
 
 ## FakeAgentDriver
 
@@ -102,18 +102,18 @@ ScenarioStep::final('Done.', usage: new Usage(inputTokens: 100, outputTokens: 50
 ScenarioStep::toolCall('search', ['q' => 'test'], usage: new Usage(200, 80));
 ```
 
-## MockTool
+## FakeTool
 
-`MockTool` creates tool stubs that implement both `ToolInterface` and `CanDescribeTool`. They can be registered in a `Tools` collection and will be resolved by the `ToolExecutor` when a matching tool call arrives.
+`FakeTool` creates tool stubs that implement both `ToolInterface` and `CanDescribeTool`. They can be registered in a `Tools` collection and will be resolved by the `ToolExecutor` when a matching tool call arrives.
 
 ### Fixed Return Value
 
 The simplest mock returns the same value regardless of the arguments passed:
 
 ```php
-use Cognesy\Agents\Tool\Tools\MockTool;
+use Cognesy\Agents\Tool\Tools\FakeTool;
 
-$tool = MockTool::returning('search', 'Search the web', 'PHP is great');
+$tool = FakeTool::returning('search', 'Search the web', 'PHP is great');
 ```
 
 The three arguments are: tool name, description (used in the tool schema), and the fixed return value.
@@ -123,7 +123,7 @@ The three arguments are: tool name, description (used in the tool schema), and t
 For more realistic stubs, pass a callable that receives the tool's arguments and returns a result:
 
 ```php
-$tool = new MockTool(
+$tool = new FakeTool(
     name: 'format',
     description: 'Format a string',
     handler: fn(string $text) => strtoupper($text),
@@ -134,10 +134,10 @@ The callable is invoked with the same arguments the LLM would pass via the tool 
 
 ### Custom Schema and Metadata
 
-When you need the mock to advertise a specific JSON Schema (for example, to test schema validation), pass the `schema` parameter:
+When you need the fake to advertise a specific JSON Schema (for example, to test schema validation), pass the `schema` parameter:
 
 ```php
-$tool = new MockTool(
+$tool = new FakeTool(
     name: 'calculate',
     description: 'Perform arithmetic',
     handler: fn(float $a, float $b) => $a + $b,
@@ -161,7 +161,7 @@ $tool = new MockTool(
 
 ## Full Test Example
 
-The following Pest test demonstrates the complete pattern: create a `MockTool`, script a `FakeAgentDriver` with a tool-call step followed by a final-response step, wire them into an `AgentLoop`, and assert on the result:
+The following Pest test demonstrates the complete pattern: create a `FakeTool`, script a `FakeAgentDriver` with a tool-call step followed by a final-response step, wire them into an `AgentLoop`, and assert on the result:
 
 ```php
 use Cognesy\Agents\AgentLoop;
@@ -171,11 +171,11 @@ use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Agents\Enums\AgentStepType;
 use Cognesy\Agents\Enums\ExecutionStatus;
-use Cognesy\Agents\Tool\Tools\MockTool;
+use Cognesy\Agents\Tool\Tools\FakeTool;
 
 it('executes tools and produces final response', function () {
-    // 1. Create a mock tool that always returns the same string
-    $tool = MockTool::returning('search', 'Search the web', 'PHP is great');
+    // 1. Create a fake tool that always returns the same string
+    $tool = FakeTool::returning('search', 'Search the web', 'PHP is great');
 
     // 2. Script the scenario: one tool call, then a final answer
     $driver = FakeAgentDriver::fromSteps(
@@ -183,7 +183,7 @@ it('executes tools and produces final response', function () {
         ScenarioStep::final('PHP is a programming language.'),
     );
 
-    // 3. Build the loop with the mock tool and fake driver
+    // 3. Build the loop with the fake tool and fake driver
     $loop = AgentLoop::default()
         ->withTools(new Tools($tool))
         ->withDriver($driver);
@@ -228,7 +228,7 @@ You can verify that your agent handles errors gracefully by scripting error step
 
 ```php
 it('handles tool errors without crashing', function () {
-    $tool = new MockTool(
+    $tool = new FakeTool(
         name: 'flaky_api',
         description: 'An unreliable API',
         handler: fn() => throw new \RuntimeException('API timeout'),
@@ -294,6 +294,6 @@ expect($stepsCompleted)->toHaveCount(2);
 |---|---|
 | `FakeAgentDriver` | Replaces the LLM driver with a scripted sequence of steps |
 | `ScenarioStep` | Describes a single loop iteration (final, tool, error, or toolCall) |
-| `MockTool` | Stubs a tool with a fixed return value or custom callable |
+| `FakeTool` | Stubs a tool with a fixed return value or custom callable |
 | `AgentLoop::iterate()` | Yields state after each step for fine-grained assertions |
 | `withChildSteps()` | Scripts subagent behavior when using `FakeAgentDriver` |

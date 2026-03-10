@@ -25,7 +25,7 @@ $config = new HttpClientConfig(
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `driver` | `string` | `'curl'` | Which driver to use (`curl`, `guzzle`, `symfony`, `exthttp`) |
+| `driver` | `string` | `'curl'` | Which driver to use (`curl`, `guzzle`, `symfony`) |
 | `connectTimeout` | `int` | `3` | Maximum seconds to wait for connection establishment |
 | `requestTimeout` | `int` | `30` | Maximum seconds for the entire request-response cycle |
 | `idleTimeout` | `int` | `-1` | Maximum seconds between data packets (`-1` disables) |

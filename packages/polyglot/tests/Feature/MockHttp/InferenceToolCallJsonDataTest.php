@@ -33,7 +33,7 @@ it('extracts tool call arguments as json data', function () {
 
     $data = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http))
         ->withModel('gpt-4o-mini')
-        ->withTools([[
+        ->withTools(\Cognesy\Polyglot\Inference\Data\ToolDefinitions::fromArray([[
             'type' => 'function',
             'function' => [
                 'name' => 'provide_data',
@@ -45,8 +45,8 @@ it('extracts tool call arguments as json data', function () {
                     ],
                 ],
             ],
-        ]])
-        ->withMessages('Provide city data')
+        ]]))
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Provide city data'))
         ->asToolCallJsonData();
 
     expect($data)->toBe([

@@ -4,7 +4,6 @@ namespace Cognesy\Instructor\Data;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Enums\OutputFormatType;
 use Cognesy\Instructor\Extras\Example\Example;
-use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use DateTimeImmutable;
 use ReflectionClass;
@@ -28,7 +27,7 @@ class StructuredOutputRequest
 
 
     public function __construct(
-        string|array|Message|Messages|null $messages = null,
+        ?Messages $messages = null,
         string|array|object|null $requestedSchema = null,
         ?string        $system = null,
         ?string        $prompt = null,
@@ -46,7 +45,7 @@ class StructuredOutputRequest
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
         $this->updatedAt = $updatedAt ?? $this->createdAt;
 
-        $this->messages = Messages::fromAny($messages ?? []);
+        $this->messages = $messages ?? Messages::empty();
         $this->requestedSchema = $requestedSchema ?? [];
 
         $this->options = $options ?: [];
@@ -116,7 +115,7 @@ class StructuredOutputRequest
     // MUTATORS /////////////////////////////////////////////////
 
     public function with(
-        string|array|Message|Messages|null $messages = null,
+        ?Messages $messages = null,
         string|array|object|null $requestedSchema = null,
         ?string        $system = null,
         ?string        $prompt = null,
@@ -143,7 +142,7 @@ class StructuredOutputRequest
         );
     }
 
-    public function withMessages(string|array|Message|Messages $messages) : static {
+    public function withMessages(Messages $messages) : static {
         return $this->with(messages: $messages);
     }
 
@@ -219,7 +218,7 @@ class StructuredOutputRequest
             default => null,
         };
         return new self(
-            messages: $data['messages'] ?? null,
+            messages: self::messagesFromArray($data),
             requestedSchema: $data['requestedSchema'] ?? null,
             system: $data['system'] ?? null,
             prompt: $data['prompt'] ?? null,
@@ -232,6 +231,17 @@ class StructuredOutputRequest
             createdAt: isset($data['createdAt']) ? new DateTimeImmutable($data['createdAt']) : null,
             updatedAt: isset($data['updatedAt']) ? new DateTimeImmutable($data['updatedAt']) : null,
         );
+    }
+
+    private static function messagesFromArray(array $data) : Messages {
+        $messages = $data['messages'] ?? null;
+
+        return match (true) {
+            $messages instanceof Messages => $messages,
+            is_array($messages) => Messages::fromAnyArray($messages),
+            is_string($messages) && $messages !== '' => Messages::fromString($messages),
+            default => Messages::empty(),
+        };
     }
 
     private static function outputFormatFromArray(?array $data) : ?OutputFormat {

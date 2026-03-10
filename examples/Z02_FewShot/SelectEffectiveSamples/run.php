@@ -109,6 +109,11 @@ dump($kClosest);
 
 $response = $selector->generateWithExamples($kClosest, $query);
 dump($response);
+
+assert(is_array($kClosest));
+assert(count($kClosest) === 2);
+assert($response instanceof Answer);
+assert(!empty($response->answer));
 ?>
 ```
 

@@ -8,7 +8,7 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanMapMessages;
 use Cognesy\Polyglot\Inference\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
-use Cognesy\Utils\Arrays;
+use Cognesy\Polyglot\Inference\Drivers\Support\RequestPayload;
 
 class MistralBodyFormat implements CanMapRequestBody
 {
@@ -43,7 +43,7 @@ class MistralBodyFormat implements CanMapRequestBody
             $requestBody['tool_choice'] = $this->toToolChoice($request);
         }
 
-        return array_filter($requestBody, fn ($value) => $value !== null && $value !== [] && $value !== '');
+        return RequestPayload::filterEmptyValues($requestBody);
     }
 
     // CAPABILITIES /////////////////////////////////////////
@@ -87,7 +87,7 @@ class MistralBodyFormat implements CanMapRequestBody
             default => [],
         };
 
-        return array_filter($result, fn ($value) => $value !== null && $value !== [] && $value !== '');
+        return RequestPayload::filterEmptyValues($result);
     }
 
     private function toTools(InferenceRequest $request): array
@@ -115,27 +115,14 @@ class MistralBodyFormat implements CanMapRequestBody
 
     private function removeDisallowedEntries(array $jsonSchema): array
     {
-        return Arrays::removeRecursively(
-            array: $jsonSchema,
-            keys: [
-                'x-title',
-                'x-php-class',
-            ],
-        );
+        return RequestPayload::removeSchemaKeys($jsonSchema, [
+            'x-title',
+            'x-php-class',
+        ]);
     }
 
     protected function toResponseFormatType(InferenceRequest $request): ?string
     {
-        if (! $request->hasResponseFormat()) {
-            return null;
-        }
-
-        return match ($request->responseFormat()->type()) {
-            'text' => 'text',
-            'json',
-            'json_object' => 'json_object',
-            'json_schema' => 'json_schema',
-            default => null,
-        };
+        return RequestPayload::responseFormatType($request);
     }
 }

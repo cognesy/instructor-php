@@ -166,6 +166,7 @@ class JsonSchema implements CanProvideJsonSchema
                 data: $data,
                 excludedFields: ['type', 'nullable', 'properties', 'required', 'items', 'enum', 'additionalProperties', 'title', 'description', '$ref', '$defs']
             ),
+            rawSchema: self::hasComposedSchema($data) ? $data : null,
         );
     }
 
@@ -206,10 +207,7 @@ class JsonSchema implements CanProvideJsonSchema
             return true;
         }
 
-        return match(true) {
-            $required === null => null,
-            default => !$required,
-        };
+        return null;
     }
 
     private static function hasNullType(array $data) : bool {
@@ -232,6 +230,16 @@ class JsonSchema implements CanProvideJsonSchema
                 return true;
             }
             if (is_array($branchType) && in_array('null', $branchType, true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static function hasComposedSchema(array $data) : bool {
+        foreach (['anyOf', 'oneOf', 'allOf'] as $keyword) {
+            if (isset($data[$keyword]) && is_array($data[$keyword])) {
                 return true;
             }
         }

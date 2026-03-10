@@ -15,6 +15,7 @@ prompt templates using Twig, Blade or custom 'arrowpipe' template syntax.
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Template\Template;
 use Cognesy\Utils\Str;
@@ -26,7 +27,7 @@ $prompt = Template::twig()
     ->with(['country' => 'Germany'])
     ->toText();
 
-$answer = Inference::using('openai')->withMessages($prompt)->get();
+$answer = Inference::using('openai')->withMessages(Messages::fromString($prompt))->get();
 
 echo "EXAMPLE 1: prompt = $prompt\n";
 echo "ASSISTANT: $answer\n";
@@ -41,7 +42,7 @@ $prompt = Template::text(
     variables: ['country' => 'Germany'],
 );
 
-$answer = Inference::using('openai')->withMessages($prompt)->get();
+$answer = Inference::using('openai')->withMessages(Messages::fromString($prompt))->get();
 
 echo "EXAMPLE 2: prompt = $prompt\n";
 echo "ASSISTANT: $answer\n";

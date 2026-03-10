@@ -57,8 +57,13 @@ $request = new HttpRequest(
     options: ['stream' => true],
 );
 
+$chunkCount = 0;
 foreach ($client->send($request)->stream() as $chunk) {
     echo $chunk;
+    $chunkCount++;
 }
+
+assert($chunkCount > 0, 'Expected at least one streamed chunk');
+assert(str_contains($chunk, '[STREAM]'), 'Expected chunks to be tagged by middleware');
 ?>
 ```

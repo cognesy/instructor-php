@@ -2,8 +2,8 @@
 
 use Cognesy\Utils\JsonSchema\JsonSchema;
 
-// Guards regression: nullable inference from parent "required" list was dropped in fromArray().
-it('infers nullable from required flags when property nullable is not explicitly provided', function () {
+// Guards 2.0 contract: optional does not imply nullable during fromArray().
+it('does not infer nullable from required flags when property nullable is not explicitly provided', function () {
     $schema = JsonSchema::fromArray([
         'type' => 'object',
         'properties' => [
@@ -16,7 +16,7 @@ it('infers nullable from required flags when property nullable is not explicitly
     ]);
 
     expect($schema->property('requiredField')?->isNullable())->toBeFalse()
-        ->and($schema->property('optionalField')?->isNullable())->toBeTrue()
+        ->and($schema->property('optionalField')?->isNullable())->toBeFalse()
         ->and($schema->property('explicitNullableFalse')?->isNullable())->toBeFalse()
         ->and($schema->property('explicitNullableTrue')?->isNullable())->toBeTrue();
 });

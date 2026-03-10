@@ -104,7 +104,7 @@ $structuredOutput = new StructuredOutput(
 echo "PROJECT EVENTS:\n\n";
 
 $stream = $structuredOutput
-    //->onEvent(PartialInferenceResponseReceived::class, fn(PartialInferenceResponseReceived $e) => print "---\n".$e->partialInferenceResponse->content()."---\n")
+    //->onEvent(StructuredOutputResponseUpdated::class, fn(StructuredOutputResponseUpdated $e) => print "---\n".$e->response->content()."---\n")
     ->with(
         messages: $report,
         responseModel: Sequence::of(ProjectEvent::class),
@@ -125,6 +125,7 @@ foreach ($stream->sequence() as $sequence) {
 $events = $stream->finalValue();
 
 echo "TOTAL EVENTS: " . count($events) . "\n";
+assert(count($events) > 0, 'Expected events to be extracted');
 
 function displayEvent(ProjectEvent $event) : void {
     echo "Event: {$event->title}\n";

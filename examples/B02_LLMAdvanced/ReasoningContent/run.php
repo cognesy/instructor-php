@@ -15,11 +15,12 @@ This feature is useful for debugging and understanding the reasoning behind the 
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 // EXAMPLE 1: regular API, allows to customize inference options
 $response = Inference::using('deepseek-r')
-    ->withMessages([['role' => 'user', 'content' => 'What is the capital of France. Answer with just a name.']])
+    ->withMessages(Messages::fromString('What is the capital of France. Answer with just a name.'))
     ->withMaxTokens(256)
     ->response();
 
@@ -30,11 +31,10 @@ echo "REASONING: {$response->reasoningContent()}\n";
 assert($response->content() !== '');
 assert($response->reasoningContent() !== '');
 
-
 // EXAMPLE 2: streaming response
 $stream = Inference::using('deepseek-r')
     ->with(
-        messages: [['role' => 'user', 'content' => 'What is capital of Brasil. Answer with just a name.']],
+        messages: Messages::fromString('What is capital of Brasil. Answer with just a name.'),
         options: ['max_tokens' => 256]
     )
     ->withStreaming()
@@ -42,7 +42,7 @@ $stream = Inference::using('deepseek-r')
 
 echo "\nCASE #2: Streamed response\n";
 echo "USER: What is capital of Brasil\n";
-echo "ASSISTANT: ";
+echo 'ASSISTANT: ';
 foreach ($stream->deltas() as $delta) {
     echo $delta->contentDelta;
 }

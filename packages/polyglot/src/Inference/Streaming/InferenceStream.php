@@ -2,6 +2,7 @@
 
 namespace Cognesy\Polyglot\Inference\Streaming;
 
+use ArrayIterator;
 use Closure;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
@@ -13,8 +14,11 @@ use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;
 use Cognesy\Polyglot\Inference\Events\StreamFirstChunkReceived;
 use DateTimeImmutable;
 use Generator;
+use Iterator;
+use IteratorIterator;
 use LogicException;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Traversable;
 
 /**
  * The InferenceStream class is responsible for handling and processing streamed responses
@@ -28,8 +32,9 @@ class InferenceStream
     /** @var (Closure(PartialInferenceDelta): void)|null */
     protected ?Closure $onDelta = null;
 
-    /** @var iterable<PartialInferenceDelta> */
-    private iterable $deltaStream;
+    /** @var Iterator<int, PartialInferenceDelta> */
+    private Iterator $deltaStream;
+    private bool $deltaStreamInitialized = false;
     private InferenceStreamState $state;
     private VisibilityTracker $visibility;
     private ?PartialInferenceDelta $lastDelta = null;
@@ -56,7 +61,7 @@ class InferenceStream
         $this->driver = $driver;
         $this->events = $eventDispatcher;
         $this->startedAt = $startedAt ?? new DateTimeImmutable();
-        $this->deltaStream = $driver->makeStreamDeltasFor($execution->request());
+        $this->deltaStream = $this->toIterator($driver->makeStreamDeltasFor($execution->request()));
         $this->state = new InferenceStreamState();
         $this->visibility = new VisibilityTracker();
         $this->decorateFinalResponse = $decorateFinalResponse;
@@ -177,7 +182,14 @@ class InferenceStream
      * @return Generator<PartialInferenceDelta>
      */
     private function emitVisibleDeltas(): Generator {
-        foreach ($this->deltaStream as $delta) {
+        $this->initializeDeltaStream();
+
+        while ($this->deltaStream->valid()) {
+            $delta = $this->deltaStream->current();
+            $this->deltaStream->next();
+
+            assert($delta instanceof PartialInferenceDelta);
+
             $visibleDelta = $this->advanceState($delta);
             if ($visibleDelta === null) {
                 continue;
@@ -193,6 +205,15 @@ class InferenceStream
         }
 
         $this->finalizeDeltaStream();
+    }
+
+    private function initializeDeltaStream(): void {
+        if ($this->deltaStreamInitialized) {
+            return;
+        }
+
+        $this->deltaStream->rewind();
+        $this->deltaStreamInitialized = true;
     }
 
     /**
@@ -253,6 +274,19 @@ class InferenceStream
         $this->visibility->remember($this->state);
         $this->lastDelta = $delta;
         return $this->lastDelta;
+    }
+
+    /**
+     * @param iterable<PartialInferenceDelta> $deltaStream
+     * @return Iterator<int, PartialInferenceDelta>
+     */
+    private function toIterator(iterable $deltaStream): Iterator {
+        return match (true) {
+            is_array($deltaStream) => new ArrayIterator($deltaStream),
+            $deltaStream instanceof Iterator => $deltaStream,
+            $deltaStream instanceof Traversable => new IteratorIterator($deltaStream),
+            default => new ArrayIterator(),
+        };
     }
 
     /**

@@ -135,7 +135,7 @@ echo "Status: {$finalState->status()->value}\n";
 
 if ($finalState->status()->value === 'failed') {
     echo "Skipping assertions because execution status is failed.\n";
-    return;
+    exit(1);
 }
 
 $hasAnswer = trim($finalState->finalResponse()->toString()) !== '';

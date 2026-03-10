@@ -3,6 +3,8 @@
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIBodyFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIMessageFormat;
 
@@ -28,8 +30,8 @@ it('OpenAI: tool_choice maps to function selection when name provided', function
     $req = new InferenceRequest(
         messages: Messages::fromAny([['role' => 'user', 'content' => 'Hi']]),
         model: 'gpt-4o-mini',
-        tools: $tools,
-        toolChoice: [ 'function' => ['name' => 'search'] ],
+        tools: ToolDefinitions::fromArray($tools),
+        toolChoice: ToolChoice::specific('search'),
         options: ['stream' => false],
     );
 
@@ -38,4 +40,3 @@ it('OpenAI: tool_choice maps to function selection when name provided', function
     expect(($json['tool_choice']['type'] ?? ''))->toBe('function');
     expect(($json['tool_choice']['function']['name'] ?? ''))->toBe('search');
 });
-

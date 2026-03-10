@@ -1,15 +1,15 @@
 ---
 title: Testing
-description: 'Use MockSandbox for fast, deterministic tests without running real processes.'
+description: 'Use FakeSandbox for fast, deterministic tests without running real processes.'
 ---
 
 ## Introduction
 
-The Sandbox package includes `MockSandbox`, a test double that implements the same `CanExecuteCommand` interface as all real drivers. It lets you write fast, deterministic tests for code that depends on sandbox execution -- without spawning any processes, pulling container images, or requiring any system binaries.
+The Sandbox package includes `FakeSandbox`, a test double that implements the same `CanExecuteCommand` interface as all real drivers. It lets you write fast, deterministic tests for code that depends on sandbox execution -- without spawning any processes, pulling container images, or requiring any system binaries.
 
-`MockSandbox` supports canned responses, FIFO queuing for repeated commands, a default fallback response, array-based response definitions, command recording, streaming callback simulation, and custom policies.
+`FakeSandbox` supports canned responses, FIFO queuing for repeated commands, a default fallback response, array-based response definitions, command recording, streaming callback simulation, and custom policies.
 
-## Creating a Mock
+## Creating a Fake
 
 ### The `fromResponses()` Factory
 
@@ -17,9 +17,9 @@ The quickest way to create a mock is with the `fromResponses()` static factory. 
 
 ```php
 use Cognesy\Sandbox\Data\ExecResult;
-use Cognesy\Sandbox\Testing\MockSandbox;
+use Cognesy\Sandbox\Testing\FakeSandbox;
 
-$sandbox = MockSandbox::fromResponses([
+$sandbox = FakeSandbox::fromResponses([
     'php -v' => [
         new ExecResult(
             stdout: 'PHP 8.3.0 (cli)',
@@ -45,7 +45,7 @@ use Cognesy\Sandbox\Config\ExecutionPolicy;
 
 $policy = ExecutionPolicy::in('/tmp')->withTimeout(60);
 
-$sandbox = new MockSandbox(
+$sandbox = new FakeSandbox(
     policy: $policy,
     responses: [
         'php script.php' => [
@@ -64,7 +64,7 @@ The `fromResponses()` factory uses `ExecutionPolicy::default()` when no policy i
 When the same command is called multiple times, provide multiple results in the list. They are consumed in FIFO order -- each call to `execute()` shifts the next response off the queue:
 
 ```php
-$sandbox = MockSandbox::fromResponses([
+$sandbox = FakeSandbox::fromResponses([
     'php script.php' => [
         new ExecResult(stdout: 'first run',  stderr: '', exitCode: 0, duration: 0.1),
         new ExecResult(stdout: 'second run', stderr: '', exitCode: 0, duration: 0.2),
@@ -84,7 +84,7 @@ If the queue is exhausted and no default response is set, the next call throws a
 To provide a fallback for any command that does not have a specific canned response, pass a `defaultResponse`:
 
 ```php
-$sandbox = MockSandbox::fromResponses(
+$sandbox = FakeSandbox::fromResponses(
     responses: [],
     defaultResponse: new ExecResult(
         stdout: '',
@@ -102,10 +102,10 @@ The default response is also used when a command's specific queue has been exhau
 
 ## Enqueuing Responses After Construction
 
-You can add responses to an existing mock at any time using the `enqueue()` method. This is useful in test setups where you build the mock incrementally:
+You can add responses to an existing fake at any time using the `enqueue()` method. This is useful in test setups where you build the fake incrementally:
 
 ```php
-$sandbox = MockSandbox::fromResponses([]);
+$sandbox = FakeSandbox::fromResponses([]);
 
 $sandbox->enqueue('php -v', new ExecResult(
     stdout: 'PHP 8.3.0',
@@ -130,7 +130,7 @@ $sandbox->execute(['php', '-v'])->stdout(); // "PHP 8.3.1"
 For convenience, you can define responses as associative arrays instead of `ExecResult` objects. The mock normalizes them automatically:
 
 ```php
-$sandbox = MockSandbox::fromResponses([
+$sandbox = FakeSandbox::fromResponses([
     'php -v' => [
         ['stdout' => 'PHP 8.3.0', 'exit_code' => 0, 'duration' => 0.01],
     ],
@@ -159,7 +159,7 @@ Any omitted key uses its default value, so you only need to specify the fields r
 The mock records every command it receives. Use the `commands()` method to retrieve the full history:
 
 ```php
-$sandbox = MockSandbox::fromResponses([
+$sandbox = FakeSandbox::fromResponses([
     'php -v' => [
         new ExecResult(stdout: 'PHP 8.3.0', stderr: '', exitCode: 0, duration: 0.01),
     ],
@@ -185,7 +185,7 @@ This is useful for asserting that your code called the expected commands in the 
 When stdin is provided, it is appended to the recorded argv as a `[stdin=...]` entry:
 
 ```php
-$sandbox = MockSandbox::fromResponses([
+$sandbox = FakeSandbox::fromResponses([
     'php -r echo fgets(STDIN);' => [
         new ExecResult(stdout: 'hello', stderr: '', exitCode: 0, duration: 0.01),
     ],
@@ -201,10 +201,10 @@ $commands = $sandbox->commands();
 
 ## Streaming Callback Support
 
-The `MockSandbox` honors the streaming callback, just like real drivers. When a callback is provided, the mock delivers stdout and stderr from the canned response as single chunks:
+The `FakeSandbox` honors the streaming callback, just like real drivers. When a callback is provided, the fake delivers stdout and stderr from the canned response as single chunks:
 
 ```php
-$sandbox = MockSandbox::fromResponses([
+$sandbox = FakeSandbox::fromResponses([
     'php script.php' => [
         new ExecResult(stdout: 'output', stderr: 'warning', exitCode: 0, duration: 0.1),
     ],
@@ -231,7 +231,7 @@ Empty stdout or stderr is not delivered to the callback, matching the behavior o
 Create an `ExecResult` with `timedOut: true` and exit code `124`:
 
 ```php
-$sandbox = MockSandbox::fromResponses([
+$sandbox = FakeSandbox::fromResponses([
     'php long-script.php' => [
         new ExecResult(
             stdout: 'partial output...',
@@ -253,7 +253,7 @@ assert($result->exitCode() === 124);
 Set the truncation flags to test how your code handles oversized output:
 
 ```php
-$sandbox = MockSandbox::fromResponses([
+$sandbox = FakeSandbox::fromResponses([
     'php noisy-script.php' => [
         new ExecResult(
             stdout: '...last portion of output',
@@ -274,7 +274,7 @@ assert($result->truncatedStdout() === true);
 Test error handling by returning non-zero exit codes:
 
 ```php
-$sandbox = MockSandbox::fromResponses([
+$sandbox = FakeSandbox::fromResponses([
     'php broken.php' => [
         new ExecResult(
             stdout: '',
@@ -290,9 +290,9 @@ assert($result->success() === false);
 assert($result->exitCode() === 255);
 ```
 
-## Using MockSandbox with Dependency Injection
+## Using FakeSandbox with Dependency Injection
 
-The `MockSandbox` implements `CanExecuteCommand`, so it can be injected anywhere a real sandbox is expected. This is the recommended approach for testing application services:
+The `FakeSandbox` implements `CanExecuteCommand`, so it can be injected anywhere a real sandbox is expected. This is the recommended approach for testing application services:
 
 ```php
 use Cognesy\Sandbox\Contracts\CanExecuteCommand;
@@ -314,7 +314,7 @@ class CodeExecutor
 }
 
 // In your test:
-$mock = MockSandbox::fromResponses([
+$mock = FakeSandbox::fromResponses([
     'php -r echo "hello";' => [
         new ExecResult(stdout: 'hello', stderr: '', exitCode: 0, duration: 0.01),
     ],
@@ -331,8 +331,8 @@ assert($mock->commands() === [['php', '-r', 'echo "hello";']]);
 
 | Method | Purpose |
 |---|---|
-| `MockSandbox::fromResponses($responses, $default)` | Create mock with canned responses and optional default |
-| `new MockSandbox($policy, $responses, $default)` | Create mock with custom policy |
+| `FakeSandbox::fromResponses($responses, $default)` | Create fake with canned responses and optional default |
+| `new FakeSandbox($policy, $responses, $default)` | Create fake with custom policy |
 | `$mock->enqueue($key, $result)` | Add a response to the queue after construction |
 | `$mock->execute($argv, $stdin, $onOutput)` | Execute and return next canned response |
 | `$mock->commands()` | Get all recorded commands as `list<list<string>>` |

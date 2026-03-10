@@ -4,6 +4,8 @@ use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIBodyFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIMessageFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIRequestAdapter;
@@ -33,8 +35,8 @@ it('OpenAI golden adapter: complex request + streaming response assembly', funct
     $ireq = new InferenceRequest(
         messages: Messages::fromAny([['role' => 'system', 'content' => 'You are helpful.'], ['role' => 'user', 'content' => 'Hi']]),
         model: 'gpt-4o-mini',
-        tools: $tools,
-        toolChoice: 'auto',
+        tools: ToolDefinitions::fromArray($tools),
+        toolChoice: ToolChoice::auto(),
         responseFormat: ResponseFormat::fromArray(['type' => 'json_object']),
         options: ['stream' => true],
     );

@@ -20,13 +20,14 @@ use Cognesy\Events\Event;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Utils\Str;
 use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
 
-$events = new EventDispatcher();
+$events = new EventDispatcher;
 
 // Build fully customized HTTP client
 
@@ -60,7 +61,7 @@ $config = new LLMConfig(
 );
 
 // Call inference API with custom client and configuration
-$events->addListener(Event::class, fn(Event $e) => $e->print());
+$events->addListener(Event::class, fn (Event $e) => $e->print());
 $runtime = InferenceRuntime::fromConfig(
     config: $config,
     events: $events,
@@ -69,7 +70,7 @@ $runtime = InferenceRuntime::fromConfig(
 
 $answer = Inference::fromRuntime($runtime)
     ->with(
-        messages: [['role' => 'user', 'content' => 'What is the capital of France']],
+        messages: Messages::fromString('What is the capital of France'),
         options: ['max_tokens' => 64]
     )
     ->withStreaming()

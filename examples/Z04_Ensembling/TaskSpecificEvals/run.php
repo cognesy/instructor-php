@@ -146,5 +146,10 @@ $usp = new USPClassification();
 $balanced = $usp->balancedSample($examples, 3);
 $final = $usp->finalWithExamples('i feel furious that right to life advocates can and do tell me how to live and die', $balanced);
 dump($balanced, $final);
+
+assert(is_array($balanced));
+assert(count($balanced) > 0);
+assert($final instanceof Classification);
+assert($final->label instanceof Emotion);
 ?>
 ```

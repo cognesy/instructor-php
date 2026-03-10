@@ -12,7 +12,7 @@ use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Data\ExecutionBudget;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
-use Cognesy\Agents\Tool\Tools\MockTool;
+use Cognesy\Agents\Tool\Tools\FakeTool;
 
 describe('Planning Subagent Capability', function () {
     it('appends planning instructions to system prompt on first execution', function () {
@@ -71,9 +71,9 @@ describe('Planning Subagent Capability', function () {
     });
 
     it('filters recursive tools from planner toolset even when allowed', function () {
-        $spawnTool = MockTool::returning('spawn_subagent', 'Spawn subagent', 'spawn');
-        $plannerTool = MockTool::returning(PlanningSubagentTool::TOOL_NAME, 'Planner tool', 'plan');
-        $readTool = MockTool::returning('read_file', 'Read file', 'content');
+        $spawnTool = FakeTool::returning('spawn_subagent', 'Spawn subagent', 'spawn');
+        $plannerTool = FakeTool::returning(PlanningSubagentTool::TOOL_NAME, 'Planner tool', 'plan');
+        $readTool = FakeTool::returning('read_file', 'Read file', 'content');
 
         $tools = new Tools($spawnTool, $plannerTool, $readTool);
         $allowList = new NameList('spawn_subagent', PlanningSubagentTool::TOOL_NAME, 'read_file');
@@ -98,7 +98,7 @@ describe('Planning Subagent Capability', function () {
     });
 
     it('allows planner to use additional tools not available to parent', function () {
-        $bashTool = MockTool::returning('bash', 'Run shell command', 'match');
+        $bashTool = FakeTool::returning('bash', 'Run shell command', 'match');
 
         $driver = (new FakeAgentDriver([
             ScenarioStep::toolCall(PlanningSubagentTool::TOOL_NAME, [

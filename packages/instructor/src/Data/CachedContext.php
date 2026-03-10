@@ -14,21 +14,17 @@ final readonly class CachedContext
     private ExampleList $examples;
 
     /**
-     * @param string|array $messages
+     * @param Example[] $examples
      * @param string $system
      * @param string $prompt
-     * @param Example[] $examples
      */
     public function __construct(
-        string|array $messages = [],
+        ?Messages $messages = null,
         string $system = '',
         string $prompt = '',
         array $examples = [],
     ) {
-        $this->messages = match(true) {
-            is_string($messages) => Messages::fromString($messages),
-            is_array($messages) => Messages::fromArray($messages),
-        };
+        $this->messages = $messages ?? Messages::empty();
         $this->system = $system;
         $this->prompt = $prompt;
         $this->examples = new ExampleList(...$examples);
@@ -75,14 +71,7 @@ final readonly class CachedContext
             return new CachedContext();
         }
 
-        $messages = $data['messages'] ?? [];
         $rawExamples = $data['examples'] ?? [];
-        $messagesData = match (true) {
-            $messages instanceof Messages => $messages->toArray(),
-            is_array($messages) => $messages,
-            is_string($messages) => $messages,
-            default => [],
-        };
         $examples = match (true) {
             $rawExamples instanceof ExampleList => $rawExamples->all(),
             is_array($rawExamples) => self::examplesFromArray($rawExamples),
@@ -90,11 +79,22 @@ final readonly class CachedContext
         };
 
         return new CachedContext(
-            messages: $messagesData,
+            messages: self::messagesFromArray($data),
             system: $data['system'] ?? '',
             prompt: $data['prompt'] ?? '',
             examples: $examples,
         );
+    }
+
+    private static function messagesFromArray(array $data) : Messages {
+        $messages = $data['messages'] ?? [];
+
+        return match (true) {
+            $messages instanceof Messages => $messages,
+            is_array($messages) => Messages::fromAnyArray($messages),
+            is_string($messages) && $messages !== '' => Messages::fromString($messages),
+            default => Messages::empty(),
+        };
     }
 
     private static function examplesFromArray(array $data) : array {

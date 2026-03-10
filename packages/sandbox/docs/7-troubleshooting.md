@@ -275,9 +275,9 @@ For the host driver, there is no OS-level network enforcement. If you need actua
 
    Pattern matching uses `fnmatch()`, so `AWS_*` matches any variable starting with `AWS_`.
 
-## MockSandbox Throws "No Response" Error
+## FakeSandbox Throws "No Response" Error
 
-**Symptom:** A `RuntimeException` with the message "MockSandbox has no response for command: ..." is thrown.
+**Symptom:** A `RuntimeException` with the message "FakeSandbox has no response for command: ..." is thrown.
 
 **Cause:** The command key (argv joined with spaces) does not match any registered response, and no default response was provided.
 
@@ -290,7 +290,7 @@ For the host driver, there is no OS-level network enforcement. If you need actua
 
 2. Provide a default response for unmatched commands:
    ```php
-   $sandbox = MockSandbox::fromResponses(
+   $sandbox = FakeSandbox::fromResponses(
        responses: [...],
        defaultResponse: new ExecResult(stdout: '', stderr: '', exitCode: 0, duration: 0.0),
    );

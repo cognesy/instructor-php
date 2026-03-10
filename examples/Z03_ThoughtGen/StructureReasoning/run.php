@@ -65,6 +65,12 @@ CTX;
 
 $response = (new GenerateStructuredReasoning)($query, $context);
 dump($response);
+
+assert($response instanceof Response);
+assert(is_array($response->reasoning));
+assert(count($response->reasoning) > 0);
+assert($response->reasoning[0] instanceof ReasoningStep);
+assert(is_int($response->correct_answer));
 ?>
 ```
 

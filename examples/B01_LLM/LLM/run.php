@@ -19,24 +19,22 @@ LLM providers access details can be found and modified via
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\Str;
 
 // EXAMPLE 1: use default runtime configuration for convenient ad-hoc calls
 $answer = Inference::using('openai')
-    ->with(messages: 'What is capital of Germany')
+    ->with(messages: Messages::fromString('What is capital of Germany'))
     ->get();
 
 echo "USER: What is capital of Germany\n";
 echo "ASSISTANT: $answer\n\n";
 assert(Str::contains($answer, 'Berlin'));
 
-
-
-
 // EXAMPLE 2: customize inference options using fluent API
 $response = Inference::using('openai')
-    ->withMessages([['role' => 'user', 'content' => 'What is capital of France']])
+    ->withMessages(Messages::fromString('What is capital of France'))
     ->withOptions(['max_tokens' => 64])
     ->create();
 
@@ -45,19 +43,16 @@ echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n\n";
 assert(Str::contains($answer, 'Paris'));
 
-
-
-
 // EXAMPLE 3: streaming response
 $stream = Inference::using('openai')
-    ->withMessages([['role' => 'user', 'content' => 'Describe capital of Brasil']])
+    ->withMessages(Messages::fromString('Describe capital of Brasil'))
     ->withOptions(['max_tokens' => 128])
     ->withStreaming()
     ->stream()
     ->deltas();
 
 echo "USER: Describe capital of Brasil\n";
-echo "ASSISTANT: ";
+echo 'ASSISTANT: ';
 foreach ($stream as $delta) {
     echo $delta->contentDelta;
 }

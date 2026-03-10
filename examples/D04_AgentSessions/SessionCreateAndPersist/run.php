@@ -60,5 +60,13 @@ echo 'Version after save: ' . $updated->version() . "\n";
 echo 'Last response: ' . ($worked->state()->finalResponse()->toString() ?: 'No response') . "\n";
 echo 'Metadata phase: ' . ($updated->state()->metadata()->get('phase') ?? 'missing') . "\n";
 echo 'Loaded from store: ' . ($loaded !== null ? 'yes' : 'no') . "\n";
+
+assert(!empty($created->sessionId()->toString()), 'Session ID should not be empty');
+assert($created->version() >= 1, 'Created session should have version >= 1');
+assert($worked->version() > $created->version(), 'Version should increment after SendMessage');
+assert($updated->version() > $worked->version(), 'Version should increment after save');
+assert(!empty($worked->state()->finalResponse()->toString()), 'SendMessage should produce a response');
+assert($updated->state()->metadata()->get('phase') === 'saved', 'Metadata phase should be saved');
+assert($loaded !== null, 'Session should be loadable from store');
 ?>
 ```

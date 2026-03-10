@@ -9,6 +9,7 @@ use Cognesy\Messages\ContentPart;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\ToolCall;
+use Cognesy\Messages\Enums\MessageType;
 use Cognesy\Polyglot\Inference\Contracts\CanMapMessages;
 use Cognesy\Polyglot\Inference\Contracts\MessageMapper;
 use Cognesy\Utils\Str;
@@ -34,9 +35,9 @@ class AnthropicMessageFormat implements CanMapMessages
 
     private function mapMessage(Message $message): array
     {
-        return match (true) {
-            $message->isAssistant() && $message->hasToolCalls() => $this->toNativeToolCall($message),
-            $message->isTool() && $message->hasToolResult() => $this->toNativeToolResult($message),
+        return match ($message->type()) {
+            MessageType::AssistantToolCalls => $this->toNativeToolCall($message),
+            MessageType::ToolResult => $this->toNativeToolResult($message),
             default => $this->toNativeTextMessage($message),
         };
     }
@@ -112,16 +113,30 @@ class AnthropicMessageFormat implements CanMapMessages
 
     private function toNativeToolCall(Message $message): array
     {
+        $content = [];
+        $textContent = $this->toNativeContent($message->content());
+        $content = match (true) {
+            $textContent === '' => $content,
+            is_string($textContent) => [[
+                'type' => 'text',
+                'text' => $textContent,
+            ]],
+            default => $textContent,
+        };
+
         return [
             'role' => 'assistant',
-            'content' => $message->toolCalls()->map(
-                fn (ToolCall $tc) => array_filter([
-                    'type' => 'tool_use',
-                    'id' => $tc->idString(),
-                    'name' => $tc->name(),
-                    'input' => $tc->arguments(),
-                ]),
-            ),
+            'content' => [
+                ...$content,
+                ...$message->toolCalls()->map(
+                    fn (ToolCall $tc) => array_filter([
+                        'type' => 'tool_use',
+                        'id' => $tc->idString(),
+                        'name' => $tc->name(),
+                        'input' => $tc->arguments(),
+                    ]),
+                ),
+            ],
         ];
     }
 

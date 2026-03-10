@@ -3,6 +3,7 @@ order:
   - overview
   - quickstart
   - setup
+  - testing-doubles
   # Directories
   - essentials
   - modes

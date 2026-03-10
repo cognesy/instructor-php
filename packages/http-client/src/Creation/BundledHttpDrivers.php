@@ -3,7 +3,6 @@
 namespace Cognesy\Http\Creation;
 
 use Cognesy\Http\Drivers\Curl\CurlDriver;
-use Cognesy\Http\Drivers\ExtHttp\ExtHttpDriver;
 use Cognesy\Http\Drivers\Guzzle\GuzzleDriver;
 use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
 
@@ -13,7 +12,6 @@ final class BundledHttpDrivers
     {
         return HttpDriverRegistry::fromArray([
             'curl' => CurlDriver::class,
-            'exthttp' => ExtHttpDriver::class,
             'guzzle' => GuzzleDriver::class,
             'symfony' => SymfonyDriver::class,
         ]);

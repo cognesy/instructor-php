@@ -221,7 +221,7 @@ PROMPT;
     {
         $prompt = sprintf(self::CRITIC_PROMPT, $task, $evidence, $response);
         $request = new StructuredOutputRequest(
-            messages: $prompt,
+            messages: Messages::fromString($prompt),
             requestedSchema: SelfCriticResult::class,
         );
 

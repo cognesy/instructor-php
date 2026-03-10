@@ -18,12 +18,7 @@ final class LLMProvider implements CanResolveLLMConfig, HasExplicitInferenceDriv
     // FACTORIES /////////////////////////////////////////////////////////////
 
     public static function new(?LLMConfig $config = null): self {
-        return new self(config: $config ?? LLMConfig::fromArray([
-            'driver' => 'openai',
-            'apiUrl' => 'https://api.openai.com/v1',
-            'endpoint' => '/chat/completions',
-            'model' => 'gpt-4.1-nano',
-        ]));
+        return new self(config: $config ?? LLMConfig::fromPreset('openai'));
     }
 
     public static function using(string $preset, ?string $basePath = null): self {

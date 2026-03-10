@@ -7,6 +7,7 @@ use Cognesy\Agents\Tool\Tools\SimpleTool;
 use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Extras\Maybe\Maybe;
+use Cognesy\Messages\Messages;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
 use Throwable;
@@ -79,7 +80,7 @@ final class StructuredOutputTool extends SimpleTool
         $schema = $this->schemas->get($schemaName);
         $responseModel = $this->policy->useMaybe ? Maybe::is($schema->class) : $schema->class;
         $request = $this->policy->withRequest(new StructuredOutputRequest(
-            messages: $input,
+            messages: Messages::fromString($input),
             requestedSchema: $responseModel,
         ));
         $request = $schema->withRequest($request);

@@ -52,6 +52,7 @@ if ($response->isSuccess()) {
     }
 } else {
     echo "Error: Command failed with exit code {$response->exitCode}\n";
+    exit(1);
 }
 ?>
 ```

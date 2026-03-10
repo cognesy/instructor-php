@@ -88,5 +88,11 @@ echo "\nParent transcript:\n";
 echo $parentBranch->state()->messages()->toString() . "\n";
 echo "\nFork transcript:\n";
 echo $forkBranch->state()->messages()->toString() . "\n";
+
+assert($storedFork->sessionId()->toString() === $forkedId->toString(), 'Forked session should have the requested ID');
+assert($storedFork->info()->parentId() !== null, 'Forked session should reference a parent');
+assert($storedFork->info()->parentId()->value === $parentId->toString(), 'Fork parent ID should match original session');
+assert(!empty($parentBranch->state()->finalResponse()->toString()), 'Parent branch should have a response');
+assert(!empty($forkBranch->state()->finalResponse()->toString()), 'Fork branch should have a response');
 ?>
 ```

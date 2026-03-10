@@ -160,7 +160,7 @@ $result->toArray();
 // ]
 ```
 
-The `toArray()` method returns a flat associative array suitable for JSON serialization, logging, or passing to the `MockSandbox` for test fixtures.
+The `toArray()` method returns a flat associative array suitable for JSON serialization, logging, or passing to the `FakeSandbox` for test fixtures.
 
 ## Common Patterns
 

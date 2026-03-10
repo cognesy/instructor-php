@@ -2,8 +2,8 @@
 
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Messages\Tests\Fixtures\MockMessageProvider;
-use Cognesy\Messages\Tests\Fixtures\MockMessagesProvider;
+use Cognesy\Messages\Tests\Fixtures\StubMessageProvider;
+use Cognesy\Messages\Tests\Fixtures\StubMessagesProvider;
 
 // Test edge cases for empty messages
 test('handles empty messages collection correctly', function () {
@@ -107,7 +107,7 @@ test('fromAny handles various input types correctly', function () {
 
 // Test interface implementations
 test('fromInput handles objects implementing CanProvideMessage', function () {
-    $provider = new MockMessageProvider;
+    $provider = new StubMessageProvider;
     $messages = Messages::fromInput($provider);
 
     expect($messages)->toBeInstanceOf(Messages::class)
@@ -115,7 +115,7 @@ test('fromInput handles objects implementing CanProvideMessage', function () {
 });
 
 test('fromInput handles objects implementing CanProvideMessages', function () {
-    $provider = new MockMessagesProvider;
+    $provider = new StubMessagesProvider;
     $messages = Messages::fromInput($provider);
 
     expect($messages)->toBeInstanceOf(Messages::class)

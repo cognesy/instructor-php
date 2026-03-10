@@ -34,7 +34,7 @@ $documents = [
     'Philip K. Dick is an author of many sci-fi novels.',
 ];
 
-$query = "technology news";
+$query = 'technology news';
 
 $drivers = [
     'azure',
@@ -42,8 +42,8 @@ $drivers = [
     'gemini',
     'jina',
     'mistral',
-    //'ollama',
-    'openai'
+    // 'ollama',
+    'openai',
 ];
 
 foreach ($drivers as $driver) {
@@ -56,6 +56,7 @@ foreach ($drivers as $driver) {
 
     echo "\n[$driver]\n";
     dump($bestMatches);
+    assert(!empty($bestMatches));
 }
 ?>
 ```

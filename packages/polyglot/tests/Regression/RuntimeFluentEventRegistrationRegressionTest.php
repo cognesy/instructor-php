@@ -1,17 +1,17 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Http\Data\HttpResponse;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsResponse;
 use Cognesy\Polyglot\Embeddings\Data\Vector;
 use Cognesy\Polyglot\Embeddings\EmbeddingsRuntime;
 use Cognesy\Polyglot\Embeddings\Events\EmbeddingsResponseReceived;
-use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Events\InferenceCompleted;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
+use Cognesy\Polyglot\Tests\Support\FakeEmbeddingsDriver;
 use Cognesy\Polyglot\Tests\Support\FakeInferenceDriver;
 
 it('allows fluent event registration on inference runtime', function () {
@@ -30,7 +30,7 @@ it('allows fluent event registration on inference runtime', function () {
             $tapped++;
         });
 
-    $runtime->create(new InferenceRequest(messages: 'hello'))->response();
+    $runtime->create(new InferenceRequest(messages: Messages::fromString('hello')))->response();
 
     expect($completed)->toBe(1);
     expect($tapped)->toBeGreaterThan(0);
@@ -42,15 +42,9 @@ it('allows fluent event registration on embeddings runtime', function () {
     $tapped = 0;
 
     $runtime = (new EmbeddingsRuntime(
-        driver: new class implements CanHandleVectorization {
-            public function handle(EmbeddingsRequest $request): HttpResponse {
-                return HttpResponse::sync(200, [], '{"data":[{"embedding":[0.1,0.2]}]}');
-            }
-
-            public function fromData(array $data): ?EmbeddingsResponse {
-                return new EmbeddingsResponse(vectors: [new Vector([0.1, 0.2])]);
-            }
-        },
+        driver: new FakeEmbeddingsDriver([
+            new EmbeddingsResponse(vectors: [new Vector([0.1, 0.2])]),
+        ]),
         events: $events,
     ))
         ->onEvent(EmbeddingsResponseReceived::class, static function () use (&$received): void {

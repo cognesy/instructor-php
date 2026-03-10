@@ -8,12 +8,12 @@ use Cognesy\Sandbox\Enums\SandboxDriver;
 use Cognesy\Sandbox\Sandbox;
 
 $policy = ExecutionPolicy::in(__DIR__);
-$sandbox = Sandbox::with($policy)->using(SandboxDriver::Host);
+$sandbox = Sandbox::fromPolicy($policy)->using(SandboxDriver::Host);
 ```
 
 Static constructors:
 
-- `Sandbox::with(ExecutionPolicy $policy): Sandbox`
+- `Sandbox::fromPolicy(ExecutionPolicy $policy): Sandbox`
 - `Sandbox::host(ExecutionPolicy $policy): CanExecuteCommand`
 - `Sandbox::docker(ExecutionPolicy $policy, ?string $image = null, ?string $dockerBin = null): CanExecuteCommand`
 - `Sandbox::podman(ExecutionPolicy $policy, ?string $image = null, ?string $podmanBin = null): CanExecuteCommand`
@@ -111,26 +111,12 @@ Getters:
 - `combinedOutput(): string`
 - `toArray(): array`
 
-## Value Objects
-
-`Argv`:
-
-- `Argv::of(array $items): Argv`
-- `with(string $value): Argv`
-- `toArray(): array`
-
-`CommandSpec`:
-
-- `new CommandSpec(Argv $argv, ?string $stdin = null)`
-- `argv(): Argv`
-- `stdin(): ?string`
-
 ## Testing
 
-`MockSandbox` (implements `CanExecuteCommand`):
+`FakeSandbox` (implements `CanExecuteCommand`):
 
-- `new MockSandbox(ExecutionPolicy $policy, array $responses = [], ?ExecResult $defaultResponse = null)`
-- `MockSandbox::withResponses(array $responses, ?ExecResult $defaultResponse = null): MockSandbox`
+- `new FakeSandbox(ExecutionPolicy $policy, array $responses = [], ?ExecResult $defaultResponse = null)`
+- `FakeSandbox::fromResponses(array $responses, ?ExecResult $defaultResponse = null): FakeSandbox`
 - `commands(): array` (recorded argv calls)
 - `enqueue(string $commandKey, ExecResult $result): void`
 - `execute(array $argv, ?string $stdin = null, ?callable $onOutput = null): ExecResult`

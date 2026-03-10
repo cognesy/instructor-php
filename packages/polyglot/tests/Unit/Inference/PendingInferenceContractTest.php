@@ -13,7 +13,7 @@ it('is lazy until response data is accessed and memoizes the finalized raw respo
     ]);
 
     $request = (new InferenceRequestBuilder())
-        ->withMessages('Say hello')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Say hello'))
         ->create();
 
     $pending = new PendingInference(

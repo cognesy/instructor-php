@@ -64,9 +64,14 @@ final class LoggingPipeline
      */
     public function build(): callable
     {
-        return function (Event $event): void {
+        $filters = $this->filters;
+        $enrichers = $this->enrichers;
+        $formatters = $this->formatters;
+        $writers = $this->writers;
+
+        return function (Event $event) use ($filters, $enrichers, $formatters, $writers): void {
             // Apply all filters - if any returns false, skip processing
-            foreach ($this->filters as $filter) {
+            foreach ($filters as $filter) {
                 if (!$filter($event)) {
                     return; // Event filtered out
                 }
@@ -74,7 +79,7 @@ final class LoggingPipeline
 
             // Enrich the event with context from all enrichers
             $context = null;
-            foreach ($this->enrichers as $enricher) {
+            foreach ($enrichers as $enricher) {
                 $newContext = $enricher($event);
 
                 if ($context === null) {
@@ -95,7 +100,7 @@ final class LoggingPipeline
 
             // Format with all formatters (chain them)
             $logEntry = null;
-            foreach ($this->formatters as $formatter) {
+            foreach ($formatters as $formatter) {
                 if ($logEntry === null) {
                     $logEntry = $formatter($event, $context);
                 } else {
@@ -115,11 +120,12 @@ final class LoggingPipeline
                     level: $event->logLevel,
                     message: $event->name(),
                     context: $context->toArray(),
+                    timestamp: $context->eventTime,
                 );
             }
 
             // Write to all writers
-            foreach ($this->writers as $writer) {
+            foreach ($writers as $writer) {
                 $writer($logEntry);
             }
         };

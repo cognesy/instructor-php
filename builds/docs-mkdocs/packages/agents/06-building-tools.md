@@ -1,6 +1,6 @@
 ---
 title: 'Building Tools'
-description: 'Step-by-step guide to building tools with FunctionTool, BaseTool, and MockTool'
+description: 'Step-by-step guide to building tools with FunctionTool, BaseTool, and FakeTool'
 ---
 
 # Building Tools
@@ -31,7 +31,7 @@ function get_weather(
 }
 
 $tool = FunctionTool::fromCallable(get_weather(...));
-// @doctest id="c1e9"
+// @doctest id="0b26"
 ```
 
 The generated tool will have the name `get_weather`, the description from the function-level `#[Description]` attribute, and a JSON schema with a required `city` string parameter documented with its own description.
@@ -51,7 +51,7 @@ $tool = FunctionTool::fromCallable(
         return "Results for: {$query}";
     }
 );
-// @doctest id="31ef"
+// @doctest id="7a9c"
 ```
 
 ### Multiple Parameters and Types
@@ -70,7 +70,7 @@ function create_event(
 }
 
 $tool = FunctionTool::fromCallable(create_event(...));
-// @doctest id="568b"
+// @doctest id="77e6"
 ```
 
 ### Using Static or Instance Methods
@@ -92,7 +92,7 @@ class WeatherService {
 
 $service = new WeatherService();
 $tool = FunctionTool::fromCallable($service->forecast(...));
-// @doctest id="7a72"
+// @doctest id="c0b7"
 ```
 
 ### How Schema Generation Works
@@ -113,7 +113,7 @@ If you need to retrieve the original callable (for example, for testing), use th
 ```php
 $callback = $tool->function(); // Returns the Closure
 $result = $callback('Paris');
-// @doctest id="375e"
+// @doctest id="bf80"
 ```
 
 <a name="base-tool"></a>
@@ -146,9 +146,9 @@ class WeatherTool extends BaseTool
         return "Weather in {$city}: 72F, sunny";
     }
 
-    public function toToolSchema(): array
+    public function toToolSchema(): ToolDefinition
     {
-        return ToolSchema::make(
+        return ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
             parameters: JsonSchema::object('parameters')
@@ -156,10 +156,10 @@ class WeatherTool extends BaseTool
                     JsonSchema::string('city', 'City name'),
                 ])
                 ->withRequiredProperties(['city'])
-        )->toArray();
+        )->toArray());
     }
 }
-// @doctest id="d540"
+// @doctest id="dcea"
 ```
 
 ### Why Override `toToolSchema()`?
@@ -174,9 +174,9 @@ The `JsonSchema` class provides a fluent API for building parameter schemas with
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
 
-public function toToolSchema(): array
+public function toToolSchema(): ToolDefinition
 {
-    return ToolSchema::make(
+    return ToolDefinition::fromArray(ToolSchema::make(
         name: $this->name(),
         description: $this->description(),
         parameters: JsonSchema::object('parameters')
@@ -189,9 +189,9 @@ public function toToolSchema(): array
                     ->withItemSchema(JsonSchema::string()),
             ])
             ->withRequiredProperties(['query'])
-    )->toArray();
+    )->toArray());
 }
-// @doctest id="f2e2"
+// @doctest id="2598"
 ```
 
 Available `JsonSchema` factory methods include: `string()`, `integer()`, `number()`, `boolean()`, `enum()`, `array()`, `object()`, and `any()`. Each accepts a name, description, and optional configuration like nullability.
@@ -209,7 +209,7 @@ public function __invoke(mixed ...$args): string
 
     // ... perform search
 }
-// @doctest id="7281"
+// @doctest id="b357"
 ```
 
 The lookup order is: `$args['query']` first, then `$args[0]`, then the default `''`.
@@ -226,7 +226,7 @@ public function __invoke(mixed ...$args): string
 
     return "Processed after {$stepCount} steps in the conversation.";
 }
-// @doctest id="1162"
+// @doctest id="99af"
 ```
 
 State is read-only from the tool's perspective. The framework clones the tool and injects the state before each call, so tools are safe to use across multiple invocations without shared mutable state.
@@ -244,7 +244,7 @@ parent::__construct(
 
 // Class-name fallback (less readable in LLM prompts)
 parent::__construct();
-// @doctest id="3825"
+// @doctest id="5a86"
 ```
 
 ### Custom Metadata and Instructions
@@ -275,7 +275,7 @@ public function instructions(): array
         'notes' => ['Results are sorted by relevance score'],
     ];
 }
-// @doctest id="de54"
+// @doctest id="c0c5"
 ```
 
 The default `metadata()` implementation supports automatic namespace extraction from dotted tool names (e.g., `file.read` extracts namespace `file`) and automatic summary extraction from the first sentence of the description. The `instructions()` method returns the full specification including the reflective parameter schema. This two-level design supports the `ToolsTool` registry pattern where agents can discover tools without loading their complete documentation.
@@ -290,7 +290,7 @@ This means you cannot write:
 ```php
 // This will NOT work -- PHP fatal error
 public function __invoke(string $city): string { ... }
-// @doctest id="056f"
+// @doctest id="3416"
 ```
 
 Instead, use `$this->arg()` to extract named or positional parameters:
@@ -301,7 +301,7 @@ public function __invoke(mixed ...$args): string
     $city = (string) $this->arg($args, 'city', 0, '');
     return "Weather in {$city}: 72F, sunny";
 }
-// @doctest id="6aa8"
+// @doctest id="31ab"
 ```
 
 If you want typed parameters with compile-time safety and auto-generated schema, use `FunctionTool::fromCallable()` instead.
@@ -309,23 +309,23 @@ If you want typed parameters with compile-time safety and auto-generated schema,
 <a name="test-helpers"></a>
 ## Testing Your Tools
 
-### MockTool for Loop Testing
+### FakeTool for Loop Testing
 
-When writing tests for agent behavior, use `MockTool` to create tools with predetermined responses. This lets you test the agent loop without real tool implementations:
+When writing tests for agent behavior, use `FakeTool` to create tools with predetermined responses. This lets you test the agent loop without real tool implementations:
 
 ```php
-use Cognesy\Agents\Tool\Tools\MockTool;
+use Cognesy\Agents\Tool\Tools\FakeTool;
 
 // Simple static return value
-$tool = MockTool::returning('search', 'Search the web', 'result text');
+$tool = FakeTool::returning('search', 'Search the web', 'result text');
 
 // Dynamic handler for input-dependent responses
-$tool = new MockTool(
+$tool = new FakeTool(
     name: 'calculator',
     description: 'Evaluate math expressions',
     handler: fn(string $expression) => (string) eval("return {$expression};"),
 );
-// @doctest id="4af5"
+// @doctest id="81c4"
 ```
 
 ### Testing FunctionTool Directly
@@ -343,7 +343,7 @@ assert($result === 'Weather in Paris: 72F, sunny');
 $result = $tool->use(city: 'Paris');
 assert($result->isSuccess());
 assert($result->unwrap() === 'Weather in Paris: 72F, sunny');
-// @doctest id="2bb1"
+// @doctest id="e8fc"
 ```
 
 ### Testing BaseTool Subclasses
@@ -360,7 +360,7 @@ $result = $tool('Paris');
 $state = AgentState::empty()->withUserMessage('test');
 $tool = $tool->withAgentState($state);
 $result = $tool('Paris');
-// @doctest id="068c"
+// @doctest id="313a"
 ```
 
 <a name="choosing-a-base-class"></a>

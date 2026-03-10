@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Inference\Creation;
 
-use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
@@ -41,8 +40,8 @@ class InferenceRequestBuilder
     public function __construct(
         ?Messages $messages = null,
         ?string $model = null,
-        ToolDefinitions|array|null $tools = null,
-        ToolChoice|string|array|null $toolChoice = null,
+        ?ToolDefinitions $tools = null,
+        ?ToolChoice $toolChoice = null,
         ?ResponseFormat $responseFormat = null,
         ?array $options = null,
         ?CachedInferenceContext $cachedContext = null,
@@ -53,16 +52,8 @@ class InferenceRequestBuilder
     ) {
         $this->messages = $messages;
         $this->model = $model;
-        $this->tools = match (true) {
-            $tools instanceof ToolDefinitions => $tools,
-            is_array($tools) => ToolDefinitions::fromArray($tools),
-            default => null,
-        };
-        $this->toolChoice = match (true) {
-            $toolChoice instanceof ToolChoice => $toolChoice,
-            is_string($toolChoice), is_array($toolChoice) => ToolChoice::fromAny($toolChoice),
-            default => null,
-        };
+        $this->tools = $tools;
+        $this->toolChoice = $toolChoice;
         $this->responseFormat = $responseFormat;
         $this->options = $options;
         $this->streaming = $streaming;
@@ -75,42 +66,34 @@ class InferenceRequestBuilder
     /**
      * Sets the parameters for the inference request and returns the current instance.
      *
-     * @param  string|array  $messages  The input messages for the inference.
+     * @param  Messages|null  $messages  The input messages for the inference.
      * @param  string  $model  The model to be used for the inference.
-     * @param  array  $tools  The tools to be used for the inference.
-     * @param  string|array  $toolChoice  The choice of tools for the inference.
-     * @param  array  $responseFormat  The format of the response.
+     * @param  ToolDefinitions|null  $tools  The tools to be used for the inference.
+     * @param  ToolChoice|null  $toolChoice  The choice of tools for the inference.
+     * @param  ResponseFormat|null  $responseFormat  The format of the response.
      * @param  array  $options  Additional options for the inference.
      */
     public function with(
-        null|string|array|Message|Messages $messages = null,
+        ?Messages $messages = null,
         ?string $model = null,
-        ToolDefinitions|array|null $tools = null,
-        ToolChoice|string|array|null $toolChoice = null,
-        ?array $responseFormat = null,
+        ?ToolDefinitions $tools = null,
+        ?ToolChoice $toolChoice = null,
+        ?ResponseFormat $responseFormat = null,
         ?array $options = null,
     ): static {
-        $this->messages = $messages !== null ? Messages::fromAny($messages) : $this->messages;
+        $this->messages = $messages ?? $this->messages;
         $this->model = $model ?? $this->model;
-        $this->tools = match (true) {
-            $tools instanceof ToolDefinitions => $tools,
-            is_array($tools) => ToolDefinitions::fromArray($tools),
-            default => $this->tools,
-        };
-        $this->toolChoice = match (true) {
-            $toolChoice instanceof ToolChoice => $toolChoice,
-            is_string($toolChoice), is_array($toolChoice) => ToolChoice::fromAny($toolChoice),
-            default => $this->toolChoice,
-        };
-        $this->responseFormat = $responseFormat !== null ? ResponseFormat::fromArray($responseFormat) : $this->responseFormat;
+        $this->tools = $tools ?? $this->tools;
+        $this->toolChoice = $toolChoice ?? $this->toolChoice;
+        $this->responseFormat = $responseFormat ?? $this->responseFormat;
         $this->options = $options ?? $this->options;
 
         return $this;
     }
 
-    public function withMessages(string|array|Message|Messages $messages): static
+    public function withMessages(Messages $messages): static
     {
-        $this->messages = Messages::fromAny($messages);
+        $this->messages = $messages;
 
         return $this;
     }
@@ -122,26 +105,23 @@ class InferenceRequestBuilder
         return $this;
     }
 
-    public function withTools(ToolDefinitions|array $tools): static
+    public function withTools(ToolDefinitions $tools): static
     {
-        $this->tools = match (true) {
-            $tools instanceof ToolDefinitions => $tools,
-            default => ToolDefinitions::fromArray($tools),
-        };
+        $this->tools = $tools;
 
         return $this;
     }
 
-    public function withToolChoice(ToolChoice|string|array $toolChoice): static
+    public function withToolChoice(ToolChoice $toolChoice): static
     {
-        $this->toolChoice = ToolChoice::fromAny($toolChoice);
+        $this->toolChoice = $toolChoice;
 
         return $this;
     }
 
-    public function withResponseFormat(array $responseFormat): static
+    public function withResponseFormat(ResponseFormat $responseFormat): static
     {
-        $this->responseFormat = ResponseFormat::fromArray($responseFormat);
+        $this->responseFormat = $responseFormat;
 
         return $this;
     }
@@ -184,19 +164,22 @@ class InferenceRequestBuilder
     /**
      * Sets a cached context with provided messages, tools, tool choices, and response format.
      *
-     * @param  string|array  $messages  Messages to be cached in the context.
-     * @param  array  $tools  Tools to be included in the cached context.
-     * @param  string|array  $toolChoice  Tool choices for the cached context.
-     * @param  array  $responseFormat  Format for responses in the cached context.
+     * @param  Messages|null  $messages  Messages to be cached in the context.
+     * @param  ToolDefinitions|null  $tools  Tools to be included in the cached context.
+     * @param  ToolChoice|null  $toolChoice  Tool choices for the cached context.
+     * @param  ResponseFormat|null  $responseFormat  Format for responses in the cached context.
      */
     public function withCachedContext(
-        string|array $messages = [],
-        ToolDefinitions|array $tools = [],
-        ToolChoice|string|array $toolChoice = [],
-        array $responseFormat = [],
+        ?Messages $messages = null,
+        ?ToolDefinitions $tools = null,
+        ?ToolChoice $toolChoice = null,
+        ?ResponseFormat $responseFormat = null,
     ): self {
         $this->cachedContext = new CachedInferenceContext(
-            $messages, $tools, $toolChoice, $responseFormat
+            $messages ?? Messages::empty(),
+            $tools ?? ToolDefinitions::empty(),
+            $toolChoice ?? ToolChoice::empty(),
+            $responseFormat ?? ResponseFormat::empty(),
         );
 
         return $this;

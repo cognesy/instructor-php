@@ -74,6 +74,8 @@ class PredictSentiment {
 $predictSentiment = (new PredictSentiment)('This movie has been very impressive, even considering I lost half of the plot.');
 
 dump($predictSentiment);
+
+assert($predictSentiment instanceof ReviewSentiment);
 ?>
 ```
 

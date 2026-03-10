@@ -25,6 +25,7 @@
   },
   "require": {
     "php": "^8.3",
+    "symfony/config": "^7.0 || ^8.0",
     "symfony/yaml": "^7.0 || ^8.0"
   },
   "require-dev": {

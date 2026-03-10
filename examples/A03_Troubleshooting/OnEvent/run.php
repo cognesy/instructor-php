@@ -58,5 +58,8 @@ $user = (new StructuredOutput($runtime))
     ->get();
 
 dump($user);
+
+assert($user->name === 'Jason');
+assert($user->age === 28);
 ?>
 ```

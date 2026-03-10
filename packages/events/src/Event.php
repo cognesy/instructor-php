@@ -6,6 +6,7 @@ use Cognesy\Events\Utils\EventFormatter;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
+use InvalidArgumentException;
 use JsonSerializable;
 use Psr\Log\LogLevel;
 
@@ -95,7 +96,16 @@ class Event implements JsonSerializable
      * @return string The event data as a JSON string
      */
     public function __toString(): string {
-        return Json::encode($this->data);
+        try {
+            $encoded = Json::encode($this->data);
+        } catch (InvalidArgumentException) {
+            return '[unserializable event payload]';
+        }
+
+        return match ($encoded) {
+            '' => '[unserializable event payload]',
+            default => $encoded,
+        };
     }
 
     /**

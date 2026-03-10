@@ -18,7 +18,7 @@ use Cognesy\Agents\Hook\Enums\HookTrigger;
 use Cognesy\Agents\Hook\HookStack;
 use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
 use Cognesy\Agents\Tool\ToolExecutor;
-use Cognesy\Agents\Tool\Tools\MockTool;
+use Cognesy\Agents\Tool\Tools\FakeTool;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\ToolCalls;
@@ -190,7 +190,7 @@ describe('Execution History', function () {
     });
 
     it('captures step count and usage in summary', function () {
-        $searchTool = MockTool::returning('search', 'Search tool', 'found');
+        $searchTool = FakeTool::returning('search', 'Search tool', 'found');
         $store = new ArrayExecutionStore();
         $historyHook = new ExecutionHistoryHook(store: $store);
 

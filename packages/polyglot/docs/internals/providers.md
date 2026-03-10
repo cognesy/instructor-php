@@ -222,7 +222,7 @@ The provider system is built on a small set of interfaces:
 |---|---|
 | `CanTranslateInferenceRequest` | Converts `InferenceRequest` to `HttpRequest` |
 | `CanTranslateInferenceResponse` | Converts `HttpResponse` to `InferenceResponse` or stream deltas |
-| `CanMapMessages` | Maps message arrays to provider format |
+| `CanMapMessages` | Maps typed `Messages` to provider format |
 | `CanMapRequestBody` | Assembles the request body |
 | `CanMapUsage` | Extracts token usage from response data |
 

@@ -9,6 +9,8 @@ use Cognesy\Polyglot\Inference\Contracts\CanMapMessages;
 use Cognesy\Polyglot\Inference\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
+use Cognesy\Polyglot\Inference\Drivers\Support\RequestMessages;
+use Cognesy\Polyglot\Inference\Drivers\Support\RequestPayload;
 use Cognesy\Utils\Arrays;
 
 class GeminiBodyFormat implements CanMapRequestBody
@@ -23,7 +25,7 @@ class GeminiBodyFormat implements CanMapRequestBody
     {
         $request = $request->withCacheApplied();
 
-        $requestBody = $this->filterEmptyValues([
+        $requestBody = RequestPayload::filterEmptyValues([
             'systemInstruction' => $this->toSystem($request),
             'contents' => $this->toMessages($request),
             'generationConfig' => $this->toOptions($request),
@@ -55,17 +57,14 @@ class GeminiBodyFormat implements CanMapRequestBody
 
     protected function toSystem(InferenceRequest $request): array
     {
-        $system = $request->messages()
-            ->forRoles(['system'])
-            ->toString();
+        $system = RequestMessages::textForRoles($request->messages(), ['system']);
 
         return empty($system) ? [] : ['parts' => [['text' => $system]]];
     }
 
     protected function toMessages(InferenceRequest $request): array
     {
-        $messages = $request->messages()
-            ->exceptRoles(['system']);
+        $messages = RequestMessages::exceptRoles($request->messages(), ['system']);
 
         return $this->messageFormat->map($messages);
     }
@@ -77,7 +76,7 @@ class GeminiBodyFormat implements CanMapRequestBody
         $responseFormat = $request->responseFormat();
         $type = $this->toResponseFormatType($request);
 
-        return $this->filterEmptyValues([
+        return RequestPayload::filterEmptyValues([
             'responseMimeType' => $this->toResponseMimeType($type),
             'responseSchema' => $this->toResponseSchema($responseFormat, $type),
             // candidateCount is a top-level param in some API versions; omit here for compatibility
@@ -156,33 +155,15 @@ class GeminiBodyFormat implements CanMapRequestBody
 
     protected function removeDisallowedEntries(array $jsonSchema): array
     {
-        return Arrays::removeRecursively(
-            array: $jsonSchema,
-            keys: [
-                'x-title',
-                'x-php-class',
-                'additionalProperties',
-            ],
-        );
-    }
-
-    protected function filterEmptyValues(array $data): array
-    {
-        return array_filter($data, fn ($value) => $value !== null && $value !== [] && $value !== '');
+        return RequestPayload::removeSchemaKeys($jsonSchema, [
+            'x-title',
+            'x-php-class',
+            'additionalProperties',
+        ]);
     }
 
     protected function toResponseFormatType(InferenceRequest $request): ?string
     {
-        if (! $request->hasResponseFormat()) {
-            return null;
-        }
-
-        return match ($request->responseFormat()->type()) {
-            'text' => 'text',
-            'json',
-            'json_object' => 'json_object',
-            'json_schema' => 'json_schema',
-            default => null,
-        };
+        return RequestPayload::responseFormatType($request);
     }
 }

@@ -92,9 +92,6 @@ class PropertyInfo
     public function isRequired() : bool {
         $constructorParameter = $this->constructorParameter();
         if ($constructorParameter !== null) {
-            if ($constructorParameter->allowsNull()) {
-                return false;
-            }
             return !$constructorParameter->isDefaultValueAvailable();
         }
 

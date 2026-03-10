@@ -8,6 +8,11 @@ use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\PendingStructuredOutput;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIBodyFormat;
+use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIMessageFormat;
+use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIRequestAdapter;
 
 it('should properly use toData() method on Image', function () {
     // Create a mock base64 image data
@@ -51,6 +56,36 @@ it('should properly use toData() method on Image', function () {
     
     expect($hasText)->toBeTrue('Message should contain text part');
     expect($hasImage)->toBeTrue('Message should contain image part');
+});
+
+it('preserves image content in the openai request body used by image examples', function () {
+    $image = new Image(
+        'data:image/jpeg;base64,/9j/4AAQSkZJRg==',
+        'image/jpeg',
+        'Describe the receipt image',
+    );
+
+    $config = new LLMConfig(
+        apiUrl: 'https://api.openai.com/v1',
+        apiKey: 'KEY',
+        endpoint: '/chat/completions',
+        model: 'gpt-4o-mini',
+        driver: 'openai',
+    );
+    $adapter = new OpenAIRequestAdapter(
+        $config,
+        new OpenAIBodyFormat($config, new OpenAIMessageFormat()),
+    );
+
+    $http = $adapter->toHttpRequest(new InferenceRequest(messages: $image->toMessages()));
+    $body = json_decode($http->body()->toString(), true, flags: JSON_THROW_ON_ERROR);
+
+    expect($body['messages'][0]['content'])->toHaveCount(2)
+        ->and($body['messages'][0]['content'][0]['type'])->toBe('text')
+        ->and($body['messages'][0]['content'][1])->toBe([
+            'type' => 'image_url',
+            'image_url' => ['url' => 'data:image/jpeg;base64,/9j/4AAQSkZJRg=='],
+        ]);
 });
 
 it('reproduces the missing messages parameter issue', function () {

@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Creation;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
+use Cognesy\Instructor\Contracts\CanMaterializeRequest;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
@@ -26,6 +27,7 @@ final readonly class StructuredOutputPipelineFactory
         private CanHandleEvents $events,
         private StructuredOutputConfig $config,
         private CanCreateInference $inference,
+        private CanMaterializeRequest $requestMaterializer,
         private array $validators = [],
         private array $transformers = [],
         private array $deserializers = [],
@@ -60,6 +62,7 @@ final readonly class StructuredOutputPipelineFactory
             responseTransformer: $responseTransformer,
             events: $this->events,
             extractor: $extractor,
+            requestMaterializer: $this->requestMaterializer,
         );
     }
 

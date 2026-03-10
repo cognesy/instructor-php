@@ -115,5 +115,8 @@ $state = (new ToolUseState)
 $finalState = $toolUse->finalStep($state);
 $result = $finalState->currentStep()->outputMessages()->toString();
 print("RESULT: " . $result . "\n");
+
+assert(!empty($result), 'Expected non-empty result from tool use');
+assert($finalState->stepCount() > 0, 'Expected at least one step in tool use');
 ?>
 ```

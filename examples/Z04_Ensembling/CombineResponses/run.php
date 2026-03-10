@@ -48,6 +48,10 @@ class CombineResponses {
 $query = "The three-digit number 'ab5' is divisible by 3. How many different three-digit numbers can 'ab5' represent?";
 $result = (new CombineResponses)($query, k: 3);
 dump($result);
+
+assert($result instanceof ResponseItem);
+assert(!empty($result->chain_of_thought));
+assert(!empty($result->answer));
 ?>
 ```
 

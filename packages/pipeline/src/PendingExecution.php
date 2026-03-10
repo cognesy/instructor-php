@@ -2,7 +2,6 @@
 
 namespace Cognesy\Pipeline;
 
-use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\StateContracts\CanCarryState;
 use Cognesy\Utils\Result\Result;
 use Generator;
@@ -17,23 +16,19 @@ use Throwable;
  */
 class PendingExecution
 {
-    private CanProcessState $pipeline;
-    private CanCarryState $initialState;
     private ?CanCarryState $cachedOutput = null;
 
     public function __construct(
-        CanCarryState $initialState,
-        CanProcessState $pipeline,
-    ) {
-        $this->initialState = $initialState;
-        $this->pipeline = $pipeline;
-    }
+        private CanCarryState $initialState,
+        private Pipeline $pipeline,
+    ) {}
 
     public function for(mixed $value, array $tags = []): self {
         $this->initialState = $this->initialState
             ->withResult(Result::from($value))
             ->replaceTags(...$tags);
-        $this->cachedOutput = null; // Reset cached output
+        $this->cachedOutput = null;
+
         return $this;
     }
 
@@ -49,7 +44,7 @@ class PendingExecution
     }
 
     public function execute(): CanCarryState {
-        return $this->executeOnce($this->initialState, $this->pipeline);
+        return $this->cachedOutput ??= $this->pipeline->process($this->initialState);
     }
 
     public function state(): CanCarryState {
@@ -106,12 +101,4 @@ class PendingExecution
         };
     }
 
-    // INTERNAL ////////////////////////////////////////////////////
-
-    private function executeOnce(CanCarryState $state, CanProcessState $pipeline): CanCarryState {
-        if (is_null($this->cachedOutput)) {
-            $this->cachedOutput = $pipeline->process($state);
-        }
-        return $this->cachedOutput;
-    }
 }

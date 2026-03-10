@@ -89,6 +89,12 @@ $candidates = [
 $bestExamples = $selector->selectBestExamples($candidates, k: 2);
 
 dump($bestExamples);
+
+assert(is_array($bestExamples));
+assert(count($bestExamples) > 0);
+assert(count($bestExamples) <= 2);
+assert(isset($bestExamples[0]['text']));
+assert(isset($bestExamples[0]['score']));
 ?>
 ```
 

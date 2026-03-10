@@ -131,6 +131,7 @@ foreach ($stream->sequence() as $sequence) {
 $events = $stream->finalValue();
 
 echo "TOTAL EVENTS: " . count($events) . "\n";
+assert(count($events) > 0, 'Expected events to be extracted');
 //dump($events->list);
 
 function displayEvent(ProjectEvent $event) : void {

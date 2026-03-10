@@ -33,7 +33,7 @@ dump($response->usage());
 
 // Why the model stopped generating
 dump($response->finishReason());
-// @doctest id="e559"
+// @doctest id="1f16"
 ```
 
 ### Raw Provider Response
@@ -47,7 +47,7 @@ $raw = (new StructuredOutput())
 
 dump($raw->content());
 dump($raw->toolCalls());
-// @doctest id="88e9"
+// @doctest id="bf75"
 ```
 
 ### Execution Metadata
@@ -63,23 +63,23 @@ $pending = (new StructuredOutput())
 $execution = $pending->execution();
 dump($execution->outputMode());
 dump($execution->request());
-// @doctest id="5284"
+// @doctest id="870c"
 ```
 
-### Streaming Snapshots
+### Streaming Responses
 
-When streaming, use `responses()` to inspect each partial snapshot:
+When streaming, use `responses()` to inspect each emitted `StructuredOutputResponse`:
 
 ```php
 $stream = (new StructuredOutput())
     ->with(messages: '...', responseModel: User::class)
     ->stream();
 
-foreach ($stream->responses() as $snapshot) {
-    echo $snapshot->isPartial() ? 'partial' : 'final';
-    dump($snapshot->value());
+foreach ($stream->responses() as $response) {
+    echo $response->isPartial() ? 'partial' : 'final';
+    dump($response->value());
 }
-// @doctest id="8f21"
+// @doctest id="0b05"
 ```
 
 
@@ -96,7 +96,7 @@ $runtime = StructuredOutputRuntime::fromDefaults()
 $result = (new StructuredOutput($runtime))
     ->with(messages: '...', responseModel: User::class)
     ->get();
-// @doctest id="44cb"
+// @doctest id="66bc"
 ```
 
 For targeted debugging, listen to specific event types:
@@ -110,7 +110,7 @@ $runtime = StructuredOutputRuntime::fromDefaults()
     ->onEvent(ResponseValidationFailed::class, fn($e) => dump('Validation failed:', $e->data))
     ->onEvent(ResponseDeserializationFailed::class, fn($e) => dump('Deserialization failed:', $e->data))
     ->onEvent(NewValidationRecoveryAttempt::class, fn($e) => dump('Retrying...', $e->data));
-// @doctest id="b2ae"
+// @doctest id="d52a"
 ```
 
 See the [Events](events) page for the full list of available event classes.
@@ -131,7 +131,7 @@ echo $pending->toJson();
 
 // Parsed array
 dump($pending->toArray());
-// @doctest id="6ddd"
+// @doctest id="750b"
 ```
 
 

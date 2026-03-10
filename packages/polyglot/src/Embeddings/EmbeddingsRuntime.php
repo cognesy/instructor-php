@@ -114,7 +114,7 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
 
         $events->dispatch(new EmbeddingsDriverBuilt([
             'driverClass' => get_class($driver),
-            'config' => $config->toArray(),
+            'config' => self::redactedConfig($config),
             'httpClient' => get_class($httpClient),
         ]));
 
@@ -140,5 +140,44 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
             return $events;
         }
         return new EventDispatcher(name: 'polyglot.embeddings.runtime');
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    private static function redactedConfig(EmbeddingsConfig $config): array {
+        return self::redactSensitiveValues($config->toArray());
+    }
+
+    /**
+     * @param array<string,mixed> $data
+     * @return array<string,mixed>
+     */
+    private static function redactSensitiveValues(array $data): array {
+        $redacted = [];
+
+        foreach ($data as $key => $value) {
+            $redacted[$key] = match (true) {
+                self::isSensitiveKey((string) $key) => '[REDACTED]',
+                is_array($value) => self::redactSensitiveValues($value),
+                default => $value,
+            };
+        }
+
+        return $redacted;
+    }
+
+    private static function isSensitiveKey(string $key): bool {
+        $normalized = strtolower(str_replace(['-', '_'], '', $key));
+
+        return match (true) {
+            in_array($normalized, ['apikey', 'authorization', 'proxyauthorization', 'token', 'accesstoken', 'refreshtoken', 'secret', 'password', 'cookie', 'setcookie'], true) => true,
+            str_contains($normalized, 'apikey') => true,
+            str_contains($normalized, 'authorization') => true,
+            str_contains($normalized, 'cookie') => true,
+            default => str_contains($normalized, 'token')
+                || str_contains($normalized, 'secret')
+                || str_contains($normalized, 'password'),
+        };
     }
 }

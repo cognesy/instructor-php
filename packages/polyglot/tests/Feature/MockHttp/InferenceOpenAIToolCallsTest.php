@@ -33,7 +33,7 @@ it('handles tool calls in non-streaming OpenAI response', function () {
 
     $response = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http))
         ->withModel('gpt-4o-mini')
-        ->withMessages('Weather please')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Weather please'))
         ->response();
 
     expect($response->hasToolCalls())->toBeTrue();

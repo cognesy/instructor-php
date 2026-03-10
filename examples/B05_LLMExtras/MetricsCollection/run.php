@@ -15,6 +15,7 @@ stream duration, chunk count (streamed deltas), and average output tokens per se
 require 'examples/boot.php';
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Messages\Messages;
 use Cognesy\Metrics\Collectors\MetricsCollector;
 use Cognesy\Metrics\Data\Metric;
 use Cognesy\Metrics\Exporters\CallbackExporter;
@@ -85,7 +86,7 @@ $metrics->exportTo(new CallbackExporter(function (iterable $metrics): void {
 $prompt = 'In one sentence, explain why streaming responses help UX.';
 $runtime = InferenceRuntime::fromConfig(config: LLMConfig::fromPreset('openai'), events: $events);
 $stream = Inference::fromRuntime($runtime)
-    ->withMessages($prompt)
+    ->withMessages(Messages::fromString($prompt))
     ->withOptions(['max_tokens' => 64])
     ->withStreaming()
     ->stream()
@@ -98,7 +99,15 @@ foreach ($stream as $delta) {
 }
 echo "\n\n";
 
+$exportedMetrics = [];
+$metrics->exportTo(new CallbackExporter(function (iterable $m) use (&$exportedMetrics): void {
+    foreach ($m as $metric) {
+        $exportedMetrics[] = $metric;
+    }
+}));
 $metrics->export();
+
+assert(count($exportedMetrics) > 0, 'Expected non-empty metrics collection');
 
 function formatTags(array $tags): string {
     if ($tags === []) {

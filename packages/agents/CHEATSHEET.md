@@ -40,7 +40,7 @@ For narrative guidance and examples, use `packages/agents/docs/*.md`.
 
 - `Collections\Tools`
   - immutable named tool collection
-  - key API: `has()`, `get()`, `names()`, `descriptions()`, `withTool()`, `withTools()`, `withToolRemoved()`, `merge()`, `toToolSchema()`
+  - key API: `has()`, `get()`, `names()`, `descriptions()`, `withTool()`, `withTools()`, `withToolRemoved()`, `merge()`, `toToolSchema(): ToolDefinitions`
 - `Collections\AgentSteps`
 - `Collections\StepExecutions`
 - `Collections\ToolExecutions`
@@ -52,7 +52,7 @@ For narrative guidance and examples, use `packages/agents/docs/*.md`.
 
 - `Tool\Contracts\ToolInterface`
   - `use(mixed ...$args): Result`
-  - `toToolSchema(): array`
+  - `toToolSchema(): ToolDefinition`
   - `descriptor(): CanDescribeTool`
 - `Tool\Contracts\CanDescribeTool`
   - `name()`, `description()`, `metadata()`, `instructions()`
@@ -70,7 +70,7 @@ For narrative guidance and examples, use `packages/agents/docs/*.md`.
 - `Tool\Tools\StateAwareTool`
 - `Tool\Tools\BaseTool`
 - `Tool\Tools\ContextAwareTool`
-- `Tool\Tools\MockTool`
+- `Tool\Tools\FakeTool`
 
 ### Runtime
 
@@ -243,15 +243,33 @@ Session events include:
 - `SessionLoaded`, `SessionActionExecuted`, `SessionSaved`
 - `SessionLoadFailed`, `SessionSaveFailed`
 
+## 13. Testing
+
+- `Drivers\Testing\FakeAgentDriver`
+  - scripted loop steps via `ScenarioStep`
+  - best for most deterministic agent-loop tests
+- `Tests\Support\FakeInferenceDriver`
+  - queued raw `InferenceResponse` or streaming `PartialInferenceDelta` fixtures
+  - use when the test sits closer to the inference boundary
+- `Tool\Tools\FakeTool`
+  - deterministic tool double with fixed or callable-backed results
+- `Tests\Support\FakeSubagentProvider`
+  - in-memory subagent definition registry for capability tests
+- `Tests\Support\TestAgentLoop`
+  - small loop harness with explicit max-iteration stop behavior
+- `Cognesy\Sandbox\Testing\FakeSandbox`
+  - deterministic process-execution seam for bash-backed tools
+
 ## 13. Docs Index
 
 Read in this order:
 
 1. `packages/agents/docs/01-introduction.md`
-2. `packages/agents/docs/02-basic-agent.md`
-3. `packages/agents/docs/05-tools.md`
-4. `packages/agents/docs/06-building-tools.md`
-5. `packages/agents/docs/13-agent-builder.md`
-6. `packages/agents/docs/14-agent-templates.md`
-7. `packages/agents/docs/15-subagents.md`
-8. `packages/agents/docs/16-session-runtime.md`
+2. `packages/agents/docs/testing-doubles.md`
+3. `packages/agents/docs/02-basic-agent.md`
+4. `packages/agents/docs/05-tools.md`
+5. `packages/agents/docs/06-building-tools.md`
+6. `packages/agents/docs/13-agent-builder.md`
+7. `packages/agents/docs/14-agent-templates.md`
+8. `packages/agents/docs/15-subagents.md`
+9. `packages/agents/docs/16-session-runtime.md`

@@ -44,6 +44,8 @@ $user = (new StructuredOutput($toolsRuntime))
     )->get();
 echo "\nRESPONSE:\n";
 dump($user);
+assert($user->name === 'Jason');
+assert($user->age === 25);
 
 print("\n# Request for OutputMode::Json:\n\n");
 $jsonRuntime->onEvent(HttpRequestSent::class, fn(HttpRequestSent $event) => dump($event));
@@ -55,6 +57,8 @@ $user = (new StructuredOutput($jsonRuntime))
     )->get();
 echo "\nRESPONSE:\n";
 dump($user);
+assert($user->name === 'Jason');
+assert($user->age === 25);
 
 print("\n# Request for OutputMode::MdJson:\n\n");
 $mdJsonRuntime->onEvent(HttpRequestSent::class, fn(HttpRequestSent $event) => dump($event));
@@ -66,6 +70,8 @@ $user = (new StructuredOutput($mdJsonRuntime))
     )->get();
 echo "\nRESPONSE:\n";
 dump($user);
+assert($user->name === 'Jason');
+assert($user->age === 25);
 
 ?>
 ```

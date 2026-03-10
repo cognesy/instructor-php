@@ -2,11 +2,11 @@
 
 use Cognesy\Agents\Capability\Tools\ToolsTool;
 use Cognesy\Agents\Tool\ToolRegistry;
-use Cognesy\Agents\Tool\Tools\MockTool;
+use Cognesy\Agents\Tool\Tools\FakeTool;
 
 it('lists available tools', function () {
     $registry = new ToolRegistry();
-    $registry->register(MockTool::returning('alpha', 'Alpha tool', 'ok'));
+    $registry->register(FakeTool::returning('alpha', 'Alpha tool', 'ok'));
 
     $tool = new ToolsTool($registry);
     $result = $tool(action: 'list');
@@ -18,7 +18,7 @@ it('lists available tools', function () {
 
 it('returns tool help', function () {
     $registry = new ToolRegistry();
-    $registry->register(MockTool::returning('alpha', 'Alpha tool', 'ok'));
+    $registry->register(FakeTool::returning('alpha', 'Alpha tool', 'ok'));
 
     $tool = new ToolsTool($registry);
     $result = $tool(action: 'help', tool: 'alpha');
@@ -29,8 +29,8 @@ it('returns tool help', function () {
 
 it('searches tools by query', function () {
     $registry = new ToolRegistry();
-    $registry->register(MockTool::returning('alpha', 'Alpha tool', 'ok'));
-    $registry->register(MockTool::returning('beta', 'Beta tool', 'ok'));
+    $registry->register(FakeTool::returning('alpha', 'Alpha tool', 'ok'));
+    $registry->register(FakeTool::returning('beta', 'Beta tool', 'ok'));
 
     $tool = new ToolsTool($registry);
     $result = $tool(action: 'search', query: 'beta');

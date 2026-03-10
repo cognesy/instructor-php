@@ -3,6 +3,8 @@
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\Drivers\Gemini\GeminiBodyFormat;
 use Cognesy\Polyglot\Inference\Drivers\Gemini\GeminiMessageFormat;
 
@@ -28,8 +30,8 @@ it('Gemini native: tool_config.allowed_function_names is an array of names', fun
     $req = new InferenceRequest(
         messages: Messages::fromAny([['role' => 'user', 'content' => 'Hi']]),
         model: 'gemini-1.5-flash',
-        tools: $tools,
-        toolChoice: [ 'function' => ['name' => 'search'] ],
+        tools: ToolDefinitions::fromArray($tools),
+        toolChoice: ToolChoice::specific('search'),
     );
 
     $json = $body->toRequestBody($req);

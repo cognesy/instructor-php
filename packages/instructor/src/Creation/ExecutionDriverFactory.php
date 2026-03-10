@@ -6,8 +6,8 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Instructor\Contracts\CanDetermineRetry;
 use Cognesy\Instructor\Contracts\CanEmitStreamingUpdates;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
+use Cognesy\Instructor\Contracts\CanMaterializeRequest;
 use Cognesy\Instructor\Core\InferenceProvider;
-use Cognesy\Instructor\Core\RequestMaterializer;
 use Cognesy\Instructor\Core\ResponseGenerator;
 use Cognesy\Instructor\Core\StreamingExecutionDriver;
 use Cognesy\Instructor\Core\SyncExecutionDriver;
@@ -27,6 +27,7 @@ final class ExecutionDriverFactory
     private readonly CanTransformResponse $responseTransformer;
     private readonly CanExtractResponse $extractor;
     private readonly CanHandleEvents $events;
+    private readonly CanMaterializeRequest $requestMaterializer;
 
     public function __construct(
         CanCreateInference $inference,
@@ -35,6 +36,7 @@ final class ExecutionDriverFactory
         CanTransformResponse $responseTransformer,
         CanHandleEvents $events,
         CanExtractResponse $extractor,
+        CanMaterializeRequest $requestMaterializer,
     ) {
         $this->inference = $inference;
         $this->responseDeserializer = $responseDeserializer;
@@ -42,6 +44,7 @@ final class ExecutionDriverFactory
         $this->responseTransformer = $responseTransformer;
         $this->extractor = $extractor;
         $this->events = $events;
+        $this->requestMaterializer = $requestMaterializer;
     }
 
     public function makeExecutionDriver(StructuredOutputExecution $execution): CanEmitStreamingUpdates {
@@ -75,7 +78,7 @@ final class ExecutionDriverFactory
     private function makeInferenceProvider(): InferenceProvider {
         return new InferenceProvider(
             inference: $this->inference,
-            requestMaterializer: new RequestMaterializer(),
+            requestMaterializer: $this->requestMaterializer,
         );
     }
 

@@ -40,6 +40,10 @@ Read:
 - `has(string $name): bool`
 - `get(string $name): mixed`
 
+Magic access:
+
+- `isset($structure->field)` is true only when runtime data contains a non-null value or the schema provides a non-null default
+
 Mutate (immutable):
 
 - `withData(array $data): Structure`
@@ -61,6 +65,8 @@ Validation / transform:
 - `fromJsonSchema(array $jsonSchema): Structure`
 - `fromArrayKeyValues(string $name, array $data, string $description = ''): Structure`
 - `fromString(string $name, string $typeString, string $description = ''): Structure`
+
+`fromString()` is a convenience shape parser for compact field lists. It supports top-level comma-separated fields, nested type strings like `array{name:string}`, and field descriptions in trailing parentheses.
 
 ## Schema Authoring
 

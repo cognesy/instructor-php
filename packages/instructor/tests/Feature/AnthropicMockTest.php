@@ -1,43 +1,28 @@
 <?php
 
+use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\MockHttp;
-use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Instructor\Tests\Support\TestConfig;
 use Cognesy\Polyglot\Inference\Drivers\Anthropic\AnthropicDriver;
-use Cognesy\Polyglot\Inference\Drivers\Anthropic\AnthropicUsageFormat;
-use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Events\Dispatchers\EventDispatcher;
 
-class AnthropicTestUser {
+class AnthropicTestUser
+{
     public int $age;
+
     public string $name;
 }
 
 it('works with Anthropic mock responses in tools mode', function () {
     $json = '{"age":30,"name":"Alex"}';
     $client = MockHttp::get([$json], 'anthropic');
-
-    $llmConfigArray = require __DIR__ . '/../Fixtures/Setup/config/llm.php';
-    $preset = $llmConfigArray['presets']['anthropic'];
-
-    // Filter to only include LLMConfig fields
-    $configData = array_intersect_key($preset, [
-        'apiUrl' => true,
-        'apiKey' => true,
-        'endpoint' => true,
-        'metadata' => true,
-        'model' => true,
-        'maxTokens' => true,
-        'contextLength' => true,
-        'maxOutputLength' => true,
-    ]);
-
-    $config = LLMConfig::fromArray($configData);
+    $config = TestConfig::llmPreset('anthropic');
     $driver = new AnthropicDriver(
         config: $config,
         httpClient: $client,
-        events: new EventDispatcher()
+        events: new EventDispatcher
     );
 
     $obj = (new StructuredOutput(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Tools)))
@@ -53,32 +38,16 @@ it('works with Anthropic mock responses in tools mode', function () {
 it('works with Anthropic mock responses for scalars', function () {
     $intJson = '{"age":28}';
     $client = MockHttp::get([$intJson], 'anthropic');
-
-    $llmConfigArray = require __DIR__ . '/../Fixtures/Setup/config/llm.php';
-    $preset = $llmConfigArray['presets']['anthropic'];
-
-    // Filter to only include LLMConfig fields
-    $configData = array_intersect_key($preset, [
-        'apiUrl' => true,
-        'apiKey' => true,
-        'endpoint' => true,
-        'metadata' => true,
-        'model' => true,
-        'maxTokens' => true,
-        'contextLength' => true,
-        'maxOutputLength' => true,
-    ]);
-
-    $config = LLMConfig::fromArray($configData);
+    $config = TestConfig::llmPreset('anthropic');
     $driver = new AnthropicDriver(
         config: $config,
         httpClient: $client,
-        events: new EventDispatcher()
+        events: new EventDispatcher
     );
 
     $v1 = (new StructuredOutput(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Tools)))
         ->with(
-            messages: [['role'=>'user','content'=>'age?']],
+            messages: [['role' => 'user', 'content' => 'age?']],
             responseModel: Scalar::integer('age'),
         )
         ->get();

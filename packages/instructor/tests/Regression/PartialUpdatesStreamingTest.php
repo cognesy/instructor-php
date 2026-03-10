@@ -3,7 +3,7 @@
 use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Enums\OutputMode;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Tests\Addons\Support\FakeInferenceDriver;
 
 class StreamUser
@@ -13,10 +13,10 @@ class StreamUser
 }
 
 it('yields each partial value via stream partials()', function () {
-    // Prepare a deterministic stream of partial responses with values already set
-    $p1 = (new PartialInferenceResponse(contentDelta: ''))->withValue(new StreamUser(1));
-    $p2 = (new PartialInferenceResponse(contentDelta: ''))->withValue(new StreamUser(2));
-    $p3 = (new PartialInferenceResponse(contentDelta: ''))->withValue(new StreamUser(3));
+    // Prepare a deterministic stream of deltas with values already set
+    $p1 = new PartialInferenceDelta(value: new StreamUser(1));
+    $p2 = new PartialInferenceDelta(value: new StreamUser(2));
+    $p3 = new PartialInferenceDelta(value: new StreamUser(3));
 
     $driver = new FakeInferenceDriver(
         responses: [],

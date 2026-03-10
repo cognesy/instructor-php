@@ -1,0 +1,25 @@
+defaultPreset: openai
+
+presets:
+  openai:
+    driver: openai
+    apiUrl: https://api.openai.com/v1
+    apiKey: test
+    endpoint: /chat/completions
+    model: gpt-4o-mini
+    maxTokens: 1024
+    contextLength: 128000
+    maxOutputLength: 16384
+
+  anthropic:
+    driver: anthropic
+    apiUrl: https://api.anthropic.com/v1
+    apiKey: test
+    endpoint: /messages
+    metadata:
+      apiVersion: 2023-06-01
+      beta: prompt-caching-2024-07-31
+    model: claude-3-haiku-20240307
+    maxTokens: 1024
+    contextLength: 200000
+    maxOutputLength: 8192

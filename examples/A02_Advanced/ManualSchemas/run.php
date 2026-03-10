@@ -102,6 +102,13 @@ print("- Schema is determined at runtime\n");
 print("- You need provider-specific optimizations\n");
 print("- Working with legacy JSON Schema specs\n");
 print("- Reflection overhead is a concern\n");
+
+assert($user['name'] === 'John Doe');
+assert($user['email'] === 'john.doe@example.com');
+assert($user['age'] === 35);
+assert($user['role'] === 'admin');
+assert(!empty($user['address']['city']));
+assert(!empty($user['skills']));
 ?>
 ```
 
@@ -154,5 +161,10 @@ print("Product: " . $data['product'] . "\n");
 print("Quantity: " . $data['quantity'] . "\n");
 print("Price: $" . $data['price'] . "\n");
 print("In Stock: " . ($data['inStock'] ? 'Yes' : 'No') . "\n");
+
+assert(is_string($data['product']) && !empty($data['product']));
+assert($data['quantity'] === 2);
+assert(is_float($data['price']) || is_int($data['price']));
+assert($data['inStock'] === true);
 ?>
 ```

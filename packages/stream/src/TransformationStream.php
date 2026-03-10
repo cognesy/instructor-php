@@ -87,11 +87,15 @@ final class TransformationStream implements Stream
         ?TransformationExecution $execution = null,
         ?Iterator $iterator = null,
     ) : self {
+        $resolvedInput = $input ?? $this->input;
+        $resolvedTransformation = $transformation ?? $this->transformation;
+        $resetRuntimeState = $resolvedInput !== $this->input || $resolvedTransformation !== $this->transformation;
+
         return new self(
-            input: $input ?? $this->input,
-            transformation: $transformation ?? $this->transformation,
-            execution: $execution ?? $this->execution,
-            iterator: $iterator ?? $this->iterator,
+            input: $resolvedInput,
+            transformation: $resolvedTransformation,
+            execution: $resetRuntimeState ? $execution : ($execution ?? $this->execution),
+            iterator: $resetRuntimeState ? $iterator : ($iterator ?? $this->iterator),
         );
     }
 

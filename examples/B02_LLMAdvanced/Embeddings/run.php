@@ -33,7 +33,7 @@ require 'examples/boot.php';
 use Cognesy\Polyglot\Embeddings\Embeddings;
 use Cognesy\Polyglot\Embeddings\Utils\EmbedUtils;
 
-$query = "technology news";
+$query = 'technology news';
 $documents = [
     'Computer vision models are used to analyze images and videos.',
     'The bakers at the Nashville Bakery baked 200 loaves of bread on Monday morning.',
@@ -62,15 +62,15 @@ $queryVector = $queryVectors[0]
 $similarities = EmbedUtils::findTopK($queryVector, $docVectors, $topK);
 
 // print documents most similar to the query
-echo "Query: " . $query . PHP_EOL;
+echo 'Query: '.$query.PHP_EOL;
 $count = 1;
-foreach($similarities as $index => $similarity) {
+foreach ($similarities as $index => $similarity) {
     echo $count++;
-    echo ': ' . $documents[$index];
-    echo ' - cosine similarity to query = ' . $similarities[$index];
+    echo ': '.$documents[$index];
+    echo ' - cosine similarity to query = '.$similarities[$index];
     echo PHP_EOL;
 }
 
-assert(!empty($similarities));
+assert(! empty($similarities));
 ?>
 ```

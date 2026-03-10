@@ -121,5 +121,7 @@ while ($chat->hasNextStep($state)) {
 //    echo "MESSAGES:\n" . $state->store()->section('messages')->get()?->toString();
 //    echo "=====================\n";
 }
+
+assert($state->stepCount() > 0, 'Expected at least one step in the chat');
 ?>
 ```

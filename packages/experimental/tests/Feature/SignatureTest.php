@@ -15,6 +15,13 @@ it('creates signature from string', function () {
     expect($signature->toSignatureString())->toBe('name:string (description) -> age:int (description)');
 });
 
+it('creates signature from string without an explicit description', function () {
+    $signature = SignatureFactory::fromString('name:string -> age:int');
+
+    expect($signature->toSignatureString())->toBe('name:string -> age:int')
+        ->and($signature->getDescription())->toBe('');
+});
+
 it('creates signature from separate schemas', function () {
     $inputSchema = SchemaBuilder::define('inputs')
         ->string('name', 'name description')

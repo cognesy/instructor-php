@@ -225,6 +225,10 @@ $client = (new HttpClientBuilder())
 
 When `fallbackToRealRequests` is `true`, unrecorded requests are sent to the real server. When `false`, a `RecordingNotFoundException` is thrown.
 
+Record/replay matching is intentionally narrow in 2.0.0: recordings are keyed by request method, full URL, and body. Request headers and request options are not part of the identity contract.
+
+For streamed responses, recording mode buffers the full upstream stream before returning a replayable streamed response. That keeps replay deterministic, but it means recording mode is not a transparent progressive-streaming path.
+
 ## Response Decoration
 
 For middleware that needs to transform streamed responses, use `BaseResponseDecorator` to wrap the stream with a transformation function:

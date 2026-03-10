@@ -35,3 +35,6 @@ $response = Inference::using('openai')
     ->get();
 
 echo "Response: " . $response . "\n";
+
+assert(!empty($response), 'Expected non-empty response from image inference');
+?>

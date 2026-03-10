@@ -30,7 +30,6 @@ use Cognesy\Addons\Image\Image;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Schema\Attributes\Description;
-use Cognesy\Utils\Str;
 
 enum DamageSeverity : string {
     case Minor = 'minor';
@@ -78,9 +77,11 @@ $assessment = Image::fromFile(__DIR__ . '/car-damage.jpg')
     );
 
 dump($assessment);
-assert(Str::contains($assessment->make, 'Toyota', false));
-assert(Str::contains($assessment->model, 'Prius', false));
-assert(Str::contains($assessment->bodyColor, 'white', false));
+
+assert(strtolower(trim($assessment->make)) === 'toyota');
+assert(strtolower(trim($assessment->model)) === 'prius');
+assert(strtolower(trim($assessment->bodyColor)) === 'white');
 assert(count($assessment->damages) > 0);
+assert(trim($assessment->summary) !== '');
 ?>
 ```

@@ -161,6 +161,9 @@ class DecomposedTaskSolver {
 $result = (new DecomposedTaskSolver)('Concatenate the second letter of every word in "Jack Ryan" together');
 
 dump($result);
+
+assert(is_string($result));
+assert(!empty($result));
 ?>
 ```
 

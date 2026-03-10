@@ -7,13 +7,12 @@ use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 
 class FakeInferenceDriver implements CanProcessInferenceRequest
 {
     /** @var InferenceResponse[] */
     private array $responses;
-    /** @var array<int, PartialInferenceResponse[]> */
+    /** @var array<int, PartialInferenceDelta[]> */
     private array $streamBatches;
     public int $responseCalls = 0;
     public int $streamCalls = 0;
@@ -46,21 +45,12 @@ class FakeInferenceDriver implements CanProcessInferenceRequest
         return new DriverCapabilities();
     }
 
-    /** @param PartialInferenceResponse[] $batch */
+    /** @param PartialInferenceDelta[] $batch */
     private function emitDeltas(array $batch): iterable
     {
         foreach ($batch as $item) {
-            yield new PartialInferenceDelta(
-                contentDelta: $item->contentDelta,
-                reasoningContentDelta: $item->reasoningContentDelta,
-                toolId: $item->toolId(),
-                toolName: $item->toolName(),
-                toolArgs: $item->toolArgs(),
-                finishReason: $item->finishReason(),
-                usage: $item->usage(),
-                usageIsCumulative: $item->isUsageCumulative(),
-                value: $item->value(),
-            );
+            assert($item instanceof PartialInferenceDelta);
+            yield $item;
         }
     }
 }

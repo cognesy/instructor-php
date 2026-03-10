@@ -23,40 +23,37 @@ supported by all language model providers.
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Inference;
 
 $data = Inference::using('openai')
     ->with(
-        messages: [['role' => 'user', 'content' => 'What is capital of France? \
-        Respond with JSON data.']],
-        responseFormat: [
-            'type' => 'json_schema',
-            'description' => 'City data',
-            'json_schema' => [
-                'name' => 'city_data',
-                'schema' => [
-                    'type' => 'object',
-                    'description' => 'City information',
-                    'properties' => [
-                        'name' => [
-                            'type' => 'string',
-                            'description' => 'City name',
-                        ],
-                        'founded' => [
-                            'type' => 'integer',
-                            'description' => 'Founding year',
-                        ],
-                        'population' => [
-                            'type' => 'integer',
-                            'description' => 'Current population',
-                        ],
+        messages: Messages::fromString('What is capital of France? Respond with JSON data.'),
+        responseFormat: ResponseFormat::jsonSchema(
+            schema: [
+                'type' => 'object',
+                'description' => 'City information',
+                'properties' => [
+                    'name' => [
+                        'type' => 'string',
+                        'description' => 'City name',
                     ],
-                    'additionalProperties' => false,
-                    'required' => ['name', 'founded', 'population'],
+                    'founded' => [
+                        'type' => 'integer',
+                        'description' => 'Founding year',
+                    ],
+                    'population' => [
+                        'type' => 'integer',
+                        'description' => 'Current population',
+                    ],
                 ],
-                'strict' => true,
+                'additionalProperties' => false,
+                'required' => ['name', 'founded', 'population'],
             ],
-        ],
+            name: 'city_data',
+            strict: true,
+        ),
         options: ['max_tokens' => 64],
     )
     ->asJsonData();

@@ -55,5 +55,12 @@ $relationships = StructuredOutput::using('openai')->with(
 dump($relationships);
 
 assert(!empty($relationships->users));
+assert(count($relationships->users) === 3, 'Expected 3 users: Jason, Amanda, John');
+foreach ($relationships->users as $user) {
+    assert($user instanceof UserDetail);
+    assert(!empty($user->name));
+    assert(!empty($user->role));
+    assert(is_array($user->coworkers));
+}
 ?>
 ```

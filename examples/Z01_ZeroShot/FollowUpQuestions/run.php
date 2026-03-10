@@ -59,6 +59,10 @@ $response = (new RespondWithFollowUp)(
 
 echo "Answer:\n";
 dump($response);
+
+assert($response instanceof Response);
+assert(!empty($response->finalAnswer));
+assert(is_array($response->followUps));
 ?>
 ```
 

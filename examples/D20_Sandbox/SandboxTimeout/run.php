@@ -29,5 +29,7 @@ $result = Sandbox::host($policy)->execute([
 echo "Exit: {$result->exitCode()}\n";
 echo "Timed out: " . ($result->timedOut() ? 'yes' : 'no') . "\n";
 echo "Stdout: " . $result->stdout() . "\n";
+
+assert($result->timedOut() === true, 'Command should have timed out');
 ?>
 ```

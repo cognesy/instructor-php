@@ -6,6 +6,7 @@ order:
   - introduction
   - quickstart
   - setup
+  - testing-doubles
   # Directories (navigation groups)
   - concepts
   - essentials

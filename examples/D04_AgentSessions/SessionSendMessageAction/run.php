@@ -81,5 +81,11 @@ echo 'Conversation messages count: ' . $afterSecondWakeUp->state()->messages()->
 echo 'Last response: ' . ($afterSecondWakeUp->state()->finalResponse()->toString() ?: 'No response') . "\n";
 echo "\nConversation transcript:\n";
 echo $afterSecondWakeUp->state()->messages()->toString() . "\n";
+
+assert($afterFirstWakeUp->version() > $created->version(), 'Version should increment after first wake-up');
+assert($afterSecondWakeUp->version() > $afterFirstWakeUp->version(), 'Version should increment after second wake-up');
+assert($afterSecondWakeUp->state()->messages()->count() > $afterFirstWakeUp->state()->messages()->count(), 'Message count should grow after second wake-up');
+assert(!empty($afterFirstWakeUp->state()->finalResponse()->toString()), 'First wake-up should produce a response');
+assert(!empty($afterSecondWakeUp->state()->finalResponse()->toString()), 'Second wake-up should produce a response');
 ?>
 ```

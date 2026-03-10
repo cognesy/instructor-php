@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+use Cognesy\Messages\Messages;
 use Cognesy\Instructor\Collections\StructuredOutputAttemptList;
 use Cognesy\Instructor\Data\StructuredOutputAttempt;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
@@ -14,7 +15,7 @@ it('reports success for latest finalized attempt (instructor)', function () {
     );
 
     $exec = new StructuredOutputExecution(
-        request: new \Cognesy\Instructor\Data\StructuredOutputRequest(messages: '', requestedSchema: []),
+        request: new \Cognesy\Instructor\Data\StructuredOutputRequest(messages: Messages::empty(), requestedSchema: []),
         attemptHistory: StructuredOutputAttemptList::of($attempt),
         status: ExecutionStatus::Succeeded,
     );
@@ -35,7 +36,7 @@ it('reports failure for latest finalized attempt (instructor)', function () {
     );
 
     $exec = new StructuredOutputExecution(
-        request: new \Cognesy\Instructor\Data\StructuredOutputRequest(messages: '', requestedSchema: []),
+        request: new \Cognesy\Instructor\Data\StructuredOutputRequest(messages: Messages::empty(), requestedSchema: []),
         attemptHistory: StructuredOutputAttemptList::of($attempt),
         status: ExecutionStatus::Failed,
     );
@@ -50,7 +51,7 @@ it('reports failure for latest finalized attempt (instructor)', function () {
 it('aggregates current errors and exposes currentErrors() (instructor)', function () {
     $attempt = new StructuredOutputAttempt(isFinalized: false, errors: ['e1']);
     $exec = new StructuredOutputExecution(
-        request: new \Cognesy\Instructor\Data\StructuredOutputRequest(messages: '', requestedSchema: []),
+        request: new \Cognesy\Instructor\Data\StructuredOutputRequest(messages: Messages::empty(), requestedSchema: []),
         activeAttempt: $attempt,
         status: ExecutionStatus::Running,
     );

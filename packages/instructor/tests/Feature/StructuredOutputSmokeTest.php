@@ -9,7 +9,7 @@ use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Messages\ToolCall;
 use Cognesy\Messages\ToolCalls;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -38,9 +38,9 @@ it('sync: deserializes object into provided class', function () {
 // 2) Streaming: should receive a sequence of gradually completed PHP object
 it('stream: yields partial updates of object progressively', function () {
     $stream = [
-        new PartialInferenceResponse(contentDelta: '{"age":3'),
-        new PartialInferenceResponse(contentDelta: '0,"name":"A'),
-        new PartialInferenceResponse(contentDelta: 'lex"}'),
+        new PartialInferenceDelta(contentDelta: '{"age":3'),
+        new PartialInferenceDelta(contentDelta: '0,"name":"A'),
+        new PartialInferenceDelta(contentDelta: 'lex"}'),
     ];
     $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $stream ]);
 
@@ -143,8 +143,8 @@ it('sequence: streaming yields updates with complete items', function () {
     $s2->push((function(){ $i=new SmokeItem(); $i->title='A'; return $i; })());
     $s2->push((function(){ $i=new SmokeItem(); $i->title='B'; return $i; })());
     $sequenceStream = [
-        (new PartialInferenceResponse(contentDelta: ''))->withValue($s1),
-        (new PartialInferenceResponse(contentDelta: ''))->withValue($s2),
+        new PartialInferenceDelta(value: $s1),
+        new PartialInferenceDelta(value: $s2),
     ];
     $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $sequenceStream ]);
 
@@ -189,8 +189,8 @@ it('tools mode: sync uses tool call args as JSON', function () {
 
 it('tools mode: streaming assembles args from tool deltas', function () {
     $stream = [
-        new PartialInferenceResponse(toolName: 'extract', toolArgs: '{"age":'),
-        new PartialInferenceResponse(toolArgs: '42}'),
+        new PartialInferenceDelta(toolName: 'extract', toolArgs: '{"age":'),
+        new PartialInferenceDelta(toolArgs: '42}'),
     ];
     $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $stream ]);
 
@@ -224,7 +224,7 @@ it('supports structured output runtime static factories', function () {
     $llmConfig = $provider->resolveConfig();
     $structuredConfig = (new StructuredOutputConfig())->withOutputMode(OutputMode::Tools);
     $request = new StructuredOutputRequest(
-        messages: 'extract',
+        messages: \Cognesy\Messages\Messages::fromString('extract'),
         requestedSchema: RuntimeFactoryUser::class,
     );
 

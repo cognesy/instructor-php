@@ -2,7 +2,7 @@
 
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 
@@ -13,11 +13,11 @@ it('partials engine emits all completed sequence items including final one', fun
 
     // Stream JSON content deltas forming a 4-item sequence
     $chunks = [
-        new PartialInferenceResponse(contentDelta: '{"list":[{"name":"Jason","age":25}'),
-        new PartialInferenceResponse(contentDelta: ',{"name":"Jane","age":18}'),
-        new PartialInferenceResponse(contentDelta: ',{"name":"John","age":30}'),
-        new PartialInferenceResponse(contentDelta: ',{"name":"Anna","age":28}'),
-        new PartialInferenceResponse(contentDelta: ']}', finishReason: 'stop'),
+        new PartialInferenceDelta(contentDelta: '{"list":[{"name":"Jason","age":25}'),
+        new PartialInferenceDelta(contentDelta: ',{"name":"Jane","age":18}'),
+        new PartialInferenceDelta(contentDelta: ',{"name":"John","age":30}'),
+        new PartialInferenceDelta(contentDelta: ',{"name":"Anna","age":28}'),
+        new PartialInferenceDelta(contentDelta: ']}', finishReason: 'stop'),
     ];
 
     $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $chunks ]);

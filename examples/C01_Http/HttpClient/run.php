@@ -49,5 +49,8 @@ $response = $client->send($request)->get();
 echo "Status:  " . $response->statusCode() . "\n";
 echo "Headers: " . json_encode($response->headers()) . "\n";
 echo "Body:    " . $response->body() . "\n";
+
+assert($response->statusCode() === 200, 'Expected status code 200');
+assert(!empty($response->body()), 'Expected non-empty response body');
 ?>
 ```

@@ -68,6 +68,8 @@ $options = [
 
 $answer = (new MajorityVoting)($question, $options, k: 8, threshold: 0.6);
 dump($answer);
+
+assert($answer instanceof OptionLetter);
 ?>
 ```
 

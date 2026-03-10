@@ -32,6 +32,19 @@ it('allows repeated completion access with stable results', function () {
     expect($second)->toBe([2, 4, 6]);
 });
 
+it('replays completed output from the materialized snapshot', function () {
+    $stream = TransformationStream::from([1, 2, 3])
+        ->through(new Map(fn(int $x): int => $x * 2));
+
+    $completed = $stream->getCompleted();
+    $firstReplay = iterator_to_array($stream->getIterator(), false);
+    $secondReplay = iterator_to_array($stream->getIterator(), false);
+
+    expect($completed)->toBe([2, 4, 6]);
+    expect($firstReplay)->toBe([2, 4, 6]);
+    expect($secondReplay)->toBe([2, 4, 6]);
+});
+
 it('allows getCompleted after consuming iterator without failure', function () {
     $stream = TransformationStream::from([1, 2, 3])
         ->through(new Map(fn(int $x): int => $x * 2));

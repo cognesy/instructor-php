@@ -30,16 +30,16 @@ this feature in JSON mode (only in JSON Schema mode).
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Inference;
 
 $data = Inference::using('openai')
     ->with(
-        messages: [['role' => 'user', 'content' => 'What is capital of France? \
+        messages: Messages::fromString('What is capital of France? \
            Respond with JSON data containing name", population and year of founding. \
-           Example: {"name": "Berlin", "population": 3700000, "founded": 1237}']],
-        responseFormat: [
-            'type' => 'json_object',
-        ],
+           Example: {"name": "Berlin", "population": 3700000, "founded": 1237}'),
+        responseFormat: ResponseFormat::jsonObject(),
         options: ['max_tokens' => 64],
     )
     ->asJsonData();

@@ -31,7 +31,7 @@ model: gpt-4.1-nano
 metadata:
   organization: 'org-your-organization-id'
   project: 'proj-your-project-id'
-# @doctest id="bab3"
+# @doctest id="1397"
 ```
 
 ### API Changes
@@ -56,7 +56,7 @@ $text = Inference::using('openai')
 $text = Inference::using('openai-responses')
     ->withMessages('Hello')
     ->get();
-// @doctest id="6696"
+// @doctest id="95bf"
 ```
 
 ## Anthropic
@@ -78,7 +78,7 @@ endpoint: /messages
 metadata:
   apiVersion: '2023-06-01'
   beta: prompt-caching-2024-07-31
-# @doctest id="f23e"
+# @doctest id="0486"
 ```
 
 If you see errors about unsupported API versions, update the `apiVersion` value in your preset.
@@ -110,7 +110,7 @@ $text = Inference::using('gemini')
 $text = Inference::using('gemini-oai')
     ->withMessages('Hello')
     ->get();
-// @doctest id="b1fd"
+// @doctest id="f534"
 ```
 
 ## Mistral
@@ -135,7 +135,7 @@ curl http://localhost:11434/api/version
 
 # Start Ollama if not running
 ollama serve
-# @doctest id="9298"
+# @doctest id="dbf3"
 ```
 
 ### Pull Models Before Use
@@ -148,7 +148,7 @@ ollama pull llama3
 
 # List available models
 ollama list
-# @doctest id="d4a1"
+# @doctest id="0614"
 ```
 
 ### Default Endpoint
@@ -170,23 +170,27 @@ apiUrl: 'https://your-resource.openai.azure.com/openai'
 apiKey: '${AZURE_OPENAI_API_KEY}'
 endpoint: '/deployments/your-deployment/chat/completions'
 model: gpt-4
-# @doctest id="1fbc"
+# @doctest id="d329"
 ```
 
 Azure deployments use deployment names rather than model names in the endpoint URL. Ensure the `endpoint` field includes the correct deployment name.
 
 ## AWS Bedrock
 
-The `aws-bedrock` driver uses AWS authentication (SigV4) rather than API keys. Configuration requires AWS credentials:
+Use the `bedrock-openai` driver for Bedrock's OpenAI-compatible endpoint.
+The current 2.0 implementation authenticates with a bearer API key. AWS
+SigV4 credential signing is not implemented in Polyglot yet.
 
 ```yaml
 # config/llm/presets/aws-bedrock.yaml
-driver: aws-bedrock
-apiUrl: 'https://bedrock-runtime.us-east-1.amazonaws.com'
+driver: bedrock-openai
+apiUrl: 'https://bedrock-runtime.us-east-1.amazonaws.com/openai/v1'
 apiKey: '${AWS_BEDROCK_API_KEY}'
-endpoint: '/model/anthropic.claude-3-haiku-20240307-v1:0/converse'
+endpoint: /chat/completions
 model: anthropic.claude-3-haiku-20240307-v1:0
-# @doctest id="d7c1"
+metadata:
+  region: '${AWS_BEDROCK_REGION:-us-east-1}'
+# @doctest id="85ac"
 ```
 
 ## Cohere

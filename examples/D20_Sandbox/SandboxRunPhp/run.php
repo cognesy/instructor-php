@@ -30,5 +30,8 @@ $result = $sandbox->execute([
 ]);
 
 echo $result->stdout();
+
+assert($result->exitCode() === 0, 'PHP script should exit with code 0');
+assert(str_contains($result->stdout(), 'sandbox says hi'), 'Output should contain expected greeting');
 ?>
 ```

@@ -45,6 +45,12 @@ $list = StructuredOutput::using('openai')->with(
 dump($list);
 
 assert(!empty($list->users));
+assert(count($list->users) >= 3, 'Expected at least 3 user detail entries');
+foreach ($list->users as $user) {
+    assert($user instanceof UserDetail);
+    assert(!empty($user->key));
+    assert(!empty($user->value));
+}
 ?>
 ```
 

@@ -220,3 +220,29 @@ test('throws when recording cannot be written to storage', function() {
         rmdir($readOnlyDir);
     }
 });
+
+test('matches recordings by method url and body only, ignoring headers and options', function() {
+    $recorded = new HttpRequest(
+        'https://api.example.com/users',
+        'POST',
+        ['Authorization' => 'Bearer token-a', 'Accept' => 'application/json'],
+        '{"id":1}',
+        ['timeout' => 5, 'trace' => 'a', 'stream' => false],
+    );
+
+    $lookup = new HttpRequest(
+        'https://api.example.com/users',
+        'POST',
+        ['Authorization' => 'Bearer token-b', 'Accept' => 'text/plain'],
+        '{"id":1}',
+        ['timeout' => 30, 'trace' => 'b', 'stream' => false],
+    );
+
+    $response = MockHttpResponseFactory::success(body: '{"owner":"recorded"}');
+    $this->records->save($recorded, $response);
+
+    $record = $this->records->find($lookup);
+
+    expect($record)->not()->toBeNull()
+        ->and($record?->getResponseBody())->toBe('{"owner":"recorded"}');
+});

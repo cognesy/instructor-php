@@ -101,5 +101,5 @@ The package ships with secure defaults that apply across all drivers:
 - [Execution Policy](3-execution-policy.md) -- Configure timeouts, memory, paths, environment, network, and output limits.
 - [Drivers](4-drivers.md) -- Choose and configure the right isolation backend.
 - [Streaming and Results](5-streaming-and-results.md) -- Consume output in real time and inspect execution results.
-- [Testing](6-testing.md) -- Use `MockSandbox` for fast, deterministic tests.
+- [Testing](6-testing.md) -- Use `FakeSandbox` for fast, deterministic tests.
 - [Troubleshooting](7-troubleshooting.md) -- Diagnose and resolve common issues.

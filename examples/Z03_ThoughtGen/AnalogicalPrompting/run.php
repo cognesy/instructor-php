@@ -73,6 +73,12 @@ class SolvePerAnalogy {
 $solution = (new SolvePerAnalogy)('What is the area of the square with the four vertices at (-2, 2), (2, -2), (-2, -6), and (-6, -2)?');
 
 dump($solution);
+
+assert($solution instanceof Response);
+assert(is_array($solution->relevantProblems));
+assert(count($solution->relevantProblems) > 0);
+assert(!empty($solution->answer));
+assert($solution->problemSolution instanceof Problem);
 ?>
 ```
 

@@ -23,6 +23,7 @@ try {
     $result = Sandbox::podman($policy, image: 'alpine:3')
         ->execute(['sh', '-lc', 'echo "hello from podman sandbox"']);
 
+    assert($result->exitCode() === 0, 'Podman echo should exit with code 0');
     echo "Exit: {$result->exitCode()}\n";
     echo $result->stdout();
 } catch (Throwable $e) {

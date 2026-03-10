@@ -5,7 +5,7 @@ it('rejects retryPolicy in options', function () {
     $builder = new InferenceRequestBuilder();
 
     $build = fn() => $builder
-        ->withMessages('Retry')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Retry'))
         ->withOptions(['retryPolicy' => ['maxAttempts' => 2]])
         ->create();
 

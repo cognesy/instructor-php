@@ -55,6 +55,11 @@ $response = (new RereadAndRespond)(
 
 echo "Answer:\n";
 dump($response);
+
+assert($response instanceof Response);
+assert(!empty($response->query));
+assert(!empty($response->thoughts));
+assert(is_int($response->answer));
 ?>
 ```
 

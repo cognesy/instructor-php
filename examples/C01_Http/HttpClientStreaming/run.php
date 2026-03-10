@@ -44,8 +44,12 @@ $request = new HttpRequest(
     options: ['stream' => true],
 );
 
+$chunkCount = 0;
 foreach ($client->send($request)->stream() as $chunk) {
     echo $chunk; // handle streamed data incrementally
+    $chunkCount++;
 }
+
+assert($chunkCount === 3, 'Expected 3 streamed chunks');
 ?>
 ```

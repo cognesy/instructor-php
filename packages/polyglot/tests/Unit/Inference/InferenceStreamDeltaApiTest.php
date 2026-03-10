@@ -4,15 +4,14 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Streaming\InferenceStream;
 use Cognesy\Polyglot\Tests\Support\FakeInferenceDriver;
 
 it('invokes delta callback and exposes last visible delta', function () {
     $driver = new FakeInferenceDriver(
         streamBatches: [[
-            new PartialInferenceResponse(contentDelta: 'Hel'),
-            new PartialInferenceResponse(contentDelta: 'lo', finishReason: 'stop'),
+            new PartialInferenceDelta(contentDelta: 'Hel'),
+            new PartialInferenceDelta(contentDelta: 'lo', finishReason: 'stop'),
         ]],
     );
 

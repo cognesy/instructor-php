@@ -4,7 +4,7 @@ use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Instructor\Enums\OutputMode;
 
 if (!class_exists('SequenceStreamPerson')) {
@@ -13,9 +13,9 @@ if (!class_exists('SequenceStreamPerson')) {
 
 it('partials() skips null updates emitted before sequence value appears', function () {
     $chunks = [
-        new PartialInferenceResponse(contentDelta: '{"list":['),
-        new PartialInferenceResponse(contentDelta: '{"name":"Alice","age":25},{"name":"Bob"'),
-        new PartialInferenceResponse(contentDelta: ',"age":30}]}', finishReason: 'stop'),
+        new PartialInferenceDelta(contentDelta: '{"list":['),
+        new PartialInferenceDelta(contentDelta: '{"name":"Alice","age":25},{"name":"Bob"'),
+        new PartialInferenceDelta(contentDelta: ',"age":30}]}', finishReason: 'stop'),
     ];
 
     $driver = new FakeInferenceDriver(responses: [], streamBatches: [$chunks]);
@@ -38,8 +38,8 @@ it('partials() skips null updates emitted before sequence value appears', functi
 
 it('sequence() ignores transient non-sequence partial values and yields finalized sequence', function () {
     $chunks = [
-        (new PartialInferenceResponse())->withValue(['tool_fragment' => true]),
-        new PartialInferenceResponse(contentDelta: '{"list":[{"name":"Alice","age":25}]}', finishReason: 'stop'),
+        new PartialInferenceDelta(value: ['tool_fragment' => true]),
+        new PartialInferenceDelta(contentDelta: '{"list":[{"name":"Alice","age":25}]}', finishReason: 'stop'),
     ];
 
     $driver = new FakeInferenceDriver(responses: [], streamBatches: [$chunks]);

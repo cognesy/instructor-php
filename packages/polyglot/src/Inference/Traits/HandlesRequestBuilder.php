@@ -2,10 +2,10 @@
 
 namespace Cognesy\Polyglot\Inference\Traits;
 
-use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Data\ToolChoice;
 use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
@@ -20,7 +20,7 @@ trait HandlesRequestBuilder
         return $copy;
     }
 
-    public function withMessages(string|array|Message|Messages $messages): static {
+    public function withMessages(Messages $messages): static {
         $copy = $this->cloneWithRequestBuilder();
         $copy->requestBuilder->withMessages($messages);
         return $copy;
@@ -38,19 +38,19 @@ trait HandlesRequestBuilder
         return $copy;
     }
 
-    public function withTools(ToolDefinitions|array $tools): static {
+    public function withTools(ToolDefinitions $tools): static {
         $copy = $this->cloneWithRequestBuilder();
         $copy->requestBuilder->withTools($tools);
         return $copy;
     }
 
-    public function withToolChoice(ToolChoice|string|array $toolChoice): static {
+    public function withToolChoice(ToolChoice $toolChoice): static {
         $copy = $this->cloneWithRequestBuilder();
         $copy->requestBuilder->withToolChoice($toolChoice);
         return $copy;
     }
 
-    public function withResponseFormat(array $responseFormat): static {
+    public function withResponseFormat(ResponseFormat $responseFormat): static {
         $copy = $this->cloneWithRequestBuilder();
         $copy->requestBuilder->withResponseFormat($responseFormat);
         return $copy;
@@ -81,10 +81,10 @@ trait HandlesRequestBuilder
     }
 
     public function withCachedContext(
-        string|array $messages = [],
-        ToolDefinitions|array $tools = [],
-        ToolChoice|string|array $toolChoice = [],
-        array        $responseFormat = [],
+        ?Messages $messages = null,
+        ?ToolDefinitions $tools = null,
+        ?ToolChoice $toolChoice = null,
+        ?ResponseFormat $responseFormat = null,
     ): static {
         $copy = $this->cloneWithRequestBuilder();
         $copy->requestBuilder->withCachedContext($messages, $tools, $toolChoice, $responseFormat);

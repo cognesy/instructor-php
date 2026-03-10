@@ -1,33 +1,23 @@
 <?php
 
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Streaming\InferenceStreamState;
 
 function applyDeltas(array $partials): InferenceStreamState {
     $state = new InferenceStreamState();
     foreach ($partials as $p) {
-        $delta = $p instanceof PartialInferenceDelta ? $p : new PartialInferenceDelta(
-            contentDelta: $p->contentDelta,
-            reasoningContentDelta: $p->reasoningContentDelta,
-            toolId: $p->toolId ?? '',
-            toolName: $p->toolName ?? '',
-            toolArgs: $p->toolArgs ?? '',
-            finishReason: $p->finishReason() ?? '',
-            usage: $p->usage(),
-            usageIsCumulative: $p->isUsageCumulative(),
-        );
-        $state->applyDelta($delta);
+        assert($p instanceof PartialInferenceDelta);
+        $state->applyDelta($p);
     }
     return $state;
 }
 
 it('accumulates content across partial responses', function () {
     $partials = [
-        new PartialInferenceResponse(contentDelta: 'Hel', usage: new Usage(inputTokens: 1, outputTokens: 1)),
-        new PartialInferenceResponse(contentDelta: 'lo', usage: new Usage(inputTokens: 0, outputTokens: 1)),
-        new PartialInferenceResponse(contentDelta: '!', finishReason: 'stop', usage: new Usage(inputTokens: 0, outputTokens: 1)),
+        new PartialInferenceDelta(contentDelta: 'Hel', usage: new Usage(inputTokens: 1, outputTokens: 1)),
+        new PartialInferenceDelta(contentDelta: 'lo', usage: new Usage(inputTokens: 0, outputTokens: 1)),
+        new PartialInferenceDelta(contentDelta: '!', finishReason: 'stop', usage: new Usage(inputTokens: 0, outputTokens: 1)),
     ];
 
     $res = applyDeltas($partials)->finalResponse();
@@ -39,8 +29,8 @@ it('accumulates content across partial responses', function () {
 
 it('aggregates tool arguments from partial responses (single tool)', function () {
     $partials = [
-        new PartialInferenceResponse(toolId: 'call_1', toolName: 'search', toolArgs: '{"q":"Hel', usage: new Usage()),
-        new PartialInferenceResponse(toolId: 'call_1', toolArgs: 'lo"}', usage: new Usage()),
+        new PartialInferenceDelta(toolId: 'call_1', toolName: 'search', toolArgs: '{"q":"Hel', usage: new Usage()),
+        new PartialInferenceDelta(toolId: 'call_1', toolArgs: 'lo"}', usage: new Usage()),
     ];
     $res = applyDeltas($partials)->finalResponse();
     expect($res->hasToolCalls())->toBeTrue();
@@ -65,10 +55,10 @@ it('keeps raw cumulative tool args snapshot while assembling', function () {
 
 it('accumulates multiple tools in sequence (name-based)', function () {
     $partials = [
-        new PartialInferenceResponse(toolName: 'search', toolArgs: '{"q":"Hel', usage: new Usage()),
-        new PartialInferenceResponse(toolArgs: 'lo"}', usage: new Usage()),
-        new PartialInferenceResponse(toolName: 'calculate', toolArgs: '{"expr":"2+', usage: new Usage()),
-        new PartialInferenceResponse(toolArgs: '2"}', usage: new Usage()),
+        new PartialInferenceDelta(toolName: 'search', toolArgs: '{"q":"Hel', usage: new Usage()),
+        new PartialInferenceDelta(toolArgs: 'lo"}', usage: new Usage()),
+        new PartialInferenceDelta(toolName: 'calculate', toolArgs: '{"expr":"2+', usage: new Usage()),
+        new PartialInferenceDelta(toolArgs: '2"}', usage: new Usage()),
     ];
     $res = applyDeltas($partials)->finalResponse();
     expect($res->hasToolCalls())->toBeTrue();
@@ -83,8 +73,8 @@ it('accumulates multiple tools in sequence (name-based)', function () {
 
 it('treats repeated same-name tool deltas without id as one continuing call', function () {
     $partials = [
-        new PartialInferenceResponse(toolName: 'search', toolArgs: '{"q":"Paris"', usage: new Usage()),
-        new PartialInferenceResponse(toolName: 'search', toolArgs: ',"lang":"en"}', usage: new Usage()),
+        new PartialInferenceDelta(toolName: 'search', toolArgs: '{"q":"Paris"', usage: new Usage()),
+        new PartialInferenceDelta(toolName: 'search', toolArgs: ',"lang":"en"}', usage: new Usage()),
     ];
 
     $res = applyDeltas($partials)->finalResponse();
@@ -99,11 +89,11 @@ it('treats repeated same-name tool deltas without id as one continuing call', fu
 
 it('accumulates tools by ID with multiple deltas (ID-based preferred)', function () {
     $partials = [
-        new PartialInferenceResponse(toolId: 'call_1', toolName: 'search', toolArgs: '{"q":', usage: new Usage()),
-        new PartialInferenceResponse(toolId: 'call_1', toolArgs: '"test', usage: new Usage()),
-        new PartialInferenceResponse(toolId: 'call_1', toolArgs: '"}', usage: new Usage()),
-        new PartialInferenceResponse(toolId: 'call_2', toolName: 'calculate', toolArgs: '{"n":', usage: new Usage()),
-        new PartialInferenceResponse(toolId: 'call_2', toolArgs: '42}', usage: new Usage()),
+        new PartialInferenceDelta(toolId: 'call_1', toolName: 'search', toolArgs: '{"q":', usage: new Usage()),
+        new PartialInferenceDelta(toolId: 'call_1', toolArgs: '"test', usage: new Usage()),
+        new PartialInferenceDelta(toolId: 'call_1', toolArgs: '"}', usage: new Usage()),
+        new PartialInferenceDelta(toolId: 'call_2', toolName: 'calculate', toolArgs: '{"n":', usage: new Usage()),
+        new PartialInferenceDelta(toolId: 'call_2', toolArgs: '42}', usage: new Usage()),
     ];
     $res = applyDeltas($partials)->finalResponse();
     expect($res->hasToolCalls())->toBeTrue();
@@ -145,9 +135,9 @@ it('preserves first non-default HttpResponse across accumulation', function () {
 
 it('handles finish reason propagation correctly', function () {
     $partials = [
-        new PartialInferenceResponse(contentDelta: 'Hello', usage: new Usage()),
-        new PartialInferenceResponse(contentDelta: ' World', usage: new Usage()),
-        new PartialInferenceResponse(finishReason: 'stop', usage: new Usage()),
+        new PartialInferenceDelta(contentDelta: 'Hello', usage: new Usage()),
+        new PartialInferenceDelta(contentDelta: ' World', usage: new Usage()),
+        new PartialInferenceDelta(finishReason: 'stop', usage: new Usage()),
     ];
 
     $res = applyDeltas($partials)->finalResponse();
@@ -158,9 +148,9 @@ it('handles finish reason propagation correctly', function () {
 it('correctly handles finish reason values for streaming', function () {
     // Test 1: Finish reason stability - once set, should persist
     $partials1 = [
-        new PartialInferenceResponse(contentDelta: 'First', usage: new Usage()),
-        new PartialInferenceResponse(contentDelta: ' chunk', finishReason: 'length', usage: new Usage()),
-        new PartialInferenceResponse(usage: new Usage(inputTokens: 10, outputTokens: 20)), // Usage-only chunk after finish
+        new PartialInferenceDelta(contentDelta: 'First', usage: new Usage()),
+        new PartialInferenceDelta(contentDelta: ' chunk', finishReason: 'length', usage: new Usage()),
+        new PartialInferenceDelta(usage: new Usage(inputTokens: 10, outputTokens: 20)), // Usage-only chunk after finish
     ];
 
     $res1 = applyDeltas($partials1)->finalResponse();
@@ -180,8 +170,8 @@ it('correctly handles finish reason values for streaming', function () {
     ];
     foreach ($finishReasonTests as $test) {
         $partials = [
-            new PartialInferenceResponse(contentDelta: 'test'),
-            new PartialInferenceResponse(finishReason: $test['input']),
+            new PartialInferenceDelta(contentDelta: 'test'),
+            new PartialInferenceDelta(finishReason: $test['input']),
         ];
 
         $res = applyDeltas($partials)->finalResponse();
@@ -190,9 +180,9 @@ it('correctly handles finish reason values for streaming', function () {
 
     // Test 3: Empty finish reason in early chunks doesn't override
     $partials3 = [
-        new PartialInferenceResponse(contentDelta: 'A', finishReason: ''),
-        new PartialInferenceResponse(contentDelta: 'B', finishReason: ''),
-        new PartialInferenceResponse(contentDelta: 'C', finishReason: 'stop'),
+        new PartialInferenceDelta(contentDelta: 'A', finishReason: ''),
+        new PartialInferenceDelta(contentDelta: 'B', finishReason: ''),
+        new PartialInferenceDelta(contentDelta: 'C', finishReason: 'stop'),
     ];
 
     $res3 = applyDeltas($partials3)->finalResponse();
@@ -202,9 +192,9 @@ it('correctly handles finish reason values for streaming', function () {
 
 it('accumulates reasoning content across deltas', function () {
     $partials = [
-        new PartialInferenceResponse(reasoningContentDelta: 'First ', usage: new Usage()),
-        new PartialInferenceResponse(reasoningContentDelta: 'I think', usage: new Usage()),
-        new PartialInferenceResponse(reasoningContentDelta: ' about it', usage: new Usage()),
+        new PartialInferenceDelta(reasoningContentDelta: 'First ', usage: new Usage()),
+        new PartialInferenceDelta(reasoningContentDelta: 'I think', usage: new Usage()),
+        new PartialInferenceDelta(reasoningContentDelta: ' about it', usage: new Usage()),
     ];
 
     $res = applyDeltas($partials)->finalResponse();
@@ -213,7 +203,7 @@ it('accumulates reasoning content across deltas', function () {
 
 it('extracts reasoning content from think tags in accumulated content', function () {
     $partials = [
-        new PartialInferenceResponse(contentDelta: '<think>Because it is.</think>Paris', usage: new Usage()),
+        new PartialInferenceDelta(contentDelta: '<think>Because it is.</think>Paris', usage: new Usage()),
     ];
 
     $res = applyDeltas($partials)->finalResponse()->withReasoningContentFallbackFromContent();

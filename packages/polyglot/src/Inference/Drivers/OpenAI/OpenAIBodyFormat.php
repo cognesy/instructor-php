@@ -9,6 +9,8 @@ use Cognesy\Polyglot\Inference\Contracts\CanMapMessages;
 use Cognesy\Polyglot\Inference\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
+use Cognesy\Polyglot\Inference\Drivers\Support\RequestMessages;
+use Cognesy\Polyglot\Inference\Drivers\Support\RequestPayload;
 use Cognesy\Utils\Arrays;
 
 class OpenAIBodyFormat implements CanMapRequestBody
@@ -25,10 +27,7 @@ class OpenAIBodyFormat implements CanMapRequestBody
 
         $options = array_merge($this->config->options, $request->options());
 
-        $messages = match ($this->supportsAlternatingRoles($request)) {
-            false => $request->messages()->toMergedPerRole(),
-            true => $request->messages(),
-        };
+        $messages = RequestMessages::forMapping($request, $this->supportsAlternatingRoles($request));
 
         $requestBody = array_merge(array_filter([
             'model' => $request->model() ?: $this->config->model,
@@ -57,7 +56,7 @@ class OpenAIBodyFormat implements CanMapRequestBody
             $requestBody['tool_choice'] = $this->toToolChoice($request);
         }
 
-        return $this->filterEmptyValues($requestBody);
+        return RequestPayload::filterEmptyValues($requestBody);
     }
 
     // CAPABILITIES ///////////////////////////////////////////
@@ -105,7 +104,7 @@ class OpenAIBodyFormat implements CanMapRequestBody
 
         $result = $this->renderResponseFormatForType($responseFormat, $type);
 
-        return $this->filterEmptyValues($result);
+        return RequestPayload::filterEmptyValues($result);
     }
 
     protected function toTools(InferenceRequest $request): array
@@ -141,18 +140,10 @@ class OpenAIBodyFormat implements CanMapRequestBody
 
     protected function removeDisallowedEntries(array $jsonSchema): array
     {
-        return Arrays::removeRecursively(
-            array: $jsonSchema,
-            keys: [
-                'x-title',
-                'x-php-class',
-            ],
-        );
-    }
-
-    protected function filterEmptyValues(array $data): array
-    {
-        return array_filter($data, fn ($value) => $value !== null && $value !== [] && $value !== '');
+        return RequestPayload::removeSchemaKeys($jsonSchema, [
+            'x-title',
+            'x-php-class',
+        ]);
     }
 
     protected function renderResponseFormatForType(ResponseFormat $responseFormat, ?string $type): array
@@ -168,16 +159,6 @@ class OpenAIBodyFormat implements CanMapRequestBody
 
     protected function toResponseFormatType(InferenceRequest $request): ?string
     {
-        if (! $request->hasResponseFormat()) {
-            return null;
-        }
-
-        return match ($request->responseFormat()->type()) {
-            'text' => 'text',
-            'json',
-            'json_object' => 'json_object',
-            'json_schema' => 'json_schema',
-            default => null,
-        };
+        return RequestPayload::responseFormatType($request);
     }
 }

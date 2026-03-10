@@ -68,7 +68,7 @@ Both approaches produce identical requests. Use whichever reads better in your c
 
 | Method | Purpose |
 |---|---|
-| `withMessages(...)` | Set the chat messages (string, array, or `Messages` object) |
+| `withMessages(...)` | Set the chat messages |
 | `withInput(...)` | Set input from a string, array, or object (converted to messages) |
 | `withResponseModel(...)` | Set the response model (class string, instance, or schema array) |
 | `withResponseClass(...)` | Set the response model from a class name |

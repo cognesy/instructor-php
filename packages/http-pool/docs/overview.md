@@ -34,6 +34,5 @@ $pool = HttpPool::default();
 ## Built In Drivers
 
 - `curl`
-- `exthttp`
 - `guzzle`
 - `symfony`

@@ -68,6 +68,9 @@ if (max($fScore, $mScore) < $threshold) {
 }
 
 dump($answer);
+
+assert(is_string($answer));
+assert(!empty($answer));
 ?>
 ```
 

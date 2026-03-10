@@ -66,6 +66,10 @@ $correct = [
 
 $resp = (new ContrastiveCoT)($query, $context, $sample, $correct, $incorrect);
 dump($resp);
+
+assert($resp instanceof ChainOfThought);
+assert(!empty($resp->chain_of_thought));
+assert(!empty($resp->correct_answer));
 ?>
 ```
 

@@ -5,6 +5,8 @@ use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\Drivers\Deepseek\DeepseekBodyFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIMessageFormat;
 
@@ -45,7 +47,7 @@ it('Deepseek: omits response_format when tools are present', function () {
     $req = new InferenceRequest(
         messages: Messages::fromAny([['role' => 'user', 'content' => 'Hi']]),
         model: 'deepseek-chat',
-        tools: [[
+        tools: ToolDefinitions::fromArray([[
             'type' => 'function',
             'function' => [
                 'name' => 'extract_data',
@@ -56,8 +58,8 @@ it('Deepseek: omits response_format when tools are present', function () {
                     'required' => ['name'],
                 ],
             ],
-        ]],
-        toolChoice: ['type' => 'function', 'function' => ['name' => 'extract_data']],
+        ]]),
+        toolChoice: ToolChoice::specific('extract_data'),
         responseFormat: new ResponseFormat(
             'json_schema',
             [

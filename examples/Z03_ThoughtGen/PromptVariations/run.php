@@ -48,6 +48,11 @@ class GeneratePromptTemplates {
 $prompt = 'France is the capital of Paris';
 $templates = (new GeneratePromptTemplates)($prompt);
 dump($templates);
+
+assert(is_array($templates));
+assert(count($templates) > 0);
+assert($templates[0] instanceof PromptTemplate);
+assert(!empty($templates[0]->prompt_template));
 ?>
 ```
 

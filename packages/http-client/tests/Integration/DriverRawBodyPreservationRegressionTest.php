@@ -42,6 +42,25 @@ it('preserves plain-text request body in non-curl sync drivers', function (calla
         ->and($response->body())->toContain('"data": "plain-text-body"');
 })->with('syncHttpDrivers');
 
+it('preserves valid json string request body byte-for-byte in non-curl sync drivers', function (callable $makeDriver) {
+    $driver = $makeDriver($this->config, $this->events);
+
+    $body = "{\"b\":2, \"a\":1}";
+
+    $request = new HttpRequest(
+        url: $this->baseUrl . '/post',
+        method: 'POST',
+        headers: ['Content-Type' => 'application/json'],
+        body: $body,
+        options: [],
+    );
+
+    $response = $driver->handle($request);
+
+    expect($response->statusCode())->toBe(200)
+        ->and($response->body())->toContain('"data": "{\\"b\\":2, \\"a\\":1}"');
+})->with('syncHttpDrivers');
+
 register_shutdown_function(function () {
     IntegrationTestServer::stop();
 });

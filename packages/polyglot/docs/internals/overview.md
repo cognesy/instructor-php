@@ -48,7 +48,7 @@ Drivers translate Polyglot requests into provider-native HTTP payloads and norma
 
 - **Request adapters** (`CanTranslateInferenceRequest`) -- convert `InferenceRequest` into an `HttpRequest`
 - **Response adapters** (`CanTranslateInferenceResponse`) -- convert raw `HttpResponse` data into `InferenceResponse` or stream of `PartialInferenceDelta`
-- **Message formatters** (`CanMapMessages`) -- map the unified message format to provider-specific structures
+- **Message formatters** (`CanMapMessages`) -- map typed `Messages` to provider-specific structures, composing a `MessageMapper` utility for iteration
 - **Body formatters** (`CanMapRequestBody`) -- assemble the full request body with mode-specific adjustments
 - **Usage formatters** (`CanMapUsage`) -- extract token usage from provider responses
 

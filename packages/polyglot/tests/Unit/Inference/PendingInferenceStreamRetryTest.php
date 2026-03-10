@@ -7,7 +7,7 @@ use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Events\InferenceAttemptFailed;
 use Cognesy\Polyglot\Inference\Events\InferenceAttemptStarted;
@@ -38,14 +38,14 @@ it('creates a fresh stream on each retry attempt when streaming', function () {
                 throw new TimeoutException('stream timeout');
             }
             return [
-                new PartialInferenceResponse(contentDelta: 'Hello'),
-                new PartialInferenceResponse(contentDelta: ' world', finishReason: 'stop'),
+                new PartialInferenceDelta(contentDelta: 'Hello'),
+                new PartialInferenceDelta(contentDelta: ' world', finishReason: 'stop'),
             ];
         },
     );
 
     $request = (new InferenceRequestBuilder())
-        ->withMessages('Test retry')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Test retry'))
         ->withStreaming(true)
         ->withRetryPolicy(new InferenceRetryPolicy(
             maxAttempts: 2,
@@ -94,14 +94,14 @@ it('does not re-execute when response() is called after stream() and dispatches 
 
     $driver = new FakeInferenceDriver(
         streamBatches: [[
-            new PartialInferenceResponse(contentDelta: 'Hello'),
-            new PartialInferenceResponse(contentDelta: ' world', finishReason: 'stop'),
+            new PartialInferenceDelta(contentDelta: 'Hello'),
+            new PartialInferenceDelta(contentDelta: ' world', finishReason: 'stop'),
         ]],
         onResponse: fn() => throw new \LogicException('Should not be called in streaming mode'),
     );
 
     $request = (new InferenceRequestBuilder())
-        ->withMessages('Test')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Test'))
         ->withStreaming(true)
         ->create();
 
@@ -146,14 +146,14 @@ it('dispatches started events before response created in stream-first flow', fun
 
     $driver = new FakeInferenceDriver(
         streamBatches: [[
-            new PartialInferenceResponse(contentDelta: 'Hello'),
-            new PartialInferenceResponse(contentDelta: ' world', finishReason: 'stop'),
+            new PartialInferenceDelta(contentDelta: 'Hello'),
+            new PartialInferenceDelta(contentDelta: ' world', finishReason: 'stop'),
         ]],
         onResponse: fn() => throw new \LogicException('Should not be called in streaming mode'),
     );
 
     $request = (new InferenceRequestBuilder())
-        ->withMessages('Test')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Test'))
         ->withStreaming(true)
         ->create();
 
@@ -194,19 +194,19 @@ it('creates a fresh stream for length recovery continuation', function () {
             $requestMessages[] = $request->messages();
             if ($streamAttempts === 1) {
                 return [
-                    new PartialInferenceResponse(contentDelta: 'partial'),
-                    new PartialInferenceResponse(contentDelta: ' answer', finishReason: 'length'),
+                    new PartialInferenceDelta(contentDelta: 'partial'),
+                    new PartialInferenceDelta(contentDelta: ' answer', finishReason: 'length'),
                 ];
             }
             return [
-                new PartialInferenceResponse(contentDelta: 'complete'),
-                new PartialInferenceResponse(contentDelta: ' response', finishReason: 'stop'),
+                new PartialInferenceDelta(contentDelta: 'complete'),
+                new PartialInferenceDelta(contentDelta: ' response', finishReason: 'stop'),
             ];
         },
     );
 
     $request = (new InferenceRequestBuilder())
-        ->withMessages('Tell me everything')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Tell me everything'))
         ->withStreaming(true)
         ->withRetryPolicy(new InferenceRetryPolicy(
             maxAttempts: 1,
@@ -253,7 +253,7 @@ it('reports partial usage in failure event when stream throws after emitting chu
     $driver = new FakeInferenceDriver(
         onResponse: fn() => throw new \LogicException('Should not be called in streaming mode'),
         onStream: function (): iterable {
-            yield new PartialInferenceResponse(
+            yield new PartialInferenceDelta(
                 contentDelta: 'partial',
                 usage: new Usage(inputTokens: 10, outputTokens: 5),
                 usageIsCumulative: true,
@@ -263,7 +263,7 @@ it('reports partial usage in failure event when stream throws after emitting chu
     );
 
     $request = (new InferenceRequestBuilder())
-        ->withMessages('Test')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Test'))
         ->withStreaming(true)
         ->withRetryPolicy(new InferenceRetryPolicy(maxAttempts: 1))
         ->create();
@@ -325,14 +325,14 @@ it('is idempotent: response() called twice after stream dispatches lifecycle eve
 
     $driver = new FakeInferenceDriver(
         streamBatches: [[
-            new PartialInferenceResponse(contentDelta: 'Hello'),
-            new PartialInferenceResponse(contentDelta: ' world', finishReason: 'stop'),
+            new PartialInferenceDelta(contentDelta: 'Hello'),
+            new PartialInferenceDelta(contentDelta: ' world', finishReason: 'stop'),
         ]],
         onResponse: fn() => throw new \LogicException('Should not be called in streaming mode'),
     );
 
     $request = (new InferenceRequestBuilder())
-        ->withMessages('Test idempotency')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Test idempotency'))
         ->withStreaming(true)
         ->create();
 
@@ -391,14 +391,14 @@ it('throws and dispatches failure events when stream-first response has a failed
 
     $driver = new FakeInferenceDriver(
         streamBatches: [[
-            new PartialInferenceResponse(contentDelta: 'truncated'),
-            new PartialInferenceResponse(contentDelta: ' output', finishReason: 'length'),
+            new PartialInferenceDelta(contentDelta: 'truncated'),
+            new PartialInferenceDelta(contentDelta: ' output', finishReason: 'length'),
         ]],
         onResponse: fn() => throw new \LogicException('Should not be called in streaming mode'),
     );
 
     $request = (new InferenceRequestBuilder())
-        ->withMessages('Test failure detection')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Test failure detection'))
         ->withStreaming(true)
         ->create();
 
@@ -449,7 +449,7 @@ it('re-throws on repeated response() calls after non-streaming failure', functio
     );
 
     $request = (new InferenceRequestBuilder())
-        ->withMessages('Test failure idempotency')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Test failure idempotency'))
         ->withRetryPolicy(new InferenceRetryPolicy(maxAttempts: 1))
         ->create();
 
@@ -506,7 +506,7 @@ it('does not retry generic finish reason failures even when runtime exceptions a
     );
 
     $request = (new InferenceRequestBuilder())
-        ->withMessages('Test finish reason retries')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Test finish reason retries'))
         ->withRetryPolicy(new InferenceRetryPolicy(
             maxAttempts: 2,
             baseDelayMs: 0,
@@ -531,14 +531,14 @@ it('re-throws on repeated response() calls after stream-first failure', function
 
     $driver = new FakeInferenceDriver(
         streamBatches: [[
-            new PartialInferenceResponse(contentDelta: 'partial'),
-            new PartialInferenceResponse(contentDelta: ' content', finishReason: 'content_filter'),
+            new PartialInferenceDelta(contentDelta: 'partial'),
+            new PartialInferenceDelta(contentDelta: ' content', finishReason: 'content_filter'),
         ]],
         onResponse: fn() => throw new \LogicException('Should not be called in streaming mode'),
     );
 
     $request = (new InferenceRequestBuilder())
-        ->withMessages('Test stream failure idempotency')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Test stream failure idempotency'))
         ->withStreaming(true)
         ->create();
 

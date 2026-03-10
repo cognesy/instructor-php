@@ -35,7 +35,7 @@ it('returns content for OpenAI Responses API (non-streaming)', function () {
 
     $content = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai-responses'), httpClient: $http))
         ->withModel('gpt-4o-mini')
-        ->withMessages('Hello')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Hello'))
         ->get();
 
     expect($content)->toBe('Hi there!');
@@ -64,10 +64,10 @@ it('extracts system messages to instructions field', function () {
 
     $content = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai-responses'), httpClient: $http))
         ->withModel('gpt-4o-mini')
-        ->withMessages([
+        ->withMessages(\Cognesy\Messages\Messages::fromArray([
             ['role' => 'system', 'content' => 'You are a helpful assistant.'],
             ['role' => 'user', 'content' => 'Hi'],
-        ])
+        ]))
         ->get();
 
     expect($content)->toBe('Hello!');
@@ -101,7 +101,7 @@ it('uses max_output_tokens instead of max_tokens', function () {
 
     $content = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai-responses'), httpClient: $http))
         ->withModel('gpt-4o-mini')
-        ->withMessages('Hello')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Hello'))
         ->get();
 
     expect($content)->toBe('Response');
@@ -126,7 +126,7 @@ it('maps completed status to stop finish reason', function () {
 
     $response = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai-responses'), httpClient: $http))
         ->withModel('gpt-4o-mini')
-        ->withMessages('Hello')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Hello'))
         ->response();
 
     expect($response->finishReason()->value)->toBe('stop');
@@ -152,7 +152,7 @@ it('maps incomplete status to length finish reason and throws', function () {
     // incomplete status → length finish reason → treated as failure → exception
     expect(fn() => Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai-responses'), httpClient: $http))
         ->withModel('gpt-4o-mini')
-        ->withMessages('Write a very long story')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Write a very long story'))
         ->response()
     )->toThrow(\RuntimeException::class, 'Inference execution failed: length');
 });
@@ -180,7 +180,7 @@ it('extracts usage information', function () {
 
     $response = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai-responses'), httpClient: $http))
         ->withModel('gpt-4o-mini')
-        ->withMessages('Hi')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Hi'))
         ->response();
 
     expect($response->usage()->inputTokens)->toBe(10);

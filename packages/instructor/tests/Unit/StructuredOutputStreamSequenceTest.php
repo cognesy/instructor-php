@@ -6,6 +6,7 @@ use Cognesy\Instructor\Data\StructuredOutputResponse;
 use Cognesy\Instructor\Enums\ExecutionStatus;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\StructuredOutputStream;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Tests\Instructor\Support\TestEventDispatcher;
 
@@ -62,7 +63,7 @@ it('yields sequence updates only when new items complete and dispatches events',
         yield StructuredOutputResponse::partial($seq, new InferenceResponse(isPartial: true));
     })();
 
-    $request = new Cognesy\Instructor\Data\StructuredOutputRequest(messages: 'dummy', requestedSchema: []);
+    $request = new Cognesy\Instructor\Data\StructuredOutputRequest(messages: Messages::fromString('dummy'), requestedSchema: []);
     $initial = new StructuredOutputExecution(request: $request, status: ExecutionStatus::Pending);
 
     $emitter = new FakeEmitterForSequence($generator, $initial);
@@ -95,7 +96,7 @@ it('skips partial responses without parsed values before sequence snapshots appe
         yield StructuredOutputResponse::partial($sequence, new InferenceResponse(isPartial: true));
     })();
 
-    $request = new Cognesy\Instructor\Data\StructuredOutputRequest(messages: 'dummy', requestedSchema: []);
+    $request = new Cognesy\Instructor\Data\StructuredOutputRequest(messages: Messages::fromString('dummy'), requestedSchema: []);
     $initial = new StructuredOutputExecution(request: $request, status: ExecutionStatus::Pending);
 
     $stream = new StructuredOutputStream(

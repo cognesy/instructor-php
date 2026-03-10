@@ -23,6 +23,7 @@ try {
     $result = Sandbox::bubblewrap($policy)
         ->execute(['sh', '-lc', 'echo "hello from bubblewrap sandbox"']);
 
+    assert($result->exitCode() === 0, 'Bubblewrap echo should exit with code 0');
     echo "Exit: {$result->exitCode()}\n";
     echo $result->stdout();
 } catch (Throwable $e) {

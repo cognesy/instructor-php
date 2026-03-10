@@ -82,5 +82,14 @@ foreach ($summaries->summaries as $summary) {
     print("Expanded summary - iteration #{$summary->iteration}:\n");
     print("{$summary->expandedSummary}\n\n");
 }
+
+assert($summaries instanceof ChainOfSummaries);
+assert(!empty($summaries->overview));
+assert(count($summaries->summaries) >= 3, 'Expected at least 3 summary iterations');
+foreach ($summaries->summaries as $summary) {
+    assert($summary instanceof Summary);
+    assert(!empty($summary->expandedSummary));
+    assert($summary->iteration > 0);
+}
 ?>
 ```

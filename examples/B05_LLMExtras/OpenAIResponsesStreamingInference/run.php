@@ -16,6 +16,7 @@ response contains the expected marker.
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\Str;
 
@@ -23,7 +24,7 @@ $expectedPhrase = 'paris';
 $prompt = 'Describe the history of Paris in exactly 3 sentences.';
 
 $stream = Inference::using('openai-responses')
-    ->withMessages($prompt)
+    ->withMessages(Messages::fromString($prompt))
     ->withOptions(['max_output_tokens' => 256])
     ->withStreaming()
     ->stream()

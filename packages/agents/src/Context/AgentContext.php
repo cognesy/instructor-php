@@ -2,7 +2,6 @@
 
 namespace Cognesy\Agents\Context;
 
-use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
@@ -21,7 +20,7 @@ final readonly class AgentContext
         ?MessageStore $store = null,
         Metadata|array|null $metadata = null,
         string $systemPrompt = '',
-        ResponseFormat|array|null $responseFormat = null,
+        ?ResponseFormat $responseFormat = null,
     ) {
         $this->store = $store ?? new MessageStore();
         $this->metadata = match (true) {
@@ -31,11 +30,7 @@ final readonly class AgentContext
             default => new Metadata(),
         };
         $this->systemPrompt = $systemPrompt;
-        $this->responseFormat = match (true) {
-            $responseFormat instanceof ResponseFormat => $responseFormat,
-            is_array($responseFormat) => ResponseFormat::fromArray($responseFormat),
-            default => new ResponseFormat(),
-        };
+        $this->responseFormat = $responseFormat ?? ResponseFormat::empty();
     }
 
     // ACCESSORS ///////////////////////////////////////////////
@@ -63,7 +58,7 @@ final readonly class AgentContext
     public function toCachedContext(ToolDefinitions $toolDefinitions = new ToolDefinitions()): CachedInferenceContext {
         $messages = match(true) {
             $this->systemPrompt === '' => Messages::empty(),
-            default => Messages::fromMessages([Message::make('system', $this->systemPrompt)]),
+            default => Messages::fromString($this->systemPrompt, 'system'),
         };
         return new CachedInferenceContext(
             messages: $messages,
@@ -115,12 +110,8 @@ final readonly class AgentContext
         return $this->with(systemPrompt: $systemPrompt);
     }
 
-    public function withResponseFormat(ResponseFormat|array $responseFormat): self {
-        $format = match (true) {
-            $responseFormat instanceof ResponseFormat => $responseFormat,
-            is_array($responseFormat) => ResponseFormat::fromArray($responseFormat),
-        };
-        return $this->with(responseFormat: $format);
+    public function withResponseFormat(ResponseFormat $responseFormat): self {
+        return $this->with(responseFormat: $responseFormat);
     }
 
     // SERIALIZATION ////////////////////////////////////////////

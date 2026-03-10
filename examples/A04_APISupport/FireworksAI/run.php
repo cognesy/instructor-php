@@ -20,22 +20,28 @@ Mode compatibility:
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
-use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
-enum UserType : string {
+enum UserType: string
+{
     case Guest = 'guest';
     case User = 'user';
     case Admin = 'admin';
 }
 
-class User {
+class User
+{
     public int $age;
+
     public string $name;
+
     public string $username;
+
     public UserType $role;
+
     /** @var string[] */
     public array $hobbies;
 }
@@ -47,16 +53,16 @@ $structuredOutput = new StructuredOutput(
 
 $user = $structuredOutput
     ->with(
-        messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
+        messages: 'Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.',
         responseModel: User::class,
         examples: [[
             'input' => 'Ive got email Frank - their developer, who\'s 30. He asked to come back to him frank@hk.ch. Btw, he plays on drums!',
-            'output' => ['age' => 30, 'name' => 'Frank', 'username' => 'frank@hk.ch', 'role' => 'developer', 'hobbies' => ['playing drums'],],
+            'output' => ['age' => 30, 'name' => 'Frank', 'username' => 'frank@hk.ch', 'role' => 'developer', 'hobbies' => ['playing drums']],
         ]],
-        model: 'accounts/fireworks/models/llama4-maverick-instruct-basic',
+        model: 'accounts/fireworks/models/deepseek-v3p1',
     )->get();
 
-print("Completed response model:\n\n");
+echo "Completed response model:\n\n";
 dump($user);
 
 assert(isset($user->name));

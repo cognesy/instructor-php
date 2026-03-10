@@ -15,7 +15,7 @@ Install Polyglot via Composer:
 
 ```bash
 composer require cognesy/instructor-polyglot
-# @doctest id="d759"
+# @doctest id="049e"
 ```
 
 > **Note:** Polyglot ships as part of the Instructor PHP monorepo. If you
@@ -38,7 +38,7 @@ approach is to export them as environment variables:
 export OPENAI_API_KEY=sk-your-openai-key
 export ANTHROPIC_API_KEY=sk-ant-your-anthropic-key
 export GEMINI_API_KEY=your-gemini-key
-# @doctest id="b4ed"
+# @doctest id="a407"
 ```
 
 If your project uses a `.env` file, add the keys there instead and load
@@ -60,7 +60,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $text = Inference::using('openai')
     ->withMessages('Say hello.')
     ->get();
-// @doctest id="7011"
+// @doctest id="88e1"
 ```
 
 If you see a friendly greeting, your installation is working correctly.
@@ -91,7 +91,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $text = Inference::using('anthropic')
     ->withMessages('Explain photosynthesis in one sentence.')
     ->get();
-// @doctest id="5cc0"
+// @doctest id="4bd1"
 ```
 
 ```php
@@ -103,7 +103,7 @@ use Cognesy\Polyglot\Embeddings\Embeddings;
 $result = Embeddings::using('openai')
     ->withInputs('The quick brown fox.')
     ->create();
-// @doctest id="b8cc"
+// @doctest id="8b0d"
 ```
 
 Bundled presets live inside the package at `resources/config/llm/presets/`
@@ -139,7 +139,7 @@ model: gpt-4.1-nano
 maxTokens: 1024
 contextLength: 1000000
 maxOutputLength: 16384
-# @doctest id="b70b"
+# @doctest id="c6be"
 ```
 
 The `driver` field determines which Polyglot driver handles the request.
@@ -158,7 +158,7 @@ endpoint: /embeddings
 model: text-embedding-3-small
 dimensions: 1536
 maxInputs: 2048
-# @doctest id="a87a"
+# @doctest id="dfa5"
 ```
 
 Once the file exists, `Inference::using('openai')` or
@@ -174,7 +174,7 @@ apiKey: 'not-needed'
 endpoint: /chat/completions
 model: meta-llama/Llama-3-8b
 maxTokens: 2048
-# @doctest id="7e95"
+# @doctest id="a684"
 ```
 
 Then use it like any other preset:
@@ -183,7 +183,7 @@ Then use it like any other preset:
 $text = Inference::using('local-vllm')
     ->withMessages('Say hello.')
     ->get();
-// @doctest id="b776"
+// @doctest id="d560"
 ```
 
 #### EmbeddingsConfig Reference
@@ -222,7 +222,7 @@ $inference = Inference::fromConfig(new LLMConfig(
 $text = $inference
     ->withMessages('What is the capital of France?')
     ->get();
-// @doctest id="5fc9"
+// @doctest id="11a7"
 ```
 
 The same approach works for embeddings:
@@ -242,7 +242,7 @@ $embeddings = Embeddings::fromConfig(new EmbeddingsConfig(
     dimensions: 1536,
     maxInputs: 2048,
 ));
-// @doctest id="9679"
+// @doctest id="235c"
 ```
 
 #### LLMConfig Reference
@@ -280,7 +280,7 @@ $config = LLMConfig::fromPreset('openai')
     ]);
 
 $inference = Inference::fromConfig($config);
-// @doctest id="7794"
+// @doctest id="91b0"
 ```
 
 This is useful when you want to keep all the defaults from a preset but
@@ -304,7 +304,7 @@ $config = LLMConfig::fromDsn(
 );
 
 $inference = Inference::fromConfig($config);
-// @doctest id="80c0"
+// @doctest id="679d"
 ```
 
 DSN strings are comma-separated `key=value` pairs. Nested keys use dot

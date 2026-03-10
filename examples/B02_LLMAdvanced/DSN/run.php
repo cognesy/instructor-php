@@ -17,8 +17,9 @@ require 'examples/boot.php';
 
 use Cognesy\Config\Dsn;
 use Cognesy\Config\Env;
-use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\Str;
 
 $xaiApiKey = (string) Env::get('XAI_API_KEY', '');
@@ -26,7 +27,7 @@ $dsn = "driver=xai,apiUrl=https://api.x.ai/v1,endpoint=/chat/completions,apiKey=
 
 $answer = Inference::fromConfig(LLMConfig::fromArray(Dsn::fromString($dsn)->toArray()))
     ->with(
-        messages: [['role' => 'user', 'content' => 'What is the capital of France']],
+        messages: Messages::fromString('What is the capital of France'),
         options: ['max_tokens' => 64]
     )
     ->get();

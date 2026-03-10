@@ -16,7 +16,7 @@ it('handles tool calls in non-streaming Anthropic response', function () {
 
     $response = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('anthropic'), httpClient: $http))
         ->withModel('claude-3-haiku-20240307')
-        ->withMessages('Weather')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Weather'))
         ->response();
 
     expect($response->hasToolCalls())->toBeTrue();

@@ -22,3 +22,11 @@ it('creates null tool call id via factory', function () {
     expect($id->isEmpty())->toBeTrue()
         ->and($id->toString())->toBe('');
 });
+
+it('creates empty tool call id via explicit factory', function () {
+    $id = ToolCallId::empty();
+
+    expect($id->isEmpty())->toBeTrue()
+        ->and($id->isPresent())->toBeFalse()
+        ->and($id->toString())->toBe('');
+});

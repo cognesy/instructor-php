@@ -93,6 +93,10 @@ $result = (new TaskSpecificReasoner)(
 );
 
 dump($result);
+
+assert($result !== null);
+assert(is_numeric($result));
+assert($result == 7, "Expected 7 cars, got: $result");
 ?>
 ```
 

@@ -78,6 +78,10 @@ class Files
         $source = rtrim($source, DIRECTORY_SEPARATOR);
         $destination = rtrim($destination, DIRECTORY_SEPARATOR);
 
+        if (is_link($source)) {
+            throw new RuntimeException("Source directory contains unsupported symlink: '{$source}'");
+        }
+
         // Ensure source directory exists.
         if (!is_dir($source)) {
             throw new InvalidArgumentException("Source directory does not exist: '{$source}'");
@@ -111,6 +115,10 @@ class Files
 
             $srcPath = $fileinfo->getPathname();
             $destPath = $destination . DIRECTORY_SEPARATOR . $fileinfo->getBasename();
+
+            if ($fileinfo->isLink()) {
+                throw new RuntimeException("Source directory contains unsupported symlink: '{$srcPath}'");
+            }
 
             // Recursively copy subdirectories; copy files directly.
             if ($fileinfo->isDir()) {

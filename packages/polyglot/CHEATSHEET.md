@@ -289,3 +289,17 @@ $provider = EmbeddingsProvider::new()
 
 Embeddings::registerDriver('custom', $driverFactory);
 ```
+
+## Testing
+
+Deterministic test seams:
+
+- `Tests\Support\FakeInferenceDriver`
+  - queue sync `InferenceResponse` fixtures or streaming `PartialInferenceDelta` batches
+  - best for most inference runtime tests that do not need HTTP or adapter coverage
+- `Tests\Support\FakeEmbeddingsDriver`
+  - queue `EmbeddingsResponse` fixtures and record handled requests
+  - best for most embeddings runtime and memoization tests
+- `MockHttpDriver`
+  - use when transport and provider adapter behavior still matter
+  - best for golden tests, request assertions, and provider-specific error-path coverage

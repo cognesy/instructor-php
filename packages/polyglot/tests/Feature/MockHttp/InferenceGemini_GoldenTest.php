@@ -34,13 +34,13 @@ it('Gemini golden: tools + JSON mode + streaming functionCall', function () {
 
     $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('gemini'), httpClient: $http))
         ->withModel('gemini-1.5-flash')
-        ->withTools($tools)
-        ->withToolChoice('auto')
-        ->withResponseFormat(['type' => 'json_object'])
-        ->withMessages([
+        ->withTools(\Cognesy\Polyglot\Inference\Data\ToolDefinitions::fromArray($tools))
+        ->withToolChoice(\Cognesy\Polyglot\Inference\Data\ToolChoice::auto())
+        ->withResponseFormat(\Cognesy\Polyglot\Inference\Data\ResponseFormat::jsonObject())
+        ->withMessages(\Cognesy\Messages\Messages::fromArray([
             ['role' => 'system', 'content' => 'You are helpful.'],
             ['role' => 'user', 'content' => 'Search hello']
-        ])
+        ]))
         ->withStreaming(true)
         ->stream();
 

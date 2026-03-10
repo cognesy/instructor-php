@@ -3,19 +3,22 @@
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Data\ToolChoice;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
+use Cognesy\Messages\Messages;
 
 it('serializes inference request to a JSON-encodable array', function () {
     $request = (new InferenceRequestBuilder)
-        ->withMessages([['role' => 'user', 'content' => 'Hi']])
-        ->withResponseFormat([
+        ->withMessages(Messages::fromArray([['role' => 'user', 'content' => 'Hi']]))
+        ->withResponseFormat(ResponseFormat::fromArray([
             'type' => 'json_schema',
             'json_schema' => [
                 'name' => 'schema',
                 'schema' => ['type' => 'object'],
                 'strict' => true,
             ],
-        ])
+        ]))
         ->create();
 
     $data = $request->toArray();
@@ -28,15 +31,15 @@ it('serializes inference request to a JSON-encodable array', function () {
 
 it('round-trips inference request via toArray/fromArray', function () {
     $request = (new InferenceRequestBuilder)
-        ->withMessages([['role' => 'user', 'content' => 'Hi']])
-        ->withResponseFormat([
+        ->withMessages(Messages::fromArray([['role' => 'user', 'content' => 'Hi']]))
+        ->withResponseFormat(ResponseFormat::fromArray([
             'type' => 'json_schema',
             'json_schema' => [
                 'name' => 'schema',
                 'schema' => ['type' => 'object'],
                 'strict' => true,
             ],
-        ])
+        ]))
         ->create();
 
     $data = $request->toArray();
@@ -48,7 +51,7 @@ it('round-trips inference request via toArray/fromArray', function () {
 
 it('preserves retry policy and cached context across serialization round-trip', function () {
     $request = (new InferenceRequestBuilder)
-        ->withMessages([['role' => 'user', 'content' => 'Hi']])
+        ->withMessages(Messages::fromArray([['role' => 'user', 'content' => 'Hi']]))
         ->withRetryPolicy(new InferenceRetryPolicy(
             maxAttempts: 7,
             baseDelayMs: 100,
@@ -62,16 +65,16 @@ it('preserves retry policy and cached context across serialization round-trip', 
             maxTokensIncrement: 256,
         ))
         ->withCachedContext(
-            messages: [['role' => 'assistant', 'content' => 'Cached reply']],
-            tools: [[
+            messages: Messages::fromArray([['role' => 'assistant', 'content' => 'Cached reply']]),
+            tools: ToolDefinitions::fromArray([[
                 'type' => 'function',
                 'function' => [
                     'name' => 'tool1',
                     'parameters' => [],
                 ],
-            ]],
-            toolChoice: 'auto',
-            responseFormat: ['type' => 'json_object'],
+            ]]),
+            toolChoice: ToolChoice::auto(),
+            responseFormat: ResponseFormat::jsonObject(),
         )
         ->create();
 

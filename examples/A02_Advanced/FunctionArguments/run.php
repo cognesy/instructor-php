@@ -43,8 +43,8 @@ echo "\nExtracted arguments:\n";
 dump($args);
 
 assert(count($args) == 3);
-expect($args['name'] === 'Jason');
-expect($args['age'] == 28);
-expect($args['country'] === 'Germany');
+assert($args['name'] === 'Jason');
+assert($args['age'] == 28);
+assert($args['country'] === 'Germany');
 ?>
 ```

@@ -7,14 +7,13 @@ One of the core design goals of this package is driver independence. You write y
 
 ## Available Drivers
 
-The package ships with four production drivers and one test driver:
+The package ships with three production drivers and one test driver:
 
 | Driver name | Library | Package |
 |-------------|---------|---------|
 | `curl` | PHP cURL extension | Built-in (no dependency) |
 | `guzzle` | Guzzle HTTP | `guzzlehttp/guzzle` |
 | `symfony` | Symfony HttpClient | `symfony/http-client` |
-| `exthttp` | pecl_http | `pecl/http` |
 | (mock) | Built-in test double | Built-in |
 
 The default driver is `curl`, which requires no additional dependencies since the cURL extension is included with most PHP installations.
@@ -30,10 +29,6 @@ Guzzle is a mature, feature-rich HTTP client with its own middleware ecosystem, 
 ### SymfonyDriver
 
 The Symfony HttpClient offers native HTTP/2 support, automatic content-type detection, and multiple transports (native PHP, cURL, amphp). It is the natural choice for Symfony applications.
-
-### ExtHttpDriver
-
-The pecl_http driver integrates with the `pecl/http` extension for environments where it is available.
 
 ## Switching Drivers
 

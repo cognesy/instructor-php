@@ -110,13 +110,16 @@ class JsonSchemaRenderer implements CanRenderJsonSchema
             $properties[$propertyName] = $this->renderArray($property, $refCallback);
         }
 
-        return array_filter([
+        $result = array_filter([
             'type' => 'object',
             'x-title' => $schema->name,
             'description' => $schema->description,
             'properties' => $properties,
             'required' => $schema->required,
         ]);
+        $result['additionalProperties'] = false;
+
+        return $result;
     }
 
     /** @return array<string, mixed> */

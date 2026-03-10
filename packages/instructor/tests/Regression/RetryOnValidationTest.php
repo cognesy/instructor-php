@@ -8,7 +8,7 @@ use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Validation\Traits\ValidationMixin;
 use Cognesy\Instructor\Validation\ValidationResult;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Instructor\Enums\OutputMode;
 use Tests\Addons\Support\FakeInferenceDriver;
 
@@ -84,8 +84,8 @@ it('retries streaming (transducer) request after validation failure and succeeds
     // Second attempt: deltas assemble into valid JSON
     $batch1 = [];
     $batch2 = [
-        new PartialInferenceResponse(contentDelta: '{"age":'),
-        new PartialInferenceResponse(contentDelta: '36}'),
+        new PartialInferenceDelta(contentDelta: '{"age":'),
+        new PartialInferenceDelta(contentDelta: '36}'),
     ];
 
     $driver = new FakeInferenceDriver(
@@ -127,10 +127,10 @@ it('retries streaming (transducer) request after validation failure and succeeds
 
 it('retries streaming when driver emits pre-valued object that fails validation', function () {
     $batch1 = [
-        (new PartialInferenceResponse(contentDelta: ''))->withValue(new StreamValidatedUser(12)),
+        new PartialInferenceDelta(value: new StreamValidatedUser(12)),
     ];
     $batch2 = [
-        (new PartialInferenceResponse(contentDelta: ''))->withValue(new StreamValidatedUser(21)),
+        new PartialInferenceDelta(value: new StreamValidatedUser(21)),
     ];
 
     $driver = new FakeInferenceDriver(

@@ -51,6 +51,11 @@ $context = [
 $query = 'What was the increase in the price of a house from 2023 to 2024?';
 $response = (new ThreadOfThought)($query, $context);
 dump($response);
+
+assert($response instanceof ThreadOfThoughtResponse);
+assert(is_array($response->analysis));
+assert(count($response->analysis) > 0);
+assert(is_int($response->correct_answer));
 ?>
 ```
 

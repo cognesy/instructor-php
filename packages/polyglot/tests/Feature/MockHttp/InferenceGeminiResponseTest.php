@@ -20,7 +20,7 @@ it('returns content for Gemini generateContent (non-streaming)', function () {
 
     $content = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('gemini'), httpClient: $http))
         ->withModel('gemini-1.5-flash')
-        ->withMessages('Hello')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Hello'))
         ->get();
 
     expect($content)->toBe('Hi there!');

@@ -21,8 +21,8 @@ Polyglot normalizes all provider interactions into a small set of data objects. 
 | `updatedAt` | `DateTimeImmutable` | Timestamp of last mutation |
 | `messages` | `Messages` | The conversation messages |
 | `model` | `string` | Model identifier |
-| `tools` | `array` | Tool/function definitions |
-| `toolChoice` | `string\|array` | Tool selection strategy |
+| `tools` | `ToolDefinitions` | Tool/function definitions |
+| `toolChoice` | `ToolChoice` | Tool selection strategy |
 | `responseFormat` | `ResponseFormat` | Structured output format |
 | `options` | `array` | Additional options (e.g. `stream`, `max_tokens`, `temperature`) |
 | `cachedContext` | `CachedInferenceContext` | Shared context for prompt caching |
@@ -35,8 +35,8 @@ Polyglot normalizes all provider interactions into a small set of data objects. 
 $request->messages();             // Messages -- the message list
 $request->model();                // string
 $request->isStreamed();           // bool -- checks options['stream']
-$request->tools();               // array
-$request->toolChoice();          // string|array
+$request->tools();               // ToolDefinitions
+$request->toolChoice();          // ToolChoice
 $request->responseFormat();      // ResponseFormat
 $request->options();             // array
 $request->cachedContext();       // ?CachedInferenceContext

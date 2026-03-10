@@ -108,5 +108,10 @@ foreach ($models as $model => $prices) {
     $cost = $usage->cost($pricing);
     printf("  %-20s \$%.6f\n", $model, $cost);
 }
+
+assert($response->value()->name === 'Jason');
+assert($response->value()->age === 25);
+assert($response->usage()->inputTokens > 0);
+assert($response->usage()->outputTokens > 0);
 ?>
 ```

@@ -18,6 +18,7 @@ use Cognesy\Instructor\RetryPolicy\DefaultRetryPolicy;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
@@ -39,10 +40,10 @@ function makeSyncResponseModel(): ResponseModel {
 }
 
 function makeSyncExecution(): StructuredOutputExecution {
-    return (new StructuredOutputExecution())
+        return (new StructuredOutputExecution())
         ->with(
             request: (new StructuredOutputRequest())
-                ->withMessages([['role' => 'user', 'content' => 'Test']])
+                ->withMessages(Messages::fromArray([['role' => 'user', 'content' => 'Test']]))
                 ->withStreamed(false),
             responseModel: makeSyncResponseModel(),
             config: (new StructuredOutputConfig())->with(outputMode: OutputMode::Json)

@@ -17,7 +17,7 @@ is a preset name that maps to your environment variables:
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 $config = LLMConfig::fromPreset('openai');
-// @doctest id="faa4"
+// @doctest id="e53e"
 ```
 
 You can also create a `StructuredOutput` directly from a preset:
@@ -28,7 +28,7 @@ use Cognesy\Instructor\StructuredOutput;
 $result = StructuredOutput::using('anthropic')
     ->with(messages: 'Jason is 28.', responseModel: Person::class)
     ->get();
-// @doctest id="c2c1"
+// @doctest id="08c0"
 ```
 
 Provider configuration covers connection details: API keys, base URLs, default model
@@ -50,7 +50,7 @@ $runtime = StructuredOutputRuntime::fromConfig(
 )
     ->withMaxRetries(3)
     ->withOutputMode(OutputMode::Tools);
-// @doctest id="9efb"
+// @doctest id="7429"
 ```
 
 ### Runtime Settings
@@ -86,7 +86,7 @@ $runtime = StructuredOutputRuntime::fromConfig(
     LLMConfig::fromPreset('openai'),
     structuredConfig: $config,
 );
-// @doctest id="38ac"
+// @doctest id="9b7f"
 ```
 
 `StructuredOutputConfig` includes settings for:
@@ -118,14 +118,14 @@ $person = (new StructuredOutput)
         model: 'gpt-4o',
     )
     ->get();
-// @doctest id="2b74"
+// @doctest id="1379"
 ```
 
 ### Request Methods
 
 | Method | Purpose |
 |---|---|
-| `withMessages(...)` | Chat messages (string, array, or `Messages`) |
+| `withMessages(...)` | Set the chat messages |
 | `withInput(...)` | Input data (string, array, or object) |
 | `withResponseModel(...)` | Response model (class, instance, or schema) |
 | `withSystem(...)` | System prompt text |
@@ -152,7 +152,7 @@ $runtime->onEvent(StructuredOutputRequestReceived::class, function ($event) {
 $runtime->wiretap(function ($event) {
     logger()->debug(get_class($event));
 });
-// @doctest id="5b79"
+// @doctest id="feb3"
 ```
 
 
@@ -177,7 +177,7 @@ $summary = (new StructuredOutput)
     ->withRuntime($runtime)
     ->with(messages: $text2, responseModel: Summary::class)
     ->get();
-// @doctest id="2cc7"
+// @doctest id="b6ba"
 ```
 
 This keeps configuration centralized and each request minimal.

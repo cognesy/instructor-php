@@ -27,7 +27,7 @@ $documents = [
     'Philip K. Dick is an author of many sci-fi novels.',
 ];
 
-$query = "technology news";
+$query = 'technology news';
 
 $config = new EmbeddingsConfig(
     apiUrl    : 'https://api.cohere.ai/v1',
@@ -50,5 +50,7 @@ $bestMatches = EmbedUtils::findSimilar(
 );
 
 dump($bestMatches);
+
+assert(!empty($bestMatches));
 ?>
 ```

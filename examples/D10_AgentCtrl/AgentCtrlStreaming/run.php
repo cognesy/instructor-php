@@ -55,6 +55,10 @@ $response = AgentCtrl::claudeCode()
     ->executeStreaming('Find the AgentCtrl class and explain the make() factory method. Be concise.');
 
 echo "\n=== Result ===\n";
+if (!$response->isSuccess()) {
+    echo "Error: Command failed with exit code {$response->exitCode}\n";
+    exit(1);
+}
 echo "Tools used: " . implode(' > ', $toolCalls) . "\n";
 echo "Total tool calls: " . count($toolCalls) . "\n";
 

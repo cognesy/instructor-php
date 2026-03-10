@@ -115,6 +115,28 @@ final class SandboxCommandExecutor implements CommandExecutor
     }
 
     /**
+     * Create executor configured for Pi CLI.
+     */
+    public static function forPi(
+        SandboxDriver $driver = SandboxDriver::Host,
+        int $timeout = ExecutionPolicy::DEFAULT_TIMEOUT_SECONDS,
+        ?CanHandleEvents $events = null,
+    ): self {
+        return new self(ExecutionPolicy::forPi(), $driver, $timeout, $events, AgentType::Pi);
+    }
+
+    /**
+     * Create executor configured for Gemini CLI.
+     */
+    public static function forGemini(
+        SandboxDriver $driver = SandboxDriver::Host,
+        int $timeout = ExecutionPolicy::DEFAULT_TIMEOUT_SECONDS,
+        ?CanHandleEvents $events = null,
+    ): self {
+        return new self(ExecutionPolicy::forGemini(), $driver, $timeout, $events, AgentType::Gemini);
+    }
+
+    /**
      * Apply custom timeout to an existing policy.
      */
     private function withTimeout(ExecutionPolicy $policy, int $timeout): ExecutionPolicy {

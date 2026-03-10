@@ -1,6 +1,6 @@
 ---
 title: 'Building Tools'
-description: 'Step-by-step guide to building tools with FunctionTool, BaseTool, and MockTool'
+description: 'Step-by-step guide to building tools with FunctionTool, BaseTool, and FakeTool'
 ---
 
 # Building Tools
@@ -141,9 +141,9 @@ class WeatherTool extends BaseTool
         return "Weather in {$city}: 72F, sunny";
     }
 
-    public function toToolSchema(): array
+    public function toToolSchema(): ToolDefinition
     {
-        return ToolSchema::make(
+        return ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
             parameters: JsonSchema::object('parameters')
@@ -151,7 +151,7 @@ class WeatherTool extends BaseTool
                     JsonSchema::string('city', 'City name'),
                 ])
                 ->withRequiredProperties(['city'])
-        )->toArray();
+        )->toArray());
     }
 }
 ```
@@ -168,9 +168,9 @@ The `JsonSchema` class provides a fluent API for building parameter schemas with
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
 
-public function toToolSchema(): array
+public function toToolSchema(): ToolDefinition
 {
-    return ToolSchema::make(
+    return ToolDefinition::fromArray(ToolSchema::make(
         name: $this->name(),
         description: $this->description(),
         parameters: JsonSchema::object('parameters')
@@ -183,7 +183,7 @@ public function toToolSchema(): array
                     ->withItemSchema(JsonSchema::string()),
             ])
             ->withRequiredProperties(['query'])
-    )->toArray();
+    )->toArray());
 }
 ```
 
@@ -296,18 +296,18 @@ If you want typed parameters with compile-time safety and auto-generated schema,
 <a name="test-helpers"></a>
 ## Testing Your Tools
 
-### MockTool for Loop Testing
+### FakeTool for Loop Testing
 
-When writing tests for agent behavior, use `MockTool` to create tools with predetermined responses. This lets you test the agent loop without real tool implementations:
+When writing tests for agent behavior, use `FakeTool` to create tools with predetermined responses. This lets you test the agent loop without real tool implementations:
 
 ```php
-use Cognesy\Agents\Tool\Tools\MockTool;
+use Cognesy\Agents\Tool\Tools\FakeTool;
 
 // Simple static return value
-$tool = MockTool::returning('search', 'Search the web', 'result text');
+$tool = FakeTool::returning('search', 'Search the web', 'result text');
 
 // Dynamic handler for input-dependent responses
-$tool = new MockTool(
+$tool = new FakeTool(
     name: 'calculator',
     description: 'Evaluate math expressions',
     handler: fn(string $expression) => (string) eval("return {$expression};"),

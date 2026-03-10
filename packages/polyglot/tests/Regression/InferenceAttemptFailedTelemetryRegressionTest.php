@@ -47,7 +47,7 @@ it('emits sanitized attempt failure telemetry with provider status code', functi
     );
 
     $request = (new InferenceRequestBuilder())
-        ->withMessages('test')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('test'))
         ->withRetryPolicy(new InferenceRetryPolicy(maxAttempts: 1))
         ->create();
 

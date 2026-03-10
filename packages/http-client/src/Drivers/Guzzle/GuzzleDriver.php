@@ -65,7 +65,6 @@ class GuzzleDriver implements CanHandleHttpRequest
 
     private function performHttpCall(HttpRequest $request) : ResponseInterface {
         $body = $request->body()->toString();
-        $jsonBody = $this->decodeJsonArray($body);
         $options = [
             'headers' => $request->headers(),
             'connect_timeout' => $this->config->connectTimeout ?? 3,
@@ -74,11 +73,7 @@ class GuzzleDriver implements CanHandleHttpRequest
             'http_errors' => false, // Disable Guzzle's automatic HTTP error handling
         ];
 
-        if ($jsonBody !== null) {
-            $options['json'] = $jsonBody;
-        }
-
-        if ($jsonBody === null && $body !== '') {
+        if ($body !== '') {
             $options['body'] = $body;
         }
 
@@ -149,20 +144,4 @@ class GuzzleDriver implements CanHandleHttpRequest
         ]));
     }
 
-    private function decodeJsonArray(string $body): ?array {
-        if ($body === '') {
-            return null;
-        }
-
-        $decoded = json_decode($body, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            return null;
-        }
-
-        if (!is_array($decoded)) {
-            return null;
-        }
-
-        return $decoded;
-    }
 }

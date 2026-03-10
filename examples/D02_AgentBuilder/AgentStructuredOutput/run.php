@@ -40,6 +40,7 @@ use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Agents\Tool\Tools\BaseTool;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Polyglot\Inference\Data\ToolDefinition;
 use Symfony\Component\Validator\Constraints as Assert;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
@@ -114,8 +115,8 @@ class CreateLeadTool extends BaseTool
     }
 
     #[\Override]
-    public function toToolSchema(): array {
-        return [
+    public function toToolSchema(): ToolDefinition {
+        return ToolDefinition::fromArray([
             'type' => 'function',
             'function' => [
                 'name' => $this->name(),
@@ -131,7 +132,7 @@ class CreateLeadTool extends BaseTool
                     'required' => ['metadata_key'],
                 ],
             ],
-        ];
+        ]);
     }
 }
 
@@ -252,7 +253,7 @@ echo "Status: {$finalState->status()->value}\n";
 
 if ($finalState->status()->value !== 'completed') {
     echo "Skipping assertions because execution status is {$finalState->status()->value}.\n";
-    return;
+    exit(1);
 }
 
 // Assertions

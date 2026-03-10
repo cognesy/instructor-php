@@ -137,6 +137,7 @@
                 "packages/instructor/introduction",
                 "packages/instructor/quickstart",
                 "packages/instructor/setup",
+                "packages/instructor/testing-doubles",
                 "packages/instructor/upgrade",
                 "packages/instructor/cli_tools",
                 {
@@ -213,6 +214,7 @@
                 "packages/polyglot/overview",
                 "packages/polyglot/quickstart",
                 "packages/polyglot/setup",
+                "packages/polyglot/testing-doubles",
                 "packages/polyglot/upgrade",
                 {
                     "group": "Essentials",
@@ -310,7 +312,8 @@
                 "packages/agents/14-agent-templates",
                 "packages/agents/15-subagents",
                 "packages/agents/16-session-runtime",
-                "packages/agents/17-building-tools-advanced"
+                "packages/agents/17-building-tools-advanced",
+                "packages/agents/testing-doubles"
             ]
         },
         {
@@ -318,6 +321,7 @@
             "pages": [
                 "packages/agent-ctrl/1-overview",
                 "packages/agent-ctrl/2-getting-started",
+                "packages/agent-ctrl/testing-doubles",
                 "packages/agent-ctrl/3-streaming",
                 "packages/agent-ctrl/4-session-management",
                 "packages/agent-ctrl/5-agent-options",
@@ -345,6 +349,7 @@
             "pages": [
                 "packages/http/1-overview",
                 "packages/http/2-getting-started",
+                "packages/http/testing-doubles",
                 "packages/http/3-making-requests",
                 "packages/http/4-handling-responses",
                 "packages/http/5-streaming-responses",

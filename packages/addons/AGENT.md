@@ -808,8 +808,8 @@ class MyTool extends BaseTool
     }
 
     #[\Override]
-    public function toToolSchema(): array {
-        return [
+    public function toToolSchema(): ToolDefinition {
+        return ToolDefinition::fromArray([
             'type' => 'function',
             'function' => [
                 'name' => $this->name(),
@@ -822,7 +822,7 @@ class MyTool extends BaseTool
                     'required' => ['param'],
                 ],
             ],
-        ];
+        ]);
     }
 }
 
@@ -874,22 +874,22 @@ $agent = AgentBuilder::base()
 | `ScenarioStep::error($response)` | Creates an error step |
 | `ScenarioStep::toolCall($name, $args, $response)` | Creates a step with tool call |
 
-### MockTool
+### FakeTool
 
-Simple mock tool for testing that returns fixed values or executes custom handlers.
+Simple fake tool for testing that returns fixed values or executes custom handlers.
 
 ```php
-use Cognesy\Addons\Agent\Tools\Testing\MockTool;
+use Cognesy\Addons\Agent\Tools\Testing\FakeTool;
 
 // Static return value
-$tool = MockTool::returning(
+$tool = FakeTool::returning(
     name: 'get_weather',
     description: 'Returns weather data',
     value: ['temp' => 72, 'conditions' => 'sunny']
 );
 
 // Custom handler
-$tool = new MockTool(
+$tool = new FakeTool(
     name: 'calculate',
     description: 'Performs calculation',
     handler: fn($a, $b) => $a + $b
@@ -974,7 +974,7 @@ $agent = AgentBuilder::base()
 │       ├── BaseTool.php            # Base class for tools
 │       ├── FunctionTool.php        # Wrap PHP functions as tools
 │       └── Testing/
-│           └── MockTool.php        # Mock tool for testing
+│           └── FakeTool.php        # Fake tool for testing
 ├── src/AgentBuilder/
 │   ├── AgentBuilder.php            # Fluent builder for agents
 │   ├── Capabilities/               # MODULAR FEATURES

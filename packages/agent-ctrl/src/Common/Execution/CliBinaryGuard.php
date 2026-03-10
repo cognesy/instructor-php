@@ -63,12 +63,16 @@ final class CliBinaryGuard
             AgentType::ClaudeCode => 'Claude Code CLI',
             AgentType::Codex => 'Codex CLI',
             AgentType::OpenCode => 'OpenCode CLI',
+            AgentType::Pi => 'Pi CLI',
+            AgentType::Gemini => 'Gemini CLI',
         };
 
         $hint = match ($agentType) {
             AgentType::ClaudeCode => 'Install Claude Code CLI and ensure `claude` is available in PATH.',
             AgentType::Codex => 'Install via `npm install -g @openai/codex` and ensure `codex` is available in PATH.',
             AgentType::OpenCode => 'Install via `npm install -g opencode` (or `curl -fsSL https://get.opencode.dev | bash`) and ensure `opencode` is available in PATH.',
+            AgentType::Pi => 'Install via `npm install -g @mariozechner/pi-coding-agent` and ensure `pi` is available in PATH.',
+            AgentType::Gemini => 'Install via `npm install -g @google/gemini-cli` or `brew install gemini-cli` and ensure `gemini` is available in PATH.',
         };
 
         return "{$label} executable `{$binary}` was not found in PATH. {$hint}";

@@ -9,9 +9,9 @@ use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\EmbeddingsRuntime;
 use Cognesy\Polyglot\Embeddings\PendingEmbeddings;
 use Cognesy\Polyglot\Tests\Support\TestConfig;
+use Cognesy\Polyglot\Tests\Support\FakeEmbeddingsDriver;
 use Cognesy\Config\Dsn;
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Http\Data\HttpResponse;
 
 it('uses provided runtime and preserves it across request mutations', function () {
     $runtime = new class implements CanCreateEmbeddings {
@@ -112,15 +112,7 @@ it('supports request hydration and typed constructor sugar', function () {
 
 it('rejects execution when request has no inputs', function () {
     $runtime = new EmbeddingsRuntime(
-        driver: new class implements CanHandleVectorization {
-            public function handle(EmbeddingsRequest $request): HttpResponse {
-                throw new RuntimeException('not reached');
-            }
-
-            public function fromData(array $data): ?EmbeddingsResponse {
-                return null;
-            }
-        },
+        driver: new FakeEmbeddingsDriver(),
         events: new EventDispatcher(name: 'test.embeddings.runtime'),
     );
 

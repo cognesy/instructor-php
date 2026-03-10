@@ -23,6 +23,7 @@ try {
     $result = Sandbox::docker($policy, image: 'alpine:3')
         ->execute(['sh', '-lc', 'echo "hello from docker sandbox"']);
 
+    assert($result->exitCode() === 0, 'Docker echo should exit with code 0');
     echo "Exit: {$result->exitCode()}\n";
     echo $result->stdout();
 } catch (Throwable $e) {

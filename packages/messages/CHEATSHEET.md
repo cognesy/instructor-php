@@ -64,6 +64,103 @@ enum ContentType: string {
 }
 ```
 
+### Message Type Enumeration
+```php
+enum MessageType: string {
+    case Text = 'text';                          // Regular text message (any role)
+    case AssistantToolCalls = 'assistant_tool_calls'; // Assistant message with tool calls
+    case ToolResult = 'tool_result';             // Tool role message with result
+}
+
+// Derived from message role + tool state via Message::type()
+$message->type();                                // MessageType enum
+```
+
+## Tool Types
+
+### ToolCallId
+```php
+// Opaque external identifier for tool calls
+final readonly class ToolCallId extends OpaqueExternalId {}
+
+new ToolCallId('call_abc123');
+$id->toString();                              // 'call_abc123'
+$id->toNullableString();                      // 'call_abc123' or null
+```
+
+### ToolCall
+```php
+final readonly class ToolCall {
+    public function __construct(
+        string $name,
+        array $arguments = [],
+        ToolCallId|string|null $id = null,     // Accepts string, ToolCallId, or null
+    );
+
+    // Construction
+    ToolCall::fromArray($data);                // From array (OpenAI format)
+    ToolCall::none();                          // Sentinel "(no-tool)"
+
+    // Accessors
+    $tc->id();                                 // ?ToolCallId
+    $tc->idString();                           // string ('' if null)
+    $tc->name();                               // string
+    $tc->arguments();                          // array
+    $tc->argumentsAsJson();                    // string (JSON-encoded)
+    $tc->toArray();                            // Serialized array
+}
+```
+
+### ToolCalls
+```php
+final readonly class ToolCalls {
+    public function __construct(ToolCall ...$toolCalls);
+
+    // Construction
+    ToolCalls::empty();
+    ToolCalls::fromArray($array);              // From array of ToolCall/array/string
+    ToolCalls::fromMapper($items, $mapper);    // Custom mapping
+
+    // Access
+    $tcs->all();                               // ToolCall[]
+    $tcs->first();                             // ?ToolCall
+    $tcs->count();                             // int
+    $tcs->isEmpty();                           // bool
+
+    // Iteration
+    $tcs->map(fn(ToolCall $tc) => ...);        // array
+
+    // Mutation (immutable)
+    $tcs->withAddedToolCall($name, $args);     // Add a tool call
+    $tcs->withAppendedToolCallArgs($json);     // Append JSON to last call's args
+}
+```
+
+### ToolResult
+```php
+final readonly class ToolResult {
+    public function __construct(
+        string $content,
+        ToolCallId|string|null $callId = null, // Accepts string, ToolCallId, or null
+        ?string $toolName = null,
+        bool $isError = false,
+    );
+
+    // Factory methods
+    ToolResult::success($content, $callId, $toolName);
+    ToolResult::error($content, $callId, $toolName);
+    ToolResult::fromArray($data);
+
+    // Accessors
+    $tr->content();                            // string
+    $tr->callId();                             // ?ToolCallId
+    $tr->callIdString();                       // string ('' if null)
+    $tr->toolName();                           // ?string
+    $tr->isError();                            // bool
+    $tr->toArray();                            // Serialized array
+}
+```
+
 ## Message Class Structure
 
 ### Core Message Class
@@ -72,8 +169,10 @@ final readonly class Message {
     protected string $role;
     protected string $name;
     protected Content $content;
+    protected ToolCalls $toolCalls;
+    protected ?ToolResult $toolResult;
     protected Metadata $metadata;
-    
+
     public const DEFAULT_ROLE = 'user';
 }
 ```
@@ -747,8 +846,19 @@ $message->content();                       // Content object
 $message->contentParts();                  // ContentParts collection
 $message->contentParts()->all();           // ContentPart[] array
 
+// Role and type checking
+$message->isTool();                        // role === 'tool'
+$message->isAssistant();                   // role === 'assistant'
+$message->type();                          // MessageType enum (Text, AssistantToolCalls, ToolResult)
+
+// Tool accessors
+$message->hasToolCalls();                  // Has non-empty ToolCalls
+$message->toolCalls();                     // ToolCalls collection
+$message->hasToolResult();                 // Has a ToolResult (not null)
+$message->toolResult();                    // ?ToolResult
+
 // State checking
-$message->isEmpty();                       // Content empty and no metadata
+$message->isEmpty();                       // Content empty and no metadata/tool data
 $message->isComposite();                   // Complex content structure
 
 // Metadata operations
@@ -760,6 +870,8 @@ $message->withMetadata($key, $value);      // Add metadata (immutable)
 ```php
 $message->withContent($content);           // Replace content
 $message->withRole($role);                 // Change role
+$message->withToolCalls($toolCalls);       // Replace ToolCalls
+$message->withToolResult($toolResult);     // Replace ToolResult
 $message->addContentFrom($sourceMessage); // Merge content from another message
 $message->addContentPart($part);           // Add content part
 ```

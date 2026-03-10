@@ -23,7 +23,7 @@ use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Template\Factory\DefinitionLoopFactory;
 use Cognesy\Agents\Tool\ToolRegistry;
-use Cognesy\Agents\Tool\Tools\MockTool;
+use Cognesy\Agents\Tool\Tools\FakeTool;
 
 $logger = new AgentEventConsoleObserver(useColors: true, showTimestamps: true, showContinuation: true);
 
@@ -31,7 +31,7 @@ $capabilities = new AgentCapabilityRegistry();
 $capabilities->register('guards.basic', new UseGuards(maxSteps: 4, maxTokens: 2000, maxExecutionTime: 30));
 
 $tools = new ToolRegistry();
-$tools->register(MockTool::returning(
+$tools->register(FakeTool::returning(
     'city_fact',
     'Returns one city fact',
     'Paris has a population of about 2.1 million residents.',
@@ -60,7 +60,7 @@ echo 'Final answer: ' . ($final->finalResponse()->toString() ?: 'No response') .
 
 if ($final->status()->value !== 'completed') {
     echo "Skipping assertions because execution status is {$final->status()->value}.\n";
-    return;
+    exit(1);
 }
 
 assert($final->status()->value === 'completed');

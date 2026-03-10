@@ -15,7 +15,7 @@ use Cognesy\Agents\Template\Factory\DefinitionLoopFactory;
 use Cognesy\Agents\Tests\Support\FakeSubagentProvider;
 use Cognesy\Agents\Tests\Support\TestHelpers;
 use Cognesy\Agents\Tool\ToolRegistry;
-use Cognesy\Agents\Tool\Tools\MockTool;
+use Cognesy\Agents\Tool\Tools\FakeTool;
 
 function makeTempDir(): string {
     $tempDir = sys_get_temp_dir() . '/agent_definition_regression_' . uniqid();
@@ -51,7 +51,7 @@ it('inherits all registry tools in DefinitionLoopFactory when tools are omitted'
     ])));
 
     $tools = new ToolRegistry();
-    $tools->register(MockTool::returning('demo_tool', 'Demo tool', 'done'));
+    $tools->register(FakeTool::returning('demo_tool', 'Demo tool', 'done'));
 
     $definition = AgentDefinition::fromArray([
         'name' => 'tool-agent',
@@ -87,8 +87,8 @@ YAML;
         $spec = (new AgentDefinitionLoader())->loadFile($path);
         $provider = new FakeSubagentProvider($spec);
 
-        $toolA = MockTool::returning('tool_a', 'Tool A', 'result a');
-        $toolB = MockTool::returning('tool_b', 'Tool B', 'result b');
+        $toolA = FakeTool::returning('tool_a', 'Tool A', 'result a');
+        $toolB = FakeTool::returning('tool_b', 'Tool B', 'result b');
         $parentTools = new Tools($toolA, $toolB);
 
         $tool = new SpawnSubagentTool(

@@ -294,3 +294,18 @@ $result = (new StructuredOutput)
     ->with(messages: $text, responseModel: User::class)
     ->get();
 ```
+
+## Testing
+
+Deterministic test seams:
+
+- `Tests\Support\FakeInferenceDriver`
+  - queue sync `InferenceResponse` fixtures or streaming `PartialInferenceDelta` batches
+  - best for most unit and regression tests inside `packages/instructor`
+- `Tests\MockHttp`
+  - builds an HTTP client around `MockHttpDriver`
+  - use when provider adapter and HTTP response shape still matter
+- `Tests\Integration\Support\ProbeStreamDriver`
+  - observation helper for streaming immediacy and call-count assertions
+- `Tests\Integration\Support\ProbeIterator`
+  - explicit iterator helper for controlled delta emission in integration tests

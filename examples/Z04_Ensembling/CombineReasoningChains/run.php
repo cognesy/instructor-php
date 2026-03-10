@@ -88,6 +88,10 @@ class MetaCOT {
 $query = "Would Arnold Schwarzenegger have been able to deadlift an adult Black rhinoceros at his peak strength?";
 $result = (new MetaCOT)($query);
 dump($result);
+
+assert($result instanceof ReasoningAndResponse);
+assert(!empty($result->intermediate_reasoning));
+assert(!empty($result->correct_answer));
 ?>
 ```
 

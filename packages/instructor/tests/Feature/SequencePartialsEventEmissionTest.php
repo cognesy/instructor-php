@@ -4,7 +4,7 @@ use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated;
 use Cognesy\Instructor\Events\Request\SequenceUpdated;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 
@@ -15,9 +15,9 @@ class EvtPartialUser
 }
 
 it('emits PartialResponseGenerated events while streaming partial updates', function () {
-    $p1 = (new PartialInferenceResponse(contentDelta: ''))->withValue(new EvtPartialUser(1));
-    $p2 = (new PartialInferenceResponse(contentDelta: ''))->withValue(new EvtPartialUser(2));
-    $p3 = (new PartialInferenceResponse(contentDelta: ''))->withValue(new EvtPartialUser(3));
+    $p1 = new PartialInferenceDelta(value: new EvtPartialUser(1));
+    $p2 = new PartialInferenceDelta(value: new EvtPartialUser(2));
+    $p3 = new PartialInferenceDelta(value: new EvtPartialUser(3));
 
     $driver = new FakeInferenceDriver(
         responses: [],
@@ -50,11 +50,11 @@ it('emits SequenceUpdated events including final sequence item', function () {
     }
 
     $chunks = [
-        new PartialInferenceResponse(contentDelta: '{"list":[{"name":"Jason","age":25}'),
-        new PartialInferenceResponse(contentDelta: ',{"name":"Jane","age":18}'),
-        new PartialInferenceResponse(contentDelta: ',{"name":"John","age":30}'),
-        new PartialInferenceResponse(contentDelta: ',{"name":"Anna","age":28}'),
-        new PartialInferenceResponse(contentDelta: ']}', finishReason: 'stop'),
+        new PartialInferenceDelta(contentDelta: '{"list":[{"name":"Jason","age":25}'),
+        new PartialInferenceDelta(contentDelta: ',{"name":"Jane","age":18}'),
+        new PartialInferenceDelta(contentDelta: ',{"name":"John","age":30}'),
+        new PartialInferenceDelta(contentDelta: ',{"name":"Anna","age":28}'),
+        new PartialInferenceDelta(contentDelta: ']}', finishReason: 'stop'),
     ];
 
     $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $chunks ]);

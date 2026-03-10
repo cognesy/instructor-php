@@ -64,6 +64,10 @@ $max = max($counts);
 $finals = array_keys(array_filter($counts, fn($c) => $c === $max));
 $final = $finals[array_rand($finals)];
 dump($final);
+
+assert(is_array($top));
+assert(count($top) > 0);
+assert(!empty($final));
 ?>
 ```
 

@@ -112,11 +112,15 @@ The boundary between `\Core` and `\Hook` is **whether the behavior is optional**
 - tbd (to-be-done) - issue tracking system, see: @./docs-internal/tbd/tbd_cheatsheet.md
 
 ## `bd` CLI (dense workflow)
-**Query**: `bd work --json` (ready work on newer CLI) or `bd ready --json` (compat); `bd list --json --no-pager` (open, use `--all` for closed too); `bd show <id> --json` for detail. Common filters: `-s`/`-p`/`-t`/`-l`/`--parent`/`--assignee`.
+**Query**: `bd ready --json` for actionable work; `bd list --json --no-pager` for open issues (`--all` includes closed); `bd show <id> --json` for detail; `bd status --json` for counts/health. Use `bd ready`, not `bd work`. Common filters: `bd ready` supports `-p`/`-t`/`-l`/`--parent`/`--assignee`; `bd list` supports those plus `-s` for stored status.
 
-**Create**: Task default: `bd create "title" -d "desc" -p 2 -l area:events`; explicit task: `bd create "title" -t task -d "desc" --parent <epic-id>`; epic: `bd create "Epic: title" -t epic -d "goal/context/outcome/acceptance"`; child tasks under epic via `--parent <epic-id>`; deps via `--deps "blocks:<id>,depends-on:<id>"`.
+**Create**: Task default: `bd create "title" -d "desc" -p 2 -l area:events`; explicit task: `bd create "title" -t task -d "desc" --parent <epic-id>`; epic: `bd create "Epic: title" -t epic -d "goal/context/outcome/acceptance"`; child tasks under epic via `--parent <epic-id>`; dependencies via `--deps "blocks:<id>,discovered-from:<id>"`.
 
-**Update/Close/Remove**: Update fields/status: `bd update <id> -s in_progress -a <assignee> -p 1 --notes "plan"`; labels: `--add-label`, `--remove-label`, `--set-labels`; close: `bd close <id> -r "done"`; reopen: `bd reopen <id>`; remove (destructive): `bd delete <id> --force` (`--cascade` for dependents, `--dry-run` to preview).
+**Update/Close/Remove**: Claim atomically with `bd update <id> --claim`; update fields/status with `bd update <id> -s in_progress -a <assignee> -p 1 --notes "plan"`; labels: `--add-label`, `--remove-label`, `--set-labels`; close: `bd close <id> -r "done"`; reopen: `bd reopen <id>`; remove (destructive): `bd delete <id> --force`.
+
+**Dependencies**: use `bd dep <blocker-id> --blocks <blocked-id>` for simple blocker creation, or `bd dep add <blocked-id> <blocker-id>` for explicit dependency management.
+
+**Migration/health**: current `bd` is Dolt-only. For old repos, preserve `.beads/issues.jsonl` and reinitialize with `bd init --from-jsonl`; validate with `bd doctor --agent --json`; refresh hooks with `bd hooks install`.
 
 
 # Commit Message Guidelines
@@ -153,3 +157,116 @@ The boundary between `\Core` and `\Hook` is **whether the behavior is optional**
 ## Git Ownership
 
 - Leave all git operations to the human user unless explicitly requested.
+
+<!-- BEGIN BEADS INTEGRATION -->
+## Issue Tracking with bd (beads)
+
+**IMPORTANT**: This project uses **bd (beads)** for ALL issue tracking. Do NOT use markdown TODOs, task lists, or other tracking methods.
+
+### Why bd?
+
+- Dependency-aware: Track blockers and relationships between issues
+- Git-friendly: Dolt-powered version control with native sync
+- Agent-optimized: JSON output, ready work detection, discovered-from links
+- Prevents duplicate tracking systems and confusion
+
+### Quick Start
+
+**Check for ready work:**
+
+```bash
+bd ready --json
+```
+
+**Create new issues:**
+
+```bash
+bd create "Issue title" --description="Detailed context" -t bug|feature|task -p 0-4 --json
+bd create "Issue title" --description="What this issue is about" -p 1 --deps discovered-from:bd-123 --json
+```
+
+**Claim and update:**
+
+```bash
+bd update <id> --claim --json
+bd update bd-42 --priority 1 --json
+```
+
+**Complete work:**
+
+```bash
+bd close bd-42 --reason "Completed" --json
+```
+
+### Issue Types
+
+- `bug` - Something broken
+- `feature` - New functionality
+- `task` - Work item (tests, docs, refactoring)
+- `epic` - Large feature with subtasks
+- `chore` - Maintenance (dependencies, tooling)
+
+### Priorities
+
+- `0` - Critical (security, data loss, broken builds)
+- `1` - High (major features, important bugs)
+- `2` - Medium (default, nice-to-have)
+- `3` - Low (polish, optimization)
+- `4` - Backlog (future ideas)
+
+### Workflow for AI Agents
+
+1. **Check ready work**: `bd ready` shows unblocked issues
+2. **Claim your task atomically**: `bd update <id> --claim`
+3. **Work on it**: Implement, test, document
+4. **Discover new work?** Create linked issue:
+   - `bd create "Found bug" --description="Details about what was found" -p 1 --deps discovered-from:<parent-id>`
+5. **Complete**: `bd close <id> --reason "Done"`
+
+### Auto-Sync
+
+bd uses a Dolt-backed local database:
+
+- Use `bd doctor --agent --json` to validate backend and hook health
+- Use `bd hooks install` after migrations or CLI upgrades
+- For old SQLite-era repos, recover from `.beads/issues.jsonl` with `bd init --from-jsonl`
+
+### Important Rules
+
+- ✅ Use bd for ALL task tracking
+- ✅ Always use `--json` flag for programmatic use
+- ✅ Link discovered work with `discovered-from` dependencies
+- ✅ Check `bd ready` before asking "what should I work on?"
+- ❌ Do NOT create markdown TODO lists
+- ❌ Do NOT use external issue trackers
+- ❌ Do NOT duplicate tracking systems
+
+For more details, see README.md and docs/QUICKSTART.md.
+
+## Landing the Plane (Session Completion)
+
+**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
+
+**MANDATORY WORKFLOW:**
+
+1. **File issues for remaining work** - Create issues for anything that needs follow-up
+2. **Run quality gates** (if code changed) - Tests, linters, builds
+3. **Update issue status** - Close finished work, update in-progress items
+4. **PUSH TO REMOTE** - This is MANDATORY:
+   ```bash
+   git pull --rebase
+   bd sync
+   git push
+   git status  # MUST show "up to date with origin"
+   ```
+5. **Clean up** - Clear stashes, prune remote branches
+6. **Verify** - All changes committed AND pushed
+7. **Hand off** - Provide context for next session
+
+**CRITICAL RULES:**
+- Work is NOT complete until `git push` succeeds
+- NEVER stop before pushing - that leaves work stranded locally
+- NEVER say "ready to push when you are" - YOU must push
+- If push fails, resolve and retry until it succeeds
+
+<!-- END BEADS INTEGRATION -->

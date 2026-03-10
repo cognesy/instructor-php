@@ -12,7 +12,7 @@ final readonly class UseContextConfig implements CanProvideAgentCapability
 {
     public function __construct(
         private string $systemPrompt = '',
-        private null|array|ResponseFormat $responseFormat = null,
+        private ?ResponseFormat $responseFormat = null,
     ) {}
 
     #[\Override]
@@ -23,11 +23,7 @@ final readonly class UseContextConfig implements CanProvideAgentCapability
     #[\Override]
     public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         $prompt = trim($this->systemPrompt);
-        $format = match (true) {
-            $this->responseFormat instanceof ResponseFormat => $this->responseFormat,
-            is_array($this->responseFormat) => ResponseFormat::fromArray($this->responseFormat),
-            default => null,
-        };
+        $format = $this->responseFormat;
 
         $hasFormat = $format !== null && !$format->isEmpty();
         if ($prompt === '' && !$hasFormat) {

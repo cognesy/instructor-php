@@ -4,7 +4,7 @@ use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 
@@ -42,8 +42,8 @@ it('resolves final response after getIterator consumption for all cache policies
     $driver = new FakeInferenceDriver(
         responses: [],
         streamBatches: [[
-            new PartialInferenceResponse(contentDelta: '{"name":"Ann"'),
-            new PartialInferenceResponse(contentDelta: ',"age":30}', finishReason: 'stop'),
+            new PartialInferenceDelta(contentDelta: '{"name":"Ann"'),
+            new PartialInferenceDelta(contentDelta: ',"age":30}', finishReason: 'stop'),
         ]],
     );
 

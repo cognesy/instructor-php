@@ -65,6 +65,10 @@ $event->printLog();
 $event->printDebug();
 ```
 
+Notes:
+- Object payloads are normalized to a simplified public-property array for observability.
+- String/log rendering is best-effort JSON over that simplified payload.
+
 ## Explicit Wiring
 
 ```php
@@ -110,6 +114,8 @@ $service
     ->onEvent(Event::class, fn(object $e) => null)
     ->wiretap(fn(object $e) => null);
 ```
+
+Call `withEventHandler($events)` before `dispatch()`, `onEvent()`, or `wiretap()`.
 
 ## Event Formatter Utilities
 

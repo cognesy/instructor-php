@@ -144,7 +144,7 @@ if ($result->success()) {
 
 ## Dependency Injection
 
-Since all drivers implement the `CanExecuteCommand` interface, you can type-hint against the interface in your application services. This makes it easy to swap implementations and simplifies testing with `MockSandbox`:
+Since all drivers implement the `CanExecuteCommand` interface, you can type-hint against the interface in your application services. This makes it easy to swap implementations and simplifies testing with `FakeSandbox`:
 
 ```php
 use Cognesy\Sandbox\Contracts\CanExecuteCommand;

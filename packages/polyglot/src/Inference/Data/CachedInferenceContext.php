@@ -17,22 +17,15 @@ class CachedInferenceContext
     private ResponseFormat $responseFormat;
 
     public function __construct(
-        Messages|string|array $messages = [],
-        ToolDefinitions|array $tools = [],
-        ToolChoice|string|array $toolChoice = [],
-        array|ResponseFormat|null $responseFormat = null,
+        ?Messages $messages = null,
+        ?ToolDefinitions $tools = null,
+        ?ToolChoice $toolChoice = null,
+        ?ResponseFormat $responseFormat = null,
     ) {
-        $this->messages = Messages::fromAny($messages);
-        $this->tools = match (true) {
-            $tools instanceof ToolDefinitions => $tools,
-            default => ToolDefinitions::fromArray($tools),
-        };
-        $this->toolChoice = ToolChoice::fromAny($toolChoice);
-        $this->responseFormat = match (true) {
-            $responseFormat instanceof ResponseFormat => $responseFormat,
-            is_array($responseFormat) => ResponseFormat::fromArray($responseFormat),
-            default => new ResponseFormat,
-        };
+        $this->messages = $messages ?? Messages::empty();
+        $this->tools = $tools ?? ToolDefinitions::empty();
+        $this->toolChoice = $toolChoice ?? ToolChoice::empty();
+        $this->responseFormat = $responseFormat ?? ResponseFormat::empty();
     }
 
     public function messages(): Messages
@@ -55,7 +48,7 @@ class CachedInferenceContext
         return $this->responseFormat;
     }
 
-    public function withMessages(Messages|string|array $messages): self
+    public function withMessages(Messages $messages): self
     {
         return new self(
             messages: $messages,
@@ -65,7 +58,7 @@ class CachedInferenceContext
         );
     }
 
-    public function withTools(ToolDefinitions|array $tools): self
+    public function withTools(ToolDefinitions $tools): self
     {
         return new self(
             messages: $this->messages,
@@ -75,7 +68,7 @@ class CachedInferenceContext
         );
     }
 
-    public function withToolChoice(ToolChoice|string|array $toolChoice): self
+    public function withToolChoice(ToolChoice $toolChoice): self
     {
         return new self(
             messages: $this->messages,
@@ -85,7 +78,7 @@ class CachedInferenceContext
         );
     }
 
-    public function withResponseFormat(array|ResponseFormat $responseFormat): self
+    public function withResponseFormat(ResponseFormat $responseFormat): self
     {
         return new self(
             messages: $this->messages,
@@ -116,10 +109,55 @@ class CachedInferenceContext
     public static function fromArray(array $data): self
     {
         return new self(
-            messages: $data['messages'] ?? [],
-            tools: $data['tools'] ?? [],
-            toolChoice: $data['toolChoice'] ?? [],
-            responseFormat: is_array($data['responseFormat'] ?? null) ? $data['responseFormat'] : [],
+            messages: self::messagesFromArray($data),
+            tools: self::toolsFromArray($data),
+            toolChoice: self::toolChoiceFromArray($data),
+            responseFormat: self::responseFormatFromArray($data),
         );
+    }
+
+    private static function messagesFromArray(array $data): Messages
+    {
+        $messages = $data['messages'] ?? [];
+
+        return match (true) {
+            $messages instanceof Messages => $messages,
+            is_array($messages) => Messages::fromAnyArray($messages),
+            is_string($messages) => Messages::fromString($messages),
+            default => Messages::empty(),
+        };
+    }
+
+    private static function toolsFromArray(array $data): ToolDefinitions
+    {
+        $tools = $data['tools'] ?? [];
+
+        return match (true) {
+            $tools instanceof ToolDefinitions => $tools,
+            is_array($tools) => ToolDefinitions::fromArray($tools),
+            default => ToolDefinitions::empty(),
+        };
+    }
+
+    private static function toolChoiceFromArray(array $data): ToolChoice
+    {
+        $toolChoice = $data['toolChoice'] ?? [];
+
+        return match (true) {
+            $toolChoice instanceof ToolChoice => $toolChoice,
+            is_string($toolChoice), is_array($toolChoice) => ToolChoice::fromAny($toolChoice),
+            default => ToolChoice::empty(),
+        };
+    }
+
+    private static function responseFormatFromArray(array $data): ResponseFormat
+    {
+        $responseFormat = $data['responseFormat'] ?? null;
+
+        return match (true) {
+            $responseFormat instanceof ResponseFormat => $responseFormat,
+            is_array($responseFormat) => ResponseFormat::fromArray($responseFormat),
+            default => ResponseFormat::empty(),
+        };
     }
 }

@@ -20,7 +20,7 @@ it('streams partial responses and assembles final content (OpenAI Responses SSE)
 
     $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai-responses'), httpClient: $http))
         ->withModel('gpt-4o-mini')
-        ->withMessages('Greet me')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Greet me'))
         ->withStreaming(true)
         ->stream();
 
@@ -64,7 +64,7 @@ it('handles streaming function call arguments', function () {
 
     $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai-responses'), httpClient: $http))
         ->withModel('gpt-4o-mini')
-        ->withMessages('Weather in Paris?')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Weather in Paris?'))
         ->withStreaming(true)
         ->stream();
 
@@ -96,7 +96,7 @@ it('streams reasoning content with response.reasoning_text.delta', function () {
 
     $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai-responses'), httpClient: $http))
         ->withModel('gpt-4o-mini')
-        ->withMessages('What is the meaning of life?')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('What is the meaning of life?'))
         ->withStreaming(true)
         ->stream();
 

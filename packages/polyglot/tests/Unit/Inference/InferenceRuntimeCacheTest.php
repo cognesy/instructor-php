@@ -8,7 +8,7 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\PendingInference;
 use Cognesy\Polyglot\Tests\Support\FakeInferenceDriver;
@@ -27,7 +27,7 @@ it('uses provided runtime and preserves it across request mutations', function (
     };
 
     $inference = new Inference($runtime);
-    $derived = $inference->withMessages('hello');
+    $derived = $inference->withMessages(\Cognesy\Messages\Messages::fromString('hello'));
 
     expect($derived)->not->toBe($inference);
     expect(fn () => $inference->create())->toThrow(RuntimeException::class, 'test');
@@ -81,7 +81,7 @@ it('delegates create to runtime with built request', function () {
     };
 
     $inference = (new Inference($runtime))
-        ->withMessages('Hello')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Hello'))
         ->withModel('test-model');
 
     expect(fn () => $inference->create())->toThrow(RuntimeException::class, 'stop');
@@ -103,7 +103,7 @@ it('stream shortcut implies streaming intent', function () {
                 execution: InferenceExecution::fromRequest($request),
                 driver: new FakeInferenceDriver(
                     streamBatches: [[
-                        new PartialInferenceResponse(contentDelta: 'Hello', finishReason: 'stop'),
+                        new PartialInferenceDelta(contentDelta: 'Hello', finishReason: 'stop'),
                     ]],
                 ),
                 eventDispatcher: new EventDispatcher,
@@ -111,7 +111,7 @@ it('stream shortcut implies streaming intent', function () {
         }
     };
 
-    $inference = (new Inference($runtime))->withMessages('Hello');
+    $inference = (new Inference($runtime))->withMessages(\Cognesy\Messages\Messages::fromString('Hello'));
     $final = $inference->stream()->final();
 
     expect($runtime->captured)->toBeInstanceOf(InferenceRequest::class);

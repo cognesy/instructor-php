@@ -26,7 +26,7 @@ $sandbox = Sandbox::host(ExecutionPolicy::in('/tmp'));
 
 // Dynamic selection
 $sandbox = Sandbox::fromPolicy($policy)->using('docker');
-// @doctest id="d92a"
+// @doctest id="2b47"
 ```
 
 ### ExecutionPolicy
@@ -38,7 +38,7 @@ $policy = ExecutionPolicy::in('/tmp')
     ->withTimeout(30)
     ->withMemory('256M')
     ->withNetwork(false);
-// @doctest id="bfa3"
+// @doctest id="ee5d"
 ```
 
 ### CanExecuteCommand
@@ -52,7 +52,7 @@ function runScript(CanExecuteCommand $sandbox): string {
     $result = $sandbox->execute(['php', 'script.php']);
     return $result->stdout();
 }
-// @doctest id="e5c8"
+// @doctest id="9a9a"
 ```
 
 ### ExecResult
@@ -72,7 +72,7 @@ $result->truncatedStdout(); // true if stdout exceeded the cap
 $result->truncatedStderr(); // true if stderr exceeded the cap
 $result->combinedOutput();  // stdout + stderr joined
 $result->toArray();         // Full result as associative array
-// @doctest id="05b0"
+// @doctest id="c4cb"
 ```
 
 ## Supported Drivers
@@ -105,5 +105,5 @@ The package ships with secure defaults that apply across all drivers:
 - [Execution Policy](3-execution-policy.md) -- Configure timeouts, memory, paths, environment, network, and output limits.
 - [Drivers](4-drivers.md) -- Choose and configure the right isolation backend.
 - [Streaming and Results](5-streaming-and-results.md) -- Consume output in real time and inspect execution results.
-- [Testing](6-testing.md) -- Use `MockSandbox` for fast, deterministic tests.
+- [Testing](6-testing.md) -- Use `FakeSandbox` for fast, deterministic tests.
 - [Troubleshooting](7-troubleshooting.md) -- Diagnose and resolve common issues.

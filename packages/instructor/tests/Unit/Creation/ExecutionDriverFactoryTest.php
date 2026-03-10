@@ -2,6 +2,7 @@
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
+use Cognesy\Instructor\Core\RequestMaterializer;
 use Cognesy\Instructor\Core\StreamingExecutionDriver;
 use Cognesy\Instructor\Core\SyncExecutionDriver;
 use Cognesy\Instructor\Creation\ExecutionDriverFactory;
@@ -12,6 +13,7 @@ use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
 use Cognesy\Instructor\Extraction\Data\ExtractionInput;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
 use Cognesy\Instructor\Validation\Contracts\CanValidateResponse;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\PendingInference;
@@ -49,10 +51,11 @@ it('creates a streaming driver for streamed executions', function () {
                 return 'test-extractor';
             }
         },
+        requestMaterializer: new RequestMaterializer(),
     );
 
     $execution = new StructuredOutputExecution(
-        request: (new StructuredOutputRequest(messages: 'test'))->withStreamed(),
+        request: (new StructuredOutputRequest(messages: Messages::fromString('test')))->withStreamed(),
         config: new StructuredOutputConfig(),
     );
 
@@ -91,13 +94,13 @@ it('creates a sync driver for non streamed executions', function () {
                 return 'test-extractor';
             }
         },
+        requestMaterializer: new RequestMaterializer(),
     );
 
     $execution = new StructuredOutputExecution(
-        request: new StructuredOutputRequest(messages: 'test'),
+        request: new StructuredOutputRequest(messages: Messages::fromString('test')),
         config: new StructuredOutputConfig(),
     );
 
     expect($factory->makeExecutionDriver($execution))->toBeInstanceOf(SyncExecutionDriver::class);
 });
-

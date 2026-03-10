@@ -103,5 +103,7 @@ while ($chat->hasNextStep($state)) {
     }
 }
 echo "🎬 Panel discussion concluded!\n";
+
+assert($state->stepCount() > 0, 'Expected at least one step in the chat');
 ?>
 ```

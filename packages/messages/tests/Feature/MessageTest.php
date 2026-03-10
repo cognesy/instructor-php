@@ -2,9 +2,12 @@
 
 use Cognesy\Messages\Content;
 use Cognesy\Messages\Enums\MessageRole;
+use Cognesy\Messages\Enums\MessageType;
 use Cognesy\Messages\Message;
-use Cognesy\Messages\Tests\Fixtures\MockImage;
-use Cognesy\Messages\Tests\Fixtures\MockMessageProvider;
+use Cognesy\Messages\ToolCalls;
+use Cognesy\Messages\ToolResult;
+use Cognesy\Messages\Tests\Fixtures\FixtureImage;
+use Cognesy\Messages\Tests\Fixtures\StubMessageProvider;
 
 /**
  * Test suite for the Message class and its traits
@@ -157,6 +160,32 @@ test('accepts metadata alias in message array', function () {
         ->and($message->metadata()->toArray())->toBe(['source' => 'alias array']);
 });
 
+test('classifies message type from semantic state', function () {
+    $text = Message::asAssistant('Hello');
+    $toolCall = new Message(
+        role: 'assistant',
+        content: '',
+        toolCalls: ToolCalls::fromArray([[
+            'id' => 'call_1',
+            'name' => 'search',
+            'arguments' => ['q' => 'hello'],
+        ]]),
+    );
+    $toolResult = new Message(
+        role: 'tool',
+        content: 'Done',
+        toolResult: new ToolResult(
+            content: 'Done',
+            callId: 'call_1',
+            toolName: 'search',
+        ),
+    );
+
+    expect($text->type())->toBe(MessageType::Text)
+        ->and($toolCall->type())->toBe(MessageType::AssistantToolCalls)
+        ->and($toolResult->type())->toBe(MessageType::ToolResult);
+});
+
 test('creates a message from content with role', function () {
     $message = Message::fromContent(Content::text('System instruction'), 'system');
 
@@ -198,7 +227,7 @@ test('creates a message from various input types', function () {
     $arrayInput = Message::fromInput(['key' => 'value']);
     $messageObject = new Message('system', 'Existing message');
     $messageFromMessage = Message::fromInput($messageObject);
-    $provider = new MockMessageProvider();
+    $provider = new StubMessageProvider();
     $messageFromProvider = Message::fromInput($provider);
 
     expect($stringInput->content()->toString())->toBe('String input')
@@ -209,7 +238,7 @@ test('creates a message from various input types', function () {
 
 // Mock Image class for testing fromImage
 test('creates a message from an image', function () {
-    $image = new MockImage('http://example.com/image.jpg', 'image/jpeg');
+    $image = new FixtureImage('http://example.com/image.jpg', 'image/jpeg');
     $message = Message::fromImage($image, 'user');
     expect($message)->toBeInstanceOf(Message::class)
         ->and($message->role())->toBe(MessageRole::User)

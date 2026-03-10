@@ -19,12 +19,13 @@ use Cognesy\Logging\Filters\LogLevelFilter;
 use Cognesy\Logging\Formatters\MessageTemplateFormatter;
 use Cognesy\Logging\Pipeline\LoggingPipeline;
 use Cognesy\Logging\Writers\PsrLoggerWriter;
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Symfony\Component\HttpFoundation\Request;
-use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 // Mock Symfony request
 $request = Request::create('/api/stream');
@@ -37,14 +38,12 @@ $logger->pushHandler(new StreamHandler('php://stdout', Logger::DEBUG));
 // Create pipeline with Symfony context
 $pipeline = LoggingPipeline::create()
     ->filter(new LogLevelFilter('debug'))
-    ->enrich(LazyEnricher::framework(fn() => [
+    ->enrich(LazyEnricher::framework(fn () => [
         'route' => $request->attributes->get('_route'),
     ]))
     ->format(new MessageTemplateFormatter([
-        \Cognesy\Polyglot\Inference\Events\InferenceRequested::class =>
-            '🤖 [SYMFONY] Inference requested: {provider}/{model} (Route: {framework.route})',
-        \Cognesy\Polyglot\Inference\Events\InferenceResponseCreated::class =>
-            '✅ [SYMFONY] Inference completed: {provider}/{model}',
+        \Cognesy\Polyglot\Inference\Events\InferenceRequested::class => '🤖 [SYMFONY] Inference requested: {provider}/{model} (Route: {framework.route})',
+        \Cognesy\Polyglot\Inference\Events\InferenceResponseCreated::class => '✅ [SYMFONY] Inference completed: {provider}/{model}',
     ], channel: 'inference'))
     ->write(new PsrLoggerWriter($logger))
     ->build();
@@ -52,7 +51,7 @@ $pipeline = LoggingPipeline::create()
 echo "📋 About to demonstrate Inference logging with Symfony...\n\n";
 
 // Create inference with logging
-$events = new EventDispatcher();
+$events = new EventDispatcher;
 $events->wiretap($pipeline);
 $inference = Inference::fromRuntime(InferenceRuntime::fromConfig(
     config: LLMConfig::fromPreset('openai'),
@@ -62,9 +61,7 @@ $inference = Inference::fromRuntime(InferenceRuntime::fromConfig(
 echo "🚀 Starting simple Inference to demonstrate logging...\n";
 
 $response = $inference
-    ->withMessages([
-        ['role' => 'user', 'content' => 'What is the capital of France?']
-    ])
+    ->withMessages(Messages::fromString('What is the capital of France?'))
     ->withMaxTokens(50)
     ->get();
 
@@ -72,10 +69,12 @@ echo "\n✅ Inference completed!\n";
 
 // Handle response properly - it might be a string or object
 if (is_string($response)) {
-    echo "📊 Response: " . ($response ?: "Empty response") . "\n";
+    echo '📊 Response: '.($response ?: 'Empty response')."\n";
 } else {
-    echo "📊 Response: " . ($response->content ?? "Response object has no content property") . "\n";
+    echo '📊 Response: '.($response->content ?? 'Response object has no content property')."\n";
 }
+
+assert(!empty($response));
 ?>
 ```
 

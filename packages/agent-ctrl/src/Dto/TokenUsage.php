@@ -47,4 +47,31 @@ final readonly class TokenUsage
             reasoning: $usage->reasoning,
         );
     }
+
+    /**
+     * Create from Pi TokenUsage
+     */
+    public static function fromPi(
+        \Cognesy\AgentCtrl\Pi\Domain\Value\TokenUsage $usage
+    ): self {
+        return new self(
+            input: $usage->input,
+            output: $usage->output,
+            cacheRead: $usage->cacheRead,
+            cacheWrite: $usage->cacheWrite,
+        );
+    }
+
+    /**
+     * Create from Gemini TokenUsage
+     */
+    public static function fromGemini(
+        \Cognesy\AgentCtrl\Gemini\Domain\Value\TokenUsage $usage
+    ): self {
+        return new self(
+            input: $usage->input,
+            output: $usage->output,
+            cacheRead: $usage->cached > 0 ? $usage->cached : null,
+        );
+    }
 }

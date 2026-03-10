@@ -64,6 +64,8 @@ $query = 'Betty needs $100; has half; parents give $15; grandparents twice paren
 
 $best = (new DiverseVerifier)($query, $examples, k: 6);
 dump($best);
+
+assert(is_int($best));
 ?>
 ```
 

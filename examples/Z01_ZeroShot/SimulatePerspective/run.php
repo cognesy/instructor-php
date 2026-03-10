@@ -109,6 +109,9 @@ $location = (new SimulatePerspective)(
     query: "Where does $povEntity think the book is?",
     perspective: $povEntity,
 );
+
+assert(is_string($location));
+assert(!empty($location));
 ?>
 ```
 

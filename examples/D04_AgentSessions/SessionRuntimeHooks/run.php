@@ -84,5 +84,13 @@ echo 'Persisted status: ' . $loaded->status()->value . "\n";
 echo 'Hook stage trace: ' . implode(', ', $trace->stages) . "\n";
 echo 'Metadata hook.after_load: ' . (($loaded->state()->metadata()->get('hook.after_load') ?? false) ? 'true' : 'false') . "\n";
 echo 'Last response: ' . ($loaded->state()->finalResponse()->toString() ?: 'No response') . "\n";
+
+assert(!empty($trace->stages), 'Hook stage trace should not be empty');
+assert(in_array('after_load', $trace->stages), 'Hook should have fired after_load stage');
+assert(in_array('after_action', $trace->stages), 'Hook should have fired after_action stage');
+assert(in_array('before_save', $trace->stages), 'Hook should have fired before_save stage');
+assert($loaded->status()->value === 'suspended', 'BeforeSave hook should have suspended the session');
+assert($loaded->state()->metadata()->get('hook.after_load') === true, 'AfterLoad hook should have set metadata');
+assert(!empty($loaded->state()->finalResponse()->toString()), 'Session should have a response');
 ?>
 ```

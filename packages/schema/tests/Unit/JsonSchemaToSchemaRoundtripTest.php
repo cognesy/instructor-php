@@ -37,6 +37,7 @@ it('preserves untyped nested object as array shape schema with properties', func
     expect($roundtrip['properties']['meta']['type'] ?? null)->toBe('object');
     expect($roundtrip['properties']['meta']['properties']['requestId']['type'] ?? null)->toBe('string');
     expect($roundtrip['properties']['meta']['properties']['attempt']['type'] ?? null)->toBe('integer');
+    expect($roundtrip['properties']['meta']['additionalProperties'] ?? null)->toBeFalse();
 });
 
 it('keeps core fields stable in json-schema roundtrip for supported object schema', function () {

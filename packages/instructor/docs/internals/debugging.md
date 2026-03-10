@@ -63,18 +63,18 @@ dump($execution->outputMode());
 dump($execution->request());
 ```
 
-### Streaming Snapshots
+### Streaming Responses
 
-When streaming, use `responses()` to inspect each partial snapshot:
+When streaming, use `responses()` to inspect each emitted `StructuredOutputResponse`:
 
 ```php
 $stream = (new StructuredOutput())
     ->with(messages: '...', responseModel: User::class)
     ->stream();
 
-foreach ($stream->responses() as $snapshot) {
-    echo $snapshot->isPartial() ? 'partial' : 'final';
-    dump($snapshot->value());
+foreach ($stream->responses() as $response) {
+    echo $response->isPartial() ? 'partial' : 'final';
+    dump($response->value());
 }
 ```
 

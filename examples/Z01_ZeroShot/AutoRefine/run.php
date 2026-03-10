@@ -70,6 +70,9 @@ $answer = (new RefineAndSolve)(problem: <<<PROBLEM
 );
 
 echo $answer . "\n";
+
+assert(is_int($answer));
+assert($answer === 25);
 ?>
 ```
 

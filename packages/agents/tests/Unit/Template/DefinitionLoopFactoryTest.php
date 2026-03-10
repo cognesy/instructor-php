@@ -11,7 +11,7 @@ use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Template\Factory\DefinitionLoopFactory;
 use Cognesy\Agents\Tool\ToolRegistry;
-use Cognesy\Agents\Tool\Tools\MockTool;
+use Cognesy\Agents\Tool\Tools\FakeTool;
 
 describe('DefinitionLoopFactory', function () {
     it('instantiates executable loop from definition capabilities', function () {
@@ -38,7 +38,7 @@ describe('DefinitionLoopFactory', function () {
         ])));
 
         $tools = new ToolRegistry();
-        $tools->register(MockTool::returning('demo_tool', 'Demo tool', 'done'));
+        $tools->register(FakeTool::returning('demo_tool', 'Demo tool', 'done'));
 
         $definition = new AgentDefinition(
             name: 'tool-agent',

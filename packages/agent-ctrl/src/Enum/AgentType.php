@@ -10,4 +10,6 @@ enum AgentType: string
     case ClaudeCode = 'claude-code';
     case Codex = 'codex';
     case OpenCode = 'opencode';
+    case Pi = 'pi';
+    case Gemini = 'gemini';
 }

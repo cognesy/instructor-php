@@ -132,6 +132,20 @@ describe('Json Class', function () {
         expect($result)->toBe('{"name":"John","age":30}');
     });
 
+    it('throws explicit exception when encoding fails', function () {
+        $invalid = ["bad" => "\xB1\x31"];
+
+        expect(fn() => Json::encode($invalid))
+            ->toThrow(InvalidArgumentException::class, 'Failed to encode JSON');
+    });
+
+    it('throws explicit exception when creating Json from array fails', function () {
+        $invalid = ["bad" => "\xB1\x31"];
+
+        expect(fn() => Json::fromArray($invalid))
+            ->toThrow(InvalidArgumentException::class, 'Failed to encode JSON');
+    });
+
     it('handles unicode characters correctly', function () {
         $unicodeJson = '{"name":"Jöhn","city":"Münich"}';
         $json = Json::fromString($unicodeJson);

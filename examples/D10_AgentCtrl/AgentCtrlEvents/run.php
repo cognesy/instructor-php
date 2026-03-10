@@ -64,6 +64,9 @@ $response = $agent->executeStreaming('List files in current directory and explai
 echo "\n=== Result ===\n";
 if ($response->isSuccess()) {
     echo "Answer: " . $response->text() . "\n";
+} else {
+    echo "Error: Command failed with exit code {$response->exitCode}\n";
+    exit(1);
 }
 ?>
 ```

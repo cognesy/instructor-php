@@ -57,7 +57,7 @@ Available request methods:
 | Method | Purpose |
 |---|---|
 | `with(...)` | Set multiple parameters at once (messages, model, tools, toolChoice, responseFormat, options) |
-| `withMessages(...)` | Set the conversation messages (accepts string, array, `Message`, or `Messages`) |
+| `withMessages(...)` | Set the conversation messages |
 | `withModel(...)` | Override the model |
 | `withMaxTokens(...)` | Set maximum output tokens |
 | `withTools(...)` | Provide tool/function definitions |

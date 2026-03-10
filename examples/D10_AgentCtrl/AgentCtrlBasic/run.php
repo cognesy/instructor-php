@@ -60,6 +60,7 @@ if ($response->isSuccess()) {
     }
 } else {
     echo "ERROR: Request failed with exit code {$response->exitCode}\n";
+    exit(1);
 }
 ?>
 ```

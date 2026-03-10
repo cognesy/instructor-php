@@ -136,6 +136,19 @@ if (!$feedback->is_equal) {
 }
 
 dump($reconstructed, $originalList, $reconstructedList, $feedback, $response);
+
+assert($reconstructed instanceof ReconstructedPrompt);
+assert(!empty($reconstructed->reconstructed_prompt));
+assert(!empty($reconstructed->chain_of_thought));
+assert($originalList instanceof ConditionList);
+assert(!empty($originalList->conditions));
+assert($reconstructedList instanceof ConditionList);
+assert(!empty($reconstructedList->conditions));
+assert($feedback instanceof ModelFeedback);
+assert(!empty($feedback->feedback));
+assert($response instanceof ModelResponse);
+assert(!empty($response->correct_answer));
+assert(!empty($response->chain_of_thought));
 ?>
 ```
 

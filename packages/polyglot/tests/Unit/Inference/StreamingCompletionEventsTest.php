@@ -3,7 +3,7 @@
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Events\InferenceAttemptSucceeded;
 use Cognesy\Polyglot\Inference\Events\InferenceCompleted;
 use Cognesy\Polyglot\Inference\Events\InferenceUsageReported;
@@ -19,12 +19,12 @@ it('dispatches completion events once for streamed responses', function () {
 
     $driver = new FakeInferenceDriver(
         streamBatches: [[
-            new PartialInferenceResponse(contentDelta: 'Hello', finishReason: 'stop'),
+            new PartialInferenceDelta(contentDelta: 'Hello', finishReason: 'stop'),
         ]],
     );
 
     $request = (new InferenceRequestBuilder())
-        ->withMessages('Hi')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Hi'))
         ->withStreaming(true)
         ->create();
     $execution = InferenceExecution::fromRequest($request);

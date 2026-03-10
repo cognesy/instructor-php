@@ -130,6 +130,10 @@ echo "\nExtracted data:\n";
 echo "Name: {$person->name}\n";
 echo "Age: {$person->age}\n";
 echo "City: {$person->city}\n";
+
+assert($person->name === 'Alice Johnson');
+assert($person->age === 28);
+assert($person->city === 'San Francisco');
 ?>
 ```
 

@@ -92,6 +92,9 @@ class CoVeVerifier {
 $query = 'What was the primary cause of the Mexican-American War and how long did it last?';
 $final = (new CoVeVerifier)->run($query);
 dump($final);
+
+assert($final instanceof FinalResponse);
+assert(!empty($final->correct_answer));
 ?>
 ```
 

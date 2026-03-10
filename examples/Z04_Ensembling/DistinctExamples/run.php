@@ -66,6 +66,9 @@ foreach ($responses as $r) { $k = $r->correct_answer->value; $counts[$k] = ($cou
 arsort($counts);
 $mostCommon = array_key_first($counts);
 dump($mostCommon);
+
+assert(is_string($mostCommon));
+assert(in_array($mostCommon, ['Positive', 'Negative', 'Neutral']));
 ?>
 ```
 

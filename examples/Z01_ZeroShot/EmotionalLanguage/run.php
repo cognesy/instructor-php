@@ -85,6 +85,11 @@ $companies = (new RespondWithStimulus)(
 );
 
 dump($companies);
+
+assert(is_array($companies));
+assert(count($companies) > 0);
+assert($companies[0] instanceof Company);
+assert(!empty($companies[0]->name));
 ?>
 ```
 

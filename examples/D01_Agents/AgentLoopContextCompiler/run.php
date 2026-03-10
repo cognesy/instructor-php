@@ -37,6 +37,7 @@ use Cognesy\Agents\Context\CanCompileMessages;
 use Cognesy\Agents\Context\Compilers\ConversationWithCurrentToolTrace;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
+use Cognesy\Messages\Content;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 
@@ -81,11 +82,9 @@ class InstrumentedCompiler implements CanCompileMessages
             if ($msg->role()->value === 'tool') {
                 $content = $msg->content()->toString();
                 if (strlen($content) > $this->maxToolResultLength) {
-                    $msg = new Message(
-                        role: 'tool',
-                        content: substr($content, 0, $this->maxToolResultLength) . '... [truncated]',
-                        metadata: $msg->metadata(),
-                    );
+                    $msg = $msg->withContent(Content::fromAny(
+                        substr($content, 0, $this->maxToolResultLength) . '... [truncated]',
+                    ));
                     $truncatedCount++;
                 }
             }
@@ -149,7 +148,7 @@ echo "Steps: {$finalState->stepCount()}\n";
 
 if ($finalState->status()->value !== 'completed') {
     echo "Skipping assertions because execution status is {$finalState->status()->value}.\n";
-    return;
+    exit(1);
 }
 
 // Assertions

@@ -46,6 +46,10 @@ $prompt = 'Explain how photosynthesis works for a 10-year-old.';
 $languages = ['spanish','french','german'];
 $variants = (new Paraphraser)->generate($prompt, $languages, permutations: 3);
 dump($variants);
+
+assert(is_array($variants));
+assert(count($variants) === 3);
+assert(!empty($variants[0]));
 ?>
 ```
 

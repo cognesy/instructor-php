@@ -60,5 +60,12 @@ echo 'Session info status: ' . $info->status()->value . "\n";
 echo 'Session message count: ' . $session->state()->messages()->count() . "\n";
 echo 'Session last response: ' . ($session->state()->finalResponse()->toString() ?: 'No response') . "\n";
 echo 'List count: ' . $list->count() . "\n";
+
+assert($session !== null, 'getSession should return a session');
+assert($session->sessionId()->toString() === $sessionId->toString(), 'Loaded session ID should match requested ID');
+assert($info->status()->value === 'active', 'Session info status should be active');
+assert($session->state()->messages()->count() > 0, 'Session should have messages after SendMessage');
+assert(!empty($session->state()->finalResponse()->toString()), 'Session should have a last response');
+assert($list->count() === 2, 'listSessions should return both sessions');
 ?>
 ```

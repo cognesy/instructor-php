@@ -30,7 +30,7 @@ it('uses a unique attempt id for each retry', function () {
     );
 
     $request = (new InferenceRequestBuilder())
-        ->withMessages('Retry')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Retry'))
         ->withRetryPolicy(new InferenceRetryPolicy(maxAttempts: 2))
         ->create();
     $execution = InferenceExecution::fromRequest($request);

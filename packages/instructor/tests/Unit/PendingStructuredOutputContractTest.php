@@ -5,7 +5,7 @@ use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 
 class PendingContractUser
 {
@@ -45,8 +45,8 @@ it('reuses the finalized stream when inferenceResponse() is read after streaming
     $driver = new FakeInferenceDriver(
         responses: [],
         streamBatches: [[
-            new PartialInferenceResponse(contentDelta: '{"name":"Lia"', usage: new \Cognesy\Polyglot\Inference\Data\Usage(outputTokens: 1)),
-            new PartialInferenceResponse(contentDelta: ',"age":29}', finishReason: 'stop', usage: new \Cognesy\Polyglot\Inference\Data\Usage(outputTokens: 1)),
+            new PartialInferenceDelta(contentDelta: '{"name":"Lia"', usage: new \Cognesy\Polyglot\Inference\Data\Usage(outputTokens: 1)),
+            new PartialInferenceDelta(contentDelta: ',"age":29}', finishReason: 'stop', usage: new \Cognesy\Polyglot\Inference\Data\Usage(outputTokens: 1)),
         ]],
     );
 

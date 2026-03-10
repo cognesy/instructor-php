@@ -115,6 +115,16 @@ while (true) {
 }
 
 dump($history, $response);
+
+assert($response instanceof Response);
+assert(!empty($response->code));
+assert($history instanceof History);
+assert(!empty($history->history));
+foreach ($history->history as $timestep) {
+    assert($timestep instanceof Timestep);
+    assert(!empty($timestep->response));
+    assert(!empty($timestep->refined_response));
+}
 ?>
 ```
 

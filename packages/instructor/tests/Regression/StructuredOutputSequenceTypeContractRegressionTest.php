@@ -3,7 +3,7 @@
 use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Instructor\Enums\OutputMode;
 
 // Guards regression from instructor-v8iv (sequence() leaking get_class TypeError on scalar values).
@@ -11,7 +11,7 @@ it('throws explicit sequence contract error for non-sequenceable streamed values
     $driver = new FakeInferenceDriver(
         responses: [],
         streamBatches: [[
-            new PartialInferenceResponse(contentDelta: '{"age":30}', finishReason: 'stop'),
+            new PartialInferenceDelta(contentDelta: '{"age":30}', finishReason: 'stop'),
         ]],
     );
 

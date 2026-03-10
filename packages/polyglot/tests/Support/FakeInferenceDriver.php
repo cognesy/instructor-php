@@ -8,17 +8,16 @@ use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 
 final class FakeInferenceDriver implements CanProcessInferenceRequest
 {
     /** @var InferenceResponse[] */
     private array $responses;
-    /** @var array<int, PartialInferenceResponse[]> */
+    /** @var array<int, PartialInferenceDelta[]> */
     private array $streamBatches;
     /** @var null|Closure(InferenceRequest, self):InferenceResponse */
     private ?Closure $onResponse;
-    /** @var null|Closure(InferenceRequest, self):iterable<PartialInferenceResponse> */
+    /** @var null|Closure(InferenceRequest, self):iterable<PartialInferenceDelta> */
     private ?Closure $onStream;
     private DriverCapabilities $capabilities;
 
@@ -27,9 +26,9 @@ final class FakeInferenceDriver implements CanProcessInferenceRequest
 
     /**
      * @param InferenceResponse[] $responses
-     * @param array<int, PartialInferenceResponse[]> $streamBatches
+     * @param array<int, PartialInferenceDelta[]> $streamBatches
      * @param null|Closure(InferenceRequest, self):InferenceResponse $onResponse
-     * @param null|Closure(InferenceRequest, self):iterable<PartialInferenceResponse> $onStream
+     * @param null|Closure(InferenceRequest, self):iterable<PartialInferenceDelta> $onStream
      */
     public function __construct(
         array $responses = [],
@@ -74,20 +73,11 @@ final class FakeInferenceDriver implements CanProcessInferenceRequest
         return $this->capabilities;
     }
 
-    /** @param iterable<PartialInferenceResponse> $partials */
+    /** @param iterable<PartialInferenceDelta> $partials */
     private function emitDeltas(iterable $partials): iterable {
         foreach ($partials as $item) {
-            yield new PartialInferenceDelta(
-                contentDelta: $item->contentDelta,
-                reasoningContentDelta: $item->reasoningContentDelta,
-                toolId: $item->toolId(),
-                toolName: $item->toolName(),
-                toolArgs: $item->toolArgs(),
-                finishReason: $item->finishReason(),
-                usage: $item->usage(),
-                usageIsCumulative: $item->isUsageCumulative(),
-                value: $item->value(),
-            );
+            assert($item instanceof PartialInferenceDelta);
+            yield $item;
         }
     }
 }

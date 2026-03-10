@@ -93,9 +93,9 @@ final readonly class Tools
     // TRANSFORMERS AND CONVERSIONS //////////////////////////////
 
     public function toToolSchema(): ToolDefinitions {
-        return new ToolDefinitions(...array_map(
+        return new ToolDefinitions(...array_values(array_map(
             fn (ToolInterface $tool) => $tool->toToolSchema(),
             $this->tools,
-        ));
+        )));
     }
 }

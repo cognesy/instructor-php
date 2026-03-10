@@ -24,7 +24,7 @@ it('handles tool call during streaming for Gemini', function () {
 
     $final = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('gemini'), httpClient: $http))
         ->withModel('gemini-1.5-flash')
-        ->withMessages('Search')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Search'))
         ->withStreaming(true)
         ->stream()
         ->final();
@@ -57,7 +57,7 @@ it('handles parallel tool calls during streaming for Gemini', function () {
 
     $final = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('gemini'), httpClient: $http))
         ->withModel('gemini-1.5-flash')
-        ->withMessages('Search')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Search'))
         ->withStreaming(true)
         ->stream()
         ->final();

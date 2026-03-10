@@ -19,7 +19,7 @@ use Cognesy\Agents\Events\SubagentCompleted;
 use Cognesy\Agents\Events\SubagentSpawning;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Tests\Support\FakeSubagentProvider;
-use Cognesy\Agents\Tool\Tools\MockTool;
+use Cognesy\Agents\Tool\Tools\FakeTool;
 use Cognesy\Messages\Messages;
 
 describe('Subagent Capability', function () {
@@ -272,8 +272,8 @@ describe('Subagent Capability', function () {
     });
 
     it('applies toolsDeny to filter out denied tools', function () {
-        $tool1 = MockTool::returning('allowed_tool', 'An allowed tool', 'allowed result');
-        $tool2 = MockTool::returning('denied_tool', 'A denied tool', 'denied result');
+        $tool1 = FakeTool::returning('allowed_tool', 'An allowed tool', 'allowed result');
+        $tool2 = FakeTool::returning('denied_tool', 'A denied tool', 'denied result');
 
         $spec = new AgentDefinition(
             name: 'restricted',
@@ -304,8 +304,8 @@ describe('Subagent Capability', function () {
     });
 
     it('applies tools allowlist when specified', function () {
-        $tool1 = MockTool::returning('allowed_tool', 'An allowed tool', 'allowed result');
-        $tool2 = MockTool::returning('other_tool', 'Another tool', 'other result');
+        $tool1 = FakeTool::returning('allowed_tool', 'An allowed tool', 'allowed result');
+        $tool2 = FakeTool::returning('other_tool', 'Another tool', 'other result');
 
         $spec = new AgentDefinition(
             name: 'selective',
@@ -335,9 +335,9 @@ describe('Subagent Capability', function () {
     });
 
     it('combines tools allowlist and denylist correctly', function () {
-        $tool1 = MockTool::returning('tool_a', 'Tool A', 'result a');
-        $tool2 = MockTool::returning('tool_b', 'Tool B', 'result b');
-        $tool3 = MockTool::returning('tool_c', 'Tool C', 'result c');
+        $tool1 = FakeTool::returning('tool_a', 'Tool A', 'result a');
+        $tool2 = FakeTool::returning('tool_b', 'Tool B', 'result b');
+        $tool3 = FakeTool::returning('tool_c', 'Tool C', 'result c');
 
         // Allow tool_a and tool_b, but deny tool_b
         $spec = new AgentDefinition(

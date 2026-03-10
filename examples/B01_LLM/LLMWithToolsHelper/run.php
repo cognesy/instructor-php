@@ -14,6 +14,9 @@ Polyglot has a built-in support for dynamically constructing tool calling schema
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 
@@ -28,21 +31,14 @@ $schema = JsonSchema::object(
 
 $data = Inference::using('openai')
     ->with(
-        messages: [
-            ['role' => 'user', 'content' => 'What is capital of France? Respond with function call.']
-        ],
-        tools: [
+        messages: Messages::fromString('What is capital of France? Respond with function call.'),
+        tools: ToolDefinitions::fromArray([
             $schema->toFunctionCall(
-               functionName: 'provide_data',
-               functionDescription: 'Provide city data'
-            )
-        ],
-        toolChoice: [
-            'type' => 'function',
-            'function' => [
-                'name' => 'provide_data'
-            ]
-        ],
+                functionName: 'provide_data',
+                functionDescription: 'Provide city data'
+            ),
+        ]),
+        toolChoice: ToolChoice::specific('provide_data'),
         options: ['max_tokens' => 64],
     )
     ->asToolCallJsonData();

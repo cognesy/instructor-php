@@ -49,5 +49,7 @@ $summary = Inference::using('openai')
     ->get();
 
 dump($summary);
+
+assert(!empty($summary), 'Expected non-empty summary');
 ?>
 ```

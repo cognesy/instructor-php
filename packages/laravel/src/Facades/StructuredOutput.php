@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Cognesy\Instructor\StructuredOutput withRuntime(\Cognesy\Instructor\Contracts\CanCreateStructuredOutput $runtime)
  * @method static \Cognesy\Instructor\StructuredOutput with(string|array|\Cognesy\Messages\Message|\Cognesy\Messages\Messages|null $messages = null, string|array|object|null $responseModel = null, ?string $system = null, ?string $prompt = null, ?array $examples = null, ?string $model = null, ?array $options = null)
  * @method static \Cognesy\Instructor\StructuredOutput withMessages(string|array|\Cognesy\Messages\Message|\Cognesy\Messages\Messages $messages)
- * @method static \Cognesy\Instructor\StructuredOutput withInput(mixed $input)
+ * @method static \Cognesy\Instructor\StructuredOutput withInput(string|array|object $input)
  * @method static \Cognesy\Instructor\StructuredOutput withResponseModel(string|array|object $responseModel)
  * @method static \Cognesy\Instructor\StructuredOutput withResponseClass(string $class)
  * @method static \Cognesy\Instructor\StructuredOutput withResponseObject(object $object)

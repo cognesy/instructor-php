@@ -74,7 +74,23 @@ class SelfVerifyPipeline {
 }
 
 $query = 'What month is it now if it has been 3 weeks, 10 days, and 2 hours since May 1, 2024 6pm?';
-(new SelfVerifyPipeline)->run($query);
+$pipeline = new SelfVerifyPipeline;
+
+// Test individual components
+$candidate = $pipeline->queryCandidate($query);
+assert($candidate instanceof Candidate);
+assert(!empty($candidate->reasoning_steps));
+assert(!empty($candidate->month));
+
+$rewritten = $pipeline->rewrite($query, $candidate);
+assert($rewritten instanceof Rewritten);
+assert(!empty($rewritten->declarative));
+
+$verification = $pipeline->verify($rewritten->declarative . ' Is this correct?');
+assert($verification instanceof Verification);
+
+// Run full pipeline
+$pipeline->run($query);
 ?>
 ```
 

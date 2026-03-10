@@ -9,6 +9,7 @@ use Cognesy\Messages\ContentPart;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\ToolCall;
+use Cognesy\Messages\Enums\MessageType;
 use Cognesy\Polyglot\Inference\Contracts\CanMapMessages;
 use Cognesy\Polyglot\Inference\Contracts\MessageMapper;
 use Cognesy\Utils\Json\Json;
@@ -35,9 +36,9 @@ class OpenResponsesMessageFormat implements CanMapMessages
     /** @return array[] */
     protected function mapMessageToItems(Message $message): array
     {
-        return match (true) {
-            $message->isAssistant() && $message->hasToolCalls() => $this->toFunctionCallItems($message),
-            $message->isTool() && $message->hasToolResult() => [$this->toFunctionCallOutputItem($message)],
+        return match ($message->type()) {
+            MessageType::AssistantToolCalls => $this->toFunctionCallItems($message),
+            MessageType::ToolResult => [$this->toFunctionCallOutputItem($message)],
             default => [$this->toMessageItem($message)],
         };
     }

@@ -81,7 +81,7 @@ echo "Total tokens: {$stepState->usage()->total()}\n";
 
 if ($stepState->status()->value !== 'completed') {
     echo "Skipping assertions because execution status is {$stepState->status()->value}.\n";
-    return;
+    exit(1);
 }
 
 // Assertions

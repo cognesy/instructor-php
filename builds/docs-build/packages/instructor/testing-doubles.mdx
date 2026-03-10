@@ -1,0 +1,92 @@
+---
+title: 'Testing Doubles'
+description: 'Deterministic testing seams for structured output.'
+---
+
+## Overview
+
+Instructor supports deterministic tests at three different seams.
+
+- use `FakeInferenceDriver` when you want to drive Instructor directly with queued raw responses or streaming deltas
+- use `MockHttp` when you want to keep the provider adapter and HTTP response path in play
+- use probe helpers when you need to assert streaming timing, call counts, or emission order
+
+Pick the shallowest seam that still exercises the behavior you care about.
+
+## `FakeInferenceDriver`
+
+`FakeInferenceDriver` lives in `packages/instructor/tests/Support` and is the main
+contributor-facing fake for deterministic Instructor tests.
+
+Use it when you want to test:
+
+- deserialization and validation behavior
+- retry logic
+- stream accumulation and final response behavior
+- partial and sequence handling without real HTTP or provider adapters
+
+It supports two modes:
+
+- queued `InferenceResponse` objects for sync execution
+- queued `PartialInferenceDelta` batches for streaming execution
+
+Minimal example:
+
+```php
+use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+
+$driver = new FakeInferenceDriver(
+    responses: [new InferenceResponse(content: '{"name":"Jason","age":28}')],
+);
+// @doctest id="1b01"
+```
+
+Choose this seam for most unit and regression tests inside `packages/instructor`.
+
+## `MockHttp`
+
+`MockHttp` lives in `packages/instructor/tests` and builds an HTTP client around
+`MockHttpDriver`.
+
+Use it when you want to test:
+
+- provider-specific adapter behavior
+- request and response wiring that still goes through HTTP
+- response payload shapes such as OpenAI or Anthropic fixtures
+
+Minimal example:
+
+```php
+use Cognesy\Instructor\Tests\MockHttp;
+
+$http = MockHttp::get(['{"name":"Jason","age":28}']);
+// @doctest id="8f6a"
+```
+
+Choose this seam when the HTTP transport and provider adapter still matter to the
+test. If they do not, prefer `FakeInferenceDriver`.
+
+## Streaming Probes
+
+`ProbeStreamDriver` and `ProbeIterator` live in `packages/instructor/tests/Integration/Support`.
+
+Use them when you need to assert:
+
+- that streaming updates are emitted immediately
+- how many sync versus stream reads occurred
+- exact delta ordering in an integration-style test
+
+These helpers are narrower than `FakeInferenceDriver`. They are for observation,
+not for general-purpose fixture setup.
+
+## Which One To Use
+
+Use this rule of thumb:
+
+- `FakeInferenceDriver` for most deterministic Instructor behavior tests
+- `MockHttp` for adapter- and payload-level coverage
+- probe helpers for streaming immediacy and observation-heavy assertions
+
+If a test only needs structured-output behavior, prefer the fake driver. If the test
+is really about provider response shape or HTTP wiring, keep the mock HTTP path.

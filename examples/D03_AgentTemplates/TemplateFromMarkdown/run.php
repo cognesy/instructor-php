@@ -26,6 +26,7 @@ use Cognesy\Agents\Tool\ToolRegistry;
 use Cognesy\Agents\Tool\Tools\BaseTool;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
+use Cognesy\Polyglot\Inference\Data\ToolDefinition;
 
 class CalculatorTool extends BaseTool
 {
@@ -53,9 +54,9 @@ class CalculatorTool extends BaseTool
     }
 
     #[\Override]
-    public function toToolSchema(): array
+    public function toToolSchema(): ToolDefinition
     {
-        return ToolSchema::make(
+        return ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
             parameters: JsonSchema::object('parameters')
@@ -65,7 +66,7 @@ class CalculatorTool extends BaseTool
                     JsonSchema::string('operation', 'Operation: add, subtract, multiply, or divide'),
                 ])
                 ->withRequiredProperties(['a', 'b', 'operation'])
-        )->toArray();
+        )->toArray());
     }
 }
 
@@ -97,6 +98,6 @@ echo 'Answer: ' . ($final->finalResponse()->toString() ?: 'No response') . "\n";
 echo 'Status: ' . $final->status()->value . "\n";
 
 assert($definition->name === 'md-agent');
-assert(in_array($final->status()->value, ['completed', 'failed'], true));
+assert($final->status()->value === 'completed', 'Expected completed status, got: ' . $final->status()->value);
 ?>
 ```

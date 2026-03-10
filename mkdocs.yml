@@ -146,6 +146,7 @@ nav:
           - { Introduction: packages/instructor/introduction.md }
           - { Quickstart: packages/instructor/quickstart.md }
           - { Setup: packages/instructor/setup.md }
+          - { 'Testing Doubles': packages/instructor/testing-doubles.md }
           - { Upgrade: packages/instructor/upgrade.md }
           - { 'Cli Tools': packages/instructor/cli_tools.md }
           - { Concepts: [{ Overview: packages/instructor/concepts/overview.md }, { Why: packages/instructor/concepts/why.md }] }
@@ -159,6 +160,7 @@ nav:
           - { Overview: packages/polyglot/overview.md }
           - { Quickstart: packages/polyglot/quickstart.md }
           - { Setup: packages/polyglot/setup.md }
+          - { 'Testing Doubles': packages/polyglot/testing-doubles.md }
           - { Upgrade: packages/polyglot/upgrade.md }
           - { Essentials: [{ Overview: packages/polyglot/essentials/overview.md }, { 'Inference Class': packages/polyglot/essentials/inference-class.md }, { 'Creating Requests': packages/polyglot/essentials/creating-requests.md }, { 'Request Options': packages/polyglot/essentials/request-options.md }, { 'Response Handling': packages/polyglot/essentials/response-handling.md }] }
           - { Modes: [{ Overview: packages/polyglot/modes/overview.md }, { Tools: packages/polyglot/modes/tools.md }, { 'Json Schema': packages/polyglot/modes/json-schema.md }, { Json: packages/polyglot/modes/json.md }, { 'Md Json': packages/polyglot/modes/md-json.md }, { Text: packages/polyglot/modes/text.md }] }
@@ -186,10 +188,12 @@ nav:
           - { Subagents: packages/agents/15-subagents.md }
           - { 'Session Runtime': packages/agents/16-session-runtime.md }
           - { 'Building Tools Advanced': packages/agents/17-building-tools-advanced.md }
+          - { 'Testing Doubles': packages/agents/testing-doubles.md }
       -
         Agent-ctrl:
           - { Overview: packages/agent-ctrl/1-overview.md }
           - { 'Getting Started': packages/agent-ctrl/2-getting-started.md }
+          - { 'Testing Doubles': packages/agent-ctrl/testing-doubles.md }
           - { Streaming: packages/agent-ctrl/3-streaming.md }
           - { 'Session Management': packages/agent-ctrl/4-session-management.md }
           - { 'Agent Options': packages/agent-ctrl/5-agent-options.md }
@@ -211,6 +215,7 @@ nav:
         'HTTP Client':
           - { Overview: packages/http/1-overview.md }
           - { 'Getting Started': packages/http/2-getting-started.md }
+          - { 'Testing Doubles': packages/http/testing-doubles.md }
           - { 'Making Requests': packages/http/3-making-requests.md }
           - { 'Handling Responses': packages/http/4-handling-responses.md }
           - { 'Streaming Responses': packages/http/5-streaming-responses.md }

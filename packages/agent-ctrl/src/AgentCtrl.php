@@ -5,6 +5,8 @@ namespace Cognesy\AgentCtrl;
 use Cognesy\AgentCtrl\Builder\ClaudeCodeBridgeBuilder;
 use Cognesy\AgentCtrl\Builder\CodexBridgeBuilder;
 use Cognesy\AgentCtrl\Builder\OpenCodeBridgeBuilder;
+use Cognesy\AgentCtrl\Builder\GeminiBridgeBuilder;
+use Cognesy\AgentCtrl\Builder\PiBridgeBuilder;
 use Cognesy\AgentCtrl\Contract\AgentBridgeBuilder;
 use Cognesy\AgentCtrl\Enum\AgentType;
 
@@ -42,7 +44,7 @@ final class AgentCtrl
     /**
      * Create a new agent builder for the specified agent type.
      *
-     * @return ClaudeCodeBridgeBuilder|CodexBridgeBuilder|OpenCodeBridgeBuilder
+     * @return ClaudeCodeBridgeBuilder|CodexBridgeBuilder|OpenCodeBridgeBuilder|PiBridgeBuilder|GeminiBridgeBuilder
      */
     public static function make(AgentType $type): AgentBridgeBuilder
     {
@@ -50,6 +52,8 @@ final class AgentCtrl
             AgentType::ClaudeCode => new ClaudeCodeBridgeBuilder(),
             AgentType::Codex => new CodexBridgeBuilder(),
             AgentType::OpenCode => new OpenCodeBridgeBuilder(),
+            AgentType::Pi => new PiBridgeBuilder(),
+            AgentType::Gemini => new GeminiBridgeBuilder(),
         };
     }
 
@@ -75,5 +79,21 @@ final class AgentCtrl
     public static function openCode(): OpenCodeBridgeBuilder
     {
         return new OpenCodeBridgeBuilder();
+    }
+
+    /**
+     * Create a Pi agent builder.
+     */
+    public static function pi(): PiBridgeBuilder
+    {
+        return new PiBridgeBuilder();
+    }
+
+    /**
+     * Create a Gemini agent builder.
+     */
+    public static function gemini(): GeminiBridgeBuilder
+    {
+        return new GeminiBridgeBuilder();
     }
 }

@@ -6,6 +6,8 @@ namespace Cognesy\Polyglot\Inference\Drivers\Deepseek;
 
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
+use Cognesy\Polyglot\Inference\Drivers\Support\RequestMessages;
+use Cognesy\Polyglot\Inference\Drivers\Support\RequestPayload;
 use Cognesy\Utils\Str;
 
 class DeepseekBodyFormat extends OpenAICompatibleBodyFormat
@@ -18,10 +20,7 @@ class DeepseekBodyFormat extends OpenAICompatibleBodyFormat
         $options = array_merge($this->config->options, $request->options());
 
         $model = $request->model() ?: $this->config->model;
-        $messages = match ($this->supportsAlternatingRoles($request)) {
-            false => $request->messages()->toMergedPerRole(),
-            true => $request->messages(),
-        };
+        $messages = RequestMessages::forMapping($request, $this->supportsAlternatingRoles($request));
 
         $requestBody = array_merge(array_filter([
             'model' => $model ?: $this->config->model,
@@ -43,7 +42,7 @@ class DeepseekBodyFormat extends OpenAICompatibleBodyFormat
             $requestBody['tool_choice'] = $this->toToolChoice($request);
         }
 
-        return $this->filterEmptyValues($requestBody);
+        return RequestPayload::filterEmptyValues($requestBody);
     }
 
     // CAPABILITIES ///////////////////////////////////////////

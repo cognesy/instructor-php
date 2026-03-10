@@ -6,7 +6,7 @@ id: '87de'
 ## Overview
 
 AgentCtrl provides a unified API that works across multiple CLI-based code agents. This
-enables runtime switching between different backends (Claude Code, OpenCode, Codex, Gemini)
+enables runtime switching between different backends (Claude Code, OpenCode, Codex, Pi)
 without changing your application code. Useful for comparing agent performance, failover
 scenarios, or A/B testing.
 
@@ -40,6 +40,8 @@ $agents = [
     'opencode' => 'OpenCode',
     'claude-code' => 'Claude Code',
     'codex' => 'Codex',
+    'pi' => 'Pi',
+    'gemini' => 'Gemini',
 ];
 
 foreach ($agents as $agentId => $agentName) {
@@ -59,6 +61,9 @@ foreach ($agents as $agentId => $agentName) {
         if ($agentId === 'claude-code') {
             $builder->withMaxTurns(1);
         }
+        if ($agentId === 'pi') {
+            $builder->ephemeral();
+        }
 
         $response = $builder->execute($prompt);
         $elapsed = round((microtime(true) - $startTime) * 1000);
@@ -75,9 +80,11 @@ foreach ($agents as $agentId => $agentName) {
             }
         } else {
             echo "Failed (exit code: {$response->exitCode})\n";
+            exit(1);
         }
     } catch (Throwable $e) {
         echo "Error: {$e->getMessage()}\n";
+        exit(1);
     }
 
     echo "\n";
@@ -120,6 +127,17 @@ Answer: A class using static make() for conditional instantiation typically
 implements the Factory Method or Static Factory pattern.
 Tokens: 38 in / 22 out
 Cost: $0.0012
+
+=== Testing: Pi ===
+
+14:32:22.123 [pi] [EXEC] Execution started [prompt=What design pattern does a class...]
+14:32:23.456 [pi] [DONE] Execution completed [exit=0, tools=0, cost=$0.0003, tokens=56]
+
+=== Result (1333ms) ===
+Answer: A class with a static make() method implements the Static Factory
+Method pattern for object creation.
+Tokens: 34 in / 22 out
+Cost: $0.0003
 ```
 
 ## Key Points

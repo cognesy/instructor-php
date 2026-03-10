@@ -19,7 +19,7 @@ $request = new HttpRequest(
     body: '',
     options: [],
 );
-// @doctest id="8aa4"
+// @doctest id="7ffc"
 ```
 
 | Parameter | Type | Description |
@@ -27,7 +27,7 @@ $request = new HttpRequest(
 | `url` | `string` | The full URL including any query parameters |
 | `method` | `string` | The HTTP method (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`, etc.) |
 | `headers` | `array` | Associative array of header name to value |
-| `body` | `string\|array` | Request body -- arrays are JSON-encoded automatically |
+| `body` | `string\|array` | Request body -- arrays are JSON-encoded automatically; strings are sent verbatim |
 | `options` | `array` | Driver-level options (e.g., `['stream' => true]`) |
 
 Each request is also assigned a unique `id` and timestamped with `createdAt` and `updatedAt` properties automatically.
@@ -46,7 +46,7 @@ $request = new HttpRequest(
 );
 
 $response = $client->send($request)->get();
-// @doctest id="d98d"
+// @doctest id="a88c"
 ```
 
 ## POST with JSON Body
@@ -69,10 +69,10 @@ $request = new HttpRequest(
 );
 
 $response = $client->send($request)->get();
-// @doctest id="8c2e"
+// @doctest id="a51e"
 ```
 
-You can also pass a pre-encoded JSON string if you need precise control over the encoding:
+You can also pass a pre-encoded JSON string if you need precise control over the encoding. String bodies are sent as-is; the drivers do not parse and reserialize them:
 
 ```php
 $request = new HttpRequest(
@@ -82,7 +82,7 @@ $request = new HttpRequest(
     body: json_encode(['name' => 'John Doe']),
     options: [],
 );
-// @doctest id="cdc1"
+// @doctest id="5748"
 ```
 
 ## PUT, PATCH, and DELETE
@@ -116,7 +116,7 @@ $deleteRequest = new HttpRequest(
     body: '',
     options: [],
 );
-// @doctest id="39bf"
+// @doctest id="075d"
 ```
 
 ## Setting Headers
@@ -136,7 +136,7 @@ $request = new HttpRequest(
     body: '',
     options: [],
 );
-// @doctest id="d068"
+// @doctest id="3721"
 ```
 
 ## Modifying Requests
@@ -146,7 +146,7 @@ $request = new HttpRequest(
 ```php
 $request = $request->withHeader('Authorization', 'Bearer ' . $token);
 $request = $request->withStreaming(true);
-// @doctest id="114b"
+// @doctest id="764c"
 ```
 
 You can read request properties at any time through accessor methods:
@@ -159,15 +159,15 @@ $request->headers('Accept'); // A specific header value
 $request->body();       // The HttpRequestBody instance
 $request->options();    // The options array
 $request->isStreamed(); // Whether streaming is enabled
-// @doctest id="91a6"
+// @doctest id="0cca"
 ```
 
 The body is managed by `HttpRequestBody`, which provides `toString()` and `toArray()` conversions:
 
 ```php
-$bodyString = $request->body()->toString(); // JSON string
-$bodyArray  = $request->body()->toArray();  // Decoded array
-// @doctest id="69dd"
+$bodyString = $request->body()->toString(); // Exact outbound body string
+$bodyArray  = $request->body()->toArray();  // Decoded array when the body contains valid JSON
+// @doctest id="b73d"
 ```
 
 ## Streaming Option
@@ -186,7 +186,7 @@ $request = new HttpRequest(
 
 // Or via the mutator
 $request = $request->withStreaming(true);
-// @doctest id="47c0"
+// @doctest id="6a44"
 ```
 
 When `isStreamed()` returns `true`, calling `stream()` on the `PendingHttpResponse` will yield chunks as they arrive instead of buffering the entire response.
@@ -207,7 +207,7 @@ $client = (new HttpClientBuilder())
         failOnError: true,
     ))
     ->create();
-// @doctest id="81ca"
+// @doctest id="3c43"
 ```
 
 This gives you a client that uses Guzzle, connects within 5 seconds, times out after 30 seconds, and throws exceptions on 4xx/5xx responses. See [Changing Client Config](8-changing-client-config.md) for the full list of options.

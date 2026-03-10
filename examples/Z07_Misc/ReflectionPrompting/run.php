@@ -66,5 +66,12 @@ $solution = new StructuredOutput(
 print("Problem:\n$problem\n\n");
 dump($solution);
 
+assert($solution instanceof ReflectiveResponse);
+assert(!empty($solution->assessment));
+assert(!empty($solution->persona));
+assert(!empty($solution->initialThinking));
+assert(count($solution->chainOfThought) >= 2);
+assert(!empty($solution->reflection));
+assert(!empty($solution->finalOutput));
 ?>
 ```

@@ -25,14 +25,15 @@ to guide the model in generating the correct response.
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $data = Inference::using('openai')
     ->with(
-        messages: [['role' => 'user', 'content' => 'What is capital of France? \
+        messages: Messages::fromString('What is capital of France? \
            Respond with a JSON object in a ```json``` code block containing "name", "population", and "founded". \
            Use integer values for population and founded year (negative for BC). Do not include extra text. \
-           Example: {"name":"Paris","population":2139000,"founded":-250}']],
+           Example: {"name":"Paris","population":2139000,"founded":-250}'),
         options: ['max_tokens' => 64, 'temperature' => 0],
     )
     ->asJsonData();

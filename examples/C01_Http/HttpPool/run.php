@@ -53,5 +53,8 @@ echo "success={$results->successCount()} failures={$results->failureCount()}\n";
 foreach ($results->successful() as $response) {
     echo $response->body() . "\n";
 }
+
+assert($results->successCount() === 3, 'Expected 3 successful responses');
+assert($results->failureCount() === 0, 'Expected 0 failures');
 ?>
 ```

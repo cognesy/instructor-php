@@ -3,6 +3,7 @@
 order:
   - 1-overview
   - 2-getting-started
+  - testing-doubles
   - 3-making-requests
   - 4-handling-responses
   - 5-streaming-responses

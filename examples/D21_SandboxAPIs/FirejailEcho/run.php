@@ -23,6 +23,7 @@ try {
     $result = Sandbox::firejail($policy)
         ->execute(['sh', '-lc', 'echo "hello from firejail sandbox"']);
 
+    assert($result->exitCode() === 0, 'Firejail echo should exit with code 0');
     echo "Exit: {$result->exitCode()}\n";
     echo $result->stdout();
 } catch (Throwable $e) {

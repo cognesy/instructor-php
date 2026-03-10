@@ -79,6 +79,13 @@ $step = $sb->generateStepback('Estella Leopold went to which school between Aug 
 $edu = $sb->askStepback($step->abstract_question);
 $final = $sb->finalAnswer($step, $edu);
 dump($step, $edu, $final);
+
+assert($step instanceof Stepback);
+assert(!empty($step->abstract_question));
+assert(is_array($edu));
+assert(count($edu) > 0);
+assert($final instanceof FinalResponse);
+assert(!empty($final->school));
 ?>
 ```
 

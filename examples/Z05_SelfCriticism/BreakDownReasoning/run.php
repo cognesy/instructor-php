@@ -120,6 +120,19 @@ $verified = $pipeline->verify($proposal);
 $report = $pipeline->report($verified, $hypothesis, $premises);
 
 dump($proposal, $verified, $report);
+
+assert($proposal instanceof ProposerOutput);
+assert(!empty($proposal->reasoning));
+assert(!empty($proposal->valid_propositions));
+assert($proposal->prediction instanceof Prediction);
+assert(is_array($verified));
+assert(!empty($verified));
+foreach ($verified as $v) {
+    assert($v instanceof VerifiedProposition);
+    assert(!empty($v->proposition));
+}
+assert($report instanceof ReporterOutput);
+assert(!empty($report->reasoning));
 ?>
 ```
 

@@ -45,7 +45,7 @@ final class StructuredOutput implements CanCreateStructuredOutput
 
     public function withMessages(string|array|Message|Messages $messages): self {
         $copy = clone $this;
-        $copy->request = $copy->request->withMessages($messages);
+        $copy->request = $copy->request->withMessages(Messages::fromAny($messages));
         return $copy;
     }
 
@@ -137,7 +137,12 @@ final class StructuredOutput implements CanCreateStructuredOutput
     ): self {
         $copy = clone $this;
         $copy->request = $copy->request->withCachedContext(
-            new CachedContext($messages, $system, $prompt, $examples)
+            new CachedContext(
+                messages: self::normalizeCachedMessages($messages),
+                system: $system,
+                prompt: $prompt,
+                examples: $examples,
+            )
         );
         return $copy;
     }
@@ -181,7 +186,7 @@ final class StructuredOutput implements CanCreateStructuredOutput
     ): self {
         $copy = clone $this;
         $copy->request = $copy->request->with(
-            messages: $messages,
+            messages: $messages !== null ? Messages::fromAny($messages) : null,
             requestedSchema: $responseModel,
             system: $system,
             prompt: $prompt,
@@ -239,5 +244,13 @@ final class StructuredOutput implements CanCreateStructuredOutput
 
     public function getArray(): array {
         return $this->create()->getArray();
+    }
+
+    private static function normalizeCachedMessages(string|array $messages): Messages
+    {
+        return match (true) {
+            $messages === '' => Messages::empty(),
+            default => Messages::fromAny($messages),
+        };
     }
 }

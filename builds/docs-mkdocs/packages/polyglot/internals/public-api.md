@@ -30,14 +30,14 @@ $inference = Inference::fromProvider($provider);
 
 // From an already-built runtime
 $inference = Inference::fromRuntime($runtime);
-// @doctest id="4dc6"
+// @doctest id="8017"
 ```
 
 You can also pass a custom driver registry to `using()` or `fromConfig()` if you have registered custom drivers:
 
 ```php
 $inference = Inference::using('my-provider', drivers: $customRegistry);
-// @doctest id="01de"
+// @doctest id="f7d3"
 ```
 
 ### Building a Request
@@ -52,7 +52,7 @@ $base = Inference::using('openai')
 // Branch into two different requests from the same base
 $response1 = $base->withMessages('Explain PHP traits.')->get();
 $response2 = $base->withMessages('Explain PHP enums.')->get();
-// @doctest id="22e5"
+// @doctest id="0844"
 ```
 
 Available request methods:
@@ -60,7 +60,7 @@ Available request methods:
 | Method | Purpose |
 |---|---|
 | `with(...)` | Set multiple parameters at once (messages, model, tools, toolChoice, responseFormat, options) |
-| `withMessages(...)` | Set the conversation messages (accepts string, array, `Message`, or `Messages`) |
+| `withMessages(...)` | Set the conversation messages |
 | `withModel(...)` | Override the model |
 | `withMaxTokens(...)` | Set maximum output tokens |
 | `withTools(...)` | Provide tool/function definitions |
@@ -99,7 +99,7 @@ $json = $inference->withMessages('Call a tool')->asToolCallJson();
 
 // Stream the response
 $stream = $inference->withMessages('Hello')->stream();
-// @doctest id="2634"
+// @doctest id="ca7c"
 ```
 
 For lower-level control, `create()` returns a `PendingInference` without triggering execution:
@@ -111,7 +111,7 @@ $pending = $inference->withMessages('Hello')->create();
 $text = $pending->get();
 $response = $pending->response();
 $stream = $pending->stream();
-// @doctest id="ace7"
+// @doctest id="4762"
 ```
 
 ### Working with Responses
@@ -138,7 +138,7 @@ $response->hasFinishReason();
 // JSON extraction
 $response->findJsonData();         // Json object from content
 $response->findToolCallJsonData(); // Json object from tool call args
-// @doctest id="a734"
+// @doctest id="3d93"
 ```
 
 ### Working with Streams
@@ -171,7 +171,7 @@ $toolOnly = $stream->filter(fn($d) => $d->toolName !== '');
 
 // Collect all deltas at once
 $allDeltas = $stream->all();
-// @doctest id="2502"
+// @doctest id="e713"
 ```
 
 
@@ -197,7 +197,7 @@ $embeddings = Embeddings::fromProvider($provider);
 
 // From a runtime
 $embeddings = Embeddings::fromRuntime($runtime);
-// @doctest id="3049"
+// @doctest id="3dcc"
 ```
 
 ### Building a Request
@@ -207,7 +207,7 @@ $embeddings = Embeddings::using('openai')
     ->withInputs('The quick brown fox')
     ->withModel('text-embedding-3-small')
     ->withOptions(['dimensions' => 256]);
-// @doctest id="ac19"
+// @doctest id="d884"
 ```
 
 Available request methods:
@@ -233,7 +233,7 @@ $vectors = $embeddings->withInputs(['text one', 'text two'])->vectors();
 
 // Get the first vector
 $vector = $embeddings->withInputs('Hello world')->first();
-// @doctest id="3e3a"
+// @doctest id="c987"
 ```
 
 For lower-level control, `create()` returns a `PendingEmbeddings`:
@@ -241,7 +241,7 @@ For lower-level control, `create()` returns a `PendingEmbeddings`:
 ```php
 $pending = $embeddings->withInputs('Hello world')->create();
 $response = $pending->get();
-// @doctest id="d9fb"
+// @doctest id="d8ca"
 ```
 
 ### Working with Responses
@@ -260,7 +260,7 @@ $response->toValuesArray(); // array -- raw float arrays
 
 // Split vectors at a given index
 [$before, $after] = $response->split(1);
-// @doctest id="c1eb"
+// @doctest id="ccc4"
 ```
 
 
@@ -277,7 +277,7 @@ Embeddings::registerDriver('my-provider', MyCustomDriver::class);
 
 // Now usable via config
 $embeddings = Embeddings::fromConfig(new EmbeddingsConfig(driver: 'my-provider', ...));
-// @doctest id="3614"
+// @doctest id="0d9f"
 ```
 
 ### Inference Drivers
@@ -291,7 +291,7 @@ $registry = BundledInferenceDrivers::registry()
     ->withDriver('my-provider', MyCustomDriver::class);
 
 $inference = Inference::using('my-provider', drivers: $registry);
-// @doctest id="6de8"
+// @doctest id="c6e5"
 ```
 
 See the [Providers](/internals/providers) page for details on driver registration and factory patterns.

@@ -98,8 +98,8 @@ class RawHtml
         libxml_use_internal_errors(true);
         $this->dom = new DOMDocument('1.0', 'UTF-8');
 
-        // Preserve UTF-8 encoding
-        $content = mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8');
+        // Preserve multibyte content for DOMDocument without using deprecated HTML-ENTITIES conversion.
+        $content = $this->encodeForDom($content);
 
         // Load potentially malformed HTML
         $this->dom->loadHTML($content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
@@ -108,6 +108,14 @@ class RawHtml
         libxml_clear_errors();
 
         return $content;
+    }
+
+    private function encodeForDom(string $content): string {
+        return mb_encode_numericentity(
+            $content,
+            [0x80, 0x10FFFF, 0, 0x10FFFF],
+            'UTF-8',
+        );
     }
 
     public function removeScripts(string $content): string {
@@ -211,19 +219,19 @@ class RawHtml
 
     public function cleanupWhitespace(string $content): string {
         // Normalize line endings
-        $content = $this->pregReplace('/\R/', "\n", $content);
+        $content = $this->pregReplace('/\R/u', "\n", $content);
 
         // Remove multiple spaces
-        $content = $this->pregReplace('/[ \t]+/', ' ', $content);
+        $content = $this->pregReplace('/[ \t]+/u', ' ', $content);
 
         // Remove lines with only whitespace
-        $content = $this->pregReplace('/^\s+$/m', '', $content);
+        $content = $this->pregReplace('/^\s+$/mu', '', $content);
 
         // Remove spaces around tags
         $content = $this->pregReplace('/\s*(<[^>]*>)\s*/', '$1', $content);
 
         // Normalize multiple empty lines
-        $content = $this->pregReplace('/\n\s*\n/', "\n\n", $content);
+        $content = $this->pregReplace('/\n\s*\n/u', "\n\n", $content);
 
         return trim($content);
     }

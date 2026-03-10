@@ -4,7 +4,7 @@ use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Instructor\Enums\OutputMode;
 
 if (!class_exists('SequenceNullPartialPerson')) {
@@ -13,9 +13,9 @@ if (!class_exists('SequenceNullPartialPerson')) {
 
 it('sequence() ignores initial no-value chunks on deterministic fake driver streams', function () {
     $chunks = [
-        new PartialInferenceResponse(contentDelta: '{"list":['),
-        new PartialInferenceResponse(contentDelta: '{"name":"Alice","age":25},{"name":"Bob"'),
-        new PartialInferenceResponse(contentDelta: ',"age":30}]}', finishReason: 'stop'),
+        new PartialInferenceDelta(contentDelta: '{"list":['),
+        new PartialInferenceDelta(contentDelta: '{"name":"Alice","age":25},{"name":"Bob"'),
+        new PartialInferenceDelta(contentDelta: ',"age":30}]}', finishReason: 'stop'),
     ];
 
     $driver = new FakeInferenceDriver(responses: [], streamBatches: [$chunks]);

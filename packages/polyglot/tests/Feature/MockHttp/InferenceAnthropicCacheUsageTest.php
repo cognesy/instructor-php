@@ -22,7 +22,7 @@ it('captures Anthropic cache usage tokens', function () {
 
     $response = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('anthropic'), httpClient: $http))
         ->withModel('claude-3-haiku-20240307')
-        ->withMessages('Hello')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Hello'))
         ->response();
 
     $usage = $response->usage();

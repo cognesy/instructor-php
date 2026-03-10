@@ -23,8 +23,8 @@ it('respects JSON mode and returns structured data', function () {
 
     $data = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http))
         ->withModel('gpt-4o-mini')
-        ->withResponseFormat(['type' => 'json_object'])
-        ->withMessages('Q?')
+        ->withResponseFormat(\Cognesy\Polyglot\Inference\Data\ResponseFormat::jsonObject())
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Q?'))
         ->asJsonData();
 
     expect($data)->toBe(['answer' => 'ok']);

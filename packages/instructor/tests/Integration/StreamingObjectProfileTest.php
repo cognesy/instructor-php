@@ -14,7 +14,7 @@ use Cognesy\Instructor\Validation\ValidationResult;
 use Cognesy\Polyglot\Inference\Data\InferenceAttempt;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Utils\Profiler\ObjectCreationSnapshot;
@@ -108,15 +108,15 @@ final class StreamingObjectProfileTest extends TestCase
     }
 
     /**
-     * @return PartialInferenceResponse[]
+     * @return PartialInferenceDelta[]
      */
     private static function chunks(): array
     {
         return [
-            new PartialInferenceResponse(contentDelta: '{"list":[{"id":1,"name":"alpha"}'),
-            new PartialInferenceResponse(contentDelta: ',{"id":2,"name":"beta"}'),
-            new PartialInferenceResponse(contentDelta: ',{"id":3,"name":"gamma"}'),
-            new PartialInferenceResponse(contentDelta: ']}', finishReason: 'stop'),
+            new PartialInferenceDelta(contentDelta: '{"list":[{"id":1,"name":"alpha"}'),
+            new PartialInferenceDelta(contentDelta: ',{"id":2,"name":"beta"}'),
+            new PartialInferenceDelta(contentDelta: ',{"id":3,"name":"gamma"}'),
+            new PartialInferenceDelta(contentDelta: ']}', finishReason: 'stop'),
         ];
     }
 

@@ -5,6 +5,7 @@ use Cognesy\Http\Events\HttpClientBuilt;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputRequestReceived;
 use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Events\InferenceDriverBuilt;
 
@@ -26,7 +27,7 @@ it('reuses provided event bus across structured output runtime graph', function 
     );
 
     $runtime->create(new StructuredOutputRequest(
-        messages: 'hello',
+        messages: Messages::fromString('hello'),
         requestedSchema: ['type' => 'object'],
     ));
 
@@ -57,7 +58,7 @@ it('allows fluent event registration on structured output runtime', function () 
         });
 
     $runtime->create(new StructuredOutputRequest(
-        messages: 'hello',
+        messages: Messages::fromString('hello'),
         requestedSchema: ['type' => 'object'],
     ));
 

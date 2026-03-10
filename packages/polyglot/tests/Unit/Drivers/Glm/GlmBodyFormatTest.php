@@ -3,6 +3,7 @@
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\Drivers\Glm\GlmBodyFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIMessageFormat;
 
@@ -41,14 +42,14 @@ it('GLM: sets tool_stream=true by default for streaming tool calls', function ()
     $request = new InferenceRequest(
         messages: Messages::fromAny([['role' => 'user', 'content' => 'Hi']]),
         model: 'glm-4.5',
-        tools: [[
+        tools: ToolDefinitions::fromArray([[
             'type' => 'function',
             'function' => [
                 'name' => 'search',
                 'description' => 'Lookup information',
                 'parameters' => ['type' => 'object', 'properties' => []],
             ],
-        ]],
+        ]]),
         options: ['stream' => true],
     );
 
@@ -70,14 +71,14 @@ it('GLM: keeps explicit tool_stream value', function () {
     $request = new InferenceRequest(
         messages: Messages::fromAny([['role' => 'user', 'content' => 'Hi']]),
         model: 'glm-4.5',
-        tools: [[
+        tools: ToolDefinitions::fromArray([[
             'type' => 'function',
             'function' => [
                 'name' => 'search',
                 'description' => 'Lookup information',
                 'parameters' => ['type' => 'object', 'properties' => []],
             ],
-        ]],
+        ]]),
         options: ['stream' => true, 'tool_stream' => false],
     );
 

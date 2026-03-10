@@ -80,5 +80,12 @@ foreach (($personData['favourite_books'] ?? []) as $bookData) {
     }
     print("  - " . ($bookData['title'] ?? '') . " by " . ($bookData['author'] ?? '') . "\n");
 }
+
+assert(($personData['name'] ?? '') === 'Jane Doe');
+assert(($personData['age'] ?? 0) === 25);
+assert(!empty($personData['address']['city']));
+assert(!empty($personData['address']['zip']));
+assert(($personData['role'] ?? '') === 'manager');
+assert(!empty($personData['favourite_books']));
 ?>
 ```

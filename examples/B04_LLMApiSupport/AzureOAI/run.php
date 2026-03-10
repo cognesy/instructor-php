@@ -15,6 +15,7 @@ using Azure OpenAI service console.
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\Str;
 
@@ -22,7 +23,7 @@ require 'examples/boot.php';
 
 $answer = Inference::using('openai')
     ->with(
-        messages: [['role' => 'user', 'content' => 'What is the capital of France']],
+        messages: Messages::fromString('What is the capital of France'),
         options: ['max_tokens' => 64]
     )
     ->get();

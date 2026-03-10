@@ -18,7 +18,7 @@ it('throws on HTTP 400 for inference', function () {
 
     $act = fn() => Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http))
         ->withModel('gpt-4o-mini')
-        ->withMessages('Hello')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Hello'))
         ->get();
 
     expect($act)->toThrow(RuntimeException::class);

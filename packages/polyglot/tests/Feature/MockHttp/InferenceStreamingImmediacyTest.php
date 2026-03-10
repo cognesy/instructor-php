@@ -36,7 +36,7 @@ it('does not pre-buffer SSE stream before yielding first partial', function () {
         \Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http),
     )
         ->withModel('gpt-4o-mini')
-        ->withMessages('Greet me')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Greet me'))
         ->withStreaming(true)
         ->stream();
 

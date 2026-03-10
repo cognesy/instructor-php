@@ -61,6 +61,20 @@ final readonly class ExecutionPolicy
     }
 
     /**
+     * Create default policy for Pi CLI.
+     */
+    public static function forPi(): self {
+        return self::default('.pi');
+    }
+
+    /**
+     * Create default policy for Gemini CLI.
+     */
+    public static function forGemini(): self {
+        return self::default('.gemini');
+    }
+
+    /**
      * Create custom policy with full control over all parameters.
      */
     public static function custom(

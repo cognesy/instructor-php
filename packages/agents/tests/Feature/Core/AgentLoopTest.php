@@ -11,7 +11,7 @@ use Cognesy\Agents\Interception\PassThroughInterceptor;
 use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
 use Cognesy\Agents\Tests\Support\TestAgentLoop;
 use Cognesy\Agents\Tool\ToolExecutor;
-use Cognesy\Agents\Tool\Tools\MockTool;
+use Cognesy\Agents\Tool\Tools\FakeTool;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
@@ -79,7 +79,7 @@ describe('Agent Loop', function () {
             new InferenceResponse(content: 'Tool executed successfully.'),
         ]);
 
-        $testTool = MockTool::returning('test_tool', 'A test tool', 'Executed');
+        $testTool = FakeTool::returning('test_tool', 'A test tool', 'Executed');
 
         $llm = LLMProvider::new()->withDriver($driver);
         $tools = new Tools($testTool);
@@ -110,7 +110,7 @@ describe('Agent Loop', function () {
             new InferenceResponse(content: 'Tool executed successfully.'),
         ]);
 
-        $testTool = MockTool::returning('test_tool', 'A test tool', 'Executed');
+        $testTool = FakeTool::returning('test_tool', 'A test tool', 'Executed');
 
         $llm = LLMProvider::new()->withDriver($driver);
         $tools = new Tools($testTool);
@@ -140,7 +140,7 @@ describe('Agent Loop', function () {
             new InferenceResponse(content: 'Tool executed successfully.'),
         ]);
 
-        $testTool = MockTool::returning('test_tool', 'A test tool', 'Executed');
+        $testTool = FakeTool::returning('test_tool', 'A test tool', 'Executed');
 
         $llm = LLMProvider::new()->withDriver($driver);
         $tools = new Tools($testTool);
@@ -174,7 +174,7 @@ describe('Agent Loop', function () {
             new InferenceResponse(content: 'Tool executed successfully.'),
         ]);
 
-        $testTool = MockTool::returning('test_tool', 'A test tool', 'Executed');
+        $testTool = FakeTool::returning('test_tool', 'A test tool', 'Executed');
 
         $llm = LLMProvider::new()->withDriver($driver);
         $tools = new Tools($testTool);

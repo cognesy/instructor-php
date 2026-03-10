@@ -37,7 +37,7 @@ it('aggregates tool call arguments across streaming deltas', function () {
 
     $final = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http))
         ->withModel('gpt-4o-mini')
-        ->withMessages('Find it')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Find it'))
         ->withStreaming(true)
         ->stream()
         ->final();
@@ -80,7 +80,7 @@ it('supports parallel tool calls across streaming deltas', function () {
 
     $final = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http))
         ->withModel('gpt-4o-mini')
-        ->withMessages('Find it')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Find it'))
         ->withStreaming(true)
         ->stream()
         ->final();

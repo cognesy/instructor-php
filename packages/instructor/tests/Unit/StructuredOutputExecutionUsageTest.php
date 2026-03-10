@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+use Cognesy\Messages\Messages;
 use Cognesy\Instructor\Collections\StructuredOutputAttemptList;
 use Cognesy\Instructor\Data\StructuredOutputAttempt;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
@@ -14,7 +15,7 @@ it('accumulates usage for synchronous finalized attempts only', function () {
     );
 
     $exec = new StructuredOutputExecution(
-        request: new \Cognesy\Instructor\Data\StructuredOutputRequest(messages: '', requestedSchema: []),
+        request: new \Cognesy\Instructor\Data\StructuredOutputRequest(messages: Messages::empty(), requestedSchema: []),
         attemptHistory: StructuredOutputAttemptList::of($attempt),
         status: ExecutionStatus::Succeeded,
     );
@@ -37,7 +38,7 @@ it('accumulates usage for finalized attempts plus current in-flight usage until 
     );
 
     $exec = new StructuredOutputExecution(
-        request: new \Cognesy\Instructor\Data\StructuredOutputRequest(messages: '', requestedSchema: []),
+        request: new \Cognesy\Instructor\Data\StructuredOutputRequest(messages: Messages::empty(), requestedSchema: []),
         attemptHistory: StructuredOutputAttemptList::of($attempt1),
         activeAttempt: $attemptCurrent,
         status: ExecutionStatus::Running,
@@ -51,7 +52,7 @@ it('accumulates usage for finalized attempts plus current in-flight usage until 
 
 it('counts usage from failed attempts recorded via withFailedAttempt', function () {
     $exec = (new StructuredOutputExecution(
-        request: new \Cognesy\Instructor\Data\StructuredOutputRequest(messages: '', requestedSchema: []),
+        request: new \Cognesy\Instructor\Data\StructuredOutputRequest(messages: Messages::empty(), requestedSchema: []),
     ))->withFailedAttempt(
         inferenceResponse: new PgInferenceResponse(
             content: 'bad json',

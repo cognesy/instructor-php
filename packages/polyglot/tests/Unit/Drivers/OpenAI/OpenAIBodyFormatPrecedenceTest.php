@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIBodyFormat;
@@ -18,7 +19,7 @@ it('applies request overrides over runtime defaults in OpenAI request body', fun
 
     $body = (new OpenAIBodyFormat($config, new OpenAIMessageFormat()))
         ->toRequestBody(new InferenceRequest(
-            messages: 'Hello',
+            messages: Messages::fromString('Hello'),
             model: 'request-model',
             options: [
                 'temperature' => 0.8,

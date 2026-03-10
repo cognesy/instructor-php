@@ -14,7 +14,7 @@ Every inference driver is built from two main translators, each of which may use
 
 The request adapter converts a Polyglot `InferenceRequest` into an `HttpRequest`. It is responsible for:
 
-- **Message formatting** -- mapping Polyglot's message array (with roles, content parts, tool calls, and tool results) into the provider's expected structure
+- **Message formatting** -- mapping Polyglot's typed `Messages` (with roles, content parts, tool calls, and tool results) into the provider's expected structure
 - **Body formatting** -- assembling the full request body including model, tools, response format, and mode-specific adjustments
 - **HTTP request assembly** -- setting the URL, headers (including authentication), and body
 
@@ -22,7 +22,7 @@ These responsibilities are typically split across three classes:
 
 | Class Pattern | Contract | Purpose |
 |---|---|---|
-| `*MessageFormat` | `CanMapMessages` | Maps message arrays to provider format |
+| `*MessageFormat` | `CanMapMessages` | Maps `Messages` to provider format |
 | `*BodyFormat` | `CanMapRequestBody` | Assembles the full request body |
 | `*RequestAdapter` | `CanTranslateInferenceRequest` | Builds the final `HttpRequest` |
 
@@ -62,7 +62,7 @@ class OpenAIDriver extends BaseInferenceRequestDriver
         );
     }
 }
-// @doctest id="a94f"
+// @doctest id="5663"
 ```
 
 The `BaseInferenceRequestDriver` handles the shared execution logic -- sending HTTP requests, reading responses, and parsing event streams. The adapters only need to handle format translation.
@@ -79,7 +79,7 @@ interface CanTranslateInferenceRequest
 {
     public function toHttpRequest(InferenceRequest $request): HttpRequest;
 }
-// @doctest id="9525"
+// @doctest id="da6a"
 ```
 
 Request adapters typically delegate body construction to a `CanMapRequestBody` implementation:
@@ -89,17 +89,17 @@ interface CanMapRequestBody
 {
     public function toRequestBody(InferenceRequest $request): array;
 }
-// @doctest id="5352"
+// @doctest id="0ef1"
 ```
 
-Message formatting is handled by `CanMapMessages`:
+Message formatting is handled by `CanMapMessages`, which receives typed `Messages` and returns a provider-native array. Implementations compose a `MessageMapper` utility for typed iteration instead of duplicating the loop:
 
 ```php
 interface CanMapMessages
 {
-    public function map(array $messages): array;
+    public function map(Messages $messages): array;
 }
-// @doctest id="c4d7"
+// @doctest id="4dae"
 ```
 
 A typical request adapter composes these together. For example, `OpenAIRequestAdapter` receives a `CanMapRequestBody` (which itself wraps a `CanMapMessages`), then builds the final HTTP request with URL, headers, and the formatted body:
@@ -126,7 +126,7 @@ class OpenAIRequestAdapter implements CanTranslateInferenceRequest
         );
     }
 }
-// @doctest id="3c46"
+// @doctest id="7ce4"
 ```
 
 ### Response Side
@@ -146,7 +146,7 @@ interface CanTranslateInferenceResponse
 
     public function toEventBody(string $data): string|bool;
 }
-// @doctest id="d01d"
+// @doctest id="912e"
 ```
 
 The `toEventBody()` method extracts the payload from an SSE line (stripping the `data:` prefix, detecting `[DONE]` markers). The `fromStreamDeltas()` method parses a sequence of those payloads into `PartialInferenceDelta` objects carrying incremental content, tool call fragments, and usage snapshots.
@@ -158,7 +158,7 @@ interface CanMapUsage
 {
     public function fromData(array $data): Usage;
 }
-// @doctest id="3ccc"
+// @doctest id="f6bb"
 ```
 
 Different providers report token usage under different keys and with different granularity. Some include cache tokens or reasoning tokens, others do not. Each provider's usage formatter encapsulates these differences into the normalized `Usage` object.

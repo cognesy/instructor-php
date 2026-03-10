@@ -3,6 +3,7 @@ order:
   # Essentials
   - 1-overview
   - 2-getting-started
+  - testing-doubles
   - 3-streaming
   - 4-session-management
   - 5-agent-options

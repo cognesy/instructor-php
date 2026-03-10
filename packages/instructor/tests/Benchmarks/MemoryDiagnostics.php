@@ -8,7 +8,7 @@ use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Instructor\Enums\OutputMode;
 
 /**
@@ -293,7 +293,7 @@ final class MemoryDiagnostics
         $partialCount = 0;
         $bodyGrowth = [];
         foreach ($responseData->stream() as $chunk) {
-            $partial = new PartialInferenceResponse(
+            $partial = new PartialInferenceDelta(
                 contentDelta: $chunk,
             );
 
@@ -555,11 +555,11 @@ final class MemoryDiagnostics
         }
 
         $chunks = [];
-        $chunks[] = new PartialInferenceResponse(contentDelta: $open);
+        $chunks[] = new PartialInferenceDelta(contentDelta: $open);
         foreach ($items as $piece) {
-            $chunks[] = new PartialInferenceResponse(contentDelta: $piece);
+            $chunks[] = new PartialInferenceDelta(contentDelta: $piece);
         }
-        $chunks[] = new PartialInferenceResponse(contentDelta: $close, finishReason: 'stop');
+        $chunks[] = new PartialInferenceDelta(contentDelta: $close, finishReason: 'stop');
 
         return $chunks;
     }

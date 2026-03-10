@@ -63,6 +63,8 @@ $events->wiretap(fn(object $event) => null);
 $service->onEvent(MyEvent::class, fn(object $event) => null);
 ```
 
+`HandlesEvents` assumes explicit wiring. Call `withEventHandler(...)` before dispatching or registering listeners.
+
 ## Framework Integration Notes
 
 ### Laravel logging integration

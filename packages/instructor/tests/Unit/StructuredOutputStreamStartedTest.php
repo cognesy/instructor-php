@@ -6,6 +6,7 @@ use Cognesy\Instructor\Data\StructuredOutputResponse;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted;
 use Cognesy\Instructor\StructuredOutputStream;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Tests\Instructor\Support\TestEventDispatcher;
 
@@ -38,7 +39,7 @@ it('dispatches StructuredOutputStarted once across multiple stream reads', funct
     $dispatcher = new TestEventDispatcher();
 
     $response = new InferenceResponse(content: 'ok');
-    $request = new StructuredOutputRequest(messages: 'dummy', requestedSchema: []);
+    $request = new StructuredOutputRequest(messages: Messages::fromString('dummy'), requestedSchema: []);
 
     $execution = (new StructuredOutputExecution(request: $request))
         ->withStartedAttempt()
@@ -65,7 +66,7 @@ it('does not emit additional start events when reading the raw iterator', functi
     $dispatcher = new TestEventDispatcher();
 
     $response = new InferenceResponse(content: 'ok');
-    $request = new StructuredOutputRequest(messages: 'dummy', requestedSchema: []);
+    $request = new StructuredOutputRequest(messages: Messages::fromString('dummy'), requestedSchema: []);
 
     $execution = (new StructuredOutputExecution(request: $request))
         ->withStartedAttempt()

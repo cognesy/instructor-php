@@ -62,6 +62,12 @@ foreach ($stream as $value) {
 $all = $stream->getCompleted(); // [6, 8]
 ```
 
+`TransformationStream` is emission-oriented:
+- `getCompleted()` returns the values emitted by the stream
+- completed streams retain emitted values in memory so they can be replayed
+- custom sinks on a reused `Transformation` are ignored
+- use `Transformation::execute()` / `executeOn()` when you need sink-specific completion results
+
 Use predefined transformation:
 
 ```php
@@ -84,6 +90,8 @@ use Cognesy\Stream\Support\Tee;
 $leftItems = iterator_to_array($left, false);
 $rightItems = iterator_to_array($right, false);
 ```
+
+Unused branches still count as active until they are released. Drop never-consumed branches promptly if another branch may run far ahead.
 
 ## Source Facades
 

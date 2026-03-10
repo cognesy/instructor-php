@@ -48,6 +48,8 @@ TXT;
 
 $answer = (new SelfConsistency)($prompt, k: 5);
 dump($answer);
+
+assert(is_int($answer));
 ?>
 ```
 

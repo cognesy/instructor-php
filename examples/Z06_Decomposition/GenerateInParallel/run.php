@@ -128,6 +128,16 @@ foreach ($results as $result) {
 }
 
 dump($results);
+
+assert(is_array($results));
+assert(count($results) >= 3, 'Expected at least 3 skeleton points');
+foreach ($results as $result) {
+    assert(isset($result['point']));
+    assert(isset($result['content']));
+    assert($result['point'] instanceof Point);
+    assert(!empty($result['point']->description));
+    assert(!empty($result['content']));
+}
 ?>
 ```
 

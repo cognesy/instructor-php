@@ -11,13 +11,14 @@ use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
+use Cognesy\Messages\Messages;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\PendingInference;
 use Cognesy\Utils\Result\Result;
@@ -34,7 +35,7 @@ it('emits live partials and one final response from the streaming driver', funct
     $driver = new StreamingExecutionDriver(
         execution: new StructuredOutputExecution(
             request: (new StructuredOutputRequest(
-                messages: 'Extract user',
+                messages: Messages::fromString('Extract user'),
                 requestedSchema: StreamingDriverUser::class,
             ))->withStreamed(),
             config: new StructuredOutputConfig(outputMode: OutputMode::Json),
@@ -46,9 +47,9 @@ it('emits live partials and one final response from the streaming driver', funct
                     $fakeDriver = new FakeInferenceDriver(
                         responses: [],
                         streamBatches: [[
-                            new PartialInferenceResponse(contentDelta: '{"name":"Ann"'),
-                            new PartialInferenceResponse(contentDelta: ',"age":30}'),
-                            new PartialInferenceResponse(finishReason: 'stop'),
+                            new PartialInferenceDelta(contentDelta: '{"name":"Ann"'),
+                            new PartialInferenceDelta(contentDelta: ',"age":30}'),
+                            new PartialInferenceDelta(finishReason: 'stop'),
                         ]],
                     );
 

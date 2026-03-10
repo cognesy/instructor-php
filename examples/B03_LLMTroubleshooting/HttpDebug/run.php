@@ -20,24 +20,27 @@ debug events.
 require 'examples/boot.php';
 
 use Cognesy\Http\Config\DebugConfig;
+use Cognesy\Http\Creation\HttpClientBuilder;
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
-use Cognesy\Http\Creation\HttpClientBuilder;
-use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
-$http = (new HttpClientBuilder())->withDebugConfig(DebugConfig::fromPreset('on'))->create();
+$http = (new HttpClientBuilder)->withDebugConfig(DebugConfig::fromPreset('on'))->create();
 
 $response = Inference::fromRuntime(InferenceRuntime::fromConfig(
-        config: LLMConfig::fromPreset('openai'),
-        httpClient: $http,
-    ))
+    config: LLMConfig::fromPreset('openai'),
+    httpClient: $http,
+))
     ->with(
-        messages: [['role' => 'user', 'content' => 'What is the capital of Brasil']],
+        messages: Messages::fromString('What is the capital of Brasil?'),
         options: ['max_tokens' => 128]
     )
     ->get();
 
 echo "USER: What is capital of Brasil\n";
 echo "ASSISTANT: $response\n";
+
+assert(!empty($response));
 ?>
 ```

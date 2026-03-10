@@ -170,15 +170,19 @@ Azure deployments use deployment names rather than model names in the endpoint U
 
 ## AWS Bedrock
 
-The `aws-bedrock` driver uses AWS authentication (SigV4) rather than API keys. Configuration requires AWS credentials:
+Use the `bedrock-openai` driver for Bedrock's OpenAI-compatible endpoint.
+The current 2.0 implementation authenticates with a bearer API key. AWS
+SigV4 credential signing is not implemented in Polyglot yet.
 
 ```yaml
 # config/llm/presets/aws-bedrock.yaml
-driver: aws-bedrock
-apiUrl: 'https://bedrock-runtime.us-east-1.amazonaws.com'
+driver: bedrock-openai
+apiUrl: 'https://bedrock-runtime.us-east-1.amazonaws.com/openai/v1'
 apiKey: '${AWS_BEDROCK_API_KEY}'
-endpoint: '/model/anthropic.claude-3-haiku-20240307-v1:0/converse'
+endpoint: /chat/completions
 model: anthropic.claude-3-haiku-20240307-v1:0
+metadata:
+  region: '${AWS_BEDROCK_REGION:-us-east-1}'
 ```
 
 ## Cohere

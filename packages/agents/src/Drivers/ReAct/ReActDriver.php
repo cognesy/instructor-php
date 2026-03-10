@@ -421,7 +421,7 @@ final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
             return null;
         }
         return new StructuredCachedContext(
-            messages: [['role' => 'system', 'content' => $systemPrompt]],
+            messages: Messages::fromMessages([Message::make('system', $systemPrompt)]),
         );
     }
 

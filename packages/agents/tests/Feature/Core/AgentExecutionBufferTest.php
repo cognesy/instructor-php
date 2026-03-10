@@ -9,7 +9,7 @@ use Cognesy\Agents\Context\Compilers\ConversationWithCurrentToolTrace;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
-use Cognesy\Agents\Tool\Tools\MockTool;
+use Cognesy\Agents\Tool\Tools\FakeTool;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\ToolCalls;
@@ -31,7 +31,7 @@ describe('Agent metadata-based trace isolation', function () {
             new InferenceResponse(content: 'All done.'),
         ]);
 
-        $tool = MockTool::returning('test_tool', 'A test tool', 'Executed');
+        $tool = FakeTool::returning('test_tool', 'A test tool', 'Executed');
         $llm = LLMProvider::new()->withDriver($driver);
         $agent = AgentBuilder::base()
             ->withCapability(new UseTools($tool))
@@ -77,7 +77,7 @@ describe('Agent metadata-based trace isolation', function () {
             new InferenceResponse(content: 'Done.'),
         ]);
 
-        $tool = MockTool::returning('lookup', 'Search tool', 'sunny and warm');
+        $tool = FakeTool::returning('lookup', 'Search tool', 'sunny and warm');
         $llm = LLMProvider::new()->withDriver($driver);
         $agent = AgentBuilder::base()
             ->withCapability(new UseTools($tool))
@@ -134,7 +134,7 @@ describe('Agent metadata-based trace isolation', function () {
             new InferenceResponse(content: 'Final answer.'),
         ]);
 
-        $tool = MockTool::returning('search', 'Search tool', 'result');
+        $tool = FakeTool::returning('search', 'Search tool', 'result');
         $llm = LLMProvider::new()->withDriver($driver);
         $agent = AgentBuilder::base()
             ->withCapability(new UseTools($tool))
@@ -187,7 +187,7 @@ describe('Agent metadata-based trace isolation', function () {
             new InferenceResponse(content: 'Done.'),
         ]);
 
-        $tool = MockTool::returning('test_tool', 'Test', 'ok');
+        $tool = FakeTool::returning('test_tool', 'Test', 'ok');
         $llm = LLMProvider::new()->withDriver($driver);
         $agent = AgentBuilder::base()
             ->withCapability(new UseTools($tool))

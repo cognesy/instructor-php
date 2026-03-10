@@ -8,7 +8,11 @@ use Cognesy\Polyglot\Inference\Contracts\CanProvideInferenceDrivers;
 use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\Streaming\InferenceStream;
+use Cognesy\Messages\Messages;
 
 /**
  * Inference class is facade for handling inference requests and responses.
@@ -86,12 +90,12 @@ final class Inference implements CanCreateInference
     // INVOCATION //////////////////////////////////////////////////////////
 
     public function with(
-        string|array|null $messages = null,
-        ?string      $model = null,
-        ?array       $tools = null,
-        string|array|null $toolChoice = null,
-        ?array       $responseFormat = null,
-        ?array       $options = null,
+        ?Messages $messages = null,
+        ?string $model = null,
+        ?ToolDefinitions $tools = null,
+        ?ToolChoice $toolChoice = null,
+        ?ResponseFormat $responseFormat = null,
+        ?array $options = null,
     ) : static {
         $copy = $this->cloneWithRequestBuilder();
         $copy->requestBuilder->with(

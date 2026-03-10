@@ -17,7 +17,7 @@ it('returns true when request has messages', function () {
 });
 
 it('returns true when cached context has messages', function () {
-    $cachedContext = new CachedInferenceContext(messages: [['role' => 'system', 'content' => 'Cached']]);
+    $cachedContext = new CachedInferenceContext(messages: Messages::fromString('Cached', 'system'));
     $request = new InferenceRequest(messages: null, cachedContext: $cachedContext);
 
     expect($request->hasMessages())->toBeTrue();

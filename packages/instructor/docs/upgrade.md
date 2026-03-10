@@ -3,23 +3,55 @@ title: Upgrade
 description: 'What to expect in the 2.0-era API.'
 ---
 
-The current docs are written for the refactored structured-output API.
+The current docs are written for the 2.0 structured-output API.
 
-## The Main Shape
+## What Changed
 
-The core flow is now:
+The public model is now:
 
 - `StructuredOutput` for request construction
 - `StructuredOutputRuntime` for runtime behavior
 - `PendingStructuredOutput` for lazy execution
-- `StructuredOutputStream` for streaming reads
+- `StructuredOutputResponse` as the primary final response object
+- `StructuredOutputStream` for streaming reads and final stream access
 
-## Important Differences From Older Docs
+## Response Ownership
 
-- configuration belongs on the runtime, not on a global instructor object
+Older docs and examples often treated the raw Polyglot response as the main response object.
+
+That is no longer the intended API.
+
+- use `response()` when you want the final Instructor response
+- use `get()` when you want only the parsed value
+- use `inferenceResponse()` or `finalInferenceResponse()` only when you need raw transport-level details
+
+## Streaming Contract
+
+Streaming is now built around Instructor-owned stream state.
+
+- Polyglot streams deltas
+- Instructor accumulates those deltas in `StructuredOutputStreamState`
+- final stream reads return `StructuredOutputResponse`, not raw partial snapshot objects
+
+If you relied on old partial snapshot behavior, update that code to consume:
+
+- `stream()->responses()` for partial and final `StructuredOutputResponse` items
+- `stream()->partials()` for parsed partial values
+- `stream()->sequence()` for completed sequence items
+
+## Runtime Setup
+
+Runtime configuration belongs on `StructuredOutputRuntime`, not on a global Instructor object.
+
 - `create()` returns a lazy handle
 - `stream()` returns a dedicated stream object
-- `StructuredOutput::fromConfig(...)` and `StructuredOutput::using(...)` are valid entry points
-- published config files are optional, not required for normal usage
+- `StructuredOutput::fromConfig(...)` and `StructuredOutput::using(...)` remain valid entry points
+- published config files are optional
 
-If you are updating older examples, start by rewriting them around `StructuredOutput->with(...)->get()`.
+## Migration Rule
+
+If you are updating older code, rewrite it around one of these shapes:
+
+- `StructuredOutput->with(...)->get()`
+- `StructuredOutput->with(...)->response()`
+- `StructuredOutput->with(...)->stream()`

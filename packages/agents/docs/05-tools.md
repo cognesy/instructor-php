@@ -173,13 +173,13 @@ Every tool implements `ToolInterface`, which defines the three things the framew
 
 ```php
 interface ToolInterface {
-    public function use(mixed ...$args): Result;    // Execute the tool
-    public function toToolSchema(): array;           // JSON schema sent to the LLM
-    public function descriptor(): CanDescribeTool;   // Metadata accessor
+    public function use(mixed ...$args): Result;         // Execute the tool
+    public function toToolSchema(): ToolDefinition;      // Schema sent to the LLM
+    public function descriptor(): CanDescribeTool;       // Metadata accessor
 }
 ```
 
-The `use()` method receives the arguments that the LLM provided and returns a `Result` object wrapping either a success value or a failure. The `toToolSchema()` method returns the JSON schema in the standard OpenAI function-calling format. The `descriptor()` method returns the tool's identity and documentation.
+The `use()` method receives the arguments that the LLM provided and returns a `Result` object wrapping either a success value or a failure. The `toToolSchema()` method returns a `ToolDefinition` value object describing the tool's name, description, and parameters. The `descriptor()` method returns the tool's identity and documentation.
 
 ### CanDescribeTool
 
@@ -436,18 +436,18 @@ $tool = $registry->get('expensive_tool');
 The `ToolRegistry` is used internally by the `ToolsTool` capability, which exposes a meta-tool that lets the LLM browse, search, and inspect available tools at runtime.
 
 <a name="mock-tool-for-testing"></a>
-## MockTool for Testing
+## FakeTool for Testing
 
-When testing agent behavior, use `MockTool` to create tools with predetermined responses. This avoids external dependencies and makes tests deterministic.
+When testing agent behavior, use `FakeTool` to create tools with predetermined responses. This avoids external dependencies and makes tests deterministic.
 
 ### Static Responses
 
 The simplest form returns the same value regardless of arguments:
 
 ```php
-use Cognesy\Agents\Tool\Tools\MockTool;
+use Cognesy\Agents\Tool\Tools\FakeTool;
 
-$tool = MockTool::returning('search', 'Search the web', 'result text');
+$tool = FakeTool::returning('search', 'Search the web', 'result text');
 ```
 
 ### Dynamic Responses
@@ -455,7 +455,7 @@ $tool = MockTool::returning('search', 'Search the web', 'result text');
 Pass a callable handler for responses that depend on the arguments:
 
 ```php
-$tool = new MockTool(
+$tool = new FakeTool(
     name: 'search',
     description: 'Search the web',
     handler: fn(string $query) => "Results for: {$query}",
@@ -464,10 +464,10 @@ $tool = new MockTool(
 
 ### Full Customization
 
-`MockTool` also accepts optional `schema`, `metadata`, and `fullSpec` arrays for complete control over how the mock tool presents itself:
+`FakeTool` also accepts optional `schema`, `metadata`, and `fullSpec` arrays for complete control over how the fake tool presents itself:
 
 ```php
-$tool = new MockTool(
+$tool = new FakeTool(
     name: 'search',
     description: 'Search the web',
     handler: fn(string $query) => "Results for: {$query}",
@@ -498,7 +498,7 @@ $tool = new MockTool(
 );
 ```
 
-When no custom schema is provided, `MockTool` generates a minimal schema with an empty `properties` object, which is sufficient for most testing scenarios.
+When no custom schema is provided, `FakeTool` generates a minimal schema with an empty `properties` object, which is sufficient for most testing scenarios.
 
 <a name="next-steps"></a>
 ## Next Steps

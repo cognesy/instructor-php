@@ -54,9 +54,9 @@ All parameters on `with()` are optional -- pass only what you need:
 |------------------|-------------------------|--------------------------------------------|
 | `messages`       | `string\|array\|null`   | The messages to send to the LLM            |
 | `model`          | `?string`               | Model identifier (overrides preset default)|
-| `tools`          | `?array`                | Tool/function definitions for the model    |
-| `toolChoice`     | `string\|array\|null`   | Tool selection preference                  |
-| `responseFormat` | `?array`                | Response format specification              |
+| `tools`          | `ToolDefinitions\|array\|null` | Tool/function definitions for the model    |
+| `toolChoice`     | `ToolChoice\|string\|array\|null` | Tool selection preference                  |
+| `responseFormat` | `ResponseFormat\|array\|null` | Response format specification              |
 | `options`        | `?array`                | Provider-specific request options          |
 
 ## Focused Helper Methods

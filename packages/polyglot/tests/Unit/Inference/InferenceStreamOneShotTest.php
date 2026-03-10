@@ -4,15 +4,14 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Streaming\InferenceStream;
 use Cognesy\Polyglot\Tests\Support\FakeInferenceDriver;
 
 it('throws on second full-pass iteration', function () {
     $driver = new FakeInferenceDriver(
         streamBatches: [[
-            new PartialInferenceResponse(contentDelta: '{"name":"Ann"'),
-            new PartialInferenceResponse(contentDelta: '}', finishReason: 'stop'),
+            new PartialInferenceDelta(contentDelta: '{"name":"Ann"'),
+            new PartialInferenceDelta(contentDelta: '}', finishReason: 'stop'),
         ]],
     );
 

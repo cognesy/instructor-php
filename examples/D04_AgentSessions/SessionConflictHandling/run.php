@@ -67,5 +67,16 @@ try {
 } catch (SessionConflictException $e) {
     echo 'Conflict detected as expected: ' . $e->getMessage() . "\n";
 }
+
+assert($worked->version() > $created->version(), 'Version should increment after work turn');
+assert(!empty($worked->state()->finalResponse()->toString()), 'Work turn should produce a response');
+
+$conflictCaught = false;
+try {
+    $repo->save($copyB->withState($copyB->state()->withMetadata('writer', 'B2')));
+} catch (SessionConflictException) {
+    $conflictCaught = true;
+}
+assert($conflictCaught, 'Stale write should throw SessionConflictException');
 ?>
 ```

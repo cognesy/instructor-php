@@ -30,5 +30,8 @@ if ($result->stderr() !== '') {
     echo "--- stderr ---\n";
     echo $result->stderr() . "\n";
 }
+
+assert($result->exitCode() === 0, 'ls command should exit with code 0');
+assert(!empty($result->stdout()), 'ls command should produce output');
 ?>
 ```

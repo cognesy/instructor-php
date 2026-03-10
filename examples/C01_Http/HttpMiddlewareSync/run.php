@@ -72,5 +72,9 @@ $response = $client->send($request)->get();
 
 echo "Status: {$response->statusCode()}\n";
 echo "Body:   {$response->body()}\n";
+
+assert($response->statusCode() === 200, 'Expected status code 200');
+$decoded = json_decode($response->body(), true);
+assert($decoded['message'] === 'HELLO', 'Expected uppercased message in response body');
 ?>
 ```

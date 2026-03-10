@@ -3,7 +3,6 @@
 namespace Cognesy\HttpPool\Creation;
 
 use Cognesy\HttpPool\Drivers\Curl\Pool\CurlPool;
-use Cognesy\HttpPool\Drivers\ExtHttp\ExtHttpPool;
 use Cognesy\HttpPool\Drivers\Guzzle\GuzzlePool;
 use Cognesy\HttpPool\Drivers\Symfony\SymfonyPool;
 use GuzzleHttp\Client;
@@ -14,7 +13,6 @@ final class BundledHttpPools
     public static function registry(): HttpPoolRegistry {
         return HttpPoolRegistry::fromArray([
             'curl' => CurlPool::class,
-            'exthttp' => ExtHttpPool::class,
             'guzzle' => fn($config, $events) => new GuzzlePool(
                 config: $config,
                 client: new Client(),

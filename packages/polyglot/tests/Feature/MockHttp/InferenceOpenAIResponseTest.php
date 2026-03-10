@@ -2,6 +2,7 @@
 
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
@@ -27,7 +28,7 @@ it('returns content for OpenAI chat completions (non-streaming)', function () {
 
     $content = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http))
         ->withModel('gpt-4o-mini')
-        ->withMessages('Hello')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Hello'))
         ->get();
 
     expect($content)->toBe('Hi there!');
@@ -54,7 +55,7 @@ it('supports runtime-style create with explicit request', function () {
 
     $content = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('openai'), httpClient: $http))
         ->create(new InferenceRequest(
-            messages: 'Hello',
+            messages: Messages::fromString('Hello'),
             model: 'gpt-4o-mini',
         ))
         ->get();
@@ -81,7 +82,7 @@ it('supports facade runtime extraction and runtime static factories', function (
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
     $request = new InferenceRequest(
-        messages: 'Hello',
+        messages: Messages::fromString('Hello'),
         model: 'gpt-4o-mini',
     );
 

@@ -124,7 +124,7 @@ echo "Status: {$finalState2->status()->value}\n";
 
 if ($finalState->status()->value !== 'completed') {
     echo "Skipping assertions because safe-command execution status is {$finalState->status()->value}.\n";
-    return;
+    exit(1);
 }
 
 // Assertions

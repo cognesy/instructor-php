@@ -20,7 +20,6 @@ $responses = $pool->pool($requests, maxConcurrent: 4);
 ## Built In Drivers
 
 - `curl`
-- `exthttp`
 - `guzzle`
 - `symfony`
 

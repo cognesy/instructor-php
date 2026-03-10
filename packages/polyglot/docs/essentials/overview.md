@@ -21,7 +21,7 @@ $answer = Inference::using('openai')
 ```
 
 The `using()` static method resolves a named preset from your configuration, while
-`withMessages()` accepts a plain string, a message array, or a `Messages` object.
+`withMessages()` accepts plain text, a single message, a message array, or a `Messages` object.
 The `get()` method executes the request and returns the response content as a string.
 
 
@@ -60,7 +60,7 @@ aspect of the inference request:
 
 | Field | Method | Description |
 |-------|--------|-------------|
-| `messages` | `withMessages()` | The conversation messages (string, array, `Message`, or `Messages`) |
+| `messages` | `withMessages()` | The conversation messages |
 | `model` | `withModel()` | Override the model defined in the preset |
 | `tools` | `withTools()` | Tool/function definitions for the model to call |
 | `toolChoice` | `withToolChoice()` | Control which tool the model should use |

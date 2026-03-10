@@ -7,6 +7,7 @@ use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Http\HttpClient;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Creation\InferenceDriverRegistry;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceRequest;
@@ -116,7 +117,7 @@ it('redacts request headers and body in InferenceFailed event payload', function
         $responseTranslator,
     ) extends BaseInferenceRequestDriver {};
 
-    expect(fn() => $driver->makeResponseFor(new InferenceRequest(messages: 'hello')))
+    expect(fn() => $driver->makeResponseFor(new InferenceRequest(messages: Messages::fromString('hello'))))
         ->toThrow(\Exception::class);
 
     expect($captured)->toHaveCount(1);

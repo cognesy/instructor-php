@@ -55,5 +55,13 @@ $summary = StructuredOutput::using('openai')
     ->get();
 
 dump($summary);
+
+assert($summary instanceof Summary);
+assert(!empty($summary->summary));
+assert(count($summary->keywords) === 5, 'Expected 5 keywords, got: ' . count($summary->keywords));
+foreach ($summary->keywords as $keyword) {
+    assert(is_string($keyword));
+    assert(!empty($keyword));
+}
 ?>
 ```

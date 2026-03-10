@@ -28,7 +28,7 @@ it('handles tool calls in non-streaming Gemini response', function () {
 
     $response = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('gemini'), httpClient: $http))
         ->withModel('gemini-1.5-flash')
-        ->withMessages('Search')
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Search'))
         ->response();
 
     expect($response->hasToolCalls())->toBeTrue();

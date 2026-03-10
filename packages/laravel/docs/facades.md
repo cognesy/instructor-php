@@ -59,10 +59,14 @@ $person = StructuredOutput::connection('anthropic')->with(
 All configuration can also be set with individual fluent methods. This is useful when you build requests dynamically.
 
 ```php
+use Cognesy\Instructor\StructuredOutputRuntime;
+
 $person = StructuredOutput::withMessages('John is 30')
     ->withResponseModel(PersonData::class)
     ->withModel('gpt-4o')
-    ->withMaxRetries(3)
+    ->withRuntime(
+        StructuredOutputRuntime::fromDefaults()->withMaxRetries(3)
+    )
     ->get();
 ```
 
@@ -98,12 +102,12 @@ $items = StructuredOutput::with(...)->getArray();
 | `fromConfig(LLMConfig $config)` | Use an explicit typed LLM config object |
 | `withRuntime(CanCreateStructuredOutput)` | Replace the runtime directly (advanced) |
 | `with(...)` | Configure extraction with all parameters at once |
-| `withMessages(...)` | Set input messages (string, array, or Message object) |
-| `withInput(mixed)` | Set arbitrary input data |
-| `withResponseModel(...)` | Set the response model class, object, or array schema |
+| `withMessages(...)` | Set the input messages |
+| `withInput(string\|array\|object)` | Set arbitrary input data |
+| `withResponseModel(string\|array\|object)` | Set the response model class, object, or array schema |
 | `withResponseClass(string)` | Set the response model by class name |
 | `withResponseObject(object)` | Set the response model by object instance |
-| `withResponseJsonSchema(array)` | Set the response model via raw JSON Schema |
+| `withResponseJsonSchema(array\|CanProvideJsonSchema)` | Set the response model via JSON Schema |
 | `withSystem(string)` | Set the system prompt |
 | `withPrompt(string)` | Set the user prompt template |
 | `withExamples(array)` | Set few-shot examples |
@@ -132,9 +136,10 @@ For raw LLM inference without structured output extraction. Use this when you ne
 
 ```php
 use Cognesy\Instructor\Laravel\Facades\Inference;
+use Cognesy\Messages\Messages;
 
 $response = Inference::with(
-    messages: 'What is the capital of France?',
+    messages: Messages::fromString('What is the capital of France?'),
 )->get();
 
 echo $response; // "The capital of France is Paris."
@@ -142,14 +147,16 @@ echo $response; // "The capital of France is Paris."
 
 ### With System Message
 
-Pass a full message array when you need fine-grained control over the conversation structure.
+Pass a `Messages` object when you need fine-grained control over the conversation structure.
 
 ```php
+use Cognesy\Messages\Messages;
+
 $response = Inference::with(
-    messages: [
+    messages: Messages::fromArray([
         ['role' => 'system', 'content' => 'You are a helpful assistant.'],
         ['role' => 'user', 'content' => 'Hello!'],
-    ],
+    ]),
 )->get();
 ```
 
@@ -158,9 +165,12 @@ $response = Inference::with(
 Request a JSON-formatted response and parse it directly into a PHP array.
 
 ```php
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
+
 $data = Inference::with(
-    messages: 'List 3 colors as JSON',
-    responseFormat: ['type' => 'json_object'],
+    messages: Messages::fromString('List 3 colors as JSON'),
+    responseFormat: ResponseFormat::jsonObject(),
 )->asJsonData();
 
 // ['colors' => ['red', 'green', 'blue']]
@@ -170,7 +180,7 @@ $data = Inference::with(
 
 ```php
 $response = Inference::connection('groq')->with(
-    messages: 'Explain quantum computing',
+    messages: Messages::fromString('Explain quantum computing'),
 )->get();
 ```
 
@@ -182,12 +192,12 @@ $response = Inference::connection('groq')->with(
 | `fromConfig(LLMConfig $config)` | Use an explicit typed LLM config object |
 | `withRuntime(CanCreateInference)` | Replace the runtime directly (advanced) |
 | `with(...)` | Configure with all parameters at once |
-| `withMessages(...)` | Set messages (string, array, or Message object) |
+| `withMessages(Messages)` | Set the messages |
 | `withModel(string)` | Override model |
 | `withMaxTokens(int)` | Override max tokens |
-| `withTools(array)` | Add tool/function definitions |
-| `withToolChoice(...)` | Set tool choice strategy |
-| `withResponseFormat(array)` | Set response format (e.g., JSON mode) |
+| `withTools(ToolDefinitions)` | Add tool/function definitions |
+| `withToolChoice(ToolChoice)` | Set tool choice strategy |
+| `withResponseFormat(ResponseFormat)` | Set response format (e.g., JSON mode) |
 | `withOptions(array)` | Set provider-specific options |
 | `withStreaming(bool)` | Enable or disable streaming |
 | `withCachedContext(...)` | Set a cached context for prompt caching |

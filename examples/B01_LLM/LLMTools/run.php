@@ -20,13 +20,15 @@ model generate a JSON object with specific structure of parameters.
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\Inference;
 
 $response = Inference::using('openai')
     ->with(
-        messages: [['role' => 'user', 'content' => 'What is capital of France? \
-           Respond with function call.']],
-        tools: [[
+        messages: Messages::fromString('What is capital of France? Respond with function call.'),
+        tools: ToolDefinitions::fromArray([[
             'type' => 'function',
             'function' => [
                 'name' => 'extract_data',
@@ -52,13 +54,8 @@ $response = Inference::using('openai')
                     'additionalProperties' => false,
                 ],
             ],
-        ]],
-        toolChoice: [
-            'type' => 'function',
-            'function' => [
-                'name' => 'extract_data'
-            ]
-        ],
+        ]]),
+        toolChoice: ToolChoice::specific('extract_data'),
         options: ['max_tokens' => 64],
     )
     ->response();

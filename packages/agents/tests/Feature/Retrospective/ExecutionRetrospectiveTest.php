@@ -16,7 +16,7 @@ use Cognesy\Agents\Hook\Enums\HookTrigger;
 use Cognesy\Agents\Hook\HookStack;
 use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
 use Cognesy\Agents\Tool\ToolExecutor;
-use Cognesy\Agents\Tool\Tools\MockTool;
+use Cognesy\Agents\Tool\Tools\FakeTool;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\ToolCalls;
@@ -103,7 +103,7 @@ describe('Execution Retrospective', function () {
     });
 
     it('rewinds messages to checkpoint and injects guidance', function () {
-        $searchTool = MockTool::returning('search', 'Search tool', 'result-A');
+        $searchTool = FakeTool::returning('search', 'Search tool', 'result-A');
 
         $loop = makeRetrospectiveLoop(
             inferenceResponses: [
@@ -161,7 +161,7 @@ describe('Execution Retrospective', function () {
     });
 
     it('rewinds to checkpoint 0 and clears all step messages', function () {
-        $searchTool = MockTool::returning('search', 'Search tool', 'found');
+        $searchTool = FakeTool::returning('search', 'Search tool', 'found');
 
         $loop = makeRetrospectiveLoop(
             inferenceResponses: [
@@ -202,7 +202,7 @@ describe('Execution Retrospective', function () {
     });
 
     it('respects maxRewinds limit', function () {
-        $searchTool = MockTool::returning('search', 'Search tool', 'found');
+        $searchTool = FakeTool::returning('search', 'Search tool', 'found');
 
         $loop = makeRetrospectiveLoop(
             inferenceResponses: [
@@ -235,7 +235,7 @@ describe('Execution Retrospective', function () {
     });
 
     it('resets checkpoint counter after rewind', function () {
-        $searchTool = MockTool::returning('search', 'Search tool', 'data');
+        $searchTool = FakeTool::returning('search', 'Search tool', 'data');
 
         $loop = makeRetrospectiveLoop(
             inferenceResponses: [

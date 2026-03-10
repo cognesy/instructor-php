@@ -55,7 +55,7 @@ $context = new AgentContext(
     store: new MessageStore(),                  // or null for empty store
     metadata: ['session_id' => 'abc'],          // array, Metadata instance, or null
     systemPrompt: 'You are a data analyst.',
-    responseFormat: $responseFormat,            // ResponseFormat instance, array, or null
+    responseFormat: $responseFormat,            // ResponseFormat instance or null
 );
 ```
 

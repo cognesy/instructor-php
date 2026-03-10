@@ -1,17 +1,20 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Instructor\Tests;
 
-use Cognesy\Config\Env;
 use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\HttpClient;
+use Cognesy\Instructor\Tests\Support\TestConfig;
 
 class MockHttp
 {
-    static public function get(array $args, ?string $provider = null) : CanSendHttpRequests {
-        $driver = new MockHttpDriver();
+    public static function get(array $args, ?string $provider = null): CanSendHttpRequests
+    {
+        $driver = new MockHttpDriver;
 
         // Auto-detect provider from config if not specified
         if ($provider === null) {
@@ -40,30 +43,21 @@ class MockHttp
         return HttpClient::fromDriver($driver);
     }
 
-    static private function detectProvider(): string {
-        // Load config to check default preset
-        $configPath = __DIR__ . '/Fixtures/Setup/config/llm.php';
-        if (file_exists($configPath)) {
-            $config = require $configPath;
-            $preset = $config['defaultPreset'] ?? 'openai';
-
-            // Map preset to provider type
-            if (isset($config['presets'][$preset]['providerType'])) {
-                return $config['presets'][$preset]['providerType'];
-            }
-        }
-
-        return 'openai'; // Default fallback
+    private static function detectProvider(): string
+    {
+        return TestConfig::llmDefaultProvider();
     }
 
-    static private function mockResponse(string $json, string $provider): array {
-        return match($provider) {
+    private static function mockResponse(string $json, string $provider): array
+    {
+        return match ($provider) {
             'anthropic' => self::mockAnthropicResponse($json),
             default => self::mockOpenAIResponse($json),
         };
     }
 
-    static private function mockAnthropicResponse(string $json): array {
+    private static function mockAnthropicResponse(string $json): array
+    {
         $data = json_decode($json, true);
 
         // Ensure data is decoded properly
@@ -73,67 +67,68 @@ class MockHttp
         }
 
         return [
-            "id" => "msg_01XFDUDYJgAACzvnptvVoYEL",
-            "type" => "message",
-            "role" => "assistant",
-            "model" => "claude-3-haiku-20240307",
-            "content" => [
+            'id' => 'msg_01XFDUDYJgAACzvnptvVoYEL',
+            'type' => 'message',
+            'role' => 'assistant',
+            'model' => 'claude-3-haiku-20240307',
+            'content' => [
                 [
-                    "type" => "tool_use",
-                    "id" => "toolu_01T1x1fJ34qAmk2tNTrN7Up6",
-                    "name" => "extracted_data",
-                    "input" => is_array($data) ? $data : json_decode($data, true),
-                ]
+                    'type' => 'tool_use',
+                    'id' => 'toolu_01T1x1fJ34qAmk2tNTrN7Up6',
+                    'name' => 'extracted_data',
+                    'input' => is_array($data) ? $data : json_decode($data, true),
+                ],
             ],
-            "stop_reason" => "end_turn",
-            "stop_sequence" => null,
-            "usage" => [
-                "input_tokens" => 95,
-                "output_tokens" => 9,
+            'stop_reason' => 'end_turn',
+            'stop_sequence' => null,
+            'usage' => [
+                'input_tokens' => 95,
+                'output_tokens' => 9,
             ],
         ];
     }
 
-    static private function mockOpenAIResponse(string $json) : array {
+    private static function mockOpenAIResponse(string $json): array
+    {
         return [
-            "id" => "chatcmpl-AGH2w25Kx4hNnqUgcxqcgnqrzfIaD",
-            "object" => "chat.completion",
-            "created" => 1728442138,
-            "model" => "gpt-4o-mini-2024-07-18",
-            "choices" => [
+            'id' => 'chatcmpl-AGH2w25Kx4hNnqUgcxqcgnqrzfIaD',
+            'object' => 'chat.completion',
+            'created' => 1728442138,
+            'model' => 'gpt-4o-mini-2024-07-18',
+            'choices' => [
                 0 => [
-                    "index" => 0,
-                    "message" => [
-                        "role" => "assistant",
-                        "content" => $json,
-                        "tool_calls" => [
+                    'index' => 0,
+                    'message' => [
+                        'role' => 'assistant',
+                        'content' => $json,
+                        'tool_calls' => [
                             0 => [
-                                "id" => "call_HGWji0nx7LQsRGGw1ckosq6S",
-                                "type" => "function",
-                                "function" => [
-                                    "name" => "extracted_data",
-                                    "arguments" => $json,
-                                ]
-                            ]
+                                'id' => 'call_HGWji0nx7LQsRGGw1ckosq6S',
+                                'type' => 'function',
+                                'function' => [
+                                    'name' => 'extracted_data',
+                                    'arguments' => $json,
+                                ],
+                            ],
                         ],
-                        "refusal" => null,
+                        'refusal' => null,
                     ],
-                    "logprobs" => null,
-                    "finish_reason" => "stop",
-                ]
-            ],
-            "usage" => [
-                "prompt_tokens" => 95,
-                "completion_tokens" => 9,
-                "total_tokens" => 104,
-                "prompt_tokens_details" => [
-                    "cached_tokens" => 0,
-                ],
-                "completion_tokens_details" => [
-                    "reasoning_tokens" => 0,
+                    'logprobs' => null,
+                    'finish_reason' => 'stop',
                 ],
             ],
-            "system_fingerprint" => "fp_f85bea6784",
+            'usage' => [
+                'prompt_tokens' => 95,
+                'completion_tokens' => 9,
+                'total_tokens' => 104,
+                'prompt_tokens_details' => [
+                    'cached_tokens' => 0,
+                ],
+                'completion_tokens_details' => [
+                    'reasoning_tokens' => 0,
+                ],
+            ],
+            'system_fingerprint' => 'fp_f85bea6784',
         ];
     }
 }
