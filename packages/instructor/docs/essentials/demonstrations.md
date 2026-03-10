@@ -3,15 +3,136 @@ title: Demonstrations
 description: 'Guide the model with a small number of examples.'
 ---
 
-Use demonstrations when the shape is clear but the extraction style benefits from one or two examples.
+Demonstrations (few-shot examples) help the model understand the style and structure of
+the output you expect. They are especially useful when the extraction task is ambiguous
+or when you want consistent formatting across responses.
+
+
+## When To Use Examples
+
+Examples are most valuable in `OutputMode::Json` and `OutputMode::MdJson` modes, where
+the model relies on the prompt to understand the expected output shape. In `OutputMode::Tools`,
+the schema itself provides strong guidance, but examples can still help clarify edge cases
+or normalize output style.
+
+Keep examples short and representative. They should clarify the task, not replace the prompt.
+
+
+## The `Example` Class
+
+Each example pairs an input with the expected output. The `input` is a string describing
+the scenario, and the `output` is an array representing the correct extraction result:
 
 ```php
 use Cognesy\Instructor\Extras\Example\Example;
+use Cognesy\Instructor\StructuredOutput;
 
-$structured = (new StructuredOutput)
-    ->withExamples([
-        Example::fromText('Jane, 31', ['name' => 'Jane', 'age' => 31]),
-    ]);
+class User {
+    public int $age;
+    public string $name;
+}
+
+$user = (new StructuredOutput)
+    ->with(
+        messages: 'Our user Jason is 25 years old.',
+        responseModel: User::class,
+        examples: [
+            new Example(
+                input: 'John is 50 and works as a teacher.',
+                output: ['name' => 'John', 'age' => 50],
+            ),
+            new Example(
+                input: 'We recently hired Ian, who is 27 years old.',
+                output: ['name' => 'Ian', 'age' => 27],
+            ),
+        ],
+    )
+    ->get();
 ```
 
-Keep examples short and representative. They should clarify the task, not replace the prompt.
+Instructor appends the examples to the prompt, rendering each output array as JSON.
+
+
+## Factory Methods
+
+The `Example` class provides several factory methods for different input formats:
+
+### `fromText()` - String Input
+
+The most common form. Equivalent to the constructor:
+
+```php
+$example = Example::fromText(
+    input: 'Ian is 27 years old.',
+    output: ['name' => 'Ian', 'age' => 27],
+);
+```
+
+### `fromChat()` - Chat Messages
+
+Use when you want to demonstrate a multi-turn conversation as input:
+
+```php
+$example = Example::fromChat(
+    input: [
+        ['role' => 'user', 'content' => 'Ian is 27 years old.'],
+    ],
+    output: ['name' => 'Ian', 'age' => 27],
+);
+```
+
+### `fromData()` - Structured Data
+
+Accepts any data type as input. Objects and arrays are automatically serialized to JSON:
+
+```php
+$example = Example::fromData(
+    input: ['firstName' => 'Ian', 'lastName' => 'Brown', 'birthDate' => '1994-01-01'],
+    output: ['name' => 'Ian Brown', 'age' => 27],
+);
+```
+
+
+## Using The Fluent API
+
+You can also set examples with the fluent `withExamples()` method:
+
+```php
+$user = (new StructuredOutput)
+    ->withExamples([
+        Example::fromText('Jane, 31', ['name' => 'Jane', 'age' => 31]),
+    ])
+    ->with(
+        messages: 'Our user Jason is 25 years old.',
+        responseModel: User::class,
+    )
+    ->get();
+```
+
+
+## Custom Templates
+
+By default, Instructor formats each example using a built-in template. You can override
+this with a custom template string that uses `{input}` and `{output}` placeholders:
+
+```php
+$example = new Example(
+    input: 'John is 50 and works as a teacher.',
+    output: ['name' => 'John', 'age' => 50],
+    template: "EXAMPLE:\n{input} => {output}\n",
+);
+```
+
+When the input or output is an array, Instructor automatically converts it to a JSON
+string before replacing the placeholders.
+
+
+## Best Practices
+
+- **Use one or two examples** for most tasks. More is rarely better -- it adds tokens
+  without proportional improvement.
+- **Make examples diverse.** Show different edge cases rather than repeating similar inputs.
+- **Match the real task.** Examples should reflect the actual complexity and format of your
+  production data.
+- **Keep output arrays minimal.** Include only the fields relevant to the extraction to
+  avoid confusing the model.

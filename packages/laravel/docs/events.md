@@ -1,8 +1,8 @@
 # Events
 
-Instructor dispatches events throughout the extraction lifecycle. These events are bridged to Laravel's event system, allowing you to listen and respond using standard Laravel patterns.
+Instructor dispatches events throughout the extraction and inference lifecycle. These events are automatically bridged to Laravel's event system by the `LaravelEventDispatcher`, allowing you to listen and respond using standard Laravel patterns -- listeners, subscribers, closures, and queued handlers.
 
-The Laravel bridge is implemented by `Cognesy\Instructor\Laravel\Events\LaravelEventDispatcher` and is part of `packages/laravel`, not `packages/events`.
+The bridge is implemented by `Cognesy\Instructor\Laravel\Events\LaravelEventDispatcher`, which lives in the `packages/laravel` package. It wraps Laravel's native `Illuminate\Contracts\Events\Dispatcher` and forwards Instructor events to it based on your configuration.
 
 ## Event Bridge Configuration
 
@@ -21,6 +21,10 @@ Configure event bridging in `config/instructor.php`:
     ],
 ],
 ```
+
+When `bridge_events` is empty (the default), every Instructor event is forwarded to Laravel's dispatcher. To reduce overhead in production, list only the event classes your listeners actually need.
+
+The bridge uses `instanceof` matching, so listing a parent event class also bridges its subclasses.
 
 ## Available Events
 
@@ -54,7 +58,7 @@ Configure event bridging in `config/instructor.php`:
 
 ### Using Event Listeners
 
-Create a listener:
+Create a dedicated listener class and register it with Laravel's event system.
 
 ```php
 // app/Listeners/LogExtractionComplete.php
@@ -97,7 +101,7 @@ class EventServiceProvider extends ServiceProvider
 
 ### Using Closures
 
-Register listeners in a service provider:
+For lightweight listeners, register closures directly in a service provider's `boot` method.
 
 ```php
 // app/Providers/AppServiceProvider.php
@@ -118,6 +122,8 @@ public function boot(): void
 ```
 
 ### Using Event Subscribers
+
+Group related event handlers into a single subscriber class. This is convenient when you need to handle multiple Instructor events together.
 
 ```php
 // app/Listeners/InstructorEventSubscriber.php
@@ -232,7 +238,7 @@ Event::listen(ExtractionComplete::class, function ($event) {
 
 ### Queued Event Listeners
 
-For heavy processing, use queued listeners:
+For CPU-intensive or I/O-heavy processing, implement `ShouldQueue` to push the work onto a queue instead of running it inline.
 
 ```php
 // app/Listeners/ProcessExtractionAnalytics.php
@@ -247,14 +253,14 @@ class ProcessExtractionAnalytics implements ShouldQueue
 
     public function handle(ExtractionComplete $event): void
     {
-        // Heavy analytics processing
+        // Heavy analytics processing runs on the queue
     }
 }
 ```
 
 ## Wiretap (Direct Event Handling)
 
-For direct access to all events without Laravel's dispatcher:
+The `wiretap` method provides direct access to the raw event stream without going through Laravel's dispatcher. This is useful for low-level debugging or when you need to observe every internal event.
 
 ```php
 use Cognesy\Instructor\Laravel\Facades\StructuredOutput;
@@ -263,7 +269,7 @@ use Cognesy\Polyglot\Inference\LLMProvider;
 
 $runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
     ->wiretap(function ($event) {
-        // Called for every event
+        // Called for every event in the pipeline
         logger()->debug('Event: ' . get_class($event));
     });
 
@@ -274,9 +280,11 @@ $person = StructuredOutput::withRuntime($runtime)->with(
 ->get();
 ```
 
+The `LaravelEventDispatcher` itself also supports `wiretap` for registering global listeners that receive every event, regardless of class. These listeners run at the lowest priority after all class-specific and bridged listeners have executed.
+
 ## Disabling Event Bridge
 
-To disable event bridging (e.g., for performance):
+To disable event bridging entirely (for example, in high-throughput scenarios where the overhead is unacceptable):
 
 ```php
 // config/instructor.php
@@ -291,9 +299,11 @@ Or via environment variable:
 INSTRUCTOR_DISPATCH_EVENTS=false
 ```
 
+Disabling the bridge only stops events from being forwarded to Laravel's dispatcher. Internal Instructor event listeners and wiretaps continue to work normally.
+
 ## Testing Events
 
-Assert events were dispatched:
+Use Laravel's `Event::fake()` to assert that specific events were dispatched during a test.
 
 ```php
 use Cognesy\Instructor\Events\ExtractionComplete;
@@ -312,7 +322,7 @@ public function test_dispatches_extraction_event(): void
 }
 ```
 
-Assert event properties:
+Assert event properties with a closure:
 
 ```php
 Event::assertDispatched(ExtractionComplete::class, function ($event) {

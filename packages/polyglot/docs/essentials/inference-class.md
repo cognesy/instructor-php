@@ -1,48 +1,206 @@
 ---
 title: Inference Class
-description: Public entrypoints and shortcuts on `Inference`.
+description: The primary facade for making LLM requests -- creation, configuration, and execution.
 ---
 
-`Inference` is a thin facade over `InferenceRuntime`.
+The `Inference` class is a thin, immutable facade over `InferenceRuntime`. It provides the
+unified entry point for configuring providers, building requests, and retrieving responses
+from any supported LLM.
 
-## Create an Instance
+## Creating an Instance
 
-Use the entrypoint that matches your level of control:
+Choose the factory method that matches your level of control:
 
-- `new Inference()` for the default runtime
-- `Inference::using('openai')` for a preset
-- `Inference::fromConfig($config)` for explicit config
-- `Inference::fromProvider($provider)` for provider objects
-- `Inference::fromRuntime($runtime)` for a fully assembled runtime
+```php
+<?php
+use Cognesy\Polyglot\Inference\Inference;
 
-## Configure a Request
+// Use a named preset from your configuration
+$inference = Inference::using('openai');
 
-The fluent request API is the public surface:
+// Use the default provider
+$inference = new Inference();
 
-- `withMessages(...)`
-- `withModel(...)`
-- `withTools(...)`
-- `withToolChoice(...)`
-- `withResponseFormat(...)`
-- `withOptions(...)`
-- `withStreaming(...)`
-- `withMaxTokens(...)`
-- `withCachedContext(...)`
-- `withRetryPolicy(...)`
-- `withResponseCachePolicy(...)`
+// Explicit configuration object
+$inference = Inference::fromConfig($config);
 
-You can also use the combined `with(...)` method when that reads better.
+// From a provider instance
+$inference = Inference::fromProvider($provider);
 
-## Execute
+// From a fully assembled runtime
+$inference = Inference::fromRuntime($runtime);
+```
 
-These shortcuts all create a pending request and execute it on demand:
+### Presets
 
-- `get()`
-- `response()`
-- `asJson()`
-- `asJsonData()`
-- `asToolCallJson()`
-- `asToolCallJsonData()`
-- `stream()`
+The most common pattern is `Inference::using()`, which loads a named preset from your
+configuration files. Each preset defines the provider type, API key, base URL, default
+model, and other connection details:
 
-If you want the lazy handle first, call `create()`. It returns `PendingInference`.
+```php
+// Use different providers by switching the preset name
+$openai    = Inference::using('openai');
+$anthropic = Inference::using('anthropic');
+$ollama    = Inference::using('ollama');
+```
+
+## Configuring a Request
+
+The fluent API lets you build requests step by step. Every method returns a new immutable
+instance, so you can safely branch from a shared configuration:
+
+### Messages and Model
+
+```php
+$inference = Inference::using('openai')
+    ->withMessages('Explain dependency injection in one paragraph.')
+    ->withModel('gpt-4.1-nano');
+```
+
+### Tools and Response Format
+
+```php
+$inference = Inference::using('openai')
+    ->withTools($toolDefinitions)
+    ->withToolChoice('auto')
+    ->withResponseFormat(['type' => 'json_object']);
+```
+
+### Streaming and Token Limits
+
+```php
+$inference = Inference::using('openai')
+    ->withStreaming(true)
+    ->withMaxTokens(256);
+```
+
+### Provider-Specific Options
+
+```php
+$inference = Inference::using('openai')
+    ->withOptions(['temperature' => 0.5, 'top_p' => 0.9]);
+```
+
+### The Combined `with()` Method
+
+When you prefer a single call, use `with()` to set multiple fields at once:
+
+```php
+$inference = Inference::using('openai')->with(
+    messages: 'Hello',
+    model: 'gpt-4.1-nano',
+    tools: [],
+    toolChoice: 'auto',
+    responseFormat: ['type' => 'text'],
+    options: ['temperature' => 0.7],
+);
+```
+
+### Full Method Reference
+
+| Method                        | Purpose                                       |
+|-------------------------------|-----------------------------------------------|
+| `withMessages(...)`           | Set conversation messages                     |
+| `withModel(...)`              | Override the model                            |
+| `withTools(...)`              | Attach tool/function definitions              |
+| `withToolChoice(...)`         | Control tool selection strategy               |
+| `withResponseFormat(...)`     | Specify the response format                   |
+| `withOptions(...)`            | Set provider-specific options                 |
+| `withStreaming(...)`          | Enable or disable streaming                   |
+| `withMaxTokens(...)`         | Set maximum token count                       |
+| `withCachedContext(...)`      | Attach reusable cached context                |
+| `withRetryPolicy(...)`       | Configure retry behavior                      |
+| `withResponseCachePolicy(...)` | Configure response caching                  |
+| `withRequest(...)`           | Load all fields from an `InferenceRequest`    |
+| `withRuntime(...)`           | Replace the underlying runtime                |
+
+## Executing Requests
+
+### Response Shortcuts
+
+These methods build the request, execute it, and return the result in a single step:
+
+```php
+<?php
+use Cognesy\Polyglot\Inference\Inference;
+
+$inference = Inference::using('openai')
+    ->withMessages('What is PHP?')
+    ->withModel('gpt-4.1-nano');
+
+// Plain text content
+$text = $inference->get();
+
+// Full InferenceResponse object (with usage, finish reason, etc.)
+$response = $inference->response();
+
+// JSON string extracted from the response
+$json = $inference->asJson();
+
+// Parsed JSON as an associative array
+$data = $inference->asJsonData();
+
+// JSON from a tool call response
+$toolJson = $inference->asToolCallJson();
+
+// Parsed tool call JSON as an array
+$toolData = $inference->asToolCallJsonData();
+```
+
+### Streaming
+
+To receive partial results as they arrive from the provider:
+
+```php
+$stream = Inference::using('openai')
+    ->withMessages('Write a short story about a robot.')
+    ->stream();
+
+foreach ($stream as $partial) {
+    echo $partial->contentDelta;
+}
+```
+
+### The Lazy Handle: `PendingInference`
+
+If you need to defer execution or pass the handle to another part of your system,
+call `create()` to get a `PendingInference` instance. Execution happens only when
+you call a response method on it:
+
+```php
+$pending = Inference::using('openai')
+    ->withMessages('Hello')
+    ->create();
+
+// Nothing has been sent to the provider yet.
+// Execution happens here:
+$text = $pending->get();
+```
+
+`PendingInference` exposes the same response methods as `Inference`: `get()`,
+`response()`, `asJson()`, `asJsonData()`, `asToolCallJson()`, `asToolCallJsonData()`,
+and `stream()`.
+
+## Driver Registration
+
+Register custom drivers for providers that are not bundled with Polyglot:
+
+```php
+use Cognesy\Polyglot\Inference\Inference;
+
+// Register with a class name
+Inference::registerDriver('custom-provider', CustomDriver::class);
+
+// Register with a factory callable
+Inference::registerDriver('custom-provider', function ($config, $httpClient) {
+    return new CustomDriver($config, $httpClient);
+});
+```
+
+Once registered, the driver is available through the standard API:
+
+```php
+$response = Inference::using('custom-provider')
+    ->withMessages('Hello from a custom driver.')
+    ->get();
+```

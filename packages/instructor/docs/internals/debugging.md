@@ -3,12 +3,152 @@ title: Debugging
 description: 'The fastest ways to inspect what happened.'
 ---
 
-When a request does not behave as expected, start with the smallest useful inspection point.
+## Overview
 
-- `response()` for parsed value plus raw response
-- `rawResponse()` for provider output
-- `execution()` on `PendingStructuredOutput` for execution metadata
-- `responses()` on `StructuredOutputStream` for streaming snapshots
-- runtime events for deeper tracing
+When a request does not behave as expected, Instructor provides several inspection
+points at different levels of detail. Start with the smallest useful tool and
+escalate as needed.
 
-In most cases, `response()` or a runtime wiretap is enough.
+
+## Quick Inspection Points
+
+### Response Envelope
+
+The `response()` method returns a `StructuredOutputResponse` that pairs the parsed
+value with the raw provider response:
+
+```php
+$response = (new StructuredOutput())
+    ->with(messages: '...', responseModel: User::class)
+    ->response();
+
+// The deserialized value
+dump($response->value());
+
+// The raw inference response from the provider
+dump($response->rawResponse());
+
+// Token usage statistics
+dump($response->usage());
+
+// Why the model stopped generating
+dump($response->finishReason());
+```
+
+### Raw Provider Response
+
+If you only need the raw inference response without deserialization metadata:
+
+```php
+$raw = (new StructuredOutput())
+    ->with(messages: '...', responseModel: User::class)
+    ->rawResponse();
+
+dump($raw->content());
+dump($raw->toolCalls());
+```
+
+### Execution Metadata
+
+Access the execution object from a `PendingStructuredOutput` to inspect the request
+configuration, attempt history, and output mode:
+
+```php
+$pending = (new StructuredOutput())
+    ->with(messages: '...', responseModel: User::class)
+    ->create();
+
+$execution = $pending->execution();
+dump($execution->outputMode());
+dump($execution->request());
+```
+
+### Streaming Snapshots
+
+When streaming, use `responses()` to inspect each partial snapshot:
+
+```php
+$stream = (new StructuredOutput())
+    ->with(messages: '...', responseModel: User::class)
+    ->stream();
+
+foreach ($stream->responses() as $snapshot) {
+    echo $snapshot->isPartial() ? 'partial' : 'final';
+    dump($snapshot->value());
+}
+```
+
+
+## Runtime Events
+
+For deeper tracing, attach a wiretap to the runtime. This gives you visibility
+into every internal stage -- schema building, inference calls, extraction,
+deserialization, validation, and transformation:
+
+```php
+$runtime = StructuredOutputRuntime::fromDefaults()
+    ->wiretap(fn($event) => $event->print());
+
+$result = (new StructuredOutput($runtime))
+    ->with(messages: '...', responseModel: User::class)
+    ->get();
+```
+
+For targeted debugging, listen to specific event types:
+
+```php
+use Cognesy\Instructor\Events\Response\ResponseValidationFailed;
+use Cognesy\Instructor\Events\Response\ResponseDeserializationFailed;
+use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
+
+$runtime = StructuredOutputRuntime::fromDefaults()
+    ->onEvent(ResponseValidationFailed::class, fn($e) => dump('Validation failed:', $e->data))
+    ->onEvent(ResponseDeserializationFailed::class, fn($e) => dump('Deserialization failed:', $e->data))
+    ->onEvent(NewValidationRecoveryAttempt::class, fn($e) => dump('Retrying...', $e->data));
+```
+
+See the [Events](events.md) page for the full list of available event classes.
+
+
+## JSON Output Inspection
+
+When you need to see the raw JSON that came back from the provider (before
+deserialization), use the `toJson()` or `toArray()` methods on `PendingStructuredOutput`:
+
+```php
+$pending = (new StructuredOutput())
+    ->with(messages: '...', responseModel: User::class)
+    ->create();
+
+// Raw JSON string
+echo $pending->toJson();
+
+// Parsed array
+dump($pending->toArray());
+```
+
+
+## Common Debugging Scenarios
+
+### Wrong or Missing Fields
+
+Check that your response model class has the correct property types and names.
+Use `wiretap()` to inspect the raw JSON from the provider and compare it with your
+schema expectations.
+
+### Validation Failures Exhausting Retries
+
+Listen for `ResponseValidationFailed` events to see exactly which validation rules
+are failing. Consider increasing `maxRetries` or relaxing validation constraints.
+
+### Unexpected Deserialization Errors
+
+Listen for `ResponseDeserializationFailed` to see the raw data that could not be
+mapped to your class. This often reveals type mismatches between the schema and
+the actual model response.
+
+### Streaming Not Producing Updates
+
+Verify that `withStreaming(true)` is set and that you are consuming the stream
+(e.g., iterating `partials()` or calling `finalValue()`). The stream is lazy --
+no data flows until you start reading.

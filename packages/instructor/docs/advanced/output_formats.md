@@ -3,20 +3,201 @@ title: Output Formats
 description: 'Keep one schema and choose how the result is materialized.'
 ---
 
-The response model defines the schema. Output format controls how the result is returned.
+By default, Instructor deserializes LLM responses into PHP objects based on your response model class. The Output Format API lets you change this behavior while keeping the same schema definition. This decouples **schema specification** (what structure the LLM should produce) from **output format** (how you receive the result).
 
-## Built-In Options
+```php
+use Cognesy\Instructor\StructuredOutput;
 
-- `intoArray()`
-- `intoInstanceOf(...)`
-- `intoObject(...)`
+// Schema from User class, output as object (default)
+$user = (new StructuredOutput)
+    ->with(messages: $text, responseModel: User::class)
+    ->get();
+
+// Same schema, output as array
+$data = (new StructuredOutput)
+    ->withResponseClass(User::class)
+    ->intoArray()
+    ->withMessages($text)
+    ->get();
+```
+
+## Available Output Formats
+
+### intoArray()
+
+Returns extracted data as a plain associative array instead of an object.
 
 ```php
 $data = (new StructuredOutput)
     ->withResponseClass(User::class)
     ->intoArray()
-    ->withMessages('Jane is 31 years old.')
+    ->with(messages: 'Extract: John Doe, 30 years old')
+    ->get();
+
+// Result: ['name' => 'John Doe', 'age' => 30]
+```
+
+This is useful for database insertion, JSON API responses, array manipulation, or when integrating with code that expects arrays.
+
+```php
+// Store directly in database
+DB::table('users')->insert($data);
+
+// Or return as JSON API response
+return response()->json($data);
+```
+
+### intoInstanceOf()
+
+Uses one class for the schema definition and a different class for the output object.
+
+```php
+class UserProfile {
+    public string $fullName;
+    public int $age;
+    public string $email;
+    public string $phoneNumber;
+    public string $address;
+}
+
+class UserDTO {
+    public function __construct(
+        public string $fullName = '',
+        public string $email = '',
+    ) {}
+}
+
+$user = (new StructuredOutput)
+    ->withResponseClass(UserProfile::class)
+    ->intoInstanceOf(UserDTO::class)
+    ->with(messages: 'Extract: John Smith, 30, john@example.com, 555-1234, 123 Main St')
+    ->get();
+
+// $user is UserDTO with only fullName and email populated
+```
+
+The LLM still sees all five fields from `UserProfile`, ensuring thorough extraction. The output is then hydrated into the simpler `UserDTO`. This is valuable when you want to separate API contracts from internal models, simplify complex extraction results, or decouple domain models from presentation layers.
+
+### intoObject()
+
+Provides a custom object that controls its own deserialization from the extracted array. The object must implement the `CanDeserializeSelf` interface.
+
+```php
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
+
+class Money implements CanDeserializeSelf
+{
+    public function __construct(
+        private int $amountInCents = 0,
+        private string $currency = 'USD',
+    ) {}
+
+    public function fromArray(array $data): static {
+        return new self(
+            amountInCents: (int)(($data['amount'] ?? 0) * 100),
+            currency: strtoupper($data['currency'] ?? 'USD'),
+        );
+    }
+}
+
+$price = (new StructuredOutput)
+    ->withResponseClass(Product::class)
+    ->intoObject(new Money())
+    ->with(messages: 'Extract price: $19.99 USD')
     ->get();
 ```
 
-Use this when one schema should serve multiple consumers.
+This is particularly useful with the built-in `Scalar` adapter for extracting single values.
+
+```php
+use Cognesy\Instructor\Extras\Scalar\Scalar;
+
+$rating = (new StructuredOutput)
+    ->with(
+        messages: 'Rate this review: "Absolutely fantastic product!"',
+        responseModel: Scalar::integer(
+            name: 'rating',
+            description: 'Rating from 1 to 5',
+        ),
+    )
+    ->get();
+
+// Result: 5 (integer)
+```
+
+## Streaming with Output Formats
+
+Output formats work seamlessly with streaming. During streaming, partial updates are always returned as objects (for validation and deduplication). The final result respects the output format you specified.
+
+```php
+$stream = (new StructuredOutput)
+    ->withResponseClass(Article::class)
+    ->intoArray()
+    ->with(messages: 'Extract article data')
+    ->stream();
+
+foreach ($stream->partials() as $partial) {
+    // $partial is an Article object during streaming
+}
+
+$finalArticle = $stream->finalValue();
+// Returns: ['title' => '...', 'author' => '...', 'content' => '...']
+```
+
+## Comparison
+
+| Feature | Default (Object) | intoArray() | intoInstanceOf() | intoObject() |
+|---------|------------------|-------------|------------------|--------------|
+| **Output type** | Schema class | Array | Target class | Custom object |
+| **Validation** | Yes | Skipped | Yes | Custom |
+| **Streaming partials** | Object | Object | Object | Object |
+| **Streaming final** | Object | Array | Target class | Custom object |
+
+## Common Patterns
+
+### Conditional Deserialization
+
+Inspect data before choosing the target class.
+
+```php
+$data = (new StructuredOutput)
+    ->withResponseClass(User::class)
+    ->intoArray()
+    ->with(messages: 'Extract user')
+    ->get();
+
+$user = $data['age'] < 18
+    ? new MinorUser(...$data)
+    : new AdultUser(...$data);
+```
+
+### Multi-Layer Architecture
+
+Use a rich domain model for extraction and a simplified DTO for your application layer.
+
+```php
+class OrderDomain {
+    public string $orderId;
+    public CustomerInfo $customer;
+    public array $items;
+    public PaymentDetails $payment;
+}
+
+class OrderDTO {
+    public function __construct(
+        public string $orderId,
+        public string $customerName,
+        public float $total,
+    ) {}
+}
+
+$order = (new StructuredOutput)
+    ->withResponseClass(OrderDomain::class)
+    ->intoInstanceOf(OrderDTO::class)
+    ->with(messages: 'Extract order details')
+    ->get();
+```
+
+## Pluggable Extraction
+
+Instructor uses a pluggable extraction pipeline to convert raw LLM responses into canonical arrays. You can customize this pipeline on the `StructuredOutputRuntime` to support non-standard response formats. See [JSON Extraction](json_extraction.md) for details on the extraction pipeline and how to write custom extractors.

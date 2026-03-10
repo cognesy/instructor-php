@@ -5,33 +5,77 @@ description: 'Overview of the Agents SDK for building LLM-powered agents that re
 
 # Introduction
 
-The Agents package provides a minimal, composable foundation for building LLM-powered agents that reason and act through tool use.
+The Agents package provides a minimal, composable foundation for building LLM-powered agents in PHP. An agent, at its core, is a **loop**: send messages to a language model, receive a response that may include tool calls, execute those tools, feed the results back into the conversation, and repeat until the model produces a final answer. This simple pattern is powerful enough to drive everything from single-turn question answering to multi-step autonomous workflows.
 
-At its core, an agent is a **loop**: send messages to an LLM, receive a response (possibly with tool calls), execute those tools, feed results back, and repeat until done.
+The package is designed to stay out of your way. There are no heavyweight frameworks to learn, no mandatory dependency injection containers, and no magic. You construct an execution loop, hand it some state, and get back a result. Everything in between -- tool execution, lifecycle hooks, stop conditions -- is explicit and composable.
 
 ## Key Design Principles
 
-- **Immutable state** - `AgentState` is a readonly value object. Every mutation returns a new instance.
-- **Pluggable drivers** - Swap between `ToolCallingDriver` (native function calling) and `ReActDriver` (Thought/Action/Observation) without changing your agent code.
-- **Lifecycle hooks** - Intercept any phase of execution to add guards, logging, or custom behavior.
-- **Testable by default** - `FakeAgentDriver` lets you script deterministic scenarios without LLM calls.
+### Immutable State
 
-## Two Layers
+`AgentState` is a readonly value object. Every operation that modifies state -- adding a message, recording a step, signaling a stop -- returns a new instance, leaving the original untouched. This makes agent execution predictable and easy to reason about: you can always inspect any prior state without worrying that a later step has mutated it. It also makes agents inherently safe for persistence and resumption, since state can be serialized at any point without race conditions.
 
-**AgentLoop** is the immutable execution engine. It holds tools, a driver, an interceptor, and an event handler — all set at construction time. It takes an `AgentState`, runs the step loop, and returns the final state. Use it directly for simple agents or full manual control.
+### Pluggable Drivers
 
-**AgentBuilder** is the composition layer. It assembles an `AgentLoop` from pluggable capabilities (`Use*` classes) that install tools, hooks, guards, drivers, and compilers. Use it when you want modular, reusable configuration.
+The execution engine does not know how to talk to an LLM. That responsibility belongs to a **driver**. The default `ToolCallingDriver` uses native function-calling APIs (OpenAI, Anthropic, etc.), while the `ReActDriver` implements the Thought/Action/Observation reasoning pattern using structured output. You can swap drivers without changing any of your agent code, tools, or hooks -- the `AgentLoop` treats them identically through the `CanUseTools` interface.
 
-**Agent Templates** let you define agents as data (`AgentDefinition`) and instantiate loops/states from markdown, YAML, or JSON.
+### Lifecycle Hooks
 
-**Session Runtime** lets you persist agent sessions and "wake up" agents across processes by applying typed actions on stored session state.
+Every phase of execution fires a lifecycle hook: before/after execution, before/after each step, before/after each tool call, on stop, and on error. Hooks can inspect and transform the agent state, inject messages, enforce resource limits, or block tool calls entirely. The built-in guard hooks (`StepsLimitHook`, `TokenUsageLimitHook`, `ExecutionTimeLimitHook`) are implemented this way, and you can add your own using the same mechanism.
+
+### Testable by Default
+
+`FakeAgentDriver` lets you script deterministic scenarios without making any LLM calls. You define a sequence of `ScenarioStep` objects -- each specifying a response, optional tool calls, and a step type -- and the driver replays them in order. This means your agent tests are fast, deterministic, and free of API dependencies.
+
+## Architecture Overview
+
+The package is organized into two layers, with two additional systems built on top:
+
+### AgentLoop -- The Execution Engine
+
+`AgentLoop` is the immutable execution engine at the heart of the package. It holds a set of tools, a driver, an interceptor (hook stack), and an event handler -- all set at construction time. You pass it an `AgentState`, and it runs the step loop until a stop condition is met, returning the final state.
+
+The loop's execution cycle works as follows:
+
+1. **Before execution** -- fire lifecycle hooks, ensure a fresh execution context
+2. **Before step** -- fire hooks (guards check limits here)
+3. **Use tools** -- the driver sends messages to the LLM, receives a response, and executes any requested tool calls
+4. **After step** -- fire hooks (state inspection, summarization, etc.)
+5. **Evaluate continuation** -- check whether the loop should stop (no tool calls, stop signal received, or continuation explicitly requested)
+6. **Repeat** from step 2, or stop and fire after-execution hooks
+
+Use `AgentLoop` directly when you want full control or when your agent is simple enough that manual construction is clearer than composition.
+
+### AgentBuilder -- The Composition Layer
+
+`AgentBuilder` assembles an `AgentLoop` from pluggable **capabilities** -- small, reusable classes that install tools, hooks, guards, drivers, and compilers. Each capability implements `CanProvideAgentCapability` and knows how to configure itself onto an agent. This keeps complex agent setups modular: you can mix and match capabilities like `UseBash`, `UseGuards`, `UseFileTools`, `UseSummarization`, and more, without any of them knowing about each other.
+
+Use `AgentBuilder` when your agent needs multiple capabilities and you want to keep the configuration declarative and composable.
+
+### Agent Templates
+
+When agent configuration should be data-driven rather than code-driven, **Agent Templates** let you define agents as `AgentDefinition` objects and instantiate loops and states from Markdown, YAML, or JSON files. This is useful when non-developers need to configure agents, or when you want to store agent definitions alongside prompts and tool configurations in version-controlled files.
+
+### Session Runtime
+
+When agent state must persist across HTTP requests, CLI invocations, or background processes, the **Session Runtime** provides a persistence layer. It stores `AgentSession` objects in pluggable stores (file-based or in-memory), and lets you apply typed actions (`SendMessage`, `ChangeModel`, `ForkSession`, etc.) to stored sessions. This is the foundation for building chat interfaces, long-running background agents, and multi-turn workflows.
+
+## Quick Comparison
 
 ```php
-// Direct: AgentLoop
-$loop = AgentLoop::default()->withTool($myTool);
+use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Bash\UseBash;
+use Cognesy\Agents\Capability\Core\UseGuards;
 
-// Composed: AgentBuilder
-$agent = AgentBuilder::base()
+// Direct: construct and execute in three lines
+$loop = AgentLoop::default()->withTool($myTool);
+$state = AgentState::empty()->withUserMessage('Hello!');
+$result = $loop->execute($state);
+
+// Composed: declarative capability stacking
+$loop = AgentBuilder::base()
     ->withCapability(new UseBash())
     ->withCapability(new UseGuards(maxSteps: 10))
     ->build();
@@ -40,25 +84,30 @@ $agent = AgentBuilder::base()
 ## Package Structure
 
 ```
-AgentLoop.php         # Core execution loop
-CanControlAgentLoop   # Loop interface (execute/iterate)
-Broadcasting/         # AgentEventBroadcaster, BroadcastConfig, CanBroadcastAgentEvents
-Builder/              # AgentBuilder, AgentConfigurator, capability contracts
-Capability/           # Use* capabilities (Core, Bash, File, Subagent, etc.)
-Collections/          # Tools, AgentSteps, StepExecutions, ToolExecutions, NameList
-Context/              # AgentContext, message compilers (CanCompileMessages)
-Continuation/         # StopSignal, StopReason, ExecutionContinuation
-Data/                 # AgentState, ExecutionState, AgentStep, ExecutionBudget
-Drivers/              # ToolCallingDriver, ReActDriver, FakeAgentDriver
-Enums/                # AgentStepType, ExecutionStatus
-Events/               # Agent event system
-Exceptions/           # Domain exceptions
-Hook/                 # HookStack, HookInterface, HookContext, built-in hooks
-Interception/         # CanInterceptAgentLifecycle, PassThroughInterceptor
-Template/             # Agent definitions, parsers, registry
-Session/              # AgentSession, SessionRuntime, actions, repositories, stores
-Tool/                 # ToolInterface, BaseTool, FunctionTool, ToolExecutor
+AgentLoop.php             # Core execution loop
+CanControlAgentLoop       # Loop interface (execute / iterate)
 
+Builder/                  # AgentBuilder, AgentConfigurator, capability contracts
+Capability/               # Use* capabilities (Core, Bash, File, Subagent, etc.)
+Collections/              # Tools, AgentSteps, StepExecutions, ToolExecutions
+
+Context/                  # AgentContext, message compilers (CanCompileMessages)
+Continuation/             # StopSignal, StopReason, ExecutionContinuation
+Data/                     # AgentState, ExecutionState, AgentStep, ExecutionBudget
+
+Drivers/                  # ToolCallingDriver, ReActDriver, FakeAgentDriver
+Enums/                    # AgentStepType, ExecutionStatus
+Events/                   # Agent event system (started, completed, failed, etc.)
+Exceptions/               # Domain exceptions (tool blocked, invalid args, etc.)
+
+Hook/                     # HookStack, HookInterface, HookContext, built-in hooks
+Interception/             # CanInterceptAgentLifecycle, PassThroughInterceptor
+Tool/                     # ToolInterface, BaseTool, FunctionTool, ToolExecutor
+
+Template/                 # Agent definitions, parsers (MD/YAML/JSON), registry
+Session/                  # AgentSession, SessionRuntime, actions, stores
+
+Broadcasting/             # AgentEventBroadcaster for SSE/WebSocket streaming
 ```
 
 ## Minimal Example
@@ -74,9 +123,11 @@ $result = $loop->execute($state);
 echo $result->finalResponse()->toString();
 ```
 
-## Recommended Path
+This sends a single message to the default LLM provider, receives a text response (no tool calls), and prints it. The loop detects there are no tool calls to execute, so it stops after one step. The entire execution is captured in the returned `AgentState`, which you can inspect for usage statistics, step history, errors, and timing information.
 
-1. Start with `AgentLoop` ([Basic Agent](02-basic-agent.md)).
-2. Move to `AgentBuilder` when composition becomes non-trivial ([AgentBuilder & Capabilities](13-agent-builder.md)).
-3. Move to templates when config should be data-driven ([Agent Templates](14-agent-templates.md)).
-4. Move to sessions when runtime state must persist between calls/processes ([Session Runtime](16-session-runtime.md)).
+## Recommended Learning Path
+
+1. **[Basic Agent](02-basic-agent.md)** -- Build your first agent with `AgentLoop`, add tools, customize the driver, and understand the execution lifecycle.
+2. **[AgentBuilder & Capabilities](13-agent-builder.md)** -- Compose agents from reusable capability modules when configuration becomes non-trivial.
+3. **[Agent Templates](14-agent-templates.md)** -- Define agents as data when configuration should come from files rather than code.
+4. **[Session Runtime](16-session-runtime.md)** -- Persist and resume agent sessions across processes for chat interfaces and long-running workflows.

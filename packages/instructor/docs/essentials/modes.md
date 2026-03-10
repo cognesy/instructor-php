@@ -3,11 +3,15 @@ title: Modes
 description: 'Choose how Instructor asks the model for structured output.'
 ---
 
-Output mode is a runtime concern.
+Output mode controls how Instructor communicates the desired response schema to the LLM.
+Different providers and models support different modes, so choosing the right one can
+improve reliability and compatibility.
 
-## Default
 
-`OutputMode::Tools` is the default and the recommended starting point.
+## Setting The Mode
+
+Output mode is a runtime concern. Set it on `StructuredOutputRuntime` so it applies to
+every request that uses that runtime:
 
 ```php
 use Cognesy\Instructor\Enums\OutputMode;
@@ -19,10 +23,80 @@ $runtime = StructuredOutputRuntime::fromConfig(
 )->withOutputMode(OutputMode::Tools);
 ```
 
-## Other Modes
 
-- `Json`
-- `JsonSchema`
-- `MdJson`
+## Available Modes
 
-Use them when a provider or workflow needs a JSON-first response instead of tool calling.
+### `OutputMode::Tools` (Default)
+
+Uses the provider's tool calling (function calling) API. Instructor sends your response
+model as a tool definition, and the model responds with a structured tool call.
+
+This is the default and the most reliable mode. It works well with OpenAI, Anthropic,
+Mistral, and other providers that support tool calling.
+
+- [OpenAI Function Calling](https://platform.openai.com/docs/guides/function-calling)
+- [Anthropic Tool Use](https://docs.anthropic.com/en/docs/build-with-claude/tool-use)
+- [Mistral Function Calling](https://docs.mistral.ai/capabilities/function_calling/)
+
+
+### `OutputMode::Json`
+
+Sends the response schema as a JSON Schema and instructs the model to respond with a JSON
+object. Many providers and open-source models support this natively.
+
+Use this when a provider does not support tool calling, or when you prefer a JSON-first
+workflow.
+
+- [OpenAI JSON Mode](https://platform.openai.com/docs/guides/text-generation/json-mode)
+- [Mistral JSON Mode](https://docs.mistral.ai/capabilities/json_mode/)
+
+
+### `OutputMode::JsonSchema`
+
+Uses strict JSON Schema enforcement, where supported. When the provider offers native
+JSON Schema mode, the response is guaranteed to match the schema. For providers without
+native support, behavior falls back to best-effort JSON output.
+
+This mode is currently best supported by newer OpenAI models. Check your provider's
+documentation for compatibility.
+
+> OpenAI's JSON Schema mode does not support optional properties. If your schema requires
+> nullable fields, use `OutputMode::Tools` or `OutputMode::Json` instead.
+
+- [OpenAI Structured Outputs](https://platform.openai.com/docs/guides/structured-outputs)
+
+
+### `OutputMode::MdJson`
+
+Asks the model to return a JSON object inside a Markdown code block. This is the most
+basic extraction mode and works as a fallback for models that support neither tool calling
+nor native JSON output.
+
+Instructor scans the response for a JSON fragment inside a ` ```json ``` ` code block
+and extracts it, ignoring any surrounding text.
+
+This mode is the least reliable and most prone to deserialization errors, but it provides
+the broadest model compatibility. Including the JSON Schema in the prompt (which
+Instructor does automatically) improves results significantly.
+
+
+## Choosing A Mode
+
+| Mode | Reliability | Compatibility | Best for |
+|---|---|---|---|
+| `Tools` | Highest | Providers with tool calling | Most use cases (default) |
+| `JsonSchema` | High | OpenAI (newer models) | Strict schema guarantees |
+| `Json` | Good | Most providers | JSON-first workflows |
+| `MdJson` | Moderate | Any model | Legacy or minimal models |
+
+Start with `Tools`. Switch to another mode only when your provider requires it or when
+you have a specific reason to prefer JSON-based extraction.
+
+
+## Additional Modes
+
+Two other modes exist for non-structured use cases. They are not useful with
+`StructuredOutput` but can be used with the lower-level `Inference` class:
+
+- `OutputMode::Text` -- plain text generation
+- `OutputMode::Unrestricted` -- no format enforcement at all

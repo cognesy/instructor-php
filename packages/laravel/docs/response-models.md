@@ -1,28 +1,30 @@
 # Response Models
 
-Response models define the structure of data you want to extract from text. They are PHP classes with typed properties that guide the LLM in generating structured output.
+Response models define the structure of data you want to extract from unstructured text. They are plain PHP classes with typed constructor properties that serve a dual purpose: they tell the LLM what data to produce (via the generated JSON Schema), and they provide a strongly typed container for the extracted result.
 
 ## Creating Response Models
 
 ### Using Artisan Command
 
+The `make:response-model` command generates a ready-to-use response model class with the correct namespace, typed properties, and docblock descriptions.
+
 ```bash
 # Basic response model
 php artisan make:response-model PersonData
 
-# Collection response model
+# Collection response model (model with an array of child items)
 php artisan make:response-model ProductList --collection
 
-# Nested objects response model
+# Nested objects response model (model with child object properties)
 php artisan make:response-model CompanyProfile --nested
 
-# With description
+# With a custom description in the class docblock
 php artisan make:response-model Invoice --description="Invoice extracted from PDF"
 ```
 
 ### Manual Creation
 
-Create a class in `app/ResponseModels/`:
+Create a class in `app/ResponseModels/` (or any namespace you prefer):
 
 ```php
 <?php
@@ -44,9 +46,13 @@ final class PersonData
 }
 ```
 
+The class requires no base class, interface, or attribute -- any PHP class with typed constructor properties works. The package inspects the constructor signature and docblocks at runtime to build the JSON Schema that guides the LLM.
+
 ## Property Types
 
 ### Basic Types
+
+PHP's scalar types map directly to JSON Schema types. The LLM receives clear instructions about the expected data type for each field.
 
 ```php
 final class BasicTypes
@@ -62,6 +68,8 @@ final class BasicTypes
 
 ### Nullable Properties
 
+Mark optional fields as nullable with a default of `null`. The LLM is allowed to omit these fields, and the resulting object will have `null` for any missing values.
+
 ```php
 final class WithOptional
 {
@@ -74,6 +82,8 @@ final class WithOptional
 ```
 
 ### Arrays
+
+Use `@var` docblocks to specify the element type for array properties. This information is included in the generated schema and helps the LLM produce correctly typed array elements.
 
 ```php
 final class WithArrays
@@ -89,6 +99,8 @@ final class WithArrays
 ```
 
 ### Enums
+
+Backed enums map to their underlying scalar type in the schema. The LLM receives the list of allowed values, which significantly improves extraction accuracy for categorical fields.
 
 ```php
 enum Priority: string
@@ -108,6 +120,8 @@ final class Task
 ```
 
 ### Nested Objects
+
+Use another response model class as a property type to create hierarchical structures. The package generates nested schemas automatically.
 
 ```php
 final class Address
@@ -129,6 +143,8 @@ final class Person
 ```
 
 ### Collections
+
+Combine nested objects with typed arrays for collections of structured items. The `@var` docblock on the array property tells the package which class each element should be deserialized into.
 
 ```php
 final class OrderItem
@@ -155,7 +171,7 @@ final class Order
 
 ## Property Descriptions
 
-Property descriptions in docblocks guide the LLM:
+Docblock comments on constructor properties serve as field-level instructions for the LLM. Clear, specific descriptions dramatically improve extraction accuracy -- they are included verbatim in the JSON Schema sent to the model.
 
 ```php
 final class ProductReview
@@ -196,7 +212,7 @@ echo $person->email; // "john@example.com"
 
 ### With Array Schema
 
-For simple cases, you can use an array schema instead of a class:
+For quick prototyping or one-off extractions, you can pass a raw JSON Schema array instead of a class. The result is returned as an associative array rather than a typed object.
 
 ```php
 $person = StructuredOutput::with(
@@ -217,6 +233,8 @@ echo $person['age'];  // 30
 
 ### Extracting Collections
 
+To extract a list of objects from a single input, wrap the response model class in an array schema descriptor.
+
 ```php
 final class Product
 {
@@ -226,7 +244,6 @@ final class Product
     ) {}
 }
 
-// Wrap in array for multiple items
 $products = StructuredOutput::with(
     messages: 'Products: iPhone $999, MacBook $1299, AirPods $199',
     responseModel: [
@@ -243,6 +260,8 @@ foreach ($products as $product) {
 ## Validation
 
 ### Using Symfony Validator
+
+Add Symfony Validator constraint attributes to your properties for automatic validation. When the LLM's response violates a constraint, the package sends the validation errors back to the model and retries (up to `max_retries` times).
 
 ```php
 use Symfony\Component\Validator\Constraints as Assert;
@@ -266,6 +285,8 @@ final class UserRegistration
 
 ### Custom Validation
 
+Implement the `CanValidateObject` contract for business-rule validation that goes beyond simple type and format checks.
+
 ```php
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
 
@@ -283,7 +304,6 @@ class AgeValidator implements CanValidateObject
     }
 }
 
-// Use the validator
 $user = StructuredOutput::with(
     messages: 'User: John, age -5',
     responseModel: UserData::class,
@@ -296,6 +316,8 @@ $user = StructuredOutput::with(
 
 ### 1. Use Descriptive Property Names
 
+Property names are part of the schema the LLM sees. Clear names reduce ambiguity and improve extraction accuracy.
+
 ```php
 // Good
 public readonly string $customerEmailAddress;
@@ -305,6 +327,8 @@ public readonly string $email;
 ```
 
 ### 2. Add Detailed Descriptions
+
+Docblock descriptions are your primary tool for steering the LLM. Be specific about formats, ranges, and edge cases.
 
 ```php
 public function __construct(
@@ -317,6 +341,8 @@ public function __construct(
 ```
 
 ### 3. Use Appropriate Types
+
+Choose the most specific type available. Enums are preferable to free-form strings for fields with a fixed set of values.
 
 ```php
 // Use int for counts
@@ -331,6 +357,8 @@ public readonly Status $status;
 
 ### 4. Make Optional Properties Nullable
 
+Distinguish between required and optional fields clearly. Required properties should not have defaults; optional ones should be nullable with a `null` default.
+
 ```php
 // Required
 public readonly string $name,
@@ -341,17 +369,19 @@ public readonly ?string $nickname = null,
 
 ### 5. Use Readonly Properties
 
+Readonly properties enforce immutability, which prevents accidental mutation of extracted data. This is the recommended approach for all response models.
+
 ```php
-// Immutable - recommended
+// Immutable -- recommended
 public readonly string $name;
 
-// Mutable - avoid unless necessary
+// Mutable -- avoid unless necessary
 public string $name;
 ```
 
 ## Generated Stubs
 
-The `make:response-model` command generates these stub types:
+The `make:response-model` command generates from these stub types. Publish them with `php artisan vendor:publish --tag=instructor-stubs` to customize.
 
 ### Basic Stub
 

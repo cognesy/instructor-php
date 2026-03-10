@@ -1,6 +1,6 @@
 # Configuration
 
-After publishing the configuration file, you'll find it at `config/instructor.php`.
+After publishing the configuration file with `php artisan vendor:publish --tag=instructor-config`, you will find it at `config/instructor.php`. This file controls every aspect of the package, from LLM provider connections and extraction behavior to HTTP transport, logging, event bridging, and response caching.
 
 ## Default Connection
 
@@ -8,11 +8,11 @@ After publishing the configuration file, you'll find it at `config/instructor.ph
 'default' => env('INSTRUCTOR_CONNECTION', 'openai'),
 ```
 
-Set the default LLM connection. Can be overridden at runtime with `->connection('name')`.
+This determines which LLM connection is used when you call a facade without specifying one explicitly. You can override it at runtime with `->connection('name')` on any facade, or by passing an `LLMConfig` object via `->fromConfig(...)`.
 
 ## Connections
 
-Configure multiple LLM provider connections:
+Configure multiple LLM provider connections. Each connection defines its driver, API credentials, default model, and token limits. You can define as many connections as you need and switch between them at runtime.
 
 ```php
 'connections' => [
@@ -78,6 +78,8 @@ Configure multiple LLM provider connections:
 
 ### Adding a Custom Connection
 
+Any OpenAI-compatible API can be used by setting the `openai` driver and pointing `api_url` to your endpoint. Extra keys beyond the standard set (`driver`, `api_url`, `api_key`, `endpoint`, `model`, `max_tokens`, `options`) are automatically merged into the options array and forwarded with each request.
+
 ```php
 'connections' => [
     // ... existing connections
@@ -94,7 +96,7 @@ Configure multiple LLM provider connections:
 
 ## Embeddings Connections
 
-Configure embedding model connections:
+Configure embedding model connections separately from inference connections. The embeddings section has its own `default` key and connection definitions.
 
 ```php
 'embeddings' => [
@@ -122,7 +124,7 @@ Configure embedding model connections:
 
 ## Extraction Settings
 
-Configure structured output extraction defaults:
+Configure defaults for structured output extraction. These values apply to every `StructuredOutput` call unless overridden at runtime.
 
 ```php
 'extraction' => [
@@ -139,16 +141,18 @@ Configure structured output extraction defaults:
 
 ### Output Modes
 
+The output mode controls how the package instructs the LLM to produce structured output. Different providers have varying levels of support for each mode.
+
 | Mode | Description | Best For |
 |------|-------------|----------|
-| `json_schema` | Uses JSON Schema for structured output | Most reliable, OpenAI recommended |
-| `json` | Simple JSON mode | Fallback for unsupported models |
-| `tools` | Uses tool/function calling | Alternative structured output |
-| `md_json` | Markdown-wrapped JSON | Gemini and other models |
+| `json_schema` | Uses JSON Schema for structured output | Most reliable; recommended for OpenAI |
+| `json` | Simple JSON mode without schema enforcement | Fallback for models that lack schema support |
+| `tools` | Uses tool/function calling to extract structured data | Alternative approach; good cross-provider support |
+| `md_json` | Markdown-wrapped JSON | Useful for Gemini and similar models |
 
 ## HTTP Client Settings
 
-Configure the HTTP client:
+Configure the underlying HTTP transport. The Laravel package ships with its own `LaravelDriver` that wraps Laravel's HTTP client (`Illuminate\Http\Client\Factory`), which means `Http::fake()` works transparently in your tests.
 
 ```php
 'http' => [
@@ -163,21 +167,18 @@ Configure the HTTP client:
 ],
 ```
 
-The Laravel package owns the `laravel` HTTP client and pool drivers. They are not part of the generic `http-client` or `http-pool` bundled driver sets.
-
-The service provider binds `Cognesy\Http\Contracts\CanSendHttpRequests` to the default Laravel-backed HTTP transport.
-Higher layers should depend on that contract, not on the concrete `HttpClient`.
+The service provider binds `Cognesy\Http\Contracts\CanSendHttpRequests` to the Laravel-backed HTTP transport. All higher-level services (Inference, Embeddings, StructuredOutput) depend on that contract, ensuring consistent HTTP behavior across the entire package.
 
 ## Logging Settings
 
-Configure logging:
+The package includes a logging pipeline that enriches log entries with Laravel request context (request ID, authenticated user, route, URL) automatically.
 
 ```php
 'logging' => [
     // Enable/disable logging
     'enabled' => env('INSTRUCTOR_LOGGING_ENABLED', true),
 
-    // Log channel
+    // Log channel (must exist in config/logging.php)
     'channel' => env('INSTRUCTOR_LOG_CHANNEL', 'stack'),
 
     // Minimum log level
@@ -197,13 +198,15 @@ Configure logging:
 
 | Preset | Description |
 |--------|-------------|
-| `default` | Verbose logging for local debugging |
-| `production` | Minimal logging for production workloads |
-| `custom` | Define your own pipeline |
+| `default` | Verbose logging suitable for local development; includes message templates for key events and excludes debug-level HTTP body events |
+| `production` | Minimal logging at `warning` level and above; excludes verbose HTTP and partial-response events for lower overhead |
+| `custom` | Fully configurable pipeline -- supply your own `channel`, `level`, `exclude_events`, `include_events`, and `templates` arrays |
+
+Both the `default` and `production` presets automatically attach lazy enrichers that add the current HTTP request context (request ID, user ID, session ID, route, method, URL) to every log record.
 
 ## Events Settings
 
-Configure event dispatching:
+Configure how Instructor's internal events are bridged to Laravel's event dispatcher.
 
 ```php
 'events' => [
@@ -217,16 +220,18 @@ Configure event dispatching:
 ],
 ```
 
+When `bridge_events` is empty (the default), every Instructor event is forwarded to Laravel. To limit traffic, list only the event classes you care about. See the [Events](events.md) guide for the full list of available events and listener examples.
+
 ## Cache Settings
 
-Configure response caching:
+Configure response caching to avoid redundant API calls for identical inputs.
 
 ```php
 'cache' => [
     // Enable response caching
     'enabled' => env('INSTRUCTOR_CACHE_ENABLED', false),
 
-    // Cache store to use
+    // Cache store to use (null = default store)
     'store' => env('INSTRUCTOR_CACHE_STORE'),
 
     // Default TTL in seconds
@@ -246,18 +251,19 @@ Configure response caching:
 | `INSTRUCTOR_MAX_RETRIES` | `2` | Max validation retry attempts |
 | `INSTRUCTOR_HTTP_DRIVER` | `laravel` | HTTP client driver |
 | `INSTRUCTOR_HTTP_TIMEOUT` | `120` | Request timeout (seconds) |
+| `INSTRUCTOR_HTTP_CONNECT_TIMEOUT` | `30` | Connection timeout (seconds) |
 | `INSTRUCTOR_LOGGING_ENABLED` | `true` | Enable logging |
 | `INSTRUCTOR_LOG_CHANNEL` | `stack` | Laravel log channel |
 | `INSTRUCTOR_LOG_LEVEL` | `warning` | Minimum log level |
 | `INSTRUCTOR_LOGGING_PRESET` | `production` | Logging preset |
 | `INSTRUCTOR_DISPATCH_EVENTS` | `true` | Bridge events to Laravel |
 | `INSTRUCTOR_CACHE_ENABLED` | `false` | Enable response caching |
-| `OPENAI_API_KEY` | - | OpenAI API key |
-| `ANTHROPIC_API_KEY` | - | Anthropic API key |
+| `OPENAI_API_KEY` | -- | OpenAI API key |
+| `ANTHROPIC_API_KEY` | -- | Anthropic API key |
 
 ## Runtime Configuration
 
-Override configuration at runtime:
+Override any configuration at runtime using the fluent API on the facades:
 
 ```php
 use Cognesy\Instructor\Laravel\Facades\StructuredOutput;
@@ -269,5 +275,23 @@ $result = StructuredOutput::connection('anthropic')  // Switch connection
         messages: 'Extract data...',
         responseModel: MyModel::class,
     )
+    ->get();
+```
+
+For full programmatic control, build an `LLMConfig` object and pass it directly:
+
+```php
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
+
+$config = LLMConfig::fromArray([
+    'driver' => 'openai',
+    'apiUrl' => 'https://api.openai.com/v1',
+    'apiKey' => $myKey,
+    'model' => 'gpt-4o',
+    'maxTokens' => 8192,
+]);
+
+$result = StructuredOutput::fromConfig($config)
+    ->with(messages: '...', responseModel: MyModel::class)
     ->get();
 ```

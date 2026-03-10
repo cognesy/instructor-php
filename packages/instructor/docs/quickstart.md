@@ -1,24 +1,170 @@
 ---
 title: 'Quickstart'
-description: 'Start extracting typed data in a few minutes.'
+description: 'Extract structured data from LLM responses in under 5 minutes.'
 ---
 
-## Install
+This guide walks you through installing Instructor and running your first extraction.
+For detailed configuration options, see [Setup](setup).
+
+
+## Installation
+
+Install the package via Composer:
 
 ```bash
 composer require cognesy/instructor-struct
 ```
 
-## Extract A Typed Object
+> Instructor requires **PHP 8.3** or later.
 
-Set your provider credentials in the environment, then make a request:
+
+## Your First Extraction
+
+### Step 1: Set Your API Key
+
+Instructor needs credentials for the LLM provider you plan to use. The simplest
+approach is to export an environment variable before running your script:
+
+```bash
+export OPENAI_API_KEY="sk-your-key-here"
+```
+
+> In a real project, store API keys in a `.env` file or your framework's secret
+> manager. Never hard-code keys in source files.
+
+### Step 2: Define a Response Model
+
+Create a PHP class with typed public properties. Instructor will generate a JSON Schema
+from this class and instruct the LLM to return data matching that shape:
+
+```php
+class City {
+    public string $name;
+    public string $country;
+    public int $population;
+}
+```
+
+### Step 3: Run the Extraction
+
+Use `StructuredOutput` to send a request and receive a typed result:
+
+```php
+<?php
+require __DIR__ . '/vendor/autoload.php';
+
+use Cognesy\Instructor\StructuredOutput;
+
+class City {
+    public string $name;
+    public string $country;
+    public int $population;
+}
+
+$city = StructuredOutput::using('openai')
+    ->with(
+        messages: 'What is the capital of France?',
+        responseModel: City::class,
+    )
+    ->get();
+
+echo $city->name;       // Paris
+echo $city->country;    // France
+echo $city->population; // 2148000
+```
+
+The `get()` method returns a fully hydrated `City` instance. Public typed properties
+define the schema that Instructor sends to the model.
+
+
+## Alternative API Styles
+
+Instructor offers several ways to build the same request. Choose whichever reads best
+in your codebase.
+
+### Fluent Builder
+
+Chain individual `with*` methods for maximum readability:
+
+```php
+$city = StructuredOutput::using('openai')
+    ->withMessages('What is the capital of France?')
+    ->withResponseClass(City::class)
+    ->get();
+```
+
+### Compact `with()` Call
+
+Pass everything as named arguments to a single `with()` call:
+
+```php
+$city = StructuredOutput::using('openai')
+    ->with(
+        messages: 'What is the capital of France?',
+        responseModel: City::class,
+        model: 'gpt-4o-mini',
+    )
+    ->get();
+```
+
+### Explicit Provider Configuration
+
+When you need full control over the provider and model, use `LLMConfig` directly:
 
 ```php
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
-final class City {
+$city = StructuredOutput::fromConfig(
+    LLMConfig::fromDsn('driver=openai,model=gpt-4o-mini')
+)
+    ->with(
+        messages: 'What is the capital of France?',
+        responseModel: City::class,
+    )
+    ->get();
+```
+
+
+## Streaming Partial Updates
+
+For long extractions or real-time UIs, stream partial updates as the LLM generates
+its response:
+
+```php
+$stream = StructuredOutput::using('openai')
+    ->with(
+        messages: 'What is the capital of France?',
+        responseModel: City::class,
+    )
+    ->stream();
+
+foreach ($stream->partials() as $partial) {
+    echo "Partial: " . ($partial->name ?? '...') . "\n";
+}
+
+$city = $stream->finalValue();
+echo $city->name; // Paris
+```
+
+
+## Adding Validation
+
+Add Symfony Validator constraints to your response model. If the LLM returns data that
+fails validation, Instructor will automatically retry with the error details:
+
+```php
+use Symfony\Component\Validator\Constraints as Assert;
+
+class City {
+    #[Assert\NotBlank]
     public string $name;
+
+    #[Assert\NotBlank]
     public string $country;
+
+    #[Assert\Positive]
+    public int $population;
 }
 
 $city = StructuredOutput::using('openai')
@@ -29,16 +175,22 @@ $city = StructuredOutput::using('openai')
     ->get();
 ```
 
-`$city` is a `City` instance. Public typed properties define the shape Instructor asks the model to return.
+To enable retries, configure `maxRetries` on the runtime. See [Validation](essentials/validation) for details.
 
-## Keep It Simple
 
-- Use `StructuredOutput::using('<preset>')` when a preset is enough
-- Use `StructuredOutput::fromConfig(...)` when you want an explicit `LLMConfig`
-- Use `StructuredOutputRuntime` when you need retries, events, or custom pipeline behavior
+## Choosing the Right Entry Point
 
-## Next
+| Scenario | Entry Point |
+|----------|-------------|
+| Quick extraction with a preset | `StructuredOutput::using('openai')` |
+| Explicit provider/model control | `StructuredOutput::fromConfig(LLMConfig::fromDsn(...))` |
+| Retries, events, or custom pipeline | `StructuredOutputRuntime` |
 
-- [Setup](setup)
-- [Usage](essentials/usage)
-- [Data Model](essentials/data_model)
+
+## Next Steps
+
+- [Setup](setup) -- installation details and provider configuration
+- [Usage](essentials/usage) -- the full request-building API
+- [Data Model](essentials/data_model) -- defining response model classes
+- [Validation](essentials/validation) -- validation and retry behavior
+- [Modes](essentials/modes) -- output modes (tool calls, JSON, JSON Schema)

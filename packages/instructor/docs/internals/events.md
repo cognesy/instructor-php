@@ -3,13 +3,144 @@ title: Events
 description: 'Observe requests and streaming updates.'
 ---
 
-Attach listeners on `StructuredOutputRuntime` when you want visibility into execution.
+## Overview
+
+Instructor dispatches events at every significant stage of its execution. You can
+listen to these events for logging, monitoring, debugging, or custom processing.
+All event classes extend `Cognesy\Events\Event`.
+
+
+## Listening to Events
+
+### Targeted Listeners
+
+Use `onEvent()` on the `StructuredOutputRuntime` to listen for a specific event type:
 
 ```php
-$runtime = StructuredOutputRuntime::fromConfig($config)
-    ->wiretap(function (object $event): void {
-        // inspect event stream
+use Cognesy\Instructor\Events\Response\ResponseValidationFailed;
+
+$runtime = StructuredOutputRuntime::fromDefaults()
+    ->onEvent(ResponseValidationFailed::class, function ($event) {
+        logger()->warning('Validation failed', $event->toArray());
     });
 ```
 
-The package emits request, response, extraction, validation, and streaming-related events. Use this for logging and debugging, not for ordinary request construction.
+### Wiretap (All Events)
+
+Use `wiretap()` to receive every event dispatched by Instructor. This is useful for
+debugging or comprehensive logging:
+
+```php
+$runtime = StructuredOutputRuntime::fromDefaults()
+    ->wiretap(fn($event) => $event->print());
+```
+
+### Practical Example
+
+```php
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Instructor\Extras\Scalar\Scalar;
+
+$runtime = StructuredOutputRuntime::fromDefaults()
+    // Log HTTP-level details
+    ->onEvent(HttpRequestSent::class, fn($e) => dump($e))
+    ->onEvent(HttpResponseReceived::class, fn($e) => dump($e))
+    // Console-friendly output for all events
+    ->wiretap(fn($event) => $event->print())
+    // Structured logging
+    ->wiretap(fn($event) => YourLogger::log($event->asLog()));
+
+$result = (new StructuredOutput($runtime))
+    ->with(
+        messages: 'What is the population of Paris?',
+        responseModel: Scalar::integer(),
+    )
+    ->get();
+```
+
+
+## Event Categories
+
+Events are organized into namespaces that correspond to the processing stage:
+
+### High-Level Events (`Events\StructuredOutput`)
+
+| Event | When |
+|---|---|
+| `StructuredOutputStarted` | A structured output operation begins |
+| `StructuredOutputRequestReceived` | The request has been received by the runtime |
+| `StructuredOutputResponseGenerated` | The final response has been produced |
+| `StructuredOutputResponseUpdated` | A streaming partial response is emitted |
+
+### Request Events (`Events\Request`)
+
+| Event | When |
+|---|---|
+| `ResponseModelRequested` | A response model has been submitted for processing |
+| `ResponseModelBuildModeSelected` | The factory has chosen a build strategy |
+| `ResponseModelBuilt` | The response model and schema are ready |
+| `NewValidationRecoveryAttempt` | A retry attempt is about to begin |
+| `StructuredOutputRecoveryLimitReached` | All retries have been exhausted |
+| `SequenceUpdated` | A sequence item has been completed during streaming |
+
+### Response Events (`Events\Response`)
+
+| Event | When |
+|---|---|
+| `ResponseDeserializationAttempt` | Deserialization is about to start |
+| `ResponseDeserialized` | Deserialization succeeded |
+| `ResponseDeserializationFailed` | Deserialization failed |
+| `CustomResponseDeserializationAttempt` | A `CanDeserializeSelf` implementation is being used |
+| `ResponseValidationAttempt` | Validation is about to start |
+| `ResponseValidated` | Validation passed |
+| `ResponseValidationFailed` | Validation failed |
+| `CustomResponseValidationAttempt` | A `CanValidateSelf` implementation is being used |
+| `ResponseTransformationAttempt` | Transformation is about to start |
+| `ResponseTransformed` | Transformation succeeded |
+| `ResponseTransformationFailed` | Transformation failed |
+| `ResponseConvertedToObject` | The final object has been produced |
+| `ResponseGenerationFailed` | The entire response generation pipeline failed |
+
+### Extraction Events (`Events\Extraction`)
+
+| Event | When |
+|---|---|
+| `ExtractionStarted` | Data extraction from the inference response begins |
+| `ExtractionCompleted` | Extraction succeeded |
+| `ExtractionFailed` | Extraction failed |
+| `ExtractionStrategyAttempted` | A specific extraction strategy is being tried |
+| `ExtractionStrategySucceeded` | The strategy produced a result |
+| `ExtractionStrategyFailed` | The strategy did not produce a result |
+
+### Streaming Events (`Events\PartialsGenerator`)
+
+| Event | When |
+|---|---|
+| `ChunkReceived` | A raw chunk arrived from the provider |
+| `StreamedResponseReceived` | A streamed response chunk was processed |
+| `StreamedResponseFinished` | The stream has ended |
+| `PartialJsonReceived` | A partial JSON fragment was accumulated |
+| `PartialResponseGenerated` | A partial deserialized response is available |
+| `PartialResponseGenerationFailed` | Partial deserialization failed (non-fatal) |
+| `StreamedToolCallStarted` | A tool call began in the stream |
+| `StreamedToolCallUpdated` | A tool call received more data |
+| `StreamedToolCallCompleted` | A tool call finished |
+
+
+## Event Methods
+
+Every event inherits the following convenience methods from `Cognesy\Events\Event`:
+
+| Method | Description |
+|---|---|
+| `print()` | Print a console-friendly representation |
+| `printLog()` | Print a log-formatted representation |
+| `printDebug()` | Print console output and dump the full event object |
+| `asConsole()` | Return the event formatted for console output |
+| `asLog()` | Return the event formatted for log output |
+| `toArray()` | Return the event data as an associative array |
+| `name()` | Return the short class name of the event |
+
+Events carry a `$logLevel` property (PSR log level) and a `$data` payload. The
+`print()` method respects a configurable log-level threshold.

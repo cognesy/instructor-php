@@ -1,6 +1,6 @@
 # Troubleshooting
 
-Common issues and their solutions.
+Common issues and their solutions when working with Instructor for Laravel.
 
 ## Installation Issues
 
@@ -12,12 +12,14 @@ Package cognesy/instructor-laravel not found
 ```
 
 **Solution:**
-Ensure you have the correct package name and your Composer is up to date:
+Ensure you have the correct package name and your Composer repository cache is up to date:
 
 ```bash
 composer clear-cache
 composer require cognesy/instructor-laravel
 ```
+
+If you are using a private Packagist mirror, verify the package is available in your configured repositories.
 
 ### Service Provider Not Registered
 
@@ -27,18 +29,19 @@ Class 'Cognesy\Instructor\Laravel\Facades\StructuredOutput' not found
 ```
 
 **Solution:**
-If auto-discovery is disabled, manually register the provider:
+If auto-discovery is disabled in your `composer.json`, manually register the provider:
 
 ```php
-// config/app.php
+// config/app.php (Laravel 10)
 'providers' => [
     Cognesy\Instructor\Laravel\InstructorServiceProvider::class,
 ],
 ```
 
-Or clear the cached configuration:
+If auto-discovery is enabled but the provider is not loading, clear the cached package manifest:
 
 ```bash
+php artisan package:discover
 php artisan config:clear
 php artisan cache:clear
 ```
@@ -61,7 +64,7 @@ Add your API key to `.env`:
 OPENAI_API_KEY=sk-your-key-here
 ```
 
-Then clear config cache:
+Then clear the config cache so Laravel picks up the change:
 
 ```bash
 php artisan config:clear
@@ -75,10 +78,11 @@ php artisan config:clear
 ```
 
 **Solution:**
-1. Verify your API key is correct
-2. Check the key hasn't expired
-3. Ensure the key has the required permissions
-4. Verify there are no extra spaces in `.env`
+1. Verify your API key is correct by checking the provider's dashboard
+2. Check that the key has not expired or been revoked
+3. Ensure the key has the required permissions (some providers require specific scopes)
+4. Verify there are no extra spaces, newlines, or quotes around the key in `.env`
+5. Run `php artisan instructor:test` to confirm the key works
 
 ### Rate Limiting
 
@@ -88,9 +92,12 @@ php artisan config:clear
 ```
 
 **Solution:**
-1. Implement retry logic with exponential backoff
+Rate limiting occurs when you exceed the provider's API call limits. Strategies to mitigate this:
+
+1. Implement rate limiting in your application using Laravel's `RateLimiter`
 2. Upgrade your API plan for higher limits
-3. Add caching to reduce API calls
+3. Add response caching to reduce redundant API calls
+4. Spread requests across multiple providers using the `connection()` method
 
 ```php
 use Illuminate\Support\Facades\RateLimiter;
@@ -114,9 +121,11 @@ Failed to deserialize response to PersonData
 ```
 
 **Solution:**
-1. Add more descriptive property comments
-2. Provide examples
-3. Increase max retries
+This usually means the LLM produced JSON that does not conform to your response model's structure. Improve the extraction by:
+
+1. Adding more descriptive property comments (these become schema descriptions)
+2. Providing few-shot examples
+3. Increasing max retries so the model gets another chance
 
 ```php
 final class PersonData
@@ -146,9 +155,11 @@ Validation failed after 3 retries
 ```
 
 **Solution:**
-1. Check your validation constraints aren't too strict
-2. Review the error messages in logs
-3. Adjust the retry prompt
+The LLM repeatedly produced output that did not pass your validation constraints. Check whether:
+
+1. Your validation constraints are not too strict for the input data
+2. The retry prompt gives the LLM enough context to understand the errors
+3. The max retries count is sufficient
 
 ```php
 $result = StructuredOutput::with(
@@ -159,14 +170,19 @@ $result = StructuredOutput::with(
 )->get();
 ```
 
+Review your application logs to see the exact validation errors from each retry attempt.
+
 ### Null Values for Required Fields
 
-**Problem:** LLM returns null for fields you expected to have values.
+**Problem:** The LLM returns `null` for fields you expected to have values.
 
 **Solution:**
-1. Make the input text clearer
-2. Add better property descriptions
-3. Use system prompts
+This happens when the input text does not contain enough information for the LLM to populate a field. Strategies:
+
+1. Make the input text clearer or more detailed
+2. Add better property descriptions that explain what to look for
+3. Use a system prompt that instructs the model to infer values from context
+4. Mark fields as nullable if they are truly optional
 
 ```php
 $result = StructuredOutput::with(
@@ -188,7 +204,9 @@ cURL error 28: Operation timed out
 ```
 
 **Solution:**
-Increase timeout in configuration:
+The API call took longer than the configured timeout. This is common with large inputs, complex response models, or heavily loaded provider APIs.
+
+Increase the timeout in configuration:
 
 ```php
 // config/instructor.php
@@ -198,7 +216,7 @@ Increase timeout in configuration:
 ],
 ```
 
-Or per-request:
+Or override per-request using options:
 
 ```php
 $result = StructuredOutput::withOptions([
@@ -208,16 +226,20 @@ $result = StructuredOutput::withOptions([
 
 ### Streaming Timeout
 
-**Problem:** Streaming requests timeout before completion.
+**Problem:** Streaming requests timeout before the LLM finishes generating.
 
 **Solution:**
+For long-running streaming responses, ensure both the HTTP timeout and PHP's execution time limit are sufficient:
+
 ```php
-set_time_limit(0); // Disable PHP timeout
+set_time_limit(0); // Disable PHP timeout for this request
 
 $stream = StructuredOutput::with(...)
     ->withStreaming()
     ->stream();
 ```
+
+In production, consider running streaming extractions in a queue worker where time limits are typically more generous.
 
 ---
 
@@ -228,7 +250,7 @@ $stream = StructuredOutput::with(...)
 **Problem:** Real API calls are made despite using `fake()`.
 
 **Solution:**
-Ensure you call `fake()` BEFORE any extraction:
+Ensure you call `fake()` **before** any code that triggers an extraction. The fake replaces the facade's bound instance, and calls made before the swap reach the real service.
 
 ```php
 // CORRECT
@@ -236,16 +258,16 @@ $fake = StructuredOutput::fake([...]);
 $result = $myService->extract(); // Uses fake
 
 // WRONG
-$result = $myService->extract(); // Real API call
-$fake = StructuredOutput::fake([...]); // Too late!
+$result = $myService->extract(); // Real API call!
+$fake = StructuredOutput::fake([...]); // Too late
 ```
 
 ### Http::fake() Not Mocking
 
-**Problem:** `Http::fake()` doesn't affect Instructor calls.
+**Problem:** `Http::fake()` does not affect Instructor calls.
 
 **Solution:**
-Ensure the HTTP driver is set to 'laravel':
+Ensure the HTTP driver is set to `'laravel'` in your configuration. If a different driver is configured, the package will not route requests through Laravel's HTTP client.
 
 ```php
 // config/instructor.php
@@ -254,6 +276,8 @@ Ensure the HTTP driver is set to 'laravel':
 ],
 ```
 
+Also verify that your test environment is not overriding this setting via an environment variable.
+
 ---
 
 ## Performance Issues
@@ -261,10 +285,10 @@ Ensure the HTTP driver is set to 'laravel':
 ### Slow Responses
 
 **Solutions:**
-1. Use a faster model (e.g., `gpt-4o-mini` instead of `gpt-4o`)
-2. Use Groq for faster inference
-3. Enable response caching
-4. Reduce input size
+1. **Use a faster model** -- `gpt-4o-mini` is significantly faster than `gpt-4o` for simple extractions
+2. **Use a fast-inference provider** -- Groq offers very low latency for supported models
+3. **Enable response caching** -- avoid redundant calls for identical inputs
+4. **Reduce input size** -- truncate long inputs to the minimum necessary context
 
 ```php
 // Use faster provider
@@ -280,9 +304,10 @@ $result = Cache::remember($cacheKey, 3600, fn () =>
 ### High Token Usage
 
 **Solutions:**
-1. Use concise system prompts
-2. Truncate long inputs
-3. Use smaller context windows
+1. Use concise system prompts -- every token in the prompt counts toward your bill
+2. Truncate long inputs to the essential content
+3. Use smaller response models with fewer properties
+4. Choose a model with a lower per-token cost
 
 ```php
 // Truncate long text
@@ -307,9 +332,11 @@ Allowed memory size exhausted
 ```
 
 **Solution:**
-1. Process in batches
+This can happen when processing many documents in a single request. Strategies:
+
+1. Process documents in chunks and allow garbage collection between batches
 2. Use streaming for large responses
-3. Increase PHP memory limit
+3. Dispatch extraction jobs to a queue worker with higher memory limits
 
 ```php
 // Process in chunks
@@ -317,7 +344,7 @@ $documents->chunk(10)->each(function ($chunk) {
     foreach ($chunk as $doc) {
         $result = StructuredOutput::with(...)
             ->get();
-        // Process and free memory
+        // Process result immediately
     }
     gc_collect_cycles();
 });
@@ -329,45 +356,46 @@ $documents->chunk(10)->each(function ($chunk) {
 
 | Error | Cause | Solution |
 |-------|-------|----------|
-| `Connection refused` | API unreachable | Check network/firewall |
-| `Invalid JSON` | Malformed response | Increase retries, simplify model |
-| `Model not found` | Wrong model name | Check model name spelling |
-| `Quota exceeded` | API limit reached | Upgrade plan or wait |
-| `Context length exceeded` | Input too long | Truncate input |
-| `Invalid request` | Malformed request | Check request parameters |
+| `Connection refused` | API endpoint unreachable | Check network, firewall, and API URL |
+| `Invalid JSON` | LLM returned malformed JSON | Increase retries, simplify response model |
+| `Model not found` | Wrong model name | Check model name spelling in config |
+| `Quota exceeded` | API billing limit reached | Upgrade plan or wait for reset |
+| `Context length exceeded` | Input + output exceeds model limit | Truncate input or use a model with larger context |
+| `Invalid request` | Malformed API request | Check request parameters and model compatibility |
 
 ---
 
 ## Getting Help
 
-If you're still stuck:
+If you are still stuck after trying the solutions above:
 
-1. **Check the logs:**
+1. **Check the logs** for detailed error information:
    ```bash
    tail -f storage/logs/laravel.log
    ```
 
-2. **Enable debug logging:**
+2. **Enable debug logging** for maximum visibility into what is happening:
    ```php
    // config/instructor.php
    'logging' => [
        'enabled' => true,
        'level' => 'debug',
+       'preset' => 'default',
    ],
    ```
 
-3. **Test the API directly:**
+3. **Test the API directly** to isolate whether the issue is in your configuration or your code:
    ```bash
    php artisan instructor:test --connection=openai
+   php artisan instructor:test --connection=anthropic --inference
    ```
 
-4. **Check GitHub issues:**
+4. **Search existing issues** on GitHub:
    https://github.com/cognesy/instructor-php/issues
 
-5. **Ask for help:**
-   Open a new issue with:
-   - PHP version
-   - Laravel version
-   - Package version
-   - Error message
+5. **Open a new issue** with:
+   - PHP version (`php -v`)
+   - Laravel version (`php artisan --version`)
+   - Package version (`composer show cognesy/instructor-laravel`)
+   - Full error message and stack trace
    - Minimal reproduction code

@@ -1,15 +1,110 @@
 ---
 title: Prompts
-description: 'Keep prompts simple and close to the request.'
+description: 'Control system messages, user prompts, examples, and cached context.'
 ---
 
-Prompt templating is not the core responsibility of this package.
+Instructor provides several prompt hooks that let you shape the messages sent to the LLM. These are intentionally simple -- Instructor is not a prompt management framework, but it gives you the building blocks you need for most structured output tasks.
 
-Within `cognesy/instructor-struct`, the main prompt hooks are:
+## Prompt Hooks
 
-- `withSystem(...)`
-- `withPrompt(...)`
-- `withExamples(...)`
-- `withCachedContext(...)`
+### System Message
 
-If your application needs a larger prompt-management system, use a companion package or your framework's existing template layer and pass the rendered strings into `StructuredOutput`.
+Set a system-level instruction that frames the entire extraction task.
+
+```php
+use Cognesy\Instructor\StructuredOutput;
+
+$result = (new StructuredOutput)
+    ->withSystem('You are a data extraction assistant. Be precise and thorough.')
+    ->with(messages: $text, responseModel: Person::class)
+    ->get();
+```
+
+### User Prompt
+
+Add an additional prompt that supplements the input messages. This is useful for providing extraction instructions without mixing them into the data.
+
+```php
+$result = (new StructuredOutput)
+    ->withPrompt('Extract all person information. If age is not stated, estimate based on context.')
+    ->with(messages: $text, responseModel: Person::class)
+    ->get();
+```
+
+### Examples
+
+Provide input/output examples to guide the LLM's extraction behavior. Few-shot examples are one of the most effective ways to improve extraction accuracy.
+
+```php
+use Cognesy\Instructor\Extras\Example\Example;
+
+$result = (new StructuredOutput)
+    ->withExamples([
+        new Example(
+            input: 'Dr. Smith is a 45-year-old cardiologist from Boston.',
+            output: ['name' => 'Dr. Smith', 'age' => 45, 'occupation' => 'cardiologist'],
+        ),
+    ])
+    ->with(messages: $text, responseModel: Person::class)
+    ->get();
+```
+
+### Combined Usage
+
+All prompt hooks can be used together in a single request, either through the fluent API or the `with()` shorthand.
+
+```php
+$result = (new StructuredOutput)
+    ->withSystem('You are a precise data extraction assistant.')
+    ->withPrompt('Extract person details from the text below.')
+    ->withExamples($examples)
+    ->withMessages($text)
+    ->withResponseClass(Person::class)
+    ->get();
+
+// Or equivalently:
+$result = (new StructuredOutput)->with(
+    system: 'You are a precise data extraction assistant.',
+    prompt: 'Extract person details from the text below.',
+    examples: $examples,
+    messages: $text,
+    responseModel: Person::class,
+)->get();
+```
+
+## Cached Context
+
+For applications that use the same large context across multiple requests (such as a long document or a set of reference materials), `withCachedContext()` marks content for provider-level prompt caching. This can significantly reduce costs and latency when supported by the provider.
+
+```php
+$result = (new StructuredOutput)
+    ->withCachedContext(
+        system: 'You are a legal document analyst.',
+        messages: $longDocument,
+        prompt: 'Extract all party names and obligations.',
+        examples: $examples,
+    )
+    ->with(messages: 'Focus on section 3.', responseModel: ContractDetails::class)
+    ->get();
+```
+
+Cached context messages are placed before the regular messages in the chat structure. The exact caching behavior depends on the LLM provider -- Anthropic and OpenAI both support prompt caching with different mechanisms.
+
+## Template Engine Integration
+
+If your application needs a more sophisticated prompt management system with variable interpolation, conditional logic, or template libraries, use the companion `Template` class from the `cognesy/template` package.
+
+```php
+use Cognesy\Template\Template;
+
+$rendered = Template::twig()
+    ->from('Extract {{ entity_type }} from the following text: {{ text }}')
+    ->with(['entity_type' => 'person', 'text' => $input])
+    ->toText();
+
+$result = (new StructuredOutput)
+    ->with(messages: $rendered, responseModel: Person::class)
+    ->get();
+```
+
+The `Template` class supports Twig and Blade template engines, front matter metadata, chat message markup, and template libraries loaded from disk. Render your templates into strings or message arrays, then pass the result into `StructuredOutput`. See the Template package documentation for full details.

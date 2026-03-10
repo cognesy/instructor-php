@@ -3,35 +3,227 @@ title: Data Model
 description: 'Choose the shape you want back from the model.'
 ---
 
-The response model is the contract between your code and the LLM.
+The response model is the contract between your code and the LLM. It tells Instructor what
+schema to send to the model and how to deserialize the response back into a PHP object.
 
-## Prefer Plain PHP Classes
 
-For most cases, use a class with public typed properties.
+## Plain PHP Classes
+
+For most cases, a class with public typed properties is all you need:
 
 ```php
-final class OrderSummary {
-    public string $customer;
-    public int $itemCount;
+class Person {
+    public string $name;
+    public int $age;
 }
 ```
 
-That is usually enough. Instructor builds a schema from the class and deserializes the response back into it.
+Instructor reads the property types, builds a JSON Schema from them, and hydrates the
+response back into the class. Public properties are filled by the LLM; private and
+protected properties are left untouched with their default values.
 
-## Other Supported Shapes
 
-- class strings such as `OrderSummary::class`
-- object instances
-- JSON schema arrays
-- helper wrappers such as `Scalar`, `Sequence`, and `Maybe`
+## Supported Response Model Shapes
+
+Instructor accepts several forms as the `responseModel` parameter:
+
+| Shape | Example | When to use |
+|---|---|---|
+| Class string | `Person::class` | Most common path |
+| Object instance | `new Person()` | When you need to pre-populate defaults |
+| JSON Schema array | `['type' => 'object', ...]` | Dynamic or externally defined schemas |
+| `Scalar` helper | `Scalar::integer('age')` | Single value extraction |
+| `Sequence` helper | `Sequence::of(Person::class)` | Lists of objects |
+| `Maybe` helper | `Maybe::is(Person::class)` | Optional data that might not exist |
+
+
+## Type Hints
+
+Use standard PHP type hints to specify the type of each field. Instructor supports all
+common types: `string`, `int`, `float`, `bool`, `array`, objects, and enums.
+
+Use nullable types to indicate that a field is optional:
+
+```php
+class Person {
+    public string $name;
+    public ?int $age;
+    public Address $address;
+}
+```
+
+> Instructor only sets public fields. Private and protected fields are ignored unless the
+> class defines matching setter methods or constructor parameters.
+
+
+## DocBlock Type Hints
+
+When you cannot or prefer not to use PHP type hints, DocBlock comments work as well.
+This is particularly useful for typed arrays, since PHP does not support generic array
+type hints natively:
+
+```php
+class Person {
+    /** @var string */
+    public $name;
+    /** @var int */
+    public $age;
+    /** @var Address $address Person's home address */
+    public $address;
+}
+```
+
+
+## Typed Collections And Arrays
+
+PHP does not support generics, so you need DocBlock comments to specify array element
+types. Instructor reads these annotations and includes them in the schema:
+
+```php
+class Event {
+    public string $title;
+    /** @var Person[] List of event participants */
+    public array $participants;
+}
+```
+
+When you need a top-level list rather than an object with an array property, use the
+`Sequence` helper instead:
+
+```php
+use Cognesy\Instructor\Extras\Sequence\Sequence;
+
+$people = (new StructuredOutput)
+    ->with(
+        messages: $text,
+        responseModel: Sequence::of(Person::class),
+    )
+    ->get();
+
+foreach ($people as $person) {
+    echo $person->name;
+}
+```
+
 
 ## Nested Objects And Enums
 
-Nested objects and enums are part of the normal path. If your class graph is simple and typed, it is usually a good fit.
+Nested objects and backed enums are part of the normal path. If your class graph is simple
+and typed, it works out of the box:
 
-## Keep Models Focused
+```php
+enum SkillType: string {
+    case Technical = 'technical';
+    case Other = 'other';
+}
 
-- Use public typed properties
-- Keep names clear
-- Put validation close to the model
-- Prefer small result types over large catch-all objects
+class Skill {
+    public string $name;
+    public SkillType $type;
+}
+
+class Person {
+    public string $name;
+    public int $age;
+    /** @var Skill[] */
+    public array $skills;
+}
+
+$person = (new StructuredOutput)
+    ->with(
+        messages: 'Alex is a 25-year-old software engineer who knows PHP, Python, and plays guitar.',
+        responseModel: Person::class,
+    )
+    ->get();
+
+echo $person->skills[0]->name; // PHP
+echo $person->skills[0]->type; // SkillType::Technical
+```
+
+
+## Describing Your Model To The LLM
+
+You can guide the model by adding descriptions and instructions to your classes and
+properties. Instructor includes these in the schema sent to the LLM.
+
+### PHP DocBlocks
+
+DocBlock comments on classes and properties are automatically extracted:
+
+```php
+/**
+ * Represents a skill and the context in which it was mentioned.
+ */
+class Skill {
+    public string $name;
+    /** @var SkillType $type Type of skill, derived from description and context */
+    public SkillType $type;
+    /** Directly quoted, full sentence mentioning the skill */
+    public string $context;
+}
+```
+
+### Attributes
+
+The `#[Description]` and `#[Instructions]` attributes provide a structured alternative
+to DocBlocks:
+
+```php
+use Cognesy\Instructor\Features\Schema\Attributes\Description;
+use Cognesy\Instructor\Features\Schema\Attributes\Instructions;
+
+#[Description("Information about a user")]
+class User {
+    #[Description("User's age in years")]
+    public int $age;
+    #[Instructions("Normalize the name to ALL CAPS")]
+    public string $name;
+    #[Description("User's current profession")]
+    #[Instructions("Ignore hobbies, identify only the profession")]
+    public string $job;
+}
+```
+
+You can combine attributes and DocBlocks on the same class. Instructor merges them
+into a single description block.
+
+
+## Optional Data With `Maybe`
+
+The `Maybe` helper wraps any response model to handle cases where the requested data
+might not be present in the input:
+
+```php
+use Cognesy\Instructor\Extras\Maybe\Maybe;
+
+$result = (new StructuredOutput)
+    ->with(
+        messages: 'The document discusses market trends but mentions no individuals.',
+        responseModel: Maybe::is(Person::class, 'person', 'Person data if found'),
+    )
+    ->get();
+
+if ($result->hasValue()) {
+    $person = $result->get();
+    echo $person->name;
+} else {
+    echo 'Not found: ' . $result->error();
+}
+```
+
+`Maybe` asks the model to set a `hasValue` boolean and, when the data is missing, to
+explain why in an `error` string. This is more reliable than using nullable types when
+you need to distinguish "data not found" from "data is null."
+
+
+## Best Practices
+
+- **Use public typed properties.** They give Instructor the clearest possible schema.
+- **Keep names descriptive.** Property names like `$customerEmail` produce better results
+  than `$e`.
+- **Put validation close to the model.** Use Symfony constraints or `ValidationMixin`
+  directly on the response class.
+- **Prefer small, focused models.** A `ContactInfo` class with three fields extracts
+  more reliably than a catch-all `Document` class with twenty.
+- **Use enums for constrained values.** Backed enums produce an `enum` constraint in the
+  schema, which dramatically improves accuracy for categorical fields.

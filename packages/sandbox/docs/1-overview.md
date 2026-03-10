@@ -1,30 +1,105 @@
 ---
 title: Overview
-description: 'Sandboxed command execution with pluggable drivers and immutable policy.'
+description: 'Sandboxed command execution with pluggable drivers, immutable execution policies, and real-time output streaming.'
 ---
 
-`packages/sandbox` runs commands with controlled limits and isolation.
+## Introduction
 
-Core pieces:
+The Sandbox package provides a unified API for executing shell commands with controlled resource limits and configurable isolation. Whether you need to run a quick script on the host machine or execute untrusted code inside a locked-down container, Sandbox gives you a single, consistent interface backed by pluggable drivers.
 
-- `Sandbox`: entry point and driver selection
-- `ExecutionPolicy`: immutable runtime policy (`with*()` returns new instance)
-- `CanExecuteCommand`: common contract for all drivers
-- `ExecResult`: normalized execution output and status
+Every execution is governed by an immutable `ExecutionPolicy` that defines timeout limits, memory caps, network access, environment variables, and file-system boundaries. The policy travels with the sandbox instance, ensuring that your constraints are always enforced regardless of which driver you choose.
 
-Supported drivers:
+## Core Architecture
 
-- `host`
-- `docker`
-- `podman`
-- `firejail`
-- `bubblewrap`
+The package is built around four primary components:
 
-## Docs
+### Sandbox
 
-- [Getting Started](2-getting-started.md)
-- [Execution Policy](3-execution-policy.md)
-- [Drivers](4-drivers.md)
-- [Streaming and Results](5-streaming-and-results.md)
-- [Testing](6-testing.md)
-- [Troubleshooting](7-troubleshooting.md)
+The `Sandbox` class is the main entry point. It accepts an `ExecutionPolicy` and produces a driver instance that implements the `CanExecuteCommand` contract. You can select a driver through static factory methods (`Sandbox::host()`, `Sandbox::docker()`, etc.) or dynamically via the `SandboxDriver` enum.
+
+```php
+use Cognesy\Sandbox\Sandbox;
+use Cognesy\Sandbox\Config\ExecutionPolicy;
+
+// Static factory
+$sandbox = Sandbox::host(ExecutionPolicy::in('/tmp'));
+
+// Dynamic selection
+$sandbox = Sandbox::fromPolicy($policy)->using('docker');
+```
+
+### ExecutionPolicy
+
+The `ExecutionPolicy` is an immutable configuration object that controls every aspect of command execution. Each `with*()` method returns a new instance, making policies safe to share and compose without side effects.
+
+```php
+$policy = ExecutionPolicy::in('/tmp')
+    ->withTimeout(30)
+    ->withMemory('256M')
+    ->withNetwork(false);
+```
+
+### CanExecuteCommand
+
+All drivers implement the `CanExecuteCommand` interface, which exposes a single `execute()` method. This contract guarantees that you can swap drivers without changing any calling code, making it straightforward to use the host driver in development and a container driver in production.
+
+```php
+use Cognesy\Sandbox\Contracts\CanExecuteCommand;
+
+function runScript(CanExecuteCommand $sandbox): string {
+    $result = $sandbox->execute(['php', 'script.php']);
+    return $result->stdout();
+}
+```
+
+### ExecResult
+
+Every execution returns an `ExecResult` -- a readonly value object that provides access to stdout, stderr, the exit code, wall-clock duration, and flags indicating whether the output was truncated or the command timed out.
+
+```php
+$result = $sandbox->execute(['php', '-v']);
+
+$result->stdout();          // Captured standard output
+$result->stderr();          // Captured standard error
+$result->exitCode();        // Process exit code (0 = success)
+$result->success();         // true when exit code is 0 and no timeout
+$result->duration();        // Wall-clock seconds as float
+$result->timedOut();        // true if wall or idle timeout was hit
+$result->truncatedStdout(); // true if stdout exceeded the cap
+$result->truncatedStderr(); // true if stderr exceeded the cap
+$result->combinedOutput();  // stdout + stderr joined
+$result->toArray();         // Full result as associative array
+```
+
+## Supported Drivers
+
+The package ships with five drivers, each offering a different level of isolation:
+
+| Driver | Isolation | Platform | Use Case |
+|---|---|---|---|
+| **Host** | None (process-level only) | All | Development, trusted scripts |
+| **Docker** | Full container | Linux, macOS, Windows | Production workloads, untrusted code |
+| **Podman** | Full container (rootless) | Linux | Rootless container execution |
+| **Firejail** | Linux namespaces + seccomp | Linux | Lightweight sandboxing without containers |
+| **Bubblewrap** | Linux namespaces | Linux | Minimal sandbox with namespace isolation |
+
+All drivers enforce the same `ExecutionPolicy` constraints and return the same `ExecResult` type, so your application code remains driver-agnostic.
+
+## Security Defaults
+
+The package ships with secure defaults that apply across all drivers:
+
+- **Network disabled** -- Commands cannot reach external services unless you explicitly call `withNetwork(true)`.
+- **Environment scrubbed** -- Security-sensitive variables (`AWS_*`, `LD_PRELOAD`, `GOOGLE_APPLICATION_CREDENTIALS`, etc.) are always stripped, even when environment inheritance is enabled.
+- **Output bounded** -- Both stdout and stderr are capped at 1 MB by default. When exceeded, only the most recent bytes are retained.
+- **Timeout enforced** -- Commands are terminated after 5 seconds by default. Both wall-clock and idle timeouts are supported.
+- **Container hardening** -- Docker and Podman drivers run with a read-only root filesystem, all capabilities dropped, `no-new-privileges` set, and commands execute as the `nobody` user (UID 65534).
+
+## Documentation
+
+- [Getting Started](2-getting-started.md) -- Run your first sandboxed command in three steps.
+- [Execution Policy](3-execution-policy.md) -- Configure timeouts, memory, paths, environment, network, and output limits.
+- [Drivers](4-drivers.md) -- Choose and configure the right isolation backend.
+- [Streaming and Results](5-streaming-and-results.md) -- Consume output in real time and inspect execution results.
+- [Testing](6-testing.md) -- Use `MockSandbox` for fast, deterministic tests.
+- [Troubleshooting](7-troubleshooting.md) -- Diagnose and resolve common issues.

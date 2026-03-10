@@ -3,14 +3,109 @@ title: Lifecycle
 description: 'What happens between request creation and the final result.'
 ---
 
-The structured-output lifecycle is straightforward:
+## Overview
 
-1. Build a `StructuredOutputRequest`
-2. Execute through `PendingStructuredOutput`
-3. Get a raw inference response
-4. Extract structured data from the response
-5. Deserialize it into the target shape
-6. Validate it
-7. Return a value, response object, or stream updates
+As Instructor processes your request, it moves through a well-defined series of
+stages. Understanding this lifecycle helps when debugging unexpected output or
+building custom extensions.
 
-Retries happen inside that flow when runtime configuration allows them.
+
+## Request Lifecycle Steps
+
+### 1. Build the Request
+
+The `StructuredOutput` facade collects your messages, response model, system prompt,
+examples, model overrides, and options into an immutable `StructuredOutputRequest`.
+
+### 2. Analyze the Response Model
+
+The `ResponseModelFactory` inspects the `responseModel` parameter and determines how
+to build a schema. Depending on the type of input, it follows one of several
+paths (class string, object instance, raw JSON Schema array, schema provider, etc.).
+The result is a `ResponseModel` containing the target class, a `Schema`, and the
+rendered JSON Schema for the provider.
+
+### 3. Translate to Provider Schema
+
+The schema is rendered into the format required by the selected output mode:
+
+| Output Mode | Schema Delivery |
+|---|---|
+| `Tools` | Wrapped in a tool-call function definition |
+| `Json` | Included in the system/user prompt as text |
+| `JsonSchema` | Sent via the provider's `response_format` parameter |
+| `MdJson` | Included in the prompt, response expected in a ```json``` codeblock |
+
+### 4. Execute the Inference Request
+
+The `PendingStructuredOutput` delegates to the configured `CanCreateInference`
+implementation (via the Polyglot inference layer). For streaming requests, the
+response arrives as a series of chunks.
+
+### 5. Extract Structured Data
+
+The `CanExtractResponse` extractor pulls JSON data from the raw inference response.
+The extraction strategy depends on the output mode -- for `Tools` mode it reads
+tool-call arguments; for `Json`/`JsonSchema` it parses the content directly; for
+`MdJson` it extracts from a fenced code block.
+
+### 6. Deserialize into the Target Shape
+
+The extracted array data is deserialized into the target PHP class (or returned as
+an array if `intoArray()` was specified). Classes implementing `CanDeserializeSelf`
+can override this step entirely.
+
+### 7. Validate the Result
+
+The deserialized object is validated. Built-in validation uses Symfony Validator
+constraints declared on the response model class. Classes implementing
+`CanValidateSelf` can provide their own validation logic.
+
+### 8. Transform (Optional)
+
+If the response model implements `CanTransformSelf`, the validated object is
+transformed into a different value before being returned to the caller. This is
+how helpers like `Scalar` unwrap a wrapper class into a plain PHP scalar.
+
+### 9. Return the Result
+
+The final value is wrapped in a `StructuredOutputResponse` (or yielded as a stream
+of partial responses) and returned to the caller.
+
+
+## Retry Loop
+
+Steps 4 through 8 run inside a retry loop. When validation or deserialization fails:
+
+1. The error message is formatted as feedback for the LLM.
+2. The feedback is appended to the conversation as a retry message.
+3. The LLM is called again with the updated context.
+4. The cycle repeats until the response passes or `maxRetries` is exhausted.
+
+The retry budget is configured via `StructuredOutputConfig::maxRetries`. A value of
+`0` (the default) means a single attempt with no retries. The total number of
+attempts is always `maxRetries + 1`.
+
+```php
+// Allow up to 3 retries (4 total attempts)
+$runtime = $runtime->withMaxRetries(3);
+```
+
+When the retry limit is reached without a valid response, a
+`StructuredOutputRecoveryException` is thrown.
+
+
+## Streaming Lifecycle
+
+When streaming is enabled, the lifecycle diverges after step 4:
+
+1. Chunks arrive incrementally from the provider.
+2. Each chunk is accumulated into a partial JSON string.
+3. The partial JSON is deserialized into a partial object (best-effort).
+4. A `StructuredOutputResponse` snapshot (marked as partial) is emitted.
+5. When the stream completes, the final response goes through the full
+   validation and transformation pipeline (steps 7-8).
+6. The finalized response is emitted as a non-partial `StructuredOutputResponse`.
+
+Partial updates are available through `StructuredOutputStream::partials()`,
+`sequence()`, or `responses()`.

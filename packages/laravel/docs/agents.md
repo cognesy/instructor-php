@@ -1,12 +1,12 @@
 # Code Agents
 
-The `AgentCtrl` facade provides a unified interface for invoking CLI-based code agents that can execute code, modify files, and perform complex tasks.
+The `AgentCtrl` facade provides a unified interface for invoking CLI-based code agents that can execute code, modify files, and perform complex multi-step tasks. Each agent runs as an external process, and the facade handles process management, output parsing, and response structuring.
 
 ## Supported Agents
 
 | Agent | Description | Use Case |
 |-------|-------------|----------|
-| **Claude Code** | Anthropic's Claude agent with code execution | General coding tasks, file modifications |
+| **Claude Code** | Anthropic's Claude agent with code execution | General coding tasks, refactoring, file modifications |
 | **Codex** | OpenAI's Codex agent | Code generation and completion |
 | **OpenCode** | Multi-model code agent | Research and coding with model flexibility |
 
@@ -29,7 +29,7 @@ if ($response->isSuccess()) {
 
 ### Claude Code
 
-Best for general coding tasks with Anthropic's Claude models:
+Best for general coding tasks with Anthropic's Claude models. Supports sandbox isolation, session resumption, and streaming output.
 
 ```php
 use Cognesy\Instructor\Laravel\Facades\AgentCtrl;
@@ -46,7 +46,7 @@ echo "Session ID: " . (string) ($response->sessionId() ?? '');
 
 ### Codex
 
-Best for OpenAI-powered code generation:
+Best for OpenAI-powered code generation.
 
 ```php
 $response = AgentCtrl::codex()
@@ -56,7 +56,7 @@ $response = AgentCtrl::codex()
 
 ### OpenCode
 
-Best for multi-model flexibility:
+Best for multi-model flexibility. Specify the model using the `provider/model` format.
 
 ```php
 $response = AgentCtrl::openCode()
@@ -66,7 +66,7 @@ $response = AgentCtrl::openCode()
 
 ### Dynamic Selection
 
-Select agent type at runtime:
+Select agent type at runtime based on configuration or business logic.
 
 ```php
 use Cognesy\AgentCtrl\Enum\AgentType;
@@ -81,7 +81,7 @@ $response = AgentCtrl::make($agentType)
 
 ### Builder Methods
 
-All agents support these configuration methods:
+All agents support the same set of builder methods for configuration. These methods override any defaults set in the Laravel config file.
 
 ```php
 AgentCtrl::claudeCode()
@@ -94,7 +94,7 @@ AgentCtrl::claudeCode()
 
 ### Laravel Configuration
 
-Configure defaults in `config/instructor.php`:
+Configure defaults in `config/instructor.php`. The facade automatically reads these values and applies them when you create a builder. Builder methods then override any defaults for that specific call.
 
 ```php
 'agents' => [
@@ -129,6 +129,8 @@ Configure defaults in `config/instructor.php`:
 ],
 ```
 
+Agent-specific settings (e.g., `claude_code.timeout`) take precedence over the global defaults (e.g., `agents.timeout`).
+
 ### Environment Variables
 
 ```env
@@ -149,21 +151,21 @@ OPENCODE_MODEL=anthropic/claude-sonnet-4-5
 
 ## Streaming
 
-Process output in real-time with streaming callbacks:
+Process output in real-time with streaming callbacks. The three callback types fire at different points during execution.
 
 ```php
 $response = AgentCtrl::claudeCode()
     ->onText(function (string $text) {
-        // Called as text is generated
+        // Called as text is generated -- use for live output
         echo $text;
     })
     ->onToolUse(function (string $tool, array $input, ?string $output) {
-        // Called when agent uses a tool
+        // Called when agent uses a tool (file read, shell command, etc.)
         echo "Tool: $tool\n";
         echo "Input: " . json_encode($input) . "\n";
     })
     ->onComplete(function (AgentResponse $response) {
-        // Called when execution completes
+        // Called once when execution finishes
         echo "\nDone! Exit code: " . $response->exitCode;
     })
     ->executeStreaming('Generate a REST API for products');
@@ -171,42 +173,42 @@ $response = AgentCtrl::claudeCode()
 
 ## Response Object
 
-The `AgentResponse` object contains:
+The `AgentResponse` object contains the agent's output along with metadata about the execution.
 
 ```php
 $response = AgentCtrl::claudeCode()->execute('...');
 
 // Main content
-$response->text();           // string - Generated text output
-$response->isSuccess();      // bool - True if exitCode is 0
+$response->text();           // string -- Generated text output
+$response->isSuccess();      // bool -- True if exitCode is 0
 
 // Metadata
-$response->exitCode;         // int - Process exit code
-$response->sessionId();      // AgentSessionId|null - Session ID for resuming
-$response->agentType;        // AgentType - Which agent was used
+$response->exitCode;         // int -- Process exit code
+$response->sessionId();      // AgentSessionId|null -- Session ID for resuming
+$response->agentType;        // AgentType -- Which agent was used
 
 // Usage (when available)
-$response->usage;            // ?TokenUsage - Token statistics
-$response->usage->input;     // int - Input tokens
-$response->usage->output;    // int - Output tokens
-$response->usage->total();   // int - Total tokens
+$response->usage;            // ?TokenUsage -- Token statistics
+$response->usage->input;     // int -- Input tokens
+$response->usage->output;    // int -- Output tokens
+$response->usage->total();   // int -- Total tokens
 
 // Cost (when available)
-$response->cost;             // ?float - Cost in USD
+$response->cost;             // ?float -- Cost in USD
 
 // Tool calls
-$response->toolCalls;        // array<ToolCall> - Tools used
+$response->toolCalls;        // array<ToolCall> -- Tools used during execution
 foreach ($response->toolCalls as $call) {
-    $call->tool;             // string - Tool name
-    $call->input;            // array - Tool input
-    $call->output;           // ?string - Tool output
-    $call->isError;          // bool - If tool call failed
+    $call->tool;             // string -- Tool name
+    $call->input;            // array -- Tool input parameters
+    $call->output;           // ?string -- Tool output
+    $call->isError;          // bool -- Whether the tool call failed
 }
 ```
 
 ## Session Management
 
-Resume previous sessions for continued work:
+Resume previous sessions for continued work. This is useful for multi-turn interactions where the agent needs context from a prior execution.
 
 ```php
 // First execution
@@ -215,13 +217,15 @@ $response = AgentCtrl::claudeCode()
 
 $sessionId = (string) ($response->sessionId() ?? '');
 
-// Later: Resume the session
+// Later: Resume the session with full context from the previous run
 $response = AgentCtrl::claudeCode()
     ->resumeSession($sessionId)
     ->execute('Continue with the Address model');
 ```
 
 ## Error Handling
+
+Always check `isSuccess()` and handle failures gracefully. Agent executions can fail due to timeouts, sandbox errors, or issues in the generated code.
 
 ```php
 use Cognesy\Instructor\Laravel\Facades\AgentCtrl;
@@ -261,7 +265,7 @@ try {
 
 ## Testing
 
-Use `AgentCtrl::fake()` for testing without actual agent execution:
+Use `AgentCtrl::fake()` for testing without actual agent execution. See the [Testing](testing.md) guide for full documentation of `AgentCtrlFake`.
 
 ```php
 use Cognesy\Instructor\Laravel\Facades\AgentCtrl;
@@ -283,58 +287,7 @@ test('generates migration code', function () {
 
     expect($result)->toContain('users_table');
 });
-
-test('handles multiple agent calls', function () {
-    $fake = AgentCtrl::fake([
-        'First response',
-        'Second response',
-        'Third response',
-    ]);
-
-    // Multiple calls return responses in sequence
-    $first = AgentCtrl::claudeCode()->execute('First');
-    $second = AgentCtrl::claudeCode()->execute('Second');
-
-    expect($first->text())->toBe('First response');
-    expect($second->text())->toBe('Second response');
-
-    $fake->assertExecutedTimes(2);
-});
-
-test('can create custom fake responses', function () {
-    use Cognesy\AgentCtrl\Enum\AgentType;
-    use Cognesy\Instructor\Laravel\Testing\AgentCtrlFake;
-
-    $customResponse = AgentCtrlFake::response(
-        text: 'Custom output',
-        exitCode: 0,
-        agentType: AgentType::ClaudeCode,
-        cost: 0.05,
-    );
-
-    $fake = AgentCtrl::fake([$customResponse]);
-
-    $response = AgentCtrl::claudeCode()->execute('Test');
-
-    expect($response->cost)->toBe(0.05);
-});
 ```
-
-### Available Assertions
-
-| Method | Description |
-|--------|-------------|
-| `assertExecuted()` | Agent was executed at least once |
-| `assertNotExecuted()` | Agent was never executed |
-| `assertExecutedTimes(n)` | Agent was executed exactly n times |
-| `assertExecutedWith(prompt)` | Prompt contains specific text |
-| `assertAgentType(type)` | Specific agent type was used |
-| `assertUsedClaudeCode()` | Claude Code agent was used |
-| `assertUsedCodex()` | Codex agent was used |
-| `assertUsedOpenCode()` | OpenCode agent was used |
-| `assertStreaming()` | Streaming execution was used |
-| `getExecutions()` | Get all recorded executions |
-| `reset()` | Reset fake state |
 
 ## Real-World Examples
 
@@ -380,6 +333,8 @@ class CodeGenerationService
 
 ### Queued Code Generation
 
+For long-running agent tasks, dispatch them to a queue so the user does not have to wait.
+
 ```php
 namespace App\Jobs;
 
@@ -420,7 +375,6 @@ GenerateCodeJob::dispatch(
 
 ```php
 use Cognesy\Instructor\Laravel\Facades\AgentCtrl;
-use Illuminate\Support\Facades\Log;
 
 class CodeReviewer
 {
@@ -448,7 +402,7 @@ class CodeReviewer
 
 ## Sandbox Drivers
 
-Control agent execution isolation:
+Control the isolation level of agent execution. The sandbox driver determines whether the agent runs directly on the host or inside a container.
 
 | Driver | Description | Use Case |
 |--------|-------------|----------|
@@ -474,9 +428,9 @@ AgentCtrl::claudeCode()
 
 ## Best Practices
 
-1. **Set Timeouts**: Always set appropriate timeouts for your use case
-2. **Use Sandbox**: In production, use Docker or other sandbox drivers
-3. **Handle Errors**: Check `isSuccess()` and handle failures gracefully
-4. **Log Sessions**: Store session IDs for debugging and continuation
-5. **Test with Fakes**: Use `AgentCtrl::fake()` in tests to avoid API calls
-6. **Queue Long Tasks**: Use Laravel queues for time-consuming operations
+1. **Set Timeouts** -- Always set appropriate timeouts for your use case. Complex code generation can take several minutes.
+2. **Use Sandbox Isolation** -- In production, use Docker or another container-based sandbox driver to prevent agents from making unintended changes.
+3. **Handle Errors** -- Check `isSuccess()` and handle failures gracefully. Agents can fail for many reasons, including API limits, invalid code, and sandbox restrictions.
+4. **Log Sessions** -- Store session IDs for debugging and continuation. They let you resume work and trace agent behavior.
+5. **Test with Fakes** -- Use `AgentCtrl::fake()` in tests to avoid API calls and process execution.
+6. **Queue Long Tasks** -- Use Laravel queues for time-consuming code generation to keep web responses fast.

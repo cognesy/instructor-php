@@ -1,10 +1,10 @@
 # Artisan Commands
 
-The package provides several Artisan commands to help with development and testing.
+The package registers three Artisan commands to help with installation, testing, and scaffolding. All commands are registered automatically when the application is running in console mode.
 
 ## instructor:install
 
-Installs and configures the Instructor package.
+Sets up the Instructor package in your Laravel application. This is the recommended first step after installing the Composer package.
 
 ```bash
 php artisan instructor:install
@@ -12,15 +12,17 @@ php artisan instructor:install
 
 ### What It Does
 
-1. Publishes the configuration file (`config/instructor.php`)
-2. Checks for API key configuration in `.env`
-3. Shows next steps for getting started
+1. **Publishes the configuration file** (`config/instructor.php`) using the `instructor-config` publish tag
+2. **Checks for API key configuration** by scanning your `.env` file for `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` entries
+3. **Displays next steps** including how to create your first response model and test the installation
+
+If no API keys are detected, the command displays a warning with instructions for adding them.
 
 ### Options
 
 | Option | Description |
 |--------|-------------|
-| `--force` | Overwrite existing configuration files |
+| `--force` | Overwrite existing configuration files (passed through to `vendor:publish`) |
 
 ### Example Output
 
@@ -28,7 +30,7 @@ php artisan instructor:install
 Installing Instructor for Laravel...
 
 Publishing configuration... done
-Checking API key configuration... ✓
+Checking API key configuration... done
 
 Next steps:
 
@@ -39,7 +41,7 @@ Next steps:
      php artisan make:response-model PersonData
 
   3. Extract structured data:
-     $person = StructuredOutput::with(
+     $person = Instructor::with(
          messages: "John is 30 years old",
          responseModel: PersonData::class,
      )->get();
@@ -54,7 +56,7 @@ Instructor installed successfully!
 
 ## instructor:test
 
-Tests your Instructor installation and API configuration.
+Tests your Instructor installation and API configuration by making a real API call. This verifies that your API key is valid, the network connection works, and the full extraction pipeline (or raw inference pipeline) is operational.
 
 ```bash
 php artisan instructor:test
@@ -62,16 +64,18 @@ php artisan instructor:test
 
 ### What It Does
 
-1. Displays current configuration
-2. Makes a test API call
-3. Verifies the response
+1. **Displays current configuration** -- connection name, driver, model, and a masked version of the API key
+2. **Makes a test API call** -- either a structured output extraction (default) or a raw inference call
+3. **Verifies the response** -- confirms the result contains the expected data
+
+For the structured output test, the command extracts a simple name-and-age pair from a test sentence. For the inference test, it sends "Reply with just the word 'pong'" and checks the response.
 
 ### Options
 
 | Option | Description |
 |--------|-------------|
-| `--connection=` | Test a specific configured connection |
-| `--inference` | Test raw inference instead of structured output |
+| `--connection=` | Test a specific configured connection instead of the default |
+| `--inference` | Test raw inference instead of structured output extraction |
 
 ### Examples
 
@@ -91,21 +95,23 @@ php artisan instructor:test --inference
 ```
 Testing Instructor installation...
 
-Preset ............................................. openai
+Connection ......................................... openai
 Driver ............................................. openai
 Model .............................................. gpt-4o-mini
-API Key ............................................ sk-...abc ✓
+API Key ............................................ sk-a...xyz1 done
 
-Testing structured output extraction... ✓
+Testing structured output extraction... done
 
 Structured output test completed!
 ```
+
+Use the `-v` flag for verbose output, which includes a full stack trace if the test fails.
 
 ---
 
 ## make:response-model
 
-Generates a new response model class.
+Generates a new response model class with typed constructor properties, docblock descriptions, and the correct namespace. The generated class is ready to use with `StructuredOutput::with(responseModel: ...)` immediately.
 
 ```bash
 php artisan make:response-model {name}
@@ -115,16 +121,16 @@ php artisan make:response-model {name}
 
 | Argument | Description |
 |----------|-------------|
-| `name` | The name of the response model class |
+| `name` | The name of the response model class (e.g., `PersonData`, `InvoiceDetails`) |
 
 ### Options
 
 | Option | Description |
 |--------|-------------|
-| `--collection`, `-c` | Create a collection response model |
-| `--nested`, `-n` | Create a nested objects response model |
-| `--description=`, `-d` | Set the class description |
-| `--force`, `-f` | Overwrite existing file |
+| `--collection`, `-c` | Create a collection response model with a parent class containing an array of child item objects |
+| `--nested`, `-n` | Create a nested response model with child object properties (Contact, Address) |
+| `--description=`, `-d` | Set the class docblock description (defaults to a TODO placeholder) |
+| `--force`, `-f` | Overwrite an existing file |
 
 ### Examples
 
@@ -167,7 +173,7 @@ final class PersonData
 php artisan make:response-model ProductList --collection
 ```
 
-Creates a model with an array of items:
+Creates a model with an array of typed items, plus a companion item class in the same file:
 
 ```php
 final class ProductList
@@ -193,7 +199,7 @@ final class ProductListItem
 php artisan make:response-model CompanyProfile --nested
 ```
 
-Creates a model with nested objects:
+Creates a model with nested Contact and Address objects:
 
 ```php
 final class CompanyProfile
@@ -231,42 +237,42 @@ final class CompanyProfileAddress
 php artisan make:response-model Invoice --description="Represents an invoice extracted from PDF documents"
 ```
 
-Creates a model with the specified description in the docblock.
+Creates a model with the specified description replacing the TODO placeholder in the docblock.
 
 ---
 
 ## Customizing Stubs
 
-Publish the stubs to customize them:
+Publish the stubs to customize the templates used by `make:response-model`:
 
 ```bash
 php artisan vendor:publish --tag=instructor-stubs
 ```
 
-This copies stubs to `stubs/instructor/`:
+This copies stubs to `stubs/instructor/` in your application root:
 
 ```
 stubs/instructor/
-├── response-model.stub
-├── response-model.collection.stub
-└── response-model.nested.stub
++-- response-model.stub
++-- response-model.collection.stub
++-- response-model.nested.stub
 ```
 
-Edit these files to customize generated response models.
+The command checks for published stubs first, falling back to the package defaults only when no custom stub is found.
 
 ### Stub Placeholders
 
 | Placeholder | Description |
 |-------------|-------------|
-| `{{ namespace }}` | The class namespace |
+| `{{ namespace }}` | The fully qualified namespace for the class |
 | `{{ class }}` | The class name |
-| `{{ description }}` | The class description |
+| `{{ description }}` | The class description (from `--description` or the default TODO) |
 
 ---
 
 ## Creating Custom Commands
 
-Extend the package commands for your specific needs:
+Build your own Artisan commands that use the facades for domain-specific extraction tasks:
 
 ```php
 // app/Console/Commands/ExtractInvoiceCommand.php
@@ -306,5 +312,5 @@ class ExtractInvoiceCommand extends Command
 | Command | Description |
 |---------|-------------|
 | `instructor:install` | Install and configure the package |
-| `instructor:test` | Test API configuration |
+| `instructor:test` | Test API configuration with a real API call |
 | `make:response-model` | Generate a response model class |

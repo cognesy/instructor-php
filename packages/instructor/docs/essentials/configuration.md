@@ -3,33 +3,174 @@ title: Configuration
 description: 'Keep provider, runtime, and request configuration separate.'
 ---
 
-There are three useful layers of configuration.
+Instructor separates configuration into three layers: the LLM provider, the runtime, and
+the individual request. This keeps most applications simple -- one runtime handles shared
+behavior, while each request stays focused on content.
 
-## Provider
 
-Use `LLMConfig` to choose the provider and model baseline.
+## Provider Configuration
 
-## Runtime
+Use `LLMConfig` to choose which provider and model to connect to. The simplest approach
+is a preset name that maps to your environment variables:
 
-Use `StructuredOutputRuntime` for behavior shared across requests:
+```php
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
-- retries
-- output mode
-- events
-- validators
-- transformers
-- deserializers
-- extractors
+$config = LLMConfig::fromPreset('openai');
+```
 
-## Request
+You can also create a `StructuredOutput` directly from a preset:
 
-Use `StructuredOutput` for one request:
+```php
+use Cognesy\Instructor\StructuredOutput;
 
-- messages
-- response model
-- system text
-- prompt text
-- examples
-- per-call model and options
+$result = StructuredOutput::using('anthropic')
+    ->with(messages: 'Jason is 28.', responseModel: Person::class)
+    ->get();
+```
 
-This split keeps most applications simple: one runtime, many small requests.
+Provider configuration covers connection details: API keys, base URLs, default model
+names, and HTTP client settings.
+
+
+## Runtime Configuration
+
+`StructuredOutputRuntime` holds behavior that is shared across many requests. Create one
+runtime and reuse it throughout your application:
+
+```php
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
+
+$runtime = StructuredOutputRuntime::fromConfig(
+    LLMConfig::fromPreset('openai')
+)
+    ->withMaxRetries(3)
+    ->withOutputMode(OutputMode::Tools);
+```
+
+### Runtime Settings
+
+| Method | Purpose |
+|---|---|
+| `withMaxRetries($n)` | Number of retry attempts after validation failure |
+| `withOutputMode($mode)` | How the model produces structured output (Tools, Json, etc.) |
+| `withValidators($validators)` | Override the validation pipeline |
+| `withTransformers($transformers)` | Override response transformers |
+| `withDeserializers($deserializers)` | Override response deserializers |
+| `withExtractors($extractors)` | Override response extractors |
+| `withConfig($config)` | Pass a full `StructuredOutputConfig` object |
+| `withDefaultToStdClass($bool)` | Fall back to `stdClass` for unknown types |
+
+### Advanced Configuration With `StructuredOutputConfig`
+
+For fine-grained control, build a `StructuredOutputConfig` directly:
+
+```php
+use Cognesy\Instructor\Config\StructuredOutputConfig;
+use Cognesy\Instructor\Enums\OutputMode;
+
+$config = new StructuredOutputConfig(
+    outputMode: OutputMode::JsonSchema,
+    maxRetries: 5,
+    retryPrompt: 'Fix the validation errors and try again.',
+    toolName: 'extract_data',
+    toolDescription: 'Extract structured data from the input.',
+);
+
+$runtime = StructuredOutputRuntime::fromConfig(
+    LLMConfig::fromPreset('openai'),
+    structuredConfig: $config,
+);
+```
+
+`StructuredOutputConfig` includes settings for:
+
+- **Output mode** -- which structured output strategy to use
+- **Retry behavior** -- max retries and the prompt sent on validation failure
+- **Tool metadata** -- tool name and description for `OutputMode::Tools`
+- **Schema metadata** -- schema name and description
+- **Mode prompts** -- per-mode prompt templates (e.g., how JSON Schema is embedded)
+- **Chat structure** -- the ordering of prompt sections
+- **Deserialization** -- error prompt template, `stdClass` fallback, object references
+
+
+## Request Configuration
+
+`StructuredOutput` handles per-request concerns. These are the things that change from
+one call to the next:
+
+```php
+use Cognesy\Instructor\StructuredOutput;
+
+$person = (new StructuredOutput)
+    ->withRuntime($runtime)
+    ->with(
+        messages: 'Jason is 28 years old.',
+        responseModel: Person::class,
+        system: 'Extract accurate data.',
+        prompt: 'Identify the person in the text.',
+        model: 'gpt-4o',
+    )
+    ->get();
+```
+
+### Request Methods
+
+| Method | Purpose |
+|---|---|
+| `withMessages(...)` | Chat messages (string, array, or `Messages`) |
+| `withInput(...)` | Input data (string, array, or object) |
+| `withResponseModel(...)` | Response model (class, instance, or schema) |
+| `withSystem(...)` | System prompt text |
+| `withPrompt(...)` | Additional prompt text |
+| `withExamples(...)` | Few-shot examples |
+| `withModel(...)` | Model name override |
+| `withOptions(...)` | Provider-specific options |
+| `withStreaming(...)` | Enable streaming |
+| `withCachedContext(...)` | Cached context for prompt caching |
+
+
+## Event Handling
+
+The runtime exposes an event system for observing the processing pipeline:
+
+```php
+use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputRequestReceived;
+
+$runtime->onEvent(StructuredOutputRequestReceived::class, function ($event) {
+    logger()->info('Request received', $event->data);
+});
+
+// Or listen to all events
+$runtime->wiretap(function ($event) {
+    logger()->debug(get_class($event));
+});
+```
+
+
+## Putting It Together
+
+A typical application creates one runtime at bootstrap and passes it to each request:
+
+```php
+// Bootstrap
+$runtime = StructuredOutputRuntime::fromConfig(
+    LLMConfig::fromPreset('openai')
+)->withMaxRetries(2);
+
+// Request 1
+$person = (new StructuredOutput)
+    ->withRuntime($runtime)
+    ->with(messages: $text1, responseModel: Person::class)
+    ->get();
+
+// Request 2
+$summary = (new StructuredOutput)
+    ->withRuntime($runtime)
+    ->with(messages: $text2, responseModel: Summary::class)
+    ->get();
+```
+
+This keeps configuration centralized and each request minimal.

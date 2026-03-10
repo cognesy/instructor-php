@@ -1,8 +1,10 @@
 # Testing
 
-The package provides testing fakes that allow you to mock LLM responses and make assertions about how your code interacts with the facades.
+The package provides dedicated testing fakes for all four facades, allowing you to mock LLM responses and make assertions about how your code interacts with the services. No real API calls are made when a fake is active, which makes tests fast, deterministic, and free of external dependencies.
 
 ## StructuredOutput::fake()
+
+The `StructuredOutputFake` intercepts all extraction calls and returns predefined responses. It records every call so you can assert against the response model class, messages, connection, and model that were used.
 
 ### Basic Usage
 
@@ -15,7 +17,7 @@ class PersonExtractionTest extends TestCase
 {
     public function test_extracts_person_data(): void
     {
-        // Arrange - Setup the fake with expected response
+        // Arrange -- setup the fake with expected responses
         $fake = StructuredOutput::fake([
             PersonData::class => new PersonData(
                 name: 'John Smith',
@@ -24,13 +26,13 @@ class PersonExtractionTest extends TestCase
             ),
         ]);
 
-        // Act - Your code calls StructuredOutput
+        // Act -- your code calls StructuredOutput
         $person = StructuredOutput::with(
             messages: 'John Smith is 30 years old',
             responseModel: PersonData::class,
         )->get();
 
-        // Assert - Verify the result
+        // Assert -- verify the result
         $this->assertEquals('John Smith', $person->name);
         $this->assertEquals(30, $person->age);
 
@@ -42,7 +44,7 @@ class PersonExtractionTest extends TestCase
 
 ### Response Mapping
 
-Map response model classes to their fake responses:
+Map response model classes to their fake responses. Each class returns its corresponding value when extracted.
 
 ```php
 $fake = StructuredOutput::fake([
@@ -56,9 +58,11 @@ $person = StructuredOutput::with(..., responseModel: PersonData::class)->get();
 $address = StructuredOutput::with(..., responseModel: AddressData::class)->get();
 ```
 
+If you request a response model that has no mapping, the fake throws a `RuntimeException` with a helpful message telling you which class needs a fake response.
+
 ### Response Sequences
 
-Return different responses for sequential calls:
+Return different responses for sequential calls to the same response model class.
 
 ```php
 $fake = StructuredOutput::fake();
@@ -108,6 +112,8 @@ $fake->assertUsedModel('gpt-4o');
 
 ### Accessing Recorded Calls
 
+Inspect all recorded extraction calls for custom assertions.
+
 ```php
 $fake = StructuredOutput::fake([...]);
 
@@ -127,6 +133,8 @@ foreach ($recorded as $extraction) {
 ---
 
 ## Inference::fake()
+
+The `InferenceFake` intercepts raw inference calls and returns responses based on pattern matching against the input messages.
 
 ### Basic Usage
 
@@ -155,7 +163,7 @@ public function test_calls_inference(): void
 
 ### Pattern Matching
 
-Responses are matched by pattern:
+Responses are matched by checking whether the input message contains the pattern string. The first matching pattern wins. If no pattern matches, the `default` key is used as a fallback; if no `default` exists, an empty string is returned.
 
 ```php
 $fake = Inference::fake([
@@ -164,7 +172,7 @@ $fake = Inference::fake([
     'default' => 'I don\'t understand.',
 ]);
 
-// Matches 'capital'
+// Matches 'capital' (input contains the word)
 $response1 = Inference::with(messages: 'What is the capital of France?')->get();
 
 // Matches 'weather'
@@ -175,6 +183,8 @@ $response3 = Inference::with(messages: 'Random question')->get();
 ```
 
 ### Response Sequences
+
+Queue ordered responses that are returned regardless of input content.
 
 ```php
 $fake = Inference::fake();
@@ -204,7 +214,7 @@ $fake->assertCalledTimes(3);
 // Assert never called
 $fake->assertNotCalled();
 
-// Assert called with specific message
+// Assert called with specific message text
 $fake->assertCalledWith('What is the capital');
 
 // Assert configured connection was used
@@ -220,6 +230,8 @@ $fake->assertCalledWithTools(['search', 'calculate']);
 ---
 
 ## Embeddings::fake()
+
+The `EmbeddingsFake` intercepts embedding requests and returns predefined or randomly generated vectors.
 
 ### Basic Usage
 
@@ -245,18 +257,20 @@ public function test_generates_embeddings(): void
 
 ### Default Embeddings
 
-If no pattern matches, a random normalized embedding is generated:
+If no pattern matches, a random normalized embedding vector is generated automatically. This is useful when you need an embedding but do not care about its exact values.
 
 ```php
 $fake = Embeddings::fake();
 
-// Returns random 1536-dimensional embedding
+// Returns random 1536-dimensional embedding (matching OpenAI's default dimensions)
 $embedding = Embeddings::withInputs('anything')->first();
 
 $this->assertCount(1536, $embedding);
 ```
 
 ### Custom Dimensions
+
+Match the dimensionality of your production embedding model.
 
 ```php
 $fake = Embeddings::fake()
@@ -294,6 +308,8 @@ $fake->assertUsedModel('text-embedding-3-large');
 
 ## AgentCtrl::fake()
 
+The `AgentCtrlFake` intercepts code agent executions and returns predefined responses without launching any CLI processes.
+
 ### Basic Usage
 
 ```php
@@ -301,18 +317,18 @@ use Cognesy\Instructor\Laravel\Facades\AgentCtrl;
 
 public function test_generates_code(): void
 {
-    // Arrange - Setup fake with expected responses
+    // Arrange -- setup fake with expected responses
     $fake = AgentCtrl::fake([
         'Generated migration file: 2024_01_01_create_users_table.php',
     ]);
 
-    // Act - Your code calls AgentCtrl
+    // Act -- your code calls AgentCtrl
     $result = AgentCtrl::claudeCode()
         ->execute('Generate a users table migration');
 
     // Assert
     $this->assertEquals(0, $result->exitCode);
-    $this->assertStringContains('migration', $result->text());
+    $this->assertStringContainsString('migration', $result->text());
 
     $fake->assertExecuted();
     $fake->assertExecutedWith('migration');
@@ -321,7 +337,7 @@ public function test_generates_code(): void
 
 ### Response Sequences
 
-Return different responses for sequential calls:
+Return different responses for sequential calls. If more calls are made than responses provided, the last response is repeated.
 
 ```php
 $fake = AgentCtrl::fake([
@@ -339,10 +355,10 @@ $fake->assertExecutedTimes(3);
 
 ### Custom Responses
 
-Create detailed fake responses with metadata:
+Create detailed fake responses with specific metadata using the `AgentCtrlFake::response()` factory method.
 
 ```php
-use Cognesy\Auxiliary\Agents\Enum\AgentType;
+use Cognesy\AgentCtrl\Enum\AgentType;
 use Cognesy\Instructor\Laravel\Testing\AgentCtrlFake;
 
 $customResponse = AgentCtrlFake::response(
@@ -361,6 +377,8 @@ expect($response->agentType)->toBe(AgentType::ClaudeCode);
 ```
 
 ### Fake Tool Calls
+
+Simulate agent tool usage in your tests.
 
 ```php
 use Cognesy\Instructor\Laravel\Testing\AgentCtrlFake;
@@ -413,7 +431,7 @@ $fake->assertUsedOpenCode();
 // Assert streaming was used
 $fake->assertStreaming();
 
-// Access recorded executions
+// Access recorded executions for custom assertions
 $executions = $fake->getExecutions();
 foreach ($executions as $exec) {
     echo $exec['prompt'];
@@ -424,7 +442,7 @@ foreach ($executions as $exec) {
     echo $exec['streaming'] ? 'yes' : 'no';
 }
 
-// Reset fake state
+// Reset fake state between test scenarios
 $fake->reset();
 ```
 
@@ -459,7 +477,7 @@ public function test_generates_migration(): void
     $service = app(CodeGeneratorService::class);
     $result = $service->generateMigration(['table' => 'users']);
 
-    $this->assertStringContains('Migration', $result);
+    $this->assertStringContainsString('Migration', $result);
     $fake->assertUsedClaudeCode();
     $fake->assertExecutedWith('users');
 }
@@ -469,7 +487,7 @@ public function test_generates_migration(): void
 
 ## HTTP Client Faking
 
-Since the package uses Laravel's HTTP client, you can also use `Http::fake()`:
+Since the package routes all HTTP traffic through Laravel's HTTP client (`Illuminate\Http\Client\Factory`), you can also use `Http::fake()` to intercept requests at the HTTP transport level. This approach is lower-level than facade fakes and is useful when you need to test specific HTTP request/response shapes.
 
 ```php
 use Illuminate\Support\Facades\Http;
@@ -497,11 +515,13 @@ public function test_with_http_fake(): void
 }
 ```
 
+This works because the `LaravelDriver` HTTP transport uses the same `Illuminate\Http\Client\Factory` instance that `Http::fake()` instruments. Make sure the `instructor.http.driver` config is set to `'laravel'` (the default).
+
 ---
 
 ## Testing Services
 
-When testing services that use Instructor, prefer dependency injection:
+When testing services that use Instructor through dependency injection, the facade fake automatically replaces the container binding. The container will resolve the fake instance for both facade calls and injected dependencies.
 
 ```php
 use Cognesy\Instructor\StructuredOutput;
@@ -541,6 +561,8 @@ public function test_extracts_person(): void
 
 ### 1. Always Setup Fakes First
 
+Call `fake()` before any code that might trigger an extraction. Setting up a fake after the fact has no effect on calls that already happened.
+
 ```php
 public function test_example(): void
 {
@@ -557,8 +579,10 @@ public function test_example(): void
 
 ### 2. Use Realistic Test Data
 
+Realistic fake responses help catch bugs that only surface with production-like data, such as edge cases in string formatting or numeric precision.
+
 ```php
-// Good - realistic data
+// Good -- realistic data
 $fake = StructuredOutput::fake([
     InvoiceData::class => new InvoiceData(
         invoiceNumber: 'INV-2024-001',
@@ -567,7 +591,7 @@ $fake = StructuredOutput::fake([
     ),
 ]);
 
-// Avoid - placeholder data
+// Avoid -- placeholder data
 $fake = StructuredOutput::fake([
     InvoiceData::class => new InvoiceData(
         invoiceNumber: 'test',
@@ -578,6 +602,8 @@ $fake = StructuredOutput::fake([
 ```
 
 ### 3. Test Edge Cases
+
+Verify that your code handles empty collections, null optional fields, and other boundary conditions correctly.
 
 ```php
 public function test_handles_empty_response(): void
@@ -607,7 +633,9 @@ public function test_handles_null_optional_fields(): void
 }
 ```
 
-### 4. Verify Assertions
+### 4. Verify Connection and Model Usage
+
+Assert that your code routes requests to the correct provider and model, especially when different code paths use different connections.
 
 ```php
 public function test_uses_correct_model(): void
