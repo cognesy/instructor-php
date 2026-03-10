@@ -6,7 +6,7 @@ use Cognesy\Addons\ToolUse\Collections\ToolExecutions;
 use Cognesy\Addons\ToolUse\Enums\ToolUseStepType;
 use Cognesy\Addons\ToolUse\Exceptions\ToolExecutionException;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Throwable;
 

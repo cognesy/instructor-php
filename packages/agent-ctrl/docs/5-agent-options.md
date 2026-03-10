@@ -13,6 +13,32 @@ All configuration methods return `static`, so they can be chained fluently in an
 
 The following methods are defined in the `AgentBridgeBuilder` interface and implemented by every bridge builder. They work identically regardless of which agent you are using.
 
+### `withConfig(AgentConfig $config): static`
+
+Apply a typed config object containing the shared builder options:
+
+```php
+use Cognesy\AgentCtrl\Config\AgentConfig;
+
+$config = AgentConfig::fromArray([
+    'model' => 'claude-sonnet-4-5',
+    'timeout' => 300,
+    'directory' => '/projects/my-app',
+    'sandbox' => 'docker',
+]);
+
+AgentCtrl::claudeCode()
+    ->withConfig($config)
+    ->execute('Review the payment flow.');
+```
+
+This is the preferred way to pass shared builder defaults around your own application code. The object covers:
+
+- `model`
+- `timeout`
+- `workingDirectory`
+- `sandboxDriver`
+
 ### `withModel(string $model): static`
 
 Set the model the agent should use. The accepted model name format depends on the agent:
@@ -96,9 +122,13 @@ AgentCtrl::claudeCode()
 Build the configured bridge without executing a prompt. This is an advanced method for scenarios where you need to call the bridge's `execute()` or `executeStreaming()` methods directly:
 
 ```php
+use Cognesy\AgentCtrl\Config\AgentConfig;
+
 $bridge = AgentCtrl::claudeCode()
-    ->withModel('claude-sonnet-4-5')
-    ->withTimeout(300)
+    ->withConfig(new AgentConfig(
+        model: 'claude-sonnet-4-5',
+        timeout: 300,
+    ))
     ->build();
 
 $response = $bridge->execute('First prompt.');

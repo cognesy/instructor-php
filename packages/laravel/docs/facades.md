@@ -118,7 +118,7 @@ $items = StructuredOutput::with(...)->getArray();
 | `get()` | Execute extraction and return the result |
 | `stream()` | Execute extraction and return a stream |
 | `response()` | Execute and return the full response wrapper |
-| `rawResponse()` | Execute and return the raw inference response |
+| `inferenceResponse()` | Execute and return the raw inference response |
 
 Runtime policy such as retries, output mode, validators, transformers, deserializers, and extractors is configured on `StructuredOutputRuntime` and then passed via `withRuntime(...)`.
 
@@ -312,12 +312,16 @@ $response = AgentCtrl::make(AgentType::ClaudeCode)
 The facade automatically applies Laravel configuration defaults from `config/instructor.php` for each agent type. Builder methods override those defaults for a single call.
 
 ```php
+use Cognesy\AgentCtrl\Config\AgentConfig;
+use Cognesy\Sandbox\Enums\SandboxDriver;
+
 $response = AgentCtrl::claudeCode()
-    ->withModel('claude-opus-4-5')           // AI model
-    ->withTimeout(300)                        // Timeout in seconds
-    ->inDirectory(base_path())                // Working directory
-    ->withSandboxDriver(SandboxDriver::Host)  // Sandbox isolation
-    ->withMaxRetries(3)                       // Retry on failure
+    ->withConfig(new AgentConfig(
+        model: 'claude-opus-4-5',
+        timeout: 300,
+        workingDirectory: base_path(),
+        sandboxDriver: SandboxDriver::Host,
+    ))
     ->execute('Your prompt');
 ```
 
@@ -393,11 +397,11 @@ $response = AgentCtrl::claudeCode()
 | `openCode()` | Get OpenCode agent builder |
 | `make(AgentType)` | Get agent builder by type |
 | `fake(array $responses)` | Create a testing fake |
+| `withConfig(AgentConfig)` | Apply shared typed config |
 | `withModel(string)` | Set AI model |
 | `withTimeout(int)` | Set execution timeout in seconds |
 | `inDirectory(string)` | Set working directory |
 | `withSandboxDriver(SandboxDriver)` | Set sandbox isolation driver |
-| `withMaxRetries(int)` | Set retry count |
 | `onText(callable)` | Register streaming text callback |
 | `onToolUse(callable)` | Register tool use callback |
 | `onComplete(callable)` | Register completion callback |

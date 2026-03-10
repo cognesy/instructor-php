@@ -1,5 +1,8 @@
 <?php declare(strict_types=1);
 
+namespace Tests\AgentCtrl\Unit\Common\WorkingDirectory;
+
+use InvalidArgumentException;
 use Cognesy\AgentCtrl\Bridge\ClaudeCodeBridge;
 use Cognesy\AgentCtrl\Bridge\OpenCodeBridge;
 use Cognesy\AgentCtrl\Builder\ClaudeCodeBridgeBuilder;
@@ -52,7 +55,7 @@ it('fails early when opencode working directory does not exist', function () {
 
 function privateProperty(object $object, string $property): mixed
 {
-    $reflection = new ReflectionClass($object);
+    $reflection = new \ReflectionClass($object);
     $refProperty = $reflection->getProperty($property);
 
     return $refProperty->getValue($object);

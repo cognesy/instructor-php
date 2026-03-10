@@ -1,7 +1,10 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Tests\Unit\Drivers\OpenResponses;
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Drivers\OpenResponses\OpenResponsesMessageFormat;
 use PHPUnit\Framework\TestCase;
 
@@ -11,7 +14,7 @@ class OpenResponsesMessageFormatTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->messageFormat = new OpenResponsesMessageFormat();
+        $this->messageFormat = new OpenResponsesMessageFormat;
     }
 
     public function test_converts_user_message_to_message_item(): void
@@ -20,7 +23,7 @@ class OpenResponsesMessageFormatTest extends TestCase
             ['role' => 'user', 'content' => 'Hello!'],
         ];
 
-        $result = $this->messageFormat->map($messages);
+        $result = $this->messageFormat->map(Messages::fromArray($messages));
 
         $this->assertCount(1, $result);
         $this->assertEquals('message', $result[0]['type']);
@@ -35,7 +38,7 @@ class OpenResponsesMessageFormatTest extends TestCase
             ['role' => 'assistant', 'content' => 'Hi there!'],
         ];
 
-        $result = $this->messageFormat->map($messages);
+        $result = $this->messageFormat->map(Messages::fromArray($messages));
 
         $this->assertCount(1, $result);
         $this->assertEquals('message', $result[0]['type']);
@@ -64,13 +67,13 @@ class OpenResponsesMessageFormatTest extends TestCase
             ],
         ];
 
-        $result = $this->messageFormat->map($messages);
+        $result = $this->messageFormat->map(Messages::fromArray($messages));
 
         $this->assertCount(1, $result);
         $this->assertEquals('function_call', $result[0]['type']);
         $this->assertEquals('call_123', $result[0]['call_id']);
         $this->assertEquals('get_weather', $result[0]['name']);
-        $this->assertEquals('{"location": "NYC"}', $result[0]['arguments']);
+        $this->assertEquals('{"location":"NYC"}', $result[0]['arguments']);
     }
 
     public function test_converts_tool_call_with_content_to_multiple_items(): void
@@ -93,7 +96,7 @@ class OpenResponsesMessageFormatTest extends TestCase
             ],
         ];
 
-        $result = $this->messageFormat->map($messages);
+        $result = $this->messageFormat->map(Messages::fromArray($messages));
 
         $this->assertCount(2, $result);
         // First item should be the message content
@@ -109,13 +112,15 @@ class OpenResponsesMessageFormatTest extends TestCase
             [
                 'role' => 'tool',
                 'content' => '{"temperature": 72}',
-                '_metadata' => [
-                    'tool_call_id' => 'call_123',
+                'tool_result' => [
+                    'content' => '{"temperature": 72}',
+                    'call_id' => 'call_123',
+                    'tool_name' => 'get_weather',
                 ],
             ],
         ];
 
-        $result = $this->messageFormat->map($messages);
+        $result = $this->messageFormat->map(Messages::fromArray($messages));
 
         $this->assertCount(1, $result);
         $this->assertEquals('function_call_output', $result[0]['type']);
@@ -150,7 +155,7 @@ class OpenResponsesMessageFormatTest extends TestCase
             ],
         ];
 
-        $result = $this->messageFormat->map($messages);
+        $result = $this->messageFormat->map(Messages::fromArray($messages));
 
         $this->assertCount(2, $result);
         $this->assertEquals('function_call', $result[0]['type']);
@@ -171,7 +176,7 @@ class OpenResponsesMessageFormatTest extends TestCase
             ],
         ];
 
-        $result = $this->messageFormat->map($messages);
+        $result = $this->messageFormat->map(Messages::fromArray($messages));
 
         $this->assertCount(1, $result);
         $this->assertEquals('message', $result[0]['type']);
@@ -187,7 +192,7 @@ class OpenResponsesMessageFormatTest extends TestCase
             ['role' => 'user', 'content' => 'Hello!'],
         ];
 
-        $result = $this->messageFormat->map($messages);
+        $result = $this->messageFormat->map(Messages::fromArray($messages));
 
         // Empty content messages are preserved but with empty content array
         $this->assertCount(2, $result);
@@ -216,13 +221,15 @@ class OpenResponsesMessageFormatTest extends TestCase
             [
                 'role' => 'tool',
                 'content' => '{"temperature": 72, "condition": "sunny"}',
-                '_metadata' => [
-                    'tool_call_id' => 'call_weather',
+                'tool_result' => [
+                    'content' => '{"temperature": 72, "condition": "sunny"}',
+                    'call_id' => 'call_weather',
+                    'tool_name' => 'get_weather',
                 ],
             ],
         ];
 
-        $result = $this->messageFormat->map($messages);
+        $result = $this->messageFormat->map(Messages::fromArray($messages));
 
         $this->assertCount(3, $result);
         $this->assertEquals('message', $result[0]['type']);

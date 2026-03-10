@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Inference\Drivers\Mistral;
 
@@ -16,7 +18,8 @@ class MistralBodyFormat implements CanMapRequestBody
     ) {}
 
     #[\Override]
-    public function toRequestBody(InferenceRequest $request) : array {
+    public function toRequestBody(InferenceRequest $request): array
+    {
         $request = $request->withCacheApplied();
 
         $options = array_merge($this->config->options, $request->options());
@@ -29,33 +32,36 @@ class MistralBodyFormat implements CanMapRequestBody
             'messages' => $this->messageFormat->map($request->messages()),
         ]), $options);
 
-        $requestBody['response_format'] = match(true) {
-            $request->hasTools() && !$this->supportsNonTextResponseForTools($request) => [],
+        $requestBody['response_format'] = match (true) {
+            $request->hasTools() && ! $this->supportsNonTextResponseForTools($request) => [],
             $this->supportsStructuredOutput($request) => $this->toResponseFormat($request),
             default => [],
         };
-        
+
         if ($request->hasTools()) {
             $requestBody['tools'] = $this->toTools($request);
-            $requestBody['tool_choice'] = $this->toToolChoice($request->tools(), $request->toolChoice());
+            $requestBody['tool_choice'] = $this->toToolChoice($request);
         }
 
-        return array_filter($requestBody, fn($value) => $value !== null && $value !== [] && $value !== '');
+        return array_filter($requestBody, fn ($value) => $value !== null && $value !== [] && $value !== '');
     }
 
     // CAPABILITIES /////////////////////////////////////////
 
-    protected function supportsNonTextResponseForTools(InferenceRequest $request) : bool {
+    protected function supportsNonTextResponseForTools(InferenceRequest $request): bool
+    {
         return false;
     }
 
-    protected function supportsStructuredOutput(InferenceRequest $request) : bool {
+    protected function supportsStructuredOutput(InferenceRequest $request): bool
+    {
         return true;
     }
 
     // INTERNAL /////////////////////////////////////////////
 
-    protected function toResponseFormat(InferenceRequest $request) : array {
+    protected function toResponseFormat(InferenceRequest $request): array
+    {
         $type = $this->toResponseFormatType($request);
         if ($type === null) {
             return [];
@@ -63,8 +69,8 @@ class MistralBodyFormat implements CanMapRequestBody
 
         // Mistral API supports: json_object, json_schema, text
         $responseFormat = $request->responseFormat()
-            ->withToJsonObjectHandler(fn() => ['type' => 'json_object'])
-            ->withToJsonSchemaHandler(fn() => [
+            ->withToJsonObjectHandler(fn () => ['type' => 'json_object'])
+            ->withToJsonSchemaHandler(fn () => [
                 'type' => 'json_schema',
                 'json_schema' => [
                     'name' => $request->responseFormat()->schemaName(),
@@ -80,28 +86,35 @@ class MistralBodyFormat implements CanMapRequestBody
             'text' => $responseFormat->asText(),
             default => [],
         };
-        return array_filter($result, fn($value) => $value !== null && $value !== [] && $value !== '');
+
+        return array_filter($result, fn ($value) => $value !== null && $value !== [] && $value !== '');
     }
 
-    private function toTools(InferenceRequest $request) : array {
-        return $this->removeDisallowedEntries($request->tools());
+    private function toTools(InferenceRequest $request): array
+    {
+        return $this->removeDisallowedEntries($request->tools()->toArray());
     }
 
-    private function toToolChoice(array $tools, array|string $toolChoice) : array|string {
-        return match(true) {
-            empty($tools) => '',
-            empty($toolChoice) => 'auto',
-            is_array($toolChoice) => [
+    private function toToolChoice(InferenceRequest $request): array|string
+    {
+        $tools = $request->tools();
+        $toolChoice = $request->toolChoice();
+
+        return match (true) {
+            $tools->isEmpty() => '',
+            $toolChoice->isEmpty() => 'auto',
+            $toolChoice->isSpecific() => [
                 'type' => 'function',
                 'function' => [
-                    'name' => $toolChoice['function']['name'],
-                ]
+                    'name' => $toolChoice->functionName(),
+                ],
             ],
-            default => $toolChoice,
+            default => $toolChoice->mode(),
         };
     }
 
-    private function removeDisallowedEntries(array $jsonSchema) : array {
+    private function removeDisallowedEntries(array $jsonSchema): array
+    {
         return Arrays::removeRecursively(
             array: $jsonSchema,
             keys: [
@@ -111,12 +124,13 @@ class MistralBodyFormat implements CanMapRequestBody
         );
     }
 
-    protected function toResponseFormatType(InferenceRequest $request) : ?string {
-        if (!$request->hasResponseFormat()) {
+    protected function toResponseFormatType(InferenceRequest $request): ?string
+    {
+        if (! $request->hasResponseFormat()) {
             return null;
         }
 
-        return match($request->responseFormat()->type()) {
+        return match ($request->responseFormat()->type()) {
             'text' => 'text',
             'json',
             'json_object' => 'json_object',
@@ -124,5 +138,4 @@ class MistralBodyFormat implements CanMapRequestBody
             default => null,
         };
     }
-
 }

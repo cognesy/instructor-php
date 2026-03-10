@@ -4,7 +4,7 @@ namespace Cognesy\Agents\Tool\Contracts;
 
 use Cognesy\Agents\Collections\ToolExecutions;
 use Cognesy\Agents\Data\AgentState;
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Messages\ToolCalls;
 
 interface CanExecuteToolCalls
 {

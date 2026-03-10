@@ -6,6 +6,7 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Instructor\Contracts\CanEmitStreamingUpdates;
 use Cognesy\Instructor\Creation\ExecutionDriverFactory;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
+use Cognesy\Instructor\Data\StructuredOutputResponse;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted;
 use Cognesy\Instructor\StructuredOutputStream;
@@ -32,12 +33,12 @@ final class StructuredOutputExecutionSession
             return $this->execution->output();
         }
 
-        $this->rawResponse();
+        $this->inferenceResponse();
 
         return $this->execution->output();
     }
 
-    public function rawResponse(): InferenceResponse
+    public function inferenceResponse(): InferenceResponse
     {
         $existingResponse = $this->execution->inferenceResponse();
         if ($existingResponse !== null) {
@@ -45,7 +46,7 @@ final class StructuredOutputExecutionSession
         }
 
         if ($this->execution->isStreamed() || $this->cachedStream !== null) {
-            return $this->stream()->finalRawResponse();
+            return $this->stream()->finalInferenceResponse();
         }
 
         $this->events->dispatch(new StructuredOutputStarted(['request' => $this->execution->request()->toArray()]));
@@ -61,7 +62,12 @@ final class StructuredOutputExecutionSession
             throw new RuntimeException('Failed to get inference response');
         }
 
-        $this->events->dispatch(new StructuredOutputResponseGenerated(['response' => $response]));
+        $this->events->dispatch(new StructuredOutputResponseGenerated([
+            'response' => StructuredOutputResponse::final(
+                value: $this->execution->output(),
+                inferenceResponse: $response,
+            ),
+        ]));
 
         return $response;
     }

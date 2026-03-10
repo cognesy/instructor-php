@@ -37,7 +37,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static mixed get()
  * @method static \Cognesy\Instructor\StructuredOutputStream stream()
  * @method static \Cognesy\Instructor\Data\StructuredOutputResponse response()
- * @method static \Cognesy\Polyglot\Inference\Data\InferenceResponse rawResponse()
+ * @method static \Cognesy\Polyglot\Inference\Data\InferenceResponse inferenceResponse()
  * @method static string getString()
  * @method static float getFloat()
  * @method static int getInt()

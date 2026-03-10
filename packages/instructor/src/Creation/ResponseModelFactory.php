@@ -10,6 +10,8 @@ use Cognesy\Instructor\Data\SchemaRendering;
 use Cognesy\Instructor\Events\Request\ResponseModelBuildModeSelected;
 use Cognesy\Instructor\Events\Request\ResponseModelBuilt;
 use Cognesy\Instructor\Events\Request\ResponseModelRequested;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Schema\Contracts\CanProvideSchema;
 use Cognesy\Schema\Data\ObjectSchema;
 use Cognesy\Schema\Data\Schema;
@@ -91,7 +93,8 @@ class ResponseModelFactory
             schemaName: $schemaName,
             schemaDescription: $schemaDescription,
             outputFormat: $resolvedOutputFormat,
-            renderingPayload: $renderingPayload,
+            toolDefinitions: $renderingPayload['toolDefinitions'],
+            responseFormat: $renderingPayload['responseFormat'],
         );
     }
 
@@ -130,7 +133,8 @@ class ResponseModelFactory
             schemaName: $schemaName,
             schemaDescription: $schemaDescription,
             outputFormat: $resolvedOutputFormat,
-            renderingPayload: $renderingPayload,
+            toolDefinitions: $renderingPayload['toolDefinitions'],
+            responseFormat: $renderingPayload['responseFormat'],
         );
     }
 
@@ -158,7 +162,8 @@ class ResponseModelFactory
             schemaName: $schemaName,
             schemaDescription: $schemaDescription,
             outputFormat: $resolvedOutputFormat,
-            renderingPayload: $renderingPayload,
+            toolDefinitions: $renderingPayload['toolDefinitions'],
+            responseFormat: $renderingPayload['responseFormat'],
         );
     }
 
@@ -183,7 +188,8 @@ class ResponseModelFactory
             schemaName: $schemaName,
             schemaDescription: $schemaDescription,
             outputFormat: $resolvedOutputFormat,
-            renderingPayload: $renderingPayload,
+            toolDefinitions: $renderingPayload['toolDefinitions'],
+            responseFormat: $renderingPayload['responseFormat'],
         );
     }
 
@@ -210,7 +216,8 @@ class ResponseModelFactory
             schemaName: $schemaName,
             schemaDescription: $schemaDescription,
             outputFormat: $resolvedOutputFormat,
-            renderingPayload: $renderingPayload,
+            toolDefinitions: $renderingPayload['toolDefinitions'],
+            responseFormat: $renderingPayload['responseFormat'],
         );
     }
 
@@ -249,7 +256,8 @@ class ResponseModelFactory
             schemaName: $schemaName,
             schemaDescription: $schemaDescription,
             outputFormat: $resolvedOutputFormat,
-            renderingPayload: $renderingPayload,
+            toolDefinitions: $renderingPayload['toolDefinitions'],
+            responseFormat: $renderingPayload['responseFormat'],
         );
     }
 
@@ -284,7 +292,8 @@ class ResponseModelFactory
             schemaName: $schemaName,
             schemaDescription: $schemaDescription,
             outputFormat: $resolvedOutputFormat,
-            renderingPayload: $renderingPayload,
+            toolDefinitions: $renderingPayload['toolDefinitions'],
+            responseFormat: $renderingPayload['responseFormat'],
         );
     }
 
@@ -327,9 +336,6 @@ class ResponseModelFactory
         return $instance;
     }
 
-    /**
-     * @param array{toolCallSchema: array, responseFormat: array} $renderingPayload
-     */
     private function buildResponseModel(
         string $class,
         object $instance,
@@ -338,17 +344,22 @@ class ResponseModelFactory
         string $schemaName,
         string $schemaDescription,
         ?OutputFormat $outputFormat,
-        array $renderingPayload,
+        ToolDefinitions $toolDefinitions,
+        ResponseFormat $responseFormat,
     ) : ResponseModel {
-        return $this->makeResponseModel(
+        return new ResponseModel(
             class: $class,
             instance: $instance,
             schema: $schema,
             jsonSchema: $jsonSchema,
-            toolCallSchema: $renderingPayload['toolCallSchema'],
-            responseFormat: $renderingPayload['responseFormat'],
             schemaName: $schemaName,
             schemaDescription: $schemaDescription,
+            toolName: $this->config->toolName(),
+            toolDescription: $this->config->toolDescription(),
+            toolDefinitions: $toolDefinitions,
+            responseFormat: $responseFormat,
+            useObjectReferences: $this->config->useObjectReferences(),
+            config: $this->config,
             outputFormat: $outputFormat,
         );
     }
@@ -387,39 +398,11 @@ class ResponseModelFactory
         }
     }
 
-    private function makeResponseModel(
-        string $class,
-        object $instance,
-        Schema $schema,
-        array $jsonSchema,
-        array $toolCallSchema,
-        array $responseFormat,
-        string $schemaName,
-        string $schemaDescription,
-        ?OutputFormat $outputFormat,
-    ) : ResponseModel {
-        return new ResponseModel(
-            class: $class,
-            instance: $instance,
-            schema: $schema,
-            jsonSchema: $jsonSchema,
-            schemaName: $schemaName,
-            schemaDescription: $schemaDescription,
-            toolName: $this->config->toolName(),
-            toolDescription: $this->config->toolDescription(),
-            toolCallSchema: $toolCallSchema,
-            responseFormat: $responseFormat,
-            useObjectReferences: $this->config->useObjectReferences(),
-            config: $this->config,
-            outputFormat: $outputFormat,
-        );
-    }
-
     private function renderSchema(Schema $schema) : SchemaRendering {
         return $this->schemaRenderer->renderFromSchema($schema);
     }
 
-    private function renderResponseFormat(array $jsonSchema, string $schemaName) : array {
+    private function renderResponseFormat(array $jsonSchema, string $schemaName) : ResponseFormat {
         return $this->schemaRenderer->renderResponseFormat(
             jsonSchema: $jsonSchema,
             schemaName: $schemaName,
@@ -427,20 +410,20 @@ class ResponseModelFactory
         );
     }
 
-    private function toolCallSchemaForInstance(
+    private function toolDefinitionsForInstance(
         object $instance,
         array $jsonSchema,
         ?SchemaRendering $rendering = null,
-    ) : array {
+    ) : ToolDefinitions {
         return match(true) {
-            $instance instanceof CanHandleToolSelection => $instance->toToolCallsJson(),
-            $rendering !== null => $rendering->toolCallSchema(),
+            $instance instanceof CanHandleToolSelection => $instance->toToolDefinitions(),
+            $rendering !== null => $rendering->toolDefinitions(),
             default => $this->schemaRenderer->renderToolCallSchema($jsonSchema),
         };
     }
 
     /**
-     * @return array{toolCallSchema: array, responseFormat: array}
+     * @return array{toolDefinitions: ToolDefinitions, responseFormat: ResponseFormat}
      */
     private function renderingPayloadFor(
         object $instance,
@@ -449,7 +432,7 @@ class ResponseModelFactory
         ?SchemaRendering $rendering = null,
     ) : array {
         return [
-            'toolCallSchema' => $this->toolCallSchemaForInstance($instance, $jsonSchema, $rendering),
+            'toolDefinitions' => $this->toolDefinitionsForInstance($instance, $jsonSchema, $rendering),
             'responseFormat' => $this->renderResponseFormat($jsonSchema, $schemaName),
         ];
     }

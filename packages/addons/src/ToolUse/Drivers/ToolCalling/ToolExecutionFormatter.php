@@ -6,7 +6,9 @@ use Cognesy\Addons\ToolUse\Collections\ToolExecutions;
 use Cognesy\Addons\ToolUse\Data\ToolExecution;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCall;
+use Cognesy\Messages\ToolCalls;
+use Cognesy\Messages\ToolResult;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Result;
@@ -33,9 +35,7 @@ class ToolExecutionFormatter
         return new Message(
             role: 'assistant',
             content: '',
-            metadata: [
-                'tool_calls' => [$toolCall->toToolCallArray()]
-            ]
+            toolCalls: new ToolCalls($toolCall),
         );
     }
 
@@ -48,34 +48,37 @@ class ToolExecutionFormatter
 
     protected function toolExecutionSuccessMessage(ToolCall $toolCall, Success $result) : Message {
         $value = $result->unwrap();
+        $content = match(true) {
+            is_string($value) => $value,
+            is_array($value) => Json::encode($value),
+            is_object($value) => Json::encode($value),
+            $value === null => 'null',
+            is_bool($value) => $value ? 'true' : 'false',
+            is_int($value) || is_float($value) => (string) $value,
+            default => var_export($value, true),
+        };
         return new Message(
             role: 'tool',
-            content: match(true) {
-                is_string($value) => $value,
-                is_array($value) => Json::encode($value),
-                is_object($value) => Json::encode($value),
-                $value === null => 'null',
-                is_bool($value) => $value ? 'true' : 'false',
-                is_int($value) || is_float($value) => (string) $value,
-                default => var_export($value, true),
-            },
-            metadata: [
-                'tool_call_id' => (string) ($toolCall->id() ?? ''),
-                'tool_name' => $toolCall->name(),
-                'result' => $value
-            ]
+            content: $content,
+            toolResult: new ToolResult(
+                content: $content,
+                callId: $toolCall->id(),
+                toolName: $toolCall->name(),
+            ),
         );
     }
 
     protected function toolExecutionErrorMessage(ToolCall $toolCall, Failure $result) : Message {
+        $content = "Error in tool call: " . $result->errorMessage();
         return new Message(
             role: 'tool',
-            content: "Error in tool call: " . $result->errorMessage(),
-            metadata: [
-                'tool_call_id' => (string) ($toolCall->id() ?? ''),
-                'tool_name' => $toolCall->name(),
-                'result' => $result->error()
-            ]
+            content: $content,
+            toolResult: new ToolResult(
+                content: $content,
+                callId: $toolCall->id(),
+                toolName: $toolCall->name(),
+                isError: true,
+            ),
         );
     }
 }

@@ -3,7 +3,7 @@
 namespace Cognesy\Polyglot\Inference\Data;
 
 use Cognesy\Http\Data\HttpResponse;
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Profiler\TracksObjectCreation;

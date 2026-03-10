@@ -9,9 +9,9 @@ use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Data\AgentStep;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCall;
 
 describe('AgentState::withCurrentStep metadata tagging', function () {
     it('tags tool step output messages with is_trace and execution metadata', function () {

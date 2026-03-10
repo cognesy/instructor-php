@@ -3,6 +3,7 @@
 namespace Cognesy\Polyglot\Inference\Data;
 
 use Cognesy\Http\Data\HttpResponse;
+use Cognesy\Messages\ToolCallId;
 
 /**
  * Typed delta payload parsed from one streaming event.

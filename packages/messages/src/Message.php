@@ -42,6 +42,8 @@ final readonly class Message
     protected Content $content;
     protected Metadata $metadata;
     protected ?MessageId $parentId;
+    protected ToolCalls $toolCalls;
+    protected ?ToolResult $toolResult;
 
     /**
      * @param string|MessageRole|null $role
@@ -58,6 +60,8 @@ final readonly class Message
         string $name = '',
         Metadata|array $metadata = [],
         ?MessageId $parentId = null,
+        ?ToolCalls $toolCalls = null,
+        ?ToolResult $toolResult = null,
         // Identity fields - for deserialization
         ?MessageId $id = null,
         ?DateTimeImmutable $createdAt = null,
@@ -78,6 +82,8 @@ final readonly class Message
             default => throw new \InvalidArgumentException('Metadata must be an array or Metadata instance.'),
         };
         $this->parentId = $parentId;
+        $this->toolCalls = $toolCalls ?? ToolCalls::empty();
+        $this->toolResult = $toolResult;
     }
 
     // CONSTRUCTORS ///////////////////////////////////////
@@ -181,6 +187,24 @@ final readonly class Message
         return $this->role()->oneOf(...$roles);
     }
 
+    // TOOL ACCESSORS ///////////////////////////////////////
+
+    public function hasToolCalls(): bool {
+        return !$this->toolCalls->isEmpty();
+    }
+
+    public function toolCalls(): ToolCalls {
+        return $this->toolCalls;
+    }
+
+    public function hasToolResult(): bool {
+        return $this->toolResult !== null;
+    }
+
+    public function toolResult(): ?ToolResult {
+        return $this->toolResult;
+    }
+
     // ///////////////////////////////////////
 
     public function name(): string {
@@ -197,7 +221,9 @@ final readonly class Message
 
     public function isEmpty(): bool {
         return $this->content->isEmpty()
-            && $this->metadata()->isEmpty();
+            && $this->metadata()->isEmpty()
+            && $this->toolCalls->isEmpty()
+            && $this->toolResult === null;
     }
 
     public function isComposite(): bool {
@@ -223,7 +249,8 @@ final readonly class Message
             name: $this->name,
             metadata: $this->metadata->withKeyValue($key, $value),
             parentId: $this->parentId,
-            // Preserve identity
+            toolCalls: $this->toolCalls,
+            toolResult: $this->toolResult,
             id: $this->id,
             createdAt: $this->createdAt,
         );
@@ -238,7 +265,8 @@ final readonly class Message
             name: $this->name,
             metadata: $this->metadata,
             parentId: $this->parentId,
-            // Preserve identity
+            toolCalls: $this->toolCalls,
+            toolResult: $this->toolResult,
             id: $this->id,
             createdAt: $this->createdAt,
         );
@@ -251,7 +279,8 @@ final readonly class Message
             name: $name,
             metadata: $this->metadata,
             parentId: $this->parentId,
-            // Preserve identity
+            toolCalls: $this->toolCalls,
+            toolResult: $this->toolResult,
             id: $this->id,
             createdAt: $this->createdAt,
         );
@@ -268,7 +297,8 @@ final readonly class Message
             name: $this->name,
             metadata: $this->metadata,
             parentId: $this->parentId,
-            // Preserve identity
+            toolCalls: $this->toolCalls,
+            toolResult: $this->toolResult,
             id: $this->id,
             createdAt: $this->createdAt,
         );
@@ -281,7 +311,36 @@ final readonly class Message
             name: $this->name,
             metadata: $this->metadata,
             parentId: $parentId,
-            // Preserve identity
+            toolCalls: $this->toolCalls,
+            toolResult: $this->toolResult,
+            id: $this->id,
+            createdAt: $this->createdAt,
+        );
+    }
+
+    public function withToolCalls(ToolCalls $toolCalls): self {
+        return new self(
+            role: $this->role,
+            content: $this->content,
+            name: $this->name,
+            metadata: $this->metadata,
+            parentId: $this->parentId,
+            toolCalls: $toolCalls,
+            toolResult: $this->toolResult,
+            id: $this->id,
+            createdAt: $this->createdAt,
+        );
+    }
+
+    public function withToolResult(ToolResult $toolResult): self {
+        return new self(
+            role: $this->role,
+            content: $this->content,
+            name: $this->name,
+            metadata: $this->metadata,
+            parentId: $this->parentId,
+            toolCalls: $this->toolCalls,
+            toolResult: $toolResult,
             id: $this->id,
             createdAt: $this->createdAt,
         );
@@ -316,6 +375,13 @@ final readonly class Message
             },
             '_metadata' => $this->metadata->toArray(),
         ];
+
+        if (!$this->toolCalls->isEmpty()) {
+            $data['tool_calls'] = $this->toolCalls->toArray();
+        }
+        if ($this->toolResult !== null) {
+            $data['tool_result'] = $this->toolResult->toArray();
+        }
 
         if ($data['parentId'] === null) {
             unset($data['parentId']);

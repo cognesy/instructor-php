@@ -5,6 +5,9 @@ use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Creation\StructuredOutputSchemaRenderer;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\Enums\ReturnTarget;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Schema\Data\Schema;
 use Cognesy\Schema\TypeInfo;
 use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
@@ -16,8 +19,8 @@ final class ResponseModel implements CanProvideJsonSchema
     private string $class;
     private Schema $schema;
     private array $jsonSchema;
-    private array $toolCallSchema;
-    private array $responseFormat;
+    private ToolDefinitions $toolDefinitions;
+    private ResponseFormat $responseFormat;
     private string $toolName;
     private string $toolDescription;
     private string $schemaName;
@@ -36,8 +39,8 @@ final class ResponseModel implements CanProvideJsonSchema
         string $schemaDescription,
         string $toolName,
         string $toolDescription,
-        array  $toolCallSchema = [],
-        array  $responseFormat = [],
+        ToolDefinitions|null $toolDefinitions = null,
+        ResponseFormat|null $responseFormat = null,
         bool   $useObjectReferences = false,
         ?StructuredOutputConfig $config = null,
         ?OutputFormat $outputFormat = null,
@@ -46,8 +49,8 @@ final class ResponseModel implements CanProvideJsonSchema
         $this->instance = $instance;
         $this->schema = $schema;
         $this->jsonSchema = $jsonSchema;
-        $this->toolCallSchema = $toolCallSchema;
-        $this->responseFormat = $responseFormat;
+        $this->toolDefinitions = $toolDefinitions ?? ToolDefinitions::empty();
+        $this->responseFormat = $responseFormat ?? ResponseFormat::empty();
         $this->schemaName = $schemaName;
         $this->schemaDescription = $schemaDescription;
         $this->toolName = $toolName;
@@ -149,6 +152,10 @@ final class ResponseModel implements CanProvideJsonSchema
         );
     }
 
+    public function withToolDefinitions(ToolDefinitions $toolDefinitions) : static {
+        return $this->with(toolDefinitions: $toolDefinitions);
+    }
+
     public function withInstance(mixed $instance) : static {
         return $this->with(instance: $instance);
     }
@@ -188,26 +195,21 @@ final class ResponseModel implements CanProvideJsonSchema
         return $this->toJsonSchema();
     }
 
-    public function toolCallSchema() : array {
+    public function toolDefinitions() : ToolDefinitions {
         return match($this->config->outputMode()) {
-            OutputMode::Tools => $this->toolCallSchema,
-            default => [],
+            OutputMode::Tools => $this->toolDefinitions,
+            default => ToolDefinitions::empty(),
         };
     }
 
-    public function responseFormat() : array {
+    public function responseFormat() : ResponseFormat {
         return $this->responseFormat;
     }
 
-    public function toolChoice() : string|array {
+    public function toolChoice() : ToolChoice {
         return match($this->config->outputMode()) {
-            OutputMode::Tools => [
-                'type' => 'function',
-                'function' => [
-                    'name' => ($this->toolName() ?: 'extract_data'),
-                ]
-            ],
-            default => [],
+            OutputMode::Tools => ToolChoice::specific($this->toolName() ?: 'extract_data'),
+            default => ToolChoice::empty(),
         };
     }
 
@@ -232,15 +234,15 @@ final class ResponseModel implements CanProvideJsonSchema
         ?string $toolName = null,
         ?string $toolDescription = null,
         ?OutputFormat $outputFormat = null,
-        ?array $toolCallSchema = null,
-        ?array $responseFormat = null,
+        ?ToolDefinitions $toolDefinitions = null,
+        ?ResponseFormat $responseFormat = null,
     ) : static {
         $new = new static(
             class: $this->class,
             instance: $instance ?? $this->instance,
             schema: $this->schema,
             jsonSchema: $this->jsonSchema,
-            toolCallSchema: $toolCallSchema ?? $this->toolCallSchema,
+            toolDefinitions: $toolDefinitions ?? $this->toolDefinitions,
             responseFormat: $responseFormat ?? $this->responseFormat,
             schemaName: $this->schemaName,
             schemaDescription: $this->schemaDescription,

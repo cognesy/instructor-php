@@ -2,18 +2,20 @@
 
 namespace Cognesy\Instructor\Data;
 
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
+
 final readonly class SchemaRendering
 {
     public function __construct(
         private array $jsonSchema,
-        private array $toolCallSchema,
+        private ToolDefinitions $toolDefinitions,
     ) {}
 
     public function jsonSchema() : array {
         return $this->jsonSchema;
     }
 
-    public function toolCallSchema() : array {
-        return $this->toolCallSchema;
+    public function toolDefinitions() : ToolDefinitions {
+        return $this->toolDefinitions;
     }
 }

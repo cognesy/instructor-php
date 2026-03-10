@@ -1,28 +1,153 @@
 ---
 title: 'Streaming Responses'
-description: 'Turn on streaming for a request and consume chunks as they arrive.'
+description: 'Enable streaming, consume chunks as they arrive, and process server-sent events.'
 ---
 
-Set the request to streaming mode:
+Streaming responses let you process data as it arrives from the server rather than waiting for the entire response to buffer in memory. This is particularly valuable when working with LLM APIs that generate tokens incrementally, downloading large files, or consuming real-time event streams.
+
+## Enabling Streaming
+
+To receive a streaming response, set the `stream` option on the request:
 
 ```php
-$request = (new HttpRequest(
+use Cognesy\Http\Data\HttpRequest;
+
+$request = new HttpRequest(
     url: 'https://api.example.com/stream',
     method: 'GET',
     headers: ['Accept' => 'text/event-stream'],
     body: '',
-    options: [],
-))->withStreaming(true);
-// @doctest id="d629"
+    options: ['stream' => true],
+);
+// @doctest id="7db5"
 ```
 
-Then consume the response as chunks:
+You can also enable streaming on an existing request using `withStreaming()`:
+
+```php
+$request = $request->withStreaming(true);
+// @doctest id="a0c1"
+```
+
+## Consuming the Stream
+
+Once you have a streaming request, call `stream()` on the pending response. This returns a PHP Generator that yields string chunks:
 
 ```php
 foreach ($client->send($request)->stream() as $chunk) {
     echo $chunk;
+    flush();
 }
-// @doctest id="684b"
+// @doctest id="cdd7"
 ```
 
-If you need to parse server-sent events, add `EventSourceMiddleware` before sending the request.
+Each chunk is a raw string as received from the transport layer. The size of individual chunks depends on the driver and the `streamChunkSize` setting in `HttpClientConfig` (default: 256 bytes).
+
+> **Note:** You do not need to explicitly set `stream => true` on the request when using `PendingHttpResponse::stream()`. The pending response will force streaming mode automatically. However, setting it on the request is useful when middleware needs to know the intended mode before execution.
+
+## Streaming LLM Responses
+
+Streaming is essential for AI/LLM integrations where responses are generated token by token. Here is a typical pattern for streaming a chat completion:
+
+```php
+$request = new HttpRequest(
+    url: 'https://api.openai.com/v1/chat/completions',
+    method: 'POST',
+    headers: [
+        'Content-Type' => 'application/json',
+        'Authorization' => 'Bearer ' . $apiKey,
+    ],
+    body: [
+        'model' => 'gpt-4',
+        'messages' => [
+            ['role' => 'user', 'content' => 'Write a haiku about PHP.'],
+        ],
+        'stream' => true,
+    ],
+    options: ['stream' => true],
+);
+
+foreach ($client->send($request)->stream() as $chunk) {
+    echo $chunk;
+    flush();
+}
+// @doctest id="7c95"
+```
+
+The raw chunks from the transport layer will contain server-sent event framing (e.g., `data: {...}\n\n`). To parse these into clean payloads, use the `EventSourceMiddleware`.
+
+## Server-Sent Events with EventSourceMiddleware
+
+The `EventSourceMiddleware` handles the SSE protocol for you. It strips the `data:` prefixes, buffers partial lines, and yields complete event payloads:
+
+```php
+use Cognesy\Http\Extras\Middleware\EventSource\EventSourceMiddleware;
+
+$client = $client->withMiddleware(
+    (new EventSourceMiddleware(true))
+        ->withParser(fn(string $payload): string => $payload),
+    'eventsource',
+);
+// @doctest id="b86a"
+```
+
+The parser callback receives the raw payload string from each `data:` line and returns the value to yield. Return `false` to skip an event. This is useful for filtering out `[DONE]` markers or parsing JSON:
+
+```php
+$client = $client->withMiddleware(
+    (new EventSourceMiddleware(true))
+        ->withParser(function (string $payload): string|bool {
+            if ($payload === '[DONE]') {
+                return false; // skip
+            }
+            return $payload;
+        }),
+    'eventsource',
+);
+// @doctest id="9b96"
+```
+
+You can also attach listeners for debugging or event dispatching:
+
+```php
+use Cognesy\Http\Extras\Support\EventSource\Listeners\PrintToConsole;
+use Cognesy\Http\Config\DebugConfig;
+
+$middleware = (new EventSourceMiddleware(true))
+    ->withListeners(new PrintToConsole(new DebugConfig(httpEnabled: true)))
+    ->withParser(fn(string $payload): string => $payload);
+// @doctest id="9ddb"
+```
+
+## Downloading Large Files
+
+Streaming is the right approach for downloading large files without exhausting memory:
+
+```php
+$request = new HttpRequest(
+    url: 'https://example.com/large-dataset.csv',
+    method: 'GET',
+    headers: [],
+    body: '',
+    options: ['stream' => true],
+);
+
+$handle = fopen('dataset.csv', 'wb');
+
+foreach ($client->send($request)->stream() as $chunk) {
+    fwrite($handle, $chunk);
+}
+
+fclose($handle);
+// @doctest id="478a"
+```
+
+## Considerations
+
+When working with streaming responses, keep these points in mind:
+
+- **Memory usage.** Streaming avoids buffering the entire response, but be careful not to accumulate chunks in a variable unless you actually need the full content.
+- **Connection stability.** Streaming connections stay open longer and are more sensitive to network interruptions. Pair streaming with retry middleware for resilience.
+- **Timeouts.** The `idleTimeout` setting in `HttpClientConfig` controls how long the client waits between data packets. Set it to `-1` to disable idle timeouts for long-lived streams.
+- **Body access.** Calling `body()` on a streamed `HttpResponse` throws a `LogicException`. Always use `stream()` for streamed responses.
+- **Middleware order.** Middleware that decorates the stream (like `EventSourceMiddleware`) should be registered before middleware that reads the final content.

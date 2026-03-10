@@ -43,6 +43,55 @@ MISTRAL_API_KEY=...
 
 You can configure multiple providers simultaneously and switch between them at runtime using the `connection()` method on any facade.
 
+## Setup by Package
+
+The Laravel package is the Laravel integration layer for four underlying packages. You do not install them separately in a Laravel app. Instead, you configure them through Laravel's native `config/instructor.php` file and use the Laravel facades or container bindings.
+
+The standalone `packages/config` YAML loader is not responsible for reading `config/instructor.php`. Under Laravel, the service provider reads Laravel's config repository directly and maps those values into the typed runtime config objects used by Instructor, Polyglot, and the HTTP client.
+
+| Underlying package | Laravel surface | What to set up | Continue with |
+|-------|-------------|----------------|---------------|
+| `packages/instructor` | `StructuredOutput` facade and `Cognesy\Instructor\StructuredOutput` | Configure your default LLM connection, extraction defaults, and response models | [Facades](facades.md), [Response Models](response-models.md), [Configuration](configuration.md) |
+| `packages/polyglot` | `Inference` and `Embeddings` facades plus `Cognesy\Polyglot\Inference\Inference` and `Cognesy\Polyglot\Embeddings\Embeddings` | Configure inference connections in `connections` and embedding models in `embeddings.connections` | [Facades](facades.md), [Configuration](configuration.md), [Events](events.md) |
+| `packages/agents` | `AgentCtrl` facade | Install the CLI agent you want to use, ensure its binary is available in `PATH`, then configure timeouts, working directory, and sandbox defaults in `agents` | [Code Agents](agents.md), [Testing](testing.md) |
+| `packages/http-client` | Internal Laravel-backed transport | No separate install is required; keep `http.driver` set to `laravel` to route requests through Laravel's HTTP client and `Http::fake()` | [Configuration](configuration.md), [Testing](testing.md) |
+
+### `packages/instructor` Under Laravel
+
+Structured output uses the default connection from `config/instructor.php`, then applies Laravel-specific extraction defaults such as output mode and retry behavior. In practice, setup means:
+
+- publish the config file
+- set at least one LLM API key
+- choose a default connection in `connections`
+- define extraction defaults in `extraction`
+- create response model classes and call `StructuredOutput`
+
+### `packages/polyglot` Under Laravel
+
+Laravel exposes Polyglot through two entry points:
+
+- `Inference` for raw text, JSON, tool-calling, and streaming responses
+- `Embeddings` for vector generation
+
+Both use the same published config file. Inference reads from `connections`; embeddings read from `embeddings.connections`. If you already configured providers for `StructuredOutput`, raw inference usually needs no additional setup.
+
+### `packages/agents` Under Laravel
+
+`AgentCtrl` does not use the LLM HTTP connections from `config/instructor.php`. It runs external agent CLIs from your Laravel application. Setup means:
+
+- install the agent CLI you want to use
+- make sure its executable is available in `PATH`
+- authenticate that CLI using its own provider workflow
+- set Laravel defaults for timeout, working directory, model, and sandbox in `agents`
+
+### `packages/http-client` Under Laravel
+
+Laravel already wires the HTTP client package into the container. All Instructor, Inference, and Embeddings calls use the Laravel-backed driver by default. Setup usually means only:
+
+- keep `http.driver` set to `laravel`
+- adjust `http.timeout` and `http.connect_timeout` if needed
+- use `Http::fake()` when you want transport-level HTTP tests
+
 ## Verify Installation
 
 Run the installation command to verify everything is configured correctly:

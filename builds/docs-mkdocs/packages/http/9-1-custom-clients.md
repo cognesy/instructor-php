@@ -1,11 +1,105 @@
 ---
 title: 'Custom Clients'
-description: 'Register your own drivers when the bundled ones are not enough.'
+description: 'Register your own HTTP drivers and response adapters when the bundled ones are not enough.'
 ---
 
-For custom integrations, register a driver factory and point the client at that driver name.
+The bundled drivers cover the most common HTTP libraries, but there are situations where you need a custom integration -- perhaps with a proprietary HTTP library, a legacy system, or a specialized transport. This chapter shows how to create a custom driver, register it with the driver registry, and use it through the standard client API.
 
-## Register a Driver
+## The Driver Contract
+
+Every driver must implement the `CanHandleHttpRequest` interface, which defines a single method:
+
+```php
+namespace Cognesy\Http\Contracts;
+
+interface CanHandleHttpRequest
+{
+    public function handle(HttpRequest $request): HttpResponse;
+}
+// @doctest id="71f1"
+```
+
+The method receives an `HttpRequest` and returns an `HttpResponse`. That is the entire contract. The driver is responsible for converting these value objects into whatever the underlying HTTP library expects.
+
+## Creating a Custom Driver
+
+Here is a template for a custom driver:
+
+```php
+namespace App\Http\Drivers;
+
+use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
+use Cognesy\Http\Exceptions\HttpRequestException;
+use Cognesy\Events\Contracts\CanHandleEvents;
+
+class AcmeHttpDriver implements CanHandleHttpRequest
+{
+    public function __construct(
+        private HttpClientConfig $config,
+        private CanHandleEvents $events,
+        private ?object $clientInstance = null,
+    ) {
+        // Initialize your vendor client here
+        $this->client = $clientInstance ?? new \Acme\HttpClient([
+            'connect_timeout' => $config->connectTimeout,
+            'timeout' => $config->requestTimeout,
+        ]);
+    }
+
+    public function handle(HttpRequest $request): HttpResponse
+    {
+        try {
+            $vendorResponse = $this->client->request(
+                method: $request->method(),
+                url: $request->url(),
+                headers: $request->headers(),
+                body: $request->body()->toString(),
+            );
+
+            if ($request->isStreamed()) {
+                return HttpResponse::streaming(
+                    statusCode: $vendorResponse->status(),
+                    headers: $vendorResponse->headers(),
+                    stream: $this->adaptStream($vendorResponse),
+                );
+            }
+
+            return HttpResponse::sync(
+                statusCode: $vendorResponse->status(),
+                headers: $vendorResponse->headers(),
+                body: $vendorResponse->body(),
+            );
+        } catch (\Exception $e) {
+            throw new HttpRequestException(
+                message: $e->getMessage(),
+                request: $request,
+                previous: $e,
+            );
+        }
+    }
+
+    private function adaptStream($response): \Generator
+    {
+        foreach ($response->getStream() as $chunk) {
+            yield $chunk;
+        }
+    }
+}
+// @doctest id="7f25"
+```
+
+The key points are:
+
+- Accept `HttpClientConfig`, `CanHandleEvents`, and an optional vendor client instance in the constructor. This matches the signature expected by the driver registry.
+- Return `HttpResponse::sync()` for buffered responses and `HttpResponse::streaming()` for streamed responses.
+- Wrap vendor exceptions in `HttpRequestException` to maintain a consistent exception hierarchy.
+
+## Registering the Driver
+
+To make your driver available by name (e.g., `'acme'`), register it with the driver registry:
 
 ```php
 use Cognesy\Http\Config\HttpClientConfig;
@@ -18,10 +112,10 @@ $drivers = BundledHttpDrivers::registry()->withDriver(
     static fn(HttpClientConfig $config, CanHandleEvents $events, ?object $clientInstance): CanHandleHttpRequest
         => new AcmeHttpDriver($config, $events, $clientInstance),
 );
-// @doctest id="7ba0"
+// @doctest id="5b18"
 ```
 
-## Build a Client
+Then use it through the builder:
 
 ```php
 use Cognesy\Http\Config\HttpClientConfig;
@@ -31,36 +125,83 @@ $client = (new HttpClientBuilder())
     ->withDrivers($drivers)
     ->withConfig(new HttpClientConfig(driver: 'acme'))
     ->create();
-// @doctest id="4f2f"
+// @doctest id="786c"
 ```
 
-## Reuse a Vendor Client
+The factory function receives the config, events dispatcher, and optional client instance. This lets users pass a pre-configured vendor client through `withClientInstance('acme', $myClient)`.
+
+## Injecting a Driver Directly
+
+If you do not need the registry, bypass it entirely by passing a driver instance:
+
+```php
+use Cognesy\Http\Creation\HttpClientBuilder;
+
+$driver = new AcmeHttpDriver($config, $events);
+
+$client = (new HttpClientBuilder())
+    ->withDriver($driver)
+    ->create();
+// @doctest id="d847"
+```
+
+Or use the static shorthand:
+
+```php
+$client = HttpClient::fromDriver($driver);
+// @doctest id="717e"
+```
+
+## Reusing Vendor Client Instances
+
+When your vendor client requires special setup (custom SSL certificates, proxy configuration, connection pools), create the instance yourself and pass it through:
 
 ```php
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
 
+$symfony = SymfonyHttpClient::create([
+    'proxy' => 'http://proxy.internal:8080',
+    'verify_peer' => true,
+    'cafile' => '/etc/ssl/custom-ca.pem',
+]);
+
 $client = (new HttpClientBuilder())
-    ->withClientInstance('symfony', SymfonyHttpClient::create())
+    ->withClientInstance('symfony', $symfony)
     ->create();
-// @doctest id="ece9"
+// @doctest id="7700"
 ```
 
-## Inject a Driver Directly
+This pattern works with any registered driver. The `withClientInstance()` method sets both the driver name and the instance, so the driver factory receives it instead of creating its own.
+
+## Streaming in Custom Drivers
+
+The `HttpResponse::streaming()` factory accepts any `StreamInterface` implementation or a PHP `iterable` (including generators). The simplest approach is to yield chunks from a generator:
 
 ```php
-use Cognesy\Http\Creation\HttpClientBuilder;
+public function handle(HttpRequest $request): HttpResponse
+{
+    $vendorResponse = $this->client->sendStreaming($request->url(), ...);
 
-$client = (new HttpClientBuilder())
-    ->withDriver($myDriver) // CanHandleHttpRequest
-    ->create();
-// @doctest id="f632"
+    $stream = (function () use ($vendorResponse) {
+        foreach ($vendorResponse->chunks() as $chunk) {
+            yield $chunk;
+        }
+    })();
+
+    return HttpResponse::streaming(
+        statusCode: $vendorResponse->statusCode(),
+        headers: $vendorResponse->headers(),
+        stream: BufferedStream::fromStream($stream),
+    );
+}
+// @doctest id="7311"
 ```
 
-If you need request pooling, use `packages/http-pool`.
+The `BufferedStream`, `ArrayStream`, `IterableStream`, and `TransformStream` classes in the `Cognesy\Http\Stream` namespace provide various stream implementations you can use or compose.
 
 ## See Also
 
-- [Changing client](7-changing-client.md)
-- [Changing client config](8-changing-client-config.md)
-- [Middleware](10-middleware.md)
+- [Changing Client](7-changing-client.md) -- switch between drivers without custom code.
+- [Changing Client Config](8-changing-client-config.md) -- configure timeouts and error handling.
+- [Middleware](10-middleware.md) -- add behaviors around any driver.

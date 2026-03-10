@@ -1,9 +1,37 @@
 ---
 title: 'Getting Started'
-description: 'Start with a single request, then add config or mocks when needed.'
+description: 'Install the package, send your first request, and set up mocks for testing.'
 ---
 
-Create a client and send a request:
+## Installation
+
+Install the package via Composer:
+
+```bash
+composer require cognesy/instructor-http-client
+# @doctest id="2d23"
+```
+
+You also need at least one supported HTTP library. The default driver uses PHP's built-in cURL extension, so if cURL is available you can start immediately. For other drivers, install the corresponding package:
+
+```bash
+# Guzzle
+composer require guzzlehttp/guzzle
+
+# Symfony HttpClient
+composer require symfony/http-client
+# @doctest id="cae3"
+```
+
+### Requirements
+
+- PHP 8.2 or higher
+- JSON extension
+- cURL extension (included by default in most PHP installations)
+
+## Sending Your First Request
+
+Using the HTTP client involves three steps: create a client, build a request, and read the response.
 
 ```php
 use Cognesy\Http\Data\HttpRequest;
@@ -19,21 +47,77 @@ $response = $client->send(new HttpRequest(
     options: [],
 ))->get();
 
-echo $response->statusCode();
-echo $response->body();
-// @doctest id="4889"
+echo $response->statusCode(); // 200
+echo $response->body();       // {"status":"ok"}
+// @doctest id="4bfd"
 ```
 
-Use `HttpClientConfig` when you want a specific driver or timeout profile:
+`HttpClient::default()` creates a client with the default cURL driver. The `send()` method returns a `PendingHttpResponse`, which is lazy -- the network call does not happen until you call `get()` or `stream()`.
+
+## Choosing a Driver
+
+If you want a specific driver, pass an `HttpClientConfig`:
 
 ```php
 use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\Http\HttpClient;
 
 $client = HttpClient::fromConfig(new HttpClientConfig(driver: 'guzzle'));
-// @doctest id="c2f2"
+// @doctest id="e2e8"
 ```
 
-For tests, use the builder with the mock driver:
+Or use the builder for more control:
+
+```php
+use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\Http\Creation\HttpClientBuilder;
+
+$client = (new HttpClientBuilder())
+    ->withConfig(new HttpClientConfig(
+        driver: 'symfony',
+        connectTimeout: 5,
+        requestTimeout: 30,
+    ))
+    ->create();
+// @doctest id="8073"
+```
+
+## Error Handling
+
+HTTP requests can fail for many reasons. Wrap your calls in a try-catch block:
+
+```php
+use Cognesy\Http\Exceptions\HttpRequestException;
+
+try {
+    $response = $client->send($request)->get();
+} catch (HttpRequestException $e) {
+    echo "Request failed: {$e->getMessage()}\n";
+
+    if ($e->getResponse()) {
+        echo "Status: {$e->getResponse()->statusCode()}\n";
+    }
+}
+// @doctest id="55ad"
+```
+
+The exception hierarchy gives you granular control:
+
+| Exception | When |
+|-----------|------|
+| `HttpRequestException` | Base class for all HTTP errors |
+| `NetworkException` | Network-level failures |
+| `ConnectionException` | Could not connect to the host |
+| `TimeoutException` | Connect or request timeout exceeded |
+| `HttpClientErrorException` | HTTP 4xx response (when `failOnError` is true) |
+| `ServerErrorException` | HTTP 5xx response (when `failOnError` is true) |
+| `CircuitBreakerOpenException` | Circuit breaker is open for the target host |
+
+When `failOnError` is set to `true` in the config, the client throws typed exceptions for 4xx and 5xx responses automatically. When it is `false` (the default), you need to check the status code yourself.
+
+## Testing with Mocks
+
+For tests, use the builder's `withMock()` method to supply predefined responses without making real HTTP calls:
 
 ```php
 use Cognesy\Http\Creation\HttpClientBuilder;
@@ -44,9 +128,30 @@ $client = (new HttpClientBuilder())
         $mock->addResponse(
             HttpResponse::sync(200, ['Content-Type' => 'application/json'], '{"ok":true}'),
             url: 'https://api.example.com/health',
-            method: 'GET'
+            method: 'GET',
         );
     })
     ->create();
-// @doctest id="7fe6"
+
+$response = $client->send(new HttpRequest(
+    url: 'https://api.example.com/health',
+    method: 'GET',
+    headers: [],
+    body: '',
+    options: [],
+))->get();
+
+echo $response->body(); // {"ok":true}
+// @doctest id="ce6c"
 ```
+
+The mock driver matches responses by URL and method, making it straightforward to verify that your application sends the right requests.
+
+## What's Next
+
+Now that you have a working client, explore the rest of the documentation:
+
+- [Making Requests](3-making-requests) -- learn about request construction, HTTP methods, headers, and bodies.
+- [Handling Responses](4-handling-responses) -- read buffered content, inspect headers, and decode JSON.
+- [Streaming Responses](5-streaming-responses) -- consume chunked data as it arrives.
+- [Middleware](10-middleware) -- add retry logic, circuit breakers, and custom behaviors.

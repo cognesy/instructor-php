@@ -3,28 +3,42 @@ title: Validation
 description: 'Validate extracted data before you use it.'
 ---
 
-Validation runs after deserialization and before the result is considered valid.
+Validation runs after deserialization and before the result is returned. If the extracted
+data does not meet your rules, Instructor can automatically retry the request, feeding
+the validation errors back to the model so it can self-correct.
+
 
 ## Symfony Validation Attributes
 
-Use Symfony validation attributes on your response model when you want field-level rules.
+Instructor uses the Symfony Validator component under the hood. Add constraint attributes
+to your response model to enforce field-level rules:
 
 ```php
 use Symfony\Component\Validator\Constraints as Assert;
 
-final class User {
+class Person {
     #[Assert\NotBlank]
+    #[Assert\Length(min: 3)]
     public string $name;
 
-    #[Assert\GreaterThan(17)]
+    #[Assert\PositiveOrZero]
     public int $age;
 }
-// @doctest id="dc16"
+// @doctest id="4258"
 ```
+
+If the model returns a name shorter than three characters or a negative age, validation
+fails and Instructor can retry the request automatically.
+
+> For a full list of available constraints, see the
+> [Symfony Validation documentation](https://symfony.com/doc/current/validation.html#constraints).
+
 
 ## Retries
 
-Retries are configured on the runtime, not on the request.
+Retries are configured on the runtime, not on individual requests. When validation fails
+and retries are available, Instructor sends the validation errors back to the model and
+asks it to try again:
 
 ```php
 use Cognesy\Instructor\StructuredOutputRuntime;
@@ -32,14 +46,154 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 $runtime = StructuredOutputRuntime::fromConfig(
     LLMConfig::fromPreset('openai')
-)->withMaxRetries(2);
-// @doctest id="681f"
+)->withMaxRetries(3);
+// @doctest id="261f"
 ```
 
-If validation fails, Instructor can ask the model again until the retry limit is reached.
+The `maxRetries` value controls how many additional attempts are allowed after the first
+one. With `maxRetries(3)`, Instructor will try up to 4 times total (1 initial + 3 retries).
 
-## Custom Validation
+If all attempts fail validation, Instructor throws an exception.
 
-If you need object-level validation, use `ValidationMixin` and return a `ValidationResult` from your model.
+```php
+use Cognesy\Instructor\StructuredOutput;
+use Symfony\Component\Validator\Constraints as Assert;
 
-That keeps validation in one place without changing the extraction flow.
+class Person {
+    #[Assert\Length(min: 3)]
+    public string $name;
+
+    #[Assert\PositiveOrZero]
+    public int $age;
+}
+
+$person = (new StructuredOutput)
+    ->withRuntime($runtime)
+    ->with(
+        messages: 'His name is JX, aka Jason, he is -28 years old.',
+        responseModel: Person::class,
+    )
+    ->get();
+// @doctest id="42ed"
+```
+
+In this example, the model might initially return `name: "JX"` and `age: -28`. Validation
+catches both issues, and the retry prompt tells the model what went wrong so it can
+return `name: "Jason"` and `age: 28` on the next attempt.
+
+
+## Custom Validation With `ValidationMixin`
+
+For object-level validation logic that goes beyond simple field constraints, use the
+`ValidationMixin` trait. Implement a `validate()` method that returns a `ValidationResult`:
+
+```php
+use Cognesy\Instructor\Validation\Traits\ValidationMixin;
+use Cognesy\Instructor\Validation\ValidationResult;
+use Cognesy\Instructor\Validation\ValidationError;
+
+class UserDetails
+{
+    use ValidationMixin;
+
+    public string $name;
+    public int $age;
+
+    public function validate(): ValidationResult
+    {
+        if ($this->name !== strtoupper($this->name)) {
+            return ValidationResult::fieldError(
+                field: 'name',
+                value: $this->name,
+                message: 'Name must be in uppercase.',
+            );
+        }
+
+        return ValidationResult::valid();
+    }
+}
+// @doctest id="11a5"
+```
+
+The `ValidationResult` class provides several factory methods:
+
+| Method | Purpose |
+|---|---|
+| `ValidationResult::valid()` | Indicates the object passed validation |
+| `ValidationResult::invalid($errors)` | Wraps one or more `ValidationError` instances |
+| `ValidationResult::fieldError($field, $value, $message)` | Shorthand for a single field error |
+| `ValidationResult::make($errors, $message)` | General-purpose constructor |
+| `ValidationResult::merge($results)` | Combines multiple validation results |
+
+When validation fails, Instructor feeds the error messages back to the LLM on retry,
+just like with Symfony constraints:
+
+```php
+$user = (new StructuredOutput)
+    ->withRuntime($runtime)
+    ->with(
+        messages: 'jason is 25 years old',
+        responseModel: UserDetails::class,
+    )
+    ->get();
+
+assert($user->name === 'JASON');
+// @doctest id="ef47"
+```
+
+
+## Custom Validation With Symfony `#[Assert\Callback]`
+
+You can also use Symfony's `#[Assert\Callback]` attribute directly for full access to
+the Symfony validation context. This is useful when you want to leverage Symfony's
+violation builder API:
+
+```php
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
+
+class UserDetails
+{
+    public string $name;
+    public int $age;
+
+    #[Assert\Callback]
+    public function validateName(ExecutionContextInterface $context, mixed $payload): void
+    {
+        if ($this->name !== strtoupper($this->name)) {
+            $context->buildViolation('Name must be in uppercase.')
+                ->atPath('name')
+                ->setInvalidValue($this->name)
+                ->addViolation();
+        }
+    }
+}
+// @doctest id="6a08"
+```
+
+> See the [Symfony Callback constraint docs](https://symfony.com/doc/current/reference/constraints/Callback.html)
+> for more details on the violation builder API.
+
+
+## How Retries Work
+
+When a response fails validation, Instructor:
+
+1. Collects all validation errors (from Symfony constraints, `ValidationMixin`, or both).
+2. Formats them into a retry prompt that describes what went wrong.
+3. Appends the retry prompt to the conversation history.
+4. Sends the updated conversation back to the model for another attempt.
+
+This self-correction loop continues until validation passes or the retry limit is reached.
+The default retry prompt is `"JSON generated incorrectly, fix following errors:\n"`,
+followed by the list of violations. You can customize it through `StructuredOutputConfig`:
+
+```php
+use Cognesy\Instructor\Config\StructuredOutputConfig;
+
+$config = new StructuredOutputConfig(
+    maxRetries: 3,
+    retryPrompt: 'The previous response had errors. Please correct them:',
+);
+// @doctest id="0dec"
+```

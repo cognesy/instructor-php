@@ -1,11 +1,12 @@
 <?php
 
-use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
+use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
 
 it('serializes inference request to a JSON-encodable array', function () {
-    $request = (new InferenceRequestBuilder())
+    $request = (new InferenceRequestBuilder)
         ->withMessages([['role' => 'user', 'content' => 'Hi']])
         ->withResponseFormat([
             'type' => 'json_schema',
@@ -26,7 +27,7 @@ it('serializes inference request to a JSON-encodable array', function () {
 });
 
 it('round-trips inference request via toArray/fromArray', function () {
-    $request = (new InferenceRequestBuilder())
+    $request = (new InferenceRequestBuilder)
         ->withMessages([['role' => 'user', 'content' => 'Hi']])
         ->withResponseFormat([
             'type' => 'json_schema',
@@ -41,12 +42,12 @@ it('round-trips inference request via toArray/fromArray', function () {
     $data = $request->toArray();
     $copy = InferenceRequest::fromArray($data);
 
-    expect($copy->messages())->toBe($request->messages());
+    expect($copy->messages()->toArray())->toBe($request->messages()->toArray());
     expect($copy->responseFormat()->toArray())->toBe($request->responseFormat()->toArray());
 });
 
 it('preserves retry policy and cached context across serialization round-trip', function () {
-    $request = (new InferenceRequestBuilder())
+    $request = (new InferenceRequestBuilder)
         ->withMessages([['role' => 'user', 'content' => 'Hi']])
         ->withRetryPolicy(new InferenceRetryPolicy(
             maxAttempts: 7,
@@ -62,7 +63,13 @@ it('preserves retry policy and cached context across serialization round-trip', 
         ))
         ->withCachedContext(
             messages: [['role' => 'assistant', 'content' => 'Cached reply']],
-            tools: [['name' => 'tool1']],
+            tools: [[
+                'type' => 'function',
+                'function' => [
+                    'name' => 'tool1',
+                    'parameters' => [],
+                ],
+            ]],
             toolChoice: 'auto',
             responseFormat: ['type' => 'json_object'],
         )
@@ -74,8 +81,14 @@ it('preserves retry policy and cached context across serialization round-trip', 
         ->and($copy->retryPolicy()?->maxAttempts)->toBe(7)
         ->and($copy->retryPolicy()?->lengthRecovery)->toBe('continue')
         ->and($copy->cachedContext())->not()->toBeNull()
-        ->and($copy->cachedContext()?->tools())->toBe([['name' => 'tool1']])
-        ->and($copy->cachedContext()?->toolChoice())->toBe('auto')
+        ->and($copy->cachedContext()?->tools()->toArray())->toBe([[
+            'type' => 'function',
+            'function' => [
+                'name' => 'tool1',
+                'parameters' => [],
+            ],
+        ]])
+        ->and($copy->cachedContext()?->toolChoice())->toEqual(ToolChoice::auto())
         ->and($copy->cachedContext()?->responseFormat()->toArray())->toBe(['type' => 'json_object'])
         ->and($copy->cachedContext()?->messages()->toArray()[0]['role'] ?? null)->toBe('assistant')
         ->and($copy->cachedContext()?->messages()->toArray()[0]['content'] ?? null)->toBe('Cached reply');

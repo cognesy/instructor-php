@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Streaming;
 
 use Cognesy\Instructor\Data\StructuredOutputResponse;
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Data\Usage;
@@ -189,7 +189,7 @@ final class StructuredOutputStreamState
         );
     }
 
-    public function partialRawResponse(): InferenceResponse
+    public function partialInferenceResponse(): InferenceResponse
     {
         return (new InferenceResponse(
             content: $this->content,
@@ -205,12 +205,12 @@ final class StructuredOutputStreamState
     {
         return StructuredOutputResponse::partial(
             value: $this->value,
-            rawResponse: $this->partialRawResponse(),
+            inferenceResponse: $this->partialInferenceResponse(),
             toolArgsSnapshot: $this->toolArgsSnapshot(),
         );
     }
 
-    public function finalRawResponse(): InferenceResponse
+    public function finalInferenceResponse(): InferenceResponse
     {
         return (new InferenceResponse(
             content: $this->content,
@@ -226,7 +226,7 @@ final class StructuredOutputStreamState
     {
         return StructuredOutputResponse::final(
             value: $this->value,
-            rawResponse: $this->finalRawResponse(),
+            inferenceResponse: $this->finalInferenceResponse(),
             toolArgsSnapshot: $this->toolArgsSnapshot(),
         );
     }

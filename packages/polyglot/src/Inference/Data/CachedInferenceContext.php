@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Inference\Data;
 
@@ -7,86 +9,112 @@ use Cognesy\Messages\Messages;
 class CachedInferenceContext
 {
     private Messages $messages;
-    private array $tools;
-    private string|array $toolChoice;
+
+    private ToolDefinitions $tools;
+
+    private ToolChoice $toolChoice;
+
     private ResponseFormat $responseFormat;
 
     public function __construct(
-        string|array $messages = [],
-        array $tools = [],
-        string|array $toolChoice = [],
+        Messages|string|array $messages = [],
+        ToolDefinitions|array $tools = [],
+        ToolChoice|string|array $toolChoice = [],
         array|ResponseFormat|null $responseFormat = null,
     ) {
         $this->messages = Messages::fromAny($messages);
-        $this->tools = $tools;
-        $this->toolChoice = $toolChoice;
-        $this->responseFormat = match(true) {
+        $this->tools = match (true) {
+            $tools instanceof ToolDefinitions => $tools,
+            default => ToolDefinitions::fromArray($tools),
+        };
+        $this->toolChoice = ToolChoice::fromAny($toolChoice);
+        $this->responseFormat = match (true) {
             $responseFormat instanceof ResponseFormat => $responseFormat,
             is_array($responseFormat) => ResponseFormat::fromArray($responseFormat),
-            default => new ResponseFormat(),
+            default => new ResponseFormat,
         };
     }
 
-    public function messages() : Messages {
+    public function messages(): Messages
+    {
         return $this->messages;
     }
 
-    public function tools() : array {
+    public function tools(): ToolDefinitions
+    {
         return $this->tools;
     }
 
-    public function toolChoice() : string|array {
+    public function toolChoice(): ToolChoice
+    {
         return $this->toolChoice;
     }
 
-    public function responseFormat() : ResponseFormat {
+    public function responseFormat(): ResponseFormat
+    {
         return $this->responseFormat;
     }
 
-    public function withMessages(Messages|string|array $messages): self {
+    public function withMessages(Messages|string|array $messages): self
+    {
         return new self(
-            messages: $messages instanceof Messages ? $messages->toArray() : $messages,
+            messages: $messages,
             tools: $this->tools,
             toolChoice: $this->toolChoice,
             responseFormat: $this->responseFormat,
         );
     }
 
-    public function withTools(array $tools): self {
+    public function withTools(ToolDefinitions|array $tools): self
+    {
         return new self(
-            messages: $this->messages->toArray(),
+            messages: $this->messages,
             tools: $tools,
             toolChoice: $this->toolChoice,
             responseFormat: $this->responseFormat,
         );
     }
 
-    public function withResponseFormat(array|ResponseFormat $responseFormat): self {
+    public function withToolChoice(ToolChoice|string|array $toolChoice): self
+    {
         return new self(
-            messages: $this->messages->toArray(),
+            messages: $this->messages,
+            tools: $this->tools,
+            toolChoice: $toolChoice,
+            responseFormat: $this->responseFormat,
+        );
+    }
+
+    public function withResponseFormat(array|ResponseFormat $responseFormat): self
+    {
+        return new self(
+            messages: $this->messages,
             tools: $this->tools,
             toolChoice: $this->toolChoice,
             responseFormat: $responseFormat,
         );
     }
 
-    public function isEmpty() : bool {
+    public function isEmpty(): bool
+    {
         return $this->messages->isEmpty()
-            && empty($this->tools)
-            && empty($this->toolChoice)
+            && $this->tools->isEmpty()
+            && $this->toolChoice->isEmpty()
             && $this->responseFormat->isEmpty();
     }
 
-    public function toArray(): array {
+    public function toArray(): array
+    {
         return [
             'messages' => $this->messages->toArray(),
-            'tools' => $this->tools,
-            'toolChoice' => $this->toolChoice,
+            'tools' => $this->tools->toArray(),
+            'toolChoice' => $this->toolChoice->toArray(),
             'responseFormat' => $this->responseFormat->toArray(),
         ];
     }
 
-    public static function fromArray(array $data): self {
+    public static function fromArray(array $data): self
+    {
         return new self(
             messages: $data['messages'] ?? [],
             tools: $data['tools'] ?? [],

@@ -7,10 +7,11 @@ use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
+use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCall;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -35,10 +36,10 @@ it('executes multiple tool calls and preserves follow-up order and usage', funct
         FunctionTool::fromCallable(_inc(...)),
         FunctionTool::fromCallable(_dbl(...)),
     );
-        
+
     $state = (new ToolUseState())
         ->withMessages(Messages::fromString('run multiple'));
-        
+
     $toolUse = ToolUseFactory::default(
         tools: $tools,
         driver: new ToolCallingDriver(
@@ -57,13 +58,16 @@ it('executes multiple tool calls and preserves follow-up order and usage', funct
     expect($step?->usage()->toArray())->toMatchArray(['input' => 3, 'output' => 4]);
     expect($step?->inferenceResponse())->not()->toBeNull();
 
-    // follow-up messages order: initial, invocation1, result1, invocation2, result2
-    $msgs = $state->messages()->toArray();
-    expect(count($msgs))->toBe(5);
-    // second and fourth assistant invocations carry tool_calls metadata (offset by 1 due to initial message)
-    expect(($msgs[1]['_metadata']['tool_calls'][0]['function']['name']) ?? null)->toBe('_inc');
-    expect(($msgs[3]['_metadata']['tool_calls'][0]['function']['name']) ?? null)->toBe('_dbl');
-    // third and fifth are tool results with tool_name metadata
-    expect(($msgs[2]['_metadata']['tool_name']) ?? null)->toBe('_inc');
-    expect(($msgs[4]['_metadata']['tool_name']) ?? null)->toBe('_dbl');
+    // Verify tool call invocations and results via typed accessors
+    $allMessages = $state->messages()->all();
+    $invocations = array_values(array_filter($allMessages, fn(Message $m) => $m->hasToolCalls()));
+    $results = array_values(array_filter($allMessages, fn(Message $m) => $m->toolResult() !== null));
+
+    expect(count($invocations))->toBe(2)
+        ->and($invocations[0]->toolCalls()->first()->name())->toBe('_inc')
+        ->and($invocations[1]->toolCalls()->first()->name())->toBe('_dbl');
+
+    expect(count($results))->toBe(2)
+        ->and($results[0]->toolResult()->toolName())->toBe('_inc')
+        ->and($results[1]->toolResult()->toolName())->toBe('_dbl');
 });

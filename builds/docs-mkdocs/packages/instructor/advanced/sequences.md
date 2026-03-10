@@ -1,28 +1,113 @@
 ---
 title: Sequences
-description: 'Extract collections of objects.'
+description: 'Extract collections of typed objects.'
 ---
 
-Use `Sequence` when the result is a list of typed objects.
+When the LLM response contains a list of items rather than a single object, use the `Sequence` wrapper. It saves you from creating a dedicated class with a single array property just to hold a list.
+
+## Basic Usage
+
+Pass `Sequence::of(ClassName::class)` as the response model to extract a typed collection.
 
 ```php
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 
-$people = (new StructuredOutput)
-    ->with(messages: $text, responseModel: Sequence::of(Person::class))
-    ->get();
-// @doctest id="4b85"
+class Person {
+    public string $name;
+    public int $age;
+}
+
+$text = <<<TEXT
+    Jason is 25 years old. Jane is 18 yo. John is 30 years old
+    and Anna is 2 years younger than him.
+TEXT;
+
+$list = (new StructuredOutput)->with(
+    messages: $text,
+    responseModel: Sequence::of(Person::class),
+)->get();
+// @doctest id="a859"
 ```
 
-`Sequence` gives you collection-style helpers such as `count()`, `first()`, `last()`, `get()`, and `all()`.
+The returned `$list` is a `Sequence` instance containing fully validated `Person` objects.
 
-## Stream Completed Items
+## Working with Sequences
 
-When streaming a sequence, `sequence()` yields completed items as they become stable:
+`Sequence` implements `ArrayAccess` and `IteratorAggregate`, so you can use it like an array. It also provides convenience methods for common operations.
 
 ```php
-foreach ($stream->sequence() as $person) {
-    // completed item
+$list->count();       // Number of extracted items
+$list->first();       // First item
+$list->last();        // Last item
+$list->get(1);        // Item at index 1
+$list->all();         // All items as a plain array
+$list->toArray();     // Alias for all()
+
+// Iterate directly
+foreach ($list as $person) {
+    echo $person->name;
 }
-// @doctest id="ab7b"
+
+// Array access
+$person = $list[0];
+// @doctest id="2b0a"
+```
+
+## Streaming Sequences
+
+One of the most powerful features of sequences is streaming completed items. While `partials()` yields the entire object on every property change, `sequence()` yields only when a new item in the list is fully populated.
+
+```php
+$stream = (new StructuredOutput)
+    ->with(
+        messages: $text,
+        responseModel: Sequence::of(Person::class),
+    )
+    ->stream();
+
+foreach ($stream->sequence() as $completedSequence) {
+    // Each yield contains the sequence with one more completed item
+    $person = $completedSequence->last();
+    echo "Extracted: {$person->name}\n";
+}
+
+// Get the final, fully validated sequence
+$people = $stream->finalValue();
+// @doctest id="3ebe"
+```
+
+This is ideal for progressive UI updates -- you can render each person in a list as soon as the LLM finishes generating their data, without waiting for the entire response.
+
+Keep in mind that items yielded during streaming are deserialized but not yet validated. Only the final sequence returned by `finalValue()` is fully validated.
+
+## Named Sequences
+
+You can provide a name and description to give the LLM more context about what the collection represents.
+
+```php
+$list = (new StructuredOutput)->with(
+    messages: $transcript,
+    responseModel: Sequence::of(
+        class: ActionItem::class,
+        name: 'meetingActionItems',
+        description: 'Action items extracted from a meeting transcript',
+    ),
+)->get();
+// @doctest id="ce3d"
+```
+
+## Combining with Output Formats
+
+You can combine sequences with output formats. For example, to get the sequence data as a plain array of arrays:
+
+```php
+$data = (new StructuredOutput)
+    ->withResponseModel(Sequence::of(Person::class))
+    ->intoArray()
+    ->with(messages: $text)
+    ->get();
+
+// Result: ['list' => [['name' => 'Jason', 'age' => 25], ...]]
+// @doctest id="d658"
 ```

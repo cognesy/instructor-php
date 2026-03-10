@@ -1,19 +1,20 @@
 # Instructor for Laravel
 
-Laravel integration for [Instructor PHP](https://github.com/cognesy/instructor-php) - the structured output library for LLMs.
+Laravel integration for [Instructor PHP](https://github.com/cognesy/instructor-php) -- the structured output library for LLMs.
 
 ## Overview
 
+Instructor for Laravel brings the full power of structured LLM output extraction into the Laravel ecosystem. Rather than parsing free-form text responses from language models, Instructor lets you define PHP classes that describe the data you need, and the package takes care of prompting the model, validating its response, and deserializing the result into typed objects.
+
 This package provides seamless integration between Instructor PHP and Laravel, giving you:
 
-- **Laravel Facades** - Use `StructuredOutput::`, `Inference::`, `Embeddings::`, and `AgentCtrl::` facades
-- **Dependency Injection** - Inject services directly into your classes
-- **Testing Fakes** - Mock LLM responses with `StructuredOutput::fake()` and assertions
-- **Laravel HTTP Client** - Uses `Http::` internally, enabling `Http::fake()` in tests
-- **Laravel HTTP Pool** - Includes the Laravel-specific pool driver for concurrent requests
-- **Event Bridge** - Instructor events dispatched to Laravel's event system
-- **Artisan Commands** - Generate response models and test your configuration
-- **Configuration Publishing** - Laravel-style config with environment variables
+- **Laravel Facades** -- Use `StructuredOutput::`, `Inference::`, `Embeddings::`, and `AgentCtrl::` facades for expressive, framework-native access to LLM capabilities.
+- **Dependency Injection** -- Inject `StructuredOutput`, `Inference`, or `Embeddings` directly into your classes through Laravel's service container.
+- **Testing Fakes** -- Mock LLM responses with `StructuredOutput::fake()`, `Inference::fake()`, `Embeddings::fake()`, and `AgentCtrl::fake()`, complete with assertion helpers for verifying extraction calls, connection usage, and model selection.
+- **Laravel HTTP Client** -- All API calls go through Laravel's `Http::` client under the hood, which means `Http::fake()` works out of the box in your test suite.
+- **Event Bridge** -- Instructor's internal events are automatically dispatched through Laravel's event system, so you can attach listeners, subscribers, and queued handlers with no extra wiring.
+- **Artisan Commands** -- Generate response model scaffolding with `make:response-model`, verify your API configuration with `instructor:test`, and bootstrap the package with `instructor:install`.
+- **Configuration Publishing** -- Laravel-style config file with environment variable support for all settings, from API keys and model selection to HTTP timeouts and logging presets.
 
 ## Quick Start
 
@@ -21,7 +22,7 @@ This package provides seamless integration between Instructor PHP and Laravel, g
 
 ```bash
 composer require cognesy/instructor-laravel
-# @doctest id="b61d"
+# @doctest id="e0b7"
 ```
 
 ### 2. Configure API Key
@@ -30,7 +31,7 @@ Add to your `.env`:
 
 ```env
 OPENAI_API_KEY=your-openai-api-key
-// @doctest id="fa00"
+// @doctest id="c79c"
 ```
 
 ### 3. Extract Structured Data
@@ -55,7 +56,7 @@ $person = StructuredOutput::with(
 
 echo $person->name; // "John Smith"
 echo $person->age;  // 30
-// @doctest id="4862"
+// @doctest id="a75d"
 ```
 
 ## Documentation
@@ -64,7 +65,7 @@ echo $person->age;  // 30
 |-------|-------------|
 | [Installation](installation.md) | Detailed installation and setup instructions |
 | [Configuration](configuration.md) | Complete configuration reference |
-| [Facades](facades.md) | Using StructuredOutput, Inference, and Embeddings facades |
+| [Facades](facades.md) | Using StructuredOutput, Inference, Embeddings, and AgentCtrl facades |
 | [Response Models](response-models.md) | Creating and using response models |
 | [Code Agents](agents.md) | Using AgentCtrl for Claude Code, Codex, and OpenCode |
 | [Testing](testing.md) | Testing with fakes and assertions |
@@ -108,7 +109,7 @@ public function test_extracts_invoice_data(): void
     $this->assertEquals('INV-001', $invoice->invoiceNumber);
     $fake->assertExtracted(InvoiceData::class);
 }
-// @doctest id="db8b"
+// @doctest id="11ac"
 ```
 
 ## Requirements

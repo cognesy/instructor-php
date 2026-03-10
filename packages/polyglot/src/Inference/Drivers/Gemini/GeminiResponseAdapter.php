@@ -3,12 +3,12 @@
 namespace Cognesy\Polyglot\Inference\Drivers\Gemini;
 
 use Cognesy\Http\Data\HttpResponse;
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Contracts\CanMapUsage;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCall;
 use Cognesy\Polyglot\Inference\Data\ToolCallDelta;
 use Cognesy\Utils\Json\Json;
 use JsonException;

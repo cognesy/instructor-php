@@ -3,9 +3,9 @@
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Data\StructuredOutputResponse;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCall;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 
@@ -75,7 +75,7 @@ it('caches processed response within the same PendingStructuredOutput', function
     expect($first)->toBeInstanceOf(TestUserStruct::class);
     expect($secondResponse)->toBeInstanceOf(StructuredOutputResponse::class);
     expect($secondResponse->value())->toBeInstanceOf(TestUserStruct::class);
-    expect($secondResponse->rawResponse())->toBeInstanceOf(InferenceResponse::class);
+    expect($secondResponse->inferenceResponse())->toBeInstanceOf(InferenceResponse::class);
 });
 
 it('returns stdClass when defaultToStdClass is enabled for JSON schema output', function () {

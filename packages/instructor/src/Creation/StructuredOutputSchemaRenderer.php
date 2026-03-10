@@ -5,6 +5,8 @@ namespace Cognesy\Instructor\Creation;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Data\SchemaRendering;
 use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Schema\Data\Schema;
 use Cognesy\Schema\JsonSchemaParser;
 use Cognesy\Schema\JsonSchemaRenderer;
@@ -45,14 +47,14 @@ final class StructuredOutputSchemaRenderer
 
         return new SchemaRendering(
             jsonSchema: $jsonSchema,
-            toolCallSchema: $this->renderToolCallSchemaFrom(
+            toolDefinitions: $this->renderToolCallSchemaFrom(
                 toolCallBuilder: $toolCallBuilder,
                 jsonSchema: $jsonSchema,
             ),
         );
     }
 
-    public function renderToolCallSchema(array $jsonSchema) : array {
+    public function renderToolCallSchema(array $jsonSchema) : ToolDefinitions {
         return $this->renderToolCallSchemaFrom(
             toolCallBuilder: $this->makeToolCallBuilder(),
             jsonSchema: $jsonSchema,
@@ -63,7 +65,7 @@ final class StructuredOutputSchemaRenderer
         array $jsonSchema,
         string $schemaName,
         string $toolDescription,
-    ) : array {
+    ) : ResponseFormat {
         return self::responseFormatFor(
             mode: $this->config->outputMode(),
             jsonSchema: $jsonSchema,
@@ -77,30 +79,23 @@ final class StructuredOutputSchemaRenderer
         array $jsonSchema,
         string $schemaName,
         string $toolDescription,
-    ) : array {
+    ) : ResponseFormat {
         return match($mode) {
-            OutputMode::Json => [
-                'type' => 'json_object',
-                'schema' => $jsonSchema,
-            ],
-            OutputMode::JsonSchema => [
-                'type' => 'json_schema',
-                'description' => $toolDescription,
-                'json_schema' => [
-                    'name' => $schemaName,
-                    'schema' => $jsonSchema,
-                    'strict' => true,
-                ],
-            ],
-            default => [],
+            OutputMode::Json => ResponseFormat::jsonObject(),
+            OutputMode::JsonSchema => ResponseFormat::jsonSchema(
+                schema: $jsonSchema,
+                name: $schemaName,
+                strict: true,
+            ),
+            default => ResponseFormat::empty(),
         };
     }
 
     private function renderToolCallSchemaFrom(
         ToolCallSchemaBuilder $toolCallBuilder,
         array $jsonSchema,
-    ) : array {
-        return $toolCallBuilder->renderToolCall(
+    ) : ToolDefinitions {
+        return $toolCallBuilder->renderToolDefinitions(
             $jsonSchema,
             $this->config->toolName(),
             $this->config->toolDescription(),

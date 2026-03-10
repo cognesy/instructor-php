@@ -27,7 +27,7 @@ use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCall;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
@@ -249,7 +249,7 @@ final class SpawnSubagentTool extends ContextAwareTool
     // TOOL SCHEMA //////////////////////////////////////////////////
 
     #[\Override]
-    public function toToolSchema(): array {
+    public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition {
         $subagentNames = $this->provider->names();
         $descriptions = [];
 
@@ -267,7 +267,7 @@ final class SpawnSubagentTool extends ContextAwareTool
             $descriptionText .= "\n\nAvailable subagents:\n" . implode("\n", $descriptions);
         }
 
-        return ToolSchema::make(
+        return \Cognesy\Polyglot\Inference\Data\ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $descriptionText,
             parameters: JsonSchema::object('parameters')
@@ -276,7 +276,7 @@ final class SpawnSubagentTool extends ContextAwareTool
                     JsonSchema::string('prompt', 'The task or question for the subagent'),
                 ])
                 ->withRequiredProperties(['subagent', 'prompt'])
-        )->toArray();
+        )->toArray());
     }
 
     // SUBAGENT ASSEMBLY ////////////////////////////////////////////

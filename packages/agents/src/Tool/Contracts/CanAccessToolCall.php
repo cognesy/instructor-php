@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Tool\Contracts;
 
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCall;
 
 /**
  * Interface for tools that need access to their invocation context.

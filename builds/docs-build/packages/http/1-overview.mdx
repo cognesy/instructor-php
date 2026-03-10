@@ -1,30 +1,37 @@
 ---
 title: Overview
-description: 'A small HTTP transport for requests, streaming, and middleware.'
+description: 'A framework-agnostic HTTP transport with pluggable drivers, streaming, and middleware.'
 ---
 
-The HTTP client package gives the rest of the stack one small transport API.
+The HTTP client package provides a unified transport layer for making HTTP requests across different PHP environments. Whether your application runs on Symfony, Laravel, or plain PHP, you interact with the same small set of types and the underlying driver handles the rest.
 
-It is built around a few focused types:
+## Why a Custom HTTP Layer?
 
-- `CanSendHttpRequests`: top-level transport contract
-- `HttpClient`: default implementation of `CanSendHttpRequests`
-- `HttpRequest`: immutable request value
-- `PendingHttpResponse`: deferred execution wrapper
-- `HttpResponse`: buffered or streamed response value
-- `HttpClientBuilder`: explicit composition entry point
-- `HttpClientConfig`: typed driver configuration
+PHP has no shortage of HTTP clients, but each one exposes a different API. Switching from Guzzle to Symfony's HttpClient means rewriting every call site. This package solves that problem by placing a thin abstraction over the driver of your choice:
 
-## Core Capabilities
+- **Framework agnostic** -- the same request code works in Laravel, Symfony, or vanilla PHP without modification.
+- **Pluggable drivers** -- switch between cURL, Guzzle, Symfony, or your own driver with a single configuration change.
+- **Streaming first** -- first-class support for streamed responses, which is essential for LLM token-by-token output and server-sent events.
+- **Middleware pipeline** -- add retry logic, circuit breakers, idempotency keys, or debug logging without touching driver internals.
+- **Immutable value objects** -- requests, responses, and configuration are all immutable. Every `with*()` call returns a new instance.
 
-- send synchronous requests
-- stream response bodies
-- switch drivers without changing request code
-- add middleware around the transport layer
+## Core Types
 
-Pooling lives in `packages/http-pool`.
+The package is built around a handful of focused types:
 
-## Typical Flow
+| Type | Role |
+|------|------|
+| `CanSendHttpRequests` | Top-level transport contract |
+| `HttpClient` | Default implementation of `CanSendHttpRequests` |
+| `HttpRequest` | Immutable request value object (URL, method, headers, body, options) |
+| `PendingHttpResponse` | Deferred execution wrapper returned by `send()` |
+| `HttpResponse` | Buffered or streamed response value object |
+| `HttpClientBuilder` | Explicit composition entry point for building clients |
+| `HttpClientConfig` | Typed driver configuration (timeouts, chunk sizes, error handling) |
+
+## Request Lifecycle
+
+Every request follows the same path through the system:
 
 ```text
 HttpClient
@@ -32,9 +39,56 @@ HttpClient
   -> PendingHttpResponse
   -> get() or stream()
   -> HttpResponse
-// @doctest id="c219"
+// @doctest id="3211"
 ```
+
+1. You create an `HttpRequest` with a URL, method, headers, and body.
+2. You pass it to `HttpClient::send()`, which returns a `PendingHttpResponse`.
+3. The pending response is lazy -- no network call happens until you call `get()` (for buffered responses) or `stream()` (for streamed responses).
+4. The driver executes the request through the middleware pipeline and returns an `HttpResponse`.
+
+## Architecture
+
+The package follows a layered architecture:
+
+```text
+Your Code
+  -> HttpClient (CanSendHttpRequests)
+    -> MiddlewareStack
+      -> Middleware 1 -> Middleware 2 -> ... -> Driver
+                                                 |
+      <- Middleware 1 <- Middleware 2 <- ... <- Driver
+    -> HttpResponse
+// @doctest id="7a13"
+```
+
+**Client layer.** `HttpClient` is the public entry point. It delegates to `HttpClientRuntime`, which wires together the driver, middleware stack, and event dispatcher.
+
+**Middleware layer.** A pipeline of `HttpMiddleware` implementations that can inspect or modify requests before they reach the driver and responses after they come back. Middleware is processed in order for requests and in reverse order for responses.
+
+**Driver layer.** Drivers implement `CanHandleHttpRequest` and adapt a specific HTTP library to the common interface. The bundled drivers are:
+
+| Driver | Library | Dependency |
+|--------|---------|------------|
+| `CurlDriver` | PHP cURL extension | None (built-in) |
+| `GuzzleDriver` | Guzzle HTTP | `guzzlehttp/guzzle` |
+| `SymfonyDriver` | Symfony HttpClient | `symfony/http-client` |
+| `ExtHttpDriver` | pecl_http | `pecl/http` |
+| `MockHttpDriver` | Built-in test double | None |
 
 ## Immutability
 
-Reassign after every `with*()` call.
+All core types are immutable. When you call a `with*()` method on a request, response, config, or client, you receive a new instance. Always reassign the result:
+
+```php
+// Correct
+$request = $request->withHeader('Authorization', 'Bearer ' . $token);
+
+// Wrong -- the return value is discarded
+$request->withHeader('Authorization', 'Bearer ' . $token);
+// @doctest id="5432"
+```
+
+## Pooling
+
+Concurrent request execution has been extracted to its own package. See `packages/http-pool` for `HttpPool`, `PendingHttpPool`, and `HttpPoolBuilder`. The request and response collection types (`HttpRequestList` and `HttpResponseList`) remain in this package.

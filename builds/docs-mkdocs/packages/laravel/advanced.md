@@ -1,10 +1,10 @@
 # Advanced Usage
 
-This guide covers advanced patterns and features for power users.
+This guide covers advanced patterns and features for power users who need fine-grained control over extraction behavior, streaming, validation, and multi-provider workflows.
 
 ## Streaming
 
-Stream responses for real-time updates:
+Streaming lets you receive partial results as the LLM generates them, rather than waiting for the entire response. This is essential for long-running extractions where you want to show progress, or for real-time UIs that display data as it becomes available.
 
 ```php
 use Cognesy\Instructor\Laravel\Facades\StructuredOutput;
@@ -23,10 +23,12 @@ foreach ($stream->partials() as $partial) {
 
 // Get final complete result
 $company = $stream->finalValue();
-// @doctest id="28d0"
+// @doctest id="708b"
 ```
 
 ### Streaming with `partials()`
+
+Each partial is a partially populated instance of your response model. Properties that have not been received yet will be `null` or their default value. This is useful for broadcasting live updates via WebSockets.
 
 ```php
 $stream = StructuredOutput::with(
@@ -41,12 +43,12 @@ foreach ($stream->partials() as $partial) {
 }
 
 $result = $stream->finalValue();
-// @doctest id="68de"
+// @doctest id="5d67"
 ```
 
 ### Streaming Sequences
 
-For extracting multiple items:
+When extracting an array of items, the `sequence()` method yields the growing collection as each new item is completed.
 
 ```php
 $stream = StructuredOutput::with(
@@ -62,7 +64,7 @@ $stream = StructuredOutput::with(
 foreach ($stream->sequence() as $items) {
     echo "Found: {$items->last()->name}\n";
 }
-// @doctest id="4e08"
+// @doctest id="57a2"
 ```
 
 ---
@@ -71,7 +73,7 @@ foreach ($stream->sequence() as $items) {
 
 ### Automatic Validation
 
-Response models are automatically validated. Invalid responses trigger retries:
+Response models are automatically validated after deserialization. When validation fails, the package sends the error messages back to the LLM with a retry prompt, asking it to correct the response. This loop continues up to `max_retries` times.
 
 ```php
 use Symfony\Component\Validator\Constraints as Assert;
@@ -97,10 +99,12 @@ $user = StructuredOutput::with(
     responseModel: UserData::class,
     maxRetries: 3,
 )->get();
-// @doctest id="b8c5"
+// @doctest id="f884"
 ```
 
 ### Custom Validators
+
+Implement the `CanValidateObject` contract for domain-specific validation logic that cannot be expressed with declarative attributes.
 
 ```php
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
@@ -127,10 +131,12 @@ $order = StructuredOutput::with(
 )
 ->withValidators(BusinessRulesValidator::class)
 ->get();
-// @doctest id="c182"
+// @doctest id="afd4"
 ```
 
 ### Custom Retry Prompt
+
+Customize the message sent to the LLM when validation fails. The `{errors}` placeholder is replaced with the actual error messages.
 
 ```php
 $result = StructuredOutput::with(
@@ -139,14 +145,14 @@ $result = StructuredOutput::with(
     maxRetries: 3,
     retryPrompt: 'The extraction failed validation. Errors: {errors}. Please correct and try again.',
 )->get();
-// @doctest id="c04a"
+// @doctest id="44a8"
 ```
 
 ---
 
 ## Data Transformation
 
-Transform data after extraction:
+Apply transformations to extracted data after deserialization. Transformers run after validation, so they can normalize, enrich, or restructure the data before it reaches your application code.
 
 ```php
 use Cognesy\Instructor\Transformation\Contracts\CanTransformData;
@@ -175,14 +181,14 @@ $contact = StructuredOutput::with(
 ->get();
 
 // $contact->phone === '+15551234567'
-// @doctest id="7e8e"
+// @doctest id="d1de"
 ```
 
 ---
 
 ## Output Modes
 
-Different LLMs support different output modes:
+Different LLMs support different output modes. The output mode controls the mechanism used to extract structured data from the model's response. You can set the default mode in `config/instructor.php` or override it per-request via the runtime.
 
 ```php
 use Cognesy\Instructor\Enums\OutputMode;
@@ -220,14 +226,14 @@ $result = StructuredOutput::withRuntime($jsonRuntime)
 $result = StructuredOutput::withRuntime($mdJsonRuntime)
     ->with(...)
     ->get();
-// @doctest id="48c0"
+// @doctest id="a63d"
 ```
 
 ---
 
 ## Few-Shot Learning
 
-Provide examples to improve extraction quality:
+Providing input/output examples significantly improves extraction quality, especially for ambiguous or domain-specific data. Each example pairs an input string with a fully populated response model instance.
 
 ```php
 $person = StructuredOutput::with(
@@ -252,14 +258,14 @@ $person = StructuredOutput::with(
         ],
     ],
 )->get();
-// @doctest id="d37a"
+// @doctest id="fe26"
 ```
 
 ---
 
 ## System Prompts
 
-Customize the system prompt for specific domains:
+System prompts set the overall behavior and domain context for the LLM. They are especially valuable when extracting specialized data.
 
 ```php
 $medical = StructuredOutput::with(
@@ -272,14 +278,14 @@ $medical = StructuredOutput::with(
         If information is unclear, mark as null rather than guessing.
         PROMPT,
 )->get();
-// @doctest id="e0fd"
+// @doctest id="55b4"
 ```
 
 ---
 
 ## Tool Descriptions
 
-Customize how the response model is described to the LLM:
+Customize how the response model is described to the LLM in the tool/function calling interface. This is particularly useful when the auto-generated name or description is not descriptive enough for the model to understand the task.
 
 ```php
 $result = StructuredOutput::with(
@@ -288,14 +294,14 @@ $result = StructuredOutput::with(
     toolName: 'extract_invoice',
     toolDescription: 'Extracts structured invoice data including line items, totals, and payment terms.',
 )->get();
-// @doctest id="9981"
+// @doctest id="68f2"
 ```
 
 ---
 
 ## Multiple Providers
 
-Switch between providers based on task:
+Switch between providers based on the task at hand. Different providers offer different trade-offs in speed, accuracy, cost, and privacy.
 
 ```php
 class AIService
@@ -325,7 +331,24 @@ class AIService
             ->get();
     }
 }
-// @doctest id="7361"
+// @doctest id="835f"
+```
+
+---
+
+## Cached Context (Prompt Caching)
+
+For repeated extractions with the same system prompt, examples, or large context, use `withCachedContext()` to signal that the context should be cached by providers that support prompt caching (e.g., Anthropic, OpenAI). This can significantly reduce latency and cost for subsequent calls.
+
+```php
+$result = StructuredOutput::withCachedContext(
+    system: 'You are a legal document analyzer...',
+    examples: $examples,
+)->with(
+    messages: $newDocument,
+    responseModel: LegalAnalysis::class,
+)->get();
+// @doctest id="7312"
 ```
 
 ---
@@ -333,6 +356,8 @@ class AIService
 ## Caching Strategies
 
 ### Response Caching
+
+Cache extraction results for identical inputs to avoid redundant API calls.
 
 ```php
 use Illuminate\Support\Facades\Cache;
@@ -351,10 +376,12 @@ class CachedExtractor
         });
     }
 }
-// @doctest id="2a58"
+// @doctest id="b6e9"
 ```
 
 ### Semantic Caching
+
+Use embeddings to find cached results for semantically similar (but not identical) inputs.
 
 ```php
 use Cognesy\Instructor\Laravel\Facades\Embeddings;
@@ -383,14 +410,14 @@ class SemanticCache
         return $result;
     }
 }
-// @doctest id="9056"
+// @doctest id="24e5"
 ```
 
 ---
 
 ## Batch Processing
 
-Process multiple items efficiently:
+Process multiple items efficiently, either synchronously or via queued jobs for large batches.
 
 ```php
 use Illuminate\Support\Collection;
@@ -418,7 +445,7 @@ class BatchExtractor
             ->dispatch();
     }
 }
-// @doctest id="7400"
+// @doctest id="423d"
 ```
 
 ---
@@ -426,6 +453,8 @@ class BatchExtractor
 ## Error Handling
 
 ### Graceful Degradation
+
+Wrap extraction calls in try-catch blocks to handle API failures without crashing your application.
 
 ```php
 use Cognesy\Instructor\Laravel\Facades\StructuredOutput;
@@ -449,10 +478,12 @@ class ResilientExtractor
         }
     }
 }
-// @doctest id="9c12"
+// @doctest id="1970"
 ```
 
 ### Fallback Providers
+
+Automatically try alternative providers when the primary one fails. This pattern provides resilience against provider outages and rate limits.
 
 ```php
 class FallbackExtractor
@@ -477,7 +508,7 @@ class FallbackExtractor
         throw new RuntimeException('All providers failed');
     }
 }
-// @doctest id="d80e"
+// @doctest id="06fd"
 ```
 
 ---
@@ -498,10 +529,12 @@ $result = StructuredOutput::with(
 $result = StructuredOutput::withModel('gpt-4o-mini')
     ->with(messages: $text, responseModel: SimpleModel::class)
     ->get();
-// @doctest id="9362"
+// @doctest id="9222"
 ```
 
 ### Parallel Extraction
+
+Use Laravel's concurrency features to run multiple extractions simultaneously.
 
 ```php
 use Illuminate\Support\Facades\Concurrency;
@@ -511,5 +544,5 @@ $results = Concurrency::run([
     fn () => StructuredOutput::with(messages: $text2, responseModel: Model::class)->get(),
     fn () => StructuredOutput::with(messages: $text3, responseModel: Model::class)->get(),
 ]);
-// @doctest id="90a9"
+// @doctest id="cd0b"
 ```

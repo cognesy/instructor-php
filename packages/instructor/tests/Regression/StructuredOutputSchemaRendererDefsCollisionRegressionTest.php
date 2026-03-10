@@ -13,7 +13,7 @@ it('keeps distinct tool-call $defs keys for classes sharing basename', function 
 
     $schema = $renderer->schemaFactory()->schema(Root::class);
     $rendering = $renderer->renderFromSchema($schema);
-    $parameters = $rendering->toolCallSchema()[0]['function']['parameters'];
+    $parameters = $rendering->toolDefinitions()->all()[0]->parameters();
     $defs = $parameters['$defs'] ?? [];
 
     expect($defs)->toHaveCount(2);

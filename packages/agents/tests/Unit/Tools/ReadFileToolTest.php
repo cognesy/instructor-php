@@ -105,8 +105,7 @@ describe('ReadFileTool', function () {
         $tool = new ReadFileTool(baseDir: $this->tempDir);
         $schema = $tool->toToolSchema();
 
-        expect($schema['type'])->toBe('function');
-        expect($schema['function']['name'])->toBe('read_file');
-        expect($schema['function']['parameters'])->toBeArray();
+        expect($schema->name())->toBe('read_file');
+        expect($schema->parameters())->toBeArray();
     });
 });

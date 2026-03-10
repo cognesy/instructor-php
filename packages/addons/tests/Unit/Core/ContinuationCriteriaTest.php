@@ -17,8 +17,8 @@ use Cognesy\Addons\ToolUse\Continuation\ToolCallPresenceCheck;
 use Cognesy\Addons\ToolUse\Data\ToolExecution;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCalls;
+use Cognesy\Messages\ToolCall;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Utils\Result\Result;
 

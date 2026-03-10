@@ -2,10 +2,12 @@
 
 namespace Cognesy\Agents\Context;
 
+use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Utils\Metadata;
 
 final readonly class AgentContext
@@ -58,19 +60,15 @@ final readonly class AgentContext
         return $this->store->section(ContextSections::DEFAULT)->get()->messages();
     }
 
-    public function toCachedContext(array $toolSchemas = []): CachedInferenceContext {
+    public function toCachedContext(ToolDefinitions $toolDefinitions = new ToolDefinitions()): CachedInferenceContext {
         $messages = match(true) {
-            $this->systemPrompt === '' => [],
-            default => [['role' => 'system', 'content' => $this->systemPrompt]],
-        };
-        $responseFormat = match(true) {
-            $this->responseFormat->isEmpty() => [],
-            default => $this->responseFormat,
+            $this->systemPrompt === '' => Messages::empty(),
+            default => Messages::fromMessages([Message::make('system', $this->systemPrompt)]),
         };
         return new CachedInferenceContext(
             messages: $messages,
-            tools: $toolSchemas,
-            responseFormat: $responseFormat,
+            tools: $toolDefinitions,
+            responseFormat: $this->responseFormat,
         );
     }
 

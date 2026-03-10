@@ -23,8 +23,8 @@ use Cognesy\Agents\Interception\PassThroughInterceptor;
 use Cognesy\Agents\Tool\ToolExecutor;
 use Cognesy\Agents\Tool\Tools\MockTool;
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCalls;
+use Cognesy\Messages\ToolCall;
 use RuntimeException;
 
 final class CountingEventListener

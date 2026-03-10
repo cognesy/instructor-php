@@ -32,9 +32,9 @@ final class ToolsTool extends SimpleTool
     }
 
     #[\Override]
-    public function toToolSchema(): array
+    public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition
     {
-        return ToolSchema::make(
+        return \Cognesy\Polyglot\Inference\Data\ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
             parameters: JsonSchema::object('parameters')
@@ -44,7 +44,7 @@ final class ToolsTool extends SimpleTool
                     JsonSchema::string('query', 'Search query (when action=search).'),
                     JsonSchema::integer('limit', 'Maximum number of results to return.', meta: ['minimum' => 1, 'maximum' => 100]),
                 ])
-        )->toArray();
+        )->toArray());
     }
 
     private function handleList(array $args): array

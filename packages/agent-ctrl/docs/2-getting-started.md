@@ -29,8 +29,14 @@ The simplest way to use Agent-Ctrl is to pick an agent, pass a prompt, and read 
 
 ```php
 use Cognesy\AgentCtrl\AgentCtrl;
+use Cognesy\AgentCtrl\Config\AgentConfig;
 
-$response = AgentCtrl::codex()->execute('Summarize this repository.');
+$response = AgentCtrl::codex()
+    ->withConfig(new AgentConfig(
+        timeout: 300,
+        workingDirectory: getcwd() ?: null,
+    ))
+    ->execute('Summarize this repository.');
 
 echo $response->text();
 ```
@@ -53,7 +59,7 @@ $response = AgentCtrl::openCode()
     ->execute('Explain the package layout.');
 ```
 
-All three factory methods return a builder that supports the same core API (`withModel()`, `withTimeout()`, `inDirectory()`, `execute()`, `executeStreaming()`, etc.), so you can switch agents without restructuring your code.
+All three factory methods return a builder that supports the same core API (`withConfig()`, `withModel()`, `withTimeout()`, `inDirectory()`, `execute()`, `executeStreaming()`, etc.), so you can switch agents without restructuring your code.
 
 ## Selecting the Agent at Runtime
 
@@ -61,13 +67,21 @@ When the agent type is determined by configuration or user input rather than bei
 
 ```php
 use Cognesy\AgentCtrl\AgentCtrl;
+use Cognesy\AgentCtrl\Config\AgentConfig;
 use Cognesy\AgentCtrl\Enum\AgentType;
 
 // AgentType is a backed enum: 'claude-code', 'codex', 'opencode'
 $agent = AgentType::from($config['agent']);
 
+$agentConfig = AgentConfig::fromArray([
+    'model' => $config['model'] ?? null,
+    'timeout' => $config['timeout'] ?? null,
+    'directory' => $config['directory'] ?? null,
+    'sandbox' => $config['sandbox'] ?? null,
+]);
+
 $response = AgentCtrl::make($agent)
-    ->withModel($config['model'] ?? null)
+    ->withConfig($agentConfig)
     ->execute('Explain the package layout.');
 ```
 
@@ -82,6 +96,30 @@ The `AgentType` enum has three cases:
 ## Common Configuration
 
 Every builder -- regardless of the agent type -- supports the same set of core configuration methods. These methods are defined in the `AgentBridgeBuilder` interface and implemented by the `AbstractBridgeBuilder` base class.
+
+### `withConfig(AgentConfig $config): static`
+
+Apply a typed config object for the shared builder options:
+
+```php
+use Cognesy\AgentCtrl\Config\AgentConfig;
+
+$config = AgentConfig::fromArray([
+    'model' => 'o4-mini',
+    'timeout' => 300,
+    'directory' => '/projects/my-app',
+    'sandbox' => 'docker',
+]);
+
+AgentCtrl::codex()
+    ->withConfig($config)
+    ->execute('Review the current directory.');
+```
+
+`AgentConfig::fromArray()` accepts Laravel-style aliases:
+
+- `directory` -> `workingDirectory`
+- `sandbox` -> `sandboxDriver`
 
 ### Model Selection
 

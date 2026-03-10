@@ -6,6 +6,8 @@ use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 
 trait HandlesRequestBuilder
@@ -36,13 +38,13 @@ trait HandlesRequestBuilder
         return $copy;
     }
 
-    public function withTools(array $tools): static {
+    public function withTools(ToolDefinitions|array $tools): static {
         $copy = $this->cloneWithRequestBuilder();
         $copy->requestBuilder->withTools($tools);
         return $copy;
     }
 
-    public function withToolChoice(string|array $toolChoice): static {
+    public function withToolChoice(ToolChoice|string|array $toolChoice): static {
         $copy = $this->cloneWithRequestBuilder();
         $copy->requestBuilder->withToolChoice($toolChoice);
         return $copy;
@@ -80,8 +82,8 @@ trait HandlesRequestBuilder
 
     public function withCachedContext(
         string|array $messages = [],
-        array        $tools = [],
-        string|array $toolChoice = [],
+        ToolDefinitions|array $tools = [],
+        ToolChoice|string|array $toolChoice = [],
         array        $responseFormat = [],
     ): static {
         $copy = $this->cloneWithRequestBuilder();

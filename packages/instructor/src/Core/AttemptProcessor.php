@@ -43,7 +43,7 @@ final readonly class AttemptProcessor
                 execution: $completed,
                 response: StructuredOutputResponse::final(
                     value: $finalValue,
-                    rawResponse: $response,
+                    inferenceResponse: $response,
                 ),
             );
         }
@@ -67,7 +67,7 @@ final readonly class AttemptProcessor
             execution: $failed,
             response: StructuredOutputResponse::final(
                 value: $failed->output(),
-                rawResponse: $response,
+                inferenceResponse: $response,
             ),
         );
     }

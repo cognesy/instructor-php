@@ -130,7 +130,7 @@ final class StreamingExecutionDriver implements CanEmitStreamingUpdates
     }
 
     private function finalizeAttempt(ExecutionLoop $loop): void {
-        $finalInference = $this->state->finalRawResponse();
+        $finalInference = $this->state->finalInferenceResponse();
 
         $result = $this->attemptProcessor->process(
             execution: $loop->execution(),

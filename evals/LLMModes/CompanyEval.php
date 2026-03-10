@@ -5,7 +5,7 @@ namespace Evals\LLMModes;
 use Cognesy\Evals\Contracts\CanGenerateObservations;
 use Cognesy\Evals\Execution;
 use Cognesy\Evals\Observation;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCall;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Utils\Str;
 

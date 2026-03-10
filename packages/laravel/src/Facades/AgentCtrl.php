@@ -6,6 +6,7 @@ namespace Cognesy\Instructor\Laravel\Facades;
 
 use Cognesy\AgentCtrl\AgentCtrl as BaseAgentCtrl;
 use Cognesy\AgentCtrl\Builder\ClaudeCodeBridgeBuilder;
+use Cognesy\AgentCtrl\Config\AgentConfig;
 use Cognesy\AgentCtrl\Builder\CodexBridgeBuilder;
 use Cognesy\AgentCtrl\Builder\OpenCodeBridgeBuilder;
 use Cognesy\AgentCtrl\Enum\AgentType;
@@ -121,30 +122,17 @@ class AgentCtrl extends Facade
         ClaudeCodeBridgeBuilder|CodexBridgeBuilder|OpenCodeBridgeBuilder $builder,
         string $agentKey
     ): ClaudeCodeBridgeBuilder|CodexBridgeBuilder|OpenCodeBridgeBuilder {
-        $config = static::configGet("instructor.agents.{$agentKey}", []);
+        return $builder->withConfig(static::resolveAgentConfig($agentKey));
+    }
 
-        // Apply model if configured
-        if ($model = $config['model'] ?? null) {
-            $builder->withModel($model);
-        }
+    private static function resolveAgentConfig(string $agentKey): AgentConfig
+    {
+        $defaults = static::configGet('instructor.agents', []);
+        $globalConfig = AgentConfig::fromArray(is_array($defaults) ? $defaults : []);
 
-        // Apply timeout if configured
-        if ($timeout = $config['timeout'] ?? static::configGet('instructor.agents.timeout')) {
-            $builder->withTimeout($timeout);
-        }
+        $overrides = static::configGet("instructor.agents.{$agentKey}", []);
 
-        // Apply working directory if configured
-        if ($directory = $config['directory'] ?? static::configGet('instructor.agents.directory')) {
-            $builder->inDirectory($directory);
-        }
-
-        // Apply sandbox driver if configured
-        if ($sandbox = $config['sandbox'] ?? static::configGet('instructor.agents.sandbox')) {
-            $sandboxDriver = \Cognesy\Sandbox\Enums\SandboxDriver::from($sandbox);
-            $builder->withSandboxDriver($sandboxDriver);
-        }
-
-        return $builder;
+        return $globalConfig->withOverrides(is_array($overrides) ? $overrides : []);
     }
 
     private static function configGet(string $key, mixed $default = null): mixed

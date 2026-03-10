@@ -12,7 +12,7 @@ following resources are available.
   configuration.
 - **[Techniques](/techniques/classification)** -- practical patterns like classification, search
   query generation, and prompting guidelines.
-- **[Cookbook](/cookbook)** -- ready-to-run examples demonstrating Instructor in real-world scenarios.
+- **Examples** -- see the repository `examples/` directory for ready-to-run integrations and workflows.
 
 ## Community
 

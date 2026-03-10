@@ -5,8 +5,8 @@ namespace Cognesy\Agents\Drivers\ReAct\Actions;
 use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Drivers\ReAct\Contracts\Decision;
 use Cognesy\Agents\Drivers\ReAct\Utils\ReActValidator;
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCalls;
+use Cognesy\Messages\ToolCall;
 use Cognesy\Schema\Data\ArrayShapeSchema;
 use Cognesy\Schema\Data\CollectionSchema;
 use Cognesy\Schema\Data\ObjectSchema;
@@ -48,7 +48,7 @@ final class MakeToolCalls
         }
 
         $schema = $this->tools->get($toolName)->toToolSchema();
-        $parameters = $schema['function']['parameters'] ?? null;
+        $parameters = $schema->parameters();
         if (!is_array($parameters)) {
             return null;
         }

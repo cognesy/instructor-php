@@ -216,48 +216,10 @@ $result = StructuredOutput::fromConfig(
 Instructor is a standalone library that works in any PHP application. It does not
 require published config files, service providers, or framework-specific bindings.
 
-In framework projects, you will typically:
+For Laravel-specific installation, configuration, facades, events, and testing,
+use the dedicated Laravel package docs:
 
-1. Store API keys in the framework's environment/secret management
-2. Register `StructuredOutputRuntime` as a singleton in the service container
-3. Inject `StructuredOutput` (or the runtime) where needed
-
-### Laravel Example
-
-```php
-// AppServiceProvider.php
-use Cognesy\Instructor\StructuredOutputRuntime;
-use Cognesy\Polyglot\Inference\Config\LLMConfig;
-
-public function register(): void
-{
-    $this->app->singleton(StructuredOutputRuntime::class, function () {
-        return StructuredOutputRuntime::fromConfig(
-            LLMConfig::fromPreset('openai')
-        )->withMaxRetries(2);
-    });
-}
-```
-
-```php
-// In a controller or service
-use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Instructor\StructuredOutputRuntime;
-
-class CityController
-{
-    public function show(StructuredOutputRuntime $runtime): City
-    {
-        return (new StructuredOutput)
-            ->withRuntime($runtime)
-            ->with(
-                messages: 'What is the capital of France?',
-                responseModel: City::class,
-            )
-            ->get();
-    }
-}
-```
+- [Instructor for Laravel installation guide](../../laravel/docs/installation.md)
 
 
 ## Next Steps

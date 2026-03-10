@@ -1,8 +1,8 @@
 # Events
 
-Instructor dispatches events throughout the extraction lifecycle. These events are bridged to Laravel's event system, allowing you to listen and respond using standard Laravel patterns.
+Instructor dispatches events throughout the extraction and inference lifecycle. These events are automatically bridged to Laravel's event system by the `LaravelEventDispatcher`, allowing you to listen and respond using standard Laravel patterns -- listeners, subscribers, closures, and queued handlers.
 
-The Laravel bridge is implemented by `Cognesy\Instructor\Laravel\Events\LaravelEventDispatcher` and is part of `packages/laravel`, not `packages/events`.
+The bridge is implemented by `Cognesy\Instructor\Laravel\Events\LaravelEventDispatcher`, which lives in the `packages/laravel` package. It wraps Laravel's native `Illuminate\Contracts\Events\Dispatcher` and forwards Instructor events to it based on your configuration.
 
 ## Event Bridge Configuration
 
@@ -20,8 +20,12 @@ Configure event bridging in `config/instructor.php`:
         \Cognesy\Instructor\Events\ExtractionFailed::class,
     ],
 ],
-// @doctest id="a30e"
+// @doctest id="75b3"
 ```
+
+When `bridge_events` is empty (the default), every Instructor event is forwarded to Laravel's dispatcher. To reduce overhead in production, list only the event classes your listeners actually need.
+
+The bridge uses `instanceof` matching, so listing a parent event class also bridges its subclasses.
 
 ## Available Events
 
@@ -55,7 +59,7 @@ Configure event bridging in `config/instructor.php`:
 
 ### Using Event Listeners
 
-Create a listener:
+Create a dedicated listener class and register it with Laravel's event system.
 
 ```php
 // app/Listeners/LogExtractionComplete.php
@@ -74,7 +78,7 @@ class LogExtractionComplete
         ]);
     }
 }
-// @doctest id="5dc1"
+// @doctest id="049a"
 ```
 
 Register in `EventServiceProvider`:
@@ -95,12 +99,12 @@ class EventServiceProvider extends ServiceProvider
         ],
     ];
 }
-// @doctest id="dcb2"
+// @doctest id="a23c"
 ```
 
 ### Using Closures
 
-Register listeners in a service provider:
+For lightweight listeners, register closures directly in a service provider's `boot` method.
 
 ```php
 // app/Providers/AppServiceProvider.php
@@ -118,10 +122,12 @@ public function boot(): void
         // Handle failed extraction
     });
 }
-// @doctest id="6070"
+// @doctest id="469c"
 ```
 
 ### Using Event Subscribers
+
+Group related event handlers into a single subscriber class. This is convenient when you need to handle multiple Instructor events together.
 
 ```php
 // app/Listeners/InstructorEventSubscriber.php
@@ -163,7 +169,7 @@ class InstructorEventSubscriber
 protected $subscribe = [
     InstructorEventSubscriber::class,
 ];
-// @doctest id="c889"
+// @doctest id="ccbb"
 ```
 
 ## Common Use Cases
@@ -189,7 +195,7 @@ Event::listen(ExtractionFailed::class, function ($event) {
         'model' => $event->model,
     ]);
 });
-// @doctest id="318a"
+// @doctest id="e999"
 ```
 
 ### Metrics and Analytics
@@ -206,7 +212,7 @@ Event::listen(ExtractionComplete::class, function ($event) {
         'success' => true,
     ]);
 });
-// @doctest id="7210"
+// @doctest id="eef7"
 ```
 
 ### Alerting on Failures
@@ -222,7 +228,7 @@ Event::listen(ExtractionFailed::class, function ($event) {
             ->notify(new ExtractionFailedNotification($event));
     }
 });
-// @doctest id="2cf3"
+// @doctest id="7195"
 ```
 
 ### Caching Responses
@@ -236,12 +242,12 @@ Event::listen(ExtractionComplete::class, function ($event) {
 
     Cache::put($cacheKey, $event->result, now()->addHours(24));
 });
-// @doctest id="1f9d"
+// @doctest id="55df"
 ```
 
 ### Queued Event Listeners
 
-For heavy processing, use queued listeners:
+For CPU-intensive or I/O-heavy processing, implement `ShouldQueue` to push the work onto a queue instead of running it inline.
 
 ```php
 // app/Listeners/ProcessExtractionAnalytics.php
@@ -256,15 +262,15 @@ class ProcessExtractionAnalytics implements ShouldQueue
 
     public function handle(ExtractionComplete $event): void
     {
-        // Heavy analytics processing
+        // Heavy analytics processing runs on the queue
     }
 }
-// @doctest id="6c4d"
+// @doctest id="e911"
 ```
 
 ## Wiretap (Direct Event Handling)
 
-For direct access to all events without Laravel's dispatcher:
+The `wiretap` method provides direct access to the raw event stream without going through Laravel's dispatcher. This is useful for low-level debugging or when you need to observe every internal event.
 
 ```php
 use Cognesy\Instructor\Laravel\Facades\StructuredOutput;
@@ -273,7 +279,7 @@ use Cognesy\Polyglot\Inference\LLMProvider;
 
 $runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
     ->wiretap(function ($event) {
-        // Called for every event
+        // Called for every event in the pipeline
         logger()->debug('Event: ' . get_class($event));
     });
 
@@ -282,31 +288,35 @@ $person = StructuredOutput::withRuntime($runtime)->with(
     responseModel: PersonData::class,
 )
 ->get();
-// @doctest id="45d4"
+// @doctest id="e937"
 ```
+
+The `LaravelEventDispatcher` itself also supports `wiretap` for registering global listeners that receive every event, regardless of class. These listeners run at the lowest priority after all class-specific and bridged listeners have executed.
 
 ## Disabling Event Bridge
 
-To disable event bridging (e.g., for performance):
+To disable event bridging entirely (for example, in high-throughput scenarios where the overhead is unacceptable):
 
 ```php
 // config/instructor.php
 'events' => [
     'dispatch_to_laravel' => false,
 ],
-// @doctest id="0ff7"
+// @doctest id="384a"
 ```
 
 Or via environment variable:
 
 ```env
 INSTRUCTOR_DISPATCH_EVENTS=false
-// @doctest id="5668"
+// @doctest id="9964"
 ```
+
+Disabling the bridge only stops events from being forwarded to Laravel's dispatcher. Internal Instructor event listeners and wiretaps continue to work normally.
 
 ## Testing Events
 
-Assert events were dispatched:
+Use Laravel's `Event::fake()` to assert that specific events were dispatched during a test.
 
 ```php
 use Cognesy\Instructor\Events\ExtractionComplete;
@@ -323,15 +333,15 @@ public function test_dispatches_extraction_event(): void
 
     Event::assertDispatched(ExtractionComplete::class);
 }
-// @doctest id="c7a2"
+// @doctest id="f9d5"
 ```
 
-Assert event properties:
+Assert event properties with a closure:
 
 ```php
 Event::assertDispatched(ExtractionComplete::class, function ($event) {
     return $event->responseModel === PersonData::class
         && $event->tokensUsed > 0;
 });
-// @doctest id="6277"
+// @doctest id="dc3b"
 ```

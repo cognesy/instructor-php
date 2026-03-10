@@ -1,14 +1,17 @@
-<?php declare(strict_types=1);
+<?php
 
+declare(strict_types=1);
+
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Validation\Traits\ValidationMixin;
 use Cognesy\Instructor\Validation\ValidationResult;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
-use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Utils\Collection\ArrayList;
 use Cognesy\Utils\Str;
 
@@ -17,13 +20,16 @@ class ValidationRetryUser
     use ValidationMixin;
 
     public string $name;
+
     /** @var string[] */
     public array $details;
 
-    public function validate() : ValidationResult {
+    public function validate(): ValidationResult
+    {
         $data = implode("\n", $this->details);
         $hasPii = Str::contains($data, 'ssn=', false) || Str::contains($data, 'phone=', false);
-        return match($hasPii) {
+
+        return match ($hasPii) {
             true => ValidationResult::fieldError(
                 field: 'details',
                 value: $data,
@@ -38,34 +44,41 @@ final class RecordingInferenceRequestDriver implements CanProcessInferenceReques
 {
     /** @var ArrayList<InferenceResponse> */
     private ArrayList $responses;
-    /** @var ArrayList<array> */
+
+    /** @var ArrayList<Messages> */
     private ArrayList $requests;
 
     /** @param InferenceResponse[] $responses */
-    public function __construct(array $responses) {
+    public function __construct(array $responses)
+    {
         $this->responses = ArrayList::fromArray($responses);
         $this->requests = ArrayList::empty();
     }
 
-    /** @return ArrayList<array> */
-    public function recordedRequests(): ArrayList {
+    /** @return ArrayList<Messages> */
+    public function recordedRequests(): ArrayList
+    {
         return $this->requests;
     }
 
-    public function makeResponseFor(InferenceRequest $request): InferenceResponse {
+    public function makeResponseFor(InferenceRequest $request): InferenceResponse
+    {
         $this->requests = $this->requests->withAppended($request->messages());
-        return match($this->responses->isEmpty()) {
+
+        return match ($this->responses->isEmpty()) {
             true => new InferenceResponse(content: ''),
             false => $this->dequeueResponse(),
         };
     }
 
     /** @return iterable<PartialInferenceDelta> */
-    public function makeStreamDeltasFor(InferenceRequest $request): iterable {
+    public function makeStreamDeltasFor(InferenceRequest $request): iterable
+    {
         return [];
     }
 
-    public function capabilities(?string $model = null): DriverCapabilities {
+    public function capabilities(?string $model = null): DriverCapabilities
+    {
         return new DriverCapabilities(
             streaming: false,
             toolCalling: true,
@@ -76,17 +89,20 @@ final class RecordingInferenceRequestDriver implements CanProcessInferenceReques
         );
     }
 
-    private function dequeueResponse(): InferenceResponse {
+    private function dequeueResponse(): InferenceResponse
+    {
         $response = $this->responses->itemAt(0);
         $this->responses = $this->responses->withRemovedAt(0);
+
         return $response;
     }
 }
 
-function messageIndexOf(array $messages, string $needle): int {
-    foreach ($messages as $index => $message) {
+function messageIndexOf(Messages $messages, string $needle): int
+{
+    foreach ($messages->toArray() as $index => $message) {
         $content = $message['content'] ?? '';
-        $text = match(true) {
+        $text = match (true) {
             is_array($content) => json_encode($content),
             default => (string) $content,
         };
@@ -94,6 +110,7 @@ function messageIndexOf(array $messages, string $needle): int {
             return $index;
         }
     }
+
     return -1;
 }
 

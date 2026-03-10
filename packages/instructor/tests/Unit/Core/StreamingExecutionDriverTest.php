@@ -119,7 +119,7 @@ it('emits live partials and one final response from the streaming driver', funct
     expect($emissions[1])->toBeInstanceOf(\Cognesy\Instructor\Data\StructuredOutputResponse::class);
     expect($emissions[1]?->hasValue())->toBeTrue();
     expect($emissions[2]?->isFinal())->toBeTrue();
-    expect($emissions[2]?->rawResponse())->toBeInstanceOf(InferenceResponse::class);
+    expect($emissions[2]?->inferenceResponse())->toBeInstanceOf(InferenceResponse::class);
     expect($driver->execution()->output())->toBeInstanceOf(StreamingDriverUser::class);
     expect($driver->execution()->isFinalized())->toBeTrue();
 });

@@ -3,14 +3,16 @@ title: Usage
 description: 'The day-to-day API for structured output.'
 ---
 
-## The Standard Flow
+## Basic Usage
 
-Most usage starts with `StructuredOutput`, a response model, and one call to `get()`.
+Instructor extracts structured data from text using LLM inference. You define a PHP class that
+describes the shape of the data you want, and Instructor takes care of building the prompt,
+calling the model, and deserializing the response into a typed object.
 
 ```php
 use Cognesy\Instructor\StructuredOutput;
 
-final class Person {
+class Person {
     public string $name;
     public int $age;
 }
@@ -21,36 +23,258 @@ $person = (new StructuredOutput)
         responseModel: Person::class,
     )
     ->get();
-// @doctest id="b2fc"
+
+echo $person->name; // Jason
+echo $person->age;  // 28
+// @doctest id="1f70"
 ```
 
-## Build The Request
+> By default, Instructor looks for the `OPENAI_API_KEY` environment variable. You can also
+> choose a provider explicitly with `StructuredOutput::using('openai')` or by passing
+> a runtime configured with `LLMConfig`.
 
-Use `with(...)` for the common path, or the fluent methods when you want to be explicit.
 
-Common request methods:
+## Building The Request
 
-- `withMessages(...)`
-- `withInput(...)`
-- `withResponseModel(...)`
-- `withSystem(...)`
-- `withPrompt(...)`
-- `withExamples(...)`
-- `withModel(...)`
-- `withOptions(...)`
-- `withStreaming(...)`
+The `with()` method covers the common path. It accepts all the parameters you typically need
+in a single call:
 
-## Read The Result
+```php
+$person = (new StructuredOutput)
+    ->with(
+        messages: 'Jason is 28 years old.',
+        responseModel: Person::class,
+        system: 'Extract accurate data.',
+        prompt: 'Identify the person mentioned.',
+        model: 'gpt-4o',
+    )
+    ->get();
+// @doctest id="e6b8"
+```
 
-- `get()` returns the parsed value
-- `response()` returns `StructuredOutputResponse`
-- `rawResponse()` returns the underlying inference response
-- `stream()` returns `StructuredOutputStream`
-- `create()` returns `PendingStructuredOutput` for lazy execution
+When you prefer a more explicit, step-by-step style, use the fluent API:
 
-## Use A Runtime When Behavior Matters
+```php
+$person = (new StructuredOutput)
+    ->withMessages('Jason is 28 years old.')
+    ->withResponseModel(Person::class)
+    ->withSystem('Extract accurate data.')
+    ->withPrompt('Identify the person mentioned.')
+    ->withModel('gpt-4o')
+    ->get();
+// @doctest id="2a8d"
+```
 
-Keep provider and runtime behavior in `StructuredOutputRuntime`:
+Both approaches produce identical requests. Use whichever reads better in your code.
+
+### Request Methods
+
+| Method | Purpose |
+|---|---|
+| `withMessages(...)` | Set the chat messages (string, array, or `Messages` object) |
+| `withInput(...)` | Set input from a string, array, or object (converted to messages) |
+| `withResponseModel(...)` | Set the response model (class string, instance, or schema array) |
+| `withResponseClass(...)` | Set the response model from a class name |
+| `withResponseObject(...)` | Set the response model from an object instance |
+| `withResponseJsonSchema(...)` | Set the response model from a JSON Schema array |
+| `withSystem(...)` | Set the system prompt |
+| `withPrompt(...)` | Set additional prompt text |
+| `withExamples(...)` | Provide few-shot examples |
+| `withModel(...)` | Override the model name |
+| `withOptions(...)` | Pass provider-specific options |
+| `withOption(...)` | Set a single provider option |
+| `withStreaming(...)` | Enable or disable streaming |
+| `withCachedContext(...)` | Set cached context for providers that support prompt caching |
+
+
+## Reading The Result
+
+Instructor provides several ways to consume the response depending on your needs.
+
+### `get()` - The Parsed Value
+
+The most common method. Returns the deserialized, validated object (or scalar when using
+the `Scalar` adapter):
+
+```php
+$person = (new StructuredOutput)
+    ->with(messages: 'Jason is 28 years old.', responseModel: Person::class)
+    ->get();
+// @doctest id="1c01"
+```
+
+### `response()` - The Full Response Envelope
+
+Returns a `StructuredOutputResponse` that wraps both the parsed value and the raw LLM
+response, giving you access to usage metadata, finish reason, and more:
+
+```php
+$response = (new StructuredOutput)
+    ->with(messages: 'Jason is 28 years old.', responseModel: Person::class)
+    ->response();
+
+$person = $response->value();
+$usage  = $response->usage();
+// @doctest id="251c"
+```
+
+### `inferenceResponse()` - The Underlying Inference Response
+
+Returns the low-level `InferenceResponse` from the Polyglot layer, useful when you need
+direct access to HTTP response data or provider-specific details:
+
+```php
+$raw = (new StructuredOutput)
+    ->with(messages: 'Jason is 28 years old.', responseModel: Person::class)
+    ->inferenceResponse();
+// @doctest id="2028"
+```
+
+### `stream()` - Streaming Partial Results
+
+Returns a `StructuredOutputStream` for real-time processing. Streaming is enabled
+automatically when you call `stream()`:
+
+```php
+$stream = (new StructuredOutput)
+    ->with(messages: 'Jason is 28 years old.', responseModel: Person::class)
+    ->stream();
+
+foreach ($stream->partials() as $partial) {
+    echo $partial->name ?? '...';
+}
+
+$person = $stream->lastUpdate();
+// @doctest id="2f30"
+```
+
+### `create()` - Lazy Execution
+
+Returns a `PendingStructuredOutput` handle without triggering the LLM call. Nothing
+executes until you read from it:
+
+```php
+$pending = (new StructuredOutput)
+    ->with(messages: 'Jason is 28 years old.', responseModel: Person::class)
+    ->create();
+
+// execution happens here
+$person = $pending->get();
+// @doctest id="8847"
+```
+
+`PendingStructuredOutput` exposes the same reading methods as `StructuredOutput` plus
+a few utility helpers:
+
+| Method | Return type |
+|---|---|
+| `get()` | The parsed value |
+| `response()` | `StructuredOutputResponse` |
+| `inferenceResponse()` | `InferenceResponse` |
+| `stream()` | `StructuredOutputStream` |
+| `toJson()` | JSON string of the extracted data |
+| `toArray()` | Associative array of the extracted data |
+| `toJsonObject()` | `Json` object |
+
+
+## Typed Convenience Methods
+
+When working with `Scalar` responses or any result where you know the expected PHP type,
+you can skip `get()` and call a typed accessor directly:
+
+```php
+$age = (new StructuredOutput)
+    ->with(messages: 'Jason is 28.', responseModel: Scalar::integer('age'))
+    ->getInt();
+// @doctest id="94de"
+```
+
+Available typed methods: `getString()`, `getInt()`, `getFloat()`, `getBoolean()`,
+`getObject()`, `getArray()`.
+
+
+## String As Input
+
+You can pass a plain string anywhere messages are expected. Instructor wraps it into a
+user message automatically:
+
+```php
+$person = (new StructuredOutput)
+    ->with(messages: 'Jason is 28 years old.', responseModel: Person::class)
+    ->get();
+// @doctest id="0ff3"
+```
+
+This is equivalent to passing `[['role' => 'user', 'content' => 'Jason is 28 years old.']]`.
+
+
+## Structured-To-Structured Processing
+
+The `input` parameter accepts objects, arrays, or strings. This lets you transform one
+structured representation into another:
+
+```php
+class Email {
+    public function __construct(
+        public string $address = '',
+        public string $subject = '',
+        public string $body = '',
+    ) {}
+}
+
+$email = new Email(
+    address: 'joe@gmail.com',
+    subject: 'Status update',
+    body: 'Your account has been updated.',
+);
+
+$translated = (new StructuredOutput)
+    ->with(
+        input: $email,
+        responseModel: Email::class,
+        prompt: 'Translate the text fields to Spanish. Keep other fields unchanged.',
+    )
+    ->get();
+// @doctest id="98d6"
+```
+
+
+## Output Formats
+
+By default, Instructor returns an instance of your response model class. You can change
+this with the output format methods:
+
+```php
+// Return as an associative array instead of an object
+$data = (new StructuredOutput)
+    ->withResponseClass(User::class)
+    ->intoArray()
+    ->with(messages: 'John Doe, 30 years old')
+    ->get();
+// ['name' => 'John Doe', 'age' => 30]
+
+// Use one class for the schema but hydrate into a different class
+$dto = (new StructuredOutput)
+    ->withResponseClass(UserProfile::class)
+    ->intoInstanceOf(UserDTO::class)
+    ->with(messages: 'Extract user data')
+    ->get();
+// @doctest id="72b1"
+```
+
+Three output format methods are available:
+
+| Method | Effect |
+|---|---|
+| `intoArray()` | Skip deserialization, return a raw associative array |
+| `intoInstanceOf($class)` | Use the schema from the response model but hydrate into a different class |
+| `intoObject($obj)` | Pass a self-deserializing object that implements `CanDeserializeSelf` |
+
+
+## Using A Runtime
+
+For applications that share provider configuration and behavior across many requests,
+create a `StructuredOutputRuntime` once and reuse it:
 
 ```php
 use Cognesy\Instructor\StructuredOutput;
@@ -61,22 +285,52 @@ $runtime = StructuredOutputRuntime::fromConfig(
     LLMConfig::fromPreset('openai')
 )->withMaxRetries(2);
 
-$result = (new StructuredOutput)
+$person = (new StructuredOutput)
     ->withRuntime($runtime)
     ->with(messages: 'Jason is 28 years old.', responseModel: Person::class)
     ->get();
-// @doctest id="3abb"
+// @doctest id="f62d"
 ```
 
-## Use `create()` When You Need Control
+The runtime holds settings like retries, output mode, validators, transformers, and
+deserializers. Individual requests stay lightweight and focused on content.
 
-`create()` gives you a lazy handle. Nothing is executed until you read from it.
+You can also use the static shorthand to pick a provider without building a full runtime:
 
 ```php
-$pending = (new StructuredOutput)
+$person = StructuredOutput::using('anthropic')
     ->with(messages: 'Jason is 28 years old.', responseModel: Person::class)
-    ->create();
-
-$person = $pending->get();
-// @doctest id="4213"
+    ->get();
+// @doctest id="80d7"
 ```
+
+
+## Streaming Support
+
+Instructor supports streaming of partial results, allowing you to process data as it
+arrives from the model:
+
+```php
+$stream = (new StructuredOutput)
+    ->with(messages: 'Jason is 28 years old.', responseModel: Person::class)
+    ->stream();
+
+foreach ($stream->partials() as $partialPerson) {
+    echo "Name: " . ($partialPerson->name ?? '...');
+    echo "Age: " . ($partialPerson->age ?? '...');
+}
+
+// After the stream completes, retrieve the final validated object
+$person = $stream->lastUpdate();
+// @doctest id="1b1a"
+```
+
+The `StructuredOutputStream` provides several iteration methods:
+
+| Method | Yields |
+|---|---|
+| `partials()` | Partially filled objects as they arrive |
+| `sequence()` | Completed items when using `Sequence` as the response model |
+| `responses()` | Full `StructuredOutputResponse` snapshots |
+| `finalValue()` | Drains the stream and returns the final parsed value |
+| `finalResponse()` | Drains the stream and returns the final `StructuredOutputResponse` |

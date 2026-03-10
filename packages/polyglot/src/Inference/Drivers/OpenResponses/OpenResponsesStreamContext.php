@@ -12,7 +12,7 @@ final class OpenResponsesStreamContext
 {
     public ?OpenResponseItemId $currentItemId = null;
     public string $currentItemType = '';
-    /** @var array<string, \Cognesy\Polyglot\Inference\Data\ToolCallId> */
+    /** @var array<string, \Cognesy\Messages\ToolCallId> */
     public array $itemToCallId = [];
     /** @var array<string, string> */
     public array $itemToName = [];

@@ -205,8 +205,8 @@ final class StructuredOutput implements CanCreateStructuredOutput
         return $this->create()->response();
     }
 
-    public function rawResponse(): InferenceResponse {
-        return $this->create()->rawResponse();
+    public function inferenceResponse(): InferenceResponse {
+        return $this->create()->inferenceResponse();
     }
 
     public function stream(): StructuredOutputStream {

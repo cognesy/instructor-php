@@ -25,8 +25,7 @@ it('includes transitive object refs in tool-call $defs when object references ar
 
     $schema = $renderer->schemaFactory()->schema(TransitiveDefsRoot::class);
     $rendering = $renderer->renderFromSchema($schema);
-    $toolCallSchema = $rendering->toolCallSchema();
-    $parameters = $toolCallSchema[0]['function']['parameters'];
+    $parameters = $rendering->toolDefinitions()->all()[0]->parameters();
     $defs = $parameters['$defs'] ?? [];
 
     expect($parameters['properties']['middle']['$ref'] ?? null)->toBe('#/$defs/TransitiveDefsMiddle');

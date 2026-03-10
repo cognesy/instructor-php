@@ -5,7 +5,7 @@ namespace Cognesy\Agents\Data;
 use Cognesy\Agents\Collections\ToolExecutions;
 use Cognesy\Agents\Enums\AgentStepType;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;

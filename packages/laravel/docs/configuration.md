@@ -2,6 +2,8 @@
 
 After publishing the configuration file with `php artisan vendor:publish --tag=instructor-config`, you will find it at `config/instructor.php`. This file controls every aspect of the package, from LLM provider connections and extraction behavior to HTTP transport, logging, event bridging, and response caching.
 
+This is Laravel-native configuration. The Laravel integration reads `config('instructor.*')` through Laravel's config repository and converts those arrays into typed runtime config objects internally. It does not ask the standalone `packages/config` YAML loader to parse `config/instructor.php`.
+
 ## Default Connection
 
 ```php

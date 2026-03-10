@@ -1,10 +1,159 @@
 ---
-title: JSON Extraction
-description: 'How Instructor recovers structured data from model output.'
+title: 'JSON Extraction'
+description: 'How Instructor recovers structured data from LLM responses.'
 ---
 
-Instructor includes response extractors that pull JSON or tool arguments out of the model response before deserialization.
+LLMs do not always return clean JSON. Responses may arrive wrapped in markdown code blocks, surrounded by explanatory text, or with minor formatting errors such as trailing commas or unbalanced braces. Instructor includes a multi-strategy extraction pipeline that handles these edge cases transparently.
 
-That recovery step is built in. In normal usage, you do not configure it directly.
+## Extraction Pipeline
 
-If you need custom extraction logic, add extractors on `StructuredOutputRuntime` with `withExtractors(...)`.
+When processing an LLM response, Instructor tries multiple extraction strategies in order until one succeeds.
+
+### 1. Direct JSON Parsing
+
+The response content is parsed directly as JSON. This handles the common case where the LLM returns a well-formed JSON object.
+
+```text
+LLM response:
+{"name": "John", "age": 30}
+
+Result: Parsed successfully
+// @doctest id="4f53"
+```
+
+### 2. Markdown Code Block Extraction
+
+Extracts JSON from fenced code blocks. Some providers (particularly Claude) tend to wrap JSON responses in markdown.
+
+```text
+LLM response:
+Here's the data you requested:
+// @doctest id="d5d0"
+```json
+{"name": "John", "age": 30}
+```
+
+Result: Content extracted from between
+// @doctest id="6287"
+```json and ``` markers
+```
+
+### 3. Bracket Matching
+
+Finds the first `{` and last `}` in the response to extract JSON from surrounding text.
+// @doctest id="3b5d"
+```text
+LLM response:
+The user data is {"name": "John", "age": 30} as extracted from the text.
+
+Result: JSON extracted from first { to last }
+```
+
+### 4. Smart Brace Matching
+
+Handles complex cases with nested braces and escaped quotes inside string values.
+// @doctest id="e967"
+```text
+LLM response:
+Here is {"user": {"name": "John \"The Great\"", "age": 30}} extracted.
+
+Result: Correctly handles nested braces and escaped quotes
+```
+
+## Resilient Parsing
+
+After extraction, if standard `json_decode` fails, Instructor applies automatic repairs before parsing:
+
+- **Balance quotes** -- adds missing closing quotes
+- **Remove trailing commas** -- fixes `{"a": 1,}` patterns
+- **Balance braces** -- adds missing `}` or `]` characters
+
+This is especially valuable during streaming, where partial JSON chunks arrive before the response is complete. A dedicated partial JSON parser handles incomplete data by filling in null values for missing fields.
+
+## Default Extractors
+
+The built-in extractor chain includes these extractors, tried in order:
+
+| Extractor | Purpose |
+|-----------|---------|
+| `DirectJsonExtractor` | Parse content directly as JSON |
+| `ResilientJsonExtractor` | Handle malformed JSON (trailing commas, unbalanced braces) |
+| `MarkdownBlockExtractor` | Extract from `
+// @doctest id="c5a3"
+```json ``` ` blocks |
+| `BracketMatchingExtractor` | Find first `{` to last `}` |
+| `SmartBraceExtractor` | Handle nested braces and escaped quotes in strings |
+
+Most responses succeed on the first strategy. The subsequent strategies add negligible overhead and only activate when needed.
+
+## Custom Extractors
+
+You can replace the default extractors with your own by calling `withExtractors()` on the `StructuredOutputRuntime`. Each extractor must implement the `CanExtractResponse` interface.
+
+```php
+use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
+use Cognesy\Instructor\Extraction\Data\ExtractionInput;
+use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
+
+class XmlCdataExtractor implements CanExtractResponse
+{
+    public function extract(ExtractionInput $input): array
+    {
+        if (!preg_match('/<!\[CDATA\[(.*?)\]\]>/s', $input->content, $matches)) {
+            throw new ExtractionException('No CDATA found');
+        }
+
+        $json = trim($matches[1]);
+
+        try {
+            $decoded = json_decode($json, associative: true, flags: JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            throw new ExtractionException('Invalid JSON in CDATA', $e);
+        }
+
+        if (!is_array($decoded)) {
+            throw new ExtractionException('Expected object or array in CDATA');
+        }
+
+        return $decoded;
+    }
+
+    public function name(): string
+    {
+        return 'xml_cdata';
+    }
+}
+// @doctest id="149b"
+```
+
+### Using Custom Extractors
+
+Custom extractors are configured on the runtime and apply to both synchronous and streaming responses.
+
+```php
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
+
+$runtime = StructuredOutputRuntime::fromDefaults()
+    ->withExtractors([
+        new DirectJsonExtractor(),
+        new XmlCdataExtractor(),
+    ]);
+
+$result = (new StructuredOutput($runtime))
+    ->with(messages: 'Extract user data', responseModel: User::class)
+    ->get();
+// @doctest id="68b5"
+```
+
+The extractors are tried in the order you provide them. When an extractor throws an `ExtractionException`, the next extractor in the chain is attempted. If all extractors fail, Instructor returns an empty result, triggers a validation error, and initiates the retry mechanism (if configured).
+
+## Error Handling
+
+When extraction fails across all strategies, Instructor follows this sequence:
+
+1. Returns an empty array from the extraction pipeline
+2. Triggers a validation error on the deserialized object
+3. If retries are configured, sends the error feedback to the LLM for self-correction
+4. Repeats until the retry limit is reached or extraction succeeds

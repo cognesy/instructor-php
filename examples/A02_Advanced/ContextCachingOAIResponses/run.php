@@ -101,14 +101,14 @@ assert($project1->name !== '');
 assert($project1->description !== '');
 
 // Extract response id for Responses API server-side chaining
-$body1 = json_decode($response1->rawResponse()->responseData()->body(), true);
+$body1 = json_decode($response1->inferenceResponse()->responseData()->body(), true);
 $previousResponseId = is_array($body1) ? ($body1['id'] ?? '') : '';
 if ($previousResponseId === '') {
     echo "Warning: previous_response_id not available; chaining will be skipped.\n";
 }
 
-// get usage information from rawResponse() when you need transport-level metadata
-$usage1 = $response1->rawResponse()->usage();
+// get usage information from inferenceResponse() when you need transport-level metadata
+$usage1 = $response1->inferenceResponse()->usage();
 echo "Usage #1: {$usage1->inputTokens} prompt tokens, {$usage1->cacheWriteTokens} cache write tokens\n";
 ?>
 ```
@@ -145,8 +145,8 @@ assert($project2 instanceof Project);
 assert($project2->name !== '');
 assert($project2->description !== '');
 
-// get usage information from rawResponse() when you need transport-level metadata
-$usage2 = $response2->rawResponse()->usage();
+// get usage information from inferenceResponse() when you need transport-level metadata
+$usage2 = $response2->inferenceResponse()->usage();
 echo "Usage #2: {$usage2->inputTokens} prompt tokens, {$usage2->cacheReadTokens} cache read tokens\n";
 if ($usage2->cacheReadTokens === 0) {
     echo "Note: cacheReadTokens is 0. Cache hits depend on model/provider eligibility.\n";

@@ -1,9 +1,10 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Inference\Core;
 
 use Cognesy\Http\Exceptions\HttpRequestException;
-use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
@@ -29,10 +30,15 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 final class InferenceExecutionSession
 {
     private ?DateTimeImmutable $startedAt = null;
+
     private ?DateTimeImmutable $attemptStartedAt = null;
+
     private int $attemptNumber = 0;
+
     private ?InferenceResponse $cachedResponse = null;
+
     private ?InferenceStream $cachedStream = null;
+
     private ?\Throwable $terminalError = null;
 
     public function __construct(
@@ -42,14 +48,14 @@ final class InferenceExecutionSession
         private ?Pricing $pricing = null,
     ) {}
 
-    public function isStreamed() : bool
+    public function isStreamed(): bool
     {
         return $this->execution->request()->isStreamed();
     }
 
-    public function stream() : InferenceStream
+    public function stream(): InferenceStream
     {
-        if (!$this->isStreamed()) {
+        if (! $this->isStreamed()) {
             throw new InvalidArgumentException('Trying to read response stream for request with no streaming');
         }
 
@@ -69,7 +75,7 @@ final class InferenceExecutionSession
         return $this->cachedStream;
     }
 
-    public function response() : InferenceResponse
+    public function response(): InferenceResponse
     {
         if ($this->terminalError !== null) {
             throw $this->terminalError;
@@ -82,6 +88,7 @@ final class InferenceExecutionSession
                 $response === $existingResponse => $this->execution,
                 default => $this->execution->withUpdatedResponse($response),
             };
+
             return $response;
         }
 
@@ -96,9 +103,9 @@ final class InferenceExecutionSession
         return $this->executeResponseLifecycle();
     }
 
-    private function executeResponseLifecycle() : InferenceResponse
+    private function executeResponseLifecycle(): InferenceResponse
     {
-        $policy = $this->execution->request()->retryPolicy() ?? new InferenceRetryPolicy();
+        $policy = $this->execution->request()->retryPolicy() ?? new InferenceRetryPolicy;
         $maxAttempts = max(1, $policy->maxAttempts);
         $lengthRetries = 0;
 
@@ -115,13 +122,14 @@ final class InferenceExecutionSession
                     && $policy->shouldRetryException($e);
                 $this->execution = $this->execution->withFailedAttempt(null, $this->livePartialUsage(), $e);
                 $this->handleAttemptFailure($e, null, $shouldRetry);
-                if (!$shouldRetry) {
+                if (! $shouldRetry) {
                     $this->dispatchInferenceCompleted(isSuccess: false);
                     $this->terminalError = $e;
                     throw $e;
                 }
 
                 $this->delayForRetry($policy);
+
                 continue;
             }
 
@@ -136,6 +144,7 @@ final class InferenceExecutionSession
             if ($response->hasFinishedWithFailure()) {
                 $this->handleFailedResponse($response, $policy, $lengthRetries);
                 $lengthRetries++;
+
                 continue;
             }
 
@@ -150,7 +159,7 @@ final class InferenceExecutionSession
         }
     }
 
-    private function responseFromExistingStream() : InferenceResponse
+    private function responseFromExistingStream(): InferenceResponse
     {
         try {
             $response = $this->cachedStream?->final()
@@ -198,6 +207,7 @@ final class InferenceExecutionSession
             $this->execution = $this->execution->withRequest(
                 $this->buildLengthRecoveryRequest($this->execution->request(), $response, $policy)
             );
+
             return;
         }
 
@@ -215,7 +225,7 @@ final class InferenceExecutionSession
     private function failTerminalResponse(InferenceResponse $response): never
     {
         $finishReason = $response->finishReason();
-        $error = new \RuntimeException('Inference execution failed: ' . $finishReason->value);
+        $error = new \RuntimeException('Inference execution failed: '.$finishReason->value);
         $this->handleAttemptFailure($error, $response, false);
         $this->dispatchInferenceCompleted(isSuccess: false);
         $this->terminalError = $error;
@@ -240,7 +250,7 @@ final class InferenceExecutionSession
         return $this->cachePolicy()->shouldCache();
     }
 
-    private function makeResponse(InferenceRequest $request) : InferenceResponse
+    private function makeResponse(InferenceRequest $request): InferenceResponse
     {
         return match ($this->isStreamed()) {
             false => $this->attachPricing($this->driver->makeResponseFor($request)),
@@ -262,7 +272,7 @@ final class InferenceExecutionSession
 
     private function attachPricing(InferenceResponse $response): InferenceResponse
     {
-        if ($this->pricing === null || !$this->pricing->hasAnyPricing()) {
+        if ($this->pricing === null || ! $this->pricing->hasAnyPricing()) {
             return $response;
         }
 
@@ -280,7 +290,7 @@ final class InferenceExecutionSession
             return;
         }
 
-        $this->startedAt = new DateTimeImmutable();
+        $this->startedAt = new DateTimeImmutable;
         $this->events->dispatch(new InferenceStarted(
             executionId: $this->execution->id->toString(),
             request: $this->execution->request(),
@@ -291,7 +301,7 @@ final class InferenceExecutionSession
     private function dispatchAttemptStarted(): void
     {
         $this->attemptNumber++;
-        $this->attemptStartedAt = new DateTimeImmutable();
+        $this->attemptStartedAt = new DateTimeImmutable;
         $this->execution = $this->execution->startAttempt();
 
         $this->events->dispatch(new InferenceAttemptStarted(
@@ -355,17 +365,18 @@ final class InferenceExecutionSession
         InferenceResponse $response,
         InferenceRetryPolicy $policy,
     ): InferenceRequest {
-        $builder = (new InferenceRequestBuilder())->withRequest($request);
+        $builder = (new InferenceRequestBuilder)->withRequest($request);
 
         if ($policy->lengthRecovery === 'increase_max_tokens') {
             $current = $request->options()['max_tokens'] ?? null;
             $next = $current !== null
                 ? $current + max(1, $policy->maxTokensIncrement)
                 : max(1, $policy->maxTokensIncrement);
+
             return $builder->withMaxTokens($next)->create();
         }
 
-        $messages = Messages::fromAnyArray($request->messages())
+        $messages = $request->messages()
             ->asAssistant($response->content())
             ->asUser($policy->lengthContinuePrompt);
 
@@ -384,7 +395,7 @@ final class InferenceExecutionSession
             finishReason: $finishReason,
             usage: $usage,
             attemptCount: $this->attemptNumber,
-            startedAt: $this->startedAt ?? new DateTimeImmutable(),
+            startedAt: $this->startedAt ?? new DateTimeImmutable,
             response: $response,
         ));
     }

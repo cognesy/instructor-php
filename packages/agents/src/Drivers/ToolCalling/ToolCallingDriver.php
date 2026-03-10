@@ -21,7 +21,7 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
@@ -29,6 +29,9 @@ use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Polyglot\Inference\PendingInference;
@@ -46,9 +49,9 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
 {
     private LLMProvider $llm;
     private ?CanSendHttpRequests $httpClient = null;
-    private string|array $toolChoice;
+    private ToolChoice $toolChoice;
     private string $model;
-    private array $responseFormat;
+    private ResponseFormat $responseFormat;
     private array $options;
     private CanCompileMessages $messageCompiler;
     private ?InferenceRetryPolicy $retryPolicy;
@@ -63,8 +66,8 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         CanCreateInference $inference,
         ?LLMProvider $llm = null,
         ?CanSendHttpRequests $httpClient = null,
-        string|array $toolChoice = 'auto',
-        array        $responseFormat = [],
+        ToolChoice|string|array $toolChoice = 'auto',
+        ResponseFormat|null $responseFormat = null,
         string       $model = '',
         array        $options = [],
         ?CanCompileMessages $messageCompiler = null,
@@ -76,9 +79,9 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         $this->inference = $inference;
         $this->llm = $llm ?? LLMProvider::new();
         $this->httpClient = $httpClient;
-        $this->toolChoice = $toolChoice;
+        $this->toolChoice = ToolChoice::fromAny($toolChoice);
         $this->model = $model;
-        $this->responseFormat = $responseFormat;
+        $this->responseFormat = $responseFormat ?? ResponseFormat::empty();
         $this->options = $options;
         $this->messageCompiler = $messageCompiler ?? new ConversationWithCurrentToolTrace();
         $this->retryPolicy = $retryPolicy;
@@ -142,8 +145,8 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
     private function with(
         ?LLMProvider $llm = null,
         ?CanSendHttpRequests $httpClient = null,
-        string|array|null $toolChoice = null,
-        ?array $responseFormat = null,
+        ToolChoice|string|array|null $toolChoice = null,
+        ?ResponseFormat $responseFormat = null,
         ?string $model = null,
         ?array $options = null,
         ?CanCompileMessages $messageCompiler = null,
@@ -184,14 +187,9 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         Tools $tools,
         ?CachedInferenceContext $cache = null,
     ) : PendingInference {
-        $toolChoice = is_array($this->toolChoice)
-            ? ($this->toolChoice['type'] ?? 'auto')
-            : $this->toolChoice;
-        assert(is_string($toolChoice));
-
         $hasTools = !$tools->isEmpty();
-        $hasCachedTools = ($cache?->tools() ?? []) !== [];
-        $toolSchemas = ($hasTools && !$hasCachedTools) ? $tools->toToolSchema() : [];
+        $hasCachedTools = !($cache?->tools()->isEmpty() ?? true);
+        $toolDefinitions = ($hasTools && !$hasCachedTools) ? $tools->toToolSchema() : ToolDefinitions::empty();
 
         $options = $this->options;
         if ($hasTools) {
@@ -201,8 +199,8 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         $request = new InferenceRequest(
             messages: $messages,
             model: $this->model,
-            tools: $toolSchemas,
-            toolChoice: $hasTools ? $toolChoice : '',
+            tools: $toolDefinitions,
+            toolChoice: $hasTools ? $this->toolChoice : ToolChoice::empty(),
             responseFormat: $this->responseFormat,
             options: $options,
             cachedContext: $cache,

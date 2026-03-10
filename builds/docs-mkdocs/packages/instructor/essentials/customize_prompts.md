@@ -3,22 +3,199 @@ title: 'Customize Prompts'
 description: 'Add system text, prompt text, and cached context.'
 ---
 
-Prompt customization stays close to the request.
+Instructor builds a structured prompt from several components: system text, user messages,
+a mode-specific instruction prompt, examples, and retry context. You can customize most
+of these to tune extraction behavior without changing the underlying extraction flow.
 
-## The Common Hooks
 
-- `withSystem(...)`
-- `withPrompt(...)`
-- `withExamples(...)`
-- `withCachedContext(...)`
+## System And Prompt Text
+
+The two most common customization points are the system message and the prompt text:
+
+```php
+use Cognesy\Instructor\StructuredOutput;
+
+$result = (new StructuredOutput)
+    ->withSystem('You are a precise data extraction assistant. Return only factual data.')
+    ->withPrompt('Extract the contact details from the text below.')
+    ->with(messages: $text, responseModel: Contact::class)
+    ->get();
+// @doctest id="f977"
+```
+
+- **System text** sets the model's persona and overall behavior. Use it for stable
+  instructions that apply across many requests.
+- **Prompt text** provides task-specific instructions for this particular extraction.
+  Instructor appends it to the conversation alongside the mode-specific extraction prompt.
+
+You can also pass both through the `with()` method:
 
 ```php
 $result = (new StructuredOutput)
-    ->withSystem('Return concise, accurate data.')
-    ->withPrompt('Extract the contact details.')
-    ->with(messages: $text, responseModel: Contact::class)
+    ->with(
+        messages: $text,
+        responseModel: Contact::class,
+        system: 'Return concise, accurate data.',
+        prompt: 'Extract the contact details.',
+    )
     ->get();
-// @doctest id="4380"
+// @doctest id="9046"
 ```
 
-Use system text for stable behavior and prompt text for task-specific instructions.
+
+## Examples
+
+Few-shot examples are another prompt component. They are appended to the conversation
+to demonstrate the expected extraction style:
+
+```php
+use Cognesy\Instructor\Extras\Example\Example;
+
+$result = (new StructuredOutput)
+    ->withExamples([
+        Example::fromText('Jane Doe, 31', ['name' => 'Jane Doe', 'age' => 31]),
+    ])
+    ->with(messages: $text, responseModel: Person::class)
+    ->get();
+// @doctest id="06c1"
+```
+
+See the [Demonstrations](demonstrations.md) page for details on the `Example` class.
+
+
+## Cached Context
+
+Some providers (notably Anthropic) support prompt caching, where stable parts of the
+conversation are cached between requests to reduce latency and cost. Use
+`withCachedContext()` to mark content as cacheable:
+
+```php
+$result = (new StructuredOutput)
+    ->withCachedContext(
+        messages: $referenceDocument,
+        system: 'You are a document analyst.',
+        prompt: 'Extract entities from the document.',
+        examples: $examples,
+    )
+    ->with(messages: 'Now extract from this specific paragraph...', responseModel: Entity::class)
+    ->get();
+// @doctest id="3090"
+```
+
+The cached context is placed before the per-request content in the prompt. Content
+passed through `withCachedContext()` is marked with cache control headers where the
+provider supports them.
+
+
+## Mode-Specific Prompts
+
+Instructor uses a default prompt for each output mode that tells the model how to format
+its response. These prompts are configured in `StructuredOutputConfig` and can be
+customized per mode:
+
+| Mode | Default prompt behavior |
+|---|---|
+| `Tools` | "Extract correct and accurate data from the input using provided tools." |
+| `Json` | Includes the JSON Schema and asks for a strict JSON response |
+| `JsonSchema` | Asks for a strict JSON response following the provided schema |
+| `MdJson` | Includes the JSON Schema and asks for JSON inside a Markdown code block |
+
+### Overriding Mode Prompts
+
+You can replace the default prompt for any mode through the config:
+
+```php
+use Cognesy\Instructor\Config\StructuredOutputConfig;
+use Cognesy\Instructor\Enums\OutputMode;
+
+$config = new StructuredOutputConfig(
+    modePrompts: [
+        OutputMode::Tools->value => 'Use the provided tool to extract data accurately.',
+        OutputMode::Json->value => "Respond with a JSON object matching this schema:\n<|json_schema|>\n",
+    ],
+);
+// @doctest id="cd72"
+```
+
+### Template Placeholders
+
+Mode prompts support the `<|json_schema|>` placeholder, which Instructor replaces with
+the JSON Schema generated from your response model. This is particularly important for
+`Json` and `MdJson` modes, where the schema must be embedded in the prompt:
+
+```php
+$config = new StructuredOutputConfig(
+    modePrompts: [
+        OutputMode::Json->value => "Your task is to respond with a JSON object. "
+            . "Response must follow this JSON Schema:\n<|json_schema|>\n",
+    ],
+);
+// @doctest id="c6ad"
+```
+
+
+## Tool Name And Description
+
+In `OutputMode::Tools`, the tool definition sent to the model includes a name and
+description. These provide semantic context that can improve extraction quality:
+
+```php
+use Cognesy\Instructor\Config\StructuredOutputConfig;
+
+$config = new StructuredOutputConfig(
+    toolName: 'extract_person',
+    toolDescription: 'Extract personal information from the provided text.',
+);
+// @doctest id="ada1"
+```
+
+The defaults are `extracted_data` and `Function call based on user instructions.`
+respectively. Overriding them with task-specific values can help the model understand
+what the tool represents.
+
+> `OutputMode::Json` and `OutputMode::MdJson` ignore tool name and description since
+> they do not use tool calling.
+
+
+## Retry Prompt
+
+When validation fails and retries are enabled, Instructor appends a retry prompt to the
+conversation. The default is:
+
+```
+JSON generated incorrectly, fix following errors:
+// @doctest id="11ea"
+```
+
+You can customize this through the config:
+
+```php
+$config = new StructuredOutputConfig(
+    retryPrompt: 'The previous response had validation errors. Please correct them:',
+);
+// @doctest id="57e1"
+```
+
+
+## Chat Structure
+
+Instructor assembles the final prompt from named sections in a specific order. The default
+structure includes sections for system messages, cached context, prompt, examples,
+messages, and retries. You can reorder or extend this through `StructuredOutputConfig`:
+
+```php
+$config = new StructuredOutputConfig(
+    chatStructure: [
+        'system',
+        'pre-cached', 'cached-prompt', 'cached-examples', 'cached-messages', 'post-cached',
+        'pre-prompt', 'prompt', 'post-prompt',
+        'pre-examples', 'examples', 'post-examples',
+        'pre-messages', 'messages', 'post-messages',
+        'pre-retries', 'retries', 'post-retries',
+    ],
+);
+// @doctest id="622f"
+```
+
+Most applications will never need to modify the chat structure. It is exposed for
+advanced use cases where you need precise control over prompt ordering.

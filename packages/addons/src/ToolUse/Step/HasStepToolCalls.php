@@ -3,7 +3,7 @@
 namespace Cognesy\Addons\ToolUse\Step;
 
 use Cognesy\Addons\ToolUse\Enums\ToolUseStepType;
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 

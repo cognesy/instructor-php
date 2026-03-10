@@ -113,7 +113,7 @@ $person = $response->value();
 $usage  = $response->usage();
 ```
 
-### `rawResponse()` - The Underlying Inference Response
+### `inferenceResponse()` - The Underlying Inference Response
 
 Returns the low-level `InferenceResponse` from the Polyglot layer, useful when you need
 direct access to HTTP response data or provider-specific details:
@@ -121,7 +121,7 @@ direct access to HTTP response data or provider-specific details:
 ```php
 $raw = (new StructuredOutput)
     ->with(messages: 'Jason is 28 years old.', responseModel: Person::class)
-    ->rawResponse();
+    ->inferenceResponse();
 ```
 
 ### `stream()` - Streaming Partial Results
@@ -162,7 +162,7 @@ a few utility helpers:
 |---|---|
 | `get()` | The parsed value |
 | `response()` | `StructuredOutputResponse` |
-| `rawResponse()` | `InferenceResponse` |
+| `inferenceResponse()` | `InferenceResponse` |
 | `stream()` | `StructuredOutputStream` |
 | `toJson()` | JSON string of the extracted data |
 | `toArray()` | Associative array of the extracted data |

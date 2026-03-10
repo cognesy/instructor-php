@@ -2,6 +2,8 @@
 
 namespace Cognesy\Instructor\Creation;
 
+use Cognesy\Polyglot\Inference\Data\ToolDefinition;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Schema\SchemaFactory;
 
 final class ToolCallSchemaBuilder
@@ -15,27 +17,22 @@ final class ToolCallSchemaBuilder
 
     /**
      * @param array<string, mixed> $jsonSchema
-     * @return array<int, array<string, mixed>>
      */
-    public function renderToolCall(
+    public function renderToolDefinitions(
         array $jsonSchema,
         string $name,
         string $description,
-    ) : array {
-        $toolCall = [
-            'type' => 'function',
-            'function' => [
-                'name' => $name,
-                'description' => $description,
-            ],
-        ];
+    ) : ToolDefinitions {
+        $parameters = [];
         if ($this->hasQueued()) {
-            $toolCall['function']['parameters']['$defs'] = $this->definitions();
+            $parameters['$defs'] = $this->definitions();
         }
         foreach ($jsonSchema as $key => $value) {
-            $toolCall['function']['parameters'][$key] = $value;
+            $parameters[$key] = $value;
         }
-        return [$toolCall];
+        return new ToolDefinitions(
+            new ToolDefinition($name, $description, $parameters),
+        );
     }
 
     public function onObjectRef(string $className) : void {

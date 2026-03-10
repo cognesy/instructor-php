@@ -8,8 +8,8 @@ use Cognesy\Agents\Interception\PassThroughInterceptor;
 use Cognesy\Agents\Tool\ToolExecutor;
 use Cognesy\Agents\Tool\Tools\BaseTool;
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCalls;
+use Cognesy\Messages\ToolCall;
 
 final class NoOpTool extends BaseTool
 {
@@ -37,7 +37,7 @@ it('executes many tool calls efficiently without O(n²) degradation', function (
     $callCount = 500;
     $toolCallsArray = [];
     for ($i = 0; $i < $callCount; $i++) {
-        $toolCallsArray[] = new ToolCall(id: "call-{$i}", name: 'noop', args: []);
+        $toolCallsArray[] = new ToolCall(id: "call-{$i}", name: 'noop', arguments: []);
     }
     $toolCalls = new ToolCalls(...$toolCallsArray);
 

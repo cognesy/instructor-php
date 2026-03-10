@@ -102,13 +102,13 @@ $so = (new StructuredOutput)->withRuntime($runtime);
 ```php
 $result = $so->get();          // parsed value
 $response = $so->response();   // StructuredOutputResponse
-$raw = $so->rawResponse();     // InferenceResponse
+$raw = $so->inferenceResponse(); // InferenceResponse
 $stream = $so->stream();       // StructuredOutputStream
 
 $pending = $so->create();
 $result = $pending->get();
 $response = $pending->response();
-$raw = $pending->rawResponse();
+$raw = $pending->inferenceResponse();
 $stream = $pending->stream();
 $array = $pending->toArray();
 $json = $pending->toJson();
@@ -118,7 +118,7 @@ $execution = $pending->execution();
 
 `PendingStructuredOutput` is a lazy handle:
 - no provider call happens until one of the read methods above is used
-- `get()`, `response()`, `rawResponse()`, and `stream()` coordinate one execution
+- `get()`, `response()`, `inferenceResponse()`, and `stream()` coordinate one execution
 - mutable lifecycle bookkeeping sits behind the internal execution session, not on the facade-facing handle
 - long-lived streaming state stays in the dedicated stream/state objects
 
@@ -160,11 +160,11 @@ $latestResponse = $stream->lastResponse();
 $usage = $stream->usage();
 $finalValue = $stream->finalValue();
 $finalResponse = $stream->finalResponse();
-$finalRaw = $stream->finalRawResponse();
+$finalRaw = $stream->finalInferenceResponse();
 ```
 
 `lastResponse()` / `finalResponse()` return `StructuredOutputResponse`.
-Use `->rawResponse()` when you need the nested raw `InferenceResponse`.
+Use `->inferenceResponse()` when you need the nested raw `InferenceResponse`.
 
 ## Response Model Helpers
 

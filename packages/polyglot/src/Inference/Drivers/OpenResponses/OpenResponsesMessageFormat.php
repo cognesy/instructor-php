@@ -1,8 +1,16 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Inference\Drivers\OpenResponses;
 
+use Cognesy\Messages\Content;
+use Cognesy\Messages\ContentPart;
+use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
+use Cognesy\Messages\ToolCall;
 use Cognesy\Polyglot\Inference\Contracts\CanMapMessages;
+use Cognesy\Polyglot\Inference\Contracts\MessageMapper;
 use Cognesy\Utils\Json\Json;
 
 /**
@@ -13,59 +21,36 @@ use Cognesy\Utils\Json\Json;
  * - Assistant messages → message items with role: "assistant"
  * - Tool calls → function_call items
  * - Tool results → function_call_output items
- *
- * However, OpenResponses also accepts the standard messages format as input,
- * so we can pass through with minimal transformation.
  */
 class OpenResponsesMessageFormat implements CanMapMessages
 {
     #[\Override]
-    public function map(array $messages): array {
-        $list = [];
-        foreach ($messages as $message) {
-            $nativeMessage = $this->mapMessage($message);
-            if (empty($nativeMessage)) {
-                continue;
-            }
-            // mapMessage may return multiple items (e.g., for tool calls)
-            if (isset($nativeMessage[0]) && is_array($nativeMessage[0])) {
-                foreach ($nativeMessage as $item) {
-                    $list[] = $item;
-                }
-            } else {
-                $list[] = $nativeMessage;
-            }
-        }
-        return $list;
+    public function map(Messages $messages): array
+    {
+        return MessageMapper::flatMap($messages, $this->mapMessageToItems(...));
     }
 
     // INTERNAL /////////////////////////////////////////////
 
-    protected function mapMessage(array $message): array {
-        $role = $message['role'] ?? '';
-        $hasToolCalls = !empty($message['_metadata']['tool_calls'] ?? []);
-
-        return match(true) {
-            $role === 'assistant' && $hasToolCalls => $this->toFunctionCallItems($message),
-            $role === 'tool' => $this->toFunctionCallOutputItem($message),
-            default => $this->toMessageItem($message),
+    /** @return array[] */
+    protected function mapMessageToItems(Message $message): array
+    {
+        return match (true) {
+            $message->isAssistant() && $message->hasToolCalls() => $this->toFunctionCallItems($message),
+            $message->isTool() && $message->hasToolResult() => [$this->toFunctionCallOutputItem($message)],
+            default => [$this->toMessageItem($message)],
         };
     }
 
     /**
      * Convert a regular message to a message item.
      */
-    protected function toMessageItem(array $message): array {
-        $role = $message['role'] ?? 'user';
-        $content = $message['content'] ?? '';
-
-        // Convert content to the appropriate format
-        $contentItems = $this->toContentItems($content, $role);
-
+    protected function toMessageItem(Message $message): array
+    {
         return [
             'type' => 'message',
-            'role' => $role,
-            'content' => $contentItems,
+            'role' => $message->role()->value,
+            'content' => $this->toContentItems($message->content(), $message->role()->value),
         ];
     }
 
@@ -73,27 +58,24 @@ class OpenResponsesMessageFormat implements CanMapMessages
      * Convert assistant message with tool calls to function_call items.
      * Returns an array of items (message content + function calls).
      */
-    protected function toFunctionCallItems(array $message): array {
+    protected function toFunctionCallItems(Message $message): array
+    {
         $items = [];
-        $toolCalls = $message['_metadata']['tool_calls'] ?? [];
 
-        // If there's also text content, add it as a message item first
-        $content = $message['content'] ?? '';
-        if (!empty($content)) {
+        if (!$message->content()->isEmpty()) {
             $items[] = [
                 'type' => 'message',
                 'role' => 'assistant',
-                'content' => $this->toContentItems($content),
+                'content' => $this->toContentItems($message->content(), 'assistant'),
             ];
         }
 
-        // Add function_call items for each tool call
-        foreach ($toolCalls as $toolCall) {
+        foreach ($message->toolCalls()->all() as $toolCall) {
             $items[] = [
                 'type' => 'function_call',
-                'call_id' => $toolCall['id'] ?? '',
-                'name' => $toolCall['function']['name'] ?? '',
-                'arguments' => $toolCall['function']['arguments'] ?? '{}',
+                'call_id' => $toolCall->idString(),
+                'name' => $toolCall->name(),
+                'arguments' => Json::encode($toolCall->arguments()),
             ];
         }
 
@@ -103,58 +85,49 @@ class OpenResponsesMessageFormat implements CanMapMessages
     /**
      * Convert a tool result message to function_call_output item.
      */
-    protected function toFunctionCallOutputItem(array $message): array {
-        $callId = $message['_metadata']['tool_call_id'] ?? '';
-        $content = $message['content'] ?? '';
-
-        // Ensure content is a string
-        if (is_array($content)) {
-            $content = Json::encode($content);
-        }
-
+    protected function toFunctionCallOutputItem(Message $message): array
+    {
         return [
             'type' => 'function_call_output',
-            'call_id' => $callId,
-            'output' => $content,
+            'call_id' => $message->toolResult()->callIdString(),
+            'output' => $message->content()->toString(),
         ];
     }
 
     /**
      * Convert content to content items array.
      */
-    protected function toContentItems(string|array $content, string $role = 'user'): array {
+    protected function toContentItems(Content $content, string $role = 'user'): array
+    {
         $textType = $role === 'assistant' ? 'output_text' : 'input_text';
 
-        if (is_string($content)) {
+        if (!$content->isComposite()) {
             return [[
                 'type' => $textType,
-                'text' => $content,
+                'text' => $content->toString(),
             ]];
         }
 
-        // Content is already an array of parts
         $items = [];
-        foreach ($content as $part) {
-            if (is_string($part)) {
-                $items[] = [
-                    'type' => $textType,
-                    'text' => $part,
-                ];
-            } elseif (isset($part['type'])) {
-                // Handle different content types
-                $items[] = match($part['type']) {
-                    'text' => [
-                        'type' => $textType,
-                        'text' => $part['text'] ?? '',
-                    ],
-                    'image_url' => [
-                        'type' => 'input_image',
-                        'image_url' => $part['image_url'] ?? '',
-                    ],
-                    default => $part, // Pass through unknown types
-                };
-            }
+        foreach ($content->partsList()->all() as $part) {
+            $items[] = $this->contentPartToItem($part, $textType);
         }
+
         return $items;
+    }
+
+    protected function contentPartToItem(ContentPart $part, string $textType): array
+    {
+        return match ($part->type()) {
+            'text' => [
+                'type' => $textType,
+                'text' => $part->toString(),
+            ],
+            'image_url' => [
+                'type' => 'input_image',
+                'image_url' => $part->get('image_url', ''),
+            ],
+            default => $part->toArray(),
+        };
     }
 }

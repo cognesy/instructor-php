@@ -18,7 +18,7 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCall;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
@@ -86,9 +86,9 @@ final class PlanningSubagentTool extends ContextAwareTool
     }
 
     #[\Override]
-    public function toToolSchema(): array
+    public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition
     {
-        return ToolSchema::make(
+        return \Cognesy\Polyglot\Inference\Data\ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
             parameters: JsonSchema::object('parameters')
@@ -99,7 +99,7 @@ final class PlanningSubagentTool extends ContextAwareTool
                     ),
                 ])
                 ->withRequiredProperties(['specification'])
-        )->toArray();
+        )->toArray());
     }
 
     private function with(

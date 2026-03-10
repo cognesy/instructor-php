@@ -1,20 +1,112 @@
 ---
 title: 'Model Options'
-description: 'Control the provider model and request options.'
+description: 'Control the LLM provider, model, and request options.'
 ---
 
-Use the request for per-call model changes:
+Instructor provides several levels of configuration for controlling which model is used and how requests are sent to the LLM provider.
+
+## Per-Request Options
+
+The simplest way to control the model and options is to pass them directly in the request. This is ideal for one-off adjustments.
 
 ```php
-$result = (new StructuredOutput)
-    ->with(
-        messages: $text,
-        responseModel: Person::class,
-        model: 'gpt-4o-mini',
-        options: ['temperature' => 0],
-    )
-    ->get();
-// @doctest id="e3bc"
+use Cognesy\Instructor\StructuredOutput;
+
+$person = (new StructuredOutput)->with(
+    messages: $text,
+    responseModel: Person::class,
+    model: 'gpt-4o-mini',
+    options: ['temperature' => 0],
+)->get();
+// @doctest id="92fb"
 ```
 
-Use `LLMConfig` or a runtime when the choice should apply more broadly than one request.
+You can also use the fluent API for the same result.
+
+```php
+$person = (new StructuredOutput)
+    ->withMessages($text)
+    ->withResponseClass(Person::class)
+    ->withModel('gpt-4o-mini')
+    ->withOptions(['temperature' => 0])
+    ->get();
+// @doctest id="69f2"
+```
+
+The `options` array is passed directly to the LLM provider. Common options include `temperature`, `max_tokens`, and `top_p`, though available options vary by provider and model.
+
+## Using LLMConfig
+
+When you need consistent settings across multiple requests -- such as a custom API key, base URL, or organization -- use `LLMConfig` to construct a configured `StructuredOutput` instance.
+
+```php
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
+
+$config = new LLMConfig(
+    apiUrl: 'https://api.openai.com/v1',
+    apiKey: $yourApiKey,
+    endpoint: '/chat/completions',
+    metadata: ['organization' => ''],
+    model: 'gpt-4o-mini',
+    maxTokens: 128,
+    driver: 'openai',
+);
+
+$structuredOutput = StructuredOutput::fromConfig($config);
+
+$person = $structuredOutput->with(
+    messages: $text,
+    responseModel: Person::class,
+    options: ['temperature' => 0],
+)->get();
+// @doctest id="b544"
+```
+
+Per-request `model` and `options` values override the corresponding `LLMConfig` defaults, so you can set sensible defaults in the config and adjust individual requests as needed.
+
+## Using Presets
+
+If you have named LLM configurations defined in a configuration file, you can load them by name.
+
+```php
+$person = StructuredOutput::using('anthropic')
+    ->with(messages: $text, responseModel: Person::class)
+    ->get();
+// @doctest id="20bc"
+```
+
+The preset name is resolved through `LLMConfig::fromPreset()`, which loads the connection details from your configuration.
+
+## Using StructuredOutputRuntime
+
+For the highest level of control, create a `StructuredOutputRuntime` directly. This gives you access to output mode, retry settings, custom validators, transformers, deserializers, and extractors.
+
+```php
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Instructor\Enums\OutputMode;
+
+$runtime = StructuredOutputRuntime::fromDefaults()
+    ->withOutputMode(OutputMode::Json)
+    ->withMaxRetries(3);
+
+$person = (new StructuredOutput($runtime))
+    ->with(messages: $text, responseModel: Person::class)
+    ->get();
+// @doctest id="d729"
+```
+
+## Common Options
+
+These options are widely supported across providers, though exact behavior may vary.
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `temperature` | float | Controls randomness. Lower values (e.g. 0) produce more deterministic output. |
+| `max_tokens` | int | Maximum number of tokens in the response. |
+| `top_p` | float | Nucleus sampling threshold. |
+| `stop` | array | Stop sequences that end generation. |
+| `stream` | bool | Enable streaming (prefer `withStreaming()` instead). |
+
+Provider-specific options (such as `response_format` for OpenAI or `thinking` for Anthropic) can also be passed through the `options` array. Consult your provider's API documentation for details.

@@ -4,6 +4,7 @@
 
 ```php
 use Cognesy\AgentCtrl\AgentCtrl;
+use Cognesy\AgentCtrl\Config\AgentConfig;
 use Cognesy\AgentCtrl\Enum\AgentType;
 
 $builder = AgentCtrl::claudeCode();
@@ -28,6 +29,7 @@ Backed values:
 
 All builders support:
 
+- `withConfig(AgentConfig $config): static`
 - `withModel(string $model): static`
 - `withTimeout(int $seconds): static`
 - `inDirectory(string $path): static`
@@ -46,6 +48,27 @@ Callback signatures:
 - `onToolUse(fn(string $tool, array $input, ?string $output): void)`
 - `onComplete(fn(AgentResponse $response): void)`
 - `onError(fn(string $message, ?string $code): void)`
+
+`AgentConfig` shared fields:
+
+- `model`
+- `timeout`
+- `workingDirectory`
+- `sandboxDriver`
+
+`AgentConfig::fromArray()` also accepts:
+
+- `directory` -> `workingDirectory`
+- `sandbox` -> `sandboxDriver`
+
+```php
+$builder = AgentCtrl::codex()->withConfig(AgentConfig::fromArray([
+    'model' => 'gpt-5-codex',
+    'timeout' => 300,
+    'directory' => getcwd(),
+    'sandbox' => 'host',
+]));
+```
 
 ## Claude Code
 

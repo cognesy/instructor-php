@@ -272,15 +272,15 @@ class StructuredOutputStream
 
             return StructuredOutputResponse::final(
                 value: $this->execution->output(),
-                rawResponse: $rawResponse,
+                inferenceResponse: $rawResponse,
             );
         }
 
         return null;
     }
 
-    public function finalRawResponse() : InferenceResponse {
-        return $this->finalResponse()->rawResponse();
+    public function finalInferenceResponse() : InferenceResponse {
+        return $this->finalResponse()->inferenceResponse();
     }
 
     private function currentResponse(): ?StructuredOutputResponse {

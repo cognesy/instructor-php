@@ -76,8 +76,7 @@ describe('WriteFileTool', function () {
         $tool = new WriteFileTool(baseDir: $this->tempDir);
         $schema = $tool->toToolSchema();
 
-        expect($schema['type'])->toBe('function');
-        expect($schema['function']['name'])->toBe('write_file');
-        expect($schema['function']['parameters'])->toBeArray();
+        expect($schema->name())->toBe('write_file');
+        expect($schema->parameters())->toBeArray();
     });
 });

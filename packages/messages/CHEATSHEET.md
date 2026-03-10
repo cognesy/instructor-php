@@ -900,9 +900,8 @@ $fields = array_filter($fields, fn($value, $key) =>
     !is_null($value) && ($value !== []), ARRAY_FILTER_USE_BOTH
 );
 
-// Empty message filtering in Messages::toArray()
+// Messages::toArray() preserves the collection as-is
 foreach ($this->messages as $message) {
-    if ($message->isEmpty()) continue;             // Skip empty messages
     $result[] = $message->toArray();
 }
 

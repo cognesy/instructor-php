@@ -152,8 +152,7 @@ describe('TodoWriteTool', function () {
         $tool = new TodoWriteTool();
         $schema = $tool->toToolSchema();
 
-        expect($schema['type'])->toBe('function');
-        expect($schema['function']['name'])->toBe('todo_write');
-        expect($schema['function']['parameters'])->toBeArray();
+        expect($schema->name())->toBe('todo_write');
+        expect($schema->parameters())->toBeArray();
     });
 });

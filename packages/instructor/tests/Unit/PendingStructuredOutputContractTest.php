@@ -28,20 +28,20 @@ it('is lazy until accessed and coordinates raw and structured reads through one 
 
     expect($driver->responseCalls)->toBe(0);
 
-    $raw = $pending->rawResponse();
+    $raw = $pending->inferenceResponse();
     $response = $pending->response();
     $value = $pending->get();
 
     expect($driver->responseCalls)->toBe(1);
     expect($raw)->toBeInstanceOf(InferenceResponse::class);
     expect($response)->toBeInstanceOf(StructuredOutputResponse::class);
-    expect($response->rawResponse())->toBe($raw);
+    expect($response->inferenceResponse())->toBe($raw);
     expect($value)->toBeInstanceOf(PendingContractUser::class);
     expect($value->name)->toBe('Ava');
     expect($value->age)->toBe(34);
 });
 
-it('reuses the finalized stream when rawResponse() is read after streaming', function () {
+it('reuses the finalized stream when inferenceResponse() is read after streaming', function () {
     $driver = new FakeInferenceDriver(
         responses: [],
         streamBatches: [[
@@ -60,7 +60,7 @@ it('reuses the finalized stream when rawResponse() is read after streaming', fun
         ->create();
 
     $finalFromStream = $pending->stream()->finalResponse();
-    $raw = $pending->rawResponse();
+    $raw = $pending->inferenceResponse();
 
     expect($driver->streamCalls)->toBe(1);
     expect($raw->content())->toBe($finalFromStream->content());

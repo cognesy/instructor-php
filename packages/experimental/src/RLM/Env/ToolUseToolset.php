@@ -8,7 +8,7 @@ use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\ToolExecutor;
 use Cognesy\Experimental\RLM\Contracts\Toolset;
 use Cognesy\Experimental\RLM\Data\Handles\ResultHandle;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCall;
 
 final class ToolUseToolset implements Toolset
 {

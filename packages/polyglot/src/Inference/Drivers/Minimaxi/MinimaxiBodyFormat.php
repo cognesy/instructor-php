@@ -47,17 +47,17 @@ class MinimaxiBodyFormat extends OpenAICompatibleBodyFormat
         return [];
     }
 
-    protected function toNativeTools(array $tools) : array {
-        return array_map(fn($tool) => $this->toNativeTool($tool), $tools);
+    protected function toNativeTools(\Cognesy\Polyglot\Inference\Data\ToolDefinitions $tools) : array {
+        return array_map(fn($tool) => $this->toNativeTool($tool), $tools->all());
     }
 
-    protected function toNativeTool(array $tool) : array {
+    protected function toNativeTool(\Cognesy\Polyglot\Inference\Data\ToolDefinition $tool) : array {
         return [
             'type' => 'function',
             'function' => [
-                'name' => $tool['function']['name'] ?? $tool['name'] ?? '',
-                'description' => $tool['function']['description'] ?? $tool['description'] ?? '',
-                'parameters' => $tool['function']['parameters'] ?? $tool['parameters'] ?? [],
+                'name' => $tool->name(),
+                'description' => $tool->description(),
+                'parameters' => $tool->parameters(),
             ],
         ];
     }

@@ -1,14 +1,17 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Inference\Drivers\Perplexity;
 
-use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
+
 class PerplexityBodyFormat extends OpenAICompatibleBodyFormat
 {
     #[\Override]
-    public function toRequestBody(InferenceRequest $request) : array {
+    public function toRequestBody(InferenceRequest $request): array
+    {
         $request = $request->withCacheApplied();
 
         $options = array_merge($this->config->options, $request->options());
@@ -16,7 +19,7 @@ class PerplexityBodyFormat extends OpenAICompatibleBodyFormat
         $requestBody = array_merge(array_filter([
             'model' => $request->model() ?: $this->config->model,
             'max_tokens' => $this->config->maxTokens,
-            'messages' => $this->messageFormat->map(Messages::fromArray($request->messages())->toMergedPerRole()->toArray()),
+            'messages' => $this->messageFormat->map($request->messages()->toMergedPerRole()),
         ]), $options);
 
         // Perplexity does not support tools, so we unset them
@@ -25,13 +28,14 @@ class PerplexityBodyFormat extends OpenAICompatibleBodyFormat
 
         $requestBody['response_format'] = $this->toResponseFormat($request);
 
-        return array_filter($requestBody, fn($value) => $value !== null && $value !== [] && $value !== '');
+        return array_filter($requestBody, fn ($value) => $value !== null && $value !== [] && $value !== '');
     }
 
     // INTERNAL ///////////////////////////////////////////////
 
     #[\Override]
-    protected function toResponseFormat(InferenceRequest $request) : array {
+    protected function toResponseFormat(InferenceRequest $request): array
+    {
         $type = $this->toResponseFormatType($request);
         if ($type === null) {
             return [];
@@ -40,11 +44,11 @@ class PerplexityBodyFormat extends OpenAICompatibleBodyFormat
         // Perplexity API only supports: json_schema (with schema field only, no name/strict)
         // Both Json and JsonSchema modes use json_schema type
         $responseFormat = $request->responseFormat()
-            ->withToJsonObjectHandler(fn() => [
+            ->withToJsonObjectHandler(fn () => [
                 'type' => 'json_schema',
                 'json_schema' => ['schema' => $this->removeDisallowedEntries($request->responseFormat()->schema())],
             ])
-            ->withToJsonSchemaHandler(fn() => [
+            ->withToJsonSchemaHandler(fn () => [
                 'type' => 'json_schema',
                 'json_schema' => ['schema' => $this->removeDisallowedEntries($request->responseFormat()->schema())],
             ]);

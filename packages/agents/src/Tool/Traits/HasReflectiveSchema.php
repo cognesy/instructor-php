@@ -2,6 +2,7 @@
 
 namespace Cognesy\Agents\Tool\Traits;
 
+use Cognesy\Polyglot\Inference\Data\ToolDefinition;
 use Cognesy\Schema\CallableSchemaFactory;
 use Cognesy\Schema\SchemaFactory;
 
@@ -10,15 +11,12 @@ trait HasReflectiveSchema
     protected ?array $cachedParamsJsonSchema = null;
 
     #[\Override]
-    public function toToolSchema(): array {
-        return [
-            'type' => 'function',
-            'function' => [
-                'name' => $this->name(),
-                'description' => $this->description(),
-                'parameters' => $this->paramsJsonSchema(),
-            ],
-        ];
+    public function toToolSchema(): ToolDefinition {
+        return new ToolDefinition(
+            name: $this->name(),
+            description: $this->description(),
+            parameters: $this->paramsJsonSchema(),
+        );
     }
 
     protected function paramsJsonSchema(): array {

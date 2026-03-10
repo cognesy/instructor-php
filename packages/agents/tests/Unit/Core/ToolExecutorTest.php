@@ -9,8 +9,8 @@ use Cognesy\Agents\Interception\PassThroughInterceptor;
 use Cognesy\Agents\Tool\ToolExecutor;
 use Cognesy\Agents\Tool\Tools\BaseTool;
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCalls;
+use Cognesy\Messages\ToolCall;
 use RuntimeException;
 
 class FailingTool extends BaseTool
@@ -51,7 +51,7 @@ it('throws exception on tool failure when throwOnToolFailure is true', function 
     );
 
     $toolCalls = new ToolCalls(
-        new ToolCall(id: 'call-1', name: 'failing_tool', args: []),
+        new ToolCall(id: 'call-1', name: 'failing_tool', arguments: []),
     );
 
     expect(fn() => $executor->executeTools($toolCalls, AgentState::empty()))
@@ -68,7 +68,7 @@ it('does not throw on tool failure when throwOnToolFailure is false', function (
     );
 
     $toolCalls = new ToolCalls(
-        new ToolCall(id: 'call-1', name: 'failing_tool', args: []),
+        new ToolCall(id: 'call-1', name: 'failing_tool', arguments: []),
     );
 
     $result = $executor->executeTools($toolCalls, AgentState::empty());
@@ -87,7 +87,7 @@ it('executes successful tools without throwing', function () {
     );
 
     $toolCalls = new ToolCalls(
-        new ToolCall(id: 'call-1', name: 'succeeding_tool', args: []),
+        new ToolCall(id: 'call-1', name: 'succeeding_tool', arguments: []),
     );
 
     $result = $executor->executeTools($toolCalls, AgentState::empty());

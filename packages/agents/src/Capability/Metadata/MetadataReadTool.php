@@ -55,8 +55,8 @@ class MetadataReadTool extends StateAwareTool
     }
 
     #[\Override]
-    public function toToolSchema(): array {
-        return ToolSchema::make(
+    public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition {
+        return \Cognesy\Polyglot\Inference\Data\ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
             parameters: JsonSchema::object('parameters')
@@ -64,6 +64,6 @@ class MetadataReadTool extends StateAwareTool
                     JsonSchema::string('key', 'The key to read from metadata'),
                 ])
                 ->withRequiredProperties(['key'])
-        )->toArray();
+        )->toArray());
     }
 }

@@ -6,7 +6,7 @@ use Cognesy\Messages\Messages;
 
 it('should properly convert Image to Messages with prompt', function () {
     // Create an image with a prompt
-    $imagePath = __DIR__ . '/../../examples/A05_Extras/ImageCarDamage/car-damage.jpg';
+    $imagePath = __DIR__ . '/fixtures/car-damage.jpg';
     
     // Skip test if image file doesn't exist
     if (!file_exists($imagePath)) {

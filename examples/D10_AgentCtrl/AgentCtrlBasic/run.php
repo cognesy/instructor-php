@@ -23,6 +23,7 @@ require 'examples/boot.php';
 
 use Cognesy\AgentCtrl\AgentCtrl;
 use Cognesy\AgentCtrl\Broadcasting\AgentCtrlConsoleLogger;
+use Cognesy\AgentCtrl\Config\AgentConfig;
 use Cognesy\AgentCtrl\Enum\AgentType;
 
 // Create a console logger for visibility into agent execution
@@ -37,6 +38,10 @@ echo "=== Agent Execution Log ===\n\n";
 
 $response = AgentCtrl::make(AgentType::OpenCode)
     ->wiretap($logger->wiretap())
+    ->withConfig(new AgentConfig(
+        timeout: 300,
+        workingDirectory: getcwd() ?: null,
+    ))
     ->execute('Explain the SOLID principles in software design. List each principle with a one-line explanation.');
 
 echo "\n=== Result ===\n";
@@ -86,5 +91,6 @@ Cost: $0.0023
 - **Agent selection**: Use `AgentType` enum to specify which agent to use
 - **Console logger**: `AgentCtrlConsoleLogger` shows execution stages with color-coded labels
 - **Response metadata**: Access session IDs, token usage, and cost information
+- **Typed config**: `AgentConfig` packages shared builder options into one object
 - **Error handling**: Check `isSuccess()` before accessing response data
 - **Simple execution**: One method call (`execute()`) handles the entire interaction

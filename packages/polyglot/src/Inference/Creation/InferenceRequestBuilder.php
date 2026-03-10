@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Inference\Creation;
 
@@ -8,46 +10,64 @@ use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 
 class InferenceRequestBuilder
 {
     private ?Messages $messages;
+
     private ?string $model;
-    private ?array $tools;
-    private null|string|array $toolChoice;
+
+    private ?ToolDefinitions $tools;
+
+    private ?ToolChoice $toolChoice;
+
     private ?ResponseFormat $responseFormat;
+
     private ?array $options;
+
     private ?ResponseCachePolicy $responseCachePolicy;
+
     private ?InferenceRetryPolicy $retryPolicy;
 
     private ?bool $streaming;
+
     private ?int $maxTokens;
 
     protected CachedInferenceContext $cachedContext;
 
     public function __construct(
-        ?Messages               $messages = null,
-        ?string                 $model = null,
-        ?array                  $tools = null,
-        null|string|array       $toolChoice = null,
-        ?ResponseFormat         $responseFormat = null,
-        ?array                  $options = null,
+        ?Messages $messages = null,
+        ?string $model = null,
+        ToolDefinitions|array|null $tools = null,
+        ToolChoice|string|array|null $toolChoice = null,
+        ?ResponseFormat $responseFormat = null,
+        ?array $options = null,
         ?CachedInferenceContext $cachedContext = null,
-        ?bool                   $streaming = null,
-        ?int                    $maxTokens = null,
-        ?ResponseCachePolicy    $responseCachePolicy = null,
-        ?InferenceRetryPolicy   $retryPolicy = null,
+        ?bool $streaming = null,
+        ?int $maxTokens = null,
+        ?ResponseCachePolicy $responseCachePolicy = null,
+        ?InferenceRetryPolicy $retryPolicy = null,
     ) {
         $this->messages = $messages;
         $this->model = $model;
-        $this->tools = $tools;
-        $this->toolChoice = $toolChoice;
+        $this->tools = match (true) {
+            $tools instanceof ToolDefinitions => $tools,
+            is_array($tools) => ToolDefinitions::fromArray($tools),
+            default => null,
+        };
+        $this->toolChoice = match (true) {
+            $toolChoice instanceof ToolChoice => $toolChoice,
+            is_string($toolChoice), is_array($toolChoice) => ToolChoice::fromAny($toolChoice),
+            default => null,
+        };
         $this->responseFormat = $responseFormat;
         $this->options = $options;
         $this->streaming = $streaming;
         $this->maxTokens = $maxTokens;
-        $this->cachedContext = $cachedContext ?? new CachedInferenceContext();
+        $this->cachedContext = $cachedContext ?? new CachedInferenceContext;
         $this->responseCachePolicy = $responseCachePolicy;
         $this->retryPolicy = $retryPolicy;
     }
@@ -55,104 +75,136 @@ class InferenceRequestBuilder
     /**
      * Sets the parameters for the inference request and returns the current instance.
      *
-     * @param string|array $messages The input messages for the inference.
-     * @param string $model The model to be used for the inference.
-     * @param array $tools The tools to be used for the inference.
-     * @param string|array $toolChoice The choice of tools for the inference.
-     * @param array $responseFormat The format of the response.
-     * @param array $options Additional options for the inference.
+     * @param  string|array  $messages  The input messages for the inference.
+     * @param  string  $model  The model to be used for the inference.
+     * @param  array  $tools  The tools to be used for the inference.
+     * @param  string|array  $toolChoice  The choice of tools for the inference.
+     * @param  array  $responseFormat  The format of the response.
+     * @param  array  $options  Additional options for the inference.
      */
     public function with(
         null|string|array|Message|Messages $messages = null,
-        ?string       $model = null,
-        ?array        $tools = null,
-        null|string|array $toolChoice = null,
-        ?array        $responseFormat = null,
-        ?array        $options = null,
-    ) : static {
+        ?string $model = null,
+        ToolDefinitions|array|null $tools = null,
+        ToolChoice|string|array|null $toolChoice = null,
+        ?array $responseFormat = null,
+        ?array $options = null,
+    ): static {
         $this->messages = $messages !== null ? Messages::fromAny($messages) : $this->messages;
         $this->model = $model ?? $this->model;
-        $this->tools = $tools ?? $this->tools;
-        $this->toolChoice = $toolChoice ?? $this->toolChoice;
+        $this->tools = match (true) {
+            $tools instanceof ToolDefinitions => $tools,
+            is_array($tools) => ToolDefinitions::fromArray($tools),
+            default => $this->tools,
+        };
+        $this->toolChoice = match (true) {
+            $toolChoice instanceof ToolChoice => $toolChoice,
+            is_string($toolChoice), is_array($toolChoice) => ToolChoice::fromAny($toolChoice),
+            default => $this->toolChoice,
+        };
         $this->responseFormat = $responseFormat !== null ? ResponseFormat::fromArray($responseFormat) : $this->responseFormat;
         $this->options = $options ?? $this->options;
+
         return $this;
     }
 
-    public function withMessages(string|array|Message|Messages $messages): static {
+    public function withMessages(string|array|Message|Messages $messages): static
+    {
         $this->messages = Messages::fromAny($messages);
+
         return $this;
     }
 
-    public function withModel(string $model): static {
+    public function withModel(string $model): static
+    {
         $this->model = $model;
+
         return $this;
     }
 
-    public function withTools(array $tools): static {
-        $this->tools = $tools;
+    public function withTools(ToolDefinitions|array $tools): static
+    {
+        $this->tools = match (true) {
+            $tools instanceof ToolDefinitions => $tools,
+            default => ToolDefinitions::fromArray($tools),
+        };
+
         return $this;
     }
 
-    public function withToolChoice(string|array $toolChoice): static {
-        $this->toolChoice = $toolChoice;
+    public function withToolChoice(ToolChoice|string|array $toolChoice): static
+    {
+        $this->toolChoice = ToolChoice::fromAny($toolChoice);
+
         return $this;
     }
 
-    public function withResponseFormat(array $responseFormat): static {
+    public function withResponseFormat(array $responseFormat): static
+    {
         $this->responseFormat = ResponseFormat::fromArray($responseFormat);
+
         return $this;
     }
 
-    public function withOptions(array $options): static {
+    public function withOptions(array $options): static
+    {
         $this->options = array_merge($this->options ?? [], $options);
+
         return $this;
     }
 
-    public function withStreaming(bool $stream = true): static {
+    public function withStreaming(bool $stream = true): static
+    {
         $this->streaming = $stream;
+
         return $this;
     }
 
-    public function withMaxTokens(int $maxTokens): static {
+    public function withMaxTokens(int $maxTokens): static
+    {
         $this->maxTokens = $maxTokens;
+
         return $this;
     }
 
-    public function withResponseCachePolicy(ResponseCachePolicy $policy): static {
+    public function withResponseCachePolicy(ResponseCachePolicy $policy): static
+    {
         $this->responseCachePolicy = $policy;
+
         return $this;
     }
 
-    public function withRetryPolicy(InferenceRetryPolicy $retryPolicy): static {
+    public function withRetryPolicy(InferenceRetryPolicy $retryPolicy): static
+    {
         $this->retryPolicy = $retryPolicy;
+
         return $this;
     }
 
     /**
      * Sets a cached context with provided messages, tools, tool choices, and response format.
      *
-     * @param string|array $messages Messages to be cached in the context.
-     * @param array $tools Tools to be included in the cached context.
-     * @param string|array $toolChoice Tool choices for the cached context.
-     * @param array $responseFormat Format for responses in the cached context.
-     *
-     * @return self
+     * @param  string|array  $messages  Messages to be cached in the context.
+     * @param  array  $tools  Tools to be included in the cached context.
+     * @param  string|array  $toolChoice  Tool choices for the cached context.
+     * @param  array  $responseFormat  Format for responses in the cached context.
      */
     public function withCachedContext(
         string|array $messages = [],
-        array        $tools = [],
-        string|array $toolChoice = [],
-        array        $responseFormat = [],
+        ToolDefinitions|array $tools = [],
+        ToolChoice|string|array $toolChoice = [],
+        array $responseFormat = [],
     ): self {
         $this->cachedContext = new CachedInferenceContext(
             $messages, $tools, $toolChoice, $responseFormat
         );
+
         return $this;
     }
 
-    public function withRequest(InferenceRequest $request) : self {
-        $this->messages = Messages::fromAny($request->messages());
+    public function withRequest(InferenceRequest $request): self
+    {
+        $this->messages = $request->messages();
         $this->model = $request->model();
         $this->tools = $request->tools();
         $this->toolChoice = $request->toolChoice();
@@ -162,10 +214,12 @@ class InferenceRequestBuilder
         $this->cachedContext = $request->cachedContext();
         $this->responseCachePolicy = $request->responseCachePolicy();
         $this->retryPolicy = $request->retryPolicy();
+
         return $this;
     }
 
-    public function create(): InferenceRequest {
+    public function create(): InferenceRequest
+    {
         $options = $this->options ?? [];
         $options = $this->override($options, 'stream', $this->streaming);
         $options = $this->override($options, 'max_tokens', $this->maxTokens);
@@ -183,11 +237,13 @@ class InferenceRequestBuilder
         );
     }
 
-    private function override(array $source, string $key, mixed $value): array {
+    private function override(array $source, string $key, mixed $value): array
+    {
         if ($value === null) {
             return $source;
         }
         $source[$key] = $value;
+
         return $source;
     }
 }

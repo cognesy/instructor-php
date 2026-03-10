@@ -32,7 +32,7 @@ Polyglot normalizes all provider interactions into a small set of data objects. 
 ### Reading Values
 
 ```php
-$request->messages();             // array -- the message list
+$request->messages();             // Messages -- the message list
 $request->model();                // string
 $request->isStreamed();           // bool -- checks options['stream']
 $request->tools();               // array

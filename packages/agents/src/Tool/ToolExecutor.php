@@ -18,8 +18,8 @@ use Cognesy\Agents\Tool\Contracts\CanAccessToolCall;
 use Cognesy\Agents\Tool\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Tool\Contracts\ToolInterface;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCalls;
+use Cognesy\Messages\ToolCall;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Result;
 use DateTimeImmutable;
@@ -154,7 +154,7 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
 
     private function validateArgs(ToolInterface $tool, array $args): Result {
         $toolSchema = $tool->toToolSchema();
-        $parameters = $toolSchema['function']['parameters'] ?? [];
+        $parameters = $toolSchema->parameters();
         $required = $parameters['required'] ?? [];
         if ($required === []) {
             return Result::success(null);

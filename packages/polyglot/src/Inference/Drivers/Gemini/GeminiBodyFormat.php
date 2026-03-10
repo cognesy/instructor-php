@@ -1,8 +1,9 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Inference\Drivers\Gemini;
 
-use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanMapMessages;
 use Cognesy\Polyglot\Inference\Contracts\CanMapRequestBody;
@@ -18,7 +19,8 @@ class GeminiBodyFormat implements CanMapRequestBody
     ) {}
 
     #[\Override]
-    public function toRequestBody(InferenceRequest $request) : array {
+    public function toRequestBody(InferenceRequest $request): array
+    {
         $request = $request->withCacheApplied();
 
         $requestBody = $this->filterEmptyValues([
@@ -27,14 +29,14 @@ class GeminiBodyFormat implements CanMapRequestBody
             'generationConfig' => $this->toOptions($request),
         ]);
 
-        if (!$this->supportsNonTextResponseForTools($request)) {
+        if (! $this->supportsNonTextResponseForTools($request)) {
             if ($request->hasTools()) {
                 unset($requestBody['generationConfig']['responseSchema']);
                 unset($requestBody['generationConfig']['responseMimeType']);
             }
         }
 
-        if ($request->hasTools() && !empty($request->tools())) {
+        if ($request->hasTools() && ! $request->tools()->isEmpty()) {
             $requestBody['tools'] = $this->toTools($request);
             $requestBody['tool_config'] = $this->toToolChoice($request);
         }
@@ -44,78 +46,85 @@ class GeminiBodyFormat implements CanMapRequestBody
 
     // CAPABILITIES ///////////////////////////////////////////
 
-    protected function supportsNonTextResponseForTools(InferenceRequest $request) : bool {
+    protected function supportsNonTextResponseForTools(InferenceRequest $request): bool
+    {
         return false;
     }
 
     // INTERNAL //////////////////////////////////////////////
 
-    protected function toSystem(InferenceRequest $request) : array {
-        $messages = $request->messages();
-        $system = Messages::fromArray($messages)
+    protected function toSystem(InferenceRequest $request): array
+    {
+        $system = $request->messages()
             ->forRoles(['system'])
             ->toString();
 
-        return empty($system) ? [] : ['parts' => [[ 'text' => $system ]]];
+        return empty($system) ? [] : ['parts' => [['text' => $system]]];
     }
 
-    protected function toMessages(InferenceRequest $request): array {
-        $messages = Messages::fromArray($request->messages())
-            ->exceptRoles(['system'])
-            ->toArray();
+    protected function toMessages(InferenceRequest $request): array
+    {
+        $messages = $request->messages()
+            ->exceptRoles(['system']);
 
         return $this->messageFormat->map($messages);
     }
 
     protected function toOptions(
         InferenceRequest $request,
-    ) : array {
+    ): array {
         $options = array_merge($this->config->options, $request->options());
         $responseFormat = $request->responseFormat();
         $type = $this->toResponseFormatType($request);
 
         return $this->filterEmptyValues([
-            "responseMimeType" => $this->toResponseMimeType($type),
-            "responseSchema" => $this->toResponseSchema($responseFormat, $type),
+            'responseMimeType' => $this->toResponseMimeType($type),
+            'responseSchema' => $this->toResponseSchema($responseFormat, $type),
             // candidateCount is a top-level param in some API versions; omit here for compatibility
-            "maxOutputTokens" => $options['max_tokens'] ?? $this->config->maxTokens,
-            "temperature" => $options['temperature'] ?? 1.0,
+            'maxOutputTokens' => $options['max_tokens'] ?? $this->config->maxTokens,
+            'temperature' => $options['temperature'] ?? 1.0,
         ]);
     }
 
-    protected function toTools(InferenceRequest $request) : array {
+    protected function toTools(InferenceRequest $request): array
+    {
         $tools = $request->tools();
 
         return ['function_declarations' => array_map(
-            callback: fn($tool) => $this->removeDisallowedEntries($tool['function']),
-            array: $tools
+            callback: fn ($tool) => $this->removeDisallowedEntries([
+                'name' => $tool->name(),
+                'description' => $tool->description(),
+                'parameters' => $tool->parameters(),
+            ]),
+            array: $tools->all()
         )];
     }
 
-    protected function toToolChoice(InferenceRequest $request): string|array {
+    protected function toToolChoice(InferenceRequest $request): string|array
+    {
         $toolChoice = $request->toolChoice();
 
         if ($request->hasResponseFormat()) {
-            return ["function_calling_config" => ["mode" => "ANY"]];
+            return ['function_calling_config' => ['mode' => 'ANY']];
         }
-        if (empty($toolChoice)) {
-            return ["function_calling_config" => ["mode" => "ANY"]];
+        if ($toolChoice->isEmpty()) {
+            return ['function_calling_config' => ['mode' => 'ANY']];
         }
-        if (is_string($toolChoice)) {
-            return ["function_calling_config" => ["mode" => $this->mapToolChoice($toolChoice)]];
+        if (! $toolChoice->isSpecific()) {
+            return ['function_calling_config' => ['mode' => $this->mapToolChoice($toolChoice->mode())]];
         }
+
         return [
-            "function_calling_config" => array_filter([
-                "mode" => $this->mapToolChoice($toolChoice['mode'] ?? "ANY"),
-                "allowed_function_names" => isset($toolChoice['function']['name'])
-                    ? [ $toolChoice['function']['name'] ]
-                    : [],
+            'function_calling_config' => array_filter([
+                'mode' => 'ANY',
+                'allowed_function_names' => [$toolChoice->functionName()],
             ]),
         ];
     }
 
-    protected function mapToolChoice(string $choice) : string {
-        return match($choice) {
+    protected function mapToolChoice(string $choice): string
+    {
+        return match ($choice) {
             'auto' => 'AUTO',
             'required' => 'ANY',
             'none' => 'NONE',
@@ -123,8 +132,9 @@ class GeminiBodyFormat implements CanMapRequestBody
         };
     }
 
-    protected function toResponseMimeType(?string $type): string {
-        return match($type) {
+    protected function toResponseMimeType(?string $type): string
+    {
+        return match ($type) {
             'json',
             'json_object',
             'json_schema' => 'application/json',
@@ -132,9 +142,11 @@ class GeminiBodyFormat implements CanMapRequestBody
         };
     }
 
-    protected function toResponseSchema(ResponseFormat $responseFormat, ?string $type) : array {
+    protected function toResponseSchema(ResponseFormat $responseFormat, ?string $type): array
+    {
         $schema = $responseFormat->schemaFilteredWith($this->removeDisallowedEntries(...));
-        return match($type) {
+
+        return match ($type) {
             'json',
             'json_object',
             'json_schema' => $schema,
@@ -142,7 +154,8 @@ class GeminiBodyFormat implements CanMapRequestBody
         };
     }
 
-    protected function removeDisallowedEntries(array $jsonSchema) : array {
+    protected function removeDisallowedEntries(array $jsonSchema): array
+    {
         return Arrays::removeRecursively(
             array: $jsonSchema,
             keys: [
@@ -153,12 +166,14 @@ class GeminiBodyFormat implements CanMapRequestBody
         );
     }
 
-    protected function filterEmptyValues(array $data) : array {
-        return array_filter($data, fn($value) => $value !== null && $value !== [] && $value !== '');
+    protected function filterEmptyValues(array $data): array
+    {
+        return array_filter($data, fn ($value) => $value !== null && $value !== [] && $value !== '');
     }
 
-    protected function toResponseFormatType(InferenceRequest $request) : ?string {
-        if (!$request->hasResponseFormat()) {
+    protected function toResponseFormatType(InferenceRequest $request): ?string
+    {
+        if (! $request->hasResponseFormat()) {
             return null;
         }
 

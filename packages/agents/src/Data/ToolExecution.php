@@ -4,7 +4,7 @@ namespace Cognesy\Agents\Data;
 
 use Cognesy\Agents\Exceptions\ToolCallBlockedException;
 use Cognesy\Agents\Exceptions\ToolExecutionException;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCall;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Result;
 use Cognesy\Utils\Result\Success;

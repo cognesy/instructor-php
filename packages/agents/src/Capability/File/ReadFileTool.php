@@ -148,8 +148,8 @@ class ReadFileTool extends SimpleTool
     }
 
     #[\Override]
-    public function toToolSchema(): array {
-        return ToolSchema::make(
+    public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition {
+        return \Cognesy\Polyglot\Inference\Data\ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
             parameters: JsonSchema::object('parameters')
@@ -159,6 +159,6 @@ class ReadFileTool extends SimpleTool
                     JsonSchema::integer('limit', 'Maximum number of lines to read (default: 2000)'),
                 ])
                 ->withRequiredProperties(['path'])
-        )->toArray();
+        )->toArray());
     }
 }

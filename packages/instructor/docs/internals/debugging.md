@@ -26,7 +26,7 @@ $response = (new StructuredOutput())
 dump($response->value());
 
 // The raw inference response from the provider
-dump($response->rawResponse());
+dump($response->inferenceResponse());
 
 // Token usage statistics
 dump($response->usage());
@@ -42,7 +42,7 @@ If you only need the raw inference response without deserialization metadata:
 ```php
 $raw = (new StructuredOutput())
     ->with(messages: '...', responseModel: User::class)
-    ->rawResponse();
+    ->inferenceResponse();
 
 dump($raw->content());
 dump($raw->toolCalls());

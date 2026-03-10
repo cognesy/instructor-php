@@ -39,14 +39,14 @@ use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Validation\ValidationResult;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCall;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -379,15 +379,14 @@ final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
     }
 
     private function finalizeAnswerViaInference(Messages $messages, CachedInferenceContext $cache): PendingInference {
-        $finalMessages = Messages::fromArray([
-            ['role' => 'system', 'content' => 'Return only the final answer as plain text.'],
-            ...$messages->toArray(),
-        ]);
+        $finalMessages = Messages::fromMessages([
+            Message::make('system', 'Return only the final answer as plain text.'),
+        ])->appendMessages($messages);
 
         $cachedContext = match ($cache->isEmpty()) {
             true => null,
             default => new CachedInferenceContext(
-                messages: $cache->messages()->toArray(),
+                messages: $cache->messages(),
             ),
         };
 

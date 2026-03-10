@@ -25,7 +25,7 @@ use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCall;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\PendingInference;
 use Cognesy\Utils\Result\Result;
@@ -117,7 +117,7 @@ final class ReActDriver implements CanUseTools
         $decision = $pending->get();
         return new DecisionWithDetails(
             decision: $decision,
-            response: $pending->response(),
+            response: $pending->response()->inferenceResponse(),
         );
     }
 

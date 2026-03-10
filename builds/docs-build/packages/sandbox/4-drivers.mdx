@@ -1,44 +1,268 @@
 ---
 title: Drivers
-description: 'Choose the isolation backend for command execution.'
+description: 'Choose and configure the isolation backend for command execution: Host, Docker, Podman, Firejail, or Bubblewrap.'
 ---
 
-Use `SandboxDriver` enum or static constructors.
+## Introduction
 
-## Driver List
+The Sandbox package ships with five drivers, each offering a different trade-off between convenience and isolation. All drivers implement the `CanExecuteCommand` interface, so your application code works identically regardless of which backend is in use.
 
-- `SandboxDriver::Host`
-- `SandboxDriver::Docker`
-- `SandboxDriver::Podman`
-- `SandboxDriver::Firejail`
-- `SandboxDriver::Bubblewrap`
+Choosing a driver depends on your security requirements, platform, and operational constraints. You might use the host driver during development for simplicity and switch to Docker or Podman in production for full container isolation.
 
-## Enum-Based Selection
+## Driver Selection
+
+### Static Factory Methods
+
+The `Sandbox` class provides dedicated static methods for each driver:
+
+```php
+use Cognesy\Sandbox\Sandbox;
+use Cognesy\Sandbox\Config\ExecutionPolicy;
+
+$policy = ExecutionPolicy::in('/tmp');
+
+$host       = Sandbox::host($policy);
+$docker     = Sandbox::docker($policy, image: 'php:8.3-cli-alpine');
+$podman     = Sandbox::podman($policy, image: 'alpine:3');
+$firejail   = Sandbox::firejail($policy);
+$bubblewrap = Sandbox::bubblewrap($policy);
+// @doctest id="ca14"
+```
+
+### Enum-Based Selection
+
+When the driver is determined at runtime, use the `SandboxDriver` enum with the fluent builder:
 
 ```php
 use Cognesy\Sandbox\Enums\SandboxDriver;
 use Cognesy\Sandbox\Sandbox;
 
-$sandbox = Sandbox::with($policy)->using(SandboxDriver::Docker);
-// @doctest id="bea3"
+$sandbox = Sandbox::fromPolicy($policy)->using(SandboxDriver::Docker);
+// @doctest id="43dc"
 ```
 
-## Static Constructors
+You can also pass a plain string. The accepted values are `host`, `docker`, `podman`, `firejail`, and `bubblewrap`:
 
 ```php
-$host = Sandbox::host($policy);
-$docker = Sandbox::docker($policy, image: 'alpine:3');
-$podman = Sandbox::podman($policy, image: 'alpine:3');
-$firejail = Sandbox::firejail($policy);
-$bubblewrap = Sandbox::bubblewrap($policy);
-// @doctest id="a0f6"
+$sandbox = Sandbox::fromPolicy($policy)->using('firejail');
+// @doctest id="d513"
 ```
 
-## Binary Overrides
+An `InvalidArgumentException` is thrown if the string does not match any known driver.
 
-Environment variables:
+## Host Driver
 
-- `DOCKER_BIN`
-- `PODMAN_BIN`
-- `FIREJAIL_BIN`
-- `BWRAP_BIN`
+The host driver executes commands directly on the host machine using the Symfony Process component. It provides no file-system or network isolation -- the command runs with the same privileges as the PHP process, constrained only by the execution policy's timeout and output caps.
+
+```php
+$sandbox = Sandbox::host($policy);
+$result = $sandbox->execute(['php', '-r', 'echo phpversion();']);
+// @doctest id="ce37"
+```
+
+**When to use:** Development, trusted scripts, CI pipelines where container overhead is unnecessary.
+
+**Key characteristics:**
+- Commands run in the policy's `baseDir` directly (no temporary subdirectory is created).
+- Timeout enforcement uses Symfony Process's built-in timeout and idle timeout.
+- Environment variables are filtered through `EnvUtils` to strip security-sensitive patterns.
+- Memory limits and network settings are policy declarations only -- they are not enforced at the OS level.
+
+## Docker Driver
+
+The Docker driver runs each command inside an ephemeral Docker container with aggressive security hardening applied by default.
+
+```php
+$sandbox = Sandbox::docker($policy, image: 'python:3.12-alpine');
+$result = $sandbox->execute(['python3', '-c', 'print("hello")']);
+// @doctest id="46b0"
+```
+
+**When to use:** Production workloads, untrusted code execution, any scenario requiring strong isolation.
+
+### Container Hardening
+
+Every Docker execution applies the following security measures automatically:
+
+| Setting | Value | Purpose |
+|---|---|---|
+| `--read-only` | Enabled | Root filesystem is read-only |
+| `--cap-drop=ALL` | All capabilities dropped | No elevated privileges |
+| `--security-opt no-new-privileges` | Enabled | Prevents privilege escalation |
+| `-u 65534:65534` | `nobody` user | Non-root execution |
+| `--pids-limit=20` | 20 processes | Prevents fork bombs |
+| `--memory` | From policy (default `128M`) | Memory cap |
+| `--cpus` | `0.5` | CPU throttle |
+| `--network=none` | When network disabled | Network isolation |
+| `--tmpfs /tmp` | `rw,noexec,nodev,nosuid,size=64m` | Writable temp with noexec |
+
+### Working Directory
+
+A unique temporary directory is created on the host inside the policy's `baseDir` for each execution. This directory is mounted into the container at `/work` as the writable working directory. It is automatically cleaned up after execution, even if the command fails.
+
+### File Mounts
+
+Readable paths from the policy are mounted at `/mnt/ro0`, `/mnt/ro1`, etc. Writable paths are mounted at `/mnt/rw0`, `/mnt/rw1`, etc. Your command should reference these container paths:
+
+```php
+$policy = ExecutionPolicy::in('/tmp')
+    ->withReadablePaths('/data/input')
+    ->withWritablePaths('/data/output');
+
+$sandbox = Sandbox::docker($policy, image: 'alpine:3');
+
+// Inside the container: /mnt/ro0 is /data/input, /mnt/rw0 is /data/output
+$result = $sandbox->execute(['cp', '/mnt/ro0/file.txt', '/mnt/rw0/copy.txt']);
+// @doctest id="1fd3"
+```
+
+### Custom Image
+
+The default image is `alpine:3`. Pass any Docker image as the second argument:
+
+```php
+$sandbox = Sandbox::docker($policy, image: 'node:20-alpine');
+// @doctest id="611b"
+```
+
+### Binary Override
+
+If Docker is not on the default `PATH`, specify the binary location:
+
+```php
+$sandbox = Sandbox::docker($policy, dockerBin: '/usr/local/bin/docker');
+// @doctest id="cfc7"
+```
+
+Or set the `DOCKER_BIN` environment variable before your PHP process starts.
+
+## Podman Driver
+
+The Podman driver works identically to the Docker driver but uses Podman as the container runtime. It is designed for rootless container execution on Linux.
+
+```php
+$sandbox = Sandbox::podman($policy, image: 'alpine:3');
+// @doctest id="bd55"
+```
+
+**When to use:** Linux environments where rootless containers are preferred over Docker.
+
+### WSL2 Compatibility
+
+The Podman driver automatically detects WSL2 environments (by reading `/proc/version` and `/proc/self/cgroup`) and applies compatibility adjustments:
+
+- Switches to `cgroupfs` as the cgroup manager (via `--cgroup-manager=cgroupfs`).
+- Disables memory and CPU resource limits, which are unreliable under WSL2's cgroup configuration.
+
+All other security hardening (read-only root, dropped capabilities, nobody user, etc.) remains active.
+
+### Binary Override
+
+```php
+$sandbox = Sandbox::podman($policy, podmanBin: '/usr/bin/podman');
+// @doctest id="77be"
+```
+
+Or set the `PODMAN_BIN` environment variable.
+
+## Firejail Driver
+
+The Firejail driver uses Linux namespaces and seccomp filtering to sandbox commands without requiring a container runtime. It offers lighter weight isolation than Docker or Podman.
+
+```php
+$sandbox = Sandbox::firejail($policy);
+$result = $sandbox->execute(['python3', 'script.py']);
+// @doctest id="acbb"
+```
+
+**When to use:** Linux systems where you want sandbox isolation without the overhead of pulling container images.
+
+### Sandbox Configuration
+
+Firejail applies the following restrictions:
+
+| Setting | Value | Purpose |
+|---|---|---|
+| `--net=none` | When network disabled | Network isolation |
+| `--rlimit-nproc=20` | 20 processes | Fork bomb prevention |
+| `--rlimit-nofile=100` | 100 file descriptors | File descriptor limit |
+| `--rlimit-fsize=10485760` | 10 MB | Maximum file size |
+| `--rlimit-cpu` | Policy timeout + 1 second | CPU time limit |
+
+The working directory is bind-mounted at `/work` with a whitelist applied. Readable and writable paths follow the same `/mnt/ro*` and `/mnt/rw*` convention, with readable paths additionally marked as `--read-only`.
+
+### Binary Override
+
+```php
+$sandbox = Sandbox::firejail($policy, firejailBin: '/usr/bin/firejail');
+// @doctest id="728f"
+```
+
+Or set the `FIREJAIL_BIN` environment variable.
+
+## Bubblewrap Driver
+
+The Bubblewrap (`bwrap`) driver provides minimal Linux namespace isolation. It is the lightest-weight option and is commonly used in Flatpak applications.
+
+```php
+$sandbox = Sandbox::bubblewrap($policy);
+$result = $sandbox->execute(['ls', '-la']);
+// @doctest id="45c0"
+```
+
+**When to use:** Linux systems where you need basic namespace isolation with minimal dependencies.
+
+### Namespace Isolation
+
+Bubblewrap applies the following namespace unsharing:
+
+- `--unshare-pid` -- Process ID namespace
+- `--unshare-uts` -- Hostname namespace
+- `--unshare-ipc` -- IPC namespace
+- `--unshare-cgroup` -- Cgroup namespace
+- `--unshare-net` -- Network namespace (when network is disabled)
+- `--die-with-parent` -- Sandbox terminates if the parent process exits
+
+The host root filesystem is mounted read-only (`--ro-bind / /`) to make system binaries available. The working directory is bind-mounted to `/tmp` inside the sandbox. Writable and readable paths are mounted at their original host paths (not `/mnt/rw*` like container drivers).
+
+### Binary Override
+
+```php
+$sandbox = Sandbox::bubblewrap($policy, bubblewrapBin: '/usr/bin/bwrap');
+// @doctest id="4e79"
+```
+
+Or set the `BWRAP_BIN` environment variable.
+
+## Binary Discovery
+
+All drivers that depend on an external binary follow the same discovery strategy:
+
+1. Check the corresponding environment variable (`DOCKER_BIN`, `PODMAN_BIN`, `FIREJAIL_BIN`, `BWRAP_BIN`).
+2. Search the system `PATH`.
+3. Search additional common directories: `/usr/bin`, `/usr/local/bin`, `/opt/homebrew/bin`, `/opt/local/bin`, `/snap/bin`.
+4. Fall back to the bare binary name (e.g., `docker`), which will fail at execution time if the binary truly is not available.
+
+You can bypass discovery entirely by passing the binary path to the constructor.
+
+## Process Management
+
+Container drivers (Docker, Podman, Firejail, Bubblewrap) use `proc_open` directly for process management, while the host driver uses the Symfony Process component. All drivers:
+
+- Use `setsid` (when available) to run commands in a new session group, ensuring clean termination of the entire process tree on timeout.
+- Send `SIGTERM` first, wait briefly, then escalate to `SIGKILL` if the process does not exit.
+- Create and automatically clean up temporary working directories (container drivers only).
+
+## Driver Comparison
+
+| Feature | Host | Docker | Podman | Firejail | Bubblewrap |
+|---|---|---|---|---|---|
+| File-system isolation | No | Full | Full | Partial | Partial |
+| Network isolation | No | Yes | Yes | Yes | Yes |
+| Memory enforcement | No | Yes | Yes* | No | No |
+| CPU throttling | No | Yes | Yes* | Via rlimit | No |
+| Process limit | No | Yes | Yes | Yes | No |
+| Requires runtime | No | Docker | Podman | Firejail | bwrap |
+| Platform | All | Linux/macOS/Win | Linux | Linux | Linux |
+
+*Podman skips memory and CPU limits on WSL2 for compatibility.

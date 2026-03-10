@@ -4,6 +4,7 @@ namespace Cognesy\Agents\Collections;
 
 use Cognesy\Agents\Exceptions\InvalidToolException;
 use Cognesy\Agents\Tool\Contracts\ToolInterface;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 
 final readonly class Tools
 {
@@ -91,11 +92,10 @@ final readonly class Tools
 
     // TRANSFORMERS AND CONVERSIONS //////////////////////////////
 
-    public function toToolSchema(): array {
-        $schema = [];
-        foreach ($this->tools as $tool) {
-            $schema[] = $tool->toToolSchema();
-        }
-        return $schema;
+    public function toToolSchema(): ToolDefinitions {
+        return new ToolDefinitions(...array_map(
+            fn (ToolInterface $tool) => $tool->toToolSchema(),
+            $this->tools,
+        ));
     }
 }

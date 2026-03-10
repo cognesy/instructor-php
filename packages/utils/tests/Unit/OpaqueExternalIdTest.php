@@ -5,9 +5,27 @@ use Cognesy\Utils\Identifier\OpaqueExternalId;
 final readonly class TestExternalId extends OpaqueExternalId {}
 final readonly class OtherExternalId extends OpaqueExternalId {}
 
-it('rejects empty external id', function () {
-    new TestExternalId('');
-})->throws(\InvalidArgumentException::class);
+it('allows empty external id', function () {
+    $id = new TestExternalId('');
+
+    expect($id->isEmpty())->toBeTrue()
+        ->and($id->toString())->toBe('')
+        ->and($id->toNullableString())->toBeNull();
+});
+
+it('creates null id via factory', function () {
+    $id = TestExternalId::null();
+
+    expect($id->isEmpty())->toBeTrue()
+        ->and($id->toString())->toBe('');
+});
+
+it('non-empty id is not empty', function () {
+    $id = new TestExternalId('call_123');
+
+    expect($id->isEmpty())->toBeFalse()
+        ->and($id->toNullableString())->toBe('call_123');
+});
 
 it('supports fromString and string conversion', function () {
     $id = TestExternalId::fromString('call_123');

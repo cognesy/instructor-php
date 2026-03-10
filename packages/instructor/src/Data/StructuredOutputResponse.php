@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Data;
 
 use Cognesy\Http\Data\HttpResponse;
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
@@ -12,12 +12,12 @@ final readonly class StructuredOutputResponse
 {
     public static function partial(
         mixed $value,
-        InferenceResponse $rawResponse,
+        InferenceResponse $inferenceResponse,
         string $toolArgsSnapshot = '',
     ): self {
         return new self(
             value: $value,
-            rawResponse: $rawResponse,
+            inferenceResponse: $inferenceResponse,
             isPartial: true,
             toolArgsSnapshot: $toolArgsSnapshot,
         );
@@ -25,12 +25,12 @@ final readonly class StructuredOutputResponse
 
     public static function final(
         mixed $value,
-        InferenceResponse $rawResponse,
+        InferenceResponse $inferenceResponse,
         string $toolArgsSnapshot = '',
     ): self {
         return new self(
             value: $value,
-            rawResponse: $rawResponse,
+            inferenceResponse: $inferenceResponse,
             isPartial: false,
             toolArgsSnapshot: $toolArgsSnapshot,
         );
@@ -38,7 +38,7 @@ final readonly class StructuredOutputResponse
 
     public function __construct(
         private mixed $value,
-        private InferenceResponse $rawResponse,
+        private InferenceResponse $inferenceResponse,
         private bool $isPartial = false,
         private string $toolArgsSnapshot = '',
     ) {}
@@ -53,9 +53,9 @@ final readonly class StructuredOutputResponse
         return $this->value !== null;
     }
 
-    public function rawResponse(): InferenceResponse
+    public function inferenceResponse(): InferenceResponse
     {
-        return $this->rawResponse;
+        return $this->inferenceResponse;
     }
 
     public function isPartial(): bool
@@ -70,17 +70,17 @@ final readonly class StructuredOutputResponse
 
     public function content(): string
     {
-        return $this->rawResponse->content();
+        return $this->inferenceResponse->content();
     }
 
     public function reasoningContent(): string
     {
-        return $this->rawResponse->reasoningContent();
+        return $this->inferenceResponse->reasoningContent();
     }
 
     public function toolCalls(): ToolCalls
     {
-        return $this->rawResponse->toolCalls();
+        return $this->inferenceResponse->toolCalls();
     }
 
     public function toolArgsSnapshot(): string
@@ -90,16 +90,16 @@ final readonly class StructuredOutputResponse
 
     public function usage(): Usage
     {
-        return $this->rawResponse->usage();
+        return $this->inferenceResponse->usage();
     }
 
     public function finishReason(): InferenceFinishReason
     {
-        return $this->rawResponse->finishReason();
+        return $this->inferenceResponse->finishReason();
     }
 
     public function responseData(): HttpResponse
     {
-        return $this->rawResponse->responseData();
+        return $this->inferenceResponse->responseData();
     }
 }

@@ -32,7 +32,7 @@ it('renders non-empty tool parameters for setter-backed private fields', functio
     $schema = $renderer->schemaFactory()->schema(SetterBackedSchemaFixture::class);
     $rendering = $renderer->renderFromSchema($schema);
 
-    $parameters = $rendering->toolCallSchema()[0]['function']['parameters'];
+    $parameters = $rendering->toolDefinitions()->all()[0]->parameters();
     $properties = $parameters['properties'] ?? [];
     $required = $parameters['required'] ?? [];
 

@@ -171,8 +171,8 @@ final class BashTool extends SimpleTool
     }
 
     #[\Override]
-    public function toToolSchema(): array {
-        return ToolSchema::make(
+    public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition {
+        return \Cognesy\Polyglot\Inference\Data\ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
             parameters: JsonSchema::object('parameters')
@@ -180,7 +180,7 @@ final class BashTool extends SimpleTool
                     JsonSchema::string('command','The bash command to execute')
                 ])
                 ->withRequiredProperties(['command'])
-        )->toArray();
+        )->toArray());
     }
 
     private function resolveDir(string $baseDir) : string {

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Tool\Traits;
 
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCall;
 
 trait HasToolCall
 {

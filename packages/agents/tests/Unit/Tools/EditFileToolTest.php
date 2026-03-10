@@ -131,8 +131,7 @@ describe('EditFileTool', function () {
         $tool = new EditFileTool(baseDir: $this->tempDir);
         $schema = $tool->toToolSchema();
 
-        expect($schema['type'])->toBe('function');
-        expect($schema['function']['name'])->toBe('edit_file');
-        expect($schema['function']['parameters'])->toBeArray();
+        expect($schema->name())->toBe('edit_file');
+        expect($schema->parameters())->toBeArray();
     });
 });

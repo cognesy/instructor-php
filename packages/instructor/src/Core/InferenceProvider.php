@@ -23,7 +23,7 @@ class InferenceProvider
         return $this->inference->create(new InferenceRequest(
             messages: $this->requestMaterializer->toMessages($execution),
             model: $request->model(),
-            tools: $responseModel->toolCallSchema(),
+            tools: $responseModel->toolDefinitions(),
             toolChoice: $responseModel->toolChoice(),
             responseFormat: $responseModel->responseFormat(),
             options: $request->options(),

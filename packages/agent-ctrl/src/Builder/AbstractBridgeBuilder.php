@@ -3,6 +3,7 @@
 namespace Cognesy\AgentCtrl\Builder;
 
 use Closure;
+use Cognesy\AgentCtrl\Config\AgentConfig;
 use Cognesy\Sandbox\Enums\SandboxDriver;
 use Cognesy\AgentCtrl\Contract\AgentBridge;
 use Cognesy\AgentCtrl\Contract\AgentBridgeBuilder;
@@ -77,6 +78,28 @@ abstract class AbstractBridgeBuilder implements AgentBridgeBuilder
     public function withSandboxDriver(SandboxDriver $driver): static
     {
         $this->sandboxDriver = $driver;
+        return $this;
+    }
+
+    #[\Override]
+    public function withConfig(AgentConfig $config): static
+    {
+        if ($config->model !== null) {
+            $this->withModel($config->model);
+        }
+
+        if ($config->timeout !== null) {
+            $this->withTimeout($config->timeout);
+        }
+
+        if ($config->workingDirectory !== null) {
+            $this->inDirectory($config->workingDirectory);
+        }
+
+        if ($config->sandboxDriver !== null) {
+            $this->withSandboxDriver($config->sandboxDriver);
+        }
+
         return $this;
     }
 

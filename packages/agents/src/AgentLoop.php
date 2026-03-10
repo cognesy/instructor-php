@@ -33,7 +33,7 @@ use Cognesy\Agents\Tool\ToolExecutor;
 use Cognesy\Events\Contracts\CanAcceptEventHandler;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCall;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;

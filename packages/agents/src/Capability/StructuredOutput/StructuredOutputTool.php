@@ -102,8 +102,8 @@ final class StructuredOutputTool extends SimpleTool
     }
 
     #[\Override]
-    public function toToolSchema(): array {
-        return ToolSchema::make(
+    public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition {
+        return \Cognesy\Polyglot\Inference\Data\ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
             parameters: JsonSchema::object('parameters')
@@ -113,6 +113,6 @@ final class StructuredOutputTool extends SimpleTool
                     JsonSchema::string('store_as', 'Optional: metadata key to store the extracted data for use by other tools'),
                 ])
                 ->withRequiredProperties(['input', 'schema'])
-        )->toArray();
+        )->toArray());
     }
 }

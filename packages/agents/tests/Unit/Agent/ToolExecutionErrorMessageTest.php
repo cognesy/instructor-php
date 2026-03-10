@@ -3,7 +3,7 @@
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
 use Cognesy\Agents\Data\ToolExecution;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCall;
 use Cognesy\Utils\Result\Result;
 use DateTimeImmutable;
 

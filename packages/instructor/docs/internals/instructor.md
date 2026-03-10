@@ -82,7 +82,7 @@ $count = $so->getInt();
 $response = $so->response();
 
 // Get only the raw inference response
-$raw = $so->rawResponse();
+$raw = $so->inferenceResponse();
 
 // Stream partial updates
 $stream = $so->stream();
@@ -133,7 +133,7 @@ $runtime = $runtime
 
 `PendingStructuredOutput` is the lazy execution handle returned by `create()`. No
 network call is made until you ask for a result. It coordinates one-shot access
-across `get()`, `response()`, `rawResponse()`, and `stream()`.
+across `get()`, `response()`, `inferenceResponse()`, and `stream()`.
 
 ```php
 $pending = $so->create();
@@ -145,7 +145,7 @@ $value = $pending->get();
 $response = $pending->response();
 
 // Or access the raw inference response
-$raw = $pending->rawResponse();
+$raw = $pending->inferenceResponse();
 
 // Or stream partial updates
 $stream = $pending->stream();
@@ -196,7 +196,7 @@ the raw provider response:
 $response = $so->response();
 
 $response->value();          // the deserialized object or scalar
-$response->rawResponse();    // InferenceResponse from the provider
+$response->inferenceResponse(); // InferenceResponse from the provider
 $response->isPartial();      // false for final responses
 $response->usage();          // token usage stats
 $response->finishReason();   // stop, length, tool_calls, etc.

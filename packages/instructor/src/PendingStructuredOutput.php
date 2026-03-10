@@ -18,7 +18,7 @@ use Cognesy\Utils\Json\Json;
  *
  * Responsibilities:
  * - trigger execution only when result data is requested
- * - coordinate one-shot access across `get()`, `response()`, `rawResponse()`, and `stream()`
+ * - coordinate one-shot access across `get()`, `response()`, `inferenceResponse()`, and `stream()`
  * - cache the finalized structured/raw result for repeated reads when allowed
  *
  * Non-responsibilities:
@@ -60,8 +60,8 @@ class PendingStructuredOutput
 
     public function toJsonObject() : Json {
         return match(true) {
-            $this->execution()->isStreamed() => $this->toJsonObjectFromResponse($this->stream()->finalRawResponse()),
-            default => $this->toJsonObjectFromResponse($this->session->rawResponse()),
+            $this->execution()->isStreamed() => $this->toJsonObjectFromResponse($this->stream()->finalInferenceResponse()),
+            default => $this->toJsonObjectFromResponse($this->session->inferenceResponse()),
         };
     }
 
@@ -79,13 +79,13 @@ class PendingStructuredOutput
     public function response() : StructuredOutputResponse {
         return new StructuredOutputResponse(
             value: $this->session->output(),
-            rawResponse: $this->session->rawResponse(),
+            inferenceResponse: $this->session->inferenceResponse(),
             isPartial: false,
         );
     }
 
-    public function rawResponse() : InferenceResponse {
-        return $this->session->rawResponse();
+    public function inferenceResponse() : InferenceResponse {
+        return $this->session->inferenceResponse();
     }
 
     public function execution() : StructuredOutputExecution {

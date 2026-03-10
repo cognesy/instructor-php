@@ -46,7 +46,7 @@ it('dispatches StructuredOutputStarted once across multiple stream reads', funct
 
     $emitter = new SingleUpdateEmitter(
         $execution,
-        StructuredOutputResponse::final(value: 'ok', rawResponse: $response),
+        StructuredOutputResponse::final(value: 'ok', inferenceResponse: $response),
     );
     $stream = new StructuredOutputStream($execution, $emitter, $dispatcher);
 
@@ -73,7 +73,7 @@ it('does not emit additional start events when reading the raw iterator', functi
 
     $emitter = new SingleUpdateEmitter(
         $execution,
-        StructuredOutputResponse::final(value: 'ok', rawResponse: $response),
+        StructuredOutputResponse::final(value: 'ok', inferenceResponse: $response),
     );
     $stream = new StructuredOutputStream($execution, $emitter, $dispatcher);
 

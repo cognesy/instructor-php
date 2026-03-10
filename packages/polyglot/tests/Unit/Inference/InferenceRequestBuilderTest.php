@@ -3,7 +3,7 @@
 use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
 
 it('builds request with messages, model, options, streaming, max tokens and response format', function () {
-    $b = new InferenceRequestBuilder();
+    $b = new InferenceRequestBuilder;
     $req = $b
         ->withMessages('Hello')
         ->withModel('gpt-4o-mini')
@@ -13,7 +13,7 @@ it('builds request with messages, model, options, streaming, max tokens and resp
         ->withResponseFormat(['type' => 'json_object'])
         ->create();
 
-    expect($req->messages()[0]['content'])->toBe('Hello');
+    expect($req->messages()->toArray()[0]['content'])->toBe('Hello');
     expect($req->model())->toBe('gpt-4o-mini');
     expect($req->options()['temperature'] ?? null)->toBe(0.1);
     expect($req->options()['max_tokens'] ?? null)->toBe(50);
@@ -22,7 +22,7 @@ it('builds request with messages, model, options, streaming, max tokens and resp
 });
 
 it('applies cached context when set', function () {
-    $b = new InferenceRequestBuilder();
+    $b = new InferenceRequestBuilder;
     $req = $b
         ->withCachedContext(messages: [['role' => 'system', 'content' => 'You are helpful']])
         ->withMessages('Hi')
@@ -30,11 +30,11 @@ it('applies cached context when set', function () {
         ->withCacheApplied();
 
     // Cached context prepends system message
-    expect($req->messages()[0]['role'])->toBe('system');
+    expect($req->messages()->toArray()[0]['role'])->toBe('system');
 });
 
 it('with() does not reset model when model param is null', function () {
-    $b = new InferenceRequestBuilder();
+    $b = new InferenceRequestBuilder;
     $req = $b
         ->withModel('gpt-4o')
         ->with(messages: 'Hello') // model not specified, should preserve previous
@@ -44,18 +44,18 @@ it('with() does not reset model when model param is null', function () {
 });
 
 it('with() does not reset tools when tools param is null', function () {
-    $b = new InferenceRequestBuilder();
+    $b = new InferenceRequestBuilder;
     $tools = [['type' => 'function', 'function' => ['name' => 'test', 'parameters' => []]]];
     $req = $b
         ->withTools($tools)
         ->with(messages: 'Hello') // tools not specified, should preserve previous
         ->create();
 
-    expect($req->tools())->toBe($tools);
+    expect($req->tools()->toArray())->toBe($tools);
 });
 
 it('with() does not reset options when options param is null', function () {
-    $b = new InferenceRequestBuilder();
+    $b = new InferenceRequestBuilder;
     $req = $b
         ->withOptions(['temperature' => 0.5])
         ->with(messages: 'Hello') // options not specified, should preserve previous
@@ -65,7 +65,7 @@ it('with() does not reset options when options param is null', function () {
 });
 
 it('with() does not reset response format when responseFormat param is null', function () {
-    $b = new InferenceRequestBuilder();
+    $b = new InferenceRequestBuilder;
     $req = $b
         ->withResponseFormat(['type' => 'json_object'])
         ->with(messages: 'Hello') // mode not specified, should preserve previous
@@ -75,7 +75,7 @@ it('with() does not reset response format when responseFormat param is null', fu
 });
 
 it('with() allows overriding previously set values', function () {
-    $b = new InferenceRequestBuilder();
+    $b = new InferenceRequestBuilder;
     $req = $b
         ->withModel('gpt-4o')
         ->withOptions(['temperature' => 0.5])
@@ -91,17 +91,17 @@ it('with() allows overriding previously set values', function () {
 });
 
 it('with() accepts empty messages array as explicit update', function () {
-    $b = new InferenceRequestBuilder();
+    $b = new InferenceRequestBuilder;
     $req = $b
         ->withMessages('Hello')
         ->with(messages: [])
         ->create();
 
-    expect($req->messages())->toBe([]);
+    expect($req->messages()->isEmpty())->toBeTrue();
 });
 
 it('with() accepts empty responseFormat array as explicit update', function () {
-    $b = new InferenceRequestBuilder();
+    $b = new InferenceRequestBuilder;
     $req = $b
         ->withResponseFormat(['type' => 'json_object'])
         ->with(responseFormat: [])

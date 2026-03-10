@@ -171,8 +171,8 @@ class SearchFilesTool extends SimpleTool
     }
 
     #[\Override]
-    public function toToolSchema(): array {
-        return ToolSchema::make(
+    public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition {
+        return \Cognesy\Polyglot\Inference\Data\ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
             parameters: JsonSchema::object('parameters')
@@ -180,6 +180,6 @@ class SearchFilesTool extends SimpleTool
                     JsonSchema::string('pattern', 'Search pattern. Examples: "composer.json" (recursive), "**/*.php" (recursive glob), "*.json" (root only), "./README.md" (exact path)'),
                     JsonSchema::array('patterns', JsonSchema::string(), 'Multiple patterns to search at once. Example: ["composer.json", "package.json", "*.xml"]'),
                 ])
-        )->toArray();
+        )->toArray());
     }
 }

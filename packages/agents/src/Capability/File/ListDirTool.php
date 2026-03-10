@@ -83,8 +83,8 @@ class ListDirTool extends SimpleTool
     }
 
     #[\Override]
-    public function toToolSchema(): array {
-        return ToolSchema::make(
+    public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition {
+        return \Cognesy\Polyglot\Inference\Data\ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
             parameters: JsonSchema::object('parameters')
@@ -92,6 +92,6 @@ class ListDirTool extends SimpleTool
                     JsonSchema::string('path', 'Directory path. Examples: "." (root), "src", "packages/addons"'),
                 ])
                 ->withRequiredProperties(['path'])
-        )->toArray();
+        )->toArray());
     }
 }

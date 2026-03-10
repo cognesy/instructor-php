@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Exceptions;
 
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCall;
 use Throwable;
 
 class ToolExecutionException extends AgentException

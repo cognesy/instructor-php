@@ -19,7 +19,7 @@ use Cognesy\Addons\ToolUse\Step\HandlesStepToolExecutions;
 use Cognesy\Addons\ToolUse\Step\HasStepToolCalls;
 use Cognesy\Addons\ToolUse\Step\HasStepToolExecutions;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Throwable;

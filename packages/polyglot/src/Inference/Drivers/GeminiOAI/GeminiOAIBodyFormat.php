@@ -37,15 +37,15 @@ class GeminiOAIBodyFormat extends OpenAICompatibleBodyFormat
         $toolChoice = $request->toolChoice();
 
         $result = match(true) {
-            empty($tools) => '',
-            empty($toolChoice) => 'auto',
-            is_array($toolChoice) => [
+            $tools->isEmpty() => '',
+            $toolChoice->isEmpty() => 'auto',
+            $toolChoice->isSpecific() => [
                 'type' => 'function',
                 'function' => [
-                    'name' => $toolChoice['function']['name'] ?? '',
+                    'name' => $toolChoice->functionName() ?? '',
                 ]
             ],
-            default => $toolChoice,
+            default => $toolChoice->mode(),
         };
 
         if (!$this->supportsToolSelection($request)) {

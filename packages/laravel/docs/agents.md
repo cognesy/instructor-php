@@ -2,6 +2,18 @@
 
 The `AgentCtrl` facade provides a unified interface for invoking CLI-based code agents that can execute code, modify files, and perform complex multi-step tasks. Each agent runs as an external process, and the facade handles process management, output parsing, and response structuring.
 
+## Setup
+
+Before using `AgentCtrl`, install the CLI agent you want to run and make sure its executable is available in `PATH`. The Laravel package does not install or authenticate these tools for you.
+
+| Agent | Required binary | Setup note |
+|-------|-----------------|------------|
+| Claude Code | `claude` | Install Claude Code separately and sign in with its normal workflow |
+| Codex | `codex` | Install the Codex CLI and ensure `codex` resolves on the server running Laravel |
+| OpenCode | `opencode` | Install OpenCode and ensure `opencode` resolves on the server running Laravel |
+
+After the binary is available, configure Laravel defaults in `config/instructor.php` under `agents` for timeout, working directory, sandbox driver, and per-agent model overrides.
+
 ## Supported Agents
 
 | Agent | Description | Use Case |
@@ -13,10 +25,15 @@ The `AgentCtrl` facade provides a unified interface for invoking CLI-based code 
 ## Quick Start
 
 ```php
+use Cognesy\AgentCtrl\Config\AgentConfig;
 use Cognesy\Instructor\Laravel\Facades\AgentCtrl;
 
 // Execute a task with Claude Code
 $response = AgentCtrl::claudeCode()
+    ->withConfig(new AgentConfig(
+        timeout: 300,
+        workingDirectory: base_path(),
+    ))
     ->execute('Generate a Laravel migration for a users table with name, email, and password fields');
 
 // Check if successful
@@ -81,16 +98,23 @@ $response = AgentCtrl::make($agentType)
 
 ### Builder Methods
 
-All agents support the same set of builder methods for configuration. These methods override any defaults set in the Laravel config file.
+All agents support the same set of builder methods for configuration. Use `withConfig()` when you want one typed object for the shared options, then layer agent-specific methods on top as needed. Builder methods override any defaults set in the Laravel config file.
 
 ```php
+use Cognesy\AgentCtrl\Config\AgentConfig;
+use Cognesy\Sandbox\Enums\SandboxDriver;
+
 AgentCtrl::claudeCode()
-    ->withModel('claude-opus-4-5')           // AI model to use
-    ->withTimeout(300)                        // Execution timeout in seconds
-    ->inDirectory('/path/to/project')         // Working directory
-    ->withSandboxDriver(SandboxDriver::Host)  // Sandbox isolation
+    ->withConfig(new AgentConfig(
+        model: 'claude-opus-4-5',
+        timeout: 300,
+        workingDirectory: '/path/to/project',
+        sandboxDriver: SandboxDriver::Host,
+    ))
     ->execute('Your prompt');
 ```
+
+`AgentConfig::fromArray()` also accepts the Laravel config-style keys used in `config/instructor.php`, so `directory` and `sandbox` are mapped automatically.
 
 ### Laravel Configuration
 

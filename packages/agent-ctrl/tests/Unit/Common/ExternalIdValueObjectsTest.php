@@ -26,6 +26,9 @@ it('supports opaque provider session and thread ids', function () {
         ->and($agentToolCallId->toString())->toBe('call_global');
 });
 
-it('rejects empty provider ids', function () {
-    new OpenCodeSessionId('');
-})->throws(\InvalidArgumentException::class);
+it('allows empty provider ids', function () {
+    $id = new OpenCodeSessionId('');
+
+    expect($id->isEmpty())->toBeTrue()
+        ->and($id->toNullableString())->toBeNull();
+});

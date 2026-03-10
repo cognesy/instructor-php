@@ -259,7 +259,7 @@ class ContextAwareTool implements ToolInterface, CanAccessAgentState
 
 ```php
 use Cognesy\Agents\Tool\Contracts\CanAccessToolCall;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCall;
 
 class TracedTool implements ToolInterface, CanAccessToolCall
 {

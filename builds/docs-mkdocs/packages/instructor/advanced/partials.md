@@ -3,26 +3,113 @@ title: Partials
 description: 'Read streaming updates as the response is built.'
 ---
 
-Use streaming when you want updates before the final object is complete.
+Streaming lets you receive partial updates as the LLM generates its response, rather than waiting for the complete result. This is useful for improving perceived latency in user interfaces -- you can render data progressively as it arrives.
+
+## Basic Streaming
+
+Call `stream()` instead of `get()` to receive a `StructuredOutputStream`. The `partials()` method yields parsed partial objects as the response is built.
 
 ```php
+use Cognesy\Instructor\StructuredOutput;
+
 $stream = (new StructuredOutput)
-    ->with(messages: $text, responseModel: Report::class)
-    ->withStreaming()
+    ->with(messages: $text, responseModel: Person::class)
     ->stream();
 
 foreach ($stream->partials() as $partial) {
-    // latest parsed value
+    // $partial is a Person object with fields populated so far
+    updateUI($partial);
 }
-// @doctest id="e249"
+// @doctest id="6ef1"
 ```
 
-## Stream Views
+Instructor is smart about updates. It calculates and compares hashes of the previous and newly deserialized version of the model, so your callback only fires when a property actually changes -- not on every token received.
 
-- `partials()` yields parsed partial values
-- `responses()` yields `StructuredOutputResponse` snapshots
-- `finalValue()` drains the stream and returns the final value
-- `finalResponse()` returns the final response object
-- `usage()` returns the latest usage data
+Partial updates are deserialized but **not validated**. Only the final result returned by `finalValue()` is fully validated, making it safe to persist or process further.
 
-For sequence response models, see [Sequences](sequences).
+## Explicit Streaming Control
+
+You can also enable streaming with `withStreaming()` and then call `get()`, which internally drains the stream and returns the final value.
+
+```php
+$person = (new StructuredOutput)
+    ->withResponseClass(Person::class)
+    ->withStreaming()
+    ->with(messages: $text)
+    ->get();
+// @doctest id="c5af"
+```
+
+## StructuredOutputStream Methods
+
+The `StructuredOutputStream` class provides several ways to consume the stream.
+
+### Iteration Methods
+
+| Method | Description |
+|--------|-------------|
+| `partials()` | Yields parsed partial values. Only the final update is validated; earlier partials are only deserialized. |
+| `sequence()` | For `Sequence` response models -- yields only completed items. See [Sequences](sequences.md). |
+| `responses()` | Yields `StructuredOutputResponse` snapshots as they arrive. |
+
+### Result Access Methods
+
+| Method | Description |
+|--------|-------------|
+| `finalValue()` | Drains the stream and returns the final parsed, validated result. |
+| `finalResponse()` | Drains the stream and returns the final `StructuredOutputResponse`. |
+| `lastUpdate()` | Returns the most recently received parsed value. |
+| `lastResponse()` | Returns the most recently received `StructuredOutputResponse`. |
+
+### Utility Methods
+
+| Method | Description |
+|--------|-------------|
+| `usage()` | Returns the latest token usage data from the stream. |
+
+## Example: Streaming with Final Retrieval
+
+A common pattern is to stream partials for UI updates, then use the final validated value for persistence.
+
+```php
+$stream = (new StructuredOutput)->with(
+    messages: "His name is Jason, he is 28 years old.",
+    responseModel: Person::class,
+)->stream();
+
+foreach ($stream->partials() as $update) {
+    $view->updateView($update);
+}
+
+// Final validated object
+$person = $stream->finalValue();
+$db->savePerson($person);
+// @doctest id="65bf"
+```
+
+## Example: Streaming Sequence Items
+
+When using a `Sequence` response model, you can stream completed items individually rather than waiting for the entire list.
+
+```php
+use Cognesy\Instructor\Extras\Sequence\Sequence;
+
+$stream = (new StructuredOutput)
+    ->with(
+        messages: "Jason is 28. Amanda is 26. John is 40.",
+        responseModel: Sequence::of(Person::class),
+    )
+    ->stream();
+
+foreach ($stream->sequence() as $completedSequence) {
+    $view->appendPerson($completedSequence->last());
+}
+
+$people = $stream->finalValue();
+$db->savePeople($people->toArray());
+// @doctest id="20db"
+```
+
+## Streaming with Output Formats
+
+Streaming works with all output formats. During streaming, partials are always objects regardless of your chosen output format. The final value respects the format you specified. See [Output Formats](output_formats.md) for details.

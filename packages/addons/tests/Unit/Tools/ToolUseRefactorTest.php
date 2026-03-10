@@ -18,9 +18,9 @@ use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCall;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -62,19 +62,15 @@ it('continues loop on tool failure and formats error message', function () {
     $step = $state->currentStep();
 
     expect($step?->toolExecutions()->hasErrors())->toBeTrue();
-    $msgs = $state->messages()->toArray();
 
-    $invocationNames = [];
-    foreach ($msgs as $m) {
-        $invocationNames[] = $m['_metadata']['tool_calls'][0]['function']['name'] ?? null;
-    }
+    $allMessages = $state->messages()->all();
+    $invocations = array_filter($allMessages, fn(Message $m) => $m->hasToolCalls());
+    $results = array_filter($allMessages, fn(Message $m) => $m->toolResult() !== null);
 
+    $invocationNames = array_map(fn(Message $m) => $m->toolCalls()->first()?->name(), $invocations);
     expect($invocationNames)->toContain('_sum');
 
-    $resultNames = [];
-    foreach ($msgs as $m) {
-        $resultNames[] = $m['_metadata']['tool_name'] ?? null;
-    }
+    $resultNames = array_map(fn(Message $m) => $m->toolResult()?->toolName(), $results);
     expect($resultNames)->toContain('_sum');
 });
 

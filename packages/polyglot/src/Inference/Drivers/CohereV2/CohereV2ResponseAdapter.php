@@ -3,12 +3,12 @@
 namespace Cognesy\Polyglot\Inference\Drivers\CohereV2;
 
 use Cognesy\Http\Data\HttpResponse;
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
-use Cognesy\Polyglot\Inference\Data\ToolCallId;
+use Cognesy\Messages\ToolCallId;
 use Cognesy\Polyglot\Inference\Data\ToolCallIdByStreamIndex;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCall;
 use Cognesy\Polyglot\Inference\Data\ToolCallDelta;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIResponseAdapter;
 use RuntimeException;

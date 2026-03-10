@@ -13,9 +13,9 @@ use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallUpdated;
 use Cognesy\Instructor\Events\Request\SequenceUpdated;
 use Cognesy\Instructor\Streaming\EmissionSnapshot;
 use Cognesy\Instructor\Streaming\StructuredOutputStreamState;
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCall;
 use Cognesy\Stream\Contracts\Reducer;
 
 /**
@@ -267,7 +267,7 @@ final class DispatchStreamingEventsReducer implements Reducer
             return InferenceResponse::empty();
         }
 
-        return $this->lastState->finalRawResponse();
+        return $this->lastState->finalInferenceResponse();
     }
 
     private function handleSequenceEventsForObject(mixed $object): void {

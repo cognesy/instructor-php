@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Inference\Drivers\OpenResponses;
 
@@ -7,7 +9,6 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanMapMessages;
 use Cognesy\Polyglot\Inference\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
-use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Utils\Arrays;
 
 /**
@@ -28,15 +29,16 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
     ) {}
 
     #[\Override]
-    public function toRequestBody(InferenceRequest $request): array {
+    public function toRequestBody(InferenceRequest $request): array
+    {
         $request = $request->withCacheApplied();
 
         $options = array_merge($this->config->options, $request->options());
         $maxOutputTokens = $this->resolveMaxOutputTokens($options);
         unset($options['max_output_tokens'], $options['max_completion_tokens'], $options['max_tokens']);
 
-        $messages = match($this->supportsAlternatingRoles($request)) {
-            false => Messages::fromArray($request->messages())->toMergedPerRole()->toArray(),
+        $messages = match ($this->supportsAlternatingRoles($request)) {
+            false => $request->messages()->toMergedPerRole(),
             true => $request->messages(),
         };
 
@@ -50,7 +52,7 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
             'input' => $this->messageFormat->map($inputMessages),
             'max_output_tokens' => $maxOutputTokens,
             'stream' => ($options['stream'] ?? false) ?: null,
-        ], fn($v) => $v !== null && $v !== '' && $v !== []);
+        ], fn ($v) => $v !== null && $v !== '' && $v !== []);
 
         // Add temperature and top_p if specified
         if (isset($options['temperature'])) {
@@ -62,7 +64,7 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
 
         // Handle response format
         $textFormat = $this->toTextFormat($request);
-        if (!empty($textFormat)) {
+        if (! empty($textFormat)) {
             $requestBody['text'] = $textFormat;
         }
 
@@ -76,17 +78,17 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
         }
 
         // Add truncation if specified
-        if (!empty($options['truncation'])) {
+        if (! empty($options['truncation'])) {
             $requestBody['truncation'] = $options['truncation'];
         }
 
         // Add metadata if specified
-        if (!empty($options['metadata'])) {
+        if (! empty($options['metadata'])) {
             $requestBody['metadata'] = $options['metadata'];
         }
 
         // Add previous_response_id for conversation chaining
-        if (!empty($options['previous_response_id'])) {
+        if (! empty($options['previous_response_id'])) {
             $requestBody['previous_response_id'] = $options['previous_response_id'];
         }
 
@@ -95,11 +97,13 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
 
     // CAPABILITIES ///////////////////////////////////////////
 
-    protected function supportsToolSelection(InferenceRequest $request): bool {
+    protected function supportsToolSelection(InferenceRequest $request): bool
+    {
         return true;
     }
 
-    protected function supportsAlternatingRoles(InferenceRequest $request): bool {
+    protected function supportsAlternatingRoles(InferenceRequest $request): bool
+    {
         return true;
     }
 
@@ -108,9 +112,10 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
     /**
      * Extract system instructions from messages.
      */
-    protected function extractSystemInstructions(array $messages): string {
+    protected function extractSystemInstructions(Messages $messages): string
+    {
         $systemMessages = [];
-        foreach ($messages as $message) {
+        foreach ($messages->toArray() as $message) {
             $role = $message['role'] ?? '';
             if ($role === 'system' || $role === 'developer') {
                 $content = $message['content'] ?? '';
@@ -128,30 +133,31 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
                 }
             }
         }
+
         return implode("\n\n", $systemMessages);
     }
 
     /**
      * Filter out system/developer messages from the messages array.
      */
-    protected function filterNonSystemMessages(array $messages): array {
-        return array_values(array_filter($messages, function ($message) {
-            $role = $message['role'] ?? '';
-            return !in_array($role, ['system', 'developer'], true);
-        }));
+    protected function filterNonSystemMessages(Messages $messages): Messages
+    {
+        return $messages->exceptRoles(['system', 'developer']);
     }
 
     /**
      * Convert response format to OpenResponses text.format structure.
      */
-    protected function toTextFormat(InferenceRequest $request): array {
+    protected function toTextFormat(InferenceRequest $request): array
+    {
         $type = $this->toResponseFormatType($request);
         if ($type === null) {
             return [];
         }
 
         $responseFormat = $request->responseFormat();
-        return match($type) {
+
+        return match ($type) {
             'text' => ['format' => ['type' => 'text']],
             'json',
             'json_object' => ['format' => ['type' => 'json_object']],
@@ -173,38 +179,40 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
      * Convert tools to OpenResponses format.
      * Tools in OpenResponses use the same externally-tagged format as Chat Completions.
      */
-    protected function toTools(InferenceRequest $request): array {
-        return $this->removeDisallowedEntries($request->tools());
+    protected function toTools(InferenceRequest $request): array
+    {
+        return $this->removeDisallowedEntries($request->tools()->toArray());
     }
 
     /**
      * Convert tool choice to OpenResponses format.
      */
-    protected function toToolChoice(InferenceRequest $request): array|string|null {
+    protected function toToolChoice(InferenceRequest $request): array|string|null
+    {
         $tools = $request->tools();
         $toolChoice = $request->toolChoice();
-        $toolName = $toolChoice['function']['name'] ?? null;
 
-        $result = match(true) {
-            empty($tools) => null,
-            empty($toolChoice) => 'auto',
-            !empty($toolName) => [
+        $result = match (true) {
+            $tools->isEmpty() => null,
+            $toolChoice->isEmpty() => 'auto',
+            $toolChoice->isSpecific() => [
                 'type' => 'function',
                 'function' => [
-                    'name' => $toolName,
-                ]
+                    'name' => $toolChoice->functionName(),
+                ],
             ],
-            default => null,
+            default => $toolChoice->mode(),
         };
 
-        if (!$this->supportsToolSelection($request) && is_array($result)) {
+        if (! $this->supportsToolSelection($request) && is_array($result)) {
             $result = 'auto';
         }
 
         return $result;
     }
 
-    protected function removeDisallowedEntries(array $jsonSchema): array {
+    protected function removeDisallowedEntries(array $jsonSchema): array
+    {
         return Arrays::removeRecursively(
             array: $jsonSchema,
             keys: [
@@ -214,7 +222,8 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
         );
     }
 
-    protected function normalizeSchemaForResponses(array $schema): array {
+    protected function normalizeSchemaForResponses(array $schema): array
+    {
         $properties = $schema['properties'] ?? null;
         if (is_array($properties)) {
             $normalizedProperties = [];
@@ -239,7 +248,7 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
 
         foreach (['$defs', 'definitions'] as $key) {
             $definitions = $schema[$key] ?? null;
-            if (!is_array($definitions)) {
+            if (! is_array($definitions)) {
                 continue;
             }
 
@@ -254,7 +263,7 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
 
         foreach (['anyOf', 'oneOf', 'allOf', 'prefixItems'] as $key) {
             $variants = $schema[$key] ?? null;
-            if (!is_array($variants)) {
+            if (! is_array($variants)) {
                 continue;
             }
 
@@ -270,22 +279,25 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
         return $schema;
     }
 
-    protected function resolveMaxOutputTokens(array $options): ?int {
+    protected function resolveMaxOutputTokens(array $options): ?int
+    {
         $resolved = $options['max_output_tokens']
             ?? $options['max_completion_tokens']
             ?? $options['max_tokens']
             ?? $this->config->maxTokens
             ?? null;
 
-        if (!is_numeric($resolved)) {
+        if (! is_numeric($resolved)) {
             return null;
         }
 
         $value = (int) $resolved;
+
         return $value > 0 ? $value : null;
     }
 
-    protected function addRemainingOptions(array $requestBody, array $options): array {
+    protected function addRemainingOptions(array $requestBody, array $options): array
+    {
         foreach ($options as $key => $value) {
             if (array_key_exists($key, $requestBody)) {
                 continue;
@@ -299,12 +311,13 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
         return $requestBody;
     }
 
-    protected function toResponseFormatType(InferenceRequest $request): ?string {
-        if (!$request->hasResponseFormat()) {
+    protected function toResponseFormatType(InferenceRequest $request): ?string
+    {
+        if (! $request->hasResponseFormat()) {
             return null;
         }
 
-        return match($request->responseFormat()->type()) {
+        return match ($request->responseFormat()->type()) {
             'text' => 'text',
             'json',
             'json_object' => 'json_object',

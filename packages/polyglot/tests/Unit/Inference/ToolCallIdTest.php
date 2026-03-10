@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Polyglot\Inference\Data\ToolCallId;
+use Cognesy\Messages\ToolCallId;
 
 it('creates tool call external id from string', function () {
     $id = ToolCallId::fromString('call_abc123');
@@ -9,6 +9,16 @@ it('creates tool call external id from string', function () {
         ->and((string) $id)->toBe('call_abc123');
 });
 
-it('rejects empty tool call id', function () {
-    new ToolCallId('');
-})->throws(\InvalidArgumentException::class);
+it('allows empty tool call id', function () {
+    $id = new ToolCallId('');
+
+    expect($id->isEmpty())->toBeTrue()
+        ->and($id->toNullableString())->toBeNull();
+});
+
+it('creates null tool call id via factory', function () {
+    $id = ToolCallId::null();
+
+    expect($id->isEmpty())->toBeTrue()
+        ->and($id->toString())->toBe('');
+});

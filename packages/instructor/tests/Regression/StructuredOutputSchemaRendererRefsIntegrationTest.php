@@ -19,7 +19,7 @@ it('renders tool-call schema with distinct refs for same-basename classes when o
 
     $schema = $renderer->schemaFactory()->schema(CollisionRoot::class);
     $rendering = $renderer->renderFromSchema($schema);
-    $parameters = $rendering->toolCallSchema()[0]['function']['parameters'];
+    $parameters = $rendering->toolDefinitions()->all()[0]->parameters();
     $defs = $parameters['$defs'] ?? [];
 
     $defsByClass = [];
@@ -54,6 +54,6 @@ it('terminates self-referential schema rendering in default mode', function () {
     expect($parent['properties'] ?? [])->toHaveKey('parent');
     expect($cycleCut['type'] ?? null)->toBe('object');
     expect($cycleCut['properties'] ?? [])->toBe([]);
-    expect($rendering->toolCallSchema())->toHaveCount(1);
+    expect($rendering->toolDefinitions()->count())->toBe(1);
 });
 

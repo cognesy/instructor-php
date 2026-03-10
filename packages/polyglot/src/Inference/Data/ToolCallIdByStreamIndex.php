@@ -2,6 +2,8 @@
 
 namespace Cognesy\Polyglot\Inference\Data;
 
+use Cognesy\Messages\ToolCallId;
+
 final class ToolCallIdByStreamIndex
 {
     /** @var array<string,ToolCallId> */

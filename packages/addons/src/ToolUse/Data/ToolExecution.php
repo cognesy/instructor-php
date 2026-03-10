@@ -3,7 +3,7 @@
 namespace Cognesy\Addons\ToolUse\Data;
 
 use Cognesy\Addons\ToolUse\Exceptions\ToolExecutionException;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCall;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Result;
 use Cognesy\Utils\Result\Success;

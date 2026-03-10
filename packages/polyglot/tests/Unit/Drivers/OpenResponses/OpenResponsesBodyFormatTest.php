@@ -321,8 +321,10 @@ class OpenResponsesBodyFormatTest extends TestCase
             [
                 'role' => 'tool',
                 'content' => '{"temperature":72}',
-                '_metadata' => [
-                    'tool_call_id' => 'call_cached',
+                'tool_result' => [
+                    'content' => '{"temperature":72}',
+                    'call_id' => 'call_cached',
+                    'tool_name' => 'get_weather',
                 ],
             ],
         ]);

@@ -9,6 +9,8 @@ use Cognesy\Instructor\Creation\StructuredOutputSchemaRenderer;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Tests\Examples\ResponseModel\User;
 use Cognesy\Instructor\Tests\Examples\ResponseModel\UserWithProvider;
+use Cognesy\Polyglot\Inference\Data\ToolDefinition;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Schema\Data\Schema;
 
 final class ToolSelectionUserModel implements CanHandleToolSelection
@@ -31,15 +33,14 @@ final class ToolSelectionUserModel implements CanHandleToolSelection
         ];
     }
 
-    public function toToolCallsJson(): array {
-        return [
-            'type' => 'function',
-            'function' => [
-                'name' => 'tool_selection_user_model',
-                'description' => 'Use explicit tool selection',
-                'parameters' => $this->toJsonSchema(),
-            ],
-        ];
+    public function toToolDefinitions(): ToolDefinitions {
+        return new ToolDefinitions(
+            new ToolDefinition(
+                name: 'tool_selection_user_model',
+                description: 'Use explicit tool selection',
+                parameters: $this->toJsonSchema(),
+            ),
+        );
     }
 }
 
@@ -84,7 +85,7 @@ it('keeps schema rendering consistent between execution builder and response mod
 
     expect($fromExecution)->not->toBeNull();
     expect($fromExecution?->toJsonSchema())->toBe($fromFactory->toJsonSchema());
-    expect($fromExecution?->toolCallSchema())->toBe($fromFactory->toolCallSchema());
-    expect($fromExecution?->responseFormat())->toBe($fromFactory->responseFormat());
+    expect($fromExecution?->toolDefinitions()->toArray())->toBe($fromFactory->toolDefinitions()->toArray());
+    expect($fromExecution?->responseFormat()->toArray())->toBe($fromFactory->responseFormat()->toArray());
     expect($fromExecution?->schemaName())->toBe($fromFactory->schemaName());
 })->with('requested_schema_for_consistency');

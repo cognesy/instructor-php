@@ -12,9 +12,9 @@ use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
 use Cognesy\Agents\Tool\Tools\MockTool;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCall;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
@@ -100,20 +100,19 @@ describe('Agent metadata-based trace isolation', function () {
 
         // First: assistant message carrying the tool_calls metadata (LLM invocation record)
         $invocation = $all[0];
-        expect($invocation->isAssistant())->toBeTrue();
-        $toolCallsMetadata = $invocation->metadata()->get('tool_calls');
-        expect($toolCallsMetadata)->toBeArray()
-            ->and($toolCallsMetadata[0]['id'])->toBe('call_abc')
-            ->and($toolCallsMetadata[0]['function']['name'])->toBe('lookup');
+        expect($invocation->isAssistant())->toBeTrue()
+            ->and($invocation->hasToolCalls())->toBeTrue()
+            ->and($invocation->toolCalls()->first()->idString())->toBe('call_abc')
+            ->and($invocation->toolCalls()->first()->name())->toBe('lookup');
         // Has tool_execution_id from formatter
         expect($invocation->metadata()->get('tool_execution_id'))->not->toBeNull();
 
-        // Second: tool message with tool_call_id linking back to the invocation
+        // Second: tool message with tool_result linking back to the invocation
         $result = $all[1];
         expect($result->isTool())->toBeTrue()
             ->and($result->toString())->toBe('sunny and warm')
-            ->and($result->metadata()->get('tool_call_id'))->toBe('call_abc')
-            ->and($result->metadata()->get('tool_name'))->toBe('lookup')
+            ->and($result->toolResult()->callIdString())->toBe('call_abc')
+            ->and($result->toolResult()->toolName())->toBe('lookup')
             ->and($result->metadata()->get('tool_execution_id'))->not->toBeNull();
     });
 

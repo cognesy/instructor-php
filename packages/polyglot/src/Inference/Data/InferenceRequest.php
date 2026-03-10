@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Inference\Data;
 
@@ -16,53 +18,61 @@ use InvalidArgumentException;
 class InferenceRequest
 {
     public readonly InferenceRequestId $id;
+
     public readonly DateTimeImmutable $createdAt;
+
     public readonly DateTimeImmutable $updatedAt;
 
     protected Messages $messages;
-    protected array $tools;
-    protected string|array $toolChoice;
+
+    protected ToolDefinitions $tools;
+
+    protected ToolChoice $toolChoice;
+
     protected ResponseFormat $responseFormat;
 
     protected string $model;
+
     protected array $options; // options may contain additional inference parameters like temperature, max tokens, etc.
 
     protected ?CachedInferenceContext $cachedContext;
+
     protected ResponseCachePolicy $responseCachePolicy;
+
     protected ?InferenceRetryPolicy $retryPolicy;
 
     public function __construct(
         Messages|string|array|null $messages = null,
-        ?string                    $model = null,
-        ?array                     $tools = null,
-        null|string|array          $toolChoice = null,
-        ResponseFormat|array|null  $responseFormat = null,
-        ?array                     $options = null,
-        ?CachedInferenceContext    $cachedContext = null,
-        ?ResponseCachePolicy       $responseCachePolicy = null,
-        ?InferenceRetryPolicy      $retryPolicy = null,
+        ?string $model = null,
+        ToolDefinitions|array|null $tools = null,
+        ToolChoice|string|array|null $toolChoice = null,
+        ResponseFormat|array|null $responseFormat = null,
+        ?array $options = null,
+        ?CachedInferenceContext $cachedContext = null,
+        ?ResponseCachePolicy $responseCachePolicy = null,
+        ?InferenceRetryPolicy $retryPolicy = null,
         //
-        ?InferenceRequestId        $id = null, // for deserialization
-        ?DateTimeImmutable         $createdAt = null, // for deserialization
-        ?DateTimeImmutable         $updatedAt = null, // for deserialization
+        ?InferenceRequestId $id = null, // for deserialization
+        ?DateTimeImmutable $createdAt = null, // for deserialization
+        ?DateTimeImmutable $updatedAt = null, // for deserialization
     ) {
         $this->id = $id ?? InferenceRequestId::generate();
-        $this->createdAt = $createdAt ?? new DateTimeImmutable();
+        $this->createdAt = $createdAt ?? new DateTimeImmutable;
         $this->updatedAt = $updatedAt ?? $this->createdAt;
 
-        $this->cachedContext = $cachedContext ?? new CachedInferenceContext();
+        $this->cachedContext = $cachedContext ?? new CachedInferenceContext;
 
         $this->model = $model ?? '';
         $this->options = $options ?? [];
         $this->assertNoRetryPolicyInOptions($this->options);
         $this->retryPolicy = $retryPolicy;
 
-        $this->tools = $tools ?? [];
-        $this->toolChoice = $toolChoice ?? [];
-        $this->responseFormat = match(true) {
+        $this->tools = $this->normalizeTools($tools);
+        $this->toolChoice = $this->normalizeToolChoice($toolChoice);
+        $this->responseFormat = match (true) {
             $responseFormat instanceof ResponseFormat => $responseFormat,
             is_array($responseFormat) => ResponseFormat::fromArray($responseFormat),
-            default => new ResponseFormat(),
+            default => new ResponseFormat,
         };
 
         $this->messages = $this->normalizeMessages($messages);
@@ -71,13 +81,9 @@ class InferenceRequest
 
     // ACCESSORS //////////////////////////////////////
 
-    /**
-     * Retrieves the array of messages.
-     *
-     * @return array Returns the array containing messages.
-     */
-    public function messages() : array {
-        return $this->messages->toArray();
+    public function messages(): Messages
+    {
+        return $this->messages;
     }
 
     /**
@@ -85,7 +91,8 @@ class InferenceRequest
      *
      * @return string The model of the object.
      */
-    public function model() : string {
+    public function model(): string
+    {
         return $this->model;
     }
 
@@ -94,25 +101,28 @@ class InferenceRequest
      *
      * @return bool True if streaming is enabled, false otherwise.
      */
-    public function isStreamed() : bool {
+    public function isStreamed(): bool
+    {
         return $this->options['stream'] ?? false;
     }
 
     /**
      * Retrieves the configured tool definitions.
      *
-     * @return array The tool definitions configured on the request or cached context.
+     * @return ToolDefinitions The tool definitions configured on the request or cached context.
      */
-    public function tools() : array {
+    public function tools(): ToolDefinitions
+    {
         return $this->tools;
-     }
+    }
 
     /**
      * Retrieves the configured tool selection.
      *
-     * @return string|array The configured tool choice.
+     * @return ToolChoice The configured tool choice.
      */
-    public function toolChoice() : string|array {
+    public function toolChoice(): ToolChoice
+    {
         return $this->toolChoice;
     }
 
@@ -121,7 +131,8 @@ class InferenceRequest
      *
      * @return array The array of options.
      */
-    public function options() : array {
+    public function options(): array
+    {
         return $this->options;
     }
 
@@ -130,96 +141,118 @@ class InferenceRequest
      *
      * @return CachedInferenceContext|null The cached context instance or null if not set.
      */
-    public function cachedContext() : ?CachedInferenceContext {
+    public function cachedContext(): ?CachedInferenceContext
+    {
         return $this->cachedContext;
     }
 
-    public function responseCachePolicy() : ResponseCachePolicy {
+    public function responseCachePolicy(): ResponseCachePolicy
+    {
         return $this->responseCachePolicy;
     }
 
-    public function retryPolicy() : ?InferenceRetryPolicy {
+    public function retryPolicy(): ?InferenceRetryPolicy
+    {
         return $this->retryPolicy;
     }
 
     /**
      * Retrieves the configured response format.
      */
-    public function responseFormat() : ResponseFormat {
+    public function responseFormat(): ResponseFormat
+    {
         return $this->responseFormat;
     }
 
-    public function id() : InferenceRequestId {
+    public function id(): InferenceRequestId
+    {
         return $this->id;
     }
 
     // IS/HAS METHODS //////////////////////////////////////
 
-    public function hasResponseFormat() : bool {
-        $hasOwn = !$this->responseFormat->isEmpty();
-        $hasCached = $this->cachedContext !== null && !$this->cachedContext->responseFormat()->isEmpty();
+    public function hasResponseFormat(): bool
+    {
+        $hasOwn = ! $this->responseFormat->isEmpty();
+        $hasCached = $this->cachedContext !== null && ! $this->cachedContext->responseFormat()->isEmpty();
+
         return $hasOwn || $hasCached;
     }
 
-    public function hasTextResponseFormat() : bool {
-        if (!$this->hasResponseFormat()) return false;
-        $ownType = !$this->responseFormat->isEmpty() ? $this->responseFormat->type() : null;
-        $hasCached = $this->cachedContext !== null && !$this->cachedContext->responseFormat()->isEmpty();
+    public function hasTextResponseFormat(): bool
+    {
+        if (! $this->hasResponseFormat()) {
+            return false;
+        }
+        $ownType = ! $this->responseFormat->isEmpty() ? $this->responseFormat->type() : null;
+        $hasCached = $this->cachedContext !== null && ! $this->cachedContext->responseFormat()->isEmpty();
         $cachedType = $hasCached ? $this->cachedContext->responseFormat()->type() : null;
+
         return $ownType === 'text' || $cachedType === 'text';
     }
 
-    public function hasNonTextResponseFormat() : bool {
-        if (!$this->hasResponseFormat()) return false;
-        $ownType = !$this->responseFormat->isEmpty() ? $this->responseFormat->type() : null;
-        $hasCached = $this->cachedContext !== null && !$this->cachedContext->responseFormat()->isEmpty();
+    public function hasNonTextResponseFormat(): bool
+    {
+        if (! $this->hasResponseFormat()) {
+            return false;
+        }
+        $ownType = ! $this->responseFormat->isEmpty() ? $this->responseFormat->type() : null;
+        $hasCached = $this->cachedContext !== null && ! $this->cachedContext->responseFormat()->isEmpty();
         $cachedType = $hasCached ? $this->cachedContext->responseFormat()->type() : null;
+
         return ($ownType !== null && $ownType !== 'text') || ($cachedType !== null && $cachedType !== 'text');
     }
 
-    public function hasTools() : bool {
-        return !empty($this->tools)
-            || !empty($this->cachedContext?->tools());
+    public function hasTools(): bool
+    {
+        return ! $this->tools->isEmpty()
+            || ! $this->cachedContext?->tools()->isEmpty();
     }
 
-    public function hasToolChoice() : bool {
-        return !empty($this->toolChoice)
-            || !empty($this->cachedContext?->toolChoice());
+    public function hasToolChoice(): bool
+    {
+        return ! $this->toolChoice->isEmpty()
+            || ! $this->cachedContext?->toolChoice()->isEmpty();
     }
 
-    public function hasMessages() : bool {
-        $hasOwn = !$this->messages->isEmpty();
-        $hasCached = $this->cachedContext !== null && !$this->cachedContext->messages()->isEmpty();
+    public function hasMessages(): bool
+    {
+        $hasOwn = ! $this->messages->isEmpty();
+        $hasCached = $this->cachedContext !== null && ! $this->cachedContext->messages()->isEmpty();
+
         return $hasOwn || $hasCached;
     }
 
-    public function hasModel() : bool {
-        return !empty($this->model);
+    public function hasModel(): bool
+    {
+        return ! empty($this->model);
     }
 
-    public function hasOptions() : bool {
-        return !empty($this->options);
+    public function hasOptions(): bool
+    {
+        return ! empty($this->options);
     }
 
     // MUTATORS //////////////////////////////////////
 
     public function with(
         Messages|string|array|null $messages = null,
-        ?string                    $model = null,
-        ?array                     $tools = null,
-        string|array|null          $toolChoice = null,
-        ResponseFormat|array|null  $responseFormat = null,
-        ?array                     $options = null,
-        ?CachedInferenceContext    $cachedContext = null,
-        ?ResponseCachePolicy       $responseCachePolicy = null,
-        ?InferenceRetryPolicy      $retryPolicy = null,
-    ) : self {
-        $normalizedMessages = match(true) {
+        ?string $model = null,
+        ToolDefinitions|array|null $tools = null,
+        ToolChoice|string|array|null $toolChoice = null,
+        ResponseFormat|array|null $responseFormat = null,
+        ?array $options = null,
+        ?CachedInferenceContext $cachedContext = null,
+        ?ResponseCachePolicy $responseCachePolicy = null,
+        ?InferenceRetryPolicy $retryPolicy = null,
+    ): self {
+        $normalizedMessages = match (true) {
             $messages instanceof Messages => $messages,
             is_string($messages) => Messages::fromString($messages),
             is_array($messages) => Messages::fromArray($messages),
             default => $this->messages,
         };
+
         return new self(
             messages: $normalizedMessages,
             model: $model ?? $this->model,
@@ -232,49 +265,60 @@ class InferenceRequest
             retryPolicy: $retryPolicy ?? $this->retryPolicy,
             id: $this->id,
             createdAt: $this->createdAt,
-            updatedAt: new DateTimeImmutable(),
+            updatedAt: new DateTimeImmutable,
         );
     }
 
-    public function withMessages(string|array $messages) : self {
+    public function withMessages(string|array $messages): self
+    {
         return $this->with(messages: $messages);
     }
 
-    public function withModel(string $model) : self {
+    public function withModel(string $model): self
+    {
         return $this->with(model: $model);
     }
 
-    public function withStreaming(bool $streaming) : self {
+    public function withStreaming(bool $streaming): self
+    {
         $options = $this->options;
         $options['stream'] = $streaming;
+
         return $this->with(options: $options);
     }
 
-    public function withTools(array $tools) : self {
+    public function withTools(ToolDefinitions|array $tools): self
+    {
         return $this->with(tools: $tools);
     }
 
-    public function withToolChoice(string|array $toolChoice) : self {
+    public function withToolChoice(ToolChoice|string|array $toolChoice): self
+    {
         return $this->with(toolChoice: $toolChoice);
     }
 
-    public function withResponseFormat(array $responseFormat) : self {
+    public function withResponseFormat(array $responseFormat): self
+    {
         return $this->with(responseFormat: $responseFormat);
     }
 
-    public function withOptions(array $options) : self {
+    public function withOptions(array $options): self
+    {
         return $this->with(options: $options);
     }
 
-    public function withCachedContext(?CachedInferenceContext $cachedContext) : self {
+    public function withCachedContext(?CachedInferenceContext $cachedContext): self
+    {
         return $this->with(cachedContext: $cachedContext);
     }
 
-    public function withResponseCachePolicy(ResponseCachePolicy $policy) : self {
+    public function withResponseCachePolicy(ResponseCachePolicy $policy): self
+    {
         return $this->with(responseCachePolicy: $policy);
     }
 
-    public function withRetryPolicy(InferenceRetryPolicy $retryPolicy) : self {
+    public function withRetryPolicy(InferenceRetryPolicy $retryPolicy): self
+    {
         return $this->with(retryPolicy: $retryPolicy);
     }
 
@@ -284,20 +328,22 @@ class InferenceRequest
      *
      * @return self A new instance with the cached context applied, or the current instance if no cache is set.
      */
-    public function withCacheApplied() : self {
-        if (!isset($this->cachedContext) || $this->cachedContext->isEmpty()) {
+    public function withCacheApplied(): self
+    {
+        if (! isset($this->cachedContext) || $this->cachedContext->isEmpty()) {
             return $this;
         }
+
         return new self(
             messages: $this->cachedContext->messages()->appendMessages($this->messages),
             model: $this->model,
-            tools: empty($this->tools) ? $this->cachedContext->tools() : $this->tools,
-            toolChoice: empty($this->toolChoice) ? $this->cachedContext->toolChoice() : $this->toolChoice,
+            tools: $this->tools->isEmpty() ? $this->cachedContext->tools() : $this->tools,
+            toolChoice: $this->toolChoice->isEmpty() ? $this->cachedContext->toolChoice() : $this->toolChoice,
             responseFormat: $this->responseFormat->isEmpty()
                 ? $this->cachedContext->responseFormat()
                 : $this->responseFormat,
             options: $this->options,
-            cachedContext: new CachedInferenceContext(),
+            cachedContext: new CachedInferenceContext,
             responseCachePolicy: $this->responseCachePolicy,
             retryPolicy: $this->retryPolicy,
             id: $this->id,
@@ -312,12 +358,13 @@ class InferenceRequest
      *
      * @return array An associative array containing the object's properties and their values.
      */
-    public function toArray() : array {
+    public function toArray(): array
+    {
         return [
             'messages' => $this->messages->toArray(),
             'model' => $this->model,
-            'tools' => $this->tools,
-            'tool_choice' => $this->toolChoice,
+            'tools' => $this->tools->toArray(),
+            'tool_choice' => $this->toolChoice->toArray(),
             'response_format' => $this->responseFormat->toArray(),
             'options' => $this->options,
             'cached_context' => $this->cachedContext?->toArray(),
@@ -326,7 +373,8 @@ class InferenceRequest
         ];
     }
 
-    public static function fromArray(array $data) : self {
+    public static function fromArray(array $data): self
+    {
         $cachedContext = $data['cached_context'] ?? $data['cachedContext'] ?? null;
         $retryPolicy = $data['retry_policy'] ?? $data['retryPolicy'] ?? null;
 
@@ -345,17 +393,37 @@ class InferenceRequest
 
     // INTERNAL /////////////////////////////////////////////////
 
-    private function normalizeMessages(null|array|string|Messages $messages) : Messages {
-        return match(true) {
+    private function normalizeMessages(null|array|string|Messages $messages): Messages
+    {
+        return match (true) {
             $messages instanceof Messages => $messages,
             is_string($messages) => Messages::fromString($messages),
             is_array($messages) => Messages::fromAnyArray($messages),
-            default => new Messages(),
+            default => new Messages,
         };
     }
 
-    private function assertNoRetryPolicyInOptions(array $options) : void {
-        if (!array_key_exists('retryPolicy', $options) && !array_key_exists('retry_policy', $options)) {
+    private function normalizeTools(ToolDefinitions|array|null $tools): ToolDefinitions
+    {
+        return match (true) {
+            $tools instanceof ToolDefinitions => $tools,
+            is_array($tools) => ToolDefinitions::fromArray($tools),
+            default => ToolDefinitions::empty(),
+        };
+    }
+
+    private function normalizeToolChoice(ToolChoice|string|array|null $toolChoice): ToolChoice
+    {
+        return match (true) {
+            $toolChoice instanceof ToolChoice => $toolChoice,
+            is_string($toolChoice), is_array($toolChoice) => ToolChoice::fromAny($toolChoice),
+            default => ToolChoice::empty(),
+        };
+    }
+
+    private function assertNoRetryPolicyInOptions(array $options): void
+    {
+        if (! array_key_exists('retryPolicy', $options) && ! array_key_exists('retry_policy', $options)) {
             return;
         }
 

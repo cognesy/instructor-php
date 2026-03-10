@@ -11,6 +11,8 @@ use Cognesy\Messages\Message;
 use Cognesy\Messages\MessageId;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\Support\ContentInput;
+use Cognesy\Messages\ToolCalls;
+use Cognesy\Messages\ToolResult;
 use Cognesy\Utils\TextRepresentation;
 use DateTimeImmutable;
 use InvalidArgumentException;
@@ -62,13 +64,37 @@ final class MessageInput
             ),
         };
 
+        $metadata = $message['_metadata'] ?? $message['metadata'] ?? [];
+
+        // Hydrate tool_calls: from top-level 'tool_calls', or legacy _metadata.tool_calls
+        $toolCallsRaw = $message['tool_calls'] ?? $metadata['tool_calls'] ?? null;
+        $toolCalls = match (true) {
+            $toolCallsRaw instanceof ToolCalls => $toolCallsRaw,
+            is_array($toolCallsRaw) && $toolCallsRaw !== [] => ToolCalls::fromArray($toolCallsRaw),
+            default => null,
+        };
+
+        // Hydrate tool_result: from top-level 'tool_result', or legacy _metadata.tool_result
+        $toolResultRaw = $message['tool_result'] ?? $metadata['tool_result'] ?? null;
+        $toolResult = match (true) {
+            $toolResultRaw instanceof ToolResult => $toolResultRaw,
+            is_array($toolResultRaw) && $toolResultRaw !== [] => ToolResult::fromArray($toolResultRaw),
+            default => null,
+        };
+
+        // Remove tool data from metadata — it lives on the Message now
+        if (is_array($metadata)) {
+            unset($metadata['tool_calls'], $metadata['tool_result']);
+        }
+
         return new Message(
             role: $role,
             content: $content,
             name: $message['name'] ?? '',
-            metadata: $message['_metadata'] ?? $message['metadata'] ?? [],
+            metadata: $metadata,
             parentId: isset($message['parentId']) ? new MessageId((string)$message['parentId']) : null,
-            // Identity fields for deserialization
+            toolCalls: $toolCalls,
+            toolResult: $toolResult,
             id: isset($message['id']) ? new MessageId((string)$message['id']) : null,
             createdAt: isset($message['createdAt']) ? new DateTimeImmutable($message['createdAt']) : null,
         );

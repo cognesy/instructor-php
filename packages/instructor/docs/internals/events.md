@@ -70,7 +70,7 @@ Events are organized into namespaces that correspond to the processing stage:
 |---|---|
 | `StructuredOutputStarted` | A structured output operation begins |
 | `StructuredOutputRequestReceived` | The request has been received by the runtime |
-| `StructuredOutputResponseGenerated` | The final response has been produced |
+| `StructuredOutputResponseGenerated` | The final `StructuredOutputResponse` has been produced |
 | `StructuredOutputResponseUpdated` | A streaming partial response is emitted |
 
 ### Request Events (`Events\Request`)

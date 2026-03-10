@@ -9,10 +9,12 @@ use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanCreateEmbeddings;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
+use Cognesy\Polyglot\Embeddings\Contracts\CanProvideEmbeddingsDrivers;
 use Cognesy\Polyglot\Embeddings\Contracts\CanResolveEmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\HasExplicitEmbeddingsDriver;
+use Cognesy\Polyglot\Embeddings\Creation\BundledEmbeddingsDrivers;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
-use Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory;
+use Cognesy\Polyglot\Embeddings\Events\EmbeddingsDriverBuilt;
 
 final class EmbeddingsRuntime implements CanCreateEmbeddings
 {
@@ -38,11 +40,15 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
         EmbeddingsConfig $config,
         ?CanHandleEvents $events = null,
         ?CanSendHttpRequests $httpClient = null,
+        ?CanProvideEmbeddingsDrivers $drivers = null,
     ): self {
         $events = self::resolveEvents($events);
-        $driver = (new EmbeddingsDriverFactory($events))->makeDriver(
+        $httpClient = self::resolveHttpClient($events, $httpClient);
+        $driver = self::makeDriver(
             config: $config,
-            httpClient: self::resolveHttpClient($events, $httpClient),
+            events: $events,
+            httpClient: $httpClient,
+            drivers: $drivers,
         );
         return new self(driver: $driver, events: $events);
     }
@@ -51,19 +57,21 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
         CanResolveEmbeddingsConfig $resolver,
         ?CanHandleEvents $events = null,
         ?CanSendHttpRequests $httpClient = null,
+        ?CanProvideEmbeddingsDrivers $drivers = null,
     ): self {
         $events = self::resolveEvents($events);
         $config = $resolver->resolveConfig();
         $driver = match (true) {
             $resolver instanceof HasExplicitEmbeddingsDriver && $resolver->explicitEmbeddingsDriver() !== null
                 => $resolver->explicitEmbeddingsDriver(),
-            default => (new EmbeddingsDriverFactory($events))->makeDriver(
+            default => self::makeDriver(
                 config: $config,
+                events: $events,
                 httpClient: self::resolveHttpClient($events, $httpClient),
+                drivers: $drivers,
             ),
         };
 
-        assert($driver instanceof CanHandleVectorization);
         return new self(driver: $driver, events: $events);
     }
 
@@ -71,11 +79,13 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
         EmbeddingsProvider $provider,
         ?CanHandleEvents $events = null,
         ?CanSendHttpRequests $httpClient = null,
+        ?CanProvideEmbeddingsDrivers $drivers = null,
     ): self {
         return self::fromResolver(
             resolver: $provider,
             events: $events,
             httpClient: $httpClient,
+            drivers: $drivers,
         );
     }
 
@@ -87,6 +97,32 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
     public function wiretap(callable $listener): self {
         $this->events->wiretap($listener);
         return $this;
+    }
+
+    private static function makeDriver(
+        EmbeddingsConfig $config,
+        CanHandleEvents $events,
+        CanSendHttpRequests $httpClient,
+        ?CanProvideEmbeddingsDrivers $drivers,
+    ): CanHandleVectorization {
+        $driverName = $config->driver ?? 'openai';
+        if (empty($driverName)) {
+            throw new \InvalidArgumentException('Provider type not specified in the configuration.');
+        }
+
+        $driver = self::resolveDrivers($drivers)->makeDriver($driverName, $config, $httpClient, $events);
+
+        $events->dispatch(new EmbeddingsDriverBuilt([
+            'driverClass' => get_class($driver),
+            'config' => $config->toArray(),
+            'httpClient' => get_class($httpClient),
+        ]));
+
+        return $driver;
+    }
+
+    private static function resolveDrivers(?CanProvideEmbeddingsDrivers $drivers): CanProvideEmbeddingsDrivers {
+        return $drivers ?? BundledEmbeddingsDrivers::registry();
     }
 
     private static function resolveHttpClient(

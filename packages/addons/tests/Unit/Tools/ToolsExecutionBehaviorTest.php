@@ -7,8 +7,8 @@ use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Exceptions\ToolExecutionException;
 use Cognesy\Addons\ToolUse\ToolExecutor;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Messages\ToolCalls;
+use Cognesy\Messages\ToolCall;
 
 function _ok(int $x): int { return $x + 1; }
 function _boom(): int { throw new \RuntimeException('fail'); }

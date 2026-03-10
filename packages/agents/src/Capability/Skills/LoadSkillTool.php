@@ -43,8 +43,8 @@ class LoadSkillTool extends SimpleTool
     }
 
     #[\Override]
-    public function toToolSchema(): array {
-        return ToolSchema::make(
+    public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition {
+        return \Cognesy\Polyglot\Inference\Data\ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
             parameters: JsonSchema::object('parameters')
@@ -52,6 +52,6 @@ class LoadSkillTool extends SimpleTool
                     JsonSchema::string('skill_name', 'Name of the skill to load'),
                     JsonSchema::boolean('list_skills', 'If true, list all available skills instead of loading one'),
                 ])
-        )->toArray();
+        )->toArray());
     }
 }

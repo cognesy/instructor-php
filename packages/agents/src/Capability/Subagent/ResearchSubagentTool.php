@@ -62,8 +62,8 @@ class ResearchSubagentTool extends SimpleTool
     }
 
     #[\Override]
-    public function toToolSchema(): array {
-        return ToolSchema::make(
+    public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition {
+        return \Cognesy\Polyglot\Inference\Data\ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
             parameters: JsonSchema::object('parameters')
@@ -72,6 +72,6 @@ class ResearchSubagentTool extends SimpleTool
                     JsonSchema::array('files', JsonSchema::string(), 'List of file paths to examine'),
                 ])
                 ->withRequiredProperties(['task'])
-        )->toArray();
+        )->toArray());
     }
 }

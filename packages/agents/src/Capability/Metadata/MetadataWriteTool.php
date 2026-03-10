@@ -66,8 +66,8 @@ final class MetadataWriteTool extends SimpleTool
     }
 
     #[\Override]
-    public function toToolSchema(): array {
-        return ToolSchema::make(
+    public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition {
+        return \Cognesy\Polyglot\Inference\Data\ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
             parameters: JsonSchema::object('parameters')
@@ -76,6 +76,6 @@ final class MetadataWriteTool extends SimpleTool
                     JsonSchema::any('value', 'The data to store. Can be any JSON-serializable value: string, number, object, array.'),
                 ])
                 ->withRequiredProperties(['key', 'value'])
-        )->toArray();
+        )->toArray());
     }
 }

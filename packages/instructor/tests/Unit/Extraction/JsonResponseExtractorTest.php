@@ -8,8 +8,8 @@ use Cognesy\Instructor\Extraction\ResponseExtractor;
 use Cognesy\Instructor\Extraction\Data\ExtractionInput;
 use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Messages\ToolCall;
+use Cognesy\Messages\ToolCalls;
 use Cognesy\Instructor\Enums\OutputMode;
 
 /**
@@ -39,7 +39,7 @@ it('extracts array from JSON Schema mode', function () {
 
 it('extracts from tool calls in Tools mode', function () {
     $toolCalls = new ToolCalls(
-        new ToolCall(name: 'User', args: ['name' => 'John', 'age' => 30])
+        new ToolCall(name: 'User', arguments: ['name' => 'John', 'age' => 30])
     );
     $response = new InferenceResponse(content: '', toolCalls: $toolCalls);
     $extractor = new ResponseExtractor();

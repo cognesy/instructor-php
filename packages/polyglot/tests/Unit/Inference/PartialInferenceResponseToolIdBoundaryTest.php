@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
-use Cognesy\Polyglot\Inference\Data\ToolCallId;
+use Cognesy\Messages\ToolCallId;
 
 it('preserves tool call id through partial response construction', function () {
     $partial = new PartialInferenceResponse(

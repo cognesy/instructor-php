@@ -1,4 +1,7 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
 namespace Cognesy\Instructor\Core;
 
 use Cognesy\Instructor\Contracts\CanMaterializeRequest;
@@ -18,7 +21,8 @@ use Exception;
 class RequestMaterializer implements CanMaterializeRequest
 {
     #[\Override]
-    public function toMessages(StructuredOutputExecution $execution) : array {
+    public function toMessages(StructuredOutputExecution $execution): Messages
+    {
         $request = $execution->request();
 
         $store = $this->mergeMessageStores(
@@ -42,31 +46,34 @@ class RequestMaterializer implements CanMaterializeRequest
             throw new Exception('Request materialization produced no messages after rendering. Check chatStructure configuration.');
         }
 
-        return $rendered->toArray();
+        return $rendered;
     }
 
-    protected function makeMessageStore(StructuredOutputExecution $execution) : MessageStore {
+    protected function makeMessageStore(StructuredOutputExecution $execution): MessageStore
+    {
         $request = $execution->request();
 
         if ($this->isRequestEmpty($request)) {
             throw new Exception('Request cannot be empty - you have to provide content for processing.');
         }
         $messages = $request->messages();
-        $store = (new MessageStore())
+        $store = (new MessageStore)
             ->section('system')->appendMessages($this->makeSystem($messages, $request->system()))
             ->section('messages')->appendMessages($this->makeMessages($messages))
             ->section('prompt')->appendMessages($this->makePrompt(
                 $request->prompt() ?: $execution->config()->prompt($execution->outputMode())
             ))
             ->section('examples')->setMessages($this->makeExamples($request->examples()));
+
         return $this->removeEmptyMessages($store);
     }
 
-    protected function makeCachedMessageStore(CachedContext $cachedContext) : MessageStore {
+    protected function makeCachedMessageStore(CachedContext $cachedContext): MessageStore
+    {
         if ($cachedContext->isEmpty()) {
-            return new MessageStore();
+            return new MessageStore;
         }
-        $store = new MessageStore();
+        $store = new MessageStore;
 
         // system (cached)
         $store = $store->section('system')->setMessages($this->makeSystem($cachedContext->messages(), $cachedContext->system()));
@@ -99,7 +106,8 @@ class RequestMaterializer implements CanMaterializeRequest
         return $this->removeEmptyMessages($store);
     }
 
-    protected function withCacheMetaSections(CachedContext $cachedContext, MessageStore $store) : MessageStore {
+    protected function withCacheMetaSections(CachedContext $cachedContext, MessageStore $store): MessageStore
+    {
         if ($cachedContext->isEmpty()) {
             return $store;
         }
@@ -111,7 +119,7 @@ class RequestMaterializer implements CanMaterializeRequest
                     'role' => 'user',
                     'content' => [[
                         'type' => 'text',
-                        'text' => "TASK:",
+                        'text' => 'TASK:',
                     ]],
                 ]);
             }
@@ -123,7 +131,7 @@ class RequestMaterializer implements CanMaterializeRequest
                     'role' => 'user',
                     'content' => [[
                         'type' => 'text',
-                        'text' => "EXAMPLES:",
+                        'text' => 'EXAMPLES:',
                     ]],
                 ]);
             }
@@ -142,32 +150,35 @@ class RequestMaterializer implements CanMaterializeRequest
         return $store;
     }
 
-    protected function addRetryMessages(StructuredOutputExecution $execution, MessageStore $store) : MessageStore {
+    protected function addRetryMessages(StructuredOutputExecution $execution, MessageStore $store): MessageStore
+    {
         if ($execution->attempts()->isEmpty()) {
             return $store;
         }
 
         $messages = [];
         /** @var StructuredOutputAttempt $attempt */
-        foreach($execution->attempts() as $attempt) {
+        foreach ($execution->attempts() as $attempt) {
             $messages[] = [
                 'role' => 'assistant',
-                'content' => $attempt->inferenceResponse()?->content() ?? ''
+                'content' => $attempt->inferenceResponse()?->content() ?? '',
             ];
             $retryFeedback = $execution->config()->retryPrompt()
-                . Arrays::flattenToString($attempt->errors(), "; ");
+                .Arrays::flattenToString($attempt->errors(), '; ');
             $messages[] = ['role' => 'user', 'content' => $retryFeedback];
         }
         $newMessageStore = $store->section('retries')->setMessages(Messages::fromArray($messages));
+
         return $newMessageStore;
     }
 
-    protected function withSections(MessageStore $store) : MessageStore {
+    protected function withSections(MessageStore $store): MessageStore
+    {
         if ($store->section('prompt')->isNotEmpty()) {
             if ($store->section('pre-prompt')->isEmpty()) {
                 $store = $store->section('pre-prompt')->appendMessages([
                     'role' => 'user',
-                    'content' => "TASK:",
+                    'content' => 'TASK:',
                 ]);
             }
         }
@@ -176,7 +187,7 @@ class RequestMaterializer implements CanMaterializeRequest
             if ($store->section('pre-examples')->isEmpty()) {
                 $store = $store->section('pre-examples')->appendMessages([
                     'role' => 'user',
-                    'content' => "EXAMPLES:",
+                    'content' => 'EXAMPLES:',
                 ]);
             }
         }
@@ -185,20 +196,20 @@ class RequestMaterializer implements CanMaterializeRequest
             if ($store->section('pre-retries')->isEmpty()) {
                 $store = $store->section('pre-retries')->appendMessages([
                     'role' => 'user',
-                    'content' => "FEEDBACK:",
+                    'content' => 'FEEDBACK:',
                 ]);
             }
             if ($store->section('post-retries')->isEmpty()) {
                 $store = $store->section('post-retries')->appendMessages([
                     'role' => 'user',
-                    'content' => "CORRECTED RESPONSE:",
+                    'content' => 'CORRECTED RESPONSE:',
                 ]);
             }
         } else {
             if ($store->section('post-retries')->isEmpty()) {
                 $store = $store->section('post-retries')->appendMessages([
                     'role' => 'user',
-                    'content' => "RESPONSE:",
+                    'content' => 'RESPONSE:',
                 ]);
             }
         }
@@ -206,42 +217,48 @@ class RequestMaterializer implements CanMaterializeRequest
         return $store;
     }
 
-    protected function isRequestEmpty(StructuredOutputRequest $request) : bool {
-        return match(true) {
-            !$request->messages()->isEmpty() => false,
+    protected function isRequestEmpty(StructuredOutputRequest $request): bool
+    {
+        return match (true) {
+            ! $request->messages()->isEmpty() => false,
             $request->prompt() !== '' => false,
             $request->system() !== '' => false,
-            !empty($request->examples()) => false,
+            ! empty($request->examples()) => false,
             default => true,
         };
     }
 
-    protected function makeSystem(Messages $messages, string $system) : Messages {
+    protected function makeSystem(Messages $messages, string $system): Messages
+    {
         $output = Messages::empty();
-        if (!empty($system)) {
+        if (! empty($system)) {
             $output = $output->appendMessage(new Message(role: 'system', content: $system));
         }
         $output = $output->appendMessages(
             $messages->headWithRoles(['system', 'developer'])
         );
+
         return $output;
     }
 
-    protected function makeMessages(Messages $messages) : Messages {
+    protected function makeMessages(Messages $messages): Messages
+    {
         $output = Messages::empty();
         $output = $output->appendMessages(
             $messages->tailAfterRoles(['developer', 'system'])
         );
+
         return $output;
     }
 
-    protected function makeExamples(array $examples) : Messages {
+    protected function makeExamples(array $examples): Messages
+    {
         $output = Messages::empty();
         if (empty($examples)) {
             return $output;
         }
         foreach ($examples as $item) {
-            $example = match(true) {
+            $example = match (true) {
                 is_array($item) => Example::fromArray($item),
                 is_string($item) => Example::fromJson($item),
                 $item instanceof Example => $item,
@@ -249,22 +266,27 @@ class RequestMaterializer implements CanMaterializeRequest
             };
             $output = $output->appendMessages($example->toMessages());
         }
+
         return $output;
     }
 
-    protected function makePrompt(string $prompt) : Message {
+    protected function makePrompt(string $prompt): Message
+    {
         return new Message(role: 'user', content: $prompt);
     }
 
-    protected function makeJsonSchema(?ResponseModel $responseModel) : array {
+    protected function makeJsonSchema(?ResponseModel $responseModel): array
+    {
         return $responseModel?->toJsonSchema() ?? [];
     }
 
-    private function mergeMessageStores(MessageStore $baseStore, MessageStore $sourceStore): MessageStore {
+    private function mergeMessageStores(MessageStore $baseStore, MessageStore $sourceStore): MessageStore
+    {
         return $baseStore->merge($sourceStore);
     }
 
-    private function removeEmptyMessages(MessageStore $store): MessageStore {
+    private function removeEmptyMessages(MessageStore $store): MessageStore
+    {
         return $store->withoutEmpty();
     }
 }

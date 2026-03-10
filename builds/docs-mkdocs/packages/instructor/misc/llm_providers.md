@@ -1,14 +1,89 @@
 ---
-title: LLM Providers
-description: 'Provider selection lives in the runtime layer.'
+title: 'LLM Providers'
+description: 'Supported LLM API providers and how to select them.'
 ---
 
-Provider selection is handled through `LLMConfig` and the Polyglot runtime used underneath this package.
+Instructor is provider-agnostic. Provider selection is handled through `LLMConfig` and the
+Polyglot runtime that powers the underlying inference calls. Once the configuration is resolved,
+your application code stays the same regardless of which provider you use.
 
-For everyday use, choose one of these paths:
+## Selecting a Provider
 
-- `StructuredOutput::using('<preset>')`
-- `StructuredOutput::fromConfig(LLMConfig::fromPreset(...))`
-- `StructuredOutputRuntime::fromConfig(...)`
+The most common approaches:
 
-This package stays provider-agnostic once the config is resolved.
+```php
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
+
+// Use a named preset
+$so = StructuredOutput::using('anthropic');
+
+// Build from a config object
+$so = StructuredOutput::fromConfig(
+    LLMConfig::fromPreset('openai')
+);
+// @doctest id="387a"
+```
+
+Presets are YAML files stored in the `config/llm/presets` directory. Each file defines the API
+URL, driver, default model, and other provider-specific settings.
+
+## Supported Providers
+
+The following providers have built-in presets:
+
+| Provider | Preset name |
+|---|---|
+| A21 | `a21` |
+| Anthropic | `anthropic` |
+| AWS Bedrock | `aws-bedrock` |
+| Azure OpenAI | `azure` |
+| Cerebras | `cerebras` |
+| Cohere | `cohere` |
+| DeepSeek | `deepseek` |
+| Fireworks | `fireworks` |
+| Google Gemini | `gemini` |
+| Gemini (OpenAI-compatible) | `gemini-oai` |
+| GLM | `glm` |
+| Groq | `groq` |
+| Hugging Face | `huggingface` |
+| Inception | `inception` |
+| Meta | `meta` |
+| MiniMaxi | `minimaxi` |
+| MiniMaxi (OpenAI-compatible) | `minimaxi-oai` |
+| Mistral | `mistral` |
+| Moonshot / Kimi | `moonshot-kimi` |
+| Ollama | `ollama` |
+| OpenAI | `openai` |
+| OpenAI Responses | `openai-responses` |
+| OpenRouter | `openrouter` |
+| Perplexity | `perplexity` |
+| Qwen | `qwen` |
+| SambaNova | `sambanova` |
+| Together | `together` |
+| xAI | `xai` |
+
+## Custom Providers
+
+Any OpenAI-compatible API can be used by building an `LLMConfig` manually:
+
+```php
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Instructor\StructuredOutput;
+
+$config = new LLMConfig(
+    apiUrl: 'https://my-provider.example.com/v1',
+    apiKey: $_ENV['MY_PROVIDER_KEY'],
+    model: 'my-model',
+    driver: 'openai-compatible',
+    maxTokens: 2048,
+);
+
+$result = StructuredOutput::fromConfig($config)
+    ->with(
+        messages: 'Extract the data.',
+        responseModel: MyModel::class,
+    )
+    ->get();
+// @doctest id="d2f4"
+```

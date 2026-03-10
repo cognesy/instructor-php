@@ -46,8 +46,8 @@ final class ExecutionRetrospectiveTool extends StateAwareTool
     }
 
     #[\Override]
-    public function toToolSchema(): array {
-        return ToolSchema::make(
+    public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition {
+        return \Cognesy\Polyglot\Inference\Data\ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
             parameters: JsonSchema::object('parameters')
@@ -63,6 +63,6 @@ final class ExecutionRetrospectiveTool extends StateAwareTool
                     ),
                 ])
                 ->withRequiredProperties(['checkpoint_id', 'guidance'])
-        )->toArray();
+        )->toArray());
     }
 }

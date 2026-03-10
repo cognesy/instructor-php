@@ -16,7 +16,7 @@ use Cognesy\Agents\Tool\ToolExecutor;
 use Cognesy\Agents\Tool\Contracts\CanExecuteToolCalls;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMProvider;

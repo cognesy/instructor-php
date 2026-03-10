@@ -2,7 +2,8 @@
 
 namespace Cognesy\Polyglot\Inference\Data;
 
-use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Messages\ToolCallId;
+use Cognesy\Messages\ToolCalls;
 
 class PartialInferenceResponse
 {

@@ -4,6 +4,7 @@ namespace Cognesy\Agents\Tool\Tools;
 
 use Cognesy\Agents\Tool\Contracts\CanDescribeTool;
 use Cognesy\Agents\Tool\Contracts\ToolInterface;
+use Cognesy\Polyglot\Inference\Data\ToolDefinition;
 use Cognesy\Utils\Json\EmptyObject;
 use Cognesy\Utils\Result\Result;
 
@@ -61,21 +62,18 @@ final readonly class MockTool implements ToolInterface, CanDescribeTool
     }
 
     #[\Override]
-    public function toToolSchema(): array {
+    public function toToolSchema(): ToolDefinition {
         if ($this->schema !== []) {
-            return $this->schema;
+            return ToolDefinition::fromArray($this->schema);
         }
-        return [
-            'type' => 'function',
-            'function' => [
-                'name' => $this->name,
-                'description' => $this->description,
-                'parameters' => [
-                    'type' => 'object',
-                    'properties' => new EmptyObject(),
-                ],
+        return new ToolDefinition(
+            name: $this->name,
+            description: $this->description,
+            parameters: [
+                'type' => 'object',
+                'properties' => new EmptyObject(),
             ],
-        ];
+        );
     }
 
     #[\Override]

@@ -1,22 +1,64 @@
 ---
 title: 'Changing Client'
-description: 'Switch drivers without changing request code.'
+description: 'Switch HTTP drivers without changing your request code.'
 ---
 
-You can change how requests are executed without changing how requests are built.
+One of the core design goals of this package is driver independence. You write your request code once, and the underlying HTTP library can be swapped at any time -- through configuration, the builder, or direct injection. This is especially valuable when moving between environments (e.g., a Symfony project that uses the Symfony driver vs. a CLI tool that uses raw cURL).
 
-## Choose a Driver
+## Available Drivers
+
+The package ships with four production drivers and one test driver:
+
+| Driver name | Library | Package |
+|-------------|---------|---------|
+| `curl` | PHP cURL extension | Built-in (no dependency) |
+| `guzzle` | Guzzle HTTP | `guzzlehttp/guzzle` |
+| `symfony` | Symfony HttpClient | `symfony/http-client` |
+| `exthttp` | pecl_http | `pecl/http` |
+| (mock) | Built-in test double | Built-in |
+
+The default driver is `curl`, which requires no additional dependencies since the cURL extension is included with most PHP installations.
+
+### CurlDriver
+
+The cURL driver provides zero-dependency HTTP support. It uses PHP's native cURL extension with automatic HTTP/1.1 and HTTP/2 negotiation, full header parsing, streaming support, and built-in SSL verification. This is the best choice for quick starts and lightweight applications.
+
+### GuzzleDriver
+
+Guzzle is a mature, feature-rich HTTP client with its own middleware ecosystem, PSR-7 message support, and excellent streaming capabilities. Use it when you need Guzzle-specific features or when your project already depends on it.
+
+### SymfonyDriver
+
+The Symfony HttpClient offers native HTTP/2 support, automatic content-type detection, and multiple transports (native PHP, cURL, amphp). It is the natural choice for Symfony applications.
+
+### ExtHttpDriver
+
+The pecl_http driver integrates with the `pecl/http` extension for environments where it is available.
+
+## Switching Drivers
+
+### Via Configuration
+
+The simplest way to choose a driver is through `HttpClientConfig`:
 
 ```php
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\HttpClient;
 
+// Use Guzzle
 $client = HttpClient::fromConfig(new HttpClientConfig(driver: 'guzzle'));
+
+// Use Symfony
 $client = HttpClient::fromConfig(new HttpClientConfig(driver: 'symfony'));
-// @doctest id="2e33"
+
+// Use cURL (default)
+$client = HttpClient::fromConfig(new HttpClientConfig(driver: 'curl'));
+// @doctest id="32a9"
 ```
 
-The builder gives you the same choice in a more explicit form:
+### Via the Builder
+
+The builder gives you the same choice in a more explicit, composable form:
 
 ```php
 use Cognesy\Http\Config\HttpClientConfig;
@@ -25,39 +67,103 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 $client = (new HttpClientBuilder())
     ->withConfig(new HttpClientConfig(driver: 'guzzle'))
     ->create();
-// @doctest id="c7bc"
+// @doctest id="84bc"
 ```
 
-## Inject a Driver
+### Injecting a Driver Directly
+
+If you have a pre-configured driver instance, bypass the registry entirely:
 
 ```php
 use Cognesy\Http\Creation\HttpClientBuilder;
-use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 
 $client = (new HttpClientBuilder())
-    ->withDriver(new MockHttpDriver())
+    ->withDriver($myCustomDriver)
     ->create();
-// @doctest id="5b35"
+// @doctest id="1fc3"
 ```
 
-`HttpClient::fromDriver($driver)` is the shortest way to wrap a driver directly.
+Or use the static shorthand:
 
-## Reuse a Vendor Client
+```php
+use Cognesy\Http\HttpClient;
+
+$client = HttpClient::fromDriver($myCustomDriver);
+// @doctest id="eeb8"
+```
+
+## Reusing a Vendor Client Instance
+
+Sometimes you already have a configured vendor client (e.g., a `GuzzleHttp\Client` with custom options or a Symfony client with specific transport settings). You can pass that instance directly:
 
 ```php
 use Cognesy\Http\Creation\HttpClientBuilder;
 use GuzzleHttp\Client;
 
+$guzzle = new Client([
+    'timeout' => 10,
+    'verify' => '/path/to/cacert.pem',
+]);
+
 $client = (new HttpClientBuilder())
-    ->withClientInstance('guzzle', new Client(['timeout' => 10]))
+    ->withClientInstance('guzzle', $guzzle)
     ->create();
-// @doctest id="5ccf"
+// @doctest id="e720"
 ```
 
-`withClientInstance()` selects the driver name and passes the vendor client instance to it.
+The `withClientInstance()` method selects the driver by name and passes your vendor client to it, so the driver uses your instance instead of creating its own.
+
+This works with any supported driver:
+
+```php
+use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
+
+$client = (new HttpClientBuilder())
+    ->withClientInstance('symfony', SymfonyHttpClient::create(['timeout' => 30]))
+    ->create();
+// @doctest id="36fe"
+```
+
+## Using the Mock Driver
+
+For testing, the mock driver lets you define responses without making network calls:
+
+```php
+use Cognesy\Http\Creation\HttpClientBuilder;
+use Cognesy\Http\Data\HttpResponse;
+
+$client = (new HttpClientBuilder())
+    ->withMock(function ($mock) {
+        $mock->addResponse(
+            HttpResponse::sync(200, ['Content-Type' => 'application/json'], '{"users":[]}'),
+            url: 'https://api.example.com/users',
+            method: 'GET',
+        );
+    })
+    ->create();
+// @doctest id="6ed8"
+```
+
+## Request Code Stays the Same
+
+The key insight is that your request code never changes when you switch drivers. The same `HttpRequest`, the same `send()` call, the same response handling:
+
+```php
+$response = $client->send(new HttpRequest(
+    url: 'https://api.example.com/data',
+    method: 'GET',
+    headers: ['Accept' => 'application/json'],
+    body: '',
+    options: [],
+))->get();
+
+echo $response->body();
+// @doctest id="8025"
+```
+
+This code works identically with cURL, Guzzle, Symfony, or the mock driver.
 
 ## See Also
 
-- [Changing client config](8-changing-client-config.md)
-- [Custom clients](9-1-custom-clients.md)
-- `packages/http-pool/README.md`
+- [Changing Client Config](8-changing-client-config.md) -- configure timeouts, error handling, and stream settings.
+- [Custom Clients](9-1-custom-clients.md) -- register your own driver when the bundled ones are not enough.

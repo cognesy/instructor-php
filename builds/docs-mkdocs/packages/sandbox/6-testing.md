@@ -1,36 +1,352 @@
 ---
 title: Testing
-description: 'Use MockSandbox for deterministic command execution tests.'
+description: 'Use MockSandbox for fast, deterministic tests without running real processes.'
 ---
 
-`MockSandbox` implements the same `CanExecuteCommand` contract.
+## Introduction
 
-## Create Mock with Responses
+The Sandbox package includes `MockSandbox`, a test double that implements the same `CanExecuteCommand` interface as all real drivers. It lets you write fast, deterministic tests for code that depends on sandbox execution -- without spawning any processes, pulling container images, or requiring any system binaries.
+
+`MockSandbox` supports canned responses, FIFO queuing for repeated commands, a default fallback response, array-based response definitions, command recording, streaming callback simulation, and custom policies.
+
+## Creating a Mock
+
+### The `fromResponses()` Factory
+
+The quickest way to create a mock is with the `fromResponses()` static factory. Pass an associative array where keys are the expected command strings and values are lists of `ExecResult` objects to return in order:
 
 ```php
 use Cognesy\Sandbox\Data\ExecResult;
 use Cognesy\Sandbox\Testing\MockSandbox;
 
-$sandbox = MockSandbox::withResponses([
+$sandbox = MockSandbox::fromResponses([
     'php -v' => [
-        new ExecResult(stdout: 'PHP 8.3', stderr: '', exitCode: 0, duration: 0.01),
+        new ExecResult(
+            stdout: 'PHP 8.3.0 (cli)',
+            stderr: '',
+            exitCode: 0,
+            duration: 0.01,
+        ),
     ],
 ]);
-// @doctest id="9e44"
-```
 
-## Execute and Assert
-
-```php
 $result = $sandbox->execute(['php', '-v']);
-
-echo $result->stdout();
-// @doctest id="d834"
+echo $result->stdout(); // "PHP 8.3.0 (cli)"
+// @doctest id="3e54"
 ```
 
-## Inspect Recorded Commands
+The command key is formed by joining the argv array with spaces: `['php', '-v']` becomes `'php -v'`. Make sure the key in your response map matches exactly.
+
+### The Constructor
+
+For more control, use the constructor directly. This lets you specify a custom `ExecutionPolicy`:
 
 ```php
-$commands = $sandbox->commands();
-// @doctest id="3f82"
+use Cognesy\Sandbox\Config\ExecutionPolicy;
+
+$policy = ExecutionPolicy::in('/tmp')->withTimeout(60);
+
+$sandbox = new MockSandbox(
+    policy: $policy,
+    responses: [
+        'php script.php' => [
+            new ExecResult(stdout: 'done', stderr: '', exitCode: 0, duration: 1.5),
+        ],
+    ],
+);
+
+echo $sandbox->policy()->timeoutSeconds(); // 60
+// @doctest id="999f"
 ```
+
+The `fromResponses()` factory uses `ExecutionPolicy::default()` when no policy is specified.
+
+## Queueing Multiple Responses
+
+When the same command is called multiple times, provide multiple results in the list. They are consumed in FIFO order -- each call to `execute()` shifts the next response off the queue:
+
+```php
+$sandbox = MockSandbox::fromResponses([
+    'php script.php' => [
+        new ExecResult(stdout: 'first run',  stderr: '', exitCode: 0, duration: 0.1),
+        new ExecResult(stdout: 'second run', stderr: '', exitCode: 0, duration: 0.2),
+        new ExecResult(stdout: 'third run',  stderr: '', exitCode: 0, duration: 0.3),
+    ],
+]);
+
+$sandbox->execute(['php', 'script.php'])->stdout(); // "first run"
+$sandbox->execute(['php', 'script.php'])->stdout(); // "second run"
+$sandbox->execute(['php', 'script.php'])->stdout(); // "third run"
+// @doctest id="599f"
+```
+
+If the queue is exhausted and no default response is set, the next call throws a `RuntimeException`.
+
+## Default Response
+
+To provide a fallback for any command that does not have a specific canned response, pass a `defaultResponse`:
+
+```php
+$sandbox = MockSandbox::fromResponses(
+    responses: [],
+    defaultResponse: new ExecResult(
+        stdout: '',
+        stderr: 'command not found',
+        exitCode: 127,
+        duration: 0.0,
+    ),
+);
+
+$result = $sandbox->execute(['anything', '--help']);
+echo $result->exitCode(); // 127
+// @doctest id="1f36"
+```
+
+The default response is also used when a command's specific queue has been exhausted.
+
+## Enqueuing Responses After Construction
+
+You can add responses to an existing mock at any time using the `enqueue()` method. This is useful in test setups where you build the mock incrementally:
+
+```php
+$sandbox = MockSandbox::fromResponses([]);
+
+$sandbox->enqueue('php -v', new ExecResult(
+    stdout: 'PHP 8.3.0',
+    stderr: '',
+    exitCode: 0,
+    duration: 0.01,
+));
+
+$sandbox->enqueue('php -v', new ExecResult(
+    stdout: 'PHP 8.3.1',
+    stderr: '',
+    exitCode: 0,
+    duration: 0.01,
+));
+
+$sandbox->execute(['php', '-v'])->stdout(); // "PHP 8.3.0"
+$sandbox->execute(['php', '-v'])->stdout(); // "PHP 8.3.1"
+// @doctest id="d32f"
+```
+
+## Array-Based Responses
+
+For convenience, you can define responses as associative arrays instead of `ExecResult` objects. The mock normalizes them automatically:
+
+```php
+$sandbox = MockSandbox::fromResponses([
+    'php -v' => [
+        ['stdout' => 'PHP 8.3.0', 'exit_code' => 0, 'duration' => 0.01],
+    ],
+    'php script.php' => [
+        ['stdout' => 'output', 'stderr' => 'warning', 'exit_code' => 0],
+    ],
+]);
+// @doctest id="1c6f"
+```
+
+The recognized keys match the `ExecResult::toArray()` format:
+
+| Key | Type | Default |
+|---|---|---|
+| `stdout` | `string` | `''` |
+| `stderr` | `string` | `''` |
+| `exit_code` | `int` | `0` |
+| `duration` | `float` | `0.0` |
+| `timed_out` | `bool` | `false` |
+| `truncated_stdout` | `bool` | `false` |
+| `truncated_stderr` | `bool` | `false` |
+
+Any omitted key uses its default value, so you only need to specify the fields relevant to your test.
+
+## Inspecting Recorded Commands
+
+The mock records every command it receives. Use the `commands()` method to retrieve the full history:
+
+```php
+$sandbox = MockSandbox::fromResponses([
+    'php -v' => [
+        new ExecResult(stdout: 'PHP 8.3.0', stderr: '', exitCode: 0, duration: 0.01),
+    ],
+    'php -r echo 1;' => [
+        new ExecResult(stdout: '1', stderr: '', exitCode: 0, duration: 0.01),
+    ],
+]);
+
+$sandbox->execute(['php', '-v']);
+$sandbox->execute(['php', '-r', 'echo 1;']);
+
+$commands = $sandbox->commands();
+// [
+//     ['php', '-v'],
+//     ['php', '-r', 'echo 1;'],
+// ]
+// @doctest id="ee3f"
+```
+
+This is useful for asserting that your code called the expected commands in the expected order.
+
+### Standard Input Recording
+
+When stdin is provided, it is appended to the recorded argv as a `[stdin=...]` entry:
+
+```php
+$sandbox = MockSandbox::fromResponses([
+    'php -r echo fgets(STDIN);' => [
+        new ExecResult(stdout: 'hello', stderr: '', exitCode: 0, duration: 0.01),
+    ],
+]);
+
+$sandbox->execute(['php', '-r', 'echo fgets(STDIN);'], 'hello');
+
+$commands = $sandbox->commands();
+// [
+//     ['php', '-r', 'echo fgets(STDIN);', '[stdin=hello]'],
+// ]
+// @doctest id="5056"
+```
+
+## Streaming Callback Support
+
+The `MockSandbox` honors the streaming callback, just like real drivers. When a callback is provided, the mock delivers stdout and stderr from the canned response as single chunks:
+
+```php
+$sandbox = MockSandbox::fromResponses([
+    'php script.php' => [
+        new ExecResult(stdout: 'output', stderr: 'warning', exitCode: 0, duration: 0.1),
+    ],
+]);
+
+$chunks = [];
+$sandbox->execute(
+    ['php', 'script.php'],
+    null,
+    function (string $type, string $chunk) use (&$chunks) {
+        $chunks[] = [$type, $chunk];
+    }
+);
+
+// $chunks === [['out', 'output'], ['err', 'warning']]
+// @doctest id="1fda"
+```
+
+Empty stdout or stderr is not delivered to the callback, matching the behavior of real drivers.
+
+## Testing Failure Scenarios
+
+### Simulating Timeouts
+
+Create an `ExecResult` with `timedOut: true` and exit code `124`:
+
+```php
+$sandbox = MockSandbox::fromResponses([
+    'php long-script.php' => [
+        new ExecResult(
+            stdout: 'partial output...',
+            stderr: '',
+            exitCode: 124,
+            duration: 30.0,
+            timedOut: true,
+        ),
+    ],
+]);
+
+$result = $sandbox->execute(['php', 'long-script.php']);
+assert($result->timedOut() === true);
+assert($result->exitCode() === 124);
+// @doctest id="d20b"
+```
+
+### Simulating Truncated Output
+
+Set the truncation flags to test how your code handles oversized output:
+
+```php
+$sandbox = MockSandbox::fromResponses([
+    'php noisy-script.php' => [
+        new ExecResult(
+            stdout: '...last portion of output',
+            stderr: '',
+            exitCode: 0,
+            duration: 5.0,
+            truncatedStdout: true,
+        ),
+    ],
+]);
+
+$result = $sandbox->execute(['php', 'noisy-script.php']);
+assert($result->truncatedStdout() === true);
+// @doctest id="bac9"
+```
+
+### Simulating Command Failures
+
+Test error handling by returning non-zero exit codes:
+
+```php
+$sandbox = MockSandbox::fromResponses([
+    'php broken.php' => [
+        new ExecResult(
+            stdout: '',
+            stderr: 'PHP Fatal error: ...',
+            exitCode: 255,
+            duration: 0.5,
+        ),
+    ],
+]);
+
+$result = $sandbox->execute(['php', 'broken.php']);
+assert($result->success() === false);
+assert($result->exitCode() === 255);
+// @doctest id="4319"
+```
+
+## Using MockSandbox with Dependency Injection
+
+The `MockSandbox` implements `CanExecuteCommand`, so it can be injected anywhere a real sandbox is expected. This is the recommended approach for testing application services:
+
+```php
+use Cognesy\Sandbox\Contracts\CanExecuteCommand;
+
+class CodeExecutor
+{
+    public function __construct(
+        private readonly CanExecuteCommand $sandbox,
+    ) {}
+
+    public function run(string $code): string
+    {
+        $result = $this->sandbox->execute(['php', '-r', $code]);
+        if (!$result->success()) {
+            throw new \RuntimeException("Execution failed: " . $result->stderr());
+        }
+        return $result->stdout();
+    }
+}
+
+// In your test:
+$mock = MockSandbox::fromResponses([
+    'php -r echo "hello";' => [
+        new ExecResult(stdout: 'hello', stderr: '', exitCode: 0, duration: 0.01),
+    ],
+]);
+
+$executor = new CodeExecutor($mock);
+assert($executor->run('echo "hello";') === 'hello');
+
+// Verify the command was called
+assert($mock->commands() === [['php', '-r', 'echo "hello";']]);
+// @doctest id="4be0"
+```
+
+## Quick Reference
+
+| Method | Purpose |
+|---|---|
+| `MockSandbox::fromResponses($responses, $default)` | Create mock with canned responses and optional default |
+| `new MockSandbox($policy, $responses, $default)` | Create mock with custom policy |
+| `$mock->enqueue($key, $result)` | Add a response to the queue after construction |
+| `$mock->execute($argv, $stdin, $onOutput)` | Execute and return next canned response |
+| `$mock->commands()` | Get all recorded commands as `list<list<string>>` |
+| `$mock->policy()` | Access the execution policy |

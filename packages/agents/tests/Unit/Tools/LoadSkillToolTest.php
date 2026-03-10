@@ -100,8 +100,7 @@ SKILL;
         $tool = new LoadSkillTool($library);
         $schema = $tool->toToolSchema();
 
-        expect($schema['type'])->toBe('function');
-        expect($schema['function']['name'])->toBe('load_skill');
-        expect($schema['function']['parameters'])->toBeArray();
+        expect($schema->name())->toBe('load_skill');
+        expect($schema->parameters())->toBeArray();
     });
 });

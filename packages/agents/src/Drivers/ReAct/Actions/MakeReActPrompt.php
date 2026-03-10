@@ -40,11 +40,11 @@ final class MakeReActPrompt
         return [
             'tools' => $toolList,
             'schemas' => array_map(
-                fn(array $item) => [
-                    'name' => $item['function']['name'] ?? '',
-                    'parameters' => $item['function']['parameters'] ?? [],
+                fn($item) => [
+                    'name' => $item->name(),
+                    'parameters' => $item->parameters(),
                 ],
-                $toolSchemas,
+                $toolSchemas->all(),
             ),
         ];
     }

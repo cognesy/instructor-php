@@ -66,3 +66,39 @@ it('records executions and returns fake response via facade entrypoints', functi
     AgentCtrlFacade::assertExecuted();
     AgentCtrlFacade::assertExecutedWith('run prompt');
 });
+
+it('hydrates agent builder defaults through typed config conventions', function () {
+    $app = new Container();
+    $app->instance('config', new MinimalConfigRepository([
+        'instructor' => [
+            'agents' => [
+                'timeout' => 300,
+                'directory' => '/workspace',
+                'sandbox' => 'host',
+                'codex' => [
+                    'model' => 'gpt-5-codex',
+                    'timeout' => 45,
+                    'sandbox' => 'docker',
+                ],
+            ],
+        ],
+    ]));
+    Container::setInstance($app);
+    Facade::setFacadeApplication($app);
+    Facade::clearResolvedInstances();
+
+    $builder = AgentCtrlFacade::codex();
+
+    expect(builderProperty($builder, 'model'))->toBe('gpt-5-codex')
+        ->and(builderProperty($builder, 'timeout'))->toBe(45)
+        ->and(builderProperty($builder, 'workingDirectory'))->toBe('/workspace')
+        ->and((string) builderProperty($builder, 'sandboxDriver')->value)->toBe('docker');
+});
+
+function builderProperty(object $object, string $property): mixed
+{
+    $reflection = new ReflectionClass($object);
+    $refProperty = $reflection->getProperty($property);
+
+    return $refProperty->getValue($object);
+}
