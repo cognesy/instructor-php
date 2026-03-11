@@ -43,7 +43,7 @@ $request->cachedContext();       // ?CachedInferenceContext
 $request->responseCachePolicy(); // ResponseCachePolicy
 $request->retryPolicy();         // ?InferenceRetryPolicy
 $request->id();                  // InferenceRequestId
-// @doctest id="88e3"
+// @doctest id="2228"
 ```
 
 Predicate methods are also available: `hasMessages()`, `hasModel()`, `hasTools()`, `hasToolChoice()`, `hasResponseFormat()`, `hasNonTextResponseFormat()`, `hasTextResponseFormat()`, `hasOptions()`.
@@ -63,7 +63,7 @@ $updated = $request
     ->withResponseFormat(['type' => 'json_object'])
     ->withRetryPolicy(new InferenceRetryPolicy(maxAttempts: 3))
     ->withResponseCachePolicy(ResponseCachePolicy::ReadOrWrite);
-// @doctest id="3d20"
+// @doctest id="061f"
 ```
 
 The `with(...)` method allows setting multiple fields in a single call:
@@ -74,7 +74,7 @@ $updated = $request->with(
     model: 'gpt-4.1',
     options: ['temperature' => 0.7],
 );
-// @doctest id="464c"
+// @doctest id="e384"
 ```
 
 ### Cached Context
@@ -94,7 +94,7 @@ $request = new InferenceRequest(
 // Merges cached messages before request messages,
 // cached tools/format used if request has none
 $merged = $request->withCacheApplied();
-// @doctest id="43ee"
+// @doctest id="2533"
 ```
 
 After applying, the merged request has an empty cached context to prevent double-application.
@@ -106,7 +106,7 @@ Requests can be serialized to and from arrays for storage or transport:
 ```php
 $array = $request->toArray();
 $restored = InferenceRequest::fromArray($array);
-// @doctest id="be2f"
+// @doctest id="884f"
 ```
 
 
@@ -138,7 +138,7 @@ $data = $pending->asToolCallJsonData();  // array
 
 // Check if streaming is enabled for this request
 $isStreamed = $pending->isStreamed();
-// @doctest id="e8c7"
+// @doctest id="f521"
 ```
 
 The underlying `InferenceExecutionSession` handles retry logic, event dispatching, pricing attachment, and response caching. Once execution completes, the response is cached for the lifetime of the `PendingInference` instance.
@@ -162,7 +162,7 @@ $response->usage();             // Usage object with token counts
 $response->finishReason();      // InferenceFinishReason enum
 $response->responseData();      // HttpResponse -- the raw HTTP response
 $response->isPartial();         // bool -- true for intermediate streaming results
-// @doctest id="6621"
+// @doctest id="6973"
 ```
 
 Predicate methods: `hasContent()`, `hasReasoningContent()`, `hasToolCalls()`, `hasFinishReason()`.
@@ -179,7 +179,7 @@ $str = $response->findJsonData()->toString(); // string
 
 // Extract tool call arguments
 $json = $response->findToolCallJsonData();  // Json object
-// @doctest id="1ca1"
+// @doctest id="034c"
 ```
 
 When a response has a single tool call, `findToolCallJsonData()` returns the arguments of that call. When there are multiple tool calls, it returns an array of all tool call data.
@@ -192,7 +192,7 @@ Some providers embed reasoning in `<think>` tags within the content rather than 
 $response = $response->withReasoningContentFallbackFromContent();
 // Now $response->reasoningContent() contains the extracted reasoning
 // And $response->content() has the <think> tags removed
-// @doctest id="c272"
+// @doctest id="bc61"
 ```
 
 This is a no-op if the response already has dedicated reasoning content or if no `<think>` tags are present.
@@ -205,7 +205,7 @@ The `finishReason()` method returns an `InferenceFinishReason` enum. The `hasFin
 if ($response->hasFinishedWithFailure()) {
     // Handle error, content_filter, or length finish reasons
 }
-// @doctest id="cfd5"
+// @doctest id="f06b"
 ```
 
 ### Serialization
@@ -215,7 +215,7 @@ Responses support round-trip serialization:
 ```php
 $array = $response->toArray();
 $restored = InferenceResponse::fromArray($array);
-// @doctest id="852e"
+// @doctest id="8683"
 ```
 
 
@@ -264,7 +264,7 @@ $usage->cache();   // cache write + cache read tokens
 
 // String representation
 $usage->toString(); // "Tokens: 150 (i:100 o:40 c:0 r:10)"
-// @doctest id="82ba"
+// @doctest id="cdbb"
 ```
 
 ### Cost Calculation
@@ -279,7 +279,7 @@ $cost = $usage->cost(new Pricing(
     inputPerMToken: 0.15,
     outputPerMToken: 0.60,
 ));
-// @doctest id="93bd"
+// @doctest id="41de"
 ```
 
 ### Accumulation
@@ -288,7 +288,7 @@ Usage can be accumulated across multiple requests:
 
 ```php
 $total = $usage1->withAccumulated($usage2);
-// @doctest id="ff46"
+// @doctest id="46d9"
 ```
 
 
@@ -315,7 +315,7 @@ $request->retryPolicy(); // ?EmbeddingsRetryPolicy
 $updated = $request->withInputs('New text');
 $updated = $request->withModel('text-embedding-3-large');
 $updated = $request->withOptions(['dimensions' => 1024]);
-// @doctest id="6488"
+// @doctest id="01bc"
 ```
 
 ### EmbeddingsResponse
@@ -330,7 +330,7 @@ $response->all();           // Vector[] -- alias for vectors()
 $response->usage();         // Usage
 $response->toValuesArray(); // array of float arrays
 $response->split($index);   // [Vector[], Vector[]] -- split at index
-// @doctest id="47db"
+// @doctest id="5708"
 ```
 
 ### PendingEmbeddings
@@ -341,5 +341,5 @@ A lazy handle similar to `PendingInference`. Calling `get()` triggers the HTTP r
 $pending = $embeddings->withInputs('Hello world')->create();
 $response = $pending->get();      // triggers HTTP call
 $request = $pending->request();   // access the original request
-// @doctest id="aa31"
+// @doctest id="6e3e"
 ```

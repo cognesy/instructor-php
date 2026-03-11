@@ -46,7 +46,7 @@ it('hydrates recoverable json partials and refines them as snapshots grow', func
     expect($result[1]->value()->age)->toBe(30);
 });
 
-it('does not rehydrate unchanged snapshots repeatedly', function () {
+it('preserves the last-good parsed value for unchanged snapshots', function () {
     $calls = 0;
     $deserializer = new class($calls) implements CanDeserializeResponse {
         public function __construct(private int &$calls) {}
@@ -76,10 +76,13 @@ it('does not rehydrate unchanged snapshots repeatedly', function () {
     expect($calls)->toBe(1);
     expect($result)->toHaveCount(2);
     expect($result[0]->hasValue())->toBeTrue();
-    expect($result[1]->hasValue())->toBeFalse();
+    expect($result[1]->hasValue())->toBeTrue();
+    expect($result[1]->value())->toBeInstanceOf(AccumulatedUser::class);
+    expect($result[1]->value()->name)->toBe('Ann');
+    expect($result[1]->value()->age)->toBe(30);
 });
 
-it('does not rehydrate when only usage changes after a parsed snapshot', function () {
+it('preserves the last-good parsed value when only usage changes', function () {
     $calls = 0;
     $deserializer = new class($calls) implements CanDeserializeResponse {
         public function __construct(private int &$calls) {}
@@ -116,7 +119,10 @@ it('does not rehydrate when only usage changes after a parsed snapshot', functio
     expect($calls)->toBe(1);
     expect($result)->toHaveCount(2);
     expect($result[0]->hasValue())->toBeTrue();
-    expect($result[1]->hasValue())->toBeFalse();
+    expect($result[1]->hasValue())->toBeTrue();
+    expect($result[1]->value())->toBeInstanceOf(AccumulatedUser::class);
+    expect($result[1]->value()->name)->toBe('Ann');
+    expect($result[1]->value()->age)->toBe(30);
 });
 
 it('hydrates recoverable tool argument partials and refines them as snapshots grow', function () {

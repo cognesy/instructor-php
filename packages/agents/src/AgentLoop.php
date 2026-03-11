@@ -132,6 +132,7 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
     protected function onBeforeExecution(AgentState $state): AgentState {
         $state = $this->ensureNextExecution($state);
         $state = $state->with(executionCount: $state->executionCount() + 1);
+        $state = $state->withExecutionStatus(ExecutionStatus::InProgress);
         $this->emitExecutionStarted($state, count($this->tools->names()));
         $state = $this->interceptor->intercept(HookContext::beforeExecution($state))->state();
         return $state;
@@ -181,7 +182,7 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
     }
 
     private function handleToolBlockException(AgentState $state, ToolExecutionBlockedException $stop) : AgentState {
-        $this->emitToolCallBlocked($stop->toolCall, $stop->getMessage(), $stop->hookName);
+        $this->emitToolCallBlocked($state, $stop->toolCall, $stop->getMessage(), $stop->hookName);
         return $this->onError($state, $stop);
     }
 
@@ -314,6 +315,7 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
     private function emitExecutionStarted(AgentState $state, int $availableTools): void {
         $this->events->dispatch(new AgentExecutionStarted(
             agentId: $state->agentId()->toString(),
+            executionId: $state->execution()?->executionId()->toString() ?? '',
             parentAgentId: $state->parentAgentId() !== null ? (string) $state->parentAgentId() : null,
             messageCount: $state->messages()->count(),
             availableTools: $availableTools,
@@ -323,6 +325,7 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
     private function emitStepStarted(AgentState $state): void {
         $this->events->dispatch(new AgentStepStarted(
             agentId: $state->agentId()->toString(),
+            executionId: $state->execution()?->executionId()->toString() ?? '',
             parentAgentId: $state->parentAgentId() !== null ? (string) $state->parentAgentId() : null,
             stepNumber: $state->stepCount() + 1,
             messageCount: $state->messages()->count(),
@@ -336,6 +339,7 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
 
         $this->events->dispatch(new AgentStepCompleted(
             agentId: $state->agentId()->toString(),
+            executionId: $state->execution()?->executionId()->toString() ?? '',
             parentAgentId: $state->parentAgentId() !== null ? (string) $state->parentAgentId() : null,
             stepNumber: $state->stepCount(),
             hasToolCalls: $state->currentStep()?->hasToolCalls() ?? false,
@@ -350,6 +354,7 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
         if ($usage->total() > 0) {
             $this->events->dispatch(new TokenUsageReported(
                 agentId: $state->agentId()->toString(),
+                executionId: $state->execution()?->executionId()->toString() ?? '',
                 parentAgentId: $state->parentAgentId() !== null ? (string) $state->parentAgentId() : null,
                 operation: 'step',
                 usage: $usage,
@@ -365,6 +370,7 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
         $signal = $state->executionContinuation()?->stopSignals()->first();
         $this->events->dispatch(new AgentExecutionStopped(
             agentId: $state->agentId()->toString(),
+            executionId: $state->execution()?->executionId()->toString() ?? '',
             parentAgentId: $state->parentAgentId() !== null ? (string) $state->parentAgentId() : null,
             stopReason: $signal?->reason ?? StopReason::Unknown,
             stopMessage: $signal?->message ?? '',
@@ -376,6 +382,7 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
     private function emitExecutionFinished(AgentState $state): void {
         $this->events->dispatch(new AgentExecutionCompleted(
             agentId: $state->agentId()->toString(),
+            executionId: $state->execution()?->executionId()->toString() ?? '',
             parentAgentId: $state->parentAgentId() !== null ? (string) $state->parentAgentId() : null,
             status: $state->status(),
             totalSteps: $state->stepCount(),
@@ -387,6 +394,7 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
     private function emitExecutionFailed(AgentState $state, Throwable $exception): void {
         $this->events->dispatch(new AgentExecutionFailed(
             agentId: $state->agentId()->toString(),
+            executionId: $state->execution()?->executionId()->toString() ?? '',
             parentAgentId: $state->parentAgentId() !== null ? (string) $state->parentAgentId() : null,
             exception: $exception,
             status: $state->status(),
@@ -399,14 +407,19 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
     private function emitContinuationEvaluated(AgentState $state): void {
         $this->events->dispatch(new ContinuationEvaluated(
             agentId: $state->agentId()->toString(),
+            executionId: $state->execution()?->executionId()->toString() ?? '',
             parentAgentId: $state->parentAgentId() !== null ? (string) $state->parentAgentId() : null,
             stepNumber: $state->stepCount(),
             executionState: $state->execution(),
         ));
     }
 
-    private function emitToolCallBlocked(ToolCall $toolCall, string $reason, ?string $hookName): void {
+    private function emitToolCallBlocked(AgentState $state, ToolCall $toolCall, string $reason, ?string $hookName): void {
         $this->events->dispatch(new ToolCallBlocked(
+            agentId: $state->agentId()->toString(),
+            executionId: $state->execution()?->executionId()->toString() ?? '',
+            parentAgentId: $state->parentAgentId() !== null ? (string) $state->parentAgentId() : null,
+            stepNumber: $state->stepCount() + 1,
             tool: $toolCall->name(),
             args: $toolCall->args(),
             reason: $reason,

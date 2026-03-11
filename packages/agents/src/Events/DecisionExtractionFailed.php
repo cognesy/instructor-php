@@ -14,6 +14,7 @@ final class DecisionExtractionFailed extends AgentEvent
 
     public function __construct(
         public readonly string $agentId,
+        public readonly string $executionId,
         public readonly ?string $parentAgentId,
         public readonly int $stepNumber,
         public readonly string $errorMessage,
@@ -25,6 +26,7 @@ final class DecisionExtractionFailed extends AgentEvent
 
         parent::__construct([
             'agentId' => $this->agentId,
+            'executionId' => $this->executionId,
             'parentAgentId' => $this->parentAgentId,
             'step' => $this->stepNumber,
             'error' => $this->errorMessage,

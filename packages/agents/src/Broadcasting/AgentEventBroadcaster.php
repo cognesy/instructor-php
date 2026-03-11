@@ -3,12 +3,16 @@
 namespace Cognesy\Agents\Broadcasting;
 
 use Cognesy\Agents\Continuation\StopReason;
+use Cognesy\Agents\Enums\ExecutionStatus;
+use Cognesy\Agents\Events\AgentExecutionFailed;
+use Cognesy\Agents\Events\AgentExecutionStopped;
 use Cognesy\Agents\Events\AgentStepCompleted;
 use Cognesy\Agents\Events\AgentStepStarted;
 use Cognesy\Agents\Events\ContinuationEvaluated;
 use Cognesy\Agents\Events\ToolCallCompleted;
 use Cognesy\Agents\Events\ToolCallStarted;
 use Cognesy\Events\Event;
+use Cognesy\Polyglot\Inference\Events\PartialInferenceDeltaCreated;
 use Cognesy\Polyglot\Inference\Events\StreamEventParsed;
 use DateTimeImmutable;
 
@@ -53,12 +57,15 @@ final class AgentEventBroadcaster
     {
         return function (Event $event): void {
             match (true) {
+                $event instanceof PartialInferenceDeltaCreated => $this->onPartialInferenceDelta($event),
                 $event instanceof StreamEventParsed => $this->onStreamChunk($event),
                 $event instanceof AgentStepStarted => $this->onAgentStepStarted($event),
                 $event instanceof AgentStepCompleted => $this->onAgentStepCompleted($event),
                 $event instanceof ToolCallStarted => $this->onToolCallStarted($event),
                 $event instanceof ToolCallCompleted => $this->onToolCallCompleted($event),
                 $event instanceof ContinuationEvaluated => $this->onContinuationEvaluated($event),
+                $event instanceof AgentExecutionFailed => $this->onAgentExecutionFailed($event),
+                $event instanceof AgentExecutionStopped => $this->onAgentExecutionStopped($event),
                 default => null,
             };
         };
@@ -73,16 +80,16 @@ final class AgentEventBroadcaster
             return;
         }
 
-        $content = $event->content;
-        if ($content === '') {
+        $this->emitStreamChunk($event->content);
+    }
+
+    public function onPartialInferenceDelta(PartialInferenceDeltaCreated $event): void
+    {
+        if (!$this->config->includeStreamChunks) {
             return;
         }
 
-        $this->emit('agent.stream.chunk', [
-            'content' => $content,
-            'is_complete' => false,
-            'chunk_index' => $this->chunkCounter++,
-        ]);
+        $this->emitStreamChunk($event->partialInferenceDelta->contentDelta);
     }
 
     public function onAgentStepStarted(AgentStepStarted $event): void
@@ -150,16 +157,18 @@ final class AgentEventBroadcaster
         // Auto-transition status on stop
         if ($this->config->autoStatusTracking && $shouldStop) {
             $stopReason = $event->stopReason();
-            $finalStatus = match ($stopReason) {
-                StopReason::Completed => 'completed',
-                StopReason::ErrorForbade => 'failed',
-                StopReason::UserRequested => 'cancelled',
-                default => 'stopped',
-            };
-            $this->transitionStatus($finalStatus);
-
-            // Reset chunk counter for next execution
-            $this->chunkCounter = 0;
+            $executionStatus = $event->executionState?->status();
+            if ($executionStatus !== ExecutionStatus::Failed) {
+                $finalStatus = match (true) {
+                    $stopReason === null => 'completed',
+                    $stopReason === StopReason::Completed => 'completed',
+                    $stopReason === StopReason::ErrorForbade => 'failed',
+                    $stopReason === StopReason::UserRequested => 'cancelled',
+                    default => 'stopped',
+                };
+                $this->transitionStatus($finalStatus);
+                $this->chunkCounter = 0;
+            }
         }
 
         if (!$this->config->includeContinuationTrace) {
@@ -173,6 +182,38 @@ final class AgentEventBroadcaster
             'stop_reason' => $stopReason?->value,
             'resolved_by' => $event->resolvedBy(),
         ]);
+    }
+
+    public function onAgentExecutionFailed(AgentExecutionFailed $event): void
+    {
+        if ($this->currentStatus === 'failed') {
+            $this->chunkCounter = 0;
+            return;
+        }
+
+        $this->onAgentStatusChanged(
+            status: 'failed',
+            error: $event->exception->getMessage(),
+        );
+        $this->chunkCounter = 0;
+    }
+
+    public function onAgentExecutionStopped(AgentExecutionStopped $event): void
+    {
+        $status = match ($event->stopReason) {
+            StopReason::UserRequested => 'cancelled',
+            default => 'stopped',
+        };
+        if ($this->currentStatus === $status) {
+            $this->chunkCounter = 0;
+            return;
+        }
+
+        $this->onAgentStatusChanged(
+            status: $status,
+            error: $event->stopMessage !== '' ? $event->stopMessage : null,
+        );
+        $this->chunkCounter = 0;
     }
 
     /**
@@ -211,6 +252,19 @@ final class AgentEventBroadcaster
         $this->emit('agent.status', [
             'status' => $newStatus,
             'previous_status' => $previousStatus,
+        ]);
+    }
+
+    private function emitStreamChunk(string $content): void
+    {
+        if ($content === '') {
+            return;
+        }
+
+        $this->emit('agent.stream.chunk', [
+            'content' => $content,
+            'is_complete' => false,
+            'chunk_index' => $this->chunkCounter++,
         ]);
     }
 

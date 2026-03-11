@@ -53,6 +53,11 @@ final class InferenceExecutionSession
         return $this->execution->request()->isStreamed();
     }
 
+    public function executionId(): string
+    {
+        return $this->execution->id->toString();
+    }
+
     public function stream(): InferenceStream
     {
         if (! $this->isStreamed()) {

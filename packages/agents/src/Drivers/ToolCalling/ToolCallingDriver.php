@@ -175,9 +175,10 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         $cache = $state->context()->toCachedContext($tools->toToolSchema());
         $cache = $cache->isEmpty() ? null : $cache;
         $requestStartedAt = new DateTimeImmutable();
-        $this->emitInferenceRequestStarted($state, $messages->count(), $this->resolveModel($state));
-        $response = $this->buildPendingInference($state, $messages, $tools, $cache)->response();
-        $this->emitInferenceResponseReceived($state, $response, $requestStartedAt);
+        $pending = $this->buildPendingInference($state, $messages, $tools, $cache);
+        $this->emitInferenceRequestStarted($state, $messages->count(), $this->resolveModel($state), $pending->executionId());
+        $response = $pending->response();
+        $this->emitInferenceResponseReceived($state, $response, $requestStartedAt, $pending->executionId());
         return $response;
     }
 
@@ -279,24 +280,28 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
 
     // EVENT EMISSION ////////////////////////////////////////////
 
-    private function emitInferenceRequestStarted(AgentState $state, int $messageCount, ?string $model): void {
+    private function emitInferenceRequestStarted(AgentState $state, int $messageCount, ?string $model, ?string $inferenceExecutionId = null): void {
         $this->events->dispatch(new InferenceRequestStarted(
             agentId: $state->agentId()->toString(),
+            executionId: $state->execution()?->executionId()->toString() ?? '',
             parentAgentId: $state->parentAgentId() !== null ? (string) $state->parentAgentId() : null,
             stepNumber: $state->stepCount() + 1,
             messageCount: $messageCount,
             model: $model,
+            inferenceExecutionId: $inferenceExecutionId,
         ));
     }
 
-    private function emitInferenceResponseReceived(AgentState $state, ?InferenceResponse $response, DateTimeImmutable $requestStartedAt): void {
+    private function emitInferenceResponseReceived(AgentState $state, ?InferenceResponse $response, DateTimeImmutable $requestStartedAt, ?string $inferenceExecutionId = null): void {
         $this->events->dispatch(new InferenceResponseReceived(
             agentId: $state->agentId()->toString(),
+            executionId: $state->execution()?->executionId()->toString() ?? '',
             parentAgentId: $state->parentAgentId() !== null ? (string) $state->parentAgentId() : null,
             stepNumber: $state->stepCount() + 1,
             usage: $response?->usage(),
             finishReason: $response?->finishReason()?->value,
             requestStartedAt: $requestStartedAt,
+            inferenceExecutionId: $inferenceExecutionId,
         ));
     }
 }

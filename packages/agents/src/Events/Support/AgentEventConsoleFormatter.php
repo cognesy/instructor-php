@@ -153,7 +153,13 @@ final class AgentEventConsoleFormatter implements CanFormatConsoleEvent
             $args = ' '.$this->formatArgs($event->args);
         }
 
-        return $this->line('TOOL', ConsoleColor::Yellow, sprintf('Calling %s%s', $event->tool, $args));
+        return $this->lineWithAgent(
+            'TOOL',
+            ConsoleColor::Yellow,
+            sprintf('Calling %s%s', $event->tool, $args),
+            $event->agentId,
+            $event->parentAgentId,
+        );
     }
 
     private function onToolCompleted(ToolCallCompleted $event): ConsoleEventLine
@@ -161,13 +167,21 @@ final class AgentEventConsoleFormatter implements CanFormatConsoleEvent
         $duration = $this->durationMs($event->startedAt, $event->completedAt);
 
         if ($event->success) {
-            return $this->line('TOOL', ConsoleColor::Yellow, sprintf('Tool %s completed [duration=%dms]', $event->tool, $duration));
+            return $this->lineWithAgent(
+                'TOOL',
+                ConsoleColor::Yellow,
+                sprintf('Tool %s completed [duration=%dms]', $event->tool, $duration),
+                $event->agentId,
+                $event->parentAgentId,
+            );
         }
 
-        return $this->line(
+        return $this->lineWithAgent(
             'TOOL',
             ConsoleColor::Red,
             sprintf('Tool %s failed [error=%s, duration=%dms]', $event->tool, $this->truncate($event->error ?? 'unknown', 80), $duration),
+            $event->agentId,
+            $event->parentAgentId,
         );
     }
 
@@ -199,7 +213,13 @@ final class AgentEventConsoleFormatter implements CanFormatConsoleEvent
     private function onToolBlocked(ToolCallBlocked $event): ConsoleEventLine
     {
         $hook = $event->hookName ? " by '{$event->hookName}'" : '';
-        return $this->line('BLCK', ConsoleColor::Red, sprintf('Tool %s blocked%s: %s', $event->tool, $hook, $this->truncate($event->reason, 100)));
+        return $this->lineWithAgent(
+            'BLCK',
+            ConsoleColor::Red,
+            sprintf('Tool %s blocked%s: %s', $event->tool, $hook, $this->truncate($event->reason, 100)),
+            $event->agentId,
+            $event->parentAgentId,
+        );
     }
 
     private function onInferenceRequestStarted(InferenceRequestStarted $event): ?ConsoleEventLine

@@ -20,7 +20,7 @@ final readonly class AppendSkillMetadataHook implements HookInterface
     public function handle(HookContext $context): HookContext
     {
         $state = $context->state();
-        $skills = $this->library->listSkills();
+        $skills = $this->library->listSkills(modelInvocable: true);
 
         if ($skills === [] || $this->hasInjectedSkills($state->messages())) {
             return $context;
@@ -28,7 +28,7 @@ final readonly class AppendSkillMetadataHook implements HookInterface
 
         $content = implode("\n", [
             self::MARKER,
-            $this->library->renderSkillList(),
+            $this->library->renderSkillList(modelInvocable: true),
             '</skills-metadata>',
             'Use load_skill to load a skill when needed.',
         ]);

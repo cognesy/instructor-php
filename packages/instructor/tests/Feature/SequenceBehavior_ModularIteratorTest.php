@@ -97,33 +97,20 @@ it('[modular] sequence() yields single update per COMPLETED sequence item only',
             responseModel: Sequence::of('ModularPerson'),
         );
 
-    // Collect sequence updates
-    $sequenceUpdates = [];
-    foreach ($pending->stream()->sequence() as $seq) {
-        $sequenceUpdates[] = [
-            'count' => $seq->count(),
-            'items' => array_map(fn($item) => $item->name, $seq->toArray()),
-        ];
+    // Collect individual completed items
+    $completedItems = [];
+    foreach ($pending->stream()->sequence() as $item) {
+        $completedItems[] = $item->name;
     }
 
-    // EXPECTED BEHAVIOR: Single update per COMPLETED item
-    // - When Alice completes (chunk 2): Sequence[Alice]
-    // - When Bob completes (chunk 3): Sequence[Alice, Bob]
-    // - When Carol completes (chunk 4/finalize): Sequence[Alice, Bob, Carol]
+    // EXPECTED BEHAVIOR: One item yielded per COMPLETED entry
+    // - Alice, Bob, Carol — each yielded individually when the next item starts
 
-    expect(count($sequenceUpdates))->toBe(3);
+    expect(count($completedItems))->toBe(3);
 
-    // First update: Alice completed
-    expect($sequenceUpdates[0]['count'])->toBe(1);
-    expect($sequenceUpdates[0]['items'])->toBe(['Alice']);
-
-    // Second update: Bob completed
-    expect($sequenceUpdates[1]['count'])->toBe(2);
-    expect($sequenceUpdates[1]['items'])->toBe(['Alice', 'Bob']);
-
-    // Third update: Carol completed
-    expect($sequenceUpdates[2]['count'])->toBe(3);
-    expect($sequenceUpdates[2]['items'])->toBe(['Alice', 'Bob', 'Carol']);
+    expect($completedItems[0])->toBe('Alice');
+    expect($completedItems[1])->toBe('Bob');
+    expect($completedItems[2])->toBe('Carol');
 })->group('sequence', 'streaming', 'critical', 'modular');
 
 it('[modular] sequence() does not yield incomplete items even if many chunks arrive', function () {
@@ -148,18 +135,14 @@ it('[modular] sequence() does not yield incomplete items even if many chunks arr
             responseModel: Sequence::of('ModularPerson'),
         );
 
-    $sequenceUpdates = iterator_to_array($pending->stream()->sequence());
+    $completedItems = iterator_to_array($pending->stream()->sequence());
 
-    // Despite 5 chunks, we should only get 2 updates (for 2 completed items)
-    expect(count($sequenceUpdates))->toBe(2);
+    // Despite 5 chunks, we should only get 2 completed items
+    expect(count($completedItems))->toBe(2);
 
-    // First completed item
-    expect($sequenceUpdates[0]->count())->toBe(1);
-    expect($sequenceUpdates[0]->toArray()[0]->name)->toBe('Dave');
-
-    // Second completed item
-    expect($sequenceUpdates[1]->count())->toBe(2);
-    expect($sequenceUpdates[1]->toArray()[1]->name)->toBe('Eve');
+    // Individual completed items
+    expect($completedItems[0]->name)->toBe('Dave');
+    expect($completedItems[1]->name)->toBe('Eve');
 })->group('sequence', 'streaming', 'critical', 'modular');
 
 it('[modular] partials() yields MORE updates than sequence() for same stream', function () {

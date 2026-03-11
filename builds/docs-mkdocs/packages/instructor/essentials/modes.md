@@ -21,7 +21,7 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 $runtime = StructuredOutputRuntime::fromConfig(
     LLMConfig::fromPreset('openai')
 )->withOutputMode(OutputMode::Tools);
-// @doctest id="f601"
+// @doctest id="63d6"
 ```
 
 

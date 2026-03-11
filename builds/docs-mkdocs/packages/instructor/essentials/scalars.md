@@ -22,7 +22,7 @@ $age = (new StructuredOutput)
     ->get();
 
 // int(28)
-// @doctest id="e3a6"
+// @doctest id="e051"
 ```
 
 The first argument to each factory method is the field name, which gives the model
@@ -43,7 +43,7 @@ $name = (new StructuredOutput)
     ->get();
 
 // string("Jason")
-// @doctest id="ee64"
+// @doctest id="8b25"
 ```
 
 ### Integer
@@ -57,7 +57,7 @@ $age = (new StructuredOutput)
     ->get();
 
 // int(28)
-// @doctest id="03aa"
+// @doctest id="a799"
 ```
 
 ### Float
@@ -71,7 +71,7 @@ $time = (new StructuredOutput)
     ->get();
 
 // float(11.6)
-// @doctest id="7d36"
+// @doctest id="b392"
 ```
 
 ### Boolean
@@ -85,7 +85,7 @@ $isAdult = (new StructuredOutput)
     ->get();
 
 // bool(true)
-// @doctest id="4830"
+// @doctest id="84c6"
 ```
 
 ### Enum
@@ -107,7 +107,7 @@ $group = (new StructuredOutput)
     ->get();
 
 // CitizenshipGroup::Other
-// @doctest id="fdb5"
+// @doctest id="423f"
 ```
 
 The model sees the enum's backed values as the allowed options and returns one of them.
@@ -125,7 +125,7 @@ Scalar::string(
     required: true,           // Whether the field is required
     defaultValue: null,       // Default if not extracted
 );
-// @doctest id="2918"
+// @doctest id="71d1"
 ```
 
 | Factory | PHP return type |
@@ -150,7 +150,7 @@ $age = (new StructuredOutput)
 $name = (new StructuredOutput)
     ->with(messages: 'Jason is 28.', responseModel: Scalar::string('name'))
     ->getString();
-// @doctest id="bccf"
+// @doctest id="951f"
 ```
 
 Available typed methods: `getString()`, `getInt()`, `getFloat()`, `getBoolean()`.

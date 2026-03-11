@@ -10,12 +10,14 @@ final class ContinuationEvaluated extends AgentEvent
 {
     public function __construct(
         public readonly string          $agentId,
+        public readonly string          $executionId,
         public readonly ?string         $parentAgentId,
         public readonly int             $stepNumber,
         public readonly ?ExecutionState $executionState = null,
     ) {
         parent::__construct([
             'agentId' => $this->agentId,
+            'executionId' => $this->executionId,
             'parentAgentId' => $this->parentAgentId,
             'step' => $this->stepNumber,
             'status' => $this->explain(),

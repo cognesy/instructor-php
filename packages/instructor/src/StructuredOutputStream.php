@@ -9,7 +9,6 @@ use Cognesy\Instructor\Data\StructuredOutputResponse;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseUpdated;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted;
-use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\Streaming\Sequence\SequenceTracker;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
@@ -89,14 +88,16 @@ class StructuredOutputStream
     }
 
     /**
-     * Returns single update for each completed item of the sequence.
-     * This method is useful when you want to process only fully updated
-     * sequence items, e.g. for visualization or further processing.
+     * Yields individual completed items from a streaming sequence.
      *
-     * @return Generator<Sequenceable>
+     * Each yielded value is a single deserialized item (not a Sequence snapshot).
+     * The full Sequence is available after streaming via finalValue().
+     *
+     * @return Generator<mixed> Individual completed items.
      */
     public function sequence(): Generator {
         $tracker = SequenceTracker::empty();
+        $lastSequence = null;
 
         foreach ($this->streamResponses() as $partialResponse) {
             $value = $this->responseValue($partialResponse);
@@ -113,17 +114,19 @@ class StructuredOutputStream
                 throw new RuntimeException("Expected Sequenceable value in sequence() stream, got {$type}.");
             }
 
+            $lastSequence = $value;
             $result = $tracker->consume($value);
-            foreach ($result->updates as $completedSequence) {
-                yield $completedSequence;
+            foreach ($result->updates as $completedItem) {
+                yield $completedItem;
             }
             $tracker = $result->tracker;
         }
 
-        // Finalize - yield remaining completed items
-        $finalUpdates = $tracker->finalize();
-        foreach ($finalUpdates as $nextFinalItem) {
-            yield $nextFinalItem;
+        // Finalize - yield remaining items (including the last held-back one)
+        if ($lastSequence !== null) {
+            foreach ($tracker->finalize($lastSequence) as $remainingItem) {
+                yield $remainingItem;
+            }
         }
     }
 
@@ -306,4 +309,5 @@ class StructuredOutputStream
         $this->execution = $this->emitter->execution();
         $this->lastValue = $this->execution->output();
     }
+
 }

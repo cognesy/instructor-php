@@ -8,6 +8,7 @@ use Cognesy\Agents\Broadcasting\CanBroadcastAgentEvents;
 use Cognesy\Agents\Continuation\StopReason;
 use Cognesy\Agents\Continuation\StopSignal;
 use Cognesy\Agents\Data\ExecutionState;
+use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Agents\Events\AgentStepCompleted;
 use Cognesy\Agents\Events\AgentStepStarted;
 use Cognesy\Agents\Events\ContinuationEvaluated;
@@ -35,6 +36,7 @@ it('emits agent step events', function () {
 
     $eventBroadcaster->onAgentStepStarted(new AgentStepStarted(
         agentId: 'agent-1',
+        executionId: 'exec-1',
         parentAgentId: null,
         stepNumber: 1,
         messageCount: 2,
@@ -43,6 +45,7 @@ it('emits agent step events', function () {
 
     $eventBroadcaster->onAgentStepCompleted(new AgentStepCompleted(
         agentId: 'agent-1',
+        executionId: 'exec-1',
         parentAgentId: null,
         stepNumber: 1,
         hasToolCalls: false,
@@ -69,6 +72,10 @@ it('emits tool call events', function () {
     $eventBroadcaster = new AgentEventBroadcaster($broadcaster, 'session-1', 'exec-1');
 
     $eventBroadcaster->onToolCallStarted(new ToolCallStarted(
+        agentId: 'agent-1',
+        executionId: 'exec-1',
+        parentAgentId: null,
+        stepNumber: 1,
         tool: 'search',
         args: ['q' => 'hi'],
         startedAt: new DateTimeImmutable(),
@@ -77,6 +84,10 @@ it('emits tool call events', function () {
     $startedAt = new DateTimeImmutable('2026-01-01 00:00:00');
     $completedAt = $startedAt->modify('+2 seconds');
     $eventBroadcaster->onToolCallCompleted(new ToolCallCompleted(
+        agentId: 'agent-1',
+        executionId: 'exec-1',
+        parentAgentId: null,
+        stepNumber: 1,
         tool: 'search',
         success: true,
         error: null,
@@ -109,6 +120,7 @@ it('emits continuation events when enabled', function () {
 
     $eventBroadcaster->onContinuationEvaluated(new ContinuationEvaluated(
         agentId: 'agent-1',
+        executionId: 'exec-1',
         parentAgentId: null,
         stepNumber: 1,
         executionState: ExecutionState::fresh()->withStopSignal($stopSignal),
@@ -129,6 +141,7 @@ it('returns wiretap callable that handles all events', function () {
     // Send events through wiretap
     $wiretap(new AgentStepStarted(
         agentId: 'agent-1',
+        executionId: 'exec-1',
         parentAgentId: null,
         stepNumber: 1,
         messageCount: 2,
@@ -136,6 +149,10 @@ it('returns wiretap callable that handles all events', function () {
     ));
 
     $wiretap(new ToolCallStarted(
+        agentId: 'agent-1',
+        executionId: 'exec-1',
+        parentAgentId: null,
+        stepNumber: 1,
         tool: 'search',
         args: ['q' => 'test'],
         startedAt: new DateTimeImmutable(),
@@ -187,6 +204,7 @@ it('auto-transitions status on lifecycle events', function () {
     // Start step -> status becomes 'processing'
     $eventBroadcaster->onAgentStepStarted(new AgentStepStarted(
         agentId: 'agent-1',
+        executionId: 'exec-1',
         parentAgentId: null,
         stepNumber: 1,
         messageCount: 0,
@@ -206,6 +224,7 @@ it('auto-transitions status on lifecycle events', function () {
 
     $eventBroadcaster->onContinuationEvaluated(new ContinuationEvaluated(
         agentId: 'agent-1',
+        executionId: 'exec-1',
         parentAgentId: null,
         stepNumber: 1,
         executionState: ExecutionState::fresh()->withStopSignal($stopSignal),
@@ -228,6 +247,7 @@ it('maps StopReason to correct status', function () {
     // Start step first to get 'processing' status
     $eventBroadcaster->onAgentStepStarted(new AgentStepStarted(
         agentId: 'agent-1',
+        executionId: 'exec-1',
         parentAgentId: null,
         stepNumber: 1,
         messageCount: 0,
@@ -243,6 +263,7 @@ it('maps StopReason to correct status', function () {
 
     $eventBroadcaster->onContinuationEvaluated(new ContinuationEvaluated(
         agentId: 'agent-1',
+        executionId: 'exec-1',
         parentAgentId: null,
         stepNumber: 1,
         executionState: ExecutionState::fresh()->withStopSignal($stopSignal),
@@ -263,6 +284,7 @@ it('does not duplicate status when already in same state', function () {
     // Two step starts should only emit 'processing' once
     $eventBroadcaster->onAgentStepStarted(new AgentStepStarted(
         agentId: 'agent-1',
+        executionId: 'exec-1',
         parentAgentId: null,
         stepNumber: 1,
         messageCount: 0,
@@ -271,6 +293,7 @@ it('does not duplicate status when already in same state', function () {
 
     $eventBroadcaster->onAgentStepStarted(new AgentStepStarted(
         agentId: 'agent-1',
+        executionId: 'exec-1',
         parentAgentId: null,
         stepNumber: 2,
         messageCount: 0,
@@ -328,6 +351,10 @@ it('includes full tool args in debug mode', function () {
     );
 
     $eventBroadcaster->onToolCallStarted(new ToolCallStarted(
+        agentId: 'agent-1',
+        executionId: 'exec-1',
+        parentAgentId: null,
+        stepNumber: 1,
         tool: 'search',
         args: ['query' => 'test query', 'limit' => 10],
         startedAt: new DateTimeImmutable(),
@@ -354,6 +381,37 @@ it('can be reset for new executions', function () {
     // Second execution
     $eventBroadcaster->onStreamChunk(new StreamEventParsed('World'));
     expect($broadcaster->calls[1]['envelope']['payload']['chunk_index'])->toBe(0);
+});
+
+it('skips failed status during continuation auto-tracking', function () {
+    $broadcaster = new FakeBroadcaster();
+    $eventBroadcaster = new AgentEventBroadcaster($broadcaster, 'session-1', 'exec-1');
+
+    $eventBroadcaster->onAgentStepStarted(new AgentStepStarted(
+        agentId: 'agent-1',
+        executionId: 'exec-1',
+        parentAgentId: null,
+        stepNumber: 1,
+        messageCount: 0,
+        availableTools: 0,
+    ));
+
+    $eventBroadcaster->onContinuationEvaluated(new ContinuationEvaluated(
+        agentId: 'agent-1',
+        executionId: 'exec-1',
+        parentAgentId: null,
+        stepNumber: 1,
+        executionState: ExecutionState::fresh()
+            ->withStatus(ExecutionStatus::Failed),
+    ));
+
+    $statusEvents = array_values(array_filter(
+        $broadcaster->calls,
+        static fn(array $call): bool => $call['envelope']['type'] === 'agent.status',
+    ));
+
+    expect($statusEvents)->toHaveCount(1);
+    expect($statusEvents[0]['envelope']['payload']['status'])->toBe('processing');
 });
 
 it('wiretap ignores raw stream frames and broadcasts parsed chunks only', function () {

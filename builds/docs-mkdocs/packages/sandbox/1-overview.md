@@ -26,7 +26,7 @@ $sandbox = Sandbox::host(ExecutionPolicy::in('/tmp'));
 
 // Dynamic selection
 $sandbox = Sandbox::fromPolicy($policy)->using('docker');
-// @doctest id="2b47"
+// @doctest id="0b7a"
 ```
 
 ### ExecutionPolicy
@@ -38,7 +38,7 @@ $policy = ExecutionPolicy::in('/tmp')
     ->withTimeout(30)
     ->withMemory('256M')
     ->withNetwork(false);
-// @doctest id="ee5d"
+// @doctest id="9f48"
 ```
 
 ### CanExecuteCommand
@@ -52,7 +52,7 @@ function runScript(CanExecuteCommand $sandbox): string {
     $result = $sandbox->execute(['php', 'script.php']);
     return $result->stdout();
 }
-// @doctest id="9a9a"
+// @doctest id="412b"
 ```
 
 ### ExecResult
@@ -72,7 +72,7 @@ $result->truncatedStdout(); // true if stdout exceeded the cap
 $result->truncatedStderr(); // true if stderr exceeded the cap
 $result->combinedOutput();  // stdout + stderr joined
 $result->toArray();         // Full result as associative array
-// @doctest id="c4cb"
+// @doctest id="0fb5"
 ```
 
 ## Supported Drivers

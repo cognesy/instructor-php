@@ -124,8 +124,8 @@ $stream = $structuredOutput
         ])
     ->stream();
 
-foreach ($stream->sequence() as $sequence) {
-    displayEvent($sequence->last());
+foreach ($stream->sequence() as $item) {
+    displayEvent($item);
 }
 
 $events = $stream->finalValue();

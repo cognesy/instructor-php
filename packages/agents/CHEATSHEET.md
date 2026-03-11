@@ -243,7 +243,35 @@ Session events include:
 - `SessionLoaded`, `SessionActionExecuted`, `SessionSaved`
 - `SessionLoadFailed`, `SessionSaveFailed`
 
-## 13. Testing
+## 14. Skills
+
+- `Capability\Skills\Skill`
+  - immutable skill value object
+  - standard fields: `name`, `description`, `license`, `compatibility`, `metadata`, `allowedTools`
+  - extension fields: `disableModelInvocation`, `userInvocable`, `argumentHint`, `model`, `context`, `agent`
+  - key API: `render(?string $arguments)`, `renderMetadata()`, `toArray()`
+  - argument substitution: `$ARGUMENTS`, `$ARGUMENTS[N]`, `$N` placeholders
+- `Capability\Skills\SkillLibrary`
+  - discovers `SKILL.md` files in `<path>/<skill-name>/SKILL.md`
+  - lazy-loads skill content on first access, caches result
+  - key API: `listSkills(modelInvocable, userInvocable)`, `hasSkill()`, `getSkill()`, `renderSkillList()`
+  - resource discovery: scans `scripts/`, `references/`, `assets/`, `examples/` subdirs
+- `Capability\Skills\LoadSkillTool`
+  - tool exposed to LLM: `load_skill(skill_name, list_skills, arguments)`
+  - user-invocable filtering on list mode
+- `Capability\Skills\AppendSkillMetadataHook`
+  - injects skill names/descriptions as system message before first step
+  - filters out `disable-model-invocation: true` skills
+- `Capability\Skills\SkillPreprocessor`
+  - executes `!`command`` patterns in skill body before argument substitution
+  - configurable working directory and timeout
+  - opt-in: pass to `UseSkills` or `LoadSkillTool` constructor
+- `Capability\Skills\UseSkills`
+  - capability that wires `LoadSkillTool` + hooks into agent
+  - optional `?SkillPreprocessor` for shell preprocessing
+- follows [Agent Skills Open Standard](https://agentskills.io) (30+ tools)
+
+## 15. Testing
 
 - `Drivers\Testing\FakeAgentDriver`
   - scripted loop steps via `ScenarioStep`
@@ -260,7 +288,7 @@ Session events include:
 - `Cognesy\Sandbox\Testing\FakeSandbox`
   - deterministic process-execution seam for bash-backed tools
 
-## 13. Docs Index
+## 16. Docs Index
 
 Read in this order:
 
@@ -273,3 +301,4 @@ Read in this order:
 7. `packages/agents/docs/14-agent-templates.md`
 8. `packages/agents/docs/15-subagents.md`
 9. `packages/agents/docs/16-session-runtime.md`
+10. `packages/agents/docs/19-skills.md`

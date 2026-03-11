@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Extras\Sequence;
 
 use ArrayAccess;
+use ArrayIterator;
 use Cognesy\Instructor\Contracts\Sequenceable;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
@@ -14,7 +15,6 @@ use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
 use Cognesy\Schema\Contracts\CanProvideSchema;
 use Cognesy\Schema\Data\Schema;
 use Cognesy\Schema\SchemaFactory;
-use Cognesy\Utils\Collection\ArrayList;
 use IteratorAggregate;
 use ReflectionClass;
 use Traversable;
@@ -36,8 +36,8 @@ final class Sequence implements
     private string $name;
     private string $description;
 
-    /** @var ArrayList<object> */
-    private ArrayList $items;
+    /** @var list<object> */
+    private array $items = [];
 
     public function __construct(
         string $class = '',
@@ -49,7 +49,6 @@ final class Sequence implements
         $this->class = $class;
         $this->name = $name;
         $this->description = $description;
-        $this->items = ArrayList::empty();
     }
 
     #[\Override]
@@ -59,56 +58,55 @@ final class Sequence implements
 
     #[\Override]
     public function toArray() : array {
-        return $this->items->toArray();
+        return $this->items;
     }
 
     public function all() : array {
-        return $this->items->toArray();
+        return $this->items;
     }
 
     #[\Override]
     public function count(): int {
-        return $this->items->count();
+        return count($this->items);
     }
 
     #[\Override]
     public function get(int $index) : mixed {
-        return $this->items->getOrNull($index);
+        return $this->items[$index] ?? null;
     }
 
     public function first() : mixed {
-        return $this->items->first();
+        return $this->items[0] ?? null;
     }
 
     public function last() : mixed {
-        return $this->items->last();
+        if ($this->items === []) {
+            return null;
+        }
+        return $this->items[array_key_last($this->items)];
     }
 
     #[\Override]
     public function push(mixed $item) : void {
-        $this->items = $this->items->withAppended($item);
+        $this->items[] = $item;
     }
 
     #[\Override]
     public function pop() : mixed {
-        if ($this->items->isEmpty()) {
+        if ($this->items === []) {
             return null;
         }
-
-        $lastIndex = $this->items->count() - 1;
-        $item = $this->items->last();
-        $this->items = $this->items->withRemovedAt($lastIndex);
-        return $item;
+        return array_pop($this->items);
     }
 
     #[\Override]
     public function isEmpty() : bool {
-        return $this->items->isEmpty();
+        return $this->items === [];
     }
 
     #[\Override]
     public function getIterator() : Traversable {
-        return $this->items->getIterator();
+        return new ArrayIterator($this->items);
     }
 
     #[\Override]
@@ -135,21 +133,20 @@ final class Sequence implements
         $returnedList = $data['list'] ?? $data['properties']['list'] ?? [];
 
         if (!is_array($returnedList)) {
-            $this->items = ArrayList::empty();
+            $this->items = [];
             return $this;
         }
 
         /** @var class-string<object> $class */
         $class = $this->class;
-        $list = [];
+        $this->items = [];
 
         foreach ($returnedList as $item) {
             if (is_array($item)) {
-                $list[] = $this->deserializer->fromArray($item, $class);
+                $this->items[] = $this->deserializer->fromArray($item, $class);
             }
         }
 
-        $this->items = ArrayList::fromArray($list);
         return $this;
     }
 
@@ -157,7 +154,7 @@ final class Sequence implements
     public function validate(): ValidationResult {
         $validationErrors = [];
 
-        foreach ($this->items->toArray() as $item) {
+        foreach ($this->items as $item) {
             $result = $this->validator->validate($item);
             if ($result->isInvalid()) {
                 $validationErrors[] = $result->getErrors();
@@ -177,7 +174,7 @@ final class Sequence implements
             return false;
         }
 
-        return $this->items->getOrNull($offset) !== null;
+        return array_key_exists($offset, $this->items);
     }
 
     #[\Override]
@@ -186,13 +183,13 @@ final class Sequence implements
             return null;
         }
 
-        return $this->items->getOrNull($offset);
+        return $this->items[$offset] ?? null;
     }
 
     #[\Override]
     public function offsetSet(mixed $offset, mixed $value): void {
         if ($offset === null) {
-            $this->push($value);
+            $this->items[] = $value;
             return;
         }
 
@@ -200,9 +197,7 @@ final class Sequence implements
             return;
         }
 
-        $items = $this->items->toArray();
-        $items[$offset] = $value;
-        $this->items = ArrayList::fromArray(array_values($items));
+        $this->items[$offset] = $value;
     }
 
     #[\Override]
@@ -211,12 +206,11 @@ final class Sequence implements
             return;
         }
 
-        $items = $this->items->toArray();
-        if (!array_key_exists($offset, $items)) {
+        if (!array_key_exists($offset, $this->items)) {
             return;
         }
 
-        unset($items[$offset]);
-        $this->items = ArrayList::fromArray(array_values($items));
+        unset($this->items[$offset]);
+        $this->items = array_values($this->items);
     }
 }

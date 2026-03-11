@@ -186,11 +186,10 @@ class InferenceStream
 
         while ($this->deltaStream->valid()) {
             $delta = $this->deltaStream->current();
-            $this->deltaStream->next();
-
             assert($delta instanceof PartialInferenceDelta);
 
             $visibleDelta = $this->advanceState($delta);
+            $this->deltaStream->next();
             if ($visibleDelta === null) {
                 continue;
             }
@@ -235,7 +234,10 @@ class InferenceStream
      * Dispatches events and calls callback for the visible delta.
      */
     private function notifyOnDelta(PartialInferenceDelta $delta): void {
-        $this->events->dispatch(new PartialInferenceDeltaCreated($delta));
+        $this->events->dispatch(new PartialInferenceDeltaCreated(
+            executionId: $this->execution->id->toString(),
+            partialInferenceDelta: $delta,
+        ));
 
         if ($this->onDelta !== null) {
             ($this->onDelta)($delta);

@@ -18,7 +18,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $answer = Inference::using('openai')
     ->withMessages('What is the capital of France?')
     ->get();
-// @doctest id="2bb4"
+// @doctest id="9325"
 ```
 
 The `using()` static method resolves a named preset from your configuration, while
@@ -40,7 +40,7 @@ $inference = new Inference();
 $answer = $inference
     ->withMessages([['role' => 'user', 'content' => 'Explain event sourcing briefly.']])
     ->get();
-// @doctest id="c883"
+// @doctest id="6aef"
 ```
 
 You may also use the `with()` method, which accepts all request parameters at once:
@@ -52,7 +52,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $answer = (new Inference)->with(
     messages: 'What is the capital of France?',
 )->get();
-// @doctest id="405f"
+// @doctest id="d9e8"
 ```
 
 
@@ -104,7 +104,7 @@ $messages = [
 $answer = Inference::using('openai')
     ->withMessages($messages)
     ->get();
-// @doctest id="53a2"
+// @doctest id="a6b9"
 ```
 
 
@@ -123,7 +123,7 @@ $answer = Inference::using('openai')
     ->withModel('gpt-4o')
     ->withOptions(['temperature' => 0.7, 'max_tokens' => 200])
     ->get();
-// @doctest id="2eb4"
+// @doctest id="1347"
 ```
 
 You can also set all parameters at once via the `with()` convenience method:
@@ -137,7 +137,7 @@ $answer = Inference::using('openai')->with(
     model: 'gpt-4o',
     options: ['temperature' => 0.9, 'max_tokens' => 100],
 )->get();
-// @doctest id="2674"
+// @doctest id="54c2"
 ```
 
 
@@ -159,7 +159,7 @@ $stream = Inference::using('openai')
 foreach ($stream->deltas() as $delta) {
     echo $delta->contentDelta;
 }
-// @doctest id="674d"
+// @doctest id="11df"
 ```
 
 Each `PartialInferenceDelta` exposes the `contentDelta` string for the incremental
@@ -180,7 +180,7 @@ $stream->onDelta(fn($delta) => print($delta->contentDelta));
 
 // Drain the stream to trigger callbacks
 $stream->all();
-// @doctest id="4629"
+// @doctest id="17b8"
 ```
 
 After the stream completes, call `final()` to retrieve the assembled
@@ -203,7 +203,7 @@ $response = Inference::using('openai')
 $text = $response->content();
 $usage = $response->usage();
 $finishReason = $response->finishReason();
-// @doctest id="842c"
+// @doctest id="a5f6"
 ```
 
 The response object provides access to content, reasoning content (for models that
@@ -225,7 +225,7 @@ $question = 'What is the capital of France?';
 $openai = Inference::using('openai')->withMessages($question)->get();
 $anthropic = Inference::using('anthropic')->withMessages($question)->get();
 $gemini = Inference::using('gemini')->withMessages($question)->get();
-// @doctest id="e978"
+// @doctest id="8509"
 ```
 
 Available presets include `openai`, `anthropic`, `gemini`, `mistral`, `groq`,
@@ -248,7 +248,7 @@ model: gpt-4.1-nano
 maxTokens: 1024
 contextLength: 1000000
 maxOutputLength: 16384
-# @doctest id="ff78"
+# @doctest id="882e"
 ```
 
 Polyglot resolves presets from several locations, searched in order:
@@ -275,7 +275,7 @@ $answer = Inference::using('openai')
     ->withMessages('Explain machine learning in one sentence.')
     ->withModel('gpt-4o')
     ->get();
-// @doctest id="74c1"
+// @doctest id="bc4c"
 ```
 
 
@@ -293,7 +293,7 @@ $base = Inference::using('openai')->withOptions(['temperature' => 0.3]);
 
 $precise = $base->withModel('gpt-4o');
 $fast = $base->withModel('gpt-4.1-mini');
-// @doctest id="627c"
+// @doctest id="8364"
 ```
 
 Both `$precise` and `$fast` inherit the temperature setting without affecting

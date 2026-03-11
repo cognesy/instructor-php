@@ -13,6 +13,7 @@ final class AgentExecutionStarted extends AgentEvent
 
     public function __construct(
         public readonly string $agentId,
+        public readonly string $executionId,
         public readonly ?string $parentAgentId,
         public readonly int $messageCount,
         public readonly int $availableTools,
@@ -21,6 +22,7 @@ final class AgentExecutionStarted extends AgentEvent
 
         parent::__construct([
             'agentId' => $this->agentId,
+            'executionId' => $this->executionId,
             'parentAgentId' => $this->parentAgentId,
             'messages' => $this->messageCount,
             'tools' => $this->availableTools,

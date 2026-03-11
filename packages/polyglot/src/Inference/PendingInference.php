@@ -53,6 +53,10 @@ class PendingInference
         return $this->session->stream();
     }
 
+    public function executionId() : string {
+        return $this->session->executionId();
+    }
+
     public function asJson() : string {
         return $this->response()
             ->findJsonData()

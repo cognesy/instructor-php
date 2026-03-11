@@ -8,7 +8,7 @@ Sets up the Instructor package in your Laravel application. This is the recommen
 
 ```bash
 php artisan instructor:install
-# @doctest id="7e83"
+# @doctest id="e16e"
 ```
 
 ### What It Does
@@ -51,7 +51,7 @@ Next steps:
      php artisan instructor:test
 
 Instructor installed successfully!
-// @doctest id="cd5a"
+// @doctest id="cd1a"
 ```
 
 ---
@@ -62,7 +62,7 @@ Tests your Instructor installation and API configuration by making a real API ca
 
 ```bash
 php artisan instructor:test
-# @doctest id="ce81"
+# @doctest id="ba5c"
 ```
 
 ### What It Does
@@ -91,7 +91,7 @@ php artisan instructor:test --connection=anthropic
 
 # Test raw inference
 php artisan instructor:test --inference
-# @doctest id="f7b9"
+# @doctest id="e110"
 ```
 
 ### Example Output
@@ -107,7 +107,7 @@ API Key ............................................ sk-a...xyz1 done
 Testing structured output extraction... done
 
 Structured output test completed!
-// @doctest id="3c56"
+// @doctest id="a7b1"
 ```
 
 Use the `-v` flag for verbose output, which includes a full stack trace if the test fails.
@@ -120,7 +120,7 @@ Generates a new response model class with typed constructor properties, docblock
 
 ```bash
 php artisan make:response-model {name}
-# @doctest id="48b1"
+# @doctest id="1d05"
 ```
 
 ### Arguments
@@ -144,7 +144,7 @@ php artisan make:response-model {name}
 
 ```bash
 php artisan make:response-model PersonData
-# @doctest id="b93d"
+# @doctest id="0ef1"
 ```
 
 Creates `app/ResponseModels/PersonData.php`:
@@ -172,14 +172,14 @@ final class PersonData
         public readonly ?string $email = null,
     ) {}
 }
-// @doctest id="e0ca"
+// @doctest id="2f48"
 ```
 
 #### Collection Response Model
 
 ```bash
 php artisan make:response-model ProductList --collection
-# @doctest id="58a1"
+# @doctest id="bfde"
 ```
 
 Creates a model with an array of typed items, plus a companion item class in the same file:
@@ -200,14 +200,14 @@ final class ProductListItem
         public readonly ?string $description = null,
     ) {}
 }
-// @doctest id="8368"
+// @doctest id="1bff"
 ```
 
 #### Nested Objects Response Model
 
 ```bash
 php artisan make:response-model CompanyProfile --nested
-# @doctest id="4744"
+# @doctest id="edad"
 ```
 
 Creates a model with nested Contact and Address objects:
@@ -240,14 +240,14 @@ final class CompanyProfileAddress
         public readonly ?string $postalCode = null,
     ) {}
 }
-// @doctest id="a2d3"
+// @doctest id="ffa3"
 ```
 
 #### With Description
 
 ```bash
 php artisan make:response-model Invoice --description="Represents an invoice extracted from PDF documents"
-# @doctest id="c082"
+# @doctest id="ed04"
 ```
 
 Creates a model with the specified description replacing the TODO placeholder in the docblock.
@@ -260,7 +260,7 @@ Publish the stubs to customize the templates used by `make:response-model`:
 
 ```bash
 php artisan vendor:publish --tag=instructor-stubs
-# @doctest id="064a"
+# @doctest id="d394"
 ```
 
 This copies stubs to `stubs/instructor/` in your application root:
@@ -270,7 +270,7 @@ stubs/instructor/
 +-- response-model.stub
 +-- response-model.collection.stub
 +-- response-model.nested.stub
-// @doctest id="699d"
+// @doctest id="bc59"
 ```
 
 The command checks for published stubs first, falling back to the package defaults only when no custom stub is found.
@@ -318,7 +318,7 @@ class ExtractInvoiceCommand extends Command
         return self::SUCCESS;
     }
 }
-// @doctest id="2994"
+// @doctest id="6fb9"
 ```
 
 ---

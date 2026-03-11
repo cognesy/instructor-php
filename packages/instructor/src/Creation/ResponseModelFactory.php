@@ -113,9 +113,18 @@ class ResponseModelFactory
             name: $schemaName,
             description: $schemaDescription,
         );
+        $isStructureSchema = match (true) {
+            $class === \stdClass::class => true,
+            $class === Structure::class => true,
+            is_subclass_of($class, Structure::class) => true,
+            default => false,
+        };
+        $resolvedClass = match (true) {
+            $isStructureSchema => Structure::class,
+            default => $class,
+        };
         $instance = match (true) {
-            $class === Structure::class,
-            is_subclass_of($class, Structure::class) => Structure::fromSchema($schema),
+            $isStructureSchema => Structure::fromSchema($schema),
             default => $this->makeInstance($class),
         };
         $jsonSchema = $requestedModel;
@@ -126,7 +135,7 @@ class ResponseModelFactory
             schemaName: $schemaName,
         );
         return $this->buildResponseModel(
-            class: $class,
+            class: $resolvedClass,
             instance: $instance,
             schema: $schema,
             jsonSchema: $jsonSchema,

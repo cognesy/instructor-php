@@ -2,19 +2,20 @@
 
 namespace Cognesy\Instructor\Streaming\Sequence;
 
-use Cognesy\Utils\Profiler\TracksObjectCreation;
-
 /**
- * Result of consuming a Sequenceable update with SequenceTracker.
+ * Result of consuming a Sequenceable update.
+ *
+ * Contains the advanced tracker and a list of individual completed items
+ * (not Sequence snapshots).
  */
 final readonly class SequenceTrackingResult
 {
-    use TracksObjectCreation;
-
+    /**
+     * @param SequenceTracker $tracker Advanced tracker state.
+     * @param list<mixed> $updates Individual completed items.
+     */
     public function __construct(
         public SequenceTracker $tracker,
-        public SequenceUpdateList $updates,
-    ) {
-        $this->trackObjectCreation();
-    }
+        public array $updates,
+    ) {}
 }

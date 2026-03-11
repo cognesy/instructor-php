@@ -15,9 +15,10 @@ it('serializes streamed deltas without requiring accumulated response snapshots'
         value: ['name' => 'Ann'],
     );
 
-    $event = new PartialInferenceDeltaCreated($delta);
+    $event = new PartialInferenceDeltaCreated('inference-1', $delta);
     $payload = $event->toArray();
 
+    expect($payload['executionId'])->toBe('inference-1');
     expect($payload['partialInferenceDelta'])->toMatchArray([
         'contentDelta' => 'Hel',
         'reasoningContentDelta' => 'thinking',

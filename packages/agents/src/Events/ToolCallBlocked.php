@@ -13,6 +13,10 @@ final class ToolCallBlocked extends AgentEvent
     public readonly DateTimeImmutable $blockedAt;
 
     public function __construct(
+        public readonly string $agentId,
+        public readonly string $executionId,
+        public readonly ?string $parentAgentId,
+        public readonly int $stepNumber,
         public readonly string $tool,
         public readonly array $args,
         public readonly string $reason,
@@ -21,6 +25,10 @@ final class ToolCallBlocked extends AgentEvent
         $this->blockedAt = new DateTimeImmutable();
 
         parent::__construct([
+            'agentId' => $this->agentId,
+            'executionId' => $this->executionId,
+            'parentAgentId' => $this->parentAgentId,
+            'step' => $this->stepNumber,
             'tool' => $this->tool,
             'args' => $this->args,
             'reason' => $this->reason,

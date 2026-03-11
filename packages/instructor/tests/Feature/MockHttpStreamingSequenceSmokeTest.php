@@ -43,13 +43,11 @@ final class MockHttpStreamingSequenceSmokeTest extends TestCase
             ->withStreaming(true)
             ->stream();
 
-        // Collect sequence updates; should yield progressively
-        $updates = iterator_to_array($stream->sequence());
-        $this->assertNotEmpty($updates);
-        $last = end($updates);
-        $this->assertInstanceOf(SequenceModel::class, $last);
-        $this->assertSame(2, $last->count());
-        $this->assertSame(1, $last->get(0)->x);
-        $this->assertSame(2, $last->get(1)->x);
+        // Collect individual completed items from sequence
+        $items = iterator_to_array($stream->sequence());
+        $this->assertNotEmpty($items);
+        $this->assertCount(2, $items);
+        $this->assertSame(1, $items[0]->x);
+        $this->assertSame(2, $items[1]->x);
     }
 }

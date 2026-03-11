@@ -1,6 +1,6 @@
 ---
 title: Overview
-description: 'Agent-Ctrl provides a unified, fluent PHP API for orchestrating CLI-based code agents such as Claude Code, OpenAI Codex, and OpenCode.'
+description: 'Agent-Ctrl provides a unified, fluent PHP API for orchestrating CLI-based code agents such as Claude Code, OpenAI Codex, OpenCode, and Pi.'
 ---
 
 ## Introduction
@@ -11,7 +11,7 @@ The package ships as part of the Instructor-PHP monorepo and can be installed st
 
 ```bash
 composer require cognesy/agent-ctrl
-# @doctest id="42a0"
+# @doctest id="4d0c"
 ```
 
 ## Entry Point
@@ -26,10 +26,12 @@ use Cognesy\AgentCtrl\Enum\AgentType;
 AgentCtrl::claudeCode();   // Returns ClaudeCodeBridgeBuilder
 AgentCtrl::codex();        // Returns CodexBridgeBuilder
 AgentCtrl::openCode();     // Returns OpenCodeBridgeBuilder
+AgentCtrl::pi();           // Returns PiBridgeBuilder
+AgentCtrl::gemini();       // Returns GeminiBridgeBuilder
 
 // Runtime selection via enum
 AgentCtrl::make(AgentType::from('codex'));
-// @doctest id="be53"
+// @doctest id="752f"
 ```
 
 Each factory method returns a bridge builder -- a fluent configuration object that lets you set the model, timeout, working directory, streaming callbacks, and agent-specific options before calling `execute()` or `executeStreaming()`.
@@ -56,12 +58,12 @@ $response = AgentCtrl::claudeCode()
 if ($response->isSuccess()) {
     echo $response->text();
 }
-// @doctest id="752e"
+// @doctest id="e226"
 ```
 
 ## Core Capabilities
 
-**Unified API across agents.** Switch between Claude Code, Codex, and OpenCode without changing your application's control flow or response handling. The same `execute()` call and `AgentResponse` shape work with every bridge.
+**Unified API across agents.** Switch between Claude Code, Codex, OpenCode, and Pi without changing your application's control flow or response handling. The same `execute()` call and `AgentResponse` shape work with every bridge.
 
 **Real-time streaming.** Register `onText()`, `onToolUse()`, `onComplete()`, and `onError()` callbacks to receive incremental updates while the agent works. Streaming and final-result access are not mutually exclusive -- `executeStreaming()` returns the complete `AgentResponse` when the agent finishes.
 
@@ -69,11 +71,11 @@ if ($response->isSuccess()) {
 
 **Configurable execution environment.** Set the working directory, execution timeout, and sandbox driver (Host, Docker, Podman, Firejail, or Bubblewrap). The sandbox integration runs through the Instructor-PHP `Sandbox` package, providing consistent process isolation across all agents.
 
-**Normalized tool call tracking.** Every tool invocation -- whether it is a Claude Code tool use, a Codex command execution or file change, or an OpenCode tool call -- is normalized into a `ToolCall` DTO with a tool name, input parameters, optional output, call ID, and error flag.
+**Normalized tool call tracking.** Every tool invocation -- whether it is a Claude Code tool use, a Codex command execution or file change, an OpenCode tool call, or a Pi tool execution -- is normalized into a `ToolCall` DTO with a tool name, input parameters, optional output, call ID, and error flag.
 
 **Observable execution pipeline.** The builder emits granular events at every stage of the execution lifecycle: request building, command spec creation, sandbox initialization, process start/completion, stream chunk processing, response parsing, and data extraction. Connect the built-in `AgentCtrlConsoleLogger` via `wiretap()` for color-coded console output during development.
 
-**Binary preflight checks.** Before every execution, `CliBinaryGuard` verifies that the required CLI binary (`claude`, `codex`, or `opencode`) is available in the system `PATH`. If the binary is missing, a clear exception is thrown immediately -- before any prompt is sent.
+**Binary preflight checks.** Before every execution, `CliBinaryGuard` verifies that the required CLI binary (`claude`, `codex`, `opencode`, or `pi`) is available in the system `PATH`. If the binary is missing, a clear exception is thrown immediately -- before any prompt is sent.
 
 ## Supported Agents
 
@@ -89,6 +91,14 @@ OpenAI's `codex` CLI. Best suited when you want Codex-specific sandbox controls 
 
 The `opencode` CLI. Best suited when you want flexible model selection using provider-prefixed model IDs (e.g., `anthropic/claude-sonnet-4-5`), named agent selection, file attachments, session sharing, and session titles. Returns both token usage and cost data when available.
 
+### Pi
+
+The `pi` CLI (from pi-mono). A minimal, aggressively extensible terminal coding harness. Best suited when you want thinking level control (6 levels from off to xhigh), multi-provider model selection, TypeScript extensions, skills, fine-grained tool selection, system prompt control, and ephemeral sessions. Returns both token usage and cost data.
+
+### Gemini
+
+The `gemini` CLI (from @google/gemini-cli). Google's terminal coding agent with a free tier. Best suited when you want model aliases (pro, flash, flash-lite), approval modes (default, auto_edit, yolo, plan), sandbox isolation (Seatbelt, Docker, Podman, gVisor), extensions, MCP server integration, policy-based tool approval, and include directories. Returns token usage data.
+
 ## Documentation
 
 - [Getting Started](/agent-ctrl/getting-started) -- Installation, first request, and basic configuration
@@ -100,3 +110,5 @@ The `opencode` CLI. Best suited when you want flexible model selection using pro
 - [Claude Code Bridge](/agent-ctrl/claude-code-bridge) -- System prompts, permissions, turns, and Claude Code-specific features
 - [Codex Bridge](/agent-ctrl/codex-bridge) -- Sandbox modes, auto-approval, images, and Codex-specific features
 - [OpenCode Bridge](/agent-ctrl/opencode-bridge) -- Model flexibility, agents, files, sharing, and OpenCode-specific features
+- [Pi Bridge](/agent-ctrl/pi-bridge) -- Thinking levels, extensions, skills, tool control, and Pi-specific features
+- [Gemini Bridge](/agent-ctrl/gemini-bridge) -- Approval modes, sandbox, extensions, MCP servers, and Gemini-specific features

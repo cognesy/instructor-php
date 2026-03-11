@@ -11,11 +11,19 @@ use DateTimeImmutable;
 final class ToolCallStarted extends AgentEvent
 {
     public function __construct(
+        public readonly string $agentId,
+        public readonly string $executionId,
+        public readonly ?string $parentAgentId,
+        public readonly int $stepNumber,
         public readonly string $tool,
         public readonly mixed $args,
         public readonly DateTimeImmutable $startedAt,
     ) {
         parent::__construct([
+            'agentId' => $this->agentId,
+            'executionId' => $this->executionId,
+            'parentAgentId' => $this->parentAgentId,
+            'step' => $this->stepNumber,
             'tool' => $this->tool,
             'args' => $this->args,
             'at' => $this->startedAt->format(DateTimeImmutable::ATOM),

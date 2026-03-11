@@ -47,7 +47,7 @@ class FakeEmitterForSequence implements CanEmitStreamingUpdates {
     }
 }
 
-it('yields sequence updates only when new items complete and dispatches events', function () {
+it('yields individual completed items from sequence and dispatches events', function () {
     $dispatcher = new TestEventDispatcher();
 
     $seq = new Sequence();
@@ -69,23 +69,21 @@ it('yields sequence updates only when new items complete and dispatches events',
     $emitter = new FakeEmitterForSequence($generator, $initial);
     $stream = new StructuredOutputStream($initial, $emitter, $dispatcher);
 
-    $updates = iterator_to_array($stream->sequence());
-    // Expect: yields previous sequence when new item completes, then final sequence at end
-    expect(count($updates))->toBe(2);
-    expect($updates[0])->toBeInstanceOf(Sequence::class);
-    expect($updates[1])->toBeInstanceOf(Sequence::class);
-    expect($updates[0]->count())->toBe(1);
-    expect($updates[1]->count())->toBe(2);
+    $items = iterator_to_array($stream->sequence());
+
+    // sequence() yields individual completed items
+    expect(count($items))->toBe(2);
+    expect($items[0])->toBe(['x' => 1]);
+    expect($items[1])->toBe(['x' => 2]);
 
     // Events dispatched: StructuredOutputStarted (constructor) + multiple StructuredOutputResponseUpdated (per-item)
-    // StructuredOutputResponseGenerated only fires from finalResponse(), not from sequence()
     $types = array_map(fn($e) => get_class($e), $dispatcher->events);
     expect(array_filter($types, fn($t) => str_contains($t, 'StructuredOutputStarted')))->not()->toBeEmpty();
     expect(array_filter($types, fn($t) => str_contains($t, 'StructuredOutputResponseUpdated')))->not()->toBeEmpty();
     expect(array_filter($types, fn($t) => str_contains($t, 'StructuredOutputResponseGenerated')))->toBeEmpty();
 });
 
-it('skips partial responses without parsed values before sequence snapshots appear', function () {
+it('skips partial responses without parsed values before sequence items appear', function () {
     $dispatcher = new TestEventDispatcher();
 
     $generator = (function () {
@@ -105,9 +103,9 @@ it('skips partial responses without parsed values before sequence snapshots appe
         $dispatcher,
     );
 
-    $updates = iterator_to_array($stream->sequence(), false);
+    $items = iterator_to_array($stream->sequence(), false);
 
-    expect($updates)->toHaveCount(1);
-    expect($updates[0])->toBeInstanceOf(Sequence::class);
-    expect($updates[0]->count())->toBe(1);
+    // The single item is finalized (held back then released)
+    expect($items)->toHaveCount(1);
+    expect($items[0])->toBe(['x' => 1]);
 });

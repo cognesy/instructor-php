@@ -23,7 +23,7 @@ interface CanProcessInferenceRequest
 
     public function capabilities(?string $model = null): DriverCapabilities;
 }
-// @doctest id="3c89"
+// @doctest id="c43b"
 ```
 
 | Method | Purpose |
@@ -59,7 +59,7 @@ $config = new LLMConfig(
 $text = Inference::fromConfig($config, drivers: $drivers)
     ->withMessages('Hello from Acme!')
     ->get();
-// @doctest id="c6a6"
+// @doctest id="b0a5"
 ```
 
 ### Registering a Driver Factory
@@ -83,7 +83,7 @@ $drivers = BundledInferenceDrivers::registry()
             }
         };
     });
-// @doctest id="31b9"
+// @doctest id="6844"
 ```
 
 This factory approach is particularly useful when you want to extend an existing driver with
@@ -107,7 +107,7 @@ $runtime = InferenceRuntime::fromConfig(
 );
 
 $inference = Inference::fromRuntime($runtime);
-// @doctest id="c486"
+// @doctest id="e2e1"
 ```
 
 Or use the `drivers` parameter on `Inference::fromConfig()` or `Inference::using()`:
@@ -120,7 +120,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $text = Inference::using('acme', drivers: $drivers)
     ->withMessages('Hello!')
     ->get();
-// @doctest id="3617"
+// @doctest id="40b3"
 ```
 
 ### Implementing a Full Driver
@@ -148,7 +148,7 @@ interface CanHandleVectorization
     public function handle(EmbeddingsRequest $request): HttpResponse;
     public function fromData(array $data): ?EmbeddingsResponse;
 }
-// @doctest id="c184"
+// @doctest id="d71b"
 ```
 
 Register a custom embeddings driver using the static `registerDriver` method on the
@@ -161,7 +161,7 @@ use App\Polyglot\AcmeEmbeddingsDriver;
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
 Embeddings::registerDriver('acme', AcmeEmbeddingsDriver::class);
-// @doctest id="9578"
+// @doctest id="6370"
 ```
 
 Once registered, use the driver name in your `EmbeddingsConfig`:
@@ -181,7 +181,7 @@ $embeddings = Embeddings::fromConfig(new EmbeddingsConfig(
     dimensions: 768,
     maxInputs: 100,
 ));
-// @doctest id="612c"
+// @doctest id="b8de"
 ```
 
 Like inference drivers, you can also pass a callable factory instead of a class string:
@@ -195,7 +195,7 @@ use Cognesy\Polyglot\Embeddings\Embeddings;
 Embeddings::registerDriver('acme', function ($config, $httpClient, $events) {
     return new AcmeEmbeddingsDriver($config, $httpClient, $events);
 });
-// @doctest id="0c5d"
+// @doctest id="96ce"
 ```
 
 > **Note:** Embeddings driver registration is global (static). Once registered, the driver is
@@ -219,7 +219,7 @@ $drivers = BundledInferenceDrivers::registry()
 // Replace a driver
 $drivers = BundledInferenceDrivers::registry()
     ->withDriver('openai', MyCustomOpenAIDriver::class);
-// @doctest id="2707"
+// @doctest id="fdf3"
 ```
 
 
@@ -283,5 +283,5 @@ $runtime->wiretap(function ($event) {
 $response = Inference::fromRuntime($runtime)
     ->withMessages('Hello!')
     ->get();
-// @doctest id="6b92"
+// @doctest id="9bb9"
 ```

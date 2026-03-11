@@ -21,12 +21,12 @@ $config = new HttpClientConfig(
     streamHeaderTimeout: 5,
     failOnError: false,
 );
-// @doctest id="e75b"
+// @doctest id="5d01"
 ```
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `driver` | `string` | `'curl'` | Which driver to use (`curl`, `guzzle`, `symfony`, `exthttp`) |
+| `driver` | `string` | `'curl'` | Which driver to use (`curl`, `guzzle`, `symfony`) |
 | `connectTimeout` | `int` | `3` | Maximum seconds to wait for connection establishment |
 | `requestTimeout` | `int` | `30` | Maximum seconds for the entire request-response cycle |
 | `idleTimeout` | `int` | `-1` | Maximum seconds between data packets (`-1` disables) |
@@ -61,7 +61,7 @@ $client = (new HttpClientBuilder())
         failOnError: true,
     ))
     ->create();
-// @doctest id="c7a8"
+// @doctest id="c782"
 ```
 
 Or create the client directly:
@@ -73,7 +73,7 @@ $client = HttpClient::fromConfig(new HttpClientConfig(
     driver: 'symfony',
     requestTimeout: 120,
 ));
-// @doctest id="c3dc"
+// @doctest id="192d"
 ```
 
 ## DSN Strings
@@ -84,7 +84,7 @@ For environments where configuration comes from environment variables or strings
 $client = (new HttpClientBuilder())
     ->withDsn('driver=symfony,connectTimeout=2,requestTimeout=20,streamHeaderTimeout=5,failOnError=true')
     ->create();
-// @doctest id="cc94"
+// @doctest id="bc62"
 ```
 
 DSN values are automatically coerced to the correct types -- integers for timeout fields, booleans for `failOnError`, and strings for `driver`.
@@ -98,7 +98,7 @@ $base = new HttpClientConfig(driver: 'guzzle', requestTimeout: 30);
 $strict = $base->withOverrides(['failOnError' => true, 'requestTimeout' => 60]);
 
 $client = HttpClient::fromConfig($strict);
-// @doctest id="d796"
+// @doctest id="f4f8"
 ```
 
 Only the fields you specify in the override array are changed; everything else carries forward from the base config.
@@ -114,7 +114,7 @@ $config = HttpClientConfig::fromArray([
     'requestTimeout' => 45,
     'failOnError' => true,
 ]);
-// @doctest id="43f0"
+// @doctest id="94a8"
 ```
 
 ## Debug Configuration
@@ -138,7 +138,7 @@ $client = (new HttpClientBuilder())
         httpResponseStreamByLine: true,
     ))
     ->create();
-// @doctest id="7a58"
+// @doctest id="8d2d"
 ```
 
 | Option | Default | Description |
@@ -183,7 +183,7 @@ $downloadConfig = new HttpClientConfig(
     requestTimeout: 300,
     idleTimeout: 30,
 );
-// @doctest id="4918"
+// @doctest id="d96e"
 ```
 
 ### Environment-Based Configuration
@@ -201,7 +201,7 @@ $config = new HttpClientConfig(
     requestTimeout: $timeout,
     failOnError: getenv('APP_ENV') !== 'production',
 );
-// @doctest id="d8b7"
+// @doctest id="64ff"
 ```
 
 ## See Also

@@ -23,7 +23,7 @@ $shouldStop = match (true) {
     $hasToolCalls => false,                            // model requested more tool calls
     default => true,                                   // no tool calls = conversation complete
 };
-// @doctest id="4fd8"
+// @doctest id="5a06"
 ```
 
 In plain terms:
@@ -48,7 +48,7 @@ $signal = new StopSignal(
     context: ['currentSteps' => 10, 'maxSteps' => 10],
     source: MyGuard::class,
 );
-// @doctest id="6e68"
+// @doctest id="0b17"
 ```
 
 | Property | Type | Description |
@@ -75,7 +75,7 @@ $signal->toArray();
 
 // Restore from serialized data
 $restored = StopSignal::fromArray($data);
-// @doctest id="4eb3"
+// @doctest id="8b88"
 ```
 
 ### Creating Signals from Exceptions
@@ -85,7 +85,7 @@ When an `AgentStopException` is caught by the loop, the exception is converted t
 ```php
 $signal = StopSignal::fromStopException($exception);
 // Creates a signal with reason StopRequested and the exception's message/context
-// @doctest id="5080"
+// @doctest id="2a25"
 ```
 
 ### Emitting Stop Signals from Hooks
@@ -112,7 +112,7 @@ class CustomGuard implements HookInterface
         return $context;
     }
 }
-// @doctest id="aad4"
+// @doctest id="c71b"
 ```
 
 The `withStopSignal()` method on `AgentState` appends the signal to the execution's `ExecutionContinuation` state. The loop checks `shouldStop()` after processing hooks at the end of each step.
@@ -132,7 +132,7 @@ $signals = $signals->withSignal($tokenLimitSignal);
 $signals->hasAny();     // true
 $signals->first();      // Returns the first signal added
 $signals->toString();   // "steps_limit: Step limit reached: 10/10 | token_limit: Token limit reached"
-// @doctest id="12cd"
+// @doctest id="7538"
 ```
 
 Each `withSignal()` call returns a new instance. The collection supports full serialization through `toArray()` and `fromArray()`.
@@ -162,7 +162,7 @@ Each `StopReason` has a numeric priority that determines its severity. Lower num
 ```php
 $reason->priority();        // Returns the numeric priority (0-9)
 $reason->compare($other);   // Spaceship comparison using <=> operator
-// @doctest id="963f"
+// @doctest id="d027"
 ```
 
 ### Distinguishing Graceful Stops from Forced Stops
@@ -175,7 +175,7 @@ StopReason::FinishReasonReceived->wasForceStopped();  // false -- model signaled
 StopReason::StepsLimitReached->wasForceStopped();     // true  -- resource limit hit
 StopReason::StopRequested->wasForceStopped();         // true  -- explicit tool stop
 StopReason::ErrorForbade->wasForceStopped();          // true  -- error prevented continuation
-// @doctest id="c4a9"
+// @doctest id="7222"
 ```
 
 <a name="agent-stop-exception"></a>
@@ -204,7 +204,7 @@ class SubmitAnswerTool extends BaseTool
         );
     }
 }
-// @doctest id="872e"
+// @doctest id="85e7"
 ```
 
 The exception carries several properties for rich diagnostic context:
@@ -227,7 +227,7 @@ throw new AgentStopException(
     context: ['tasks_completed' => 5],
     source: self::class,
 );
-// @doctest id="3256"
+// @doctest id="0fe3"
 ```
 
 ### Common Use Cases for AgentStopException
@@ -249,7 +249,7 @@ class TaskCompleteTool extends BaseTool
         );
     }
 }
-// @doctest id="6197"
+// @doctest id="2872"
 ```
 
 **Error-driven stop** -- Halt when a tool encounters an unrecoverable error:
@@ -272,7 +272,7 @@ class CriticalOperationTool extends BaseTool
         }
     }
 }
-// @doctest id="9bfd"
+// @doctest id="6c39"
 ```
 
 <a name="execution-continuation"></a>
@@ -294,7 +294,7 @@ $continuation = ExecutionContinuation::fresh();
 $continuation->shouldStop();               // false (no signals present)
 $continuation->isContinuationRequested();   // false
 $continuation->stopSignals()->hasAny();     // false
-// @doctest id="d50a"
+// @doctest id="0ad5"
 ```
 
 ### Modifying Continuation State
@@ -310,7 +310,7 @@ $continuation = $continuation->withContinuationRequested(true);
 
 // Replace all stop signals at once
 $continuation = $continuation->withStopSignals($newSignals);
-// @doctest id="7d77"
+// @doctest id="aed5"
 ```
 
 ### Overriding Stop Signals with Continuation
@@ -331,7 +331,7 @@ $hook = new CallableHook(function (HookContext $ctx): HookContext {
     $state = $state->withExecutionContinued();
     return $ctx->withState($state);
 });
-// @doctest id="851a"
+// @doctest id="4f1d"
 ```
 
 The `withExecutionContinued()` method on `AgentState` sets the continuation flag to `true`, which causes `shouldStop()` to return `false` even though stop signals are present. This gives hooks the power to implement recovery strategies before allowing the loop to terminate.
@@ -347,7 +347,7 @@ $continuation->explain();
 // "Stop Signals: steps_limit: Step limit reached: 10/10; Continuation Requested: No"
 // or
 // "No Stop Signals; Continuation Requested: No"
-// @doctest id="3333"
+// @doctest id="ab21"
 ```
 
 <a name="inspecting-after"></a>
@@ -370,7 +370,7 @@ if ($continuation->stopSignals()->hasAny()) {
 // Or get a human-readable explanation
 echo $continuation->explain();
 // "Stop Signals: steps_limit: Step limit reached: 10/10; Continuation Requested: No"
-// @doctest id="221c"
+// @doctest id="771c"
 ```
 
 <a name="serialization"></a>
@@ -390,7 +390,7 @@ $signals = StopSignals::fromArray($data);
 // ExecutionContinuation
 $data = $continuation->toArray();
 $continuation = ExecutionContinuation::fromArray($data);
-// @doctest id="72c7"
+// @doctest id="5d6a"
 ```
 
 This makes it straightforward to persist the complete stop state alongside agent state when saving executions to a database or transferring them across process boundaries.
@@ -412,7 +412,7 @@ $agent = AgentBuilder::base()
     ))
     ->withTools([new SubmitAnswerTool()])
     ->build();
-// @doctest id="abd9"
+// @doctest id="7a67"
 ```
 
 In this configuration, the agent will stop when any of these conditions is met:

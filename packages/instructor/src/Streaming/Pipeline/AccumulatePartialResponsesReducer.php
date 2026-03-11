@@ -136,7 +136,15 @@ final class AccumulatePartialResponsesReducer implements Reducer
     private function accumulateDelta(PartialInferenceDelta $delta): StructuredOutputStreamState
     {
         $this->state->applyDelta($delta);
-        $this->state->setValue($delta->value);
+        if ($delta->value !== null) {
+            $this->state->setValue($delta->value);
+            return $this->state;
+        }
+
+        if ($delta->contentDelta !== '' || $delta->toolArgs !== '') {
+            $this->state->clearValue();
+        }
+
         return $this->state;
     }
 }

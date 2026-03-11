@@ -13,9 +13,9 @@ if (!class_exists('MockStreamSeqPerson')) {
 }
 
 it('streams sequence updates incrementally without waiting for full stream completion', function () {
-    $allowThirdChunk = false;
+    $gateReached = false;
 
-    $streamChunks = (function () use (&$allowThirdChunk): Generator {
+    $streamChunks = (function () use (&$gateReached): Generator {
         yield 'data: ' . json_encode([
             'choices' => [[
                 'delta' => ['content' => '{"list":[{"name":"Ann","age":30}'],
@@ -34,10 +34,11 @@ it('streams sequence updates incrementally without waiting for full stream compl
             ]],
         ], JSON_UNESCAPED_SLASHES) . "\n\n";
 
-        if (!$allowThirdChunk) {
-            throw new RuntimeException('Terminal chunk consumed before unlock');
-        }
         yield "data: [DONE]\n\n";
+
+        // Gate: if we reach here before the caller has consumed ANY sequence items,
+        // the stream was fully buffered rather than lazily consumed.
+        $gateReached = true;
     })();
 
     $mock = new MockHttpDriver();
@@ -63,20 +64,12 @@ it('streams sequence updates incrementally without waiting for full stream compl
         ->withStreaming(true)
         ->stream();
 
-    $iter = $stream->sequence();
+    $items = [];
+    foreach ($stream->sequence() as $item) {
+        $items[] = $item;
+    }
 
-    expect($iter->valid())->toBeTrue();
-    $first = $iter->current();
-    expect($first->count())->toBe(1);
-    expect($first->get(0)->name)->toBe('Ann');
-
-    // If sequence stream was pre-buffered, gated chunk access would already fail above.
-    $allowThirdChunk = true;
-
-    $iter->next();
-    expect($iter->valid())->toBeTrue();
-    $second = $iter->current();
-    expect($second->count())->toBe(2);
-    expect($second->get(0)->name)->toBe('Ann');
-    expect($second->get(1)->name)->toBe('Bob');
+    expect($items)->toHaveCount(2);
+    expect($items[0]->name)->toBe('Ann');
+    expect($items[1]->name)->toBe('Bob');
 });

@@ -8,7 +8,7 @@ final class SkillLibrary
 {
     private const SKILL_FILENAME = 'SKILL.md';
 
-    /** @var array<string, array{name: string, description: string, path: string, dir: string}> */
+    /** @var array<string, array{name: string, description: string, path: string, dir: string, disable-model-invocation: bool, user-invocable: bool, argument-hint: ?string}> */
     private array $metadata;
 
     /** @var array<string, Skill> */
@@ -24,13 +24,25 @@ final class SkillLibrary
         return new self($path);
     }
 
-    /** @return list<array{name: string, description: string}> */
-    public function listSkills(): array {
+    /**
+     * @return list<array{name: string, description: string}>
+     */
+    public function listSkills(
+        ?bool $modelInvocable = null,
+        ?bool $userInvocable = null,
+    ): array {
         $list = [];
         foreach ($this->metadata as $meta) {
+            if ($modelInvocable === true && ($meta['disable-model-invocation'] ?? false)) {
+                continue;
+            }
+            if ($userInvocable === true && !($meta['user-invocable'] ?? true)) {
+                continue;
+            }
             $list[] = [
                 'name' => $meta['name'],
                 'description' => $meta['description'],
+                'argument-hint' => $meta['argument-hint'] ?? null,
             ];
         }
 
@@ -58,21 +70,25 @@ final class SkillLibrary
         return $skill;
     }
 
-    public function renderSkillList(): string {
-        $skills = $this->listSkills();
+    public function renderSkillList(
+        ?bool $modelInvocable = null,
+        ?bool $userInvocable = null,
+    ): string {
+        $skills = $this->listSkills(modelInvocable: $modelInvocable, userInvocable: $userInvocable);
         if ($skills === []) {
             return "(no skills available)";
         }
 
         $lines = ["Available skills:"];
         foreach ($skills as $skill) {
-            $lines[] = "- [{$skill['name']}]: {$skill['description']}";
+            $hint = !empty($skill['argument-hint']) ? " {$skill['argument-hint']}" : '';
+            $lines[] = "- [{$skill['name']}{$hint}]: {$skill['description']}";
         }
 
         return implode("\n", $lines);
     }
 
-    /** @return array<string, array{name: string, description: string, path: string, dir: string}> */
+    /** @return array<string, array{name: string, description: string, path: string, dir: string, disable-model-invocation: bool, user-invocable: bool, argument-hint: ?string}> */
     private function scanDirectory(): array {
         if (!is_dir($this->skillsPath)) {
             return [];
@@ -98,7 +114,7 @@ final class SkillLibrary
         return ($skillFiles !== false) ? $skillFiles : [];
     }
 
-    /** @return array{name: string, description: string, path: string, dir: string}|null */
+    /** @return array{name: string, description: string, path: string, dir: string, disable-model-invocation: bool, user-invocable: bool, argument-hint: ?string}|null */
     private function extractMetadata(string $path): ?array {
         $content = @file_get_contents($path);
         if ($content === false) {
@@ -116,6 +132,9 @@ final class SkillLibrary
             'description' => (string) ($data['description'] ?? ''),
             'path' => $path,
             'dir' => dirname($path),
+            'disable-model-invocation' => (bool) ($data['disable-model-invocation'] ?? false),
+            'user-invocable' => (bool) ($data['user-invocable'] ?? true),
+            'argument-hint' => isset($data['argument-hint']) ? (string) $data['argument-hint'] : null,
         ];
     }
 
@@ -140,14 +159,42 @@ final class SkillLibrary
             description: (string) ($data['description'] ?? ''),
             body: $body,
             path: $path,
+            license: isset($data['license']) ? (string) $data['license'] : null,
+            compatibility: isset($data['compatibility']) ? (string) $data['compatibility'] : null,
+            metadata: is_array($data['metadata'] ?? null) ? $data['metadata'] : [],
+            allowedTools: self::parseAllowedTools($data['allowed-tools'] ?? null),
+            disableModelInvocation: (bool) ($data['disable-model-invocation'] ?? false),
+            userInvocable: (bool) ($data['user-invocable'] ?? true),
+            argumentHint: isset($data['argument-hint']) ? (string) $data['argument-hint'] : null,
+            model: isset($data['model']) ? (string) $data['model'] : null,
+            context: isset($data['context']) ? (string) $data['context'] : null,
+            agent: isset($data['agent']) ? (string) $data['agent'] : null,
             resources: $this->findResources($dir),
         );
     }
 
     /** @return list<string> */
+    private static function parseAllowedTools(mixed $value): array {
+        if ($value === null || $value === '' || $value === []) {
+            return [];
+        }
+        if (is_array($value)) {
+            return array_values(array_map('trim', array_filter($value, 'is_string')));
+        }
+        if (is_string($value)) {
+            // Try comma-delimited first, then space-delimited
+            if (str_contains($value, ',')) {
+                return array_values(array_filter(array_map('trim', explode(',', $value))));
+            }
+            return array_values(array_filter(preg_split('/\s+/', $value)));
+        }
+        return [];
+    }
+
+    /** @return list<string> */
     private function findResources(string $skillDir): array {
         $resources = [];
-        $resourceFolders = ['scripts', 'references', 'assets'];
+        $resourceFolders = ['scripts', 'references', 'assets', 'examples'];
 
         foreach ($resourceFolders as $folder) {
             $resources = array_merge(

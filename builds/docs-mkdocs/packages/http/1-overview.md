@@ -39,7 +39,7 @@ HttpClient
   -> PendingHttpResponse
   -> get() or stream()
   -> HttpResponse
-// @doctest id="182e"
+// @doctest id="7ce6"
 ```
 
 1. You create an `HttpRequest` with a URL, method, headers, and body.
@@ -59,7 +59,7 @@ Your Code
                                                  |
       <- Middleware 1 <- Middleware 2 <- ... <- Driver
     -> HttpResponse
-// @doctest id="a77b"
+// @doctest id="b276"
 ```
 
 **Client layer.** `HttpClient` is the public entry point. It delegates to `HttpClientRuntime`, which wires together the driver, middleware stack, and event dispatcher.
@@ -73,7 +73,6 @@ Your Code
 | `CurlDriver` | PHP cURL extension | None (built-in) |
 | `GuzzleDriver` | Guzzle HTTP | `guzzlehttp/guzzle` |
 | `SymfonyDriver` | Symfony HttpClient | `symfony/http-client` |
-| `ExtHttpDriver` | pecl_http | `pecl/http` |
 | `MockHttpDriver` | Built-in test double | None |
 
 ## Immutability
@@ -86,7 +85,7 @@ $request = $request->withHeader('Authorization', 'Bearer ' . $token);
 
 // Wrong -- the return value is discarded
 $request->withHeader('Authorization', 'Bearer ' . $token);
-// @doctest id="dfd9"
+// @doctest id="1f18"
 ```
 
 ## Pooling

@@ -5,16 +5,12 @@ use Cognesy\Instructor\Streaming\Sequence\SequenceTracker;
 
 final class CountingSequence implements Sequenceable
 {
-    public static int $popCount = 0;
-
     /**
      * @param list<mixed> $items
      */
-    public function __construct(private array $items = []) {}
-
-    public static function resetCounters(): void {
-        self::$popCount = 0;
-    }
+    public function __construct(
+        private array $items = [],
+    ) {}
 
     /**
      * @param list<mixed> $items
@@ -45,7 +41,6 @@ final class CountingSequence implements Sequenceable
 
     #[\Override]
     public function pop(): mixed {
-        self::$popCount++;
         return array_pop($this->items);
     }
 
@@ -60,37 +55,48 @@ final class CountingSequence implements Sequenceable
     }
 }
 
-it('emits pending sequence snapshots while keeping last item mutable', function() {
+it('emits individual completed items while keeping last item pending', function() {
     $sequence = CountingSequence::fromItems(['a', 'b', 'c']);
 
     $result = SequenceTracker::empty()->consume($sequence);
-    $snapshots = array_map(
-        fn(Sequenceable $update): array => $update->toArray(),
-        $result->updates->toArray(),
-    );
 
-    expect($snapshots)->toBe([
-        ['a'],
-        ['a', 'b'],
-    ]);
+    // With 3 items, 'a' and 'b' are confirmed, 'c' is held back
+    expect($result->updates)->toBe(['a', 'b']);
 });
 
-it('finalize emits full sequence snapshot once', function() {
+it('finalize emits remaining items', function() {
     $sequence = CountingSequence::fromItems(['a', 'b', 'c']);
-    $tracker = SequenceTracker::empty()->consume($sequence)->tracker;
+    $result = SequenceTracker::empty()->consume($sequence);
 
-    $updates = $tracker->finalize()->toArray();
+    $remaining = $result->tracker->finalize($sequence);
 
-    expect($updates)->toHaveCount(1)
-        ->and($updates[0]->toArray())->toBe(['a', 'b', 'c']);
+    // Only 'c' was held back
+    expect($remaining)->toBe(['c']);
 });
 
-it('generates pending updates with linear pop count', function() {
-    CountingSequence::resetCounters();
+it('emits individual items for each completed entry', function() {
     $items = range(1, 8);
     $sequence = CountingSequence::fromItems($items);
 
-    SequenceTracker::empty()->consume($sequence);
+    $result = SequenceTracker::empty()->consume($sequence);
 
-    expect(CountingSequence::$popCount)->toBe(count($items) - 1);
+    // With 8 items, items 1-7 are confirmed (last kept pending)
+    expect($result->updates)->toHaveCount(7);
+    expect($result->updates)->toBe(range(1, 7));
+});
+
+it('incremental consume tracks emitted position', function() {
+    // First batch: 3 items
+    $seq1 = CountingSequence::fromItems(['a', 'b', 'c']);
+    $result1 = SequenceTracker::empty()->consume($seq1);
+    expect($result1->updates)->toBe(['a', 'b']);
+
+    // Second batch: 5 items (2 new)
+    $seq2 = CountingSequence::fromItems(['a', 'b', 'c', 'd', 'e']);
+    $result2 = $result1->tracker->consume($seq2);
+    expect($result2->updates)->toBe(['c', 'd']);
+
+    // Finalize
+    $remaining = $result2->tracker->finalize($seq2);
+    expect($remaining)->toBe(['e']);
 });

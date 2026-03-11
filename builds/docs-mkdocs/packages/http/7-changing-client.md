@@ -7,14 +7,13 @@ One of the core design goals of this package is driver independence. You write y
 
 ## Available Drivers
 
-The package ships with four production drivers and one test driver:
+The package ships with three production drivers and one test driver:
 
 | Driver name | Library | Package |
 |-------------|---------|---------|
 | `curl` | PHP cURL extension | Built-in (no dependency) |
 | `guzzle` | Guzzle HTTP | `guzzlehttp/guzzle` |
 | `symfony` | Symfony HttpClient | `symfony/http-client` |
-| `exthttp` | pecl_http | `pecl/http` |
 | (mock) | Built-in test double | Built-in |
 
 The default driver is `curl`, which requires no additional dependencies since the cURL extension is included with most PHP installations.
@@ -30,10 +29,6 @@ Guzzle is a mature, feature-rich HTTP client with its own middleware ecosystem, 
 ### SymfonyDriver
 
 The Symfony HttpClient offers native HTTP/2 support, automatic content-type detection, and multiple transports (native PHP, cURL, amphp). It is the natural choice for Symfony applications.
-
-### ExtHttpDriver
-
-The pecl_http driver integrates with the `pecl/http` extension for environments where it is available.
 
 ## Switching Drivers
 
@@ -53,7 +48,7 @@ $client = HttpClient::fromConfig(new HttpClientConfig(driver: 'symfony'));
 
 // Use cURL (default)
 $client = HttpClient::fromConfig(new HttpClientConfig(driver: 'curl'));
-// @doctest id="1556"
+// @doctest id="0a65"
 ```
 
 ### Via the Builder
@@ -67,7 +62,7 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 $client = (new HttpClientBuilder())
     ->withConfig(new HttpClientConfig(driver: 'guzzle'))
     ->create();
-// @doctest id="fb49"
+// @doctest id="b6b2"
 ```
 
 ### Injecting a Driver Directly
@@ -80,7 +75,7 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 $client = (new HttpClientBuilder())
     ->withDriver($myCustomDriver)
     ->create();
-// @doctest id="d730"
+// @doctest id="8fc9"
 ```
 
 Or use the static shorthand:
@@ -89,7 +84,7 @@ Or use the static shorthand:
 use Cognesy\Http\HttpClient;
 
 $client = HttpClient::fromDriver($myCustomDriver);
-// @doctest id="3622"
+// @doctest id="a498"
 ```
 
 ## Reusing a Vendor Client Instance
@@ -108,7 +103,7 @@ $guzzle = new Client([
 $client = (new HttpClientBuilder())
     ->withClientInstance('guzzle', $guzzle)
     ->create();
-// @doctest id="26ac"
+// @doctest id="dd34"
 ```
 
 The `withClientInstance()` method selects the driver by name and passes your vendor client to it, so the driver uses your instance instead of creating its own.
@@ -121,7 +116,7 @@ use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
 $client = (new HttpClientBuilder())
     ->withClientInstance('symfony', SymfonyHttpClient::create(['timeout' => 30]))
     ->create();
-// @doctest id="f71b"
+// @doctest id="6b9a"
 ```
 
 ## Using the Mock Driver
@@ -141,7 +136,7 @@ $client = (new HttpClientBuilder())
         );
     })
     ->create();
-// @doctest id="6d13"
+// @doctest id="1828"
 ```
 
 ## Request Code Stays the Same
@@ -158,7 +153,7 @@ $response = $client->send(new HttpRequest(
 ))->get();
 
 echo $response->body();
-// @doctest id="b508"
+// @doctest id="1e52"
 ```
 
 This code works identically with cURL, Guzzle, Symfony, or the mock driver.

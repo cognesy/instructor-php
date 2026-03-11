@@ -1,5 +1,4 @@
 <?php
-
 use Cognesy\Agents\Events\AgentExecutionStarted;
 use Cognesy\Agents\Events\InferenceRequestStarted;
 use Cognesy\Agents\Events\Support\AgentEventConsoleFormatter;
@@ -10,6 +9,7 @@ it('formats execution started with context and label', function () {
 
     $line = $formatter->format(new AgentExecutionStarted(
         agentId: 'agent-1111-2222-3333-4444',
+        executionId: 'exec-1111-2222-3333-4444',
         parentAgentId: 'parent-aaaa-bbbb-cccc-dddd',
         messageCount: 2,
         availableTools: 3,
@@ -22,20 +22,17 @@ it('formats execution started with context and label', function () {
     expect($line?->message)->toContain('tools=3');
 });
 
-it('uses tracked context for tool events that do not carry agent id', function () {
+it('uses tool event context directly', function () {
     $formatter = new AgentEventConsoleFormatter();
 
-    $formatter->format(new AgentExecutionStarted(
-        agentId: 'agent-1111-2222-3333-4444',
-        parentAgentId: null,
-        messageCount: 1,
-        availableTools: 1,
-    ));
-
     $line = $formatter->format(new ToolCallStarted(
+        agentId: 'agent-1111-2222-3333-4444',
+        executionId: 'exec-1111-2222-3333-4444',
+        parentAgentId: null,
+        stepNumber: 1,
         tool: 'search',
         args: ['q' => 'Paris'],
-        startedAt: new DateTimeImmutable(),
+        startedAt: new \DateTimeImmutable(),
     ));
 
     expect($line)->not->toBeNull();
@@ -49,6 +46,7 @@ it('respects inference visibility toggle', function () {
 
     $line = $formatter->format(new InferenceRequestStarted(
         agentId: 'agent-1111-2222-3333-4444',
+        executionId: 'exec-1111-2222-3333-4444',
         parentAgentId: null,
         stepNumber: 1,
         messageCount: 2,

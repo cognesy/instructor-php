@@ -45,8 +45,8 @@ $stream = StructuredOutput::using('openai')
     )
     ->stream();
 
-foreach ($stream->sequence() as $sequence) {
-    dump($sequence->last());
+foreach ($stream->sequence() as $item) {
+    dump($item);
 }
 
 $list = $stream->finalValue();

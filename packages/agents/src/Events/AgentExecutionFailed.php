@@ -17,6 +17,7 @@ final class AgentExecutionFailed extends AgentEvent
 
     public function __construct(
         public readonly string          $agentId,
+        public readonly string          $executionId,
         public readonly ?string         $parentAgentId,
         public readonly Throwable       $exception,
         public readonly ExecutionStatus $status,
@@ -28,6 +29,7 @@ final class AgentExecutionFailed extends AgentEvent
 
         parent::__construct([
             'agentId' => $this->agentId,
+            'executionId' => $this->executionId,
             'parentAgentId' => $this->parentAgentId,
             'error' => $this->exception->getMessage(),
             'errorType' => get_class($this->exception),

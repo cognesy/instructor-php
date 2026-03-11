@@ -81,13 +81,13 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
             }
 
             // Emit tool call started event
-            $this->emitToolCallStarted($toolCall, new DateTimeImmutable());
+            $this->emitToolCallStarted($toolCall, $state, new DateTimeImmutable());
 
             // Execute the tool call
             $execution = $this->executeToolCall($toolCall, $state);
 
             // Emit tool call completed event
-            $this->emitToolCallCompleted($execution);
+            $this->emitToolCallCompleted($execution, $state);
 
             // After tool use hook
             $hookContext = $this->interceptor->intercept(HookContext::afterToolUse($state, $execution));
@@ -197,16 +197,24 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
 
     // EVENT EMISSION ////////////////////////////////////////////
 
-    private function emitToolCallStarted(ToolCall $toolCall, DateTimeImmutable $startedAt): void {
+    private function emitToolCallStarted(ToolCall $toolCall, AgentState $state, DateTimeImmutable $startedAt): void {
         $this->events->dispatch(new ToolCallStarted(
+            agentId: $state->agentId()->toString(),
+            executionId: $state->execution()?->executionId()->toString() ?? '',
+            parentAgentId: $state->parentAgentId() !== null ? (string) $state->parentAgentId() : null,
+            stepNumber: $state->stepCount() + 1,
             tool: $toolCall->name(),
             args: $toolCall->args(),
             startedAt: $startedAt,
         ));
     }
 
-    private function emitToolCallCompleted(ToolExecution $execution): void {
+    private function emitToolCallCompleted(ToolExecution $execution, AgentState $state): void {
         $this->events->dispatch(new ToolCallCompleted(
+            agentId: $state->agentId()->toString(),
+            executionId: $state->execution()?->executionId()->toString() ?? '',
+            parentAgentId: $state->parentAgentId() !== null ? (string) $state->parentAgentId() : null,
+            stepNumber: $state->stepCount() + 1,
             tool: $execution->toolCall()->name(),
             success: $execution->result()->isSuccess(),
             error: $execution->errorAsString(),

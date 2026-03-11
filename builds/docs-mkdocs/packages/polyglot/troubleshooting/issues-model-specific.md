@@ -26,7 +26,7 @@ $text = Inference::using('openai')
     ->withModel('gpt-4.1-nano')
     ->withMessages('Hello')
     ->get();
-// @doctest id="5319"
+// @doctest id="b587"
 ```
 
 Models are periodically deprecated or renamed by providers. If a model that previously worked suddenly fails, check the provider's release notes for changes.
@@ -76,7 +76,7 @@ $text = Inference::using('openai')
     ->withMessages('What is 2 + 2?')
     ->withTools($myTools)
     ->get();
-// @doctest id="63b0"
+// @doctest id="41e9"
 ```
 
 ## JSON and Structured Output Support
@@ -113,7 +113,7 @@ $stream = Inference::using('openai')
 foreach ($stream->deltas() as $delta) {
     echo $delta->contentDelta;
 }
-// @doctest id="f9cf"
+// @doctest id="7f18"
 ```
 
 ## Vision and Multimodal Capabilities
@@ -155,7 +155,7 @@ $response = withFallback(
     ['gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano'],
     'Explain general relativity.',
 );
-// @doctest id="9dcb"
+// @doctest id="d542"
 ```
 
 ## Debugging Approach

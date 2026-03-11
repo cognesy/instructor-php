@@ -153,20 +153,16 @@ it('sequence: streaming yields updates with complete items', function () {
         ->withResponseObject(Sequence::of(SmokeItem::class))
         ->create();
 
-    $updates = [];
-    foreach ($pending->stream()->sequence() as $seq) {
-        $updates[] = $seq;
+    $items = [];
+    foreach ($pending->stream()->sequence() as $item) {
+        $items[] = $item;
     }
 
-    // We should observe completed snapshots as items get finalized
-    expect(count($updates))->toBeGreaterThanOrEqual(2);
-    $first = $updates[0];
-    expect($first)->toBeInstanceOf(Sequence::class);
-    expect($first->all())->toHaveCount(1);
-    expect($first->get(0)->title)->toBe('A');
-    $last = end($updates);
-    expect($last->all())->toHaveCount(2);
-    expect($last->get(1)->title)->toBe('B');
+    // We should get individual completed items
+    expect(count($items))->toBeGreaterThanOrEqual(2);
+    expect($items[0])->toBeInstanceOf(SmokeItem::class);
+    expect($items[0]->title)->toBe('A');
+    expect($items[1]->title)->toBe('B');
 });
 
 // 5) Tools mode: sync and streaming

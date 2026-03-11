@@ -4,6 +4,7 @@ namespace Cognesy\Agents\Tests\Unit\Tools;
 
 use Cognesy\Agents\Capability\Skills\LoadSkillTool;
 use Cognesy\Agents\Capability\Skills\SkillLibrary;
+use Cognesy\Agents\Capability\Skills\SkillPreprocessor;
 use Cognesy\Agents\Tests\Support\TestHelpers;
 
 describe('LoadSkillTool', function () {
@@ -102,5 +103,33 @@ SKILL;
 
         expect($schema->name())->toBe('load_skill');
         expect($schema->parameters())->toBeArray();
+    });
+
+    it('preprocesses shell commands in skill body', function () {
+        $skillDir = $this->tempDir . '/dynamic';
+        mkdir($skillDir, 0755, true);
+        file_put_contents($skillDir . '/SKILL.md', "---\nname: dynamic\ndescription: Dynamic skill\n---\nVersion: !\x60echo 42\x60");
+
+        $library = new SkillLibrary($this->tempDir);
+        $preprocessor = new SkillPreprocessor();
+        $tool = LoadSkillTool::fromLibrary($library, preprocessor: $preprocessor);
+
+        $result = $tool(skill_name: 'dynamic');
+
+        expect($result)->toContain('Version: 42');
+        expect($result)->not->toContain('echo');
+    });
+
+    it('skips preprocessing when no preprocessor configured', function () {
+        $skillDir = $this->tempDir . '/no-preprocess';
+        mkdir($skillDir, 0755, true);
+        file_put_contents($skillDir . '/SKILL.md', "---\nname: no-preprocess\ndescription: No preprocessing\n---\nVersion: !\x60echo 42\x60");
+
+        $library = new SkillLibrary($this->tempDir);
+        $tool = LoadSkillTool::fromLibrary($library);
+
+        $result = $tool(skill_name: 'no-preprocess');
+
+        expect($result)->toContain("!\x60echo 42\x60");
     });
 });

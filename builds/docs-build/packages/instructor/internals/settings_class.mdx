@@ -37,7 +37,7 @@ $config = LLMConfig::fromArray($data);
 
 // From a DSN string
 $config = LLMConfig::fromDsn('openai://sk-...@api.openai.com/v1?model=gpt-4o');
-// @doctest id="a6eb"
+// @doctest id="c9fd"
 ```
 
 ### `StructuredOutputConfig`
@@ -55,7 +55,7 @@ $config = new StructuredOutputConfig(
     toolName: 'extract_data',
     toolDescription: 'Extract structured data from the input.',
 );
-// @doctest id="d9f4"
+// @doctest id="2279"
 ```
 
 Key settings:
@@ -90,7 +90,7 @@ $runtime = new StructuredOutputRuntime(
     validators: [MyValidator::class],
     transformers: [MyTransformer::class],
 );
-// @doctest id="485a"
+// @doctest id="0c5b"
 ```
 
 

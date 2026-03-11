@@ -11,6 +11,10 @@ use DateTimeImmutable;
 final class ToolCallCompleted extends AgentEvent
 {
     public function __construct(
+        public readonly string $agentId,
+        public readonly string $executionId,
+        public readonly ?string $parentAgentId,
+        public readonly int $stepNumber,
         public readonly string $tool,
         public readonly bool $success,
         public readonly ?string $error,
@@ -18,6 +22,10 @@ final class ToolCallCompleted extends AgentEvent
         public readonly DateTimeImmutable $completedAt,
     ) {
         parent::__construct([
+            'agentId' => $this->agentId,
+            'executionId' => $this->executionId,
+            'parentAgentId' => $this->parentAgentId,
+            'step' => $this->stepNumber,
             'tool' => $this->tool,
             'success' => $this->success,
             'error' => $this->error,

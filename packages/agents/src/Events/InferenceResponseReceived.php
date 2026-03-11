@@ -15,22 +15,26 @@ final class InferenceResponseReceived extends AgentEvent
 
     public function __construct(
         public readonly string $agentId,
+        public readonly string $executionId,
         public readonly ?string $parentAgentId,
         public readonly int $stepNumber,
         public readonly ?Usage $usage,
         public readonly ?string $finishReason,
         public readonly DateTimeImmutable $requestStartedAt,
+        public readonly ?string $inferenceExecutionId = null,
     ) {
         $this->receivedAt = new DateTimeImmutable();
 
         parent::__construct([
             'agentId' => $this->agentId,
+            'executionId' => $this->executionId,
             'parentAgentId' => $this->parentAgentId,
             'step' => $this->stepNumber,
             'inputTokens' => $this->usage?->inputTokens,
             'outputTokens' => $this->usage?->outputTokens,
             'finishReason' => $this->finishReason,
             'duration_ms' => $this->getDurationMs(),
+            'inferenceExecutionId' => $this->inferenceExecutionId,
         ]);
     }
 

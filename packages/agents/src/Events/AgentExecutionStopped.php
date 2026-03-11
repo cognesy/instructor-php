@@ -14,6 +14,7 @@ final class AgentExecutionStopped extends AgentEvent
 
     public function __construct(
         public readonly string      $agentId,
+        public readonly string      $executionId,
         public readonly ?string     $parentAgentId,
         public readonly StopReason  $stopReason,
         public readonly string      $stopMessage,
@@ -24,6 +25,7 @@ final class AgentExecutionStopped extends AgentEvent
 
         parent::__construct([
             'agentId' => $this->agentId,
+            'executionId' => $this->executionId,
             'parentAgentId' => $this->parentAgentId,
             'stopReason' => $this->stopReason->value,
             'stopMessage' => $this->stopMessage,

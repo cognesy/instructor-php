@@ -27,12 +27,12 @@ it('partials engine emits all completed sequence items including final one', fun
         ->withResponseObject(Sequence::of('SeqPerson'))
         ->create();
 
-    $updates = iterator_to_array($pending->stream()->sequence());
+    $items = iterator_to_array($pending->stream()->sequence());
 
-    // We expect 4 snapshots: after 1st, 2nd, 3rd, and final (4th)
-    expect(count($updates))->toBe(4);
-    expect($updates[0]->count())->toBe(1);
-    expect($updates[1]->count())->toBe(2);
-    expect($updates[2]->count())->toBe(3);
-    expect($updates[3]->count())->toBe(4);
+    // We expect 4 individual completed items
+    expect(count($items))->toBe(4);
+    expect($items[0]->name)->toBe('Jason');
+    expect($items[1]->name)->toBe('Jane');
+    expect($items[2]->name)->toBe('John');
+    expect($items[3]->name)->toBe('Anna');
 });

@@ -188,6 +188,8 @@ nav:
           - { Subagents: packages/agents/15-subagents.md }
           - { 'Session Runtime': packages/agents/16-session-runtime.md }
           - { 'Building Tools Advanced': packages/agents/17-building-tools-advanced.md }
+          - { 'Observing Agent Execution': packages/agents/18-observing-agent-execution.md }
+          - { Skills: packages/agents/19-skills.md }
           - { 'Testing Doubles': packages/agents/testing-doubles.md }
       -
         Agent-ctrl:
@@ -202,6 +204,8 @@ nav:
           - { 'Claude Code Bridge': packages/agent-ctrl/8-claude-code-bridge.md }
           - { 'Codex Bridge': packages/agent-ctrl/9-codex-bridge.md }
           - { 'Opencode Bridge': packages/agent-ctrl/10-opencode-bridge.md }
+          - { 'Pi Bridge': packages/agent-ctrl/11-pi-bridge.md }
+          - { 'Gemini Bridge': packages/agent-ctrl/12-gemini-bridge.md }
       -
         Sandbox:
           - { Overview: packages/sandbox/1-overview.md }

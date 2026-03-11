@@ -8,6 +8,7 @@ use Cognesy\Utils\Json\Json;
 final class PartialInferenceDeltaCreated extends InferenceEvent
 {
     public function __construct(
+        public string $executionId,
         public PartialInferenceDelta $partialInferenceDelta,
     ) {
         parent::__construct();
@@ -20,6 +21,7 @@ final class PartialInferenceDeltaCreated extends InferenceEvent
     #[\Override]
     public function toArray() : array {
         return [
+            'executionId' => $this->executionId,
             'partialInferenceDelta' => [
                 'contentDelta' => $this->partialInferenceDelta->contentDelta,
                 'reasoningContentDelta' => $this->partialInferenceDelta->reasoningContentDelta,

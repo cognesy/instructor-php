@@ -34,3 +34,20 @@ it('normalizes leading backslash in x-php-class for json schema', function () {
     expect($model->instanceClass())->toBe(Structure::class)
         ->and($model->instance())->toBeInstanceOf(Structure::class);
 });
+
+it('hydrates Structure when json schema x-php-class is stdClass', function () {
+    $model = makeAnyResponseModel([
+        'x-php-class' => \stdClass::class,
+        'type' => 'object',
+        'name' => 'city',
+        'properties' => [
+            'name' => ['type' => 'string'],
+            'population' => ['type' => 'integer'],
+        ],
+        'required' => ['name'],
+    ]);
+
+    expect($model->instanceClass())->toBe(Structure::class)
+        ->and($model->instance())->toBeInstanceOf(Structure::class)
+        ->and($model->instance()->name())->toBe('city');
+});

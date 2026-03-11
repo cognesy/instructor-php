@@ -14,19 +14,23 @@ final class InferenceRequestStarted extends AgentEvent
 
     public function __construct(
         public readonly string $agentId,
+        public readonly string $executionId,
         public readonly ?string $parentAgentId,
         public readonly int $stepNumber,
         public readonly int $messageCount,
         public readonly ?string $model = null,
+        public readonly ?string $inferenceExecutionId = null,
     ) {
         $this->startedAt = new DateTimeImmutable();
 
         parent::__construct([
             'agentId' => $this->agentId,
+            'executionId' => $this->executionId,
             'parentAgentId' => $this->parentAgentId,
             'step' => $this->stepNumber,
             'messages' => $this->messageCount,
             'model' => $this->model,
+            'inferenceExecutionId' => $this->inferenceExecutionId,
         ]);
     }
 

@@ -313,6 +313,8 @@
                 "packages/agents/15-subagents",
                 "packages/agents/16-session-runtime",
                 "packages/agents/17-building-tools-advanced",
+                "packages/agents/18-observing-agent-execution",
+                "packages/agents/19-skills",
                 "packages/agents/testing-doubles"
             ]
         },
@@ -329,7 +331,9 @@
                 "packages/agent-ctrl/7-troubleshooting",
                 "packages/agent-ctrl/8-claude-code-bridge",
                 "packages/agent-ctrl/9-codex-bridge",
-                "packages/agent-ctrl/10-opencode-bridge"
+                "packages/agent-ctrl/10-opencode-bridge",
+                "packages/agent-ctrl/11-pi-bridge",
+                "packages/agent-ctrl/12-gemini-bridge"
             ]
         },
         {

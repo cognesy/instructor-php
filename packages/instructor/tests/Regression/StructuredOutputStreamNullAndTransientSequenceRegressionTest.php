@@ -36,7 +36,7 @@ it('partials() skips null updates emitted before sequence value appears', functi
     expect(in_array(null, $partials, true))->toBeFalse();
 });
 
-it('sequence() ignores transient non-sequence partial values and yields finalized sequence', function () {
+it('sequence() ignores transient non-sequence partial values and yields finalized items', function () {
     $chunks = [
         new PartialInferenceDelta(value: ['tool_fragment' => true]),
         new PartialInferenceDelta(contentDelta: '{"list":[{"name":"Alice","age":25}]}', finishReason: 'stop'),
@@ -54,10 +54,8 @@ it('sequence() ignores transient non-sequence partial values and yields finalize
             responseModel: Sequence::of('SequenceStreamPerson'),
         );
 
-    $updates = iterator_to_array($pending->stream()->sequence(), false);
+    $items = iterator_to_array($pending->stream()->sequence(), false);
 
-    expect($updates)->toHaveCount(1);
-    expect($updates[0])->toBeInstanceOf(Sequence::class);
-    expect($updates[0]->count())->toBe(1);
-    expect($updates[0]->toArray()[0]->name)->toBe('Alice');
+    expect($items)->toHaveCount(1);
+    expect($items[0]->name)->toBe('Alice');
 });

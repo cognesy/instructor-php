@@ -111,6 +111,20 @@ Getters:
 - `combinedOutput(): string`
 - `toArray(): array`
 
+## Value Objects
+
+`Argv`:
+
+- `Argv::of(array $items): Argv`
+- `with(string $value): Argv`
+- `toArray(): array`
+
+`CommandSpec`:
+
+- `new CommandSpec(Argv $argv, ?string $stdin = null)`
+- `argv(): Argv`
+- `stdin(): ?string`
+
 ## Testing
 
 `FakeSandbox` (implements `CanExecuteCommand`):

@@ -89,7 +89,7 @@ attempts is always `maxRetries + 1`.
 ```php
 // Allow up to 3 retries (4 total attempts)
 $runtime = $runtime->withMaxRetries(3);
-// @doctest id="f13c"
+// @doctest id="2011"
 ```
 
 When the retry limit is reached without a valid response, a

@@ -1,5 +1,6 @@
 <?php
 
+use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\Drivers\Mock\MockHttpResponseFactory;
@@ -40,5 +41,5 @@ it('throws on HTTP 429 for embeddings', function () {
         ->withInputs(['hello'])
         ->vectors();
 
-    expect($act)->toThrow(RuntimeException::class);
+    expect($act)->toThrow(HttpRequestException::class);
 });

@@ -16,6 +16,7 @@ it('renders continuation evaluated event summary', function () {
     $executionState = ExecutionState::fresh()->withStopSignal($signal);
     $event = new ContinuationEvaluated(
         agentId: 'agent-12345678',
+        executionId: 'exec-12345678',
         parentAgentId: null,
         stepNumber: 2,
         executionState: $executionState,
@@ -35,6 +36,7 @@ it('uses stop signal metadata when provided', function () {
 
     $event = new ContinuationEvaluated(
         agentId: 'agent-12345678',
+        executionId: 'exec-12345678',
         parentAgentId: null,
         stepNumber: 1,
         executionState: $executionState,

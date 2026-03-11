@@ -30,12 +30,9 @@ it('sequence() ignores initial no-value chunks on deterministic fake driver stre
             responseModel: Sequence::of('SequenceNullPartialPerson'),
         );
 
-    $updates = iterator_to_array($pending->stream()->sequence(), false);
+    $items = iterator_to_array($pending->stream()->sequence(), false);
 
-    expect($updates)->toHaveCount(2);
-    expect($updates[0])->toBeInstanceOf(Sequence::class);
-    expect($updates[0]->count())->toBe(1);
-    expect($updates[0]->toArray()[0]->name)->toBe('Alice');
-    expect($updates[1]->count())->toBe(2);
-    expect($updates[1]->toArray()[1]->name)->toBe('Bob');
+    expect($items)->toHaveCount(2);
+    expect($items[0]->name)->toBe('Alice');
+    expect($items[1]->name)->toBe('Bob');
 });

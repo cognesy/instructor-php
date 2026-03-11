@@ -157,6 +157,10 @@ The boundary between `\Core` and `\Hook` is **whether the behavior is optional**
 ## Git Ownership
 
 - Leave all git operations to the human user unless explicitly requested.
+- **CRITICAL REQUIREMENT** - NEVER EXECUTE DESTRUCTIVE GIT COMMANDS WITHOUT EXPLICIT USER PERMISSION.
+- Destructive git commands include anything that can discard, overwrite, detach, stash away, or silently replace local work, including `git reset --hard`, `git checkout -- <path>`, `git restore`, `git clean`, `git stash`, rebases with conflict-side overwrites, or retrieving older file contents over uncommitted work.
+- Before any such command, the agent MUST explain exactly what may be lost or overwritten and make sure the user understands the consequences.
+- If there is any risk of losing uncommitted work from the current session or prior user work, stop and ask first.
 
 <!-- BEGIN BEADS INTEGRATION -->
 ## Issue Tracking with bd (beads)

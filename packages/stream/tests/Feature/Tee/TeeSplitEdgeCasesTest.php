@@ -278,6 +278,44 @@ test('works with custom Iterator implementation', function () {
     expect(iterator_to_array($b2))->toBe(['x', 'y', 'z']);
 });
 
+test('supports iterators that require explicit rewind within Tee', function () {
+    $iterator = new class implements Iterator {
+        private array $data = [1, 2, 3];
+        private int $position = 0;
+        private bool $rewound = false;
+
+        public function current(): mixed {
+            return $this->data[$this->position];
+        }
+
+        public function next(): void {
+            $this->position++;
+        }
+
+        public function key(): mixed {
+            return $this->position;
+        }
+
+        public function valid(): bool {
+            if (!$this->rewound) {
+                return false;
+            }
+
+            return isset($this->data[$this->position]);
+        }
+
+        public function rewind(): void {
+            $this->rewound = true;
+            $this->position = 0;
+        }
+    };
+
+    [$b1, $b2] = Tee::split($iterator);
+
+    expect(iterator_to_array($b1, false))->toBe([1, 2, 3]);
+    expect(iterator_to_array($b2, false))->toBe([1, 2, 3]);
+});
+
 test('works with IteratorAggregate', function () {
     $aggregate = new class implements IteratorAggregate {
         public function getIterator(): Traversable {

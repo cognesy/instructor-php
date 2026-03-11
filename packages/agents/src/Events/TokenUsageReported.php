@@ -15,6 +15,7 @@ final class TokenUsageReported extends AgentEvent
 
     public function __construct(
         public readonly string $agentId,
+        public readonly string $executionId,
         public readonly ?string $parentAgentId,
         public readonly string $operation, // 'llm_call', 'tool_call', 'step'
         public readonly Usage $usage,
@@ -24,6 +25,7 @@ final class TokenUsageReported extends AgentEvent
 
         parent::__construct([
             'agentId' => $this->agentId,
+            'executionId' => $this->executionId,
             'parentAgentId' => $this->parentAgentId,
             'operation' => $this->operation,
             'usage' => $this->usage->toArray(),
