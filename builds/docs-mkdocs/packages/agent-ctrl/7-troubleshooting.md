@@ -11,7 +11,7 @@ The error message identifies the missing binary and provides installation guidan
 
 ```
 Claude Code CLI executable `claude` was not found in PATH. Install Claude Code CLI and ensure `claude` is available in PATH.
-// @doctest id="08a8"
+// @doctest id="6473"
 ```
 
 ### Resolution Steps
@@ -45,7 +45,7 @@ When you call `inDirectory()`, the bridge validates that the directory exists be
 $response = AgentCtrl::claudeCode()
     ->inDirectory('/nonexistent/path')
     ->execute('List files.');
-// @doctest id="e590"
+// @doctest id="bdc9"
 ```
 
 ### Common Causes
@@ -69,7 +69,7 @@ if (!$response->isSuccess()) {
     echo "Agent failed with exit code: {$response->exitCode}\n";
     echo "Partial output: " . $response->text() . "\n";
 }
-// @doctest id="c328"
+// @doctest id="b460"
 ```
 
 ### Common Exit Codes
@@ -92,7 +92,7 @@ The default timeout is 120 seconds. Complex tasks, large codebases, or agents th
 $response = AgentCtrl::claudeCode()
     ->withTimeout(600) // 10 minutes
     ->execute('Perform a comprehensive codebase review.');
-// @doctest id="cfa7"
+// @doctest id="2c61"
 ```
 
 When an execution times out:
@@ -127,7 +127,7 @@ $response = AgentCtrl::openCode()
         error_log("Stream error [{$code}]: {$message}");
     })
     ->executeStreaming('Process this task.');
-// @doctest id="a5f2"
+// @doctest id="730c"
 ```
 
 Stream errors do **not** prevent the execution from completing. The agent may recover and continue working after emitting an error event. The final `AgentResponse` is still returned normally.
@@ -146,7 +146,7 @@ try {
     // Working directory does not exist
     echo "Configuration error: " . $e->getMessage();
 }
-// @doctest id="e19a"
+// @doctest id="3d22"
 ```
 
 The key distinction: stream errors are **data** (delivered via callbacks), while process errors are **exceptions** (thrown and propagated through the call stack).
@@ -167,7 +167,7 @@ try {
 } catch (JsonParsingException $e) {
     echo "Malformed JSON in agent output: " . $e->getMessage();
 }
-// @doctest id="66d1"
+// @doctest id="dcac"
 ```
 
 ### Tolerant Mode
@@ -181,7 +181,7 @@ if ($response->parseFailures() > 0) {
         echo "  Sample: {$sample}\n";
     }
 }
-// @doctest id="da76"
+// @doctest id="ece7"
 ```
 
 ### Common Causes of Parse Failures
@@ -205,7 +205,7 @@ $logger = new AgentCtrlConsoleLogger();
 $response = AgentCtrl::claudeCode()
     ->wiretap($logger->wiretap())
     ->execute('Analyze this codebase.');
-// @doctest id="b679"
+// @doctest id="796b"
 ```
 
 ### Configuration Options
@@ -223,7 +223,7 @@ $logger = new AgentCtrlConsoleLogger(
     showPipeline: true,       // Show request/response pipeline events
     maxArgLength: 100,        // Truncate tool arguments to this length
 );
-// @doctest id="51f7"
+// @doctest id="b9fb"
 ```
 
 ### Event Categories
@@ -253,7 +253,7 @@ The logger groups events into categories with color-coded labels:
 14:23:04.890 [claude-code] [TOOL] Bash {command=php -l src/UserService.php}
 14:23:06.123 [claude-code] [TEXT] Text received [length=1432]
 14:23:06.125 [claude-code] [DONE] Execution completed [exit=0, tools=5, tokens=0]
-// @doctest id="7ad8"
+// @doctest id="2f5b"
 ```
 
 ## Common Pitfalls

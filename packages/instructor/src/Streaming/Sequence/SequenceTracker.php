@@ -42,7 +42,7 @@ final readonly class SequenceTracker
         }
 
         return new SequenceTrackingResult(
-            tracker: new self(emittedCount: $confirmedUpTo),
+            tracker: new self(emittedCount: max($this->emittedCount, $confirmedUpTo)),
             updates: $items,
         );
     }

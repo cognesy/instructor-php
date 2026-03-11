@@ -9,16 +9,17 @@ use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Stream\Contracts\Reducer;
-use Cognesy\Utils\Json\StreamingPartialJson;
+use Cognesy\Utils\Json\IncrementalCompletingJsonParser;
 use Throwable;
 
 final class AccumulatePartialResponsesReducer implements Reducer
 {
-    private string $lastSnapshot = '';
     private int $lastSnapshotRevision = -1;
     private StructuredOutputStreamState $state;
     private bool $hasProducedValue = false;
     private ?Throwable $lastCreationError = null;
+    private IncrementalCompletingJsonParser $jsonParser;
+    private string $activeToolKey = '';
 
     public function __construct(
         private readonly Reducer $inner,
@@ -28,15 +29,17 @@ final class AccumulatePartialResponsesReducer implements Reducer
         private readonly ResponseModel $responseModel,
     ) {
         $this->state = StructuredOutputStreamState::empty();
+        $this->jsonParser = new IncrementalCompletingJsonParser();
     }
 
     #[\Override]
     public function init(): mixed {
-        $this->lastSnapshot = '';
         $this->lastSnapshotRevision = -1;
         $this->state->reset();
         $this->hasProducedValue = false;
         $this->lastCreationError = null;
+        $this->jsonParser->reset();
+        $this->activeToolKey = '';
         return $this->inner->init();
     }
 
@@ -80,12 +83,7 @@ final class AccumulatePartialResponsesReducer implements Reducer
             return $state;
         }
 
-        if ($snapshot === $this->lastSnapshot) {
-            $this->lastSnapshotRevision = $state->snapshotRevision();
-            return $state;
-        }
-
-        $parsed = $this->parseSnapshot($snapshot);
+        $parsed = $this->parseCurrentState($snapshot);
         if ($parsed === null) {
             return $state;
         }
@@ -95,7 +93,6 @@ final class AccumulatePartialResponsesReducer implements Reducer
             return $state;
         }
 
-        $this->lastSnapshot = $snapshot;
         $this->lastSnapshotRevision = $state->snapshotRevision();
         $this->state->setValue($object);
         return $this->state;
@@ -111,17 +108,16 @@ final class AccumulatePartialResponsesReducer implements Reducer
     /**
      * @return array<array-key, mixed>|null
      */
-    private function parseSnapshot(string $snapshot): ?array {
+    private function parseCurrentState(string $snapshot): ?array {
         if ($snapshot === '') {
             return null;
         }
 
-        $hasBraces = str_contains($snapshot, '{') || str_contains($snapshot, '[');
-        if (!$hasBraces) {
-            return null;
+        if ($this->jsonParser->buffer() === '' && $snapshot !== '') {
+            $this->jsonParser->append($snapshot);
         }
 
-        return StreamingPartialJson::toArray($snapshot);
+        return $this->jsonParser->currentArray();
     }
 
     private function createObject(array $data): mixed {
@@ -159,7 +155,10 @@ final class AccumulatePartialResponsesReducer implements Reducer
 
     private function accumulateDelta(PartialInferenceDelta $delta): StructuredOutputStreamState
     {
+        $previousToolKey = $this->state->toolKey();
         $this->state->applyDelta($delta);
+        $this->appendDeltaToParser($delta, $previousToolKey);
+
         if ($delta->value !== null) {
             $this->state->setValue($delta->value);
             return $this->state;
@@ -170,5 +169,43 @@ final class AccumulatePartialResponsesReducer implements Reducer
         }
 
         return $this->state;
+    }
+
+    private function appendDeltaToParser(PartialInferenceDelta $delta, string $previousToolKey): void
+    {
+        match ($this->mode) {
+            OutputMode::Tools => $this->appendToolArgsDelta($delta, $previousToolKey),
+            default => $this->appendContentDelta($delta),
+        };
+    }
+
+    private function appendContentDelta(PartialInferenceDelta $delta): void
+    {
+        if ($delta->contentDelta === '') {
+            return;
+        }
+
+        $this->jsonParser->append($delta->contentDelta);
+    }
+
+    private function appendToolArgsDelta(PartialInferenceDelta $delta, string $previousToolKey): void
+    {
+        $currentToolKey = $this->state->toolKey();
+
+        if ($currentToolKey !== '' && $currentToolKey !== $previousToolKey) {
+            $this->jsonParser->reset();
+            $this->activeToolKey = $currentToolKey;
+        }
+
+        if ($delta->toolArgs === '') {
+            return;
+        }
+
+        if ($currentToolKey !== '' && $this->activeToolKey !== $currentToolKey) {
+            $this->jsonParser->reset();
+            $this->activeToolKey = $currentToolKey;
+        }
+
+        $this->jsonParser->append($delta->toolArgs);
     }
 }
