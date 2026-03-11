@@ -70,8 +70,9 @@ $workDir = dirname(__DIR__, 3);
 // to the system prompt via BeforeExecution hook — no manual prompt setup needed.
 $agent = AgentBuilder::base()
     ->withCapability(new UseLLMConfig(
-        llm: LLMProvider::using('openai')->withConfigOverrides([
-            'model' => 'gpt-5.2',
+        llm: LLMProvider::using('anthropic')->withConfigOverrides([
+            'model' => 'claude-sonnet-4-5-20250929',
+            'maxTokens' => 8192,
         ]),
     ))
     ->withCapability(new UseContextConfig(
@@ -79,12 +80,22 @@ $agent = AgentBuilder::base()
         You are a CLI automation agent. You accomplish tasks using bash commands.
         Always limit command output — use --limit, | head -20, etc.
 
-        WORKFLOW — you always work in two passes:
-        Pass 1: Explore the tool (--help, trial runs). Once you get the result, do NOT answer.
-                Instead call execution_retrospective to rewind with the exact command as guidance.
-        Pass 2: After rewind, guidance from your future self is in the conversation.
-                Trust it. Run the command from guidance. Answer. Done.
+        MANDATORY TWO-PASS WORKFLOW — you MUST follow this exactly:
+
+        Pass 1 (EXPLORE): Discover the right command via --help, trial runs, etc.
+                Once you know the correct command that produces the answer, STOP.
+                Do NOT answer the user's question yet.
+                You MUST call execution_retrospective to rewind to checkpoint 1
+                with the exact working command as guidance.
+                This is REQUIRED even if you already have the answer — the purpose
+                is to clean the context of exploration noise.
+
+        Pass 2 (EXECUTE): After rewind, you will see guidance from your future self.
+                Trust it completely. Run the command from guidance. Answer. Done.
                 Do NOT explore again. Do NOT call execution_retrospective again.
+
+        IMPORTANT: You must ALWAYS rewind after exploration. Never skip the rewind.
+        Answering directly after exploration without rewinding is a workflow violation.
         SYSTEM,
     ))
     ->withCapability(new UseBash(baseDir: $workDir))
@@ -92,16 +103,18 @@ $agent = AgentBuilder::base()
         policy: new RetrospectivePolicy(
             maxRewinds: 1,
             systemPromptInstructions: <<<'PROMPT'
-            ## Execution Retrospective (IMPORTANT)
-
-            The conversation contains [CHECKPOINT N] markers before each step. You have the
-            `execution_retrospective` tool available.
+            ## Execution Retrospective (MANDATORY)
 
             [CHECKPOINT N] markers appear before each step. You have `execution_retrospective`.
 
-            After a rewind, guidance from your future self appears as an assistant message.
-            If you see such guidance: trust it, run the command it specifies, answer. Done.
-            Do NOT read --help. Do NOT explore. Do NOT call execution_retrospective again.
+            RULES:
+            1. After ANY exploration (--help, trial commands, learning), you MUST call
+               execution_retrospective to rewind to checkpoint 1 with the working command as guidance.
+               This is not optional — it cleans exploration noise from the context.
+            2. After a rewind, guidance from your future self appears as an assistant message.
+               Trust it completely. Run the command it specifies. Answer. Done.
+               Do NOT explore again. Do NOT call execution_retrospective again.
+            3. NEVER answer the user's question directly after exploration without rewinding first.
             PROMPT,
         ),
         onRewind: function (ExecutionRetrospectiveResult $result, AgentState $state) use (&$rewindLog) {

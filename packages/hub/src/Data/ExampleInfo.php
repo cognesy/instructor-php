@@ -13,6 +13,7 @@ class ExampleInfo
         public string $content,
         public ?int $order = null,
         public string $id = '',
+        public bool $skip = false,
     ) {}
 
     public static function fromFile(string $path, string $name) : ExampleInfo {
@@ -22,12 +23,15 @@ class ExampleInfo
         $order = isset($data['order']) ? (int) $data['order'] : null;
         $id = $data['id'] ?? '';
 
+        $skip = (bool) ($data['skip'] ?? false);
+
         return new ExampleInfo(
             title: $title,
             docName: $docName,
             content: $content,
             order: $order,
             id: $id,
+            skip: $skip,
         );
     }
 

@@ -48,6 +48,9 @@ class Runner
         if ($index > 0 && $example->index < $index) {
             return true;
         }
+        if ($example->skip) {
+            return true;
+        }
         (new RunnerView)->runStart($example);
         $this->timeStart = microtime(true);
         $output = $this->execute($example->runPath);

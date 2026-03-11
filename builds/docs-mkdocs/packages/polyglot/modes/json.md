@@ -20,7 +20,7 @@ $data = Inference::using('openai')
     ->asJsonData();
 
 // $data is now a PHP array, e.g. ['name' => 'Alice', 'role' => 'Engineer']
-// @doctest id="264f"
+// @doctest id="a601"
 ```
 
 The `asJsonData()` method only decodes the returned content. Validation and structure depend on the provider and your prompt -- there are no schema guarantees with this mode.
@@ -58,7 +58,7 @@ $data = Inference::using('openai')
 foreach ($data['cities'] as $city) {
     echo "{$city['name']}, {$city['country']}: {$city['population']} million\n";
 }
-// @doctest id="1cad"
+// @doctest id="f72b"
 ```
 
 ## Using the Fluent API
@@ -74,7 +74,7 @@ $data = Inference::using('openai')
     ->withMessages('List three programming languages as JSON with name and year fields.')
     ->withResponseFormat(['type' => 'json_object'])
     ->asJsonData();
-// @doctest id="381a"
+// @doctest id="a752"
 ```
 
 ## Getting JSON as a String
@@ -92,7 +92,7 @@ $json = Inference::using('openai')
     ->asJson();
 
 // $json is a string like '{"greeting": "Hello, world!"}'
-// @doctest id="2079"
+// @doctest id="35ac"
 ```
 
 ## Provider Support

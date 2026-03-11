@@ -12,7 +12,6 @@ use Cognesy\Instructor\Data\StructuredOutputResponse;
 use Cognesy\Instructor\Streaming\EmissionSnapshot;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\Streaming\EmissionFingerprint;
-use Cognesy\Instructor\Streaming\StructuredOutputStreamState;
 use Cognesy\Instructor\Streaming\Pipeline\AccumulatePartialResponses;
 use Cognesy\Instructor\Streaming\Pipeline\DispatchStreamingEvents;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
@@ -28,7 +27,8 @@ final class StreamingExecutionDriver implements CanEmitStreamingUpdates
 {
     private ExecutionLoop $loop;
     private ?Iterator $stream = null;
-    private StructuredOutputStreamState $state;
+    private ?InferenceResponse $finalInference = null;
+    private mixed $finalValue = null;
     private readonly AttemptProcessor $attemptProcessor;
     private EmissionFingerprint $fingerprint;
 
@@ -42,7 +42,6 @@ final class StreamingExecutionDriver implements CanEmitStreamingUpdates
         private readonly CanHandleEvents $events,
     ) {
         $this->loop = new ExecutionLoop($execution);
-        $this->state = StructuredOutputStreamState::empty();
         $this->fingerprint = EmissionFingerprint::fresh();
         $this->attemptProcessor = new AttemptProcessor(
             responseGenerator: $responseGenerator,
@@ -79,11 +78,12 @@ final class StreamingExecutionDriver implements CanEmitStreamingUpdates
             return;
         }
 
-        /** @var StructuredOutputStreamState $currentState */
         $currentState = $this->stream->current();
         $snapshot = $currentState->snapshot();
         $response = $currentState->partialResponse();
-        $this->state = $currentState;
+        // Capture finalization data before next() mutates the shared state object
+        $this->finalInference = $currentState->finalInferenceResponse();
+        $this->finalValue = $currentState->value();
         $this->stream->next();
 
         if (!$this->stream->valid()) {
@@ -125,17 +125,16 @@ final class StreamingExecutionDriver implements CanEmitStreamingUpdates
         $this->stream = $aggregateStream instanceof IteratorAggregate
             ? $aggregateStream->getIterator()
             : $aggregateStream;
-        $this->state->reset();
+        $this->finalInference = null;
+        $this->finalValue = null;
         $this->fingerprint = EmissionFingerprint::fresh();
     }
 
     private function finalizeAttempt(ExecutionLoop $loop): void {
-        $finalInference = $this->state->finalInferenceResponse();
-
         $result = $this->attemptProcessor->process(
             execution: $loop->execution(),
-            inferenceResponse: $finalInference,
-            prebuiltValue: $this->state->value(),
+            inferenceResponse: $this->finalInference ?? new InferenceResponse(),
+            prebuiltValue: $this->finalValue,
         );
         $loop->applyAttemptResult($result);
         $this->stream = null;
@@ -147,7 +146,8 @@ final class StreamingExecutionDriver implements CanEmitStreamingUpdates
 
     private function resetAttemptRuntime(): void {
         $this->stream = null;
-        $this->state->reset();
+        $this->finalInference = null;
+        $this->finalValue = null;
         $this->fingerprint = EmissionFingerprint::fresh();
     }
 

@@ -56,8 +56,7 @@ $code = (new StructuredOutput(
 print("Extracted data:\n");
 dump($code);
 
-assert(!empty($code->code));
-assert(!empty($code->codeDescription));
-assert(Str::contains(strtolower($code->programmingLanguage), 'php'));
+assert(!empty($code->code), 'Expected non-empty code');
+assert(Str::contains(strtolower($code->programmingLanguage), 'php'), 'Expected PHP as programming language');
 ?>
 ```

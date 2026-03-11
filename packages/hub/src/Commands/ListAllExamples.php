@@ -31,20 +31,25 @@ class ListAllExamples extends Command
 
         foreach ($this->examples->getAllExamples() as $example) {
             $idDisplay = !empty($example->id) ? 'x' . $example->id : '-----';
+            $nameColor = $example->skip ? Color::DARK_GRAY : Color::GREEN;
+            $titleColor = Color::DARK_GRAY;
+            $indexColor = $example->skip ? Color::DARK_GRAY : Color::WHITE;
+            $idColor = $example->skip ? Color::DARK_GRAY : Color::CYAN;
+            $tabColor = $example->skip ? Color::DARK_GRAY : Color::DARK_YELLOW;
             Cli::grid([
                 [1, '(', STR_PAD_LEFT, Color::DARK_GRAY],
-                [3, $example->index, STR_PAD_LEFT, Color::WHITE],
+                [3, $example->index, STR_PAD_LEFT, $indexColor],
                 [1, ')', STR_PAD_LEFT, Color::DARK_GRAY],
                 [1, '[', STR_PAD_LEFT, Color::DARK_GRAY],
-                [5, $idDisplay, STR_PAD_RIGHT, Color::CYAN],
+                [5, $idDisplay, STR_PAD_RIGHT, $idColor],
                 [1, ']', STR_PAD_LEFT, Color::DARK_GRAY],
-                [12, $example->tab, STR_PAD_RIGHT, Color::DARK_YELLOW],
+                [12, $example->tab, STR_PAD_RIGHT, $tabColor],
                 [1, '/', STR_PAD_LEFT, Color::DARK_GRAY],
-                [16, $example->group, STR_PAD_LEFT, Color::DARK_YELLOW],
+                [16, $example->group, STR_PAD_LEFT, $tabColor],
                 [1, '/', STR_PAD_LEFT, Color::DARK_GRAY],
-                [20, $example->name, STR_PAD_RIGHT, Color::GREEN],
+                [20, $example->name, STR_PAD_RIGHT, $nameColor],
                 [2, '-', STR_PAD_LEFT, Color::WHITE],
-                [40, $example->title, STR_PAD_RIGHT, Color::DARK_GRAY],
+                [40, $example->title, STR_PAD_RIGHT, $titleColor],
             ]);
             Cli::outln();
         }

@@ -17,6 +17,8 @@ final class AccumulatePartialResponsesReducer implements Reducer
     private string $lastSnapshot = '';
     private int $lastSnapshotRevision = -1;
     private StructuredOutputStreamState $state;
+    private bool $hasProducedValue = false;
+    private ?Throwable $lastCreationError = null;
 
     public function __construct(
         private readonly Reducer $inner,
@@ -33,6 +35,8 @@ final class AccumulatePartialResponsesReducer implements Reducer
         $this->lastSnapshot = '';
         $this->lastSnapshotRevision = -1;
         $this->state->reset();
+        $this->hasProducedValue = false;
+        $this->lastCreationError = null;
         return $this->inner->init();
     }
 
@@ -50,6 +54,15 @@ final class AccumulatePartialResponsesReducer implements Reducer
 
     #[\Override]
     public function complete(mixed $accumulator): mixed {
+        if (!$this->hasProducedValue && $this->lastCreationError !== null) {
+            trigger_error(
+                'Streaming object creation never succeeded. Last error: '
+                . $this->lastCreationError->getMessage()
+                . ' in ' . $this->lastCreationError->getFile()
+                . ':' . $this->lastCreationError->getLine(),
+                E_USER_WARNING,
+            );
+        }
         return $this->inner->complete($accumulator);
     }
 
@@ -127,10 +140,25 @@ final class AccumulatePartialResponsesReducer implements Reducer
                 return null;
             }
 
+            $this->hasProducedValue = true;
             return $transformed->unwrap();
-        } catch (Throwable) {
+        } catch (Throwable $e) {
+            $this->lastCreationError = $e;
             return null;
         }
+    }
+
+    /**
+     * Returns the last unexpected error from object creation, if any.
+     * Useful for diagnosing silent streaming failures where JSON parsed
+     * successfully but deserialization/transformation threw an exception.
+     */
+    public function lastCreationError(): ?Throwable {
+        return $this->lastCreationError;
+    }
+
+    public function hasProducedValue(): bool {
+        return $this->hasProducedValue;
     }
 
     private function accumulateDelta(PartialInferenceDelta $delta): StructuredOutputStreamState

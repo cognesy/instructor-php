@@ -25,7 +25,7 @@ final class DispatchStreamingEventsReducer implements Reducer
 {
     private string $activeToolKey;
     private ToolCalls $lastToolCalls;
-    private ?StructuredOutputStreamState $lastState;
+    private ?InferenceResponse $lastInferenceResponse;
     private int $previousSequenceLength;
     private ?Sequenceable $currentSequence;
 
@@ -36,7 +36,7 @@ final class DispatchStreamingEventsReducer implements Reducer
     ) {
         $this->activeToolKey = '';
         $this->lastToolCalls = ToolCalls::empty();
-        $this->lastState = null;
+        $this->lastInferenceResponse = null;
         $this->previousSequenceLength = 0;
         $this->currentSequence = null;
     }
@@ -45,7 +45,7 @@ final class DispatchStreamingEventsReducer implements Reducer
     public function init(): mixed {
         $this->activeToolKey = '';
         $this->lastToolCalls = ToolCalls::empty();
-        $this->lastState = null;
+        $this->lastInferenceResponse = null;
         $this->previousSequenceLength = 0;
         $this->currentSequence = null;
         return $this->inner->init();
@@ -85,7 +85,10 @@ final class DispatchStreamingEventsReducer implements Reducer
         $snapshot = $state->snapshot();
 
         $this->events->dispatch(new ChunkReceived([
-            'chunk' => $state,
+            'contentLength' => strlen($state->content()),
+            'hasValue' => $state->hasValue(),
+            'finishReason' => $state->finishReason(),
+            'snapshotRevision' => $state->snapshotRevision(),
         ]));
 
         if ($this->expectedToolName !== '') {
@@ -94,7 +97,8 @@ final class DispatchStreamingEventsReducer implements Reducer
 
         $this->dispatchPartialResponseFromState($state);
         $this->handleSequenceEventsForSnapshot($snapshot);
-        $this->lastState = $state;
+        // Capture immutable response now rather than keeping a mutable state reference
+        $this->lastInferenceResponse = $state->finalInferenceResponse();
     }
 
     private function handleToolCallEventsFromState(
@@ -263,11 +267,7 @@ final class DispatchStreamingEventsReducer implements Reducer
     }
 
     private function finalResponse(): InferenceResponse {
-        if ($this->lastState === null) {
-            return InferenceResponse::empty();
-        }
-
-        return $this->lastState->finalInferenceResponse();
+        return $this->lastInferenceResponse ?? InferenceResponse::empty();
     }
 
     private function handleSequenceEventsForObject(mixed $object): void {

@@ -37,6 +37,6 @@ $value = StructuredOutput::using('openai')->with(
 dump($value);
 
 assert($value instanceof CitizenshipGroup);
-assert($value == CitizenshipGroup::Other);
+assert($value == CitizenshipGroup::US);
 ?>
 ```

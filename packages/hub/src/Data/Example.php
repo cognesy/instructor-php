@@ -21,6 +21,7 @@ class Example
         public string $relativePath = '',
         public string $runPath = '',
         public ?int   $order = null,
+        public bool   $skip = false,
     ) {}
 
     /**
@@ -74,6 +75,7 @@ class Example
             relativePath: './' . $tab . '/' . $path . '/run.php',
             runPath: $baseDir . $path . '/run.php',
             order: $info->order,
+            skip: $info->skip,
         );
     }
 }

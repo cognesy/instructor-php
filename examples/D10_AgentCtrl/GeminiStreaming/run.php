@@ -1,7 +1,7 @@
 ---
 title: 'Gemini CLI - Streaming'
 docname: 'gemini_streaming'
-id: 'd7c4'
+id: 'gm01'
 ---
 ## Overview
 

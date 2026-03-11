@@ -40,7 +40,7 @@ $response = AgentCtrl::claudeCode()
 if ($response->isSuccess()) {
     echo $response->text();
 }
-// @doctest id="8080"
+// @doctest id="eb36"
 ```
 
 ## Agent Selection
@@ -60,7 +60,7 @@ $response = AgentCtrl::claudeCode()
 
 echo $response->text();
 echo "Session ID: " . (string) ($response->sessionId() ?? '');
-// @doctest id="103f"
+// @doctest id="ec58"
 ```
 
 ### Codex
@@ -71,7 +71,7 @@ Best for OpenAI-powered code generation.
 $response = AgentCtrl::codex()
     ->withModel('codex')
     ->execute('Write unit tests for the UserService class');
-// @doctest id="867b"
+// @doctest id="1f57"
 ```
 
 ### OpenCode
@@ -82,7 +82,7 @@ Best for multi-model flexibility. Specify the model using the `provider/model` f
 $response = AgentCtrl::openCode()
     ->withModel('anthropic/claude-sonnet-4-5')
     ->execute('Analyze the codebase architecture');
-// @doctest id="855e"
+// @doctest id="a79c"
 ```
 
 ### Dynamic Selection
@@ -96,7 +96,7 @@ $agentType = AgentType::from(config('app.default_agent'));
 
 $response = AgentCtrl::make($agentType)
     ->execute('Generate API documentation');
-// @doctest id="8edc"
+// @doctest id="24a9"
 ```
 
 ## Configuration
@@ -117,7 +117,7 @@ AgentCtrl::claudeCode()
         sandboxDriver: SandboxDriver::Host,
     ))
     ->execute('Your prompt');
-// @doctest id="8474"
+// @doctest id="3da6"
 ```
 
 `AgentConfig::fromArray()` also accepts the Laravel config-style keys used in `config/instructor.php`, so `directory` and `sandbox` are mapped automatically.
@@ -157,7 +157,7 @@ Configure defaults in `config/instructor.php`. The facade automatically reads th
         'timeout' => env('OPENCODE_TIMEOUT'),
     ],
 ],
-// @doctest id="8e41"
+// @doctest id="7f28"
 ```
 
 Agent-specific settings (e.g., `claude_code.timeout`) take precedence over the global defaults (e.g., `agents.timeout`).
@@ -178,7 +178,7 @@ CODEX_MODEL=codex
 
 # OpenCode
 OPENCODE_MODEL=anthropic/claude-sonnet-4-5
-// @doctest id="185a"
+// @doctest id="b88c"
 ```
 
 ## Streaming
@@ -201,7 +201,7 @@ $response = AgentCtrl::claudeCode()
         echo "\nDone! Exit code: " . $response->exitCode;
     })
     ->executeStreaming('Generate a REST API for products');
-// @doctest id="b665"
+// @doctest id="bc93"
 ```
 
 ## Response Object
@@ -237,7 +237,7 @@ foreach ($response->toolCalls as $call) {
     $call->output;           // ?string -- Tool output
     $call->isError;          // bool -- Whether the tool call failed
 }
-// @doctest id="e758"
+// @doctest id="d9e3"
 ```
 
 ## Session Management
@@ -255,7 +255,7 @@ $sessionId = (string) ($response->sessionId() ?? '');
 $response = AgentCtrl::claudeCode()
     ->resumeSession($sessionId)
     ->execute('Continue with the Address model');
-// @doctest id="6862"
+// @doctest id="917a"
 ```
 
 ## Error Handling
@@ -296,7 +296,7 @@ try {
     Log::error('Agent exception', ['error' => $e->getMessage()]);
     return null;
 }
-// @doctest id="3c60"
+// @doctest id="8cd7"
 ```
 
 ## Testing
@@ -323,7 +323,7 @@ test('generates migration code', function () {
 
     expect($result)->toContain('users_table');
 });
-// @doctest id="ce5e"
+// @doctest id="40fb"
 ```
 
 ## Real-World Examples
@@ -366,7 +366,7 @@ class CodeGenerationService
         return "Generate a Laravel migration for:\n" . json_encode($schema, JSON_PRETTY_PRINT);
     }
 }
-// @doctest id="5de9"
+// @doctest id="301c"
 ```
 
 ### Queued Code Generation
@@ -407,7 +407,7 @@ GenerateCodeJob::dispatch(
     'Generate a complete CRUD controller for Products',
     app_path('Http/Controllers/ProductController.php')
 );
-// @doctest id="49f0"
+// @doctest id="4df6"
 ```
 
 ### Interactive Code Review
@@ -437,7 +437,7 @@ class CodeReviewer
         ];
     }
 }
-// @doctest id="fc2d"
+// @doctest id="43de"
 ```
 
 ## Sandbox Drivers
@@ -464,7 +464,7 @@ AgentCtrl::claudeCode()
 AgentCtrl::claudeCode()
     ->withSandboxDriver(SandboxDriver::Docker)
     ->execute('...');
-// @doctest id="e162"
+// @doctest id="218f"
 ```
 
 ## Best Practices

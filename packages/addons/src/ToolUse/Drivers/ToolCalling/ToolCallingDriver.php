@@ -16,6 +16,9 @@ use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\PendingInference;
 
 /**
@@ -87,17 +90,12 @@ class ToolCallingDriver implements CanUseTools
         Messages $messages,
         Tools $tools
     ) : PendingInference {
-        $toolChoice = is_array($this->toolChoice)
-            ? ($this->toolChoice['type'] ?? 'auto')
-            : $this->toolChoice;
-        assert(is_string($toolChoice));
-
         $request = new InferenceRequest(
             messages: $messages,
             model: $this->model,
-            tools: $tools->toToolSchema(),
-            toolChoice: $toolChoice,
-            responseFormat: $this->responseFormat,
+            tools: ToolDefinitions::fromArray($tools->toToolSchema()),
+            toolChoice: ToolChoice::fromAny($this->toolChoice),
+            responseFormat: $this->responseFormat ? ResponseFormat::fromArray($this->responseFormat) : null,
             options: array_merge($this->options, ['parallel_tool_calls' => $this->parallelToolCalls]),
             retryPolicy: $this->retryPolicy,
         );
@@ -112,9 +110,12 @@ class ToolCallingDriver implements CanUseTools
         Messages $followUps,
         Messages $context,
     ) : ToolUseStep {
-        $outputMessages = $followUps->appendMessage(
-            Message::asAssistant($response->content()),
-        );
+        // Only append assistant content message if there's actual text content.
+        // When LLM returns tool calls, content is typically empty — appending an
+        // empty assistant message causes OpenAI to reject subsequent requests.
+        $outputMessages = $response->content() !== ''
+            ? $followUps->appendMessage(Message::asAssistant($response->content()))
+            : $followUps;
 
         return new ToolUseStep(
             inputMessages: $context,

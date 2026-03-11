@@ -84,7 +84,7 @@ class EnhancedRunAllExamples extends Command
         $index = 1;
 
         $this->examples->forEachExample(function($example) use (&$allExamples, &$index, $startIndex) {
-            if ($index >= $startIndex) {
+            if ($index >= $startIndex && !$example->skip) {
                 $allExamples[] = $example;
             }
             $index++;

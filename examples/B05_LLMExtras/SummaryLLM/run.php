@@ -14,6 +14,7 @@ This is an example of a simple summarization.
 
 require 'examples/boot.php';
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $report = <<<EOT
@@ -41,11 +42,11 @@ $report = <<<EOT
     EOT;
 
 $summary = Inference::using('openai')
-    ->with(messages: [
+    ->with(messages: Messages::fromArray([
         ['role' => 'user', 'content' => 'Content to summarize:'],
         ['role' => 'user', 'content' => $report],
         ['role' => 'user', 'content' => 'Concise summary of project report in 2-3 sentences:'],
-    ])
+    ]))
     ->get();
 
 dump($summary);
