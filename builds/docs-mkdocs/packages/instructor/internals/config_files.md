@@ -27,7 +27,7 @@ packages/polyglot/resources/config/llm/presets/
     gemini.yaml
     groq.yaml
     ...
-// @doctest id="a1b6"
+// @doctest id="cab4"
 ```
 
 You load a preset with `LLMConfig::fromPreset()`:
@@ -36,7 +36,7 @@ You load a preset with `LLMConfig::fromPreset()`:
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 $config = LLMConfig::fromPreset('openai');
-// @doctest id="6d19"
+// @doctest id="7f3a"
 ```
 
 The preset resolution searches several paths automatically (project `config/`
@@ -77,7 +77,7 @@ $config = new StructuredOutputConfig(
     maxRetries: 2,
     toolName: 'extract_data',
 );
-// @doctest id="a6c0"
+// @doctest id="d711"
 ```
 
 This keeps the package independent from any file-based configuration system while

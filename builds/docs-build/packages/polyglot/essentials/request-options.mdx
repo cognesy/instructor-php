@@ -26,7 +26,7 @@ $text = Inference::using('openai')
         'top_p' => 0.9,
     ])
     ->get();
-// @doctest id="6842"
+// @doctest id="3593"
 ```
 
 Options are merged additively -- calling `withOptions()` multiple times will merge the
@@ -45,7 +45,7 @@ $options = [
     'presence_penalty' => 0.0,    // Penalize repeated topics
     'stop' => ["\n\n", "User:"],  // Stop sequences
 ];
-// @doctest id="7868"
+// @doctest id="8803"
 ```
 
 ## Dedicated Helpers Over Raw Options
@@ -78,7 +78,7 @@ $response = Inference::using('openai')
         'presence_penalty' => 0.3,
     ])
     ->get();
-// @doctest id="43b2"
+// @doctest id="84b2"
 ```
 
 ### Anthropic
@@ -92,7 +92,7 @@ $response = Inference::using('anthropic')
         'top_k' => 40,
     ])
     ->get();
-// @doctest id="05a4"
+// @doctest id="db9b"
 ```
 
 ## Retry Policy
@@ -117,7 +117,7 @@ $response = Inference::using('openai')
     ->withMessages('Summarize this article.')
     ->withRetryPolicy($retryPolicy)
     ->get();
-// @doctest id="70d4"
+// @doctest id="4ebc"
 ```
 
 The retry policy supports exponential backoff with configurable jitter and can also
@@ -148,7 +148,7 @@ $response = Inference::using('openai')
     ->withMessages('What is 2 + 2?')
     ->withResponseCachePolicy(ResponseCachePolicy::Memory)
     ->get();
-// @doctest id="0fc8"
+// @doctest id="f1ef"
 ```
 
 Available policies:
@@ -178,7 +178,7 @@ $base = Inference::using('openai')->withCachedContext(
 // Each call inherits the cached context automatically
 $response1 = $base->withMessages('Explain SOLID principles.')->get();
 $response2 = $base->withMessages('What is the Repository pattern?')->get();
-// @doctest id="9c33"
+// @doctest id="72db"
 ```
 
 When the request is executed, cached context is merged with the request-level fields:

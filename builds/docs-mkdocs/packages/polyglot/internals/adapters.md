@@ -62,7 +62,7 @@ class OpenAIDriver extends BaseInferenceRequestDriver
         );
     }
 }
-// @doctest id="ec7e"
+// @doctest id="8f4e"
 ```
 
 The `BaseInferenceRequestDriver` handles the shared execution logic -- sending HTTP requests, reading responses, and parsing event streams. The adapters only need to handle format translation.
@@ -79,7 +79,7 @@ interface CanTranslateInferenceRequest
 {
     public function toHttpRequest(InferenceRequest $request): HttpRequest;
 }
-// @doctest id="67bb"
+// @doctest id="f263"
 ```
 
 Request adapters typically delegate body construction to a `CanMapRequestBody` implementation:
@@ -89,7 +89,7 @@ interface CanMapRequestBody
 {
     public function toRequestBody(InferenceRequest $request): array;
 }
-// @doctest id="c421"
+// @doctest id="0b4c"
 ```
 
 Message formatting is handled by `CanMapMessages`, which receives typed `Messages` and returns a provider-native array. Implementations compose a `MessageMapper` utility for typed iteration instead of duplicating the loop:
@@ -99,7 +99,7 @@ interface CanMapMessages
 {
     public function map(Messages $messages): array;
 }
-// @doctest id="ec1e"
+// @doctest id="bbb0"
 ```
 
 A typical request adapter composes these together. For example, `OpenAIRequestAdapter` receives a `CanMapRequestBody` (which itself wraps a `CanMapMessages`), then builds the final HTTP request with URL, headers, and the formatted body:
@@ -126,7 +126,7 @@ class OpenAIRequestAdapter implements CanTranslateInferenceRequest
         );
     }
 }
-// @doctest id="e7a5"
+// @doctest id="c5b5"
 ```
 
 ### Response Side
@@ -146,7 +146,7 @@ interface CanTranslateInferenceResponse
 
     public function toEventBody(string $data): string|bool;
 }
-// @doctest id="35c6"
+// @doctest id="c1b6"
 ```
 
 The `toEventBody()` method extracts the payload from an SSE line (stripping the `data:` prefix, detecting `[DONE]` markers). The `fromStreamDeltas()` method parses a sequence of those payloads into `PartialInferenceDelta` objects carrying incremental content, tool call fragments, and usage snapshots.
@@ -158,7 +158,7 @@ interface CanMapUsage
 {
     public function fromData(array $data): Usage;
 }
-// @doctest id="7710"
+// @doctest id="a159"
 ```
 
 Different providers report token usage under different keys and with different granularity. Some include cache tokens or reasoning tokens, others do not. Each provider's usage formatter encapsulates these differences into the normalized `Usage` object.

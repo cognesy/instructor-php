@@ -48,7 +48,7 @@ $client = HttpClient::fromConfig(new HttpClientConfig(driver: 'symfony'));
 
 // Use cURL (default)
 $client = HttpClient::fromConfig(new HttpClientConfig(driver: 'curl'));
-// @doctest id="2475"
+// @doctest id="4893"
 ```
 
 ### Via the Builder
@@ -62,7 +62,7 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 $client = (new HttpClientBuilder())
     ->withConfig(new HttpClientConfig(driver: 'guzzle'))
     ->create();
-// @doctest id="6852"
+// @doctest id="57f9"
 ```
 
 ### Injecting a Driver Directly
@@ -75,7 +75,7 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 $client = (new HttpClientBuilder())
     ->withDriver($myCustomDriver)
     ->create();
-// @doctest id="b307"
+// @doctest id="7807"
 ```
 
 Or use the static shorthand:
@@ -84,7 +84,7 @@ Or use the static shorthand:
 use Cognesy\Http\HttpClient;
 
 $client = HttpClient::fromDriver($myCustomDriver);
-// @doctest id="8746"
+// @doctest id="dd79"
 ```
 
 ## Reusing a Vendor Client Instance
@@ -103,7 +103,7 @@ $guzzle = new Client([
 $client = (new HttpClientBuilder())
     ->withClientInstance('guzzle', $guzzle)
     ->create();
-// @doctest id="846f"
+// @doctest id="8572"
 ```
 
 The `withClientInstance()` method selects the driver by name and passes your vendor client to it, so the driver uses your instance instead of creating its own.
@@ -116,7 +116,7 @@ use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
 $client = (new HttpClientBuilder())
     ->withClientInstance('symfony', SymfonyHttpClient::create(['timeout' => 30]))
     ->create();
-// @doctest id="270f"
+// @doctest id="024a"
 ```
 
 ## Using the Mock Driver
@@ -136,7 +136,7 @@ $client = (new HttpClientBuilder())
         );
     })
     ->create();
-// @doctest id="54b0"
+// @doctest id="573c"
 ```
 
 ## Request Code Stays the Same
@@ -153,7 +153,7 @@ $response = $client->send(new HttpRequest(
 ))->get();
 
 echo $response->body();
-// @doctest id="54fc"
+// @doctest id="3559"
 ```
 
 This code works identically with cURL, Guzzle, Symfony, or the mock driver.

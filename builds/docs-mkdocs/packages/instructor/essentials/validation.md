@@ -24,7 +24,7 @@ class Person {
     #[Assert\PositiveOrZero]
     public int $age;
 }
-// @doctest id="9f59"
+// @doctest id="2666"
 ```
 
 If the model returns a name shorter than three characters or a negative age, validation
@@ -47,7 +47,7 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 $runtime = StructuredOutputRuntime::fromConfig(
     LLMConfig::fromPreset('openai')
 )->withMaxRetries(3);
-// @doctest id="e550"
+// @doctest id="1325"
 ```
 
 The `maxRetries` value controls how many additional attempts are allowed after the first
@@ -74,7 +74,7 @@ $person = (new StructuredOutput)
         responseModel: Person::class,
     )
     ->get();
-// @doctest id="df5f"
+// @doctest id="f105"
 ```
 
 In this example, the model might initially return `name: "JX"` and `age: -28`. Validation
@@ -112,7 +112,7 @@ class UserDetails
         return ValidationResult::valid();
     }
 }
-// @doctest id="b7bb"
+// @doctest id="38b4"
 ```
 
 The `ValidationResult` class provides several factory methods:
@@ -138,7 +138,7 @@ $user = (new StructuredOutput)
     ->get();
 
 assert($user->name === 'JASON');
-// @doctest id="7a9d"
+// @doctest id="91ef"
 ```
 
 
@@ -168,7 +168,7 @@ class UserDetails
         }
     }
 }
-// @doctest id="0027"
+// @doctest id="cfbc"
 ```
 
 > See the [Symfony Callback constraint docs](https://symfony.com/doc/current/reference/constraints/Callback.html)
@@ -195,5 +195,5 @@ $config = new StructuredOutputConfig(
     maxRetries: 3,
     retryPrompt: 'The previous response had errors. Please correct them:',
 );
-// @doctest id="015f"
+// @doctest id="46e8"
 ```

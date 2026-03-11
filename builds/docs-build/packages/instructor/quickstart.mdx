@@ -13,7 +13,7 @@ Install the package via Composer:
 
 ```bash
 composer require cognesy/instructor-struct
-# @doctest id="f51b"
+# @doctest id="1b48"
 ```
 
 > Instructor requires **PHP 8.3** or later.
@@ -28,7 +28,7 @@ approach is to export an environment variable before running your script:
 
 ```bash
 export OPENAI_API_KEY="sk-your-key-here"
-# @doctest id="d99f"
+# @doctest id="01d0"
 ```
 
 > In a real project, store API keys in a `.env` file or your framework's secret
@@ -45,7 +45,7 @@ class City {
     public string $country;
     public int $population;
 }
-// @doctest id="d486"
+// @doctest id="21d0"
 ```
 
 ### Step 3: Run the Extraction
@@ -74,7 +74,7 @@ $city = StructuredOutput::using('openai')
 echo $city->name;       // Paris
 echo $city->country;    // France
 echo $city->population; // 2148000
-// @doctest id="456b"
+// @doctest id="5bb0"
 ```
 
 The `get()` method returns a fully hydrated `City` instance. Public typed properties
@@ -95,7 +95,7 @@ $city = StructuredOutput::using('openai')
     ->withMessages('What is the capital of France?')
     ->withResponseClass(City::class)
     ->get();
-// @doctest id="161c"
+// @doctest id="a2c4"
 ```
 
 ### Compact `with()` Call
@@ -110,7 +110,7 @@ $city = StructuredOutput::using('openai')
         model: 'gpt-4o-mini',
     )
     ->get();
-// @doctest id="9652"
+// @doctest id="f499"
 ```
 
 ### Explicit Provider Configuration
@@ -129,7 +129,7 @@ $city = StructuredOutput::fromConfig(
         responseModel: City::class,
     )
     ->get();
-// @doctest id="aa0e"
+// @doctest id="b60d"
 ```
 
 
@@ -152,7 +152,7 @@ foreach ($stream->partials() as $partial) {
 
 $city = $stream->finalValue();
 echo $city->name; // Paris
-// @doctest id="d595"
+// @doctest id="6063"
 ```
 
 
@@ -181,7 +181,7 @@ $city = StructuredOutput::using('openai')
         responseModel: City::class,
     )
     ->get();
-// @doctest id="7e71"
+// @doctest id="8158"
 ```
 
 To enable retries, configure `maxRetries` on the runtime. See [Validation](essentials/validation) for details.
