@@ -11,7 +11,7 @@ When you call `HttpClient::send()`, it returns a `PendingHttpResponse`. This obj
 
 ```php
 $pending = $client->send($request);
-// @doctest id="7feb"
+// @doctest id="f01b"
 ```
 
 | Method | Returns | Description |
@@ -34,7 +34,7 @@ $response = $client->send($request)->get();
 $status  = $response->statusCode();  // 200
 $headers = $response->headers();     // ['Content-Type' => 'application/json', ...]
 $body    = $response->body();        // '{"id":1,"name":"John"}'
-// @doctest id="562a"
+// @doctest id="7291"
 ```
 
 ### Decoding JSON
@@ -49,7 +49,7 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 }
 
 echo $data['name']; // John
-// @doctest id="1743"
+// @doctest id="b7cf"
 ```
 
 ### Checking Status Codes
@@ -67,7 +67,7 @@ if ($response->statusCode() >= 200 && $response->statusCode() < 300) {
 } elseif ($response->statusCode() >= 500) {
     // Server error -- maybe retry
 }
-// @doctest id="10e8"
+// @doctest id="a8b5"
 ```
 
 ## Streamed Responses
@@ -78,7 +78,7 @@ For streamed requests, call `stream()` on the pending response. This returns a P
 foreach ($client->send($request)->stream() as $chunk) {
     echo $chunk;
 }
-// @doctest id="c500"
+// @doctest id="e6e0"
 ```
 
 The `stream()` method always forces streaming mode regardless of the request's `isStreamed()` flag. Similarly, `get()` and `content()` always force synchronous mode.
@@ -108,7 +108,7 @@ $streamed = HttpResponse::streaming(
 
 // Empty response
 $empty = HttpResponse::empty();
-// @doctest id="1728"
+// @doctest id="efe1"
 ```
 
 ## Error Handling with failOnError
@@ -132,7 +132,7 @@ try {
     // 5xx error
     echo "Server error {$e->getStatusCode()}: {$e->getMessage()}\n";
 }
-// @doctest id="1b38"
+// @doctest id="3de7"
 ```
 
 Each exception carries the original request, the response (if available), and the duration of the call. Use `$e->getRequest()`, `$e->getResponse()`, and `$e->getDuration()` to inspect them.
@@ -145,14 +145,14 @@ The `HttpResponse` object also exposes metadata about the response:
 $response->isStreamed();   // true if the response was created in streaming mode
 $response->isStreaming();  // true if the stream has not yet completed
 $response->rawStream();    // access the underlying StreamInterface
-// @doctest id="41b1"
+// @doctest id="c860"
 ```
 
 You can create a new response with a replaced stream using `withStream()`:
 
 ```php
 $decorated = $response->withStream($transformedStream);
-// @doctest id="3ca9"
+// @doctest id="c8b2"
 ```
 
 This is the primary mechanism used by middleware to intercept and transform streamed data.

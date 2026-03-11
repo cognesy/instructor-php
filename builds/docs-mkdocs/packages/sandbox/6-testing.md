@@ -32,7 +32,7 @@ $sandbox = FakeSandbox::fromResponses([
 
 $result = $sandbox->execute(['php', '-v']);
 echo $result->stdout(); // "PHP 8.3.0 (cli)"
-// @doctest id="b499"
+// @doctest id="d291"
 ```
 
 The command key is formed by joining the argv array with spaces: `['php', '-v']` becomes `'php -v'`. Make sure the key in your response map matches exactly.
@@ -56,7 +56,7 @@ $sandbox = new FakeSandbox(
 );
 
 echo $sandbox->policy()->timeoutSeconds(); // 60
-// @doctest id="3439"
+// @doctest id="2689"
 ```
 
 The `fromResponses()` factory uses `ExecutionPolicy::default()` when no policy is specified.
@@ -77,7 +77,7 @@ $sandbox = FakeSandbox::fromResponses([
 $sandbox->execute(['php', 'script.php'])->stdout(); // "first run"
 $sandbox->execute(['php', 'script.php'])->stdout(); // "second run"
 $sandbox->execute(['php', 'script.php'])->stdout(); // "third run"
-// @doctest id="5c62"
+// @doctest id="e9ff"
 ```
 
 If the queue is exhausted and no default response is set, the next call throws a `RuntimeException`.
@@ -99,7 +99,7 @@ $sandbox = FakeSandbox::fromResponses(
 
 $result = $sandbox->execute(['anything', '--help']);
 echo $result->exitCode(); // 127
-// @doctest id="bd3d"
+// @doctest id="0d15"
 ```
 
 The default response is also used when a command's specific queue has been exhausted.
@@ -127,7 +127,7 @@ $sandbox->enqueue('php -v', new ExecResult(
 
 $sandbox->execute(['php', '-v'])->stdout(); // "PHP 8.3.0"
 $sandbox->execute(['php', '-v'])->stdout(); // "PHP 8.3.1"
-// @doctest id="f092"
+// @doctest id="3ed3"
 ```
 
 ## Array-Based Responses
@@ -143,7 +143,7 @@ $sandbox = FakeSandbox::fromResponses([
         ['stdout' => 'output', 'stderr' => 'warning', 'exit_code' => 0],
     ],
 ]);
-// @doctest id="2d5e"
+// @doctest id="bd44"
 ```
 
 The recognized keys match the `ExecResult::toArray()` format:
@@ -182,7 +182,7 @@ $commands = $sandbox->commands();
 //     ['php', '-v'],
 //     ['php', '-r', 'echo 1;'],
 // ]
-// @doctest id="a328"
+// @doctest id="0e0e"
 ```
 
 This is useful for asserting that your code called the expected commands in the expected order.
@@ -204,7 +204,7 @@ $commands = $sandbox->commands();
 // [
 //     ['php', '-r', 'echo fgets(STDIN);', '[stdin=hello]'],
 // ]
-// @doctest id="95cc"
+// @doctest id="ddd9"
 ```
 
 ## Streaming Callback Support
@@ -228,7 +228,7 @@ $sandbox->execute(
 );
 
 // $chunks === [['out', 'output'], ['err', 'warning']]
-// @doctest id="3b96"
+// @doctest id="b9c5"
 ```
 
 Empty stdout or stderr is not delivered to the callback, matching the behavior of real drivers.
@@ -255,7 +255,7 @@ $sandbox = FakeSandbox::fromResponses([
 $result = $sandbox->execute(['php', 'long-script.php']);
 assert($result->timedOut() === true);
 assert($result->exitCode() === 124);
-// @doctest id="8e84"
+// @doctest id="1ed1"
 ```
 
 ### Simulating Truncated Output
@@ -277,7 +277,7 @@ $sandbox = FakeSandbox::fromResponses([
 
 $result = $sandbox->execute(['php', 'noisy-script.php']);
 assert($result->truncatedStdout() === true);
-// @doctest id="43b1"
+// @doctest id="b889"
 ```
 
 ### Simulating Command Failures
@@ -299,7 +299,7 @@ $sandbox = FakeSandbox::fromResponses([
 $result = $sandbox->execute(['php', 'broken.php']);
 assert($result->success() === false);
 assert($result->exitCode() === 255);
-// @doctest id="423a"
+// @doctest id="34cd"
 ```
 
 ## Using FakeSandbox with Dependency Injection
@@ -337,7 +337,7 @@ assert($executor->run('echo "hello";') === 'hello');
 
 // Verify the command was called
 assert($mock->commands() === [['php', '-r', 'echo "hello";']]);
-// @doctest id="9963"
+// @doctest id="8c3e"
 ```
 
 ## Quick Reference

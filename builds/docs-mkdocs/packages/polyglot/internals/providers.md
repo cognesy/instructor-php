@@ -38,7 +38,7 @@ $provider = LLMProvider::fromArray([
 
 // Default (OpenAI with gpt-4.1-nano)
 $provider = LLMProvider::new();
-// @doctest id="48ff"
+// @doctest id="2c15"
 ```
 
 ### Customizing a Provider
@@ -56,7 +56,7 @@ $provider = $provider->withLLMConfig($newConfig);
 
 // Inject an explicit driver (bypasses the driver factory)
 $provider = $provider->withDriver($customDriver);
-// @doctest id="4699"
+// @doctest id="c843"
 ```
 
 When an explicit driver is set, the runtime uses it directly instead of building one from the config. This is useful for testing or for providers that need custom initialization.
@@ -97,7 +97,7 @@ $provider = EmbeddingsProvider::fromArray([
     'endpoint' => '/embeddings',
     'model' => 'text-embedding-3-small',
 ]);
-// @doctest id="58e9"
+// @doctest id="0a3b"
 ```
 
 Unlike `LLMProvider`, `EmbeddingsProvider` does not have a `using(...)` shortcut for presets. Use `Embeddings::using(...)` or construct the config explicitly.
@@ -108,7 +108,7 @@ Unlike `LLMProvider`, `EmbeddingsProvider` does not have a `using(...)` shortcut
 $provider = EmbeddingsProvider::fromArray([...])
     ->withConfigOverrides(['dimensions' => 256])
     ->withDriver($customDriver);
-// @doctest id="99f5"
+// @doctest id="0699"
 ```
 
 
@@ -159,7 +159,7 @@ $registry = BundledInferenceDrivers::registry()
     ->withDriver('my-provider', MyCustomDriver::class);
 
 $runtime = InferenceRuntime::fromConfig($config, drivers: $registry);
-// @doctest id="2549"
+// @doctest id="a01b"
 ```
 
 A custom driver can be registered as a class name (must accept `LLMConfig`, `CanSendHttpRequests`, and `CanHandleEvents` in its constructor) or as a callable factory:
@@ -168,14 +168,14 @@ A custom driver can be registered as a class name (must accept `LLMConfig`, `Can
 $registry = $registry->withDriver('my-provider', function ($config, $httpClient, $events) {
     return new MyCustomDriver($config, $httpClient, $events);
 });
-// @doctest id="4aba"
+// @doctest id="c9e4"
 ```
 
 You can also remove drivers from the registry:
 
 ```php
 $registry = $registry->withoutDriver('openai-compatible');
-// @doctest id="a532"
+// @doctest id="4297"
 ```
 
 ### Embeddings Driver Factory
@@ -188,7 +188,7 @@ Custom embeddings drivers can be registered statically:
 use Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory;
 
 EmbeddingsDriverFactory::registerDriver('my-provider', MyEmbeddingsDriver::class);
-// @doctest id="9913"
+// @doctest id="da41"
 ```
 
 Or with a factory callable:
@@ -197,7 +197,7 @@ Or with a factory callable:
 EmbeddingsDriverFactory::registerDriver('my-provider', function ($config, $httpClient, $events) {
     return new MyEmbeddingsDriver($config, $httpClient, $events);
 });
-// @doctest id="dfbd"
+// @doctest id="7e4f"
 ```
 
 > **Note:** The `EmbeddingsDriverFactory` uses static registration, while `InferenceDriverRegistry` uses immutable instance-based registration. This means embeddings driver registrations are global, while inference driver registrations can vary per runtime.
@@ -240,5 +240,5 @@ The driver contract `CanProcessInferenceRequest` also includes a `capabilities()
 ```php
 $driver->capabilities()->supportsStreaming;
 $driver->capabilities('deepseek-reasoner')->supportsToolCalls;
-// @doctest id="341d"
+// @doctest id="23d1"
 ```

@@ -9,7 +9,7 @@ use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Stream\Contracts\Reducer;
-use Cognesy\Utils\Json\Json;
+use Cognesy\Utils\Json\StreamingPartialJson;
 use Throwable;
 
 final class AccumulatePartialResponsesReducer implements Reducer
@@ -121,11 +121,7 @@ final class AccumulatePartialResponsesReducer implements Reducer
             return null;
         }
 
-        try {
-            return Json::fromPartial($snapshot)->toArray();
-        } catch (Throwable) {
-            return null;
-        }
+        return StreamingPartialJson::toArray($snapshot);
     }
 
     private function createObject(array $data): mixed {

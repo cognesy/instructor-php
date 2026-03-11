@@ -30,12 +30,12 @@ class ResponseDeserializer implements CanDeserializeResponse
     public function deserialize(array $data, ResponseModel $responseModel) : Result {
         $returnTarget = $responseModel->returnTarget();
         if ($returnTarget === ReturnTarget::Array) {
-            $this->events->dispatch(new ResponseDeserialized(['response' => json_encode($data)]));
+            $this->events->dispatch(new ResponseDeserialized($this->dataSummary($data)));
             return Result::success($data);
         }
         if ($returnTarget === ReturnTarget::UntypedObject) {
             $response = $this->toAnonymousObject($data);
-            $this->events->dispatch(new ResponseDeserialized(['response' => json_encode($response)]));
+            $this->events->dispatch(new ResponseDeserialized($this->objectSummary($response)));
             return Result::success($response);
         }
 
@@ -51,8 +51,9 @@ class ResponseDeserializer implements CanDeserializeResponse
             $instance = $outputFormat->targetInstance();
             if ($instance !== null && method_exists($instance, 'fromArray')) {
                 $this->events->dispatch(new CustomResponseDeserializationAttempt([
-                    'response' => $instance,
-                    'json' => json_encode($data),
+                    'class' => $instance::class,
+                    'dataKeys' => array_keys($data),
+                    'dataKeyCount' => count($data),
                 ]));
                 /** @var Result<mixed, string> */
                 return Result::try(fn() => $instance->fromArray($data));
@@ -86,7 +87,11 @@ class ResponseDeserializer implements CanDeserializeResponse
     }
 
     protected function deserializeSelf(array $data, CanDeserializeSelf $response) : Result {
-        $this->events->dispatch(new CustomResponseDeserializationAttempt(['response' => $response, 'json' => json_encode($data)]));
+        $this->events->dispatch(new CustomResponseDeserializationAttempt([
+            'class' => $response::class,
+            'dataKeys' => array_keys($data),
+            'dataKeyCount' => count($data),
+        ]));
         return Result::try(fn() => $response->fromArray($data));
     }
 
@@ -101,8 +106,10 @@ class ResponseDeserializer implements CanDeserializeResponse
         ReturnTarget $returnTarget,
     ): Result {
         $this->events->dispatch(new ResponseDeserializationAttempt([
-            'responseModel' => $responseModel->toArray(),
-            'json' => json_encode($data),
+            'targetClass' => $targetClass,
+            'returnTarget' => $returnTarget->name,
+            'dataKeys' => array_keys($data),
+            'dataKeyCount' => count($data),
         ]));
 
         $result = Result::failure('No deserializer available');
@@ -117,7 +124,7 @@ class ResponseDeserializer implements CanDeserializeResponse
             // Try fromArray
             $result = Result::try(fn() => $deserializer->fromArray($data, $targetClass));
             if ($result->isSuccess()) {
-                $this->events->dispatch(new ResponseDeserialized(['response' => json_encode($result->unwrap())]));
+                $this->events->dispatch(new ResponseDeserialized($this->objectSummary($result->unwrap())));
                 return $result;
             }
         }
@@ -136,6 +143,28 @@ class ResponseDeserializer implements CanDeserializeResponse
 
     private function toAnonymousObject(array $data) : object {
         return (object) $data;
+    }
+
+    private function dataSummary(array $data): array {
+        return [
+            'type' => 'array',
+            'keyCount' => count($data),
+            'keys' => array_slice(array_keys($data), 0, 20),
+        ];
+    }
+
+    private function objectSummary(mixed $value): array {
+        if (is_object($value)) {
+            $vars = get_object_vars($value);
+            return [
+                'type' => $value::class,
+                'fieldCount' => count($vars),
+                'fields' => array_slice(array_keys($vars), 0, 20),
+            ];
+        }
+        return [
+            'type' => gettype($value),
+        ];
     }
 
     private function makeFailureMessage(string $template, array $context) : string {

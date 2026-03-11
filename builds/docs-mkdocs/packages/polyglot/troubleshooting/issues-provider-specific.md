@@ -31,7 +31,7 @@ model: gpt-4.1-nano
 metadata:
   organization: 'org-your-organization-id'
   project: 'proj-your-project-id'
-# @doctest id="8bb9"
+# @doctest id="f478"
 ```
 
 ### API Changes
@@ -56,7 +56,7 @@ $text = Inference::using('openai')
 $text = Inference::using('openai-responses')
     ->withMessages('Hello')
     ->get();
-// @doctest id="72b8"
+// @doctest id="3d33"
 ```
 
 ## Anthropic
@@ -78,7 +78,7 @@ endpoint: /messages
 metadata:
   apiVersion: '2023-06-01'
   beta: prompt-caching-2024-07-31
-# @doctest id="21b1"
+# @doctest id="898d"
 ```
 
 If you see errors about unsupported API versions, update the `apiVersion` value in your preset.
@@ -110,7 +110,7 @@ $text = Inference::using('gemini')
 $text = Inference::using('gemini-oai')
     ->withMessages('Hello')
     ->get();
-// @doctest id="6755"
+// @doctest id="c0b6"
 ```
 
 ## Mistral
@@ -135,7 +135,7 @@ curl http://localhost:11434/api/version
 
 # Start Ollama if not running
 ollama serve
-# @doctest id="2c97"
+# @doctest id="9b3e"
 ```
 
 ### Pull Models Before Use
@@ -148,7 +148,7 @@ ollama pull llama3
 
 # List available models
 ollama list
-# @doctest id="c410"
+# @doctest id="a415"
 ```
 
 ### Default Endpoint
@@ -170,7 +170,7 @@ apiUrl: 'https://your-resource.openai.azure.com/openai'
 apiKey: '${AZURE_OPENAI_API_KEY}'
 endpoint: '/deployments/your-deployment/chat/completions'
 model: gpt-4
-# @doctest id="512f"
+# @doctest id="79fc"
 ```
 
 Azure deployments use deployment names rather than model names in the endpoint URL. Ensure the `endpoint` field includes the correct deployment name.
@@ -190,7 +190,7 @@ endpoint: /chat/completions
 model: anthropic.claude-3-haiku-20240307-v1:0
 metadata:
   region: '${AWS_BEDROCK_REGION:-us-east-1}'
-# @doctest id="2786"
+# @doctest id="fb72"
 ```
 
 ## Cohere

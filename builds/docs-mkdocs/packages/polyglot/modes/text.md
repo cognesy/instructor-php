@@ -17,7 +17,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $text = Inference::using('openai')
     ->withMessages('What is the single responsibility principle?')
     ->get();
-// @doctest id="6420"
+// @doctest id="da00"
 ```
 
 The `get()` method returns the raw string content from the model's response. There is no JSON parsing, no schema validation -- just the text the model produced.
@@ -50,7 +50,7 @@ $response = Inference::using('openai')
 $response = Inference::using('anthropic')
     ->withMessages('Write a short poem about the ocean.')
     ->get();
-// @doctest id="e709"
+// @doctest id="c477"
 ```
 
 ## Using the `with()` Method
@@ -68,7 +68,7 @@ $response = Inference::using('openai')
         options: ['temperature' => 0.3],
     )
     ->get();
-// @doctest id="9bd1"
+// @doctest id="f96c"
 ```
 
 ## Streaming Text Responses
@@ -88,7 +88,7 @@ $stream = Inference::using('openai')
 foreach ($stream as $partial) {
     echo $partial->contentDelta;
 }
-// @doctest id="2550"
+// @doctest id="d15d"
 ```
 
 Each partial response contains a `contentDelta` with the next chunk of text from the model. Streaming works with all providers that support it.
@@ -109,5 +109,5 @@ $response = Inference::using('openai')
 $text = $response->content();
 $usage = $response->usage();
 $reason = $response->finishReason();
-// @doctest id="8bd5"
+// @doctest id="029b"
 ```
