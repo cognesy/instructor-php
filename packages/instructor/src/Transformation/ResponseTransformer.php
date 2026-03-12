@@ -18,8 +18,7 @@ class ResponseTransformer implements CanTransformResponse
 {
     public function __construct(
         private EventDispatcherInterface $events,
-        /** @var array<CanTransformData|class-string<CanTransformData>> $transformers */
-        private array $transformers,
+        private ?CanTransformData $transformer,
         private StructuredOutputConfig $config,
     ) {}
 
@@ -29,18 +28,6 @@ class ResponseTransformer implements CanTransformResponse
             $data instanceof CanTransformSelf => $this->transformSelf($data),
             default => $this->transformData($data),
         };
-    }
-
-    /** @param CanTransformData[] $transformers */
-    public function appendTransformers(array $transformers) : self {
-        $this->transformers = array_merge($this->transformers, $transformers);
-        return $this;
-    }
-
-    /** @param CanTransformData[] $transformers */
-    public function setTransformers(array $transformers) : self {
-        $this->transformers = $transformers;
-        return $this;
     }
 
     // INTERNAL ////////////////////////////////////////////////////////
@@ -58,43 +45,30 @@ class ResponseTransformer implements CanTransformResponse
     }
 
     protected function transformData(mixed $input) : Result {
-        if (empty($this->transformers)) {
+        if ($this->transformer === null) {
             return Result::success($input);
         }
 
-        // clone the input as transformers may mutate it
+        // clone the input as transformer may mutate it
         $data = match(true) {
             is_object($input) => clone $input,
             default => $input,
         };
 
-        foreach ($this->transformers as $transformer) {
-            $transformer = match(true) {
-                is_string($transformer) && is_subclass_of($transformer, CanTransformData::class) => new $transformer(),
-                $transformer instanceof CanTransformData => $transformer,
-                default => throw new Exception('Transformer must implement CanTransformData interface'),
-            };
-
-            $this->events->dispatch(new ResponseTransformationAttempt(['data' => $data]));
-            $result = Result::try(fn() => $transformer->transform($data));
-            if ($result->isSuccessAndNull()) {
-                // if the transformer returns null, we skip it
-                continue;
+        $this->events->dispatch(new ResponseTransformationAttempt(['data' => $data]));
+        $result = Result::try(fn() => $this->transformer->transform($data));
+        if ($result->isSuccessAndNull()) {
+            return Result::success($input);
+        }
+        if ($result->isFailure()) {
+            $errorMessage = $result->exception()->getMessage();
+            $this->events->dispatch(new ResponseTransformationFailed(['data' => $data, 'error' => $errorMessage]));
+            if ($this->config->throwOnTransformationFailure()) {
+                throw new ResponseTransformationException($errorMessage);
             }
-            if ($result->isFailure()) {
-                // if the transformer failed - try with the next one
-                $errorMessage = $result->exception()->getMessage();
-                $this->events->dispatch(new ResponseTransformationFailed(['data' => $data, 'error' => $errorMessage]));
-                if ($this->config->throwOnTransformationFailure()) {
-                    throw new ResponseTransformationException($errorMessage);
-                }
-                continue;
-            }
-
-            // we take the transformed data and continue transforming it
-            $data = $result->unwrap();
+            return Result::success($input);
         }
 
-        return Result::success($data);
+        return Result::success($result->unwrap());
     }
 }

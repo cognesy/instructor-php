@@ -12,20 +12,22 @@ use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
+use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
 use Cognesy\Utils\Result\Result;
 
 // Lightweight fakes for pipeline dependencies
 class FakeDeserializer extends ResponseDeserializer {
-    public function __construct($events, $config) { parent::__construct($events, [], $config); }
+    public function __construct($events, $config) { parent::__construct($events, new SymfonyDeserializer(), $config); }
     public function deserialize(array $data, ResponseModel $responseModel) : Result {
         return Result::success((object)['ok' => true, 'data' => $data]);
     }
 }
 class FakeValidator extends ResponseValidator {
-    public function __construct($events, $config) { parent::__construct($events, [], $config); }
+    public function __construct($events, $config) { parent::__construct($events, new SymfonyValidator(), $config); }
 }
 class FakeTransformer extends ResponseTransformer {
-    public function __construct($events, $config) { parent::__construct($events, [], $config); }
+    public function __construct($events, $config) { parent::__construct($events, null, $config); }
 }
 
 describe('ResponseGenerator', function () {

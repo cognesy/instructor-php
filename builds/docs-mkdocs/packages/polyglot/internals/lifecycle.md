@@ -17,7 +17,7 @@ $inference = Inference::using('openai')
     ->withMessages(Messages::fromString('Explain PHP generics.'))
     ->withModel('gpt-4.1-nano')
     ->withMaxTokens(1024);
-// @doctest id="d1f2"
+// @doctest id="586f"
 ```
 
 At this point, no HTTP call has been made. The facade holds an `InferenceRequestBuilder` that accumulates parameters. Every `with*()` call returns a new immutable copy, so the original instance is never modified.
@@ -28,7 +28,7 @@ Calling `create()` (or a shortcut like `get()` or `response()`) builds the `Infe
 
 ```php
 $pending = $inference->create();
-// @doctest id="75dd"
+// @doctest id="9280"
 ```
 
 The `InferenceRuntime` wraps the request in an `InferenceExecution` object and returns a `PendingInference` handle. Execution is still deferred -- no HTTP call has been sent yet.
@@ -43,7 +43,7 @@ The HTTP call is triggered only when you read from the `PendingInference`:
 $text = $pending->get();          // triggers execution, returns content string
 $response = $pending->response(); // triggers execution, returns InferenceResponse
 $stream = $pending->stream();     // triggers execution (streaming mode)
-// @doctest id="b162"
+// @doctest id="ae06"
 ```
 
 Internally, `PendingInference` delegates to `InferenceExecutionSession`, which orchestrates the full lifecycle.
@@ -62,10 +62,11 @@ The `InferenceExecutionSession` is the heart of the lifecycle. It performs these
 5. **Dispatches success events**:
    - `InferenceResponseCreated` -- the response is ready
    - `InferenceAttemptSucceeded` -- the attempt completed, including finish reason and usage
-   - `InferenceUsageReported` -- token usage is reported with the model name
+   - `InferenceUsageReported` -- token usage (`InferenceUsage`) is reported with the model name
    - `InferenceCompleted` -- the entire operation is done, including total attempt count and timing
-6. **Attaches pricing** -- if the `LLMConfig` includes pricing data, it is attached to the `Usage` object so that `$response->usage()->cost()` returns the estimated cost
-7. **Returns `InferenceResponse`** to the caller
+6. **Returns `InferenceResponse`** to the caller
+
+Cost calculation is performed externally using a `FlatRateCostCalculator` with `InferencePricing` data from the `LLMConfig`, rather than being attached to the usage object in the pipeline.
 
 ### 5. Retry Handling
 
@@ -106,7 +107,7 @@ foreach ($stream->deltas() as $delta) {
 }
 
 $finalResponse = $stream->final();  // assembled InferenceResponse
-// @doctest id="e870"
+// @doctest id="88fb"
 ```
 
 ### Stream Events
@@ -133,7 +134,7 @@ $toolDeltas = $stream->filter(fn($delta) => $delta->toolName !== '');
 
 // Collect all visible deltas
 $allDeltas = $stream->all();
-// @doctest id="1a5b"
+// @doctest id="7b94"
 ```
 
 ### Delta Callback
@@ -144,14 +145,14 @@ You can register a callback that fires for every visible delta:
 $stream->onDelta(function (PartialInferenceDelta $delta): void {
     echo $delta->contentDelta;
 });
-// @doctest id="d4b4"
+// @doctest id="b645"
 ```
 
 ### Stream Finalization
 
 Calling `final()` on a stream that has not been fully consumed will drain the remaining deltas first, ensuring the final response is complete. A stream can only be consumed once -- calling `deltas()` a second time throws a `LogicException`.
 
-The final response assembled from the stream goes through the same pricing attachment and event dispatch as a synchronous response.
+The final response assembled from the stream goes through the same event dispatch as a synchronous response.
 
 
 ## Embeddings Lifecycle
@@ -173,8 +174,8 @@ $response = Embeddings::using('openai')
 
 $vectors = $response->vectors();   // Vector[]
 $first = $response->first();       // first Vector
-$usage = $response->usage();       // Usage
-// @doctest id="4f3e"
+$usage = $response->usage();       // InferenceUsage
+// @doctest id="7381"
 ```
 
 Retry logic is handled internally by `PendingEmbeddings` based on the `EmbeddingsRetryPolicy` attached to the request. The retry loop follows the same exponential backoff pattern as inference retries.
@@ -194,7 +195,7 @@ $pending = $inference
 
 $first = $pending->response();  // makes HTTP call
 $second = $pending->response(); // returns cached response
-// @doctest id="90aa"
+// @doctest id="b42b"
 ```
 
 For streaming, the stream itself cannot be replayed -- calling `deltas()` a second time will throw a `LogicException`. However, `final()` always returns the assembled response, which is stored in the execution object.

@@ -33,7 +33,7 @@ $stream = Inference::using('openai')
 foreach ($stream->deltas() as $delta) {
     echo $delta->contentDelta;
 }
-// @doctest id="3a4f"
+// @doctest id="d7ad"
 ```
 
 The `deltas()` method returns a PHP `Generator` that yields `PartialInferenceDelta` objects one at a time. Each delta represents a single chunk received from the provider.
@@ -76,7 +76,7 @@ foreach ($stream->deltas() as $delta) {
 $response = $stream->final();
 echo $response->content();    // full accumulated text
 echo $response->usage();      // token usage for the request
-// @doctest id="cf58"
+// @doctest id="84af"
 ```
 
 If you call `final()` before consuming the stream, it will drain all remaining deltas internally so that the response is fully assembled. This means you can skip the `foreach` loop entirely when you only need the final result, though in that case a non-streaming request would be more appropriate.
@@ -99,7 +99,7 @@ $stream = Inference::using('openai')
 
 // Drain the stream to trigger the callbacks
 $stream->final();
-// @doctest id="1745"
+// @doctest id="0a77"
 ```
 
 This pattern is convenient when the delta processing logic is simple and you want the final response at the end.
@@ -130,7 +130,7 @@ foreach ($stream->deltas() as $delta) {
         break;
     }
 }
-// @doctest id="b95e"
+// @doctest id="ee2c"
 ```
 
 When you break out of the loop, the underlying HTTP connection to the provider continues in the background, but your application stops processing further chunks.
@@ -153,7 +153,7 @@ $stream = Inference::using('openai')
     ->withMessages(Messages::fromString('Hello!'))
     ->withResponseCachePolicy(ResponseCachePolicy::Memory)
     ->stream();
-// @doctest id="dc65"
+// @doctest id="6db7"
 ```
 
 With `ResponseCachePolicy::Memory`, the raw response data is cached in memory, allowing the stream to be reconstructed if needed.

@@ -43,7 +43,7 @@ $request->cachedContext();       // ?CachedInferenceContext
 $request->responseCachePolicy(); // ResponseCachePolicy
 $request->retryPolicy();         // ?InferenceRetryPolicy
 $request->id();                  // InferenceRequestId
-// @doctest id="2200"
+// @doctest id="764d"
 ```
 
 Predicate methods are also available: `hasMessages()`, `hasModel()`, `hasTools()`, `hasToolChoice()`, `hasResponseFormat()`, `hasNonTextResponseFormat()`, `hasTextResponseFormat()`, `hasOptions()`.
@@ -63,7 +63,7 @@ $updated = $request
     ->withResponseFormat(['type' => 'json_object'])
     ->withRetryPolicy(new InferenceRetryPolicy(maxAttempts: 3))
     ->withResponseCachePolicy(ResponseCachePolicy::Memory);
-// @doctest id="9cde"
+// @doctest id="d67f"
 ```
 
 The `with(...)` method allows setting multiple fields in a single call:
@@ -74,7 +74,7 @@ $updated = $request->with(
     model: 'gpt-4.1',
     options: ['temperature' => 0.7],
 );
-// @doctest id="a132"
+// @doctest id="2d14"
 ```
 
 ### Cached Context
@@ -94,7 +94,7 @@ $request = new InferenceRequest(
 // Merges cached messages before request messages,
 // cached tools/format used if request has none
 $merged = $request->withCacheApplied();
-// @doctest id="ed52"
+// @doctest id="ed33"
 ```
 
 After applying, the merged request has an empty cached context to prevent double-application.
@@ -106,7 +106,7 @@ Requests can be serialized to and from arrays for storage or transport:
 ```php
 $array = $request->toArray();
 $restored = InferenceRequest::fromArray($array);
-// @doctest id="9738"
+// @doctest id="cc59"
 ```
 
 
@@ -138,10 +138,10 @@ $data = $pending->asToolCallJsonData();  // array
 
 // Check if streaming is enabled for this request
 $isStreamed = $pending->isStreamed();
-// @doctest id="cb21"
+// @doctest id="f1ae"
 ```
 
-The underlying `InferenceExecutionSession` handles retry logic, event dispatching, pricing attachment, and response caching. Once execution completes, the response is cached for the lifetime of the `PendingInference` instance.
+The underlying `InferenceExecutionSession` handles retry logic, event dispatching, and response caching. Once execution completes, the response is cached for the lifetime of the `PendingInference` instance.
 
 > **Important:** Calling `stream()` on a non-streaming request will throw an `InvalidArgumentException`. Enable streaming via `withStreaming(true)` on the facade before calling `create()`.
 
@@ -158,11 +158,11 @@ The underlying `InferenceExecutionSession` handles retry logic, event dispatchin
 $response->content();           // string -- the generated text
 $response->reasoningContent();  // string -- chain-of-thought (if available)
 $response->toolCalls();         // ToolCalls collection
-$response->usage();             // Usage object with token counts
+$response->usage();             // InferenceUsage object with token counts
 $response->finishReason();      // InferenceFinishReason enum
 $response->responseData();      // HttpResponse -- the raw HTTP response
 $response->isPartial();         // bool -- true for intermediate streaming results
-// @doctest id="e0aa"
+// @doctest id="00c4"
 ```
 
 Predicate methods: `hasContent()`, `hasReasoningContent()`, `hasToolCalls()`, `hasFinishReason()`.
@@ -179,7 +179,7 @@ $str = $response->findJsonData()->toString(); // string
 
 // Extract tool call arguments
 $json = $response->findToolCallJsonData();  // Json object
-// @doctest id="1e0a"
+// @doctest id="82cd"
 ```
 
 When a response has a single tool call, `findToolCallJsonData()` returns the arguments of that call. When there are multiple tool calls, it returns an array of all tool call data.
@@ -192,7 +192,7 @@ Some providers embed reasoning in `<think>` tags within the content rather than 
 $response = $response->withReasoningContentFallbackFromContent();
 // Now $response->reasoningContent() contains the extracted reasoning
 // And $response->content() has the <think> tags removed
-// @doctest id="46b5"
+// @doctest id="487e"
 ```
 
 This is a no-op if the response already has dedicated reasoning content or if no `<think>` tags are present.
@@ -205,7 +205,7 @@ The `finishReason()` method returns an `InferenceFinishReason` enum. The `hasFin
 if ($response->hasFinishedWithFailure()) {
     // Handle error, content_filter, or length finish reasons
 }
-// @doctest id="b481"
+// @doctest id="a25d"
 ```
 
 ### Serialization
@@ -215,7 +215,7 @@ Responses support round-trip serialization:
 ```php
 $array = $response->toArray();
 $restored = InferenceResponse::fromArray($array);
-// @doctest id="7f4a"
+// @doctest id="c657"
 ```
 
 
@@ -235,7 +235,7 @@ During streaming, the driver emits `PartialInferenceDelta` objects for each SSE 
 | `toolName` | `string` | Tool name (first delta of a tool call) |
 | `toolArgs` | `string` | Incremental tool call arguments |
 | `finishReason` | `string` | Set on the final delta |
-| `usage` | `?Usage` | Token usage (typically on the last delta) |
+| `usage` | `?InferenceUsage` | Token usage (typically on the last delta) |
 | `usageIsCumulative` | `bool` | Whether usage represents total (true) or incremental (false) |
 | `responseData` | `?HttpResponse` | Raw response data for this event |
 | `value` | `mixed` | Optional provider-specific value |
@@ -243,9 +243,11 @@ During streaming, the driver emits `PartialInferenceDelta` objects for each SSE 
 The `InferenceStream` accumulates these deltas internally using `InferenceStreamState` and assembles the final `InferenceResponse` when the stream completes. A `VisibilityTracker` ensures that only deltas with meaningful content changes are yielded to the caller.
 
 
-## Usage
+## InferenceUsage
 
-The `Usage` object tracks token consumption across several categories:
+The `InferenceUsage` object tracks token consumption across several categories:
+
+**Namespace:** `Cognesy\Polyglot\Inference\Data\InferenceUsage`
 
 ```php
 $usage = $response->usage();
@@ -264,31 +266,39 @@ $usage->cache();   // cache write + cache read tokens
 
 // String representation
 $usage->toString(); // "Tokens: 150 (i:100 o:40 c:0 r:10)"
-// @doctest id="3294"
+// @doctest id="44cb"
 ```
 
 ### Cost Calculation
 
-When pricing is available (from `LLMConfig` or attached manually), you can calculate costs. Pricing is specified in USD per 1 million tokens:
+Cost is calculated externally using a calculator rather than through methods on the usage object. Pricing is specified in USD per 1 million tokens:
 
 ```php
-$cost = $usage->cost();  // float -- total cost in USD
+use Cognesy\Polyglot\Inference\Data\InferencePricing;
+use Cognesy\Polyglot\Pricing\FlatRateCostCalculator;
 
-// Or with explicit pricing
-$cost = $usage->cost(new Pricing(
+$calculator = new FlatRateCostCalculator();
+$cost = $calculator->calculate($usage, new InferencePricing(
     inputPerMToken: 0.15,
     outputPerMToken: 0.60,
 ));
-// @doctest id="c0ea"
+
+// The Cost value object
+$cost->total;          // float -- total cost in USD
+$cost->breakdown;      // array -- per-category breakdown
+$cost->toString();     // string representation
+$cost->toArray();      // array representation
+// @doctest id="65a3"
 ```
 
 ### Accumulation
 
-Usage can be accumulated across multiple requests:
+Usage and cost can be accumulated across multiple requests:
 
 ```php
 $total = $usage1->withAccumulated($usage2);
-// @doctest id="d4ce"
+$totalCost = $cost1->withAccumulated($cost2);
+// @doctest id="d99d"
 ```
 
 
@@ -315,7 +325,7 @@ $request->retryPolicy(); // ?EmbeddingsRetryPolicy
 $updated = $request->withInputs('New text');
 $updated = $request->withModel('text-embedding-3-large');
 $updated = $request->withOptions(['dimensions' => 1024]);
-// @doctest id="6018"
+// @doctest id="1bfa"
 ```
 
 ### EmbeddingsResponse
@@ -327,10 +337,10 @@ $response->vectors();       // Vector[] -- all embedding vectors
 $response->first();         // ?Vector -- first vector
 $response->last();          // ?Vector -- last vector
 $response->all();           // Vector[] -- alias for vectors()
-$response->usage();         // Usage
+$response->usage();         // InferenceUsage
 $response->toValuesArray(); // array of float arrays
 $response->split($index);   // [Vector[], Vector[]] -- split at index
-// @doctest id="3dde"
+// @doctest id="150c"
 ```
 
 ### PendingEmbeddings
@@ -341,5 +351,5 @@ A lazy handle similar to `PendingInference`. Calling `get()` triggers the HTTP r
 $pending = $embeddings->withInputs('Hello world')->create();
 $response = $pending->get();      // triggers HTTP call
 $request = $pending->request();   // access the original request
-// @doctest id="e04a"
+// @doctest id="198a"
 ```

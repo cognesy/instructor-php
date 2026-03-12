@@ -51,7 +51,7 @@ $config = LLMConfig::fromArray([
 
 // From a DSN string
 $config = LLMConfig::fromDsn('openai://model=gpt-4.1-nano&maxTokens=2048');
-// @doctest id="99fe"
+// @doctest id="55d5"
 ```
 
 ### Presets
@@ -67,7 +67,7 @@ You may also pass a custom base path:
 
 ```php
 $config = LLMConfig::fromPreset('my-preset', basePath: '/path/to/presets');
-// @doctest id="06a0"
+// @doctest id="e48d"
 ```
 
 ### Overriding Values
@@ -77,14 +77,17 @@ Use `withOverrides()` to create a modified copy of an existing config:
 ```php
 $base = LLMConfig::fromPreset('openai');
 $custom = $base->withOverrides(['model' => 'gpt-4.1', 'maxTokens' => 4096]);
-// @doctest id="628b"
+// @doctest id="a8c1"
 ```
 
 ### Pricing
 
-When pricing data is included in the config, it is automatically attached to `Usage` objects in responses, enabling cost calculations via `$usage->cost()`. Pricing values are specified in USD per 1 million tokens:
+When pricing data is included in the config, it can be used with a cost calculator to compute costs externally. Pricing values are specified in USD per 1 million tokens:
 
 ```php
+use Cognesy\Polyglot\Inference\Data\InferencePricing;
+use Cognesy\Polyglot\Pricing\FlatRateCostCalculator;
+
 $config = LLMConfig::fromArray([
     'driver' => 'openai',
     'apiUrl' => 'https://api.openai.com/v1',
@@ -99,7 +102,12 @@ $config = LLMConfig::fromArray([
         'reasoningPerMToken' => 0.0,
     ],
 ]);
-// @doctest id="f53b"
+
+// Cost is calculated externally using a calculator
+$pricing = InferencePricing::fromArray($config->pricing);
+$calculator = new FlatRateCostCalculator();
+$cost = $calculator->calculate($usage, $pricing);
+// @doctest id="5eca"
 ```
 
 ### Type Coercion
@@ -146,7 +154,7 @@ $config = EmbeddingsConfig::fromArray([
 
 // From a DSN string
 $config = EmbeddingsConfig::fromDsn('openai://model=text-embedding-3-small');
-// @doctest id="036f"
+// @doctest id="8649"
 ```
 
 Presets for embeddings are resolved from similar paths, under the `embed` config group:
@@ -163,7 +171,7 @@ $modified = $config->withOverrides([
     'model' => 'text-embedding-3-large',
     'dimensions' => 1024,
 ]);
-// @doctest id="791e"
+// @doctest id="6da2"
 ```
 
 For `EmbeddingsConfig`, type coercion applies to the `dimensions` and `maxInputs` fields.
@@ -195,7 +203,7 @@ $policy = new InferenceRetryPolicy(
 );
 
 $inference->withRetryPolicy($policy);
-// @doctest id="4c22"
+// @doctest id="5b2a"
 ```
 
 The retry delay uses exponential backoff: `baseDelayMs * 2^(attempt-1)`, capped at `maxDelayMs`. The `jitter` strategy adds randomness to avoid thundering herd problems:
@@ -218,5 +226,5 @@ use Cognesy\Polyglot\Embeddings\Config\EmbeddingsRetryPolicy;
 $embeddings->withRetryPolicy(new EmbeddingsRetryPolicy(
     maxAttempts: 3,
 ));
-// @doctest id="a4db"
+// @doctest id="96d2"
 ```

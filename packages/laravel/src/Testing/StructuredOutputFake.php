@@ -229,22 +229,22 @@ class StructuredOutputFake
         return $this;
     }
 
-    public function withValidators(...$validators): self
+    public function withValidator(\Cognesy\Instructor\Validation\Contracts\CanValidateObject $validator): self
     {
         return $this;
     }
 
-    public function withTransformers(...$transformers): self
+    public function withTransformer(\Cognesy\Instructor\Transformation\Contracts\CanTransformData $transformer): self
     {
         return $this;
     }
 
-    public function withDeserializers(...$deserializers): self
+    public function withDeserializer(\Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass $deserializer): self
     {
         return $this;
     }
 
-    public function withExtractors(...$extractors): self
+    public function withExtractor(\Cognesy\Instructor\Extraction\Contracts\CanExtractResponse $extractor): self
     {
         return $this;
     }

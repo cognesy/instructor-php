@@ -24,18 +24,14 @@ use Cognesy\Polyglot\Inference\LLMProvider;
 
 final class StructuredOutputRuntime implements CanCreateStructuredOutput
 {
-    /** @param array<CanValidateObject|class-string<CanValidateObject>> $validators */
-    /** @param array<CanTransformData|class-string<CanTransformData>> $transformers */
-    /** @param array<CanDeserializeClass|class-string<CanDeserializeClass>> $deserializers */
-    /** @param array<CanExtractResponse|class-string<CanExtractResponse>> $extractors */
     public function __construct(
         private readonly CanCreateInference $inference,
         private readonly CanHandleEvents $events,
         private readonly StructuredOutputConfig $config,
-        private readonly array $validators = [],
-        private readonly array $transformers = [],
-        private readonly array $deserializers = [],
-        private readonly array $extractors = [],
+        private readonly ?CanValidateObject $validator = null,
+        private readonly ?CanTransformData $transformer = null,
+        private readonly ?CanDeserializeClass $deserializer = null,
+        private readonly ?CanExtractResponse $extractor = null,
         private readonly CanMaterializeRequest $requestMaterializer = new RequestMaterializer(),
     ) {}
 
@@ -114,10 +110,10 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
             config: $this->config,
             inference: $this->inference,
             requestMaterializer: $this->requestMaterializer,
-            validators: $this->validators,
-            transformers: $this->transformers,
-            deserializers: $this->deserializers,
-            extractors: $this->extractors,
+            validator: $this->validator,
+            transformer: $this->transformer,
+            deserializer: $this->deserializer,
+            extractor: $this->extractor,
         );
 
         return new PendingStructuredOutput(
@@ -147,24 +143,20 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
         return $this->config;
     }
 
-    /** @return array<CanValidateObject|class-string<CanValidateObject>> */
-    public function validators(): array {
-        return $this->validators;
+    public function validator(): ?CanValidateObject {
+        return $this->validator;
     }
 
-    /** @return array<CanTransformData|class-string<CanTransformData>> */
-    public function transformers(): array {
-        return $this->transformers;
+    public function transformer(): ?CanTransformData {
+        return $this->transformer;
     }
 
-    /** @return array<CanDeserializeClass|class-string<CanDeserializeClass>> */
-    public function deserializers(): array {
-        return $this->deserializers;
+    public function deserializer(): ?CanDeserializeClass {
+        return $this->deserializer;
     }
 
-    /** @return array<CanExtractResponse|class-string<CanExtractResponse>> */
-    public function extractors(): array {
-        return $this->extractors;
+    public function extractor(): ?CanExtractResponse {
+        return $this->extractor;
     }
 
     public function requestMaterializer(): CanMaterializeRequest {
@@ -187,24 +179,20 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
         return $this->withConfig($this->config->withMaxRetries($maxRetries));
     }
 
-    /** @param array<CanValidateObject|class-string<CanValidateObject>> $validators */
-    public function withValidators(array $validators): self {
-        return $this->with(validators: $validators);
+    public function withValidator(CanValidateObject $validator): self {
+        return $this->with(validator: $validator);
     }
 
-    /** @param array<CanTransformData|class-string<CanTransformData>> $transformers */
-    public function withTransformers(array $transformers): self {
-        return $this->with(transformers: $transformers);
+    public function withTransformer(CanTransformData $transformer): self {
+        return $this->with(transformer: $transformer);
     }
 
-    /** @param array<CanDeserializeClass|class-string<CanDeserializeClass>> $deserializers */
-    public function withDeserializers(array $deserializers): self {
-        return $this->with(deserializers: $deserializers);
+    public function withDeserializer(CanDeserializeClass $deserializer): self {
+        return $this->with(deserializer: $deserializer);
     }
 
-    /** @param array<CanExtractResponse|class-string<CanExtractResponse>> $extractors */
-    public function withExtractors(array $extractors): self {
-        return $this->with(extractors: $extractors);
+    public function withExtractor(CanExtractResponse $extractor): self {
+        return $this->with(extractor: $extractor);
     }
 
     public function withRequestMaterializer(CanMaterializeRequest $requestMaterializer): self {
@@ -218,29 +206,22 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
         return new StructuredOutputConfig();
     }
 
-    /**
-     * @param array<CanValidateObject|class-string<CanValidateObject>>|null $validators
-     * @param array<CanTransformData|class-string<CanTransformData>>|null $transformers
-     * @param array<CanDeserializeClass|class-string<CanDeserializeClass>>|null $deserializers
-     * @param array<CanExtractResponse|class-string<CanExtractResponse>>|null $extractors
-     * @param CanMaterializeRequest|null $requestMaterializer
-     */
     private function with(
         ?StructuredOutputConfig $config = null,
-        ?array $validators = null,
-        ?array $transformers = null,
-        ?array $deserializers = null,
-        ?array $extractors = null,
+        ?CanValidateObject $validator = null,
+        ?CanTransformData $transformer = null,
+        ?CanDeserializeClass $deserializer = null,
+        ?CanExtractResponse $extractor = null,
         ?CanMaterializeRequest $requestMaterializer = null,
     ): self {
         return new self(
             inference: $this->inference,
             events: $this->events,
             config: $config ?? $this->config,
-            validators: $validators ?? $this->validators,
-            transformers: $transformers ?? $this->transformers,
-            deserializers: $deserializers ?? $this->deserializers,
-            extractors: $extractors ?? $this->extractors,
+            validator: $validator ?? $this->validator,
+            transformer: $transformer ?? $this->transformer,
+            deserializer: $deserializer ?? $this->deserializer,
+            extractor: $extractor ?? $this->extractor,
             requestMaterializer: $requestMaterializer ?? $this->requestMaterializer,
         );
     }

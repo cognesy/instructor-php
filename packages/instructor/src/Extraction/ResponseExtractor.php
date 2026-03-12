@@ -24,17 +24,17 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  */
 class ResponseExtractor implements CanExtractResponse, CanProvideContentBuffer
 {
-    /** @var array<CanExtractResponse|class-string<CanExtractResponse>> */
+    /** @var CanExtractResponse[] */
     private array $extractors;
 
-    /** @var array<CanExtractResponse|class-string<CanExtractResponse>>|null */
+    /** @var CanExtractResponse[]|null */
     private ?array $streamingExtractors;
 
     private ?EventDispatcherInterface $events;
 
     /**
-     * @param array<CanExtractResponse|class-string<CanExtractResponse>>|null $extractors Custom extractors (default: standard chain)
-     * @param array<CanExtractResponse|class-string<CanExtractResponse>>|null $streamingExtractors Streaming-specific extractors (null = use subset of $extractors)
+     * @param CanExtractResponse[]|null $extractors Custom extractors (default: standard chain)
+     * @param CanExtractResponse[]|null $streamingExtractors Streaming-specific extractors (null = use subset of $extractors)
      * @param EventDispatcherInterface|null $events Optional event dispatcher
      */
     public function __construct(
@@ -42,13 +42,17 @@ class ResponseExtractor implements CanExtractResponse, CanProvideContentBuffer
         ?array $streamingExtractors = null,
         ?EventDispatcherInterface $events = null,
     ) {
-        $this->extractors = $extractors ?? self::defaultExtractors();
-        $this->streamingExtractors = match (true) {
+        $this->events = $events;
+        $resolved = $extractors ?? self::defaultExtractors();
+        $this->extractors = $events !== null ? self::attachEvents($resolved, $events) : $resolved;
+        $resolvedStreaming = match (true) {
             $streamingExtractors !== null => $streamingExtractors,
             $extractors !== null => $extractors,
             default => null,
         };
-        $this->events = $events;
+        $this->streamingExtractors = ($resolvedStreaming !== null && $events !== null)
+            ? self::attachEvents($resolvedStreaming, $events)
+            : $resolvedStreaming;
     }
 
     /**
@@ -58,6 +62,10 @@ class ResponseExtractor implements CanExtractResponse, CanProvideContentBuffer
     {
         $clone = clone $this;
         $clone->events = $events;
+        $clone->extractors = self::attachEvents($clone->extractors, $events);
+        if ($clone->streamingExtractors !== null) {
+            $clone->streamingExtractors = self::attachEvents($clone->streamingExtractors, $events);
+        }
         return $clone;
     }
 
@@ -71,10 +79,8 @@ class ResponseExtractor implements CanExtractResponse, CanProvideContentBuffer
 
     /**
      * Create extractor with custom extractors.
-     *
-     * @param CanExtractResponse|class-string<CanExtractResponse> ...$extractors
      */
-    public static function fromExtractors(CanExtractResponse|string ...$extractors): self
+    public static function fromExtractors(CanExtractResponse ...$extractors): self
     {
         return new self($extractors);
     }
@@ -82,30 +88,30 @@ class ResponseExtractor implements CanExtractResponse, CanProvideContentBuffer
     /**
      * Get the default extraction chain in order.
      *
-     * @return array<class-string<CanExtractResponse>>
+     * @return CanExtractResponse[]
      */
     public static function defaultExtractors(): array
     {
         return [
-            DirectJsonExtractor::class,
-            ResilientJsonExtractor::class,
-            MarkdownBlockExtractor::class,
-            BracketMatchingExtractor::class,
-            SmartBraceExtractor::class,
+            new DirectJsonExtractor(),
+            new ResilientJsonExtractor(),
+            new MarkdownBlockExtractor(),
+            new BracketMatchingExtractor(),
+            new SmartBraceExtractor(),
         ];
     }
 
     /**
      * Get the default streaming extractors (fast subset).
      *
-     * @return array<class-string<CanExtractResponse>>
+     * @return CanExtractResponse[]
      */
     public static function defaultStreamingExtractors(): array
     {
         return [
-            DirectJsonExtractor::class,
-            ResilientJsonExtractor::class,
-            PartialJsonExtractor::class,
+            new DirectJsonExtractor(),
+            new ResilientJsonExtractor(),
+            new PartialJsonExtractor(),
         ];
     }
 
@@ -118,7 +124,7 @@ class ResponseExtractor implements CanExtractResponse, CanProvideContentBuffer
 
         $buffer = ExtractingBuffer::empty(
             mode: $input->mode,
-            extractors: $this->resolveExtractors(),
+            extractors: $this->extractors,
             response: $input->response,
             events: $this->events,
         )->assemble($input->content);
@@ -142,7 +148,7 @@ class ResponseExtractor implements CanExtractResponse, CanProvideContentBuffer
     {
         return ExtractingBuffer::empty(
             mode: $mode,
-            extractors: $this->resolveStreamingExtractors(),
+            extractors: $this->streamingExtractors ?? self::defaultStreamingExtractors(),
             response: null,
             events: null,
         );
@@ -151,7 +157,7 @@ class ResponseExtractor implements CanExtractResponse, CanProvideContentBuffer
     /**
      * Get extractors currently configured for this service.
      *
-     * @return array<CanExtractResponse|class-string<CanExtractResponse>>
+     * @return CanExtractResponse[]
      */
     public function extractors(): array
     {
@@ -167,49 +173,20 @@ class ResponseExtractor implements CanExtractResponse, CanProvideContentBuffer
     // INTERNAL ////////////////////////////////////////////////////////////////
 
     /**
-     * Resolve extractor from class string if needed.
+     * Attach events to extractors that support withEvents().
      *
-     * @param CanExtractResponse|class-string<CanExtractResponse> $extractor
-     */
-    private function resolveExtractor(CanExtractResponse|string $extractor): CanExtractResponse
-    {
-        $resolved = match (true) {
-            is_string($extractor) => new $extractor(),
-            default => $extractor,
-        };
-        if ($this->events === null || !method_exists($resolved, 'withEvents')) {
-            return $resolved;
-        }
-        $withEvents = $resolved->withEvents($this->events);
-        return match (true) {
-            $withEvents instanceof CanExtractResponse => $withEvents,
-            default => $resolved,
-        };
-    }
-
-    /**
+     * @param CanExtractResponse[] $extractors
      * @return CanExtractResponse[]
      */
-    private function resolveExtractors(): array
+    private static function attachEvents(array $extractors, EventDispatcherInterface $events): array
     {
-        return array_map(
-            fn($extractor) => $this->resolveExtractor($extractor),
-            $this->extractors,
-        );
-    }
-
-    /**
-     * Get streaming extractors, resolved to instances.
-     *
-     * @return CanExtractResponse[]
-     */
-    private function resolveStreamingExtractors(): array
-    {
-        $extractors = $this->streamingExtractors ?? self::defaultStreamingExtractors();
-        return array_map(
-            fn($extractor) => $this->resolveExtractor($extractor),
-            $extractors,
-        );
+        return array_map(function (CanExtractResponse $extractor) use ($events) {
+            if (!method_exists($extractor, 'withEvents')) {
+                return $extractor;
+            }
+            $withEvents = $extractor->withEvents($events);
+            return $withEvents instanceof CanExtractResponse ? $withEvents : $extractor;
+        }, $extractors);
     }
 
     /**

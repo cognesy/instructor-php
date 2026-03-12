@@ -15,14 +15,13 @@ use Cognesy\Instructor\Events\Response\ResponseDeserializationFailed;
 use Cognesy\Instructor\Events\Response\ResponseDeserialized;
 use Cognesy\Template\Template;
 use Cognesy\Utils\Result\Result;
-use Exception;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 class ResponseDeserializer implements CanDeserializeResponse
 {
     public function __construct(
         private EventDispatcherInterface $events,
-        private array $deserializers,
+        private CanDeserializeClass $deserializer,
         private StructuredOutputConfig $config,
     ) {}
 
@@ -68,18 +67,6 @@ class ResponseDeserializer implements CanDeserializeResponse
         return $this->deserializeAny($data, $targetClass, $responseModel, $returnTarget);
     }
 
-    /** @param CanDeserializeClass[] $deserializers */
-    public function appendDeserializers(array $deserializers) : self {
-        $this->deserializers = array_merge($this->deserializers, $deserializers);
-        return $this;
-    }
-
-    /** @param CanDeserializeClass[] $deserializers */
-    public function setDeserializers(array $deserializers) : self {
-        $this->deserializers = $deserializers;
-        return $this;
-    }
-
     // INTERNAL ////////////////////////////////////////////////////////
 
     protected function canDeserializeSelf(ResponseModel $responseModel) : bool {
@@ -112,24 +99,12 @@ class ResponseDeserializer implements CanDeserializeResponse
             'dataKeyCount' => count($data),
         ]));
 
-        $result = Result::failure('No deserializer available');
-
-        foreach ($this->deserializers as $deserializer) {
-            $deserializer = match (true) {
-                is_string($deserializer) && is_subclass_of($deserializer, CanDeserializeClass::class) => new $deserializer(),
-                $deserializer instanceof CanDeserializeClass => $deserializer,
-                default => throw new Exception('Deserializer must implement CanDeserializeClass interface'),
-            };
-
-            // Try fromArray
-            $result = Result::try(fn() => $deserializer->fromArray($data, $targetClass));
-            if ($result->isSuccess()) {
-                $this->events->dispatch(new ResponseDeserialized($this->objectSummary($result->unwrap())));
-                return $result;
-            }
+        $result = Result::try(fn() => $this->deserializer->fromArray($data, $targetClass));
+        if ($result->isSuccess()) {
+            $this->events->dispatch(new ResponseDeserialized($this->objectSummary($result->unwrap())));
+            return $result;
         }
 
-        // No deserializer succeeded
         $this->events->dispatch(new ResponseDeserializationFailed(['error' => $result->errorMessage()]));
         return match (true) {
             $returnTarget === ReturnTarget::UntypedObject => Result::success($this->toAnonymousObject($data)),

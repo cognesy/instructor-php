@@ -30,7 +30,7 @@ $runtime = InferenceRuntime::fromConfig(
 )->onEvent(InferenceResponseCreated::class, function ($event): void {
     // Log or inspect the response
 });
-// @doctest id="865a"
+// @doctest id="f7d0"
 ```
 
 You can register multiple listeners for the same event class. An optional priority parameter controls the order (higher values run first):
@@ -38,7 +38,7 @@ You can register multiple listeners for the same event class. An optional priori
 ```php
 $runtime->onEvent(InferenceStarted::class, $highPriorityListener, priority: 10);
 $runtime->onEvent(InferenceStarted::class, $lowPriorityListener, priority: 0);
-// @doctest id="effa"
+// @doctest id="8408"
 ```
 
 ### Wiretap
@@ -49,7 +49,7 @@ Use `wiretap()` to receive all events regardless of type. This is useful for deb
 $runtime->wiretap(function ($event): void {
     echo get_class($event) . "\n";
 });
-// @doctest id="d21e"
+// @doctest id="0b4c"
 ```
 
 
@@ -75,7 +75,7 @@ Each retry attempt dispatches its own events:
 | `InferenceAttemptStarted` | Beginning of an attempt | execution ID, attempt ID, attempt number, model |
 | `InferenceAttemptSucceeded` | Attempt completed successfully | execution ID, attempt ID, attemptNumber, finish reason, usage, durationMs |
 | `InferenceAttemptFailed` | Attempt failed | execution ID, attempt ID, attemptNumber, errorMessage, errorType, willRetry, HTTP status code, partial usage, durationMs |
-| `InferenceUsageReported` | After a successful attempt | execution ID, usage, model, isFinal |
+| `InferenceUsageReported` | After a successful attempt | execution ID, InferenceUsage, model, isFinal |
 
 When retries are configured, you may see multiple `InferenceAttemptStarted`/`InferenceAttemptFailed` pairs before a final `InferenceAttemptSucceeded` event. The `attemptNumber` field tracks which attempt is running.
 
@@ -132,7 +132,7 @@ $runtime->onEvent(InferenceUsageReported::class, function ($event): void {
         'usage' => $event->usage->toString(),
     ]);
 });
-// @doctest id="6089"
+// @doctest id="83cb"
 ```
 
 ### Measuring Time-to-First-Chunk
@@ -143,7 +143,7 @@ use Cognesy\Polyglot\Inference\Events\StreamFirstChunkReceived;
 $runtime->onEvent(StreamFirstChunkReceived::class, function (StreamFirstChunkReceived $event): void {
     logger()->info("TTFC: {$event->timeToFirstChunkMs}ms for model {$event->model}");
 });
-// @doctest id="e287"
+// @doctest id="b400"
 ```
 
 ### Tracking Retry Attempts
@@ -159,7 +159,7 @@ $runtime->onEvent(InferenceAttemptFailed::class, function (InferenceAttemptFaile
         'httpStatus' => $event->httpStatusCode,
     ]);
 });
-// @doctest id="6e70"
+// @doctest id="ff26"
 ```
 
 ### Monitoring Execution Outcomes
@@ -176,7 +176,7 @@ $runtime->onEvent(InferenceCompleted::class, function (InferenceCompleted $event
         'durationMs' => $event->durationMs,
     ]);
 });
-// @doctest id="f29f"
+// @doctest id="58a5"
 ```
 
 
@@ -191,7 +191,7 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 
 $events = new EventDispatcher(name: 'my-app');
 $runtime = InferenceRuntime::fromConfig($config, events: $events);
-// @doctest id="1ddd"
+// @doctest id="fb37"
 ```
 
 The same event dispatcher instance can be shared between inference and embeddings runtimes, allowing a single wiretap listener to observe all Polyglot activity.

@@ -62,7 +62,7 @@ function createTestDeserializer(): ResponseDeserializer
 
     return new ResponseDeserializer(
         events: $events,
-        deserializers: [new SymfonyDeserializer()],
+        deserializer: new SymfonyDeserializer(),
         config: $config,
     );
 }

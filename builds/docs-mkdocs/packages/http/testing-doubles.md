@@ -50,7 +50,7 @@ $client = (new HttpClientBuilder())
             ->replyJson(['ok' => true]);
     })
     ->create();
-// @doctest id="ca63"
+// @doctest id="52a5"
 ```
 
 Use this for most package and downstream tests.

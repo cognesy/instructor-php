@@ -30,7 +30,6 @@ $schema = JsonSchema::object(
 
 $user = new StructuredOutput(
         StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
-            ->withDeserializers([])
             ->withDefaultToStdClass()
     )
     ->withMessages("Jason is 25 years old and works as an engineer")

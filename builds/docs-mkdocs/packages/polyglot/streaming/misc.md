@@ -25,7 +25,7 @@ $text = Inference::using('openai')
     );
 
 echo $text;
-// @doctest id="b9e8"
+// @doctest id="1804"
 ```
 
 Because `reduce()` drains the entire stream before returning, it blocks until the response is complete.
@@ -48,7 +48,7 @@ $stream = Inference::using('openai')
 foreach ($stream->map(fn($delta) => strtoupper($delta->contentDelta)) as $chunk) {
     echo $chunk;
 }
-// @doctest id="dcf2"
+// @doctest id="1962"
 ```
 
 
@@ -70,7 +70,7 @@ $stream = Inference::using('openai')
 foreach ($stream->filter(fn($delta) => preg_match('/\d/', $delta->contentDelta)) as $delta) {
     echo $delta->contentDelta;
 }
-// @doctest id="8429"
+// @doctest id="a9c1"
 ```
 
 
@@ -90,7 +90,7 @@ $deltas = Inference::using('openai')
     ->all();
 
 echo "Received " . count($deltas) . " deltas.\n";
-// @doctest id="21ea"
+// @doctest id="279c"
 ```
 
 
@@ -109,7 +109,7 @@ foreach ($stream->deltas() as $delta) {
 
 $last = $stream->lastDelta();
 echo $last->finishReason; // e.g. "stop"
-// @doctest id="0d93"
+// @doctest id="668a"
 ```
 
 This is particularly useful for inspecting the finish reason or final usage data without keeping track of it manually during iteration.
@@ -117,7 +117,7 @@ This is particularly useful for inspecting the finish reason or final usage data
 
 ## Token Usage
 
-The `usage()` method returns the accumulated `Usage` object for the stream, containing input tokens, output tokens, and any cache or reasoning token counts reported by the provider:
+The `usage()` method returns the accumulated `InferenceUsage` object for the stream, containing input tokens, output tokens, and any cache or reasoning token counts reported by the provider:
 
 ```php
 $stream = Inference::using('openai')
@@ -130,7 +130,7 @@ foreach ($stream->deltas() as $delta) {
 
 $usage = $stream->usage();
 echo "\nTokens used: input={$usage->inputTokens}, output={$usage->outputTokens}\n";
-// @doctest id="1e50"
+// @doctest id="62fc"
 ```
 
 
@@ -148,7 +148,7 @@ $stream->final(); // ensure stream is consumed
 $execution = $stream->execution();
 echo "Execution ID: " . $execution->id->toString() . "\n";
 echo "Model used: " . $execution->request()->model() . "\n";
-// @doctest id="6773"
+// @doctest id="aede"
 ```
 
 
@@ -164,5 +164,5 @@ echo "Model used: " . $execution->request()->model() . "\n";
 | `onDelta(callable)` | `self` | No (registers callback) | Registers a callback fired for each visible delta. |
 | `final()` | `?InferenceResponse` | Drains if needed | Returns the assembled final response. |
 | `lastDelta()` | `?PartialInferenceDelta` | No | Returns the most recently yielded delta. |
-| `usage()` | `Usage` | No | Returns accumulated token usage. |
+| `usage()` | `InferenceUsage` | No | Returns accumulated token usage. |
 | `execution()` | `InferenceExecution` | No | Returns the execution context and metadata. |

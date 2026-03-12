@@ -18,6 +18,7 @@ use Cognesy\Instructor\RetryPolicy\DefaultRetryPolicy;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
+use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Instructor\Enums\OutputMode;
@@ -61,11 +62,11 @@ function makeSyncDriver(
         responseGenerator: new ResponseGenerator(
             responseDeserializer: new ResponseDeserializer(
                 events: $events,
-                deserializers: [SymfonyDeserializer::class],
+                deserializer: new SymfonyDeserializer(),
                 config: new StructuredOutputConfig(),
             ),
-            responseValidator: new ResponseValidator($events, [], new StructuredOutputConfig()),
-            responseTransformer: new ResponseTransformer($events, [], new StructuredOutputConfig()),
+            responseValidator: new ResponseValidator($events, new SymfonyValidator(), new StructuredOutputConfig()),
+            responseTransformer: new ResponseTransformer($events, null, new StructuredOutputConfig()),
             events: $events,
             extractor: new ResponseExtractor(events: $events),
         ),

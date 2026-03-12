@@ -18,7 +18,7 @@ $result = (new StructuredOutput)
     ->withSystem('You are a data extraction assistant. Be precise and thorough.')
     ->with(messages: $text, responseModel: Person::class)
     ->get();
-// @doctest id="004b"
+// @doctest id="7d3e"
 ```
 
 ### User Prompt
@@ -30,7 +30,7 @@ $result = (new StructuredOutput)
     ->withPrompt('Extract all person information. If age is not stated, estimate based on context.')
     ->with(messages: $text, responseModel: Person::class)
     ->get();
-// @doctest id="46e3"
+// @doctest id="9dc1"
 ```
 
 ### Examples
@@ -49,7 +49,7 @@ $result = (new StructuredOutput)
     ])
     ->with(messages: $text, responseModel: Person::class)
     ->get();
-// @doctest id="48a7"
+// @doctest id="7808"
 ```
 
 ### Combined Usage
@@ -73,7 +73,7 @@ $result = (new StructuredOutput)->with(
     messages: $text,
     responseModel: Person::class,
 )->get();
-// @doctest id="6c0b"
+// @doctest id="cd58"
 ```
 
 ## Using Stringable Objects as Prompts
@@ -89,7 +89,7 @@ $result = (new StructuredOutput)
     ->withPrompt('Extract person details from the text below.')
     ->with(messages: $text, responseModel: Person::class)
     ->get();
-// @doctest id="5131"
+// @doctest id="2d81"
 ```
 
 ## Cached Context
@@ -106,7 +106,7 @@ $result = (new StructuredOutput)
     )
     ->with(messages: 'Focus on section 3.', responseModel: ContractDetails::class)
     ->get();
-// @doctest id="9466"
+// @doctest id="e3fd"
 ```
 
 Cached context messages are placed before the regular messages in the chat structure. The exact caching behavior depends on the LLM provider -- Anthropic and OpenAI both support prompt caching with different mechanisms.
@@ -126,7 +126,7 @@ $rendered = Template::twig()
 $result = (new StructuredOutput)
     ->with(messages: $rendered, responseModel: Person::class)
     ->get();
-// @doctest id="f40d"
+// @doctest id="c44e"
 ```
 
 The `Template` class supports Twig and Blade template engines, front matter metadata, chat message markup, and template libraries loaded from disk. Render your templates into strings or message arrays, then pass the result into `StructuredOutput`. See the Template package documentation for full details.

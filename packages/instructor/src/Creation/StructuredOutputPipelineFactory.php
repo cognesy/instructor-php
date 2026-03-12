@@ -19,37 +19,33 @@ use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 
 final readonly class StructuredOutputPipelineFactory
 {
-    /** @param array<CanValidateObject|class-string<CanValidateObject>> $validators */
-    /** @param array<CanTransformData|class-string<CanTransformData>> $transformers */
-    /** @param array<CanDeserializeClass|class-string<CanDeserializeClass>> $deserializers */
-    /** @param array<CanExtractResponse|class-string<CanExtractResponse>> $extractors */
     public function __construct(
         private CanHandleEvents $events,
         private StructuredOutputConfig $config,
         private CanCreateInference $inference,
         private CanMaterializeRequest $requestMaterializer,
-        private array $validators = [],
-        private array $transformers = [],
-        private array $deserializers = [],
-        private array $extractors = [],
+        private ?CanValidateObject $validator = null,
+        private ?CanTransformData $transformer = null,
+        private ?CanDeserializeClass $deserializer = null,
+        private ?CanExtractResponse $extractor = null,
     ) {}
 
     public function createExecutionDriverFactory(): ExecutionDriverFactory {
         $responseDeserializer = new ResponseDeserializer(
             events: $this->events,
-            deserializers: $this->resolveDeserializers(),
+            deserializer: $this->resolveDeserializer(),
             config: $this->config,
         );
 
         $responseValidator = new ResponseValidator(
             events: $this->events,
-            validators: $this->resolveValidators(),
+            validator: $this->resolveValidator(),
             config: $this->config,
         );
 
         $responseTransformer = new ResponseTransformer(
             events: $this->events,
-            transformers: $this->resolveTransformers(),
+            transformer: $this->transformer,
             config: $this->config,
         );
 
@@ -66,44 +62,16 @@ final readonly class StructuredOutputPipelineFactory
         );
     }
 
-    /**
-     * @return array<CanDeserializeClass|class-string<CanDeserializeClass>>
-     */
-    private function resolveDeserializers(): array {
-        return match (true) {
-            empty($this->deserializers) => [SymfonyDeserializer::class],
-            default => $this->deserializers,
-        };
+    private function resolveDeserializer(): CanDeserializeClass {
+        return $this->deserializer ?? new SymfonyDeserializer();
     }
 
-    /**
-     * @return array<CanValidateObject|class-string<CanValidateObject>>
-     */
-    private function resolveValidators(): array {
-        return match (true) {
-            empty($this->validators) => [SymfonyValidator::class],
-            default => $this->validators,
-        };
-    }
-
-    /**
-     * @return array<CanTransformData|class-string<CanTransformData>>
-     */
-    private function resolveTransformers(): array {
-        return match (true) {
-            empty($this->transformers) => [],
-            default => $this->transformers,
-        };
+    private function resolveValidator(): CanValidateObject {
+        return $this->validator ?? new SymfonyValidator();
     }
 
     private function resolveExtractor(): CanExtractResponse {
-        return new ResponseExtractor(
-            extractors: match (true) {
-                empty($this->extractors) => null,
-                default => $this->extractors,
-            },
-            events: $this->events,
-        );
+        return $this->extractor ?? new ResponseExtractor(events: $this->events);
     }
 
 }

@@ -16,12 +16,6 @@ if (!function_exists('makeAnyResponseModel')) {
 }
 
 if (!function_exists('makeStructuredRuntime')) {
-    /**
-     * @param array<\Cognesy\Instructor\Validation\Contracts\CanValidateObject|string> $validators
-     * @param array<\Cognesy\Instructor\Transformation\Contracts\CanTransformData|string> $transformers
-     * @param array<\Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass|string> $deserializers
-     * @param array<\Cognesy\Instructor\Extraction\Contracts\CanExtractResponse|string> $extractors
-     */
     function makeStructuredRuntime(
         ?\Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest $driver = null,
         ?\Cognesy\Events\Contracts\CanHandleEvents $events = null,
@@ -31,10 +25,10 @@ if (!function_exists('makeStructuredRuntime')) {
         ?\Cognesy\Instructor\Enums\OutputMode $outputMode = null,
         ?int $maxRetries = null,
         ?bool $defaultToStdClass = null,
-        array $extractors = [],
-        array $validators = [],
-        array $transformers = [],
-        array $deserializers = [],
+        ?\Cognesy\Instructor\Extraction\Contracts\CanExtractResponse $extractor = null,
+        ?\Cognesy\Instructor\Validation\Contracts\CanValidateObject $validator = null,
+        ?\Cognesy\Instructor\Transformation\Contracts\CanTransformData $transformer = null,
+        ?\Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass $deserializer = null,
     ): \Cognesy\Instructor\StructuredOutputRuntime {
         $provider = \Cognesy\Polyglot\Inference\LLMProvider::fromLLMConfig(match (true) {
             $llmDriver !== null => makeLLMConfigForDriver($llmDriver),
@@ -62,17 +56,17 @@ if (!function_exists('makeStructuredRuntime')) {
             structuredConfig: $structuredConfig,
         );
 
-        if (!empty($validators)) {
-            $runtime = $runtime->withValidators($validators);
+        if ($validator !== null) {
+            $runtime = $runtime->withValidator($validator);
         }
-        if (!empty($transformers)) {
-            $runtime = $runtime->withTransformers($transformers);
+        if ($transformer !== null) {
+            $runtime = $runtime->withTransformer($transformer);
         }
-        if (!empty($deserializers)) {
-            $runtime = $runtime->withDeserializers($deserializers);
+        if ($deserializer !== null) {
+            $runtime = $runtime->withDeserializer($deserializer);
         }
-        if (!empty($extractors)) {
-            $runtime = $runtime->withExtractors($extractors);
+        if ($extractor !== null) {
+            $runtime = $runtime->withExtractor($extractor);
         }
         return $runtime;
     }

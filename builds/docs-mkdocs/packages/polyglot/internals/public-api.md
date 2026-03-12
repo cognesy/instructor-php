@@ -30,14 +30,14 @@ $inference = Inference::fromProvider($provider);
 
 // From an already-built runtime
 $inference = Inference::fromRuntime($runtime);
-// @doctest id="a630"
+// @doctest id="825a"
 ```
 
 You can also pass a custom driver registry to `using()` or `fromConfig()` if you have registered custom drivers:
 
 ```php
 $inference = Inference::using('my-provider', drivers: $customRegistry);
-// @doctest id="f248"
+// @doctest id="9025"
 ```
 
 ### Building a Request
@@ -52,7 +52,7 @@ $base = Inference::using('openai')
 // Branch into two different requests from the same base
 $response1 = $base->withMessages(Messages::fromString('Explain PHP traits.'))->get();
 $response2 = $base->withMessages(Messages::fromString('Explain PHP enums.'))->get();
-// @doctest id="2390"
+// @doctest id="d134"
 ```
 
 Available request methods:
@@ -99,7 +99,7 @@ $json = $inference->withMessages(Messages::fromString('Call a tool'))->asToolCal
 
 // Stream the response
 $stream = $inference->withMessages(Messages::fromString('Hello'))->stream();
-// @doctest id="78ce"
+// @doctest id="31db"
 ```
 
 For lower-level control, `create()` returns a `PendingInference` without triggering execution:
@@ -111,7 +111,7 @@ $pending = $inference->withMessages(Messages::fromString('Hello'))->create();
 $text = $pending->get();
 $response = $pending->response();
 $stream = $pending->stream();
-// @doctest id="26c3"
+// @doctest id="72bb"
 ```
 
 ### Working with Responses
@@ -124,7 +124,7 @@ $response = $inference->withMessages(Messages::fromString('Hello'))->response();
 $response->content();          // string -- the text content
 $response->reasoningContent(); // string -- reasoning/thinking content (if supported)
 $response->toolCalls();        // ToolCalls -- tool call collection
-$response->usage();            // Usage -- token counts and optional cost
+$response->usage();            // InferenceUsage -- token counts
 $response->finishReason();     // InferenceFinishReason enum
 $response->responseData();     // HttpResponse -- raw provider response
 $response->isPartial();        // bool -- true for partial streaming responses
@@ -138,7 +138,7 @@ $response->hasFinishReason();
 // JSON extraction
 $response->findJsonData();         // Json object from content
 $response->findToolCallJsonData(); // Json object from tool call args
-// @doctest id="3b53"
+// @doctest id="a787"
 ```
 
 ### Working with Streams
@@ -171,7 +171,7 @@ $toolOnly = $stream->filter(fn($d) => $d->toolName !== '');
 
 // Collect all deltas at once
 $allDeltas = $stream->all();
-// @doctest id="4feb"
+// @doctest id="f8dd"
 ```
 
 
@@ -197,7 +197,7 @@ $embeddings = Embeddings::fromProvider($provider);
 
 // From a runtime
 $embeddings = Embeddings::fromRuntime($runtime);
-// @doctest id="d72a"
+// @doctest id="9053"
 ```
 
 ### Building a Request
@@ -207,7 +207,7 @@ $embeddings = Embeddings::using('openai')
     ->withInputs('The quick brown fox')
     ->withModel('text-embedding-3-small')
     ->withOptions(['dimensions' => 256]);
-// @doctest id="daf4"
+// @doctest id="63ab"
 ```
 
 Available request methods:
@@ -233,7 +233,7 @@ $vectors = $embeddings->withInputs(['text one', 'text two'])->vectors();
 
 // Get the first vector
 $vector = $embeddings->withInputs('Hello world')->first();
-// @doctest id="ed16"
+// @doctest id="2710"
 ```
 
 For lower-level control, `create()` returns a `PendingEmbeddings`:
@@ -241,7 +241,7 @@ For lower-level control, `create()` returns a `PendingEmbeddings`:
 ```php
 $pending = $embeddings->withInputs('Hello world')->create();
 $response = $pending->get();
-// @doctest id="851f"
+// @doctest id="dc32"
 ```
 
 ### Working with Responses
@@ -255,12 +255,12 @@ $response->vectors();       // Vector[] -- all embedding vectors
 $response->all();           // Vector[] -- alias for vectors()
 $response->first();         // ?Vector -- first vector
 $response->last();          // ?Vector -- last vector
-$response->usage();         // Usage -- token counts
+$response->usage();         // InferenceUsage -- token counts
 $response->toValuesArray(); // array -- raw float arrays
 
 // Split vectors at a given index
 [$before, $after] = $response->split(1);
-// @doctest id="732f"
+// @doctest id="bf4b"
 ```
 
 
@@ -277,7 +277,7 @@ $registry = BundledInferenceDrivers::registry()
     ->withDriver('my-provider', MyCustomDriver::class);
 
 $inference = Inference::using('my-provider', drivers: $registry);
-// @doctest id="8aca"
+// @doctest id="3352"
 ```
 
 ### Embeddings Drivers
@@ -292,7 +292,7 @@ $registry = BundledEmbeddingsDrivers::registry()
 
 $runtime = EmbeddingsRuntime::fromConfig($config, drivers: $registry);
 $embeddings = Embeddings::fromRuntime($runtime);
-// @doctest id="e3cd"
+// @doctest id="fffa"
 ```
 
 See the [Providers](/internals/providers) page for details on driver registration and factory patterns.

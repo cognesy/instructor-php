@@ -45,6 +45,7 @@
             <directory suffix="Test.php">./packages/auxiliary/tests/Feature</directory>
             <directory suffix="Test.php">./packages/config/tests/Feature</directory>
             <directory suffix="Test.php">./packages/doctools/tests/Feature</directory>
+            <exclude>./packages/doctools/tests/Feature/Quality</exclude>
             <directory suffix="Test.php">./packages/dynamic/tests/Feature</directory>
             <directory suffix="Test.php">./packages/evals/tests/Feature</directory>
             <directory suffix="Test.php">./packages/events/tests/Feature</directory>

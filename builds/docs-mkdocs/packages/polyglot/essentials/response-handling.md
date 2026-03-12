@@ -26,7 +26,7 @@ $pending = Inference::using('openai')
 // Get the response as plain text
 $text = $pending->get();
 echo $text; // "The capital of France is Paris."
-// @doctest id="fccc"
+// @doctest id="764b"
 ```
 
 ## Retrieving JSON Data
@@ -52,7 +52,7 @@ echo $data['status'];
 
 // Or get the raw JSON string
 $json = $pending->asJson();
-// @doctest id="7acd"
+// @doctest id="db4c"
 ```
 
 ## Working with `InferenceResponse`
@@ -88,7 +88,7 @@ echo "Cache tokens: " . $usage->cache() . "\n";
 
 // Raw HTTP response data
 $httpResponse = $response->responseData();
-// @doctest id="8849"
+// @doctest id="9b43"
 ```
 
 ### Available `InferenceResponse` Methods
@@ -98,7 +98,7 @@ $httpResponse = $response->responseData();
 | `content()` | `string` | The model's text output |
 | `reasoningContent()` | `string` | Chain-of-thought / thinking content (if supported) |
 | `toolCalls()` | `ToolCalls` | Collection of tool calls made by the model |
-| `usage()` | `Usage` | Token counts for the request |
+| `usage()` | `InferenceUsage` | Token counts for the request |
 | `finishReason()` | `InferenceFinishReason` | Why the model stopped generating |
 | `responseData()` | `HttpResponse` | The underlying raw HTTP response |
 | `hasContent()` | `bool` | Whether the response contains text content |
@@ -122,7 +122,7 @@ normalizes the many vendor-specific strings into a consistent set of values:
 
 ### Token Usage
 
-The `Usage` object provides detailed token breakdowns including cache and reasoning
+The `InferenceUsage` object provides detailed token breakdowns including cache and reasoning
 tokens:
 
 ```php
@@ -141,7 +141,7 @@ $usage->input();   // Same as inputTokens
 $usage->output();  // outputTokens + reasoningTokens
 $usage->cache();   // cacheWriteTokens + cacheReadTokens
 $usage->total();   // Sum of all token counts
-// @doctest id="8e3a"
+// @doctest id="1962"
 ```
 
 ## Handling Tool Calls
@@ -202,7 +202,7 @@ if ($response->hasToolCalls()) {
         $unit = $call->value('unit', 'celsius');
     }
 }
-// @doctest id="8cb1"
+// @doctest id="e746"
 ```
 
 ### Quick JSON Extraction from Tool Calls
@@ -218,7 +218,7 @@ $args = $pending->asToolCallJsonData();
 
 // Or as a JSON string
 $json = $pending->asToolCallJson();
-// @doctest id="4b80"
+// @doctest id="9797"
 ```
 
 > **Note:** When a single tool call is present, `asToolCallJsonData()` returns that
@@ -247,7 +247,7 @@ foreach ($stream->deltas() as $delta) {
 // After iteration, get the finalized response
 $finalResponse = $stream->final();
 echo "\n\nTokens used: " . $finalResponse->usage()->total();
-// @doctest id="9a72"
+// @doctest id="7f21"
 ```
 
 ### The `PartialInferenceDelta` Object
@@ -263,7 +263,7 @@ public properties:
 | `toolName` | `string` | Tool name (when streaming tool calls) |
 | `toolArgs` | `string` | Partial tool arguments JSON |
 | `finishReason` | `string` | Set on the final delta |
-| `usage` | `?Usage` | Token usage (typically on the final delta) |
+| `usage` | `?InferenceUsage` | Token usage (typically on the final delta) |
 | `usageIsCumulative` | `bool` | Whether usage counts are cumulative |
 
 ### Stream Methods
@@ -298,7 +298,7 @@ $allDeltas = $stream->all();
 
 // Get the finalized response (drains the stream if needed)
 $response = $stream->final();
-// @doctest id="8135"
+// @doctest id="ca65"
 ```
 
 ### Using the `onDelta` Callback
@@ -328,7 +328,7 @@ $stream->onDelta(function ($delta) {
 
 // Drain the stream to trigger all callbacks
 $response = $stream->final();
-// @doctest id="e177"
+// @doctest id="7d9d"
 ```
 
 ### Stream Lifecycle
@@ -360,5 +360,5 @@ if ($pending->isStreamed()) {
 } else {
     echo $pending->get();
 }
-// @doctest id="290d"
+// @doctest id="db96"
 ```

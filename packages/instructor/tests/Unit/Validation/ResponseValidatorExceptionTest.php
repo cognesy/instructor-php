@@ -17,7 +17,7 @@ class ExplodingValidator implements CanValidateObject
 it('converts validator exceptions into failure results', function () {
     $validator = new ResponseValidator(
         events: new EventDispatcher(),
-        validators: [new ExplodingValidator()],
+        validator: new ExplodingValidator(),
         config: new StructuredOutputConfig(),
     );
 

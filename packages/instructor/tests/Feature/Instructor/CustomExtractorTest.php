@@ -8,6 +8,7 @@ use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
 use Cognesy\Instructor\Extraction\Data\ExtractionInput;
 use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
+use Cognesy\Instructor\Extraction\ResponseExtractor;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Tests\MockHttp;
@@ -64,10 +65,10 @@ $mockHttp = MockHttp::get([
     '{"name":"John","age":30}'
 ]);
 
-it('uses custom extractor when provided with withExtractors()', function () use ($mockHttp) {
+it('uses custom extractor when provided with withExtractor()', function () use ($mockHttp) {
     $customExtractor = new FixedDataExtractor(['name' => 'Custom', 'age' => 99]);
     $runtime = StructuredOutputRuntime::fromDefaults(httpClient: $mockHttp)
-        ->withExtractors([$customExtractor]);
+        ->withExtractor(ResponseExtractor::fromExtractors($customExtractor));
 
     $result = (new StructuredOutput($runtime))
         ->withResponseClass(CustomExtractorUser::class)
@@ -80,9 +81,9 @@ it('uses custom extractor when provided with withExtractors()', function () use 
     expect($result['age'])->toBe(99);
 });
 
-it('uses custom extractors with withExtractors()', function () use ($mockHttp) {
+it('uses custom extractors with withExtractor()', function () use ($mockHttp) {
     $runtime = StructuredOutputRuntime::fromDefaults(httpClient: $mockHttp)
-        ->withExtractors([DirectJsonExtractor::class]);
+        ->withExtractor(ResponseExtractor::fromExtractors(new DirectJsonExtractor()));
 
     $result = (new StructuredOutput($runtime))
         ->withResponseClass(CustomExtractorUser::class)
@@ -98,10 +99,10 @@ it('uses custom extractors with withExtractors()', function () use ($mockHttp) {
 it('custom extractor works for special formats', function () {
     $xmlMock = MockHttp::get(['<json>{"name":"Jane","age":25}</json>']);
     $runtime = StructuredOutputRuntime::fromDefaults(httpClient: $xmlMock)
-        ->withExtractors([
+        ->withExtractor(ResponseExtractor::fromExtractors(
             new XmlJsonExtractor(),
             new DirectJsonExtractor(),
-        ]);
+        ));
 
     $result = (new StructuredOutput($runtime))
         ->withResponseClass(CustomExtractorUser::class)
@@ -117,7 +118,7 @@ it('custom extractor works for special formats', function () {
 it('custom extractor works with object deserialization', function () use ($mockHttp) {
     $customExtractor = new FixedDataExtractor(['name' => 'Custom', 'age' => 42]);
     $runtime = StructuredOutputRuntime::fromDefaults(httpClient: $mockHttp)
-        ->withExtractors([$customExtractor]);
+        ->withExtractor(ResponseExtractor::fromExtractors($customExtractor));
 
     $result = (new StructuredOutput($runtime))
         ->with(
@@ -131,11 +132,11 @@ it('custom extractor works with object deserialization', function () use ($mockH
     expect($result->age)->toBe(42);
 });
 
-it('withExtractors() can replace default extractor chain', function () use ($mockHttp) {
+it('withExtractor() can replace default extractor chain', function () use ($mockHttp) {
     // Even though response is {"name":"John","age":30}, custom extractor returns different data
     $customExtractor = new FixedDataExtractor(['name' => 'Override', 'age' => 1]);
     $runtime = StructuredOutputRuntime::fromDefaults(httpClient: $mockHttp)
-        ->withExtractors([$customExtractor]);
+        ->withExtractor(ResponseExtractor::fromExtractors($customExtractor));
 
     $result = (new StructuredOutput($runtime))
         ->withResponseClass(CustomExtractorUser::class)
@@ -147,14 +148,14 @@ it('withExtractors() can replace default extractor chain', function () use ($moc
     expect($result['age'])->toBe(1);
 });
 
-it('withExtractors() stores custom extractor list on runtime', function () {
+it('withExtractor() stores custom extractor on runtime', function () {
+    $extractor = ResponseExtractor::fromExtractors(new DirectJsonExtractor());
     $runtime = StructuredOutputRuntime::fromDefaults()
-        ->withExtractors([DirectJsonExtractor::class]);
+        ->withExtractor($extractor);
 
     $reflection = new \ReflectionClass($runtime);
-    $prop = $reflection->getProperty('extractors');
-    $extractors = $prop->getValue($runtime);
+    $prop = $reflection->getProperty('extractor');
+    $stored = $prop->getValue($runtime);
 
-    expect($extractors)->toHaveCount(1);
-    expect($extractors[0])->toBe(DirectJsonExtractor::class);
+    expect($stored)->toBeInstanceOf(ResponseExtractor::class);
 });
