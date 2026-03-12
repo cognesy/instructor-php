@@ -66,10 +66,10 @@ function runConfigCachePublish(string $projectRoot, array $arguments): int
     chdir($projectRoot);
     try {
         $application = new Application('test-app', '1.0.0');
-        $application->addCommand(new ConfigPublishCommand());
-        $application->addCommand(new ConfigValidateCommand());
-        $application->addCommand(new ConfigCacheCommand());
-        $application->addCommand(new PublishCommand());
+        $application->add(new ConfigPublishCommand());
+        $application->add(new ConfigValidateCommand());
+        $application->add(new ConfigCacheCommand());
+        $application->add(new PublishCommand());
 
         $command = $application->find('config:publish');
         $tester = new CommandTester($command);
@@ -93,10 +93,10 @@ function runConfigCacheCommand(string $projectRoot, array $arguments): int
     chdir($projectRoot);
     try {
         $application = new Application('test-app', '1.0.0');
-        $application->addCommand(new ConfigPublishCommand());
-        $application->addCommand(new ConfigValidateCommand());
-        $application->addCommand(new ConfigCacheCommand());
-        $application->addCommand(new PublishCommand());
+        $application->add(new ConfigPublishCommand());
+        $application->add(new ConfigValidateCommand());
+        $application->add(new ConfigCacheCommand());
+        $application->add(new PublishCommand());
 
         $command = $application->find('config:cache');
         $tester = new CommandTester($command);

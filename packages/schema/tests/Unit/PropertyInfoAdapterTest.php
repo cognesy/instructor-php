@@ -25,7 +25,7 @@ it('resolves property types using Symfony TypeInfo representation', function (st
     $type = PropertyInfo::fromName(PI_Fixture::class, $property)->getType();
 
     expect($type)->toBeInstanceOf(Type::class);
-    expect((string)$type)->toBe($expectedType);
+    expect(canonicalPropertyInfoTypeString((string) $type))->toBe(canonicalPropertyInfoTypeString($expectedType));
 })->with(function (): array {
     return [
         'nullableArrayOfObjects' => ['nullableArrayOfObjects', 'array<int|string, DateTimeImmutable>'],
@@ -35,3 +35,8 @@ it('resolves property types using Symfony TypeInfo representation', function (st
         'mapOfNestedArrays' => ['mapOfNestedArrays', 'array<int, array<string, int>>'],
     ];
 });
+
+function canonicalPropertyInfoTypeString(string $type) : string
+{
+    return preg_replace('/,\\s+/', ',', $type) ?? $type;
+}

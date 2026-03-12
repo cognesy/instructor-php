@@ -68,7 +68,7 @@ function runPublishCommand(string $projectRoot, array $arguments): int
     chdir($projectRoot);
     try {
         $application = new Application('test-app', '1.0.0');
-        $application->addCommand(new PublishCommand());
+        $application->add(new PublishCommand());
 
         $command = $application->find('publish');
         $tester = new CommandTester($command);
