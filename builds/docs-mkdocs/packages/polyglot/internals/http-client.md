@@ -15,7 +15,7 @@ interface CanSendHttpRequests
 {
     public function send(HttpRequest $request): PendingHttpResponse;
 }
-// @doctest id="e327"
+// @doctest id="5628"
 ```
 
 Every inference and embeddings driver receives a `CanSendHttpRequests` implementation. The driver translates its `InferenceRequest` into an `HttpRequest`, sends it via the client's `send()` method (which returns a `PendingHttpResponse`), calls `get()` on the pending response to obtain the `HttpResponse`, and translates that back.
@@ -27,7 +27,7 @@ When you call `InferenceRuntime::fromConfig(...)` or `EmbeddingsRuntime::fromCon
 
 ```php
 $httpClient = (new HttpClientBuilder(events: $events))->create();
-// @doctest id="621b"
+// @doctest id="f688"
 ```
 
 The builder selects an appropriate underlying HTTP library (Guzzle, Symfony HttpClient, or Laravel's HTTP client) based on what is available in your project.
@@ -42,7 +42,7 @@ $httpClient = (new HttpClientBuilder())
     ->create();
 
 $runtime = InferenceRuntime::fromConfig($config, httpClient: $httpClient);
-// @doctest id="c6c9"
+// @doctest id="f196"
 ```
 
 
@@ -70,7 +70,7 @@ $request->isStreamed(); // bool
 
 // Create a copy with streaming toggled
 $streamRequest = $request->withStreaming(true);
-// @doctest id="5fe3"
+// @doctest id="f8b7"
 ```
 
 ### HttpResponse
@@ -83,7 +83,7 @@ $response->headers();    // array
 $response->body();       // string -- the full response body
 $response->stream();     // Generator -- for streaming responses
 $response->original();   // mixed -- the underlying library's native response
-// @doctest id="7db1"
+// @doctest id="14de"
 ```
 
 For streaming, the `stream()` method returns a `Generator` that yields chunks as they arrive from the provider. The driver's response adapter parses these chunks into SSE events and then into `PartialInferenceDelta` objects.
@@ -101,7 +101,7 @@ interface HttpMiddleware
         CanHandleHttpRequest $next,
     ): HttpResponse;
 }
-// @doctest id="1448"
+// @doctest id="b905"
 ```
 
 The `BaseMiddleware` abstract class provides convenient hooks so you do not need to manage the chain manually:
@@ -136,7 +136,7 @@ abstract class BaseMiddleware implements HttpMiddleware
         return $response;
     }
 }
-// @doctest id="ccd0"
+// @doctest id="e1bf"
 ```
 
 ### Managing the Middleware Stack
@@ -152,7 +152,7 @@ $client->middleware()->has('logging'); // bool
 $client->middleware()->get('logging'); // ?HttpMiddleware
 $client->middleware()->all();          // array
 $client->middleware()->clear();        // self
-// @doctest id="21d5"
+// @doctest id="35f1"
 ```
 
 Middleware runs in stack order: middleware added with `prepend()` runs before middleware added with `append()`. The `name` parameter is optional but recommended -- it allows you to replace or remove middleware later without tracking references.
@@ -167,7 +167,7 @@ $runtime = InferenceRuntime::fromConfig(
     $config,
     streamCacheManager: $cacheManager,
 );
-// @doctest id="ec2c"
+// @doctest id="078a"
 ```
 
 The cache behavior is controlled per-request through the `ResponseCachePolicy` enum on the `InferenceRequest`. You can set this through the facade:
@@ -176,7 +176,7 @@ The cache behavior is controlled per-request through the `ResponseCachePolicy` e
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 
 $inference->withResponseCachePolicy(ResponseCachePolicy::Memory);
-// @doctest id="ce8f"
+// @doctest id="360f"
 ```
 
 

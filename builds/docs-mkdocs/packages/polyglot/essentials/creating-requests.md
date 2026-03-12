@@ -23,7 +23,7 @@ $response = Inference::using('openai')
     ->get();
 
 echo $response; // "Paris."
-// @doctest id="7195"
+// @doctest id="cd86"
 ```
 
 `Messages::fromString()` wraps a plain string as a user message. You can also use
@@ -49,7 +49,7 @@ $text = Inference::using('openai')
         options: ['temperature' => 0.2],
     )
     ->get();
-// @doctest id="32dc"
+// @doctest id="f8e8"
 ```
 
 All parameters on `with()` are optional -- pass only what you need:
@@ -83,7 +83,7 @@ $response = Inference::using('anthropic')
     ]))
     ->withOptions(['temperature' => 0.5])
     ->get();
-// @doctest id="1649"
+// @doctest id="5db1"
 ```
 
 Each helper returns a new immutable instance, so you can safely branch from a shared base:
@@ -93,7 +93,7 @@ $base = Inference::using('openai')->withModel('gpt-4.1-nano');
 
 $creative = $base->withOptions(['temperature' => 0.9]);
 $precise  = $base->withOptions(['temperature' => 0.0]);
-// @doctest id="d6c4"
+// @doctest id="e4e7"
 ```
 
 The full list of fluent helpers:
@@ -132,7 +132,7 @@ $response = Inference::using('openai')
     ->withModel('gpt-4.1-nano')
     ->withMessages($messages)
     ->get();
-// @doctest id="8ef3"
+// @doctest id="f666"
 ```
 
 > The `asDeveloper()` method maps to OpenAI's developer role and is automatically
@@ -179,7 +179,7 @@ $response = Inference::using('openai')
     ->withModel('gpt-4o')
     ->withMessages($messages)
     ->get();
-// @doctest id="9271"
+// @doctest id="75ec"
 ```
 
 ## Using `InferenceRequest` Directly
@@ -202,7 +202,7 @@ $request = new InferenceRequest(
 $text = Inference::using('openai')
     ->withRequest($request)
     ->get();
-// @doctest id="0732"
+// @doctest id="4db4"
 ```
 
 `InferenceRequest` objects are immutable value objects. Use `with()` or the dedicated
@@ -215,5 +215,5 @@ $updated = $request->with(
     model: 'gpt-4.1',
     options: ['temperature' => 0.7],
 );
-// @doctest id="3aee"
+// @doctest id="a14e"
 ```

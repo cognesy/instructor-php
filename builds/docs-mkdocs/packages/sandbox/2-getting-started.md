@@ -15,7 +15,7 @@ Every sandbox requires an `ExecutionPolicy` that defines the constraints for com
 use Cognesy\Sandbox\Config\ExecutionPolicy;
 
 $policy = ExecutionPolicy::in(__DIR__);
-// @doctest id="54f1"
+// @doctest id="b2c7"
 ```
 
 The base directory serves as the working directory for host-mode execution and as the parent for temporary work directories that container drivers create. It must exist and be writable by the PHP process.
@@ -24,7 +24,7 @@ If you do not need a specific directory, use the `default()` factory, which defa
 
 ```php
 $policy = ExecutionPolicy::default();
-// @doctest id="31d9"
+// @doctest id="e6aa"
 ```
 
 Both factories return a policy with secure defaults: a 5-second timeout, 128 MB memory limit, network disabled, no environment inheritance, and 1 MB output caps for both stdout and stderr.
@@ -50,7 +50,7 @@ $sandbox = Sandbox::firejail($policy);
 
 // Bubblewrap driver -- minimal Linux namespace isolation
 $sandbox = Sandbox::bubblewrap($policy);
-// @doctest id="6e98"
+// @doctest id="c782"
 ```
 
 All factory methods return an instance of `CanExecuteCommand`, so you can swap drivers without changing your calling code.
@@ -69,7 +69,7 @@ $sandbox = Sandbox::fromPolicy($policy)->using(SandboxDriver::Docker);
 // Using a string (e.g., from config)
 $driverName = config('sandbox.driver'); // 'docker'
 $sandbox = Sandbox::fromPolicy($policy)->using($driverName);
-// @doctest id="a864"
+// @doctest id="e5f3"
 ```
 
 Valid string values are: `host`, `docker`, `podman`, `firejail`, `bubblewrap`. An `InvalidArgumentException` is thrown if the value does not match any known driver.
@@ -83,7 +83,7 @@ $result = $sandbox->execute(['php', '-v']);
 
 echo $result->stdout();   // "PHP 8.3.0 (cli) ..."
 echo $result->exitCode(); // 0
-// @doctest id="ee7a"
+// @doctest id="4eaa"
 ```
 
 Always pass commands in argv format -- each argument as a separate array element. This avoids shell injection vulnerabilities and ensures correct argument parsing across all drivers.
@@ -99,7 +99,7 @@ $result = $sandbox->execute(
 );
 
 echo $result->stdout(); // "HELLO WORLD"
-// @doctest id="6b7c"
+// @doctest id="a4ca"
 ```
 
 ### Checking the Result
@@ -119,7 +119,7 @@ if ($result->success()) {
         echo "The command exceeded its time limit.\n";
     }
 }
-// @doctest id="53a0"
+// @doctest id="8811"
 ```
 
 ## Complete Example
@@ -147,7 +147,7 @@ if ($result->success()) {
 } else {
     echo "Command failed with exit code " . $result->exitCode();
 }
-// @doctest id="18ee"
+// @doctest id="7a6f"
 ```
 
 ## Dependency Injection
@@ -169,7 +169,7 @@ class CodeRunner
         return $this->sandbox->execute(['php', '-r', $code]);
     }
 }
-// @doctest id="3e64"
+// @doctest id="4b66"
 ```
 
 ## Next Steps

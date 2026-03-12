@@ -75,7 +75,7 @@ $agent = AgentBuilder::base()
 $result = $agent->execute(
     AgentState::empty()->withUserMessage('Explain closures in PHP.')
 );
-// @doctest id="8e49"
+// @doctest id="a087"
 ```
 
 Once installed, the capability listens to the relevant execution, step, tool, continuation, and streaming events and emits normalized envelopes through your transport. Your app consumes those envelopes and updates the UI.
@@ -106,7 +106,7 @@ $agent = AgentLoop::default()->withDriver(
         events: $events,
     )
 );
-// @doctest id="0fd8"
+// @doctest id="c13f"
 ```
 
 Without streamed inference, you still receive step, tool, and status envelopes, but not incremental text chunks.
@@ -120,7 +120,7 @@ interface CanBroadcastAgentEvents
 {
     public function broadcast(string $channel, array $envelope): void;
 }
-// @doctest id="31d9"
+// @doctest id="64a1"
 ```
 
 This keeps the integration boundary small. The broadcaster does not require a framework or network stack. Your implementation decides how envelopes leave the process.
@@ -155,7 +155,7 @@ $broadcaster = new AgentEventBroadcaster(
     executionId: 'exec-1',
     config: BroadcastConfig::standard(),
 );
-// @doctest id="6a7c"
+// @doctest id="d67f"
 ```
 
 For most user-facing apps, `standard()` is the right default.
