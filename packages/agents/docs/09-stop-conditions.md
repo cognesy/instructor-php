@@ -385,6 +385,7 @@ A typical agent setup combines guard hooks (to enforce resource limits) with a s
 ```php
 use Cognesy\Agents\Builder\AgentBuilder;
 use Cognesy\Agents\Capability\Core\UseGuards;
+use Cognesy\Agents\Capability\Core\UseTools;
 
 $agent = AgentBuilder::base()
     ->withCapability(new UseGuards(
@@ -392,7 +393,7 @@ $agent = AgentBuilder::base()
         maxTokens: 16000,
         maxExecutionTime: 60.0,
     ))
-    ->withTools([new SubmitAnswerTool()])
+    ->withCapability(new UseTools(new SubmitAnswerTool()))
     ->build();
 ```
 

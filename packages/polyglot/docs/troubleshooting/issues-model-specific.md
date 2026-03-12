@@ -19,12 +19,13 @@ Verify that the model identifier in your preset or request matches a model that 
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 // Correct: exact model identifier
 $text = Inference::using('openai')
     ->withModel('gpt-4.1-nano')
-    ->withMessages('Hello')
+    ->withMessages(Messages::fromString('Hello'))
     ->get();
 ```
 
@@ -59,12 +60,13 @@ When debugging tool-related failures, first confirm the request works without to
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 // Step 1: Test plain text output
 $text = Inference::using('openai')
     ->withModel('gpt-4.1-nano')
-    ->withMessages('What is 2 + 2?')
+    ->withMessages(Messages::fromString('What is 2 + 2?'))
     ->get();
 
 echo $text; // Verify this works first
@@ -72,7 +74,7 @@ echo $text; // Verify this works first
 // Step 2: Then add tools back
 $text = Inference::using('openai')
     ->withModel('gpt-4.1-nano')
-    ->withMessages('What is 2 + 2?')
+    ->withMessages(Messages::fromString('What is 2 + 2?'))
     ->withTools($myTools)
     ->get();
 ```
@@ -94,18 +96,19 @@ Most modern models support streaming, but some do not. If enabling streaming cau
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 // Test non-streaming first
 $text = Inference::using('openai')
     ->withModel('gpt-4.1-nano')
-    ->withMessages('Write a haiku.')
+    ->withMessages(Messages::fromString('Write a haiku.'))
     ->get();
 
 // Then test streaming
 $stream = Inference::using('openai')
     ->withModel('gpt-4.1-nano')
-    ->withMessages('Write a haiku.')
+    ->withMessages(Messages::fromString('Write a haiku.'))
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
@@ -124,6 +127,7 @@ For production applications, implement a fallback strategy that tries alternativ
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 function withFallback(array $models, string $prompt): string {
@@ -133,7 +137,7 @@ function withFallback(array $models, string $prompt): string {
         try {
             return Inference::using('openai')
                 ->withModel($model)
-                ->withMessages($prompt)
+                ->withMessages(Messages::fromString($prompt))
                 ->get();
         } catch (\Exception $e) {
             $lastException = $e;

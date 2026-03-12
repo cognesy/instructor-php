@@ -19,14 +19,15 @@ Verify that the model identifier in your preset or request matches a model that 
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 // Correct: exact model identifier
 $text = Inference::using('openai')
     ->withModel('gpt-4.1-nano')
-    ->withMessages('Hello')
+    ->withMessages(Messages::fromString('Hello'))
     ->get();
-// @doctest id="4aa0"
+// @doctest id="a573"
 ```
 
 Models are periodically deprecated or renamed by providers. If a model that previously worked suddenly fails, check the provider's release notes for changes.
@@ -60,12 +61,13 @@ When debugging tool-related failures, first confirm the request works without to
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 // Step 1: Test plain text output
 $text = Inference::using('openai')
     ->withModel('gpt-4.1-nano')
-    ->withMessages('What is 2 + 2?')
+    ->withMessages(Messages::fromString('What is 2 + 2?'))
     ->get();
 
 echo $text; // Verify this works first
@@ -73,10 +75,10 @@ echo $text; // Verify this works first
 // Step 2: Then add tools back
 $text = Inference::using('openai')
     ->withModel('gpt-4.1-nano')
-    ->withMessages('What is 2 + 2?')
+    ->withMessages(Messages::fromString('What is 2 + 2?'))
     ->withTools($myTools)
     ->get();
-// @doctest id="e1ab"
+// @doctest id="ee2a"
 ```
 
 ## JSON and Structured Output Support
@@ -96,24 +98,25 @@ Most modern models support streaming, but some do not. If enabling streaming cau
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 // Test non-streaming first
 $text = Inference::using('openai')
     ->withModel('gpt-4.1-nano')
-    ->withMessages('Write a haiku.')
+    ->withMessages(Messages::fromString('Write a haiku.'))
     ->get();
 
 // Then test streaming
 $stream = Inference::using('openai')
     ->withModel('gpt-4.1-nano')
-    ->withMessages('Write a haiku.')
+    ->withMessages(Messages::fromString('Write a haiku.'))
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
     echo $delta->contentDelta;
 }
-// @doctest id="38fe"
+// @doctest id="936c"
 ```
 
 ## Vision and Multimodal Capabilities
@@ -127,6 +130,7 @@ For production applications, implement a fallback strategy that tries alternativ
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 function withFallback(array $models, string $prompt): string {
@@ -136,7 +140,7 @@ function withFallback(array $models, string $prompt): string {
         try {
             return Inference::using('openai')
                 ->withModel($model)
-                ->withMessages($prompt)
+                ->withMessages(Messages::fromString($prompt))
                 ->get();
         } catch (\Exception $e) {
             $lastException = $e;
@@ -155,7 +159,7 @@ $response = withFallback(
     ['gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano'],
     'Explain general relativity.',
 );
-// @doctest id="479c"
+// @doctest id="e967"
 ```
 
 ## Debugging Approach

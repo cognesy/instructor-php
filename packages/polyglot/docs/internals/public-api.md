@@ -48,8 +48,8 @@ $base = Inference::using('openai')
     ->withMaxTokens(1024);
 
 // Branch into two different requests from the same base
-$response1 = $base->withMessages('Explain PHP traits.')->get();
-$response2 = $base->withMessages('Explain PHP enums.')->get();
+$response1 = $base->withMessages(Messages::fromString('Explain PHP traits.'))->get();
+$response2 = $base->withMessages(Messages::fromString('Explain PHP enums.'))->get();
 ```
 
 Available request methods:
@@ -77,31 +77,31 @@ Shortcuts execute the request and return results directly:
 
 ```php
 // Get the text content
-$text = $inference->withMessages('Hello')->get();
+$text = $inference->withMessages(Messages::fromString('Hello'))->get();
 
 // Get the full response object
-$response = $inference->withMessages('Hello')->response();
+$response = $inference->withMessages(Messages::fromString('Hello'))->response();
 
 // Parse JSON from the response content
-$data = $inference->withMessages('Return JSON')->asJsonData();
+$data = $inference->withMessages(Messages::fromString('Return JSON'))->asJsonData();
 
 // Get JSON as a string
-$json = $inference->withMessages('Return JSON')->asJson();
+$json = $inference->withMessages(Messages::fromString('Return JSON'))->asJson();
 
 // Parse tool call arguments as JSON array
-$args = $inference->withMessages('Call a tool')->asToolCallJsonData();
+$args = $inference->withMessages(Messages::fromString('Call a tool'))->asToolCallJsonData();
 
 // Get tool call arguments as JSON string
-$json = $inference->withMessages('Call a tool')->asToolCallJson();
+$json = $inference->withMessages(Messages::fromString('Call a tool'))->asToolCallJson();
 
 // Stream the response
-$stream = $inference->withMessages('Hello')->stream();
+$stream = $inference->withMessages(Messages::fromString('Hello'))->stream();
 ```
 
 For lower-level control, `create()` returns a `PendingInference` without triggering execution:
 
 ```php
-$pending = $inference->withMessages('Hello')->create();
+$pending = $inference->withMessages(Messages::fromString('Hello'))->create();
 
 // Then choose how to consume it
 $text = $pending->get();
@@ -114,7 +114,7 @@ $stream = $pending->stream();
 The `InferenceResponse` object provides access to all parts of the provider's response:
 
 ```php
-$response = $inference->withMessages('Hello')->response();
+$response = $inference->withMessages(Messages::fromString('Hello'))->response();
 
 $response->content();          // string -- the text content
 $response->reasoningContent(); // string -- reasoning/thinking content (if supported)
@@ -140,7 +140,7 @@ $response->findToolCallJsonData(); // Json object from tool call args
 The `InferenceStream` provides several ways to consume streaming data:
 
 ```php
-$stream = $inference->withMessages('Hello')->stream();
+$stream = $inference->withMessages(Messages::fromString('Hello'))->stream();
 
 // Iterate over visible deltas
 foreach ($stream->deltas() as $delta) {

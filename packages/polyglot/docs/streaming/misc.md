@@ -13,10 +13,11 @@ The `reduce()` method works like `array_reduce`: it folds every delta into an ac
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $text = Inference::using('openai')
-    ->withMessages('Write three short lines about queues.')
+    ->withMessages(Messages::fromString('Write three short lines about queues.'))
     ->stream()
     ->reduce(
         fn(string $carry, $delta) => $carry . $delta->contentDelta,
@@ -36,10 +37,11 @@ The `map()` method transforms each delta into a new value and yields the results
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $stream = Inference::using('openai')
-    ->withMessages('List five fun facts about PHP.')
+    ->withMessages(Messages::fromString('List five fun facts about PHP.'))
     ->stream();
 
 foreach ($stream->map(fn($delta) => strtoupper($delta->contentDelta)) as $chunk) {
@@ -55,10 +57,11 @@ The `filter()` method yields only the deltas that satisfy a given predicate. Del
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $stream = Inference::using('openai')
-    ->withMessages('Count from one to ten.')
+    ->withMessages(Messages::fromString('Count from one to ten.'))
     ->stream();
 
 // Only process deltas that contain digits
@@ -75,10 +78,11 @@ The `all()` method drains the stream and returns every visible delta as an array
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $deltas = Inference::using('openai')
-    ->withMessages('Say hello.')
+    ->withMessages(Messages::fromString('Say hello.'))
     ->stream()
     ->all();
 
@@ -92,7 +96,7 @@ After the stream has been consumed (either partially or fully), you can retrieve
 
 ```php
 $stream = Inference::using('openai')
-    ->withMessages('What is 2 + 2?')
+    ->withMessages(Messages::fromString('What is 2 + 2?'))
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
@@ -112,7 +116,7 @@ The `usage()` method returns the accumulated `Usage` object for the stream, cont
 
 ```php
 $stream = Inference::using('openai')
-    ->withMessages('Summarize the theory of relativity.')
+    ->withMessages(Messages::fromString('Summarize the theory of relativity.'))
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
@@ -130,7 +134,7 @@ The `execution()` method returns the underlying `InferenceExecution` object, whi
 
 ```php
 $stream = Inference::using('openai')
-    ->withMessages('Hello!')
+    ->withMessages(Messages::fromString('Hello!'))
     ->stream();
 
 $stream->final(); // ensure stream is consumed

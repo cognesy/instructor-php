@@ -14,10 +14,10 @@ The lifecycle begins when the application builds an `InferenceRequest` through t
 
 ```php
 $inference = Inference::using('openai')
-    ->withMessages('Explain PHP generics.')
+    ->withMessages(Messages::fromString('Explain PHP generics.'))
     ->withModel('gpt-4.1-nano')
     ->withMaxTokens(1024);
-// @doctest id="f44d"
+// @doctest id="d1f2"
 ```
 
 At this point, no HTTP call has been made. The facade holds an `InferenceRequestBuilder` that accumulates parameters. Every `with*()` call returns a new immutable copy, so the original instance is never modified.
@@ -28,7 +28,7 @@ Calling `create()` (or a shortcut like `get()` or `response()`) builds the `Infe
 
 ```php
 $pending = $inference->create();
-// @doctest id="31fb"
+// @doctest id="75dd"
 ```
 
 The `InferenceRuntime` wraps the request in an `InferenceExecution` object and returns a `PendingInference` handle. Execution is still deferred -- no HTTP call has been sent yet.
@@ -43,7 +43,7 @@ The HTTP call is triggered only when you read from the `PendingInference`:
 $text = $pending->get();          // triggers execution, returns content string
 $response = $pending->response(); // triggers execution, returns InferenceResponse
 $stream = $pending->stream();     // triggers execution (streaming mode)
-// @doctest id="7642"
+// @doctest id="b162"
 ```
 
 Internally, `PendingInference` delegates to `InferenceExecutionSession`, which orchestrates the full lifecycle.
@@ -99,14 +99,14 @@ When streaming is enabled, the flow diverges after the HTTP request is sent:
 3. The `InferenceStream` tracks visibility state through a `VisibilityTracker` and yields only deltas with meaningful changes (filtering out empty or duplicate deltas)
 
 ```php
-$stream = $inference->withMessages('Hello')->stream();
+$stream = $inference->withMessages(Messages::fromString('Hello'))->stream();
 
 foreach ($stream->deltas() as $delta) {
     echo $delta->contentDelta;  // incremental text
 }
 
 $finalResponse = $stream->final();  // assembled InferenceResponse
-// @doctest id="ca61"
+// @doctest id="e870"
 ```
 
 ### Stream Events
@@ -133,7 +133,7 @@ $toolDeltas = $stream->filter(fn($delta) => $delta->toolName !== '');
 
 // Collect all visible deltas
 $allDeltas = $stream->all();
-// @doctest id="2b5e"
+// @doctest id="1a5b"
 ```
 
 ### Delta Callback
@@ -144,7 +144,7 @@ You can register a callback that fires for every visible delta:
 $stream->onDelta(function (PartialInferenceDelta $delta): void {
     echo $delta->contentDelta;
 });
-// @doctest id="96ca"
+// @doctest id="d4b4"
 ```
 
 ### Stream Finalization
@@ -174,7 +174,7 @@ $response = Embeddings::using('openai')
 $vectors = $response->vectors();   // Vector[]
 $first = $response->first();       // first Vector
 $usage = $response->usage();       // Usage
-// @doctest id="db76"
+// @doctest id="4f3e"
 ```
 
 Retry logic is handled internally by `PendingEmbeddings` based on the `EmbeddingsRetryPolicy` attached to the request. The retry loop follows the same exponential backoff pattern as inference retries.
@@ -188,13 +188,13 @@ Both the inference and embeddings lifecycles support response caching. When `Res
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 
 $pending = $inference
-    ->withMessages('Hello')
+    ->withMessages(Messages::fromString('Hello'))
     ->withResponseCachePolicy(ResponseCachePolicy::Memory)
     ->create();
 
 $first = $pending->response();  // makes HTTP call
 $second = $pending->response(); // returns cached response
-// @doctest id="8a7a"
+// @doctest id="90aa"
 ```
 
 For streaming, the stream itself cannot be replayed -- calling `deltas()` a second time will throw a `LogicException`. However, `final()` always returns the assembled response, which is stored in the execution object.

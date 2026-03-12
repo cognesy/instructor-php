@@ -12,6 +12,7 @@ The simplest debugging path is to attach a wiretap listener to the `InferenceRun
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
@@ -27,7 +28,7 @@ $runtime = InferenceRuntime::fromConfig(new LLMConfig(
 });
 
 $text = Inference::fromRuntime($runtime)
-    ->withMessages('Say hello.')
+    ->withMessages(Messages::fromString('Say hello.'))
     ->get();
 ```
 
@@ -41,6 +42,7 @@ When you only care about certain events, use `onEvent()` to register targeted li
 <?php
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Events\InferenceRequested;
 use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;
@@ -66,7 +68,7 @@ $runtime->onEvent(
 );
 
 $text = Inference::fromRuntime($runtime)
-    ->withMessages('What is the capital of France?')
+    ->withMessages(Messages::fromString('What is the capital of France?'))
     ->get();
 ```
 
@@ -98,6 +100,7 @@ For persistent debugging, write event data to a log file:
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Events\InferenceRequested;
 use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;
@@ -130,7 +133,7 @@ $runtime->onEvent(
 );
 
 $text = Inference::fromRuntime($runtime)
-    ->withMessages('What is artificial intelligence?')
+    ->withMessages(Messages::fromString('What is artificial intelligence?'))
     ->get();
 ```
 
@@ -143,6 +146,7 @@ If you need to see the raw HTTP request and response bodies, inject a custom HTT
 
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\HttpClient;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
@@ -158,7 +162,7 @@ $runtime = InferenceRuntime::fromConfig(
 );
 
 $text = Inference::fromRuntime($runtime)
-    ->withMessages('Test message')
+    ->withMessages(Messages::fromString('Test message'))
     ->get();
 ```
 

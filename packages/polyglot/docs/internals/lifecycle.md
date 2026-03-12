@@ -14,7 +14,7 @@ The lifecycle begins when the application builds an `InferenceRequest` through t
 
 ```php
 $inference = Inference::using('openai')
-    ->withMessages('Explain PHP generics.')
+    ->withMessages(Messages::fromString('Explain PHP generics.'))
     ->withModel('gpt-4.1-nano')
     ->withMaxTokens(1024);
 ```
@@ -96,7 +96,7 @@ When streaming is enabled, the flow diverges after the HTTP request is sent:
 3. The `InferenceStream` tracks visibility state through a `VisibilityTracker` and yields only deltas with meaningful changes (filtering out empty or duplicate deltas)
 
 ```php
-$stream = $inference->withMessages('Hello')->stream();
+$stream = $inference->withMessages(Messages::fromString('Hello'))->stream();
 
 foreach ($stream->deltas() as $delta) {
     echo $delta->contentDelta;  // incremental text
@@ -181,7 +181,7 @@ Both the inference and embeddings lifecycles support response caching. When `Res
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 
 $pending = $inference
-    ->withMessages('Hello')
+    ->withMessages(Messages::fromString('Hello'))
     ->withResponseCachePolicy(ResponseCachePolicy::Memory)
     ->create();
 

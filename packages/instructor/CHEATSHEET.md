@@ -34,6 +34,7 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 $so = new StructuredOutput();
 $so = StructuredOutput::using('openai');
+$so = StructuredOutput::using('openai', '/custom/config/path');
 $so = StructuredOutput::fromConfig(LLMConfig::fromArray(['driver' => 'openai']));
 ```
 
@@ -84,6 +85,15 @@ $so = StructuredOutput::fromConfig(LLMConfig::fromArray(['driver' => 'openai']))
 $runtime = StructuredOutputRuntime::fromConfig(LLMConfig::fromDsn('driver=openai,model=gpt-4o-mini'))
     ->withOutputMode(OutputMode::Json)
     ->withMaxRetries(2);
+
+// Create from LLMProvider
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new());
+
+// Configure with StructuredOutputConfig
+$runtime = $runtime->withConfig(StructuredOutputConfig::fromArray([...]));
+$runtime = $runtime->withConfig(StructuredOutputConfig::fromDsn('outputMode=json,maxRetries=2'));
+$runtime = $runtime->withRequestMaterializer($customMaterializer);
+
 $so = (new StructuredOutput)->withRuntime($runtime);
 ```
 
@@ -226,6 +236,10 @@ $age = (new StructuredOutput)
 
 $isAdult = (new StructuredOutput)
     ->with(messages: $text, responseModel: Scalar::boolean('isAdult'))
+    ->get();
+
+$sentiment = (new StructuredOutput)
+    ->with(messages: $text, responseModel: Scalar::enum(Sentiment::class, 'sentiment'))
     ->get();
 ```
 

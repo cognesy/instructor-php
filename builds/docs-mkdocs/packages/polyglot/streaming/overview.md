@@ -23,16 +23,17 @@ To stream a response, call `withStreaming()` on the `Inference` builder, then ca
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $stream = Inference::using('openai')
-    ->withMessages('Explain event buses in simple language.')
+    ->withMessages(Messages::fromString('Explain event buses in simple language.'))
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
     echo $delta->contentDelta;
 }
-// @doctest id="8edf"
+// @doctest id="3a4f"
 ```
 
 The `deltas()` method returns a PHP `Generator` that yields `PartialInferenceDelta` objects one at a time. Each delta represents a single chunk received from the provider.
@@ -61,10 +62,11 @@ After iterating through all deltas, you can obtain the complete `InferenceRespon
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $stream = Inference::using('openai')
-    ->withMessages('Write a haiku about PHP.')
+    ->withMessages(Messages::fromString('Write a haiku about PHP.'))
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
@@ -74,7 +76,7 @@ foreach ($stream->deltas() as $delta) {
 $response = $stream->final();
 echo $response->content();    // full accumulated text
 echo $response->usage();      // token usage for the request
-// @doctest id="4559"
+// @doctest id="cf58"
 ```
 
 If you call `final()` before consuming the stream, it will drain all remaining deltas internally so that the response is fully assembled. This means you can skip the `foreach` loop entirely when you only need the final result, though in that case a non-streaming request would be more appropriate.
@@ -87,16 +89,17 @@ You can register a callback with `onDelta()` instead of (or in addition to) iter
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $stream = Inference::using('openai')
-    ->withMessages('Write a short poem about queues.')
+    ->withMessages(Messages::fromString('Write a short poem about queues.'))
     ->stream()
     ->onDelta(fn($delta) => print($delta->contentDelta));
 
 // Drain the stream to trigger the callbacks
 $stream->final();
-// @doctest id="05b0"
+// @doctest id="1745"
 ```
 
 This pattern is convenient when the delta processing logic is simple and you want the final response at the end.
@@ -109,10 +112,11 @@ You can break out of the delta loop at any time. This is useful when you have re
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $stream = Inference::using('openai')
-    ->withMessages('Write a long story about space exploration.')
+    ->withMessages(Messages::fromString('Write a long story about space exploration.'))
     ->stream();
 
 $wordCount = 0;
@@ -126,7 +130,7 @@ foreach ($stream->deltas() as $delta) {
         break;
     }
 }
-// @doctest id="e015"
+// @doctest id="b95e"
 ```
 
 When you break out of the loop, the underlying HTTP connection to the provider continues in the background, but your application stops processing further chunks.
@@ -141,14 +145,15 @@ If you need to replay the stream (for example, during testing or when multiple c
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 
 $stream = Inference::using('openai')
-    ->withMessages('Hello!')
+    ->withMessages(Messages::fromString('Hello!'))
     ->withResponseCachePolicy(ResponseCachePolicy::Memory)
     ->stream();
-// @doctest id="7368"
+// @doctest id="dc65"
 ```
 
 With `ResponseCachePolicy::Memory`, the raw response data is cached in memory, allowing the stream to be reconstructed if needed.

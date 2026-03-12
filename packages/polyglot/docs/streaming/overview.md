@@ -23,10 +23,11 @@ To stream a response, call `withStreaming()` on the `Inference` builder, then ca
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $stream = Inference::using('openai')
-    ->withMessages('Explain event buses in simple language.')
+    ->withMessages(Messages::fromString('Explain event buses in simple language.'))
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
@@ -60,10 +61,11 @@ After iterating through all deltas, you can obtain the complete `InferenceRespon
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $stream = Inference::using('openai')
-    ->withMessages('Write a haiku about PHP.')
+    ->withMessages(Messages::fromString('Write a haiku about PHP.'))
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
@@ -85,10 +87,11 @@ You can register a callback with `onDelta()` instead of (or in addition to) iter
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $stream = Inference::using('openai')
-    ->withMessages('Write a short poem about queues.')
+    ->withMessages(Messages::fromString('Write a short poem about queues.'))
     ->stream()
     ->onDelta(fn($delta) => print($delta->contentDelta));
 
@@ -106,10 +109,11 @@ You can break out of the delta loop at any time. This is useful when you have re
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $stream = Inference::using('openai')
-    ->withMessages('Write a long story about space exploration.')
+    ->withMessages(Messages::fromString('Write a long story about space exploration.'))
     ->stream();
 
 $wordCount = 0;
@@ -137,11 +141,12 @@ If you need to replay the stream (for example, during testing or when multiple c
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 
 $stream = Inference::using('openai')
-    ->withMessages('Hello!')
+    ->withMessages(Messages::fromString('Hello!'))
     ->withResponseCachePolicy(ResponseCachePolicy::Memory)
     ->stream();
 ```

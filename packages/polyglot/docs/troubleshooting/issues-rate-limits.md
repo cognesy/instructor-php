@@ -18,6 +18,7 @@ Polyglot can automatically retry failed requests with exponential backoff and ji
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -28,7 +29,7 @@ $text = Inference::using('openai')
         maxDelayMs: 8000,
         jitter: 'full',
     ))
-    ->withMessages('What is the capital of France?')
+    ->withMessages(Messages::fromString('What is the capital of France?'))
     ->get();
 ```
 
@@ -56,6 +57,7 @@ The retry policy also supports automatic recovery when a response is truncated d
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -67,7 +69,7 @@ $text = Inference::using('openai')
         lengthContinuePrompt: 'Continue.',
         maxTokensIncrement: 512,
     ))
-    ->withMessages('Write a detailed essay about climate change.')
+    ->withMessages(Messages::fromString('Write a detailed essay about climate change.'))
     ->get();
 ```
 
@@ -95,6 +97,7 @@ When retries alone are not enough, implement request throttling in your applicat
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 class RateLimiter
@@ -123,7 +126,7 @@ for ($i = 0; $i < 10; $i++) {
     $limiter->waitIfNeeded();
 
     $text = Inference::using('openai')
-        ->withMessages("This is request $i")
+        ->withMessages(Messages::fromString("This is request $i"))
         ->get();
 
     echo "Response $i: $text\n";
@@ -137,6 +140,7 @@ Instead of making many small requests, combine related questions into a single p
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 // Instead of N separate requests...
@@ -153,7 +157,7 @@ foreach ($questions as $i => $q) {
 }
 
 $text = Inference::using('openai')
-    ->withMessages($batchPrompt)
+    ->withMessages(Messages::fromString($batchPrompt))
     ->get();
 ```
 

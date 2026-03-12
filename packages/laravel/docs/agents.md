@@ -143,12 +143,16 @@ Configure defaults in `config/instructor.php`. The facade automatically reads th
     'codex' => [
         'model' => env('CODEX_MODEL', 'codex'),
         'timeout' => env('CODEX_TIMEOUT'),
+        'directory' => env('CODEX_DIRECTORY'),
+        'sandbox' => env('CODEX_SANDBOX'),
     ],
 
     // OpenCode specific
     'opencode' => [
-        'model' => env('OPENCODE_MODEL', 'anthropic/claude-sonnet-4-5'),
+        'model' => env('OPENCODE_MODEL', 'anthropic/claude-sonnet-4-20250514'),
         'timeout' => env('OPENCODE_TIMEOUT'),
+        'directory' => env('OPENCODE_DIRECTORY'),
+        'sandbox' => env('OPENCODE_SANDBOX'),
     ],
 ],
 ```
@@ -170,7 +174,7 @@ CLAUDE_CODE_MODEL=claude-opus-4-5
 CODEX_MODEL=codex
 
 # OpenCode
-OPENCODE_MODEL=anthropic/claude-sonnet-4-5
+OPENCODE_MODEL=anthropic/claude-sonnet-4-20250514
 ```
 
 ## Streaming

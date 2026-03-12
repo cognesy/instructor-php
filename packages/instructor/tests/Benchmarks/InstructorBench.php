@@ -154,7 +154,7 @@ final class InstructorBench
             ->withRuntime(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json))
             ->with(messages: 'Extract list.', responseModel: Sequence::of(BenchItem::class))
             ->get();
-        assert(count($result->items) === 100);
+        assert($result->count() === 100);
     }
 
     /**
@@ -170,7 +170,7 @@ final class InstructorBench
             ->withRuntime(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json))
             ->with(messages: 'Extract list.', responseModel: Sequence::of(BenchItem::class))
             ->get();
-        assert(count($result->items) === 1000);
+        assert($result->count() === 1000);
     }
 
     // ========================================================================

@@ -53,7 +53,7 @@ All mutators return a new instance, preserving the original request ID and creat
 
 ```php
 $updated = $request
-    ->withMessages('New prompt')
+    ->withMessages(Messages::fromString('New prompt'))
     ->withModel('gpt-4.1')
     ->withStreaming(true)
     ->withOptions(['temperature' => 0.7])
@@ -68,7 +68,7 @@ The `with(...)` method allows setting multiple fields in a single call:
 
 ```php
 $updated = $request->with(
-    messages: 'New prompt',
+    messages: Messages::fromString('New prompt'),
     model: 'gpt-4.1',
     options: ['temperature' => 0.7],
 );
@@ -80,7 +80,7 @@ The cached context mechanism allows you to separate stable parts of a prompt (sy
 
 ```php
 $request = new InferenceRequest(
-    messages: 'What is 2+2?',
+    messages: Messages::fromString('What is 2+2?'),
     cachedContext: new CachedInferenceContext(
         messages: [['role' => 'system', 'content' => 'You are a math tutor.']],
         tools: $toolDefinitions,

@@ -205,7 +205,7 @@ public function __invoke(mixed ...$args): string
     if ($input === 'ABORT') {
         throw new AgentStopException(
             signal: new StopSignal(
-                reason: StopReason::ToolStop,
+                reason: StopReason::StopRequested,
                 message: 'Abort signal received',
             ),
         );

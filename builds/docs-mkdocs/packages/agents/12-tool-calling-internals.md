@@ -21,7 +21,7 @@ AgentLoop
   |
   |-- CanExecuteToolCalls (executor)    # runs the actual tools
       |-- ToolExecutor                  # default implementation
-// @doctest id="a16d"
+// @doctest id="5c96"
 ```
 
 The `AgentLoop` owns both the driver and the executor. Before the first step, it binds the tool runtime to the driver via `CanAcceptToolRuntime::withToolRuntime()`, ensuring the driver has access to the same `Tools` collection and `ToolExecutor` that the loop manages. This binding happens once per `execute()` / `iterate()` call.
@@ -37,7 +37,7 @@ interface CanUseTools
 {
     public function useTools(AgentState $state): AgentState;
 }
-// @doctest id="7c7c"
+// @doctest id="c439"
 ```
 
 The driver is responsible for:
@@ -57,7 +57,7 @@ interface CanExecuteToolCalls
 {
     public function executeTools(ToolCalls $toolCalls, AgentState $state): ToolExecutions;
 }
-// @doctest id="bc38"
+// @doctest id="1724"
 ```
 
 The executor is responsible for:
@@ -109,7 +109,7 @@ $driver = new ToolCallingDriver(
     options: [],                       // additional provider-specific options
     events: $events,
 );
-// @doctest id="605f"
+// @doctest id="88a6"
 ```
 
 > **Note:** You will need `use Cognesy\Polyglot\Inference\Data\ToolChoice;` for the `ToolChoice` value object.
@@ -181,7 +181,7 @@ $driver = new ReActDriver(
     finalModel: null,             // optional different model for final answer
     finalOptions: [],             // optional different options for final answer
 );
-// @doctest id="e7c9"
+// @doctest id="a05e"
 ```
 
 ### Error Handling
@@ -229,7 +229,7 @@ For each tool call in the `ToolCalls` collection, the executor runs this pipelin
 7. afterToolUse intercept
    |-- Interceptor can modify the execution result
    |-- Interceptor can modify the agent state
-// @doctest id="168d"
+// @doctest id="f968"
 ```
 
 ### Tool Context Injection
@@ -260,7 +260,7 @@ class ContextAwareTool implements ToolInterface, CanAccessAgentState
         // ...
     }
 }
-// @doctest id="f282"
+// @doctest id="2461"
 ```
 
 **`CanAccessToolCall`** -- The tool receives the `ToolCall` object that triggered it. Useful for correlation and tracing, especially in subagent tools that emit their own events:
@@ -280,7 +280,7 @@ class TracedTool implements ToolInterface, CanAccessToolCall
         return $clone;
     }
 }
-// @doctest id="c308"
+// @doctest id="f95b"
 ```
 
 ### Configuration
@@ -302,7 +302,7 @@ $executor = new ToolExecutor(
 $loop = AgentLoop::default()
     ->withTools($tools)
     ->withToolExecutor($executor);
-// @doctest id="c956"
+// @doctest id="ad61"
 ```
 
 ### Error Handling Modes
@@ -329,7 +329,7 @@ final readonly class ToolExecution
     private DateTimeImmutable $startedAt;
     private DateTimeImmutable $completedAt;
 }
-// @doctest id="17ed"
+// @doctest id="2d79"
 ```
 
 You can inspect the result using:
@@ -342,7 +342,7 @@ $execution->value();          // Unwrapped value (null if failed)
 $execution->hasError();       // bool
 $execution->errorMessage();   // string
 $execution->wasBlocked();     // bool -- true if blocked by interceptor
-// @doctest id="befa"
+// @doctest id="52c5"
 ```
 
 ## Message Formatting
@@ -420,7 +420,7 @@ class MyCustomDriver implements CanUseTools, CanAcceptToolRuntime
         // Must return $state->withCurrentStep($step)
     }
 }
-// @doctest id="d1fd"
+// @doctest id="28cc"
 ```
 
 The `AgentLoop` will call `withToolRuntime()` before the first step, passing the same `Tools` and `ToolExecutor` it manages internally.

@@ -30,7 +30,7 @@ If none of these directories exist, Polyglot throws an `InvalidArgumentException
 use Cognesy\Polyglot\Inference\Inference;
 
 $inference = Inference::using('my-custom-preset', basePath: '/app/config/llm');
-// @doctest id="cdc8"
+// @doctest id="9697"
 ```
 
 ## Required Preset Fields
@@ -46,7 +46,7 @@ model: gpt-4.1-nano
 maxTokens: 1024
 contextLength: 128000
 maxOutputLength: 16384
-# @doctest id="71b8"
+# @doctest id="4a52"
 ```
 
 The following fields are required or strongly recommended:
@@ -77,6 +77,7 @@ If your configuration is dynamic -- for example, when the user selects a model a
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -90,9 +91,9 @@ $config = new LLMConfig(
 );
 
 $text = Inference::fromConfig($config)
-    ->withMessages('Hello')
+    ->withMessages(Messages::fromString('Hello'))
     ->get();
-// @doctest id="7f3d"
+// @doctest id="5574"
 ```
 
 You can also create a config from an associative array:
@@ -110,7 +111,7 @@ $config = LLMConfig::fromArray([
     'model' => 'claude-haiku-4-5-20251001',
     'maxTokens' => 1024,
 ]);
-// @doctest id="d424"
+// @doctest id="782a"
 ```
 
 ## Overriding Preset Values
@@ -120,6 +121,7 @@ To start from a preset and change specific values, use `withOverrides()`:
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -127,9 +129,9 @@ $config = LLMConfig::fromPreset('openai')
     ->withOverrides(['model' => 'gpt-4.1', 'maxTokens' => 4096]);
 
 $text = Inference::fromConfig($config)
-    ->withMessages('Hello')
+    ->withMessages(Messages::fromString('Hello'))
     ->get();
-// @doctest id="cbea"
+// @doctest id="4dc3"
 ```
 
 ## Verify a Configuration
@@ -150,7 +152,7 @@ try {
 } catch (\InvalidArgumentException $e) {
     echo "Configuration error: " . $e->getMessage() . "\n";
 }
-// @doctest id="c39b"
+// @doctest id="27e2"
 ```
 
 ## Common Pitfalls

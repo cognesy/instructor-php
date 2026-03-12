@@ -5,7 +5,7 @@ description: 'Use the OpenCode bridge for flexible model selection with provider
 
 ## Overview
 
-The OpenCode bridge wraps the `opencode` CLI, providing access to a multi-provider code agent through Agent-Ctrl's unified API. OpenCode is the most flexible bridge in terms of model selection -- it supports provider-prefixed model IDs that let you use models from Anthropic, OpenAI, Google, and other providers through a single CLI tool. It is also the only bridge that currently exposes both token usage and cost data.
+The OpenCode bridge wraps the `opencode` CLI, providing access to a multi-provider code agent through Agent-Ctrl's unified API. OpenCode is the most flexible bridge in terms of model selection -- it supports provider-prefixed model IDs that let you use models from Anthropic, OpenAI, Google, and other providers through a single CLI tool. It exposes both token usage and cost data (as does the Pi bridge).
 
 The bridge is implemented by `OpenCodeBridge` and configured through `OpenCodeBridgeBuilder`. Access the builder through the `AgentCtrl` facade:
 
@@ -170,7 +170,7 @@ if ($sessionId !== null) {
 
 ## Usage and Cost Data
 
-OpenCode provides the most comprehensive usage and cost reporting of the three bridges. Both token usage and cost data are available after execution.
+OpenCode provides comprehensive usage and cost reporting. Both token usage and cost data are available after execution.
 
 ### Token Usage
 
@@ -201,7 +201,7 @@ if ($usage !== null) {
 
 ### Cost Tracking
 
-OpenCode is the only supported agent that exposes cost data. The cost is returned in USD:
+OpenCode exposes cost data (as does Pi). The cost is returned in USD:
 
 ```php
 $cost = $response->cost();
@@ -279,17 +279,25 @@ if ($response->isSuccess()) {
 
 ## Comparison with Other Bridges
 
-| Feature | Claude Code | Codex | OpenCode |
-|---------|------------|-------|----------|
-| System prompts | Yes (replace + append) | No | No |
-| Permission modes | Yes (4 levels) | No | No |
-| Turn limits | Yes | No | No |
-| Sandbox modes | No | Yes (3 levels) | No |
-| Image input | No | Yes | No |
-| Named agents | No | No | Yes |
-| File attachments | No | No | Yes |
-| Session sharing | No | No | Yes |
-| Session titles | No | No | Yes |
-| Token usage | No | Yes (partial) | Yes (full) |
-| Cost tracking | No | No | Yes |
-| Multi-provider models | No | No | Yes |
+| Feature | Claude Code | Codex | OpenCode | Pi | Gemini |
+|---------|------------|-------|----------|-----|--------|
+| System prompts | Yes (replace + append) | No | No | Yes (replace + append) | Yes (GEMINI.md file) |
+| Permission modes | Yes (4 levels) | No | No | No | Yes (4 modes) |
+| Turn limits | Yes | No | No | No | Yes (via settings) |
+| Sandbox modes | No | Yes (3 levels) | No | No | Yes (Seatbelt/Docker/Podman/gVisor) |
+| Image input | No | Yes | No | No | No |
+| Thinking levels | No | No | No | Yes (6 levels) | No |
+| Named agents | No | No | Yes | No | No |
+| File attachments | No | No | Yes | Yes (@-prefix) | No |
+| Extensions | No | No | No | Yes (TypeScript) | Yes |
+| Skills | No | No | No | Yes | No |
+| Tool control | No | No | No | Yes (select/disable) | Yes (allowlist) |
+| MCP servers | No | No | No | No | Yes |
+| Policy engine | No | No | No | No | Yes |
+| Session sharing | No | No | Yes | No | No |
+| Session titles | No | No | Yes | No | No |
+| Ephemeral mode | No | No | No | Yes | No |
+| API key override | No | No | No | Yes | No |
+| Token usage | No | Yes (partial) | Yes (full) | Yes | Yes (with cache) |
+| Cost tracking | No | No | Yes | Yes | No |
+| Multi-provider models | No | No | Yes | Yes | No |

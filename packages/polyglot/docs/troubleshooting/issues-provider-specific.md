@@ -44,16 +44,17 @@ Polyglot also supports the OpenAI Responses API through the `openai-responses` d
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 // Standard Chat Completions API
 $text = Inference::using('openai')
-    ->withMessages('Hello')
+    ->withMessages(Messages::fromString('Hello'))
     ->get();
 
 // Responses API (different driver)
 $text = Inference::using('openai-responses')
-    ->withMessages('Hello')
+    ->withMessages(Messages::fromString('Hello'))
     ->get();
 ```
 
@@ -96,16 +97,17 @@ The native Gemini API has different request and response structures. If you expe
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 // Native Gemini API
 $text = Inference::using('gemini')
-    ->withMessages('Hello')
+    ->withMessages(Messages::fromString('Hello'))
     ->get();
 
 // OpenAI-compatible Gemini endpoint
 $text = Inference::using('gemini-oai')
-    ->withMessages('Hello')
+    ->withMessages(Messages::fromString('Hello'))
     ->get();
 ```
 

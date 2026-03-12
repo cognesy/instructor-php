@@ -21,7 +21,7 @@ The most common connection problem is an incorrect `apiUrl` or `endpoint` in you
 driver: openai
 apiUrl: 'https://api.openai.com/v1'
 endpoint: /chat/completions
-# @doctest id="791e"
+# @doctest id="7ef4"
 ```
 
 Common mistakes include trailing slashes on `apiUrl`, missing the version prefix (e.g. `/v1`), or using an endpoint path that does not match the driver.
@@ -39,7 +39,7 @@ curl -s -o /dev/null -w "%{http_code}" https://api.openai.com/v1/models \
 curl -s -o /dev/null -w "%{http_code}" https://api.anthropic.com/v1/messages \
   -H "x-api-key: $ANTHROPIC_API_KEY" \
   -H "anthropic-version: 2023-06-01"
-# @doctest id="ef54"
+# @doctest id="2edb"
 ```
 
 If the `curl` command fails, the problem is at the network layer, not in Polyglot.
@@ -53,6 +53,7 @@ Polyglot uses the `HttpClientConfig` to control connection and request timeouts.
 
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\HttpClient;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
@@ -68,9 +69,9 @@ $runtime = InferenceRuntime::fromConfig(
 );
 
 $text = Inference::fromRuntime($runtime)
-    ->withMessages('Summarize quantum computing in 200 words.')
+    ->withMessages(Messages::fromString('Summarize quantum computing in 200 words.'))
     ->get();
-// @doctest id="c69c"
+// @doctest id="95f4"
 ```
 
 ## Proxy Configuration
@@ -82,7 +83,7 @@ The approach depends on your HTTP client driver. For the default cURL driver, yo
 ```bash
 export HTTP_PROXY=http://proxy.example.com:8080
 export HTTPS_PROXY=http://proxy.example.com:8080
-# @doctest id="a13b"
+# @doctest id="15fa"
 ```
 
 Alternatively, configure a custom HTTP client with explicit proxy settings for your chosen driver.
@@ -104,7 +105,7 @@ If DNS is not resolving the provider's domain, you will see connection failures 
 ```bash
 nslookup api.openai.com
 dig api.anthropic.com
-# @doctest id="3444"
+# @doctest id="0d1b"
 ```
 
 In containerized environments, check that the container's DNS resolver is configured correctly (e.g. `/etc/resolv.conf`).
@@ -116,7 +117,7 @@ For local providers like Ollama, confirm that the service is running and listeni
 ```bash
 # Check if Ollama is running
 curl http://localhost:11434/api/version
-# @doctest id="1692"
+# @doctest id="4af1"
 ```
 
 If Ollama is running on a different host or port, update the `apiUrl` in your preset:
@@ -126,7 +127,7 @@ driver: ollama
 apiUrl: 'http://192.168.1.100:11434/v1'
 endpoint: /chat/completions
 model: 'llama3'
-# @doctest id="84d3"
+# @doctest id="f3e5"
 ```
 
 ## Retry Transient Failures
@@ -136,6 +137,7 @@ Network issues are often transient. Use `InferenceRetryPolicy` to automatically 
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -146,9 +148,9 @@ $text = Inference::using('openai')
         maxDelayMs: 5000,
         jitter: 'full',
     ))
-    ->withMessages('Hello')
+    ->withMessages(Messages::fromString('Hello'))
     ->get();
-// @doctest id="732b"
+// @doctest id="0bc4"
 ```
 
 The retry policy automatically retries on `TimeoutException` and `NetworkException` by default.

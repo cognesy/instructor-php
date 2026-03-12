@@ -12,6 +12,7 @@ The simplest debugging path is to attach a wiretap listener to the `InferenceRun
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
@@ -27,9 +28,9 @@ $runtime = InferenceRuntime::fromConfig(new LLMConfig(
 });
 
 $text = Inference::fromRuntime($runtime)
-    ->withMessages('Say hello.')
+    ->withMessages(Messages::fromString('Say hello.'))
     ->get();
-// @doctest id="aea3"
+// @doctest id="0636"
 ```
 
 This prints every event class name as it fires, giving you an immediate view of the request flow without modifying your application code.
@@ -42,6 +43,7 @@ When you only care about certain events, use `onEvent()` to register targeted li
 <?php
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Events\InferenceRequested;
 use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;
@@ -67,9 +69,9 @@ $runtime->onEvent(
 );
 
 $text = Inference::fromRuntime($runtime)
-    ->withMessages('What is the capital of France?')
+    ->withMessages(Messages::fromString('What is the capital of France?'))
     ->get();
-// @doctest id="5c5d"
+// @doctest id="2262"
 ```
 
 ### Available Events
@@ -100,6 +102,7 @@ For persistent debugging, write event data to a log file:
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Events\InferenceRequested;
 use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;
@@ -132,9 +135,9 @@ $runtime->onEvent(
 );
 
 $text = Inference::fromRuntime($runtime)
-    ->withMessages('What is artificial intelligence?')
+    ->withMessages(Messages::fromString('What is artificial intelligence?'))
     ->get();
-// @doctest id="5e0f"
+// @doctest id="eda7"
 ```
 
 ## HTTP-Level Inspection
@@ -146,6 +149,7 @@ If you need to see the raw HTTP request and response bodies, inject a custom HTT
 
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\HttpClient;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
@@ -161,9 +165,9 @@ $runtime = InferenceRuntime::fromConfig(
 );
 
 $text = Inference::fromRuntime($runtime)
-    ->withMessages('Test message')
+    ->withMessages(Messages::fromString('Test message'))
     ->get();
-// @doctest id="b269"
+// @doctest id="b72c"
 ```
 
 You can add custom middleware to the HTTP client using `withMiddleware()` to log, transform, or inspect requests and responses at the transport layer. This is especially helpful when working behind proxies, or when provider error messages are only visible in the raw HTTP body.

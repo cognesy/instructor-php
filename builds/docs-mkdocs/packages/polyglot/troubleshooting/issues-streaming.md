@@ -20,16 +20,17 @@ Streaming must be explicitly enabled on the request. The simplest approach is to
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $stream = Inference::using('openai')
-    ->withMessages('Write a short poem about the ocean.')
+    ->withMessages(Messages::fromString('Write a short poem about the ocean.'))
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
     echo $delta->contentDelta;
 }
-// @doctest id="67a3"
+// @doctest id="200b"
 ```
 
 Alternatively, use the `withStreaming()` method followed by `create()->stream()`:
@@ -37,10 +38,11 @@ Alternatively, use the `withStreaming()` method followed by `create()->stream()`
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $pending = Inference::using('openai')
-    ->withMessages('Write a short poem about the ocean.')
+    ->withMessages(Messages::fromString('Write a short poem about the ocean.'))
     ->withStreaming(true)
     ->create();
 
@@ -48,7 +50,7 @@ $stream = $pending->stream();
 foreach ($stream->deltas() as $delta) {
     echo $delta->contentDelta;
 }
-// @doctest id="710f"
+// @doctest id="5fc5"
 ```
 
 ## Do Not Consume a Stream Twice
@@ -61,7 +63,7 @@ The most common streaming mistake is attempting to iterate over `deltas()` more 
 // This will throw LogicException on the second loop
 foreach ($stream->deltas() as $delta) { /* first pass */ }
 foreach ($stream->deltas() as $delta) { /* throws! */ }
-// @doctest id="54a6"
+// @doctest id="f8ad"
 ```
 
 If you need to replay the stream content, enable the memory cache policy before creating the request:
@@ -70,13 +72,14 @@ If you need to replay the stream content, enable the memory cache policy before 
 <?php
 
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $inference = Inference::using('openai')
     ->withResponseCachePolicy(ResponseCachePolicy::Memory)
-    ->withMessages('Write a haiku.')
+    ->withMessages(Messages::fromString('Write a haiku.'))
     ->withStreaming(true);
-// @doctest id="b790"
+// @doctest id="d57b"
 ```
 
 ## Collect the Full Response After Streaming
@@ -86,10 +89,11 @@ To get the complete assembled response after consuming all deltas, use the `fina
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $stream = Inference::using('openai')
-    ->withMessages('Explain gravity.')
+    ->withMessages(Messages::fromString('Explain gravity.'))
     ->stream();
 
 // Consume deltas for real-time output
@@ -101,7 +105,7 @@ foreach ($stream->deltas() as $delta) {
 // Get the finalized response (assembled from all deltas)
 $response = $stream->final();
 echo "\n\nTotal tokens: " . $response->usage()->total() . "\n";
-// @doctest id="9be3"
+// @doctest id="eb16"
 ```
 
 If you only need the final response and do not need to process deltas, call `final()` directly -- it will drain the stream internally.
@@ -122,7 +126,7 @@ foreach ($stream->deltas() as $delta) {
     }
     flush();
 }
-// @doctest id="fedd"
+// @doctest id="4a7a"
 ```
 
 For web applications, also ensure that your web server is not buffering the response. Common server-side buffering sources:
@@ -140,6 +144,7 @@ Streaming responses can take longer than non-streaming requests because the conn
 
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\HttpClient;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
@@ -156,14 +161,14 @@ $runtime = InferenceRuntime::fromConfig(
 );
 
 $stream = Inference::fromRuntime($runtime)
-    ->withMessages('Write a long story about a space explorer.')
+    ->withMessages(Messages::fromString('Write a long story about a space explorer.'))
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
     echo $delta->contentDelta;
     flush();
 }
-// @doctest id="d3dc"
+// @doctest id="5d60"
 ```
 
 The `idleTimeout` is particularly important for streaming. It controls how long the client waits for the next chunk before giving up. If a model pauses while generating (for example, during complex reasoning), a short idle timeout will cause the stream to terminate prematurely.
@@ -175,10 +180,11 @@ Wrap the stream consumption in a try-catch to handle errors that occur mid-strea
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $stream = Inference::using('openai')
-    ->withMessages('Write a detailed explanation of relativity.')
+    ->withMessages(Messages::fromString('Write a detailed explanation of relativity.'))
     ->stream();
 
 $content = '';
@@ -196,7 +202,7 @@ try {
         echo "Partial content received: " . strlen($content) . " characters\n";
     }
 }
-// @doctest id="577c"
+// @doctest id="155e"
 ```
 
 ## Use the onDelta Callback
@@ -206,10 +212,11 @@ Instead of iterating over `deltas()`, you can register a callback that is invoke
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $stream = Inference::using('openai')
-    ->withMessages('Tell me a joke.')
+    ->withMessages(Messages::fromString('Tell me a joke.'))
     ->stream();
 
 $stream->onDelta(function ($delta) {
@@ -219,7 +226,7 @@ $stream->onDelta(function ($delta) {
 
 // Drain the stream to trigger all callbacks
 $stream->all();
-// @doctest id="7998"
+// @doctest id="753b"
 ```
 
 ## Use Functional Stream Operations
@@ -229,10 +236,11 @@ The stream supports `map()`, `filter()`, and `reduce()` operations for functiona
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $stream = Inference::using('openai')
-    ->withMessages('List five programming languages.')
+    ->withMessages(Messages::fromString('List five programming languages.'))
     ->stream();
 
 // Collect only non-empty content deltas
@@ -242,7 +250,7 @@ $content = $stream->reduce(
 );
 
 echo $content;
-// @doctest id="79b2"
+// @doctest id="c332"
 ```
 
 ## Fallback to Non-Streaming
@@ -252,10 +260,11 @@ If streaming consistently fails for a particular model or provider, fall back to
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 function getResponse(string $prompt, bool $preferStreaming = true): string {
-    $inference = Inference::using('openai')->withMessages($prompt);
+    $inference = Inference::using('openai')->withMessages(Messages::fromString($prompt));
 
     if ($preferStreaming) {
         try {
@@ -271,7 +280,7 @@ function getResponse(string $prompt, bool $preferStreaming = true): string {
 
     return $inference->get();
 }
-// @doctest id="faae"
+// @doctest id="3cdb"
 ```
 
 ## Verify Model Supports Streaming

@@ -60,7 +60,7 @@ if ($response->isSuccess()) {
 
 ## Core Capabilities
 
-**Unified API across agents.** Switch between Claude Code, Codex, OpenCode, and Pi without changing your application's control flow or response handling. The same `execute()` call and `AgentResponse` shape work with every bridge.
+**Unified API across agents.** Switch between Claude Code, Codex, OpenCode, Pi, and Gemini without changing your application's control flow or response handling. The same `execute()` call and `AgentResponse` shape work with every bridge.
 
 **Real-time streaming.** Register `onText()`, `onToolUse()`, `onComplete()`, and `onError()` callbacks to receive incremental updates while the agent works. Streaming and final-result access are not mutually exclusive -- `executeStreaming()` returns the complete `AgentResponse` when the agent finishes.
 

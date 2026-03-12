@@ -62,7 +62,7 @@ Validation / transform:
 - `validate(): ValidationResult`
 - `normalizeRecord(array $values): array`
 - `transform(): mixed`
-- `withValidation(callable $validator): Structure` — compatibility no-op, returns `$this`
+- `withValidation(callable $validator): Structure` — compatibility no-op, returns a clone
 
 ## StructureFactory API
 

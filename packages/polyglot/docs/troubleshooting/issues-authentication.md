@@ -61,11 +61,12 @@ When you call `Inference::using('openai')`, Polyglot loads the `openai` preset a
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 // This uses the 'anthropic' preset -- make sure ANTHROPIC_API_KEY is set
 $text = Inference::using('anthropic')
-    ->withMessages('Hello')
+    ->withMessages(Messages::fromString('Hello'))
     ->get();
 ```
 
@@ -76,12 +77,13 @@ Use a minimal script to confirm that the key works independently of your applica
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 function testPreset(string $preset): void {
     try {
         $text = Inference::using($preset)
-            ->withMessages('Test')
+            ->withMessages(Messages::fromString('Test'))
             ->withMaxTokens(5)
             ->get();
 
@@ -103,6 +105,7 @@ If environment variables are not practical, you can supply the API key directly 
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -114,7 +117,7 @@ $inference = Inference::fromConfig(new LLMConfig(
     model: 'gpt-4.1-nano',
 ));
 
-$text = $inference->withMessages('Hello')->get();
+$text = $inference->withMessages(Messages::fromString('Hello'))->get();
 ```
 
 > **Security note:** Avoid hard-coding API keys in source files that are committed to version control. Use environment variables, secrets managers, or encrypted configuration files.

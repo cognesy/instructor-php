@@ -364,7 +364,7 @@ $response->isSuccess();      // True if exitCode is 0
 
 // Metadata
 $response->exitCode;         // Process exit code
-$response->sessionId;        // Session ID for resuming
+$response->sessionId();      // Session ID for resuming (AgentSessionId|null)
 $response->agentType;        // Which agent was used
 
 // Usage & cost

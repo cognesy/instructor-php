@@ -25,7 +25,7 @@ $key = getenv('OPENAI_API_KEY');
 if (empty($key)) {
     echo "OPENAI_API_KEY is not set or is empty.\n";
 }
-// @doctest id="5d91"
+// @doctest id="3ac6"
 ```
 
 If you use a `.env` file with a library like `vlucas/phpdotenv`, make sure the file is loaded before Polyglot resolves the preset:
@@ -36,7 +36,7 @@ If you use a `.env` file with a library like `vlucas/phpdotenv`, make sure the f
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 $dotenv->required(['OPENAI_API_KEY'])->notEmpty();
-// @doctest id="792c"
+// @doctest id="98cc"
 ```
 
 ## Check the Key Format
@@ -54,7 +54,7 @@ $openaiKey = (string) getenv('OPENAI_API_KEY');
 if ($openaiKey !== '' && !str_starts_with($openaiKey, 'sk-')) {
     echo "Warning: OpenAI key does not start with 'sk-'. Verify it was copied correctly.\n";
 }
-// @doctest id="20b2"
+// @doctest id="057f"
 ```
 
 ## Confirm the Preset Matches the Provider
@@ -64,13 +64,14 @@ When you call `Inference::using('openai')`, Polyglot loads the `openai` preset a
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 // This uses the 'anthropic' preset -- make sure ANTHROPIC_API_KEY is set
 $text = Inference::using('anthropic')
-    ->withMessages('Hello')
+    ->withMessages(Messages::fromString('Hello'))
     ->get();
-// @doctest id="c027"
+// @doctest id="1c6a"
 ```
 
 ## Test the Key Directly
@@ -80,12 +81,13 @@ Use a minimal script to confirm that the key works independently of your applica
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 function testPreset(string $preset): void {
     try {
         $text = Inference::using($preset)
-            ->withMessages('Test')
+            ->withMessages(Messages::fromString('Test'))
             ->withMaxTokens(5)
             ->get();
 
@@ -98,7 +100,7 @@ function testPreset(string $preset): void {
 testPreset('openai');
 testPreset('anthropic');
 testPreset('mistral');
-// @doctest id="b82a"
+// @doctest id="5acc"
 ```
 
 ## Pass the Key Programmatically
@@ -108,6 +110,7 @@ If environment variables are not practical, you can supply the API key directly 
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -119,8 +122,8 @@ $inference = Inference::fromConfig(new LLMConfig(
     model: 'gpt-4.1-nano',
 ));
 
-$text = $inference->withMessages('Hello')->get();
-// @doctest id="1a9c"
+$text = $inference->withMessages(Messages::fromString('Hello'))->get();
+// @doctest id="42be"
 ```
 
 > **Security note:** Avoid hard-coding API keys in source files that are committed to version control. Use environment variables, secrets managers, or encrypted configuration files.

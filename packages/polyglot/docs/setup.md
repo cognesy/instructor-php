@@ -329,12 +329,14 @@ Polyglot includes built-in drivers for the following providers:
 | `a21` | AI21 Labs |
 | `meta` | Meta Llama API |
 | `minimaxi` | MiniMaxi |
+| `moonshot` | Moonshot (Kimi) |
 | `inception` | Inception |
 | `huggingface` | Hugging Face |
 | `qwen` | Qwen |
 | `glm` | GLM |
 | `bedrock-openai` | AWS Bedrock (OpenAI-compatible) |
 | `openai-responses` | OpenAI Responses API |
+| `openresponses` | Open Responses API |
 | `openai-compatible` | Any OpenAI-compatible API |
 
 Any provider that exposes an OpenAI-compatible chat completions endpoint

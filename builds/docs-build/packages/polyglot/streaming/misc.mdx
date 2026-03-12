@@ -13,10 +13,11 @@ The `reduce()` method works like `array_reduce`: it folds every delta into an ac
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $text = Inference::using('openai')
-    ->withMessages('Write three short lines about queues.')
+    ->withMessages(Messages::fromString('Write three short lines about queues.'))
     ->stream()
     ->reduce(
         fn(string $carry, $delta) => $carry . $delta->contentDelta,
@@ -24,7 +25,7 @@ $text = Inference::using('openai')
     );
 
 echo $text;
-// @doctest id="5705"
+// @doctest id="6327"
 ```
 
 Because `reduce()` drains the entire stream before returning, it blocks until the response is complete.
@@ -37,16 +38,17 @@ The `map()` method transforms each delta into a new value and yields the results
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $stream = Inference::using('openai')
-    ->withMessages('List five fun facts about PHP.')
+    ->withMessages(Messages::fromString('List five fun facts about PHP.'))
     ->stream();
 
 foreach ($stream->map(fn($delta) => strtoupper($delta->contentDelta)) as $chunk) {
     echo $chunk;
 }
-// @doctest id="3e57"
+// @doctest id="c01e"
 ```
 
 
@@ -57,17 +59,18 @@ The `filter()` method yields only the deltas that satisfy a given predicate. Del
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $stream = Inference::using('openai')
-    ->withMessages('Count from one to ten.')
+    ->withMessages(Messages::fromString('Count from one to ten.'))
     ->stream();
 
 // Only process deltas that contain digits
 foreach ($stream->filter(fn($delta) => preg_match('/\d/', $delta->contentDelta)) as $delta) {
     echo $delta->contentDelta;
 }
-// @doctest id="c974"
+// @doctest id="8c59"
 ```
 
 
@@ -78,15 +81,16 @@ The `all()` method drains the stream and returns every visible delta as an array
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $deltas = Inference::using('openai')
-    ->withMessages('Say hello.')
+    ->withMessages(Messages::fromString('Say hello.'))
     ->stream()
     ->all();
 
 echo "Received " . count($deltas) . " deltas.\n";
-// @doctest id="59b1"
+// @doctest id="65c2"
 ```
 
 
@@ -96,7 +100,7 @@ After the stream has been consumed (either partially or fully), you can retrieve
 
 ```php
 $stream = Inference::using('openai')
-    ->withMessages('What is 2 + 2?')
+    ->withMessages(Messages::fromString('What is 2 + 2?'))
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
@@ -105,7 +109,7 @@ foreach ($stream->deltas() as $delta) {
 
 $last = $stream->lastDelta();
 echo $last->finishReason; // e.g. "stop"
-// @doctest id="b3df"
+// @doctest id="3da7"
 ```
 
 This is particularly useful for inspecting the finish reason or final usage data without keeping track of it manually during iteration.
@@ -117,7 +121,7 @@ The `usage()` method returns the accumulated `Usage` object for the stream, cont
 
 ```php
 $stream = Inference::using('openai')
-    ->withMessages('Summarize the theory of relativity.')
+    ->withMessages(Messages::fromString('Summarize the theory of relativity.'))
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
@@ -126,7 +130,7 @@ foreach ($stream->deltas() as $delta) {
 
 $usage = $stream->usage();
 echo "\nTokens used: input={$usage->inputTokens}, output={$usage->outputTokens}\n";
-// @doctest id="7ee8"
+// @doctest id="ad32"
 ```
 
 
@@ -136,7 +140,7 @@ The `execution()` method returns the underlying `InferenceExecution` object, whi
 
 ```php
 $stream = Inference::using('openai')
-    ->withMessages('Hello!')
+    ->withMessages(Messages::fromString('Hello!'))
     ->stream();
 
 $stream->final(); // ensure stream is consumed
@@ -144,7 +148,7 @@ $stream->final(); // ensure stream is consumed
 $execution = $stream->execution();
 echo "Execution ID: " . $execution->id->toString() . "\n";
 echo "Model used: " . $execution->request()->model() . "\n";
-// @doctest id="5ed5"
+// @doctest id="30be"
 ```
 
 

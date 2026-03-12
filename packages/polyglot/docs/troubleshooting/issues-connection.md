@@ -51,6 +51,7 @@ Polyglot uses the `HttpClientConfig` to control connection and request timeouts.
 
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\HttpClient;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
@@ -66,7 +67,7 @@ $runtime = InferenceRuntime::fromConfig(
 );
 
 $text = Inference::fromRuntime($runtime)
-    ->withMessages('Summarize quantum computing in 200 words.')
+    ->withMessages(Messages::fromString('Summarize quantum computing in 200 words.'))
     ->get();
 ```
 
@@ -129,6 +130,7 @@ Network issues are often transient. Use `InferenceRetryPolicy` to automatically 
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -139,7 +141,7 @@ $text = Inference::using('openai')
         maxDelayMs: 5000,
         jitter: 'full',
     ))
-    ->withMessages('Hello')
+    ->withMessages(Messages::fromString('Hello'))
     ->get();
 ```
 

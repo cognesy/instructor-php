@@ -20,10 +20,11 @@ Streaming must be explicitly enabled on the request. The simplest approach is to
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $stream = Inference::using('openai')
-    ->withMessages('Write a short poem about the ocean.')
+    ->withMessages(Messages::fromString('Write a short poem about the ocean.'))
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
@@ -36,10 +37,11 @@ Alternatively, use the `withStreaming()` method followed by `create()->stream()`
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $pending = Inference::using('openai')
-    ->withMessages('Write a short poem about the ocean.')
+    ->withMessages(Messages::fromString('Write a short poem about the ocean.'))
     ->withStreaming(true)
     ->create();
 
@@ -67,11 +69,12 @@ If you need to replay the stream content, enable the memory cache policy before 
 <?php
 
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $inference = Inference::using('openai')
     ->withResponseCachePolicy(ResponseCachePolicy::Memory)
-    ->withMessages('Write a haiku.')
+    ->withMessages(Messages::fromString('Write a haiku.'))
     ->withStreaming(true);
 ```
 
@@ -82,10 +85,11 @@ To get the complete assembled response after consuming all deltas, use the `fina
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $stream = Inference::using('openai')
-    ->withMessages('Explain gravity.')
+    ->withMessages(Messages::fromString('Explain gravity.'))
     ->stream();
 
 // Consume deltas for real-time output
@@ -134,6 +138,7 @@ Streaming responses can take longer than non-streaming requests because the conn
 
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\HttpClient;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
@@ -150,7 +155,7 @@ $runtime = InferenceRuntime::fromConfig(
 );
 
 $stream = Inference::fromRuntime($runtime)
-    ->withMessages('Write a long story about a space explorer.')
+    ->withMessages(Messages::fromString('Write a long story about a space explorer.'))
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
@@ -168,10 +173,11 @@ Wrap the stream consumption in a try-catch to handle errors that occur mid-strea
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $stream = Inference::using('openai')
-    ->withMessages('Write a detailed explanation of relativity.')
+    ->withMessages(Messages::fromString('Write a detailed explanation of relativity.'))
     ->stream();
 
 $content = '';
@@ -198,10 +204,11 @@ Instead of iterating over `deltas()`, you can register a callback that is invoke
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $stream = Inference::using('openai')
-    ->withMessages('Tell me a joke.')
+    ->withMessages(Messages::fromString('Tell me a joke.'))
     ->stream();
 
 $stream->onDelta(function ($delta) {
@@ -220,10 +227,11 @@ The stream supports `map()`, `filter()`, and `reduce()` operations for functiona
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $stream = Inference::using('openai')
-    ->withMessages('List five programming languages.')
+    ->withMessages(Messages::fromString('List five programming languages.'))
     ->stream();
 
 // Collect only non-empty content deltas
@@ -242,10 +250,11 @@ If streaming consistently fails for a particular model or provider, fall back to
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 function getResponse(string $prompt, bool $preferStreaming = true): string {
-    $inference = Inference::using('openai')->withMessages($prompt);
+    $inference = Inference::using('openai')->withMessages(Messages::fromString($prompt));
 
     if ($preferStreaming) {
         try {

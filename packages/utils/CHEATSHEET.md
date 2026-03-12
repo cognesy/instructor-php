@@ -894,38 +894,29 @@ $fm->error()                         // → ?string (YAML parse error message)
 
 ## Specialized Parsers
 
-### JsonParser - JSON Extraction from Text
+### JsonExtractor - JSON Extraction from Text
 ```php
-$parser = new JsonParser();
-$parser->findCompleteJson($input)    // → string (valid JSON or '' on failure)
-$parser->findPartialJson($input)     // → string (partial/complete JSON or '')
-// Tries: raw input, markdown fenced blocks, bracket matching, brace scanning
-// Internally uses ResilientJsonParser and PartialJsonParser as fallbacks
+use Cognesy\Utils\Json\JsonExtractor;
+
+JsonExtractor::first($text)          // → ?array (first valid JSON object/array, or null)
+JsonExtractor::all($text)            // → list<array> (all valid JSON objects/arrays)
+// Tries: raw input, markdown fenced blocks, brace-matching scan
 ```
 
-### ResilientJsonParser - Malformed JSON Recovery
+### JsonDecoder - Resilient JSON Decoder
 ```php
-$parser = new ResilientJsonParser($input);
-$parser->parse()                     // → mixed (parsed data, handles unquoted keys, etc.)
+use Cognesy\Utils\Json\JsonDecoder;
+
+JsonDecoder::decode($input)          // → mixed (handles valid, repairable, and broken JSON)
+JsonDecoder::decodeToArray($input)   // → array ([] on failure or non-array result)
+// Strategy: json_decode fast path → minimal repairs → JsonExtractor → tolerant tokenizer
 ```
 
-### PartialJsonParser - Incomplete JSON Completion
+### IncrementalJsonParser - Streaming Chunk Parser
 ```php
-$parser = new PartialJsonParser();
-$parser->parse($json, associative: true)  // → array|object (completes truncated JSON)
-$parser->fix($partialJson)                // → string (completed JSON string)
-$parser->reminder()                       // → string (unparsed trailing content)
-```
+use Cognesy\Utils\Json\IncrementalJsonParser;
 
-### StreamingPartialJson - One-Shot Partial Decode
-```php
-StreamingPartialJson::toArray($buffer)    // → ?array (null if not decodable)
-// Tries json_decode first, falls back to PartialJsonParser
-```
-
-### IncrementalCompletingJsonParser - Streaming Chunk Parser
-```php
-$parser = new IncrementalCompletingJsonParser();
+$parser = new IncrementalJsonParser();
 $parser->append($chunk)             // Feed next chunk of data
 $parser->buffer()                    // → string (raw accumulated input)
 $parser->currentJson()               // → ?string (completed JSON so far, or null)

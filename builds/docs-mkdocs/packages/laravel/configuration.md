@@ -8,7 +8,7 @@ This is Laravel-native configuration. The Laravel integration reads `config('ins
 
 ```php
 'default' => env('INSTRUCTOR_CONNECTION', 'openai'),
-// @doctest id="b80c"
+// @doctest id="fd70"
 ```
 
 This determines which LLM connection is used when you call a facade without specifying one explicitly. You can override it at runtime with `->connection('name')` on any facade, or by passing an `LLMConfig` object via `->fromConfig(...)`.
@@ -62,7 +62,7 @@ Configure multiple LLM provider connections. Each connection defines its driver,
         'max_tokens' => env('OLLAMA_MAX_TOKENS', 4096),
     ],
 ],
-// @doctest id="8b7e"
+// @doctest id="0d7b"
 ```
 
 ### Supported Drivers
@@ -96,7 +96,7 @@ Any OpenAI-compatible API can be used by setting the `openai` driver and pointin
         'max_tokens' => 4096,
     ],
 ],
-// @doctest id="244d"
+// @doctest id="cf21"
 ```
 
 ## Embeddings Connections
@@ -125,7 +125,7 @@ Configure embedding model connections separately from inference connections. The
         ],
     ],
 ],
-// @doctest id="dc81"
+// @doctest id="615c"
 ```
 
 ## Extraction Settings
@@ -143,7 +143,7 @@ Configure defaults for structured output extraction. These values apply to every
     // Prompt template for retry attempts
     'retry_prompt' => 'The response did not pass validation. Please fix the following errors and try again: {errors}',
 ],
-// @doctest id="a65b"
+// @doctest id="6902"
 ```
 
 ### Output Modes
@@ -172,7 +172,7 @@ Configure the underlying HTTP transport. The Laravel package ships with its own 
     // Connection timeout in seconds
     'connect_timeout' => env('INSTRUCTOR_HTTP_CONNECT_TIMEOUT', 30),
 ],
-// @doctest id="c3cb"
+// @doctest id="64a2"
 ```
 
 The service provider binds `Cognesy\Http\Contracts\CanSendHttpRequests` to the Laravel-backed HTTP transport. All higher-level services (Inference, Embeddings, StructuredOutput) depend on that contract, ensuring consistent HTTP behavior across the entire package.
@@ -201,7 +201,7 @@ The package includes a logging pipeline that enriches log entries with Laravel r
         Cognesy\Http\Events\DebugResponseBodyReceived::class,
     ],
 ],
-// @doctest id="0a91"
+// @doctest id="b8ed"
 ```
 
 ### Logging Presets
@@ -228,7 +228,7 @@ Configure how Instructor's internal events are bridged to Laravel's event dispat
         // \Cognesy\Instructor\Events\ExtractionComplete::class,
     ],
 ],
-// @doctest id="a98b"
+// @doctest id="470f"
 ```
 
 When `bridge_events` is empty (the default), every Instructor event is forwarded to Laravel. To limit traffic, list only the event classes you care about. See the [Events](events.md) guide for the full list of available events and listener examples.
@@ -251,7 +251,7 @@ Configure response caching to avoid redundant API calls for identical inputs.
     // Cache key prefix
     'prefix' => 'instructor',
 ],
-// @doctest id="d1ec"
+// @doctest id="591f"
 ```
 
 ## Environment Variables Reference
@@ -291,7 +291,7 @@ $result = StructuredOutput::connection('anthropic')  // Switch connection
         responseModel: MyModel::class,
     )
     ->get();
-// @doctest id="d0ed"
+// @doctest id="c979"
 ```
 
 For full programmatic control, build an `LLMConfig` object and pass it directly:
@@ -310,5 +310,5 @@ $config = LLMConfig::fromArray([
 $result = StructuredOutput::fromConfig($config)
     ->with(messages: '...', responseModel: MyModel::class)
     ->get();
-// @doctest id="f67d"
+// @doctest id="9c2c"
 ```

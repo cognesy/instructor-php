@@ -11,7 +11,7 @@ The package ships as part of the Instructor-PHP monorepo and can be installed st
 
 ```bash
 composer require cognesy/agent-ctrl
-# @doctest id="2abe"
+# @doctest id="b839"
 ```
 
 ## Entry Point
@@ -31,7 +31,7 @@ AgentCtrl::gemini();       // Returns GeminiBridgeBuilder
 
 // Runtime selection via enum
 AgentCtrl::make(AgentType::from('codex'));
-// @doctest id="f57c"
+// @doctest id="115b"
 ```
 
 Each factory method returns a bridge builder -- a fluent configuration object that lets you set the model, timeout, working directory, streaming callbacks, and agent-specific options before calling `execute()` or `executeStreaming()`.
@@ -58,12 +58,12 @@ $response = AgentCtrl::claudeCode()
 if ($response->isSuccess()) {
     echo $response->text();
 }
-// @doctest id="cc18"
+// @doctest id="8647"
 ```
 
 ## Core Capabilities
 
-**Unified API across agents.** Switch between Claude Code, Codex, OpenCode, and Pi without changing your application's control flow or response handling. The same `execute()` call and `AgentResponse` shape work with every bridge.
+**Unified API across agents.** Switch between Claude Code, Codex, OpenCode, Pi, and Gemini without changing your application's control flow or response handling. The same `execute()` call and `AgentResponse` shape work with every bridge.
 
 **Real-time streaming.** Register `onText()`, `onToolUse()`, `onComplete()`, and `onError()` callbacks to receive incremental updates while the agent works. Streaming and final-result access are not mutually exclusive -- `executeStreaming()` returns the complete `AgentResponse` when the agent finishes.
 

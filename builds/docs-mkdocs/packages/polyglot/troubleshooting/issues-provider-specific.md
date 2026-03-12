@@ -31,7 +31,7 @@ model: gpt-4.1-nano
 metadata:
   organization: 'org-your-organization-id'
   project: 'proj-your-project-id'
-# @doctest id="0bf3"
+# @doctest id="0e01"
 ```
 
 ### API Changes
@@ -45,18 +45,19 @@ Polyglot also supports the OpenAI Responses API through the `openai-responses` d
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 // Standard Chat Completions API
 $text = Inference::using('openai')
-    ->withMessages('Hello')
+    ->withMessages(Messages::fromString('Hello'))
     ->get();
 
 // Responses API (different driver)
 $text = Inference::using('openai-responses')
-    ->withMessages('Hello')
+    ->withMessages(Messages::fromString('Hello'))
     ->get();
-// @doctest id="cd66"
+// @doctest id="ce32"
 ```
 
 ## Anthropic
@@ -78,7 +79,7 @@ endpoint: /messages
 metadata:
   apiVersion: '2023-06-01'
   beta: prompt-caching-2024-07-31
-# @doctest id="def4"
+# @doctest id="e7d0"
 ```
 
 If you see errors about unsupported API versions, update the `apiVersion` value in your preset.
@@ -99,18 +100,19 @@ The native Gemini API has different request and response structures. If you expe
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 // Native Gemini API
 $text = Inference::using('gemini')
-    ->withMessages('Hello')
+    ->withMessages(Messages::fromString('Hello'))
     ->get();
 
 // OpenAI-compatible Gemini endpoint
 $text = Inference::using('gemini-oai')
-    ->withMessages('Hello')
+    ->withMessages(Messages::fromString('Hello'))
     ->get();
-// @doctest id="747e"
+// @doctest id="4541"
 ```
 
 ## Mistral
@@ -135,7 +137,7 @@ curl http://localhost:11434/api/version
 
 # Start Ollama if not running
 ollama serve
-# @doctest id="7c4a"
+# @doctest id="4dd6"
 ```
 
 ### Pull Models Before Use
@@ -148,7 +150,7 @@ ollama pull llama3
 
 # List available models
 ollama list
-# @doctest id="1074"
+# @doctest id="1df6"
 ```
 
 ### Default Endpoint
@@ -170,7 +172,7 @@ apiUrl: 'https://your-resource.openai.azure.com/openai'
 apiKey: '${AZURE_OPENAI_API_KEY}'
 endpoint: '/deployments/your-deployment/chat/completions'
 model: gpt-4
-# @doctest id="9a23"
+# @doctest id="f8fb"
 ```
 
 Azure deployments use deployment names rather than model names in the endpoint URL. Ensure the `endpoint` field includes the correct deployment name.
@@ -190,7 +192,7 @@ endpoint: /chat/completions
 model: anthropic.claude-3-haiku-20240307-v1:0
 metadata:
   region: '${AWS_BEDROCK_REGION:-us-east-1}'
-# @doctest id="47c2"
+# @doctest id="18f2"
 ```
 
 ## Cohere

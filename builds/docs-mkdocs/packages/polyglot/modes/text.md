@@ -18,7 +18,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $text = Inference::using('openai')
     ->withMessages(Messages::fromString('What is the single responsibility principle?'))
     ->get();
-// @doctest id="559a"
+// @doctest id="71d5"
 ```
 
 The `get()` method returns the raw string content from the model's response. There is no JSON parsing, no schema validation -- just the text the model produced.
@@ -52,7 +52,7 @@ $response = Inference::using('openai')
 $response = Inference::using('anthropic')
     ->withMessages(Messages::fromString('Write a short poem about the ocean.'))
     ->get();
-// @doctest id="52ab"
+// @doctest id="6626"
 ```
 
 ## Using the `with()` Method
@@ -71,7 +71,7 @@ $response = Inference::using('openai')
         options: ['temperature' => 0.3],
     )
     ->get();
-// @doctest id="7d8a"
+// @doctest id="64cc"
 ```
 
 ## Streaming Text Responses
@@ -86,16 +86,15 @@ use Cognesy\Polyglot\Inference\Inference;
 
 $stream = Inference::using('openai')
     ->withMessages(Messages::fromString('Write a short essay about renewable energy.'))
-    ->stream()
-    ->responses();
+    ->stream();
 
-foreach ($stream as $partial) {
-    echo $partial->contentDelta;
+foreach ($stream->deltas() as $delta) {
+    echo $delta->contentDelta;
 }
-// @doctest id="ffd5"
+// @doctest id="356a"
 ```
 
-Each partial response contains a `contentDelta` with the next chunk of text from the model. Streaming works with all providers that support it.
+Each delta contains a `contentDelta` with the next chunk of text from the model. Streaming works with all providers that support it.
 
 ## Accessing the Full Response
 
@@ -114,5 +113,5 @@ $response = Inference::using('openai')
 $text = $response->content();
 $usage = $response->usage();
 $reason = $response->finishReason();
-// @doctest id="89ad"
+// @doctest id="f69c"
 ```

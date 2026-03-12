@@ -9,7 +9,7 @@ Install the package via Composer:
 
 ```bash
 composer require cognesy/instructor-http-client
-# @doctest id="5ee4"
+# @doctest id="7a71"
 ```
 
 You also need at least one supported HTTP library. The default driver uses PHP's built-in cURL extension, so if cURL is available you can start immediately. For other drivers, install the corresponding package:
@@ -20,7 +20,7 @@ composer require guzzlehttp/guzzle
 
 # Symfony HttpClient
 composer require symfony/http-client
-# @doctest id="3e99"
+# @doctest id="3230"
 ```
 
 ### Requirements
@@ -49,7 +49,7 @@ $response = $client->send(new HttpRequest(
 
 echo $response->statusCode(); // 200
 echo $response->body();       // {"status":"ok"}
-// @doctest id="2d7f"
+// @doctest id="f30a"
 ```
 
 `HttpClient::default()` creates a client with the default cURL driver. The `send()` method returns a `PendingHttpResponse`, which is lazy -- the network call does not happen until you call `get()` or `stream()`.
@@ -63,7 +63,7 @@ use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\HttpClient;
 
 $client = HttpClient::fromConfig(new HttpClientConfig(driver: 'guzzle'));
-// @doctest id="a960"
+// @doctest id="1405"
 ```
 
 Or use the builder for more control:
@@ -79,7 +79,7 @@ $client = (new HttpClientBuilder())
         requestTimeout: 30,
     ))
     ->create();
-// @doctest id="ce0a"
+// @doctest id="db7a"
 ```
 
 ## Error Handling
@@ -98,7 +98,7 @@ try {
         echo "Status: {$e->getResponse()->statusCode()}\n";
     }
 }
-// @doctest id="b102"
+// @doctest id="b818"
 ```
 
 The exception hierarchy gives you granular control:
@@ -142,7 +142,7 @@ $response = $client->send(new HttpRequest(
 ))->get();
 
 echo $response->body(); // {"ok":true}
-// @doctest id="16dd"
+// @doctest id="2f26"
 ```
 
 The mock driver matches responses by URL and method, making it straightforward to verify that your application sends the right requests.

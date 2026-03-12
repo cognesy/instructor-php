@@ -75,6 +75,7 @@ If your configuration is dynamic -- for example, when the user selects a model a
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -88,7 +89,7 @@ $config = new LLMConfig(
 );
 
 $text = Inference::fromConfig($config)
-    ->withMessages('Hello')
+    ->withMessages(Messages::fromString('Hello'))
     ->get();
 ```
 
@@ -116,6 +117,7 @@ To start from a preset and change specific values, use `withOverrides()`:
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -123,7 +125,7 @@ $config = LLMConfig::fromPreset('openai')
     ->withOverrides(['model' => 'gpt-4.1', 'maxTokens' => 4096]);
 
 $text = Inference::fromConfig($config)
-    ->withMessages('Hello')
+    ->withMessages(Messages::fromString('Hello'))
     ->get();
 ```
 
