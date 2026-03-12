@@ -19,7 +19,7 @@ jobs:
       fail-fast: true
       matrix:
         php: ['8.3', '8.4', '8.5']
-        symfony: ['^7.1', '^8.0']
+        symfony: ['^7.3', '^8.0']
         composer: ['--prefer-stable', '--prefer-lowest']
         exclude:
           - php: '8.3'
@@ -55,6 +55,7 @@ jobs:
         --with symfony/property-access:${{ matrix.symfony }}
         --with symfony/property-info:${{ matrix.symfony }}
         --with symfony/serializer:${{ matrix.symfony }}
+        --with symfony/type-info:${{ matrix.symfony }}
         --with symfony/validator:${{ matrix.symfony }}
         --with symfony/var-dumper:${{ matrix.symfony }}
         --with symfony/yaml:${{ matrix.symfony }}

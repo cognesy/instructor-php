@@ -28,8 +28,8 @@
     "php": "^8.3",
     "cognesy/instructor-utils": "^1.22",
     "cognesy/instructor-pipeline": "^1.22",
-    "symfony/property-info": "^7.1 || ^8.0",
-    "symfony/type-info": "^7.1 || ^8.0"
+    "symfony/property-info": "^7.3 || ^8.0",
+    "symfony/type-info": "^7.3 || ^8.0"
   },
   "require-dev": {
     "icanhazstring/composer-unused": "^0.9.0",
