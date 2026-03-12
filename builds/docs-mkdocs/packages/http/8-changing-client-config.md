@@ -21,7 +21,7 @@ $config = new HttpClientConfig(
     streamHeaderTimeout: 5,
     failOnError: false,
 );
-// @doctest id="6d40"
+// @doctest id="b6d0"
 ```
 
 | Option | Type | Default | Description |
@@ -61,7 +61,7 @@ $client = (new HttpClientBuilder())
         failOnError: true,
     ))
     ->create();
-// @doctest id="6951"
+// @doctest id="f659"
 ```
 
 Or create the client directly:
@@ -73,7 +73,7 @@ $client = HttpClient::fromConfig(new HttpClientConfig(
     driver: 'symfony',
     requestTimeout: 120,
 ));
-// @doctest id="6e58"
+// @doctest id="b191"
 ```
 
 ## DSN Strings
@@ -84,7 +84,7 @@ For environments where configuration comes from environment variables or strings
 $client = (new HttpClientBuilder())
     ->withDsn('driver=symfony,connectTimeout=2,requestTimeout=20,streamHeaderTimeout=5,failOnError=true')
     ->create();
-// @doctest id="fdd0"
+// @doctest id="23ce"
 ```
 
 DSN values are automatically coerced to the correct types -- integers for timeout fields, booleans for `failOnError`, and strings for `driver`.
@@ -98,7 +98,7 @@ $base = new HttpClientConfig(driver: 'guzzle', requestTimeout: 30);
 $strict = $base->withOverrides(['failOnError' => true, 'requestTimeout' => 60]);
 
 $client = HttpClient::fromConfig($strict);
-// @doctest id="a344"
+// @doctest id="c569"
 ```
 
 Only the fields you specify in the override array are changed; everything else carries forward from the base config.
@@ -114,7 +114,7 @@ $config = HttpClientConfig::fromArray([
     'requestTimeout' => 45,
     'failOnError' => true,
 ]);
-// @doctest id="84c0"
+// @doctest id="22fc"
 ```
 
 ## Debug Configuration
@@ -138,7 +138,7 @@ $client = (new HttpClientBuilder())
         httpResponseStreamByLine: true,
     ))
     ->create();
-// @doctest id="42bf"
+// @doctest id="e6ce"
 ```
 
 | Option | Default | Description |
@@ -183,7 +183,7 @@ $downloadConfig = new HttpClientConfig(
     requestTimeout: 300,
     idleTimeout: 30,
 );
-// @doctest id="639d"
+// @doctest id="c7ff"
 ```
 
 ### Environment-Based Configuration
@@ -201,7 +201,7 @@ $config = new HttpClientConfig(
     requestTimeout: $timeout,
     failOnError: getenv('APP_ENV') !== 'production',
 );
-// @doctest id="d7ff"
+// @doctest id="2bc7"
 ```
 
 ## See Also

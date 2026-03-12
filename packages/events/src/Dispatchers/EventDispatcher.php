@@ -26,6 +26,12 @@ class EventDispatcher implements CanHandleEvents
     private array $listeners = [];
     private int $listenerOrder = 0;
 
+    /** @var array<string, string[]> Cached class hierarchy per event class */
+    private static array $typeCache = [];
+
+    /** @var callable[]|null Pre-sorted tap listeners, null = needs rebuild */
+    private ?array $sortedTaps = null;
+
     public function __construct(
         string $name = 'default',
         ?EventDispatcherInterface $parent = null,
@@ -62,6 +68,10 @@ class EventDispatcher implements CanHandleEvents
             'priority' => $priority,
             'order' => $this->listenerOrder++,
         ];
+
+        if ($name === '*') {
+            $this->sortedTaps = null; // invalidate tap cache
+        }
     }
 
     /**
@@ -86,7 +96,7 @@ class EventDispatcher implements CanHandleEvents
     public function getListenersForEvent(object $event): iterable {
         yield from $this->classListeners($event);
 
-        foreach ($this->tapListeners() as $tap) {
+        foreach ($this->resolvedTapListeners() as $tap) {
             yield $tap;
         }
     }
@@ -99,6 +109,11 @@ class EventDispatcher implements CanHandleEvents
      */
     #[\Override]
     public function dispatch(object $event): object {
+        // Fast path: no listeners registered and no parent to forward to
+        if (empty($this->listeners) && $this->parent === null) {
+            return $event;
+        }
+
         // class-specific listeners (honour stopPropagation)
         foreach ($this->classListeners($event) as $listener) {
             $listener($event);
@@ -107,8 +122,8 @@ class EventDispatcher implements CanHandleEvents
             }
         }
 
-        // taps — always run
-        foreach ($this->tapListeners() as $tap) {
+        // taps — always run (pre-sorted, cached)
+        foreach ($this->resolvedTapListeners() as $tap) {
             $tap($event);
         }
 
@@ -121,6 +136,21 @@ class EventDispatcher implements CanHandleEvents
     // INTERNAL /////////////////////////////////////////////////////////////////////
 
     /**
+     * Resolve the class hierarchy for an event, cached per class name.
+     *
+     * @return string[]
+     */
+    private static function eventTypes(object $event): array
+    {
+        $class = get_class($event);
+        return self::$typeCache[$class] ??= array_merge(
+            [$class],
+            class_parents($event),
+            class_implements($event),
+        );
+    }
+
+    /**
      * @return iterable<callable(object): void>
      *
      * Ordering policy:
@@ -130,11 +160,7 @@ class EventDispatcher implements CanHandleEvents
      */
     private function classListeners(object $event): iterable
     {
-        $types = array_merge(
-            [get_class($event)],
-            class_parents($event),
-            class_implements($event)
-        );
+        $types = self::eventTypes($event);
 
         $candidates = [];
         foreach ($types as $typeOrder => $type) {
@@ -152,19 +178,13 @@ class EventDispatcher implements CanHandleEvents
             }
         }
 
-        usort($candidates, static function (array $left, array $right): int {
-            $priorityOrder = $right['priority'] <=> $left['priority'];
-            if ($priorityOrder !== 0) {
-                return $priorityOrder;
-            }
-
-            $typeOrder = $left['typeOrder'] <=> $right['typeOrder'];
-            if ($typeOrder !== 0) {
-                return $typeOrder;
-            }
-
-            return $left['order'] <=> $right['order'];
-        });
+        if (count($candidates) > 1) {
+            usort($candidates, static function (array $left, array $right): int {
+                return ($right['priority'] <=> $left['priority'])
+                    ?: ($left['typeOrder'] <=> $right['typeOrder'])
+                    ?: ($left['order'] <=> $right['order']);
+            });
+        }
 
         foreach ($candidates as $entry) {
             yield $entry['listener'];
@@ -172,23 +192,26 @@ class EventDispatcher implements CanHandleEvents
     }
 
     /**
-     * @return iterable<callable(object): void>
+     * Returns pre-sorted tap listener callables (cached between addListener calls).
      *
-     * Taps are always ordered by priority and then registration order.
+     * @return callable[]
      */
-    private function tapListeners(): iterable
+    private function resolvedTapListeners(): array
     {
-        $taps = $this->listeners['*'] ?? [];
-        usort($taps, static function (array $left, array $right): int {
-            $priorityOrder = $right['priority'] <=> $left['priority'];
-            if ($priorityOrder !== 0) {
-                return $priorityOrder;
-            }
-            return $left['order'] <=> $right['order'];
-        });
-
-        foreach ($taps as $tap) {
-            yield $tap['listener'];
+        if ($this->sortedTaps !== null) {
+            return $this->sortedTaps;
         }
+
+        $taps = $this->listeners['*'] ?? [];
+
+        if (count($taps) > 1) {
+            usort($taps, static function (array $left, array $right): int {
+                return ($right['priority'] <=> $left['priority'])
+                    ?: ($left['order'] <=> $right['order']);
+            });
+        }
+
+        $this->sortedTaps = array_map(static fn(array $t) => $t['listener'], $taps);
+        return $this->sortedTaps;
     }
 }

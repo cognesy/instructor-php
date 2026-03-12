@@ -18,7 +18,7 @@ $builder = AgentCtrl::openCode();
 
 // Or via the generic factory
 $builder = AgentCtrl::make(AgentType::OpenCode);
-// @doctest id="6cb3"
+// @doctest id="802b"
 ```
 
 ## Basic Usage
@@ -30,7 +30,7 @@ $response = AgentCtrl::openCode()
     ->execute('Explain the architecture of this project in short paragraphs.');
 
 echo $response->text();
-// @doctest id="f7e1"
+// @doctest id="6ccf"
 ```
 
 With model selection:
@@ -41,7 +41,7 @@ $response = AgentCtrl::openCode()
     ->execute('Review the test suite.');
 
 echo $response->text();
-// @doctest id="54b6"
+// @doctest id="c9f2"
 ```
 
 ## Model Selection
@@ -59,7 +59,7 @@ AgentCtrl::openCode()->withModel('openai/o4-mini');
 
 // Google models
 AgentCtrl::openCode()->withModel('google/gemini-2.5-pro');
-// @doctest id="8a7b"
+// @doctest id="a9aa"
 ```
 
 The exact set of available providers and models depends on your OpenCode installation and configuration. If no model is specified, OpenCode uses its configured default. Check OpenCode's documentation for the full list of supported providers and models.
@@ -72,14 +72,14 @@ OpenCode supports named agents -- preconfigured agent profiles that define speci
 $response = AgentCtrl::openCode()
     ->withAgent('coder')
     ->execute('Refactor the authentication module.');
-// @doctest id="f3dd"
+// @doctest id="f292"
 ```
 
 ```php
 $response = AgentCtrl::openCode()
     ->withAgent('task')
     ->execute('Create a detailed implementation plan.');
-// @doctest id="e7a9"
+// @doctest id="3296"
 ```
 
 The available agent names depend on your OpenCode configuration. Common agents include `coder` (for code-focused tasks) and `task` (for planning and general tasks).
@@ -95,7 +95,7 @@ $response = AgentCtrl::openCode()
         '/projects/my-app/src/Models/Payment.php',
     ])
     ->execute('Refactor the PaymentService to handle partial refunds.');
-// @doctest id="49bc"
+// @doctest id="b18a"
 ```
 
 Unlike `inDirectory()` which sets the working directory, `withFiles()` explicitly includes specific files in the prompt context. This is useful when you want the agent to focus on particular files rather than browsing the project directory.
@@ -108,7 +108,7 @@ Use `withTitle()` to set a descriptive title for the session. The title appears 
 $response = AgentCtrl::openCode()
     ->withTitle('Payment module refactoring')
     ->execute('Plan the payment module refactoring.');
-// @doctest id="166d"
+// @doctest id="8097"
 ```
 
 Titles are especially useful when you manage multiple sessions and need to identify them by purpose rather than by opaque session IDs.
@@ -128,7 +128,7 @@ $sessionId = $response->sessionId();
 if ($sessionId !== null) {
     echo "Share this session ID with your team: {$sessionId}\n";
 }
-// @doctest id="8c29"
+// @doctest id="5373"
 ```
 
 ## Streaming with OpenCode
@@ -144,7 +144,7 @@ $response = AgentCtrl::openCode()
     ->onToolUse(fn(string $tool, array $input, ?string $output) => print("\n> [{$tool}]\n"))
     ->onError(fn(string $message, ?string $code) => print("\nError [{$code}]: {$message}\n"))
     ->executeStreaming('Analyze the error handling in this codebase.');
-// @doctest id="e478"
+// @doctest id="6008"
 ```
 
 ### Event Normalization
@@ -176,7 +176,7 @@ if ($sessionId !== null) {
         ->resumeSession((string) $sessionId)
         ->execute('Continue with the next step.');
 }
-// @doctest id="45de"
+// @doctest id="84fe"
 ```
 
 ## Usage and Cost Data
@@ -208,7 +208,7 @@ if ($usage !== null) {
         echo "Reasoning:       {$usage->reasoning}\n";
     }
 }
-// @doctest id="791f"
+// @doctest id="6714"
 ```
 
 ### Cost Tracking
@@ -220,7 +220,7 @@ $cost = $response->cost();
 if ($cost !== null) {
     echo sprintf("This execution cost $%.4f\n", $cost);
 }
-// @doctest id="0676"
+// @doctest id="331b"
 ```
 
 This makes OpenCode a good choice when you need to track and report on the cost of agent executions, build usage dashboards, or enforce cost budgets.
@@ -288,7 +288,7 @@ if ($response->isSuccess()) {
     echo "\nReview failed with exit code: {$response->exitCode}\n";
     echo "Partial output: " . substr($response->text(), 0, 500) . "\n";
 }
-// @doctest id="4ba4"
+// @doctest id="e4c1"
 ```
 
 ## Comparison with Other Bridges

@@ -38,7 +38,7 @@ OPENROUTER_API_KEY=''
 SAMBANOVA_API_KEY=''
 TOGETHER_API_KEY=''
 XAI_API_KEY=''
-# @doctest id="952a"
+# @doctest id="350e"
 ```
 
 Only configure the providers you plan to use. Empty keys are ignored.
@@ -51,7 +51,7 @@ If you use embedding features (via companion packages), configure these as well:
 ```ini
 AZURE_OPENAI_EMBED_API_KEY=''
 JINA_API_KEY=''
-# @doctest id="1043"
+# @doctest id="b30d"
 ```
 
 
@@ -63,7 +63,7 @@ Scraping and web-related add-ons use their own API keys:
 JINAREADER_API_KEY=''
 SCRAPFLY_API_KEY=''
 SCRAPINGBEE_API_KEY=''
-# @doctest id="fca8"
+# @doctest id="bc14"
 ```
 
 These are not required for core structured-output functionality.
@@ -76,7 +76,7 @@ find configuration files:
 
 ```ini
 INSTRUCTOR_CONFIG_PATHS='config,vendor/cognesy/instructor-php/config'
-# @doctest id="96d5"
+# @doctest id="5899"
 ```
 
 This is primarily used by the CLI tooling and companion packages. The
@@ -100,7 +100,7 @@ StructuredOutputRuntime      <-- assembled runtime
     |
     v
 StructuredOutput             <-- your application code
-// @doctest id="a1bd"
+// @doctest id="558b"
 ```
 
 The structured-output package never reads environment variables directly. The
