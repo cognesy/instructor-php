@@ -2,13 +2,13 @@
 
 namespace Cognesy\Addons\StepByStep\Step\Traits;
 
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 trait HandlesStepUsage
 {
-    protected readonly Usage $usage;
+    protected readonly InferenceUsage $usage;
 
-    public function usage(): Usage {
+    public function usage(): InferenceUsage {
         return $this->usage;
     }
 }

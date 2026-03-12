@@ -2,9 +2,9 @@
 
 namespace Cognesy\Addons\StepByStep\Step\Contracts;
 
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 interface HasStepUsage
 {
-    public function usage(): Usage;
+    public function usage(): InferenceUsage;
 }

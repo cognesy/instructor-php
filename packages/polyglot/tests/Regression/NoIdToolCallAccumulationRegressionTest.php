@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\Streaming\InferenceStreamState;
 
 it('keeps distinct no-id tool calls when the same tool name appears again later', function () {

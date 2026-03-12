@@ -85,7 +85,7 @@ The `get()` method returns an `EmbeddingsResponse` with several methods for acce
 | `all()` | `Vector[]` | Alias for `vectors()` |
 | `toValuesArray()` | `float[][]` | All vectors as nested arrays of floats |
 | `split(int $index)` | `[Vector[], Vector[]]` | Split vectors into two groups at the given index |
-| `usage()` | `Usage` | Token usage information for the request |
+| `usage()` | `EmbeddingsUsage` | Token usage information for the request |
 
 ### Accessing Usage Information
 

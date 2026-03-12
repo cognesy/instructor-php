@@ -29,7 +29,7 @@ final readonly class InferenceResponse
     private string $finishReason;
 
     private ToolCalls $toolCalls;
-    private Usage $usage;
+    private InferenceUsage $usage;
     private HttpResponse $responseData;
 
     private bool $isPartial;
@@ -39,7 +39,7 @@ final readonly class InferenceResponse
         string $finishReason = '',
         ?ToolCalls $toolCalls = null,
         string $reasoningContent = '',
-        ?Usage $usage = null,
+        ?InferenceUsage $usage = null,
         ?HttpResponse $responseData = null,
         bool $isPartial = false,
         //
@@ -56,7 +56,7 @@ final readonly class InferenceResponse
         $this->toolCalls = $toolCalls ?? new ToolCalls();
         $this->reasoningContent = $reasoningContent;
         $this->responseData = $responseData ?? HttpResponse::empty();
-        $this->usage = $usage ?? new Usage();
+        $this->usage = $usage ?? new InferenceUsage();
 
         $this->isPartial = $isPartial;
         $this->trackObjectCreation();
@@ -76,7 +76,7 @@ final readonly class InferenceResponse
         return $this->reasoningContent;
     }
 
-    public function usage(): Usage {
+    public function usage(): InferenceUsage {
         return $this->usage;
     }
 
@@ -134,7 +134,7 @@ final readonly class InferenceResponse
         ?string $finishReason = null,
         ?ToolCalls $toolCalls = null,
         ?string $reasoningContent = null,
-        ?Usage $usage = null,
+        ?InferenceUsage $usage = null,
         ?HttpResponse $responseData = null,
         ?bool $isPartial = null,
     ): self {
@@ -154,10 +154,6 @@ final readonly class InferenceResponse
 
     public function withContent(string $content): self {
         return $this->with(content: $content);
-    }
-
-    public function withPricing(Pricing $pricing): self {
-        return $this->with(usage: $this->usage->withPricing($pricing));
     }
 
     public function withReasoningContentFallbackFromContent(): self {
@@ -203,7 +199,7 @@ final readonly class InferenceResponse
                 : null,
             reasoningContent: $data['reasoningContent'] ?? '',
             usage: (isset($data['usage']) && is_array($data['usage']))
-                ? Usage::fromArray($data['usage'])
+                ? InferenceUsage::fromArray($data['usage'])
                 : null,
             responseData: (is_array($responseData) && $responseData !== [])
                 ? HttpResponse::fromArray($responseData)

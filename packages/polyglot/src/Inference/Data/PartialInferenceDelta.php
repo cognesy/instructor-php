@@ -17,7 +17,7 @@ final readonly class PartialInferenceDelta
         public string $toolName = '',
         public string $toolArgs = '',
         public string $finishReason = '',
-        public ?Usage $usage = null,
+        public ?InferenceUsage $usage = null,
         public bool $usageIsCumulative = false,
         public ?HttpResponse $responseData = null,
         public mixed $value = null,

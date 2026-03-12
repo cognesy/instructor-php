@@ -14,7 +14,7 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 
 final class ExternalCollaborator implements CanCollaborate
@@ -52,7 +52,7 @@ final class ExternalCollaborator implements CanCollaborate
             collaboratorName: $this->name,
             inputMessages: $this->compiler->compile($state),
             outputMessages: $response,
-            usage: Usage::none(),
+            usage: InferenceUsage::none(),
             inferenceResponse: null,
             finishReason: InferenceFinishReason::Other,
         );

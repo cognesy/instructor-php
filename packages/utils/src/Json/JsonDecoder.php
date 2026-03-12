@@ -5,16 +5,22 @@ namespace Cognesy\Utils\Json;
 /**
  * Resilient JSON decoder.
  *
- * Strategy (always in this order):
+ * Strategy for decode() (always in this order):
  *  1) json_decode() fast path
- *  2) Minimal repairs (trailing commas, unbalanced braces/quotes) + json_decode() retry
- *  3) Tolerant tokenizer-based single-pass parser (handles severely broken JSON)
+ *  2) Minimal repairs (invalid escapes, trailing commas, unbalanced braces) + json_decode() retry
+ *  3) Extract JSON from surrounding text via JsonExtractor
+ *  4) Tolerant tokenizer-based single-pass parser (handles severely broken JSON)
+ *
+ * Strategy for tryStrictDecode() (steps 1+2 only — no text extraction, no lenient tokenizer):
+ *  Used by JsonExtractor to validate JSON candidates resiliently without
+ *  accepting garbage or creating circular dependencies.
  */
 final class JsonDecoder
 {
     /**
      * Decode a JSON string to a PHP value.
-     * Handles valid JSON (fast), repairable JSON, and severely broken/partial JSON.
+     * Handles valid JSON (fast), repairable JSON, JSON embedded in text,
+     * and severely broken/partial JSON.
      */
     public static function decode(string $input): mixed
     {
@@ -42,6 +48,7 @@ final class JsonDecoder
         }
 
         // 3) Try extracting JSON from surrounding text
+        //    JsonExtractor uses tryStrictDecode() internally — no circular dependency.
         $extracted = JsonExtractor::first($trimmed);
         if ($extracted !== null) {
             return $extracted;
@@ -49,6 +56,42 @@ final class JsonDecoder
 
         // 4) Tolerant tokenizer-based parser
         return self::lenientParse($trimmed);
+    }
+
+    /**
+     * Try to decode JSON with repairs but without text extraction or lenient tokenizer.
+     * Returns null if the input cannot be decoded even after repairs.
+     *
+     * This method is safe to call from JsonExtractor — it never calls back into
+     * JsonExtractor and never uses the lenient tokenizer (which would accept garbage).
+     *
+     * Handles: valid JSON, and common LLM issues like invalid escape sequences
+     * (\R from \RuntimeException, \T from \Throwable), trailing commas, and
+     * unbalanced braces/brackets.
+     */
+    public static function tryStrictDecode(string $input): mixed
+    {
+        $trimmed = trim($input);
+        if ($trimmed === '') {
+            return null;
+        }
+
+        // 1) Fast path
+        try {
+            return json_decode($trimmed, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\Throwable) {
+        }
+
+        // 2) Repair + retry
+        $repaired = self::repairCommonIssues($trimmed);
+        if ($repaired !== '' && $repaired !== $trimmed) {
+            try {
+                return json_decode($repaired, true, 512, JSON_THROW_ON_ERROR);
+            } catch (\Throwable) {
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -78,6 +121,11 @@ final class JsonDecoder
         if ($s === '') {
             return '';
         }
+
+        // Fix invalid JSON escape sequences (common in LLM output with class names
+        // like \RuntimeException, \Throwable). Doubles the backslash so \R becomes \\R,
+        // which json_decode interprets as literal "\R" in the string value.
+        $s = preg_replace('/\\\\(?!["\\\\\\/bfnrtu])/', '\\\\\\\\', $s) ?? $s;
 
         // Unbalanced quotes heuristic
         $quoteCount = preg_match_all('/(?<!\\\\)"/', $s);

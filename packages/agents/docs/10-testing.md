@@ -96,7 +96,7 @@ When `executeTools` is `true`, the tool call is forwarded to the `ToolExecutor`,
 All step factories accept an optional `Usage` parameter for testing token-budget guards or usage reporting:
 
 ```php
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 ScenarioStep::final('Done.', usage: new Usage(inputTokens: 100, outputTokens: 50));
 ScenarioStep::toolCall('search', ['q' => 'test'], usage: new Usage(200, 80));

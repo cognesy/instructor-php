@@ -19,7 +19,7 @@ use Cognesy\Addons\ToolUse\Collections\ToolUseSteps;
 use Cognesy\Addons\ToolUse\Enums\ToolUseStatus;
 use Cognesy\Addons\ToolUse\State\HandlesToolUseSteps;
 use Cognesy\Messages\MessageStore\MessageStore;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Utils\Metadata;
 
 /** @implements HasSteps<ToolUseStep> */
@@ -41,7 +41,7 @@ final readonly class ToolUseState implements HasSteps, HasMessageStore, HasMetad
         ?ToolUseStep $currentStep = null,
 
         Metadata|array|null $variables = null,
-        ?Usage $usage = null,
+        ?InferenceUsage $usage = null,
         ?MessageStore $store = null,
         ?StateInfo $stateInfo = null,
         ?array $stepResults = null,
@@ -57,7 +57,7 @@ final readonly class ToolUseState implements HasSteps, HasMessageStore, HasMetad
             is_array($variables) => new Metadata($variables),
             default => new Metadata(),
         };
-        $this->usage = $usage ?? new Usage();
+        $this->usage = $usage ?? new InferenceUsage();
         $this->store = $store ?? new MessageStore();
         $this->stepResults = $stepResults ?? [];
     }
@@ -76,7 +76,7 @@ final readonly class ToolUseState implements HasSteps, HasMessageStore, HasMetad
         ?ToolUseStep $currentStep = null,
 
         ?Metadata $variables = null,
-        ?Usage $usage = null,
+        ?InferenceUsage $usage = null,
         ?MessageStore $store = null,
         ?StateInfo $stateInfo = null,
         ?array $stepResults = null,
@@ -187,7 +187,7 @@ final readonly class ToolUseState implements HasSteps, HasMessageStore, HasMetad
             currentStep: isset($data['currentStep']) ? ToolUseStep::fromArray($data['currentStep']) : null,
 
             variables: isset($data['metadata']) ? Metadata::fromArray($data['metadata']) : new Metadata(),
-            usage: isset($data['usage']) ? Usage::fromArray($data['usage']) : new Usage(),
+            usage: isset($data['usage']) ? InferenceUsage::fromArray($data['usage']) : new InferenceUsage(),
             store: isset($data['messageStore']) ? MessageStore::fromArray($data['messageStore']) : new MessageStore(),
             stateInfo: isset($data['stateInfo']) ? StateInfo::fromArray($data['stateInfo']) : null,
             stepResults: $stepResults,

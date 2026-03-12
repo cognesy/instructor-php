@@ -4,7 +4,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceAttempt;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 it('round-trips started attempt without synthetic response', function () {
     $attempt = InferenceAttempt::started();
@@ -45,12 +45,12 @@ it('failed attempt without response preserves durable usage metadata', function 
         contentDelta: 'Hel',
         toolName: 'search',
         toolArgs: '{"q":"hel',
-        usage: new Usage(inputTokens: 1, outputTokens: 1),
+        usage: new InferenceUsage(inputTokens: 1, outputTokens: 1),
     ));
     $state->applyDelta(new \Cognesy\Polyglot\Inference\Data\PartialInferenceDelta(
         contentDelta: 'lo',
         toolArgs: 'lo"}',
-        usage: new Usage(inputTokens: 1, outputTokens: 1),
+        usage: new InferenceUsage(inputTokens: 1, outputTokens: 1),
     ));
     $response = $state->finalResponse();
 

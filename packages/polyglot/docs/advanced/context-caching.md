@@ -157,7 +157,7 @@ reduced input token processing, which lowers both cost and latency.
 ## Inspecting Cache Usage
 
 If a provider reports cache usage, you can inspect it through `response()->usage()`. The
-`Usage` object exposes the following cache-related fields when available:
+`InferenceUsage` object exposes the following cache-related fields when available:
 
 | Field | Description |
 |---|---|

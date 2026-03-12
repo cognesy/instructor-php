@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\Events\PartialInferenceDeltaCreated;
 
 it('serializes streamed deltas without requiring accumulated response snapshots', function () {
@@ -11,7 +11,7 @@ it('serializes streamed deltas without requiring accumulated response snapshots'
         toolName: 'extract_data',
         toolArgs: '{"name":"Ann"}',
         finishReason: 'stop',
-        usage: new Usage(inputTokens: 10, outputTokens: 2),
+        usage: new InferenceUsage(inputTokens: 10, outputTokens: 2),
         value: ['name' => 'Ann'],
     );
 
@@ -32,7 +32,6 @@ it('serializes streamed deltas without requiring accumulated response snapshots'
             'cacheWrite' => 0,
             'cacheRead' => 0,
             'reasoning' => 0,
-            'pricing' => null,
         ],
         'hasValue' => true,
         'value' => ['name' => 'Ann'],

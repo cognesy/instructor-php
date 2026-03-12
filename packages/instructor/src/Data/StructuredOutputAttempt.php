@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Data;
 
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Utils\Profiler\TracksObjectCreation;
 use DateTimeImmutable;
 
@@ -16,14 +16,14 @@ readonly final class StructuredOutputAttempt
     public DateTimeImmutable $updatedAt;
 
     private ?InferenceResponse $inferenceResponse;
-    private ?Usage $usage;
+    private ?InferenceUsage $usage;
     private bool $isFinalized;
     private array $errors;
     private mixed $output;
 
     public function __construct(
         ?InferenceResponse $inferenceResponse = null,
-        ?Usage $usage = null,
+        ?InferenceUsage $usage = null,
         ?bool $isFinalized = false,
         ?array $errors = [],
         mixed $output = null,
@@ -48,7 +48,7 @@ readonly final class StructuredOutputAttempt
 
     public function with(
         ?InferenceResponse $inferenceResponse = null,
-        ?Usage $usage = null,
+        ?InferenceUsage $usage = null,
         ?bool $isFinalized = null,
         ?array $errors = null,
         mixed $output = null,
@@ -127,8 +127,8 @@ readonly final class StructuredOutputAttempt
         return count($this->errors) > 0;
     }
 
-    public function usage(): Usage {
-        return $this->usage ?? Usage::none();
+    public function usage(): InferenceUsage {
+        return $this->usage ?? InferenceUsage::none();
     }
 
     // SERIALIZATION /////////////////////////////////////////////////////
@@ -152,7 +152,7 @@ readonly final class StructuredOutputAttempt
                 ? InferenceResponse::fromArray($data['inferenceResponse'])
                 : null,
             usage: isset($data['usage']) && is_array($data['usage'])
-                ? Usage::fromArray($data['usage'])
+                ? InferenceUsage::fromArray($data['usage'])
                 : null,
             isFinalized: $data['isFinalized'] ?? false,
             errors: $data['errors'] ?? [],
@@ -165,7 +165,7 @@ readonly final class StructuredOutputAttempt
 
     private function copy(
         ?InferenceResponse $inferenceResponse,
-        ?Usage $usage,
+        ?InferenceUsage $usage,
         bool $isFinalized,
         array $errors,
         mixed $output,

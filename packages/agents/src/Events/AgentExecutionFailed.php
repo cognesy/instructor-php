@@ -3,7 +3,7 @@
 namespace Cognesy\Agents\Events;
 
 use Cognesy\Agents\Enums\ExecutionStatus;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use DateTimeImmutable;
 use Throwable;
 
@@ -22,7 +22,7 @@ final class AgentExecutionFailed extends AgentEvent
         public readonly Throwable       $exception,
         public readonly ExecutionStatus $status,
         public readonly int             $stepsCompleted,
-        public readonly Usage           $totalUsage,
+        public readonly InferenceUsage           $totalUsage,
         public readonly ?string         $errors,
     ) {
         $this->failedAt = new DateTimeImmutable();

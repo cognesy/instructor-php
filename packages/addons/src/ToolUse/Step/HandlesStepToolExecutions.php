@@ -7,7 +7,7 @@ use Cognesy\Addons\ToolUse\Enums\ToolUseStepType;
 use Cognesy\Addons\ToolUse\Exceptions\ToolExecutionException;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\ToolCalls;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Throwable;
 
 trait HandlesStepToolExecutions
@@ -30,7 +30,7 @@ trait HandlesStepToolExecutions
         return new self(
             inputMessages: $inputMessages,
             outputMessages: Messages::empty(),
-            usage: Usage::none(),
+            usage: InferenceUsage::none(),
             toolCalls: new ToolCalls(),
             toolExecutions: new ToolExecutions(),
             inferenceResponse: null,

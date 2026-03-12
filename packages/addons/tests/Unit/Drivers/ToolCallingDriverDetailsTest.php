@@ -12,7 +12,7 @@ use Cognesy\Messages\Messages;
 use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Messages\ToolCall;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Tests\Addons\Support\FakeInferenceDriver;
@@ -28,7 +28,7 @@ it('executes multiple tool calls and preserves follow-up order and usage', funct
             new ToolCall('_inc', ['x' => 1]),
             new ToolCall('_dbl', ['x' => 2])
         ),
-        usage: new Usage(3,4)
+        usage: new InferenceUsage(3,4)
     );
     $driver = new FakeInferenceDriver([$resp]);
 

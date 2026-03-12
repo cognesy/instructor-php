@@ -119,7 +119,7 @@ $response = $inference->withMessages(Messages::fromString('Hello'))->response();
 $response->content();          // string -- the text content
 $response->reasoningContent(); // string -- reasoning/thinking content (if supported)
 $response->toolCalls();        // ToolCalls -- tool call collection
-$response->usage();            // Usage -- token counts and optional cost
+$response->usage();            // InferenceUsage -- token counts
 $response->finishReason();     // InferenceFinishReason enum
 $response->responseData();     // HttpResponse -- raw provider response
 $response->isPartial();        // bool -- true for partial streaming responses
@@ -244,7 +244,7 @@ $response->vectors();       // Vector[] -- all embedding vectors
 $response->all();           // Vector[] -- alias for vectors()
 $response->first();         // ?Vector -- first vector
 $response->last();          // ?Vector -- last vector
-$response->usage();         // Usage -- token counts
+$response->usage();         // InferenceUsage -- token counts
 $response->toValuesArray(); // array -- raw float arrays
 
 // Split vectors at a given index

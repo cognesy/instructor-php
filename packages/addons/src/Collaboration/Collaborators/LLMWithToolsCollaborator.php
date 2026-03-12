@@ -16,7 +16,7 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Enums\MessageRole;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 
 /**
@@ -79,7 +79,7 @@ final readonly class LLMWithToolsCollaborator implements CanCollaborate
             collaboratorName: $this->name,
             inputMessages: $messages,
             outputMessages: $outputMessages,
-            usage: $toolStep?->usage() ?? Usage::none(),
+            usage: $toolStep?->usage() ?? InferenceUsage::none(),
             finishReason: $toolStep?->finishReason() ?? InferenceFinishReason::Other,
             metadata: [
                 'hasToolCalls' => $toolStep?->hasToolCalls() ? true : false,

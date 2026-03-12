@@ -5,7 +5,7 @@ namespace Cognesy\Agents\Capability\ExecutionHistory;
 use Cognesy\Agents\Data\ExecutionId;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Enums\ExecutionStatus;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use DateTimeImmutable;
 
 /**
@@ -18,7 +18,7 @@ final readonly class ExecutionSummary
         public int $executionNumber,
         public ExecutionStatus $status,
         public int $stepCount,
-        public Usage $usage,
+        public InferenceUsage $usage,
         public float $duration,
         public DateTimeImmutable $startedAt,
         public ?DateTimeImmutable $completedAt,

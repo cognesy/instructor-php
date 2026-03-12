@@ -20,7 +20,7 @@ use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use ReflectionProperty;
 
 final class EventAwareDriver implements CanUseTools, CanAcceptEventHandler
@@ -45,7 +45,7 @@ final class EventAwareDriver implements CanUseTools, CanAcceptEventHandler
             outputMessages: Messages::fromString('ok', 'assistant'),
             inferenceResponse: new InferenceResponse(
                 toolCalls: ToolCalls::empty(),
-                usage: new Usage(0, 0),
+                usage: new InferenceUsage(0, 0),
             ),
         ));
     }

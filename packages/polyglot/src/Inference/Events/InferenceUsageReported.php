@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Inference\Events;
 
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 /**
  * Dispatched when token usage information is available.
@@ -12,7 +12,7 @@ final class InferenceUsageReported extends InferenceEvent
 {
     public function __construct(
         public readonly string $executionId,
-        public readonly Usage $usage,
+        public readonly InferenceUsage $usage,
         public readonly ?string $model = null,
         public readonly bool $isFinal = true,
     ) {

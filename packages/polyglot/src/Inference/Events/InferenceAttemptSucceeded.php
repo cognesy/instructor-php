@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Inference\Events;
 
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use DateTimeImmutable;
 
@@ -19,7 +19,7 @@ final class InferenceAttemptSucceeded extends InferenceEvent
         public readonly string $attemptId,
         public readonly int $attemptNumber,
         public readonly InferenceFinishReason $finishReason,
-        public readonly Usage $usage,
+        public readonly InferenceUsage $usage,
         ?DateTimeImmutable $startedAt = null,
     ) {
         $this->succeededAt = new DateTimeImmutable();

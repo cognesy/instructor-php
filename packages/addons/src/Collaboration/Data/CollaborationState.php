@@ -18,7 +18,7 @@ use Cognesy\Addons\StepByStep\State\Traits\HandlesStateInfo;
 use Cognesy\Addons\StepByStep\State\Traits\HandlesUsage;
 use Cognesy\Addons\StepByStep\Step\StepResult;
 use Cognesy\Messages\MessageStore\MessageStore;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Utils\Metadata;
 
 /** @implements HasSteps<CollaborationStep> */
@@ -38,7 +38,7 @@ final readonly class CollaborationState implements HasSteps, HasMetadata, HasMes
         ?CollaborationStep  $currentStep = null,
 
         Metadata|array|null $variables = null,
-        ?Usage              $usage = null,
+        ?InferenceUsage              $usage = null,
         ?MessageStore       $store = null,
         ?StateInfo          $stateInfo = null,
         ?array              $stepResults = null,
@@ -53,7 +53,7 @@ final readonly class CollaborationState implements HasSteps, HasMetadata, HasMes
             is_array($variables) => new Metadata($variables),
             default => new Metadata(),
         };
-        $this->usage = $usage ?? new Usage();
+        $this->usage = $usage ?? new InferenceUsage();
         $this->store = $store ?? new MessageStore();
         $this->stepResults = $stepResults ?? [];
     }
@@ -64,7 +64,7 @@ final readonly class CollaborationState implements HasSteps, HasMetadata, HasMes
         ?CollaborationSteps $steps = null,
         ?CollaborationStep  $currentStep = null,
         ?Metadata           $variables = null,
-        ?Usage              $usage = null,
+        ?InferenceUsage              $usage = null,
         ?MessageStore       $store = null,
         ?StateInfo          $stateInfo = null,
         ?array              $stepResults = null,
@@ -161,7 +161,7 @@ final readonly class CollaborationState implements HasSteps, HasMetadata, HasMes
             steps: isset($data['steps']) ? new CollaborationSteps(...array_map(fn(array $s) => CollaborationStep::fromArray($s), $data['steps'])) : null,
             currentStep: isset($data['currentStep']) ? CollaborationStep::fromArray($data['currentStep']) : null,
             variables: isset($data['metadata']) ? new Metadata($data['metadata']) : null,
-            usage: isset($data['usage']) ? Usage::fromArray($data['usage']) : null,
+            usage: isset($data['usage']) ? InferenceUsage::fromArray($data['usage']) : null,
             store: isset($data['messageStore']) ? MessageStore::fromArray($data['messageStore']) : null,
             stateInfo: isset($data['stateInfo']) ? StateInfo::fromArray($data['stateInfo']) : null,
             stepResults: $stepResults,

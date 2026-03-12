@@ -3,15 +3,14 @@
 namespace Cognesy\Polyglot\Embeddings\Drivers\Cohere;
 
 use Cognesy\Polyglot\Embeddings\Contracts\CanMapUsage;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Embeddings\Data\EmbeddingsUsage;
 
 class CohereUsageFormat implements CanMapUsage
 {
     #[\Override]
-    public function fromData(array $data): Usage {
-        return new Usage(
+    public function fromData(array $data): EmbeddingsUsage {
+        return new EmbeddingsUsage(
             inputTokens: (int) ($data['meta']['billed_units']['input_tokens'] ?? 0),
-            outputTokens: (int) ($data['meta']['billed_units']['output_tokens'] ?? 0),
         );
     }
 }

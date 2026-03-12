@@ -95,7 +95,7 @@ $httpResponse = $response->responseData();
 | `content()` | `string` | The model's text output |
 | `reasoningContent()` | `string` | Chain-of-thought / thinking content (if supported) |
 | `toolCalls()` | `ToolCalls` | Collection of tool calls made by the model |
-| `usage()` | `Usage` | Token counts for the request |
+| `usage()` | `InferenceUsage` | Token counts for the request |
 | `finishReason()` | `InferenceFinishReason` | Why the model stopped generating |
 | `responseData()` | `HttpResponse` | The underlying raw HTTP response |
 | `hasContent()` | `bool` | Whether the response contains text content |
@@ -119,7 +119,7 @@ normalizes the many vendor-specific strings into a consistent set of values:
 
 ### Token Usage
 
-The `Usage` object provides detailed token breakdowns including cache and reasoning
+The `InferenceUsage` object provides detailed token breakdowns including cache and reasoning
 tokens:
 
 ```php
@@ -256,7 +256,7 @@ public properties:
 | `toolName` | `string` | Tool name (when streaming tool calls) |
 | `toolArgs` | `string` | Partial tool arguments JSON |
 | `finishReason` | `string` | Set on the final delta |
-| `usage` | `?Usage` | Token usage (typically on the final delta) |
+| `usage` | `?InferenceUsage` | Token usage (typically on the final delta) |
 | `usageIsCumulative` | `bool` | Whether usage counts are cumulative |
 
 ### Stream Methods

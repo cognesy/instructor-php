@@ -5,10 +5,10 @@ namespace Cognesy\Polyglot\Inference\Data;
 use InvalidArgumentException;
 
 /**
- * Pricing configuration for LLM token costs.
+ * Pricing configuration for LLM inference token costs.
  * All prices are in USD per 1,000,000 tokens (per 1M tokens).
  */
-final class Pricing
+final class InferencePricing
 {
     public readonly float $inputPerMToken;
     public readonly float $outputPerMToken;

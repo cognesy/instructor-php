@@ -2,8 +2,6 @@
 
 namespace Cognesy\Polyglot\Embeddings\Data;
 
-use Cognesy\Polyglot\Inference\Data\Usage;
-
 /**
  * EmbeddingsResponse represents the response from an embeddings request
  */
@@ -11,14 +9,14 @@ class EmbeddingsResponse
 {
     /** @var Vector[] */
     private array $vectors;
-    private Usage $usage;
+    private EmbeddingsUsage $usage;
 
     public function __construct(
         array $vectors = [],
-        ?Usage $usage = null
+        ?EmbeddingsUsage $usage = null
     ) {
         $this->vectors = $vectors;
-        $this->usage = $usage ?? new Usage();
+        $this->usage = $usage ?? new EmbeddingsUsage();
     }
 
     /**
@@ -73,10 +71,9 @@ class EmbeddingsResponse
     }
 
     /**
-     * Get the number of vectors
-     * @return Usage
+     * @return EmbeddingsUsage
      */
-    public function usage() : Usage {
+    public function usage() : EmbeddingsUsage {
         return $this->usage;
     }
 

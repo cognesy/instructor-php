@@ -12,7 +12,6 @@ use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Contracts\CanProvideInferenceDrivers;
 use Cognesy\Polyglot\Inference\Contracts\CanResolveLLMConfig;
-use Cognesy\Polyglot\Inference\Data\Pricing;
 use Cognesy\Polyglot\Inference\Contracts\HasExplicitInferenceDriver;
 use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
@@ -26,7 +25,6 @@ final class InferenceRuntime implements CanCreateInference
     public function __construct(
         private readonly CanProcessInferenceRequest $driver,
         private readonly CanHandleEvents $events,
-        private readonly ?Pricing $pricing = null,
     ) {}
 
     #[\Override]
@@ -35,7 +33,6 @@ final class InferenceRuntime implements CanCreateInference
             execution: InferenceExecution::fromRequest($request),
             driver: $this->driver,
             eventDispatcher: $this->events,
-            pricing: $this->pricing,
         );
     }
 
@@ -58,7 +55,6 @@ final class InferenceRuntime implements CanCreateInference
         return new self(
             driver: $driver,
             events: $events,
-            pricing: self::toOptionalPricing($config->getPricing()),
         );
     }
 
@@ -87,7 +83,6 @@ final class InferenceRuntime implements CanCreateInference
         return new self(
             driver: $driver,
             events: $events,
-            pricing: self::toOptionalPricing($config->getPricing()),
         );
     }
 
@@ -147,12 +142,6 @@ final class InferenceRuntime implements CanCreateInference
         };
     }
 
-    private static function toOptionalPricing(Pricing $pricing): ?Pricing {
-        return match (true) {
-            $pricing->hasAnyPricing() => $pricing,
-            default => null,
-        };
-    }
 
     private static function makeDriver(
         LLMConfig $config,

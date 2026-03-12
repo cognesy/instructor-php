@@ -11,7 +11,7 @@ use Cognesy\Agents\Events\AgentExecutionFailed;
 use Cognesy\Agents\Events\AgentExecutionStarted;
 use Cognesy\Agents\Events\InferenceRequestStarted;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\Events\PartialInferenceDeltaCreated;
 
 it('maps inference stream chunks onto the active agent execution', function () {
@@ -94,7 +94,7 @@ it('cleans up execution routing after completion', function () {
         parentAgentId: null,
         status: ExecutionStatus::Completed,
         totalSteps: 1,
-        totalUsage: Usage::none(),
+        totalUsage: InferenceUsage::none(),
         errors: null,
     ));
 
@@ -134,7 +134,7 @@ it('emits failed status when execution fails', function () {
         exception: new \RuntimeException('boom'),
         status: ExecutionStatus::Failed,
         stepsCompleted: 1,
-        totalUsage: Usage::none(),
+        totalUsage: InferenceUsage::none(),
         errors: null,
     ));
 

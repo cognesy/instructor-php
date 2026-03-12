@@ -9,12 +9,12 @@ use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 it('accumulates usage from step into state', function () {
     $state = new ToolUseState();
-    $state = $state->withAccumulatedUsage(new Usage(1,2));
-    $step = new ToolUseStep(usage: new Usage(3,4));
+    $state = $state->withAccumulatedUsage(new InferenceUsage(1,2));
+    $step = new ToolUseStep(usage: new InferenceUsage(3,4));
     $state = $state->withCurrentStep($step)->withAddedStep($step);
 
     $p = new AccumulateTokenUsage();

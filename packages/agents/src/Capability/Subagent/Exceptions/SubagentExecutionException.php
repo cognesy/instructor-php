@@ -5,7 +5,7 @@ namespace Cognesy\Agents\Capability\Subagent\Exceptions;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Agents\Exceptions\AgentException;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 final class SubagentExecutionException extends AgentException
 {
@@ -13,7 +13,7 @@ final class SubagentExecutionException extends AgentException
         public readonly string $subagentName,
         public readonly string $subagentId,
         public readonly ExecutionStatus $status,
-        public readonly ?Usage $usage,
+        public readonly ?InferenceUsage $usage,
         public readonly int $steps,
         string $errorMessage,
     ) {

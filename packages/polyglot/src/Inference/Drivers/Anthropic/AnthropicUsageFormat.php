@@ -3,13 +3,13 @@
 namespace Cognesy\Polyglot\Inference\Drivers\Anthropic;
 
 use Cognesy\Polyglot\Inference\Contracts\CanMapUsage;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 class AnthropicUsageFormat implements CanMapUsage
 {
     #[\Override]
-    public function fromData(array $data) : Usage {
-        return new Usage(
+    public function fromData(array $data) : InferenceUsage {
+        return new InferenceUsage(
             inputTokens: (int) ($data['usage']['input_tokens']
                 ?? $data['message']['usage']['input_tokens']
                 ?? 0),

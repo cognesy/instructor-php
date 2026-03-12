@@ -2,11 +2,11 @@
 
 namespace Cognesy\Addons\StepByStep\State\Contracts;
 
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 interface HasUsage
 {
-    public function usage(): Usage;
-    public function withUsage(Usage $usage): static;
-    public function withAccumulatedUsage(Usage $usage): static;
+    public function usage(): InferenceUsage;
+    public function withUsage(InferenceUsage $usage): static;
+    public function withAccumulatedUsage(InferenceUsage $usage): static;
 }

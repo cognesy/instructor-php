@@ -8,7 +8,7 @@ use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\Events\PartialInferenceDeltaCreated;
 use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;
 use Cognesy\Polyglot\Inference\Events\StreamFirstChunkReceived;
@@ -165,7 +165,7 @@ class InferenceStream
         return $this->lastDelta;
     }
 
-    public function usage(): Usage {
+    public function usage(): InferenceUsage {
         return $this->state->usage();
     }
 

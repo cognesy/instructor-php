@@ -79,9 +79,12 @@ $custom = $base->withOverrides(['model' => 'gpt-4.1', 'maxTokens' => 4096]);
 
 ### Pricing
 
-When pricing data is included in the config, it is automatically attached to `Usage` objects in responses, enabling cost calculations via `$usage->cost()`. Pricing values are specified in USD per 1 million tokens:
+When pricing data is included in the config, it can be used with a cost calculator to compute costs externally. Pricing values are specified in USD per 1 million tokens:
 
 ```php
+use Cognesy\Polyglot\Inference\Data\InferencePricing;
+use Cognesy\Polyglot\Pricing\FlatRateCostCalculator;
+
 $config = LLMConfig::fromArray([
     'driver' => 'openai',
     'apiUrl' => 'https://api.openai.com/v1',
@@ -96,6 +99,11 @@ $config = LLMConfig::fromArray([
         'reasoningPerMToken' => 0.0,
     ],
 ]);
+
+// Cost is calculated externally using a calculator
+$pricing = InferencePricing::fromArray($config->pricing);
+$calculator = new FlatRateCostCalculator();
+$cost = $calculator->calculate($usage, $pricing);
 ```
 
 ### Type Coercion

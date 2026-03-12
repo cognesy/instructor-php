@@ -74,18 +74,18 @@ final class JsonExtractor
     // ── Extraction strategies ────────────────────────────────────────
 
     /**
-     * Try json_decode and return array result, or null on failure/non-array.
+     * Try decoding JSON with repair heuristics but without accepting garbage.
+     *
+     * Uses JsonDecoder::tryStrictDecode() which handles common LLM issues like
+     * invalid escape sequences (\R, \T from class names) without creating a
+     * circular dependency (tryStrictDecode never calls back into JsonExtractor)
+     * and without using the lenient tokenizer (which would accept anything).
      *
      * @return array<array-key, mixed>|null
      */
     private static function tryDecode(string $json): ?array
     {
-        try {
-            $decoded = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
-        } catch (\JsonException) {
-            return null;
-        }
-
+        $decoded = JsonDecoder::tryStrictDecode($json);
         return is_array($decoded) ? $decoded : null;
     }
 

@@ -12,7 +12,7 @@ use Cognesy\Evals\Observation\MakeObservations;
 use Cognesy\Evals\Observers\Measure\DurationObserver;
 use Cognesy\Evals\Observers\Measure\TokenUsageObserver;
 use Cognesy\Evals\ValueObject\ExecutionId;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Utils\Data\DataMap;
 use DateTime;
 use Exception;
@@ -38,7 +38,7 @@ class Execution
     private ExecutionId $id;
     private ?DateTime $startedAt = null;
     private float $timeElapsed = 0.0;
-    private Usage $usage;
+    private InferenceUsage $usage;
     /** @var DataMap<string, mixed> */
     private DataMap $data;
 
@@ -55,7 +55,7 @@ class Execution
         $this->id = ExecutionId::generate();
         $this->data = new DataMap();
         $this->data->set('case', $case);
-        $this->usage = Usage::none();
+        $this->usage = InferenceUsage::none();
     }
 
     // PUBLIC /////////////////////////////////////////////////////////
@@ -78,7 +78,7 @@ class Execution
         }
         $this->timeElapsed = microtime(true) - $time;
         $this->data()->set('output.notes', $this->get('response')?->content());
-        $this->usage = $this->get('response')?->usage() ?? Usage::none();
+        $this->usage = $this->get('response')?->usage() ?? InferenceUsage::none();
         $this->observations = $this->makeObservations();
         $this->events->dispatch(new ExecutionProcessed($this->toArray()));
     }

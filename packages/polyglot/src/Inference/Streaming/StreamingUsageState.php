@@ -2,8 +2,7 @@
 
 namespace Cognesy\Polyglot\Inference\Streaming;
 
-use Cognesy\Polyglot\Inference\Data\Pricing;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 final class StreamingUsageState
 {
@@ -12,16 +11,14 @@ final class StreamingUsageState
     private int $cacheWriteTokens = 0;
     private int $cacheReadTokens = 0;
     private int $reasoningTokens = 0;
-    private ?Pricing $pricing = null;
     private bool $isCumulative = false;
 
-    public function apply(?Usage $usage, bool $isCumulative): void
+    public function apply(?InferenceUsage $usage, bool $isCumulative): void
     {
         if ($usage === null) {
             return;
         }
 
-        $this->pricing ??= $usage->pricing();
         $this->isCumulative = $this->isCumulative || $isCumulative;
 
         if ($usage->total() === 0) {
@@ -34,15 +31,14 @@ final class StreamingUsageState
         };
     }
 
-    public function toUsage(): Usage
+    public function toUsage(): InferenceUsage
     {
-        return new Usage(
+        return new InferenceUsage(
             inputTokens: $this->inputTokens,
             outputTokens: $this->outputTokens,
             cacheWriteTokens: $this->cacheWriteTokens,
             cacheReadTokens: $this->cacheReadTokens,
             reasoningTokens: $this->reasoningTokens,
-            pricing: $this->pricing,
         );
     }
 
@@ -71,17 +67,12 @@ final class StreamingUsageState
         return $this->reasoningTokens;
     }
 
-    public function pricing(): ?Pricing
-    {
-        return $this->pricing;
-    }
-
     public function isCumulative(): bool
     {
         return $this->isCumulative;
     }
 
-    private function applyCumulative(Usage $usage): void
+    private function applyCumulative(InferenceUsage $usage): void
     {
         $this->inputTokens = max($this->inputTokens, $usage->inputTokens);
         $this->outputTokens = max($this->outputTokens, $usage->outputTokens);
@@ -90,7 +81,7 @@ final class StreamingUsageState
         $this->reasoningTokens = max($this->reasoningTokens, $usage->reasoningTokens);
     }
 
-    private function applyIncremental(Usage $usage): void
+    private function applyIncremental(InferenceUsage $usage): void
     {
         $this->inputTokens += $usage->inputTokens;
         $this->outputTokens += $usage->outputTokens;

@@ -6,7 +6,7 @@ use Cognesy\Instructor\Data\StructuredOutputAttempt;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Enums\ExecutionStatus;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse as PgInferenceResponse;
-use Cognesy\Polyglot\Inference\Data\Usage as PgUsage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage as PgUsage;
 
 it('accumulates usage for synchronous finalized attempts only', function () {
     $attempt = new StructuredOutputAttempt(

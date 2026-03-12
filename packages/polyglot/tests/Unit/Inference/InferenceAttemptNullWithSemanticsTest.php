@@ -2,13 +2,13 @@
 
 use Cognesy\Polyglot\Inference\Data\InferenceAttempt;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 it('keeps existing nullable fields when with() receives null', function () {
-    $response = new InferenceResponse(content: 'ok', usage: new Usage(inputTokens: 2, outputTokens: 3));
+    $response = new InferenceResponse(content: 'ok', usage: new InferenceUsage(inputTokens: 2, outputTokens: 3));
     $attempt = new InferenceAttempt(
         response: $response,
-        usage: new Usage(inputTokens: 5, outputTokens: 7),
+        usage: new InferenceUsage(inputTokens: 5, outputTokens: 7),
         isFinalized: true,
         errors: ['boom'],
     );

@@ -15,7 +15,7 @@ use Cognesy\Agents\Events\ContinuationEvaluated;
 use Cognesy\Agents\Events\ToolCallCompleted;
 use Cognesy\Agents\Events\ToolCallStarted;
 use Cognesy\Agents\Hook\Hooks\StepsLimitHook;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\Events\StreamEventParsed;
 use Cognesy\Polyglot\Inference\Events\StreamEventReceived;
 use DateTimeImmutable;
@@ -51,7 +51,7 @@ it('emits agent step events', function () {
         hasToolCalls: false,
         errorCount: 0,
         errorMessages: '',
-        usage: new Usage(1, 2),
+        usage: new InferenceUsage(1, 2),
         finishReason: null,
         startedAt: new DateTimeImmutable(),
     ));

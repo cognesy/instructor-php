@@ -11,11 +11,11 @@ use Cognesy\Addons\Collaboration\Selectors\RoundRobin\RoundRobinSelector;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
 use Cognesy\Addons\StepByStep\StateProcessing\StateProcessors;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
-final class CountingUsage extends Usage
+final class CountingUsage extends InferenceUsage
 {
-    public function withAccumulated(Usage $usage): Usage {
+    public function withAccumulated(InferenceUsage $usage): InferenceUsage {
         return new self(
             inputTokens: $this->inputTokens + 1,
             outputTokens: $this->outputTokens,

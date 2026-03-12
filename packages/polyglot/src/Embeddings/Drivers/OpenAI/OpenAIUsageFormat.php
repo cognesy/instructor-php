@@ -3,18 +3,15 @@
 namespace Cognesy\Polyglot\Embeddings\Drivers\OpenAI;
 
 use Cognesy\Polyglot\Embeddings\Contracts\CanMapUsage;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Embeddings\Data\EmbeddingsUsage;
 
 class OpenAIUsageFormat implements CanMapUsage
 {
     #[\Override]
-    public function fromData(array $data): Usage {
+    public function fromData(array $data): EmbeddingsUsage {
          $input = (int)($data['usage']['prompt_tokens'] ?? 0);
-         $total = (int)($data['usage']['total_tokens'] ?? 0);
-         $output = max(0, $total - $input);
-         return new Usage(
+         return new EmbeddingsUsage(
             inputTokens: $input,
-            outputTokens: $output,
         );
    }
 }

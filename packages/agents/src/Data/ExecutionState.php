@@ -6,7 +6,7 @@ use Cognesy\Agents\Collections\StepExecutions;
 use Cognesy\Agents\Continuation\ExecutionContinuation;
 use Cognesy\Agents\Continuation\StopSignal;
 use Cognesy\Agents\Enums\ExecutionStatus;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Utils\Exceptions\ErrorList;
 use DateTimeImmutable;
 use Throwable;
@@ -151,7 +151,7 @@ final readonly class ExecutionState
         };
     }
 
-    public function usage(): Usage {
+    public function usage(): InferenceUsage {
         $usage = $this->stepExecutions->totalUsage();
         $currentStep = $this->ensureCurrentStep();
         return $usage->withAccumulated($currentStep->usage());

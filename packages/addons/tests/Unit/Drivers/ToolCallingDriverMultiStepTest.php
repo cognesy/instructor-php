@@ -12,7 +12,7 @@ use Cognesy\Messages\Messages;
 use Cognesy\Messages\ToolCall;
 use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Tests\Addons\Support\FakeInferenceDriver;
@@ -24,13 +24,13 @@ it('does not produce empty assistant messages after tool call step', function ()
     $toolCallResponse = new InferenceResponse(
         content: '',
         toolCalls: new ToolCalls(new ToolCall('_add', ['a' => 2, 'b' => 3])),
-        usage: new Usage(10, 20),
+        usage: new InferenceUsage(10, 20),
     );
 
     // Step 2: LLM returns a final text answer
     $finalResponse = new InferenceResponse(
         content: 'The result is 5.',
-        usage: new Usage(15, 10),
+        usage: new InferenceUsage(15, 10),
     );
 
     $driver = new FakeInferenceDriver([$toolCallResponse, $finalResponse]);

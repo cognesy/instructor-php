@@ -4,11 +4,11 @@ use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceAttempt;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 it('reports success for latest finalized attempt', function () {
     $exec = InferenceExecution::fromRequest(new InferenceRequest());
-    $exec = $exec->withSuccessfulAttempt(new InferenceResponse(usage: new Usage(inputTokens: 1, outputTokens: 1)));
+    $exec = $exec->withSuccessfulAttempt(new InferenceResponse(usage: new InferenceUsage(inputTokens: 1, outputTokens: 1)));
 
     expect($exec->isSuccessful())->toBeTrue()
         ->and($exec->isFailedFinal())->toBeFalse()
@@ -18,7 +18,7 @@ it('reports success for latest finalized attempt', function () {
 
 it('reports failure for latest finalized attempt', function () {
     $exec = InferenceExecution::fromRequest(new InferenceRequest());
-    $exec = $exec->withFailedAttempt(new InferenceResponse(usage: new Usage()), new Usage(), 'boom');
+    $exec = $exec->withFailedAttempt(new InferenceResponse(usage: new InferenceUsage()), new InferenceUsage(), 'boom');
 
     expect($exec->isSuccessful())->toBeFalse()
         ->and($exec->isFailedFinal())->toBeTrue()
@@ -30,7 +30,7 @@ it('aggregates current errors and exposes currentErrors()', function () {
     // Create an in-flight attempt with errors (not finalized)
     $attempt = new InferenceAttempt(
         response: null,
-        usage: Usage::none(),
+        usage: InferenceUsage::none(),
         isFinalized: false,
         errors: ['e1']
     );
@@ -50,7 +50,7 @@ it('aggregates current errors and exposes currentErrors()', function () {
 
 it('does not duplicate errors when current finalized attempt is already in attempts list', function () {
     $exec = InferenceExecution::fromRequest(new InferenceRequest());
-    $exec = $exec->withFailedAttempt(new InferenceResponse(usage: new Usage()), null, 'boom');
+    $exec = $exec->withFailedAttempt(new InferenceResponse(usage: new InferenceUsage()), null, 'boom');
 
     expect($exec->currentErrors())->toBe(['boom'])
         ->and($exec->errors())->toBe(['boom'])

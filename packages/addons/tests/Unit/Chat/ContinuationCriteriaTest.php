@@ -10,7 +10,7 @@ use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationEvaluation;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 final class CriterionCounter
 {
@@ -54,7 +54,7 @@ it('stops when steps limit reached', function () {
 
 it('stops when token usage exceeds limit', function () {
     $state = new ChatState();
-    $state = $state->withAccumulatedUsage(new Usage(inputTokens: 100, outputTokens: 50));
+    $state = $state->withAccumulatedUsage(new InferenceUsage(inputTokens: 100, outputTokens: 50));
     $crit = new TokenUsageLimit(120, fn(ChatState $s) => $s->usage()->total());
     // Over limit - forbid continuation
     expect($crit->evaluate($state)->decision)->toBe(ContinuationDecision::ForbidContinuation);

@@ -74,7 +74,7 @@ class InferenceExecution
         return $this->currentAttempt?->response()?->finishReason();
     }
 
-    public function usage(): Usage {
+    public function usage(): InferenceUsage {
         $attemptsUsage = $this->attempts->usage();
         $current = $this->currentAttempt;
         if ($current === null) {
@@ -226,13 +226,13 @@ class InferenceExecution
 
     public function withFailedAttempt(
         ?InferenceResponse $response = null,
-        ?Usage $usage = null,
+        ?InferenceUsage $usage = null,
         string|Throwable ...$errors,
     ): self {
         $attemptUsage = $usage
             ?? $response?->usage()
             ?? $this->currentAttempt?->usage()
-            ?? Usage::none();
+            ?? InferenceUsage::none();
         $newAttempt = $this->currentAttempt !== null && !$this->currentAttempt->isFinalized()
             ? $this->currentAttempt->with(
                 response: $response,

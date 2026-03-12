@@ -26,7 +26,7 @@ use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Messages\ToolCall;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\PendingInference;
 use Cognesy\Utils\Result\Result;
 
@@ -186,7 +186,7 @@ final class ReActDriver implements CanUseTools
     /** Builds a step for a final_answer decision (optionally finalizes via Inference). */
     private function buildFinalAnswerStep(
         ReActDecision $decision,
-        ?Usage $usage,
+        ?InferenceUsage $usage,
         ?InferenceResponse $inferenceResponse,
         Messages $messages,
     ): ToolUseStep {

@@ -6,7 +6,7 @@ use Cognesy\Addons\StepByStep\State\Contracts\HasSteps;
 use Cognesy\Addons\StepByStep\State\Contracts\HasUsage;
 use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 use Cognesy\Addons\StepByStep\Step\Contracts\HasStepUsage;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 /**
  * @implements CanProcessAnyState<HasSteps<object>&HasUsage>
@@ -27,7 +27,7 @@ final class AccumulateTokenUsage implements CanProcessAnyState
         $step = $newState->currentStep();
 
         assert($newState instanceof HasUsage);
-        $usage = Usage::none();
+        $usage = InferenceUsage::none();
         if ($step !== null && $step instanceof HasStepUsage) {
             $usage = $step->usage();
         }

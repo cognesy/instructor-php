@@ -9,7 +9,7 @@ use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Agents\Exceptions\AgentException;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 it('appends a user message to the default section', function () {
     $state = AgentState::empty();
@@ -25,7 +25,7 @@ it('appends a user message to the default section', function () {
 it('resets execution state for continuation', function () {
     $stepId = new AgentStepId('00000000-0000-4000-8000-000000000001');
     $step = new AgentStep(
-        inferenceResponse: new InferenceResponse(usage: new Usage(1, 2, 0, 0, 0)),
+        inferenceResponse: new InferenceResponse(usage: new InferenceUsage(1, 2, 0, 0, 0)),
         id: $stepId,
     );
     $state = AgentState::empty()

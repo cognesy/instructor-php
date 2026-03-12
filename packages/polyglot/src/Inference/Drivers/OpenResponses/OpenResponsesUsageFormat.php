@@ -3,7 +3,7 @@
 namespace Cognesy\Polyglot\Inference\Drivers\OpenResponses;
 
 use Cognesy\Polyglot\Inference\Contracts\CanMapUsage;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 /**
  * Extracts usage information from OpenResponses API responses.
@@ -17,7 +17,7 @@ use Cognesy\Polyglot\Inference\Data\Usage;
 class OpenResponsesUsageFormat implements CanMapUsage
 {
     #[\Override]
-    public function fromData(array $data): Usage {
+    public function fromData(array $data): InferenceUsage {
         $usage = $data['usage'] ?? ($data['response']['usage'] ?? []);
 
         // Handle both nested and flat usage structures
@@ -31,7 +31,7 @@ class OpenResponsesUsageFormat implements CanMapUsage
         $cacheReadTokens = $promptDetails['cached_tokens'] ?? 0;
         $reasoningTokens = $completionDetails['reasoning_tokens'] ?? 0;
 
-        return new Usage(
+        return new InferenceUsage(
             inputTokens: (int) $promptTokens,
             outputTokens: (int) $completionTokens,
             cacheWriteTokens: 0,

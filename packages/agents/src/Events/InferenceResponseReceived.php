@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Events;
 
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use DateTimeImmutable;
 
 /**
@@ -18,7 +18,7 @@ final class InferenceResponseReceived extends AgentEvent
         public readonly string $executionId,
         public readonly ?string $parentAgentId,
         public readonly int $stepNumber,
-        public readonly ?Usage $usage,
+        public readonly ?InferenceUsage $usage,
         public readonly ?string $finishReason,
         public readonly DateTimeImmutable $requestStartedAt,
         public readonly ?string $inferenceExecutionId = null,

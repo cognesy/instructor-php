@@ -19,7 +19,7 @@ use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Messages\ToolCalls;
 use Cognesy\Messages\ToolCall;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Utils\Result\Result;
 
 final class ToolUseCriterionCounter
@@ -79,7 +79,7 @@ it('steps limit boundary works', function () {
 
 it('token usage limit boundary works', function () {
     $state = new ToolUseState();
-    $state = $state->withAccumulatedUsage(new Usage(10, 0));
+    $state = $state->withAccumulatedUsage(new InferenceUsage(10, 0));
     $limit = new TokenUsageLimit(10, static fn(ToolUseState $state): int => $state->usage()->total());
     // At/over limit - forbid continuation
     expect($limit->evaluate($state)->decision)->toBe(ContinuationDecision::ForbidContinuation);

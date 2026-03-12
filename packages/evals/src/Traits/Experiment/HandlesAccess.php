@@ -6,7 +6,7 @@ use Cognesy\Evals\Execution;
 use Cognesy\Evals\Observation;
 use Cognesy\Evals\Observation\SelectObservations;
 use Cognesy\Evals\ValueObject\ExperimentId;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Utils\Data\DataMap;
 use DateTime;
 
@@ -24,8 +24,8 @@ trait HandlesAccess
         return $this->timeElapsed;
     }
 
-    public function usage() : Usage {
-        $usage = new Usage();
+    public function usage() : InferenceUsage {
+        $usage = new InferenceUsage();
         foreach ($this->executions as $execution) {
             $usage = $usage->withAccumulated($execution->usage());
         }

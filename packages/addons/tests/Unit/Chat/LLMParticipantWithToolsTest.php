@@ -16,7 +16,7 @@ use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Messages\ToolCall;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -47,13 +47,13 @@ it('executes tool calls and returns chat step with tool results', function () {
         new InferenceResponse(
             content: '',
             toolCalls: new ToolCalls(new ToolCall('test_add', ['a' => 5, 'b' => 3])),
-            usage: new Usage(10, 20),
+            usage: new InferenceUsage(10, 20),
             finishReason: 'tool_calls'
         ),
         new InferenceResponse(
             content: 'The result is 8.',
             toolCalls: new ToolCalls(),
-            usage: new Usage(5, 15),
+            usage: new InferenceUsage(5, 15),
             finishReason: 'stop'
         )
     ]);
@@ -98,13 +98,13 @@ it('handles multiple tool calls in sequence', function () {
                 new ToolCall('test_add', ['a' => 5, 'b' => 3]),
                 new ToolCall('test_multiply', ['a' => 2, 'b' => 4])
             ),
-            usage: new Usage(15, 25),
+            usage: new InferenceUsage(15, 25),
             finishReason: 'tool_calls'
         ),
         new InferenceResponse(
             content: 'First result is 8, second result is 8.',
             toolCalls: new ToolCalls(),
-            usage: new Usage(10, 20),
+            usage: new InferenceUsage(10, 20),
             finishReason: 'stop'
         )
     ]);
@@ -147,7 +147,7 @@ it('prepends system prompt when provided', function () {
             content: 'Hello! I am a helpful math assistant.',
             finishReason: 'stop',
             toolCalls: new ToolCalls(),
-            usage: new Usage(5, 10),
+            usage: new InferenceUsage(5, 10),
         )
     ]);
 
@@ -183,7 +183,7 @@ it('works without system prompt', function () {
         new InferenceResponse(
             content: 'Hello!',
             toolCalls: new ToolCalls(),
-            usage: new Usage(3, 7),
+            usage: new InferenceUsage(3, 7),
             finishReason: 'stop'
         )
     ]);
@@ -230,7 +230,7 @@ it('dispatches tool use events', function () {
         new InferenceResponse(
             content: 'Result is ready.',
             toolCalls: new ToolCalls(),
-            usage: new Usage(8, 12),
+            usage: new InferenceUsage(8, 12),
             finishReason: 'stop'
         )
     ]);

@@ -7,7 +7,7 @@ use Cognesy\Agents\Enums\AgentStepType;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Utils\Exceptions\ErrorList;
 use Throwable;
@@ -112,7 +112,7 @@ final readonly class AgentStep
         return $this->inferenceResponse;
     }
 
-    public function usage(): Usage {
+    public function usage(): InferenceUsage {
         return $this->inferenceResponse->usage();
     }
 
@@ -230,7 +230,7 @@ final readonly class AgentStep
         }
 
         if (isset($data['usage']) && $response->usage()->total() === 0) {
-            $response = $response->with(usage: Usage::fromArray($data['usage']));
+            $response = $response->with(usage: InferenceUsage::fromArray($data['usage']));
         }
 
         return $response;

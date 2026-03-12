@@ -358,7 +358,7 @@ final class SpawnSubagentTool extends ContextAwareTool
         string $subagentName,
         ExecutionStatus $status,
         int $steps,
-        ?\Cognesy\Polyglot\Inference\Data\Usage $usage,
+        ?\Cognesy\Polyglot\Inference\Data\InferenceUsage $usage,
         DateTimeImmutable $startedAt,
         ?string $parentExecutionId,
         ?int $parentStepNumber,

@@ -4,11 +4,11 @@ use Cognesy\Polyglot\Inference\Collections\InferenceAttemptList;
 use Cognesy\Polyglot\Inference\Data\InferenceAttempt;
 use Cognesy\Polyglot\Inference\Data\InferenceAttemptId;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 it('constructs list via of() and aggregates usage', function () {
-    $a1 = InferenceAttempt::fromResponse(new InferenceResponse(usage: new Usage(inputTokens: 1, outputTokens: 2)));
-    $a2 = InferenceAttempt::fromResponse(new InferenceResponse(usage: new Usage(inputTokens: 3, outputTokens: 4)));
+    $a1 = InferenceAttempt::fromResponse(new InferenceResponse(usage: new InferenceUsage(inputTokens: 1, outputTokens: 2)));
+    $a2 = InferenceAttempt::fromResponse(new InferenceResponse(usage: new InferenceUsage(inputTokens: 3, outputTokens: 4)));
 
     $list = InferenceAttemptList::of($a1, $a2);
 
@@ -21,8 +21,8 @@ it('constructs list via of() and aggregates usage', function () {
 });
 
 it('rehydrates from array and preserves usage', function () {
-    $a1 = InferenceAttempt::fromResponse(new InferenceResponse(usage: new Usage(inputTokens: 2, outputTokens: 1)));
-    $a2 = InferenceAttempt::fromResponse(new InferenceResponse(usage: new Usage(inputTokens: 5, outputTokens: 7)));
+    $a1 = InferenceAttempt::fromResponse(new InferenceResponse(usage: new InferenceUsage(inputTokens: 2, outputTokens: 1)));
+    $a2 = InferenceAttempt::fromResponse(new InferenceResponse(usage: new InferenceUsage(inputTokens: 5, outputTokens: 7)));
 
     $original = InferenceAttemptList::of($a1, $a2);
     $rehydrated = InferenceAttemptList::fromArray($original->toArray());

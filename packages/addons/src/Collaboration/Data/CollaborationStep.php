@@ -18,7 +18,7 @@ use Cognesy\Addons\StepByStep\Step\Traits\HandlesStepMetadata;
 use Cognesy\Addons\StepByStep\Step\Traits\HandlesStepUsage;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Utils\Metadata;
 use Throwable;
@@ -45,7 +45,7 @@ final readonly class CollaborationStep implements
         string                 $collaboratorName,
         ?Messages              $inputMessages = null,
         ?Messages              $outputMessages = null,
-        ?Usage                 $usage = null,
+        ?InferenceUsage                 $usage = null,
         ?InferenceResponse     $inferenceResponse = null,
         ?InferenceFinishReason $finishReason = null,
         Metadata|array|null    $metadata = null,
@@ -58,7 +58,7 @@ final readonly class CollaborationStep implements
         $this->collaboratorName = $collaboratorName;
         $this->inputMessages = $inputMessages;
         $this->outputMessages = $outputMessages;
-        $this->usage = $usage ?? new Usage();
+        $this->usage = $usage ?? new InferenceUsage();
         $this->inferenceResponse = $inferenceResponse;
         $this->finishReason = $finishReason;
         $this->metadata = $metadata instanceof Metadata ? $metadata : Metadata::fromArray($metadata ?? []);
@@ -92,7 +92,7 @@ final readonly class CollaborationStep implements
             collaboratorName: $stepData['collaboratorName'],
             inputMessages: isset($stepData['inputMessages']) ? Messages::fromArray($stepData['inputMessages']) : null,
             outputMessages: isset($stepData['outputMessages']) ? Messages::fromArray($stepData['outputMessages']) : null,
-            usage: isset($stepData['usage']) ? Usage::fromArray($stepData['usage']) : null,
+            usage: isset($stepData['usage']) ? InferenceUsage::fromArray($stepData['usage']) : null,
             inferenceResponse: isset($stepData['inferenceResponse']) ? InferenceResponse::fromArray($stepData['inferenceResponse']) : null,
             finishReason: InferenceFinishReason::tryFrom($stepData['finishReason'] ?? ''),
             metadata: $stepData['meta'] ?? [],

@@ -15,7 +15,7 @@ use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Utils\Exceptions\ErrorList;
 use Cognesy\Utils\Metadata;
 use DateTimeImmutable;
@@ -361,8 +361,8 @@ final readonly class AgentState
         return $this->lastStepExecution()?->step()->stepType();
     }
 
-    public function lastStepUsage(): Usage {
-        return $this->lastStepExecution()?->step()->usage() ?? Usage::none();
+    public function lastStepUsage(): InferenceUsage {
+        return $this->lastStepExecution()?->step()->usage() ?? InferenceUsage::none();
     }
 
     public function lastStepDuration(): ?float {
@@ -413,8 +413,8 @@ final readonly class AgentState
         return $this->execution?->currentStepDuration();
     }
 
-    public function usage(): Usage {
-        return $this->execution?->usage() ?? Usage::none();
+    public function usage(): InferenceUsage {
+        return $this->execution?->usage() ?? InferenceUsage::none();
     }
 
     public function hasErrors() : ?bool {

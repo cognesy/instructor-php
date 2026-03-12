@@ -4,7 +4,7 @@ namespace Cognesy\Polyglot\Inference\Events;
 
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Polyglot\Inference\Exceptions\ProviderException;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use DateTimeImmutable;
 use Throwable;
 
@@ -25,7 +25,7 @@ final class InferenceAttemptFailed extends InferenceEvent
         public readonly ?string $errorType = null,
         public readonly ?int $httpStatusCode = null,
         public readonly bool $willRetry = false,
-        public readonly ?Usage $partialUsage = null,
+        public readonly ?InferenceUsage $partialUsage = null,
         ?DateTimeImmutable $startedAt = null,
     ) {
         $this->failedAt = new DateTimeImmutable();
@@ -53,7 +53,7 @@ final class InferenceAttemptFailed extends InferenceEvent
         Throwable $error,
         bool $willRetry = false,
         ?int $httpStatusCode = null,
-        ?Usage $partialUsage = null,
+        ?InferenceUsage $partialUsage = null,
         ?DateTimeImmutable $startedAt = null,
     ): self {
         $resolvedHttpStatusCode = $httpStatusCode ?? self::extractStatusCode($error);

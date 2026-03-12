@@ -47,7 +47,7 @@ use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Messages\ToolCall;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Polyglot\Inference\PendingInference;
@@ -349,7 +349,7 @@ final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
 
     private function buildFinalAnswerStep(
         ReActDecision          $decision,
-        ?Usage                 $usage,
+        ?InferenceUsage                 $usage,
         ?InferenceResponse     $inferenceResponse,
         Messages               $messages,
         CachedInferenceContext $cachedContext,
@@ -407,7 +407,7 @@ final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         return $response->with(toolCalls: $toolCalls);
     }
 
-    private function withUsage(?InferenceResponse $response, ?Usage $usage): InferenceResponse {
+    private function withUsage(?InferenceResponse $response, ?InferenceUsage $usage): InferenceResponse {
         $resolved = $response ?? new InferenceResponse();
         if ($usage === null) {
             return $resolved;

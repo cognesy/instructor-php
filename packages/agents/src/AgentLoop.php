@@ -34,7 +34,7 @@ use Cognesy\Events\Contracts\CanAcceptEventHandler;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\ToolCall;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Throwable;
@@ -334,7 +334,7 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
     }
 
     private function emitStepCompleted(AgentState $state): void {
-        $usage = $state->currentStep()?->usage() ?? new Usage(0, 0);
+        $usage = $state->currentStep()?->usage() ?? new InferenceUsage(0, 0);
         $durationMs = ($state->currentStepDuration() ?? 0.0) * 1000;
 
         $this->events->dispatch(new AgentStepCompleted(

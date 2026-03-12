@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Events;
 
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use DateTimeImmutable;
 
@@ -23,7 +23,7 @@ final class AgentStepCompleted extends AgentEvent
         public readonly bool $hasToolCalls,
         public readonly int $errorCount,
         public readonly string $errorMessages,
-        public readonly Usage $usage,
+        public readonly InferenceUsage $usage,
         public readonly ?InferenceFinishReason $finishReason,
         DateTimeImmutable $startedAt,
         ?float $durationMs = null,

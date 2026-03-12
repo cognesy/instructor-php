@@ -135,7 +135,7 @@ $data = $pending->asToolCallJsonData();  // array
 $isStreamed = $pending->isStreamed();
 ```
 
-The underlying `InferenceExecutionSession` handles retry logic, event dispatching, pricing attachment, and response caching. Once execution completes, the response is cached for the lifetime of the `PendingInference` instance.
+The underlying `InferenceExecutionSession` handles retry logic, event dispatching, and response caching. Once execution completes, the response is cached for the lifetime of the `PendingInference` instance.
 
 > **Important:** Calling `stream()` on a non-streaming request will throw an `InvalidArgumentException`. Enable streaming via `withStreaming(true)` on the facade before calling `create()`.
 
@@ -152,7 +152,7 @@ The underlying `InferenceExecutionSession` handles retry logic, event dispatchin
 $response->content();           // string -- the generated text
 $response->reasoningContent();  // string -- chain-of-thought (if available)
 $response->toolCalls();         // ToolCalls collection
-$response->usage();             // Usage object with token counts
+$response->usage();             // InferenceUsage object with token counts
 $response->finishReason();      // InferenceFinishReason enum
 $response->responseData();      // HttpResponse -- the raw HTTP response
 $response->isPartial();         // bool -- true for intermediate streaming results
@@ -224,7 +224,7 @@ During streaming, the driver emits `PartialInferenceDelta` objects for each SSE 
 | `toolName` | `string` | Tool name (first delta of a tool call) |
 | `toolArgs` | `string` | Incremental tool call arguments |
 | `finishReason` | `string` | Set on the final delta |
-| `usage` | `?Usage` | Token usage (typically on the last delta) |
+| `usage` | `?InferenceUsage` | Token usage (typically on the last delta) |
 | `usageIsCumulative` | `bool` | Whether usage represents total (true) or incremental (false) |
 | `responseData` | `?HttpResponse` | Raw response data for this event |
 | `value` | `mixed` | Optional provider-specific value |
@@ -232,9 +232,11 @@ During streaming, the driver emits `PartialInferenceDelta` objects for each SSE 
 The `InferenceStream` accumulates these deltas internally using `InferenceStreamState` and assembles the final `InferenceResponse` when the stream completes. A `VisibilityTracker` ensures that only deltas with meaningful content changes are yielded to the caller.
 
 
-## Usage
+## InferenceUsage
 
-The `Usage` object tracks token consumption across several categories:
+The `InferenceUsage` object tracks token consumption across several categories:
+
+**Namespace:** `Cognesy\Polyglot\Inference\Data\InferenceUsage`
 
 ```php
 $usage = $response->usage();
@@ -257,24 +259,32 @@ $usage->toString(); // "Tokens: 150 (i:100 o:40 c:0 r:10)"
 
 ### Cost Calculation
 
-When pricing is available (from `LLMConfig` or attached manually), you can calculate costs. Pricing is specified in USD per 1 million tokens:
+Cost is calculated externally using a calculator rather than through methods on the usage object. Pricing is specified in USD per 1 million tokens:
 
 ```php
-$cost = $usage->cost();  // float -- total cost in USD
+use Cognesy\Polyglot\Inference\Data\InferencePricing;
+use Cognesy\Polyglot\Pricing\FlatRateCostCalculator;
 
-// Or with explicit pricing
-$cost = $usage->cost(new Pricing(
+$calculator = new FlatRateCostCalculator();
+$cost = $calculator->calculate($usage, new InferencePricing(
     inputPerMToken: 0.15,
     outputPerMToken: 0.60,
 ));
+
+// The Cost value object
+$cost->total;          // float -- total cost in USD
+$cost->breakdown;      // array -- per-category breakdown
+$cost->toString();     // string representation
+$cost->toArray();      // array representation
 ```
 
 ### Accumulation
 
-Usage can be accumulated across multiple requests:
+Usage and cost can be accumulated across multiple requests:
 
 ```php
 $total = $usage1->withAccumulated($usage2);
+$totalCost = $cost1->withAccumulated($cost2);
 ```
 
 
@@ -312,7 +322,7 @@ $response->vectors();       // Vector[] -- all embedding vectors
 $response->first();         // ?Vector -- first vector
 $response->last();          // ?Vector -- last vector
 $response->all();           // Vector[] -- alias for vectors()
-$response->usage();         // Usage
+$response->usage();         // InferenceUsage
 $response->toValuesArray(); // array of float arrays
 $response->split($index);   // [Vector[], Vector[]] -- split at index
 ```

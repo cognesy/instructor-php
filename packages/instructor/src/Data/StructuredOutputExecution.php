@@ -6,7 +6,7 @@ use Cognesy\Instructor\Collections\StructuredOutputAttemptList;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Enums\ExecutionStatus;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Utils\Profiler\TracksObjectCreation;
 use DateTimeImmutable;
@@ -150,7 +150,7 @@ final readonly class StructuredOutputExecution
         return $this->activeAttempt !== null;
     }
 
-    public function usage(): Usage
+    public function usage(): InferenceUsage
     {
         $usage = $this->attemptHistory->usage();
         return match (true) {

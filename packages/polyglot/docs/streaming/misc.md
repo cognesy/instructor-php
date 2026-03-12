@@ -112,7 +112,7 @@ This is particularly useful for inspecting the finish reason or final usage data
 
 ## Token Usage
 
-The `usage()` method returns the accumulated `Usage` object for the stream, containing input tokens, output tokens, and any cache or reasoning token counts reported by the provider:
+The `usage()` method returns the accumulated `InferenceUsage` object for the stream, containing input tokens, output tokens, and any cache or reasoning token counts reported by the provider:
 
 ```php
 $stream = Inference::using('openai')
@@ -157,5 +157,5 @@ echo "Model used: " . $execution->request()->model() . "\n";
 | `onDelta(callable)` | `self` | No (registers callback) | Registers a callback fired for each visible delta. |
 | `final()` | `?InferenceResponse` | Drains if needed | Returns the assembled final response. |
 | `lastDelta()` | `?PartialInferenceDelta` | No | Returns the most recently yielded delta. |
-| `usage()` | `Usage` | No | Returns accumulated token usage. |
+| `usage()` | `InferenceUsage` | No | Returns accumulated token usage. |
 | `execution()` | `InferenceExecution` | No | Returns the execution context and metadata. |

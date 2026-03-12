@@ -13,7 +13,7 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Enums\MessageRole;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 
 final class ScriptedParticipant implements CanParticipateInChat
@@ -53,7 +53,7 @@ final class ScriptedParticipant implements CanParticipateInChat
             participantName: $this->name,
             inputMessages: $compiledMessages,
             outputMessages: $outputMessages,
-            usage: Usage::none(),
+            usage: InferenceUsage::none(),
             inferenceResponse: null,
             finishReason: InferenceFinishReason::Other,
         );

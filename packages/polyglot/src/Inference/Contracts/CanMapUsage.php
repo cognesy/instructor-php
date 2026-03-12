@@ -2,9 +2,9 @@
 
 namespace Cognesy\Polyglot\Inference\Contracts;
 
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 interface CanMapUsage
 {
-    public function fromData(array $data): Usage;
+    public function fromData(array $data): InferenceUsage;
 }

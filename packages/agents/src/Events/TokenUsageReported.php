@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Events;
 
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use DateTimeImmutable;
 
 /**
@@ -18,7 +18,7 @@ final class TokenUsageReported extends AgentEvent
         public readonly string $executionId,
         public readonly ?string $parentAgentId,
         public readonly string $operation, // 'llm_call', 'tool_call', 'step'
-        public readonly Usage $usage,
+        public readonly InferenceUsage $usage,
         public readonly array $context = [], // Additional context (step number, tool name, etc.)
     ) {
         $this->reportedAt = new DateTimeImmutable();

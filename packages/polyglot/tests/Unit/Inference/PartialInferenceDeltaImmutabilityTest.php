@@ -1,7 +1,7 @@
 <?php
 
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\Streaming\InferenceStreamState;
 
 it('keeps delta payload immutable while carrying explicit value', function () {
@@ -12,8 +12,8 @@ it('keeps delta payload immutable while carrying explicit value', function () {
 });
 
 it('InferenceStreamState accumulates without mutating source delta objects', function () {
-    $delta1 = new PartialInferenceDelta(contentDelta: 'prev', usage: new Usage(outputTokens: 1));
-    $delta2 = new PartialInferenceDelta(contentDelta: 'next', usage: new Usage(outputTokens: 1));
+    $delta1 = new PartialInferenceDelta(contentDelta: 'prev', usage: new InferenceUsage(outputTokens: 1));
+    $delta2 = new PartialInferenceDelta(contentDelta: 'next', usage: new InferenceUsage(outputTokens: 1));
 
     $state = new InferenceStreamState();
     $state->applyDelta($delta1);

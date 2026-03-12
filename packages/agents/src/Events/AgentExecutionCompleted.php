@@ -3,7 +3,7 @@
 namespace Cognesy\Agents\Events;
 
 use Cognesy\Agents\Enums\ExecutionStatus;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use DateTimeImmutable;
 
 /**
@@ -20,7 +20,7 @@ final class AgentExecutionCompleted extends AgentEvent
         public readonly ?string         $parentAgentId,
         public readonly ExecutionStatus $status,
         public readonly int             $totalSteps,
-        public readonly Usage           $totalUsage,
+        public readonly InferenceUsage           $totalUsage,
         public readonly ?string         $errors,
     ) {
         $this->completedAt = new DateTimeImmutable();

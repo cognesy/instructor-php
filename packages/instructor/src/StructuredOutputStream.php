@@ -11,7 +11,7 @@ use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseUpdated;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted;
 use Cognesy\Instructor\Streaming\Sequence\SequenceTracker;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 use Generator;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -212,7 +212,7 @@ class StructuredOutputStream
     /**
      * Convenience: aggregated usage for the last response seen on the stream.
      */
-    public function usage() : Usage {
+    public function usage() : InferenceUsage {
         return $this->currentResponse()?->usage() ?? $this->execution->usage();
     }
 

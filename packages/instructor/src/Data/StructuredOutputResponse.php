@@ -5,7 +5,7 @@ namespace Cognesy\Instructor\Data;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 
 final readonly class StructuredOutputResponse
@@ -88,7 +88,7 @@ final readonly class StructuredOutputResponse
         return $this->toolArgsSnapshot;
     }
 
-    public function usage(): Usage
+    public function usage(): InferenceUsage
     {
         return $this->inferenceResponse->usage();
     }

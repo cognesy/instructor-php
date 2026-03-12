@@ -151,11 +151,11 @@ Usage extraction is handled by `CanMapUsage`:
 ```php
 interface CanMapUsage
 {
-    public function fromData(array $data): Usage;
+    public function fromData(array $data): InferenceUsage;
 }
 ```
 
-Different providers report token usage under different keys and with different granularity. Some include cache tokens or reasoning tokens, others do not. Each provider's usage formatter encapsulates these differences into the normalized `Usage` object.
+Different providers report token usage under different keys and with different granularity. Some include cache tokens or reasoning tokens, others do not. Each provider's usage formatter encapsulates these differences into the normalized `InferenceUsage` object.
 
 
 ## Embeddings Adapters

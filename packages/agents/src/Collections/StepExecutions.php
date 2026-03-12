@@ -4,7 +4,7 @@ namespace Cognesy\Agents\Collections;
 
 use Cognesy\Agents\Data\AgentStep;
 use Cognesy\Agents\Data\StepExecution;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Utils\Exceptions\ErrorList;
 
 final readonly class StepExecutions
@@ -60,8 +60,8 @@ final readonly class StepExecutions
         ));
     }
 
-    public function totalUsage(): Usage {
-        $usage = Usage::none();
+    public function totalUsage(): InferenceUsage {
+        $usage = InferenceUsage::none();
         foreach ($this->items as $stepExecution) {
             $usage = $usage->withAccumulated($stepExecution->usage());
         }

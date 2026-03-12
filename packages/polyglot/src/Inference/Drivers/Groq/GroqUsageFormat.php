@@ -3,13 +3,13 @@
 namespace Cognesy\Polyglot\Inference\Drivers\Groq;
 
 use Cognesy\Polyglot\Inference\Contracts\CanMapUsage;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 class GroqUsageFormat implements CanMapUsage
 {
     #[\Override]
-    public function fromData(array $data): Usage {
-        return new Usage(
+    public function fromData(array $data): InferenceUsage {
+        return new InferenceUsage(
             inputTokens: (int) ($data['x_groq']['usage']['prompt_tokens'] ?? $data['usage']['prompt_tokens'] ?? 0),
             outputTokens: (int) ($data['x_groq']['usage']['completion_tokens'] ?? $data['usage']['completion_tokens'] ?? 0),
             cacheWriteTokens: 0,

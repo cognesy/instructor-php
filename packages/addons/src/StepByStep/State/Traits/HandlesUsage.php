@@ -2,21 +2,21 @@
 
 namespace Cognesy\Addons\StepByStep\State\Traits;
 
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 trait HandlesUsage
 {
-    protected readonly Usage $usage;
+    protected readonly InferenceUsage $usage;
 
-    public function usage(): Usage {
+    public function usage(): InferenceUsage {
         return $this->usage;
     }
 
-    public function withUsage(Usage $usage): static {
+    public function withUsage(InferenceUsage $usage): static {
         return $this->with(usage: $usage);
     }
 
-    public function withAccumulatedUsage(Usage $usage): static {
+    public function withAccumulatedUsage(InferenceUsage $usage): static {
         return $this->withUsage($this->usage->withAccumulated($usage));
     }
 }

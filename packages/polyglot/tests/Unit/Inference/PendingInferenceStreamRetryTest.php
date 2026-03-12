@@ -8,7 +8,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\Events\InferenceAttemptFailed;
 use Cognesy\Polyglot\Inference\Events\InferenceAttemptStarted;
 use Cognesy\Polyglot\Inference\Events\InferenceAttemptSucceeded;
@@ -255,7 +255,7 @@ it('reports partial usage in failure event when stream throws after emitting chu
         onStream: function (): iterable {
             yield new PartialInferenceDelta(
                 contentDelta: 'partial',
-                usage: new Usage(inputTokens: 10, outputTokens: 5),
+                usage: new InferenceUsage(inputTokens: 10, outputTokens: 5),
                 usageIsCumulative: true,
             );
             throw new TimeoutException('connection lost mid-stream');

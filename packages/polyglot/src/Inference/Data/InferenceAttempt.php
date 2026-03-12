@@ -15,7 +15,7 @@ class InferenceAttempt
     public readonly DateTimeImmutable $updatedAt;
 
     private ?InferenceResponse $response;
-    private Usage $usage;
+    private InferenceUsage $usage;
 
     private array $errors;
     private ?bool $isFinalized = null;
@@ -24,7 +24,7 @@ class InferenceAttempt
 
     public function __construct(
         ?InferenceResponse $response = null,
-        ?Usage $usage = null,
+        ?InferenceUsage $usage = null,
         ?bool $isFinalized = null,
         ?array $errors = null,
         //
@@ -37,7 +37,7 @@ class InferenceAttempt
         $this->updatedAt = $updatedAt ?? $this->createdAt;
 
         $this->response = $response;
-        $this->usage = $usage ?? $response?->usage() ?? Usage::none();
+        $this->usage = $usage ?? $response?->usage() ?? InferenceUsage::none();
         $this->isFinalized = $isFinalized;
         $this->errors = $errors ?? [];
         $this->trackObjectCreation();
@@ -48,17 +48,17 @@ class InferenceAttempt
     }
 
     public static function started(): self {
-        return new self(usage: Usage::none(), isFinalized: false);
+        return new self(usage: InferenceUsage::none(), isFinalized: false);
     }
 
     public static function fromFailedResponse(
         ?InferenceResponse $response = null,
-        ?Usage $usage = null,
+        ?InferenceUsage $usage = null,
         array $errors = [],
     ) : self {
         return new self(
             response: $response,
-            usage: $usage ?? $response?->usage() ?? Usage::none(),
+            usage: $usage ?? $response?->usage() ?? InferenceUsage::none(),
             isFinalized: true,
             errors: $errors,
         );
@@ -96,7 +96,7 @@ class InferenceAttempt
         return $this->response->hasFinishedWithFailure();
     }
 
-    public function usage(): Usage {
+    public function usage(): InferenceUsage {
         return $this->usage;
     }
 
@@ -104,7 +104,7 @@ class InferenceAttempt
 
     public function with(
         ?InferenceResponse $response = null,
-        ?Usage $usage = null,
+        ?InferenceUsage $usage = null,
         ?bool $isFinalized = null,
         ?array $errors = null
     ): self {
@@ -148,7 +148,7 @@ class InferenceAttempt
                 ? InferenceResponse::fromArray($response)
                 : null,
             usage: isset($data['usage']) && is_array($data['usage'])
-                ? Usage::fromArray($data['usage'])
+                ? InferenceUsage::fromArray($data['usage'])
                 : null,
             isFinalized: $data['isFinalized'] ?? null,
             errors: $data['errors'] ?? [],

@@ -21,7 +21,7 @@ use Cognesy\Addons\ToolUse\Step\HasStepToolExecutions;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Throwable;
 
 /**
@@ -45,7 +45,7 @@ final readonly class ToolUseStep implements
     public function __construct(
         ?Messages $inputMessages = null,
         ?Messages $outputMessages = null,
-        ?Usage $usage = null,
+        ?InferenceUsage $usage = null,
         ?ToolCalls $toolCalls = null,
         ?ToolExecutions $toolExecutions = null,
         ?InferenceResponse $inferenceResponse = null,
@@ -58,7 +58,7 @@ final readonly class ToolUseStep implements
 
         $this->inputMessages = $inputMessages ?? Messages::empty();
         $this->outputMessages = $outputMessages ?? Messages::empty();
-        $this->usage = $usage ?? Usage::none();
+        $this->usage = $usage ?? InferenceUsage::none();
 
         $this->toolCalls = $toolCalls ?? new ToolCalls();
         $this->toolExecutions = $toolExecutions ?? new ToolExecutions();
@@ -100,7 +100,7 @@ final readonly class ToolUseStep implements
         return new self(
             inputMessages: isset($data['inputMessages']) ? Messages::fromArray($data['inputMessages']) : Messages::empty(),
             outputMessages: isset($data['outputMessages']) ? Messages::fromArray($data['outputMessages']) : Messages::empty(),
-            usage: isset($data['usage']) ? Usage::fromArray($data['usage']) : null,
+            usage: isset($data['usage']) ? InferenceUsage::fromArray($data['usage']) : null,
             toolCalls: isset($data['toolCalls']) ? ToolCalls::fromArray($data['toolCalls']) : null,
             toolExecutions: isset($data['toolExecutions']) ? ToolExecutions::fromArray($data['toolExecutions']) : null,
             inferenceResponse: isset($data['inferenceResponse']) ? InferenceResponse::fromArray($data['inferenceResponse']) : null,

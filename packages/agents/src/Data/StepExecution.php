@@ -3,7 +3,7 @@
 namespace Cognesy\Agents\Data;
 
 use Cognesy\Agents\Continuation\ExecutionContinuation;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use DateTimeImmutable;
 
 /**
@@ -82,7 +82,7 @@ final readonly class StepExecution
         return $end - $start;
     }
 
-    public function usage() : Usage {
+    public function usage() : InferenceUsage {
         return $this->step->usage();
     }
 

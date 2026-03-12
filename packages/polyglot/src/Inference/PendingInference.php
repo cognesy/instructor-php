@@ -6,7 +6,6 @@ use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Core\InferenceExecutionSession;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\Pricing;
 use Cognesy\Polyglot\Inference\Streaming\InferenceStream;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -31,13 +30,11 @@ class PendingInference
         InferenceExecution         $execution,
         CanProcessInferenceRequest $driver,
         EventDispatcherInterface   $eventDispatcher,
-        ?Pricing                   $pricing = null,
     ) {
         $this->session = new InferenceExecutionSession(
             execution: $execution,
             driver: $driver,
             events: $eventDispatcher,
-            pricing: $pricing,
         );
     }
 

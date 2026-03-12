@@ -59,10 +59,11 @@ The `InferenceExecutionSession` is the heart of the lifecycle. It performs these
 5. **Dispatches success events**:
    - `InferenceResponseCreated` -- the response is ready
    - `InferenceAttemptSucceeded` -- the attempt completed, including finish reason and usage
-   - `InferenceUsageReported` -- token usage is reported with the model name
+   - `InferenceUsageReported` -- token usage (`InferenceUsage`) is reported with the model name
    - `InferenceCompleted` -- the entire operation is done, including total attempt count and timing
-6. **Attaches pricing** -- if the `LLMConfig` includes pricing data, it is attached to the `Usage` object so that `$response->usage()->cost()` returns the estimated cost
-7. **Returns `InferenceResponse`** to the caller
+6. **Returns `InferenceResponse`** to the caller
+
+Cost calculation is performed externally using a `FlatRateCostCalculator` with `InferencePricing` data from the `LLMConfig`, rather than being attached to the usage object in the pipeline.
 
 ### 5. Retry Handling
 
@@ -145,7 +146,7 @@ $stream->onDelta(function (PartialInferenceDelta $delta): void {
 
 Calling `final()` on a stream that has not been fully consumed will drain the remaining deltas first, ensuring the final response is complete. A stream can only be consumed once -- calling `deltas()` a second time throws a `LogicException`.
 
-The final response assembled from the stream goes through the same pricing attachment and event dispatch as a synchronous response.
+The final response assembled from the stream goes through the same event dispatch as a synchronous response.
 
 
 ## Embeddings Lifecycle
@@ -167,7 +168,7 @@ $response = Embeddings::using('openai')
 
 $vectors = $response->vectors();   // Vector[]
 $first = $response->first();       // first Vector
-$usage = $response->usage();       // Usage
+$usage = $response->usage();       // InferenceUsage
 ```
 
 Retry logic is handled internally by `PendingEmbeddings` based on the `EmbeddingsRetryPolicy` attached to the request. The retry loop follows the same exponential backoff pattern as inference retries.

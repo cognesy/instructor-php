@@ -102,8 +102,24 @@ final class InstructorBench
     }
 
     // ========================================================================
-    // SYNC: Single object
+    // SYNC: Single object — scaling with JSON size
     // ========================================================================
+
+    /**
+     * @Revs(100)
+     * @Iterations(3)
+     * @OutputTimeUnit("milliseconds", precision=3)
+     * @Groups({"sync", "object"})
+     */
+    public function benchSyncObject128B(): void {
+        $json = $this->makeObjectJson(128);
+        $driver = $this->syncDriver($json);
+        $result = (new StructuredOutput)
+            ->withRuntime(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json))
+            ->with(messages: 'Extract profile.', responseModel: BenchProfile::class)
+            ->get();
+        assert($result->fullName !== '');
+    }
 
     /**
      * @Revs(50)
@@ -129,6 +145,38 @@ final class InstructorBench
      */
     public function benchSyncObject10KB(): void {
         $json = $this->makeObjectJson(10240);
+        $driver = $this->syncDriver($json);
+        $result = (new StructuredOutput)
+            ->withRuntime(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json))
+            ->with(messages: 'Extract profile.', responseModel: BenchProfile::class)
+            ->get();
+        assert($result->fullName !== '');
+    }
+
+    /**
+     * @Revs(5)
+     * @Iterations(3)
+     * @OutputTimeUnit("milliseconds", precision=3)
+     * @Groups({"sync", "object"})
+     */
+    public function benchSyncObject50KB(): void {
+        $json = $this->makeObjectJson(51200);
+        $driver = $this->syncDriver($json);
+        $result = (new StructuredOutput)
+            ->withRuntime(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json))
+            ->with(messages: 'Extract profile.', responseModel: BenchProfile::class)
+            ->get();
+        assert($result->fullName !== '');
+    }
+
+    /**
+     * @Revs(3)
+     * @Iterations(3)
+     * @OutputTimeUnit("milliseconds", precision=3)
+     * @Groups({"sync", "object"})
+     */
+    public function benchSyncObject100KB(): void {
+        $json = $this->makeObjectJson(102400);
         $driver = $this->syncDriver($json);
         $result = (new StructuredOutput)
             ->withRuntime(makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json))

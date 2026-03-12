@@ -6,7 +6,7 @@ use Cognesy\Instructor\Data\StructuredOutputResponse;
 use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\Streaming\StreamingUsageState;
 
 final class StructuredOutputStreamState
@@ -132,7 +132,7 @@ final class StructuredOutputStreamState
         return $this->snapshotRevision;
     }
 
-    public function usage(): Usage
+    public function usage(): InferenceUsage
     {
         return $this->usage->toUsage();
     }

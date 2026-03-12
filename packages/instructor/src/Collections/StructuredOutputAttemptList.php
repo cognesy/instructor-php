@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Collections;
 
 use Cognesy\Instructor\Data\StructuredOutputAttempt;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Utils\Collection\ArrayList;
 use Traversable;
 
@@ -78,8 +78,8 @@ final readonly class StructuredOutputAttemptList implements \Countable, \Iterato
         return new self(ArrayList::fromArray($responses));
     }
 
-    public function usage(): Usage {
-        $total = Usage::none();
+    public function usage(): InferenceUsage {
+        $total = InferenceUsage::none();
         foreach ($this->attempts->all() as $attempt) {
             if ($attempt->isFinalized()) {
                 $total = $total->withAccumulated($attempt->usage());

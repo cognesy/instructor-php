@@ -95,7 +95,7 @@ it('preserves the last-good parsed value when only usage changes', function () {
 
     $responses = [
         new PartialInferenceDelta(contentDelta: '{"name":"Ann","age":30}'),
-        new PartialInferenceDelta(usage: \Cognesy\Polyglot\Inference\Data\Usage::fromArray([
+        new PartialInferenceDelta(usage: \Cognesy\Polyglot\Inference\Data\InferenceUsage::fromArray([
             'inputTokens' => 1,
             'outputTokens' => 2,
             'cacheWriteTokens' => 0,

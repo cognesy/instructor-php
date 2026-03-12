@@ -21,7 +21,7 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMProvider;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Exceptions\ErrorList;
 
@@ -32,7 +32,7 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptToolRuntime, CanAcc
     /** @var list<ScenarioStep> */
     private array $steps;
     private string $defaultResponse;
-    private Usage $defaultUsage;
+    private InferenceUsage $defaultUsage;
     private AgentStepType $defaultStepType;
     /** @var list<ScenarioStep>|null */
     private ?array $childSteps;
@@ -47,7 +47,7 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptToolRuntime, CanAcc
     public function __construct(
         array $steps = [],
         string $defaultResponse = 'ok',
-        ?Usage $defaultUsage = null,
+        ?InferenceUsage $defaultUsage = null,
         ?AgentStepType $defaultStepType = null,
         ?array $childSteps = null,
         ?CanCompileMessages $messageCompiler = null,
@@ -56,7 +56,7 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptToolRuntime, CanAcc
     ) {
         $this->steps = $steps;
         $this->defaultResponse = $defaultResponse;
-        $this->defaultUsage = $defaultUsage ?? new Usage(0, 0);
+        $this->defaultUsage = $defaultUsage ?? new InferenceUsage(0, 0);
         $this->defaultStepType = $defaultStepType ?? AgentStepType::FinalResponse;
         $this->childSteps = $childSteps;
         $this->messageCompiler = $messageCompiler ?? SelectedSections::default();

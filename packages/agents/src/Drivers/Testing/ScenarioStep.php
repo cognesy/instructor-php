@@ -8,42 +8,42 @@ use Cognesy\Agents\Enums\AgentStepType;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Utils\Exceptions\ErrorList;
 
 final readonly class ScenarioStep
 {
     public function __construct(
         public string        $response,
-        public Usage         $usage,
+        public InferenceUsage         $usage,
         public AgentStepType $stepType,
         public ?ToolCalls    $toolCalls = null,
         public bool          $executeTools = true,
     ) {}
 
-    public static function final(string $response, ?Usage $usage = null): self
+    public static function final(string $response, ?InferenceUsage $usage = null): self
     {
         return new self(
             response: $response,
-            usage: $usage ?? new Usage(0, 0),
+            usage: $usage ?? new InferenceUsage(0, 0),
             stepType: AgentStepType::FinalResponse,
         );
     }
 
-    public static function tool(string $response, ?Usage $usage = null): self
+    public static function tool(string $response, ?InferenceUsage $usage = null): self
     {
         return new self(
             response: $response,
-            usage: $usage ?? new Usage(0, 0),
+            usage: $usage ?? new InferenceUsage(0, 0),
             stepType: AgentStepType::ToolExecution,
         );
     }
 
-    public static function error(string $response, ?Usage $usage = null): self
+    public static function error(string $response, ?InferenceUsage $usage = null): self
     {
         return new self(
             response: $response,
-            usage: $usage ?? new Usage(0, 0),
+            usage: $usage ?? new InferenceUsage(0, 0),
             stepType: AgentStepType::Error,
         );
     }
@@ -52,14 +52,14 @@ final readonly class ScenarioStep
         string $toolName,
         array  $args = [],
         string $response = '',
-        ?Usage $usage = null,
+        ?InferenceUsage $usage = null,
         bool   $executeTools = true,
     ): self
     {
         $toolCalls = ToolCalls::empty()->withAddedToolCall($toolName, $args);
         return new self(
             response: $response,
-            usage: $usage ?? new Usage(0, 0),
+            usage: $usage ?? new InferenceUsage(0, 0),
             stepType: AgentStepType::ToolExecution,
             toolCalls: $toolCalls,
             executeTools: $executeTools,

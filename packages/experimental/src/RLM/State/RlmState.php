@@ -15,7 +15,7 @@ use Cognesy\Experimental\RLM\Data\Handles\ResultHandle;
 use Cognesy\Experimental\RLM\Data\Policy;
 use Cognesy\Experimental\RLM\Steps\RlmStep;
 use Cognesy\Messages\MessageStore\MessageStore;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 /** @implements HasSteps<RlmStep> */
 final readonly class RlmState implements HasSteps, HasMessageStore, HasUsage, HasStateInfo
@@ -33,7 +33,7 @@ final readonly class RlmState implements HasSteps, HasMessageStore, HasUsage, Ha
         private Policy $policy,
         ?GenericSteps $steps = null,
         ?RlmStep $currentStep = null,
-        ?Usage $usage = null,
+        ?InferenceUsage $usage = null,
         ?MessageStore $store = null,
         ?StateInfo $stateInfo = null,
         bool $terminal = false,
@@ -41,7 +41,7 @@ final readonly class RlmState implements HasSteps, HasMessageStore, HasUsage, Ha
     ) {
         $this->steps = $steps ?? new GenericSteps();
         $this->currentStep = $currentStep;
-        $this->usage = $usage ?? new Usage();
+        $this->usage = $usage ?? new InferenceUsage();
         $this->store = $store ?? new MessageStore();
         $this->stateInfo = $stateInfo ?? StateInfo::new();
         $this->terminal = $terminal;
@@ -56,7 +56,7 @@ final readonly class RlmState implements HasSteps, HasMessageStore, HasUsage, Ha
         ?Policy $policy = null,
         ?GenericSteps $steps = null,
         ?RlmStep $currentStep = null,
-        ?Usage $usage = null,
+        ?InferenceUsage $usage = null,
         ?MessageStore $store = null,
         ?StateInfo $stateInfo = null,
         ?bool $terminal = null,

@@ -45,8 +45,8 @@ it('reuses the finalized stream when inferenceResponse() is read after streaming
     $driver = new FakeInferenceDriver(
         responses: [],
         streamBatches: [[
-            new PartialInferenceDelta(contentDelta: '{"name":"Lia"', usage: new \Cognesy\Polyglot\Inference\Data\Usage(outputTokens: 1)),
-            new PartialInferenceDelta(contentDelta: ',"age":29}', finishReason: 'stop', usage: new \Cognesy\Polyglot\Inference\Data\Usage(outputTokens: 1)),
+            new PartialInferenceDelta(contentDelta: '{"name":"Lia"', usage: new \Cognesy\Polyglot\Inference\Data\InferenceUsage(outputTokens: 1)),
+            new PartialInferenceDelta(contentDelta: ',"age":29}', finishReason: 'stop', usage: new \Cognesy\Polyglot\Inference\Data\InferenceUsage(outputTokens: 1)),
         ]],
     );
 

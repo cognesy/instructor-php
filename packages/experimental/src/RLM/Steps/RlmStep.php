@@ -10,7 +10,7 @@ use Cognesy\Addons\StepByStep\Step\Traits\HandlesStepInfo;
 use Cognesy\Addons\StepByStep\Step\Traits\HandlesStepMessages;
 use Cognesy\Addons\StepByStep\Step\Traits\HandlesStepUsage;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 final readonly class RlmStep implements HasStepInfo, HasStepMessages, HasStepUsage
 {
@@ -25,17 +25,17 @@ final readonly class RlmStep implements HasStepInfo, HasStepMessages, HasStepUsa
         ?StepInfo $stepInfo = null,
         ?Messages $inputMessages = null,
         ?Messages $outputMessages = null,
-        ?Usage $usage = null,
+        ?InferenceUsage $usage = null,
         array $action = [],
     ) {
         $this->stepInfo = $stepInfo ?? StepInfo::new();
         $this->inputMessages = $inputMessages ?? Messages::empty();
         $this->outputMessages = $outputMessages ?? Messages::empty();
-        $this->usage = $usage ?? new Usage();
+        $this->usage = $usage ?? new InferenceUsage();
         $this->action = $action;
     }
 
-    public static function from(Messages $input, Messages $output, Usage $usage, array $action = []): self
+    public static function from(Messages $input, Messages $output, InferenceUsage $usage, array $action = []): self
     {
         return new self(
             stepInfo: StepInfo::new(),

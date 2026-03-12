@@ -3,13 +3,13 @@
 namespace Cognesy\Polyglot\Inference\Drivers\GeminiOAI;
 
 use Cognesy\Polyglot\Inference\Contracts\CanMapUsage;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 class GeminiOAIUsageFormat implements CanMapUsage
 {
     #[\Override]
-    public function fromData(array $data): Usage {
-        return new Usage(
+    public function fromData(array $data): InferenceUsage {
+        return new InferenceUsage(
             inputTokens: (int) ($data['usage']['prompt_tokens'] ?? 0),
             outputTokens: (int) ($data['usage']['completion_tokens'] ?? 0),
             cacheWriteTokens: 0,

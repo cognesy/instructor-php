@@ -18,7 +18,7 @@ use Cognesy\Addons\StepByStep\State\Traits\HandlesStateInfo;
 use Cognesy\Addons\StepByStep\State\Traits\HandlesUsage;
 use Cognesy\Addons\StepByStep\Step\StepResult;
 use Cognesy\Messages\MessageStore\MessageStore;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Utils\Metadata;
 
 /** @implements HasSteps<ChatStep> */
@@ -37,7 +37,7 @@ final readonly class ChatState implements HasSteps, HasMetadata, HasMessageStore
         ?ChatSteps          $steps = null,
         ?ChatStep           $currentStep = null,
         Metadata|array|null $variables = null,
-        ?Usage              $usage = null,
+        ?InferenceUsage              $usage = null,
         ?MessageStore       $store = null,
         ?StateInfo          $stateInfo = null,
         ?array              $stepResults = null,
@@ -52,7 +52,7 @@ final readonly class ChatState implements HasSteps, HasMetadata, HasMessageStore
             is_array($variables) => new Metadata($variables),
             default => new Metadata(),
         };
-        $this->usage = $usage ?? new Usage();
+        $this->usage = $usage ?? new InferenceUsage();
         $this->store = $store ?? new MessageStore();
         $this->stepResults = $stepResults ?? [];
     }
@@ -63,7 +63,7 @@ final readonly class ChatState implements HasSteps, HasMetadata, HasMessageStore
         ?ChatSteps    $steps = null,
         ?ChatStep     $currentStep = null,
         ?Metadata     $variables = null,
-        ?Usage        $usage = null,
+        ?InferenceUsage        $usage = null,
         ?MessageStore $store = null,
         ?StateInfo    $stateInfo = null,
         ?array        $stepResults = null,
@@ -160,7 +160,7 @@ final readonly class ChatState implements HasSteps, HasMetadata, HasMessageStore
             steps: isset($data['steps']) ? new ChatSteps(...array_map(static fn(array $s) => ChatStep::fromArray($s), $data['steps'])) : null,
             currentStep: isset($data['currentStep']) ? ChatStep::fromArray($data['currentStep']) : null,
             variables: isset($data['metadata']) ? new Metadata($data['metadata']) : null,
-            usage: isset($data['usage']) ? Usage::fromArray($data['usage']) : null,
+            usage: isset($data['usage']) ? InferenceUsage::fromArray($data['usage']) : null,
             store: isset($data['messageStore']) ? MessageStore::fromArray($data['messageStore']) : null,
             stateInfo: isset($data['stateInfo']) ? StateInfo::fromArray($data['stateInfo']) : null,
             stepResults: $stepResults,

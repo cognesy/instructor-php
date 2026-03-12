@@ -4,16 +4,16 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\Streaming\InferenceStream;
 use Cognesy\Polyglot\Tests\Support\FakeInferenceDriver;
 
 it('suppresses invisible usage-only chunks while still accumulating final usage', function () {
     $driver = new FakeInferenceDriver(
         streamBatches: [[
-            new PartialInferenceDelta(contentDelta: 'Hi', usage: new Usage(outputTokens: 1)),
-            new PartialInferenceDelta(usage: new Usage(outputTokens: 1)),
-            new PartialInferenceDelta(finishReason: 'stop', usage: new Usage(outputTokens: 1)),
+            new PartialInferenceDelta(contentDelta: 'Hi', usage: new InferenceUsage(outputTokens: 1)),
+            new PartialInferenceDelta(usage: new InferenceUsage(outputTokens: 1)),
+            new PartialInferenceDelta(finishReason: 'stop', usage: new InferenceUsage(outputTokens: 1)),
         ]],
     );
 

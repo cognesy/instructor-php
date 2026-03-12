@@ -5,7 +5,7 @@ namespace Cognesy\Polyglot\Inference\Config;
 use Cognesy\Config\BasePath;
 use Cognesy\Config\Config;
 use Cognesy\Config\Dsn;
-use Cognesy\Polyglot\Inference\Data\Pricing;
+use Cognesy\Polyglot\Inference\Data\InferencePricing;
 use InvalidArgumentException;
 use Throwable;
 
@@ -97,8 +97,8 @@ final class LLMConfig
         ];
     }
 
-    public function getPricing(): Pricing {
-        return Pricing::fromArray($this->pricing);
+    public function getPricing(): InferencePricing {
+        return InferencePricing::fromArray($this->pricing);
     }
 
     private function assertNoRetryPolicyInOptions(array $options) : void {

@@ -2,7 +2,7 @@
 
 use Cognesy\Instructor\Streaming\StructuredOutputStreamState;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 it('accumulates json content, reasoning, finish reason, usage, and parsed value in place', function () {
     $state = StructuredOutputStreamState::empty();
@@ -10,7 +10,7 @@ it('accumulates json content, reasoning, finish reason, usage, and parsed value 
     $state->applyDelta(new PartialInferenceDelta(
         contentDelta: '{"name"',
         reasoningContentDelta: 'thinking',
-        usage: new Usage(outputTokens: 1),
+        usage: new InferenceUsage(outputTokens: 1),
     ));
     $state->setValue(['name' => '']);
 
@@ -19,7 +19,7 @@ it('accumulates json content, reasoning, finish reason, usage, and parsed value 
     $state->applyDelta(new PartialInferenceDelta(
         contentDelta: ':"Ann"}',
         finishReason: 'stop',
-        usage: new Usage(outputTokens: 2),
+        usage: new InferenceUsage(outputTokens: 2),
     ));
     $state->setValue(['name' => 'Ann']);
 

@@ -35,7 +35,7 @@ Each runtime can be constructed from a config object, a provider, or injected di
 Requests and responses are normalized into package data objects that are provider-agnostic:
 
 - **`InferenceRequest`** -- messages, model, tools, tool choice, response format, options, cached context, retry policy, response cache policy
-- **`InferenceResponse`** -- content, reasoning content, tool calls, usage (with pricing), finish reason, raw HTTP response data
+- **`InferenceResponse`** -- content, reasoning content, tool calls, usage, finish reason, raw HTTP response data
 - **`PartialInferenceDelta`** -- a single streaming event delta with content, reasoning content, tool call fragments, finish reason, and usage
 - **`EmbeddingsRequest`** -- input texts, model, options, retry policy
 - **`EmbeddingsResponse`** -- vectors and usage

@@ -4,16 +4,16 @@ use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceExecutionId;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 it('computes usage from finalized attempts only (no double count)', function () {
     $exec = InferenceExecution::fromRequest(new InferenceRequest());
 
     // First finalized response with usage (2 in, 3 out)
-    $exec = $exec->withSuccessfulAttempt(new InferenceResponse(usage: new Usage(inputTokens: 2, outputTokens: 3)));
+    $exec = $exec->withSuccessfulAttempt(new InferenceResponse(usage: new InferenceUsage(inputTokens: 2, outputTokens: 3)));
 
     // Second finalized response with usage (5 in, 7 out)
-    $exec = $exec->withSuccessfulAttempt(new InferenceResponse(usage: new Usage(inputTokens: 5, outputTokens: 7)));
+    $exec = $exec->withSuccessfulAttempt(new InferenceResponse(usage: new InferenceUsage(inputTokens: 5, outputTokens: 7)));
 
     $usage = $exec->usage();
 
@@ -27,11 +27,11 @@ it('includes current attempt usage until finalized', function () {
     $exec = InferenceExecution::fromRequest(new InferenceRequest());
 
     // One finalized response
-    $exec = $exec->withSuccessfulAttempt(new InferenceResponse(usage: new Usage(inputTokens: 1, outputTokens: 1)));
+    $exec = $exec->withSuccessfulAttempt(new InferenceResponse(usage: new InferenceUsage(inputTokens: 1, outputTokens: 1)));
 
     $currentAttempt = new \Cognesy\Polyglot\Inference\Data\InferenceAttempt(
         response: null,
-        usage: new Usage(inputTokens: 3, outputTokens: 5),
+        usage: new InferenceUsage(inputTokens: 3, outputTokens: 5),
         isFinalized: false,
         errors: [],
     );

@@ -3,7 +3,7 @@
 namespace Cognesy\Agents\Events;
 
 use Cognesy\Agents\Enums\ExecutionStatus;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use DateTimeImmutable;
 
 /**
@@ -20,7 +20,7 @@ final class SubagentCompleted extends AgentEvent
         public readonly string            $subagentName,
         public readonly ExecutionStatus   $status,
         public readonly int               $steps,
-        public readonly ?Usage            $usage,
+        public readonly ?InferenceUsage            $usage,
         public readonly DateTimeImmutable $startedAt,
         public readonly ?string           $parentExecutionId = null,
         public readonly ?int              $parentStepNumber = null,

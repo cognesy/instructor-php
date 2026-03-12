@@ -3,7 +3,7 @@
 namespace Cognesy\Polyglot\Inference\Collections;
 
 use Cognesy\Polyglot\Inference\Data\InferenceAttempt;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Utils\Collection\ArrayList;
 use InvalidArgumentException;
 
@@ -52,13 +52,13 @@ class InferenceAttemptList
         return $this->attempts->last();
     }
 
-    public function usage(): Usage {
+    public function usage(): InferenceUsage {
         return array_reduce(
             $this->attempts->all(),
-            fn (Usage $carry, InferenceAttempt $attempt) => $attempt->isFinalized()
+            fn (InferenceUsage $carry, InferenceAttempt $attempt) => $attempt->isFinalized()
                 ? $carry->withAccumulated($attempt->usage())
                 : $carry,
-            Usage::none()
+            InferenceUsage::none()
         );
     }
 

@@ -1,0 +1,81 @@
+---
+title: 'Cost calculation (Polyglot)'
+docname: 'cost_calculation_inference'
+id: 'b5c1'
+---
+## Overview
+
+Calculate the cost of an LLM inference call using `FlatRateCostCalculator`.
+Pricing is decoupled from usage — you define rates with `InferencePricing`,
+get token counts from the response's `InferenceUsage`, and the calculator
+produces a `Cost` value object with total and per-category breakdown.
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\Data\InferencePricing;
+use Cognesy\Polyglot\Inference\Pricing\FlatRateCostCalculator;
+
+// 1. Run an inference call
+$prompt = 'Explain the observer pattern in one sentence.';
+$response = Inference::using('openai')
+    ->withMessages(Messages::fromString($prompt))
+    ->withOptions(['max_tokens' => 100])
+    ->response();
+
+$usage = $response->usage();
+
+echo "Prompt: {$prompt}\n";
+echo "Response: {$response->content()}\n\n";
+echo "Tokens — input: {$usage->inputTokens}, output: {$usage->outputTokens}\n\n";
+
+// 2. Define pricing rates ($/1M tokens) and calculate cost
+$calculator = new FlatRateCostCalculator();
+
+$pricing = InferencePricing::fromArray([
+    'input'  => 0.2,  // gpt-4.1-nano input
+    'output' => 0.8,  // gpt-4.1-nano output
+]);
+
+$cost = $calculator->calculate($usage, $pricing);
+
+echo "Cost breakdown:\n";
+foreach ($cost->breakdown as $category => $amount) {
+    if ($amount > 0) {
+        printf("  %-12s \$%.6f\n", $category, $amount);
+    }
+}
+echo "  Total:       {$cost->toString()}\n\n";
+
+// 3. Compare across models using the same usage
+$models = [
+    'GPT-4.1-nano'      => ['input' => 0.2,  'output' => 0.8],
+    'GPT-4.1-mini'      => ['input' => 0.4,  'output' => 1.6],
+    'GPT-4.1'           => ['input' => 2.0,  'output' => 8.0],
+    'Claude 4 Haiku'    => ['input' => 0.8,  'output' => 4.0],
+    'Claude 4 Sonnet'   => ['input' => 3.0,  'output' => 15.0],
+    'Gemini 2.5 Flash'  => ['input' => 0.15, 'output' => 0.60],
+];
+
+echo "Cost comparison ({$usage->inputTokens} in + {$usage->outputTokens} out tokens):\n";
+foreach ($models as $model => $rates) {
+    $modelCost = $calculator->calculate($usage, InferencePricing::fromArray($rates));
+    printf("  %-20s %s\n", $model, $modelCost->toString());
+}
+
+// 4. Accumulate costs across multiple calls
+$cost2 = $calculator->calculate($usage, InferencePricing::fromArray(['input' => 3.0, 'output' => 15.0]));
+$totalCost = $cost->withAccumulated($cost2);
+echo "\nAccumulated (nano + sonnet pricing): {$totalCost->toString()}\n";
+
+assert($usage->inputTokens > 0);
+assert($usage->outputTokens > 0);
+assert($cost->total > 0);
+assert($totalCost->total > $cost->total);
+?>
+```

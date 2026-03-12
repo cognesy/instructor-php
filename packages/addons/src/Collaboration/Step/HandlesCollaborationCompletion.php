@@ -5,7 +5,7 @@ namespace Cognesy\Addons\Collaboration\Step;
 use Cognesy\Addons\Collaboration\Exceptions\CollaborationException;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Throwable;
 
@@ -39,7 +39,7 @@ trait HandlesCollaborationCompletion
             collaboratorName: $collaboratorName,
             inputMessages: $inputMessages,
             outputMessages: $outputMessages,
-            usage: Usage::none(),
+            usage: InferenceUsage::none(),
             inferenceResponse: null,
             finishReason: InferenceFinishReason::Other,
             metadata: ($metadata ?? []) + ['errorType' => get_class($baseError)],

@@ -72,7 +72,7 @@ Each retry attempt dispatches its own events:
 | `InferenceAttemptStarted` | Beginning of an attempt | execution ID, attempt ID, attempt number, model |
 | `InferenceAttemptSucceeded` | Attempt completed successfully | execution ID, attempt ID, attemptNumber, finish reason, usage, durationMs |
 | `InferenceAttemptFailed` | Attempt failed | execution ID, attempt ID, attemptNumber, errorMessage, errorType, willRetry, HTTP status code, partial usage, durationMs |
-| `InferenceUsageReported` | After a successful attempt | execution ID, usage, model, isFinal |
+| `InferenceUsageReported` | After a successful attempt | execution ID, InferenceUsage, model, isFinal |
 
 When retries are configured, you may see multiple `InferenceAttemptStarted`/`InferenceAttemptFailed` pairs before a final `InferenceAttemptSucceeded` event. The `attemptNumber` field tracks which attempt is running.
 

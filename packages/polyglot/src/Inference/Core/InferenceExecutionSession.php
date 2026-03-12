@@ -11,8 +11,7 @@ use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\Pricing;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 use Cognesy\Polyglot\Inference\Events\InferenceAttemptFailed;
@@ -45,7 +44,6 @@ final class InferenceExecutionSession
         private InferenceExecution $execution,
         private readonly CanProcessInferenceRequest $driver,
         private readonly EventDispatcherInterface $events,
-        private ?Pricing $pricing = null,
     ) {}
 
     public function isStreamed(): bool
@@ -74,7 +72,7 @@ final class InferenceExecutionSession
             execution: $this->execution,
             driver: $this->driver,
             eventDispatcher: $this->events,
-            decorateFinalResponse: $this->attachPricing(...),
+            decorateFinalResponse: null,
         );
 
         return $this->cachedStream;
@@ -88,13 +86,7 @@ final class InferenceExecutionSession
 
         $existingResponse = $this->execution->response();
         if ($existingResponse !== null) {
-            $response = $this->attachPricing($existingResponse);
-            $this->execution = match (true) {
-                $response === $existingResponse => $this->execution,
-                default => $this->execution->withUpdatedResponse($response),
-            };
-
-            return $response;
+            return $existingResponse;
         }
 
         if ($this->shouldCache() && $this->cachedResponse !== null) {
@@ -178,8 +170,6 @@ final class InferenceExecutionSession
             throw $e;
         }
 
-        $response = $this->attachPricing($response);
-
         if ($response->hasFinishedWithFailure()) {
             $this->execution = $this->execution->withFailedAttempt(
                 response: $response,
@@ -258,10 +248,8 @@ final class InferenceExecutionSession
     private function makeResponse(InferenceRequest $request): InferenceResponse
     {
         return match ($this->isStreamed()) {
-            false => $this->attachPricing($this->driver->makeResponseFor($request)),
-            true => $this->attachPricing(
-                $this->stream()->final() ?? throw new \RuntimeException('Failed to generate final response from stream')
-            ),
+            false => $this->driver->makeResponseFor($request),
+            true => $this->stream()->final() ?? throw new \RuntimeException('Failed to generate final response from stream'),
         };
     }
 
@@ -273,20 +261,6 @@ final class InferenceExecutionSession
         if ($currentAttempt === null || $currentAttempt->isFinalized()) {
             $this->dispatchAttemptStarted();
         }
-    }
-
-    private function attachPricing(InferenceResponse $response): InferenceResponse
-    {
-        if ($this->pricing === null || ! $this->pricing->hasAnyPricing()) {
-            return $response;
-        }
-
-        $usagePricing = $response->usage()->pricing();
-        if ($usagePricing !== null && $usagePricing->hasAnyPricing()) {
-            return $response;
-        }
-
-        return $response->withPricing($this->pricing);
     }
 
     private function dispatchInferenceStarted(): void
@@ -360,9 +334,9 @@ final class InferenceExecutionSession
         ));
     }
 
-    private function livePartialUsage(): Usage
+    private function livePartialUsage(): InferenceUsage
     {
-        return $this->cachedStream?->usage() ?? Usage::none();
+        return $this->cachedStream?->usage() ?? InferenceUsage::none();
     }
 
     private function buildLengthRecoveryRequest(

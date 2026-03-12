@@ -3,7 +3,7 @@
 namespace Cognesy\Polyglot\Inference\Events;
 
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use DateTimeImmutable;
 
@@ -20,7 +20,7 @@ final class InferenceCompleted extends InferenceEvent
         public readonly string $executionId,
         public readonly bool $isSuccess,
         public readonly InferenceFinishReason $finishReason,
-        public readonly Usage $usage,
+        public readonly InferenceUsage $usage,
         public readonly int $attemptCount,
         DateTimeImmutable $startedAt,
         public readonly ?InferenceResponse $response = null,
