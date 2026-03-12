@@ -83,7 +83,6 @@
             <directory suffix="Test.php">./packages/logging/tests/Integration</directory>
             <directory suffix="Test.php">./packages/messages/tests/Integration</directory>
             <directory suffix="Test.php">./packages/metrics/tests/Integration</directory>
-            <directory suffix="Test.php">./packages/pipeline/tests/Integration</directory>
             <directory suffix="Test.php">./packages/polyglot/tests/Integration</directory>
             <directory suffix="Test.php">./packages/schema/tests/Integration</directory>
             <directory suffix="Test.php">./packages/setup/tests/Integration</directory>

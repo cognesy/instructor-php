@@ -31,7 +31,7 @@ final class SearchQuery {
         // dispatch to the appropriate search backend
     }
 }
-// @doctest id="f66d"
+// @doctest id="9a19"
 ```
 
 ## Segmenting Into Multiple Queries
@@ -44,7 +44,7 @@ final class Search {
     /** @var SearchQuery[] */
     public array $queries = [];
 }
-// @doctest id="a74a"
+// @doctest id="e9cd"
 ```
 
 ## Putting It Together
@@ -68,7 +68,7 @@ $results = segment('Find a picture of a cat and a video of a dog');
 foreach ($results->queries as $query) {
     $query->execute();
 }
-// @doctest id="0ed1"
+// @doctest id="6dd1"
 ```
 
 ## Design Tips

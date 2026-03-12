@@ -30,14 +30,14 @@ $inference = Inference::fromProvider($provider);
 
 // From an already-built runtime
 $inference = Inference::fromRuntime($runtime);
-// @doctest id="0ded"
+// @doctest id="797d"
 ```
 
 You can also pass a custom driver registry to `using()` or `fromConfig()` if you have registered custom drivers:
 
 ```php
 $inference = Inference::using('my-provider', drivers: $customRegistry);
-// @doctest id="1554"
+// @doctest id="8aea"
 ```
 
 ### Building a Request
@@ -52,7 +52,7 @@ $base = Inference::using('openai')
 // Branch into two different requests from the same base
 $response1 = $base->withMessages(Messages::fromString('Explain PHP traits.'))->get();
 $response2 = $base->withMessages(Messages::fromString('Explain PHP enums.'))->get();
-// @doctest id="f553"
+// @doctest id="ed90"
 ```
 
 Available request methods:
@@ -99,7 +99,7 @@ $json = $inference->withMessages(Messages::fromString('Call a tool'))->asToolCal
 
 // Stream the response
 $stream = $inference->withMessages(Messages::fromString('Hello'))->stream();
-// @doctest id="962c"
+// @doctest id="ec41"
 ```
 
 For lower-level control, `create()` returns a `PendingInference` without triggering execution:
@@ -111,7 +111,7 @@ $pending = $inference->withMessages(Messages::fromString('Hello'))->create();
 $text = $pending->get();
 $response = $pending->response();
 $stream = $pending->stream();
-// @doctest id="114d"
+// @doctest id="2d26"
 ```
 
 ### Working with Responses
@@ -138,7 +138,7 @@ $response->hasFinishReason();
 // JSON extraction
 $response->findJsonData();         // Json object from content
 $response->findToolCallJsonData(); // Json object from tool call args
-// @doctest id="8f90"
+// @doctest id="49fd"
 ```
 
 ### Working with Streams
@@ -171,7 +171,7 @@ $toolOnly = $stream->filter(fn($d) => $d->toolName !== '');
 
 // Collect all deltas at once
 $allDeltas = $stream->all();
-// @doctest id="7b6a"
+// @doctest id="0a24"
 ```
 
 
@@ -197,7 +197,7 @@ $embeddings = Embeddings::fromProvider($provider);
 
 // From a runtime
 $embeddings = Embeddings::fromRuntime($runtime);
-// @doctest id="ce33"
+// @doctest id="f3b1"
 ```
 
 ### Building a Request
@@ -207,7 +207,7 @@ $embeddings = Embeddings::using('openai')
     ->withInputs('The quick brown fox')
     ->withModel('text-embedding-3-small')
     ->withOptions(['dimensions' => 256]);
-// @doctest id="7dd1"
+// @doctest id="5678"
 ```
 
 Available request methods:
@@ -233,7 +233,7 @@ $vectors = $embeddings->withInputs(['text one', 'text two'])->vectors();
 
 // Get the first vector
 $vector = $embeddings->withInputs('Hello world')->first();
-// @doctest id="c755"
+// @doctest id="3035"
 ```
 
 For lower-level control, `create()` returns a `PendingEmbeddings`:
@@ -241,7 +241,7 @@ For lower-level control, `create()` returns a `PendingEmbeddings`:
 ```php
 $pending = $embeddings->withInputs('Hello world')->create();
 $response = $pending->get();
-// @doctest id="f7f1"
+// @doctest id="681d"
 ```
 
 ### Working with Responses
@@ -260,7 +260,7 @@ $response->toValuesArray(); // array -- raw float arrays
 
 // Split vectors at a given index
 [$before, $after] = $response->split(1);
-// @doctest id="6c9a"
+// @doctest id="45d1"
 ```
 
 
@@ -277,7 +277,7 @@ $registry = BundledInferenceDrivers::registry()
     ->withDriver('my-provider', MyCustomDriver::class);
 
 $inference = Inference::using('my-provider', drivers: $registry);
-// @doctest id="5cd1"
+// @doctest id="a82a"
 ```
 
 ### Embeddings Drivers
@@ -292,7 +292,7 @@ $registry = BundledEmbeddingsDrivers::registry()
 
 $runtime = EmbeddingsRuntime::fromConfig($config, drivers: $registry);
 $embeddings = Embeddings::fromRuntime($runtime);
-// @doctest id="6bed"
+// @doctest id="59a3"
 ```
 
 See the [Providers](/internals/providers) page for details on driver registration and factory patterns.

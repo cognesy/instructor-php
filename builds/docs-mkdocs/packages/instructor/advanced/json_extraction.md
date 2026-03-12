@@ -18,7 +18,7 @@ LLM response:
 {"name": "John", "age": 30}
 
 Result: Parsed successfully
-// @doctest id="18b5"
+// @doctest id="a2d6"
 ```
 
 ### 2. Markdown Code Block Extraction
@@ -28,20 +28,20 @@ Extracts JSON from fenced code blocks. Some providers (particularly Claude) tend
 ```text
 LLM response:
 Here's the data you requested:
-// @doctest id="d318"
+// @doctest id="797c"
 ```json
 {"name": "John", "age": 30}
 ```
 
 Result: Content extracted from between
-// @doctest id="036d"
+// @doctest id="8f0e"
 ```json and ``` markers
 ```
 
 ### 3. Bracket Matching
 
 Finds the first `{` and last `}` in the response to extract JSON from surrounding text.
-// @doctest id="561c"
+// @doctest id="5496"
 ```text
 LLM response:
 The user data is {"name": "John", "age": 30} as extracted from the text.
@@ -52,7 +52,7 @@ Result: JSON extracted from first { to last }
 ### 4. Smart Brace Matching
 
 Handles complex cases with nested braces and escaped quotes inside string values.
-// @doctest id="24ea"
+// @doctest id="4c35"
 ```text
 LLM response:
 Here is {"user": {"name": "John \"The Great\"", "age": 30}} extracted.
@@ -79,7 +79,7 @@ The built-in extractor chain includes these extractors, tried in order:
 | `DirectJsonExtractor` | Parse content directly as JSON |
 | `ResilientJsonExtractor` | Handle malformed JSON (trailing commas, unbalanced braces) |
 | `MarkdownBlockExtractor` | Extract from `
-// @doctest id="b038"
+// @doctest id="4deb"
 ```json ``` ` blocks |
 | `BracketMatchingExtractor` | Find first `{` to last `}` |
 | `SmartBraceExtractor` | Handle nested braces and escaped quotes in strings |
@@ -123,7 +123,7 @@ class XmlCdataExtractor implements CanExtractResponse
         return 'xml_cdata';
     }
 }
-// @doctest id="adee"
+// @doctest id="43db"
 ```
 
 ### Using Custom Extractors
@@ -144,7 +144,7 @@ $runtime = StructuredOutputRuntime::fromDefaults()
 $result = (new StructuredOutput($runtime))
     ->with(messages: 'Extract user data', responseModel: User::class)
     ->get();
-// @doctest id="b89c"
+// @doctest id="2ddf"
 ```
 
 The extractors are tried in the order you provide them. When an extractor throws an `ExtractionException`, the next extractor in the chain is attempted. If all extractors fail, Instructor returns an empty result, triggers a validation error, and initiates the retry mechanism (if configured).

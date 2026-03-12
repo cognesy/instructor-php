@@ -30,7 +30,7 @@ $runtime = InferenceRuntime::fromConfig(new LLMConfig(
 $text = Inference::fromRuntime($runtime)
     ->withMessages(Messages::fromString('Say hello.'))
     ->get();
-// @doctest id="4f96"
+// @doctest id="fe32"
 ```
 
 This prints every event class name as it fires, giving you an immediate view of the request flow without modifying your application code.
@@ -71,7 +71,7 @@ $runtime->onEvent(
 $text = Inference::fromRuntime($runtime)
     ->withMessages(Messages::fromString('What is the capital of France?'))
     ->get();
-// @doctest id="ff98"
+// @doctest id="1376"
 ```
 
 ### Available Events
@@ -137,7 +137,7 @@ $runtime->onEvent(
 $text = Inference::fromRuntime($runtime)
     ->withMessages(Messages::fromString('What is artificial intelligence?'))
     ->get();
-// @doctest id="6e6f"
+// @doctest id="768c"
 ```
 
 ## HTTP-Level Inspection
@@ -167,7 +167,7 @@ $runtime = InferenceRuntime::fromConfig(
 $text = Inference::fromRuntime($runtime)
     ->withMessages(Messages::fromString('Test message'))
     ->get();
-// @doctest id="f78a"
+// @doctest id="cda1"
 ```
 
 You can add custom middleware to the HTTP client using `withMiddleware()` to log, transform, or inspect requests and responses at the transport layer. This is especially helpful when working behind proxies, or when provider error messages are only visible in the raw HTTP body.

@@ -17,7 +17,7 @@ $registry->register('reviewer.analyze', Analyze::class);
 
 $prompt = $registry->get('reviewer.analyze');
 echo $prompt->render(content: $doc);
-// @doctest id="baa3"
+// @doctest id="6563"
 ```
 
 ## Variants
@@ -31,7 +31,7 @@ $registry->register('reviewer.analyze', AnalyzeConcise::class);
 
 $registry->variants('reviewer.analyze');
 // ['Analyze' => Analyze::class, 'AnalyzeCoT' => AnalyzeCoT::class, ...]
-// @doctest id="be09"
+// @doctest id="139d"
 ```
 
 ## Overrides
@@ -45,7 +45,7 @@ $registry = new PromptRegistry(
 
 $prompt = $registry->get('reviewer.analyze');
 // Returns AnalyzeCoT instance
-// @doctest id="d8a0"
+// @doctest id="ab36"
 ```
 
 Overrides are resolved by short class name or fully-qualified class name. This makes it easy to drive prompt selection from configuration files without changing calling code.
@@ -67,7 +67,7 @@ class AnalyzeCoT extends Analyze
     public string $model = 'opus';
     public string $templateFile = 'analyze_cot.twig';
 }
-// @doctest id="7bc1"
+// @doctest id="9799"
 ```
 
 The calling code doesn't change. It asks the registry for `'reviewer.analyze'` and gets whichever variant is configured.
@@ -84,7 +84,7 @@ class Analyze extends Prompt
 {
     // ...
 }
-// @doctest id="678a"
+// @doctest id="26dd"
 ```
 
 Then register via `registerClass()`:
@@ -92,7 +92,7 @@ Then register via `registerClass()`:
 ```php
 $registry->registerClass(Analyze::class);
 // Registered under 'reviewer.analyze'
-// @doctest id="047f"
+// @doctest id="87b5"
 ```
 
 ## Auto-Discovery
@@ -103,7 +103,7 @@ $registry->registerClass(Analyze::class);
 use Cognesy\Xprompt\Discovery\PromptDiscovery;
 
 PromptDiscovery::register($registry, namespaces: ['App\\Prompts']);
-// @doctest id="4eff"
+// @doctest id="375d"
 ```
 
 Name resolution priority:
@@ -125,7 +125,7 @@ $registry->names(includeBlocks: true);
 foreach ($registry->all() as $name => $class) {
     echo "{$name}: {$class}\n";
 }
-// @doctest id="198e"
+// @doctest id="69d8"
 ```
 
 ## Next Steps

@@ -42,7 +42,7 @@ $so = StructuredOutput::fromConfig($llmConfig);
 
 // With a custom runtime
 $so = (new StructuredOutput())->withRuntime($runtime);
-// @doctest id="449c"
+// @doctest id="5cb4"
 ```
 
 ### Setting Request Parameters
@@ -56,7 +56,7 @@ $so = (new StructuredOutput())
     ->withResponseClass(User::class)
     ->withSystem('Extract user data from the text.')
     ->withModel('gpt-4o');
-// @doctest id="ab32"
+// @doctest id="10b7"
 ```
 
 Or equivalently:
@@ -68,7 +68,7 @@ $so = (new StructuredOutput())->with(
     system: 'Extract user data from the text.',
     model: 'gpt-4o',
 );
-// @doctest id="677d"
+// @doctest id="5110"
 ```
 
 ### Executing and Retrieving Results
@@ -88,7 +88,7 @@ $raw = $so->inferenceResponse();
 
 // Stream partial updates
 $stream = $so->stream();
-// @doctest id="55b3"
+// @doctest id="95d9"
 ```
 
 All of the above are shortcuts that internally call `create()` to obtain a
@@ -107,7 +107,7 @@ use Cognesy\Instructor\StructuredOutputRuntime;
 $runtime = StructuredOutputRuntime::fromConfig($llmConfig);
 $runtime = StructuredOutputRuntime::fromDefaults();
 $runtime = StructuredOutputRuntime::fromProvider($provider);
-// @doctest id="60e8"
+// @doctest id="9fa3"
 ```
 
 ### Event Listeners
@@ -119,7 +119,7 @@ monitoring, or debugging:
 $runtime
     ->onEvent(ResponseValidationFailed::class, fn($e) => logger()->warning($e))
     ->wiretap(fn($event) => $event->print());
-// @doctest id="10d2"
+// @doctest id="69fd"
 ```
 
 ### Pipeline Customization
@@ -131,7 +131,7 @@ runtime level. These apply to every request processed through the runtime:
 $runtime = $runtime
     ->withValidators([MyCustomValidator::class])
     ->withTransformers([MyTransformer::class]);
-// @doctest id="0962"
+// @doctest id="51f1"
 ```
 
 
@@ -155,7 +155,7 @@ $raw = $pending->inferenceResponse();
 
 // Or stream partial updates
 $stream = $pending->stream();
-// @doctest id="ae7a"
+// @doctest id="6e7c"
 ```
 
 The handle also provides typed accessors via the `HandlesResultTypecasting` trait:
@@ -191,7 +191,7 @@ $final = $stream->finalValue();
 
 // Get the final response envelope
 $finalResponse = $stream->finalResponse();
-// @doctest id="f840"
+// @doctest id="160a"
 ```
 
 
@@ -210,7 +210,7 @@ $response->usage();          // token usage stats
 $response->finishReason();   // stop, length, tool_calls, etc.
 $response->content();        // raw content string
 $response->toolCalls();      // tool call data (when using Tools mode)
-// @doctest id="55c1"
+// @doctest id="a553"
 ```
 
 
