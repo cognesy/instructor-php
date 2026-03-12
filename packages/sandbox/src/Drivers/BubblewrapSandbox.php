@@ -63,7 +63,8 @@ final class BubblewrapSandbox implements CanExecuteCommand
      * @return list<string>
      */
     private function buildCommand(string $workDir, array $innerArgv): array {
-        $cmd = [$this->bwrapBin, '--die-with-parent'];
+        $bwrapBin = ProcUtils::requireExecutable($this->bwrapBin, 'bwrap');
+        $cmd = [$bwrapBin, '--die-with-parent'];
         $cmd = [...$cmd, '--unshare-pid', '--unshare-uts', '--unshare-ipc', '--unshare-cgroup'];
         if (!$this->policy->networkEnabled()) {
             $cmd[] = '--unshare-net';

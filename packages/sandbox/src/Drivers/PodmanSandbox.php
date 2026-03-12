@@ -65,8 +65,9 @@ final class PodmanSandbox implements CanExecuteCommand
      */
     private function buildContainerCommand(string $workDir, array $argv): array {
         $isWSL2 = $this->isWSL2Environment();
+        $podmanBin = ProcUtils::requireExecutable($this->podmanBin, 'podman');
 
-        $builder = ContainerCommandBuilder::podman($this->podmanBin)
+        $builder = ContainerCommandBuilder::podman($podmanBin)
             ->withImage($this->image)
             ->withNetwork($this->policy->networkEnabled())
             ->withPidsLimit(20)

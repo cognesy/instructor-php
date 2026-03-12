@@ -64,7 +64,9 @@ final class DockerSandbox implements CanExecuteCommand
      * @return list<string>
      */
     private function buildContainerCommand(string $workDir, array $argv): array {
-        $builder = ContainerCommandBuilder::docker($this->dockerBin)
+        $dockerBin = ProcUtils::requireExecutable($this->dockerBin, 'docker');
+
+        $builder = ContainerCommandBuilder::docker($dockerBin)
             ->withImage($this->image)
             ->withNetwork($this->policy->networkEnabled())
             ->withPidsLimit(20)

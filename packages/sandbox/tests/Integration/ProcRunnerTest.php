@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Sandbox\Tests\Unit;
+namespace Cognesy\Sandbox\Tests\Integration;
 
 use Cognesy\Sandbox\Runners\ProcRunner;
 use Cognesy\Sandbox\Utils\TimeoutTracker;

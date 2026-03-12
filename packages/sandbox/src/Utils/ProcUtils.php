@@ -14,6 +14,25 @@ final class ProcUtils
         return null;
     }
 
+    public static function requireExecutable(string $binaryName, string $nameForError): string {
+        if ($binaryName === '') {
+            throw new \RuntimeException('Failed to start ' . $nameForError);
+        }
+
+        if (basename($binaryName) !== $binaryName) {
+            if (!is_executable($binaryName)) {
+                throw new \RuntimeException('Failed to start ' . $nameForError);
+            }
+            return $binaryName;
+        }
+
+        $resolved = self::findOnPath($binaryName, self::defaultBinPaths());
+        if ($resolved === null) {
+            throw new \RuntimeException('Failed to start ' . $nameForError);
+        }
+        return $resolved;
+    }
+
     /**
      * Locate an executable on PATH and optional extra directories.
      *

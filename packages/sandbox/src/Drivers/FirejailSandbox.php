@@ -63,8 +63,9 @@ final class FirejailSandbox implements CanExecuteCommand
      * @return list<string>
      */
     private function buildCommand(string $workDir, array $innerArgv): array {
+        $firejailBin = ProcUtils::requireExecutable($this->firejailBin, 'firejail');
         $cmd = [
-            $this->firejailBin,
+            $firejailBin,
         ];
         if (!$this->policy->networkEnabled()) {
             $cmd[] = '--net=none';
