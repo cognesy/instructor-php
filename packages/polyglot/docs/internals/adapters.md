@@ -116,6 +116,7 @@ class OpenAIRequestAdapter implements CanTranslateInferenceRequest
             headers: [
                 'Authorization' => "Bearer {$this->config->apiKey}",
                 'Content-Type' => 'application/json; charset=utf-8',
+                'Accept' => 'application/json',
             ],
             body: $this->bodyFormat->toRequestBody($request),
             options: ['stream' => $request->isStreamed()],

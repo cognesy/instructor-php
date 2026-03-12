@@ -167,6 +167,8 @@ Available modes:
 | `OutputMode::Json` | Requests JSON output via the provider's JSON mode |
 | `OutputMode::JsonSchema` | Sends a JSON Schema and requests strict conformance |
 | `OutputMode::MdJson` | Asks the LLM to return JSON inside a Markdown code block |
+| `OutputMode::Text` | Extracts JSON from unstructured text responses |
+| `OutputMode::Unrestricted` | No output constraints; extraction is best-effort |
 
 
 ### Event Listeners

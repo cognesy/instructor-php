@@ -61,18 +61,18 @@ final class PiBridgeBuilder extends AbstractBridgeBuilder
     /**
      * Replace the default system prompt.
      */
-    public function withSystemPrompt(string $prompt): static
+    public function withSystemPrompt(string|\Stringable $prompt): static
     {
-        $this->systemPrompt = $prompt;
+        $this->systemPrompt = (string) $prompt;
         return $this;
     }
 
     /**
      * Append to the default system prompt.
      */
-    public function appendSystemPrompt(string $prompt): static
+    public function appendSystemPrompt(string|\Stringable $prompt): static
     {
-        $this->appendSystemPrompt = $prompt;
+        $this->appendSystemPrompt = (string) $prompt;
         return $this;
     }
 

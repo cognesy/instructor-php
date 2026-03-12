@@ -10,6 +10,7 @@ use Cognesy\Instructor\Data\StructuredOutputResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Utils\Json\Json;
+use Cognesy\Utils\Json\JsonExtractor;
 
 final class SyncExecutionDriver implements CanEmitStreamingUpdates
 {
@@ -19,8 +20,8 @@ final class SyncExecutionDriver implements CanEmitStreamingUpdates
     public function __construct(
         StructuredOutputExecution $execution,
         private readonly InferenceProvider $inferenceProvider,
-        private readonly CanGenerateResponse $responseGenerator,
-        private readonly CanDetermineRetry $retryPolicy,
+        CanGenerateResponse $responseGenerator,
+        CanDetermineRetry $retryPolicy,
     ) {
         $this->loop = new ExecutionLoop($execution);
         $this->attemptProcessor = new AttemptProcessor(
@@ -71,7 +72,9 @@ final class SyncExecutionDriver implements CanEmitStreamingUpdates
             OutputMode::Tools => $response->toolCalls()->first()?->argsAsJson()
                 ?: $response->content()
                     ?: '',
-            default => Json::fromString($response->content())->toString(),
+            default => ($extracted = JsonExtractor::first($response->content())) !== null
+                ? Json::encode($extracted)
+                : $response->content(),
         });
     }
 }

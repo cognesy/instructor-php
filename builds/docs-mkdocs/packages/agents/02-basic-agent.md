@@ -21,7 +21,7 @@ $result = $loop->execute($state);
 
 echo $result->finalResponse()->toString();
 // "2 + 2 equals 4."
-// @doctest id="6996"
+// @doctest id="eb19"
 ```
 
 Three things happen here:
@@ -66,7 +66,7 @@ $result = $loop->execute($state);
 
 echo $result->finalResponse()->toString();
 // "The weather in Paris is 72°F and sunny."
-// @doctest id="33f5"
+// @doctest id="68e4"
 ```
 
 When the LLM receives this request, it recognizes that a weather tool is available and returns a tool call instead of a direct answer. The loop executes the tool, feeds the result back as a tool response message, and calls the LLM again. This time the model has the weather data and produces a natural language answer. The loop sees no further tool calls and stops.
@@ -82,20 +82,20 @@ $loop = AgentLoop::default()
     ->withTool($weatherTool)
     ->withTool($calculatorTool)
     ->withTool($searchTool);
-// @doctest id="9478"
+// @doctest id="756e"
 ```
 
 The LLM sees all available tools in each request and chooses which to call (or none) based on the user's message.
 
 ## System Prompt
 
-A system prompt establishes the agent's persona, instructions, and constraints. It is sent as a cached context prefix on every LLM request, so the model always has it in scope:
+A system prompt establishes the agent's persona, instructions, and constraints. It is sent as a cached context prefix on every LLM request, so the model always has it in scope. Both `withSystemPrompt()` and `withUserMessage()` accept `string|\Stringable`, so you can pass xprompt `Prompt` objects or any `Stringable` directly:
 
 ```php
 $state = AgentState::empty()
     ->withSystemPrompt('You are a concise weather assistant. Always respond with temperature in Celsius.')
     ->withUserMessage('What is the weather in Paris?');
-// @doctest id="3c5d"
+// @doctest id="31fa"
 ```
 
 Since `AgentState` is immutable, you can create a base state with a system prompt and reuse it across multiple conversations by calling `withUserMessage()` each time:
@@ -106,7 +106,7 @@ $baseState = AgentState::empty()
 
 $result1 = $loop->execute($baseState->withUserMessage('Explain closures in PHP.'));
 $result2 = $loop->execute($baseState->withUserMessage('What is a generator?'));
-// @doctest id="b7c5"
+// @doctest id="6d23"
 ```
 
 ## Stepping Through Execution
@@ -123,7 +123,7 @@ foreach ($loop->iterate($state) as $stepState) {
         $step->usage()->total(),
     );
 }
-// @doctest id="76b5"
+// @doctest id="015d"
 ```
 
 This is useful for progress reporting, streaming intermediate results to a UI, or implementing custom early-exit logic. The final state yielded by the generator is the same state you would get from `execute()`.
@@ -162,7 +162,7 @@ echo $stopReason?->value; // "completed", "steps_limit", "token_limit", etc.
 
 // Debug summary (useful during development)
 print_r($result->debug());
-// @doctest id="ed8f"
+// @doctest id="2f23"
 ```
 
 ## Observing Events
@@ -184,7 +184,7 @@ $loop->wiretap(function (object $event) {
 });
 
 $result = $loop->execute($state);
-// @doctest id="9051"
+// @doctest id="2fa7"
 ```
 
 Events are dispatched for execution start/complete/fail, step start/complete, inference requests/responses, tool call start/complete/blocked, stop signals, and token usage reports. This makes it straightforward to build logging, monitoring, or streaming integrations without modifying agent logic.
@@ -207,12 +207,12 @@ $llm = LLMProvider::using('anthropic');
 
 $loop = AgentLoop::default()->withDriver(
     new ToolCallingDriver(
-        llm: $llm,
         inference: InferenceRuntime::fromProvider($llm, events: $events),
+        llm: $llm,
         events: $events,
     )
 );
-// @doctest id="ce7e"
+// @doctest id="5b7f"
 ```
 
 ### ReAct Driver
@@ -222,7 +222,6 @@ The `ReActDriver` implements the Thought/Action/Observation reasoning pattern. I
 ```php
 use Cognesy\Agents\Drivers\ReAct\ReActDriver;
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -230,18 +229,14 @@ use Cognesy\Polyglot\Inference\LLMProvider;
 $events = new EventDispatcher();
 $llm = LLMProvider::new();
 $inference = InferenceRuntime::fromProvider($llm, events: $events);
-$structuredOutput = new StructuredOutputRuntime(
-    inference: $inference,
-    events: $events,
-    config: (new StructuredOutputConfigBuilder())->create(),
-);
+$structuredOutput = StructuredOutputRuntime::fromProvider($llm, events: $events);
 
 $loop = AgentLoop::default()->withDriver(new ReActDriver(
     inference: $inference,
     structuredOutput: $structuredOutput,
     model: 'gpt-4o',
 ));
-// @doctest id="9a2e"
+// @doctest id="ceb8"
 ```
 
 ## Testing Without an LLM
@@ -270,7 +265,7 @@ $result = $loop->execute(
 
 assert($result->finalResponse()->toString() === 'The weather in Paris is 72F and sunny.');
 assert($result->stepCount() === 2);
-// @doctest id="eb6a"
+// @doctest id="40d7"
 ```
 
 You can also create a driver that always returns the same response, which is useful for simple unit tests:
@@ -278,7 +273,7 @@ You can also create a driver that always returns the same response, which is use
 ```php
 $driver = FakeAgentDriver::fromResponses('Hello!', 'Goodbye!');
 $loop = AgentLoop::default()->withDriver($driver);
-// @doctest id="18dd"
+// @doctest id="8020"
 ```
 
 The first execution returns "Hello!", the second returns "Goodbye!", and any subsequent executions repeat "Goodbye!".
@@ -309,7 +304,7 @@ $loop = AgentBuilder::base()
     ->build();
 
 $result = $loop->execute($state);
-// @doctest id="f3f9"
+// @doctest id="27ec"
 ```
 
 Each capability is a small, focused class that knows how to install its tools, hooks, and configuration onto the agent. They compose cleanly because they operate on a shared `CanConfigureAgent` interface without needing to know about each other.

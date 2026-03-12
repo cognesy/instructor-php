@@ -1,3 +1,9 @@
+---
+title: HTTP Pool
+description: Concurrent HTTP request execution — pooling, concurrency limits, and response collection
+package: http-pool
+---
+
 # HTTP Pool Cheat Sheet
 
 ## Start Here

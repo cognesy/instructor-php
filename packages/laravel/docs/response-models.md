@@ -285,31 +285,42 @@ final class UserRegistration
 
 ### Custom Validation
 
-Implement the `CanValidateObject` contract for business-rule validation that goes beyond simple type and format checks.
+Implement the `CanValidateObject` contract for business-rule validation that goes beyond simple type and format checks. The `validate` method must return a `ValidationResult` instance.
 
 ```php
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
+use Cognesy\Instructor\Validation\ValidationResult;
 
 class AgeValidator implements CanValidateObject
 {
-    public function validate(object $object): array
+    public function validate(object $dataObject): ValidationResult
     {
-        $errors = [];
-
-        if ($object->age < 0) {
-            $errors[] = 'Age cannot be negative';
+        if ($dataObject->age < 0) {
+            return ValidationResult::fieldError(
+                field: 'age',
+                value: $dataObject->age,
+                message: 'Age cannot be negative',
+            );
         }
 
-        return $errors;
+        return ValidationResult::valid();
     }
 }
+```
 
-$user = StructuredOutput::with(
+Custom validators are registered on the `StructuredOutputRuntime`, not on the facade directly:
+
+```php
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
+
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withValidators([AgeValidator::class]);
+
+$user = StructuredOutput::withRuntime($runtime)->with(
     messages: 'User: John, age -5',
     responseModel: UserData::class,
-)
-->withValidators(AgeValidator::class)
-->get();
+)->get();
 ```
 
 ## Best Practices

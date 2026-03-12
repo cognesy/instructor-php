@@ -100,33 +100,44 @@ $user = StructuredOutput::with(
 
 ### Custom Validators
 
-Implement the `CanValidateObject` contract for domain-specific validation logic that cannot be expressed with declarative attributes.
+Implement the `CanValidateObject` contract for domain-specific validation logic that cannot be expressed with declarative attributes. The `validate` method must return a `ValidationResult` instance.
 
 ```php
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
+use Cognesy\Instructor\Validation\ValidationResult;
 
 class BusinessRulesValidator implements CanValidateObject
 {
-    public function validate(object $object): array
+    public function validate(object $dataObject): ValidationResult
     {
-        $errors = [];
-
-        if ($object instanceof OrderData) {
-            if ($object->total < $object->minimumOrderValue) {
-                $errors[] = "Order total must be at least {$object->minimumOrderValue}";
+        if ($dataObject instanceof OrderData) {
+            if ($dataObject->total < $dataObject->minimumOrderValue) {
+                return ValidationResult::fieldError(
+                    field: 'total',
+                    value: $dataObject->total,
+                    message: "Order total must be at least {$dataObject->minimumOrderValue}",
+                );
             }
         }
 
-        return $errors;
+        return ValidationResult::valid();
     }
 }
+```
 
-$order = StructuredOutput::with(
+Custom validators are registered on the `StructuredOutputRuntime`, not on the facade directly:
+
+```php
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
+
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withValidators([BusinessRulesValidator::class]);
+
+$order = StructuredOutput::withRuntime($runtime)->with(
     messages: 'Extract order...',
     responseModel: OrderData::class,
-)
-->withValidators(BusinessRulesValidator::class)
-->get();
+)->get();
 ```
 
 ### Custom Retry Prompt
@@ -166,13 +177,21 @@ class NormalizePhoneNumbers implements CanTransformData
         return preg_replace('/[^0-9+]/', '', $phone);
     }
 }
+```
 
-$contact = StructuredOutput::with(
+Custom transformers are registered on the `StructuredOutputRuntime`, not on the facade directly:
+
+```php
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
+
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withTransformers([NormalizePhoneNumbers::class]);
+
+$contact = StructuredOutput::withRuntime($runtime)->with(
     messages: 'Contact: John, phone: (555) 123-4567',
     responseModel: ContactData::class,
-)
-->withTransformers(NormalizePhoneNumbers::class)
-->get();
+)->get();
 
 // $contact->phone === '+15551234567'
 ```

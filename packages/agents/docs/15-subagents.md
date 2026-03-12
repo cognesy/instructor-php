@@ -321,12 +321,14 @@ $agent->onEvent(SubagentCompleted::class, function (SubagentCompleted $e) {
 ```
 
 The event includes:
+- `parentAgentId` -- the parent's agent ID
 - `subagentName` -- the name of the completed subagent
 - `subagentId` -- the child's unique agent ID
 - `status` -- the `ExecutionStatus` (completed, failed, etc.)
 - `steps` -- total steps the child took
 - `usage` -- token usage data (nullable)
 - `startedAt` / `completedAt` -- timestamps for duration calculation
+- `parentExecutionId`, `parentStepNumber`, `toolCallId` -- correlation IDs for tracing
 
 ## Error Handling
 

@@ -41,7 +41,7 @@ $policy = ExecutionPolicy::in('/tmp')
 
 ### CanExecuteCommand
 
-All drivers implement the `CanExecuteCommand` interface, which exposes a single `execute()` method. This contract guarantees that you can swap drivers without changing any calling code, making it straightforward to use the host driver in development and a container driver in production.
+All drivers implement the `CanExecuteCommand` interface, which exposes an `execute()` method and a `policy()` accessor. This contract guarantees that you can swap drivers without changing any calling code, making it straightforward to use the host driver in development and a container driver in production.
 
 ```php
 use Cognesy\Sandbox\Contracts\CanExecuteCommand;

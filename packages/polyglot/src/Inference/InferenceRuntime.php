@@ -107,11 +107,13 @@ final class InferenceRuntime implements CanCreateInference
         );
     }
 
+    /** @param callable(object):void $listener */
     public function onEvent(string $class, callable $listener, int $priority = 0): self {
         $this->events->addListener($class, $listener, $priority);
         return $this;
     }
 
+    /** @param callable(object):void $listener */
     public function wiretap(callable $listener): self {
         $this->events->wiretap($listener);
         return $this;

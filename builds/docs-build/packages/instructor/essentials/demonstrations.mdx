@@ -48,7 +48,7 @@ $user = (new StructuredOutput)
         ],
     )
     ->get();
-// @doctest id="c09f"
+// @doctest id="4a5e"
 ```
 
 Instructor appends the examples to the prompt, rendering each output array as JSON.
@@ -67,7 +67,7 @@ $example = Example::fromText(
     input: 'Ian is 27 years old.',
     output: ['name' => 'Ian', 'age' => 27],
 );
-// @doctest id="065d"
+// @doctest id="cb4a"
 ```
 
 ### `fromChat()` - Chat Messages
@@ -76,12 +76,12 @@ Use when you want to demonstrate a multi-turn conversation as input:
 
 ```php
 $example = Example::fromChat(
-    input: [
+    messages: [
         ['role' => 'user', 'content' => 'Ian is 27 years old.'],
     ],
     output: ['name' => 'Ian', 'age' => 27],
 );
-// @doctest id="b2ff"
+// @doctest id="1c24"
 ```
 
 ### `fromData()` - Structured Data
@@ -93,7 +93,7 @@ $example = Example::fromData(
     input: ['firstName' => 'Ian', 'lastName' => 'Brown', 'birthDate' => '1994-01-01'],
     output: ['name' => 'Ian Brown', 'age' => 27],
 );
-// @doctest id="c841"
+// @doctest id="bf40"
 ```
 
 
@@ -111,7 +111,7 @@ $user = (new StructuredOutput)
         responseModel: User::class,
     )
     ->get();
-// @doctest id="7707"
+// @doctest id="b16e"
 ```
 
 
@@ -124,9 +124,9 @@ this with a custom template string that uses `{input}` and `{output}` placeholde
 $example = new Example(
     input: 'John is 50 and works as a teacher.',
     output: ['name' => 'John', 'age' => 50],
-    template: "EXAMPLE:\n{input} => {output}\n",
+    template: "EXAMPLE:\n<|input|> => <|output|>\n",
 );
-// @doctest id="653a"
+// @doctest id="266e"
 ```
 
 When the input or output is an array, Instructor automatically converts it to a JSON

@@ -29,7 +29,7 @@ $inference = Inference::fromProvider($provider);
 
 // From a fully assembled runtime
 $inference = Inference::fromRuntime($runtime);
-// @doctest id="57bc"
+// @doctest id="3e31"
 ```
 
 ### Presets
@@ -43,7 +43,7 @@ model, and other connection details:
 $openai    = Inference::using('openai');
 $anthropic = Inference::using('anthropic');
 $ollama    = Inference::using('ollama');
-// @doctest id="de83"
+// @doctest id="709d"
 ```
 
 ## Configuring a Request
@@ -55,19 +55,22 @@ instance, so you can safely branch from a shared configuration:
 
 ```php
 $inference = Inference::using('openai')
-    ->withMessages('Explain dependency injection in one paragraph.')
+    ->withMessages(Messages::fromString('Explain dependency injection in one paragraph.'))
     ->withModel('gpt-4.1-nano');
-// @doctest id="94a6"
+// @doctest id="3298"
 ```
 
 ### Tools and Response Format
 
 ```php
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
+
 $inference = Inference::using('openai')
     ->withTools($toolDefinitions)
-    ->withToolChoice('auto')
-    ->withResponseFormat(['type' => 'json_object']);
-// @doctest id="bea7"
+    ->withToolChoice(ToolChoice::auto())
+    ->withResponseFormat(ResponseFormat::jsonObject());
+// @doctest id="fb2d"
 ```
 
 ### Streaming and Token Limits
@@ -76,7 +79,7 @@ $inference = Inference::using('openai')
 $inference = Inference::using('openai')
     ->withStreaming(true)
     ->withMaxTokens(256);
-// @doctest id="cb7c"
+// @doctest id="3ff3"
 ```
 
 ### Provider-Specific Options
@@ -84,7 +87,7 @@ $inference = Inference::using('openai')
 ```php
 $inference = Inference::using('openai')
     ->withOptions(['temperature' => 0.5, 'top_p' => 0.9]);
-// @doctest id="19a0"
+// @doctest id="244f"
 ```
 
 ### The Combined `with()` Method
@@ -92,15 +95,18 @@ $inference = Inference::using('openai')
 When you prefer a single call, use `with()` to set multiple fields at once:
 
 ```php
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
+
 $inference = Inference::using('openai')->with(
-    messages: 'Hello',
+    messages: Messages::fromString('Hello'),
     model: 'gpt-4.1-nano',
-    tools: [],
-    toolChoice: 'auto',
-    responseFormat: ['type' => 'text'],
+    toolChoice: ToolChoice::auto(),
+    responseFormat: ResponseFormat::text(),
     options: ['temperature' => 0.7],
 );
-// @doctest id="f1e0"
+// @doctest id="71aa"
 ```
 
 ### Full Method Reference
@@ -130,9 +136,10 @@ These methods build the request, execute it, and return the result in a single s
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 $inference = Inference::using('openai')
-    ->withMessages('What is PHP?')
+    ->withMessages(Messages::fromString('What is PHP?'))
     ->withModel('gpt-4.1-nano');
 
 // Plain text content
@@ -152,7 +159,7 @@ $toolJson = $inference->asToolCallJson();
 
 // Parsed tool call JSON as an array
 $toolData = $inference->asToolCallJsonData();
-// @doctest id="fd8f"
+// @doctest id="fdf4"
 ```
 
 ### Streaming
@@ -161,13 +168,13 @@ To receive partial results as they arrive from the provider:
 
 ```php
 $stream = Inference::using('openai')
-    ->withMessages('Write a short story about a robot.')
+    ->withMessages(Messages::fromString('Write a short story about a robot.'))
     ->stream();
 
-foreach ($stream as $partial) {
+foreach ($stream->deltas() as $partial) {
     echo $partial->contentDelta;
 }
-// @doctest id="5b79"
+// @doctest id="59cd"
 ```
 
 ### The Lazy Handle: `PendingInference`
@@ -178,41 +185,29 @@ you call a response method on it:
 
 ```php
 $pending = Inference::using('openai')
-    ->withMessages('Hello')
+    ->withMessages(Messages::fromString('Hello'))
     ->create();
 
 // Nothing has been sent to the provider yet.
 // Execution happens here:
 $text = $pending->get();
-// @doctest id="5a7c"
+// @doctest id="8e98"
 ```
 
 `PendingInference` exposes the same response methods as `Inference`: `get()`,
 `response()`, `asJson()`, `asJsonData()`, `asToolCallJson()`, `asToolCallJsonData()`,
 and `stream()`.
 
-## Driver Registration
+## Custom Drivers
 
-Register custom drivers for providers that are not bundled with Polyglot:
+To use a custom driver, implement the `CanProvideInferenceDrivers` contract and pass
+it to `Inference::using()` or `Inference::fromConfig()` via the `drivers` parameter:
 
 ```php
 use Cognesy\Polyglot\Inference\Inference;
 
-// Register with a class name
-Inference::registerDriver('custom-provider', CustomDriver::class);
-
-// Register with a factory callable
-Inference::registerDriver('custom-provider', function ($config, $httpClient) {
-    return new CustomDriver($config, $httpClient);
-});
-// @doctest id="8c43"
-```
-
-Once registered, the driver is available through the standard API:
-
-```php
-$response = Inference::using('custom-provider')
-    ->withMessages('Hello from a custom driver.')
+$response = Inference::using('custom-provider', drivers: $myDriverRegistry)
+    ->withMessages(Messages::fromString('Hello from a custom driver.'))
     ->get();
-// @doctest id="a533"
+// @doctest id="d31a"
 ```

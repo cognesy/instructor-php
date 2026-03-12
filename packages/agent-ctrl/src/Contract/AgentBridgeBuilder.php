@@ -73,12 +73,12 @@ interface AgentBridgeBuilder
     /**
      * Execute the prompt synchronously.
      */
-    public function execute(string $prompt): AgentResponse;
+    public function execute(string|\Stringable $prompt): AgentResponse;
 
     /**
      * Execute the prompt with streaming output.
      */
-    public function executeStreaming(string $prompt): AgentResponse;
+    public function executeStreaming(string|\Stringable $prompt): AgentResponse;
 
     /**
      * Build the configured bridge for advanced use cases.

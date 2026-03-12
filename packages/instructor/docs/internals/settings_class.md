@@ -36,7 +36,7 @@ $config = new LLMConfig(
 $config = LLMConfig::fromArray($data);
 
 // From a DSN string
-$config = LLMConfig::fromDsn('openai://sk-...@api.openai.com/v1?model=gpt-4o');
+$config = LLMConfig::fromDsn('driver=openai,model=gpt-4o,apiKey=sk-...');
 ```
 
 ### `StructuredOutputConfig`
@@ -60,7 +60,7 @@ Key settings:
 
 | Setting | Default | Purpose |
 |---|---|---|
-| `outputMode` | `Tools` | How the schema is delivered to the LLM (`Tools`, `Json`, `JsonSchema`, `MdJson`) |
+| `outputMode` | `Tools` | How the schema is delivered to the LLM (`Tools`, `Json`, `JsonSchema`, `MdJson`, `Text`, `Unrestricted`) |
 | `maxRetries` | `0` | Maximum retry attempts after the first call |
 | `retryPrompt` | `"JSON generated incorrectly..."` | Template for retry feedback messages |
 | `toolName` | `"extracted_data"` | Function name used in tool-call mode |

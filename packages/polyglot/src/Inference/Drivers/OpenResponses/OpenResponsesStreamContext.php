@@ -20,6 +20,6 @@ final class OpenResponsesStreamContext
     public array $seenOutputTextItems = [];
     /** @var array<string, bool> */
     public array $seenReasoningItems = [];
-    /** @var array<string, string> */
-    public array $toolArgsAccumulated = [];
+    /** @var array<string, bool> */
+    public array $toolArgsSeen = [];
 }

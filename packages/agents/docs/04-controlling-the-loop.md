@@ -156,6 +156,7 @@ match ($reason) {
     StopReason::StepsLimitReached   => 'Hit the maximum step count',
     StopReason::TokenLimitReached   => 'Exceeded token budget',
     StopReason::TimeLimitReached    => 'Exceeded time limit',
+    StopReason::RetryLimitReached   => 'Hit the maximum retry count',
     StopReason::StopRequested       => 'A hook requested a stop',
     StopReason::ErrorForbade        => 'An error prevented continuation',
     StopReason::UserRequested       => 'The user requested a stop',

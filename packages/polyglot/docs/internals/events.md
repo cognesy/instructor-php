@@ -59,7 +59,7 @@ The inference lifecycle dispatches events in this order:
 | Event | When Dispatched | Key Data |
 |---|---|---|
 | `InferenceStarted` | Beginning of execution | execution ID, request, isStreamed |
-| `InferenceCompleted` | End of execution (success or failure) | execution ID, isSuccess, finish reason, usage, attempt count, start time, response |
+| `InferenceCompleted` | End of execution (success or failure) | execution ID, isSuccess, finish reason, usage, attempt count, durationMs, completedAt, response |
 
 These events bracket the entire inference operation, including any retry attempts. `InferenceCompleted` is dispatched exactly once per execution, whether it succeeded or failed.
 
@@ -70,8 +70,8 @@ Each retry attempt dispatches its own events:
 | Event | When Dispatched | Key Data |
 |---|---|---|
 | `InferenceAttemptStarted` | Beginning of an attempt | execution ID, attempt ID, attempt number, model |
-| `InferenceAttemptSucceeded` | Attempt completed successfully | execution ID, attempt ID, finish reason, usage, start time |
-| `InferenceAttemptFailed` | Attempt failed | execution ID, attempt ID, error, willRetry, HTTP status code, partial usage, start time |
+| `InferenceAttemptSucceeded` | Attempt completed successfully | execution ID, attempt ID, attemptNumber, finish reason, usage, durationMs |
+| `InferenceAttemptFailed` | Attempt failed | execution ID, attempt ID, attemptNumber, errorMessage, errorType, willRetry, HTTP status code, partial usage, durationMs |
 | `InferenceUsageReported` | After a successful attempt | execution ID, usage, model, isFinal |
 
 When retries are configured, you may see multiple `InferenceAttemptStarted`/`InferenceAttemptFailed` pairs before a final `InferenceAttemptSucceeded` event. The `attemptNumber` field tracks which attempt is running.
@@ -88,8 +88,8 @@ When retries are configured, you may see multiple `InferenceAttemptStarted`/`Inf
 
 | Event | When Dispatched | Key Data |
 |---|---|---|
-| `StreamFirstChunkReceived` | First visible delta arrives | execution ID, request start time, model, initial content |
-| `PartialInferenceDeltaCreated` | Each visible delta | `PartialInferenceDelta` object |
+| `StreamFirstChunkReceived` | First visible delta arrives | execution ID, timeToFirstChunkMs, receivedAt, model, initial content |
+| `PartialInferenceDeltaCreated` | Each visible delta | execution ID, `PartialInferenceDelta` object |
 | `StreamEventReceived` | Raw SSE event received | raw event data |
 | `StreamEventParsed` | SSE event parsed into a delta | parsed event data |
 
@@ -136,11 +136,8 @@ $runtime->onEvent(InferenceUsageReported::class, function ($event): void {
 ```php
 use Cognesy\Polyglot\Inference\Events\StreamFirstChunkReceived;
 
-$runtime->onEvent(StreamFirstChunkReceived::class, function ($event): void {
-    $now = new \DateTimeImmutable();
-    $interval = $event->requestStartedAt->diff($now);
-    $seconds = $interval->s + $interval->f;
-    logger()->info("TTFC: {$seconds}s for model {$event->model}");
+$runtime->onEvent(StreamFirstChunkReceived::class, function (StreamFirstChunkReceived $event): void {
+    logger()->info("TTFC: {$event->timeToFirstChunkMs}ms for model {$event->model}");
 });
 ```
 
@@ -149,9 +146,10 @@ $runtime->onEvent(StreamFirstChunkReceived::class, function ($event): void {
 ```php
 use Cognesy\Polyglot\Inference\Events\InferenceAttemptFailed;
 
-$runtime->onEvent(InferenceAttemptFailed::class, function ($event): void {
+$runtime->onEvent(InferenceAttemptFailed::class, function (InferenceAttemptFailed $event): void {
     logger()->warning("Attempt {$event->attemptNumber} failed", [
-        'error' => $event->errorMessage,
+        'errorMessage' => $event->errorMessage,
+        'errorType' => $event->errorType,
         'willRetry' => $event->willRetry,
         'httpStatus' => $event->httpStatusCode,
     ]);
@@ -163,13 +161,13 @@ $runtime->onEvent(InferenceAttemptFailed::class, function ($event): void {
 ```php
 use Cognesy\Polyglot\Inference\Events\InferenceCompleted;
 
-$runtime->onEvent(InferenceCompleted::class, function ($event): void {
-    $duration = $event->startedAt->diff(new \DateTimeImmutable());
+$runtime->onEvent(InferenceCompleted::class, function (InferenceCompleted $event): void {
     logger()->info('Inference completed', [
         'success' => $event->isSuccess,
         'finishReason' => $event->finishReason->value,
         'attempts' => $event->attemptCount,
         'totalTokens' => $event->usage->total(),
+        'durationMs' => $event->durationMs,
     ]);
 });
 ```
@@ -177,7 +175,7 @@ $runtime->onEvent(InferenceCompleted::class, function ($event): void {
 
 ## Event Dispatcher
 
-Events are dispatched through an `EventDispatcher` that implements `Psr\EventDispatcher\EventDispatcherInterface`. When a runtime is created without an explicit event dispatcher, it creates a default one named `'polyglot.inference.runtime'` or `'polyglot.embeddings.runtime'`.
+Events are dispatched through an `EventDispatcher` that implements `CanHandleEvents` (which extends `Psr\EventDispatcher\EventDispatcherInterface`). When a runtime is created without an explicit event dispatcher, it creates a default one named `'polyglot.inference.runtime'` or `'polyglot.embeddings.runtime'`.
 
 You can inject a shared event dispatcher to correlate events across multiple runtimes or integrate with your application's existing event system:
 

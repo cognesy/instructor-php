@@ -169,8 +169,8 @@ The `#[Description]` and `#[Instructions]` attributes provide a structured alter
 to DocBlocks:
 
 ```php
-use Cognesy\Instructor\Features\Schema\Attributes\Description;
-use Cognesy\Instructor\Features\Schema\Attributes\Instructions;
+use Cognesy\Schema\Attributes\Description;
+use Cognesy\Schema\Attributes\Instructions;
 
 #[Description("Information about a user")]
 class User {

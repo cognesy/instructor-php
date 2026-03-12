@@ -7,31 +7,30 @@ JSON Schema mode takes structured output a step further by validating the respon
 
 ## Basic Usage
 
-Set `responseFormat` with `type` set to `json_schema` and provide a `json_schema` object containing the schema definition. Polyglot forwards the schema directly to the provider:
+Use `ResponseFormat::jsonSchema()` to create a response format with a schema definition. Polyglot forwards the schema directly to the provider:
 
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Inference;
 
 $data = Inference::using('openai')
     ->with(
-        messages: 'Return a city record as JSON.',
-        responseFormat: [
-            'type' => 'json_schema',
-            'json_schema' => [
-                'name' => 'city_record',
-                'schema' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'name' => ['type' => 'string'],
-                        'country' => ['type' => 'string'],
-                    ],
-                    'required' => ['name', 'country'],
+        messages: Messages::fromString('Return a city record as JSON.'),
+        responseFormat: ResponseFormat::jsonSchema(
+            schema: [
+                'type' => 'object',
+                'properties' => [
+                    'name' => ['type' => 'string'],
+                    'country' => ['type' => 'string'],
                 ],
-                'strict' => true,
+                'required' => ['name', 'country'],
             ],
-        ],
+            name: 'city_record',
+            strict: true,
+        ),
     )
     ->asJsonData();
 
@@ -41,11 +40,13 @@ echo "{$data['name']}, {$data['country']}\n";
 
 ## Using the Fluent API
 
-You can also set the response format with the `withResponseFormat()` method. Polyglot's `ResponseFormat` class understands the nested `json_schema` structure and extracts the schema, name, and strict flag automatically:
+You can also set the response format with the `withResponseFormat()` method, using the `ResponseFormat::jsonSchema()` factory:
 
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Inference;
 
 $schema = [
@@ -59,15 +60,12 @@ $schema = [
 ];
 
 $data = Inference::using('openai')
-    ->withMessages('Return a book record for "1984" by George Orwell.')
-    ->withResponseFormat([
-        'type' => 'json_schema',
-        'json_schema' => [
-            'name' => 'book_record',
-            'schema' => $schema,
-            'strict' => true,
-        ],
-    ])
+    ->withMessages(Messages::fromString('Return a book record for "1984" by George Orwell.'))
+    ->withResponseFormat(ResponseFormat::jsonSchema(
+        schema: $schema,
+        name: 'book_record',
+        strict: true,
+    ))
     ->asJsonData();
 ```
 
@@ -78,6 +76,8 @@ JSON Schema mode shines when you need complex, nested data structures. The provi
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Inference;
 
 $schema = [
@@ -114,15 +114,12 @@ $schema = [
 
 $data = Inference::using('openai')
     ->with(
-        messages: 'Provide a weather report for Paris, France.',
-        responseFormat: [
-            'type' => 'json_schema',
-            'json_schema' => [
-                'name' => 'weather_report',
-                'schema' => $schema,
-                'strict' => true,
-            ],
-        ],
+        messages: Messages::fromString('Provide a weather report for Paris, France.'),
+        responseFormat: ResponseFormat::jsonSchema(
+            schema: $schema,
+            name: 'weather_report',
+            strict: true,
+        ),
     )
     ->asJsonData();
 

@@ -132,8 +132,9 @@ abstract class AbstractBridgeBuilder implements AgentBridgeBuilder
     }
 
     #[\Override]
-    public function execute(string $prompt): AgentResponse
+    public function execute(string|\Stringable $prompt): AgentResponse
     {
+        $prompt = (string) $prompt;
         $this->dispatch(new AgentExecutionStarted(
             agentType: $this->agentType(),
             prompt: $prompt,
@@ -155,8 +156,9 @@ abstract class AbstractBridgeBuilder implements AgentBridgeBuilder
     }
 
     #[\Override]
-    public function executeStreaming(string $prompt): AgentResponse
+    public function executeStreaming(string|\Stringable $prompt): AgentResponse
     {
+        $prompt = (string) $prompt;
         $this->dispatch(new AgentExecutionStarted(
             agentType: $this->agentType(),
             prompt: $prompt,

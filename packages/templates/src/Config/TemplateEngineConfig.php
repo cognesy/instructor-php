@@ -2,6 +2,8 @@
 
 namespace Cognesy\Template\Config;
 
+use Cognesy\Config\BasePath;
+use Cognesy\Config\Config;
 use Cognesy\Template\Enums\FrontMatterFormat;
 use Cognesy\Template\Enums\TemplateEngineType;
 use InvalidArgumentException;
@@ -10,6 +12,13 @@ use Throwable;
 class TemplateEngineConfig
 {
     public const CONFIG_GROUP = 'prompt';
+
+    private const PRESET_PATHS = [
+        'config/prompt/presets',
+        'packages/templates/resources/config/prompt/presets',
+        'vendor/cognesy/instructor-php/packages/templates/resources/config/prompt/presets',
+        'vendor/cognesy/instructor-templates/resources/config/prompt/presets',
+    ];
 
     public function __construct(
         public TemplateEngineType $templateEngine = TemplateEngineType::Twig,
@@ -49,6 +58,18 @@ class TemplateEngineConfig
             cachePath: $cachePath,
             extension: '.tpl',
         );
+    }
+
+    public static function fromPreset(string $preset, ?string $basePath = null): self {
+        $basePaths = $basePath !== null ? [$basePath] : self::PRESET_PATHS;
+        $resolvedPaths = BasePath::resolveExisting(...$basePaths);
+        if ($resolvedPaths === []) {
+            throw new InvalidArgumentException("No preset directory found for '{$preset}'. Searched: " . implode(', ', $basePaths));
+        }
+        $data = Config::fromPaths(...$resolvedPaths)
+            ->load("{$preset}.yaml")
+            ->toArray();
+        return self::fromArray($data);
     }
 
     public static function group() : string {
@@ -95,15 +116,5 @@ class TemplateEngineConfig
             );
         }
         return $instance;
-
-//        return new TemplateEngineConfig(
-//            templateEngine: TemplateEngineType::from($data['templateEngine']),
-//            resourcePath: $data['resourcePath'] ?? '',
-//            cachePath: $data['cachePath'] ?? '',
-//            extension: $data['extension'] ?? 'twig',
-//            frontMatterTags: $data['frontMatterTags'] ?? [],
-//            frontMatterFormat: FrontMatterFormat::from($data['frontMatterFormat'] ?? FrontMatterFormat::Yaml->value),
-//            metadata: $data['metadata'] ?? [],
-//        );
     }
 }

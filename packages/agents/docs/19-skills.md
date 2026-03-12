@@ -229,7 +229,19 @@ load_skill(list_skills: true)                      // List available
 
 ### AppendSkillMetadataHook
 
-Before the first agent step, injects a system message listing available model-invocable skills with their descriptions and argument hints.
+Fires on `BeforeStep`. Before the first agent step, injects a system message listing available model-invocable skills with their descriptions and argument hints. Skips subsequent steps if already injected.
+
+### TrackActiveSkillHook
+
+Fires on `AfterToolUse`. When `load_skill` completes successfully, updates the agent state metadata with the loaded skill's `allowed-tools` list and `model` override. Clears these values when a skill without them is loaded.
+
+### SkillToolFilterHook
+
+Fires on `BeforeToolUse`. Enforces `allowed-tools` restrictions when a skill with an `allowed-tools` field is active. If the tool being called is not in the list, blocks execution. The `load_skill` tool itself is never blocked, allowing the agent to switch skills.
+
+### SkillModelOverrideHook
+
+Fires on `BeforeStep`. Checks agent state metadata for an active skill's `model` override and applies it by creating a new `LLMConfig` with the specified model. This allows skills to target specific models (e.g., a coding skill that requires a more capable model).
 
 ## Shell Preprocessing
 

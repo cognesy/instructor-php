@@ -5,7 +5,7 @@ description: 'Diagnose and resolve common setup, execution, streaming, and parsi
 
 ## CLI Binary Not Found
 
-Agent-Ctrl uses `CliBinaryGuard` to verify that the required CLI binary (`claude`, `codex`, or `opencode`) is available before every execution. If the binary cannot be found, a `RuntimeException` is thrown immediately -- before any prompt is sent to the agent.
+Agent-Ctrl uses `CliBinaryGuard` to verify that the required CLI binary (`claude`, `codex`, `opencode`, `pi`, or `gemini`) is available before every execution. If the binary cannot be found, a `RuntimeException` is thrown immediately -- before any prompt is sent to the agent.
 
 The error message identifies the missing binary and provides installation guidance:
 
@@ -20,6 +20,8 @@ Claude Code CLI executable `claude` was not found in PATH. Install Claude Code C
    claude --version
    codex --version
    opencode --version
+   pi --version
+   gemini --version
    ```
 
 2. **Complete authentication.** Most agents require interactive authentication on first use. Run the CLI interactively at least once to complete any setup flows before using it through Agent-Ctrl.
@@ -247,7 +249,7 @@ The logger groups events into categories with color-coded labels:
 
 ## Common Pitfalls
 
-**Using `continueSession()` with the wrong agent.** Session IDs are agent-specific. A Claude Code session ID is meaningless to the Codex bridge, and vice versa. Always use the same agent type when continuing or resuming a session.
+**Using `continueSession()` with the wrong agent.** Session IDs are agent-specific. Session IDs are agent-specific and incompatible across bridges. Always use the same agent type when continuing or resuming a session.
 
 **Forgetting to check `isSuccess()`.** A completed execution with a non-zero exit code does not throw an exception. Always verify the result before using the text output as authoritative.
 

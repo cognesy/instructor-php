@@ -3,6 +3,7 @@
 namespace Cognesy\Messages;
 
 use Cognesy\Utils\Json\Json;
+use Cognesy\Utils\Json\JsonDecoder;
 use InvalidArgumentException;
 
 final readonly class ToolCall
@@ -121,7 +122,7 @@ final readonly class ToolCall
     {
         return new self(
             name: $this->name,
-            arguments: is_array($args) ? $args : Json::fromString($args)->toArray(),
+            arguments: is_array($args) ? $args : JsonDecoder::decodeToArray($args),
             id: $this->id,
         );
     }
@@ -177,8 +178,7 @@ final readonly class ToolCall
 
         return match (true) {
             is_array($arguments) => $arguments,
-            is_string($arguments) => Json::fromString($arguments)->toArray(),
-            $arguments === null => [],
+            is_string($arguments) => JsonDecoder::decodeToArray($arguments),
             default => throw new InvalidArgumentException('ToolCall arguments must be an array, JSON string, or null.'),
         };
     }
@@ -200,7 +200,7 @@ final readonly class ToolCall
         return match (true) {
             $id === null => null,
             $id instanceof ToolCallId => $id,
-            is_string($id) && $id !== '' => new ToolCallId($id),
+            $id !== '' => new ToolCallId($id),
             default => null,
         };
     }

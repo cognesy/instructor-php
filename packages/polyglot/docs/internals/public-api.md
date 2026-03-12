@@ -254,22 +254,9 @@ $response->toValuesArray(); // array -- raw float arrays
 
 ## Registering Custom Drivers
 
-### Embeddings Drivers
-
-Custom embeddings drivers can be registered at the class level:
-
-```php
-use Cognesy\Polyglot\Embeddings\Embeddings;
-
-Embeddings::registerDriver('my-provider', MyCustomDriver::class);
-
-// Now usable via config
-$embeddings = Embeddings::fromConfig(new EmbeddingsConfig(driver: 'my-provider', ...));
-```
-
 ### Inference Drivers
 
-For inference, custom drivers are registered through the `InferenceDriverRegistry` and passed to the runtime:
+Custom inference drivers are registered through the `InferenceDriverRegistry` and passed to the runtime:
 
 ```php
 use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
@@ -278,6 +265,20 @@ $registry = BundledInferenceDrivers::registry()
     ->withDriver('my-provider', MyCustomDriver::class);
 
 $inference = Inference::using('my-provider', drivers: $registry);
+```
+
+### Embeddings Drivers
+
+Custom embeddings drivers are registered through the `EmbeddingsDriverRegistry` and passed to the runtime:
+
+```php
+use Cognesy\Polyglot\Embeddings\Creation\BundledEmbeddingsDrivers;
+
+$registry = BundledEmbeddingsDrivers::registry()
+    ->withDriver('my-provider', MyCustomDriver::class);
+
+$runtime = EmbeddingsRuntime::fromConfig($config, drivers: $registry);
+$embeddings = Embeddings::fromRuntime($runtime);
 ```
 
 See the [Providers](/internals/providers) page for details on driver registration and factory patterns.

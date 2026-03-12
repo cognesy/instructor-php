@@ -1,3 +1,9 @@
+---
+title: Doctools
+description: Documentation generation — MkDocs, Mintlify, llms.txt, package discovery, and nav building
+package: doctools
+---
+
 # Doctools Package Cheatsheet
 
 Code-verified reference for `packages/doctools`.

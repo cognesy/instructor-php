@@ -40,6 +40,7 @@ The following providers have built-in presets:
 | Cerebras | `cerebras` |
 | Cohere | `cohere` |
 | DeepSeek | `deepseek` |
+| DeepSeek (Reasoning) | `deepseek-r` |
 | Fireworks | `fireworks` |
 | Google Gemini | `gemini` |
 | Gemini (OpenAI-compatible) | `gemini-oai` |

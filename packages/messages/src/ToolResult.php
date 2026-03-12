@@ -96,7 +96,7 @@ final readonly class ToolResult
         return match (true) {
             $value === null => null,
             $value instanceof ToolCallId => $value,
-            is_string($value) && $value !== '' => new ToolCallId($value),
+            $value !== '' => new ToolCallId($value),
             default => null,
         };
     }

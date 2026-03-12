@@ -74,7 +74,7 @@ $updated = $context->with(
 $updated = $context
     ->withSystemPrompt('New prompt')
     ->withMetadataKey('user_id', 42)
-    ->withResponseFormat(['type' => 'json_object']);
+    ->withResponseFormat(new ResponseFormat(type: 'json_object'));
 
 // Message manipulation
 $updated = $context->withMessages($messages);           // Replace all messages in DEFAULT section

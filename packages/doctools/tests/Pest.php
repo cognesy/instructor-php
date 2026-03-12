@@ -12,6 +12,7 @@
 */
 
 // uses(Tests\TestCase::class)->in('Feature');
+uses()->group('docs-qa')->in('Feature/Quality');
 
 /*
 |--------------------------------------------------------------------------

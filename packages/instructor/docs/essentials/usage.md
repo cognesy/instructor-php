@@ -74,8 +74,8 @@ Both approaches produce identical requests. Use whichever reads better in your c
 | `withResponseClass(...)` | Set the response model from a class name |
 | `withResponseObject(...)` | Set the response model from an object instance |
 | `withResponseJsonSchema(...)` | Set the response model from a JSON Schema array |
-| `withSystem(...)` | Set the system prompt |
-| `withPrompt(...)` | Set additional prompt text |
+| `withSystem(...)` | Set the system prompt (`string\|\Stringable`) |
+| `withPrompt(...)` | Set additional prompt text (`string\|\Stringable`) |
 | `withExamples(...)` | Provide few-shot examples |
 | `withModel(...)` | Override the model name |
 | `withOptions(...)` | Pass provider-specific options |
@@ -219,8 +219,8 @@ $email = new Email(
 );
 
 $translated = (new StructuredOutput)
+    ->withInput($email)
     ->with(
-        input: $email,
         responseModel: Email::class,
         prompt: 'Translate the text fields to Spanish. Keep other fields unchanged.',
     )

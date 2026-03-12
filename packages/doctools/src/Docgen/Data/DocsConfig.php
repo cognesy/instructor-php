@@ -18,6 +18,8 @@ readonly class DocsConfig
         public array $packageTargetDirs,
         public array $packageOrder,
         public array $packageInternal,
+        // Cheatsheets section
+        public string $cheatsheetsSourcePattern,
         // Examples section
         public string $examplesSource,
         public array $examplesIntroPages,
@@ -72,6 +74,8 @@ readonly class DocsConfig
             packageTargetDirs: $config['packages']['target_dirs'] ?? [],
             packageOrder: $config['packages']['order'] ?? [],
             packageInternal: $config['packages']['internal'] ?? [],
+            // Cheatsheets section
+            cheatsheetsSourcePattern: $config['cheatsheets']['source_pattern'] ?? './packages/*/CHEATSHEET.md',
             // Examples section
             examplesSource: $config['examples']['source'] ?? './examples',
             examplesIntroPages: $config['examples']['intro_pages'] ?? [],
@@ -109,6 +113,7 @@ readonly class DocsConfig
             packageTargetDirs: [],
             packageOrder: [],
             packageInternal: [],
+            cheatsheetsSourcePattern: './packages/*/CHEATSHEET.md',
             examplesSource: './examples',
             examplesIntroPages: [],
             changelogSource: './docs/release-notes',

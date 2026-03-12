@@ -75,9 +75,8 @@ final class StructuredOutputStreamState
         $this->toolArgs = $delta->toolArgs;
         $this->invalidateDerivedState();
 
-        $snapshotChanged = false;
+        $snapshotChanged = $this->contentDelta !== '';
         $this->content .= $this->contentDelta;
-        $snapshotChanged = $snapshotChanged || $this->contentDelta !== '';
         $this->reasoningContent .= $this->reasoningContentDelta;
         $this->finishReason = match ($delta->finishReason) {
             '' => $this->finishReason,

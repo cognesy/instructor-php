@@ -17,15 +17,16 @@ the response content as a plain string:
 <?php
 
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 $pending = Inference::using('openai')
-    ->withMessages('What is the capital of France?')
+    ->withMessages(Messages::fromString('What is the capital of France?'))
     ->create();
 
 // Get the response as plain text
 $text = $pending->get();
 echo $text; // "The capital of France is Paris."
-// @doctest id="a7a4"
+// @doctest id="c261"
 ```
 
 ## Retrieving JSON Data
@@ -37,10 +38,12 @@ directly into an associative array, or `asJson()` to get the raw JSON string:
 <?php
 
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 
 $pending = Inference::using('openai')
-    ->withMessages('Return JSON with a single "status" field.')
-    ->withResponseFormat(['type' => 'json_object'])
+    ->withMessages(Messages::fromString('Return JSON with a single "status" field.'))
+    ->withResponseFormat(ResponseFormat::jsonObject())
     ->create();
 
 // Decode response content as a PHP array
@@ -49,7 +52,7 @@ echo $data['status'];
 
 // Or get the raw JSON string
 $json = $pending->asJson();
-// @doctest id="9e0c"
+// @doctest id="5835"
 ```
 
 ## Working with `InferenceResponse`
@@ -61,9 +64,10 @@ normalized `InferenceResponse` object:
 <?php
 
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 $pending = Inference::using('openai')
-    ->withMessages('What is the capital of France?')
+    ->withMessages(Messages::fromString('What is the capital of France?'))
     ->create();
 
 $response = $pending->response();
@@ -84,7 +88,7 @@ echo "Cache tokens: " . $usage->cache() . "\n";
 
 // Raw HTTP response data
 $httpResponse = $response->responseData();
-// @doctest id="7f7a"
+// @doctest id="9418"
 ```
 
 ### Available `InferenceResponse` Methods
@@ -137,7 +141,7 @@ $usage->input();   // Same as inputTokens
 $usage->output();  // outputTokens + reasoningTokens
 $usage->cache();   // cacheWriteTokens + cacheReadTokens
 $usage->total();   // Sum of all token counts
-// @doctest id="9ed3"
+// @doctest id="24ee"
 ```
 
 ## Handling Tool Calls
@@ -150,9 +154,11 @@ on the response object:
 <?php
 
 use Cognesy\Polyglot\Inference\Inference;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
 
-$tools = [
+$tools = ToolDefinitions::fromArray([
     [
         'type' => 'function',
         'function' => [
@@ -174,14 +180,13 @@ $tools = [
             ],
         ],
     ],
-];
+]);
 
 $response = Inference::using('openai')
     ->with(
-        messages: 'What is the weather in Paris?',
+        messages: Messages::fromString('What is the weather in Paris?'),
         tools: $tools,
-        toolChoice: 'auto',
-        mode: OutputMode::Tools,
+        toolChoice: ToolChoice::auto(),
     )
     ->response();
 
@@ -197,7 +202,7 @@ if ($response->hasToolCalls()) {
         $unit = $call->value('unit', 'celsius');
     }
 }
-// @doctest id="09b8"
+// @doctest id="4db4"
 ```
 
 ### Quick JSON Extraction from Tool Calls
@@ -213,7 +218,7 @@ $args = $pending->asToolCallJsonData();
 
 // Or as a JSON string
 $json = $pending->asToolCallJson();
-// @doctest id="404f"
+// @doctest id="1db4"
 ```
 
 > **Note:** When a single tool call is present, `asToolCallJsonData()` returns that
@@ -223,17 +228,16 @@ $json = $pending->asToolCallJson();
 ## Streaming Responses
 
 For long-running completions, streaming lets you display output as it arrives.
-Enable streaming with `withStreaming()` and consume the stream via the `stream()`
-method:
+Call `stream()` to get an `InferenceStream` and consume deltas:
 
 ```php
 <?php
 
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 $stream = Inference::using('openai')
-    ->withMessages('Write a short story about a robot.')
-    ->withStreaming()
+    ->withMessages(Messages::fromString('Write a short story about a robot.'))
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
@@ -243,7 +247,7 @@ foreach ($stream->deltas() as $delta) {
 // After iteration, get the finalized response
 $finalResponse = $stream->final();
 echo "\n\nTokens used: " . $finalResponse->usage()->total();
-// @doctest id="2473"
+// @doctest id="22d5"
 ```
 
 ### The `PartialInferenceDelta` Object
@@ -255,10 +259,12 @@ public properties:
 |----------|------|-------------|
 | `contentDelta` | `string` | New text content in this chunk |
 | `reasoningContentDelta` | `string` | New reasoning content in this chunk |
+| `toolId` | `ToolCallId\|string\|null` | Tool call ID |
 | `toolName` | `string` | Tool name (when streaming tool calls) |
 | `toolArgs` | `string` | Partial tool arguments JSON |
 | `finishReason` | `string` | Set on the final delta |
 | `usage` | `?Usage` | Token usage (typically on the final delta) |
+| `usageIsCumulative` | `bool` | Whether usage counts are cumulative |
 
 ### Stream Methods
 
@@ -292,7 +298,7 @@ $allDeltas = $stream->all();
 
 // Get the finalized response (drains the stream if needed)
 $response = $stream->final();
-// @doctest id="1594"
+// @doctest id="b1fd"
 ```
 
 ### Using the `onDelta` Callback
@@ -303,9 +309,11 @@ visible delta:
 ```php
 <?php
 
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
+
 $stream = Inference::using('openai')
-    ->withMessages('Explain queues in simple terms.')
-    ->withStreaming()
+    ->withMessages(Messages::fromString('Explain queues in simple terms.'))
     ->stream();
 
 $stream->onDelta(function ($delta) {
@@ -320,7 +328,7 @@ $stream->onDelta(function ($delta) {
 
 // Drain the stream to trigger all callbacks
 $response = $stream->final();
-// @doctest id="e470"
+// @doctest id="bbcf"
 ```
 
 ### Stream Lifecycle
@@ -341,7 +349,7 @@ streaming, use the `isStreamed()` method on `PendingInference`:
 <?php
 
 $pending = Inference::using('openai')
-    ->withMessages('Hello!')
+    ->withMessages(Messages::fromString('Hello!'))
     ->withStreaming()
     ->create();
 
@@ -352,5 +360,5 @@ if ($pending->isStreamed()) {
 } else {
     echo $pending->get();
 }
-// @doctest id="9a5d"
+// @doctest id="b956"
 ```

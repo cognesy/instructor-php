@@ -7,9 +7,13 @@ use Cognesy\Agents\Session\Data\AgentSession;
 
 final readonly class ChangeSystemPrompt implements CanExecuteSessionAction
 {
+    private string $systemPrompt;
+
     public function __construct(
-        private string $systemPrompt,
-    ) {}
+        string|\Stringable $systemPrompt,
+    ) {
+        $this->systemPrompt = (string) $systemPrompt;
+    }
 
     #[\Override]
     public function executeOn(AgentSession $session): AgentSession {

@@ -1,6 +1,6 @@
 ---
 title: Agent Options
-description: 'Configure shared builder options available on every agent and provider-specific options unique to Claude Code, Codex, and OpenCode.'
+description: 'Configure shared builder options available on every agent and provider-specific options unique to Claude Code, Codex, OpenCode, Pi, and Gemini.'
 ---
 
 ## Introduction
@@ -139,7 +139,7 @@ $response2 = $bridge->executeStreaming('Second prompt.', $streamHandler);
 
 The `ClaudeCodeBridgeBuilder` adds the following methods on top of the shared options.
 
-### `withSystemPrompt(string $prompt): static`
+### `withSystemPrompt(string|\Stringable $prompt): static`
 
 Replace the agent's default system prompt entirely with a custom one:
 
@@ -149,7 +149,7 @@ AgentCtrl::claudeCode()
     ->execute('Audit the authentication module.');
 ```
 
-### `appendSystemPrompt(string $prompt): static`
+### `appendSystemPrompt(string|\Stringable $prompt): static`
 
 Add instructions on top of the default system prompt without replacing it. This preserves Claude Code's built-in behavior while layering in project-specific context:
 
@@ -159,7 +159,7 @@ AgentCtrl::claudeCode()
     ->execute('Refactor the UserService class.');
 ```
 
-You can use both `withSystemPrompt()` and `appendSystemPrompt()` together -- `withSystemPrompt()` sets the base and `appendSystemPrompt()` appends to it.
+You can use both `withSystemPrompt()` and `appendSystemPrompt()` together -- `withSystemPrompt()` sets the base and `appendSystemPrompt()` appends to it. Both accept `Stringable` objects (e.g. xprompt `Prompt` classes), which are cast to string at the boundary.
 
 ### `withMaxTurns(int $turns): static`
 
@@ -412,4 +412,247 @@ $response = AgentCtrl::openCode()
 if ($response->cost() !== null) {
     echo sprintf("\nCost: $%.4f\n", $response->cost());
 }
+```
+
+## Pi Options
+
+The `PiBridgeBuilder` adds the following methods on top of the shared options.
+
+### `withProvider(string $provider): static`
+
+Set the provider explicitly (e.g., `'anthropic'`, `'openai'`, `'google'`):
+
+```php
+AgentCtrl::pi()
+    ->withProvider('anthropic')
+    ->execute('Analyze this codebase.');
+```
+
+### `withThinking(ThinkingLevel $level): static`
+
+Set the thinking level, which controls how much reasoning the agent does:
+
+```php
+use Cognesy\AgentCtrl\Pi\Domain\Enum\ThinkingLevel;
+
+AgentCtrl::pi()
+    ->withThinking(ThinkingLevel::High)
+    ->execute('Solve this complex problem.');
+```
+
+| Level | Value |
+|-------|-------|
+| `ThinkingLevel::Off` | `'off'` |
+| `ThinkingLevel::Minimal` | `'minimal'` |
+| `ThinkingLevel::Low` | `'low'` |
+| `ThinkingLevel::Medium` | `'medium'` |
+| `ThinkingLevel::High` | `'high'` |
+| `ThinkingLevel::ExtraHigh` | `'xhigh'` |
+
+### `withSystemPrompt(string|\Stringable $prompt): static`
+
+Replace the agent's default system prompt:
+
+```php
+AgentCtrl::pi()
+    ->withSystemPrompt('You are a security auditor.')
+    ->execute('Audit the authentication module.');
+```
+
+### `appendSystemPrompt(string|\Stringable $prompt): static`
+
+Add instructions on top of the default system prompt:
+
+```php
+AgentCtrl::pi()
+    ->appendSystemPrompt('Focus on PSR-12 compliance.')
+    ->execute('Review this code.');
+```
+
+### `withTools(array $tools): static`
+
+Enable specific built-in tools:
+
+```php
+AgentCtrl::pi()
+    ->withTools(['read', 'bash', 'edit'])
+    ->execute('Refactor this file.');
+```
+
+### `noTools(): static`
+
+Disable all built-in tools.
+
+### `withFiles(array $filePaths): static`
+
+Attach files to the prompt:
+
+```php
+AgentCtrl::pi()
+    ->withFiles(['/projects/my-app/src/UserService.php'])
+    ->execute('Review this file.');
+```
+
+### `withExtensions(array $extensions): static`
+
+Load extensions from paths or sources.
+
+### `noExtensions(): static`
+
+Disable extension discovery.
+
+### `withSkills(array $skills): static`
+
+Load skills from paths.
+
+### `noSkills(): static`
+
+Disable skill discovery.
+
+### `withApiKey(string $apiKey): static`
+
+Override the API key for this execution.
+
+### `ephemeral(): static`
+
+Run in ephemeral mode -- the session is not saved.
+
+### `withSessionDir(string $dir): static`
+
+Set a custom session storage directory.
+
+### `verbose(bool $enabled = true): static`
+
+Enable verbose output.
+
+### `continueSession(): static`
+
+Continue the most recent Pi session. See [Session Management](/agent-ctrl/session-management).
+
+### `resumeSession(string $sessionId): static`
+
+Resume a specific Pi session by its ID. See [Session Management](/agent-ctrl/session-management).
+
+### Complete Pi Example
+
+```php
+use Cognesy\AgentCtrl\AgentCtrl;
+use Cognesy\AgentCtrl\Pi\Domain\Enum\ThinkingLevel;
+
+$response = AgentCtrl::pi()
+    ->withProvider('anthropic')
+    ->withThinking(ThinkingLevel::High)
+    ->withSystemPrompt('You are a careful code reviewer.')
+    ->withTools(['read', 'bash'])
+    ->withTimeout(300)
+    ->inDirectory('/projects/my-app')
+    ->onText(fn(string $text) => print($text))
+    ->executeStreaming('Review the PaymentService for edge cases.');
+```
+
+## Gemini Options
+
+The `GeminiBridgeBuilder` adds the following methods on top of the shared options.
+
+### `withApprovalMode(ApprovalMode $mode): static`
+
+Set the approval mode for tool execution:
+
+```php
+use Cognesy\AgentCtrl\Gemini\Domain\Enum\ApprovalMode;
+
+AgentCtrl::gemini()
+    ->withApprovalMode(ApprovalMode::Yolo)
+    ->execute('Refactor the database layer.');
+```
+
+| Mode | Value | Behavior |
+|------|-------|----------|
+| `ApprovalMode::Default` | `'default'` | Standard interactive prompts |
+| `ApprovalMode::AutoEdit` | `'auto_edit'` | Auto-approve edits, prompt for others |
+| `ApprovalMode::Yolo` | `'yolo'` | Auto-approve all actions |
+| `ApprovalMode::Plan` | `'plan'` | Read-only analysis mode |
+
+### `yolo(): static`
+
+Shorthand for `withApprovalMode(ApprovalMode::Yolo)`:
+
+```php
+AgentCtrl::gemini()
+    ->yolo()
+    ->execute('Implement the feature.');
+```
+
+### `planMode(): static`
+
+Shorthand for `withApprovalMode(ApprovalMode::Plan)`:
+
+```php
+AgentCtrl::gemini()
+    ->planMode()
+    ->execute('Analyze the codebase architecture.');
+```
+
+### `withSandbox(bool $enabled = true): static`
+
+Enable Gemini's sandbox mode for additional isolation.
+
+### `withIncludeDirectories(array $paths): static`
+
+Add additional workspace directories:
+
+```php
+AgentCtrl::gemini()
+    ->withIncludeDirectories(['/shared/libraries', '/configs'])
+    ->execute('Review the shared library usage.');
+```
+
+### `withExtensions(array $extensions): static`
+
+Use specific extensions.
+
+### `withAllowedTools(array $tools): static`
+
+Restrict which tools the agent can use:
+
+```php
+AgentCtrl::gemini()
+    ->withAllowedTools(['read_file', 'search_files', 'list_directory'])
+    ->execute('Analyze the codebase structure.');
+```
+
+### `withAllowedMcpServers(array $names): static`
+
+Set allowed MCP server names.
+
+### `withPolicy(array $paths): static`
+
+Add policy files or directories.
+
+### `debug(bool $enabled = true): static`
+
+Enable debug output for troubleshooting CLI behavior.
+
+### `continueSession(): static`
+
+Continue the most recent Gemini session (resumes `'latest'` internally). See [Session Management](/agent-ctrl/session-management).
+
+### `resumeSession(string $sessionId): static`
+
+Resume a specific Gemini session by its ID or index. See [Session Management](/agent-ctrl/session-management).
+
+### Complete Gemini Example
+
+```php
+use Cognesy\AgentCtrl\AgentCtrl;
+use Cognesy\AgentCtrl\Gemini\Domain\Enum\ApprovalMode;
+
+$response = AgentCtrl::gemini()
+    ->withApprovalMode(ApprovalMode::Yolo)
+    ->withAllowedTools(['read_file', 'edit_file', 'shell'])
+    ->withIncludeDirectories(['/shared/utils'])
+    ->withTimeout(300)
+    ->inDirectory('/projects/my-app')
+    ->onText(fn(string $text) => print($text))
+    ->executeStreaming('Review the authentication module.');
 ```

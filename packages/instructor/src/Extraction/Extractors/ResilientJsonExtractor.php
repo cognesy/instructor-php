@@ -5,7 +5,7 @@ namespace Cognesy\Instructor\Extraction\Extractors;
 use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
 use Cognesy\Instructor\Extraction\Data\ExtractionInput;
 use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
-use Cognesy\Utils\Json\Partial\ResilientJson;
+use Cognesy\Utils\Json\JsonDecoder;
 
 /**
  * Attempts to parse content using resilient JSON parsing.
@@ -30,7 +30,7 @@ class ResilientJsonExtractor implements CanExtractResponse
         }
 
         try {
-            $parsed = ResilientJson::parse($trimmed);
+            $parsed = JsonDecoder::decode($trimmed);
 
             // Only accept objects/arrays - scalars indicate parsing of non-JSON text
             if (!is_array($parsed)) {

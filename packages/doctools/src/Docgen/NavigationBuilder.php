@@ -2,6 +2,7 @@
 
 namespace Cognesy\Doctools\Docgen;
 
+use Cognesy\Doctools\Docgen\Data\DiscoveredCheatsheet;
 use Cognesy\Doctools\Docgen\Data\DiscoveredPackage;
 use Cognesy\Doctools\Docgen\Data\DocsConfig;
 use Cognesy\InstructorHub\Data\ExampleGroup;
@@ -31,8 +32,9 @@ class NavigationBuilder
      * @param DiscoveredPackage[] $packages
      * @param ExampleGroup[] $exampleGroups
      * @param array $releaseNotes
+     * @param DiscoveredCheatsheet[] $cheatsheets
      */
-    public function buildMkDocsNav(array $packages, array $exampleGroups, array $releaseNotes): array
+    public function buildMkDocsNav(array $packages, array $exampleGroups, array $releaseNotes, array $cheatsheets = []): array
     {
         $nav = [];
 
@@ -50,6 +52,12 @@ class NavigationBuilder
         $cookbookNav = $this->buildCookbookNav($exampleGroups);
         if (!empty($cookbookNav)) {
             $nav[] = ['Cookbook' => $cookbookNav];
+        }
+
+        // Cheatsheets section
+        $cheatsheetsNav = $this->buildCheatsheetsNav($cheatsheets);
+        if (!empty($cheatsheetsNav)) {
+            $nav[] = ['Cheatsheets' => $cheatsheetsNav];
         }
 
         return $nav;
@@ -203,6 +211,28 @@ class NavigationBuilder
                 $groupTitle = $group->title ?: $this->formatTitle($group->name);
                 $nav[] = [$groupTitle => $groupNav];
             }
+        }
+
+        return $nav;
+    }
+
+    /**
+     * Build cheatsheets navigation
+     * @param DiscoveredCheatsheet[] $cheatsheets
+     */
+    private function buildCheatsheetsNav(array $cheatsheets): array
+    {
+        $nav = [];
+
+        // Index page
+        $indexPath = $this->targetDir . '/cheatsheets/index.md';
+        if (file_exists($indexPath)) {
+            $nav[] = ['Overview' => 'cheatsheets/index.md'];
+        }
+
+        foreach ($cheatsheets as $cheatsheet) {
+            $path = 'cheatsheets/' . $cheatsheet->getTargetName() . '.md';
+            $nav[] = [$cheatsheet->title => $path];
         }
 
         return $nav;

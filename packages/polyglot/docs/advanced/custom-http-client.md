@@ -19,6 +19,7 @@ an HTTP client with `HttpClientBuilder`, configure it to your needs, and pass it
 
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
@@ -44,7 +45,7 @@ $runtime = InferenceRuntime::fromConfig(
 );
 
 $text = Inference::fromRuntime($runtime)
-    ->withMessages('Say hello.')
+    ->withMessages(Messages::fromString('Say hello.'))
     ->get();
 ```
 
@@ -123,8 +124,8 @@ use Cognesy\Http\Extras\Support\RetryPolicy;
 $httpClient = (new HttpClientBuilder())
     ->withRetryPolicy(new RetryPolicy(
         maxRetries: 3,
-        retryDelayMs: 500,
-        retryMultiplier: 2.0,
+        baseDelayMs: 500,
+        maxDelayMs: 8000,
     ))
     ->create();
 ```
@@ -142,7 +143,7 @@ use Cognesy\Http\Extras\Support\CircuitBreakerPolicy;
 $httpClient = (new HttpClientBuilder())
     ->withCircuitBreakerPolicy(new CircuitBreakerPolicy(
         failureThreshold: 5,
-        recoveryTimeout: 30,
+        openForSec: 30,
     ))
     ->create();
 ```
@@ -162,7 +163,7 @@ $httpClient = (new HttpClientBuilder())
     ->withRetryPolicy(new RetryPolicy(maxRetries: 3))
     ->withCircuitBreakerPolicy(new CircuitBreakerPolicy(
         failureThreshold: 5,
-        recoveryTimeout: 30,
+        openForSec: 30,
     ))
     ->create();
 ```
@@ -224,12 +225,12 @@ between them to reuse connection pools and middleware configuration:
 
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Extras\Support\RetryPolicy;
-use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Inference;
-use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Embeddings;
 use Cognesy\Polyglot\Embeddings\EmbeddingsRuntime;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 
 $http = (new HttpClientBuilder())
     ->withRetryPolicy(new RetryPolicy(maxRetries: 3))

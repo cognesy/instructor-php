@@ -35,6 +35,8 @@ The schema is rendered into the format required by the selected output mode:
 | `Json` | Included in the system/user prompt as text |
 | `JsonSchema` | Sent via the provider's `response_format` parameter |
 | `MdJson` | Included in the prompt, response expected in a ```json``` codeblock |
+| `Text` | Schema included in the prompt; JSON extracted from unstructured text |
+| `Unrestricted` | No output constraints; extraction is best-effort |
 
 ### 4. Execute the Inference Request
 

@@ -3,6 +3,7 @@
 namespace Cognesy\Tell;
 
 use Cognesy\Config\Dsn;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
@@ -52,7 +53,7 @@ class TellCommand extends Command
         $config = LLMConfig::fromArray(Dsn::fromString($dsn)->toArray());
 
         return InferenceRuntime::fromConfig($config)->create(new InferenceRequest(
-            messages: $prompt,
+            messages: Messages::fromString($prompt),
             options: ['stream' => true],
         ));
     }
@@ -64,7 +65,7 @@ class TellCommand extends Command
         ]);
 
         return InferenceRuntime::fromConfig($config)->create(new InferenceRequest(
-            messages: $prompt,
+            messages: Messages::fromString($prompt),
             options: ['stream' => true],
         ));
     }

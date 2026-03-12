@@ -40,6 +40,7 @@ standard constructor signature `($config, $httpClient, $events)`:
 <?php
 
 use App\Polyglot\AcmeInferenceDriver;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
@@ -56,7 +57,7 @@ $config = new LLMConfig(
 );
 
 $text = Inference::fromConfig($config, drivers: $drivers)
-    ->withMessages('Hello from Acme!')
+    ->withMessages(Messages::fromString('Hello from Acme!'))
     ->get();
 ```
 
@@ -114,7 +115,7 @@ Or use the `drivers` parameter on `Inference::fromConfig()` or `Inference::using
 use Cognesy\Polyglot\Inference\Inference;
 
 $text = Inference::using('acme', drivers: $drivers)
-    ->withMessages('Hello!')
+    ->withMessages(Messages::fromString('Hello!'))
     ->get();
 ```
 
@@ -145,27 +146,22 @@ interface CanHandleVectorization
 }
 ```
 
-Register a custom embeddings driver using the static `registerDriver` method on the
-`Embeddings` facade:
+Register a custom embeddings driver using the `BundledEmbeddingsDrivers` registry, the same
+pattern used for inference drivers:
 
 ```php
 <?php
 
 use App\Polyglot\AcmeEmbeddingsDriver;
-use Cognesy\Polyglot\Embeddings\Embeddings;
-
-Embeddings::registerDriver('acme', AcmeEmbeddingsDriver::class);
-```
-
-Once registered, use the driver name in your `EmbeddingsConfig`:
-
-```php
-<?php
-
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
+use Cognesy\Polyglot\Embeddings\Creation\BundledEmbeddingsDrivers;
 use Cognesy\Polyglot\Embeddings\Embeddings;
+use Cognesy\Polyglot\Embeddings\EmbeddingsRuntime;
 
-$embeddings = Embeddings::fromConfig(new EmbeddingsConfig(
+$drivers = BundledEmbeddingsDrivers::registry()
+    ->withDriver('acme', AcmeEmbeddingsDriver::class);
+
+$config = new EmbeddingsConfig(
     driver: 'acme',
     apiUrl: 'https://api.acme.com/v1',
     apiKey: (string) getenv('ACME_API_KEY'),
@@ -173,7 +169,11 @@ $embeddings = Embeddings::fromConfig(new EmbeddingsConfig(
     model: 'acme-embed-v1',
     dimensions: 768,
     maxInputs: 100,
-));
+);
+
+$embeddings = Embeddings::fromRuntime(
+    EmbeddingsRuntime::fromConfig($config, drivers: $drivers)
+);
 ```
 
 Like inference drivers, you can also pass a callable factory instead of a class string:
@@ -182,15 +182,16 @@ Like inference drivers, you can also pass a callable factory instead of a class 
 <?php
 
 use App\Polyglot\AcmeEmbeddingsDriver;
-use Cognesy\Polyglot\Embeddings\Embeddings;
+use Cognesy\Polyglot\Embeddings\Creation\BundledEmbeddingsDrivers;
 
-Embeddings::registerDriver('acme', function ($config, $httpClient, $events) {
-    return new AcmeEmbeddingsDriver($config, $httpClient, $events);
-});
+$drivers = BundledEmbeddingsDrivers::registry()
+    ->withDriver('acme', function ($config, $httpClient, $events) {
+        return new AcmeEmbeddingsDriver($config, $httpClient, $events);
+    });
 ```
 
-> **Note:** Embeddings driver registration is global (static). Once registered, the driver is
-> available to all `Embeddings` instances in the process.
+> **Note:** The `EmbeddingsDriverRegistry` is immutable -- each mutation returns a new instance,
+> matching the same pattern as `InferenceDriverRegistry`.
 
 
 ## Removing or Replacing Bundled Drivers
@@ -219,27 +220,37 @@ For reference, Polyglot bundles the following inference drivers:
 
 | Driver Name | Class |
 |---|---|
-| `openai` | `OpenAIDriver` |
+| `a21` | `A21Driver` |
 | `anthropic` | `AnthropicDriver` |
-| `gemini` | `GeminiDriver` |
-| `gemini-oai` | `GeminiOAIDriver` |
 | `azure` | `AzureDriver` |
 | `bedrock-openai` | `BedrockOpenAIDriver` |
-| `mistral` | `MistralDriver` |
+| `cerebras` | `CerebrasDriver` |
 | `cohere` | `CohereV2Driver` |
-| `groq` | `GroqDriver` |
 | `deepseek` | `DeepseekDriver` |
 | `fireworks` | `FireworksDriver` |
+| `gemini` | `GeminiDriver` |
+| `gemini-oai` | `GeminiOAIDriver` |
+| `glm` | `GlmDriver` |
+| `groq` | `GroqDriver` |
+| `huggingface` | `HuggingFaceDriver` |
+| `inception` | `InceptionDriver` |
+| `meta` | `MetaDriver` |
+| `minimaxi` | `MinimaxiDriver` |
+| `mistral` | `MistralDriver` |
+| `openai` | `OpenAIDriver` |
+| `openai-responses` | `OpenAIResponsesDriver` |
+| `openresponses` | `OpenResponsesDriver` |
 | `openrouter` | `OpenRouterDriver` |
 | `perplexity` | `PerplexityDriver` |
-| `xai` | `XAiDriver` |
+| `qwen` | `QwenDriver` |
 | `sambanova` | `SambaNovaDriver` |
+| `xai` | `XAiDriver` |
+| `moonshot` | `OpenAICompatibleDriver` |
 | `ollama` | `OpenAICompatibleDriver` |
-| `together` | `OpenAICompatibleDriver` |
 | `openai-compatible` | `OpenAICompatibleDriver` |
+| `together` | `OpenAICompatibleDriver` |
 
-And several more (Cerebras, HuggingFace, Inception, Meta, Minimaxi, Qwen, Glm). The full
-list is defined in `BundledInferenceDrivers::registry()`.
+The full list is defined in `BundledInferenceDrivers::registry()`.
 
 Bundled embeddings drivers include: `openai`, `azure`, `cohere`, `gemini`, `jina`, `mistral`,
 and `ollama`.
@@ -253,6 +264,7 @@ can listen for specific events or wiretap all of them:
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
@@ -271,6 +283,6 @@ $runtime->wiretap(function ($event) {
 });
 
 $response = Inference::fromRuntime($runtime)
-    ->withMessages('Hello!')
+    ->withMessages(Messages::fromString('Hello!'))
     ->get();
 ```

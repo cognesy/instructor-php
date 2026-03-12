@@ -33,7 +33,7 @@ $data = $inference
         mode: $oldMode,
     )
     ->asJsonData();
-// @doctest id="5b8e"
+// @doctest id="3e6d"
 ```
 
 ## After
@@ -41,15 +41,15 @@ $data = $inference
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Inference;
 
 $data = Inference::using('openai')
-    ->with(
-        messages: 'Return JSON.',
-        responseFormat: ['type' => 'json_object'],
-    )
+    ->withMessages(Messages::fromString('Return JSON.'))
+    ->withResponseFormat(new ResponseFormat(type: 'json_object'))
     ->asJsonData();
-// @doctest id="8b58"
+// @doctest id="a0ae"
 ```
 
 Markdown-JSON fallback is no longer a Polyglot concern.

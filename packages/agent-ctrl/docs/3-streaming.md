@@ -7,7 +7,7 @@ description: 'Receive real-time text output, tool activity, completion events, a
 
 When an agent works on a complex task, it may run for minutes -- reading files, executing commands, reasoning through problems, and producing output incrementally. Streaming lets your application display progress, log tool activity, and react to errors in real time rather than waiting for the agent to finish.
 
-Agent-Ctrl provides streaming through four callback methods on the builder. These callbacks are invoked as the agent's JSON Lines output is parsed, and the same callback API works identically across Claude Code, Codex, and OpenCode.
+Agent-Ctrl provides streaming through four callback methods on the builder. These callbacks are invoked as the agent's JSON Lines output is parsed, and the same callback API works identically across Claude Code, Codex, OpenCode, Pi, and Gemini.
 
 ## Using `executeStreaming()`
 

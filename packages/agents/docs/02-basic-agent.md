@@ -86,7 +86,7 @@ The LLM sees all available tools in each request and chooses which to call (or n
 
 ## System Prompt
 
-A system prompt establishes the agent's persona, instructions, and constraints. It is sent as a cached context prefix on every LLM request, so the model always has it in scope:
+A system prompt establishes the agent's persona, instructions, and constraints. It is sent as a cached context prefix on every LLM request, so the model always has it in scope. Both `withSystemPrompt()` and `withUserMessage()` accept `string|\Stringable`, so you can pass xprompt `Prompt` objects or any `Stringable` directly:
 
 ```php
 $state = AgentState::empty()
@@ -199,8 +199,8 @@ $llm = LLMProvider::using('anthropic');
 
 $loop = AgentLoop::default()->withDriver(
     new ToolCallingDriver(
-        llm: $llm,
         inference: InferenceRuntime::fromProvider($llm, events: $events),
+        llm: $llm,
         events: $events,
     )
 );
@@ -213,7 +213,6 @@ The `ReActDriver` implements the Thought/Action/Observation reasoning pattern. I
 ```php
 use Cognesy\Agents\Drivers\ReAct\ReActDriver;
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -221,11 +220,7 @@ use Cognesy\Polyglot\Inference\LLMProvider;
 $events = new EventDispatcher();
 $llm = LLMProvider::new();
 $inference = InferenceRuntime::fromProvider($llm, events: $events);
-$structuredOutput = new StructuredOutputRuntime(
-    inference: $inference,
-    events: $events,
-    config: (new StructuredOutputConfigBuilder())->create(),
-);
+$structuredOutput = StructuredOutputRuntime::fromProvider($llm, events: $events);
 
 $loop = AgentLoop::default()->withDriver(new ReActDriver(
     inference: $inference,

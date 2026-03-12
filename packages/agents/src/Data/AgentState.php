@@ -186,13 +186,13 @@ final readonly class AgentState
         return $this->with(context: $this->context->withMetadataKey($name, $value));
     }
 
-    public function withUserMessage(string|Message $message): self {
-        $userMessage = Messages::fromAny(Message::asUser($message));
+    public function withUserMessage(string|\Stringable|Message $message): self {
+        $userMessage = Messages::fromAny(Message::asUser($message instanceof \Stringable && !$message instanceof Message ? (string) $message : $message));
         return $this->with(context: $this->context->withAppendedMessages($userMessage));
     }
 
-    public function withSystemPrompt(string $systemPrompt): self {
-        return $this->with(context: $this->context->withSystemPrompt($systemPrompt));
+    public function withSystemPrompt(string|\Stringable $systemPrompt): self {
+        return $this->with(context: $this->context->withSystemPrompt((string) $systemPrompt));
     }
 
     public function withExecutionStatus(ExecutionStatus $status): self {

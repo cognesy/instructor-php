@@ -9,7 +9,7 @@ use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Stream\Contracts\Reducer;
-use Cognesy\Utils\Json\IncrementalCompletingJsonParser;
+use Cognesy\Utils\Json\IncrementalJsonParser;
 use Throwable;
 
 final class AccumulatePartialResponsesReducer implements Reducer
@@ -18,7 +18,7 @@ final class AccumulatePartialResponsesReducer implements Reducer
     private StructuredOutputStreamState $state;
     private bool $hasProducedValue = false;
     private ?Throwable $lastCreationError = null;
-    private IncrementalCompletingJsonParser $jsonParser;
+    private IncrementalJsonParser $jsonParser;
     private string $activeToolKey = '';
 
     public function __construct(
@@ -29,7 +29,7 @@ final class AccumulatePartialResponsesReducer implements Reducer
         private readonly ResponseModel $responseModel,
     ) {
         $this->state = StructuredOutputStreamState::empty();
-        $this->jsonParser = new IncrementalCompletingJsonParser();
+        $this->jsonParser = new IncrementalJsonParser();
     }
 
     #[\Override]

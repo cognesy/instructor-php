@@ -15,11 +15,11 @@ The following public properties are available directly on the `AgentResponse` ob
 
 ### `agentType: AgentType`
 
-The agent type that produced this response. This is one of `AgentType::ClaudeCode`, `AgentType::Codex`, or `AgentType::OpenCode`:
+The agent type that produced this response. This is one of `AgentType::ClaudeCode`, `AgentType::Codex`, `AgentType::OpenCode`, `AgentType::Pi`, or `AgentType::Gemini`:
 
 ```php
 echo "Produced by: {$response->agentType->value}"; // e.g., "claude-code"
-// @doctest id="8afa"
+// @doctest id="07b8"
 ```
 
 ### `text: string`
@@ -30,7 +30,7 @@ The agent's main text output. This is the concatenation of all text content bloc
 echo $response->text;
 // or
 echo $response->text();
-// @doctest id="e813"
+// @doctest id="dc61"
 ```
 
 ### `exitCode: int`
@@ -41,7 +41,7 @@ The process exit code. A value of `0` indicates success. Non-zero values indicat
 if ($response->exitCode !== 0) {
     echo "Process failed with exit code: {$response->exitCode}";
 }
-// @doctest id="1f74"
+// @doctest id="badc"
 ```
 
 Common exit codes:
@@ -52,7 +52,7 @@ Common exit codes:
 
 ### `usage: ?TokenUsage`
 
-Token usage statistics, when available. This is `null` for agents that do not expose usage data (Claude Code does not; Codex and OpenCode do when the data is present in the CLI output):
+Token usage statistics, when available. This is `null` for agents that do not expose usage data (Claude Code does not; Codex, OpenCode, Pi, and Gemini do when the data is present in the CLI output):
 
 ```php
 $usage = $response->usage;
@@ -61,18 +61,18 @@ if ($usage !== null) {
     echo "Output tokens: {$usage->output}\n";
     echo "Total tokens: {$usage->total()}\n";
 }
-// @doctest id="1d60"
+// @doctest id="d1ff"
 ```
 
 ### `cost: ?float`
 
-The estimated cost in USD, when available. Currently, only OpenCode exposes cost data:
+The estimated cost in USD, when available. Currently, OpenCode and Pi expose cost data:
 
 ```php
 if ($response->cost !== null) {
     echo sprintf("Cost: $%.4f", $response->cost);
 }
-// @doctest id="da21"
+// @doctest id="bd56"
 ```
 
 ### `toolCalls: array`
@@ -81,17 +81,17 @@ An array of `ToolCall` objects representing every tool invocation made during th
 
 ```php
 echo "Tool calls made: " . count($response->toolCalls);
-// @doctest id="7a4c"
+// @doctest id="7f8e"
 ```
 
 ### `rawResponse: mixed`
 
-The original bridge-specific response object (`ClaudeResponse`, `CodexResponse`, or `OpenCodeResponse`). This provides access to agent-specific data that is not part of the normalized response:
+The original bridge-specific response object (`ClaudeResponse`, `CodexResponse`, `OpenCodeResponse`, `PiResponse`, or `GeminiResponse`). This provides access to agent-specific data that is not part of the normalized response:
 
 ```php
 // Access the raw Codex response for agent-specific data
 $codexResponse = $response->rawResponse;
-// @doctest id="3c4a"
+// @doctest id="d695"
 ```
 
 ### `parseFailures: int`
@@ -102,7 +102,7 @@ The number of malformed JSON lines that were skipped during response parsing:
 if ($response->parseFailures > 0) {
     echo "Warning: {$response->parseFailures} JSON parse failures";
 }
-// @doctest id="afb1"
+// @doctest id="a3de"
 ```
 
 ## Response Methods
@@ -120,7 +120,7 @@ if ($response->isSuccess()) {
     echo "Failed with exit code: {$response->exitCode}";
     echo "Partial output: " . $response->text();
 }
-// @doctest id="0aa4"
+// @doctest id="4754"
 ```
 
 A completed execution with a non-zero exit code does **not** throw an exception. Always check `isSuccess()` before treating the text output as authoritative.
@@ -131,7 +131,7 @@ Returns the agent's text output. Equivalent to accessing the `text` property dir
 
 ```php
 echo $response->text();
-// @doctest id="c30e"
+// @doctest id="400b"
 ```
 
 ### `sessionId(): ?AgentSessionId`
@@ -145,7 +145,7 @@ if ($sessionId !== null) {
     // Store for later resumption
     $cache->set('last_session', (string) $sessionId);
 }
-// @doctest id="cde8"
+// @doctest id="3a10"
 ```
 
 ### `usage(): ?TokenUsage`
@@ -157,7 +157,7 @@ $usage = $response->usage();
 if ($usage !== null) {
     echo "Tokens used: {$usage->total()}";
 }
-// @doctest id="87b2"
+// @doctest id="cbe8"
 ```
 
 ### `cost(): ?float`
@@ -169,7 +169,7 @@ $cost = $response->cost();
 if ($cost !== null) {
     echo sprintf("This execution cost $%.4f", $cost);
 }
-// @doctest id="5f40"
+// @doctest id="71cd"
 ```
 
 ### `parseFailures(): int`
@@ -178,7 +178,7 @@ Returns the number of malformed JSON lines encountered during parsing:
 
 ```php
 echo "Parse failures: {$response->parseFailures()}";
-// @doctest id="dbda"
+// @doctest id="db2b"
 ```
 
 ### `parseFailureSamples(): array`
@@ -192,7 +192,7 @@ if ($response->parseFailures() > 0) {
         echo "  - {$sample}\n";
     }
 }
-// @doctest id="83e0"
+// @doctest id="897a"
 ```
 
 ## Tool Calls
@@ -257,7 +257,7 @@ foreach ($response->toolCalls as $toolCall) {
 
     echo "---\n";
 }
-// @doctest id="754a"
+// @doctest id="16a5"
 ```
 
 ## Token Usage
@@ -287,6 +287,8 @@ The `TokenUsage` DTO provides detailed token statistics when the agent's CLI exp
 | Claude Code | No | No |
 | Codex | Yes (input, output, cacheRead) | No |
 | OpenCode | Yes (input, output, cacheRead, cacheWrite, reasoning) | Yes |
+| Pi | Yes (input, output, cacheRead, cacheWrite) | Yes |
+| Gemini | Yes (input, output, cacheRead) | No |
 
 ```php
 $response = AgentCtrl::openCode()
@@ -314,7 +316,7 @@ $cost = $response->cost();
 if ($cost !== null) {
     echo sprintf("Cost: $%.4f\n", $cost);
 }
-// @doctest id="69ab"
+// @doctest id="6b40"
 ```
 
 ## Complete Example
@@ -367,5 +369,5 @@ foreach ($toolSummary as $tool => $count) {
 if ($response->parseFailures() > 0) {
     echo "Warning: {$response->parseFailures()} parse failures\n";
 }
-// @doctest id="7dde"
+// @doctest id="9c3d"
 ```

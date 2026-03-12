@@ -135,7 +135,7 @@ $runtime->execute($sessionId, new SendMessage(
 ));
 ```
 
-The `message` parameter accepts either a plain `string` or a `Message` object. The `loopFactory` must implement `CanInstantiateAgentLoop` -- typically a `DefinitionLoopFactory`.
+The `message` parameter accepts a `string`, `\Stringable`, or `Message` object. `Stringable` values are cast to string at the boundary. The `loopFactory` must implement `CanInstantiateAgentLoop` -- typically a `DefinitionLoopFactory`.
 
 ### SuspendSession and ResumeSession
 
@@ -184,7 +184,7 @@ Note that `ForkSession` is typically used outside the runtime's `execute()` pipe
 
 ### ChangeSystemPrompt
 
-Updates the system prompt in the session's agent state.
+Updates the system prompt in the session's agent state. Accepts `string|\Stringable` -- `Stringable` values are cast to string at the boundary.
 
 ```php
 use Cognesy\Agents\Session\Actions\ChangeSystemPrompt;

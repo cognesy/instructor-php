@@ -182,7 +182,7 @@ use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 
 $pending = $inference
     ->withMessages('Hello')
-    ->withResponseCachePolicy(ResponseCachePolicy::ReadOrWrite)
+    ->withResponseCachePolicy(ResponseCachePolicy::Memory)
     ->create();
 
 $first = $pending->response();  // makes HTTP call

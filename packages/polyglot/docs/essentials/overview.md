@@ -14,14 +14,16 @@ The simplest way to generate text is with a single chained call:
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 $answer = Inference::using('openai')
-    ->withMessages('What is the capital of France?')
+    ->withMessages(Messages::fromString('What is the capital of France?'))
     ->get();
 ```
 
 The `using()` static method resolves a named preset from your configuration, while
-`withMessages()` accepts plain text, a single message, a message array, or a `Messages` object.
+`withMessages()` accepts a `Messages` object. Use `Messages::fromString()` to wrap a plain text
+prompt, or `Messages::fromArray()` to convert an array of role/content pairs.
 The `get()` method executes the request and returns the response content as a string.
 
 
@@ -33,11 +35,12 @@ Inference uses a sensible default configuration:
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 $inference = new Inference();
 
 $answer = $inference
-    ->withMessages([['role' => 'user', 'content' => 'Explain event sourcing briefly.']])
+    ->withMessages(Messages::fromArray([['role' => 'user', 'content' => 'Explain event sourcing briefly.']]))
     ->get();
 ```
 
@@ -46,9 +49,10 @@ You may also use the `with()` method, which accepts all request parameters at on
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 $answer = (new Inference)->with(
-    messages: 'What is the capital of France?',
+    messages: Messages::fromString('What is the capital of France?'),
 )->get();
 ```
 
@@ -62,9 +66,9 @@ aspect of the inference request:
 |-------|--------|-------------|
 | `messages` | `withMessages()` | The conversation messages |
 | `model` | `withModel()` | Override the model defined in the preset |
-| `tools` | `withTools()` | Tool/function definitions for the model to call |
-| `toolChoice` | `withToolChoice()` | Control which tool the model should use |
-| `responseFormat` | `withResponseFormat()` | Request structured output (e.g. JSON schema) |
+| `tools` | `withTools()` | Tool/function definitions (`ToolDefinitions`) for the model to call |
+| `toolChoice` | `withToolChoice()` | Control which tool the model should use (`ToolChoice`) |
+| `responseFormat` | `withResponseFormat()` | Request structured output (`ResponseFormat`) |
 | `options` | `withOptions()` | Provider-specific parameters (`temperature`, `max_tokens`, etc.) |
 | `maxTokens` | `withMaxTokens()` | Shorthand for setting the maximum output token count |
 
@@ -91,12 +95,13 @@ For multi-turn conversations, pass an array of messages with role annotations:
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
-$messages = [
+$messages = Messages::fromArray([
     ['role' => 'user', 'content' => 'Can you help me with a math problem?'],
     ['role' => 'assistant', 'content' => 'Of course! What would you like to solve?'],
     ['role' => 'user', 'content' => 'What is the square root of 144?'],
-];
+]);
 
 $answer = Inference::using('openai')
     ->withMessages($messages)
@@ -113,9 +118,10 @@ parameter conventions:
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 $answer = Inference::using('openai')
-    ->withMessages('Write a short poem about coding.')
+    ->withMessages(Messages::fromString('Write a short poem about coding.'))
     ->withModel('gpt-4o')
     ->withOptions(['temperature' => 0.7, 'max_tokens' => 200])
     ->get();
@@ -126,9 +132,10 @@ You can also set all parameters at once via the `with()` convenience method:
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 $answer = Inference::using('openai')->with(
-    messages: 'Write a haiku about PHP.',
+    messages: Messages::fromString('Write a haiku about PHP.'),
     model: 'gpt-4o',
     options: ['temperature' => 0.9, 'max_tokens' => 100],
 )->get();
@@ -144,9 +151,10 @@ then iterate over deltas:
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 $stream = Inference::using('openai')
-    ->withMessages('Describe the capital of Brasil.')
+    ->withMessages(Messages::fromString('Describe the capital of Brasil.'))
     ->withMaxTokens(512)
     ->stream();
 
@@ -164,9 +172,10 @@ You can also register a callback to handle each delta as it arrives:
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 $stream = Inference::using('openai')
-    ->withMessages('Tell me a story.')
+    ->withMessages(Messages::fromString('Tell me a story.'))
     ->stream();
 
 $stream->onDelta(fn($delta) => print($delta->contentDelta));
@@ -187,9 +196,10 @@ When you need more than just text, use `response()` to access the complete
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 $response = Inference::using('openai')
-    ->withMessages('What is quantum computing?')
+    ->withMessages(Messages::fromString('What is quantum computing?'))
     ->response();
 
 $text = $response->content();
@@ -210,8 +220,9 @@ is a single method call:
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
-$question = 'What is the capital of France?';
+$question = Messages::fromString('What is the capital of France?');
 
 $openai = Inference::using('openai')->withMessages($question)->get();
 $anthropic = Inference::using('anthropic')->withMessages($question)->get();
@@ -259,9 +270,10 @@ Each preset defines a default model, but you can override it per-request:
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 $answer = Inference::using('openai')
-    ->withMessages('Explain machine learning in one sentence.')
+    ->withMessages(Messages::fromString('Explain machine learning in one sentence.'))
     ->withModel('gpt-4o')
     ->get();
 ```

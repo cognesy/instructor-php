@@ -29,6 +29,8 @@ Here is a minimal example that requests structured city data from an LLM:
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 
@@ -43,17 +45,14 @@ $schema = JsonSchema::object(
 
 $data = Inference::using('openai')
     ->with(
-        messages: [
+        messages: Messages::fromArray([
             ['role' => 'user', 'content' => 'What is the capital of France? Respond with JSON data.'],
-        ],
-        responseFormat: [
-            'type' => 'json_schema',
-            'json_schema' => [
-                'name' => 'city_data',
-                'schema' => $schema->toJsonSchema(),
-                'strict' => true,
-            ],
-        ],
+        ]),
+        responseFormat: ResponseFormat::jsonSchema(
+            schema: $schema->toJsonSchema(),
+            name: 'city_data',
+            strict: true,
+        ),
         options: ['max_tokens' => 64],
     )
     ->asJsonData();
@@ -280,7 +279,7 @@ Available fluent methods include:
 | `withProperties(?array $properties)` | Set object properties |
 | `withItemSchema(JsonSchema $itemSchema)` | Set array item schema |
 | `withRequiredProperties(?array $required)` | Set required property names |
-| `withAdditionalProperties(bool $flag)` | Allow or disallow additional properties |
+| `withAdditionalProperties(?bool $additionalProperties)` | Allow or disallow additional properties |
 
 
 ## Converting Schemas
@@ -354,6 +353,8 @@ to the `tools` parameter of an inference request:
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 
@@ -373,10 +374,10 @@ $tool = $params->toFunctionCall(
 
 $result = Inference::using('openai')
     ->with(
-        messages: [
+        messages: Messages::fromArray([
             ['role' => 'user', 'content' => 'What is the weather like in Tokyo?'],
-        ],
-        tools: [$tool],
+        ]),
+        tools: ToolDefinitions::fromArray([$tool]),
     )
     ->asToolCallJsonData();
 ```
@@ -390,6 +391,8 @@ structured data from an LLM:
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 
@@ -443,17 +446,14 @@ $userSchema = JsonSchema::object(
 // Use the schema with Inference
 $userData = Inference::using('openai')
     ->with(
-        messages: [
+        messages: Messages::fromArray([
             ['role' => 'user', 'content' => 'Generate a profile for John Doe who lives in New York.'],
-        ],
-        responseFormat: [
-            'type' => 'json_schema',
-            'json_schema' => [
-                'name' => 'user_profile',
-                'schema' => $userSchema->toJsonSchema(),
-                'strict' => true,
-            ],
-        ],
+        ]),
+        responseFormat: ResponseFormat::jsonSchema(
+            schema: $userSchema->toJsonSchema(),
+            name: 'user_profile',
+            strict: true,
+        ),
     )
     ->asJsonData();
 

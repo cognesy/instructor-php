@@ -1,0 +1,77 @@
+---
+title: 'Limiting the length of lists'
+docname: 'limiting_lists'
+id: 'c871'
+---
+## Overview
+
+When dealing with lists of attributes, especially arbitrary properties, it's crucial to manage
+the length of list. You can use prompting and enumeration to limit the list length, ensuring
+a manageable set of properties.
+
+> To be 100% certain the list does not exceed the limit, add extra
+> validation, e.g. using ValidationMixin (see: Validation).
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Instructor\Validation\Traits\ValidationMixin;
+use Cognesy\Instructor\Validation\ValidationResult;
+use Cognesy\Polyglot\Inference\LLMProvider;
+
+class Property
+{
+    /**  Monotonically increasing ID, not larger than 2 */
+    public string $index;
+    public string $key;
+    public string $value;
+}
+
+class UserDetail
+{
+    use ValidationMixin;
+
+    public int $age;
+    public string $name;
+    /** @var Property[] List other extracted properties - not more than 2. */
+    public array $properties;
+
+    public function validate() : ValidationResult
+    {
+        if (count($this->properties) < 3) {
+            return ValidationResult::valid();
+        }
+        return ValidationResult::fieldError(
+            field: 'properties',
+            value: $this->name,
+            message: "Number of properties must be not more than 2.",
+        );
+    }
+}
+
+$text = <<<TEXT
+    Jason is 25 years old. He is a programmer. He has a car. He lives in
+    a small house in Alamo. He likes to play guitar.
+    TEXT;
+
+$user = new StructuredOutput(
+    StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
+        ->withMaxRetries(1)
+)->with(
+    messages: [['role' => 'user', 'content' => $text]],
+    responseModel: UserDetail::class,
+    // change runtime maxRetries to 0 to see validation error
+)->get();
+
+dump($user);
+
+assert($user->age === 25);
+assert($user->name === "Jason");
+assert(count($user->properties) < 3);
+?>
+```

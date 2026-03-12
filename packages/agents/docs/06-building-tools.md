@@ -122,6 +122,7 @@ Every `BaseTool` subclass must implement `__invoke(mixed ...$args)`. Because `Si
 
 ```php
 use Cognesy\Agents\Tool\Tools\BaseTool;
+use Cognesy\Polyglot\Inference\Data\ToolDefinition;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
 
@@ -165,6 +166,7 @@ class WeatherTool extends BaseTool
 The `JsonSchema` class provides a fluent API for building parameter schemas without writing raw arrays. It supports all JSON Schema types:
 
 ```php
+use Cognesy\Polyglot\Inference\Data\ToolDefinition;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
 

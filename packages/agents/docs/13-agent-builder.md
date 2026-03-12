@@ -212,11 +212,11 @@ use Cognesy\Agents\Capability\Core\UseContextConfig;
 
 new UseContextConfig(
     systemPrompt: 'You are a helpful coding assistant.',
-    responseFormat: ['type' => 'json_object'],
+    responseFormat: new ResponseFormat(type: 'json_object'),
 )
 ```
 
-Both a `string` system prompt and a `ResponseFormat` object (or array representation) are accepted. If both are empty, the capability is a no-op.
+Both a `string` system prompt and a `ResponseFormat` object are accepted. If both are empty, the capability is a no-op.
 
 ### UseReActConfig
 

@@ -151,7 +151,7 @@ echo "Model used: " . $execution->request()->model() . "\n";
 | `reduce(callable, initial)` | `mixed` | Yes (blocking) | Folds all deltas into a single value. |
 | `all()` | `array<PartialInferenceDelta>` | Yes (blocking) | Collects all deltas into an array. |
 | `onDelta(callable)` | `self` | No (registers callback) | Registers a callback fired for each visible delta. |
-| `final()` | `InferenceResponse` | Drains if needed | Returns the assembled final response. |
+| `final()` | `?InferenceResponse` | Drains if needed | Returns the assembled final response. |
 | `lastDelta()` | `?PartialInferenceDelta` | No | Returns the most recently yielded delta. |
 | `usage()` | `Usage` | No | Returns accumulated token usage. |
 | `execution()` | `InferenceExecution` | No | Returns the execution context and metadata. |

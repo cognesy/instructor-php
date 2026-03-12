@@ -12,12 +12,13 @@ A minimal text request requires nothing more than a message:
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $text = Inference::using('openai')
-    ->withMessages('What is the single responsibility principle?')
+    ->withMessages(Messages::fromString('What is the single responsibility principle?'))
     ->get();
-// @doctest id="d33e"
+// @doctest id="9887"
 ```
 
 The `get()` method returns the raw string content from the model's response. There is no JSON parsing, no schema validation -- just the text the model produced.
@@ -39,18 +40,19 @@ Text mode works consistently across all providers, making it the most portable o
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 // Using OpenAI
 $response = Inference::using('openai')
-    ->withMessages('Write a short poem about the ocean.')
+    ->withMessages(Messages::fromString('Write a short poem about the ocean.'))
     ->get();
 
 // Using Anthropic -- same API, same result shape
 $response = Inference::using('anthropic')
-    ->withMessages('Write a short poem about the ocean.')
+    ->withMessages(Messages::fromString('Write a short poem about the ocean.'))
     ->get();
-// @doctest id="d5d2"
+// @doctest id="6d4e"
 ```
 
 ## Using the `with()` Method
@@ -60,15 +62,16 @@ You can also use the `with()` method to pass messages alongside other parameters
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $response = Inference::using('openai')
     ->with(
-        messages: 'Explain the SOLID principles in one paragraph.',
+        messages: Messages::fromString('Explain the SOLID principles in one paragraph.'),
         options: ['temperature' => 0.3],
     )
     ->get();
-// @doctest id="a17a"
+// @doctest id="ae8a"
 ```
 
 ## Streaming Text Responses
@@ -78,17 +81,18 @@ For long-form content, you may want to stream the response so your application c
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $stream = Inference::using('openai')
-    ->withMessages('Write a short essay about renewable energy.')
+    ->withMessages(Messages::fromString('Write a short essay about renewable energy.'))
     ->stream()
     ->responses();
 
 foreach ($stream as $partial) {
     echo $partial->contentDelta;
 }
-// @doctest id="0974"
+// @doctest id="b39c"
 ```
 
 Each partial response contains a `contentDelta` with the next chunk of text from the model. Streaming works with all providers that support it.
@@ -100,14 +104,15 @@ If you need metadata beyond the raw text -- such as token usage or the finish re
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $response = Inference::using('openai')
-    ->withMessages('What is photosynthesis?')
+    ->withMessages(Messages::fromString('What is photosynthesis?'))
     ->response();
 
 $text = $response->content();
 $usage = $response->usage();
 $reason = $response->finishReason();
-// @doctest id="ec25"
+// @doctest id="dbf1"
 ```

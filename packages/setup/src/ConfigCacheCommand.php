@@ -137,9 +137,7 @@ final class ConfigCacheCommand extends Command
         return array_values(array_unique($list));
     }
 
-    /**
-     * @return array<string, scalar|null>
-     */
+    /** @return array<string, string> */
     private function currentEnvironment(): array
     {
         $env = getenv();
@@ -149,10 +147,6 @@ final class ConfigCacheCommand extends Command
 
         ksort($env);
 
-        return array_filter(
-            $env,
-            fn(mixed $value, mixed $key): bool => is_string($key) && (is_scalar($value) || $value === null),
-            ARRAY_FILTER_USE_BOTH,
-        );
+        return $env;
     }
 }

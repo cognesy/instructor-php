@@ -24,7 +24,7 @@ $text = Inference::using('openai')
     );
 
 echo $text;
-// @doctest id="a95f"
+// @doctest id="51d3"
 ```
 
 Because `reduce()` drains the entire stream before returning, it blocks until the response is complete.
@@ -46,7 +46,7 @@ $stream = Inference::using('openai')
 foreach ($stream->map(fn($delta) => strtoupper($delta->contentDelta)) as $chunk) {
     echo $chunk;
 }
-// @doctest id="cb9d"
+// @doctest id="a468"
 ```
 
 
@@ -67,7 +67,7 @@ $stream = Inference::using('openai')
 foreach ($stream->filter(fn($delta) => preg_match('/\d/', $delta->contentDelta)) as $delta) {
     echo $delta->contentDelta;
 }
-// @doctest id="7505"
+// @doctest id="8431"
 ```
 
 
@@ -86,7 +86,7 @@ $deltas = Inference::using('openai')
     ->all();
 
 echo "Received " . count($deltas) . " deltas.\n";
-// @doctest id="074e"
+// @doctest id="b536"
 ```
 
 
@@ -105,7 +105,7 @@ foreach ($stream->deltas() as $delta) {
 
 $last = $stream->lastDelta();
 echo $last->finishReason; // e.g. "stop"
-// @doctest id="cd6c"
+// @doctest id="9cfd"
 ```
 
 This is particularly useful for inspecting the finish reason or final usage data without keeping track of it manually during iteration.
@@ -126,7 +126,7 @@ foreach ($stream->deltas() as $delta) {
 
 $usage = $stream->usage();
 echo "\nTokens used: input={$usage->inputTokens}, output={$usage->outputTokens}\n";
-// @doctest id="7232"
+// @doctest id="eb0d"
 ```
 
 
@@ -144,7 +144,7 @@ $stream->final(); // ensure stream is consumed
 $execution = $stream->execution();
 echo "Execution ID: " . $execution->id->toString() . "\n";
 echo "Model used: " . $execution->request()->model() . "\n";
-// @doctest id="23e4"
+// @doctest id="3485"
 ```
 
 
@@ -158,7 +158,7 @@ echo "Model used: " . $execution->request()->model() . "\n";
 | `reduce(callable, initial)` | `mixed` | Yes (blocking) | Folds all deltas into a single value. |
 | `all()` | `array<PartialInferenceDelta>` | Yes (blocking) | Collects all deltas into an array. |
 | `onDelta(callable)` | `self` | No (registers callback) | Registers a callback fired for each visible delta. |
-| `final()` | `InferenceResponse` | Drains if needed | Returns the assembled final response. |
+| `final()` | `?InferenceResponse` | Drains if needed | Returns the assembled final response. |
 | `lastDelta()` | `?PartialInferenceDelta` | No | Returns the most recently yielded delta. |
 | `usage()` | `Usage` | No | Returns accumulated token usage. |
 | `execution()` | `InferenceExecution` | No | Returns the execution context and metadata. |

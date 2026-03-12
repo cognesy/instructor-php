@@ -20,7 +20,7 @@ php artisan make:response-model CompanyProfile --nested
 
 # With a custom description in the class docblock
 php artisan make:response-model Invoice --description="Invoice extracted from PDF"
-# @doctest id="7449"
+# @doctest id="edd6"
 ```
 
 ### Manual Creation
@@ -45,7 +45,7 @@ final class PersonData
         public readonly ?string $email = null,
     ) {}
 }
-// @doctest id="8b1e"
+// @doctest id="c00a"
 ```
 
 The class requires no base class, interface, or attribute -- any PHP class with typed constructor properties works. The package inspects the constructor signature and docblocks at runtime to build the JSON Schema that guides the LLM.
@@ -66,7 +66,7 @@ final class BasicTypes
         public readonly bool $isActive,
     ) {}
 }
-// @doctest id="2f15"
+// @doctest id="fa08"
 ```
 
 ### Nullable Properties
@@ -82,7 +82,7 @@ final class WithOptional
         public readonly ?int $maybeNumber = null,
     ) {}
 }
-// @doctest id="952b"
+// @doctest id="7b30"
 ```
 
 ### Arrays
@@ -100,7 +100,7 @@ final class WithArrays
         public readonly array $scores,
     ) {}
 }
-// @doctest id="fc16"
+// @doctest id="624f"
 ```
 
 ### Enums
@@ -122,7 +122,7 @@ final class Task
         public readonly Priority $priority,
     ) {}
 }
-// @doctest id="f281"
+// @doctest id="71ed"
 ```
 
 ### Nested Objects
@@ -146,7 +146,7 @@ final class Person
         public readonly Address $address,
     ) {}
 }
-// @doctest id="43e4"
+// @doctest id="0c25"
 ```
 
 ### Collections
@@ -174,7 +174,7 @@ final class Order
         public readonly float $total,
     ) {}
 }
-// @doctest id="33f8"
+// @doctest id="75d9"
 ```
 
 ## Property Descriptions
@@ -198,7 +198,7 @@ final class ProductReview
         public readonly ?array $concerns = null,
     ) {}
 }
-// @doctest id="3286"
+// @doctest id="0e0f"
 ```
 
 ## Using Response Models
@@ -217,7 +217,7 @@ $person = StructuredOutput::with(
 echo $person->name;  // "John Smith"
 echo $person->age;   // 30
 echo $person->email; // "john@example.com"
-// @doctest id="ac29"
+// @doctest id="4614"
 ```
 
 ### With Array Schema
@@ -239,7 +239,7 @@ $person = StructuredOutput::with(
 
 echo $person['name']; // "John"
 echo $person['age'];  // 30
-// @doctest id="ef1b"
+// @doctest id="9d08"
 ```
 
 ### Extracting Collections
@@ -266,7 +266,7 @@ $products = StructuredOutput::with(
 foreach ($products as $product) {
     echo "{$product->name}: \${$product->price}\n";
 }
-// @doctest id="c840"
+// @doctest id="da80"
 ```
 
 ## Validation
@@ -293,37 +293,49 @@ final class UserRegistration
         public readonly int $age,
     ) {}
 }
-// @doctest id="07dd"
+// @doctest id="e4a7"
 ```
 
 ### Custom Validation
 
-Implement the `CanValidateObject` contract for business-rule validation that goes beyond simple type and format checks.
+Implement the `CanValidateObject` contract for business-rule validation that goes beyond simple type and format checks. The `validate` method must return a `ValidationResult` instance.
 
 ```php
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
+use Cognesy\Instructor\Validation\ValidationResult;
 
 class AgeValidator implements CanValidateObject
 {
-    public function validate(object $object): array
+    public function validate(object $dataObject): ValidationResult
     {
-        $errors = [];
-
-        if ($object->age < 0) {
-            $errors[] = 'Age cannot be negative';
+        if ($dataObject->age < 0) {
+            return ValidationResult::fieldError(
+                field: 'age',
+                value: $dataObject->age,
+                message: 'Age cannot be negative',
+            );
         }
 
-        return $errors;
+        return ValidationResult::valid();
     }
 }
+// @doctest id="c314"
+```
 
-$user = StructuredOutput::with(
+Custom validators are registered on the `StructuredOutputRuntime`, not on the facade directly:
+
+```php
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
+
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withValidators([AgeValidator::class]);
+
+$user = StructuredOutput::withRuntime($runtime)->with(
     messages: 'User: John, age -5',
     responseModel: UserData::class,
-)
-->withValidators(AgeValidator::class)
-->get();
-// @doctest id="ef1f"
+)->get();
+// @doctest id="56ea"
 ```
 
 ## Best Practices
@@ -338,7 +350,7 @@ public readonly string $customerEmailAddress;
 
 // Less clear
 public readonly string $email;
-// @doctest id="32c7"
+// @doctest id="f980"
 ```
 
 ### 2. Add Detailed Descriptions
@@ -353,7 +365,7 @@ public function __construct(
      */
     public readonly string $sku,
 ) {}
-// @doctest id="118e"
+// @doctest id="f5e6"
 ```
 
 ### 3. Use Appropriate Types
@@ -369,7 +381,7 @@ public readonly float $price;
 
 // Use enums for fixed options
 public readonly Status $status;
-// @doctest id="263d"
+// @doctest id="ef75"
 ```
 
 ### 4. Make Optional Properties Nullable
@@ -382,7 +394,7 @@ public readonly string $name,
 
 // Optional
 public readonly ?string $nickname = null,
-// @doctest id="59d0"
+// @doctest id="c9b9"
 ```
 
 ### 5. Use Readonly Properties
@@ -395,7 +407,7 @@ public readonly string $name;
 
 // Mutable -- avoid unless necessary
 public string $name;
-// @doctest id="bb7e"
+// @doctest id="6e9c"
 ```
 
 ## Generated Stubs
@@ -418,7 +430,7 @@ final class {{ class }}
         public readonly ?string $email = null,
     ) {}
 }
-// @doctest id="8322"
+// @doctest id="d9b8"
 ```
 
 ### Collection Stub (`--collection`)
@@ -439,7 +451,7 @@ final class {{ class }}Item
         public readonly ?string $description = null,
     ) {}
 }
-// @doctest id="225d"
+// @doctest id="b8b9"
 ```
 
 ### Nested Stub (`--nested`)
@@ -470,5 +482,5 @@ final class {{ class }}Address
         public readonly string $country,
     ) {}
 }
-// @doctest id="b329"
+// @doctest id="2aa0"
 ```

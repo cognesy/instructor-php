@@ -10,7 +10,7 @@
 
 ```bash
 composer require cognesy/instructor-laravel
-# @doctest id="c542"
+# @doctest id="6db0"
 ```
 
 The package uses Laravel's package auto-discovery mechanism, so the service provider and all four facades (`StructuredOutput`, `Inference`, `Embeddings`, `AgentCtrl`) are registered automatically. No manual registration is required for typical Laravel applications.
@@ -21,7 +21,7 @@ Publish the configuration file to customize connections, extraction defaults, an
 
 ```bash
 php artisan vendor:publish --tag=instructor-config
-# @doctest id="6832"
+# @doctest id="6f33"
 ```
 
 This creates `config/instructor.php` with all available options. The file ships with sensible defaults, so you can start using the package with just an API key and customize later as your needs grow.
@@ -41,7 +41,7 @@ ANTHROPIC_API_KEY=sk-ant-...
 GEMINI_API_KEY=...
 GROQ_API_KEY=...
 MISTRAL_API_KEY=...
-// @doctest id="9523"
+// @doctest id="dc5a"
 ```
 
 You can configure multiple providers simultaneously and switch between them at runtime using the `connection()` method on any facade.
@@ -56,7 +56,7 @@ The standalone `packages/config` YAML loader is not responsible for reading `con
 |-------|-------------|----------------|---------------|
 | `packages/instructor` | `StructuredOutput` facade and `Cognesy\Instructor\StructuredOutput` | Configure your default LLM connection, extraction defaults, and response models | [Facades](facades.md), [Response Models](response-models.md), [Configuration](configuration.md) |
 | `packages/polyglot` | `Inference` and `Embeddings` facades plus `Cognesy\Polyglot\Inference\Inference` and `Cognesy\Polyglot\Embeddings\Embeddings` | Configure inference connections in `connections` and embedding models in `embeddings.connections` | [Facades](facades.md), [Configuration](configuration.md), [Events](events.md) |
-| `packages/agents` | `AgentCtrl` facade | Install the CLI agent you want to use, ensure its binary is available in `PATH`, then configure timeouts, working directory, and sandbox defaults in `agents` | [Code Agents](agents.md), [Testing](testing.md) |
+| `packages/agent-ctrl` | `AgentCtrl` facade | Install the CLI agent you want to use, ensure its binary is available in `PATH`, then configure timeouts, working directory, and sandbox defaults in `agents` | [Code Agents](agents.md), [Testing](testing.md) |
 | `packages/http-client` | Internal Laravel-backed transport | No separate install is required; keep `http.driver` set to `laravel` to route requests through Laravel's HTTP client and `Http::fake()` | [Configuration](configuration.md), [Testing](testing.md) |
 
 ### `packages/instructor` Under Laravel
@@ -78,7 +78,7 @@ Laravel exposes Polyglot through two entry points:
 
 Both use the same published config file. Inference reads from `connections`; embeddings read from `embeddings.connections`. If you already configured providers for `StructuredOutput`, raw inference usually needs no additional setup.
 
-### `packages/agents` Under Laravel
+### `packages/agent-ctrl` Under Laravel
 
 `AgentCtrl` does not use the LLM HTTP connections from `config/instructor.php`. It runs external agent CLIs from your Laravel application. Setup means:
 
@@ -101,7 +101,7 @@ Run the installation command to verify everything is configured correctly:
 
 ```bash
 php artisan instructor:install
-# @doctest id="1c81"
+# @doctest id="ccf1"
 ```
 
 This will:
@@ -115,7 +115,7 @@ Test that your API configuration is working by making a real API call:
 
 ```bash
 php artisan instructor:test
-# @doctest id="339b"
+# @doctest id="068b"
 ```
 
 This command displays your current configuration (connection name, driver, model, masked API key) and then performs a structured output extraction to confirm the full pipeline is operational.
@@ -124,14 +124,14 @@ To test a specific connection:
 
 ```bash
 php artisan instructor:test --connection=anthropic
-# @doctest id="a058"
+# @doctest id="88c5"
 ```
 
 To test raw inference (without structured output extraction):
 
 ```bash
 php artisan instructor:test --inference
-# @doctest id="5abe"
+# @doctest id="9e3d"
 ```
 
 ## Optional: Publish Stubs
@@ -140,7 +140,7 @@ If you want to customize the response model templates used by `make:response-mod
 
 ```bash
 php artisan vendor:publish --tag=instructor-stubs
-# @doctest id="d5b0"
+# @doctest id="f00b"
 ```
 
 This publishes stubs to `stubs/instructor/` in your application root. The command will prefer your custom stubs over the package defaults when generating new response models.
@@ -162,7 +162,7 @@ If you have disabled Laravel's package auto-discovery, manually register the ser
     'Embeddings' => Cognesy\Instructor\Laravel\Facades\Embeddings::class,
     'AgentCtrl' => Cognesy\Instructor\Laravel\Facades\AgentCtrl::class,
 ],
-// @doctest id="53ac"
+// @doctest id="ab89"
 ```
 
 In Laravel 11 and 12, register the provider in `bootstrap/providers.php`.
@@ -173,7 +173,7 @@ When upgrading to a new version, republish the configuration if there are new op
 
 ```bash
 php artisan vendor:publish --tag=instructor-config --force
-# @doctest id="2b70"
+# @doctest id="75a6"
 ```
 
 Review the [changelog](https://github.com/cognesy/instructor-php/blob/main/CHANGELOG.md) for breaking changes before upgrading major versions.

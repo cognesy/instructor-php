@@ -7,16 +7,18 @@ JSON object mode instructs the model to return its response as a valid JSON obje
 
 ## Basic Usage
 
-Use `responseFormat` with `type` set to `json_object` to request JSON output. The `asJsonData()` convenience method decodes the response into a PHP array:
+Use `ResponseFormat::jsonObject()` to request JSON output. The `asJsonData()` convenience method decodes the response into a PHP array:
 
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Inference;
 
 $data = Inference::using('openai')
-    ->withMessages('Return JSON with keys "name" and "role".')
-    ->withResponseFormat(['type' => 'json_object'])
+    ->withMessages(Messages::fromString('Return JSON with keys "name" and "role".'))
+    ->withResponseFormat(ResponseFormat::jsonObject())
     ->asJsonData();
 
 // $data is now a PHP array, e.g. ['name' => 'Alice', 'role' => 'Engineer']
@@ -31,6 +33,8 @@ For best results, include clear instructions about the expected JSON structure d
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Inference;
 
 $prompt = <<<EOT
@@ -49,8 +53,8 @@ EOT;
 
 $data = Inference::using('openai')
     ->with(
-        messages: $prompt,
-        responseFormat: ['type' => 'json_object'],
+        messages: Messages::fromString($prompt),
+        responseFormat: ResponseFormat::jsonObject(),
     )
     ->asJsonData();
 
@@ -66,11 +70,13 @@ You can also set the response format with the dedicated `withResponseFormat()` m
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Inference;
 
 $data = Inference::using('openai')
-    ->withMessages('List three programming languages as JSON with name and year fields.')
-    ->withResponseFormat(['type' => 'json_object'])
+    ->withMessages(Messages::fromString('List three programming languages as JSON with name and year fields.'))
+    ->withResponseFormat(ResponseFormat::jsonObject())
     ->asJsonData();
 ```
 
@@ -81,11 +87,13 @@ If you need the raw JSON string instead of a decoded array, use `asJson()`:
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Inference;
 
 $json = Inference::using('openai')
-    ->withMessages('Return a JSON object with a greeting.')
-    ->withResponseFormat(['type' => 'json_object'])
+    ->withMessages(Messages::fromString('Return a JSON object with a greeting.'))
+    ->withResponseFormat(ResponseFormat::jsonObject())
     ->asJson();
 
 // $json is a string like '{"greeting": "Hello, world!"}'

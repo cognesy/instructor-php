@@ -11,6 +11,10 @@
         {
             "name": "Cookbook",
             "url": "cookbook"
+        },
+        {
+            "name": "Cheatsheets",
+            "url": "cheatsheets"
         }
     ],
     "navigation": [
@@ -381,9 +385,46 @@
             ]
         },
         {
+            "group": "Xprompt",
+            "pages": [
+                "packages/xprompt/01-introduction",
+                "packages/xprompt/02-getting-started",
+                "packages/xprompt/03-composition",
+                "packages/xprompt/04-templates",
+                "packages/xprompt/05-structured-data",
+                "packages/xprompt/06-variants-and-registry",
+                "packages/xprompt/07-configuration"
+            ]
+        },
+        {
             "group": "Test Group",
             "pages": [
                 "cookbook/basics/TestGroup/"
+            ]
+        },
+        {
+            "group": "Cheatsheets",
+            "pages": [
+                "cheatsheets/index",
+                "cheatsheets/instructor",
+                "cheatsheets/polyglot",
+                "cheatsheets/agents",
+                "cheatsheets/agent-ctrl",
+                "cheatsheets/sandbox",
+                "cheatsheets/http-client",
+                "cheatsheets/laravel",
+                "cheatsheets/config",
+                "cheatsheets/dynamic",
+                "cheatsheets/events",
+                "cheatsheets/logging",
+                "cheatsheets/messages",
+                "cheatsheets/metrics",
+                "cheatsheets/pipeline",
+                "cheatsheets/schema",
+                "cheatsheets/stream",
+                "cheatsheets/templates",
+                "cheatsheets/utils",
+                "cheatsheets/xprompt"
             ]
         }
     ]

@@ -241,6 +241,15 @@ nav:
           - { Testing: packages/laravel/testing.md }
           - { Advanced: packages/laravel/advanced.md }
           - { Troubleshooting: packages/laravel/troubleshooting.md }
+      -
+        Xprompt:
+          - { Introduction: packages/xprompt/01-introduction.md }
+          - { 'Getting Started': packages/xprompt/02-getting-started.md }
+          - { Composition: packages/xprompt/03-composition.md }
+          - { Templates: packages/xprompt/04-templates.md }
+          - { 'Structured Data': packages/xprompt/05-structured-data.md }
+          - { 'Variants And Registry': packages/xprompt/06-variants-and-registry.md }
+          - { Configuration: packages/xprompt/07-configuration.md }
   -
     Cookbook:
       -
@@ -250,3 +259,45 @@ nav:
       -
         'Test Group':
           - { 'Test Example': cookbook/basics/TestGroup/.md }
+  -
+    Cheatsheets:
+      -
+        Overview: cheatsheets/index.md
+      -
+        Instructor: cheatsheets/instructor.md
+      -
+        Polyglot: cheatsheets/polyglot.md
+      -
+        Agents: cheatsheets/agents.md
+      -
+        AgentCtrl: cheatsheets/agent-ctrl.md
+      -
+        Sandbox: cheatsheets/sandbox.md
+      -
+        'HTTP Client': cheatsheets/http-client.md
+      -
+        Laravel: cheatsheets/laravel.md
+      -
+        Config: cheatsheets/config.md
+      -
+        Dynamic: cheatsheets/dynamic.md
+      -
+        Events: cheatsheets/events.md
+      -
+        Logging: cheatsheets/logging.md
+      -
+        Messages: cheatsheets/messages.md
+      -
+        Metrics: cheatsheets/metrics.md
+      -
+        Pipeline: cheatsheets/pipeline.md
+      -
+        Schema: cheatsheets/schema.md
+      -
+        Stream: cheatsheets/stream.md
+      -
+        Templates: cheatsheets/templates.md
+      -
+        Utils: cheatsheets/utils.md
+      -
+        Xprompt: cheatsheets/xprompt.md

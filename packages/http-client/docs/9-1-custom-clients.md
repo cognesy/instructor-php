@@ -80,11 +80,15 @@ class AcmeHttpDriver implements CanHandleHttpRequest
         }
     }
 
-    private function adaptStream($response): \Generator
+    private function adaptStream($response): \Cognesy\Http\Stream\StreamInterface
     {
-        foreach ($response->getStream() as $chunk) {
-            yield $chunk;
-        }
+        return \Cognesy\Http\Stream\BufferedStream::fromStream(
+            (function () use ($response) {
+                foreach ($response->getStream() as $chunk) {
+                    yield $chunk;
+                }
+            })()
+        );
     }
 }
 ```
@@ -169,7 +173,7 @@ This pattern works with any registered driver. The `withClientInstance()` method
 
 ## Streaming in Custom Drivers
 
-The `HttpResponse::streaming()` factory accepts any `StreamInterface` implementation or a PHP `iterable` (including generators). The simplest approach is to yield chunks from a generator:
+The `HttpResponse::streaming()` factory accepts a `StreamInterface` implementation. The simplest approach is to yield chunks from a generator and wrap them with `BufferedStream::fromStream()`:
 
 ```php
 public function handle(HttpRequest $request): HttpResponse

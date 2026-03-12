@@ -76,7 +76,7 @@ final class SchemaBuilder
         return new self($this->name, $this->description, $properties, $requiredSet, $this->schemaFactory);
     }
 
-    /** @param array<string, Schema>|array<int, Schema> $properties */
+    /** @param array<array-key, mixed> $properties */
     public function withProperties(array $properties) : self {
         $builder = $this;
         foreach ($properties as $name => $schema) {
@@ -154,7 +154,7 @@ final class SchemaBuilder
         return $this->withProperty($name, $schema, $required);
     }
 
-    /** @param callable(self):(self|array<string,Schema>|array<int,Schema>)|self|array<string,Schema>|array<int,Schema> $shape */
+    /** @param callable(self):(self|array<array-key,mixed>)|self|array<array-key,mixed> $shape */
     public function shape(
         string $name,
         callable|self|array $shape,
@@ -189,7 +189,7 @@ final class SchemaBuilder
         return $this->schema();
     }
 
-    /** @param callable(self):(self|array<string,Schema>|array<int,Schema>)|self|array<string,Schema>|array<int,Schema> $shape */
+    /** @param callable(self):(self|array<array-key,mixed>)|self|array<array-key,mixed> $shape */
     private static function resolveShape(string $name, string $description, callable|self|array $shape) : self {
         if ($shape instanceof self) {
             return $shape;

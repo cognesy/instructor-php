@@ -1,0 +1,177 @@
+---
+title: Templates
+description: 'Use Twig templates with front matter metadata for prompt content'
+---
+
+# Templates
+
+When prompt content is mostly markup — instructions, rubrics, output format specifications — a Twig template is easier to maintain than a PHP string. Xprompt integrates with the `packages/templates` engine so you can keep your `.twig` files next to your prompt classes.
+
+## Template-Backed Prompt
+
+Set `$templateFile` and `$templateDir` on your prompt class:
+
+```php
+use Cognesy\Xprompt\Prompt;
+
+class Analyze extends Prompt
+{
+    public string $templateFile = 'analyze.twig';
+    public ?string $templateDir = __DIR__ . '/templates';
+}
+// @doctest id="6675"
+```
+
+The template file `templates/analyze.twig`:
+
+```twig
+You will analyze the provided {{ content_type }} for quality issues.
+
+## Criteria
+- Clarity and readability
+- Logical consistency
+- Completeness of arguments
+
+## Input
+{{ content }}
+// @doctest id="0f3d"
+```
+
+Render it like any other prompt:
+
+```php
+echo Analyze::with(content_type: 'essay', content: $essay);
+// @doctest id="ac83"
+```
+
+Context variables map directly to Twig variables. The `body()` method you inherit handles loading, parsing, and rendering automatically.
+
+## Colocating Templates
+
+The recommended layout places templates alongside the prompt classes that use them:
+
+```
+src/Prompts/
+    Analyze.php
+    Summarize.php
+    templates/
+        analyze.twig
+        summarize.twig
+// @doctest id="ed36"
+```
+
+Each prompt sets `$templateDir = __DIR__ . '/templates'`, keeping paths relative and portable.
+
+## Front Matter
+
+Templates can include YAML front matter for metadata. The front matter is parsed but not rendered — it's available via the `meta()` method:
+
+```twig
+---
+description: Analyze content for quality
+model: sonnet
+version: v2
+---
+Analyze the following {{ topic }} in detail.
+
+Focus on {{ aspect }}.
+// @doctest id="b295"
+```
+
+```php
+$prompt = Analyze::make();
+$meta = $prompt->meta();
+// ['description' => 'Analyze content for quality', 'model' => 'sonnet', 'version' => 'v2']
+// @doctest id="cf5b"
+```
+
+This is useful for storing prompt metadata — suggested model, version, author — alongside the prompt content. Your application code can read `meta()` to make decisions about which model to use or to track prompt versions.
+
+## Introspection
+
+Template-backed prompts expose their variables and validation state:
+
+```php
+$prompt = Analyze::make();
+
+// List all template variables
+$prompt->variables();
+// ['content_type', 'content']
+
+// Check for missing or extra variables
+$prompt->validationErrors(content_type: 'code');
+// ['Missing variable: content']
+// @doctest id="80e3"
+```
+
+## Blocks
+
+Blocks let you inject pre-rendered prompt content into template variables. Define block classes, list them in `$blocks`, and reference them in your template as `{{ blocks.ClassName }}`:
+
+```php
+class Header extends Prompt
+{
+    public bool $isBlock = true;
+
+    public function body(mixed ...$ctx): string
+    {
+        return "# {$ctx['title']}";
+    }
+}
+
+class Footer extends Prompt
+{
+    public bool $isBlock = true;
+
+    public function body(mixed ...$ctx): string
+    {
+        return "---\nEnd of document.";
+    }
+}
+
+class Document extends Prompt
+{
+    public string $templateFile = 'document.twig';
+    public ?string $templateDir = __DIR__ . '/templates';
+    public array $blocks = [Header::class, Footer::class];
+}
+// @doctest id="c1b9"
+```
+
+The template `document.twig`:
+
+```twig
+{{ blocks.Header }}
+
+## Content
+{{ body_text }}
+
+{{ blocks.Footer }}
+// @doctest id="5121"
+```
+
+Blocks are rendered before the template, receiving the same context as the parent. The `isBlock = true` flag hides them from registry listings — they're internal building blocks, not standalone prompts.
+
+## Overriding body()
+
+If you need to add logic around template rendering, override `body()` and call `renderTemplate()` yourself, or compose the template prompt with other elements:
+
+```php
+class SmartAnalyze extends Prompt
+{
+    public function body(mixed ...$ctx): array
+    {
+        return [
+            Persona::with(role: 'analyst'),
+            AnalyzeTemplate::with(topic: $ctx['topic']),
+            $ctx['examples'] ? Examples::with(items: $ctx['examples']) : null,
+        ];
+    }
+}
+// @doctest id="4d01"
+```
+
+## Next Steps
+
+- [Structured Data](05-structured-data.md) — render lists and rubrics with NodeSet
+- [Variants & Registry](06-variants-and-registry.md) — swap template-backed prompts without changing callers

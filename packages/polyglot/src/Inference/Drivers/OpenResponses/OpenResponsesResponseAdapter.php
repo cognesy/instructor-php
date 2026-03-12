@@ -447,31 +447,27 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
     protected function markToolArgsSeen(OpenResponsesStreamContext $ctx, array $data, string $delta): string {
         $callId = $this->resolveCallId($ctx, $data);
         if ($callId !== null) {
-            $callKey = $callId->toString();
-            $ctx->toolArgsAccumulated[$callKey] = ($ctx->toolArgsAccumulated[$callKey] ?? '') . $delta;
+            $ctx->toolArgsSeen[$callId->toString()] = true;
         }
         return $delta;
     }
 
-    protected function maybeEmitDoneToolArgs(OpenResponsesStreamContext $ctx, array $data, ?string $arguments = null): string {
+    protected function hasSeenToolArgs(OpenResponsesStreamContext $ctx, array $data): bool {
         $callId = $this->resolveCallId($ctx, $data);
-        $fullArgs = (string) ($arguments ?? ($data['arguments'] ?? ''));
-
-        if ($callId === null || $fullArgs === '') {
-            return $fullArgs;
+        if ($callId === null) {
+            return false;
         }
+        return $ctx->toolArgsSeen[$callId->toString()] ?? false;
+    }
 
-        $callKey = $callId->toString();
-        $existing = $ctx->toolArgsAccumulated[$callKey] ?? '';
-        $ctx->toolArgsAccumulated[$callKey] = $fullArgs;
-
-        if ($existing === '') {
-            return $fullArgs;
+    /**
+     * Done event is a completion signal — if we already received deltas, ignore it.
+     * Only emit the full args if no deltas were seen (non-streaming response path).
+     */
+    protected function maybeEmitDoneToolArgs(OpenResponsesStreamContext $ctx, array $data, ?string $arguments = null): string {
+        if ($this->hasSeenToolArgs($ctx, $data)) {
+            return '';
         }
-        if (str_starts_with($fullArgs, $existing)) {
-            return substr($fullArgs, strlen($existing));
-        }
-
-        return $fullArgs;
+        return (string) ($arguments ?? ($data['arguments'] ?? ''));
     }
 }

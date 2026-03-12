@@ -21,9 +21,10 @@ supported backend:
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
-$prompt = 'Explain dependency injection in one sentence.';
+$prompt = Messages::fromString('Explain dependency injection in one sentence.');
 
 $openai    = Inference::using('openai')->withMessages($prompt)->get();
 $anthropic = Inference::using('anthropic')->withMessages($prompt)->get();
@@ -35,11 +36,12 @@ You can also override the model on a per-request basis without creating a new pr
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $response = Inference::using('openai')
     ->with(
-        messages: 'What is the capital of France?',
+        messages: Messages::fromString('What is the capital of France?'),
         model: 'gpt-4.1',
     )
     ->get();
@@ -62,19 +64,30 @@ Polyglot ships with the following driver types:
 | Driver | Providers |
 |---|---|
 | `openai` | OpenAI |
+| `openai-responses` | OpenAI (Responses API) |
 | `anthropic` | Anthropic |
 | `gemini` | Google Gemini (native API) |
 | `gemini-oai` | Google Gemini (OpenAI-compatible API) |
 | `azure` | Azure OpenAI |
+| `bedrock-openai` | AWS Bedrock (OpenAI-compatible) |
+| `a21` | AI21 Labs |
+| `cerebras` | Cerebras |
 | `cohere` | Cohere |
-| `mistral` | Mistral AI |
-| `groq` | Groq |
 | `deepseek` | DeepSeek |
 | `fireworks` | Fireworks AI |
+| `glm` | GLM |
+| `groq` | Groq |
+| `huggingface` | Hugging Face |
+| `inception` | Inception |
+| `meta` | Meta |
+| `minimaxi` | MiniMaxi |
+| `mistral` | Mistral AI |
 | `openrouter` | OpenRouter |
+| `openresponses` | Open Responses |
 | `perplexity` | Perplexity |
-| `xai` | xAI (Grok) |
+| `qwen` | Qwen |
 | `sambanova` | SambaNova |
+| `xai` | xAI (Grok) |
 | `openai-compatible` | Any OpenAI-compatible API (Ollama, Together, Moonshot, etc.) |
 
 
@@ -87,9 +100,10 @@ where you have the context to decide which providers to try and how to handle fa
 <?php
 
 use Cognesy\Polyglot\Inference\Inference;
-use Cognesy\Http\Exceptions\RequestException;
+use Cognesy\Http\Exceptions\HttpRequestException;
+use Cognesy\Messages\Messages;
 
-function withFallback(array $presets, string $prompt): string {
+function withFallback(array $presets, Messages $prompt): string {
     $lastException = null;
 
     foreach ($presets as $preset) {
@@ -97,7 +111,7 @@ function withFallback(array $presets, string $prompt): string {
             return Inference::using($preset)
                 ->withMessages($prompt)
                 ->get();
-        } catch (RequestException $e) {
+        } catch (HttpRequestException $e) {
             $lastException = $e;
             // Optionally log the failure before trying the next provider
         }
@@ -110,7 +124,7 @@ function withFallback(array $presets, string $prompt): string {
 
 $response = withFallback(
     presets: ['openai', 'anthropic', 'gemini'],
-    prompt: 'What is the capital of France?',
+    prompt: Messages::fromString('What is the capital of France?'),
 );
 ```
 
@@ -127,6 +141,7 @@ for simpler queries:
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 class CostAwareRouter {
@@ -140,7 +155,7 @@ class CostAwareRouter {
         $provider = $this->tiers[$tier] ?? $this->tiers['medium'];
 
         return Inference::using($provider['preset'])
-            ->with(messages: $question, model: $provider['model'])
+            ->with(messages: Messages::fromString($question), model: $provider['model'])
             ->get();
     }
 }
@@ -166,6 +181,7 @@ preset, routing creative writing to one model and code generation to another:
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 class TaskRouter {
@@ -180,7 +196,7 @@ class TaskRouter {
         $preset = $this->routes[$taskType] ?? $this->routes['default'];
 
         return Inference::using($preset)
-            ->withMessages($question)
+            ->withMessages(Messages::fromString($question))
             ->get();
     }
 }
@@ -204,12 +220,13 @@ to issue many requests against the same provider, create the instance once and r
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $inference = Inference::using('openai');
 
-$answer1 = $inference->withMessages('What is PHP?')->get();
-$answer2 = $inference->withMessages('What is Laravel?')->get();
+$answer1 = $inference->withMessages(Messages::fromString('What is PHP?'))->get();
+$answer2 = $inference->withMessages(Messages::fromString('What is Laravel?'))->get();
 ```
 
 Because `Inference` uses immutable builder methods (each call returns a new copy), sharing a

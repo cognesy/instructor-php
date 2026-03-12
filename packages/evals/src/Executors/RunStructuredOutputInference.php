@@ -9,6 +9,7 @@ use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\PendingStructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 class RunStructuredOutputInference implements CanRunExecution
@@ -37,7 +38,7 @@ class RunStructuredOutputInference implements CanRunExecution
             ->create();
 
         $request = new StructuredOutputRequest(
-            messages: $this->structuredOutputData->messages,
+            messages: Messages::fromAny($this->structuredOutputData->messages),
             requestedSchema: $this->structuredOutputData->responseModel,
             system: $this->structuredOutputData->system,
             prompt: $this->structuredOutputData->prompt,

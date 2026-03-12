@@ -54,8 +54,7 @@ $so = (new StructuredOutput())
     ->withMessages('Jason is 25 years old')
     ->withResponseClass(User::class)
     ->withSystem('Extract user data from the text.')
-    ->withModel('gpt-4o')
-    ->withMaxRetries(2);
+    ->withModel('gpt-4o');
 ```
 
 Or equivalently:

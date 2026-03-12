@@ -18,9 +18,10 @@ Pass options through `withOptions()` or the `options` parameter on `with()`:
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 $text = Inference::using('openai')
-    ->withMessages('Write one short sentence about PHP.')
+    ->withMessages(Messages::fromString('Write one short sentence about PHP.'))
     ->withOptions([
         'temperature' => 0.2,
         'top_p' => 0.9,
@@ -68,7 +69,7 @@ Different providers accept different option keys. Here are a few examples:
 
 ```php
 $response = Inference::using('openai')
-    ->withMessages('Write a poem about programming.')
+    ->withMessages(Messages::fromString('Write a poem about programming.'))
     ->withOptions([
         'temperature' => 0.7,
         'top_p' => 0.9,
@@ -82,7 +83,7 @@ $response = Inference::using('openai')
 
 ```php
 $response = Inference::using('anthropic')
-    ->withMessages('Write a poem about programming.')
+    ->withMessages(Messages::fromString('Write a poem about programming.'))
     ->withOptions([
         'temperature' => 0.7,
         'top_p' => 0.9,
@@ -110,7 +111,7 @@ $retryPolicy = new InferenceRetryPolicy(
 );
 
 $response = Inference::using('openai')
-    ->withMessages('Summarize this article.')
+    ->withMessages(Messages::fromString('Summarize this article.'))
     ->withRetryPolicy($retryPolicy)
     ->get();
 ```
@@ -128,6 +129,7 @@ recover from truncated responses:
 | `retryOnExceptions`   | Timeout, Network    | Exception classes that trigger a retry          |
 | `lengthRecovery`      | `'none'`            | Recovery mode: `none`, `continue`, `increase_max_tokens` |
 | `lengthMaxAttempts`   | `1`                 | Max attempts for length recovery                |
+| `lengthContinuePrompt` | `'Continue.'`     | Prompt used for `continue` recovery mode        |
 | `maxTokensIncrement`  | `512`               | Token increment for `increase_max_tokens` mode  |
 
 ## Response Cache Policy
@@ -140,7 +142,7 @@ use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 use Cognesy\Polyglot\Inference\Inference;
 
 $response = Inference::using('openai')
-    ->withMessages('What is 2 + 2?')
+    ->withMessages(Messages::fromString('What is 2 + 2?'))
     ->withResponseCachePolicy(ResponseCachePolicy::Memory)
     ->get();
 ```
@@ -159,19 +161,22 @@ definitions, or response formats that remain constant across multiple calls:
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 
 $base = Inference::using('openai')->withCachedContext(
-    messages: [
+    messages: Messages::fromArray([
         ['role' => 'system', 'content' => 'You are an expert PHP developer.'],
-    ],
+    ]),
     tools: $sharedToolDefinitions,
-    toolChoice: 'auto',
-    responseFormat: ['type' => 'json_object'],
+    toolChoice: ToolChoice::auto(),
+    responseFormat: ResponseFormat::jsonObject(),
 );
 
 // Each call inherits the cached context automatically
-$response1 = $base->withMessages('Explain SOLID principles.')->get();
-$response2 = $base->withMessages('What is the Repository pattern?')->get();
+$response1 = $base->withMessages(Messages::fromString('Explain SOLID principles.'))->get();
+$response2 = $base->withMessages(Messages::fromString('What is the Repository pattern?'))->get();
 ```
 
 When the request is executed, cached context is merged with the request-level fields:

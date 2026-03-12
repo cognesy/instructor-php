@@ -118,32 +118,35 @@ Supported inference drivers include:
 
 | Driver Name | Class | Notes |
 |---|---|---|
-| `openai` | `OpenAIDriver` | OpenAI Chat Completions API |
-| `openai-responses` | `OpenAIResponsesDriver` | OpenAI Responses API |
+| `a21` | `A21Driver` | A21 Labs |
 | `anthropic` | `AnthropicDriver` | Anthropic Messages API |
 | `azure` | `AzureDriver` | Azure OpenAI |
 | `bedrock-openai` | `BedrockOpenAIDriver` | AWS Bedrock (OpenAI-compatible) |
-| `gemini` | `GeminiDriver` | Google Gemini native API |
-| `gemini-oai` | `GeminiOAIDriver` | Gemini via OpenAI-compatible endpoint |
-| `groq` | `GroqDriver` | Groq |
-| `mistral` | `MistralDriver` | Mistral |
+| `cerebras` | `CerebrasDriver` | Cerebras |
 | `cohere` | `CohereV2Driver` | Cohere v2 |
 | `deepseek` | `DeepseekDriver` | DeepSeek |
 | `fireworks` | `FireworksDriver` | Fireworks AI |
+| `gemini` | `GeminiDriver` | Google Gemini native API |
+| `gemini-oai` | `GeminiOAIDriver` | Gemini via OpenAI-compatible endpoint |
+| `glm` | `GlmDriver` | GLM |
+| `groq` | `GroqDriver` | Groq |
+| `huggingface` | `HuggingFaceDriver` | Hugging Face |
+| `inception` | `InceptionDriver` | Inception |
 | `meta` | `MetaDriver` | Meta Llama API |
+| `minimaxi` | `MinimaxiDriver` | Minimaxi |
+| `mistral` | `MistralDriver` | Mistral |
+| `openai` | `OpenAIDriver` | OpenAI Chat Completions API |
+| `openai-responses` | `OpenAIResponsesDriver` | OpenAI Responses API |
+| `openresponses` | `OpenResponsesDriver` | Open Responses API |
+| `openrouter` | `OpenRouterDriver` | OpenRouter |
 | `perplexity` | `PerplexityDriver` | Perplexity |
 | `qwen` | `QwenDriver` | Alibaba Qwen |
 | `sambanova` | `SambaNovaDriver` | SambaNova |
 | `xai` | `XAiDriver` | xAI (Grok) |
-| `openrouter` | `OpenRouterDriver` | OpenRouter |
-| `inception` | `InceptionDriver` | Inception |
-| `minimaxi` | `MinimaxiDriver` | Minimaxi |
-| `glm` | `GlmDriver` | GLM |
-| `huggingface` | `HuggingFaceDriver` | Hugging Face |
-| `openai-compatible` | `OpenAICompatibleDriver` | Generic OpenAI-compatible APIs |
-| `ollama` | `OpenAICompatibleDriver` | Ollama (via OpenAI-compatible) |
-| `together` | `OpenAICompatibleDriver` | Together AI (via OpenAI-compatible) |
 | `moonshot` | `OpenAICompatibleDriver` | Moonshot (via OpenAI-compatible) |
+| `ollama` | `OpenAICompatibleDriver` | Ollama (via OpenAI-compatible) |
+| `openai-compatible` | `OpenAICompatibleDriver` | Generic OpenAI-compatible APIs |
+| `together` | `OpenAICompatibleDriver` | Together AI (via OpenAI-compatible) |
 
 You can extend the registry with custom drivers:
 
@@ -171,27 +174,30 @@ You can also remove drivers from the registry:
 $registry = $registry->withoutDriver('openai-compatible');
 ```
 
-### Embeddings Driver Factory
+### Embeddings Driver Registry
 
-The `EmbeddingsDriverFactory` follows a similar pattern. Bundled embeddings drivers include: `openai`, `azure`, `cohere`, `gemini`, `jina`, `mistral`, and `ollama`.
+The `EmbeddingsDriverRegistry` follows the same immutable instance-based pattern as `InferenceDriverRegistry`. Bundled embeddings drivers are provided via `BundledEmbeddingsDrivers::registry()` and include: `openai`, `azure`, `cohere`, `gemini`, `jina`, `mistral`, and `ollama`.
 
-Custom embeddings drivers can be registered statically:
+Custom embeddings drivers can be registered through the registry:
 
 ```php
-use Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory;
+use Cognesy\Polyglot\Embeddings\Creation\BundledEmbeddingsDrivers;
 
-EmbeddingsDriverFactory::registerDriver('my-provider', MyEmbeddingsDriver::class);
+$registry = BundledEmbeddingsDrivers::registry()
+    ->withDriver('my-provider', MyEmbeddingsDriver::class);
+
+$runtime = EmbeddingsRuntime::fromConfig($config, drivers: $registry);
 ```
 
 Or with a factory callable:
 
 ```php
-EmbeddingsDriverFactory::registerDriver('my-provider', function ($config, $httpClient, $events) {
+$registry = $registry->withDriver('my-provider', function ($config, $httpClient, $events) {
     return new MyEmbeddingsDriver($config, $httpClient, $events);
 });
 ```
 
-> **Note:** The `EmbeddingsDriverFactory` uses static registration, while `InferenceDriverRegistry` uses immutable instance-based registration. This means embeddings driver registrations are global, while inference driver registrations can vary per runtime.
+Both `InferenceDriverRegistry` and `EmbeddingsDriverRegistry` use immutable instance-based registration, so driver registrations can vary per runtime.
 
 
 ## Key Contracts

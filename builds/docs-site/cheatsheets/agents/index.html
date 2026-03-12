@@ -1,0 +1,2332 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Agent loop, state model, tools, context management, hooks, and subagent orchestration">
+      
+      
+        <meta name="author" content="Dariusz Debowczyk">
+      
+      
+        <link rel="canonical" href="https://cognesy.github.io/instructor-php/cheatsheets/agents/">
+      
+      
+        <link rel="prev" href="../polyglot/">
+      
+      
+        <link rel="next" href="../agent-ctrl/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Agents - Instructor for PHP</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/nav.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#agents-package-cheatsheet" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Instructor for PHP" class="md-header__button md-logo" aria-label="Instructor for PHP" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Instructor for PHP
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Agents
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/cognesy/instructor-php" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    instructor-php
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../.." class="md-tabs__link">
+          
+  
+  
+    
+  
+  Main
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../packages/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Packages
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../cookbook/introduction/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Cookbook
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Cheatsheets
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Instructor for PHP" class="md-nav__button md-logo" aria-label="Instructor for PHP" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Instructor for PHP
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/cognesy/instructor-php" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    instructor-php
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../.." class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Main
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../packages/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Packages
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../cookbook/introduction/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cookbook
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+      
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cheatsheets
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Cheatsheets
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../instructor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Instructor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../polyglot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Polyglot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agents
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-core-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Core Loop
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-state-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. State Model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-enums" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Enums
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-collections" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Collections
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Tools
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Tools">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#contracts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contracts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#base-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Base classes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-drivers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Drivers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-continuation-stop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Continuation / Stop
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-hooks-interception" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Hooks / Interception
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-builder-capabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Builder / Capabilities
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-broadcasting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Broadcasting
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Templates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-sessions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Sessions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Events
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-skills" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. Skills
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17. Testing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18-docs-index" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18. Docs Index
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../agent-ctrl/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AgentCtrl
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sandbox/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sandbox
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../http-client/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP Client
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../laravel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Laravel
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dynamic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dynamic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../logging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../messages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Messages
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../metrics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metrics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../stream/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stream
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../templates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Templates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Utils
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-core-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Core Loop
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-state-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. State Model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-enums" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Enums
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-collections" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Collections
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Tools
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Tools">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#contracts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contracts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#base-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Base classes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-drivers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Drivers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-continuation-stop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Continuation / Stop
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-hooks-interception" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Hooks / Interception
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-builder-capabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Builder / Capabilities
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-broadcasting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Broadcasting
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Templates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-sessions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Sessions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Events
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-skills" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. Skills
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17. Testing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18-docs-index" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18. Docs Index
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/cognesy/instructor-php/edit/main/builds/docs-mkdocs/cheatsheets/agents.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75z"/></svg>
+    </a>
+  
+  
+    
+      
+    
+    <a href="https://github.com/cognesy/instructor-php/raw/main/builds/docs-mkdocs/cheatsheets/agents.md" title="View source of this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0 8a5 5 0 0 1-5-5 5 5 0 0 1 5-5 5 5 0 0 1 5 5 5 5 0 0 1-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5"/></svg>
+    </a>
+  
+
+
+<h1 id="agents-package-cheatsheet">Agents Package Cheatsheet<a class="headerlink" href="#agents-package-cheatsheet" title="Permanent link">&para;</a></h1>
+<p>Root namespace: <code>Cognesy\Agents</code></p>
+<p>This file is a quick, code-aligned map of the package surface.
+For narrative guidance and examples, use <code>packages/agents/docs/*.md</code>.</p>
+<h2 id="1-core-loop">1. Core Loop<a class="headerlink" href="#1-core-loop" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>AgentLoop</code> (readonly)</li>
+<li>main orchestrator, implements <code>CanControlAgentLoop</code> and <code>CanAcceptEventHandler</code></li>
+<li>key API: <code>default()</code>, <code>execute()</code>, <code>iterate()</code></li>
+<li>accessors: <code>tools()</code>, <code>toolExecutor()</code>, <code>driver()</code>, <code>eventHandler()</code>, <code>interceptor()</code></li>
+<li>composition API: <code>withTool()</code>, <code>withTools()</code>, <code>withDriver()</code>, <code>withToolExecutor()</code>, <code>withInterceptor()</code>, <code>withEventHandler()</code>, <code>with()</code></li>
+<li>event API: <code>wiretap()</code>, <code>onEvent()</code></li>
+<li>note: terminal executions are auto-reset on entry to <code>execute()</code> / <code>iterate()</code></li>
+<li><code>CanControlAgentLoop</code></li>
+<li>contract: <code>execute(AgentState): AgentState</code>, <code>iterate(AgentState): iterable</code></li>
+</ul>
+<h2 id="2-state-model">2. State Model<a class="headerlink" href="#2-state-model" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Data\AgentState</code></li>
+<li>immutable runtime state</li>
+<li>factories: <code>empty()</code>, <code>fromArray()</code></li>
+<li>identity: <code>agentId()</code>, <code>parentAgentId()</code>, <code>llmConfig()</code>, <code>executionCount()</code>, <code>createdAt()</code>, <code>updatedAt()</code></li>
+<li>common mutators: <code>withUserMessage()</code>, <code>withSystemPrompt()</code>, <code>withMetadata()</code>, <code>withMessages()</code>, <code>withMessageStore()</code>, <code>withLLMConfig()</code>, <code>with()</code></li>
+<li>step mutators: <code>withCurrentStep()</code>, <code>withCurrentStepCompleted()</code>, <code>withExecutionCompleted()</code>, <code>withExecutionContinued()</code></li>
+<li>stop/failure: <code>withStopSignal()</code>, <code>withFailure()</code>, <code>withExecutionStatus()</code></li>
+<li>context access: <code>context()</code>, <code>store()</code>, <code>messages()</code>, <code>metadata()</code></li>
+<li>result access: <code>finalResponse()</code>, <code>currentResponse()</code>, <code>hasFinalResponse()</code></li>
+<li>execution access: <code>execution()</code>, <code>status()</code>, <code>stepCount()</code>, <code>steps()</code>, <code>usage()</code>, <code>errors()</code>, <code>hasErrors()</code></li>
+<li>last-step accessors: <code>lastStep()</code>, <code>lastStepExecution()</code>, <code>lastStepToolExecutions()</code>, <code>lastToolExecution()</code>, <code>lastStepErrors()</code>, <code>lastStepType()</code>, <code>lastStepUsage()</code>, <code>lastStepDuration()</code>, <code>lastStopSignal()</code>, <code>lastStopReason()</code>, <code>lastStopSource()</code></li>
+<li>control: <code>shouldStop()</code>, <code>forNextExecution()</code></li>
+<li>serialization: <code>debug()</code>, <code>toArray()</code>, <code>fromArray()</code></li>
+<li><code>Data\ExecutionState</code></li>
+<li>per-execution transient state (<code>executionId</code>, status, steps, continuation)</li>
+<li><code>Data\AgentStep</code></li>
+<li>one loop step snapshot (<code>inputMessages</code>, <code>outputMessages</code>, <code>inferenceResponse</code>, <code>toolExecutions</code>, <code>errors</code>)</li>
+<li><code>Data\StepExecution</code></li>
+<li>completed step wrapper with timing</li>
+<li><code>Data\ToolExecution</code></li>
+<li>one executed tool call (<code>value()</code>, <code>hasError()</code>, <code>errorAsString()</code>, <code>wasBlocked()</code>)</li>
+<li><code>Data\ExecutionBudget</code></li>
+<li>optional limits: <code>maxSteps</code>, <code>maxTokens</code>, <code>maxSeconds</code>, <code>maxCost</code>, <code>deadline</code></li>
+<li>factories: <code>unlimited()</code></li>
+<li>queries: <code>isEmpty()</code>, <code>isExhausted()</code></li>
+<li><code>Data\AgentId</code>, <code>Data\ExecutionId</code>, <code>Data\AgentStepId</code>, <code>Data\ToolExecutionId</code></li>
+<li>typed ID value objects</li>
+</ul>
+<h2 id="3-enums">3. Enums<a class="headerlink" href="#3-enums" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Enums\ExecutionStatus</code> -- <code>Pending</code>, <code>InProgress</code>, <code>Completed</code>, <code>Stopped</code>, <code>Failed</code></li>
+<li><code>Enums\AgentStepType</code> -- <code>ToolExecution</code>, <code>FinalResponse</code>, <code>Error</code></li>
+</ul>
+<h2 id="4-collections">4. Collections<a class="headerlink" href="#4-collections" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Collections\Tools</code></li>
+<li>immutable named tool collection</li>
+<li>key API: <code>has()</code>, <code>get()</code>, <code>names()</code>, <code>all()</code>, <code>count()</code>, <code>isEmpty()</code>, <code>descriptions()</code>, <code>withTool()</code>, <code>withTools()</code>, <code>withToolRemoved()</code>, <code>merge()</code>, <code>toToolSchema(): ToolDefinitions</code></li>
+<li><code>Collections\AgentSteps</code></li>
+<li><code>Collections\StepExecutions</code></li>
+<li><code>Collections\ToolExecutions</code></li>
+<li><code>Collections\NameList</code></li>
+</ul>
+<h2 id="5-tools">5. Tools<a class="headerlink" href="#5-tools" title="Permanent link">&para;</a></h2>
+<h3 id="contracts">Contracts<a class="headerlink" href="#contracts" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>Tool\Contracts\ToolInterface</code></li>
+<li><code>use(mixed ...$args): Result</code></li>
+<li><code>toToolSchema(): ToolDefinition</code></li>
+<li><code>descriptor(): CanDescribeTool</code></li>
+<li><code>Tool\Contracts\CanDescribeTool</code></li>
+<li><code>name()</code>, <code>description()</code>, <code>metadata()</code>, <code>instructions()</code></li>
+<li><code>Tool\Contracts\CanExecuteToolCalls</code></li>
+<li><code>executeTools(ToolCalls, AgentState): ToolExecutions</code></li>
+<li><code>Tool\Contracts\CanAccessAgentState</code></li>
+<li><code>Tool\Contracts\CanAccessToolCall</code></li>
+<li><code>Tool\Contracts\CanManageTools</code></li>
+</ul>
+<h3 id="base-classes">Base classes<a class="headerlink" href="#base-classes" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>Tool\Tools\SimpleTool</code></li>
+<li><code>Tool\Tools\ReflectiveSchemaTool</code></li>
+<li><code>Tool\Tools\FunctionTool</code></li>
+<li><code>Tool\Tools\StateAwareTool</code></li>
+<li><code>Tool\Tools\BaseTool</code></li>
+<li><code>Tool\Tools\ContextAwareTool</code></li>
+<li><code>Tool\Tools\FakeTool</code></li>
+</ul>
+<h3 id="runtime">Runtime<a class="headerlink" href="#runtime" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>Tool\ToolExecutor</code></li>
+<li><code>Tool\ToolRegistry</code></li>
+<li><code>Tool\ToolDescriptor</code></li>
+</ul>
+<h2 id="6-drivers">6. Drivers<a class="headerlink" href="#6-drivers" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Drivers\CanUseTools</code></li>
+<li><code>Drivers\CanAcceptToolRuntime</code></li>
+<li><code>Drivers\ToolCalling\ToolCallingDriver</code> (default)</li>
+<li><code>Drivers\ToolCalling\ToolExecutionFormatter</code></li>
+<li><code>Drivers\ReAct\ReActDriver</code></li>
+<li><code>Drivers\Testing\FakeAgentDriver</code></li>
+<li><code>Drivers\Testing\ScenarioStep</code></li>
+</ul>
+<h2 id="7-context">7. Context<a class="headerlink" href="#7-context" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Context\AgentContext</code></li>
+<li><code>Context\CanCompileMessages</code></li>
+<li><code>Context\CanAcceptMessageCompiler</code></li>
+<li><code>Context\ContextSections</code></li>
+</ul>
+<p>Compilers:</p>
+<ul>
+<li><code>Context\Compilers\ConversationWithCurrentToolTrace</code> (default)</li>
+<li><code>Context\Compilers\AllSections</code></li>
+<li><code>Context\Compilers\SelectedSections</code></li>
+</ul>
+<h2 id="8-continuation-stop">8. Continuation / Stop<a class="headerlink" href="#8-continuation-stop" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Continuation\StopReason</code></li>
+<li><code>Continuation\StopSignal</code></li>
+<li><code>Continuation\StopSignals</code></li>
+<li><code>Continuation\ExecutionContinuation</code></li>
+<li><code>Continuation\AgentStopException</code></li>
+</ul>
+<h2 id="9-hooks-interception">9. Hooks / Interception<a class="headerlink" href="#9-hooks-interception" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Hook\Contracts\HookInterface</code></li>
+<li><code>Hook\Data\HookContext</code></li>
+<li><code>Hook\Data\RegisteredHook</code></li>
+<li><code>Hook\Collections\RegisteredHooks</code></li>
+<li><code>Hook\Enums\HookTrigger</code></li>
+<li>values: <code>BeforeExecution</code>, <code>BeforeStep</code>, <code>BeforeToolUse</code>, <code>AfterToolUse</code>, <code>AfterStep</code>, <code>OnStop</code>, <code>AfterExecution</code>, <code>OnError</code></li>
+<li><code>Hook\Collections\HookTriggers</code></li>
+<li><code>Hook\HookStack</code></li>
+</ul>
+<p>Built-in hooks:</p>
+<ul>
+<li><code>Hook\Hooks\CallableHook</code></li>
+<li><code>Hook\Hooks\StepsLimitHook</code></li>
+<li><code>Hook\Hooks\TokenUsageLimitHook</code></li>
+<li><code>Hook\Hooks\ExecutionTimeLimitHook</code></li>
+<li><code>Hook\Hooks\FinishReasonHook</code></li>
+<li><code>Hook\Hooks\ApplyContextConfigHook</code></li>
+</ul>
+<p>Interception:</p>
+<ul>
+<li><code>Interception\CanInterceptAgentLifecycle</code></li>
+<li><code>Interception\PassThroughInterceptor</code></li>
+</ul>
+<h2 id="10-builder-capabilities">10. Builder / Capabilities<a class="headerlink" href="#10-builder-capabilities" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Builder\AgentBuilder</code></li>
+<li><code>Builder\AgentConfigurator</code></li>
+<li><code>Builder\Contracts\CanProvideAgentCapability</code></li>
+<li><code>Builder\Contracts\CanConfigureAgent</code></li>
+<li><code>Builder\Contracts\CanComposeAgentLoop</code></li>
+<li><code>Builder\Contracts\CanProvideDeferredTools</code></li>
+<li><code>Builder\Collections\DeferredToolProviders</code></li>
+<li><code>Builder\Data\DeferredToolContext</code></li>
+</ul>
+<p>Capability registry:</p>
+<ul>
+<li><code>Capability\AgentCapabilityRegistry</code></li>
+<li><code>Capability\CanManageAgentCapabilities</code></li>
+</ul>
+<p>Core capabilities:</p>
+<ul>
+<li><code>Capability\Core\UseLLMConfig</code></li>
+<li><code>Capability\Core\UseGuards</code></li>
+<li><code>Capability\Core\UseTools</code></li>
+<li><code>Capability\Core\UseToolFactory</code></li>
+<li><code>Capability\Core\UseHook</code></li>
+<li><code>Capability\Core\UseDriver</code></li>
+<li><code>Capability\Core\UseDriverDecorator</code></li>
+<li><code>Capability\Core\UseContextCompiler</code></li>
+<li><code>Capability\Core\UseContextCompilerDecorator</code></li>
+<li><code>Capability\Core\UseContextConfig</code></li>
+<li><code>Capability\Core\UseReActConfig</code></li>
+</ul>
+<p>Domain capabilities:</p>
+<ul>
+<li><code>Capability\Bash\UseBash</code></li>
+<li><code>Capability\File\UseFileTools</code></li>
+<li>installs: <code>read_file</code>, <code>write_file</code>, <code>edit_file</code></li>
+<li>standalone file tools also available: <code>SearchFilesTool</code>, <code>ListDirTool</code></li>
+<li><code>Capability\Metadata\UseMetadataTools</code></li>
+<li><code>Capability\Subagent\UseSubagents</code></li>
+<li><code>Capability\PlanningSubagent\UsePlanningSubagent</code></li>
+<li><code>Capability\StructuredOutput\UseStructuredOutputs</code></li>
+<li><code>Capability\Summarization\UseSummarization</code></li>
+<li><code>Capability\SelfCritique\UseSelfCritique</code></li>
+<li><code>Capability\Skills\UseSkills</code></li>
+<li><code>Capability\Tasks\UseTaskPlanning</code></li>
+<li><code>Capability\Tools\UseToolRegistry</code></li>
+<li><code>Capability\ExecutionHistory\UseExecutionHistory</code></li>
+<li><code>Capability\Retrospective\UseExecutionRetrospective</code></li>
+<li><code>Capability\Broadcasting\UseAgentBroadcasting</code></li>
+</ul>
+<h2 id="11-broadcasting">11. Broadcasting<a class="headerlink" href="#11-broadcasting" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Broadcasting\AgentEventBroadcaster</code></li>
+<li><code>Broadcasting\AgentBroadcastObserver</code></li>
+<li><code>Broadcasting\BroadcastConfig</code></li>
+<li><code>Broadcasting\CanBroadcastAgentEvents</code></li>
+</ul>
+<h2 id="12-templates">12. Templates<a class="headerlink" href="#12-templates" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Template\Data\AgentDefinition</code></li>
+<li>core fields: <code>name</code>, <code>description</code>, <code>systemPrompt</code>, <code>label</code>, <code>llmConfig</code>, <code>capabilities</code>, <code>tools</code>, <code>toolsDeny</code>, <code>skills</code>, <code>budget</code>, <code>metadata</code></li>
+<li>tool semantics: <code>tools === null</code> means inherit all available tools</li>
+<li><code>Template\AgentDefinitionLoader</code></li>
+<li><code>Template\AgentDefinitionRegistry</code></li>
+<li><code>Template\Contracts\CanManageAgentDefinitions</code></li>
+<li><code>Template\Contracts\CanInstantiateAgentLoop</code></li>
+<li><code>Template\Contracts\CanInstantiateAgentState</code></li>
+<li><code>Template\Parsers\CanParseAgentDefinition</code></li>
+<li><code>Template\Factory\DefinitionStateFactory</code></li>
+<li><code>Template\Factory\DefinitionLoopFactory</code></li>
+<li>parsers: <code>Template\Parsers\MarkdownDefinitionParser</code>, <code>JsonDefinitionParser</code>, <code>YamlDefinitionParser</code></li>
+</ul>
+<h2 id="13-sessions">13. Sessions<a class="headerlink" href="#13-sessions" title="Permanent link">&para;</a></h2>
+<p>Core:</p>
+<ul>
+<li><code>Session\Data\SessionId</code></li>
+<li><code>Session\Data\AgentSessionInfo</code></li>
+<li><code>Session\Data\AgentSession</code></li>
+<li>access: <code>info()</code>, <code>definition()</code>, <code>state()</code>, <code>sessionId()</code>, <code>status()</code>, <code>version()</code></li>
+<li><code>Session\SessionFactory</code></li>
+<li><code>Session\SessionRepository</code></li>
+<li><code>Session\SessionRuntime</code></li>
+</ul>
+<p>Contracts:</p>
+<ul>
+<li><code>Session\Contracts\CanManageAgentSessions</code></li>
+<li><code>Session\Contracts\CanExecuteSessionAction</code></li>
+<li><code>Session\Contracts\CanStoreSessions</code></li>
+<li><code>Session\Contracts\CanControlAgentSession</code></li>
+</ul>
+<p>Stores:</p>
+<ul>
+<li><code>Session\Store\InMemorySessionStore</code></li>
+<li><code>Session\Store\FileSessionStore</code></li>
+</ul>
+<p>Actions:</p>
+<ul>
+<li><code>Session\Actions\SendMessage</code></li>
+<li><code>Session\Actions\ForkSession</code> (returns a new branch session object; persist via repository <code>create()</code>)</li>
+<li><code>Session\Actions\ResumeSession</code></li>
+<li><code>Session\Actions\SuspendSession</code></li>
+<li><code>Session\Actions\ClearSession</code></li>
+<li><code>Session\Actions\ChangeModel</code></li>
+<li><code>Session\Actions\ChangeSystemPrompt</code></li>
+<li><code>Session\Actions\WriteMetadata</code></li>
+<li><code>Session\Actions\UpdateTask</code></li>
+</ul>
+<p>Enums:</p>
+<ul>
+<li><code>Session\Enums\SessionStatus</code> -- <code>Active</code>, <code>Suspended</code>, <code>Completed</code>, <code>Failed</code>, <code>Deleted</code></li>
+<li><code>Session\Enums\AgentSessionStage</code> -- <code>AfterLoad</code>, <code>AfterAction</code>, <code>BeforeSave</code>, <code>AfterSave</code></li>
+</ul>
+<p>Session hooks:</p>
+<ul>
+<li><code>Session\SessionHookStack</code></li>
+<li><code>Session\RegisteredSessionHook</code></li>
+<li><code>Session\PassThroughSessionController</code></li>
+<li><code>Session\Collections\SessionInfoList</code></li>
+</ul>
+<p>Exceptions:</p>
+<ul>
+<li><code>Session\Exceptions\SessionNotFoundException</code></li>
+<li><code>Session\Exceptions\SessionConflictException</code></li>
+<li><code>Session\Exceptions\InvalidSessionFileException</code></li>
+</ul>
+<h2 id="14-events">14. Events<a class="headerlink" href="#14-events" title="Permanent link">&para;</a></h2>
+<p>Agent events include:</p>
+<ul>
+<li><code>AgentExecutionStarted</code>, <code>AgentStepStarted</code>, <code>AgentStepCompleted</code></li>
+<li><code>AgentExecutionStopped</code>, <code>AgentExecutionCompleted</code>, <code>AgentExecutionFailed</code></li>
+<li><code>AgentStateUpdated</code></li>
+<li><code>ContinuationEvaluated</code>, <code>StopSignalReceived</code>, <code>TokenUsageReported</code></li>
+<li><code>ToolCallStarted</code>, <code>ToolCallCompleted</code>, <code>ToolCallBlocked</code></li>
+<li><code>InferenceRequestStarted</code>, <code>InferenceResponseReceived</code></li>
+<li><code>SubagentSpawning</code>, <code>SubagentCompleted</code></li>
+<li><code>HookExecuted</code>, <code>DecisionExtractionFailed</code>, <code>ValidationFailed</code></li>
+<li><code>Events\AgentEvent</code> (base class)</li>
+</ul>
+<p>Event support:</p>
+<ul>
+<li><code>Events\Support\AgentEventConsoleFormatter</code></li>
+<li><code>Events\Support\AgentEventConsoleObserver</code></li>
+</ul>
+<p>Session events include:</p>
+<ul>
+<li><code>SessionLoaded</code>, <code>SessionActionExecuted</code>, <code>SessionSaved</code></li>
+<li><code>SessionLoadFailed</code>, <code>SessionSaveFailed</code></li>
+</ul>
+<h2 id="15-exceptions">15. Exceptions<a class="headerlink" href="#15-exceptions" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Exceptions\AgentException</code> (base)</li>
+<li><code>Exceptions\AgentNotFoundException</code></li>
+<li><code>Exceptions\InvalidToolException</code></li>
+<li><code>Exceptions\InvalidToolArgumentsException</code></li>
+<li><code>Exceptions\ToolCallBlockedException</code></li>
+<li><code>Exceptions\ToolExecutionBlockedException</code></li>
+<li><code>Exceptions\ToolExecutionException</code></li>
+</ul>
+<h2 id="16-skills">16. Skills<a class="headerlink" href="#16-skills" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Capability\Skills\Skill</code></li>
+<li>immutable skill value object</li>
+<li>standard fields: <code>name</code>, <code>description</code>, <code>license</code>, <code>compatibility</code>, <code>metadata</code>, <code>allowedTools</code>, <code>body</code>, <code>path</code>, <code>resources</code></li>
+<li>extension fields: <code>disableModelInvocation</code>, <code>userInvocable</code>, <code>argumentHint</code>, <code>model</code>, <code>context</code>, <code>agent</code></li>
+<li>key API: <code>render(?string $arguments)</code>, <code>renderMetadata()</code>, <code>toArray()</code></li>
+<li>argument substitution: <code>$ARGUMENTS</code>, <code>$ARGUMENTS[N]</code>, <code>$N</code> placeholders</li>
+<li><code>Capability\Skills\SkillLibrary</code></li>
+<li>discovers <code>SKILL.md</code> files in <code>&lt;path&gt;/&lt;skill-name&gt;/SKILL.md</code></li>
+<li>lazy-loads skill content on first access, caches result</li>
+<li>key API: <code>listSkills(modelInvocable, userInvocable)</code>, <code>hasSkill()</code>, <code>getSkill()</code>, <code>renderSkillList()</code></li>
+<li>resource discovery: scans <code>scripts/</code>, <code>references/</code>, <code>assets/</code>, <code>examples/</code> subdirs</li>
+<li><code>Capability\Skills\LoadSkillTool</code></li>
+<li>tool exposed to LLM: <code>load_skill(skill_name, list_skills, arguments)</code></li>
+<li>user-invocable filtering on list mode</li>
+<li><code>Capability\Skills\AppendSkillMetadataHook</code></li>
+<li>injects skill names/descriptions as system message before first step</li>
+<li>filters out <code>disable-model-invocation: true</code> skills</li>
+<li><code>Capability\Skills\TrackActiveSkillHook</code></li>
+<li>tracks active skill metadata (allowed-tools, model) in state after <code>load_skill</code> completes</li>
+<li><code>Capability\Skills\SkillToolFilterHook</code></li>
+<li>enforces <code>allowed-tools</code> restrictions; blocks non-allowed tools (except <code>load_skill</code> itself)</li>
+<li><code>Capability\Skills\SkillModelOverrideHook</code></li>
+<li>overrides LLMConfig when a skill with a <code>model</code> field is active</li>
+<li><code>Capability\Skills\SkillForkExecutor</code></li>
+<li>executes skills in a forked agent loop context</li>
+<li><code>Capability\Skills\SkillPreprocessor</code></li>
+<li>executes <code>!</code>command`` patterns in skill body before argument substitution</li>
+<li>configurable working directory and timeout</li>
+<li>opt-in: pass to <code>UseSkills</code> or <code>LoadSkillTool</code> constructor</li>
+<li><code>Capability\Skills\UseSkills</code></li>
+<li>capability that wires <code>LoadSkillTool</code> + hooks into agent</li>
+<li>optional <code>?SkillPreprocessor</code> for shell preprocessing</li>
+<li>follows <a href="https://agentskills.io">Agent Skills Open Standard</a> (30+ tools)</li>
+</ul>
+<h2 id="17-testing">17. Testing<a class="headerlink" href="#17-testing" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Drivers\Testing\FakeAgentDriver</code></li>
+<li>scripted loop steps via <code>ScenarioStep</code></li>
+<li>best for most deterministic agent-loop tests</li>
+<li><code>Tests\Support\FakeInferenceDriver</code></li>
+<li>queued raw <code>InferenceResponse</code> or streaming <code>PartialInferenceDelta</code> fixtures</li>
+<li>use when the test sits closer to the inference boundary</li>
+<li><code>Tool\Tools\FakeTool</code></li>
+<li>deterministic tool double with fixed or callable-backed results</li>
+<li><code>Tests\Support\FakeSubagentProvider</code></li>
+<li>in-memory subagent definition registry for capability tests</li>
+<li><code>Tests\Support\TestAgentLoop</code></li>
+<li>small loop harness with explicit max-iteration stop behavior</li>
+<li><code>Cognesy\Sandbox\Testing\FakeSandbox</code> (from <code>packages/sandbox</code>, not agents)</li>
+<li>deterministic process-execution seam for bash-backed tools</li>
+</ul>
+<h2 id="18-docs-index">18. Docs Index<a class="headerlink" href="#18-docs-index" title="Permanent link">&para;</a></h2>
+<p>Read in this order:</p>
+<ol>
+<li><code>packages/agents/docs/01-introduction.md</code></li>
+<li><code>packages/agents/docs/testing-doubles.md</code></li>
+<li><code>packages/agents/docs/02-basic-agent.md</code></li>
+<li><code>packages/agents/docs/05-tools.md</code></li>
+<li><code>packages/agents/docs/06-building-tools.md</code></li>
+<li><code>packages/agents/docs/13-agent-builder.md</code></li>
+<li><code>packages/agents/docs/14-agent-templates.md</code></li>
+<li><code>packages/agents/docs/15-subagents.md</code></li>
+<li><code>packages/agents/docs/16-session-runtime.md</code></li>
+<li><code>packages/agents/docs/19-skills.md</code></li>
+</ol>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../polyglot/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Polyglot">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Polyglot
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../agent-ctrl/" class="md-footer__link md-footer__link--next" aria-label="Next: AgentCtrl">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                AgentCtrl
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2024 Dariusz Debowczyk
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://twitter.com/ddebowczyk" target="_blank" rel="noopener" title="twitter.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M459.4 151.7c.3 4.5.3 9.1.3 13.6 0 138.7-105.6 298.6-298.6 298.6-59.5 0-114.7-17.2-161.1-47.1 8.4 1 16.6 1.3 25.3 1.3 49.1 0 94.2-16.6 130.3-44.8-46.1-1-84.8-31.2-98.1-72.8 6.5 1 13 1.6 19.8 1.6 9.4 0 18.8-1.3 27.6-3.6-48.1-9.7-84.1-52-84.1-103v-1.3c14 7.8 30.2 12.7 47.4 13.3-28.3-18.8-46.8-51-46.8-87.4 0-19.5 5.2-37.4 14.3-53C87.4 130.8 165 172.4 252.1 176.9c-1.6-7.8-2.6-15.9-2.6-24C249.5 95.1 296.3 48 354.4 48c30.2 0 57.5 12.7 76.7 33.1 23.7-4.5 46.5-13.3 66.6-25.3-7.8 24.4-24.4 44.8-46.1 57.8 21.1-2.3 41.6-8.1 60.4-16.2-14.3 20.8-32.2 39.3-52.6 54.3"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/cognesy" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["announce.dismiss", "content.action.edit", "content.action.view", "content.code.annotate", "content.code.copy", "content.code.select", "content.tabs.link", "content.tooltips", "header.autohide", "navigation.expand", "navigation.footer", "navigation.indexes", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.progress", "navigation.prune", "navigation.sections", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

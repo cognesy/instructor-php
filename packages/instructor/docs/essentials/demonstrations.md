@@ -74,7 +74,7 @@ Use when you want to demonstrate a multi-turn conversation as input:
 
 ```php
 $example = Example::fromChat(
-    input: [
+    messages: [
         ['role' => 'user', 'content' => 'Ian is 27 years old.'],
     ],
     output: ['name' => 'Ian', 'age' => 27],
@@ -119,7 +119,7 @@ this with a custom template string that uses `{input}` and `{output}` placeholde
 $example = new Example(
     input: 'John is 50 and works as a teacher.',
     output: ['name' => 'John', 'age' => 50],
-    template: "EXAMPLE:\n{input} => {output}\n",
+    template: "EXAMPLE:\n<|input|> => <|output|>\n",
 );
 ```
 

@@ -35,6 +35,8 @@ The schema is rendered into the format required by the selected output mode:
 | `Json` | Included in the system/user prompt as text |
 | `JsonSchema` | Sent via the provider's `response_format` parameter |
 | `MdJson` | Included in the prompt, response expected in a ```json``` codeblock |
+| `Text` | Schema included in the prompt; JSON extracted from unstructured text |
+| `Unrestricted` | No output constraints; extraction is best-effort |
 
 ### 4. Execute the Inference Request
 
@@ -89,7 +91,7 @@ attempts is always `maxRetries + 1`.
 ```php
 // Allow up to 3 retries (4 total attempts)
 $runtime = $runtime->withMaxRetries(3);
-// @doctest id="1a76"
+// @doctest id="5708"
 ```
 
 When the retry limit is reached without a valid response, a

@@ -13,11 +13,11 @@ All HTTP communication flows through a single contract:
 ```php
 interface CanSendHttpRequests
 {
-    public function handle(HttpRequest $request): HttpResponse;
+    public function send(HttpRequest $request): PendingHttpResponse;
 }
 ```
 
-Every inference and embeddings driver receives a `CanSendHttpRequests` implementation. The driver translates its `InferenceRequest` into an `HttpRequest`, hands it to the client, and translates the `HttpResponse` back.
+Every inference and embeddings driver receives a `CanSendHttpRequests` implementation. The driver translates its `InferenceRequest` into an `HttpRequest`, sends it via the client's `send()` method (which returns a `PendingHttpResponse`), calls `get()` on the pending response to obtain the `HttpResponse`, and translates that back.
 
 
 ## Default Client
@@ -166,7 +166,7 @@ The cache behavior is controlled per-request through the `ResponseCachePolicy` e
 ```php
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 
-$inference->withResponseCachePolicy(ResponseCachePolicy::ReadOrWrite);
+$inference->withResponseCachePolicy(ResponseCachePolicy::Memory);
 ```
 
 

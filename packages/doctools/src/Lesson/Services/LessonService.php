@@ -5,6 +5,7 @@ namespace Cognesy\Doctools\Lesson\Services;
 use Cognesy\Config\BasePath;
 use Cognesy\Doctools\Lesson\Config\LessonConfig;
 use Cognesy\InstructorHub\Data\Example;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Template\Config\TemplateEngineConfig;
@@ -26,7 +27,7 @@ class LessonService
         $prompt = $this->buildPrompt($example->title, $example->content);
 
         return $this->inference->create(new InferenceRequest(
-            messages: $prompt,
+            messages: Messages::fromString($prompt),
             options: ['max_tokens' => $this->config->maxTokens],
         ))->get();
     }

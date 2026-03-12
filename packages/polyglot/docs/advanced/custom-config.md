@@ -76,6 +76,7 @@ When you need to build a configuration programmatically, use the `LLMConfig` cla
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -91,9 +92,13 @@ $config = new LLMConfig(
 );
 
 $text = Inference::fromConfig($config)
-    ->withMessages('Say hello.')
+    ->withMessages(Messages::fromString('Say hello.'))
     ->get();
 ```
+
+Note: `Messages` is imported from `Cognesy\Messages\Messages`. You can create messages from a
+string with `Messages::fromString()` or from an array of role/content pairs with
+`Messages::fromArray()`.
 
 This is useful when your application stores provider credentials in a database, rotates API
 keys at runtime, or needs to construct configurations for providers not included in the
@@ -182,13 +187,14 @@ for quick inline configuration:
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 
 $config = LLMConfig::fromDsn('openai://api.openai.com/v1?model=gpt-4.1-nano&apiKey=sk-...');
 
 $response = Inference::fromConfig($config)
-    ->withMessages('Hello!')
+    ->withMessages(Messages::fromString('Hello!'))
     ->get();
 ```
 
@@ -225,12 +231,13 @@ Different providers support unique request parameters. You can pass these throug
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 // OpenAI-specific options
 $response = Inference::using('openai')
     ->with(
-        messages: 'Generate a creative story.',
+        messages: Messages::fromString('Generate a creative story.'),
         options: [
             'temperature' => 0.8,
             'top_p' => 0.95,
@@ -247,12 +254,13 @@ For Anthropic, the available options differ:
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 // Anthropic-specific options
 $response = Inference::using('anthropic')
     ->with(
-        messages: 'Generate a creative story.',
+        messages: Messages::fromString('Generate a creative story.'),
         options: [
             'temperature' => 0.7,
             'top_p' => 0.9,
@@ -302,12 +310,13 @@ Then select the preset based on your application's environment:
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $preset = getenv('APP_ENV') === 'production' ? 'openai' : 'dev-local';
 
 $response = Inference::using($preset)
-    ->withMessages('Hello!')
+    ->withMessages(Messages::fromString('Hello!'))
     ->get();
 ```
 
@@ -337,10 +346,11 @@ Then reference it by name:
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $response = Inference::using('my-proxy')
-    ->withMessages('Hello from my proxy!')
+    ->withMessages(Messages::fromString('Hello from my proxy!'))
     ->get();
 ```
 

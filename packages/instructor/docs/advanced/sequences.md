@@ -64,9 +64,8 @@ $stream = (new StructuredOutput)
     )
     ->stream();
 
-foreach ($stream->sequence() as $completedSequence) {
-    // Each yield contains the sequence with one more completed item
-    $person = $completedSequence->last();
+foreach ($stream->sequence() as $person) {
+    // Each yield is an individual completed item
     echo "Extracted: {$person->name}\n";
 }
 

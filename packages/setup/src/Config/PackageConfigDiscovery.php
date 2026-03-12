@@ -110,8 +110,8 @@ final class PackageConfigDiscovery
             ? $data['extra']['instructor']['config']
             : [];
 
-        $namespace = is_string($config['namespace'] ?? null) && trim((string) $config['namespace']) !== ''
-            ? trim((string) $config['namespace'])
+        $namespace = is_string($config['namespace'] ?? null) && trim($config['namespace']) !== ''
+            ? trim($config['namespace'])
             : $package;
 
         $paths = array_values(array_filter(

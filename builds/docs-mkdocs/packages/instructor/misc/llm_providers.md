@@ -22,7 +22,7 @@ $so = StructuredOutput::using('anthropic');
 $so = StructuredOutput::fromConfig(
     LLMConfig::fromPreset('openai')
 );
-// @doctest id="5a3d"
+// @doctest id="8d30"
 ```
 
 Presets are YAML files stored in the `config/llm/presets` directory. Each file defines the API
@@ -41,6 +41,7 @@ The following providers have built-in presets:
 | Cerebras | `cerebras` |
 | Cohere | `cohere` |
 | DeepSeek | `deepseek` |
+| DeepSeek (Reasoning) | `deepseek-r` |
 | Fireworks | `fireworks` |
 | Google Gemini | `gemini` |
 | Gemini (OpenAI-compatible) | `gemini-oai` |
@@ -85,5 +86,5 @@ $result = StructuredOutput::fromConfig($config)
         responseModel: MyModel::class,
     )
     ->get();
-// @doctest id="acfa"
+// @doctest id="5c4c"
 ```

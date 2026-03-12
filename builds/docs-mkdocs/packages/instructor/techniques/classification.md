@@ -31,7 +31,7 @@ $prediction = (new StructuredOutput)
     ->get();
 
 assert($prediction->classLabel === Label::SPAM);
-// @doctest id="8cd5"
+// @doctest id="2695"
 ```
 
 The model sees the enum values in the generated JSON Schema and picks the most appropriate one.
@@ -66,7 +66,7 @@ $ticket = (new StructuredOutput)
 
 assert(in_array(TicketCategory::TECH_ISSUE, $ticket->labels));
 assert(in_array(TicketCategory::BILLING, $ticket->labels));
-// @doctest id="c8e9"
+// @doctest id="8246"
 ```
 
 ## Tips for Better Classification
@@ -93,7 +93,7 @@ final class SentimentResult {
     /** Brief explanation of why this sentiment was chosen. */
     public string $reasoning;
 }
-// @doctest id="998a"
+// @doctest id="dc99"
 ```
 
 ### Keep the schema narrow
@@ -129,5 +129,5 @@ final class Ticket {
         return ValidationResult::valid();
     }
 }
-// @doctest id="23f9"
+// @doctest id="6c09"
 ```

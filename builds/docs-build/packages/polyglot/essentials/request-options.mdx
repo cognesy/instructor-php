@@ -18,15 +18,16 @@ Pass options through `withOptions()` or the `options` parameter on `with()`:
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 $text = Inference::using('openai')
-    ->withMessages('Write one short sentence about PHP.')
+    ->withMessages(Messages::fromString('Write one short sentence about PHP.'))
     ->withOptions([
         'temperature' => 0.2,
         'top_p' => 0.9,
     ])
     ->get();
-// @doctest id="3a8a"
+// @doctest id="015b"
 ```
 
 Options are merged additively -- calling `withOptions()` multiple times will merge the
@@ -45,7 +46,7 @@ $options = [
     'presence_penalty' => 0.0,    // Penalize repeated topics
     'stop' => ["\n\n", "User:"],  // Stop sequences
 ];
-// @doctest id="8024"
+// @doctest id="1171"
 ```
 
 ## Dedicated Helpers Over Raw Options
@@ -70,7 +71,7 @@ Different providers accept different option keys. Here are a few examples:
 
 ```php
 $response = Inference::using('openai')
-    ->withMessages('Write a poem about programming.')
+    ->withMessages(Messages::fromString('Write a poem about programming.'))
     ->withOptions([
         'temperature' => 0.7,
         'top_p' => 0.9,
@@ -78,21 +79,21 @@ $response = Inference::using('openai')
         'presence_penalty' => 0.3,
     ])
     ->get();
-// @doctest id="726f"
+// @doctest id="08cb"
 ```
 
 ### Anthropic
 
 ```php
 $response = Inference::using('anthropic')
-    ->withMessages('Write a poem about programming.')
+    ->withMessages(Messages::fromString('Write a poem about programming.'))
     ->withOptions([
         'temperature' => 0.7,
         'top_p' => 0.9,
         'top_k' => 40,
     ])
     ->get();
-// @doctest id="e3d5"
+// @doctest id="ad3c"
 ```
 
 ## Retry Policy
@@ -114,10 +115,10 @@ $retryPolicy = new InferenceRetryPolicy(
 );
 
 $response = Inference::using('openai')
-    ->withMessages('Summarize this article.')
+    ->withMessages(Messages::fromString('Summarize this article.'))
     ->withRetryPolicy($retryPolicy)
     ->get();
-// @doctest id="6c16"
+// @doctest id="5972"
 ```
 
 The retry policy supports exponential backoff with configurable jitter and can also
@@ -133,6 +134,7 @@ recover from truncated responses:
 | `retryOnExceptions`   | Timeout, Network    | Exception classes that trigger a retry          |
 | `lengthRecovery`      | `'none'`            | Recovery mode: `none`, `continue`, `increase_max_tokens` |
 | `lengthMaxAttempts`   | `1`                 | Max attempts for length recovery                |
+| `lengthContinuePrompt` | `'Continue.'`     | Prompt used for `continue` recovery mode        |
 | `maxTokensIncrement`  | `512`               | Token increment for `increase_max_tokens` mode  |
 
 ## Response Cache Policy
@@ -145,10 +147,10 @@ use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 use Cognesy\Polyglot\Inference\Inference;
 
 $response = Inference::using('openai')
-    ->withMessages('What is 2 + 2?')
+    ->withMessages(Messages::fromString('What is 2 + 2?'))
     ->withResponseCachePolicy(ResponseCachePolicy::Memory)
     ->get();
-// @doctest id="da89"
+// @doctest id="fd12"
 ```
 
 Available policies:
@@ -165,20 +167,23 @@ definitions, or response formats that remain constant across multiple calls:
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 
 $base = Inference::using('openai')->withCachedContext(
-    messages: [
+    messages: Messages::fromArray([
         ['role' => 'system', 'content' => 'You are an expert PHP developer.'],
-    ],
+    ]),
     tools: $sharedToolDefinitions,
-    toolChoice: 'auto',
-    responseFormat: ['type' => 'json_object'],
+    toolChoice: ToolChoice::auto(),
+    responseFormat: ResponseFormat::jsonObject(),
 );
 
 // Each call inherits the cached context automatically
-$response1 = $base->withMessages('Explain SOLID principles.')->get();
-$response2 = $base->withMessages('What is the Repository pattern?')->get();
-// @doctest id="be37"
+$response1 = $base->withMessages(Messages::fromString('Explain SOLID principles.'))->get();
+$response2 = $base->withMessages(Messages::fromString('What is the Repository pattern?'))->get();
+// @doctest id="7e71"
 ```
 
 When the request is executed, cached context is merged with the request-level fields:

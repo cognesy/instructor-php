@@ -79,14 +79,15 @@ final class CodexBridge implements AgentBridge
     }
 
     #[\Override]
-    public function execute(string $prompt): AgentResponse
+    public function execute(string|\Stringable $prompt): AgentResponse
     {
         return $this->executeStreaming($prompt, null);
     }
 
     #[\Override]
-    public function executeStreaming(string $prompt, ?StreamHandler $handler): AgentResponse
+    public function executeStreaming(string|\Stringable $prompt, ?StreamHandler $handler): AgentResponse
     {
+        $prompt = (string) $prompt;
         CliBinaryGuard::assertAvailableForDriver('codex', AgentType::Codex, $this->sandboxDriver);
 
         // Build request with timing

@@ -36,8 +36,8 @@ $config = new LLMConfig(
 $config = LLMConfig::fromArray($data);
 
 // From a DSN string
-$config = LLMConfig::fromDsn('openai://sk-...@api.openai.com/v1?model=gpt-4o');
-// @doctest id="ee0f"
+$config = LLMConfig::fromDsn('driver=openai,model=gpt-4o,apiKey=sk-...');
+// @doctest id="0baa"
 ```
 
 ### `StructuredOutputConfig`
@@ -55,14 +55,14 @@ $config = new StructuredOutputConfig(
     toolName: 'extract_data',
     toolDescription: 'Extract structured data from the input.',
 );
-// @doctest id="e64c"
+// @doctest id="c019"
 ```
 
 Key settings:
 
 | Setting | Default | Purpose |
 |---|---|---|
-| `outputMode` | `Tools` | How the schema is delivered to the LLM (`Tools`, `Json`, `JsonSchema`, `MdJson`) |
+| `outputMode` | `Tools` | How the schema is delivered to the LLM (`Tools`, `Json`, `JsonSchema`, `MdJson`, `Text`, `Unrestricted`) |
 | `maxRetries` | `0` | Maximum retry attempts after the first call |
 | `retryPrompt` | `"JSON generated incorrectly..."` | Template for retry feedback messages |
 | `toolName` | `"extracted_data"` | Function name used in tool-call mode |
@@ -90,7 +90,7 @@ $runtime = new StructuredOutputRuntime(
     validators: [MyValidator::class],
     transformers: [MyTransformer::class],
 );
-// @doctest id="cdaa"
+// @doctest id="8968"
 ```
 
 

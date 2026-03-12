@@ -123,9 +123,12 @@ class GenerateMintlifyCommand extends Command
             }
         }
 
+        // Generate cheatsheets
+        $documentation->generateCheatsheetDocs();
+
         // Generate examples
         $exampleResult = $documentation->generateExampleDocs();
-        
+
         if (!$exampleResult->isSuccess()) {
             return $exampleResult;
         }

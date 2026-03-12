@@ -13,7 +13,7 @@ Getting started with Instructor requires two things:
 
 ```bash
 composer require cognesy/instructor-struct
-# @doctest id="9438"
+# @doctest id="11f4"
 ```
 
 > Instructor requires **PHP 8.3** or later.
@@ -27,7 +27,7 @@ is to set them in your shell or a `.env` file at the root of your project:
 ```ini
 # .env
 OPENAI_API_KEY=sk-your-key-here
-# @doctest id="4cc1"
+# @doctest id="fad5"
 ```
 
 For other providers, set the corresponding variable:
@@ -37,7 +37,7 @@ ANTHROPIC_API_KEY=your-key
 GEMINI_API_KEY=your-key
 GROQ_API_KEY=your-key
 MISTRAL_API_KEY=your-key
-# @doctest id="6e2c"
+# @doctest id="33d2"
 ```
 
 > Never commit API keys to version control. Add `.env` to your `.gitignore` file.
@@ -57,7 +57,7 @@ $result = StructuredOutput::using('openai')
         responseModel: City::class,
     )
     ->get();
-// @doctest id="1e5f"
+// @doctest id="b4d0"
 ```
 
 You can switch providers by changing the preset name:
@@ -70,7 +70,7 @@ $result = StructuredOutput::using('anthropic')
         responseModel: City::class,
     )
     ->get();
-// @doctest id="fc6d"
+// @doctest id="70e8"
 ```
 
 
@@ -89,7 +89,7 @@ $result = StructuredOutput::fromConfig(
     messages: 'What is the capital of France?',
     responseModel: City::class,
 )->get();
-// @doctest id="9085"
+// @doctest id="b19a"
 ```
 
 You can also construct `LLMConfig` from an array for more detailed configuration:
@@ -111,7 +111,7 @@ $result = StructuredOutput::fromConfig($config)
         responseModel: City::class,
     )
     ->get();
-// @doctest id="e9cd"
+// @doctest id="cf4c"
 ```
 
 
@@ -138,7 +138,7 @@ $city = $structured
         responseModel: City::class,
     )
     ->get();
-// @doctest id="9a01"
+// @doctest id="955d"
 ```
 
 ### What Belongs Where
@@ -165,7 +165,7 @@ use Cognesy\Instructor\Enums\OutputMode;
 $runtime = StructuredOutputRuntime::fromConfig(
     LLMConfig::fromPreset('openai')
 )->withOutputMode(OutputMode::JsonSchema);
-// @doctest id="48a7"
+// @doctest id="5f96"
 ```
 
 Available modes:
@@ -176,6 +176,8 @@ Available modes:
 | `OutputMode::Json` | Requests JSON output via the provider's JSON mode |
 | `OutputMode::JsonSchema` | Sends a JSON Schema and requests strict conformance |
 | `OutputMode::MdJson` | Asks the LLM to return JSON inside a Markdown code block |
+| `OutputMode::Text` | Extracts JSON from unstructured text responses |
+| `OutputMode::Unrestricted` | No output constraints; extraction is best-effort |
 
 
 ### Event Listeners
@@ -199,7 +201,7 @@ $runtime->onEvent(
 $runtime->wiretap(
     fn($event) => logger()->debug(get_class($event)),
 );
-// @doctest id="071b"
+// @doctest id="1b48"
 ```
 
 
@@ -218,7 +220,7 @@ $result = StructuredOutput::fromConfig(
     messages: 'What is the capital of France?',
     responseModel: City::class,
 )->get();
-// @doctest id="7756"
+// @doctest id="6f79"
 ```
 
 

@@ -17,9 +17,10 @@ the response content as a plain string:
 <?php
 
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 $pending = Inference::using('openai')
-    ->withMessages('What is the capital of France?')
+    ->withMessages(Messages::fromString('What is the capital of France?'))
     ->create();
 
 // Get the response as plain text
@@ -36,10 +37,12 @@ directly into an associative array, or `asJson()` to get the raw JSON string:
 <?php
 
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 
 $pending = Inference::using('openai')
-    ->withMessages('Return JSON with a single "status" field.')
-    ->withResponseFormat(['type' => 'json_object'])
+    ->withMessages(Messages::fromString('Return JSON with a single "status" field.'))
+    ->withResponseFormat(ResponseFormat::jsonObject())
     ->create();
 
 // Decode response content as a PHP array
@@ -59,9 +62,10 @@ normalized `InferenceResponse` object:
 <?php
 
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 $pending = Inference::using('openai')
-    ->withMessages('What is the capital of France?')
+    ->withMessages(Messages::fromString('What is the capital of France?'))
     ->create();
 
 $response = $pending->response();
@@ -146,9 +150,11 @@ on the response object:
 <?php
 
 use Cognesy\Polyglot\Inference\Inference;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
 
-$tools = [
+$tools = ToolDefinitions::fromArray([
     [
         'type' => 'function',
         'function' => [
@@ -170,14 +176,13 @@ $tools = [
             ],
         ],
     ],
-];
+]);
 
 $response = Inference::using('openai')
     ->with(
-        messages: 'What is the weather in Paris?',
+        messages: Messages::fromString('What is the weather in Paris?'),
         tools: $tools,
-        toolChoice: 'auto',
-        mode: OutputMode::Tools,
+        toolChoice: ToolChoice::auto(),
     )
     ->response();
 
@@ -217,17 +222,16 @@ $json = $pending->asToolCallJson();
 ## Streaming Responses
 
 For long-running completions, streaming lets you display output as it arrives.
-Enable streaming with `withStreaming()` and consume the stream via the `stream()`
-method:
+Call `stream()` to get an `InferenceStream` and consume deltas:
 
 ```php
 <?php
 
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 $stream = Inference::using('openai')
-    ->withMessages('Write a short story about a robot.')
-    ->withStreaming()
+    ->withMessages(Messages::fromString('Write a short story about a robot.'))
     ->stream();
 
 foreach ($stream->deltas() as $delta) {
@@ -248,10 +252,12 @@ public properties:
 |----------|------|-------------|
 | `contentDelta` | `string` | New text content in this chunk |
 | `reasoningContentDelta` | `string` | New reasoning content in this chunk |
+| `toolId` | `ToolCallId\|string\|null` | Tool call ID |
 | `toolName` | `string` | Tool name (when streaming tool calls) |
 | `toolArgs` | `string` | Partial tool arguments JSON |
 | `finishReason` | `string` | Set on the final delta |
 | `usage` | `?Usage` | Token usage (typically on the final delta) |
+| `usageIsCumulative` | `bool` | Whether usage counts are cumulative |
 
 ### Stream Methods
 
@@ -295,9 +301,11 @@ visible delta:
 ```php
 <?php
 
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
+
 $stream = Inference::using('openai')
-    ->withMessages('Explain queues in simple terms.')
-    ->withStreaming()
+    ->withMessages(Messages::fromString('Explain queues in simple terms.'))
     ->stream();
 
 $stream->onDelta(function ($delta) {
@@ -332,7 +340,7 @@ streaming, use the `isStreamed()` method on `PendingInference`:
 <?php
 
 $pending = Inference::using('openai')
-    ->withMessages('Hello!')
+    ->withMessages(Messages::fromString('Hello!'))
     ->withStreaming()
     ->create();
 

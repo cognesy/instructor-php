@@ -41,6 +41,8 @@ $runtime = StructuredOutputRuntime::fromDefaults()
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Extras\Scalar\Scalar;
+use Cognesy\Http\Events\HttpRequestSent;
+use Cognesy\Http\Events\HttpResponseReceived;
 
 $runtime = StructuredOutputRuntime::fromDefaults()
     // Log HTTP-level details

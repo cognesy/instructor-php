@@ -42,6 +42,10 @@ packages:
     - hub
     - tell
 
+# Cheatsheets - autodiscovered from packages/*/CHEATSHEET.md
+cheatsheets:
+  source_pattern: './packages/*/CHEATSHEET.md'
+
 # Examples / Cookbook
 examples:
   source: './examples'

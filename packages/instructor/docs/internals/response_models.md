@@ -120,7 +120,7 @@ $dto = (new StructuredOutput())
 // Use a self-deserializing object
 $result = (new StructuredOutput())
     ->with(responseModel: Rating::class, messages: '...')
-    ->intoObject(new Scalar('rating', 'integer'))
+    ->intoObject(Scalar::integer('rating'))
     ->get();
 ```
 

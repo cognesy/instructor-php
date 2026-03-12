@@ -12,10 +12,10 @@ interface AgentBridge
     /**
      * Execute a prompt synchronously.
      */
-    public function execute(string $prompt): AgentResponse;
+    public function execute(string|\Stringable $prompt): AgentResponse;
 
     /**
      * Execute a prompt with streaming output.
      */
-    public function executeStreaming(string $prompt, ?StreamHandler $handler): AgentResponse;
+    public function executeStreaming(string|\Stringable $prompt, ?StreamHandler $handler): AgentResponse;
 }

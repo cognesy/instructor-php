@@ -17,6 +17,7 @@ class MkDocsDocumentation
     private DocsConfig $docsConfig;
     private PackageDiscovery $packageDiscovery;
     private PackageDocsBuilder $packageBuilder;
+    private CheatsheetDiscovery $cheatsheetDiscovery;
     private NavigationBuilder $navBuilder;
 
     public function __construct(
@@ -33,6 +34,11 @@ class MkDocsDocumentation
         $this->packageBuilder = new PackageDocsBuilder(
             targetBaseDir: $this->docsConfig->mkdocsTarget,
             format: 'mkdocs',
+        );
+        $this->cheatsheetDiscovery = new CheatsheetDiscovery(
+            sourcePattern: $this->docsConfig->cheatsheetsSourcePattern,
+            internal: $this->docsConfig->packageInternal,
+            order: $this->docsConfig->packageOrder,
         );
         $this->navBuilder = new NavigationBuilder(
             config: $this->docsConfig,
@@ -56,6 +62,9 @@ class MkDocsDocumentation
 
             // Generate packages listing page
             $this->generatePackagesIndex();
+
+            // Generate cheatsheet docs
+            $this->generateCheatsheetDocs();
 
             // Fix absolute image paths after all files are copied
             $this->fixImagePaths();
@@ -220,6 +229,27 @@ class MkDocsDocumentation
         $indexGenerator->generateToFile($packages, $targetPath);
     }
 
+    /**
+     * Copy cheatsheet files into build directory and generate index page.
+     */
+    private function generateCheatsheetDocs(): void {
+        $cheatsheets = $this->cheatsheetDiscovery->discover();
+        $targetDir = $this->config->docsTargetDir . '/cheatsheets';
+
+        if (!is_dir($targetDir)) {
+            mkdir($targetDir, 0755, true);
+        }
+
+        foreach ($cheatsheets as $cheatsheet) {
+            $targetPath = $targetDir . '/' . $cheatsheet->getTargetName() . '.md';
+            Files::copyFile($cheatsheet->sourcePath, $targetPath);
+        }
+
+        // Generate index page
+        $indexGenerator = new CheatsheetsIndexGenerator();
+        $indexGenerator->generateToFile($cheatsheets, $targetDir . '/index.md');
+    }
+
     private function processExample(Example $example): FileProcessingResult {
         if (empty($example->tab)) {
             return FileProcessingResult::skipped($example->name, 'No tab specified');
@@ -266,9 +296,10 @@ class MkDocsDocumentation
             $packages = $this->packageDiscovery->discover();
             $exampleGroups = $this->examples->getExampleGroups();
             $releaseNotes = $this->scanReleaseNotes();
+            $cheatsheets = $this->cheatsheetDiscovery->discover();
 
             // Generate nav using NavigationBuilder
-            $config['nav'] = $this->navBuilder->buildMkDocsNav($packages, $exampleGroups, $releaseNotes);
+            $config['nav'] = $this->navBuilder->buildMkDocsNav($packages, $exampleGroups, $releaseNotes, $cheatsheets);
 
             // Write config
             $yamlContent = Yaml::dump($config, 6, 2);

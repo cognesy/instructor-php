@@ -37,7 +37,7 @@ The class is built from several focused components:
 | `EmbeddingsRuntime` | Orchestrates driver creation, HTTP clients, and event dispatching |
 | `EmbeddingsProvider` | Resolves configuration and optional explicit drivers |
 | `PendingEmbeddings` | Executes the request with retry logic and returns the response |
-| `EmbeddingsDriverFactory` | Maps driver names to concrete driver implementations |
+| `EmbeddingsDriverRegistry` | Maps driver names to concrete driver implementations |
 
 ## Entry Points
 
@@ -114,25 +114,23 @@ Polyglot ships with presets for the following providers:
 
 ## Custom Driver Registration
 
-You can register your own driver for providers not bundled with Polyglot:
+You can register your own driver for providers not bundled with Polyglot by creating a custom `EmbeddingsDriverRegistry`:
 
 ```php
 <?php
 
 use Cognesy\Polyglot\Embeddings\Embeddings;
+use Cognesy\Polyglot\Embeddings\Creation\BundledEmbeddingsDrivers;
 
-// Register with a class name
-Embeddings::registerDriver('custom-provider', CustomEmbeddingsDriver::class);
+// Start from the bundled registry and add your driver (by class name or factory callable)
+$registry = BundledEmbeddingsDrivers::registry()
+    ->withDriver('custom-provider', CustomEmbeddingsDriver::class);
 
-// Register with a factory callable
-Embeddings::registerDriver('custom-provider', function ($config, $httpClient, $events) {
-    return new CustomEmbeddingsDriver($config, $httpClient, $events);
-});
-
-// Then use it like any other preset
-$response = Embeddings::using('custom-provider')
-    ->withInputs(['Hello world'])
-    ->get();
+// Or register with a factory callable
+$registry = BundledEmbeddingsDrivers::registry()
+    ->withDriver('custom-provider', function ($config, $httpClient, $events) {
+        return new CustomEmbeddingsDriver($config, $httpClient, $events);
+    });
 ```
 
 Your custom driver must implement the `CanHandleVectorization` contract.

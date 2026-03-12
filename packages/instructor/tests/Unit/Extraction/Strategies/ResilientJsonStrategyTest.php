@@ -63,12 +63,12 @@ describe('ResilientJsonExtractor', function () {
             ->toThrow(ExtractionException::class, 'scalar');
     });
 
-    it('fails on markdown wrapped JSON (produces scalar)', function () {
+    it('extracts JSON from markdown wrapped content', function () {
         $content = '```json{"name":"John"}```';
 
-        $input = ExtractionInput::fromContent($content, OutputMode::Json);
-        expect(fn() => $this->extractor->extract($input))
-            ->toThrow(ExtractionException::class, 'scalar');
+        $result = $this->extractor->extract(ExtractionInput::fromContent($content, OutputMode::Json));
+
+        expect($result)->toBe(['name' => 'John']);
     });
 
     it('handles valid JSON array', function () {

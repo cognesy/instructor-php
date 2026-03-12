@@ -98,8 +98,8 @@ $stream = (new StructuredOutput)
     )
     ->stream();
 
-foreach ($stream->sequence() as $completedSequence) {
-    $view->appendPerson($completedSequence->last());
+foreach ($stream->sequence() as $person) {
+    $view->appendPerson($person);
 }
 
 $people = $stream->finalValue();

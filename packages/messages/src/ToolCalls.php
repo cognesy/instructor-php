@@ -2,7 +2,7 @@
 
 namespace Cognesy\Messages;
 
-use Cognesy\Utils\Json\Json;
+use Cognesy\Utils\Json\JsonDecoder;
 use InvalidArgumentException;
 
 final readonly class ToolCalls
@@ -145,16 +145,19 @@ final readonly class ToolCalls
 
     // TRANSFORMERS ////////////////////////////////////////////////
 
+    /** @param callable(ToolCall):mixed $callback */
     public function map(callable $callback): array
     {
         return array_map($callback, $this->toolCalls);
     }
 
+    /** @param callable(ToolCall):bool $callback */
     public function filter(callable $callback): self
     {
         return new self(...array_values(array_filter($this->toolCalls, $callback)));
     }
 
+    /** @param callable(mixed, ToolCall):mixed $callback */
     public function reduce(callable $callback, mixed $initial = null): mixed
     {
         return array_reduce($this->toolCalls, $callback, $initial);
@@ -184,6 +187,6 @@ final readonly class ToolCalls
             return $args;
         }
 
-        return empty($args) ? [] : Json::fromString($args)->toArray();
+        return empty($args) ? [] : JsonDecoder::decodeToArray($args);
     }
 }

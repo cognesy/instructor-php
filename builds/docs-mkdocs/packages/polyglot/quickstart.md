@@ -19,7 +19,7 @@ Polyglot requires **PHP 8.3** or later. Install it with Composer:
 
 ```bash
 composer require cognesy/instructor-polyglot
-# @doctest id="f1f5"
+# @doctest id="7bb8"
 ```
 
 
@@ -34,7 +34,7 @@ running any PHP code:
 
 ```bash
 export OPENAI_API_KEY=sk-...
-# @doctest id="8b8d"
+# @doctest id="d815"
 ```
 
 <Warning>
@@ -52,13 +52,14 @@ Create a file called `test-polyglot.php` in your project directory:
 require __DIR__ . '/vendor/autoload.php';
 
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 $answer = Inference::using('openai')
-    ->withMessages('What is the capital of France?')
+    ->withMessages(Messages::fromString('What is the capital of France?'))
     ->get();
 
 echo "ASSISTANT: $answer\n";
-// @doctest id="f8c1"
+// @doctest id="9b38"
 ```
 
 Run it from the terminal:
@@ -68,7 +69,7 @@ php test-polyglot.php
 
 # Output:
 # ASSISTANT: The capital of France is Paris.
-# @doctest id="22c2"
+# @doctest id="892a"
 ```
 
 That is all it takes. The `Inference` class is the main entry point for every
@@ -104,21 +105,23 @@ Because every provider is just a preset name, switching from OpenAI to another
 provider is a one-line change:
 
 ```php
+use Cognesy\Messages\Messages;
+
 // Anthropic
 $text = Inference::using('anthropic')
-    ->withMessages('Explain dependency injection in one paragraph.')
+    ->withMessages(Messages::fromString('Explain dependency injection in one paragraph.'))
     ->get();
 
 // Google Gemini
 $text = Inference::using('gemini')
-    ->withMessages('Explain dependency injection in one paragraph.')
+    ->withMessages(Messages::fromString('Explain dependency injection in one paragraph.'))
     ->get();
 
 // Groq
 $text = Inference::using('groq')
-    ->withMessages('Explain dependency injection in one paragraph.')
+    ->withMessages(Messages::fromString('Explain dependency injection in one paragraph.'))
     ->get();
-// @doctest id="3151"
+// @doctest id="8538"
 ```
 
 Set the corresponding environment variable for each provider you want to use
@@ -130,11 +133,13 @@ Set the corresponding environment variable for each provider you want to use
 The preset defines a default model, but you can override it per-request:
 
 ```php
+use Cognesy\Messages\Messages;
+
 $text = Inference::using('openai')
     ->withModel('gpt-4.1')
-    ->withMessages('Summarize the theory of relativity in two sentences.')
+    ->withMessages(Messages::fromString('Summarize the theory of relativity in two sentences.'))
     ->get();
-// @doctest id="a5cf"
+// @doctest id="3c59"
 ```
 
 
@@ -143,14 +148,16 @@ $text = Inference::using('openai')
 For long responses or interactive UIs, you can stream the output token by token:
 
 ```php
+use Cognesy\Messages\Messages;
+
 $stream = Inference::using('openai')
-    ->withMessages('Write a short poem about PHP.')
+    ->withMessages(Messages::fromString('Write a short poem about PHP.'))
     ->stream();
 
-foreach ($stream as $delta) {
+foreach ($stream->deltas() as $delta) {
     echo $delta->contentDelta;
 }
-// @doctest id="3a0e"
+// @doctest id="5ff6"
 ```
 
 

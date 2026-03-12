@@ -21,9 +21,9 @@ This approach keeps Polyglot close to the underlying APIs and makes requests eas
 | Shape | Request Fields | Best For |
 |---|---|---|
 | Plain text | _(none)_ | Simple text generation, conversations, summaries |
-| JSON object | `responseFormat: ['type' => 'json_object']` | Structured data extraction without a strict schema |
-| JSON schema | `responseFormat: ['type' => 'json_schema', ...]` | Strictly typed, schema-validated data |
-| Tool calls | `tools`, `toolChoice` | Function calling, external actions, agent workflows |
+| JSON object | `responseFormat: ResponseFormat::jsonObject()` | Structured data extraction without a strict schema |
+| JSON schema | `responseFormat: ResponseFormat::jsonSchema(...)` | Strictly typed, schema-validated data |
+| Tool calls | `tools: ToolDefinitions`, `toolChoice: ToolChoice` | Function calling, external actions, agent workflows |
 
 ## Choosing the Right Shape
 

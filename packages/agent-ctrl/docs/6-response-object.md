@@ -15,7 +15,7 @@ The following public properties are available directly on the `AgentResponse` ob
 
 ### `agentType: AgentType`
 
-The agent type that produced this response. This is one of `AgentType::ClaudeCode`, `AgentType::Codex`, or `AgentType::OpenCode`:
+The agent type that produced this response. This is one of `AgentType::ClaudeCode`, `AgentType::Codex`, `AgentType::OpenCode`, `AgentType::Pi`, or `AgentType::Gemini`:
 
 ```php
 echo "Produced by: {$response->agentType->value}"; // e.g., "claude-code"
@@ -49,7 +49,7 @@ Common exit codes:
 
 ### `usage: ?TokenUsage`
 
-Token usage statistics, when available. This is `null` for agents that do not expose usage data (Claude Code does not; Codex and OpenCode do when the data is present in the CLI output):
+Token usage statistics, when available. This is `null` for agents that do not expose usage data (Claude Code does not; Codex, OpenCode, Pi, and Gemini do when the data is present in the CLI output):
 
 ```php
 $usage = $response->usage;
@@ -62,7 +62,7 @@ if ($usage !== null) {
 
 ### `cost: ?float`
 
-The estimated cost in USD, when available. Currently, only OpenCode exposes cost data:
+The estimated cost in USD, when available. Currently, OpenCode and Pi expose cost data:
 
 ```php
 if ($response->cost !== null) {
@@ -80,7 +80,7 @@ echo "Tool calls made: " . count($response->toolCalls);
 
 ### `rawResponse: mixed`
 
-The original bridge-specific response object (`ClaudeResponse`, `CodexResponse`, or `OpenCodeResponse`). This provides access to agent-specific data that is not part of the normalized response:
+The original bridge-specific response object (`ClaudeResponse`, `CodexResponse`, `OpenCodeResponse`, `PiResponse`, or `GeminiResponse`). This provides access to agent-specific data that is not part of the normalized response:
 
 ```php
 // Access the raw Codex response for agent-specific data
@@ -271,6 +271,8 @@ The `TokenUsage` DTO provides detailed token statistics when the agent's CLI exp
 | Claude Code | No | No |
 | Codex | Yes (input, output, cacheRead) | No |
 | OpenCode | Yes (input, output, cacheRead, cacheWrite, reasoning) | Yes |
+| Pi | Yes (input, output, cacheRead, cacheWrite) | Yes |
+| Gemini | Yes (input, output, cacheRead) | No |
 
 ```php
 $response = AgentCtrl::openCode()

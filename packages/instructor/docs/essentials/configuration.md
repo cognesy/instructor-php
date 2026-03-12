@@ -123,8 +123,8 @@ $person = (new StructuredOutput)
 | `withMessages(...)` | Set the chat messages |
 | `withInput(...)` | Input data (string, array, or object) |
 | `withResponseModel(...)` | Response model (class, instance, or schema) |
-| `withSystem(...)` | System prompt text |
-| `withPrompt(...)` | Additional prompt text |
+| `withSystem(...)` | System prompt text (`string\|\Stringable`) |
+| `withPrompt(...)` | Additional prompt text (`string\|\Stringable`) |
 | `withExamples(...)` | Few-shot examples |
 | `withModel(...)` | Model name override |
 | `withOptions(...)` | Provider-specific options |

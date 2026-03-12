@@ -170,6 +170,16 @@ AgentCtrl::gemini()
     ->execute('Analyze the codebase structure.');
 ```
 
+## Debug Mode
+
+Enable debug output for troubleshooting CLI behavior:
+
+```php
+AgentCtrl::gemini()
+    ->debug()
+    ->execute('Analyze the codebase.');
+```
+
 ## Streaming with Gemini
 
 Gemini streams output as JSONL with the `stream-json` format. The bridge normalizes these into the standard callback API:

@@ -1,0 +1,134 @@
+---
+title: 'Variants & Registry'
+description: 'Register prompt classes by name, swap implementations via overrides, and auto-discover prompts'
+---
+
+# Variants & Registry
+
+As your prompt library grows, you'll want to swap implementations without changing the code that uses them. The `PromptRegistry` maps logical names to prompt classes and lets you override which class is used at runtime.
+
+## Registering Prompts
+
+```php
+use Cognesy\Xprompt\PromptRegistry;
+
+$registry = new PromptRegistry();
+$registry->register('reviewer.analyze', Analyze::class);
+
+$prompt = $registry->get('reviewer.analyze');
+echo $prompt->render(content: $doc);
+// @doctest id="7b2e"
+```
+
+## Variants
+
+Register multiple classes under the same name. The first registration becomes the default; subsequent ones are stored as variants:
+
+```php
+$registry->register('reviewer.analyze', Analyze::class);
+$registry->register('reviewer.analyze', AnalyzeCoT::class);
+$registry->register('reviewer.analyze', AnalyzeConcise::class);
+
+$registry->variants('reviewer.analyze');
+// ['Analyze' => Analyze::class, 'AnalyzeCoT' => AnalyzeCoT::class, ...]
+// @doctest id="e8ec"
+```
+
+## Overrides
+
+Pass overrides to the constructor to swap which variant is returned by `get()`:
+
+```php
+$registry = new PromptRegistry(
+    overrides: ['reviewer.analyze' => AnalyzeCoT::class],
+);
+
+$prompt = $registry->get('reviewer.analyze');
+// Returns AnalyzeCoT instance
+// @doctest id="b50c"
+```
+
+Overrides are resolved by short class name or fully-qualified class name. This makes it easy to drive prompt selection from configuration files without changing calling code.
+
+## Creating Variants
+
+A variant is just a subclass. Override what you need — template, model hint, body logic — and register it under the same name:
+
+```php
+class Analyze extends Prompt
+{
+    public string $model = 'sonnet';
+    public string $templateFile = 'analyze.twig';
+    public ?string $templateDir = __DIR__ . '/templates';
+}
+
+class AnalyzeCoT extends Analyze
+{
+    public string $model = 'opus';
+    public string $templateFile = 'analyze_cot.twig';
+}
+// @doctest id="b4f7"
+```
+
+The calling code doesn't change. It asks the registry for `'reviewer.analyze'` and gets whichever variant is configured.
+
+## The AsPrompt Attribute
+
+Instead of calling `register()` manually, annotate your class with `#[AsPrompt]`:
+
+```php
+use Cognesy\Xprompt\Attributes\AsPrompt;
+
+#[AsPrompt('reviewer.analyze')]
+class Analyze extends Prompt
+{
+    // ...
+}
+// @doctest id="5863"
+```
+
+Then register via `registerClass()`:
+
+```php
+$registry->registerClass(Analyze::class);
+// Registered under 'reviewer.analyze'
+// @doctest id="2541"
+```
+
+## Auto-Discovery
+
+`PromptDiscovery` scans Composer's classmap and registers all prompt classes automatically:
+
+```php
+use Cognesy\Xprompt\Discovery\PromptDiscovery;
+
+PromptDiscovery::register($registry, namespaces: ['App\\Prompts']);
+// @doctest id="96bf"
+```
+
+Name resolution priority:
+1. `#[AsPrompt("name")]` attribute
+2. `$promptName` public property
+3. Derived from FQCN — `App\Prompts\Reviewer\AnalyzeDocument` becomes `reviewer.analyze_document`
+
+## Listing Prompts
+
+```php
+// Names only (excludes blocks by default)
+$registry->names();
+// ['reviewer.analyze', 'reviewer.summarize', ...]
+
+// Include blocks
+$registry->names(includeBlocks: true);
+
+// Iterate name => class pairs
+foreach ($registry->all() as $name => $class) {
+    echo "{$name}: {$class}\n";
+}
+// @doctest id="de19"
+```
+
+## Next Steps
+
+- [Configuration](07-configuration.md) — configure template paths and engine settings
+- [Getting Started](02-getting-started.md) — revisit the basics

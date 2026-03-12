@@ -35,7 +35,7 @@ use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Polyglot\Inference\PendingInference;
-use Cognesy\Utils\Json\Json;
+use Cognesy\Utils\Json\JsonExtractor;
 use DateTimeImmutable;
 use Override;
 
@@ -254,11 +254,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
     }
 
     private function parseContentArgs(string $content) : ?array {
-        $json = Json::fromString($content);
-        if ($json->isEmpty()) {
-            return null;
-        }
-        return $json->toArray();
+        return JsonExtractor::first($content);
     }
 
     private function ensureStateLLMConfig(AgentState $state): AgentState {

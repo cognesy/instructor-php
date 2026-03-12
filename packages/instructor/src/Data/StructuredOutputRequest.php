@@ -29,8 +29,8 @@ class StructuredOutputRequest
     public function __construct(
         ?Messages $messages = null,
         string|array|object|null $requestedSchema = null,
-        ?string        $system = null,
-        ?string        $prompt = null,
+        string|\Stringable|null $system = null,
+        string|\Stringable|null $prompt = null,
         ?array         $examples = null,
         ?string        $model = null,
         ?array         $options = null,
@@ -49,9 +49,9 @@ class StructuredOutputRequest
         $this->requestedSchema = $requestedSchema ?? [];
 
         $this->options = $options ?: [];
-        $this->prompt = $prompt ?: '';
+        $this->prompt = $prompt ? (string) $prompt : '';
         $this->examples = $examples ?: [];
-        $this->system = $system ?: '';
+        $this->system = $system ? (string) $system : '';
         $this->model = $model ?: '';
 
         $this->cachedContext = $cachedContext ?: new CachedContext();
@@ -117,8 +117,8 @@ class StructuredOutputRequest
     public function with(
         ?Messages $messages = null,
         string|array|object|null $requestedSchema = null,
-        ?string        $system = null,
-        ?string        $prompt = null,
+        string|\Stringable|null $system = null,
+        string|\Stringable|null $prompt = null,
         ?array         $examples = null,
         ?string        $model = null,
         ?array         $options = null,
@@ -150,11 +150,11 @@ class StructuredOutputRequest
         return $this->with(requestedSchema: $requestedSchema);
     }
 
-    public function withSystem(string $system) : static {
+    public function withSystem(string|\Stringable $system) : static {
         return $this->with(system: $system);
     }
 
-    public function withPrompt(string $prompt) : static {
+    public function withPrompt(string|\Stringable $prompt) : static {
         return $this->with(prompt: $prompt);
     }
 

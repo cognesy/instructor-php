@@ -40,13 +40,13 @@ $data = $inference
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Inference;
 
 $data = Inference::using('openai')
-    ->with(
-        messages: 'Return JSON.',
-        responseFormat: ['type' => 'json_object'],
-    )
+    ->withMessages(Messages::fromString('Return JSON.'))
+    ->withResponseFormat(new ResponseFormat(type: 'json_object'))
     ->asJsonData();
 ```
 

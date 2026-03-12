@@ -2,6 +2,7 @@
 
 namespace Cognesy\Doctools\Docgen\Commands;
 
+use Cognesy\Doctools\Docgen\CheatsheetDiscovery;
 use Cognesy\Doctools\Docgen\Data\DocsConfig;
 use Cognesy\Doctools\Docgen\Data\DocumentationConfig;
 use Cognesy\Doctools\Docgen\LlmsDocsGenerator;
@@ -132,7 +133,13 @@ class GenerateMkDocsCommand extends Command
         $packages = $packageDiscovery->discover();
         $exampleGroups = $this->examples->getExampleGroups();
         $releaseNotes = $this->scanReleaseNotes();
-        $navigation = $navBuilder->buildMkDocsNav($packages, $exampleGroups, $releaseNotes);
+        $cheatsheetDiscovery = new CheatsheetDiscovery(
+            sourcePattern: $docsConfig->cheatsheetsSourcePattern,
+            internal: $docsConfig->packageInternal,
+            order: $docsConfig->packageOrder,
+        );
+        $cheatsheets = $cheatsheetDiscovery->discover();
+        $navigation = $navBuilder->buildMkDocsNav($packages, $exampleGroups, $releaseNotes, $cheatsheets);
 
         // Generate files
         $generator = new LlmsDocsGenerator(

@@ -51,7 +51,7 @@ $definition = new AgentDefinition(
     toolsDeny: new NameList('write_file'),
     capabilities: new NameList('use_bash'),
 );
-// @doctest id="8b84"
+// @doctest id="5601"
 ```
 
 ### Tool Visibility Rules
@@ -78,7 +78,7 @@ $budget = new ExecutionBudget(
     maxCost: 0.50,        // maximum cost in dollars
     deadline: new DateTimeImmutable('2025-12-31'),
 );
-// @doctest id="b829"
+// @doctest id="cb05"
 ```
 
 When an `AgentDefinition` declares a budget, it is translated into `UseGuards` during loop instantiation.
@@ -118,7 +118,7 @@ You are a research assistant. Your job is to find and summarize information accu
 
 When given a topic, use the available tools to gather evidence, then synthesize your findings
 into a clear, well-structured summary. Always cite the sources you used.
-// @doctest id="bc8d"
+// @doctest id="92a1"
 ```
 
 The document body (everything after the front matter) becomes the `systemPrompt` field.
@@ -139,7 +139,7 @@ budget:
 tools:
   - bash
   - read_file
-# @doctest id="548d"
+# @doctest id="d314"
 ```
 
 ### JSON Format
@@ -158,7 +158,7 @@ tools:
   },
   "tools": ["bash", "read_file"]
 }
-// @doctest id="d142"
+// @doctest id="4234"
 ```
 
 All three formats produce identical `AgentDefinition` objects when loaded.
@@ -174,7 +174,7 @@ use Cognesy\Agents\Template\AgentDefinitionLoader;
 
 $loader = new AgentDefinitionLoader();
 $definition = $loader->loadFile('/path/to/researcher.md');
-// @doctest id="17b0"
+// @doctest id="d290"
 ```
 
 Supported extensions: `.md`, `.json`, `.yaml`, `.yml`. The loader throws a `RuntimeException` if the file cannot be read and an `InvalidArgumentException` for unsupported extensions.
@@ -192,7 +192,7 @@ $loader = new AgentDefinitionLoader([
     'yaml' => new YamlDefinitionParser(),
     'yml' => new YamlDefinitionParser(),
 ]);
-// @doctest id="e81e"
+// @doctest id="8375"
 ```
 
 ### AgentDefinitionRegistry
@@ -203,7 +203,7 @@ The `AgentDefinitionRegistry` is a named collection of agent definitions. It sup
 use Cognesy\Agents\Template\AgentDefinitionRegistry;
 
 $registry = new AgentDefinitionRegistry();
-// @doctest id="9213"
+// @doctest id="0434"
 ```
 
 #### Programmatic Registration
@@ -211,7 +211,7 @@ $registry = new AgentDefinitionRegistry();
 ```php
 $registry->register($definition);
 $registry->registerMany($def1, $def2, $def3);
-// @doctest id="2d17"
+// @doctest id="0da7"
 ```
 
 #### Loading from Files
@@ -225,7 +225,7 @@ $registry->loadFromDirectory('/agents');
 
 // Load recursively, scanning subdirectories
 $registry->loadFromDirectory('/agents', recursive: true);
-// @doctest id="d575"
+// @doctest id="f322"
 ```
 
 During directory scans, files that fail to parse are skipped rather than causing exceptions. The errors are collected and can be inspected afterward:
@@ -233,7 +233,7 @@ During directory scans, files that fail to parse are skipped rather than causing
 ```php
 $errors = $registry->errors();
 // Returns: ['path/to/broken.md' => 'Error message', ...]
-// @doctest id="fe52"
+// @doctest id="000d"
 ```
 
 #### Auto-Discovery
@@ -246,7 +246,7 @@ $registry->autoDiscover(
     packagePath: '/package/agents',   // scans this directory directly
     userPath: '/user/agents',         // scans this directory directly
 );
-// @doctest id="35a9"
+// @doctest id="6c26"
 ```
 
 Paths are scanned in order: `userPath`, `packagePath`, then `projectPath/.claude/agents`. Later registrations overwrite earlier ones with the same name, so user-level definitions take precedence over package defaults.
@@ -259,7 +259,7 @@ $exists = $registry->has('researcher');        // returns bool
 $names = $registry->names();                   // returns ['researcher', 'reviewer', ...]
 $count = $registry->count();                   // returns int
 $all = $registry->all();                       // returns ['name' => AgentDefinition, ...]
-// @doctest id="c3ab"
+// @doctest id="c88e"
 ```
 
 ## Instantiation Factories
@@ -275,7 +275,7 @@ use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
 
 $factory = new DefinitionStateFactory();
 $state = $factory->instantiateAgentState($definition);
-// @doctest id="e8f0"
+// @doctest id="b889"
 ```
 
 You can also pass a seed state to merge the definition's settings onto an existing state:
@@ -283,7 +283,7 @@ You can also pass a seed state to merge the definition's settings onto an existi
 ```php
 $existingState = AgentState::empty()->withUserMessage('Start here');
 $state = $factory->instantiateAgentState($definition, seed: $existingState);
-// @doctest id="396e"
+// @doctest id="0e60"
 ```
 
 The factory applies settings in this order: system prompt, metadata merge, then LLM config. Each step is skipped if the corresponding field in the definition is empty or null.
@@ -302,7 +302,7 @@ $capabilities->register('use_bash', new UseBash());
 
 $factory = new DefinitionLoopFactory($capabilities);
 $loop = $factory->instantiateAgentLoop($definition);
-// @doctest id="6baf"
+// @doctest id="8d96"
 ```
 
 The factory builds the loop by applying the definition's fields in order:
@@ -327,7 +327,7 @@ $factory = new DefinitionLoopFactory(
     capabilities: $capabilities,
     tools: $tools,
 );
-// @doctest id="38b2"
+// @doctest id="183d"
 ```
 
 If a definition references tools and no registry is provided, `DefinitionLoopFactory` throws an `InvalidArgumentException`. Unknown tool names also cause an exception, listing which tools could not be found.
@@ -341,7 +341,7 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 
 $events = new EventDispatcher('session');
 $factory = new DefinitionLoopFactory($capabilities, $tools, $events);
-// @doctest id="9cc1"
+// @doctest id="3d90"
 ```
 
 ## AgentCapabilityRegistry
@@ -366,7 +366,7 @@ $capabilities->has('use_bash');     // true
 $capabilities->get('use_bash');     // returns the UseBash instance
 $capabilities->names();             // ['use_bash', 'use_file_tools']
 $capabilities->count();             // 2
-// @doctest id="4b28"
+// @doctest id="04f1"
 ```
 
 Factory-registered capabilities are instantiated on first access and cached for subsequent lookups. If the factory does not return a `CanProvideAgentCapability`, an `InvalidArgumentException` is thrown.
@@ -386,7 +386,7 @@ $registry->loadFromDirectory('/agents');
 $agent = AgentBuilder::base()
     ->withCapability(new UseSubagents(provider: $registry))
     ->build();
-// @doctest id="ac66"
+// @doctest id="8e7c"
 ```
 
 The subagent tool's schema automatically includes the list of available agents and their descriptions, so the LLM knows which subagents it can delegate to. See [Subagents](15-subagents.md) for the full delegation model.
@@ -398,7 +398,7 @@ The subagent tool's schema automatically includes the list of available agents a
 ```php
 $array = $definition->toArray();
 $restored = AgentDefinition::fromArray($array);
-// @doctest id="f929"
+// @doctest id="0f41"
 ```
 
 This is used internally by the session persistence layer to store agent definitions alongside session state. The `fromArray()` method also accepts `title` as an alias for `label` to support legacy formats.

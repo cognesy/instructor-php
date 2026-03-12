@@ -8,6 +8,7 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Evals\Executors\Data\InferenceSchema;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
@@ -62,9 +63,9 @@ class InferenceAdapter
 
     public function forModeTools(LLMConfig $llmConfig, string|array $messages, InferenceSchema $schema, array $options) : PendingInference {
         $request = new InferenceRequest(
-            messages: $messages,
-            tools: $schema->tools(),
-            toolChoice: $schema->toolChoice(),
+            messages: Messages::fromAny($messages),
+            tools: \Cognesy\Polyglot\Inference\Data\ToolDefinitions::fromArray($schema->tools()),
+            toolChoice: \Cognesy\Polyglot\Inference\Data\ToolChoice::fromAny($schema->toolChoice()),
             options: $options,
         );
         return $this->runtime($llmConfig)->create($request);
@@ -73,11 +74,11 @@ class InferenceAdapter
     public function forModeJsonSchema(LLMConfig $llmConfig, string|array $messages, InferenceSchema $schema, array $options) : PendingInference {
         $messagesArray = is_array($messages) ? $messages : [['role' => 'user', 'content' => $messages]];
         $request = new InferenceRequest(
-            messages: array_merge($messagesArray, [
+            messages: Messages::fromArray(array_merge($messagesArray, [
                 ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema->schema())],
                 ['role' => 'user', 'content' => 'Respond correctly with strict JSON.'],
-            ]),
-            responseFormat: $schema->responseFormatJsonSchema(),
+            ])),
+            responseFormat: \Cognesy\Polyglot\Inference\Data\ResponseFormat::fromArray($schema->responseFormatJsonSchema()),
             options: $options,
         );
         return $this->runtime($llmConfig)->create($request);
@@ -86,11 +87,11 @@ class InferenceAdapter
     public function forModeJson(LLMConfig $llmConfig, string|array $messages, InferenceSchema $schema, array $options) : PendingInference {
         $messagesArray = is_array($messages) ? $messages : [['role' => 'user', 'content' => $messages]];
         $request = new InferenceRequest(
-            messages: array_merge($messagesArray, [
+            messages: Messages::fromArray(array_merge($messagesArray, [
                 ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema->schema())],
                 ['role' => 'user', 'content' => 'Respond correctly with strict JSON.'],
-            ]),
-            responseFormat: $schema->responseFormatJson(),
+            ])),
+            responseFormat: \Cognesy\Polyglot\Inference\Data\ResponseFormat::fromArray($schema->responseFormatJson()),
             options: $options,
         );
         return $this->runtime($llmConfig)->create($request);
@@ -99,11 +100,11 @@ class InferenceAdapter
     public function forModeMdJson(LLMConfig $llmConfig, string|array $messages, InferenceSchema $schema, array $options) : PendingInference {
         $messagesArray = is_array($messages) ? $messages : [['role' => 'user', 'content' => $messages]];
         $request = new InferenceRequest(
-            messages: array_merge($messagesArray, [
+            messages: Messages::fromArray(array_merge($messagesArray, [
                 ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema->schema())],
                 ['role' => 'user', 'content' => 'Respond correctly with strict JSON.'],
                 ['role' => 'user', 'content' => '```json'],
-            ]),
+            ])),
             options: $options,
         );
         return $this->runtime($llmConfig)->create($request);
@@ -111,7 +112,7 @@ class InferenceAdapter
 
     public function forModeText(LLMConfig $llmConfig, string|array $messages, array $options) : PendingInference {
         $request = new InferenceRequest(
-            messages: $messages,
+            messages: Messages::fromAny($messages),
             options: $options,
         );
         return $this->runtime($llmConfig)->create($request);
@@ -119,14 +120,14 @@ class InferenceAdapter
 
     public function forModeUnrestricted(LLMConfig $llmConfig, array $messages, InferenceSchema $schema, array $options) : PendingInference {
         $request = new InferenceRequest(
-            messages: array_merge($messages, [
+            messages: Messages::fromArray(array_merge($messages, [
                 ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema->schema())],
                 ['role' => 'user', 'content' => 'Respond correctly with strict JSON.'],
                 ['role' => 'user', 'content' => '```json'],
-            ]),
-            tools: $schema->tools(),
-            toolChoice: $schema->toolChoice(),
-            responseFormat: $schema->responseFormatJson(),
+            ])),
+            tools: \Cognesy\Polyglot\Inference\Data\ToolDefinitions::fromArray($schema->tools()),
+            toolChoice: \Cognesy\Polyglot\Inference\Data\ToolChoice::fromAny($schema->toolChoice()),
+            responseFormat: \Cognesy\Polyglot\Inference\Data\ResponseFormat::fromArray($schema->responseFormatJson()),
             options: $options,
         );
         return $this->runtime($llmConfig)->create($request);

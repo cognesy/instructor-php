@@ -72,6 +72,21 @@ $result = (new StructuredOutput)->with(
 )->get();
 ```
 
+## Using Stringable Objects as Prompts
+
+Both `withSystem()` and `withPrompt()` accept `string|\Stringable`, so you can pass any object that implements `Stringable` -- such as an xprompt `Prompt` class -- directly, without calling `->render()` or `(string)` yourself. The value is cast to string immediately at the boundary.
+
+```php
+use Cognesy\Instructor\StructuredOutput;
+use App\Prompts\ExtractionSystem;
+
+$result = (new StructuredOutput)
+    ->withSystem(ExtractionSystem::with(domain: 'finance'))
+    ->withPrompt('Extract person details from the text below.')
+    ->with(messages: $text, responseModel: Person::class)
+    ->get();
+```
+
 ## Cached Context
 
 For applications that use the same large context across multiple requests (such as a long document or a set of reference materials), `withCachedContext()` marks content for provider-level prompt caching. This can significantly reduce costs and latency when supported by the provider.

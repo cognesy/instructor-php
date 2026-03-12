@@ -106,8 +106,8 @@ final readonly class AgentContext
         return $this->with(metadata: $metadata);
     }
 
-    public function withSystemPrompt(string $systemPrompt): self {
-        return $this->with(systemPrompt: $systemPrompt);
+    public function withSystemPrompt(string|\Stringable $systemPrompt): self {
+        return $this->with(systemPrompt: (string) $systemPrompt);
     }
 
     public function withResponseFormat(ResponseFormat $responseFormat): self {

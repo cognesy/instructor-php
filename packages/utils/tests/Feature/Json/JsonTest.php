@@ -1,234 +1,199 @@
-<?php
+<?php declare(strict_types=1);
 
 use Cognesy\Utils\Json\Json;
 
-describe('Json Class', function () {
-    it('creates an empty Json object', function () {
-        $json = new Json();
+describe('Json value object', function () {
+    it('creates empty via none()', function () {
+        $json = Json::none();
         expect($json->isEmpty())->toBeTrue();
         expect($json->toString())->toBe('');
         expect($json->toArray())->toBe([]);
     });
 
-    it('creates a Json object from a valid JSON string', function () {
-        $validJson = '{"name":"John","age":30}';
-        $json = Json::fromString($validJson);
-        expect($json->isEmpty())->toBeFalse();
-        expect($json->toString())->toBe($validJson);
-        expect($json->toArray())->toBe(['name' => 'John', 'age' => 30]);
-    });
-
-    it('handles empty input gracefully', function () {
+    it('creates from empty string', function () {
         $json = Json::fromString('');
         expect($json->isEmpty())->toBeTrue();
         expect($json->toString())->toBe('');
         expect($json->toArray())->toBe([]);
     });
 
-    it('handles known cases', function ($json, $result) {
-        expect(Json::fromString($json)->toArray())->toMatchArray($result);
-    })->with([
-        ['{"name": "John", "age": 30}', ["name"=>"John", "age"=>30]],
-        ['{"name": "John", "age": 30} Other text', ["name"=>"John", "age"=>30]],
-        ['Other text {"name": "John", "age": 30}', ["name"=>"John", "age"=>30]],
-        ['Other text {"name": "John", "age": 30} Other text', ["name"=>"John", "age"=>30]],
-        ['Other text {"name": "John", "age": 30} Other text {"name": "Jane", "age": 25}', ["name"=>"John", "age"=>30]],
-    ]);
+    // -- Lazy behavior --
 
-    it('handles known ACME cases', function ($json, $result) {
-        expect(Json::fromString($json)->toArray())->toMatchArray($result);
-    })->with([
-        ['{"name":"ACME","year":2020}', ["name"=>"ACME","year"=>2020]],
-        ['{"name":"ACME","year":2020} Other text', ["name"=>"ACME","year"=>2020]],
-        ['Other text {"name":"ACME","year":2020}', ["name"=>"ACME","year"=>2020]],
-        ['Other text {"name":"ACME","year":2020} Other text', ["name"=>"ACME","year"=>2020]],
-        ['{\n  "year": 2020,\n  "name": "ACME"\n}', ["name"=>"ACME","year"=>2020]],
-        ['{\n  "name": "ACME",\n  "year": 2020\n}\n```', ["name"=>"ACME","year"=>2020]],
-        ['```json\n{\n  "name": "ACME",\n  "year": 2020\n}\n```', ["name"=>"ACME","year"=>2020]],
-        ['```json\n{\n  "name": "ACME",\n  "year": 2020\n}', ["name"=>"ACME","year"=>2020]],
-        ['{\n"name": "ACME",\n"year": 2020\n}\n```', ["name"=>"ACME","year"=>2020]],
-        ['```json\n{\n"name": "ACME",\n"year": 2020\n}\n```', ["name"=>"ACME","year"=>2020]],
-        ['```json\n{\n  "name": "ACME",\n  "year": 2020\n}\n```', ["name"=>"ACME","year"=>2020]],
-        ['\n{\n"name": "ACME",\n"year": 2020\n}\n```', ["name"=>"ACME","year"=>2020]],
-        ['\n{\t  "name": "ACME",\n  "year": 2020\n}\n```', ["name"=>"ACME","year"=>2020]],
-        ['```json\n{"year": 2020, "name": "ACME"}\n```', ["name"=>"ACME","year"=>2020]],
-    ]);
-
-    it('extracts JSON from markdown', function () {
-        $markdown = "# Title\n```json\n{\"key\": \"value\"}\n```\nOther text";
-        $json = Json::fromString($markdown);
-        expect($json->toArray())->toMatchArray(["key" => "value"]);
+    it('fromString stores string without decoding', function () {
+        $original = '{"a":1}';
+        $json = Json::fromString($original);
+        // toString returns original string without re-encoding
+        expect($json->toString())->toBe($original);
     });
 
-    it('extracts JSON from text with brackets', function () {
-        $text = "Some text before {\"key\": \"value\"} and after";
-        $json = Json::fromString($text);
-        expect($json->toArray())->toMatchArray(["key" => "value"]);
+    it('fromString preserves whitespace in original string', function () {
+        $original = '{"a" : 1}';
+        $json = Json::fromString($original);
+        expect($json->toString())->toBe($original);
     });
 
-    it('returns empty string for input without valid JSON', function () {
-        $text = "No JSON here";
-        $json = Json::fromString($text);
-        expect($json->isEmpty())->toBeTrue();
+    it('fromArray stores array without encoding', function () {
+        $array = ['a' => 1];
+        $json = Json::fromArray($array);
+        expect($json->toArray())->toBe($array);
     });
 
-    it('parses partial JSON using fromPartial method', function () {
-        $partialJson = '{"name": "John", "age":';
-        $json = Json::fromPartial($partialJson);
-        expect($json->toString())->toBe('{"name":"John","age":null}');
+    it('fromArray lazily encodes on toString', function () {
+        $json = Json::fromArray(['a' => 1]);
+        expect($json->toString())->toBe('{"a":1}');
     });
 
-    it('handles streaming partial JSON', function () {
-        $streamParts = [
-            '{"name": "Jo',
-            'hn", "age": 3',
-            '0, "city": "New York"}'
-        ];
+    it('fromString lazily decodes on toArray', function () {
+        $json = Json::fromString('{"a":1}');
+        expect($json->toArray())->toBe(['a' => 1]);
+    });
 
+    // -- fromPartial --
+
+    it('parses partial JSON with trailing comma', function () {
+        $json = Json::fromPartial('{"name":"John","age":30,}');
+        expect($json->toArray())->toBe(['name' => 'John', 'age' => 30]);
+    });
+
+    it('parses partial JSON with unclosed brace', function () {
+        $json = Json::fromPartial('{"name":"John","age":30');
+        expect($json->toArray())->toMatchArray(['name' => 'John', 'age' => 30]);
+    });
+
+    it('parses partial JSON with unclosed string', function () {
+        $json = Json::fromPartial('{"name":"John');
+        expect($json->toArray())->toMatchArray(['name' => 'John']);
+    });
+
+    it('handles streaming partial JSON accumulation', function () {
+        $parts = ['{"name": "Jo', 'hn", "age": 3', '0, "city": "New York"}'];
         $result = '';
-        foreach ($streamParts as $part) {
+        foreach ($parts as $part) {
             $result .= $part;
             $json = Json::fromPartial($result);
             expect($json->isEmpty())->toBeFalse();
         }
+        expect($json->toArray())->toBe(['name' => 'John', 'age' => 30, 'city' => 'New York']);
+    });
 
+    // -- Immutability --
+
+    it('is immutable - multiple toArray calls return same result', function () {
+        $json = Json::fromString('{"a":1}');
+        $first = $json->toArray();
+        $second = $json->toArray();
+        expect($first)->toBe($second);
+    });
+
+    // -- Complex structures --
+
+    it('handles nested structures', function () {
+        $complex = '{"person":{"name":"John","address":{"city":"New York","zip":"10001"}},"hobbies":["reading","swimming"]}';
+        $json = Json::fromString($complex);
         expect($json->toArray())->toBe([
-            'name' => 'John',
-            'age' => 30,
-            'city' => 'New York'
+            'person' => ['name' => 'John', 'address' => ['city' => 'New York', 'zip' => '10001']],
+            'hobbies' => ['reading', 'swimming'],
         ]);
     });
 
-    it('handles JSON with nested structures', function () {
-        $complexJson = '{"person": {"name": "John", "address": {"city": "New York", "zip": "10001"}}, "hobbies": ["reading", "swimming"]}';
-        $json = Json::fromString($complexJson);
-        expect($json->toArray())->toBe([
-            'person' => [
-                'name' => 'John',
-                'address' => [
-                    'city' => 'New York',
-                    'zip' => '10001'
-                ]
-            ],
-            'hobbies' => ['reading', 'swimming']
-        ]);
-    });
-
-    it('parses JSON using static parse method', function () {
-        $validJson = '{"name": "John", "age": 30}';
-        $result = Json::decode($validJson);
-        expect($result)->toBe(['name' => 'John', 'age' => 30]);
-    });
-
-    it('returns default value when parsing invalid JSON', function () {
-        $invalidJson = '{"name": "John", "age": }';
-        $result = Json::decode($invalidJson, ['default' => true]);
-        expect($result)->toBe(['default' => true]);
-    });
-
-    it('encodes data to JSON string', function () {
-        $data = ['name' => 'John', 'age' => 30];
-        $result = Json::encode($data);
-        expect($result)->toBe('{"name":"John","age":30}');
-    });
-
-    it('throws explicit exception when encoding fails', function () {
-        $invalid = ["bad" => "\xB1\x31"];
-
-        expect(fn() => Json::encode($invalid))
-            ->toThrow(InvalidArgumentException::class, 'Failed to encode JSON');
-    });
-
-    it('throws explicit exception when creating Json from array fails', function () {
-        $invalid = ["bad" => "\xB1\x31"];
-
-        expect(fn() => Json::fromArray($invalid))
-            ->toThrow(InvalidArgumentException::class, 'Failed to encode JSON');
-    });
-
-    it('handles unicode characters correctly', function () {
-        $unicodeJson = '{"name":"Jöhn","city":"Münich"}';
-        $json = Json::fromString($unicodeJson);
-        expect($json->toString())->toBe('{"name":"J\u00f6hn","city":"M\u00fcnich"}');
-        expect($json->toArray())->toBe(['name' => 'Jöhn', 'city' => 'Münich']);
-    });
-
-    it('handles large JSON payloads', function () {
-        $largeArray = array_fill(0, 1000, ['id' => uniqid(), 'data' => str_repeat('a', 100)]);
-        $largeJson = json_encode($largeArray);
-        $json = Json::fromString($largeJson);
-        expect(count($json->toArray()))->toBe(1000);
-    });
-
-    it('extracts valid JSON from a string with multiple JSON-like structures', function () {
-        $mixedText = 'Invalid {"key": "value"} Valid {"name": "John", "age": 30} Another {"x": 1}';
-        $json = Json::fromString($mixedText);
-        expect($json->toArray())->toBe(['key' => 'value']);
-    });
-
-    it('preserves numeric values correctly', function () {
-        $numericJson = '{"integer": 42, "float": 3.14, "exponential": 1.23e-4}';
-        $json = Json::fromString($numericJson);
+    it('preserves numeric values', function () {
+        $json = Json::fromString('{"integer":42,"float":3.14,"exponential":1.23e-4}');
         $array = $json->toArray();
-
         expect($array['integer'])->toBe(42);
         expect($array['float'])->toBe(3.14);
         expect($array['exponential'])->toBe(1.23e-4);
     });
 
-    it('handles boolean and null values correctly', function () {
-        $mixedJson = '{"bool_true": true, "bool_false": false, "null_value": null}';
-        $json = Json::fromString($mixedJson);
+    it('handles boolean and null values', function () {
+        $json = Json::fromString('{"t":true,"f":false,"n":null}');
         $array = $json->toArray();
-
-        expect($array['bool_true'])->toBeTrue();
-        expect($array['bool_false'])->toBeFalse();
-        expect($array['null_value'])->toBeNull();
+        expect($array['t'])->toBeTrue();
+        expect($array['f'])->toBeFalse();
+        expect($array['n'])->toBeNull();
     });
 
     it('preserves array structures', function () {
-        $arrayJson = '{"numbers": [1, 2, 3], "mixed": [1, "two", true, null]}';
-        $json = Json::fromString($arrayJson);
+        $json = Json::fromString('{"numbers":[1,2,3],"mixed":[1,"two",true,null]}');
         $array = $json->toArray();
-
         expect($array['numbers'])->toBe([1, 2, 3]);
         expect($array['mixed'])->toBe([1, "two", true, null]);
     });
 
-    it('ignores comments in JSON-like strings', function () {
-        $jsonWithComments = '
-        {
-            // This is a comment
-            "name": "John", /* Multi-line
-            comment */
-            "age": 30
-        }';
-        $json = Json::fromString($jsonWithComments);
-        expect($json->toArray())->toBe(['name' => 'John', 'age' => 30]);
+    it('handles escaped characters', function () {
+        $escaped = '{"message":"Hello \\"World\\"! \\\\ \\/ \\b \\f \\n \\r \\t"}';
+        $json = Json::fromString($escaped);
+        $expected = json_decode($escaped, true)['message'];
+        expect($json->toArray()['message'])->toBe($expected);
     });
 
-    it('handles multiple JSON-like strings and returns the first valid one', function () {
-        $text = "{\"invalid\": \"json\" {\"valid\": \"json\"}";
-        $json = Json::fromString($text);
-        expect($json->toString())->toBe('{"valid":"json"}');
+    it('handles large JSON payloads', function () {
+        $largeArray = array_fill(0, 1000, ['id' => 'x', 'data' => str_repeat('a', 100)]);
+        $largeJson = json_encode($largeArray);
+        $json = Json::fromString($largeJson);
+        expect(count($json->toArray()))->toBe(1000);
     });
 
-    it('gracefully handles malformed JSON with extra commas', function () {
-        $malformedJson = '{"name": "John",, "age": 30,}';
-        $json = Json::fromPartial($malformedJson);
-        expect($json->toArray())->toBe(['name' => 'John', 'age' => 30]);
+    // -- Static helpers --
+
+    it('encode encodes to JSON string', function () {
+        expect(Json::encode(['a' => 1]))->toBe('{"a":1}');
     });
 
-    it('handles escaped characters in JSON strings', function () {
-        $escapedJson = '{"message":"Hello \\"World\\"! \\\\ \\/ \\b \\f \\n \\r \\t"}';
-        $json = Json::fromString($escapedJson);
+    it('encode throws on unencodable data', function () {
+        expect(fn() => Json::encode(["bad" => "\xB1\x31"]))
+            ->toThrow(InvalidArgumentException::class, 'Failed to encode JSON');
+    });
 
-        // Test that the parsed array contains the correct unescaped string
-        $expectedMessage = json_decode($escapedJson, true)['message'];
-        expect($json->toArray()['message'])->toBe($expectedMessage);
+    it('fromArray throws on unencodable data', function () {
+        // fromArray defers encoding, so it fails on toString()
+        $json = Json::fromArray(["bad" => "\xB1\x31"]);
+        expect(fn() => $json->toString())
+            ->toThrow(InvalidArgumentException::class, 'Failed to encode JSON');
+    });
 
-        // Test that when re-encoded, the JSON is equivalent to the original
-        $reEncodedJson = json_encode($json->toArray());
-        expect(json_decode($reEncodedJson, true))->toBe(json_decode($escapedJson, true));
+    it('decode parses valid JSON', function () {
+        expect(Json::decode('{"a":1}'))->toBe(['a' => 1]);
+    });
+
+    it('decode returns default on invalid JSON', function () {
+        expect(Json::decode('{"broken', ['default' => true]))->toBe(['default' => true]);
+    });
+
+    it('decode throws without default on invalid JSON', function () {
+        expect(fn() => Json::decode('{"broken'))->toThrow(JsonException::class);
+    });
+
+    // -- Falsy value regression --
+
+    it('decode preserves falsy values with default', function () {
+        expect(Json::decode('0', 'DEF'))->toBe(0);
+        expect(Json::decode('false', 'DEF'))->toBeFalse();
+        expect(Json::decode('[]', ['default' => true]))->toBe([]);
+        expect(Json::decode('""', 'DEF'))->toBe('');
+        expect(Json::decode('null', 'DEF'))->toBeNull();
+    });
+
+    it('decode preserves falsy values without default', function () {
+        expect(Json::decode('0'))->toBe(0);
+        expect(Json::decode('false'))->toBeFalse();
+        expect(Json::decode('[]'))->toBe([]);
+        expect(Json::decode('""'))->toBe('');
+        expect(Json::decode('null'))->toBeNull();
+    });
+
+    // -- fromString throws on invalid JSON --
+
+    it('fromString throws on invalid JSON when toArray is called', function () {
+        $json = Json::fromString('not json');
+        expect(fn() => $json->toArray())->toThrow(InvalidArgumentException::class);
+    });
+
+    // -- format --
+
+    it('format returns formatted JSON', function () {
+        $json = Json::fromArray(['a' => 1]);
+        $formatted = $json->format(JSON_PRETTY_PRINT);
+        expect($formatted)->toContain("\n");
+        expect(json_decode($formatted, true))->toBe(['a' => 1]);
     });
 });

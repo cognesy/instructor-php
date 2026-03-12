@@ -23,7 +23,7 @@ foreach ($stream->partials() as $partial) {
 
 // Get final complete result
 $company = $stream->finalValue();
-// @doctest id="00a5"
+// @doctest id="0901"
 ```
 
 ### Streaming with `partials()`
@@ -43,7 +43,7 @@ foreach ($stream->partials() as $partial) {
 }
 
 $result = $stream->finalValue();
-// @doctest id="89c7"
+// @doctest id="da0a"
 ```
 
 ### Streaming Sequences
@@ -64,7 +64,7 @@ $stream = StructuredOutput::with(
 foreach ($stream->sequence() as $items) {
     echo "Found: {$items->last()->name}\n";
 }
-// @doctest id="edd0"
+// @doctest id="79d9"
 ```
 
 ---
@@ -99,39 +99,51 @@ $user = StructuredOutput::with(
     responseModel: UserData::class,
     maxRetries: 3,
 )->get();
-// @doctest id="99af"
+// @doctest id="4729"
 ```
 
 ### Custom Validators
 
-Implement the `CanValidateObject` contract for domain-specific validation logic that cannot be expressed with declarative attributes.
+Implement the `CanValidateObject` contract for domain-specific validation logic that cannot be expressed with declarative attributes. The `validate` method must return a `ValidationResult` instance.
 
 ```php
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
+use Cognesy\Instructor\Validation\ValidationResult;
 
 class BusinessRulesValidator implements CanValidateObject
 {
-    public function validate(object $object): array
+    public function validate(object $dataObject): ValidationResult
     {
-        $errors = [];
-
-        if ($object instanceof OrderData) {
-            if ($object->total < $object->minimumOrderValue) {
-                $errors[] = "Order total must be at least {$object->minimumOrderValue}";
+        if ($dataObject instanceof OrderData) {
+            if ($dataObject->total < $dataObject->minimumOrderValue) {
+                return ValidationResult::fieldError(
+                    field: 'total',
+                    value: $dataObject->total,
+                    message: "Order total must be at least {$dataObject->minimumOrderValue}",
+                );
             }
         }
 
-        return $errors;
+        return ValidationResult::valid();
     }
 }
+// @doctest id="46f3"
+```
 
-$order = StructuredOutput::with(
+Custom validators are registered on the `StructuredOutputRuntime`, not on the facade directly:
+
+```php
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
+
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withValidators([BusinessRulesValidator::class]);
+
+$order = StructuredOutput::withRuntime($runtime)->with(
     messages: 'Extract order...',
     responseModel: OrderData::class,
-)
-->withValidators(BusinessRulesValidator::class)
-->get();
-// @doctest id="afaa"
+)->get();
+// @doctest id="25d4"
 ```
 
 ### Custom Retry Prompt
@@ -145,7 +157,7 @@ $result = StructuredOutput::with(
     maxRetries: 3,
     retryPrompt: 'The extraction failed validation. Errors: {errors}. Please correct and try again.',
 )->get();
-// @doctest id="2e60"
+// @doctest id="4231"
 ```
 
 ---
@@ -172,16 +184,25 @@ class NormalizePhoneNumbers implements CanTransformData
         return preg_replace('/[^0-9+]/', '', $phone);
     }
 }
+// @doctest id="8ae8"
+```
 
-$contact = StructuredOutput::with(
+Custom transformers are registered on the `StructuredOutputRuntime`, not on the facade directly:
+
+```php
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
+
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
+    ->withTransformers([NormalizePhoneNumbers::class]);
+
+$contact = StructuredOutput::withRuntime($runtime)->with(
     messages: 'Contact: John, phone: (555) 123-4567',
     responseModel: ContactData::class,
-)
-->withTransformers(NormalizePhoneNumbers::class)
-->get();
+)->get();
 
 // $contact->phone === '+15551234567'
-// @doctest id="e231"
+// @doctest id="7361"
 ```
 
 ---
@@ -226,7 +247,7 @@ $result = StructuredOutput::withRuntime($jsonRuntime)
 $result = StructuredOutput::withRuntime($mdJsonRuntime)
     ->with(...)
     ->get();
-// @doctest id="1c2e"
+// @doctest id="8a5d"
 ```
 
 ---
@@ -258,7 +279,7 @@ $person = StructuredOutput::with(
         ],
     ],
 )->get();
-// @doctest id="2fd7"
+// @doctest id="e413"
 ```
 
 ---
@@ -278,7 +299,7 @@ $medical = StructuredOutput::with(
         If information is unclear, mark as null rather than guessing.
         PROMPT,
 )->get();
-// @doctest id="acdf"
+// @doctest id="5d73"
 ```
 
 ---
@@ -294,7 +315,7 @@ $result = StructuredOutput::with(
     toolName: 'extract_invoice',
     toolDescription: 'Extracts structured invoice data including line items, totals, and payment terms.',
 )->get();
-// @doctest id="8d2d"
+// @doctest id="dd0d"
 ```
 
 ---
@@ -331,7 +352,7 @@ class AIService
             ->get();
     }
 }
-// @doctest id="b656"
+// @doctest id="e1e3"
 ```
 
 ---
@@ -348,7 +369,7 @@ $result = StructuredOutput::withCachedContext(
     messages: $newDocument,
     responseModel: LegalAnalysis::class,
 )->get();
-// @doctest id="0f3d"
+// @doctest id="d829"
 ```
 
 ---
@@ -376,7 +397,7 @@ class CachedExtractor
         });
     }
 }
-// @doctest id="4af6"
+// @doctest id="9cad"
 ```
 
 ### Semantic Caching
@@ -410,7 +431,7 @@ class SemanticCache
         return $result;
     }
 }
-// @doctest id="3434"
+// @doctest id="e3dd"
 ```
 
 ---
@@ -445,7 +466,7 @@ class BatchExtractor
             ->dispatch();
     }
 }
-// @doctest id="ac40"
+// @doctest id="59ad"
 ```
 
 ---
@@ -478,7 +499,7 @@ class ResilientExtractor
         }
     }
 }
-// @doctest id="acc9"
+// @doctest id="e9d0"
 ```
 
 ### Fallback Providers
@@ -508,7 +529,7 @@ class FallbackExtractor
         throw new RuntimeException('All providers failed');
     }
 }
-// @doctest id="de5e"
+// @doctest id="286f"
 ```
 
 ---
@@ -529,7 +550,7 @@ $result = StructuredOutput::with(
 $result = StructuredOutput::withModel('gpt-4o-mini')
     ->with(messages: $text, responseModel: SimpleModel::class)
     ->get();
-// @doctest id="187a"
+// @doctest id="5b0c"
 ```
 
 ### Parallel Extraction
@@ -544,5 +565,5 @@ $results = Concurrency::run([
     fn () => StructuredOutput::with(messages: $text2, responseModel: Model::class)->get(),
     fn () => StructuredOutput::with(messages: $text3, responseModel: Model::class)->get(),
 ]);
-// @doctest id="eb95"
+// @doctest id="e11b"
 ```

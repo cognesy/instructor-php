@@ -187,7 +187,7 @@ metadata:
 
 ## Cohere
 
-The `cohere-v2` driver supports Cohere's v2 Chat API. Cohere uses a different message and usage format that the driver translates automatically.
+The `cohere` driver supports Cohere's v2 Chat API. Cohere uses a different message and usage format that the driver translates automatically.
 
 ## Other Providers
 

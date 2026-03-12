@@ -6,6 +6,7 @@ use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Utils\Json\Json;
+use Cognesy\Utils\Json\JsonExtractor;
 use Cognesy\Utils\Profiler\TracksObjectCreation;
 use DateTimeImmutable;
 
@@ -114,7 +115,8 @@ final readonly class InferenceResponse
     }
 
     public function findJsonData(): Json {
-        return Json::fromString($this->content);
+        $extracted = JsonExtractor::first($this->content);
+        return $extracted !== null ? Json::fromArray($extracted) : Json::none();
     }
 
     public function findToolCallJsonData(): Json {

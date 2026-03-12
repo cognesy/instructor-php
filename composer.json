@@ -72,7 +72,6 @@
             "@qa:phpstan",
             "@qa:psalm",
             "@qa:pint",
-            "@qa:docs",
             "@qa:semgrep"
         ],
         "hub": "php ./bin/instructor-hub",
@@ -80,8 +79,9 @@
         "psalm": "@php ./vendor/bin/psalm -c packages/instructor/psalm.xml",
         "psalm-unused": "@php ./vendor/bin/psalm --find-unused-code",
         "tell": "bin/tell",
-        "test": "@php -d memory_limit=512M ./vendor/bin/pest --compact --testsuite=Unit,Feature,Regression",
-        "tests": "@php -d memory_limit=512M ./vendor/bin/pest --compact --testsuite=Unit,Feature,Regression",
+        "test": "@php -d memory_limit=512M ./vendor/bin/pest --compact --testsuite=Unit,Feature,Regression --exclude-group=docs-qa",
+        "tests": "@php -d memory_limit=512M ./vendor/bin/pest --compact --testsuite=Unit,Feature,Regression --exclude-group=docs-qa",
+        "test:docs-qa": "@php -d memory_limit=512M ./vendor/bin/pest --compact --group=docs-qa",
         "test-all": "@php ./vendor/bin/pest",
         "dead-code": "@php ./vendor/bin/phpstan analyse -c phpstan-unused.neon --no-progress --error-format=table",
         "dead-code-debug": "@php ./vendor/bin/phpstan analyse -c phpstan-unused.neon --no-progress --error-format=table -vvv",
@@ -140,10 +140,12 @@
             "Cognesy\\Setup\\": "packages/setup/src/",
             "Cognesy\\Stream\\": "packages/stream/src/",
             "Cognesy\\Template\\": "packages/templates/src/",
-            "Cognesy\\Utils\\": "packages/utils/src/"
+            "Cognesy\\Utils\\": "packages/utils/src/",
+            "Cognesy\\Xprompt\\": "packages/xprompt/src/"
         },
         "files": [
-            "src/polyfills.php"
+            "src/polyfills.php",
+            "packages/xprompt/src/functions.php"
         ]
     },
     "autoload-dev": {
@@ -173,6 +175,7 @@
             "Cognesy\\Stream\\Tests\\": "packages/stream/tests/",
             "Cognesy\\Templates\\Tests\\": "packages/templates/tests/",
             "Cognesy\\Utils\\Tests\\": "packages/utils/tests/",
+            "Cognesy\\Xprompt\\Tests\\": "packages/xprompt/tests/",
             "Cognesy\\Auxiliary\\Tests\\": "packages/auxiliary/tests/",
             "Cognesy\\Doctools\\Tests\\": "packages/doctools/tests/",
             "Cognesy\\Evals\\Tests\\": "packages/evals/tests/",

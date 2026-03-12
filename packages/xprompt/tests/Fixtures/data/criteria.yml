@@ -1,0 +1,16 @@
+- id: clarity
+  label: Clarity
+  content: Writing is clear and unambiguous
+  priority: 2
+- id: accuracy
+  label: Accuracy
+  content: Claims are factually correct
+  priority: 1
+  children:
+    - id: sources
+      content: Sources are cited
+    - id: data
+      content: Data is verifiable
+- id: brevity
+  label: Brevity
+  priority: 3

@@ -34,25 +34,26 @@ The `withCachedContext()` method accepts the same kinds of data you would normal
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $inference = Inference::using('anthropic')->withCachedContext(
-    messages: [
+    messages: Messages::fromArray([
         ['role' => 'system', 'content' => 'You are a helpful assistant who provides concise answers.'],
         ['role' => 'user', 'content' => 'I want to discuss machine learning concepts.'],
         ['role' => 'assistant', 'content' => 'I would be happy to discuss machine learning. What aspect interests you?'],
-    ],
+    ]),
 );
 
 $response1 = $inference
-    ->withMessages('What is supervised learning?')
+    ->withMessages(Messages::fromString('What is supervised learning?'))
     ->response();
 
 echo $response1->content() . "\n";
 echo 'Cache read tokens: ' . $response1->usage()->cacheReadTokens . "\n";
 
 $response2 = $inference
-    ->withMessages('And what about unsupervised learning?')
+    ->withMessages(Messages::fromString('And what about unsupervised learning?'))
     ->response();
 
 echo $response2->content() . "\n";
@@ -76,13 +77,16 @@ The cached context can include any combination of:
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\Inference;
 
 $inference = Inference::using('anthropic')->withCachedContext(
-    messages: [
+    messages: Messages::fromArray([
         ['role' => 'system', 'content' => 'You are a data extraction assistant.'],
-    ],
-    tools: [
+    ]),
+    tools: ToolDefinitions::fromArray([
         [
             'type' => 'function',
             'function' => [
@@ -100,12 +104,12 @@ $inference = Inference::using('anthropic')->withCachedContext(
                 ],
             ],
         ],
-    ],
-    toolChoice: 'auto',
+    ]),
+    toolChoice: ToolChoice::auto(),
 );
 
 // Each follow-up query reuses the cached system prompt and tool definitions
-$response = $inference->withMessages('Extract entities from: "Apple announced the new iPhone in Cupertino."')->response();
+$response = $inference->withMessages(Messages::fromString('Extract entities from: "Apple announced the new iPhone in Cupertino."'))->response();
 ```
 
 
@@ -118,15 +122,16 @@ follow-up queries:
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $document = file_get_contents('large_document.txt');
 
 $inference = Inference::using('anthropic')->withCachedContext(
-    messages: [
+    messages: Messages::fromArray([
         ['role' => 'system', 'content' => 'You will help analyze and summarize documents.'],
         ['role' => 'user', 'content' => "Here is the document to analyze:\n\n" . $document],
-    ],
+    ]),
 );
 
 $questions = [
@@ -137,7 +142,7 @@ $questions = [
 ];
 
 foreach ($questions as $question) {
-    $response = $inference->withMessages($question)->response();
+    $response = $inference->withMessages(Messages::fromString($question))->response();
 
     echo "Q: {$question}\n";
     echo "A: " . $response->content() . "\n";
@@ -162,7 +167,7 @@ If a provider reports cache usage, you can inspect it through `response()->usage
 ```php
 <?php
 
-$response = $inference->withMessages('Summarize the document.')->response();
+$response = $inference->withMessages(Messages::fromString('Summarize the document.'))->response();
 
 $usage = $response->usage();
 

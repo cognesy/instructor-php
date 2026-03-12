@@ -17,7 +17,7 @@ is a preset name that maps to your environment variables:
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 $config = LLMConfig::fromPreset('openai');
-// @doctest id="1462"
+// @doctest id="1cac"
 ```
 
 You can also create a `StructuredOutput` directly from a preset:
@@ -28,7 +28,7 @@ use Cognesy\Instructor\StructuredOutput;
 $result = StructuredOutput::using('anthropic')
     ->with(messages: 'Jason is 28.', responseModel: Person::class)
     ->get();
-// @doctest id="4deb"
+// @doctest id="5326"
 ```
 
 Provider configuration covers connection details: API keys, base URLs, default model
@@ -50,7 +50,7 @@ $runtime = StructuredOutputRuntime::fromConfig(
 )
     ->withMaxRetries(3)
     ->withOutputMode(OutputMode::Tools);
-// @doctest id="daaa"
+// @doctest id="8fdf"
 ```
 
 ### Runtime Settings
@@ -86,7 +86,7 @@ $runtime = StructuredOutputRuntime::fromConfig(
     LLMConfig::fromPreset('openai'),
     structuredConfig: $config,
 );
-// @doctest id="9eac"
+// @doctest id="bd55"
 ```
 
 `StructuredOutputConfig` includes settings for:
@@ -118,7 +118,7 @@ $person = (new StructuredOutput)
         model: 'gpt-4o',
     )
     ->get();
-// @doctest id="23d7"
+// @doctest id="e198"
 ```
 
 ### Request Methods
@@ -128,8 +128,8 @@ $person = (new StructuredOutput)
 | `withMessages(...)` | Set the chat messages |
 | `withInput(...)` | Input data (string, array, or object) |
 | `withResponseModel(...)` | Response model (class, instance, or schema) |
-| `withSystem(...)` | System prompt text |
-| `withPrompt(...)` | Additional prompt text |
+| `withSystem(...)` | System prompt text (`string\|\Stringable`) |
+| `withPrompt(...)` | Additional prompt text (`string\|\Stringable`) |
 | `withExamples(...)` | Few-shot examples |
 | `withModel(...)` | Model name override |
 | `withOptions(...)` | Provider-specific options |
@@ -152,7 +152,7 @@ $runtime->onEvent(StructuredOutputRequestReceived::class, function ($event) {
 $runtime->wiretap(function ($event) {
     logger()->debug(get_class($event));
 });
-// @doctest id="dfb6"
+// @doctest id="82ff"
 ```
 
 
@@ -177,7 +177,7 @@ $summary = (new StructuredOutput)
     ->withRuntime($runtime)
     ->with(messages: $text2, responseModel: Summary::class)
     ->get();
-// @doctest id="3225"
+// @doctest id="4e29"
 ```
 
 This keeps configuration centralized and each request minimal.

@@ -12,10 +12,11 @@ A minimal text request requires nothing more than a message:
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $text = Inference::using('openai')
-    ->withMessages('What is the single responsibility principle?')
+    ->withMessages(Messages::fromString('What is the single responsibility principle?'))
     ->get();
 ```
 
@@ -38,16 +39,17 @@ Text mode works consistently across all providers, making it the most portable o
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 // Using OpenAI
 $response = Inference::using('openai')
-    ->withMessages('Write a short poem about the ocean.')
+    ->withMessages(Messages::fromString('Write a short poem about the ocean.'))
     ->get();
 
 // Using Anthropic -- same API, same result shape
 $response = Inference::using('anthropic')
-    ->withMessages('Write a short poem about the ocean.')
+    ->withMessages(Messages::fromString('Write a short poem about the ocean.'))
     ->get();
 ```
 
@@ -58,11 +60,12 @@ You can also use the `with()` method to pass messages alongside other parameters
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $response = Inference::using('openai')
     ->with(
-        messages: 'Explain the SOLID principles in one paragraph.',
+        messages: Messages::fromString('Explain the SOLID principles in one paragraph.'),
         options: ['temperature' => 0.3],
     )
     ->get();
@@ -75,10 +78,11 @@ For long-form content, you may want to stream the response so your application c
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $stream = Inference::using('openai')
-    ->withMessages('Write a short essay about renewable energy.')
+    ->withMessages(Messages::fromString('Write a short essay about renewable energy.'))
     ->stream()
     ->responses();
 
@@ -96,10 +100,11 @@ If you need metadata beyond the raw text -- such as token usage or the finish re
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Inference;
 
 $response = Inference::using('openai')
-    ->withMessages('What is photosynthesis?')
+    ->withMessages(Messages::fromString('What is photosynthesis?'))
     ->response();
 
 $text = $response->content();

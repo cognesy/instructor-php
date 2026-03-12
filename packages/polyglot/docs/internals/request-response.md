@@ -61,7 +61,7 @@ $updated = $request
     ->withToolChoice('auto')
     ->withResponseFormat(['type' => 'json_object'])
     ->withRetryPolicy(new InferenceRetryPolicy(maxAttempts: 3))
-    ->withResponseCachePolicy(ResponseCachePolicy::ReadOrWrite);
+    ->withResponseCachePolicy(ResponseCachePolicy::Memory);
 ```
 
 The `with(...)` method allows setting multiple fields in a single call:

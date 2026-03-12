@@ -16,7 +16,7 @@ interface CanHandleHttpRequest
 {
     public function handle(HttpRequest $request): HttpResponse;
 }
-// @doctest id="44d9"
+// @doctest id="d7ba"
 ```
 
 The method receives an `HttpRequest` and returns an `HttpResponse`. That is the entire contract. The driver is responsible for converting these value objects into whatever the underlying HTTP library expects.
@@ -81,14 +81,18 @@ class AcmeHttpDriver implements CanHandleHttpRequest
         }
     }
 
-    private function adaptStream($response): \Generator
+    private function adaptStream($response): \Cognesy\Http\Stream\StreamInterface
     {
-        foreach ($response->getStream() as $chunk) {
-            yield $chunk;
-        }
+        return \Cognesy\Http\Stream\BufferedStream::fromStream(
+            (function () use ($response) {
+                foreach ($response->getStream() as $chunk) {
+                    yield $chunk;
+                }
+            })()
+        );
     }
 }
-// @doctest id="f408"
+// @doctest id="f285"
 ```
 
 The key points are:
@@ -112,7 +116,7 @@ $drivers = BundledHttpDrivers::registry()->withDriver(
     static fn(HttpClientConfig $config, CanHandleEvents $events, ?object $clientInstance): CanHandleHttpRequest
         => new AcmeHttpDriver($config, $events, $clientInstance),
 );
-// @doctest id="f609"
+// @doctest id="0ed8"
 ```
 
 Then use it through the builder:
@@ -125,7 +129,7 @@ $client = (new HttpClientBuilder())
     ->withDrivers($drivers)
     ->withConfig(new HttpClientConfig(driver: 'acme'))
     ->create();
-// @doctest id="40c5"
+// @doctest id="cdbd"
 ```
 
 The factory function receives the config, events dispatcher, and optional client instance. This lets users pass a pre-configured vendor client through `withClientInstance('acme', $myClient)`.
@@ -142,14 +146,14 @@ $driver = new AcmeHttpDriver($config, $events);
 $client = (new HttpClientBuilder())
     ->withDriver($driver)
     ->create();
-// @doctest id="8758"
+// @doctest id="e420"
 ```
 
 Or use the static shorthand:
 
 ```php
 $client = HttpClient::fromDriver($driver);
-// @doctest id="1607"
+// @doctest id="c7f4"
 ```
 
 ## Reusing Vendor Client Instances
@@ -169,14 +173,14 @@ $symfony = SymfonyHttpClient::create([
 $client = (new HttpClientBuilder())
     ->withClientInstance('symfony', $symfony)
     ->create();
-// @doctest id="9fac"
+// @doctest id="c1f2"
 ```
 
 This pattern works with any registered driver. The `withClientInstance()` method sets both the driver name and the instance, so the driver factory receives it instead of creating its own.
 
 ## Streaming in Custom Drivers
 
-The `HttpResponse::streaming()` factory accepts any `StreamInterface` implementation or a PHP `iterable` (including generators). The simplest approach is to yield chunks from a generator:
+The `HttpResponse::streaming()` factory accepts a `StreamInterface` implementation. The simplest approach is to yield chunks from a generator and wrap them with `BufferedStream::fromStream()`:
 
 ```php
 public function handle(HttpRequest $request): HttpResponse
@@ -195,7 +199,7 @@ public function handle(HttpRequest $request): HttpResponse
         stream: BufferedStream::fromStream($stream),
     );
 }
-// @doctest id="91cb"
+// @doctest id="a8e4"
 ```
 
 The `BufferedStream`, `ArrayStream`, `IterableStream`, and `TransformStream` classes in the `Cognesy\Http\Stream` namespace provide various stream implementations you can use or compose.

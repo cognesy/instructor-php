@@ -14,6 +14,7 @@ use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\Streaming\EmissionFingerprint;
 use Cognesy\Instructor\Streaming\Pipeline\AccumulatePartialResponses;
 use Cognesy\Instructor\Streaming\Pipeline\DispatchStreamingEvents;
+use Cognesy\Instructor\Streaming\StructuredOutputStreamState;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
@@ -37,8 +38,8 @@ final class StreamingExecutionDriver implements CanEmitStreamingUpdates
         private readonly InferenceProvider $inferenceProvider,
         private readonly CanDeserializeResponse $deserializer,
         private readonly CanTransformResponse $transformer,
-        private readonly CanGenerateResponse $responseGenerator,
-        private readonly CanDetermineRetry $retryPolicy,
+        CanGenerateResponse $responseGenerator,
+        CanDetermineRetry $retryPolicy,
         private readonly CanHandleEvents $events,
     ) {
         $this->loop = new ExecutionLoop($execution);

@@ -19,6 +19,7 @@ an HTTP client with `HttpClientBuilder`, configure it to your needs, and pass it
 
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
@@ -44,9 +45,9 @@ $runtime = InferenceRuntime::fromConfig(
 );
 
 $text = Inference::fromRuntime($runtime)
-    ->withMessages('Say hello.')
+    ->withMessages(Messages::fromString('Say hello.'))
     ->get();
-// @doctest id="29c1"
+// @doctest id="c0c9"
 ```
 
 When no HTTP client is provided, Polyglot creates a default one with sensible timeouts. The
@@ -83,7 +84,7 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 $http = (new HttpClientBuilder())
     ->withConfig(new HttpClientConfig(driver: 'guzzle'))
     ->create();
-// @doctest id="e4b9"
+// @doctest id="c298"
 ```
 
 You can also inject a pre-configured client instance from your application's service container:
@@ -101,7 +102,7 @@ $guzzleClient = new \GuzzleHttp\Client([
 $http = (new HttpClientBuilder())
     ->withClientInstance('guzzle', $guzzleClient)
     ->create();
-// @doctest id="a118"
+// @doctest id="147e"
 ```
 
 This is particularly useful when your application requires proxy configuration, custom SSL
@@ -126,11 +127,11 @@ use Cognesy\Http\Extras\Support\RetryPolicy;
 $httpClient = (new HttpClientBuilder())
     ->withRetryPolicy(new RetryPolicy(
         maxRetries: 3,
-        retryDelayMs: 500,
-        retryMultiplier: 2.0,
+        baseDelayMs: 500,
+        maxDelayMs: 8000,
     ))
     ->create();
-// @doctest id="3868"
+// @doctest id="9348"
 ```
 
 ### Circuit Breaker
@@ -146,10 +147,10 @@ use Cognesy\Http\Extras\Support\CircuitBreakerPolicy;
 $httpClient = (new HttpClientBuilder())
     ->withCircuitBreakerPolicy(new CircuitBreakerPolicy(
         failureThreshold: 5,
-        recoveryTimeout: 30,
+        openForSec: 30,
     ))
     ->create();
-// @doctest id="cba9"
+// @doctest id="5f19"
 ```
 
 ### Combining Multiple Middleware
@@ -167,10 +168,10 @@ $httpClient = (new HttpClientBuilder())
     ->withRetryPolicy(new RetryPolicy(maxRetries: 3))
     ->withCircuitBreakerPolicy(new CircuitBreakerPolicy(
         failureThreshold: 5,
-        recoveryTimeout: 30,
+        openForSec: 30,
     ))
     ->create();
-// @doctest id="73a1"
+// @doctest id="29f8"
 ```
 
 ### Custom Middleware
@@ -186,7 +187,7 @@ use Cognesy\Http\Contracts\HttpMiddleware;
 $httpClient = (new HttpClientBuilder())
     ->withMiddleware(new MyLoggingMiddleware(), new MyMetricsMiddleware())
     ->create();
-// @doctest id="f065"
+// @doctest id="2fe5"
 ```
 
 
@@ -218,7 +219,7 @@ $runtime = EmbeddingsRuntime::fromConfig(
 );
 
 $embeddings = Embeddings::fromRuntime($runtime);
-// @doctest id="e48f"
+// @doctest id="3170"
 ```
 
 
@@ -232,12 +233,12 @@ between them to reuse connection pools and middleware configuration:
 
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Extras\Support\RetryPolicy;
-use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Inference;
-use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Embeddings;
 use Cognesy\Polyglot\Embeddings\EmbeddingsRuntime;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 
 $http = (new HttpClientBuilder())
     ->withRetryPolicy(new RetryPolicy(maxRetries: 3))
@@ -250,7 +251,7 @@ $inference = Inference::fromRuntime(
 $embeddings = Embeddings::fromRuntime(
     EmbeddingsRuntime::fromConfig(EmbeddingsConfig::fromPreset('openai'), httpClient: $http)
 );
-// @doctest id="7698"
+// @doctest id="7112"
 ```
 
 This ensures both services share the same retry policy, circuit breaker state, and

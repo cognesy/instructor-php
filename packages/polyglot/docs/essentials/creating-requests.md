@@ -17,15 +17,17 @@ The simplest way to get a response is to pass a string message directly:
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 $response = Inference::using('openai')
-    ->withMessages('What is the capital of France?')
+    ->withMessages(Messages::fromString('What is the capital of France?'))
     ->get();
 
 echo $response; // "Paris."
 ```
 
-A plain string is automatically wrapped as a user message before it reaches the provider.
+`Messages::fromString()` wraps a plain string as a user message. You can also use
+`Messages::fromArray()` to pass an array of role/content pairs.
 
 ## The `with()` Method
 
@@ -35,13 +37,14 @@ It accepts all core request parameters in a single call:
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 $text = Inference::using('openai')
     ->with(
-        messages: [
+        messages: Messages::fromArray([
             ['role' => 'system', 'content' => 'Answer briefly.'],
             ['role' => 'user', 'content' => 'What is CQRS?'],
-        ],
+        ]),
         model: 'gpt-4.1-nano',
         options: ['temperature' => 0.2],
     )
@@ -52,11 +55,11 @@ All parameters on `with()` are optional -- pass only what you need:
 
 | Parameter        | Type                    | Description                                |
 |------------------|-------------------------|--------------------------------------------|
-| `messages`       | `string\|array\|null`   | The messages to send to the LLM            |
+| `messages`       | `?Messages`             | The messages to send to the LLM            |
 | `model`          | `?string`               | Model identifier (overrides preset default)|
-| `tools`          | `ToolDefinitions\|array\|null` | Tool/function definitions for the model    |
-| `toolChoice`     | `ToolChoice\|string\|array\|null` | Tool selection preference                  |
-| `responseFormat` | `ResponseFormat\|array\|null` | Response format specification              |
+| `tools`          | `?ToolDefinitions`      | Tool/function definitions for the model    |
+| `toolChoice`     | `?ToolChoice`           | Tool selection preference                  |
+| `responseFormat` | `?ResponseFormat`       | Response format specification              |
 | `options`        | `?array`                | Provider-specific request options          |
 
 ## Focused Helper Methods
@@ -67,15 +70,16 @@ into a single `with()` call:
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 $response = Inference::using('anthropic')
     ->withModel('claude-sonnet-4-20250514')
-    ->withMessages([
+    ->withMessages(Messages::fromArray([
         ['role' => 'system', 'content' => 'You are a helpful assistant who provides concise answers.'],
         ['role' => 'user', 'content' => 'What is the capital of France?'],
         ['role' => 'assistant', 'content' => 'Paris.'],
         ['role' => 'user', 'content' => 'And what about Germany?'],
-    ])
+    ]))
     ->withOptions(['temperature' => 0.5])
     ->get();
 ```
@@ -132,12 +136,12 @@ $response = Inference::using('openai')
 
 ## Message Formats
 
-Polyglot accepts messages in several formats, giving you flexibility based on your needs:
+The `withMessages()` method requires a `Messages` object. You can create one from
+different input formats using the factory methods on `Messages`:
 
-- **String** -- automatically converted to a single user message
-- **Array of messages** -- each element should have `role` and `content` keys
-- **`Messages` object** -- built using the fluent Messages API
-- **`Message` object** -- a single message instance
+- **`Messages::fromString($text)`** -- wraps a plain string as a single user message
+- **`Messages::fromArray($array)`** -- converts an array of role/content pairs
+- **`Messages` fluent API** -- build messages with `asSystem()`, `asUser()`, `asDeveloper()`, `asAssistant()`
 
 ### Multimodal Content
 
@@ -146,9 +150,10 @@ For providers that support vision, you can include images in your messages:
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 $imageData = base64_encode(file_get_contents('image.jpg'));
-$messages = [
+$messages = Messages::fromArray([
     [
         'role' => 'user',
         'content' => [
@@ -164,7 +169,7 @@ $messages = [
             ],
         ],
     ],
-];
+]);
 
 $response = Inference::using('openai')
     ->withModel('gpt-4o')
@@ -179,11 +184,12 @@ stored requests or building them in a pipeline -- you can pass them in directly:
 
 ```php
 <?php
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Inference;
 
 $request = new InferenceRequest(
-    messages: 'Return one deployment tip.',
+    messages: Messages::fromString('Return one deployment tip.'),
     model: 'gpt-4.1-nano',
     options: ['temperature' => 0],
 );
@@ -194,7 +200,9 @@ $text = Inference::using('openai')
 ```
 
 `InferenceRequest` objects are immutable value objects. Use `with()` or the dedicated
-mutators (`withMessages()`, `withModel()`, etc.) to derive modified copies:
+mutators (`withMessages()`, `withModel()`, etc.) to derive modified copies. Note that
+`InferenceRequest::with()` accepts typed objects (`Messages`, `ToolDefinitions`,
+`ToolChoice`, `ResponseFormat`) rather than primitive arrays or strings:
 
 ```php
 $updated = $request->with(

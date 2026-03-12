@@ -49,7 +49,7 @@ $state = AgentState::empty()->withUserMessage(
     'Review src/AgentLoop.php and summarize key issues.'
 );
 $result = $agent->execute($state);
-// @doctest id="d36b"
+// @doctest id="03f7"
 ```
 
 The parent model decides on its own when to call `spawn_subagent`. The tool schema includes a description of all available subagents and their purposes, giving the LLM the information it needs to choose the right one.
@@ -97,7 +97,7 @@ $registry->register(new AgentDefinition(
     tools: new NameList('read_file', 'edit_file'),
     budget: new ExecutionBudget(maxSteps: 12, maxTokens: 8000),
 ));
-// @doctest id="861a"
+// @doctest id="6481"
 ```
 
 ### File-Based Registration
@@ -106,7 +106,7 @@ Definitions can be loaded from `.md`, `.yaml`, or `.json` files:
 
 ```php
 $registry->loadFromDirectory('/agents', recursive: true);
-// @doctest id="b5c9"
+// @doctest id="b97b"
 ```
 
 See [Agent Templates](14-agent-templates) for the full file format specification.
@@ -126,7 +126,7 @@ new AgentDefinition(
     systemPrompt: 'Help with any task.',
     // tools: null -- inherits all parent tools
 );
-// @doctest id="bab9"
+// @doctest id="6ef8"
 ```
 
 ### Allow-List
@@ -140,7 +140,7 @@ new AgentDefinition(
     systemPrompt: 'Analyze files but never modify them.',
     tools: new NameList('read_file', 'search_files'),
 );
-// @doctest id="c7a0"
+// @doctest id="4574"
 ```
 
 ### Deny-List
@@ -156,7 +156,7 @@ new AgentDefinition(
     toolsDeny: new NameList('write_file'),
 );
 // Result: child only has 'read_file' and 'edit_file'
-// @doctest id="ebbd"
+// @doctest id="b315"
 ```
 
 ### spawn_subagent in Children
@@ -170,7 +170,7 @@ new AgentDefinition(
     systemPrompt: 'Complete the task directly.',
     toolsDeny: new NameList('spawn_subagent'),
 );
-// @doctest id="70f2"
+// @doctest id="19da"
 ```
 
 ## Depth Control
@@ -190,7 +190,7 @@ $agent = AgentBuilder::base()
         policy: new SubagentPolicy(maxDepth: 2),
     ))
     ->build();
-// @doctest id="4926"
+// @doctest id="5c11"
 ```
 
 The default `maxDepth` is `3`. A depth of `0` means the parent itself; a depth of `2` means the parent can spawn children, and those children can spawn grandchildren, but no further.
@@ -203,7 +203,7 @@ For simple depth configuration, use the static `forDepth()` factory:
 $agent = AgentBuilder::base()
     ->withCapability(UseSubagents::forDepth(2, provider: $registry))
     ->build();
-// @doctest id="bffa"
+// @doctest id="b773"
 ```
 
 ### Depth Exceeded Behavior
@@ -229,7 +229,7 @@ new AgentDefinition(
         maxSeconds: 20.0,
     ),
 );
-// @doctest id="9f5b"
+// @doctest id="0ac7"
 ```
 
 If no budget is declared, the child runs without guards (unless the parent's guards indirectly limit it through total token accounting).
@@ -251,7 +251,7 @@ new AgentDefinition(
     ]),
     budget: new ExecutionBudget(maxSteps: 3),
 );
-// @doctest id="8fd9"
+// @doctest id="4b56"
 ```
 
 If no `llmConfig` is specified, the child inherits the parent's LLM configuration. You can also pass just a driver name as a string:
@@ -263,7 +263,7 @@ new AgentDefinition(
     systemPrompt: 'Complete the task.',
     llmConfig: 'anthropic',
 );
-// @doctest id="b317"
+// @doctest id="45db"
 ```
 
 ## Skill Injection
@@ -291,7 +291,7 @@ $agent = AgentBuilder::base()
         skillLibrary: $skillLibrary,
     ))
     ->build();
-// @doctest id="878a"
+// @doctest id="858d"
 ```
 
 ## Events
@@ -310,7 +310,7 @@ $agent->onEvent(SubagentSpawning::class, function (SubagentSpawning $e) {
     echo "Parent agent: {$e->parentAgentId}\n";
     echo "Prompt: {$e->prompt}\n";
 });
-// @doctest id="bf42"
+// @doctest id="0813"
 ```
 
 The event includes:
@@ -332,16 +332,18 @@ $agent->onEvent(SubagentCompleted::class, function (SubagentCompleted $e) {
     echo "'{$e->subagentName}' completed: status={$e->status->value}, "
        . "steps={$e->steps}, tokens={$tokens}\n";
 });
-// @doctest id="8926"
+// @doctest id="cd9e"
 ```
 
 The event includes:
+- `parentAgentId` -- the parent's agent ID
 - `subagentName` -- the name of the completed subagent
 - `subagentId` -- the child's unique agent ID
 - `status` -- the `ExecutionStatus` (completed, failed, etc.)
 - `steps` -- total steps the child took
 - `usage` -- token usage data (nullable)
 - `startedAt` / `completedAt` -- timestamps for duration calculation
+- `parentExecutionId`, `parentStepNumber`, `toolCallId` -- correlation IDs for tracing
 
 ## Error Handling
 

@@ -26,7 +26,7 @@ $sandbox = Sandbox::host(ExecutionPolicy::in('/tmp'));
 
 // Dynamic selection
 $sandbox = Sandbox::fromPolicy($policy)->using('docker');
-// @doctest id="b5ff"
+// @doctest id="b0d7"
 ```
 
 ### ExecutionPolicy
@@ -38,12 +38,12 @@ $policy = ExecutionPolicy::in('/tmp')
     ->withTimeout(30)
     ->withMemory('256M')
     ->withNetwork(false);
-// @doctest id="3008"
+// @doctest id="2ed2"
 ```
 
 ### CanExecuteCommand
 
-All drivers implement the `CanExecuteCommand` interface, which exposes a single `execute()` method. This contract guarantees that you can swap drivers without changing any calling code, making it straightforward to use the host driver in development and a container driver in production.
+All drivers implement the `CanExecuteCommand` interface, which exposes an `execute()` method and a `policy()` accessor. This contract guarantees that you can swap drivers without changing any calling code, making it straightforward to use the host driver in development and a container driver in production.
 
 ```php
 use Cognesy\Sandbox\Contracts\CanExecuteCommand;
@@ -52,7 +52,7 @@ function runScript(CanExecuteCommand $sandbox): string {
     $result = $sandbox->execute(['php', 'script.php']);
     return $result->stdout();
 }
-// @doctest id="d399"
+// @doctest id="2d3e"
 ```
 
 ### ExecResult
@@ -72,7 +72,7 @@ $result->truncatedStdout(); // true if stdout exceeded the cap
 $result->truncatedStderr(); // true if stderr exceeded the cap
 $result->combinedOutput();  // stdout + stderr joined
 $result->toArray();         // Full result as associative array
-// @doctest id="83e3"
+// @doctest id="7970"
 ```
 
 ## Supported Drivers

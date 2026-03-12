@@ -60,6 +60,8 @@ $receipt = StructuredOutput::using('openai')->with(
 
 dump($receipt);
 
-assert($receipt->total === 169.82);
+assert(is_numeric($receipt->total));
+assert(number_format((float) $receipt->total, 2, '.', '') === '169.82');
+assert(count($receipt->items) > 0);
 ?>
 ```

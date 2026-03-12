@@ -16,6 +16,7 @@ final class ExecutionLoop
         $this->execution = $execution;
     }
 
+    /** @param callable(self):void $advance */
     public function hasNextEmission(callable $advance): bool
     {
         if (!$this->terminated) {
@@ -25,6 +26,7 @@ final class ExecutionLoop
         return $this->pendingEmission !== null;
     }
 
+    /** @param callable(self):void $advance */
     public function nextEmission(callable $advance): ?StructuredOutputResponse
     {
         if (!$this->terminated) {
@@ -69,13 +71,14 @@ final class ExecutionLoop
         return $this->execution->isFinalized() || $this->execution->maxRetriesReached();
     }
 
+    /** @param callable(self):void $advance */
     private function advanceUntilEmission(callable $advance): void
     {
-        if ($this->pendingEmission !== null || $this->terminated) {
-            return;
-        }
+        while (true) {
+            if ($this->pendingEmission !== null || $this->terminated) {
+                return;
+            }
 
-        while ($this->pendingEmission === null && !$this->terminated) {
             $advance($this);
         }
     }

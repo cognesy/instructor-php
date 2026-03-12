@@ -62,7 +62,7 @@ $tools->count();              // int -- number of tools
 $tools->isEmpty();            // bool -- true when collection is empty
 $tools->all();                // array<string, ToolInterface> -- keyed by name
 $tools->descriptions();       // [['name' => ..., 'description' => ...], ...]
-$tools->toToolSchema();       // JSON schema array sent to the LLM
+$tools->toToolSchema();       // ToolDefinitions -- schema collection sent to the LLM
 ```
 
 The `descriptions()` method returns an array of compact summaries (name and description) for each tool. The `toToolSchema()` method returns the full OpenAI-compatible function-calling schema array that gets sent to the LLM as part of the inference request.

@@ -87,15 +87,15 @@ final class StructuredOutput implements CanCreateStructuredOutput
         return $copy;
     }
 
-    public function withSystem(string $system): self {
+    public function withSystem(string|\Stringable $system): self {
         $copy = clone $this;
-        $copy->request = $copy->request->withSystem($system);
+        $copy->request = $copy->request->withSystem((string) $system);
         return $copy;
     }
 
-    public function withPrompt(string $prompt): self {
+    public function withPrompt(string|\Stringable $prompt): self {
         $copy = clone $this;
-        $copy->request = $copy->request->withPrompt($prompt);
+        $copy->request = $copy->request->withPrompt((string) $prompt);
         return $copy;
     }
 
@@ -178,8 +178,8 @@ final class StructuredOutput implements CanCreateStructuredOutput
     public function with(
         string|array|Message|Messages|null $messages = null,
         string|array|object|null $responseModel = null,
-        ?string $system = null,
-        ?string $prompt = null,
+        string|\Stringable|null $system = null,
+        string|\Stringable|null $prompt = null,
         ?array $examples = null,
         ?string $model = null,
         ?array $options = null,
@@ -188,8 +188,8 @@ final class StructuredOutput implements CanCreateStructuredOutput
         $copy->request = $copy->request->with(
             messages: $messages !== null ? Messages::fromAny($messages) : null,
             requestedSchema: $responseModel,
-            system: $system,
-            prompt: $prompt,
+            system: $system !== null ? (string) $system : null,
+            prompt: $prompt !== null ? (string) $prompt : null,
             examples: $examples,
             model: $model,
             options: $options,

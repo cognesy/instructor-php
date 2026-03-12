@@ -55,9 +55,10 @@ Once an API key is available, a single call is all you need:
 require 'vendor/autoload.php';
 
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 $text = Inference::using('openai')
-    ->withMessages('Say hello.')
+    ->withMessages(Messages::fromString('Say hello.'))
     ->get();
 ```
 
@@ -84,10 +85,11 @@ appropriate environment variable and call `using()`:
 <?php
 
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 // LLM inference
 $text = Inference::using('anthropic')
-    ->withMessages('Explain photosynthesis in one sentence.')
+    ->withMessages(Messages::fromString('Explain photosynthesis in one sentence.'))
     ->get();
 ```
 
@@ -174,7 +176,7 @@ Then use it like any other preset:
 
 ```php
 $text = Inference::using('local-vllm')
-    ->withMessages('Say hello.')
+    ->withMessages(Messages::fromString('Say hello.'))
     ->get();
 ```
 
@@ -199,6 +201,7 @@ dynamic source, build the config object directly in PHP:
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -212,7 +215,7 @@ $inference = Inference::fromConfig(new LLMConfig(
 ));
 
 $text = $inference
-    ->withMessages('What is the capital of France?')
+    ->withMessages(Messages::fromString('What is the capital of France?'))
     ->get();
 ```
 
@@ -250,6 +253,7 @@ $embeddings = Embeddings::fromConfig(new EmbeddingsConfig(
 | `queryParams` | array | `[]` | Additional query parameters |
 | `metadata` | array | `[]` | Provider-specific metadata |
 | `options` | array | `[]` | Additional driver options |
+| `pricing` | array | `[]` | Token pricing configuration (per 1M tokens) |
 
 
 #### Overriding a Preset at Runtime

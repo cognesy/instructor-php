@@ -10,6 +10,8 @@ description: 'Install Agent-Ctrl, send your first prompt to a CLI-based code age
   - **Claude Code** -- the `claude` binary ([Anthropic CLI](https://docs.anthropic.com/en/docs/claude-code))
   - **OpenAI Codex** -- the `codex` binary (`npm install -g @openai/codex`)
   - **OpenCode** -- the `opencode` binary (`curl -fsSL https://get.opencode.dev | bash`)
+  - **Pi** -- the `pi` binary (from pi-mono)
+  - **Gemini** -- the `gemini` binary (`npm install -g @google/gemini-cli`)
 
 Each CLI must be available in the system `PATH` visible to your PHP process. Run the binary interactively at least once to complete any first-run authentication flows before using it through Agent-Ctrl.
 
@@ -59,7 +61,7 @@ $response = AgentCtrl::openCode()
     ->execute('Explain the package layout.');
 ```
 
-All three factory methods return a builder that supports the same core API (`withConfig()`, `withModel()`, `withTimeout()`, `inDirectory()`, `execute()`, `executeStreaming()`, etc.), so you can switch agents without restructuring your code.
+All factory methods return a builder that supports the same core API (`withConfig()`, `withModel()`, `withTimeout()`, `inDirectory()`, `execute()`, `executeStreaming()`, etc.), so you can switch agents without restructuring your code.
 
 ## Selecting the Agent at Runtime
 
@@ -70,7 +72,7 @@ use Cognesy\AgentCtrl\AgentCtrl;
 use Cognesy\AgentCtrl\Config\AgentConfig;
 use Cognesy\AgentCtrl\Enum\AgentType;
 
-// AgentType is a backed enum: 'claude-code', 'codex', 'opencode'
+// AgentType is a backed enum: 'claude-code', 'codex', 'opencode', 'pi', 'gemini'
 $agent = AgentType::from($config['agent']);
 
 $agentConfig = AgentConfig::fromArray([
@@ -85,13 +87,15 @@ $response = AgentCtrl::make($agent)
     ->execute('Explain the package layout.');
 ```
 
-The `AgentType` enum has three cases:
+The `AgentType` enum has five cases:
 
 | Case | Value | Builder |
 |------|-------|---------|
 | `AgentType::ClaudeCode` | `'claude-code'` | `ClaudeCodeBridgeBuilder` |
 | `AgentType::Codex` | `'codex'` | `CodexBridgeBuilder` |
 | `AgentType::OpenCode` | `'opencode'` | `OpenCodeBridgeBuilder` |
+| `AgentType::Pi` | `'pi'` | `PiBridgeBuilder` |
+| `AgentType::Gemini` | `'gemini'` | `GeminiBridgeBuilder` |
 
 ## Common Configuration
 
@@ -208,4 +212,4 @@ See the [Response Object](/agent-ctrl/response-object) documentation for the ful
 - [Streaming](/agent-ctrl/streaming) -- Receive real-time updates while the agent is working
 - [Session Management](/agent-ctrl/session-management) -- Continue or resume agent sessions
 - [Agent Options](/agent-ctrl/agent-options) -- Explore shared and agent-specific configuration
-- [Claude Code Bridge](/agent-ctrl/claude-code-bridge), [Codex Bridge](/agent-ctrl/codex-bridge), [OpenCode Bridge](/agent-ctrl/opencode-bridge) -- Deep dives into each agent's unique capabilities
+- [Claude Code Bridge](/agent-ctrl/claude-code-bridge), [Codex Bridge](/agent-ctrl/codex-bridge), [OpenCode Bridge](/agent-ctrl/opencode-bridge), [Pi Bridge](/agent-ctrl/pi-bridge), [Gemini Bridge](/agent-ctrl/gemini-bridge) -- Deep dives into each agent's unique capabilities

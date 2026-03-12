@@ -131,7 +131,7 @@ Typical patterns:
 
 ## Advanced Option
 
-If you need lower-level control, you can still create `AgentEventBroadcaster` yourself and register listeners with `onEvent()`. `UseAgentBroadcasting` is just the prewired integration path for the event set that is usually useful in interactive applications.
+If you need lower-level control, you can create `AgentEventBroadcaster` yourself and attach it via `$agent->wiretap($broadcaster->wiretap())`. `UseAgentBroadcasting` is just the prewired integration path for the event set that is usually useful in interactive applications.
 
 ## Choosing a Broadcast Configuration
 

@@ -1,0 +1,85 @@
+---
+title: 'Gemini CLI - Basic'
+docname: 'gemini_basic'
+id: 'e3b7'
+---
+## Overview
+
+This example demonstrates how to use the Gemini CLI integration to execute
+simple prompts. The `AgentCtrl` facade provides a clean API for invoking the
+`gemini` CLI in headless mode with full event observability.
+
+Key concepts:
+- `AgentCtrl::gemini()`: Factory for Gemini agent builder
+- `planMode()`: Run in read-only analysis mode
+- `AgentCtrlConsoleLogger`: Shows execution lifecycle with color-coded labels
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\AgentCtrl\AgentCtrl;
+use Cognesy\AgentCtrl\Broadcasting\AgentCtrlConsoleLogger;
+
+// Create a console logger for visibility into agent execution
+$logger = new AgentCtrlConsoleLogger(
+    useColors: true,
+    showTimestamps: true,
+    showPipeline: true,  // Show request/response pipeline details
+);
+
+echo "=== Agent Execution Log ===\n\n";
+
+$response = AgentCtrl::gemini()
+    ->wiretap($logger->wiretap())
+    ->withModel('flash')
+    ->planMode()
+    ->execute('What is the capital of France? Answer briefly.');
+
+echo "\n=== Result ===\n";
+if ($response->isSuccess()) {
+    echo "Answer: " . $response->text() . "\n";
+
+    if ($response->sessionId()) {
+        echo "Session: {$response->sessionId()}\n";
+    }
+    if ($response->usage()) {
+        echo "Tokens: {$response->usage()->input} in / {$response->usage()->output} out\n";
+    }
+} else {
+    echo "Error: Command failed with exit code {$response->exitCode}\n";
+    exit(1);
+}
+?>
+```
+
+## Expected Output
+
+```
+=== Agent Execution Log ===
+
+14:32:15.123 [gemini] [EXEC] Execution started [prompt=What is the capital of France? Answer briefly.]
+14:32:15.124 [gemini] [REQT] Request built [type=GeminiRequest, duration=0ms]
+14:32:15.125 [gemini] [CMD ] Command spec created [args=8, duration=0ms]
+14:32:15.126 [gemini] [SBOX] Policy configured [driver=host, timeout=120s, network=on]
+14:32:15.127 [gemini] [SBOX] Ready [driver=host, setup=1ms]
+14:32:15.128 [gemini] [PROC] Process started [commands=8]
+14:32:16.234 [gemini] [RESP] Parsing started [format=stream-json, size=456]
+14:32:16.235 [gemini] [RESP] Data extracted [events=4, tools=0, text=42 chars, duration=1ms]
+14:32:16.236 [gemini] [RESP] Parsing completed [duration=2ms]
+14:32:16.237 [gemini] [DONE] Execution completed [exit=0, tools=0, tokens=58]
+
+=== Result ===
+Answer: The capital of France is Paris.
+Session: sess-abc123
+Tokens: 34 in / 24 out
+```
+
+## Key Points
+
+- **Simple execution**: One method call handles the entire interaction
+- **Full observability**: Console logger shows request building, sandbox setup, and response parsing
+- **Plan mode**: Use `planMode()` for read-only analysis without file modifications
+- **Free tier**: Gemini CLI offers a free tier with Google account authentication

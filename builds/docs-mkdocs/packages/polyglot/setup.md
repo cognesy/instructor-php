@@ -15,7 +15,7 @@ Install Polyglot via Composer:
 
 ```bash
 composer require cognesy/instructor-polyglot
-# @doctest id="b8ec"
+# @doctest id="05e1"
 ```
 
 > **Note:** Polyglot ships as part of the Instructor PHP monorepo. If you
@@ -38,7 +38,7 @@ approach is to export them as environment variables:
 export OPENAI_API_KEY=sk-your-openai-key
 export ANTHROPIC_API_KEY=sk-ant-your-anthropic-key
 export GEMINI_API_KEY=your-gemini-key
-# @doctest id="c5f8"
+# @doctest id="5bd0"
 ```
 
 If your project uses a `.env` file, add the keys there instead and load
@@ -56,11 +56,12 @@ Once an API key is available, a single call is all you need:
 require 'vendor/autoload.php';
 
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 $text = Inference::using('openai')
-    ->withMessages('Say hello.')
+    ->withMessages(Messages::fromString('Say hello.'))
     ->get();
-// @doctest id="f8f0"
+// @doctest id="858b"
 ```
 
 If you see a friendly greeting, your installation is working correctly.
@@ -86,12 +87,13 @@ appropriate environment variable and call `using()`:
 <?php
 
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 // LLM inference
 $text = Inference::using('anthropic')
-    ->withMessages('Explain photosynthesis in one sentence.')
+    ->withMessages(Messages::fromString('Explain photosynthesis in one sentence.'))
     ->get();
-// @doctest id="6c3e"
+// @doctest id="1605"
 ```
 
 ```php
@@ -103,7 +105,7 @@ use Cognesy\Polyglot\Embeddings\Embeddings;
 $result = Embeddings::using('openai')
     ->withInputs('The quick brown fox.')
     ->create();
-// @doctest id="3ab7"
+// @doctest id="90c9"
 ```
 
 Bundled presets live inside the package at `resources/config/llm/presets/`
@@ -139,7 +141,7 @@ model: gpt-4.1-nano
 maxTokens: 1024
 contextLength: 1000000
 maxOutputLength: 16384
-# @doctest id="0b27"
+# @doctest id="db5f"
 ```
 
 The `driver` field determines which Polyglot driver handles the request.
@@ -158,7 +160,7 @@ endpoint: /embeddings
 model: text-embedding-3-small
 dimensions: 1536
 maxInputs: 2048
-# @doctest id="c2cd"
+# @doctest id="53b4"
 ```
 
 Once the file exists, `Inference::using('openai')` or
@@ -174,16 +176,16 @@ apiKey: 'not-needed'
 endpoint: /chat/completions
 model: meta-llama/Llama-3-8b
 maxTokens: 2048
-# @doctest id="4725"
+# @doctest id="cd78"
 ```
 
 Then use it like any other preset:
 
 ```php
 $text = Inference::using('local-vllm')
-    ->withMessages('Say hello.')
+    ->withMessages(Messages::fromString('Say hello.'))
     ->get();
-// @doctest id="c8f1"
+// @doctest id="370e"
 ```
 
 #### EmbeddingsConfig Reference
@@ -207,6 +209,7 @@ dynamic source, build the config object directly in PHP:
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -220,9 +223,9 @@ $inference = Inference::fromConfig(new LLMConfig(
 ));
 
 $text = $inference
-    ->withMessages('What is the capital of France?')
+    ->withMessages(Messages::fromString('What is the capital of France?'))
     ->get();
-// @doctest id="ef40"
+// @doctest id="d2e6"
 ```
 
 The same approach works for embeddings:
@@ -242,7 +245,7 @@ $embeddings = Embeddings::fromConfig(new EmbeddingsConfig(
     dimensions: 1536,
     maxInputs: 2048,
 ));
-// @doctest id="4fe0"
+// @doctest id="6db6"
 ```
 
 #### LLMConfig Reference
@@ -260,6 +263,7 @@ $embeddings = Embeddings::fromConfig(new EmbeddingsConfig(
 | `queryParams` | array | `[]` | Additional query parameters |
 | `metadata` | array | `[]` | Provider-specific metadata |
 | `options` | array | `[]` | Additional driver options |
+| `pricing` | array | `[]` | Token pricing configuration (per 1M tokens) |
 
 
 #### Overriding a Preset at Runtime
@@ -280,7 +284,7 @@ $config = LLMConfig::fromPreset('openai')
     ]);
 
 $inference = Inference::fromConfig($config);
-// @doctest id="acb1"
+// @doctest id="d63a"
 ```
 
 This is useful when you want to keep all the defaults from a preset but
@@ -304,7 +308,7 @@ $config = LLMConfig::fromDsn(
 );
 
 $inference = Inference::fromConfig($config);
-// @doctest id="2748"
+// @doctest id="c4d1"
 ```
 
 DSN strings are comma-separated `key=value` pairs. Nested keys use dot

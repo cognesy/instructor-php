@@ -140,6 +140,7 @@ The `InferenceFake` intercepts raw inference calls and returns responses based o
 
 ```php
 use Cognesy\Instructor\Laravel\Facades\Inference;
+use Cognesy\Messages\Messages;
 
 public function test_calls_inference(): void
 {
@@ -151,7 +152,7 @@ public function test_calls_inference(): void
 
     // Act
     $response = Inference::with(
-        messages: 'What is 2+2?',
+        messages: Messages::fromString('What is 2+2?'),
     )->get();
 
     // Assert
@@ -173,13 +174,13 @@ $fake = Inference::fake([
 ]);
 
 // Matches 'capital' (input contains the word)
-$response1 = Inference::with(messages: 'What is the capital of France?')->get();
+$response1 = Inference::with(messages: Messages::fromString('What is the capital of France?'))->get();
 
 // Matches 'weather'
-$response2 = Inference::with(messages: 'How is the weather today?')->get();
+$response2 = Inference::with(messages: Messages::fromString('How is the weather today?'))->get();
 
 // No match, uses 'default'
-$response3 = Inference::with(messages: 'Random question')->get();
+$response3 = Inference::with(messages: Messages::fromString('Random question'))->get();
 ```
 
 ### Response Sequences

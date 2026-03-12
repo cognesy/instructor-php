@@ -53,7 +53,7 @@ The standalone `packages/config` YAML loader is not responsible for reading `con
 |-------|-------------|----------------|---------------|
 | `packages/instructor` | `StructuredOutput` facade and `Cognesy\Instructor\StructuredOutput` | Configure your default LLM connection, extraction defaults, and response models | [Facades](facades.md), [Response Models](response-models.md), [Configuration](configuration.md) |
 | `packages/polyglot` | `Inference` and `Embeddings` facades plus `Cognesy\Polyglot\Inference\Inference` and `Cognesy\Polyglot\Embeddings\Embeddings` | Configure inference connections in `connections` and embedding models in `embeddings.connections` | [Facades](facades.md), [Configuration](configuration.md), [Events](events.md) |
-| `packages/agents` | `AgentCtrl` facade | Install the CLI agent you want to use, ensure its binary is available in `PATH`, then configure timeouts, working directory, and sandbox defaults in `agents` | [Code Agents](agents.md), [Testing](testing.md) |
+| `packages/agent-ctrl` | `AgentCtrl` facade | Install the CLI agent you want to use, ensure its binary is available in `PATH`, then configure timeouts, working directory, and sandbox defaults in `agents` | [Code Agents](agents.md), [Testing](testing.md) |
 | `packages/http-client` | Internal Laravel-backed transport | No separate install is required; keep `http.driver` set to `laravel` to route requests through Laravel's HTTP client and `Http::fake()` | [Configuration](configuration.md), [Testing](testing.md) |
 
 ### `packages/instructor` Under Laravel
@@ -75,7 +75,7 @@ Laravel exposes Polyglot through two entry points:
 
 Both use the same published config file. Inference reads from `connections`; embeddings read from `embeddings.connections`. If you already configured providers for `StructuredOutput`, raw inference usually needs no additional setup.
 
-### `packages/agents` Under Laravel
+### `packages/agent-ctrl` Under Laravel
 
 `AgentCtrl` does not use the LLM HTTP connections from `config/instructor.php`. It runs external agent CLIs from your Laravel application. Setup means:
 

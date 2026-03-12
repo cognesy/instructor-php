@@ -40,7 +40,7 @@ $structure = $factory->fromJsonSchema([
     ],
     'required' => ['name', 'age', 'role'],
 ]);
-// @doctest id="c9c2"
+// @doctest id="2210"
 ```
 
 ### From a String Definition
@@ -53,7 +53,7 @@ $structure = $factory->fromString(
     typeString: 'name:string, age:int, role:string',
     description: 'A person object',
 );
-// @doctest id="75fe"
+// @doctest id="d977"
 ```
 
 ### From a PHP Class
@@ -62,7 +62,7 @@ You can also create a structure from an existing class, which is useful when you
 
 ```php
 $structure = $factory->fromClass(Person::class);
-// @doctest id="558b"
+// @doctest id="3721"
 ```
 
 ### From Key-Value Data
@@ -75,7 +75,7 @@ $structure = $factory->fromArrayKeyValues('person', [
     'age' => 25,
     'active' => true,
 ]);
-// @doctest id="a202"
+// @doctest id="7909"
 ```
 
 ## Extracting Data
@@ -104,7 +104,7 @@ echo $person->get('role');  // "line"
 // Convert to array
 $data = $person->toArray();
 // ['name' => 'Jane Doe', 'age' => 25, 'role' => 'line']
-// @doctest id="4376"
+// @doctest id="e37f"
 ```
 
 If you prefer a raw array result, use `intoArray()`.
@@ -114,7 +114,7 @@ $data = (new StructuredOutput)->with(
     messages: $text,
     responseModel: $structure,
 )->intoArray()->get();
-// @doctest id="ce10"
+// @doctest id="3961"
 ```
 
 ## Working with Structure Objects
@@ -134,7 +134,7 @@ $person->has('name'); // true
 
 // Convert to array
 $person->toArray();
-// @doctest id="c94d"
+// @doctest id="b868"
 ```
 
 Note that `Structure` is immutable. The `set()` method returns a new instance with the updated value, leaving the original unchanged. Direct property assignment via `__set` throws a `BadMethodCallException`.

@@ -61,9 +61,7 @@ $runtime->onEvent(
 $runtime->onEvent(
     InferenceResponseCreated::class,
     function (InferenceResponseCreated $event): void {
-        $response = $event->inferenceResponse;
-        echo "Response: " . substr($response->content(), 0, 80) . "...\n";
-        echo "Tokens: " . $response->usage()->total() . "\n";
+        echo "Response received\n";
     },
 );
 
@@ -120,14 +118,14 @@ $runtime = InferenceRuntime::fromConfig(LLMConfig::fromPreset('openai'));
 $runtime->onEvent(
     InferenceRequested::class,
     function (InferenceRequested $event): void {
-        logToFile("REQUEST: " . json_encode($event->request->toArray()));
+        logToFile("REQUEST: " . json_encode($event->data));
     },
 );
 
 $runtime->onEvent(
     InferenceResponseCreated::class,
     function (InferenceResponseCreated $event): void {
-        logToFile("RESPONSE: " . json_encode($event->inferenceResponse->toArray()));
+        logToFile("RESPONSE: " . json_encode($event->data));
     },
 );
 

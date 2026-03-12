@@ -26,7 +26,7 @@ class NavigationItem
 
     public static function fromArray(array $data) : NavigationItem {
         $item = new NavigationItem();
-        $item->group = NavigationGroup::fromArray($data['group'] ?? []);
+        $item->group = NavigationGroup::fromArray($data);
         $item->isGroup = true;
         return $item;
     }

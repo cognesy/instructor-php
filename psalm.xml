@@ -43,8 +43,6 @@
             <directory name="packages/auxiliary/src/Beads/Eloquent/Migrations" />
             <directory name="packages/auxiliary/src/Beads/Eloquent/Models" />
             <file name="packages/auxiliary/src/Beads/Presentation/BeadsServiceProvider.php" />
-            <!-- Exclude ext-http driver (optional pecl extension) -->
-            <directory name="packages/http-client/src/Drivers/ExtHttp" />
         </ignoreFiles>
     </projectFiles>
     <issueHandlers>

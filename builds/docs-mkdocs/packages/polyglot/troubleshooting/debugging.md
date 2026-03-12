@@ -29,7 +29,7 @@ $runtime = InferenceRuntime::fromConfig(new LLMConfig(
 $text = Inference::fromRuntime($runtime)
     ->withMessages('Say hello.')
     ->get();
-// @doctest id="8d07"
+// @doctest id="5cd3"
 ```
 
 This prints every event class name as it fires, giving you an immediate view of the request flow without modifying your application code.
@@ -62,16 +62,14 @@ $runtime->onEvent(
 $runtime->onEvent(
     InferenceResponseCreated::class,
     function (InferenceResponseCreated $event): void {
-        $response = $event->inferenceResponse;
-        echo "Response: " . substr($response->content(), 0, 80) . "...\n";
-        echo "Tokens: " . $response->usage()->total() . "\n";
+        echo "Response received\n";
     },
 );
 
 $text = Inference::fromRuntime($runtime)
     ->withMessages('What is the capital of France?')
     ->get();
-// @doctest id="f095"
+// @doctest id="9702"
 ```
 
 ### Available Events
@@ -122,21 +120,21 @@ $runtime = InferenceRuntime::fromConfig(LLMConfig::fromPreset('openai'));
 $runtime->onEvent(
     InferenceRequested::class,
     function (InferenceRequested $event): void {
-        logToFile("REQUEST: " . json_encode($event->request->toArray()));
+        logToFile("REQUEST: " . json_encode($event->data));
     },
 );
 
 $runtime->onEvent(
     InferenceResponseCreated::class,
     function (InferenceResponseCreated $event): void {
-        logToFile("RESPONSE: " . json_encode($event->inferenceResponse->toArray()));
+        logToFile("RESPONSE: " . json_encode($event->data));
     },
 );
 
 $text = Inference::fromRuntime($runtime)
     ->withMessages('What is artificial intelligence?')
     ->get();
-// @doctest id="2013"
+// @doctest id="f33d"
 ```
 
 ## HTTP-Level Inspection
@@ -165,7 +163,7 @@ $runtime = InferenceRuntime::fromConfig(
 $text = Inference::fromRuntime($runtime)
     ->withMessages('Test message')
     ->get();
-// @doctest id="380d"
+// @doctest id="98fe"
 ```
 
 You can add custom middleware to the HTTP client using `withMiddleware()` to log, transform, or inspect requests and responses at the transport layer. This is especially helpful when working behind proxies, or when provider error messages are only visible in the raw HTTP body.

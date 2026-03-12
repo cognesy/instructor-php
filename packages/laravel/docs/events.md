@@ -16,8 +16,8 @@ Configure event bridging in `config/instructor.php`:
     // Specify which events to bridge (empty = all events)
     'bridge_events' => [
         // Only bridge specific events
-        \Cognesy\Instructor\Events\ExtractionComplete::class,
-        \Cognesy\Instructor\Events\ExtractionFailed::class,
+        \Cognesy\Instructor\Events\Extraction\ExtractionCompleted::class,
+        \Cognesy\Instructor\Events\Extraction\ExtractionFailed::class,
     ],
 ],
 ```
@@ -28,31 +28,59 @@ The bridge uses `instanceof` matching, so listing a parent event class also brid
 
 ## Available Events
 
+All events extend `Cognesy\Instructor\Events\StructuredOutputEvent` (which extends `Cognesy\Events\Event`). Events carry data in the `$data` property (an array or mixed value) rather than typed properties.
+
 ### Extraction Events
 
-| Event | Description |
-|-------|-------------|
-| `ExtractionStarted` | Extraction process has begun |
-| `ExtractionComplete` | Extraction completed successfully |
-| `ExtractionFailed` | Extraction failed with an error |
-| `ValidationFailed` | Response failed validation |
-| `RetryAttempted` | A retry attempt is being made |
-
-### Inference Events
+Namespace: `Cognesy\Instructor\Events\Extraction`
 
 | Event | Description |
 |-------|-------------|
-| `InferenceRequested` | LLM API call initiated |
-| `InferenceComplete` | LLM API call completed |
-| `InferenceFailed` | LLM API call failed |
+| `ExtractionStarted` | Extraction pipeline has begun processing |
+| `ExtractionCompleted` | Extraction completed successfully |
+| `ExtractionFailed` | All extraction strategies failed |
+| `ExtractionStrategyAttempted` | An extraction strategy was attempted |
+| `ExtractionStrategyFailed` | An extraction strategy failed |
+| `ExtractionStrategySucceeded` | An extraction strategy succeeded |
+
+### Response Events
+
+Namespace: `Cognesy\Instructor\Events\Response`
+
+| Event | Description |
+|-------|-------------|
+| `ResponseValidationFailed` | Response failed validation |
+| `ResponseValidated` | Response passed validation |
+| `ResponseDeserialized` | Response was deserialized into an object |
+| `ResponseDeserializationFailed` | Response deserialization failed |
+| `ResponseTransformed` | Response was transformed |
+| `ResponseTransformationFailed` | Response transformation failed |
+| `ResponseGenerationFailed` | Response generation failed |
+
+### Request Events
+
+Namespace: `Cognesy\Instructor\Events\Request`
+
+| Event | Description |
+|-------|-------------|
+| `NewValidationRecoveryAttempt` | A validation recovery retry attempt is being made |
+| `StructuredOutputRecoveryLimitReached` | Maximum retries exhausted |
+| `ResponseModelRequested` | Response model was requested |
+| `ResponseModelBuilt` | Response model schema was built |
 
 ### Streaming Events
 
+Namespace: `Cognesy\Instructor\Events\PartialsGenerator`
+
 | Event | Description |
 |-------|-------------|
-| `StreamStarted` | Streaming response started |
-| `StreamChunkReceived` | Received a chunk of streaming data |
-| `StreamComplete` | Streaming completed |
+| `StreamedResponseReceived` | Streaming response started |
+| `ChunkReceived` | Received a chunk of streaming data |
+| `StreamedResponseFinished` | Streaming completed |
+| `PartialResponseGenerated` | A partial response object was generated |
+| `StreamedToolCallStarted` | A streamed tool call started |
+| `StreamedToolCallUpdated` | A streamed tool call was updated |
+| `StreamedToolCallCompleted` | A streamed tool call completed |
 
 ## Listening to Events
 
@@ -61,19 +89,19 @@ The bridge uses `instanceof` matching, so listing a parent event class also brid
 Create a dedicated listener class and register it with Laravel's event system.
 
 ```php
-// app/Listeners/LogExtractionComplete.php
+// app/Listeners/LogExtractionCompleted.php
 namespace App\Listeners;
 
-use Cognesy\Instructor\Events\ExtractionComplete;
+use Cognesy\Instructor\Events\Extraction\ExtractionCompleted;
 use Illuminate\Support\Facades\Log;
 
-class LogExtractionComplete
+class LogExtractionCompleted
 {
-    public function handle(ExtractionComplete $event): void
+    public function handle(ExtractionCompleted $event): void
     {
         Log::info('Extraction completed', [
-            'response_model' => $event->responseModel,
-            'duration_ms' => $event->durationMs,
+            'event' => $event->name(),
+            'data' => $event->data,
         ]);
     }
 }
@@ -85,15 +113,15 @@ Register in `EventServiceProvider`:
 // app/Providers/EventServiceProvider.php
 namespace App\Providers;
 
-use App\Listeners\LogExtractionComplete;
-use Cognesy\Instructor\Events\ExtractionComplete;
+use App\Listeners\LogExtractionCompleted;
+use Cognesy\Instructor\Events\Extraction\ExtractionCompleted;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
 {
     protected $listen = [
-        ExtractionComplete::class => [
-            LogExtractionComplete::class,
+        ExtractionCompleted::class => [
+            LogExtractionCompleted::class,
         ],
     ];
 }
@@ -105,13 +133,13 @@ For lightweight listeners, register closures directly in a service provider's `b
 
 ```php
 // app/Providers/AppServiceProvider.php
-use Cognesy\Instructor\Events\ExtractionComplete;
-use Cognesy\Instructor\Events\ExtractionFailed;
+use Cognesy\Instructor\Events\Extraction\ExtractionCompleted;
+use Cognesy\Instructor\Events\Extraction\ExtractionFailed;
 use Illuminate\Support\Facades\Event;
 
 public function boot(): void
 {
-    Event::listen(ExtractionComplete::class, function ($event) {
+    Event::listen(ExtractionCompleted::class, function ($event) {
         // Handle successful extraction
     });
 
@@ -129,9 +157,9 @@ Group related event handlers into a single subscriber class. This is convenient 
 // app/Listeners/InstructorEventSubscriber.php
 namespace App\Listeners;
 
-use Cognesy\Instructor\Events\ExtractionComplete;
-use Cognesy\Instructor\Events\ExtractionFailed;
-use Cognesy\Instructor\Events\ExtractionStarted;
+use Cognesy\Instructor\Events\Extraction\ExtractionCompleted;
+use Cognesy\Instructor\Events\Extraction\ExtractionFailed;
+use Cognesy\Instructor\Events\Extraction\ExtractionStarted;
 use Illuminate\Events\Dispatcher;
 
 class InstructorEventSubscriber
@@ -141,7 +169,7 @@ class InstructorEventSubscriber
         // Log start
     }
 
-    public function handleComplete(ExtractionComplete $event): void
+    public function handleComplete(ExtractionCompleted $event): void
     {
         // Log completion
     }
@@ -155,7 +183,7 @@ class InstructorEventSubscriber
     {
         return [
             ExtractionStarted::class => 'handleStart',
-            ExtractionComplete::class => 'handleComplete',
+            ExtractionCompleted::class => 'handleComplete',
             ExtractionFailed::class => 'handleFailed',
         ];
     }
@@ -171,23 +199,24 @@ protected $subscribe = [
 
 ### Logging and Monitoring
 
+All events carry data in the `$data` property (typically an array). Use the `name()` method to get the event class short name.
+
 ```php
-use Cognesy\Instructor\Events\ExtractionComplete;
-use Cognesy\Instructor\Events\ExtractionFailed;
+use Cognesy\Instructor\Events\Extraction\ExtractionCompleted;
+use Cognesy\Instructor\Events\Extraction\ExtractionFailed;
 use Illuminate\Support\Facades\Log;
 
-Event::listen(ExtractionComplete::class, function ($event) {
+Event::listen(ExtractionCompleted::class, function ($event) {
     Log::channel('llm')->info('Extraction successful', [
-        'model' => $event->model,
-        'tokens_used' => $event->tokensUsed,
-        'duration_ms' => $event->durationMs,
+        'event' => $event->name(),
+        'data' => $event->data,
     ]);
 });
 
 Event::listen(ExtractionFailed::class, function ($event) {
     Log::channel('llm')->error('Extraction failed', [
-        'error' => $event->error->getMessage(),
-        'model' => $event->model,
+        'event' => $event->name(),
+        'data' => $event->data,
     ]);
 });
 ```
@@ -195,15 +224,13 @@ Event::listen(ExtractionFailed::class, function ($event) {
 ### Metrics and Analytics
 
 ```php
-use Cognesy\Instructor\Events\ExtractionComplete;
+use Cognesy\Instructor\Events\Extraction\ExtractionCompleted;
 use App\Services\MetricsService;
 
-Event::listen(ExtractionComplete::class, function ($event) {
+Event::listen(ExtractionCompleted::class, function ($event) {
     app(MetricsService::class)->recordExtraction([
-        'model' => $event->model,
-        'tokens' => $event->tokensUsed,
-        'latency' => $event->durationMs,
-        'success' => true,
+        'event' => $event->name(),
+        'data' => $event->data,
     ]);
 });
 ```
@@ -211,28 +238,13 @@ Event::listen(ExtractionComplete::class, function ($event) {
 ### Alerting on Failures
 
 ```php
-use Cognesy\Instructor\Events\ExtractionFailed;
+use Cognesy\Instructor\Events\Extraction\ExtractionFailed;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\ExtractionFailedNotification;
 
 Event::listen(ExtractionFailed::class, function ($event) {
-    if ($event->isCritical) {
-        Notification::route('slack', config('services.slack.webhook'))
-            ->notify(new ExtractionFailedNotification($event));
-    }
-});
-```
-
-### Caching Responses
-
-```php
-use Cognesy\Instructor\Events\ExtractionComplete;
-use Illuminate\Support\Facades\Cache;
-
-Event::listen(ExtractionComplete::class, function ($event) {
-    $cacheKey = 'extraction:' . md5($event->inputHash);
-
-    Cache::put($cacheKey, $event->result, now()->addHours(24));
+    Notification::route('slack', config('services.slack.webhook'))
+        ->notify(new ExtractionFailedNotification($event));
 });
 ```
 
@@ -244,14 +256,14 @@ For CPU-intensive or I/O-heavy processing, implement `ShouldQueue` to push the w
 // app/Listeners/ProcessExtractionAnalytics.php
 namespace App\Listeners;
 
-use Cognesy\Instructor\Events\ExtractionComplete;
+use Cognesy\Instructor\Events\Extraction\ExtractionCompleted;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 class ProcessExtractionAnalytics implements ShouldQueue
 {
     public $queue = 'analytics';
 
-    public function handle(ExtractionComplete $event): void
+    public function handle(ExtractionCompleted $event): void
     {
         // Heavy analytics processing runs on the queue
     }
@@ -306,27 +318,26 @@ Disabling the bridge only stops events from being forwarded to Laravel's dispatc
 Use Laravel's `Event::fake()` to assert that specific events were dispatched during a test.
 
 ```php
-use Cognesy\Instructor\Events\ExtractionComplete;
+use Cognesy\Instructor\Events\Extraction\ExtractionCompleted;
 use Illuminate\Support\Facades\Event;
 
 public function test_dispatches_extraction_event(): void
 {
-    Event::fake([ExtractionComplete::class]);
+    Event::fake([ExtractionCompleted::class]);
 
     StructuredOutput::with(
         messages: 'John is 30',
         responseModel: PersonData::class,
     )->get();
 
-    Event::assertDispatched(ExtractionComplete::class);
+    Event::assertDispatched(ExtractionCompleted::class);
 }
 ```
 
-Assert event properties with a closure:
+Assert event data with a closure:
 
 ```php
-Event::assertDispatched(ExtractionComplete::class, function ($event) {
-    return $event->responseModel === PersonData::class
-        && $event->tokensUsed > 0;
+Event::assertDispatched(ExtractionCompleted::class, function ($event) {
+    return !empty($event->data);
 });
 ```

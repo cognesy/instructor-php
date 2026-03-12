@@ -1,0 +1,8 @@
+order:
+  - 01-introduction
+  - 02-getting-started
+  - 03-composition
+  - 04-templates
+  - 05-structured-data
+  - 06-variants-and-registry
+  - 07-configuration

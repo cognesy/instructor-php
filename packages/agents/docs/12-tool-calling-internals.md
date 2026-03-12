@@ -101,24 +101,25 @@ $inference = InferenceRuntime::fromProvider($llm, events: $events);
 $driver = new ToolCallingDriver(
     inference: $inference,
     llm: $llm,
+    toolChoice: ToolChoice::auto(),   // auto, required, none, or specific
     model: 'gpt-4o',
-    toolChoice: 'auto',           // 'auto', 'required', or a specific tool name
-    responseFormat: [],            // optional response format constraints
-    options: [],                   // additional provider-specific options
+    options: [],                       // additional provider-specific options
     events: $events,
 );
 ```
 
+> **Note:** You will need `use Cognesy\Polyglot\Inference\Data\ToolChoice;` for the `ToolChoice` value object.
+
 ### Tool Choice Strategies
 
-The `toolChoice` parameter controls how the LLM selects tools:
+The `toolChoice` parameter accepts a `ToolChoice` value object:
 
-| Value | Behavior |
+| Factory Method | Behavior |
 |---|---|
-| `'auto'` | The LLM decides whether to call a tool or respond directly (default) |
-| `'required'` | The LLM must call at least one tool |
-| `'none'` | Tool calling is disabled; the LLM responds with text only |
-| `'toolName'` | The LLM must call the specified tool |
+| `ToolChoice::auto()` | The LLM decides whether to call a tool or respond directly (default) |
+| `ToolChoice::required()` | The LLM must call at least one tool |
+| `ToolChoice::none()` | Tool calling is disabled; the LLM responds with text only |
+| `ToolChoice::specific('toolName')` | The LLM must call the specified tool |
 
 ### Tool Args Leak Protection
 

@@ -331,8 +331,8 @@ assert($mock->commands() === [['php', '-r', 'echo "hello";']]);
 
 | Method | Purpose |
 |---|---|
-| `FakeSandbox::fromResponses($responses, $default)` | Create fake with canned responses and optional default |
-| `new FakeSandbox($policy, $responses, $default)` | Create fake with custom policy |
+| `FakeSandbox::fromResponses($responses, $defaultResponse)` | Create fake with canned responses and optional default |
+| `new FakeSandbox($policy, $responses, $defaultResponse)` | Create fake with custom policy |
 | `$mock->enqueue($key, $result)` | Add a response to the queue after construction |
 | `$mock->execute($argv, $stdin, $onOutput)` | Execute and return next canned response |
 | `$mock->commands()` | Get all recorded commands as `list<list<string>>` |

@@ -191,7 +191,8 @@ The package includes a logging pipeline that enriches log entries with Laravel r
 
     // Events to exclude from logging
     'exclude_events' => [
-        // Cognesy\Http\Events\DebugRequestBodyUsed::class,
+        Cognesy\Http\Events\DebugRequestBodyUsed::class,
+        Cognesy\Http\Events\DebugResponseBodyReceived::class,
     ],
 ],
 ```

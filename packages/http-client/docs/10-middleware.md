@@ -137,7 +137,7 @@ $client = (new HttpClientBuilder())
         baseDelayMs: 250,
         maxDelayMs: 8000,
         jitter: 'full',                    // none, full, or equal
-        retryOnStatus: [429, 500, 502, 503, 504],
+        retryOnStatus: [408, 429, 500, 502, 503, 504],
         respectRetryAfter: true,
     ))
     ->create();

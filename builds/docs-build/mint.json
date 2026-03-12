@@ -1,29 +1,5 @@
 {
-    "name": "Instructor for PHP",
-    "logo": {
-        "dark": "/images/logo/dark.svg",
-        "light": "/images/logo/light.svg"
-    },
-    "favicon": "/favicon.svg",
-    "colors": {
-        "primary": "#0D9373",
-        "light": "#07C983",
-        "dark": "#0D9373",
-        "anchors": {
-            "from": "#0D9373",
-            "to": "#07C983"
-        }
-    },
-    "topbarLinks": [
-        {
-            "name": "Issues",
-            "url": "https://github.com/cognesy/instructor-php/issues"
-        }
-    ],
-    "topbarCtaButton": {
-        "name": "Github",
-        "url": "https://github.com/cognesy/instructor-php"
-    },
+    "name": "Test Docs",
     "primaryTab": {
         "name": "Main"
     },
@@ -35,18 +11,10 @@
         {
             "name": "Cookbook",
             "url": "cookbook"
-        }
-    ],
-    "anchors": [
-        {
-            "name": "Community",
-            "icon": "discord",
-            "url": "https://discord.com/invite/bD9YE9JArw"
         },
         {
-            "name": "Blog",
-            "icon": "newspaper",
-            "url": "https://cognesy.com/blog"
+            "name": "Cheatsheets",
+            "url": "cheatsheets"
         }
     ],
     "navigation": [
@@ -173,6 +141,7 @@
                 "packages/instructor/introduction",
                 "packages/instructor/quickstart",
                 "packages/instructor/setup",
+                "packages/instructor/testing-doubles",
                 "packages/instructor/upgrade",
                 "packages/instructor/cli_tools",
                 {
@@ -249,6 +218,7 @@
                 "packages/polyglot/overview",
                 "packages/polyglot/quickstart",
                 "packages/polyglot/setup",
+                "packages/polyglot/testing-doubles",
                 "packages/polyglot/upgrade",
                 {
                     "group": "Essentials",
@@ -346,7 +316,10 @@
                 "packages/agents/14-agent-templates",
                 "packages/agents/15-subagents",
                 "packages/agents/16-session-runtime",
-                "packages/agents/17-building-tools-advanced"
+                "packages/agents/17-building-tools-advanced",
+                "packages/agents/18-observing-agent-execution",
+                "packages/agents/19-skills",
+                "packages/agents/testing-doubles"
             ]
         },
         {
@@ -354,6 +327,7 @@
             "pages": [
                 "packages/agent-ctrl/1-overview",
                 "packages/agent-ctrl/2-getting-started",
+                "packages/agent-ctrl/testing-doubles",
                 "packages/agent-ctrl/3-streaming",
                 "packages/agent-ctrl/4-session-management",
                 "packages/agent-ctrl/5-agent-options",
@@ -361,7 +335,9 @@
                 "packages/agent-ctrl/7-troubleshooting",
                 "packages/agent-ctrl/8-claude-code-bridge",
                 "packages/agent-ctrl/9-codex-bridge",
-                "packages/agent-ctrl/10-opencode-bridge"
+                "packages/agent-ctrl/10-opencode-bridge",
+                "packages/agent-ctrl/11-pi-bridge",
+                "packages/agent-ctrl/12-gemini-bridge"
             ]
         },
         {
@@ -381,6 +357,7 @@
             "pages": [
                 "packages/http/1-overview",
                 "packages/http/2-getting-started",
+                "packages/http/testing-doubles",
                 "packages/http/3-making-requests",
                 "packages/http/4-handling-responses",
                 "packages/http/5-streaming-responses",
@@ -639,7 +616,8 @@
                 "cookbook/examples/D02_AgentBuilder/agent_search",
                 "cookbook/examples/D02_AgentBuilder/agent_subagents",
                 "cookbook/examples/D02_AgentBuilder/agent_retrospective",
-                "cookbook/examples/D02_AgentBuilder/agent_planning_subagent"
+                "cookbook/examples/D02_AgentBuilder/agent_planning_subagent",
+                "cookbook/examples/D02_AgentBuilder/agent_skills"
             ]
         },
         {
@@ -675,8 +653,12 @@
                 "cookbook/examples/D10_AgentCtrl/claude_code_search",
                 "cookbook/examples/D10_AgentCtrl/codex_basic",
                 "cookbook/examples/D10_AgentCtrl/codex_streaming",
+                "cookbook/examples/D10_AgentCtrl/gemini_basic",
+                "cookbook/examples/D10_AgentCtrl/gemini_streaming",
                 "cookbook/examples/D10_AgentCtrl/opencode_basic",
-                "cookbook/examples/D10_AgentCtrl/opencode_streaming"
+                "cookbook/examples/D10_AgentCtrl/opencode_streaming",
+                "cookbook/examples/D10_AgentCtrl/pi_basic",
+                "cookbook/examples/D10_AgentCtrl/pi_streaming"
             ]
         },
         {
@@ -792,11 +774,30 @@
                 "cookbook/examples/Z07_Misc/component_reuse",
                 "cookbook/examples/Z07_Misc/component_reuse_cot"
             ]
+        },
+        {
+            "group": "Cheatsheets",
+            "pages": [
+                "cheatsheets/index",
+                "cheatsheets/instructor",
+                "cheatsheets/polyglot",
+                "cheatsheets/agents",
+                "cheatsheets/agent-ctrl",
+                "cheatsheets/sandbox",
+                "cheatsheets/http-client",
+                "cheatsheets/laravel",
+                "cheatsheets/config",
+                "cheatsheets/dynamic",
+                "cheatsheets/events",
+                "cheatsheets/logging",
+                "cheatsheets/messages",
+                "cheatsheets/metrics",
+                "cheatsheets/pipeline",
+                "cheatsheets/schema",
+                "cheatsheets/stream",
+                "cheatsheets/templates",
+                "cheatsheets/utils"
+            ]
         }
-    ],
-    "footerSocials": {
-        "x": "https://x.com/ddebowczyk",
-        "github": "https://github.com/cognesy/instructor-php",
-        "linkedin": "https://www.linkedin.com/ddebowczyk"
-    }
+    ]
 }

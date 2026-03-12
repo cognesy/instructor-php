@@ -23,7 +23,7 @@ $runtime = StructuredOutputRuntime::fromDefaults()
     ->onEvent(ResponseValidationFailed::class, function ($event) {
         logger()->warning('Validation failed', $event->toArray());
     });
-// @doctest id="2730"
+// @doctest id="488b"
 ```
 
 ### Wiretap (All Events)
@@ -34,7 +34,7 @@ debugging or comprehensive logging:
 ```php
 $runtime = StructuredOutputRuntime::fromDefaults()
     ->wiretap(fn($event) => $event->print());
-// @doctest id="6394"
+// @doctest id="5caf"
 ```
 
 ### Practical Example
@@ -43,6 +43,8 @@ $runtime = StructuredOutputRuntime::fromDefaults()
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Extras\Scalar\Scalar;
+use Cognesy\Http\Events\HttpRequestSent;
+use Cognesy\Http\Events\HttpResponseReceived;
 
 $runtime = StructuredOutputRuntime::fromDefaults()
     // Log HTTP-level details
@@ -59,7 +61,7 @@ $result = (new StructuredOutput($runtime))
         responseModel: Scalar::integer(),
     )
     ->get();
-// @doctest id="ec63"
+// @doctest id="abdc"
 ```
 
 

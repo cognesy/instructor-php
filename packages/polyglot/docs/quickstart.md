@@ -51,9 +51,10 @@ Create a file called `test-polyglot.php` in your project directory:
 require __DIR__ . '/vendor/autoload.php';
 
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Messages;
 
 $answer = Inference::using('openai')
-    ->withMessages('What is the capital of France?')
+    ->withMessages(Messages::fromString('What is the capital of France?'))
     ->get();
 
 echo "ASSISTANT: $answer\n";
@@ -101,19 +102,21 @@ Because every provider is just a preset name, switching from OpenAI to another
 provider is a one-line change:
 
 ```php
+use Cognesy\Messages\Messages;
+
 // Anthropic
 $text = Inference::using('anthropic')
-    ->withMessages('Explain dependency injection in one paragraph.')
+    ->withMessages(Messages::fromString('Explain dependency injection in one paragraph.'))
     ->get();
 
 // Google Gemini
 $text = Inference::using('gemini')
-    ->withMessages('Explain dependency injection in one paragraph.')
+    ->withMessages(Messages::fromString('Explain dependency injection in one paragraph.'))
     ->get();
 
 // Groq
 $text = Inference::using('groq')
-    ->withMessages('Explain dependency injection in one paragraph.')
+    ->withMessages(Messages::fromString('Explain dependency injection in one paragraph.'))
     ->get();
 ```
 
@@ -126,9 +129,11 @@ Set the corresponding environment variable for each provider you want to use
 The preset defines a default model, but you can override it per-request:
 
 ```php
+use Cognesy\Messages\Messages;
+
 $text = Inference::using('openai')
     ->withModel('gpt-4.1')
-    ->withMessages('Summarize the theory of relativity in two sentences.')
+    ->withMessages(Messages::fromString('Summarize the theory of relativity in two sentences.'))
     ->get();
 ```
 
@@ -138,11 +143,13 @@ $text = Inference::using('openai')
 For long responses or interactive UIs, you can stream the output token by token:
 
 ```php
+use Cognesy\Messages\Messages;
+
 $stream = Inference::using('openai')
-    ->withMessages('Write a short poem about PHP.')
+    ->withMessages(Messages::fromString('Write a short poem about PHP.'))
     ->stream();
 
-foreach ($stream as $delta) {
+foreach ($stream->deltas() as $delta) {
     echo $delta->contentDelta;
 }
 ```

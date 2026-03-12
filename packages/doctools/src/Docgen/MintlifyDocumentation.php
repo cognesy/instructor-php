@@ -21,6 +21,7 @@ class MintlifyDocumentation
     private DocsConfig $docsConfig;
     private PackageDiscovery $packageDiscovery;
     private PackageDocsBuilder $packageBuilder;
+    private CheatsheetDiscovery $cheatsheetDiscovery;
     private LinkRewriter $linkRewriter;
     private DocsMetadata $metadata;
 
@@ -39,6 +40,11 @@ class MintlifyDocumentation
             targetBaseDir: $this->docsConfig->mintlifyTarget,
             format: 'mintlify',
         );
+        $this->cheatsheetDiscovery = new CheatsheetDiscovery(
+            sourcePattern: $this->docsConfig->cheatsheetsSourcePattern,
+            internal: $this->docsConfig->packageInternal,
+            order: $this->docsConfig->packageOrder,
+        );
         $this->linkRewriter = new LinkRewriter('mintlify');
         $this->metadata = new DocsMetadata();
     }
@@ -54,6 +60,7 @@ class MintlifyDocumentation
             $this->initializeBaseFiles();
 
             $packageResult = $this->generatePackageDocs();
+            $this->generateCheatsheetDocs();
             $exampleResult = $this->generateExampleDocs();
 
             $filesProcessed = $packageResult->filesProcessed + $exampleResult->filesProcessed;
@@ -213,6 +220,28 @@ class MintlifyDocumentation
         $indexGenerator->generateToFile($packages, $targetPath);
     }
 
+    /**
+     * Copy cheatsheet files into build directory and generate index page.
+     */
+    public function generateCheatsheetDocs(): void {
+        $cheatsheets = $this->cheatsheetDiscovery->discover();
+        $targetDir = $this->config->docsTargetDir . '/cheatsheets';
+
+        if (!is_dir($targetDir)) {
+            mkdir($targetDir, 0755, true);
+        }
+
+        foreach ($cheatsheets as $cheatsheet) {
+            $targetPath = $targetDir . '/' . $cheatsheet->getTargetName() . '.mdx';
+            Files::copyFile($cheatsheet->sourcePath, $targetPath);
+            $this->linkRewriter->rewriteFile($targetPath);
+        }
+
+        // Generate index page
+        $indexGenerator = new CheatsheetsIndexGenerator();
+        $indexGenerator->generateToFile($cheatsheets, $targetDir . '/index.mdx');
+    }
+
     private function processExample(Example $example): FileProcessingResult {
         if (empty($example->tab)) {
             return FileProcessingResult::skipped($example->name, 'No tab specified');
@@ -254,11 +283,12 @@ class MintlifyDocumentation
                 return GenerationResult::failure(['Failed to read hub index file']);
             }
 
-            // Set up tabs: Main (primary), Packages, Cookbook
+            // Set up tabs: Main (primary), Packages, Cookbook, Cheatsheets
             $index->primaryTab = ['name' => 'Main'];
             $index->tabs = [
                 ['name' => 'Packages', 'url' => 'packages'],
                 ['name' => 'Cookbook', 'url' => 'cookbook'],
+                ['name' => 'Cheatsheets', 'url' => 'cheatsheets'],
             ];
 
             // Build new navigation from autodiscovery
@@ -315,6 +345,15 @@ class MintlifyDocumentation
                 $navigation->appendGroup($navGroup);
             }
 
+            // 4. Cheatsheets section
+            $cheatsheets = $this->cheatsheetDiscovery->discover();
+            $cheatsheetsGroup = new NavigationGroup('Cheatsheets');
+            $cheatsheetsGroup->pages[] = NavigationItem::fromString('cheatsheets/index');
+            foreach ($cheatsheets as $cheatsheet) {
+                $cheatsheetsGroup->pages[] = NavigationItem::fromString('cheatsheets/' . $cheatsheet->getTargetName());
+            }
+            $navigation->appendGroup($cheatsheetsGroup);
+
             // Replace navigation
             $index->navigation = $navigation;
 
@@ -353,7 +392,7 @@ class MintlifyDocumentation
                 $group->pages[] = NavigationItem::fromString($item);
             } else {
                 // Nested group
-                $group->pages[] = NavigationItem::fromArray(['group' => $item]);
+                $group->pages[] = NavigationItem::fromArray($item);
             }
         }
 

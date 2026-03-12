@@ -38,7 +38,7 @@ $provider = LLMProvider::fromArray([
 
 // Default (OpenAI with gpt-4.1-nano)
 $provider = LLMProvider::new();
-// @doctest id="f654"
+// @doctest id="59fd"
 ```
 
 ### Customizing a Provider
@@ -56,7 +56,7 @@ $provider = $provider->withLLMConfig($newConfig);
 
 // Inject an explicit driver (bypasses the driver factory)
 $provider = $provider->withDriver($customDriver);
-// @doctest id="9f4d"
+// @doctest id="b269"
 ```
 
 When an explicit driver is set, the runtime uses it directly instead of building one from the config. This is useful for testing or for providers that need custom initialization.
@@ -97,7 +97,7 @@ $provider = EmbeddingsProvider::fromArray([
     'endpoint' => '/embeddings',
     'model' => 'text-embedding-3-small',
 ]);
-// @doctest id="e9d3"
+// @doctest id="8b8e"
 ```
 
 Unlike `LLMProvider`, `EmbeddingsProvider` does not have a `using(...)` shortcut for presets. Use `Embeddings::using(...)` or construct the config explicitly.
@@ -108,7 +108,7 @@ Unlike `LLMProvider`, `EmbeddingsProvider` does not have a `using(...)` shortcut
 $provider = EmbeddingsProvider::fromArray([...])
     ->withConfigOverrides(['dimensions' => 256])
     ->withDriver($customDriver);
-// @doctest id="610a"
+// @doctest id="eee1"
 ```
 
 
@@ -122,32 +122,35 @@ Supported inference drivers include:
 
 | Driver Name | Class | Notes |
 |---|---|---|
-| `openai` | `OpenAIDriver` | OpenAI Chat Completions API |
-| `openai-responses` | `OpenAIResponsesDriver` | OpenAI Responses API |
+| `a21` | `A21Driver` | A21 Labs |
 | `anthropic` | `AnthropicDriver` | Anthropic Messages API |
 | `azure` | `AzureDriver` | Azure OpenAI |
 | `bedrock-openai` | `BedrockOpenAIDriver` | AWS Bedrock (OpenAI-compatible) |
-| `gemini` | `GeminiDriver` | Google Gemini native API |
-| `gemini-oai` | `GeminiOAIDriver` | Gemini via OpenAI-compatible endpoint |
-| `groq` | `GroqDriver` | Groq |
-| `mistral` | `MistralDriver` | Mistral |
+| `cerebras` | `CerebrasDriver` | Cerebras |
 | `cohere` | `CohereV2Driver` | Cohere v2 |
 | `deepseek` | `DeepseekDriver` | DeepSeek |
 | `fireworks` | `FireworksDriver` | Fireworks AI |
+| `gemini` | `GeminiDriver` | Google Gemini native API |
+| `gemini-oai` | `GeminiOAIDriver` | Gemini via OpenAI-compatible endpoint |
+| `glm` | `GlmDriver` | GLM |
+| `groq` | `GroqDriver` | Groq |
+| `huggingface` | `HuggingFaceDriver` | Hugging Face |
+| `inception` | `InceptionDriver` | Inception |
 | `meta` | `MetaDriver` | Meta Llama API |
+| `minimaxi` | `MinimaxiDriver` | Minimaxi |
+| `mistral` | `MistralDriver` | Mistral |
+| `openai` | `OpenAIDriver` | OpenAI Chat Completions API |
+| `openai-responses` | `OpenAIResponsesDriver` | OpenAI Responses API |
+| `openresponses` | `OpenResponsesDriver` | Open Responses API |
+| `openrouter` | `OpenRouterDriver` | OpenRouter |
 | `perplexity` | `PerplexityDriver` | Perplexity |
 | `qwen` | `QwenDriver` | Alibaba Qwen |
 | `sambanova` | `SambaNovaDriver` | SambaNova |
 | `xai` | `XAiDriver` | xAI (Grok) |
-| `openrouter` | `OpenRouterDriver` | OpenRouter |
-| `inception` | `InceptionDriver` | Inception |
-| `minimaxi` | `MinimaxiDriver` | Minimaxi |
-| `glm` | `GlmDriver` | GLM |
-| `huggingface` | `HuggingFaceDriver` | Hugging Face |
-| `openai-compatible` | `OpenAICompatibleDriver` | Generic OpenAI-compatible APIs |
-| `ollama` | `OpenAICompatibleDriver` | Ollama (via OpenAI-compatible) |
-| `together` | `OpenAICompatibleDriver` | Together AI (via OpenAI-compatible) |
 | `moonshot` | `OpenAICompatibleDriver` | Moonshot (via OpenAI-compatible) |
+| `ollama` | `OpenAICompatibleDriver` | Ollama (via OpenAI-compatible) |
+| `openai-compatible` | `OpenAICompatibleDriver` | Generic OpenAI-compatible APIs |
+| `together` | `OpenAICompatibleDriver` | Together AI (via OpenAI-compatible) |
 
 You can extend the registry with custom drivers:
 
@@ -159,7 +162,7 @@ $registry = BundledInferenceDrivers::registry()
     ->withDriver('my-provider', MyCustomDriver::class);
 
 $runtime = InferenceRuntime::fromConfig($config, drivers: $registry);
-// @doctest id="04af"
+// @doctest id="0fd2"
 ```
 
 A custom driver can be registered as a class name (must accept `LLMConfig`, `CanSendHttpRequests`, and `CanHandleEvents` in its constructor) or as a callable factory:
@@ -168,39 +171,42 @@ A custom driver can be registered as a class name (must accept `LLMConfig`, `Can
 $registry = $registry->withDriver('my-provider', function ($config, $httpClient, $events) {
     return new MyCustomDriver($config, $httpClient, $events);
 });
-// @doctest id="405c"
+// @doctest id="13c4"
 ```
 
 You can also remove drivers from the registry:
 
 ```php
 $registry = $registry->withoutDriver('openai-compatible');
-// @doctest id="28e4"
+// @doctest id="c9a7"
 ```
 
-### Embeddings Driver Factory
+### Embeddings Driver Registry
 
-The `EmbeddingsDriverFactory` follows a similar pattern. Bundled embeddings drivers include: `openai`, `azure`, `cohere`, `gemini`, `jina`, `mistral`, and `ollama`.
+The `EmbeddingsDriverRegistry` follows the same immutable instance-based pattern as `InferenceDriverRegistry`. Bundled embeddings drivers are provided via `BundledEmbeddingsDrivers::registry()` and include: `openai`, `azure`, `cohere`, `gemini`, `jina`, `mistral`, and `ollama`.
 
-Custom embeddings drivers can be registered statically:
+Custom embeddings drivers can be registered through the registry:
 
 ```php
-use Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory;
+use Cognesy\Polyglot\Embeddings\Creation\BundledEmbeddingsDrivers;
 
-EmbeddingsDriverFactory::registerDriver('my-provider', MyEmbeddingsDriver::class);
-// @doctest id="ea7c"
+$registry = BundledEmbeddingsDrivers::registry()
+    ->withDriver('my-provider', MyEmbeddingsDriver::class);
+
+$runtime = EmbeddingsRuntime::fromConfig($config, drivers: $registry);
+// @doctest id="f08f"
 ```
 
 Or with a factory callable:
 
 ```php
-EmbeddingsDriverFactory::registerDriver('my-provider', function ($config, $httpClient, $events) {
+$registry = $registry->withDriver('my-provider', function ($config, $httpClient, $events) {
     return new MyEmbeddingsDriver($config, $httpClient, $events);
 });
-// @doctest id="41ce"
+// @doctest id="fb1c"
 ```
 
-> **Note:** The `EmbeddingsDriverFactory` uses static registration, while `InferenceDriverRegistry` uses immutable instance-based registration. This means embeddings driver registrations are global, while inference driver registrations can vary per runtime.
+Both `InferenceDriverRegistry` and `EmbeddingsDriverRegistry` use immutable instance-based registration, so driver registrations can vary per runtime.
 
 
 ## Key Contracts
@@ -240,5 +246,5 @@ The driver contract `CanProcessInferenceRequest` also includes a `capabilities()
 ```php
 $driver->capabilities()->supportsStreaming;
 $driver->capabilities('deepseek-reasoner')->supportsToolCalls;
-// @doctest id="7550"
+// @doctest id="0f66"
 ```

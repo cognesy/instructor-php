@@ -51,6 +51,7 @@ final class Pipeline
         return $this->runFinalizers($currentState);
     }
 
+    /** @param Closure(CanCarryState):CanCarryState $step */
     private function executeStep(Closure $step, CanCarryState $state): CanCarryState {
         try {
             return $step($state);

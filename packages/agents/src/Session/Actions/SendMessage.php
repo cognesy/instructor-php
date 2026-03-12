@@ -9,10 +9,14 @@ use Cognesy\Messages\Message;
 
 final readonly class SendMessage implements CanExecuteSessionAction
 {
+    private string|Message $message;
+
     public function __construct(
-        private string|Message $message,
+        string|\Stringable|Message $message,
         private CanInstantiateAgentLoop $loopFactory,
-    ) {}
+    ) {
+        $this->message = $message instanceof Message ? $message : (string) $message;
+    }
 
     #[\Override]
     public function executeOn(AgentSession $session): AgentSession {

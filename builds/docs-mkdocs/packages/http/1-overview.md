@@ -39,7 +39,7 @@ HttpClient
   -> PendingHttpResponse
   -> get() or stream()
   -> HttpResponse
-// @doctest id="ee93"
+// @doctest id="2971"
 ```
 
 1. You create an `HttpRequest` with a URL, method, headers, and body.
@@ -59,7 +59,7 @@ Your Code
                                                  |
       <- Middleware 1 <- Middleware 2 <- ... <- Driver
     -> HttpResponse
-// @doctest id="8587"
+// @doctest id="7d7c"
 ```
 
 **Client layer.** `HttpClient` is the public entry point. It delegates to `HttpClientRuntime`, which wires together the driver, middleware stack, and event dispatcher.
@@ -85,7 +85,7 @@ $request = $request->withHeader('Authorization', 'Bearer ' . $token);
 
 // Wrong -- the return value is discarded
 $request->withHeader('Authorization', 'Bearer ' . $token);
-// @doctest id="2097"
+// @doctest id="aa2c"
 ```
 
 ## Pooling

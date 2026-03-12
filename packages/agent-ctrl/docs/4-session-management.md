@@ -5,7 +5,7 @@ description: 'Continue the most recent agent session or resume a specific sessio
 
 ## Introduction
 
-CLI-based code agents maintain internal session state that includes the conversation history, file context, and previous tool results. Agent-Ctrl exposes this session mechanism through two builder methods -- `continueSession()` and `resumeSession()` -- that work consistently across all three supported agents.
+CLI-based code agents maintain internal session state that includes the conversation history, file context, and previous tool results. Agent-Ctrl exposes this session mechanism through two builder methods -- `continueSession()` and `resumeSession()` -- that work consistently across all supported agents.
 
 Session continuity is valuable when a task spans multiple steps. Rather than starting fresh each time and re-establishing context, you can continue an existing session so the agent remembers what was discussed and what actions were taken previously.
 
@@ -18,6 +18,10 @@ Each agent manages sessions differently under the hood, but Agent-Ctrl normalize
 - **Codex** uses thread-based conversations and returns a thread ID in its response. Agent-Ctrl normalizes this into an `AgentSessionId`.
 
 - **OpenCode** maintains named sessions with their own session ID format. Agent-Ctrl extracts and normalizes these as well.
+
+- **Pi** maintains sessions with a session ID. It supports ephemeral mode (no session saved) and custom session directories. Agent-Ctrl normalizes the session ID into an `AgentSessionId`.
+
+- **Gemini** supports session resume by a session ID or the special value `'latest'` for the most recent session. Agent-Ctrl normalizes these into an `AgentSessionId`.
 
 Regardless of the agent, the flow is the same: execute a prompt, capture the session ID from the response, and pass it to a subsequent execution.
 
@@ -140,6 +144,48 @@ AgentCtrl::openCode()
 ```
 
 OpenCode maintains its own session format with support for session titles and sharing.
+
+### Pi
+
+```php
+// Continue most recent session
+AgentCtrl::pi()
+    ->continueSession()
+    ->execute('Continue the previous task.');
+
+// Resume specific session
+AgentCtrl::pi()
+    ->resumeSession('session-abc-123')
+    ->execute('Pick up from where we left off.');
+
+// Ephemeral mode (session not saved)
+AgentCtrl::pi()
+    ->ephemeral()
+    ->execute('Quick one-off task.');
+
+// Custom session directory
+AgentCtrl::pi()
+    ->withSessionDir('/custom/sessions')
+    ->execute('Work in a custom session location.');
+```
+
+Pi supports `continueSession()`, `resumeSession()`, `ephemeral()` (no session saved), and `withSessionDir()` (custom session storage directory).
+
+### Gemini
+
+```php
+// Continue most recent session
+AgentCtrl::gemini()
+    ->continueSession()
+    ->execute('Continue the previous task.');
+
+// Resume specific session
+AgentCtrl::gemini()
+    ->resumeSession('session-xyz-789')
+    ->execute('Pick up from where we left off.');
+```
+
+Gemini maps `continueSession()` to resuming the `'latest'` session internally. `resumeSession()` accepts a session ID or index.
 
 ## Important Considerations
 

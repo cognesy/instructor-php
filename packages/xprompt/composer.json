@@ -1,0 +1,50 @@
+{
+  "name": "cognesy/xprompt",
+  "description": "Prompts-as-code micro-library — classes, composition, variants, registry, template-backed bodies",
+  "license": "MIT",
+  "homepage": "https://instructorphp.com",
+  "support": {
+    "issues": "https://github.com/cognesy/instructor-php/issues",
+    "source": "https://github.com/cognesy/instructor-php"
+  },
+  "authors": [
+    {
+      "name": "Dariusz Debowczyk",
+      "email": "ddebowczyk@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Cognesy\\Xprompt\\": "src/"
+    },
+    "files": [
+      "src/functions.php"
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Cognesy\\Xprompt\\Tests\\": "tests/"
+    }
+  },
+  "require": {
+    "php": "^8.3",
+    "cognesy/instructor-templates": "^1.22"
+  },
+  "require-dev": {
+    "pestphp/pest": "^2.34"
+  },
+  "scripts": {
+    "tests": "@php vendor/bin/pest"
+  },
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    },
+    "sort-packages": true
+  },
+  "suggest": {
+    "symfony/yaml": "For NodeSet YAML data file loading"
+  },
+  "minimum-stability": "RC",
+  "prefer-stable": true
+}

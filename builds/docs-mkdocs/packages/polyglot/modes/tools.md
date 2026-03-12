@@ -34,7 +34,7 @@ $weatherTool = [
         ],
     ],
 ];
-// @doctest id="0734"
+// @doctest id="5349"
 ```
 
 ## Making a Tool Call Request
@@ -44,16 +44,19 @@ Pass your tool definitions via the `tools` parameter and control how the model s
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\Inference;
 
 $response = Inference::using('openai')
     ->with(
-        messages: 'What is the weather like in Paris?',
-        tools: [$weatherTool],
-        toolChoice: 'auto',
+        messages: Messages::fromString('What is the weather like in Paris?'),
+        tools: ToolDefinitions::fromArray([$weatherTool]),
+        toolChoice: ToolChoice::auto(),
     )
     ->response();
-// @doctest id="ff6c"
+// @doctest id="f966"
 ```
 
 ## Processing Tool Call Results
@@ -67,9 +70,9 @@ if ($response->hasToolCalls()) {
     $toolCalls = $response->toolCalls();
 
     foreach ($toolCalls->all() as $call) {
-        $name = $call->name();      // e.g. 'get_weather'
-        $args = $call->args();      // e.g. ['location' => 'Paris, France']
-        $id   = $call->id();        // unique call ID for multi-turn conversations
+        $name = $call->name();        // e.g. 'get_weather'
+        $args = $call->args();        // e.g. ['location' => 'Paris, France']
+        $id   = $call->idString();    // unique call ID string for multi-turn conversations
 
         // Execute the function and use the result...
     }
@@ -77,7 +80,7 @@ if ($response->hasToolCalls()) {
     // The model responded with text instead
     echo $response->content();
 }
-// @doctest id="ef05"
+// @doctest id="febc"
 ```
 
 ## Convenience Accessors
@@ -87,26 +90,29 @@ For simple cases where you just need the tool call arguments as data, Polyglot p
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\Inference;
 
 // Get tool call arguments as a JSON string
 $json = Inference::using('openai')
     ->with(
-        messages: 'Get the weather for Paris.',
-        tools: [$weatherTool],
-        toolChoice: 'auto',
+        messages: Messages::fromString('Get the weather for Paris.'),
+        tools: ToolDefinitions::fromArray([$weatherTool]),
+        toolChoice: ToolChoice::auto(),
     )
     ->asToolCallJson();
 
 // Or as a decoded PHP array
 $data = Inference::using('openai')
     ->with(
-        messages: 'Get the weather for Paris.',
-        tools: [$weatherTool],
-        toolChoice: 'auto',
+        messages: Messages::fromString('Get the weather for Paris.'),
+        tools: ToolDefinitions::fromArray([$weatherTool]),
+        toolChoice: ToolChoice::auto(),
     )
     ->asToolCallJsonData();
-// @doctest id="0462"
+// @doctest id="ee0f"
 ```
 
 When the model returns a single tool call, `asToolCallJsonData()` returns that call's arguments as an array. When multiple tool calls are returned, it returns an array of all calls.
@@ -118,38 +124,40 @@ The `toolChoice` parameter controls how the model decides whether to use tools:
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\Inference;
+
+$toolDefs = ToolDefinitions::fromArray($tools);
 
 // Let the model decide whether to call a tool or respond with text
 $response = Inference::using('openai')
     ->with(
-        messages: 'What is the weather like in Paris?',
-        tools: $tools,
-        toolChoice: 'auto',
+        messages: Messages::fromString('What is the weather like in Paris?'),
+        tools: $toolDefs,
+        toolChoice: ToolChoice::auto(),
     )
     ->response();
 
 // Force the model to call a specific tool
 $response = Inference::using('openai')
     ->with(
-        messages: 'What is the weather like in Paris?',
-        tools: $tools,
-        toolChoice: [
-            'type' => 'function',
-            'function' => ['name' => 'get_weather'],
-        ],
+        messages: Messages::fromString('What is the weather like in Paris?'),
+        tools: $toolDefs,
+        toolChoice: ToolChoice::specific('get_weather'),
     )
     ->response();
 
 // Prevent tool usage entirely (model responds with text)
 $response = Inference::using('openai')
     ->with(
-        messages: 'What is the weather like in Paris?',
-        tools: $tools,
-        toolChoice: 'none',
+        messages: Messages::fromString('What is the weather like in Paris?'),
+        tools: $toolDefs,
+        toolChoice: ToolChoice::none(),
     )
     ->response();
-// @doctest id="a315"
+// @doctest id="5785"
 ```
 
 ## Multiple Tools
@@ -159,6 +167,9 @@ You can provide multiple tool definitions in a single request. The model will se
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\Inference;
 
 $tools = [
@@ -195,12 +206,12 @@ $tools = [
 
 $response = Inference::using('openai')
     ->with(
-        messages: 'What is the status of flight AA123?',
-        tools: $tools,
-        toolChoice: 'auto',
+        messages: Messages::fromString('What is the status of flight AA123?'),
+        tools: ToolDefinitions::fromArray($tools),
+        toolChoice: ToolChoice::auto(),
     )
     ->response();
-// @doctest id="30ce"
+// @doctest id="7780"
 ```
 
 ## Using the Fluent API
@@ -210,14 +221,17 @@ The fluent builder methods `withTools()` and `withToolChoice()` offer an alterna
 ```php
 <?php
 
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\ToolChoice;
+use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\Inference;
 
 $response = Inference::using('openai')
-    ->withMessages('Get the weather for Paris.')
-    ->withTools([$weatherTool])
-    ->withToolChoice('auto')
+    ->withMessages(Messages::fromString('Get the weather for Paris.'))
+    ->withTools(ToolDefinitions::fromArray([$weatherTool]))
+    ->withToolChoice(ToolChoice::auto())
     ->response();
-// @doctest id="fd77"
+// @doctest id="14f5"
 ```
 
 ## Provider Support
