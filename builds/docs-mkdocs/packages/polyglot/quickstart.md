@@ -19,7 +19,7 @@ Polyglot requires **PHP 8.3** or later. Install it with Composer:
 
 ```bash
 composer require cognesy/instructor-polyglot
-# @doctest id="9818"
+# @doctest id="f1f5"
 ```
 
 
@@ -34,7 +34,7 @@ running any PHP code:
 
 ```bash
 export OPENAI_API_KEY=sk-...
-# @doctest id="7dfb"
+# @doctest id="8b8d"
 ```
 
 <Warning>
@@ -58,7 +58,7 @@ $answer = Inference::using('openai')
     ->get();
 
 echo "ASSISTANT: $answer\n";
-// @doctest id="4161"
+// @doctest id="f8c1"
 ```
 
 Run it from the terminal:
@@ -68,7 +68,7 @@ php test-polyglot.php
 
 # Output:
 # ASSISTANT: The capital of France is Paris.
-# @doctest id="899d"
+# @doctest id="22c2"
 ```
 
 That is all it takes. The `Inference` class is the main entry point for every
@@ -118,7 +118,7 @@ $text = Inference::using('gemini')
 $text = Inference::using('groq')
     ->withMessages('Explain dependency injection in one paragraph.')
     ->get();
-// @doctest id="7e51"
+// @doctest id="3151"
 ```
 
 Set the corresponding environment variable for each provider you want to use
@@ -134,7 +134,7 @@ $text = Inference::using('openai')
     ->withModel('gpt-4.1')
     ->withMessages('Summarize the theory of relativity in two sentences.')
     ->get();
-// @doctest id="af77"
+// @doctest id="a5cf"
 ```
 
 
@@ -150,7 +150,7 @@ $stream = Inference::using('openai')
 foreach ($stream as $delta) {
     echo $delta->contentDelta;
 }
-// @doctest id="34ff"
+// @doctest id="3a0e"
 ```
 
 

@@ -33,7 +33,7 @@ $data = $inference
         mode: $oldMode,
     )
     ->asJsonData();
-// @doctest id="aa28"
+// @doctest id="5b8e"
 ```
 
 ## After
@@ -49,7 +49,7 @@ $data = Inference::using('openai')
         responseFormat: ['type' => 'json_object'],
     )
     ->asJsonData();
-// @doctest id="b3dd"
+// @doctest id="8b58"
 ```
 
 Markdown-JSON fallback is no longer a Polyglot concern.

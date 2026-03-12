@@ -40,6 +40,17 @@ it('keeps the last successful array when the stream is currently after a trailin
     expect($parser->currentArray())->toBe(['name' => 'Ann']);
 });
 
+it('keeps the last successful array when an array is waiting for the next value', function () {
+    $parser = new IncrementalCompletingJsonParser();
+
+    $parser->append('{"items":[1');
+    expect($parser->currentArray())->toBe(['items' => [1]]);
+
+    $parser->append(',');
+    expect($parser->currentJson())->toBeNull();
+    expect($parser->currentArray())->toBe(['items' => [1]]);
+});
+
 it('supports nested arrays and objects across chunk boundaries', function () {
     $parser = new IncrementalCompletingJsonParser();
 
@@ -81,5 +92,13 @@ it('resets state fully', function () {
     $parser->reset();
     expect($parser->buffer())->toBe('');
     expect($parser->currentJson())->toBeNull();
+    expect($parser->currentArray())->toBeNull();
+});
+
+it('does not decode scalar roots into arrays', function () {
+    $parser = new IncrementalCompletingJsonParser();
+
+    $parser->append('"hello');
+    expect($parser->currentJson())->toBe('"hello"');
     expect($parser->currentArray())->toBeNull();
 });

@@ -69,7 +69,7 @@ $embeddings = Embeddings::fromProvider($provider);
 
 // From a custom runtime (full control over driver and events)
 $embeddings = Embeddings::fromRuntime($runtime);
-// @doctest id="e284"
+// @doctest id="0f70"
 ```
 
 ## Request Methods
@@ -134,7 +134,7 @@ Embeddings::registerDriver('custom-provider', function ($config, $httpClient, $e
 $response = Embeddings::using('custom-provider')
     ->withInputs(['Hello world'])
     ->get();
-// @doctest id="43e4"
+// @doctest id="fa6a"
 ```
 
 Your custom driver must implement the `CanHandleVectorization` contract.

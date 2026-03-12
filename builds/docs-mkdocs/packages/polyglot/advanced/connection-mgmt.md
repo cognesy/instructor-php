@@ -28,7 +28,7 @@ $prompt = 'Explain dependency injection in one sentence.';
 $openai    = Inference::using('openai')->withMessages($prompt)->get();
 $anthropic = Inference::using('anthropic')->withMessages($prompt)->get();
 $gemini    = Inference::using('gemini')->withMessages($prompt)->get();
-// @doctest id="5194"
+// @doctest id="ad57"
 ```
 
 You can also override the model on a per-request basis without creating a new preset:
@@ -44,7 +44,7 @@ $response = Inference::using('openai')
         model: 'gpt-4.1',
     )
     ->get();
-// @doctest id="1f6d"
+// @doctest id="d480"
 ```
 
 
@@ -114,7 +114,7 @@ $response = withFallback(
     presets: ['openai', 'anthropic', 'gemini'],
     prompt: 'What is the capital of France?',
 );
-// @doctest id="73c1"
+// @doctest id="f6f5"
 ```
 
 This pattern gives you full control over retry logic, logging, and error handling at each
@@ -158,7 +158,7 @@ echo $router->ask('Explain monads in simple terms.', 'medium');
 
 // High-stakes analysis -- use premium tier
 echo $router->ask('Analyze the ethical implications of AI in healthcare.', 'high');
-// @doctest id="7697"
+// @doctest id="12ad"
 ```
 
 
@@ -194,7 +194,7 @@ $router = new TaskRouter();
 echo $router->ask('Write a short poem about the ocean.', 'creative');
 echo $router->ask('What is the capital of France?', 'factual');
 echo $router->ask('Write a PHP function to reverse a string.', 'code');
-// @doctest id="44fe"
+// @doctest id="ddb7"
 ```
 
 > **Tip:** You can combine cost-aware and task-based routing. For example, use a cheap local
@@ -215,7 +215,7 @@ $inference = Inference::using('openai');
 
 $answer1 = $inference->withMessages('What is PHP?')->get();
 $answer2 = $inference->withMessages('What is Laravel?')->get();
-// @doctest id="c421"
+// @doctest id="f5d4"
 ```
 
 Because `Inference` uses immutable builder methods (each call returns a new copy), sharing a

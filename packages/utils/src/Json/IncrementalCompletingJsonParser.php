@@ -2,8 +2,6 @@
 
 namespace Cognesy\Utils\Json;
 
-use JsonException;
-
 final class IncrementalCompletingJsonParser
 {
     private string $buffer = '';
@@ -19,9 +17,17 @@ final class IncrementalCompletingJsonParser
 
     private string $activeToken = '';
     private string $tokenBuffer = '';
+    private ?string $rootType = null;
+    private int $revision = 0;
+    private int $completionRevision = -1;
+    private bool $completionAvailable = false;
+    private string $cachedCompletionSuffix = '';
+    private int $currentArrayRevision = -1;
 
     /** @var array<array-key, mixed>|null */
     private ?array $lastSuccessfulArray = null;
+    /** @var array<array-key, mixed>|null */
+    private ?array $cachedCurrentArray = null;
 
     public function reset(): void
     {
@@ -35,12 +41,25 @@ final class IncrementalCompletingJsonParser
         $this->unicodeDigitsRemaining = 0;
         $this->activeToken = '';
         $this->tokenBuffer = '';
+        $this->rootType = null;
         $this->lastSuccessfulArray = null;
+        $this->revision = 0;
+        $this->completionRevision = -1;
+        $this->completionAvailable = false;
+        $this->cachedCompletionSuffix = '';
+        $this->currentArrayRevision = -1;
+        $this->cachedCurrentArray = null;
     }
 
     public function append(string $chunk): void
     {
+        if ($chunk === '') {
+            return;
+        }
+
         $this->buffer .= $chunk;
+        $this->revision++;
+        $this->invalidateCaches();
 
         foreach (str_split($chunk) as $char) {
             $this->consume($char);
@@ -71,23 +90,35 @@ final class IncrementalCompletingJsonParser
      */
     public function currentArray(): ?array
     {
-        $json = $this->currentJson();
-        if ($json === null) {
-            return $this->lastSuccessfulArray;
+        if ($this->currentArrayRevision === $this->revision) {
+            return $this->cachedCurrentArray;
         }
 
-        try {
-            $decoded = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException) {
-            return $this->lastSuccessfulArray;
+        if (!$this->isDecodeEligible()) {
+            return $this->cacheCurrentArray($this->lastSuccessfulArray);
+        }
+
+        $suffix = $this->completionSuffix();
+        if ($suffix === null) {
+            return $this->cacheCurrentArray($this->lastSuccessfulArray);
+        }
+
+        $json = match ($suffix) {
+            '' => $this->buffer,
+            default => $this->buffer . $suffix,
+        };
+
+        $decoded = json_decode($json, true, 512);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return $this->cacheCurrentArray($this->lastSuccessfulArray);
         }
 
         if (!is_array($decoded)) {
-            return $this->lastSuccessfulArray;
+            return $this->cacheCurrentArray($this->lastSuccessfulArray);
         }
 
         $this->lastSuccessfulArray = $decoded;
-        return $decoded;
+        return $this->cacheCurrentArray($decoded);
     }
 
     public function completionSuffix(): ?string
@@ -96,20 +127,30 @@ final class IncrementalCompletingJsonParser
             return '';
         }
 
+        if ($this->completionRevision === $this->revision) {
+            return match ($this->completionAvailable) {
+                true => $this->cachedCompletionSuffix,
+                default => null,
+            };
+        }
+
         $suffix = '';
         $stack = $this->stack;
         $rootComplete = $this->rootComplete;
 
         if (!$this->completePendingToken($suffix, $stack, $rootComplete)) {
+            $this->cacheCompletion(null);
             return null;
         }
 
         while ($stack !== []) {
             if (!$this->closeOpenContainer($suffix, $stack, $rootComplete)) {
+                $this->cacheCompletion(null);
                 return null;
             }
         }
 
+        $this->cacheCompletion($suffix);
         return $suffix;
     }
 
@@ -198,6 +239,10 @@ final class IncrementalCompletingJsonParser
 
     private function openContainer(string $type): void
     {
+        if (!$this->rootStarted) {
+            $this->rootType = $type;
+        }
+
         $this->rootStarted = true;
         $this->stack[] = [
             'type' => $type,
@@ -257,6 +302,10 @@ final class IncrementalCompletingJsonParser
 
     private function startString(): void
     {
+        if (!$this->rootStarted) {
+            $this->rootType = 'scalar';
+        }
+
         $this->rootStarted = true;
         $this->inString = true;
         $this->escaping = false;
@@ -266,6 +315,10 @@ final class IncrementalCompletingJsonParser
 
     private function startToken(string $type, string $char): void
     {
+        if (!$this->rootStarted) {
+            $this->rootType = 'scalar';
+        }
+
         $this->rootStarted = true;
         $this->activeToken = $type;
         $this->tokenBuffer = $char;
@@ -511,5 +564,74 @@ final class IncrementalCompletingJsonParser
         }
 
         $stack[$index]['state'] = $state;
+    }
+
+    private function invalidateCaches(): void
+    {
+        $this->completionRevision = -1;
+        $this->completionAvailable = false;
+        $this->cachedCompletionSuffix = '';
+        $this->currentArrayRevision = -1;
+        $this->cachedCurrentArray = null;
+    }
+
+    private function cacheCompletion(?string $suffix): void
+    {
+        $this->completionRevision = $this->revision;
+        $this->completionAvailable = $suffix !== null;
+        $this->cachedCompletionSuffix = $suffix ?? '';
+    }
+
+    /**
+     * @param array<array-key, mixed>|null $array
+     * @return array<array-key, mixed>|null
+     */
+    private function cacheCurrentArray(?array $array): ?array
+    {
+        $this->currentArrayRevision = $this->revision;
+        $this->cachedCurrentArray = $array;
+        return $array;
+    }
+
+    private function isDecodeEligible(): bool
+    {
+        if (!$this->hasContainerRoot()) {
+            return false;
+        }
+
+        if ($this->topState() === 'expect_key') {
+            return false;
+        }
+
+        if ($this->topType() === 'array' && $this->topState() === 'expect_value' && !$this->hasPendingValueStart()) {
+            return false;
+        }
+
+        if ($this->activeToken !== 'literal') {
+            return true;
+        }
+
+        return $this->literalCompletionSuffix($this->tokenBuffer) !== null;
+    }
+
+    private function hasContainerRoot(): bool
+    {
+        return match ($this->rootType) {
+            'object', 'array' => true,
+            default => false,
+        };
+    }
+
+    private function hasPendingValueStart(): bool
+    {
+        if ($this->inString) {
+            return true;
+        }
+
+        if ($this->activeToken !== '') {
+            return true;
+        }
+
+        return $this->topState() === 'expect_first_value_or_end';
     }
 }
