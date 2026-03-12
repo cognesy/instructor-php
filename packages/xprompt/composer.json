@@ -1,5 +1,5 @@
 {
-  "name": "cognesy/xprompt",
+  "name": "cognesy/xprompt-php",
   "description": "Prompts-as-code micro-library — classes, composition, variants, registry, template-backed bodies",
   "license": "MIT",
   "homepage": "https://instructorphp.com",

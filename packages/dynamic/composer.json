@@ -26,7 +26,8 @@
   "require": {
     "php": "^8.3",
     "cognesy/instructor-schema": "^2.0",
-    "cognesy/instructor": "^1.22"
+    "cognesy/instructor": "^1.22",
+    "symfony/type-info": "^7.1 || ^8.0"
   },
   "require-dev": {
     "pestphp/pest": "^4.0",

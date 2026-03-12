@@ -19,7 +19,7 @@ jobs:
       fail-fast: true
       matrix:
         php: ['8.3', '8.4', '8.5']
-        symfony: ['^7.0', '^8.0']
+        symfony: ['^7.1', '^8.0']
         composer: ['--prefer-stable', '--prefer-lowest']
         exclude:
           - php: '8.3'
