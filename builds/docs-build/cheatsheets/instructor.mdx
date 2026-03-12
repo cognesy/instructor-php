@@ -48,8 +48,8 @@ $so = (new StructuredOutput)
     ->withResponseClass(User::class)
     ->withResponseObject(new User())
     ->withResponseJsonSchema($jsonSchema)
-    ->withSystem('You are a precise extractor')
-    ->withPrompt('Extract user profile')
+    ->withSystem('You are a precise extractor')    // string|\Stringable
+    ->withPrompt('Extract user profile')            // string|\Stringable
     ->withExamples($examples)
     ->withModel('gpt-4o-mini')
     ->withOptions(['temperature' => 0])
@@ -63,8 +63,8 @@ Single-call variant:
 $so = (new StructuredOutput)->with(
     messages: $messages,
     responseModel: User::class,
-    system: '...',
-    prompt: '...',
+    system: '...',                         // string|\Stringable|null
+    prompt: '...',                         // string|\Stringable|null
     examples: $examples,
     model: 'gpt-4o-mini',
     options: ['temperature' => 0],

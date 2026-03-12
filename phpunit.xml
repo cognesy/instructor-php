@@ -34,6 +34,9 @@
             <directory suffix="Test.php">./packages/tell/tests/Unit</directory>
             <directory suffix="Test.php">./packages/templates/tests/Unit</directory>
             <directory suffix="Test.php">./packages/utils/tests/Unit</directory>
+            <directory suffix="Test.php">./packages/xprompt/tests/Unit</directory>
+            <directory suffix="Test.php">./packages/sandbox/tests/Unit</directory>
+            <directory suffix="Test.php">./packages/http-pool/tests/Unit</directory>
         </testsuite>
         <testsuite name="Feature">
 
@@ -60,6 +63,8 @@
             <directory suffix="Test.php">./packages/tell/tests/Feature</directory>
             <directory suffix="Test.php">./packages/templates/tests/Feature</directory>
             <directory suffix="Test.php">./packages/utils/tests/Feature</directory>
+            <directory suffix="Test.php">./packages/xprompt/tests/Feature</directory>
+            <directory suffix="Test.php">./packages/http-pool/tests/Feature</directory>
         </testsuite>
         <testsuite name="Integration">
 
@@ -86,6 +91,7 @@
             <directory suffix="Test.php">./packages/tell/tests/Integration</directory>
             <directory suffix="Test.php">./packages/templates/tests/Integration</directory>
             <directory suffix="Test.php">./packages/utils/tests/Integration</directory>
+            <directory suffix="Test.php">./packages/http-pool/tests/Integration</directory>
         </testsuite>
         <testsuite name="Regression">
 
@@ -111,6 +117,7 @@
             <directory suffix="Test.php">./packages/tell/tests/Regression</directory>
             <directory suffix="Test.php">./packages/templates/tests/Regression</directory>
             <directory suffix="Test.php">./packages/utils/tests/Regression</directory>
+            <directory suffix="Test.php">./packages/sandbox/tests/Regression</directory>
         </testsuite>
     </testsuites>
     <source>
@@ -139,6 +146,9 @@
             <directory suffix=".php">./packages/tell/src</directory>
             <directory suffix=".php">./packages/templates/src</directory>
             <directory suffix=".php">./packages/utils/src</directory>
+            <directory suffix=".php">./packages/xprompt/src</directory>
+            <directory suffix=".php">./packages/sandbox/src</directory>
+            <directory suffix=".php">./packages/http-pool/src</directory>
         </include>
     </source>
 </phpunit>

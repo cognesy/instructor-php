@@ -21,7 +21,7 @@ $result = $loop->execute($state);
 
 echo $result->finalResponse()->toString();
 // "2 + 2 equals 4."
-// @doctest id="eb19"
+// @doctest id="a8b3"
 ```
 
 Three things happen here:
@@ -66,7 +66,7 @@ $result = $loop->execute($state);
 
 echo $result->finalResponse()->toString();
 // "The weather in Paris is 72°F and sunny."
-// @doctest id="68e4"
+// @doctest id="bc0e"
 ```
 
 When the LLM receives this request, it recognizes that a weather tool is available and returns a tool call instead of a direct answer. The loop executes the tool, feeds the result back as a tool response message, and calls the LLM again. This time the model has the weather data and produces a natural language answer. The loop sees no further tool calls and stops.
@@ -82,7 +82,7 @@ $loop = AgentLoop::default()
     ->withTool($weatherTool)
     ->withTool($calculatorTool)
     ->withTool($searchTool);
-// @doctest id="756e"
+// @doctest id="f4bd"
 ```
 
 The LLM sees all available tools in each request and chooses which to call (or none) based on the user's message.
@@ -95,7 +95,7 @@ A system prompt establishes the agent's persona, instructions, and constraints. 
 $state = AgentState::empty()
     ->withSystemPrompt('You are a concise weather assistant. Always respond with temperature in Celsius.')
     ->withUserMessage('What is the weather in Paris?');
-// @doctest id="31fa"
+// @doctest id="52f1"
 ```
 
 Since `AgentState` is immutable, you can create a base state with a system prompt and reuse it across multiple conversations by calling `withUserMessage()` each time:
@@ -106,7 +106,7 @@ $baseState = AgentState::empty()
 
 $result1 = $loop->execute($baseState->withUserMessage('Explain closures in PHP.'));
 $result2 = $loop->execute($baseState->withUserMessage('What is a generator?'));
-// @doctest id="6d23"
+// @doctest id="6d43"
 ```
 
 ## Stepping Through Execution
@@ -123,7 +123,7 @@ foreach ($loop->iterate($state) as $stepState) {
         $step->usage()->total(),
     );
 }
-// @doctest id="015d"
+// @doctest id="24c1"
 ```
 
 This is useful for progress reporting, streaming intermediate results to a UI, or implementing custom early-exit logic. The final state yielded by the generator is the same state you would get from `execute()`.
@@ -162,7 +162,7 @@ echo $stopReason?->value; // "completed", "steps_limit", "token_limit", etc.
 
 // Debug summary (useful during development)
 print_r($result->debug());
-// @doctest id="2f23"
+// @doctest id="87df"
 ```
 
 ## Observing Events
@@ -184,7 +184,7 @@ $loop->wiretap(function (object $event) {
 });
 
 $result = $loop->execute($state);
-// @doctest id="2fa7"
+// @doctest id="27d2"
 ```
 
 Events are dispatched for execution start/complete/fail, step start/complete, inference requests/responses, tool call start/complete/blocked, stop signals, and token usage reports. This makes it straightforward to build logging, monitoring, or streaming integrations without modifying agent logic.
@@ -212,7 +212,7 @@ $loop = AgentLoop::default()->withDriver(
         events: $events,
     )
 );
-// @doctest id="5b7f"
+// @doctest id="e0b9"
 ```
 
 ### ReAct Driver
@@ -236,7 +236,7 @@ $loop = AgentLoop::default()->withDriver(new ReActDriver(
     structuredOutput: $structuredOutput,
     model: 'gpt-4o',
 ));
-// @doctest id="ceb8"
+// @doctest id="93de"
 ```
 
 ## Testing Without an LLM
@@ -265,7 +265,7 @@ $result = $loop->execute(
 
 assert($result->finalResponse()->toString() === 'The weather in Paris is 72F and sunny.');
 assert($result->stepCount() === 2);
-// @doctest id="40d7"
+// @doctest id="1853"
 ```
 
 You can also create a driver that always returns the same response, which is useful for simple unit tests:
@@ -273,7 +273,7 @@ You can also create a driver that always returns the same response, which is use
 ```php
 $driver = FakeAgentDriver::fromResponses('Hello!', 'Goodbye!');
 $loop = AgentLoop::default()->withDriver($driver);
-// @doctest id="8020"
+// @doctest id="d741"
 ```
 
 The first execution returns "Hello!", the second returns "Goodbye!", and any subsequent executions repeat "Goodbye!".
@@ -304,7 +304,7 @@ $loop = AgentBuilder::base()
     ->build();
 
 $result = $loop->execute($state);
-// @doctest id="27ec"
+// @doctest id="e685"
 ```
 
 Each capability is a small, focused class that knows how to install its tools, hooks, and configuration onto the agent. They compose cleanly because they operate on a shared `CanConfigureAgent` interface without needing to know about each other.

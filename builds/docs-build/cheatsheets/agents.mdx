@@ -29,7 +29,7 @@ For narrative guidance and examples, use `packages/agents/docs/*.md`.
   - immutable runtime state
   - factories: `empty()`, `fromArray()`
   - identity: `agentId()`, `parentAgentId()`, `llmConfig()`, `executionCount()`, `createdAt()`, `updatedAt()`
-  - common mutators: `withUserMessage()`, `withSystemPrompt()`, `withMetadata()`, `withMessages()`, `withMessageStore()`, `withLLMConfig()`, `with()`
+  - common mutators: `withUserMessage(string|\Stringable|Message)`, `withSystemPrompt(string|\Stringable)`, `withMetadata()`, `withMessages()`, `withMessageStore()`, `withLLMConfig()`, `with()`
   - step mutators: `withCurrentStep()`, `withCurrentStepCompleted()`, `withExecutionCompleted()`, `withExecutionContinued()`
   - stop/failure: `withStopSignal()`, `withFailure()`, `withExecutionStatus()`
   - context access: `context()`, `store()`, `messages()`, `metadata()`
@@ -253,13 +253,13 @@ Stores:
 
 Actions:
 
-- `Session\Actions\SendMessage`
+- `Session\Actions\SendMessage` (accepts `string|\Stringable|Message`)
 - `Session\Actions\ForkSession` (returns a new branch session object; persist via repository `create()`)
 - `Session\Actions\ResumeSession`
 - `Session\Actions\SuspendSession`
 - `Session\Actions\ClearSession`
 - `Session\Actions\ChangeModel`
-- `Session\Actions\ChangeSystemPrompt`
+- `Session\Actions\ChangeSystemPrompt` (accepts `string|\Stringable`)
 - `Session\Actions\WriteMetadata`
 - `Session\Actions\UpdateTask`
 

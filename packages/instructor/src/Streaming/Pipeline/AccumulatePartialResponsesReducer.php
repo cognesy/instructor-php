@@ -20,6 +20,7 @@ final class AccumulatePartialResponsesReducer implements Reducer
     private ?Throwable $lastCreationError = null;
     private IncrementalJsonParser $jsonParser;
     private string $activeToolKey = '';
+    private int $deltaSinceLastMaterialization = 0;
 
     public function __construct(
         private readonly Reducer $inner,
@@ -27,6 +28,7 @@ final class AccumulatePartialResponsesReducer implements Reducer
         private readonly CanDeserializeResponse $deserializer,
         private readonly CanTransformResponse $transformer,
         private readonly ResponseModel $responseModel,
+        private readonly int $materializationInterval = 1,
     ) {
         $this->state = StructuredOutputStreamState::empty();
         $this->jsonParser = new IncrementalJsonParser();
@@ -40,6 +42,7 @@ final class AccumulatePartialResponsesReducer implements Reducer
         $this->lastCreationError = null;
         $this->jsonParser->reset();
         $this->activeToolKey = '';
+        $this->deltaSinceLastMaterialization = 0;
         return $this->inner->init();
     }
 
@@ -83,6 +86,12 @@ final class AccumulatePartialResponsesReducer implements Reducer
             return $state;
         }
 
+        $this->deltaSinceLastMaterialization++;
+        if ($this->shouldSkipMaterialization($state)) {
+            return $state;
+        }
+        $this->deltaSinceLastMaterialization = 0;
+
         $parsed = $this->parseCurrentState($snapshot);
         if ($parsed === null) {
             return $state;
@@ -96,6 +105,21 @@ final class AccumulatePartialResponsesReducer implements Reducer
         $this->lastSnapshotRevision = $state->snapshotRevision();
         $this->state->setValue($object);
         return $this->state;
+    }
+
+    /**
+     * Skip materialization when throttle interval has not elapsed yet,
+     * unless this is the first value (time-to-first-response priority)
+     * or the stream is finishing.
+     */
+    private function shouldSkipMaterialization(StructuredOutputStreamState $state): bool {
+        if (!$this->hasProducedValue) {
+            return false;
+        }
+        if ($state->finishReason() !== '') {
+            return false;
+        }
+        return $this->deltaSinceLastMaterialization < $this->materializationInterval;
     }
 
     private function snapshotContent(): string {

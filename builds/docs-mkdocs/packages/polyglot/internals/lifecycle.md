@@ -17,7 +17,7 @@ $inference = Inference::using('openai')
     ->withMessages('Explain PHP generics.')
     ->withModel('gpt-4.1-nano')
     ->withMaxTokens(1024);
-// @doctest id="a6b4"
+// @doctest id="f44d"
 ```
 
 At this point, no HTTP call has been made. The facade holds an `InferenceRequestBuilder` that accumulates parameters. Every `with*()` call returns a new immutable copy, so the original instance is never modified.
@@ -28,7 +28,7 @@ Calling `create()` (or a shortcut like `get()` or `response()`) builds the `Infe
 
 ```php
 $pending = $inference->create();
-// @doctest id="97f8"
+// @doctest id="31fb"
 ```
 
 The `InferenceRuntime` wraps the request in an `InferenceExecution` object and returns a `PendingInference` handle. Execution is still deferred -- no HTTP call has been sent yet.
@@ -43,7 +43,7 @@ The HTTP call is triggered only when you read from the `PendingInference`:
 $text = $pending->get();          // triggers execution, returns content string
 $response = $pending->response(); // triggers execution, returns InferenceResponse
 $stream = $pending->stream();     // triggers execution (streaming mode)
-// @doctest id="1fac"
+// @doctest id="7642"
 ```
 
 Internally, `PendingInference` delegates to `InferenceExecutionSession`, which orchestrates the full lifecycle.
@@ -106,7 +106,7 @@ foreach ($stream->deltas() as $delta) {
 }
 
 $finalResponse = $stream->final();  // assembled InferenceResponse
-// @doctest id="0990"
+// @doctest id="ca61"
 ```
 
 ### Stream Events
@@ -133,7 +133,7 @@ $toolDeltas = $stream->filter(fn($delta) => $delta->toolName !== '');
 
 // Collect all visible deltas
 $allDeltas = $stream->all();
-// @doctest id="2263"
+// @doctest id="2b5e"
 ```
 
 ### Delta Callback
@@ -144,7 +144,7 @@ You can register a callback that fires for every visible delta:
 $stream->onDelta(function (PartialInferenceDelta $delta): void {
     echo $delta->contentDelta;
 });
-// @doctest id="3aea"
+// @doctest id="96ca"
 ```
 
 ### Stream Finalization
@@ -174,7 +174,7 @@ $response = Embeddings::using('openai')
 $vectors = $response->vectors();   // Vector[]
 $first = $response->first();       // first Vector
 $usage = $response->usage();       // Usage
-// @doctest id="5250"
+// @doctest id="db76"
 ```
 
 Retry logic is handled internally by `PendingEmbeddings` based on the `EmbeddingsRetryPolicy` attached to the request. The retry loop follows the same exponential backoff pattern as inference retries.
@@ -194,7 +194,7 @@ $pending = $inference
 
 $first = $pending->response();  // makes HTTP call
 $second = $pending->response(); // returns cached response
-// @doctest id="3ee0"
+// @doctest id="8a7a"
 ```
 
 For streaming, the stream itself cannot be replayed -- calling `deltas()` a second time will throw a `LogicException`. However, `final()` always returns the assembled response, which is stored in the execution object.

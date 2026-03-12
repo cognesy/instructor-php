@@ -19,7 +19,7 @@ $data = (new StructuredOutput)
     ->intoArray()
     ->withMessages($text)
     ->get();
-// @doctest id="e4aa"
+// @doctest id="829d"
 ```
 
 ## Available Output Formats
@@ -36,7 +36,7 @@ $data = (new StructuredOutput)
     ->get();
 
 // Result: ['name' => 'John Doe', 'age' => 30]
-// @doctest id="7f69"
+// @doctest id="4113"
 ```
 
 This is useful for database insertion, JSON API responses, array manipulation, or when integrating with code that expects arrays.
@@ -47,7 +47,7 @@ DB::table('users')->insert($data);
 
 // Or return as JSON API response
 return response()->json($data);
-// @doctest id="7cf8"
+// @doctest id="61e9"
 ```
 
 ### intoInstanceOf()
@@ -77,7 +77,7 @@ $user = (new StructuredOutput)
     ->get();
 
 // $user is UserDTO with only fullName and email populated
-// @doctest id="5b0e"
+// @doctest id="2be4"
 ```
 
 The LLM still sees all five fields from `UserProfile`, ensuring thorough extraction. The output is then hydrated into the simpler `UserDTO`. This is valuable when you want to separate API contracts from internal models, simplify complex extraction results, or decouple domain models from presentation layers.
@@ -109,7 +109,7 @@ $price = (new StructuredOutput)
     ->intoObject(new Money())
     ->with(messages: 'Extract price: $19.99 USD')
     ->get();
-// @doctest id="fd1f"
+// @doctest id="18aa"
 ```
 
 This is particularly useful with the built-in `Scalar` adapter for extracting single values.
@@ -128,7 +128,7 @@ $rating = (new StructuredOutput)
     ->get();
 
 // Result: 5 (integer)
-// @doctest id="ce43"
+// @doctest id="1f4d"
 ```
 
 ## Streaming with Output Formats
@@ -148,7 +148,7 @@ foreach ($stream->partials() as $partial) {
 
 $finalArticle = $stream->finalValue();
 // Returns: ['title' => '...', 'author' => '...', 'content' => '...']
-// @doctest id="b436"
+// @doctest id="8be5"
 ```
 
 ## Comparison
@@ -176,7 +176,7 @@ $data = (new StructuredOutput)
 $user = $data['age'] < 18
     ? new MinorUser(...$data)
     : new AdultUser(...$data);
-// @doctest id="a378"
+// @doctest id="aa31"
 ```
 
 ### Multi-Layer Architecture
@@ -204,7 +204,7 @@ $order = (new StructuredOutput)
     ->intoInstanceOf(OrderDTO::class)
     ->with(messages: 'Extract order details')
     ->get();
-// @doctest id="1795"
+// @doctest id="3009"
 ```
 
 ## Pluggable Extraction

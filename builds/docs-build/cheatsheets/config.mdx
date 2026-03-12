@@ -152,7 +152,7 @@ use Cognesy\Config\BasePath;
 // Get/resolve the application base path
 $base = BasePath::get();
 $base = BasePath::get('config/app.yaml');  // appends relative path
-$base = BasePath::resolve('config/app.yaml'); // alias for get()
+$base = BasePath::resolve('config/app.yaml'); // get() is an alias for resolve()
 
 // Resolve multiple paths, returning only those that exist
 $paths = BasePath::all('config', 'resources/config');          // alias for resolveExisting()

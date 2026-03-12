@@ -31,6 +31,7 @@ final readonly class StructuredOutputConfig
     private bool $throwOnTransformationFailure;
     private array $chatStructure;
     private ResponseCachePolicy $responseCachePolicy;
+    private int $streamMaterializationInterval;
 
     public function __construct(
         ?OutputMode $outputMode = null,
@@ -48,6 +49,7 @@ final readonly class StructuredOutputConfig
         ?string $deserializationErrorPrompt = null,
         ?bool $throwOnTransformationFailure = null,
         ?ResponseCachePolicy $responseCachePolicy = null,
+        ?int $streamMaterializationInterval = null,
     ) {
         $this->outputMode = $outputMode ?: OutputMode::Tools;
         $this->useObjectReferences = $useObjectReferences ?? false;
@@ -85,6 +87,7 @@ final readonly class StructuredOutputConfig
         $this->deserializationErrorPrompt = $deserializationErrorPrompt ?? "Failed to serialize response:\n<|json|>\n\nSerializer error:\n<|error|>\n\nExpected schema:\n<|jsonSchema|>\n";
         $this->throwOnTransformationFailure = $throwOnTransformationFailure ?? false;
         $this->responseCachePolicy = $responseCachePolicy ?? ResponseCachePolicy::None;
+        $this->streamMaterializationInterval = max(1, $streamMaterializationInterval ?? 1);
     }
 
     public function toArray(): array {
@@ -104,6 +107,7 @@ final readonly class StructuredOutputConfig
             'deserializationErrorPrompt' => $this->deserializationErrorPrompt,
             'throwOnTransformationFailure' => $this->throwOnTransformationFailure,
             'responseCachePolicy' => $this->responseCachePolicy->value,
+            'streamMaterializationInterval' => $this->streamMaterializationInterval,
         ];
     }
 
@@ -213,6 +217,16 @@ final readonly class StructuredOutputConfig
         return $this->responseCachePolicy;
     }
 
+    /**
+     * How many streaming deltas to accumulate before materializing
+     * (parsing JSON, deserializing, emitting partial). Higher values
+     * reduce CPU cost at the expense of partial-update granularity.
+     * Default: 1 (materialize on every delta).
+     */
+    public function streamMaterializationInterval(): int {
+        return $this->streamMaterializationInterval;
+    }
+
     // MUTATORS /////////////////////////////////////////////////////
 
     public function withOutputMode(?OutputMode $outputMode): static {
@@ -283,6 +297,7 @@ final readonly class StructuredOutputConfig
         ?string $deserializationErrorPrompt = null,
         ?bool $throwOnTransformationFailure = null,
         ?ResponseCachePolicy $responseCachePolicy = null,
+        ?int $streamMaterializationInterval = null,
     ): self {
         return new self(
             outputMode: $outputMode ?? $this->outputMode,
@@ -300,6 +315,7 @@ final readonly class StructuredOutputConfig
             deserializationErrorPrompt: $deserializationErrorPrompt ?? $this->deserializationErrorPrompt,
             throwOnTransformationFailure: $throwOnTransformationFailure ?? $this->throwOnTransformationFailure,
             responseCachePolicy: $responseCachePolicy ?? $this->responseCachePolicy,
+            streamMaterializationInterval: $streamMaterializationInterval ?? $this->streamMaterializationInterval,
         );
     }
 }

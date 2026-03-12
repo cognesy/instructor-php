@@ -54,6 +54,7 @@ final class SymfonyProcessRunner implements CanRunProcess
     }
 
     /**
+     * @param (callable(string, string): void)|null $onOutput
      * @return callable(string, string): void
      */
     private function makeProcessCallback(StreamAggregator $agg, ?callable $onOutput = null): callable {

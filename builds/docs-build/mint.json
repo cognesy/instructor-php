@@ -385,6 +385,18 @@
             ]
         },
         {
+            "group": "Xprompt",
+            "pages": [
+                "packages/xprompt/01-introduction",
+                "packages/xprompt/02-getting-started",
+                "packages/xprompt/03-composition",
+                "packages/xprompt/04-templates",
+                "packages/xprompt/05-structured-data",
+                "packages/xprompt/06-variants-and-registry",
+                "packages/xprompt/07-configuration"
+            ]
+        },
+        {
             "group": "A01_Basics",
             "pages": [
                 "cookbook/examples/A01_Basics/basic_use",
@@ -796,7 +808,8 @@
                 "cheatsheets/schema",
                 "cheatsheets/stream",
                 "cheatsheets/templates",
-                "cheatsheets/utils"
+                "cheatsheets/utils",
+                "cheatsheets/xprompt"
             ]
         }
     ]

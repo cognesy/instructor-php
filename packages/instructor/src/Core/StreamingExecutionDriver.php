@@ -167,6 +167,7 @@ final class StreamingExecutionDriver implements CanEmitStreamingUpdates
                 deserializer: $this->deserializer,
                 transformer: $this->transformer,
                 responseModel: $responseModel,
+                materializationInterval: $responseModel->config()->streamMaterializationInterval(),
             ),
             new DispatchStreamingEvents(
                 events: $this->events,

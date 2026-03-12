@@ -47,6 +47,8 @@ class PromptRegistry
 
     /**
      * Register a class using its #[AsPrompt] attribute name.
+     *
+     * @param class-string<Prompt> $class
      */
     public function registerClass(string $class): void
     {
@@ -151,6 +153,9 @@ class PromptRegistry
         );
     }
 
+    /**
+     * @param class-string $class
+     */
     private function resolveNameFromClass(string $class): ?string
     {
         $ref = new ReflectionClass($class);

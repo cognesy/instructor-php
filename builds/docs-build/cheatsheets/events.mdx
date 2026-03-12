@@ -22,6 +22,27 @@ interface CanHandleEvents {
 }
 ```
 
+### `CanAcceptEventHandler`
+
+```php
+use Cognesy\Events\Contracts\CanAcceptEventHandler;
+
+interface CanAcceptEventHandler {
+    public function withEventHandler(CanHandleEvents $events): static;
+}
+```
+
+### `CanFormatConsoleEvent`
+
+```php
+use Cognesy\Events\Contracts\CanFormatConsoleEvent;
+use Cognesy\Events\Data\ConsoleEventLine;
+
+interface CanFormatConsoleEvent {
+    public function format(object $event): ?ConsoleEventLine;
+}
+```
+
 ## Basic Dispatcher Usage
 
 ```php
@@ -41,12 +62,19 @@ $events->wiretap(function (object $event): void {
 });
 
 $events->dispatch(new UserLoggedIn(['userId' => 123]));
+
+// Additional public methods on EventDispatcher:
+$events->name();        // returns the dispatcher name (string)
+$events->dispatcher();  // returns the parent dispatcher or self (EventDispatcherInterface)
 ```
+
+Constructor: `new EventDispatcher(string $name = 'default', ?EventDispatcherInterface $parent = null)`
 
 Notes:
 - `addListener('*', $listener)` also registers a global listener.
 - Class listeners run first (priority desc), wiretaps run after.
 - Parent classes and implemented interfaces are considered for listener matching.
+- When a parent dispatcher is set, events bubble up to it after local dispatch.
 
 ## Event Base Class (`Event`)
 
@@ -56,24 +84,26 @@ use Psr\Log\LogLevel;
 
 $event = new Event(['status' => 'ok']);
 
-$id = $event->id;
-$createdAt = $event->createdAt;
-$data = $event->data;
-$event->logLevel = LogLevel::INFO;
+$id = $event->id;               // readonly string (UUID)
+$createdAt = $event->createdAt; // readonly DateTimeImmutable
+$data = $event->data;           // mixed
+$event->logLevel;               // default: LogLevel::DEBUG
 
-$name = $event->name();
-$asLog = $event->asLog();
-$asConsole = $event->asConsole();
-$array = $event->toArray();
+$name = $event->name();                         // short class name
+$asLog = $event->asLog();                       // log-formatted string
+$asConsole = $event->asConsole(quote: false);   // console-formatted string
+$array = $event->toArray();                     // delegates to jsonSerialize()
+$json = $event->jsonSerialize();                // array<string, mixed> (implements JsonSerializable)
 
-$event->print(threshold: LogLevel::DEBUG);
+$event->print(quote: false, threshold: LogLevel::DEBUG);
 $event->printLog();
 $event->printDebug();
 ```
 
 Notes:
-- Object payloads are normalized to a simplified public-property array for observability.
-- String/log rendering is best-effort JSON over that simplified payload.
+- `Event` implements `JsonSerializable`.
+- Object payloads are normalized to a simplified public-property array via `get_object_vars()`.
+- `__toString()` returns best-effort JSON of the event data.
 
 ## Explicit Wiring
 
@@ -97,9 +127,11 @@ final class MyEvent extends Event {}
 
 $symfonyBridge = new SymfonyEventDispatcher($symfonyDispatcher);
 $symfonyBridge->addListener(MyEvent::class, fn(object $e) => null, priority: 50);
-$symfonyBridge->wiretap(fn(object $e) => null);
+$symfonyBridge->wiretap(fn(object $e) => null, priority: 0);
 $symfonyBridge->dispatch(new MyEvent());
 ```
+
+Note: `SymfonyEventDispatcher::wiretap()` accepts an optional `int $priority = 0` parameter (beyond the interface contract).
 
 ## `HandlesEvents` Trait
 
@@ -115,28 +147,39 @@ final class Service {
     }
 }
 
+$service = new Service();
 $service
-    ->withEventHandler($events)
-    ->onEvent(Event::class, fn(object $e) => null)
-    ->wiretap(fn(object $e) => null);
+    ->withEventHandler($events)                    // returns static
+    ->onEvent(Event::class, fn(object $e) => null) // returns self
+    ->wiretap(fn(object $e) => null);              // returns self
 ```
 
-Call `withEventHandler($events)` before `dispatch()`, `onEvent()`, or `wiretap()`.
+Methods:
+- `withEventHandler(CanHandleEvents $events): static`
+- `dispatch(Event $event): object`
+- `onEvent(string $class, ?callable $listener): self` — null listener is a no-op
+- `wiretap(?callable $listener): self` — null listener is a no-op
+
+Call `withEventHandler($events)` before `dispatch()`, `onEvent()`, or `wiretap()` — throws `LogicException` otherwise.
 
 ## Event Formatter Utilities
 
 ```php
 use Cognesy\Events\Utils\EventFormatter;
 
-$shortName = EventFormatter::toShortName($event);
-$fullName = EventFormatter::toFullName($event);
+$shortName = EventFormatter::toShortName($event); // e.g. "UserLoggedIn"
+$fullName = EventFormatter::toFullName($event);   // e.g. "App\\Events\\UserLoggedIn"
 
 $line = EventFormatter::logFormat($event, 'message');
 $console = EventFormatter::consoleFormat($event, 'message', quote: false);
 
-$shouldPrint = EventFormatter::logFilter('info', 'warning');
-$rank = EventFormatter::logLevelRank('error');
+$shouldPrint = EventFormatter::logFilter('info', 'warning'); // bool
+$rank = EventFormatter::logLevelRank('error');               // int (0=emergency .. 7=debug)
 ```
+
+Notes:
+- `logFilter($threshold, $eventLevel)` returns `true` when `$eventLevel` severity is equal to or higher than `$threshold`.
+- Log level ranks: emergency=0, alert=1, critical=2, error=3, warning=4, notice=5, info=6, debug=7, other=8.
 
 ## Console Event Printer
 
@@ -154,6 +197,30 @@ $formatter = new class implements CanFormatConsoleEvent {
     }
 };
 
-$wiretap = $printer->wiretap($formatter);
+// Create a wiretap closure from a formatter
+$wiretap = $printer->wiretap($formatter); // returns Closure(object): void
 $wiretap(new stdClass());
+
+// Or print a line directly
+$printer->printIfAny($line); // accepts ?ConsoleEventLine, no-op on null
+```
+
+### `ConsoleEventLine`
+
+```php
+new ConsoleEventLine(
+    label: 'INFO',
+    message: 'something happened',
+    color: ConsoleColor::Green,   // default: ConsoleColor::Default
+    context: 'my-module',         // default: null
+);
+```
+
+### `ConsoleColor` Enum
+
+```php
+use Cognesy\Events\Enums\ConsoleColor;
+
+// Cases: Default, Red, Green, Yellow, Blue, Magenta, Cyan, Dark
+$ansi = ConsoleColor::Green->ansiCode(); // returns ANSI code string, e.g. "32"
 ```

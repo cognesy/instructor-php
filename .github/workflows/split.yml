@@ -131,6 +131,9 @@ jobs:
           - local: 'packages/utils'
             repo:  'cognesy/instructor-utils'
             name:  'instructor-utils'
+          - local: 'packages/xprompt'
+            repo:  'cognesy/xprompt-php'
+            name:  'xprompt-php'
     steps:
       - uses: actions/checkout@v4
         with:

@@ -23,6 +23,7 @@ final readonly class AccumulatePartialResponses implements Transducer
         private CanDeserializeResponse $deserializer,
         private CanTransformResponse $transformer,
         private ResponseModel $responseModel,
+        private int $materializationInterval = 1,
     ) {}
 
     #[\Override]
@@ -33,6 +34,7 @@ final readonly class AccumulatePartialResponses implements Transducer
             deserializer: $this->deserializer,
             transformer: $this->transformer,
             responseModel: $this->responseModel,
+            materializationInterval: $this->materializationInterval,
         );
     }
 }

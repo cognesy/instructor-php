@@ -51,7 +51,7 @@ $config = LLMConfig::fromArray([
 
 // From a DSN string
 $config = LLMConfig::fromDsn('openai://model=gpt-4.1-nano&maxTokens=2048');
-// @doctest id="d858"
+// @doctest id="e7a7"
 ```
 
 ### Presets
@@ -67,7 +67,7 @@ You may also pass a custom base path:
 
 ```php
 $config = LLMConfig::fromPreset('my-preset', basePath: '/path/to/presets');
-// @doctest id="e937"
+// @doctest id="ab6d"
 ```
 
 ### Overriding Values
@@ -77,7 +77,7 @@ Use `withOverrides()` to create a modified copy of an existing config:
 ```php
 $base = LLMConfig::fromPreset('openai');
 $custom = $base->withOverrides(['model' => 'gpt-4.1', 'maxTokens' => 4096]);
-// @doctest id="fe9c"
+// @doctest id="0ffc"
 ```
 
 ### Pricing
@@ -99,7 +99,7 @@ $config = LLMConfig::fromArray([
         'reasoningPerMToken' => 0.0,
     ],
 ]);
-// @doctest id="eeb9"
+// @doctest id="82ef"
 ```
 
 ### Type Coercion
@@ -146,7 +146,7 @@ $config = EmbeddingsConfig::fromArray([
 
 // From a DSN string
 $config = EmbeddingsConfig::fromDsn('openai://model=text-embedding-3-small');
-// @doctest id="6ac7"
+// @doctest id="4a54"
 ```
 
 Presets for embeddings are resolved from similar paths, under the `embed` config group:
@@ -163,7 +163,7 @@ $modified = $config->withOverrides([
     'model' => 'text-embedding-3-large',
     'dimensions' => 1024,
 ]);
-// @doctest id="8c38"
+// @doctest id="e281"
 ```
 
 For `EmbeddingsConfig`, type coercion applies to the `dimensions` and `maxInputs` fields.
@@ -195,7 +195,7 @@ $policy = new InferenceRetryPolicy(
 );
 
 $inference->withRetryPolicy($policy);
-// @doctest id="2c6d"
+// @doctest id="3c93"
 ```
 
 The retry delay uses exponential backoff: `baseDelayMs * 2^(attempt-1)`, capped at `maxDelayMs`. The `jitter` strategy adds randomness to avoid thundering herd problems:
@@ -218,5 +218,5 @@ use Cognesy\Polyglot\Embeddings\Config\EmbeddingsRetryPolicy;
 $embeddings->withRetryPolicy(new EmbeddingsRetryPolicy(
     maxAttempts: 3,
 ));
-// @doctest id="2238"
+// @doctest id="3e10"
 ```

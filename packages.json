@@ -155,6 +155,12 @@
             "repo": "cognesy/instructor-utils",
             "github_name": "instructor-utils",
             "composer_name": "cognesy/instructor-utils"
+        },
+        {
+            "local": "packages/xprompt",
+            "repo": "cognesy/xprompt-php",
+            "github_name": "xprompt-php",
+            "composer_name": "cognesy/xprompt-php"
         }
     ]
 }

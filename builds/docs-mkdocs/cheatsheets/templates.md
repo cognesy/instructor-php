@@ -62,6 +62,16 @@ info(): TemplateInfo
 validationErrors(): array
 ```
 
+## TemplateEngineConfig
+
+```php
+TemplateEngineConfig::fromPreset(string $preset, ?string $basePath = null): self
+TemplateEngineConfig::fromArray(array $config): self
+TemplateEngineConfig::twig(string $resourcePath = '', string $cachePath = ''): self
+TemplateEngineConfig::blade(string $resourcePath = '', string $cachePath = ''): self
+TemplateEngineConfig::arrowpipe(string $resourcePath = '', string $cachePath = ''): self
+```
+
 ## Minimal Examples
 
 ```php

@@ -139,11 +139,23 @@ final class Sequence implements
 
         /** @var class-string<object> $class */
         $class = $this->class;
-        $this->items = [];
+        $newCount = count($returnedList);
+        $existingCount = count($this->items);
 
-        foreach ($returnedList as $item) {
-            if (is_array($item)) {
-                $this->items[] = $this->deserializer->fromArray($item, $class);
+        // If incoming has fewer items, reset (e.g. different response)
+        if ($newCount < $existingCount) {
+            $this->items = [];
+            $existingCount = 0;
+        }
+
+        // Items [0..n-2] are complete (subsequent items exist after them in the JSON).
+        // The last item may be partial (still being streamed), so re-deserialize it.
+        $startFrom = max(0, $existingCount - 1);
+        $this->items = array_slice($this->items, 0, $startFrom);
+
+        for ($i = $startFrom; $i < $newCount; $i++) {
+            if (is_array($returnedList[$i])) {
+                $this->items[] = $this->deserializer->fromArray($returnedList[$i], $class);
             }
         }
 

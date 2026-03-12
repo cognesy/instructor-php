@@ -122,11 +122,11 @@ final class ExecutionPolicy
     }
 
     public function withReadablePaths(string ...$paths): self {
-        return $this->with(readablePaths: $paths);
+        return $this->with(readablePaths: array_values($paths));
     }
 
     public function withWritablePaths(string ...$paths): self {
-        return $this->with(writablePaths: $paths);
+        return $this->with(writablePaths: array_values($paths));
     }
 
     /** @param array<string,string> $env */

@@ -20,7 +20,7 @@ class Persona extends Prompt
 
 echo Persona::with(role: 'security');
 // "You are a security expert."
-// @doctest id="c176"
+// @doctest id="058d"
 ```
 
 ## Why Classes?
@@ -49,7 +49,7 @@ AgentBuilder::base()
 
 // Instructor
 (new Instructor)->respond(system: Persona::with(role: 'analyst'));
-// @doctest id="56f5"
+// @doctest id="cc45"
 ```
 
 ## What You'll Learn

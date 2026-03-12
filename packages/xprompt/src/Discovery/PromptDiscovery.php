@@ -35,8 +35,12 @@ class PromptDiscovery
      *
      * @param list<string> $namespaces
      */
+    /**
+     * @param class-string $class
+     */
     public static function resolveName(string $class, array $namespaces = []): ?string
     {
+        /** @var ReflectionClass<Prompt> $ref */
         $ref = new ReflectionClass($class);
 
         // 1. #[AsPrompt("name")] attribute
@@ -114,11 +118,13 @@ class PromptDiscovery
                 continue;
             }
 
+            /** @var ReflectionClass<object> $ref */
             $ref = new ReflectionClass($class);
             if ($ref->isAbstract() || !$ref->isSubclassOf(Prompt::class)) {
                 continue;
             }
 
+            /** @var class-string<Prompt> $class */
             $classes[] = $class;
         }
 
@@ -156,8 +162,8 @@ class PromptDiscovery
     private static function toSnakeCase(string $input): string
     {
         // Insert underscore before uppercase letters, lowercase everything
-        $result = preg_replace('/([a-z\d])([A-Z])/', '$1_$2', $input);
-        $result = preg_replace('/([A-Z]+)([A-Z][a-z])/', '$1_$2', $result);
+        $result = (string) preg_replace('/([a-z\d])([A-Z])/', '$1_$2', $input);
+        $result = (string) preg_replace('/([A-Z]+)([A-Z][a-z])/', '$1_$2', $result);
         return strtolower($result);
     }
 }

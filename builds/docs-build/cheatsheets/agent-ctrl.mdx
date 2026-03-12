@@ -50,8 +50,8 @@ All builders support:
 - `onToolUse(callable $handler): static`
 - `onComplete(callable $handler): static`
 - `onError(callable $handler): static`
-- `execute(string $prompt): AgentResponse`
-- `executeStreaming(string $prompt): AgentResponse`
+- `execute(string|\Stringable $prompt): AgentResponse`
+- `executeStreaming(string|\Stringable $prompt): AgentResponse`
 - `build(): AgentBridge`
 
 Callback signatures:
@@ -90,8 +90,8 @@ $builder = AgentCtrl::codex()->withConfig(AgentConfig::fromArray([
 
 ## Claude Code
 
-- `withSystemPrompt(string $prompt): static`
-- `appendSystemPrompt(string $prompt): static`
+- `withSystemPrompt(string|\Stringable $prompt): static`
+- `appendSystemPrompt(string|\Stringable $prompt): static`
 - `withMaxTurns(int $turns): static`
 - `withPermissionMode(PermissionMode $mode): static`
 - `verbose(bool $enabled = true): static`
@@ -124,8 +124,8 @@ $builder = AgentCtrl::codex()->withConfig(AgentConfig::fromArray([
 
 - `withProvider(string $provider): static`
 - `withThinking(ThinkingLevel $level): static`
-- `withSystemPrompt(string $prompt): static`
-- `appendSystemPrompt(string $prompt): static`
+- `withSystemPrompt(string|\Stringable $prompt): static`
+- `appendSystemPrompt(string|\Stringable $prompt): static`
 - `withTools(array $tools): static`
 - `noTools(): static`
 - `withFiles(array $filePaths): static`

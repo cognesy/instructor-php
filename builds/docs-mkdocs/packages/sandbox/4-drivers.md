@@ -26,7 +26,7 @@ $docker     = Sandbox::docker($policy, image: 'php:8.3-cli-alpine');
 $podman     = Sandbox::podman($policy, image: 'alpine:3');
 $firejail   = Sandbox::firejail($policy);
 $bubblewrap = Sandbox::bubblewrap($policy);
-// @doctest id="df96"
+// @doctest id="3f5e"
 ```
 
 ### Enum-Based Selection
@@ -38,14 +38,14 @@ use Cognesy\Sandbox\Enums\SandboxDriver;
 use Cognesy\Sandbox\Sandbox;
 
 $sandbox = Sandbox::fromPolicy($policy)->using(SandboxDriver::Docker);
-// @doctest id="c99f"
+// @doctest id="2680"
 ```
 
 You can also pass a plain string. The accepted values are `host`, `docker`, `podman`, `firejail`, and `bubblewrap`:
 
 ```php
 $sandbox = Sandbox::fromPolicy($policy)->using('firejail');
-// @doctest id="d8f0"
+// @doctest id="9a5a"
 ```
 
 An `InvalidArgumentException` is thrown if the string does not match any known driver.
@@ -57,7 +57,7 @@ The host driver executes commands directly on the host machine using the Symfony
 ```php
 $sandbox = Sandbox::host($policy);
 $result = $sandbox->execute(['php', '-r', 'echo phpversion();']);
-// @doctest id="e335"
+// @doctest id="f2c9"
 ```
 
 **When to use:** Development, trusted scripts, CI pipelines where container overhead is unnecessary.
@@ -75,7 +75,7 @@ The Docker driver runs each command inside an ephemeral Docker container with ag
 ```php
 $sandbox = Sandbox::docker($policy, image: 'python:3.12-alpine');
 $result = $sandbox->execute(['python3', '-c', 'print("hello")']);
-// @doctest id="0b3d"
+// @doctest id="d5f8"
 ```
 
 **When to use:** Production workloads, untrusted code execution, any scenario requiring strong isolation.
@@ -113,7 +113,7 @@ $sandbox = Sandbox::docker($policy, image: 'alpine:3');
 
 // Inside the container: /mnt/ro0 is /data/input, /mnt/rw0 is /data/output
 $result = $sandbox->execute(['cp', '/mnt/ro0/file.txt', '/mnt/rw0/copy.txt']);
-// @doctest id="cda3"
+// @doctest id="2ebc"
 ```
 
 ### Custom Image
@@ -122,7 +122,7 @@ The default image is `alpine:3`. Pass any Docker image as the second argument:
 
 ```php
 $sandbox = Sandbox::docker($policy, image: 'node:20-alpine');
-// @doctest id="8977"
+// @doctest id="051a"
 ```
 
 ### Binary Override
@@ -131,7 +131,7 @@ If Docker is not on the default `PATH`, specify the binary location:
 
 ```php
 $sandbox = Sandbox::docker($policy, dockerBin: '/usr/local/bin/docker');
-// @doctest id="b4d0"
+// @doctest id="8e92"
 ```
 
 Or set the `DOCKER_BIN` environment variable before your PHP process starts.
@@ -142,7 +142,7 @@ The Podman driver works identically to the Docker driver but uses Podman as the 
 
 ```php
 $sandbox = Sandbox::podman($policy, image: 'alpine:3');
-// @doctest id="3a40"
+// @doctest id="573b"
 ```
 
 **When to use:** Linux environments where rootless containers are preferred over Docker.
@@ -160,7 +160,7 @@ All other security hardening (read-only root, dropped capabilities, nobody user,
 
 ```php
 $sandbox = Sandbox::podman($policy, podmanBin: '/usr/bin/podman');
-// @doctest id="28a7"
+// @doctest id="95eb"
 ```
 
 Or set the `PODMAN_BIN` environment variable.
@@ -172,7 +172,7 @@ The Firejail driver uses Linux namespaces and seccomp filtering to sandbox comma
 ```php
 $sandbox = Sandbox::firejail($policy);
 $result = $sandbox->execute(['python3', 'script.py']);
-// @doctest id="4630"
+// @doctest id="2a75"
 ```
 
 **When to use:** Linux systems where you want sandbox isolation without the overhead of pulling container images.
@@ -195,7 +195,7 @@ The working directory is bind-mounted at `/work` with a whitelist applied. Reada
 
 ```php
 $sandbox = Sandbox::firejail($policy, firejailBin: '/usr/bin/firejail');
-// @doctest id="0ddb"
+// @doctest id="7f5f"
 ```
 
 Or set the `FIREJAIL_BIN` environment variable.
@@ -207,7 +207,7 @@ The Bubblewrap (`bwrap`) driver provides minimal Linux namespace isolation. It i
 ```php
 $sandbox = Sandbox::bubblewrap($policy);
 $result = $sandbox->execute(['ls', '-la']);
-// @doctest id="960b"
+// @doctest id="de0c"
 ```
 
 **When to use:** Linux systems where you need basic namespace isolation with minimal dependencies.
@@ -229,7 +229,7 @@ The host root filesystem is mounted read-only (`--ro-bind / /`) to make system b
 
 ```php
 $sandbox = Sandbox::bubblewrap($policy, bubblewrapBin: '/usr/bin/bwrap');
-// @doctest id="71a7"
+// @doctest id="3c6d"
 ```
 
 Or set the `BWRAP_BIN` environment variable.

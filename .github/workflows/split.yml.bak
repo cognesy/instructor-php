@@ -1,0 +1,318 @@
+name: Split packages
+on:
+  push:
+    branches: ['main']
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+#env:
+#  GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+
+jobs:
+  build-release-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        if: github.ref_type == 'tag'
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+
+      - name: Install PHP dependencies
+        if: github.ref_type == 'tag'
+        run: composer install --no-dev --optimize-autoloader --no-interaction
+
+      - name: Generate docs build directories
+        if: github.ref_type == 'tag'
+        run: |
+          php bin/instructor-docs gen:mintlify
+          php bin/instructor-docs gen:mkdocs
+
+      - name: Upload docs workspace artifact
+        if: github.ref_type == 'tag'
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-docs-workspace
+          path: |
+            builds/docs-build
+            builds/docs-mkdocs
+            packages/*/docs
+          if-no-files-found: error
+          retention-days: 7
+
+  split:
+    needs: build-release-docs
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          # Generated from packages.json - DO NOT EDIT MANUALLY
+          - local: 'packages/addons'
+            repo:  'cognesy/instructor-addons'
+            name:  'instructor-addons'
+          - local: 'packages/agents'
+            repo:  'cognesy/agents'
+            name:  'agents'
+          - local: 'packages/agent-ctrl'
+            repo:  'cognesy/instructor-agent-ctrl'
+            name:  'instructor-agent-ctrl'
+          - local: 'packages/auxiliary'
+            repo:  'cognesy/instructor-aux'
+            name:  'instructor-aux'
+          - local: 'packages/config'
+            repo:  'cognesy/instructor-config'
+            name:  'instructor-config'
+          - local: 'packages/doctools'
+            repo:  'cognesy/instructor-doctools'
+            name:  'instructor-doctools'
+          - local: 'packages/dynamic'
+            repo:  'cognesy/instructor-dynamic'
+            name:  'instructor-dynamic'
+          - local: 'packages/evals'
+            repo:  'cognesy/instructor-evals'
+            name:  'instructor-evals'
+          - local: 'packages/events'
+            repo:  'cognesy/instructor-events'
+            name:  'instructor-events'
+          - local: 'packages/http-client'
+            repo:  'cognesy/instructor-http-client'
+            name:  'instructor-http-client'
+          - local: 'packages/http-pool'
+            repo:  'cognesy/instructor-http-pool'
+            name:  'instructor-http-pool'
+          - local: 'packages/hub'
+            repo:  'cognesy/instructor-hub'
+            name:  'instructor-hub'
+          - local: 'packages/instructor'
+            repo:  'cognesy/instructor-struct'
+            name:  'instructor-struct'
+          - local: 'packages/laravel'
+            repo:  'cognesy/instructor-laravel'
+            name:  'instructor-laravel'
+          - local: 'packages/logging'
+            repo:  'cognesy/instructor-logging'
+            name:  'instructor-logging'
+          - local: 'packages/messages'
+            repo:  'cognesy/instructor-messages'
+            name:  'instructor-messages'
+          - local: 'packages/metrics'
+            repo:  'cognesy/instructor-metrics'
+            name:  'instructor-metrics'
+          - local: 'packages/pipeline'
+            repo:  'cognesy/instructor-pipeline'
+            name:  'instructor-pipeline'
+          - local: 'packages/polyglot'
+            repo:  'cognesy/instructor-polyglot'
+            name:  'instructor-polyglot'
+          - local: 'packages/sandbox'
+            repo:  'cognesy/instructor-sandbox'
+            name:  'instructor-sandbox'
+          - local: 'packages/schema'
+            repo:  'cognesy/instructor-schema'
+            name:  'instructor-schema'
+          - local: 'packages/setup'
+            repo:  'cognesy/instructor-setup'
+            name:  'instructor-setup'
+          - local: 'packages/stream'
+            repo:  'cognesy/instructor-stream'
+            name:  'instructor-stream'
+          - local: 'packages/tell'
+            repo:  'cognesy/instructor-tell'
+            name:  'instructor-tell'
+          - local: 'packages/templates'
+            repo:  'cognesy/instructor-templates'
+            name:  'instructor-templates'
+          - local: 'packages/utils'
+            repo:  'cognesy/instructor-utils'
+            name:  'instructor-utils'
+          - local: 'packages/xprompt'
+            repo:  'cognesy/instructor-xprompt'
+            name:  'instructor-xprompt'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for proper splitting
+
+      - name: Download docs workspace artifact
+        if: github.ref_type == 'tag'
+        uses: actions/download-artifact@v4
+        with:
+          name: release-docs-workspace
+          path: .
+
+      # Use centralized release notes from docs/release-notes
+      - name: Prepare release notes
+        if: github.ref_type == 'tag'
+        id: prepare_notes
+        run: |
+          TAG_NAME=${{ github.ref_name }}
+          # Release notes are centralized in docs/release-notes/
+          CENTRAL_NOTES="docs/release-notes/${TAG_NAME}.mdx"
+
+          if [ -f "$CENTRAL_NOTES" ]; then
+            echo "NOTES_PATH=$CENTRAL_NOTES" >> $GITHUB_ENV
+            echo "Using centralized release notes from $CENTRAL_NOTES"
+          else
+            echo "Warning: No release notes found at $CENTRAL_NOTES"
+            echo "NOTES_PATH=" >> $GITHUB_ENV
+          fi
+
+      - name: Prepare docs bundles for release artifacts
+        if: github.ref_type == 'tag'
+        id: docs_bundle
+        run: |
+          set -euo pipefail
+
+          TAG_NAME="${{ github.ref_name }}"
+          PKG_LOCAL="${{ matrix.package.local }}"
+          PKG_NAME="${PKG_LOCAL#packages/}"
+          DOC_SLUG=""
+          BUNDLE_DIR=".release-docs"
+
+          mkdir -p "$BUNDLE_DIR"
+
+          CANDIDATES=("$PKG_NAME")
+          case "$PKG_NAME" in
+            http-client)
+              CANDIDATES=("http-client" "http")
+              ;;
+            instructor)
+              CANDIDATES=("instructor" "instructor2")
+              ;;
+          esac
+
+          for candidate in "${CANDIDATES[@]}"; do
+            if [ -d "builds/docs-build/packages/$candidate" ] || [ -d "builds/docs-mkdocs/packages/$candidate" ]; then
+              DOC_SLUG="$candidate"
+              break
+            fi
+          done
+
+          if [ -n "$DOC_SLUG" ] && [ -d "builds/docs-build/packages/$DOC_SLUG" ]; then
+            tar -czf "$BUNDLE_DIR/${PKG_NAME}-docs-mintlify-${TAG_NAME}.tar.gz" -C builds/docs-build/packages "$DOC_SLUG"
+          fi
+
+          if [ -n "$DOC_SLUG" ] && [ -d "builds/docs-mkdocs/packages/$DOC_SLUG" ]; then
+            tar -czf "$BUNDLE_DIR/${PKG_NAME}-docs-mkdocs-${TAG_NAME}.tar.gz" -C builds/docs-mkdocs/packages "$DOC_SLUG"
+          fi
+
+          if [ -d "$PKG_LOCAL/docs" ]; then
+            tar -czf "$BUNDLE_DIR/${PKG_NAME}-docs-raw-${TAG_NAME}.tar.gz" -C "$PKG_LOCAL" docs
+          fi
+
+          if ! compgen -G "$BUNDLE_DIR/*.tar.gz" > /dev/null; then
+            FALLBACK_DIR="$BUNDLE_DIR/${PKG_NAME}-markdown"
+            mkdir -p "$FALLBACK_DIR"
+
+            for file in README.md CHEATSHEET.md; do
+              if [ -f "$PKG_LOCAL/$file" ]; then
+                cp "$PKG_LOCAL/$file" "$FALLBACK_DIR/$file"
+              fi
+            done
+
+            if [ -d "$PKG_LOCAL/docs" ]; then
+              cp -R "$PKG_LOCAL/docs" "$FALLBACK_DIR/docs"
+            fi
+
+            if find "$FALLBACK_DIR" -type f -name '*.md*' | grep -q .; then
+              tar -czf "$BUNDLE_DIR/${PKG_NAME}-docs-markdown-${TAG_NAME}.tar.gz" -C "$BUNDLE_DIR" "${PKG_NAME}-markdown"
+              rm -rf "$FALLBACK_DIR"
+            fi
+          fi
+
+          if compgen -G "$BUNDLE_DIR/*.tar.gz" > /dev/null; then
+            echo "has_files=true" >> "$GITHUB_OUTPUT"
+            {
+              echo "files<<EOF"
+              find "$BUNDLE_DIR" -type f -name '*.tar.gz' | sort
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+            ls -la "$BUNDLE_DIR"
+          else
+            echo "has_files=false" >> "$GITHUB_OUTPUT"
+            echo "files=" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ► push branch + tag
+      - name: Split Monorepo
+        uses: "danharrin/monorepo-split-github-action@v2.3.0"
+        env:
+          GITHUB_TOKEN: ${{ secrets.SPLIT_TOKEN_4 }}
+        with:
+          #github_token: ${{ secrets.SPLIT_TOKEN_4 }}      # PAT here
+          tag: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+          branch: ${{ github.ref_type == 'branch' && github.ref_name || '' }}
+          package_directory: ${{ matrix.package.local }}
+          repository_organization: cognesy
+          repository_name: ${{ matrix.package.name }}
+          user_name: 'ddebowczyk'
+          user_email: 'ddebowczyk@gmail.com'
+
+      # ► create GitHub Release with notes + docs bundles
+      - uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag' && env.NOTES_PATH != '' && steps.docs_bundle.outputs.has_files == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.SPLIT_TOKEN_4 }}
+        with:
+          repository: ${{ matrix.package.repo }}          # target repo
+          tag_name: ${{ github.ref_name }}             # v1.2.3
+          body_path: ${{ env.NOTES_PATH }}
+          files: ${{ steps.docs_bundle.outputs.files }}
+          fail_on_unmatched_files: true
+          token: ${{ secrets.SPLIT_TOKEN_4 }}        # PAT here
+
+      # ► fallback release path (notes only)
+      - uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag' && env.NOTES_PATH != '' && steps.docs_bundle.outputs.has_files != 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.SPLIT_TOKEN_4 }}
+        with:
+          repository: ${{ matrix.package.repo }}          # target repo
+          tag_name: ${{ github.ref_name }}             # v1.2.3
+          body_path: ${{ env.NOTES_PATH }}
+          token: ${{ secrets.SPLIT_TOKEN_4 }}        # PAT here
+
+  wait-for-packagist:
+    needs: split
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Packagist
+        run: |
+          # Wait 1 minute(s) for Packagist to update
+          sleep 60
+          echo "Waited for Packagist to update"
+
+  tests:
+    needs: wait-for-packagist
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        php: ['8.2', '8.3', '8.4']
+        composer: ['--prefer-stable']
+    steps:
+      - name: Install dependencies in all packages
+        run: |
+          for dir in packages/*; do
+            if [ -f "$dir/composer.json" ]; then
+              echo "📦 Installing dependencies in $dir"
+              composer --working-dir="$dir" update --no-interaction ${{ matrix.composer }}
+            fi
+          done
+
+      - name: Run tests in all packages
+        run: |
+          for dir in packages/*; do
+            if [ -f "$dir/composer.json" ]; then
+              echo "🔍 Running tests in $dir"
+              composer --working-dir="$dir" test
+            fi
+          done
