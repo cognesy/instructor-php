@@ -21,14 +21,14 @@ Load a named preset to create an `LLMConfig`:
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 $config = LLMConfig::fromPreset('openai');
-// @doctest id="0bb7"
+// @doctest id="8d8f"
 ```
 
 You can also pass an explicit base path:
 
 ```php
 $config = LLMConfig::fromPreset('openai', '/path/to/my/presets');
-// @doctest id="8eb0"
+// @doctest id="c57e"
 ```
 
 
@@ -53,7 +53,7 @@ to tell the broader InstructorPHP ecosystem where to find configuration files:
 
 ```ini
 INSTRUCTOR_CONFIG_PATHS='config,vendor/cognesy/instructor-php/config'
-# @doctest id="1ae8"
+# @doctest id="2f20"
 ```
 
 This variable is used by companion packages and the CLI tooling. The

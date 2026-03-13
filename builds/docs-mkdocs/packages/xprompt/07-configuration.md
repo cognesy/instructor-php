@@ -21,7 +21,7 @@ $config = TemplateEngineConfig::twig(
 
 $prompt = Analyze::make()->withConfig($config);
 echo $prompt->render(content: $doc);
-// @doctest id="86d7"
+// @doctest id="8080"
 ```
 
 ## Registry-Wide Config
@@ -39,7 +39,7 @@ $registry->register('analyze', Analyze::class);
 
 $prompt = $registry->get('analyze');
 // Uses the registry's config for template resolution
-// @doctest id="fc18"
+// @doctest id="b9f3"
 ```
 
 ## Config Resolution
@@ -58,7 +58,7 @@ Load configuration from YAML preset files using `fromPreset()`:
 
 ```php
 $config = TemplateEngineConfig::fromPreset('my-templates');
-// @doctest id="2594"
+// @doctest id="8c44"
 ```
 
 This searches for `my-templates.yaml` in the standard preset directories:
@@ -68,14 +68,14 @@ config/prompt/presets/
 packages/templates/resources/config/prompt/presets/
 vendor/cognesy/instructor-php/packages/templates/resources/config/prompt/presets/
 vendor/cognesy/instructor-templates/resources/config/prompt/presets/
-// @doctest id="1ab5"
+// @doctest id="ee23"
 ```
 
 You can also provide a specific base path:
 
 ```php
 $config = TemplateEngineConfig::fromPreset('custom', basePath: __DIR__ . '/config');
-// @doctest id="3455"
+// @doctest id="bce0"
 ```
 
 ## Quick Reference

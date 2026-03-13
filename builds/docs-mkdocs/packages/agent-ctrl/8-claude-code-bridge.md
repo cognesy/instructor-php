@@ -18,7 +18,7 @@ $builder = AgentCtrl::claudeCode();
 
 // Or via the generic factory
 $builder = AgentCtrl::make(AgentType::ClaudeCode);
-// @doctest id="89de"
+// @doctest id="6519"
 ```
 
 ## Basic Usage
@@ -32,7 +32,7 @@ $response = AgentCtrl::claudeCode()
     ->execute('Review this package and summarize the design.');
 
 echo $response->text();
-// @doctest id="369e"
+// @doctest id="cc73"
 ```
 
 With model selection:
@@ -43,7 +43,7 @@ $response = AgentCtrl::claudeCode()
     ->execute('Explain the architecture of this project.');
 
 echo $response->text();
-// @doctest id="c5a6"
+// @doctest id="9fa9"
 ```
 
 ## System Prompts
@@ -58,7 +58,7 @@ Use `withSystemPrompt()` to completely replace the default system prompt with yo
 $response = AgentCtrl::claudeCode()
     ->withSystemPrompt('You are a security auditor. Focus exclusively on identifying vulnerabilities, injection risks, and authentication weaknesses.')
     ->execute('Audit the authentication module.');
-// @doctest id="698d"
+// @doctest id="6eba"
 ```
 
 ### Appending to the System Prompt
@@ -69,7 +69,7 @@ Use `appendSystemPrompt()` to add instructions on top of the default system prom
 $response = AgentCtrl::claudeCode()
     ->appendSystemPrompt('This project uses Laravel conventions. Follow PSR-12 coding standards. Always add type declarations to method signatures.')
     ->execute('Refactor the UserService class.');
-// @doctest id="6189"
+// @doctest id="fe57"
 ```
 
 ### Combining Both Methods
@@ -81,7 +81,7 @@ $response = AgentCtrl::claudeCode()
     ->withSystemPrompt('You are a code reviewer specializing in PHP.')
     ->appendSystemPrompt('Pay special attention to error handling, edge cases, and performance implications.')
     ->execute('Review the PaymentGateway class.');
-// @doctest id="0bb8"
+// @doctest id="fbca"
 ```
 
 ## Permission Modes
@@ -90,7 +90,7 @@ When running Claude Code headlessly (as Agent-Ctrl does), you need to configure 
 
 ```php
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\PermissionMode;
-// @doctest id="8a02"
+// @doctest id="51c6"
 ```
 
 | Mode | CLI Flag | Behavior |
@@ -104,7 +104,7 @@ use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\PermissionMode;
 $response = AgentCtrl::claudeCode()
     ->withPermissionMode(PermissionMode::AcceptEdits)
     ->execute('Write unit tests for the PaymentService.');
-// @doctest id="c09a"
+// @doctest id="a412"
 ```
 
 The default is `BypassPermissions` because Agent-Ctrl runs the CLI in a non-interactive, headless mode. If you use `DefaultMode` or `Plan` without an interactive terminal, the agent will hang waiting for permission responses that never come, eventually timing out.
@@ -117,7 +117,7 @@ Each "turn" represents one cycle where the agent reads context, reasons, and tak
 $response = AgentCtrl::claudeCode()
     ->withMaxTurns(5)
     ->execute('Make a small improvement to the README.');
-// @doctest id="3830"
+// @doctest id="4107"
 ```
 
 ### Guidelines for Turn Limits
@@ -140,7 +140,7 @@ $response = AgentCtrl::claudeCode()
     ->inDirectory('/projects/my-app')
     ->withAdditionalDirs(['/shared/libraries', '/configs/production'])
     ->execute('Update the app to use the latest shared authentication library.');
-// @doctest id="3f06"
+// @doctest id="dbd0"
 ```
 
 Each path in the array must be an absolute path to an existing directory.
@@ -152,7 +152,7 @@ The `verbose()` method controls whether Claude Code emits detailed output. Verbo
 ```php
 // Verbose is true by default -- you rarely need to change this
 AgentCtrl::claudeCode()->verbose(true);
-// @doctest id="78c4"
+// @doctest id="a872"
 ```
 
 Disabling verbose mode may prevent Agent-Ctrl from correctly parsing the agent's output.
@@ -170,7 +170,7 @@ $response = AgentCtrl::claudeCode()
     ->onToolUse(fn(string $tool, array $input, ?string $output) => print("\n> [{$tool}]\n"))
     ->onError(fn(string $message, ?string $code) => print("\nError: {$message}\n"))
     ->executeStreaming('Explain the architecture of this project.');
-// @doctest id="efc2"
+// @doctest id="35d5"
 ```
 
 ### Event Normalization
@@ -202,7 +202,7 @@ if ($sessionId !== null) {
         ->resumeSession((string) $sessionId)
         ->execute('Now implement the first item in the plan.');
 }
-// @doctest id="c72a"
+// @doctest id="e0c1"
 ```
 
 ## Data Availability
@@ -254,5 +254,5 @@ if ($response->isSuccess()) {
 } else {
     echo "\n\nReview failed with exit code: {$response->exitCode}";
 }
-// @doctest id="2170"
+// @doctest id="a8a1"
 ```

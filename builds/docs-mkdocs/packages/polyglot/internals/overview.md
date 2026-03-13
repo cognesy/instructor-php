@@ -81,7 +81,7 @@ Most inference drivers extend `BaseInferenceRequestDriver`, which provides the s
 +------------------------------------------------+
 |             HTTP Client (shared)               |     Transport
 +------------------------------------------------+
-// @doctest id="b0e2"
+// @doctest id="3535"
 ```
 
 The public facade creates a request and hands it to the runtime. The runtime delegates to a driver, which translates the request into an HTTP call and normalizes the response. Events are dispatched at each stage for observability. The result flows back up as a normalized data object.

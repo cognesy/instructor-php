@@ -29,7 +29,7 @@ $args = (new StructuredOutput)->with(
 
 // Call the function with extracted arguments
 saveUser(...$args);
-// @doctest id="a6ec"
+// @doctest id="7baa"
 ```
 
 The docblock comment on the function is included in the schema sent to the LLM, giving it additional context about what the function does.
@@ -57,7 +57,7 @@ $args = (new StructuredOutput)->with(
 )->get();
 
 (new DataStore)->saveUser(...$args);
-// @doctest id="6801"
+// @doctest id="c5d4"
 ```
 
 ## Extracting Arguments for a Callable
@@ -81,7 +81,7 @@ $args = (new StructuredOutput)->with(
 )->get();
 
 $callable(...$args);
-// @doctest id="85ce"
+// @doctest id="c723"
 ```
 
 ## How It Works

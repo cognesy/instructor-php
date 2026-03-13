@@ -40,7 +40,7 @@ class PersonExtractionTest extends TestCase
         $fake->assertExtracted(PersonData::class);
     }
 }
-// @doctest id="8015"
+// @doctest id="522a"
 ```
 
 ### Response Mapping
@@ -57,7 +57,7 @@ $fake = StructuredOutput::fake([
 // Each class returns its mapped response
 $person = StructuredOutput::with(..., responseModel: PersonData::class)->get();
 $address = StructuredOutput::with(..., responseModel: AddressData::class)->get();
-// @doctest id="ff5f"
+// @doctest id="8c33"
 ```
 
 If you request a response model that has no mapping, the fake throws a `RuntimeException` with a helpful message telling you which class needs a fake response.
@@ -83,7 +83,7 @@ $second = StructuredOutput::with(...)->get(); // Second Person
 
 // Third call
 $third = StructuredOutput::with(...)->get();  // Third Person
-// @doctest id="758d"
+// @doctest id="ef0e"
 ```
 
 ### Available Assertions
@@ -111,7 +111,7 @@ $fake->assertUsedConnection('anthropic');
 
 // Assert model was used
 $fake->assertUsedModel('gpt-4o');
-// @doctest id="e18e"
+// @doctest id="777a"
 ```
 
 ### Accessing Recorded Calls
@@ -132,7 +132,7 @@ foreach ($recorded as $extraction) {
     echo "Model: " . $extraction['model'];
     echo "Connection: " . $extraction['connection'];
 }
-// @doctest id="e8c9"
+// @doctest id="d859"
 ```
 
 ---
@@ -165,7 +165,7 @@ public function test_calls_inference(): void
     $fake->assertCalled();
     $fake->assertCalledWith('What is 2+2?');
 }
-// @doctest id="e3cc"
+// @doctest id="81b0"
 ```
 
 ### Pattern Matching
@@ -187,7 +187,7 @@ $response2 = Inference::with(messages: Messages::fromString('How is the weather 
 
 // No match, uses 'default'
 $response3 = Inference::with(messages: Messages::fromString('Random question'))->get();
-// @doctest id="77c8"
+// @doctest id="fdc8"
 ```
 
 ### Response Sequences
@@ -206,7 +206,7 @@ $fake->respondWithSequence([
 // Returns responses in order
 $first = Inference::with(...)->get();  // "First response"
 $second = Inference::with(...)->get(); // "Second response"
-// @doctest id="5e15"
+// @doctest id="75ca"
 ```
 
 ### Available Assertions
@@ -234,7 +234,7 @@ $fake->assertUsedModel('llama-3.3-70b');
 
 // Assert called with specific tools
 $fake->assertCalledWithTools(['search', 'calculate']);
-// @doctest id="8186"
+// @doctest id="d9c9"
 ```
 
 ---
@@ -263,7 +263,7 @@ public function test_generates_embeddings(): void
     $fake->assertCalled();
     $fake->assertCalledWith('hello world');
 }
-// @doctest id="3093"
+// @doctest id="03c9"
 ```
 
 ### Default Embeddings
@@ -277,7 +277,7 @@ $fake = Embeddings::fake();
 $embedding = Embeddings::withInputs('anything')->first();
 
 $this->assertCount(1536, $embedding);
-// @doctest id="1785"
+// @doctest id="1267"
 ```
 
 ### Custom Dimensions
@@ -290,7 +290,7 @@ $fake = Embeddings::fake()
 
 $embedding = Embeddings::withInputs('test')->first();
 $this->assertCount(768, $embedding);
-// @doctest id="2d34"
+// @doctest id="6251"
 ```
 
 ### Available Assertions
@@ -315,7 +315,7 @@ $fake->assertUsedConnection('openai');
 
 // Assert model was used
 $fake->assertUsedModel('text-embedding-3-large');
-// @doctest id="9047"
+// @doctest id="2dc5"
 ```
 
 ---
@@ -347,7 +347,7 @@ public function test_generates_code(): void
     $fake->assertExecuted();
     $fake->assertExecutedWith('migration');
 }
-// @doctest id="b8df"
+// @doctest id="4604"
 ```
 
 ### Response Sequences
@@ -366,7 +366,7 @@ $second = AgentCtrl::claudeCode()->execute('Second'); // "Second response"
 $third = AgentCtrl::claudeCode()->execute('Third');   // "Third response"
 
 $fake->assertExecutedTimes(3);
-// @doctest id="9d6a"
+// @doctest id="19ee"
 ```
 
 ### Custom Responses
@@ -390,7 +390,7 @@ $response = AgentCtrl::claudeCode()->execute('Test');
 
 expect($response->cost)->toBe(0.05);
 expect($response->agentType)->toBe(AgentType::ClaudeCode);
-// @doctest id="05f7"
+// @doctest id="f495"
 ```
 
 ### Fake Tool Calls
@@ -422,7 +422,7 @@ $response = AgentCtrl::claudeCode()->execute('...');
 
 expect($response->toolCalls)->toHaveCount(2);
 expect($response->toolCalls[0]->tool)->toBe('write_file');
-// @doctest id="9d6e"
+// @doctest id="361a"
 ```
 
 ### Available Assertions
@@ -462,7 +462,7 @@ foreach ($executions as $exec) {
 
 // Reset fake state between test scenarios
 $fake->reset();
-// @doctest id="309c"
+// @doctest id="d2e5"
 ```
 
 ### Testing Agent Services
@@ -500,7 +500,7 @@ public function test_generates_migration(): void
     $fake->assertUsedClaudeCode();
     $fake->assertExecutedWith('users');
 }
-// @doctest id="f44b"
+// @doctest id="e536"
 ```
 
 ---
@@ -533,7 +533,7 @@ public function test_with_http_fake(): void
         return $request->url() === 'https://api.openai.com/v1/chat/completions';
     });
 }
-// @doctest id="5e60"
+// @doctest id="279c"
 ```
 
 This works because the `LaravelDriver` HTTP transport uses the same `Illuminate\Http\Client\Factory` instance that `Http::fake()` instruments. Make sure the `instructor.http.driver` config is set to `'laravel'` (the default).
@@ -574,7 +574,7 @@ public function test_extracts_person(): void
 
     $this->assertEquals('John', $person->name);
 }
-// @doctest id="f50d"
+// @doctest id="8620"
 ```
 
 ---
@@ -597,7 +597,7 @@ public function test_example(): void
     // FINALLY: Assert
     $fake->assertExtracted(...);
 }
-// @doctest id="f431"
+// @doctest id="5ad2"
 ```
 
 ### 2. Use Realistic Test Data
@@ -622,7 +622,7 @@ $fake = StructuredOutput::fake([
         dueDate: '',
     ),
 ]);
-// @doctest id="062a"
+// @doctest id="6c49"
 ```
 
 ### 3. Test Edge Cases
@@ -655,7 +655,7 @@ public function test_handles_null_optional_fields(): void
 
     $this->assertNull($person->email);
 }
-// @doctest id="86ae"
+// @doctest id="37e6"
 ```
 
 ### 4. Verify Connection and Model Usage
@@ -672,5 +672,5 @@ public function test_uses_correct_model(): void
     $fake->assertUsedConnection('anthropic');
     $fake->assertUsedModel('claude-3-5-sonnet-20241022');
 }
-// @doctest id="935c"
+// @doctest id="f627"
 ```

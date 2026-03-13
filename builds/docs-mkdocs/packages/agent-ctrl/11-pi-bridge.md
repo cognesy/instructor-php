@@ -18,7 +18,7 @@ $builder = AgentCtrl::pi();
 
 // Or via the generic factory
 $builder = AgentCtrl::make(AgentType::Pi);
-// @doctest id="045d"
+// @doctest id="169e"
 ```
 
 ### Prerequisites
@@ -29,7 +29,7 @@ Install Pi globally via npm or bun:
 npm install -g @mariozechner/pi-coding-agent
 # or
 bun install -g @mariozechner/pi-coding-agent
-# @doctest id="62ce"
+# @doctest id="a991"
 ```
 
 Configure an API key:
@@ -38,7 +38,7 @@ Configure an API key:
 export ANTHROPIC_API_KEY=sk-ant-...
 # or
 export OPENAI_API_KEY=sk-...
-# @doctest id="5db6"
+# @doctest id="8059"
 ```
 
 ## Basic Usage
@@ -50,7 +50,7 @@ $response = AgentCtrl::pi()
     ->execute('Explain the architecture of this project.');
 
 echo $response->text();
-// @doctest id="c237"
+// @doctest id="666b"
 ```
 
 With model selection:
@@ -61,7 +61,7 @@ $response = AgentCtrl::pi()
     ->execute('Review the test suite.');
 
 echo $response->text();
-// @doctest id="57c0"
+// @doctest id="b617"
 ```
 
 ## Model Selection
@@ -79,7 +79,7 @@ AgentCtrl::pi()->withModel('google/gemini-2.5-pro');
 
 // Model with thinking level shorthand
 AgentCtrl::pi()->withModel('sonnet:high');
-// @doctest id="6c9a"
+// @doctest id="0553"
 ```
 
 Use `withProvider()` to explicitly set the provider when the model name alone is ambiguous:
@@ -89,7 +89,7 @@ AgentCtrl::pi()
     ->withProvider('anthropic')
     ->withModel('sonnet')
     ->execute('...');
-// @doctest id="8180"
+// @doctest id="a833"
 ```
 
 ## Thinking Levels
@@ -105,7 +105,7 @@ AgentCtrl::pi()->withThinking(ThinkingLevel::Low);       // Light reasoning
 AgentCtrl::pi()->withThinking(ThinkingLevel::Medium);    // Moderate reasoning
 AgentCtrl::pi()->withThinking(ThinkingLevel::High);      // Deep reasoning
 AgentCtrl::pi()->withThinking(ThinkingLevel::ExtraHigh); // Maximum reasoning
-// @doctest id="51f3"
+// @doctest id="57f1"
 ```
 
 Alternatively, use the model shorthand: `->withModel('sonnet:high')`.
@@ -124,7 +124,7 @@ AgentCtrl::pi()
 AgentCtrl::pi()
     ->appendSystemPrompt('Focus on security issues.')
     ->execute('Review the authentication module.');
-// @doctest id="42f0"
+// @doctest id="e71f"
 ```
 
 ## Tool Control
@@ -141,7 +141,7 @@ AgentCtrl::pi()
 AgentCtrl::pi()
     ->noTools()
     ->execute('Explain dependency injection.');
-// @doctest id="71f7"
+// @doctest id="f817"
 ```
 
 ## File Arguments
@@ -155,7 +155,7 @@ $response = AgentCtrl::pi()
         '/projects/app/tests/PaymentServiceTest.php',
     ])
     ->execute('Review these files for potential issues.');
-// @doctest id="e2af"
+// @doctest id="a3c5"
 ```
 
 ## Extensions and Skills
@@ -183,7 +183,7 @@ AgentCtrl::pi()
 AgentCtrl::pi()
     ->noSkills()
     ->execute('...');
-// @doctest id="51d8"
+// @doctest id="2812"
 ```
 
 ## Streaming with Pi
@@ -200,7 +200,7 @@ $response = AgentCtrl::pi()
     ->onError(fn(string $message, ?string $code) => print("\nError: {$message}\n"))
     ->onComplete(fn(AgentResponse $r) => print("\n--- Done ---\n"))
     ->executeStreaming('Analyze the error handling in this codebase.');
-// @doctest id="9876"
+// @doctest id="bd99"
 ```
 
 ### Event Normalization
@@ -242,7 +242,7 @@ AgentCtrl::pi()
 AgentCtrl::pi()
     ->withSessionDir('/tmp/pi-sessions')
     ->execute('...');
-// @doctest id="e2d8"
+// @doctest id="0a34"
 ```
 
 ## API Key Override
@@ -254,7 +254,7 @@ AgentCtrl::pi()
     ->withApiKey('sk-ant-...')
     ->withProvider('anthropic')
     ->execute('...');
-// @doctest id="b45d"
+// @doctest id="c4f4"
 ```
 
 ## Usage and Cost Data
@@ -284,7 +284,7 @@ $cost = $response->cost();
 if ($cost !== null) {
     echo sprintf("Cost: $%.6f\n", $cost);
 }
-// @doctest id="f030"
+// @doctest id="688b"
 ```
 
 ## Data Availability
@@ -334,7 +334,7 @@ if ($response->isSuccess()) {
 } else {
     echo "\nFailed with exit code: {$response->exitCode}\n";
 }
-// @doctest id="75dc"
+// @doctest id="ab19"
 ```
 
 ## Comparison with Other Bridges

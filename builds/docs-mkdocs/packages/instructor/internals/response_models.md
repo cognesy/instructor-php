@@ -25,7 +25,7 @@ $user = (new StructuredOutput())
         responseModel: User::class,
     )
     ->get();
-// @doctest id="efc8"
+// @doctest id="1b7f"
 ```
 
 Using `User::class` gives your IDE full visibility for refactoring, autocompletion,
@@ -46,7 +46,7 @@ $result = (new StructuredOutput())
         responseModel: $user,
     )
     ->get();
-// @doctest id="8fa9"
+// @doctest id="29d3"
 ```
 
 Instructor inspects the class of the instance and generates the same schema it
@@ -71,7 +71,7 @@ $result = (new StructuredOutput())
         messages: 'Jason is 25 years old',
     )
     ->get();
-// @doctest id="abfc"
+// @doctest id="c11b"
 ```
 
 > **Important:** The `x-php-class` field is required so Instructor knows which class
@@ -99,7 +99,7 @@ $age = (new StructuredOutput())
 $users = (new StructuredOutput())
     ->with(messages: $text, responseModel: Sequence::of(User::class))
     ->get();
-// @doctest id="213c"
+// @doctest id="8db0"
 ```
 
 
@@ -126,7 +126,7 @@ $result = (new StructuredOutput())
     ->with(responseModel: Rating::class, messages: '...')
     ->intoObject(Scalar::integer('rating'))
     ->get();
-// @doctest id="d0e5"
+// @doctest id="b124"
 ```
 
 > **Note:** Instructor always returns objects (or arrays when `intoArray()` is used).

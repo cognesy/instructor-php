@@ -55,7 +55,7 @@ The package searches the following directories in addition to `PATH`: `/usr/bin`
 use Cognesy\Sandbox\Enums\SandboxDriver;
 
 $sandbox = Sandbox::fromPolicy($policy)->using(SandboxDriver::Docker);
-// @doctest id="5f8c"
+// @doctest id="8672"
 ```
 
 The valid string values are: `host`, `docker`, `podman`, `firejail`, `bubblewrap`. These match the `SandboxDriver` enum's backing values exactly.
@@ -103,7 +103,7 @@ $policy = $policy->withOutputCaps(
     stdoutBytes: 10 * 1024 * 1024, // 10 MB
     stderrBytes: 2 * 1024 * 1024,  // 2 MB
 );
-// @doctest id="1c7d"
+// @doctest id="9df0"
 ```
 
 The default cap is 1 MB (1,048,576 bytes) for each stream. The minimum is 1024 bytes -- values below this are clamped upward.
@@ -119,7 +119,7 @@ $result = $sandbox->execute($argv, null, function (string $type, string $chunk) 
 
 fclose($logFile);
 // $result->stdout() may be truncated, but /tmp/full-output.log has everything
-// @doctest id="b543"
+// @doctest id="e0b8"
 ```
 
 ## Working Directory Errors
@@ -230,7 +230,7 @@ If you still encounter issues, verify that:
 
 ```php
 $policy = $policy->withNetwork(true);
-// @doctest id="80d5"
+// @doctest id="1e55"
 ```
 
 **How network isolation is implemented per driver:**
