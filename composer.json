@@ -1,6 +1,6 @@
 {
     "name": "cognesy/instructor-php",
-    "description": "Structured data extraction in PHP, powered by LLMs",
+    "description": "The complete AI toolkit for PHP: unified LLM API, structured outputs, agents, and coding agent control",
     "keywords": [
         "llm",
         "language models",
