@@ -1,5 +1,29 @@
 {
-    "name": "Test Docs",
+    "name": "Instructor for PHP",
+    "logo": {
+        "dark": "/images/logo/dark.svg",
+        "light": "/images/logo/light.svg"
+    },
+    "favicon": "/favicon.svg",
+    "colors": {
+        "primary": "#0D9373",
+        "light": "#07C983",
+        "dark": "#0D9373",
+        "anchors": {
+            "from": "#0D9373",
+            "to": "#07C983"
+        }
+    },
+    "topbarLinks": [
+        {
+            "name": "Issues",
+            "url": "https://github.com/cognesy/instructor-php/issues"
+        }
+    ],
+    "topbarCtaButton": {
+        "name": "Github",
+        "url": "https://github.com/cognesy/instructor-php"
+    },
     "primaryTab": {
         "name": "Main"
     },

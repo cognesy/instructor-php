@@ -59,19 +59,25 @@ class MintlifyIndex
     }
 
     public function toArray() : array {
-        return array_filter([
+        // Required fields are always included; optional fields are filtered when empty
+        $required = [
             'name' => $this->name,
-            'logo' => $this->logo,
             'favicon' => $this->favicon,
             'colors' => $this->colors,
+            'navigation' => array_values($this->navigation->toArray()),
+        ];
+
+        $optional = array_filter([
+            'logo' => $this->logo,
             'topbarLinks' => $this->topbarLinks,
             'topbarCtaButton' => $this->topbarCtaButton,
             'primaryTab' => $this->primaryTab,
             'tabs' => $this->tabs,
             'anchors' => $this->anchors,
-            'navigation' => array_values($this->navigation->toArray()),
             'footerSocials' => $this->footerSocials,
             'analytics' => $this->analytics,
         ], fn($v) => !empty($v));
+
+        return $required + $optional;
     }
 }
