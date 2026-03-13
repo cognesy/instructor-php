@@ -60,66 +60,21 @@ composer phpstan
 ### Available Commands
 
 #### Root-level commands (via `composer.json`):
-- `composer test` - Run tests for main project
-- `composer tests` - Alias for test
-- `composer qa` - Run full QA pipeline (PHPStan + Psalm + Pint check + docs QA + Semgrep)
-- `composer qa:phpstan` - Run PHPStan (`phpstan.neon`)
-- `composer qa:psalm` - Run Psalm (`packages/instructor/psalm.xml`)
-- `composer qa:pint` - Run Pint in test mode (format check only)
-- `composer qa:docs` - Run docs QA across docs packages
-- `composer qa:semgrep` - Run Semgrep global rules + package-local Semgrep rules
-- `composer phpstan` - Run PHPStan analysis
-- `composer psalm` - Run Psalm analysis
-- `composer psalm-unused` - Find unused code with Psalm
-- `composer dead-code` - Find unused classes/methods (ShipMonk dead-code detector)
-- `composer dead-code-debug` - Dead-code analysis with verbose diagnostics
-- `composer unused-deps` - Find unused Composer dependencies
+- `composer test` - Run Unit + Feature + Regression tests
+- `composer test-all` - Run every test in the monorepo
+- `composer qa` - Run full QA pipeline (PHPStan + Psalm + Pint + Semgrep)
+- `composer bench` - Run PHPBench benchmarks
 - `composer hub` - Run Instructor Hub CLI
 - `composer tell` - Run Tell CLI
 - `composer setup` - Run setup wizard
 
-Run tests from the monorepo root to check if they work with the latest changes to the code.
-
+For the full list of QA commands, testing options, semgrep/ast-grep rules, docs QA, drift detection, dead-code analysis, and benchmarks see **[QUALITY.md](QUALITY.md)**.
 
 #### Package-level commands:
 Each package supports:
 - `composer test` or `composer tests` - Run package tests
 - `composer phpstan` - Static analysis
 - `composer psalm` - Additional static analysis
-
-### Testing
-
-#### Test All Packages
-```bash
-composer test
-```
-
-#### Test Individual Package
-```bash
-cd packages/instructor
-composer test
-```
-ATTENTION: Tests executed this way rely on Packagist dependencies, so they may miss the latest changes made to this monorepo packages unless they have been published already.
-
-### Code Quality
-
-Recommended QA workflow:
-```bash
-# Full pipeline (recommended before PRs / merges)
-composer qa
-
-# Individual QA tools
-composer qa:phpstan
-composer qa:psalm
-composer qa:pint
-composer qa:docs
-composer qa:semgrep
-```
-
-Semgrep rule layout:
-- Global (cross-package) rules live in `/.qa/semgrep/*.yml` (e.g. `global.yml`, `config-model.yml`)
-- Package-specific rules live in `packages/<package>/.qa/semgrep.yml`
-- Keep package-only rules inside the package; keep shared rules at repo root
 
 ### ID Modeling Standard
 
@@ -130,53 +85,6 @@ When introducing or refactoring identifiers, follow the internal ID taxonomy:
 - **Reference keys** (config/service labels): keep as strings unless domain behavior requires a value object.
 
 Use `docs-internal/development/ID_MODEL.md` as the source of truth, including boundary rules and PR checklist.
-
-### Unused Code Detection
-
-Detect unused classes, methods, and dead code:
-
-```bash
-# Find unused classes and methods using ShipMonk Dead Code Detector
-composer dead-code
-
-# Get detailed debugging information about specific class/method usage
-composer dead-code-debug
-
-# Alternative: Find unused code with Psalm
-composer psalm-unused
-```
-
-#### Understanding Unused Code Output
-
-The `composer dead-code` command will show:
-- **Unused classes**: Classes that are never instantiated or referenced
-- **Unused methods**: Methods that are never called, including transitively unused methods
-- **Dead cycles**: Methods that only call each other but are never called externally
-
-Example output:
-```
------- ------------------------------------------------------------------------
-Line   src/App/Entity/UnusedClass.php
------- ------------------------------------------------------------------------
-8      Unused App\Entity\UnusedClass 🪪 shipmonk.deadClass
-
-26     Unused App\Facade\UserFacade::updateUserAddress 🪪 shipmonk.deadMethod
-       💡 Thus App\Entity\User::updateAddress is transitively also unused
-```
-
-#### Debugging Specific Usage
-
-To debug why a specific class or method is considered unused, add it to `phpstan-unused.neon`:
-
-```neon
-parameters:
-    shipmonkDeadCode:
-        debug:
-            usagesOf:
-                - App\YourClass::yourMethod
-```
-
-Then run `composer dead-code-debug` to see detailed usage analysis.
 
 ## Creating New Packages
 
@@ -267,7 +175,7 @@ This script:
 
 The release process:
 - **Step 0**: Rebuilds documentation (`./bin/instructor-hub gendocs`)
-- **Step 0.1**: Copies resource files (`./scripts/copy-resources.sh`)
+- **Step 0.1**: Prepares docs bundles for release artifacts
 - **Step 1**: Updates all package versions (`./scripts/sync-ver.sh`)
 - **Step 2**: Distributes release notes to all packages
 - **Step 3-4**: Commits changes if any exist
@@ -288,10 +196,6 @@ After the main release is created, GitHub Actions automatically:
 - `./scripts/load-packages.sh` - Load centralized package configuration (used by other scripts)
 - `./scripts/generate-split-matrix.sh` - Generate GitHub Actions matrix from `packages.json`
 - `./scripts/update-split-yml.sh` - Update `.github/workflows/split.yml` with current package configuration
-
-### Resource Management
-- `./scripts/copy-resources.sh` - Copy shared resources to packages
-- `./scripts/remove-resources.sh` - Remove shared resources from packages
 
 ### Composer Operations
 - `./scripts/composer-install-all.sh` - Install dependencies for all packages

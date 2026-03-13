@@ -1,0 +1,40 @@
+rules:
+  - id: test-placement.no-filesystem-io-in-fast-tests
+    message: "Filesystem I/O in fast test suite. Tests that create/delete files belong in tests/Integration/. Move this test or mock the filesystem."
+    severity: ERROR
+    languages: [php]
+    paths:
+      include:
+        - "/packages/**/tests/Unit/**/*.php"
+        - "/packages/**/tests/Feature/**/*.php"
+        - "/packages/**/tests/Regression/**/*.php"
+      exclude:
+        # sys_get_temp_dir() used only as a path string, no actual I/O
+        - "/packages/sandbox/tests/Unit/SandboxDriverSelectionTest.php"
+    pattern-regex: '\b(mkdir|file_put_contents|touch|tempnam|sys_get_temp_dir|rmdir|unlink)\s*\('
+
+  - id: test-placement.no-sleep-in-fast-tests
+    message: "Sleep/usleep in fast test suite indicates timing-dependent test. Move to tests/Integration/ or remove the delay."
+    severity: ERROR
+    languages: [php]
+    paths:
+      include:
+        - "/packages/**/tests/Unit/**/*.php"
+        - "/packages/**/tests/Feature/**/*.php"
+        - "/packages/**/tests/Regression/**/*.php"
+      exclude:
+        # Mixed files: mostly pure unit tests, 1-2 tests use usleep for timing hooks/duration
+        - "/packages/agents/tests/Unit/Core/Hooks/BundledHooksTest.php"
+        - "/packages/agents/tests/Unit/Core/StateInfoTest.php"
+    pattern-regex: '\b(usleep|sleep)\s*\('
+
+  - id: test-placement.no-subprocess-in-fast-tests
+    message: "Subprocess execution in fast test suite. Tests spawning real processes belong in tests/Integration/."
+    severity: ERROR
+    languages: [php]
+    paths:
+      include:
+        - "/packages/**/tests/Unit/**/*.php"
+        - "/packages/**/tests/Feature/**/*.php"
+        - "/packages/**/tests/Regression/**/*.php"
+    pattern-regex: '(?<![>:])\b(exec|shell_exec|proc_open|system|passthru)\s*\('

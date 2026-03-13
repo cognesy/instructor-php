@@ -1,0 +1,23 @@
+# Override Semgrep defaults to allow scanning test files.
+# Based on Semgrep's built-in defaults minus test/ and tests/.
+.semgrep/
+.semgrep_logs/
+node_modules/
+vendor/
+.env
+.git/
+.mypy_cache/
+.pytest_cache/
+__pycache__/
+venv/
+.venv/
+dist/
+build/
+builds/
+.tox/
+.nox/
+.eggs/
+*.egg-info/
+.coverage
+.hypothesis/
+.terraform/

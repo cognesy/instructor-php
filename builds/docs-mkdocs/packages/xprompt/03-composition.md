@@ -39,7 +39,7 @@ class ReviewSystem extends Prompt
 }
 
 echo ReviewSystem::with(content: $code);
-// @doctest id="488c"
+// @doctest id="e49c"
 ```
 
 Output:
@@ -52,7 +52,7 @@ Analyze the following document for security vulnerabilities.
 ## Document
 
 <content here>
-// @doctest id="2bf0"
+// @doctest id="796c"
 ```
 
 Array elements are joined with `"\n\n"`. Empty strings and nulls are silently skipped.
@@ -74,7 +74,7 @@ class SystemPrompt extends Prompt
         ];
     }
 }
-// @doctest id="1aa6"
+// @doctest id="eca7"
 ```
 
 When `strict` is false, the `Constraints` section is simply absent from the output — no empty lines, no placeholders.
@@ -96,7 +96,7 @@ class Parent extends Prompt
 
 // Child sees lang: 'en' even though it wasn't explicitly passed
 echo Parent::with(lang: 'en');
-// @doctest id="1477"
+// @doctest id="b7c4"
 ```
 
 Children that bind their own context via `with()` merge it with the parent's context — the child's bindings take precedence for shared keys.
@@ -116,7 +116,7 @@ class TopLevel extends Prompt
         ];
     }
 }
-// @doctest id="d16d"
+// @doctest id="863d"
 ```
 
 The `flatten()` function handles all the recursion. It traverses nested arrays, renders any `Prompt` or `Stringable` objects it finds, filters out nulls and empty strings, and joins everything with `"\n\n"`.
@@ -137,7 +137,7 @@ class FullSystem extends Prompt
         ];
     }
 }
-// @doctest id="1d1e"
+// @doctest id="14e2"
 ```
 
 ## Next Steps

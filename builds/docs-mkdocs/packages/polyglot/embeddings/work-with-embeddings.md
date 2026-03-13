@@ -21,7 +21,7 @@ $response = Embeddings::using('openai')
 $vector = $response->first()?->values() ?? [];
 
 echo "Generated a vector with " . count($vector) . " dimensions.\n";
-// @doctest id="7e61"
+// @doctest id="d10f"
 ```
 
 ## Embedding Multiple Texts
@@ -54,7 +54,7 @@ foreach ($vectors as $index => $vector) {
 // Or get raw float arrays directly
 $valuesArray = $response->toValuesArray();
 // $valuesArray[0] = [0.0123, -0.0456, ...], etc.
-// @doctest id="b4d2"
+// @doctest id="ded9"
 ```
 
 ## Using the Shorthand Method
@@ -73,7 +73,7 @@ $response = Embeddings::using('openai')
         model: 'text-embedding-3-large',
     )
     ->get();
-// @doctest id="3682"
+// @doctest id="bb9c"
 ```
 
 ## The EmbeddingsResponse Object
@@ -106,7 +106,7 @@ $response = Embeddings::using('openai')
 $usage = $response->usage();
 echo "Input tokens: " . $usage->input() . "\n";
 echo "Total tokens: " . $usage->total() . "\n";
-// @doctest id="af4d"
+// @doctest id="c25c"
 ```
 
 ## Working with Vector Objects
@@ -132,7 +132,7 @@ echo "Dimensions: " . count($values) . "\n";
 
 // Get the vector's index/ID in the response
 $id = $vector->id();
-// @doctest id="bcc0"
+// @doctest id="314e"
 ```
 
 ### Comparing Vectors
@@ -171,7 +171,7 @@ echo "Euclidean distance: " . round($distance, 4) . "\n";
 // Dot product
 $dot = $vectors[0]->compareTo($vectors[1], Vector::METRIC_DOT_PRODUCT);
 echo "Dot product: " . round($dot, 4) . "\n";
-// @doctest id="398b"
+// @doctest id="f9c6"
 ```
 
 You can also use the static methods directly on float arrays:
@@ -184,7 +184,7 @@ use Cognesy\Polyglot\Embeddings\Data\Vector;
 $similarity = Vector::cosineSimilarity($arrayA, $arrayB);
 $distance = Vector::euclideanDistance($arrayA, $arrayB);
 $dot = Vector::dotProduct($arrayA, $arrayB);
-// @doctest id="495a"
+// @doctest id="b86b"
 ```
 
 ## Finding Similar Documents
@@ -217,7 +217,7 @@ $results = EmbedUtils::findSimilar(
 foreach ($results as $result) {
     echo round($result['similarity'], 4) . " - " . $result['content'] . "\n";
 }
-// @doctest id="9633"
+// @doctest id="0658"
 ```
 
 ## Switching Between Providers
@@ -248,7 +248,7 @@ $mistralVector = Embeddings::using('mistral')
     ->withInputs($text)
     ->first();
 echo "Mistral dimensions: " . count($mistralVector->values()) . "\n";
-// @doctest id="8357"
+// @doctest id="ad25"
 ```
 
 ## Provider-Specific Options
@@ -278,7 +278,7 @@ $response = Embeddings::using('cohere')
         'truncate' => 'END',
     ])
     ->get();
-// @doctest id="cabc"
+// @doctest id="6a13"
 ```
 
 ## Custom Configuration
@@ -306,7 +306,7 @@ $vector = Embeddings::fromConfig($config)
     ->first();
 
 echo "Generated embedding with " . count($vector->values()) . " dimensions.\n";
-// @doctest id="fc2d"
+// @doctest id="1711"
 ```
 
 You can also load configuration from a DSN string:
@@ -319,5 +319,5 @@ use Cognesy\Polyglot\Embeddings\Embeddings;
 
 $config = EmbeddingsConfig::fromDsn('openai://model=text-embedding-3-large');
 $embeddings = Embeddings::fromConfig($config);
-// @doctest id="0b4f"
+// @doctest id="8b1f"
 ```

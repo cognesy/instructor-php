@@ -19,7 +19,7 @@ class Analyze extends Prompt
     public string $templateFile = 'analyze.twig';
     public ?string $templateDir = __DIR__ . '/templates';
 }
-// @doctest id="f1ee"
+// @doctest id="cfb4"
 ```
 
 The template file `templates/analyze.twig`:
@@ -34,14 +34,14 @@ You will analyze the provided {{ content_type }} for quality issues.
 
 ## Input
 {{ content }}
-// @doctest id="627e"
+// @doctest id="6bdc"
 ```
 
 Render it like any other prompt:
 
 ```php
 echo Analyze::with(content_type: 'essay', content: $essay);
-// @doctest id="5eda"
+// @doctest id="29a3"
 ```
 
 Context variables map directly to Twig variables. The `body()` method you inherit handles loading, parsing, and rendering automatically.
@@ -57,7 +57,7 @@ src/Prompts/
     templates/
         analyze.twig
         summarize.twig
-// @doctest id="fe29"
+// @doctest id="b5ab"
 ```
 
 Each prompt sets `$templateDir = __DIR__ . '/templates'`, keeping paths relative and portable.
@@ -75,14 +75,14 @@ version: v2
 Analyze the following {{ topic }} in detail.
 
 Focus on {{ aspect }}.
-// @doctest id="27e7"
+// @doctest id="6ad4"
 ```
 
 ```php
 $prompt = Analyze::make();
 $meta = $prompt->meta();
 // ['description' => 'Analyze content for quality', 'model' => 'sonnet', 'version' => 'v2']
-// @doctest id="c66e"
+// @doctest id="9888"
 ```
 
 This is useful for storing prompt metadata — suggested model, version, author — alongside the prompt content. Your application code can read `meta()` to make decisions about which model to use or to track prompt versions.
@@ -101,7 +101,7 @@ $prompt->variables();
 // Check for missing or extra variables
 $prompt->validationErrors(content_type: 'code');
 // ['Missing variable: content']
-// @doctest id="15b1"
+// @doctest id="8e45"
 ```
 
 ## Blocks
@@ -135,7 +135,7 @@ class Document extends Prompt
     public ?string $templateDir = __DIR__ . '/templates';
     public array $blocks = [Header::class, Footer::class];
 }
-// @doctest id="97a7"
+// @doctest id="66f5"
 ```
 
 The template `document.twig`:
@@ -147,7 +147,7 @@ The template `document.twig`:
 {{ body_text }}
 
 {{ blocks.Footer }}
-// @doctest id="3d9e"
+// @doctest id="bd78"
 ```
 
 Blocks are rendered before the template, receiving the same context as the parent. The `isBlock = true` flag hides them from registry listings — they're internal building blocks, not standalone prompts.
@@ -168,7 +168,7 @@ class SmartAnalyze extends Prompt
         ];
     }
 }
-// @doctest id="331c"
+// @doctest id="3947"
 ```
 
 ## Next Steps

@@ -21,7 +21,7 @@ Install the package via Composer:
 
 ```bash
 composer require cognesy/agent-ctrl
-# @doctest id="e6c9"
+# @doctest id="0b63"
 ```
 
 Agent-Ctrl is part of the Instructor-PHP monorepo. It depends on the `cognesy/sandbox` package for process execution and isolation, which is pulled in automatically.
@@ -42,7 +42,7 @@ $response = AgentCtrl::codex()
     ->execute('Summarize this repository.');
 
 echo $response->text();
-// @doctest id="e076"
+// @doctest id="57ad"
 ```
 
 The `execute()` method runs the agent synchronously, waits for it to finish, and returns an `AgentResponse` object containing the text output, exit code, session ID, and any tool calls the agent made.
@@ -61,7 +61,7 @@ $response = AgentCtrl::claudeCode()
 // Use OpenCode
 $response = AgentCtrl::openCode()
     ->execute('Explain the package layout.');
-// @doctest id="4e0f"
+// @doctest id="2552"
 ```
 
 All factory methods return a builder that supports the same core API (`withConfig()`, `withModel()`, `withTimeout()`, `inDirectory()`, `execute()`, `executeStreaming()`, etc.), so you can switch agents without restructuring your code.
@@ -88,7 +88,7 @@ $agentConfig = AgentConfig::fromArray([
 $response = AgentCtrl::make($agent)
     ->withConfig($agentConfig)
     ->execute('Explain the package layout.');
-// @doctest id="80dc"
+// @doctest id="c5fa"
 ```
 
 The `AgentType` enum has five cases:
@@ -122,7 +122,7 @@ $config = AgentConfig::fromArray([
 AgentCtrl::codex()
     ->withConfig($config)
     ->execute('Review the current directory.');
-// @doctest id="23d8"
+// @doctest id="fb07"
 ```
 
 `AgentConfig::fromArray()` accepts Laravel-style aliases:
@@ -143,7 +143,7 @@ AgentCtrl::codex()->withModel('o4-mini');
 
 // OpenCode (provider/model format)
 AgentCtrl::openCode()->withModel('anthropic/claude-sonnet-4-5');
-// @doctest id="3649"
+// @doctest id="0b57"
 ```
 
 ### Execution Timeout
@@ -154,7 +154,7 @@ Set the maximum time (in seconds) the agent is allowed to run. The default is 12
 $response = AgentCtrl::claudeCode()
     ->withTimeout(600) // 10 minutes
     ->execute('Perform a comprehensive codebase review.');
-// @doctest id="952a"
+// @doctest id="d76a"
 ```
 
 The minimum accepted timeout is 1 second. Values less than 1 are clamped to 1.
@@ -167,7 +167,7 @@ Set the directory the agent should operate in. The bridge validates that the dir
 $response = AgentCtrl::codex()
     ->inDirectory('/projects/my-app')
     ->execute('Review the current directory.');
-// @doctest id="39fd"
+// @doctest id="075c"
 ```
 
 > **Note:** Always use absolute paths. The bridge changes the PHP process's current working directory for the duration of the execution. If your PHP process handles concurrent requests (e.g., Swoole or RoadRunner), be aware that this affects the entire process.
@@ -182,7 +182,7 @@ use Cognesy\Sandbox\Enums\SandboxDriver;
 $response = AgentCtrl::claudeCode()
     ->withSandboxDriver(SandboxDriver::Docker)
     ->execute('Analyze this codebase.');
-// @doctest id="dc59"
+// @doctest id="8e7a"
 ```
 
 Available sandbox drivers:
@@ -212,7 +212,7 @@ if ($response->isSuccess()) {
 } else {
     echo "Agent failed with exit code: {$response->exitCode}";
 }
-// @doctest id="2ebe"
+// @doctest id="2b0a"
 ```
 
 See the [Response Object](/agent-ctrl/response-object) documentation for the full set of properties and methods available on `AgentResponse`.

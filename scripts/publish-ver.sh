@@ -34,11 +34,7 @@ echo "Step 0: Rebuilding documentation..."
 composer docs gen:mintlify
 composer docs gen:mkdocs
 
-# 0.1. Copy resource files
-echo "Step 0.1: Copying resource files..."
-./scripts/copy-resources.sh
-
-# 0.2. Prepare docs bundles for GitHub release artifacts
+# 0.1. Prepare docs bundles for GitHub release artifacts
 echo "Step 0.2: Preparing docs bundles..."
 DOCS_BUNDLE_DIR="release-artifacts/docs"
 mkdir -p "$DOCS_BUNDLE_DIR"
