@@ -78,7 +78,7 @@ class FrontmatterStripper
         }
 
         // Find closing ---
-        $withoutLeading = preg_replace('/\A\s*/', '', $content);
+        $withoutLeading = preg_replace('/\A\s*/', '', $content) ?? $content;
         $endPos = strpos($withoutLeading, "\n---", 3);
         if ($endPos === false) {
             return $content;

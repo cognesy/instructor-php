@@ -218,7 +218,11 @@ final class DriftDetector
             return [];
         }
 
-        $json = json_decode(file_get_contents($path), true);
+        $contents = file_get_contents($path);
+        if ($contents === false) {
+            return [];
+        }
+        $json = json_decode($contents, true);
         if (!is_array($json) || !isset($json['packages'])) {
             return [];
         }

@@ -29,7 +29,7 @@ class EventDispatcher implements CanHandleEvents
     /** @var array<string, string[]> Cached class hierarchy per event class */
     private static array $typeCache = [];
 
-    /** @var callable[]|null Pre-sorted tap listeners, null = needs rebuild */
+    /** @var array<callable(object): void>|null Pre-sorted tap listeners, null = needs rebuild */
     private ?array $sortedTaps = null;
 
     public function __construct(
@@ -194,7 +194,7 @@ class EventDispatcher implements CanHandleEvents
     /**
      * Returns pre-sorted tap listener callables (cached between addListener calls).
      *
-     * @return callable[]
+     * @return array<callable(object): void>
      */
     private function resolvedTapListeners(): array
     {
