@@ -1,8 +1,3 @@
----
-title: 'Response Object'
-description: 'Read text output, session identifiers, token usage, cost, tool calls, and parse diagnostics from the unified AgentResponse returned by every execution.'
----
-
 ## Introduction
 
 Every call to `execute()` or `executeStreaming()` returns an `AgentResponse` -- a readonly DTO that provides a normalized view of the agent's output regardless of which CLI tool produced it. The response contains the text content, process exit code, session identifier, token usage statistics, cost, tool call records, and parse diagnostics.
@@ -19,7 +14,7 @@ The agent type that produced this response. This is one of `AgentType::ClaudeCod
 
 ```php
 echo "Produced by: {$response->agentType->value}"; // e.g., "claude-code"
-// @doctest id="c8e6"
+// @doctest id="830b"
 ```
 
 ### `text: string`
@@ -30,7 +25,7 @@ The agent's main text output. This is the concatenation of all text content bloc
 echo $response->text;
 // or
 echo $response->text();
-// @doctest id="45cf"
+// @doctest id="551f"
 ```
 
 ### `exitCode: int`
@@ -41,7 +36,7 @@ The process exit code. A value of `0` indicates success. Non-zero values indicat
 if ($response->exitCode !== 0) {
     echo "Process failed with exit code: {$response->exitCode}";
 }
-// @doctest id="0437"
+// @doctest id="21df"
 ```
 
 Common exit codes:
@@ -61,7 +56,7 @@ if ($usage !== null) {
     echo "Output tokens: {$usage->output}\n";
     echo "Total tokens: {$usage->total()}\n";
 }
-// @doctest id="fd40"
+// @doctest id="324b"
 ```
 
 ### `cost: ?float`
@@ -72,7 +67,7 @@ The estimated cost in USD, when available. Currently, OpenCode and Pi expose cos
 if ($response->cost !== null) {
     echo sprintf("Cost: $%.4f", $response->cost);
 }
-// @doctest id="f4ca"
+// @doctest id="945f"
 ```
 
 ### `toolCalls: array`
@@ -81,7 +76,7 @@ An array of `ToolCall` objects representing every tool invocation made during th
 
 ```php
 echo "Tool calls made: " . count($response->toolCalls);
-// @doctest id="24d3"
+// @doctest id="8bd8"
 ```
 
 ### `rawResponse: mixed`
@@ -91,7 +86,7 @@ The original bridge-specific response object (`ClaudeResponse`, `CodexResponse`,
 ```php
 // Access the raw Codex response for agent-specific data
 $codexResponse = $response->rawResponse;
-// @doctest id="fe2b"
+// @doctest id="caad"
 ```
 
 ### `parseFailures: int`
@@ -102,7 +97,7 @@ The number of malformed JSON lines that were skipped during response parsing:
 if ($response->parseFailures > 0) {
     echo "Warning: {$response->parseFailures} JSON parse failures";
 }
-// @doctest id="eb8a"
+// @doctest id="583d"
 ```
 
 ## Response Methods
@@ -120,7 +115,7 @@ if ($response->isSuccess()) {
     echo "Failed with exit code: {$response->exitCode}";
     echo "Partial output: " . $response->text();
 }
-// @doctest id="8edc"
+// @doctest id="0a07"
 ```
 
 A completed execution with a non-zero exit code does **not** throw an exception. Always check `isSuccess()` before treating the text output as authoritative.
@@ -131,7 +126,7 @@ Returns the agent's text output. Equivalent to accessing the `text` property dir
 
 ```php
 echo $response->text();
-// @doctest id="8c22"
+// @doctest id="e8b4"
 ```
 
 ### `sessionId(): ?AgentSessionId`
@@ -145,7 +140,7 @@ if ($sessionId !== null) {
     // Store for later resumption
     $cache->set('last_session', (string) $sessionId);
 }
-// @doctest id="eaed"
+// @doctest id="0197"
 ```
 
 ### `usage(): ?TokenUsage`
@@ -157,7 +152,7 @@ $usage = $response->usage();
 if ($usage !== null) {
     echo "Tokens used: {$usage->total()}";
 }
-// @doctest id="4520"
+// @doctest id="3a96"
 ```
 
 ### `cost(): ?float`
@@ -169,7 +164,7 @@ $cost = $response->cost();
 if ($cost !== null) {
     echo sprintf("This execution cost $%.4f", $cost);
 }
-// @doctest id="d59f"
+// @doctest id="3ae1"
 ```
 
 ### `parseFailures(): int`
@@ -178,7 +173,7 @@ Returns the number of malformed JSON lines encountered during parsing:
 
 ```php
 echo "Parse failures: {$response->parseFailures()}";
-// @doctest id="27ec"
+// @doctest id="9d2a"
 ```
 
 ### `parseFailureSamples(): array`
@@ -192,7 +187,7 @@ if ($response->parseFailures() > 0) {
         echo "  - {$sample}\n";
     }
 }
-// @doctest id="9f5f"
+// @doctest id="e348"
 ```
 
 ## Tool Calls
@@ -257,7 +252,7 @@ foreach ($response->toolCalls as $toolCall) {
 
     echo "---\n";
 }
-// @doctest id="a40f"
+// @doctest id="5912"
 ```
 
 ## Token Usage
@@ -316,7 +311,7 @@ $cost = $response->cost();
 if ($cost !== null) {
     echo sprintf("Cost: $%.4f\n", $cost);
 }
-// @doctest id="1f95"
+// @doctest id="595e"
 ```
 
 ## Complete Example
@@ -369,5 +364,5 @@ foreach ($toolSummary as $tool => $count) {
 if ($response->parseFailures() > 0) {
     echo "Warning: {$response->parseFailures()} parse failures\n";
 }
-// @doctest id="7d7e"
+// @doctest id="f482"
 ```

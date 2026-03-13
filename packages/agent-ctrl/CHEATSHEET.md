@@ -241,7 +241,7 @@ if ($sessionId !== null) {
 
 - `message` (string)
 - `code` (?string)
-- `details` (array<string,mixed>)
+- `details` (`array<string,mixed>`)
 
 ## Events
 

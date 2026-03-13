@@ -1,8 +1,3 @@
----
-title: 'Testing Doubles'
-description: 'Deterministic testing seams for structured output.'
----
-
 ## Overview
 
 Instructor supports deterministic tests at three different seams.
@@ -39,7 +34,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 $driver = new FakeInferenceDriver(
     responses: [new InferenceResponse(content: '{"name":"Jason","age":28}')],
 );
-// @doctest id="4abb"
+// @doctest id="5014"
 ```
 
 Choose this seam for most unit and regression tests inside `packages/instructor`.
@@ -61,7 +56,7 @@ Minimal example:
 use Cognesy\Instructor\Tests\MockHttp;
 
 $http = MockHttp::get(['{"name":"Jason","age":28}']);
-// @doctest id="4a90"
+// @doctest id="a512"
 ```
 
 Choose this seam when the HTTP transport and provider adapter still matter to the

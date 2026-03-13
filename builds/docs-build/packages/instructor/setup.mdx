@@ -1,8 +1,3 @@
----
-title: Setup
-description: 'Install the package and configure your LLM provider.'
----
-
 Getting started with Instructor requires two things:
 
 1. Install the `cognesy/instructor-struct` package
@@ -13,7 +8,7 @@ Getting started with Instructor requires two things:
 
 ```bash
 composer require cognesy/instructor-struct
-# @doctest id="0438"
+# @doctest id="9159"
 ```
 
 > Instructor requires **PHP 8.3** or later.
@@ -27,7 +22,7 @@ is to set them in your shell or a `.env` file at the root of your project:
 ```ini
 # .env
 OPENAI_API_KEY=sk-your-key-here
-# @doctest id="cc61"
+# @doctest id="435a"
 ```
 
 For other providers, set the corresponding variable:
@@ -37,7 +32,7 @@ ANTHROPIC_API_KEY=your-key
 GEMINI_API_KEY=your-key
 GROQ_API_KEY=your-key
 MISTRAL_API_KEY=your-key
-# @doctest id="4458"
+# @doctest id="8183"
 ```
 
 > Never commit API keys to version control. Add `.env` to your `.gitignore` file.
@@ -57,7 +52,7 @@ $result = StructuredOutput::using('openai')
         responseModel: City::class,
     )
     ->get();
-// @doctest id="2d52"
+// @doctest id="814a"
 ```
 
 You can switch providers by changing the preset name:
@@ -70,7 +65,7 @@ $result = StructuredOutput::using('anthropic')
         responseModel: City::class,
     )
     ->get();
-// @doctest id="c518"
+// @doctest id="d320"
 ```
 
 
@@ -89,7 +84,7 @@ $result = StructuredOutput::fromConfig(
     messages: 'What is the capital of France?',
     responseModel: City::class,
 )->get();
-// @doctest id="b225"
+// @doctest id="01e3"
 ```
 
 You can also construct `LLMConfig` from an array for more detailed configuration:
@@ -111,7 +106,7 @@ $result = StructuredOutput::fromConfig($config)
         responseModel: City::class,
     )
     ->get();
-// @doctest id="f974"
+// @doctest id="699b"
 ```
 
 
@@ -138,7 +133,7 @@ $city = $structured
         responseModel: City::class,
     )
     ->get();
-// @doctest id="d261"
+// @doctest id="8083"
 ```
 
 ### What Belongs Where
@@ -165,7 +160,7 @@ use Cognesy\Instructor\Enums\OutputMode;
 $runtime = StructuredOutputRuntime::fromConfig(
     LLMConfig::fromPreset('openai')
 )->withOutputMode(OutputMode::JsonSchema);
-// @doctest id="d345"
+// @doctest id="0c09"
 ```
 
 Available modes:
@@ -201,7 +196,7 @@ $runtime->onEvent(
 $runtime->wiretap(
     fn($event) => logger()->debug(get_class($event)),
 );
-// @doctest id="b75d"
+// @doctest id="7e78"
 ```
 
 
@@ -220,7 +215,7 @@ $result = StructuredOutput::fromConfig(
     messages: 'What is the capital of France?',
     responseModel: City::class,
 )->get();
-// @doctest id="a7c7"
+// @doctest id="6a05"
 ```
 
 

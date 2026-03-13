@@ -1,10 +1,3 @@
----
-title: Subagents
-docname: subagents
-order: 15
-id: subagents
----
-
 ## Introduction
 
 Subagents allow one agent to delegate part of its work to another agent that runs in complete isolation. Each child agent has its own state, system prompt, tool set, resource budget, and LLM configuration. The parent agent decides when to delegate by calling the `spawn_subagent` tool, and the child's final output is returned to the parent as a tool result.
@@ -49,7 +42,7 @@ $state = AgentState::empty()->withUserMessage(
     'Review src/AgentLoop.php and summarize key issues.'
 );
 $result = $agent->execute($state);
-// @doctest id="2e6c"
+// @doctest id="7e0c"
 ```
 
 The parent model decides on its own when to call `spawn_subagent`. The tool schema includes a description of all available subagents and their purposes, giving the LLM the information it needs to choose the right one.
@@ -97,7 +90,7 @@ $registry->register(new AgentDefinition(
     tools: new NameList('read_file', 'edit_file'),
     budget: new ExecutionBudget(maxSteps: 12, maxTokens: 8000),
 ));
-// @doctest id="b833"
+// @doctest id="8f9e"
 ```
 
 ### File-Based Registration
@@ -106,7 +99,7 @@ Definitions can be loaded from `.md`, `.yaml`, or `.json` files:
 
 ```php
 $registry->loadFromDirectory('/agents', recursive: true);
-// @doctest id="2252"
+// @doctest id="7d5f"
 ```
 
 See [Agent Templates](14-agent-templates) for the full file format specification.
@@ -126,7 +119,7 @@ new AgentDefinition(
     systemPrompt: 'Help with any task.',
     // tools: null -- inherits all parent tools
 );
-// @doctest id="d310"
+// @doctest id="9f96"
 ```
 
 ### Allow-List
@@ -140,7 +133,7 @@ new AgentDefinition(
     systemPrompt: 'Analyze files but never modify them.',
     tools: new NameList('read_file', 'search_files'),
 );
-// @doctest id="0451"
+// @doctest id="eab4"
 ```
 
 ### Deny-List
@@ -156,7 +149,7 @@ new AgentDefinition(
     toolsDeny: new NameList('write_file'),
 );
 // Result: child only has 'read_file' and 'edit_file'
-// @doctest id="76f4"
+// @doctest id="bb67"
 ```
 
 ### spawn_subagent in Children
@@ -170,7 +163,7 @@ new AgentDefinition(
     systemPrompt: 'Complete the task directly.',
     toolsDeny: new NameList('spawn_subagent'),
 );
-// @doctest id="bdf6"
+// @doctest id="65e2"
 ```
 
 ## Depth Control
@@ -190,7 +183,7 @@ $agent = AgentBuilder::base()
         policy: new SubagentPolicy(maxDepth: 2),
     ))
     ->build();
-// @doctest id="19e2"
+// @doctest id="6f07"
 ```
 
 The default `maxDepth` is `3`. A depth of `0` means the parent itself; a depth of `2` means the parent can spawn children, and those children can spawn grandchildren, but no further.
@@ -203,7 +196,7 @@ For simple depth configuration, use the static `forDepth()` factory:
 $agent = AgentBuilder::base()
     ->withCapability(UseSubagents::forDepth(2, provider: $registry))
     ->build();
-// @doctest id="4ee9"
+// @doctest id="eb06"
 ```
 
 ### Depth Exceeded Behavior
@@ -229,7 +222,7 @@ new AgentDefinition(
         maxSeconds: 20.0,
     ),
 );
-// @doctest id="7f0e"
+// @doctest id="1fa6"
 ```
 
 If no budget is declared, the child runs without guards (unless the parent's guards indirectly limit it through total token accounting).
@@ -251,7 +244,7 @@ new AgentDefinition(
     ]),
     budget: new ExecutionBudget(maxSteps: 3),
 );
-// @doctest id="eeb3"
+// @doctest id="3d77"
 ```
 
 If no `llmConfig` is specified, the child inherits the parent's LLM configuration. You can also pass just a driver name as a string:
@@ -263,7 +256,7 @@ new AgentDefinition(
     systemPrompt: 'Complete the task.',
     llmConfig: 'anthropic',
 );
-// @doctest id="7f98"
+// @doctest id="efe6"
 ```
 
 ## Skill Injection
@@ -291,7 +284,7 @@ $agent = AgentBuilder::base()
         skillLibrary: $skillLibrary,
     ))
     ->build();
-// @doctest id="ca5a"
+// @doctest id="aa0b"
 ```
 
 ## Events
@@ -310,7 +303,7 @@ $agent->onEvent(SubagentSpawning::class, function (SubagentSpawning $e) {
     echo "Parent agent: {$e->parentAgentId}\n";
     echo "Prompt: {$e->prompt}\n";
 });
-// @doctest id="d9f8"
+// @doctest id="1605"
 ```
 
 The event includes:
@@ -332,7 +325,7 @@ $agent->onEvent(SubagentCompleted::class, function (SubagentCompleted $e) {
     echo "'{$e->subagentName}' completed: status={$e->status->value}, "
        . "steps={$e->steps}, tokens={$tokens}\n";
 });
-// @doctest id="39e0"
+// @doctest id="7789"
 ```
 
 The event includes:

@@ -1,8 +1,3 @@
----
-title: Configuration
-description: 'Configure template engine settings, resource paths, and presets'
----
-
 # Configuration
 
 By default, xprompt uses Twig with `$templateDir` paths set on individual prompt classes. For centralized control — shared resource paths, cache directories, or preset-based configuration — use `TemplateEngineConfig`.
@@ -21,7 +16,7 @@ $config = TemplateEngineConfig::twig(
 
 $prompt = Analyze::make()->withConfig($config);
 echo $prompt->render(content: $doc);
-// @doctest id="e5ff"
+// @doctest id="53d4"
 ```
 
 ## Registry-Wide Config
@@ -39,7 +34,7 @@ $registry->register('analyze', Analyze::class);
 
 $prompt = $registry->get('analyze');
 // Uses the registry's config for template resolution
-// @doctest id="448f"
+// @doctest id="f19a"
 ```
 
 ## Config Resolution
@@ -58,7 +53,7 @@ Load configuration from YAML preset files using `fromPreset()`:
 
 ```php
 $config = TemplateEngineConfig::fromPreset('my-templates');
-// @doctest id="1744"
+// @doctest id="c71e"
 ```
 
 This searches for `my-templates.yaml` in the standard preset directories:
@@ -68,14 +63,14 @@ config/prompt/presets/
 packages/templates/resources/config/prompt/presets/
 vendor/cognesy/instructor-php/packages/templates/resources/config/prompt/presets/
 vendor/cognesy/instructor-templates/resources/config/prompt/presets/
-// @doctest id="6cfb"
+// @doctest id="79fc"
 ```
 
 You can also provide a specific base path:
 
 ```php
 $config = TemplateEngineConfig::fromPreset('custom', basePath: __DIR__ . '/config');
-// @doctest id="c9bb"
+// @doctest id="22a0"
 ```
 
 ## Quick Reference

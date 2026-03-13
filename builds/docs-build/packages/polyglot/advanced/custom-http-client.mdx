@@ -1,8 +1,3 @@
----
-title: 'Custom HTTP Client'
-description: 'Inject your own HTTP transport into a runtime.'
----
-
 Polyglot creates an HTTP client for you by default using the `HttpClientBuilder`. In most
 cases this is all you need. However, if your application already owns the HTTP transport
 concern -- for example, you need custom timeouts, middleware, or a shared client instance --
@@ -47,7 +42,7 @@ $runtime = InferenceRuntime::fromConfig(
 $text = Inference::fromRuntime($runtime)
     ->withMessages(Messages::fromString('Say hello.'))
     ->get();
-// @doctest id="e412"
+// @doctest id="dfee"
 ```
 
 When no HTTP client is provided, Polyglot creates a default one with sensible timeouts. The
@@ -84,7 +79,7 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 $http = (new HttpClientBuilder())
     ->withConfig(new HttpClientConfig(driver: 'guzzle'))
     ->create();
-// @doctest id="6c69"
+// @doctest id="2a0c"
 ```
 
 You can also inject a pre-configured client instance from your application's service container:
@@ -102,7 +97,7 @@ $guzzleClient = new \GuzzleHttp\Client([
 $http = (new HttpClientBuilder())
     ->withClientInstance('guzzle', $guzzleClient)
     ->create();
-// @doctest id="ef6f"
+// @doctest id="2e42"
 ```
 
 This is particularly useful when your application requires proxy configuration, custom SSL
@@ -131,7 +126,7 @@ $httpClient = (new HttpClientBuilder())
         maxDelayMs: 8000,
     ))
     ->create();
-// @doctest id="82c4"
+// @doctest id="c2e8"
 ```
 
 ### Circuit Breaker
@@ -150,7 +145,7 @@ $httpClient = (new HttpClientBuilder())
         openForSec: 30,
     ))
     ->create();
-// @doctest id="d4df"
+// @doctest id="46a6"
 ```
 
 ### Combining Multiple Middleware
@@ -171,7 +166,7 @@ $httpClient = (new HttpClientBuilder())
         openForSec: 30,
     ))
     ->create();
-// @doctest id="00e5"
+// @doctest id="be50"
 ```
 
 ### Custom Middleware
@@ -187,7 +182,7 @@ use Cognesy\Http\Contracts\HttpMiddleware;
 $httpClient = (new HttpClientBuilder())
     ->withMiddleware(new MyLoggingMiddleware(), new MyMetricsMiddleware())
     ->create();
-// @doctest id="b43e"
+// @doctest id="e6e9"
 ```
 
 
@@ -219,7 +214,7 @@ $runtime = EmbeddingsRuntime::fromConfig(
 );
 
 $embeddings = Embeddings::fromRuntime($runtime);
-// @doctest id="0188"
+// @doctest id="1661"
 ```
 
 
@@ -251,7 +246,7 @@ $inference = Inference::fromRuntime(
 $embeddings = Embeddings::fromRuntime(
     EmbeddingsRuntime::fromConfig(EmbeddingsConfig::fromPreset('openai'), httpClient: $http)
 );
-// @doctest id="9550"
+// @doctest id="923b"
 ```
 
 This ensures both services share the same retry policy, circuit breaker state, and

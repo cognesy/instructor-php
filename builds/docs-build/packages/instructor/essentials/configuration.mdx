@@ -1,8 +1,3 @@
----
-title: Configuration
-description: 'Keep provider, runtime, and request configuration separate.'
----
-
 Instructor separates configuration into three layers: the LLM provider, the runtime, and
 the individual request. This keeps most applications simple -- one runtime handles shared
 behavior, while each request stays focused on content.
@@ -17,7 +12,7 @@ is a preset name that maps to your environment variables:
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 $config = LLMConfig::fromPreset('openai');
-// @doctest id="30d9"
+// @doctest id="e15d"
 ```
 
 You can also create a `StructuredOutput` directly from a preset:
@@ -28,7 +23,7 @@ use Cognesy\Instructor\StructuredOutput;
 $result = StructuredOutput::using('anthropic')
     ->with(messages: 'Jason is 28.', responseModel: Person::class)
     ->get();
-// @doctest id="1ccf"
+// @doctest id="a5fe"
 ```
 
 Provider configuration covers connection details: API keys, base URLs, default model
@@ -50,7 +45,7 @@ $runtime = StructuredOutputRuntime::fromConfig(
 )
     ->withMaxRetries(3)
     ->withOutputMode(OutputMode::Tools);
-// @doctest id="c85e"
+// @doctest id="c7f8"
 ```
 
 ### Runtime Settings
@@ -86,7 +81,7 @@ $runtime = StructuredOutputRuntime::fromConfig(
     LLMConfig::fromPreset('openai'),
     structuredConfig: $config,
 );
-// @doctest id="87d3"
+// @doctest id="4112"
 ```
 
 `StructuredOutputConfig` includes settings for:
@@ -118,7 +113,7 @@ $person = (new StructuredOutput)
         model: 'gpt-4o',
     )
     ->get();
-// @doctest id="5722"
+// @doctest id="06f6"
 ```
 
 ### Request Methods
@@ -152,7 +147,7 @@ $runtime->onEvent(StructuredOutputRequestReceived::class, function ($event) {
 $runtime->wiretap(function ($event) {
     logger()->debug(get_class($event));
 });
-// @doctest id="a360"
+// @doctest id="6d44"
 ```
 
 
@@ -177,7 +172,7 @@ $summary = (new StructuredOutput)
     ->withRuntime($runtime)
     ->with(messages: $text2, responseModel: Summary::class)
     ->get();
-// @doctest id="c43f"
+// @doctest id="3935"
 ```
 
 This keeps configuration centralized and each request minimal.

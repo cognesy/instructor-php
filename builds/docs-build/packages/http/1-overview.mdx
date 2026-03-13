@@ -1,8 +1,3 @@
----
-title: Overview
-description: 'A framework-agnostic HTTP transport with pluggable drivers, streaming, and middleware.'
----
-
 The HTTP client package provides a unified transport layer for making HTTP requests across different PHP environments. Whether your application runs on Symfony, Laravel, or plain PHP, you interact with the same small set of types and the underlying driver handles the rest.
 
 ## Why a Custom HTTP Layer?
@@ -39,7 +34,7 @@ HttpClient
   -> PendingHttpResponse
   -> get() or stream()
   -> HttpResponse
-// @doctest id="56c7"
+// @doctest id="21da"
 ```
 
 1. You create an `HttpRequest` with a URL, method, headers, and body.
@@ -59,7 +54,7 @@ Your Code
                                                  |
       <- Middleware 1 <- Middleware 2 <- ... <- Driver
     -> HttpResponse
-// @doctest id="b73c"
+// @doctest id="e9ed"
 ```
 
 **Client layer.** `HttpClient` is the public entry point. It delegates to `HttpClientRuntime`, which wires together the driver, middleware stack, and event dispatcher.
@@ -85,7 +80,7 @@ $request = $request->withHeader('Authorization', 'Bearer ' . $token);
 
 // Wrong -- the return value is discarded
 $request->withHeader('Authorization', 'Bearer ' . $token);
-// @doctest id="4bd7"
+// @doctest id="f2de"
 ```
 
 ## Pooling

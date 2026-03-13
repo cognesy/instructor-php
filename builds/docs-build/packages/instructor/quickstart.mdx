@@ -1,8 +1,3 @@
----
-title: Quickstart
-description: 'Extract structured data from LLM responses in under 5 minutes.'
----
-
 This guide walks you through installing Instructor and running your first extraction.
 For detailed configuration options, see [Setup](setup).
 
@@ -13,7 +8,7 @@ Install the package via Composer:
 
 ```bash
 composer require cognesy/instructor-struct
-# @doctest id="9b83"
+# @doctest id="73a4"
 ```
 
 > Instructor requires **PHP 8.3** or later.
@@ -28,7 +23,7 @@ approach is to export an environment variable before running your script:
 
 ```bash
 export OPENAI_API_KEY="sk-your-key-here"
-# @doctest id="8046"
+# @doctest id="ca2c"
 ```
 
 > In a real project, store API keys in a `.env` file or your framework's secret
@@ -45,7 +40,7 @@ class City {
     public string $country;
     public int $population;
 }
-// @doctest id="0e81"
+// @doctest id="1a18"
 ```
 
 ### Step 3: Run the Extraction
@@ -74,7 +69,7 @@ $city = StructuredOutput::using('openai')
 echo $city->name;       // Paris
 echo $city->country;    // France
 echo $city->population; // 2148000
-// @doctest id="39b4"
+// @doctest id="83f7"
 ```
 
 The `get()` method returns a fully hydrated `City` instance. Public typed properties
@@ -95,7 +90,7 @@ $city = StructuredOutput::using('openai')
     ->withMessages('What is the capital of France?')
     ->withResponseClass(City::class)
     ->get();
-// @doctest id="ae59"
+// @doctest id="ad60"
 ```
 
 ### Compact `with()` Call
@@ -110,7 +105,7 @@ $city = StructuredOutput::using('openai')
         model: 'gpt-4o-mini',
     )
     ->get();
-// @doctest id="365a"
+// @doctest id="288a"
 ```
 
 ### Explicit Provider Configuration
@@ -129,7 +124,7 @@ $city = StructuredOutput::fromConfig(
         responseModel: City::class,
     )
     ->get();
-// @doctest id="47c9"
+// @doctest id="8d1e"
 ```
 
 
@@ -152,7 +147,7 @@ foreach ($stream->partials() as $partial) {
 
 $city = $stream->finalValue();
 echo $city->name; // Paris
-// @doctest id="348e"
+// @doctest id="0a1d"
 ```
 
 
@@ -181,7 +176,7 @@ $city = StructuredOutput::using('openai')
         responseModel: City::class,
     )
     ->get();
-// @doctest id="e318"
+// @doctest id="e6f3"
 ```
 
 To enable retries, configure `maxRetries` on the runtime. See [Validation](essentials/validation) for details.

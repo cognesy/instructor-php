@@ -1,8 +1,3 @@
----
-title: Validation
-description: 'Validate extracted data before you use it.'
----
-
 Validation runs after deserialization and before the result is returned. If the extracted
 data does not meet your rules, Instructor can automatically retry the request, feeding
 the validation errors back to the model so it can self-correct.
@@ -24,7 +19,7 @@ class Person {
     #[Assert\PositiveOrZero]
     public int $age;
 }
-// @doctest id="2ec7"
+// @doctest id="1675"
 ```
 
 If the model returns a name shorter than three characters or a negative age, validation
@@ -47,7 +42,7 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 $runtime = StructuredOutputRuntime::fromConfig(
     LLMConfig::fromPreset('openai')
 )->withMaxRetries(3);
-// @doctest id="fdd8"
+// @doctest id="436f"
 ```
 
 The `maxRetries` value controls how many additional attempts are allowed after the first
@@ -74,7 +69,7 @@ $person = (new StructuredOutput)
         responseModel: Person::class,
     )
     ->get();
-// @doctest id="32bb"
+// @doctest id="671c"
 ```
 
 In this example, the model might initially return `name: "JX"` and `age: -28`. Validation
@@ -112,7 +107,7 @@ class UserDetails
         return ValidationResult::valid();
     }
 }
-// @doctest id="feea"
+// @doctest id="fbf4"
 ```
 
 The `ValidationResult` class provides several factory methods:
@@ -138,7 +133,7 @@ $user = (new StructuredOutput)
     ->get();
 
 assert($user->name === 'JASON');
-// @doctest id="bd30"
+// @doctest id="95c2"
 ```
 
 
@@ -168,7 +163,7 @@ class UserDetails
         }
     }
 }
-// @doctest id="92ca"
+// @doctest id="25eb"
 ```
 
 > See the [Symfony Callback constraint docs](https://symfony.com/doc/current/reference/constraints/Callback.html)
@@ -195,5 +190,5 @@ $config = new StructuredOutputConfig(
     maxRetries: 3,
     retryPrompt: 'The previous response had errors. Please correct them:',
 );
-// @doctest id="3a5f"
+// @doctest id="bee6"
 ```

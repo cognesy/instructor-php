@@ -1,8 +1,3 @@
----
-title: 'Upgrading Polyglot'
-description: 'Polyglot 2.0 uses explicit request fields instead of output modes.'
----
-
 Polyglot 2.0 is centered around explicit request fields.
 
 The main migration points are:
@@ -33,7 +28,7 @@ $data = $inference
         mode: $oldMode,
     )
     ->asJsonData();
-// @doctest id="cc69"
+// @doctest id="b73b"
 ```
 
 ## After
@@ -49,7 +44,7 @@ $data = Inference::using('openai')
     ->withMessages(Messages::fromString('Return JSON.'))
     ->withResponseFormat(new ResponseFormat(type: 'json_object'))
     ->asJsonData();
-// @doctest id="063d"
+// @doctest id="2082"
 ```
 
 Markdown-JSON fallback is no longer a Polyglot concern.

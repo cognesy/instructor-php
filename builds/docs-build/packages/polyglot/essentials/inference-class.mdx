@@ -1,8 +1,3 @@
----
-title: 'Inference Class'
-description: 'The primary facade for making LLM requests -- creation, configuration, and execution.'
----
-
 The `Inference` class is a thin, immutable facade over `InferenceRuntime`. It provides the
 unified entry point for configuring providers, building requests, and retrieving responses
 from any supported LLM.
@@ -29,7 +24,7 @@ $inference = Inference::fromProvider($provider);
 
 // From a fully assembled runtime
 $inference = Inference::fromRuntime($runtime);
-// @doctest id="3dd8"
+// @doctest id="bb74"
 ```
 
 ### Presets
@@ -43,7 +38,7 @@ model, and other connection details:
 $openai    = Inference::using('openai');
 $anthropic = Inference::using('anthropic');
 $ollama    = Inference::using('ollama');
-// @doctest id="a0ce"
+// @doctest id="b883"
 ```
 
 ## Configuring a Request
@@ -57,7 +52,7 @@ instance, so you can safely branch from a shared configuration:
 $inference = Inference::using('openai')
     ->withMessages(Messages::fromString('Explain dependency injection in one paragraph.'))
     ->withModel('gpt-4.1-nano');
-// @doctest id="eebb"
+// @doctest id="2973"
 ```
 
 ### Tools and Response Format
@@ -70,7 +65,7 @@ $inference = Inference::using('openai')
     ->withTools($toolDefinitions)
     ->withToolChoice(ToolChoice::auto())
     ->withResponseFormat(ResponseFormat::jsonObject());
-// @doctest id="f3a4"
+// @doctest id="e0f4"
 ```
 
 ### Streaming and Token Limits
@@ -79,7 +74,7 @@ $inference = Inference::using('openai')
 $inference = Inference::using('openai')
     ->withStreaming(true)
     ->withMaxTokens(256);
-// @doctest id="611c"
+// @doctest id="0a3f"
 ```
 
 ### Provider-Specific Options
@@ -87,7 +82,7 @@ $inference = Inference::using('openai')
 ```php
 $inference = Inference::using('openai')
     ->withOptions(['temperature' => 0.5, 'top_p' => 0.9]);
-// @doctest id="07da"
+// @doctest id="d269"
 ```
 
 ### The Combined `with()` Method
@@ -106,7 +101,7 @@ $inference = Inference::using('openai')->with(
     responseFormat: ResponseFormat::text(),
     options: ['temperature' => 0.7],
 );
-// @doctest id="0036"
+// @doctest id="53be"
 ```
 
 ### Full Method Reference
@@ -159,7 +154,7 @@ $toolJson = $inference->asToolCallJson();
 
 // Parsed tool call JSON as an array
 $toolData = $inference->asToolCallJsonData();
-// @doctest id="2568"
+// @doctest id="9cd3"
 ```
 
 ### Streaming
@@ -174,7 +169,7 @@ $stream = Inference::using('openai')
 foreach ($stream->deltas() as $partial) {
     echo $partial->contentDelta;
 }
-// @doctest id="f3bf"
+// @doctest id="9ca0"
 ```
 
 ### The Lazy Handle: `PendingInference`
@@ -191,7 +186,7 @@ $pending = Inference::using('openai')
 // Nothing has been sent to the provider yet.
 // Execution happens here:
 $text = $pending->get();
-// @doctest id="798f"
+// @doctest id="9653"
 ```
 
 `PendingInference` exposes the same response methods as `Inference`: `get()`,
@@ -209,5 +204,5 @@ use Cognesy\Polyglot\Inference\Inference;
 $response = Inference::using('custom-provider', drivers: $myDriverRegistry)
     ->withMessages(Messages::fromString('Hello from a custom driver.'))
     ->get();
-// @doctest id="5f2c"
+// @doctest id="21d2"
 ```

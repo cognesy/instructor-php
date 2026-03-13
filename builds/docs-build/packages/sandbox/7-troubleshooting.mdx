@@ -1,8 +1,3 @@
----
-title: Troubleshooting
-description: 'Diagnose and resolve common setup, runtime, and configuration issues with the Sandbox package.'
----
-
 ## Introduction
 
 This page covers the most common issues you may encounter when using the Sandbox package. Each entry describes the symptom, explains the root cause, and provides concrete solutions.
@@ -55,7 +50,7 @@ The package searches the following directories in addition to `PATH`: `/usr/bin`
 use Cognesy\Sandbox\Enums\SandboxDriver;
 
 $sandbox = Sandbox::fromPolicy($policy)->using(SandboxDriver::Docker);
-// @doctest id="f5ca"
+// @doctest id="2de6"
 ```
 
 The valid string values are: `host`, `docker`, `podman`, `firejail`, `bubblewrap`. These match the `SandboxDriver` enum's backing values exactly.
@@ -103,7 +98,7 @@ $policy = $policy->withOutputCaps(
     stdoutBytes: 10 * 1024 * 1024, // 10 MB
     stderrBytes: 2 * 1024 * 1024,  // 2 MB
 );
-// @doctest id="6d07"
+// @doctest id="402f"
 ```
 
 The default cap is 1 MB (1,048,576 bytes) for each stream. The minimum is 1024 bytes -- values below this are clamped upward.
@@ -119,7 +114,7 @@ $result = $sandbox->execute($argv, null, function (string $type, string $chunk) 
 
 fclose($logFile);
 // $result->stdout() may be truncated, but /tmp/full-output.log has everything
-// @doctest id="3298"
+// @doctest id="574c"
 ```
 
 ## Working Directory Errors
@@ -230,7 +225,7 @@ If you still encounter issues, verify that:
 
 ```php
 $policy = $policy->withNetwork(true);
-// @doctest id="a912"
+// @doctest id="fd4a"
 ```
 
 **How network isolation is implemented per driver:**

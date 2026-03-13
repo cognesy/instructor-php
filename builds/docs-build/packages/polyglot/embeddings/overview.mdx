@@ -1,8 +1,3 @@
----
-title: 'Overview of Embeddings'
-description: 'Generate vector embeddings through the Embeddings facade across multiple providers.'
----
-
 Embeddings are numerical representations of text that capture semantic meaning in a high-dimensional vector space. They are a foundational building block for many LLM-powered applications, enabling machines to understand relationships between words, phrases, and documents.
 
 Polyglot's `Embeddings` class provides a unified interface for generating vector embeddings across multiple providers. You write your code once, and switch between OpenAI, Cohere, Gemini, Jina, Mistral, or any other supported provider by changing a single preset name.
@@ -69,7 +64,7 @@ $embeddings = Embeddings::fromProvider($provider);
 
 // From a custom runtime (full control over driver and events)
 $embeddings = Embeddings::fromRuntime($runtime);
-// @doctest id="8973"
+// @doctest id="6004"
 ```
 
 ## Request Methods
@@ -132,7 +127,7 @@ $registry = BundledEmbeddingsDrivers::registry()
     ->withDriver('custom-provider', function ($config, $httpClient, $events) {
         return new CustomEmbeddingsDriver($config, $httpClient, $events);
     });
-// @doctest id="e00c"
+// @doctest id="a5fb"
 ```
 
 Your custom driver must implement the `CanHandleVectorization` contract.

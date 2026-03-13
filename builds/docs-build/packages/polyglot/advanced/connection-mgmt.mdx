@@ -1,8 +1,3 @@
----
-title: 'Preset Management'
-description: 'Switch providers by changing presets, not request code.'
----
-
 One of Polyglot's core design principles is that your request code should remain stable while
 the provider configuration changes. A **preset** is a named YAML file that bundles everything
 the runtime needs -- driver type, API URL, credentials, default model, and token limits -- into
@@ -29,7 +24,7 @@ $prompt = Messages::fromString('Explain dependency injection in one sentence.');
 $openai    = Inference::using('openai')->withMessages($prompt)->get();
 $anthropic = Inference::using('anthropic')->withMessages($prompt)->get();
 $gemini    = Inference::using('gemini')->withMessages($prompt)->get();
-// @doctest id="ee88"
+// @doctest id="5f36"
 ```
 
 You can also override the model on a per-request basis without creating a new preset:
@@ -46,7 +41,7 @@ $response = Inference::using('openai')
         model: 'gpt-4.1',
     )
     ->get();
-// @doctest id="6caf"
+// @doctest id="2c39"
 ```
 
 
@@ -128,7 +123,7 @@ $response = withFallback(
     presets: ['openai', 'anthropic', 'gemini'],
     prompt: Messages::fromString('What is the capital of France?'),
 );
-// @doctest id="0e21"
+// @doctest id="92e1"
 ```
 
 This pattern gives you full control over retry logic, logging, and error handling at each
@@ -173,7 +168,7 @@ echo $router->ask('Explain monads in simple terms.', 'medium');
 
 // High-stakes analysis -- use premium tier
 echo $router->ask('Analyze the ethical implications of AI in healthcare.', 'high');
-// @doctest id="26bf"
+// @doctest id="e175"
 ```
 
 
@@ -210,7 +205,7 @@ $router = new TaskRouter();
 echo $router->ask('Write a short poem about the ocean.', 'creative');
 echo $router->ask('What is the capital of France?', 'factual');
 echo $router->ask('Write a PHP function to reverse a string.', 'code');
-// @doctest id="a25b"
+// @doctest id="0928"
 ```
 
 > **Tip:** You can combine cost-aware and task-based routing. For example, use a cheap local
@@ -232,7 +227,7 @@ $inference = Inference::using('openai');
 
 $answer1 = $inference->withMessages(Messages::fromString('What is PHP?'))->get();
 $answer2 = $inference->withMessages(Messages::fromString('What is Laravel?'))->get();
-// @doctest id="485a"
+// @doctest id="e5f9"
 ```
 
 Because `Inference` uses immutable builder methods (each call returns a new copy), sharing a

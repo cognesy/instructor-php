@@ -1,8 +1,3 @@
----
-title: 'Changing Client'
-description: 'Switch HTTP drivers without changing your request code.'
----
-
 One of the core design goals of this package is driver independence. You write your request code once, and the underlying HTTP library can be swapped at any time -- through configuration, the builder, or direct injection. This is especially valuable when moving between environments (e.g., a Symfony project that uses the Symfony driver vs. a CLI tool that uses raw cURL).
 
 ## Available Drivers
@@ -48,7 +43,7 @@ $client = HttpClient::fromConfig(new HttpClientConfig(driver: 'symfony'));
 
 // Use cURL (default)
 $client = HttpClient::fromConfig(new HttpClientConfig(driver: 'curl'));
-// @doctest id="d836"
+// @doctest id="dc90"
 ```
 
 ### Via the Builder
@@ -62,7 +57,7 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 $client = (new HttpClientBuilder())
     ->withConfig(new HttpClientConfig(driver: 'guzzle'))
     ->create();
-// @doctest id="7e0d"
+// @doctest id="4680"
 ```
 
 ### Injecting a Driver Directly
@@ -75,7 +70,7 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 $client = (new HttpClientBuilder())
     ->withDriver($myCustomDriver)
     ->create();
-// @doctest id="b992"
+// @doctest id="d75d"
 ```
 
 Or use the static shorthand:
@@ -84,7 +79,7 @@ Or use the static shorthand:
 use Cognesy\Http\HttpClient;
 
 $client = HttpClient::fromDriver($myCustomDriver);
-// @doctest id="3309"
+// @doctest id="669c"
 ```
 
 ## Reusing a Vendor Client Instance
@@ -103,7 +98,7 @@ $guzzle = new Client([
 $client = (new HttpClientBuilder())
     ->withClientInstance('guzzle', $guzzle)
     ->create();
-// @doctest id="80b8"
+// @doctest id="ca01"
 ```
 
 The `withClientInstance()` method selects the driver by name and passes your vendor client to it, so the driver uses your instance instead of creating its own.
@@ -116,7 +111,7 @@ use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
 $client = (new HttpClientBuilder())
     ->withClientInstance('symfony', SymfonyHttpClient::create(['timeout' => 30]))
     ->create();
-// @doctest id="11ae"
+// @doctest id="d11f"
 ```
 
 ## Using the Mock Driver
@@ -136,7 +131,7 @@ $client = (new HttpClientBuilder())
         );
     })
     ->create();
-// @doctest id="eb9b"
+// @doctest id="88df"
 ```
 
 ## Request Code Stays the Same
@@ -153,7 +148,7 @@ $response = $client->send(new HttpRequest(
 ))->get();
 
 echo $response->body();
-// @doctest id="d2bd"
+// @doctest id="3c28"
 ```
 
 This code works identically with cURL, Guzzle, Symfony, or the mock driver.

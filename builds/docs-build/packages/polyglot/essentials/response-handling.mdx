@@ -1,8 +1,3 @@
----
-title: 'Response Handling'
-description: 'Work with `PendingInference`, `InferenceResponse`, and streaming to consume LLM output in the format your application needs.'
----
-
 Polyglot's `PendingInference` class represents a pending inference execution. It is
 returned by the `Inference` class when you call the `create()` method. The request is
 **not sent** to the underlying LLM until you actually access the response data, making
@@ -26,7 +21,7 @@ $pending = Inference::using('openai')
 // Get the response as plain text
 $text = $pending->get();
 echo $text; // "The capital of France is Paris."
-// @doctest id="404a"
+// @doctest id="94d5"
 ```
 
 ## Retrieving JSON Data
@@ -52,7 +47,7 @@ echo $data['status'];
 
 // Or get the raw JSON string
 $json = $pending->asJson();
-// @doctest id="ed41"
+// @doctest id="4816"
 ```
 
 ## Working with `InferenceResponse`
@@ -88,7 +83,7 @@ echo "Cache tokens: " . $usage->cache() . "\n";
 
 // Raw HTTP response data
 $httpResponse = $response->responseData();
-// @doctest id="7e24"
+// @doctest id="57a5"
 ```
 
 ### Available `InferenceResponse` Methods
@@ -141,7 +136,7 @@ $usage->input();   // Same as inputTokens
 $usage->output();  // outputTokens + reasoningTokens
 $usage->cache();   // cacheWriteTokens + cacheReadTokens
 $usage->total();   // Sum of all token counts
-// @doctest id="c7f7"
+// @doctest id="0c14"
 ```
 
 ## Handling Tool Calls
@@ -202,7 +197,7 @@ if ($response->hasToolCalls()) {
         $unit = $call->value('unit', 'celsius');
     }
 }
-// @doctest id="c613"
+// @doctest id="7183"
 ```
 
 ### Quick JSON Extraction from Tool Calls
@@ -218,7 +213,7 @@ $args = $pending->asToolCallJsonData();
 
 // Or as a JSON string
 $json = $pending->asToolCallJson();
-// @doctest id="fa0e"
+// @doctest id="2acb"
 ```
 
 > **Note:** When a single tool call is present, `asToolCallJsonData()` returns that
@@ -247,7 +242,7 @@ foreach ($stream->deltas() as $delta) {
 // After iteration, get the finalized response
 $finalResponse = $stream->final();
 echo "\n\nTokens used: " . $finalResponse->usage()->total();
-// @doctest id="fd6e"
+// @doctest id="5893"
 ```
 
 ### The `PartialInferenceDelta` Object
@@ -298,7 +293,7 @@ $allDeltas = $stream->all();
 
 // Get the finalized response (drains the stream if needed)
 $response = $stream->final();
-// @doctest id="5ec3"
+// @doctest id="61da"
 ```
 
 ### Using the `onDelta` Callback
@@ -328,7 +323,7 @@ $stream->onDelta(function ($delta) {
 
 // Drain the stream to trigger all callbacks
 $response = $stream->final();
-// @doctest id="4972"
+// @doctest id="433f"
 ```
 
 ### Stream Lifecycle
@@ -360,5 +355,5 @@ if ($pending->isStreamed()) {
 } else {
     echo $pending->get();
 }
-// @doctest id="1051"
+// @doctest id="86d8"
 ```

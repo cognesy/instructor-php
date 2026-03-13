@@ -1,8 +1,3 @@
----
-title: 'Public API'
-description: 'The main classes applications are expected to use.'
----
-
 Most applications only need a small part of the package. The `Inference` and `Embeddings` facades provide a fluent, immutable interface that handles provider differences behind the scenes.
 
 
@@ -30,14 +25,14 @@ $inference = Inference::fromProvider($provider);
 
 // From an already-built runtime
 $inference = Inference::fromRuntime($runtime);
-// @doctest id="3f3d"
+// @doctest id="f000"
 ```
 
 You can also pass a custom driver registry to `using()` or `fromConfig()` if you have registered custom drivers:
 
 ```php
 $inference = Inference::using('my-provider', drivers: $customRegistry);
-// @doctest id="0782"
+// @doctest id="a4c9"
 ```
 
 ### Building a Request
@@ -52,7 +47,7 @@ $base = Inference::using('openai')
 // Branch into two different requests from the same base
 $response1 = $base->withMessages(Messages::fromString('Explain PHP traits.'))->get();
 $response2 = $base->withMessages(Messages::fromString('Explain PHP enums.'))->get();
-// @doctest id="ba18"
+// @doctest id="2d2f"
 ```
 
 Available request methods:
@@ -99,7 +94,7 @@ $json = $inference->withMessages(Messages::fromString('Call a tool'))->asToolCal
 
 // Stream the response
 $stream = $inference->withMessages(Messages::fromString('Hello'))->stream();
-// @doctest id="1a93"
+// @doctest id="3819"
 ```
 
 For lower-level control, `create()` returns a `PendingInference` without triggering execution:
@@ -111,7 +106,7 @@ $pending = $inference->withMessages(Messages::fromString('Hello'))->create();
 $text = $pending->get();
 $response = $pending->response();
 $stream = $pending->stream();
-// @doctest id="98da"
+// @doctest id="0751"
 ```
 
 ### Working with Responses
@@ -138,7 +133,7 @@ $response->hasFinishReason();
 // JSON extraction
 $response->findJsonData();         // Json object from content
 $response->findToolCallJsonData(); // Json object from tool call args
-// @doctest id="3317"
+// @doctest id="c2b7"
 ```
 
 ### Working with Streams
@@ -171,7 +166,7 @@ $toolOnly = $stream->filter(fn($d) => $d->toolName !== '');
 
 // Collect all deltas at once
 $allDeltas = $stream->all();
-// @doctest id="f4f0"
+// @doctest id="4b0e"
 ```
 
 
@@ -197,7 +192,7 @@ $embeddings = Embeddings::fromProvider($provider);
 
 // From a runtime
 $embeddings = Embeddings::fromRuntime($runtime);
-// @doctest id="17cc"
+// @doctest id="96dc"
 ```
 
 ### Building a Request
@@ -207,7 +202,7 @@ $embeddings = Embeddings::using('openai')
     ->withInputs('The quick brown fox')
     ->withModel('text-embedding-3-small')
     ->withOptions(['dimensions' => 256]);
-// @doctest id="a7f6"
+// @doctest id="7328"
 ```
 
 Available request methods:
@@ -233,7 +228,7 @@ $vectors = $embeddings->withInputs(['text one', 'text two'])->vectors();
 
 // Get the first vector
 $vector = $embeddings->withInputs('Hello world')->first();
-// @doctest id="d30e"
+// @doctest id="0928"
 ```
 
 For lower-level control, `create()` returns a `PendingEmbeddings`:
@@ -241,7 +236,7 @@ For lower-level control, `create()` returns a `PendingEmbeddings`:
 ```php
 $pending = $embeddings->withInputs('Hello world')->create();
 $response = $pending->get();
-// @doctest id="05f2"
+// @doctest id="0ef5"
 ```
 
 ### Working with Responses
@@ -260,7 +255,7 @@ $response->toValuesArray(); // array -- raw float arrays
 
 // Split vectors at a given index
 [$before, $after] = $response->split(1);
-// @doctest id="c475"
+// @doctest id="b7c7"
 ```
 
 
@@ -277,7 +272,7 @@ $registry = BundledInferenceDrivers::registry()
     ->withDriver('my-provider', MyCustomDriver::class);
 
 $inference = Inference::using('my-provider', drivers: $registry);
-// @doctest id="a436"
+// @doctest id="e4d3"
 ```
 
 ### Embeddings Drivers
@@ -292,7 +287,7 @@ $registry = BundledEmbeddingsDrivers::registry()
 
 $runtime = EmbeddingsRuntime::fromConfig($config, drivers: $registry);
 $embeddings = Embeddings::fromRuntime($runtime);
-// @doctest id="0aed"
+// @doctest id="2ff0"
 ```
 
 See the [Providers](/internals/providers) page for details on driver registration and factory patterns.

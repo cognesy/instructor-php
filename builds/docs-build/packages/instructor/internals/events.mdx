@@ -1,8 +1,3 @@
----
-title: Events
-description: 'Observe requests and streaming updates.'
----
-
 ## Overview
 
 Instructor dispatches events at every significant stage of its execution. You can
@@ -23,7 +18,7 @@ $runtime = StructuredOutputRuntime::fromDefaults()
     ->onEvent(ResponseValidationFailed::class, function ($event) {
         logger()->warning('Validation failed', $event->toArray());
     });
-// @doctest id="30fd"
+// @doctest id="77c7"
 ```
 
 ### Wiretap (All Events)
@@ -34,7 +29,7 @@ debugging or comprehensive logging:
 ```php
 $runtime = StructuredOutputRuntime::fromDefaults()
     ->wiretap(fn($event) => $event->print());
-// @doctest id="b6d5"
+// @doctest id="fe1c"
 ```
 
 ### Practical Example
@@ -61,7 +56,7 @@ $result = (new StructuredOutput($runtime))
         responseModel: Scalar::integer(),
     )
     ->get();
-// @doctest id="f229"
+// @doctest id="2747"
 ```
 
 

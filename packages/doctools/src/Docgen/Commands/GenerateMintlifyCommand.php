@@ -133,6 +133,9 @@ class GenerateMintlifyCommand extends Command
             return $exampleResult;
         }
 
+        // Strip YAML frontmatter from all .mdx files (MDX/Mintlify doesn't support it)
+        $documentation->stripFrontmatter();
+
         // Combine results
         return $packageResult;
     }

@@ -1,10 +1,3 @@
----
-title: 'Observing Agent Execution'
-docname: observing_agent_execution
-order: 18
-id: observing-agent-execution
----
-
 ## Introduction
 
 For responsive chat interfaces, it is usually not enough to wait for `execute()` to finish and then render the final answer. The Agents package exposes the execution lifecycle through events, and the `AgentEventBroadcaster` converts selected events into UI-friendly envelopes that can be forwarded to SSE, WebSocket, or any custom transport.
@@ -75,7 +68,7 @@ $agent = AgentBuilder::base()
 $result = $agent->execute(
     AgentState::empty()->withUserMessage('Explain closures in PHP.')
 );
-// @doctest id="d658"
+// @doctest id="cfe9"
 ```
 
 Once installed, the capability listens to the relevant execution, step, tool, continuation, and streaming events and emits normalized envelopes through your transport. Your app consumes those envelopes and updates the UI.
@@ -106,7 +99,7 @@ $agent = AgentLoop::default()->withDriver(
         events: $events,
     )
 );
-// @doctest id="4fb9"
+// @doctest id="3171"
 ```
 
 Without streamed inference, you still receive step, tool, and status envelopes, but not incremental text chunks.
@@ -120,7 +113,7 @@ interface CanBroadcastAgentEvents
 {
     public function broadcast(string $channel, array $envelope): void;
 }
-// @doctest id="6c15"
+// @doctest id="c066"
 ```
 
 This keeps the integration boundary small. The broadcaster does not require a framework or network stack. Your implementation decides how envelopes leave the process.
@@ -155,7 +148,7 @@ $broadcaster = new AgentEventBroadcaster(
     executionId: 'exec-1',
     config: BroadcastConfig::standard(),
 );
-// @doctest id="a0b5"
+// @doctest id="e6f3"
 ```
 
 For most user-facing apps, `standard()` is the right default.

@@ -1,8 +1,3 @@
----
-title: Introduction
-description: 'Prompts as PHP classes — composable, testable, swappable'
----
-
 # Introduction
 
 Xprompt turns prompts into ordinary PHP classes. Instead of scattering prompt strings across your codebase, you write a class that returns its content from a `body()` method. Because every prompt implements `Stringable`, it plugs directly into Polyglot, Instructor, and Agents without adapters or glue code.
@@ -20,7 +15,7 @@ class Persona extends Prompt
 
 echo Persona::with(role: 'security');
 // "You are a security expert."
-// @doctest id="1810"
+// @doctest id="431d"
 ```
 
 ## Why Classes?
@@ -47,7 +42,7 @@ StructuredOutput::with(
 
 // Agents (via AgentContext)
 $context->withSystemPrompt(ReviewSystem::with(content: $doc));
-// @doctest id="c440"
+// @doctest id="f76e"
 ```
 
 ## What You'll Learn

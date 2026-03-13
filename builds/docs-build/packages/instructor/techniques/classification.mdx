@@ -1,8 +1,3 @@
----
-title: Classification
-description: 'Use enums and response models to turn text into categories with LLM-powered classification.'
----
-
 Text classification is one of the most common tasks in natural language processing. Whether you are
 detecting spam, categorizing support tickets, or routing content, Instructor makes it straightforward
 by combining PHP enums with response models.
@@ -31,7 +26,7 @@ $prediction = (new StructuredOutput)
     ->get();
 
 assert($prediction->classLabel === Label::SPAM);
-// @doctest id="e0c5"
+// @doctest id="37f4"
 ```
 
 The model sees the enum values in the generated JSON Schema and picks the most appropriate one.
@@ -66,7 +61,7 @@ $ticket = (new StructuredOutput)
 
 assert(in_array(TicketCategory::TECH_ISSUE, $ticket->labels));
 assert(in_array(TicketCategory::BILLING, $ticket->labels));
-// @doctest id="a7c8"
+// @doctest id="df25"
 ```
 
 ## Tips for Better Classification
@@ -93,7 +88,7 @@ final class SentimentResult {
     /** Brief explanation of why this sentiment was chosen. */
     public string $reasoning;
 }
-// @doctest id="1ee6"
+// @doctest id="a986"
 ```
 
 ### Keep the schema narrow
@@ -129,5 +124,5 @@ final class Ticket {
         return ValidationResult::valid();
     }
 }
-// @doctest id="ed44"
+// @doctest id="5285"
 ```

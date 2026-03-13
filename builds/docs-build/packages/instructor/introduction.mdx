@@ -1,8 +1,3 @@
----
-title: Introduction
-description: 'Structured data extraction in PHP, powered by LLMs. Designed for simplicity, transparency, and control.'
----
-
 Instructor is a PHP library for extracting structured, validated data from LLM responses.
 You define the shape of the data you need using plain PHP classes, and Instructor handles
 the rest: schema generation, prompt construction, response parsing, validation, and
@@ -30,7 +25,7 @@ $city = StructuredOutput::using('openai')
 echo $city->name;       // Paris
 echo $city->country;    // France
 echo $city->population; // 2148000
-// @doctest id="ae32"
+// @doctest id="12cb"
 ```
 
 The package is distributed as `cognesy/instructor-struct` and requires PHP 8.3+.

@@ -1,8 +1,3 @@
----
-title: 'Architecture Overview'
-description: 'How the public facades, runtimes, requests, and drivers fit together.'
----
-
 Polyglot is built on a modular, layered architecture that separates concerns and promotes extensibility. Each layer has a clear responsibility, and dependencies flow in one direction -- from the public API down to the HTTP transport.
 
 Understanding these layers will help you extend the library, contribute to its development, or build your own integrations with new LLM providers.
@@ -81,7 +76,7 @@ Most inference drivers extend `BaseInferenceRequestDriver`, which provides the s
 +------------------------------------------------+
 |             HTTP Client (shared)               |     Transport
 +------------------------------------------------+
-// @doctest id="e08b"
+// @doctest id="34e7"
 ```
 
 The public facade creates a request and hands it to the runtime. The runtime delegates to a driver, which translates the request into an HTTP call and normalizes the response. Events are dispatched at each stage for observability. The result flows back up as a normalized data object.

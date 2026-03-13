@@ -1,8 +1,3 @@
----
-title: Markdown JSON Fallback
-description: Markdown-wrapped JSON is handled by Instructor, not by Polyglot directly.
----
-
 Polyglot 2.0 does not expose a markdown-JSON response mode. In previous versions, `OutputMode::MdJson` instructed the model to wrap its JSON response in a Markdown code block (` ```json ... ``` `), and Polyglot would extract the JSON content automatically. This was useful as a compatibility fallback for providers that lacked native JSON output support.
 
 ## Why It Was Removed

@@ -1,8 +1,3 @@
----
-title: 'Configuration Issues'
-description: 'Diagnose and resolve preset loading and configuration problems.'
----
-
 Configuration issues typically surface when Polyglot cannot find a preset file, when the file is missing required fields, or when field values have the wrong type. These problems usually produce clear error messages that point directly to the cause.
 
 ## Symptoms
@@ -30,7 +25,7 @@ If none of these directories exist, Polyglot throws an `InvalidArgumentException
 use Cognesy\Polyglot\Inference\Inference;
 
 $inference = Inference::using('my-custom-preset', basePath: '/app/config/llm');
-// @doctest id="b825"
+// @doctest id="75f4"
 ```
 
 ## Required Preset Fields
@@ -46,7 +41,7 @@ model: gpt-4.1-nano
 maxTokens: 1024
 contextLength: 128000
 maxOutputLength: 16384
-# @doctest id="fcc1"
+# @doctest id="6865"
 ```
 
 The following fields are required or strongly recommended:
@@ -93,7 +88,7 @@ $config = new LLMConfig(
 $text = Inference::fromConfig($config)
     ->withMessages(Messages::fromString('Hello'))
     ->get();
-// @doctest id="a75e"
+// @doctest id="212e"
 ```
 
 You can also create a config from an associative array:
@@ -111,7 +106,7 @@ $config = LLMConfig::fromArray([
     'model' => 'claude-haiku-4-5-20251001',
     'maxTokens' => 1024,
 ]);
-// @doctest id="38a9"
+// @doctest id="481b"
 ```
 
 ## Overriding Preset Values
@@ -131,7 +126,7 @@ $config = LLMConfig::fromPreset('openai')
 $text = Inference::fromConfig($config)
     ->withMessages(Messages::fromString('Hello'))
     ->get();
-// @doctest id="5d8e"
+// @doctest id="34ae"
 ```
 
 ## Verify a Configuration
@@ -152,7 +147,7 @@ try {
 } catch (\InvalidArgumentException $e) {
     echo "Configuration error: " . $e->getMessage() . "\n";
 }
-// @doctest id="6efc"
+// @doctest id="d527"
 ```
 
 ## Common Pitfalls

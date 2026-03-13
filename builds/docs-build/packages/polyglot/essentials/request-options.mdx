@@ -1,8 +1,3 @@
----
-title: 'Request Options'
-description: 'Customize provider-specific request fields, retry policies, caching, and advanced options.'
----
-
 The `options` array is the escape hatch for provider-specific request fields that fall
 outside Polyglot's unified API. Anything you place in `options` is passed through to
 the underlying provider driver.
@@ -27,7 +22,7 @@ $text = Inference::using('openai')
         'top_p' => 0.9,
     ])
     ->get();
-// @doctest id="14fb"
+// @doctest id="65dd"
 ```
 
 Options are merged additively -- calling `withOptions()` multiple times will merge the
@@ -46,7 +41,7 @@ $options = [
     'presence_penalty' => 0.0,    // Penalize repeated topics
     'stop' => ["\n\n", "User:"],  // Stop sequences
 ];
-// @doctest id="edeb"
+// @doctest id="d88e"
 ```
 
 ## Dedicated Helpers Over Raw Options
@@ -79,7 +74,7 @@ $response = Inference::using('openai')
         'presence_penalty' => 0.3,
     ])
     ->get();
-// @doctest id="6539"
+// @doctest id="306b"
 ```
 
 ### Anthropic
@@ -93,7 +88,7 @@ $response = Inference::using('anthropic')
         'top_k' => 40,
     ])
     ->get();
-// @doctest id="6d1f"
+// @doctest id="354c"
 ```
 
 ## Retry Policy
@@ -118,7 +113,7 @@ $response = Inference::using('openai')
     ->withMessages(Messages::fromString('Summarize this article.'))
     ->withRetryPolicy($retryPolicy)
     ->get();
-// @doctest id="3cc2"
+// @doctest id="e9bb"
 ```
 
 The retry policy supports exponential backoff with configurable jitter and can also
@@ -150,7 +145,7 @@ $response = Inference::using('openai')
     ->withMessages(Messages::fromString('What is 2 + 2?'))
     ->withResponseCachePolicy(ResponseCachePolicy::Memory)
     ->get();
-// @doctest id="2780"
+// @doctest id="dbba"
 ```
 
 Available policies:
@@ -183,7 +178,7 @@ $base = Inference::using('openai')->withCachedContext(
 // Each call inherits the cached context automatically
 $response1 = $base->withMessages(Messages::fromString('Explain SOLID principles.'))->get();
 $response2 = $base->withMessages(Messages::fromString('What is the Repository pattern?'))->get();
-// @doctest id="ac48"
+// @doctest id="856f"
 ```
 
 When the request is executed, cached context is merged with the request-level fields:

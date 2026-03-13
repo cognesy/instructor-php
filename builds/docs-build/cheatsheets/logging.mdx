@@ -1,9 +1,3 @@
----
-title: Logging
-description: Structured logging pipeline — filters, enrichers, formatters, and log drivers
-package: logging
----
-
 # Logging Package Cheatsheet
 
 Code-verified reference for `packages/logging`.
@@ -111,9 +105,9 @@ Template placeholders supported by `MessageTemplateFormatter`:
 Config keys:
 - `channel` (string)
 - `level` (string)
-- `exclude_events` (array<class-string>)
-- `include_events` (array<class-string>)
-- `templates` (array<string, string>)
+- `exclude_events` (`array<class-string>`)
+- `include_events` (`array<class-string>`)
+- `templates` (`array<string, string>`)
 
 `SymfonyLoggingFactory`:
 - `create(ContainerInterface $container, LoggerInterface $logger, array $config = []): callable`

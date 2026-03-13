@@ -1,8 +1,3 @@
----
-title: 'Getting Started'
-description: 'Create your first prompt class, pass context, and render output'
----
-
 # Getting Started
 
 ## Your First Prompt
@@ -19,7 +14,7 @@ class Greeting extends Prompt
         return "Hello, {$ctx['name']}!";
     }
 }
-// @doctest id="c9d1"
+// @doctest id="d5e7"
 ```
 
 Render it:
@@ -27,7 +22,7 @@ Render it:
 ```php
 echo Greeting::with(name: 'Alice');
 // "Hello, Alice!"
-// @doctest id="069a"
+// @doctest id="496c"
 ```
 
 ## Creating Instances
@@ -42,7 +37,7 @@ echo $prompt->render(name: 'Bob');
 // Pre-bound context — stored and merged at render time
 $prompt = Greeting::with(name: 'Charlie');
 echo $prompt->render(); // "Hello, Charlie!"
-// @doctest id="d353"
+// @doctest id="7726"
 ```
 
 ## Passing Context
@@ -61,7 +56,7 @@ class Welcome extends Prompt
 $prompt = Welcome::with(greeting: 'Hi');
 echo $prompt->render(name: 'Dana');            // "Hi, Dana!"
 echo $prompt->render(name: 'Eve', greeting: 'Hey'); // "Hey, Eve!"
-// @doctest id="19de"
+// @doctest id="419a"
 ```
 
 ## Stringable
@@ -79,7 +74,7 @@ echo "Using prompt: {$persona}";
 
 // Pass to any API accepting string|Stringable
 $inference->withSystem($persona)->create();
-// @doctest id="7541"
+// @doctest id="b44f"
 ```
 
 ## Returning Null
@@ -96,7 +91,7 @@ class MaybeDisclaimer extends Prompt
             : null;
     }
 }
-// @doctest id="4607"
+// @doctest id="6aad"
 ```
 
 ## Next Steps

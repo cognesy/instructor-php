@@ -1,8 +1,3 @@
----
-title: Lifecycle
-description: 'What happens between request creation and the final result.'
----
-
 ## Overview
 
 As Instructor processes your request, it moves through a well-defined series of
@@ -91,7 +86,7 @@ attempts is always `maxRetries + 1`.
 ```php
 // Allow up to 3 retries (4 total attempts)
 $runtime = $runtime->withMaxRetries(3);
-// @doctest id="593b"
+// @doctest id="4f09"
 ```
 
 When the retry limit is reached without a valid response, a

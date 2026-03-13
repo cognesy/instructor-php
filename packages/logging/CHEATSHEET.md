@@ -111,9 +111,9 @@ Template placeholders supported by `MessageTemplateFormatter`:
 Config keys:
 - `channel` (string)
 - `level` (string)
-- `exclude_events` (array<class-string>)
-- `include_events` (array<class-string>)
-- `templates` (array<string, string>)
+- `exclude_events` (`array<class-string>`)
+- `include_events` (`array<class-string>`)
+- `templates` (`array<string, string>`)
 
 `SymfonyLoggingFactory`:
 - `create(ContainerInterface $container, LoggerInterface $logger, array $config = []): callable`

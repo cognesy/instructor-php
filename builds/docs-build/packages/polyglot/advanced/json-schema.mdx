@@ -1,8 +1,3 @@
----
-title: 'Building JSON Schemas'
-description: 'Use arrays or the schema builder to define structured response formats.'
----
-
 When you need structured output from an LLM -- a JSON object with specific fields and types --
 you pass a `responseFormat` that describes the expected shape. You can build this format as a
 plain array, or use Polyglot's `JsonSchema` builder for a more expressive, composable approach.
@@ -56,7 +51,7 @@ $data = Inference::using('openai')
         options: ['max_tokens' => 64],
     )
     ->asJsonData();
-// @doctest id="07a2"
+// @doctest id="f318"
 ```
 
 The `JsonSchema` class only helps you build the schema payload. Polyglot passes it to the
@@ -74,7 +69,7 @@ $name = JsonSchema::string(
     name: 'full_name',
     description: 'The user\'s full name',
 );
-// @doctest id="51de"
+// @doctest id="78e0"
 ```
 
 ### Integer and Number
@@ -82,14 +77,14 @@ $name = JsonSchema::string(
 ```php
 $age = JsonSchema::integer('age', description: 'Age in years');
 $price = JsonSchema::number('price', description: 'Product price');
-// @doctest id="bcc1"
+// @doctest id="932c"
 ```
 
 ### Boolean
 
 ```php
 $active = JsonSchema::boolean('is_active', description: 'Whether the account is active');
-// @doctest id="4a99"
+// @doctest id="cdd8"
 ```
 
 ### Array
@@ -102,7 +97,7 @@ $tags = JsonSchema::array(
     description: 'List of tags',
     itemSchema: JsonSchema::string(),
 );
-// @doctest id="455e"
+// @doctest id="96d5"
 ```
 
 Arrays can also contain complex objects:
@@ -120,7 +115,7 @@ $hobbies = JsonSchema::array(
         requiredProperties: ['name', 'description', 'years_experience'],
     ),
 );
-// @doctest id="9564"
+// @doctest id="dc0f"
 ```
 
 ### Enum
@@ -133,7 +128,7 @@ $status = JsonSchema::enum(
     description: 'Account status',
     enumValues: ['active', 'inactive', 'pending'],
 );
-// @doctest id="baaf"
+// @doctest id="6d06"
 ```
 
 ### Object
@@ -151,7 +146,7 @@ $profile = JsonSchema::object(
     ],
     requiredProperties: ['username'],
 );
-// @doctest id="3777"
+// @doctest id="2091"
 ```
 
 
@@ -175,14 +170,14 @@ $user = JsonSchema::object(
     ],
     requiredProperties: ['email', 'name'],
 );
-// @doctest id="30f8"
+// @doctest id="3c0d"
 ```
 
 Nullable fields are specified on individual properties:
 
 ```php
 $bio = JsonSchema::string('bio', 'Optional biography', nullable: true);
-// @doctest id="7d61"
+// @doctest id="c069"
 ```
 
 ### OpenAI Strict Mode
@@ -198,7 +193,7 @@ $user = JsonSchema::object(
     ],
     requiredProperties: ['email', 'bio'], // Both required, but bio can be null
 );
-// @doctest id="d6e1"
+// @doctest id="c212"
 ```
 
 ### Common Patterns
@@ -219,7 +214,7 @@ JsonSchema::string('phone', 'Phone number', nullable: false);
 // Optional and nullable (most permissive)
 // requiredProperties: [] (does not include 'website')
 JsonSchema::string('website', 'Personal website', nullable: true);
-// @doctest id="dd7b"
+// @doctest id="632b"
 ```
 
 
@@ -263,7 +258,7 @@ $user = JsonSchema::object(
     ],
     requiredProperties: ['name', 'address', 'contact', 'status'],
 );
-// @doctest id="18ba"
+// @doctest id="b50b"
 ```
 
 
@@ -277,7 +272,7 @@ $tags = JsonSchema::array('tags')
     ->withItemSchema(JsonSchema::string())
     ->withDescription('A list of tags')
     ->withNullable(true);
-// @doctest id="8c33"
+// @doctest id="0086"
 ```
 
 Available fluent methods include:
@@ -313,7 +308,7 @@ $functionCall = $schema->toFunctionCall(
     functionDescription: 'Gets the user profile information',
     strict: true,
 );
-// @doctest id="28ac"
+// @doctest id="3e87"
 ```
 
 
@@ -335,7 +330,7 @@ $schema->enumValues();              // Get enum values
 $schema->hasAdditionalProperties(); // Check if additional properties allowed
 $schema->meta();                    // Get all meta fields
 $schema->meta('key');               // Get a specific meta field
-// @doctest id="637f"
+// @doctest id="b0fb"
 ```
 
 
@@ -354,7 +349,7 @@ $username = JsonSchema::string(
         'pattern' => '^[a-zA-Z0-9_]+$',
     ],
 );
-// @doctest id="0a94"
+// @doctest id="575d"
 ```
 
 In the generated schema, these become `x-min_length`, `x-max_length`, and `x-pattern`.
@@ -397,7 +392,7 @@ $result = Inference::using('openai')
         tools: ToolDefinitions::fromArray([$tool]),
     )
     ->asToolCallJsonData();
-// @doctest id="9908"
+// @doctest id="4844"
 ```
 
 
@@ -476,7 +471,7 @@ $userData = Inference::using('openai')
     ->asJsonData();
 
 print_r($userData);
-// @doctest id="de6b"
+// @doctest id="037e"
 ```
 
 
@@ -491,7 +486,7 @@ JsonSchema::string('name', 'the name');
 
 // Specific -- the LLM understands the expected format
 JsonSchema::string('name', 'The user\'s display name (2-50 characters)');
-// @doctest id="c711"
+// @doctest id="fc62"
 ```
 
 **Organize nested schemas.** Define child schemas as separate variables before embedding them

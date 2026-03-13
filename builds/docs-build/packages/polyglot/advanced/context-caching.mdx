@@ -1,8 +1,3 @@
----
-title: 'Context Caching'
-description: 'Attach stable context to later requests for reduced token usage.'
----
-
 When you are asking multiple questions against the same background material -- a system prompt,
 a long document, a set of tools -- resending that material with every request wastes tokens and
 increases latency. Polyglot's `withCachedContext()` method lets you separate the **stable
@@ -23,7 +18,7 @@ the number of tokens processed and the time to first token.
 Request 1:  [cached context] + [new question]  -->  cache write
 Request 2:  [cached context] + [new question]  -->  cache read (faster, cheaper)
 Request 3:  [cached context] + [new question]  -->  cache read (faster, cheaper)
-// @doctest id="fd64"
+// @doctest id="3805"
 ```
 
 
@@ -59,7 +54,7 @@ $response2 = $inference
 
 echo $response2->content() . "\n";
 echo 'Cache read tokens: ' . $response2->usage()->cacheReadTokens . "\n";
-// @doctest id="86b0"
+// @doctest id="fbd3"
 ```
 
 The first request populates the provider's cache (you may see `cacheWriteTokens` reported).
@@ -112,7 +107,7 @@ $inference = Inference::using('anthropic')->withCachedContext(
 
 // Each follow-up query reuses the cached system prompt and tool definitions
 $response = $inference->withMessages(Messages::fromString('Extract entities from: "Apple announced the new iPhone in Cupertino."'))->response();
-// @doctest id="e55d"
+// @doctest id="e363"
 ```
 
 
@@ -151,7 +146,7 @@ foreach ($questions as $question) {
     echo "A: " . $response->content() . "\n";
     echo "Cache read tokens: " . $response->usage()->cacheReadTokens . "\n\n";
 }
-// @doctest id="736b"
+// @doctest id="9eb9"
 ```
 
 After the first request populates the provider's cache, subsequent questions benefit from
@@ -179,7 +174,7 @@ echo "Input tokens:       " . $usage->inputTokens . "\n";
 echo "Output tokens:      " . $usage->outputTokens . "\n";
 echo "Cache read tokens:  " . $usage->cacheReadTokens . "\n";
 echo "Cache write tokens: " . $usage->cacheWriteTokens . "\n";
-// @doctest id="bd82"
+// @doctest id="ea5e"
 ```
 
 

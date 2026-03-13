@@ -1,8 +1,3 @@
----
-title: 'Session Management'
-description: 'Continue the most recent agent session or resume a specific session by ID to maintain conversational context across multiple executions.'
----
-
 ## Introduction
 
 CLI-based code agents maintain internal session state that includes the conversation history, file context, and previous tool results. Agent-Ctrl exposes this session mechanism through two builder methods -- `continueSession()` and `resumeSession()` -- that work consistently across all supported agents.
@@ -44,7 +39,7 @@ $response = AgentCtrl::claudeCode()
     ->execute('Now implement the first item in the plan.');
 
 echo $response->text();
-// @doctest id="4bca"
+// @doctest id="17a5"
 ```
 
 This approach works well for sequential, script-like workflows where each step builds on the previous one and there is no need to branch or revisit earlier sessions.
@@ -71,7 +66,7 @@ if ($sessionId !== null) {
         ->resumeSession((string) $sessionId)
         ->execute('Implement step 2 from the plan.');
 }
-// @doctest id="400a"
+// @doctest id="9025"
 ```
 
 The `resumeSession()` method accepts a plain string. The `AgentSessionId` value object returned by `sessionId()` implements `__toString()`, so you can cast it directly.
@@ -91,7 +86,7 @@ if ($sessionId !== null) {
 } else {
     echo "No session ID available.\n";
 }
-// @doctest id="2455"
+// @doctest id="6666"
 ```
 
 The `AgentSessionId` is an opaque value object (extending `OpaqueExternalId`) that wraps the raw string identifier. It provides type safety and prevents accidental mixing of session IDs with other string values.
@@ -112,7 +107,7 @@ AgentCtrl::claudeCode()
 AgentCtrl::claudeCode()
     ->resumeSession('abc-123-def')
     ->execute('Pick up from where we left off.');
-// @doctest id="7c56"
+// @doctest id="2f3e"
 ```
 
 Claude Code passes `--continue` or `--resume <session_id>` to the `claude` CLI. Session IDs are extracted from the `session_id` field in the JSON stream output.
@@ -129,7 +124,7 @@ AgentCtrl::codex()
 AgentCtrl::codex()
     ->resumeSession('thread_abc123')
     ->execute('Pick up from where we left off.');
-// @doctest id="54d7"
+// @doctest id="31ea"
 ```
 
 Codex maps session management to its thread system. The session ID corresponds to the Codex thread ID.
@@ -146,7 +141,7 @@ AgentCtrl::openCode()
 AgentCtrl::openCode()
     ->resumeSession('session-xyz-789')
     ->execute('Pick up from where we left off.');
-// @doctest id="acd7"
+// @doctest id="3c05"
 ```
 
 OpenCode maintains its own session format with support for session titles and sharing.
@@ -173,7 +168,7 @@ AgentCtrl::pi()
 AgentCtrl::pi()
     ->withSessionDir('/custom/sessions')
     ->execute('Work in a custom session location.');
-// @doctest id="8bb7"
+// @doctest id="47af"
 ```
 
 Pi supports `continueSession()`, `resumeSession()`, `ephemeral()` (no session saved), and `withSessionDir()` (custom session storage directory).
@@ -190,7 +185,7 @@ AgentCtrl::gemini()
 AgentCtrl::gemini()
     ->resumeSession('session-xyz-789')
     ->execute('Pick up from where we left off.');
-// @doctest id="99b5"
+// @doctest id="03ee"
 ```
 
 Gemini maps `continueSession()` to resuming the `'latest'` session internally. `resumeSession()` accepts a session ID or index.
@@ -241,5 +236,5 @@ $step2 = AgentCtrl::claudeCode()
     ->execute('Implement step 2 from the plan.');
 
 echo "\nStep 2 result:\n" . $step2->text() . "\n";
-// @doctest id="6f6b"
+// @doctest id="bfa7"
 ```

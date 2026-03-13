@@ -1,8 +1,3 @@
----
-title: 'JSON Object Responses'
-description: 'Ask the provider for native JSON object output using the response format field.'
----
-
 JSON object mode instructs the model to return its response as a valid JSON object. This is useful when you need structured data that can be easily processed by your application, without defining a full schema.
 
 ## Basic Usage
@@ -22,7 +17,7 @@ $data = Inference::using('openai')
     ->asJsonData();
 
 // $data is now a PHP array, e.g. ['name' => 'Alice', 'role' => 'Engineer']
-// @doctest id="b33f"
+// @doctest id="aad3"
 ```
 
 The `asJsonData()` method only decodes the returned content. Validation and structure depend on the provider and your prompt -- there are no schema guarantees with this mode.
@@ -62,7 +57,7 @@ $data = Inference::using('openai')
 foreach ($data['cities'] as $city) {
     echo "{$city['name']}, {$city['country']}: {$city['population']} million\n";
 }
-// @doctest id="8dfc"
+// @doctest id="5841"
 ```
 
 ## Using the Fluent API
@@ -80,7 +75,7 @@ $data = Inference::using('openai')
     ->withMessages(Messages::fromString('List three programming languages as JSON with name and year fields.'))
     ->withResponseFormat(ResponseFormat::jsonObject())
     ->asJsonData();
-// @doctest id="2e7d"
+// @doctest id="68e6"
 ```
 
 ## Getting JSON as a String
@@ -100,7 +95,7 @@ $json = Inference::using('openai')
     ->asJson();
 
 // $json is a string like '{"greeting": "Hello, world!"}'
-// @doctest id="b000"
+// @doctest id="c713"
 ```
 
 ## Provider Support

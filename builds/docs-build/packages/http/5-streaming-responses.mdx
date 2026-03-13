@@ -1,8 +1,3 @@
----
-title: 'Streaming Responses'
-description: 'Enable streaming, consume chunks as they arrive, and process server-sent events.'
----
-
 Streaming responses let you process data as it arrives from the server rather than waiting for the entire response to buffer in memory. This is particularly valuable when working with LLM APIs that generate tokens incrementally, downloading large files, or consuming real-time event streams.
 
 ## Enabling Streaming
@@ -19,14 +14,14 @@ $request = new HttpRequest(
     body: '',
     options: ['stream' => true],
 );
-// @doctest id="5d1d"
+// @doctest id="20b0"
 ```
 
 You can also enable streaming on an existing request using `withStreaming()`:
 
 ```php
 $request = $request->withStreaming(true);
-// @doctest id="9540"
+// @doctest id="d186"
 ```
 
 ## Consuming the Stream
@@ -38,7 +33,7 @@ foreach ($client->send($request)->stream() as $chunk) {
     echo $chunk;
     flush();
 }
-// @doctest id="b2d8"
+// @doctest id="06ad"
 ```
 
 Each chunk is a raw string as received from the transport layer. The size of individual chunks depends on the driver and the `streamChunkSize` setting in `HttpClientConfig` (default: 256 bytes).
@@ -71,7 +66,7 @@ foreach ($client->send($request)->stream() as $chunk) {
     echo $chunk;
     flush();
 }
-// @doctest id="afb0"
+// @doctest id="bd72"
 ```
 
 The raw chunks from the transport layer will contain server-sent event framing (e.g., `data: {...}\n\n`). To parse these into clean payloads, use the `EventSourceMiddleware`.
@@ -88,7 +83,7 @@ $client = $client->withMiddleware(
         ->withParser(fn(string $payload): string => $payload),
     'eventsource',
 );
-// @doctest id="9642"
+// @doctest id="11b9"
 ```
 
 The parser callback receives the raw payload string from each `data:` line and returns the value to yield. Return `false` to skip an event. This is useful for filtering out `[DONE]` markers or parsing JSON:
@@ -104,7 +99,7 @@ $client = $client->withMiddleware(
         }),
     'eventsource',
 );
-// @doctest id="36c7"
+// @doctest id="0a7f"
 ```
 
 You can also attach listeners for debugging or event dispatching:
@@ -116,7 +111,7 @@ use Cognesy\Http\Config\DebugConfig;
 $middleware = (new EventSourceMiddleware(true))
     ->withListeners(new PrintToConsole(new DebugConfig(httpEnabled: true)))
     ->withParser(fn(string $payload): string => $payload);
-// @doctest id="c7ea"
+// @doctest id="ebc6"
 ```
 
 ## Downloading Large Files
@@ -139,7 +134,7 @@ foreach ($client->send($request)->stream() as $chunk) {
 }
 
 fclose($handle);
-// @doctest id="51fc"
+// @doctest id="bdb2"
 ```
 
 ## Considerations

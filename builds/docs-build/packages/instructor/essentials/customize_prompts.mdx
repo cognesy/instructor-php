@@ -1,8 +1,3 @@
----
-title: 'Customize Prompts'
-description: 'Add system text, prompt text, and cached context.'
----
-
 Instructor builds a structured prompt from several components: system text, user messages,
 a mode-specific instruction prompt, examples, and retry context. You can customize most
 of these to tune extraction behavior without changing the underlying extraction flow.
@@ -20,7 +15,7 @@ $result = (new StructuredOutput)
     ->withPrompt('Extract the contact details from the text below.')
     ->with(messages: $text, responseModel: Contact::class)
     ->get();
-// @doctest id="d0cd"
+// @doctest id="4700"
 ```
 
 - **System text** sets the model's persona and overall behavior. Use it for stable
@@ -39,7 +34,7 @@ $result = (new StructuredOutput)
         prompt: 'Extract the contact details.',
     )
     ->get();
-// @doctest id="a9e9"
+// @doctest id="94ce"
 ```
 
 
@@ -57,7 +52,7 @@ $result = (new StructuredOutput)
     ])
     ->with(messages: $text, responseModel: Person::class)
     ->get();
-// @doctest id="f814"
+// @doctest id="9e11"
 ```
 
 See the [Demonstrations](demonstrations) page for details on the `Example` class.
@@ -79,7 +74,7 @@ $result = (new StructuredOutput)
     )
     ->with(messages: 'Now extract from this specific paragraph...', responseModel: Entity::class)
     ->get();
-// @doctest id="8f61"
+// @doctest id="e9fa"
 ```
 
 The cached context is placed before the per-request content in the prompt. Content
@@ -114,7 +109,7 @@ $config = new StructuredOutputConfig(
         OutputMode::Json->value => "Respond with a JSON object matching this schema:\n<|json_schema|>\n",
     ],
 );
-// @doctest id="908d"
+// @doctest id="1121"
 ```
 
 ### Template Placeholders
@@ -130,7 +125,7 @@ $config = new StructuredOutputConfig(
             . "Response must follow this JSON Schema:\n<|json_schema|>\n",
     ],
 );
-// @doctest id="e4f2"
+// @doctest id="f1a2"
 ```
 
 
@@ -146,7 +141,7 @@ $config = new StructuredOutputConfig(
     toolName: 'extract_person',
     toolDescription: 'Extract personal information from the provided text.',
 );
-// @doctest id="b6fe"
+// @doctest id="214b"
 ```
 
 The defaults are `extracted_data` and `Function call based on user instructions.`
@@ -164,7 +159,7 @@ conversation. The default is:
 
 ```
 JSON generated incorrectly, fix following errors:
-// @doctest id="f53b"
+// @doctest id="012d"
 ```
 
 You can customize this through the config:
@@ -173,7 +168,7 @@ You can customize this through the config:
 $config = new StructuredOutputConfig(
     retryPrompt: 'The previous response had validation errors. Please correct them:',
 );
-// @doctest id="24d3"
+// @doctest id="be35"
 ```
 
 
@@ -194,7 +189,7 @@ $config = new StructuredOutputConfig(
         'pre-retries', 'retries', 'post-retries',
     ],
 );
-// @doctest id="e114"
+// @doctest id="62d0"
 ```
 
 Most applications will never need to modify the chat structure. It is exposed for

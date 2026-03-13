@@ -23,6 +23,7 @@ class MintlifyDocumentation
     private PackageDocsBuilder $packageBuilder;
     private CheatsheetDiscovery $cheatsheetDiscovery;
     private LinkRewriter $linkRewriter;
+    private FrontmatterStripper $frontmatterStripper;
     private DocsMetadata $metadata;
 
     public function __construct(
@@ -46,6 +47,7 @@ class MintlifyDocumentation
             order: $this->docsConfig->packageOrder,
         );
         $this->linkRewriter = new LinkRewriter('mintlify');
+        $this->frontmatterStripper = new FrontmatterStripper();
         $this->metadata = new DocsMetadata();
     }
 
@@ -62,6 +64,10 @@ class MintlifyDocumentation
             $packageResult = $this->generatePackageDocs();
             $this->generateCheatsheetDocs();
             $exampleResult = $this->generateExampleDocs();
+
+            // Strip YAML frontmatter from all .mdx files in the build directory.
+            // Source files are untouched — this only modifies copies in the build output.
+            $this->stripFrontmatter();
 
             $filesProcessed = $packageResult->filesProcessed + $exampleResult->filesProcessed;
             $filesCreated = $packageResult->filesCreated + $exampleResult->filesCreated;
@@ -198,6 +204,14 @@ class MintlifyDocumentation
         }
     }
 
+    /**
+     * Strip YAML frontmatter from all .mdx files in the build directory.
+     * Runs after all files are copied — source files are never modified.
+     */
+    public function stripFrontmatter(): void {
+        $this->frontmatterStripper->stripDirectory($this->config->docsTargetDir, 'mdx');
+    }
+
     public function initializeBaseFiles(): void {
         Files::removeDirectory($this->config->docsTargetDir);
         Files::copyDirectory($this->config->docsSourceDir, $this->config->docsTargetDir);
@@ -237,9 +251,11 @@ class MintlifyDocumentation
             $this->linkRewriter->rewriteFile($targetPath);
         }
 
-        // Generate index page
+        // Generate index page and rewrite .md links for Mintlify
         $indexGenerator = new CheatsheetsIndexGenerator();
-        $indexGenerator->generateToFile($cheatsheets, $targetDir . '/index.mdx');
+        $indexPath = $targetDir . '/index.mdx';
+        $indexGenerator->generateToFile($cheatsheets, $indexPath);
+        $this->linkRewriter->rewriteFile($indexPath);
     }
 
     private function processExample(Example $example): FileProcessingResult {

@@ -1,10 +1,3 @@
----
-title: Overview
-description: 'Polyglot is the low-level LLM transport layer for InstructorPHP, providing a unified API for interacting with multiple LLM and embeddings providers.'
-meta:
-    - { name: has_code, content: false }
----
-
 Polyglot is a PHP library that provides a unified API for interacting with various Large Language Model (LLM) providers. It serves as the low-level transport and normalization layer for InstructorPHP, but can also be used as a standalone library for direct LLM interactions.
 
 The core philosophy behind Polyglot is to create a consistent, provider-agnostic interface that abstracts away the differences between LLM APIs while staying close to provider-native request shapes. This enables developers to:
@@ -137,7 +130,7 @@ model: gpt-4.1-nano
 maxTokens: 1024
 contextLength: 1000000
 maxOutputLength: 16384
-# @doctest id="7f3e"
+# @doctest id="043c"
 ```
 
 You can override any preset value at runtime using the fluent API -- for example, `withModel()` to change the model or `withMaxTokens()` to adjust the token limit.
