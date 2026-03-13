@@ -18,7 +18,7 @@ $runtime = StructuredOutputRuntime::fromDefaults()
     ->onEvent(ResponseValidationFailed::class, function ($event) {
         logger()->warning('Validation failed', $event->toArray());
     });
-// @doctest id="77c7"
+// @doctest id="a992"
 ```
 
 ### Wiretap (All Events)
@@ -29,7 +29,7 @@ debugging or comprehensive logging:
 ```php
 $runtime = StructuredOutputRuntime::fromDefaults()
     ->wiretap(fn($event) => $event->print());
-// @doctest id="fe1c"
+// @doctest id="756e"
 ```
 
 ### Practical Example
@@ -56,7 +56,7 @@ $result = (new StructuredOutput($runtime))
         responseModel: Scalar::integer(),
     )
     ->get();
-// @doctest id="2747"
+// @doctest id="0628"
 ```
 
 

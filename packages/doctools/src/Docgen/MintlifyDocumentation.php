@@ -364,7 +364,6 @@ class MintlifyDocumentation
             // 4. Cheatsheets section
             $cheatsheets = $this->cheatsheetDiscovery->discover();
             $cheatsheetsGroup = new NavigationGroup('Cheatsheets');
-            $cheatsheetsGroup->pages[] = NavigationItem::fromString('cheatsheets/index');
             foreach ($cheatsheets as $cheatsheet) {
                 $cheatsheetsGroup->pages[] = NavigationItem::fromString('cheatsheets/' . $cheatsheet->getTargetName());
             }

@@ -18,7 +18,7 @@ interface CanProcessInferenceRequest
 
     public function capabilities(?string $model = null): DriverCapabilities;
 }
-// @doctest id="2b40"
+// @doctest id="db56"
 ```
 
 | Method | Purpose |
@@ -55,7 +55,7 @@ $config = new LLMConfig(
 $text = Inference::fromConfig($config, drivers: $drivers)
     ->withMessages(Messages::fromString('Hello from Acme!'))
     ->get();
-// @doctest id="2bf0"
+// @doctest id="ae4f"
 ```
 
 ### Registering a Driver Factory
@@ -79,7 +79,7 @@ $drivers = BundledInferenceDrivers::registry()
             }
         };
     });
-// @doctest id="e02b"
+// @doctest id="e613"
 ```
 
 This factory approach is particularly useful when you want to extend an existing driver with
@@ -103,7 +103,7 @@ $runtime = InferenceRuntime::fromConfig(
 );
 
 $inference = Inference::fromRuntime($runtime);
-// @doctest id="a877"
+// @doctest id="614f"
 ```
 
 Or use the `drivers` parameter on `Inference::fromConfig()` or `Inference::using()`:
@@ -116,7 +116,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $text = Inference::using('acme', drivers: $drivers)
     ->withMessages(Messages::fromString('Hello!'))
     ->get();
-// @doctest id="604f"
+// @doctest id="8f41"
 ```
 
 ### Implementing a Full Driver
@@ -144,7 +144,7 @@ interface CanHandleVectorization
     public function handle(EmbeddingsRequest $request): HttpResponse;
     public function fromData(array $data): ?EmbeddingsResponse;
 }
-// @doctest id="fd6e"
+// @doctest id="6ffa"
 ```
 
 Register a custom embeddings driver using the `BundledEmbeddingsDrivers` registry, the same
@@ -175,7 +175,7 @@ $config = new EmbeddingsConfig(
 $embeddings = Embeddings::fromRuntime(
     EmbeddingsRuntime::fromConfig($config, drivers: $drivers)
 );
-// @doctest id="c507"
+// @doctest id="4bcd"
 ```
 
 Like inference drivers, you can also pass a callable factory instead of a class string:
@@ -190,7 +190,7 @@ $drivers = BundledEmbeddingsDrivers::registry()
     ->withDriver('acme', function ($config, $httpClient, $events) {
         return new AcmeEmbeddingsDriver($config, $httpClient, $events);
     });
-// @doctest id="778d"
+// @doctest id="dad8"
 ```
 
 > **Note:** The `EmbeddingsDriverRegistry` is immutable -- each mutation returns a new instance,
@@ -214,7 +214,7 @@ $drivers = BundledInferenceDrivers::registry()
 // Replace a driver
 $drivers = BundledInferenceDrivers::registry()
     ->withDriver('openai', MyCustomOpenAIDriver::class);
-// @doctest id="e766"
+// @doctest id="4c61"
 ```
 
 
@@ -289,5 +289,5 @@ $runtime->wiretap(function ($event) {
 $response = Inference::fromRuntime($runtime)
     ->withMessages(Messages::fromString('Hello!'))
     ->get();
-// @doctest id="0993"
+// @doctest id="4e81"
 ```

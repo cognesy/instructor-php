@@ -785,7 +785,6 @@
         {
             "group": "Cheatsheets",
             "pages": [
-                "cheatsheets/index",
                 "cheatsheets/instructor",
                 "cheatsheets/polyglot",
                 "cheatsheets/agents",
