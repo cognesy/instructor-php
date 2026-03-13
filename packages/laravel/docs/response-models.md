@@ -315,7 +315,7 @@ use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 $runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
-    ->withValidators([AgeValidator::class]);
+    ->withValidator(new AgeValidator());
 
 $user = StructuredOutput::withRuntime($runtime)->with(
     messages: 'User: John, age -5',

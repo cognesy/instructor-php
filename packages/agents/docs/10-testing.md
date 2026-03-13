@@ -93,13 +93,13 @@ When `executeTools` is `true`, the tool call is forwarded to the `ToolExecutor`,
 
 ### Custom Usage Tracking
 
-All step factories accept an optional `Usage` parameter for testing token-budget guards or usage reporting:
+All step factories accept an optional `InferenceUsage` parameter for testing token-budget guards or usage reporting:
 
 ```php
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
-ScenarioStep::final('Done.', usage: new Usage(inputTokens: 100, outputTokens: 50));
-ScenarioStep::toolCall('search', ['q' => 'test'], usage: new Usage(200, 80));
+ScenarioStep::final('Done.', usage: new InferenceUsage(inputTokens: 100, outputTokens: 50));
+ScenarioStep::toolCall('search', ['q' => 'test'], usage: new InferenceUsage(200, 80));
 ```
 
 ## FakeTool

@@ -1,7 +1,0 @@
-{
-    "runner.bootstrap": "vendor/autoload.php",
-    "runner.path": "tests/Benchmarks",
-    "runner.iterations": [10],
-    "runner.revs": [1000],
-    "runner.warmup": [3]
-}

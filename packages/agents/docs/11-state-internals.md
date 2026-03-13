@@ -180,7 +180,7 @@ $state->steps();                      // AgentSteps -- collection of completed s
 $state->lastStep();                   // ?AgentStep -- most recently completed step
 $state->lastStepType();              // ?AgentStepType -- ToolExecution|FinalResponse|Error
 $state->lastStopReason();            // ?StopReason -- why the last step stopped
-$state->usage();                      // Usage -- accumulated token usage
+$state->usage();                      // InferenceUsage -- accumulated token usage
 $state->hasErrors();                  // ?bool -- whether any errors occurred
 $state->errors();                     // ErrorList -- all accumulated errors
 ```

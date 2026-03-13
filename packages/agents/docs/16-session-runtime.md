@@ -432,9 +432,7 @@ final readonly class ArchiveSession implements CanExecuteSessionAction
     public function executeOn(AgentSession $session): AgentSession
     {
         // Store the reason in metadata, then mark as completed
-        $state = $session->state()->withMetadata(
-            $session->state()->metadata()->withValue('archive_reason', $this->archiveReason)
-        );
+        $state = $session->state()->withMetadata('archive_reason', $this->archiveReason);
 
         return $session->withState($state)->completed();
     }

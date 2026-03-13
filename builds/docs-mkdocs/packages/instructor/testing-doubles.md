@@ -39,7 +39,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 $driver = new FakeInferenceDriver(
     responses: [new InferenceResponse(content: '{"name":"Jason","age":28}')],
 );
-// @doctest id="3534"
+// @doctest id="2b26"
 ```
 
 Choose this seam for most unit and regression tests inside `packages/instructor`.
@@ -61,7 +61,7 @@ Minimal example:
 use Cognesy\Instructor\Tests\MockHttp;
 
 $http = MockHttp::get(['{"name":"Jason","age":28}']);
-// @doctest id="0baf"
+// @doctest id="a1c4"
 ```
 
 Choose this seam when the HTTP transport and provider adapter still matter to the

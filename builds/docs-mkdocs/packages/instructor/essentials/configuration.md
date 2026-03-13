@@ -17,7 +17,7 @@ is a preset name that maps to your environment variables:
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 $config = LLMConfig::fromPreset('openai');
-// @doctest id="a61b"
+// @doctest id="9f05"
 ```
 
 You can also create a `StructuredOutput` directly from a preset:
@@ -28,7 +28,7 @@ use Cognesy\Instructor\StructuredOutput;
 $result = StructuredOutput::using('anthropic')
     ->with(messages: 'Jason is 28.', responseModel: Person::class)
     ->get();
-// @doctest id="51ea"
+// @doctest id="d475"
 ```
 
 Provider configuration covers connection details: API keys, base URLs, default model
@@ -50,7 +50,7 @@ $runtime = StructuredOutputRuntime::fromConfig(
 )
     ->withMaxRetries(3)
     ->withOutputMode(OutputMode::Tools);
-// @doctest id="b7d7"
+// @doctest id="2bd2"
 ```
 
 ### Runtime Settings
@@ -59,10 +59,10 @@ $runtime = StructuredOutputRuntime::fromConfig(
 |---|---|
 | `withMaxRetries($n)` | Number of retry attempts after validation failure |
 | `withOutputMode($mode)` | How the model produces structured output (Tools, Json, etc.) |
-| `withValidators($validators)` | Override the validation pipeline |
-| `withTransformers($transformers)` | Override response transformers |
-| `withDeserializers($deserializers)` | Override response deserializers |
-| `withExtractors($extractors)` | Override response extractors |
+| `withValidator($validator)` | Override the validator (implements `CanValidateObject`) |
+| `withTransformer($transformer)` | Override the response transformer (implements `CanTransformData`) |
+| `withDeserializer($deserializer)` | Override the deserializer (implements `CanDeserializeClass`) |
+| `withExtractor($extractor)` | Override the response extractor (implements `CanExtractResponse`) |
 | `withConfig($config)` | Pass a full `StructuredOutputConfig` object |
 | `withDefaultToStdClass($bool)` | Fall back to `stdClass` for unknown types |
 
@@ -86,7 +86,7 @@ $runtime = StructuredOutputRuntime::fromConfig(
     LLMConfig::fromPreset('openai'),
     structuredConfig: $config,
 );
-// @doctest id="2c3b"
+// @doctest id="e96f"
 ```
 
 `StructuredOutputConfig` includes settings for:
@@ -118,7 +118,7 @@ $person = (new StructuredOutput)
         model: 'gpt-4o',
     )
     ->get();
-// @doctest id="2c79"
+// @doctest id="fcfd"
 ```
 
 ### Request Methods
@@ -152,7 +152,7 @@ $runtime->onEvent(StructuredOutputRequestReceived::class, function ($event) {
 $runtime->wiretap(function ($event) {
     logger()->debug(get_class($event));
 });
-// @doctest id="6f50"
+// @doctest id="26ed"
 ```
 
 
@@ -177,7 +177,7 @@ $summary = (new StructuredOutput)
     ->withRuntime($runtime)
     ->with(messages: $text2, responseModel: Summary::class)
     ->get();
-// @doctest id="61a9"
+// @doctest id="b8c8"
 ```
 
 This keeps configuration centralized and each request minimal.

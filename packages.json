@@ -4,163 +4,198 @@
             "local": "packages/addons",
             "repo": "cognesy/instructor-addons",
             "github_name": "instructor-addons",
-            "composer_name": "cognesy/instructor-addons"
+            "composer_name": "cognesy/instructor-addons",
+            "tier": "addon"
         },
         {
             "local": "packages/agents",
             "repo": "cognesy/agents",
             "github_name": "agents",
-            "composer_name": "cognesy/agents"
+            "composer_name": "cognesy/agents",
+            "tier": "public"
         },
         {
             "local": "packages/agent-ctrl",
             "repo": "cognesy/instructor-agent-ctrl",
             "github_name": "instructor-agent-ctrl",
-            "composer_name": "cognesy/instructor-agent-ctrl"
+            "composer_name": "cognesy/instructor-agent-ctrl",
+            "tier": "public"
         },
         {
             "local": "packages/auxiliary",
             "repo": "cognesy/instructor-aux",
             "github_name": "instructor-aux",
-            "composer_name": "cognesy/instructor-auxiliary"
+            "composer_name": "cognesy/instructor-auxiliary",
+            "tier": "addon"
         },
         {
             "local": "packages/config",
             "repo": "cognesy/instructor-config",
             "github_name": "instructor-config",
-            "composer_name": "cognesy/instructor-config"
+            "composer_name": "cognesy/instructor-config",
+            "tier": "library"
         },
         {
             "local": "packages/doctools",
             "repo": "cognesy/instructor-doctools",
             "github_name": "instructor-doctools",
-            "composer_name": "cognesy/instructor-doctools"
+            "composer_name": "cognesy/instructor-doctools",
+            "tier": "dev"
+        },
+        {
+            "local": "packages/doctor",
+            "tier": "dev"
         },
         {
             "local": "packages/dynamic",
             "repo": "cognesy/instructor-dynamic",
             "github_name": "instructor-dynamic",
-            "composer_name": "cognesy/instructor-dynamic"
+            "composer_name": "cognesy/instructor-dynamic",
+            "tier": "library"
         },
         {
             "local": "packages/evals",
             "repo": "cognesy/instructor-evals",
             "github_name": "instructor-evals",
-            "composer_name": "cognesy/instructor-evals"
+            "composer_name": "cognesy/instructor-evals",
+            "tier": "dev"
         },
         {
             "local": "packages/events",
             "repo": "cognesy/instructor-events",
             "github_name": "instructor-events",
-            "composer_name": "cognesy/instructor-events"
+            "composer_name": "cognesy/instructor-events",
+            "tier": "library"
+        },
+        {
+            "local": "packages/experimental",
+            "tier": "dev"
         },
         {
             "local": "packages/http-client",
             "repo": "cognesy/instructor-http-client",
             "github_name": "instructor-http-client",
-            "composer_name": "cognesy/instructor-http-client"
+            "composer_name": "cognesy/instructor-http-client",
+            "tier": "library"
         },
         {
             "local": "packages/http-pool",
             "repo": "cognesy/instructor-http-pool",
             "github_name": "instructor-http-pool",
-            "composer_name": "cognesy/instructor-http-pool"
+            "composer_name": "cognesy/instructor-http-pool",
+            "tier": "library"
         },
         {
             "local": "packages/hub",
             "repo": "cognesy/instructor-hub",
             "github_name": "instructor-hub",
-            "composer_name": "cognesy/instructor-hub"
+            "composer_name": "cognesy/instructor-hub",
+            "tier": "dev"
         },
         {
             "local": "packages/instructor",
             "repo": "cognesy/instructor-struct",
             "github_name": "instructor-struct",
-            "composer_name": "cognesy/instructor-struct"
+            "composer_name": "cognesy/instructor-struct",
+            "tier": "public"
         },
         {
             "local": "packages/laravel",
             "repo": "cognesy/instructor-laravel",
             "github_name": "instructor-laravel",
-            "composer_name": "cognesy/instructor-laravel"
+            "composer_name": "cognesy/instructor-laravel",
+            "tier": "public"
         },
         {
             "local": "packages/logging",
             "repo": "cognesy/instructor-logging",
             "github_name": "instructor-logging",
-            "composer_name": "cognesy/instructor-logging"
+            "composer_name": "cognesy/instructor-logging",
+            "tier": "library"
         },
         {
             "local": "packages/messages",
             "repo": "cognesy/instructor-messages",
             "github_name": "instructor-messages",
-            "composer_name": "cognesy/instructor-messages"
+            "composer_name": "cognesy/instructor-messages",
+            "tier": "library"
         },
         {
             "local": "packages/metrics",
             "repo": "cognesy/instructor-metrics",
             "github_name": "instructor-metrics",
-            "composer_name": "cognesy/instructor-metrics"
+            "composer_name": "cognesy/instructor-metrics",
+            "tier": "library"
         },
         {
             "local": "packages/pipeline",
             "repo": "cognesy/instructor-pipeline",
             "github_name": "instructor-pipeline",
-            "composer_name": "cognesy/instructor-pipeline"
+            "composer_name": "cognesy/instructor-pipeline",
+            "tier": "library"
         },
         {
             "local": "packages/polyglot",
             "repo": "cognesy/instructor-polyglot",
             "github_name": "instructor-polyglot",
-            "composer_name": "cognesy/instructor-polyglot"
+            "composer_name": "cognesy/instructor-polyglot",
+            "tier": "public"
         },
         {
             "local": "packages/sandbox",
             "repo": "cognesy/instructor-sandbox",
             "github_name": "instructor-sandbox",
-            "composer_name": "cognesy/instructor-sandbox"
+            "composer_name": "cognesy/instructor-sandbox",
+            "tier": "public"
         },
         {
             "local": "packages/schema",
             "repo": "cognesy/instructor-schema",
             "github_name": "instructor-schema",
-            "composer_name": "cognesy/instructor-schema"
+            "composer_name": "cognesy/instructor-schema",
+            "tier": "library"
         },
         {
             "local": "packages/setup",
             "repo": "cognesy/instructor-setup",
             "github_name": "instructor-setup",
-            "composer_name": "cognesy/instructor-setup"
+            "composer_name": "cognesy/instructor-setup",
+            "tier": "library"
         },
         {
             "local": "packages/stream",
             "repo": "cognesy/instructor-stream",
             "github_name": "instructor-stream",
-            "composer_name": "cognesy/instructor-stream"
+            "composer_name": "cognesy/instructor-stream",
+            "tier": "library"
         },
         {
             "local": "packages/tell",
             "repo": "cognesy/instructor-tell",
             "github_name": "instructor-tell",
-            "composer_name": "cognesy/instructor-tell"
+            "composer_name": "cognesy/instructor-tell",
+            "tier": "addon"
         },
         {
             "local": "packages/templates",
             "repo": "cognesy/instructor-templates",
             "github_name": "instructor-templates",
-            "composer_name": "cognesy/instructor-templates"
+            "composer_name": "cognesy/instructor-templates",
+            "tier": "library"
         },
         {
             "local": "packages/utils",
             "repo": "cognesy/instructor-utils",
             "github_name": "instructor-utils",
-            "composer_name": "cognesy/instructor-utils"
+            "composer_name": "cognesy/instructor-utils",
+            "tier": "library"
         },
         {
             "local": "packages/xprompt",
             "repo": "cognesy/xprompt-php",
             "github_name": "xprompt-php",
-            "composer_name": "cognesy/xprompt-php"
+            "composer_name": "cognesy/xprompt-php",
+            "tier": "public"
         }
     ]
 }

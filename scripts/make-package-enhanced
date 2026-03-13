@@ -292,7 +292,7 @@ $docsToUpdate = [
         'pattern' => '/(- \*\*.*?\*\*:.*\n)(- \*\*HTTP client\*\*:)/s',
         'replacement' => "$1- **{$config['category']}**: `" . basename($packagePath) . "` - {$config['category_description']}\n$2"
     ],
-    'CONTRIBUTOR_GUIDE.md' => [
+    'CONTRIBUTING.md' => [
         'pattern' => '/(- \*\*.*?\*\*:.*\n)(- \*\*HTTP client\*\*:)/s',
         'replacement' => "$1- **{$config['category']}**: `" . basename($packagePath) . "` - {$config['category_description']}\n$2"
     ]
@@ -407,7 +407,7 @@ echo "   • Package structure created from template\n";
 echo "   • Added to packages.json\n";
 echo "   • Added to root composer.json autoload\n";
 echo "   • Added to phpunit.xml test suites\n";
-echo "   • Updated documentation (CONTENTS.md, CONTRIBUTOR_GUIDE.md)\n";
+echo "   • Updated documentation (CONTENTS.md, CONTRIBUTING.md)\n";
 echo "   • Updated GitHub Actions split workflow\n";
 echo "   • Dependencies installed\n";
 echo "   • Root autoloader regenerated\n";

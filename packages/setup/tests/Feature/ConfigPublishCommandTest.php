@@ -76,8 +76,8 @@ function runConfigPublishCommand(string $projectRoot, array $arguments): int
     chdir($projectRoot);
     try {
         $application = new Application('test-app', '1.0.0');
-        $application->add(new ConfigPublishCommand());
-        $application->add(new PublishCommand());
+        $application->addCommand(new ConfigPublishCommand());
+        $application->addCommand(new PublishCommand());
 
         $command = $application->find('config:publish');
         $tester = new CommandTester($command);
@@ -101,8 +101,8 @@ function runLegacyPublishCommand(string $projectRoot, array $arguments): int
     chdir($projectRoot);
     try {
         $application = new Application('test-app', '1.0.0');
-        $application->add(new ConfigPublishCommand());
-        $application->add(new PublishCommand());
+        $application->addCommand(new ConfigPublishCommand());
+        $application->addCommand(new PublishCommand());
 
         $command = $application->find('publish');
         $tester = new CommandTester($command);

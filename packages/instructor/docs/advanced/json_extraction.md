@@ -83,7 +83,7 @@ Most responses succeed on the first strategy. The subsequent strategies add negl
 
 ## Custom Extractors
 
-You can replace the default extractors with your own by calling `withExtractors()` on the `StructuredOutputRuntime`. Each extractor must implement the `CanExtractResponse` interface.
+You can replace the default extractor with your own by calling `withExtractor()` on the `StructuredOutputRuntime`. Use `ResponseExtractor::fromExtractors()` to compose multiple extractors into a chain.
 
 ```php
 use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
@@ -128,12 +128,13 @@ Custom extractors are configured on the runtime and apply to both synchronous an
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
+use Cognesy\Instructor\Extraction\ResponseExtractor;
 
 $runtime = StructuredOutputRuntime::fromDefaults()
-    ->withExtractors([
+    ->withExtractor(ResponseExtractor::fromExtractors(
         new DirectJsonExtractor(),
         new XmlCdataExtractor(),
-    ]);
+    ));
 
 $result = (new StructuredOutput($runtime))
     ->with(messages: 'Extract user data', responseModel: User::class)

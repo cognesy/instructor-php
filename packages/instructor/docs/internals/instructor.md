@@ -123,8 +123,8 @@ runtime level. These apply to every request processed through the runtime:
 
 ```php
 $runtime = $runtime
-    ->withValidators([MyCustomValidator::class])
-    ->withTransformers([MyTransformer::class]);
+    ->withValidator(new MyCustomValidator())
+    ->withTransformer(new MyTransformer());
 ```
 
 

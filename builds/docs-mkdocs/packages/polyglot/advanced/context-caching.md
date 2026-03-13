@@ -23,7 +23,7 @@ the number of tokens processed and the time to first token.
 Request 1:  [cached context] + [new question]  -->  cache write
 Request 2:  [cached context] + [new question]  -->  cache read (faster, cheaper)
 Request 3:  [cached context] + [new question]  -->  cache read (faster, cheaper)
-// @doctest id="a0fd"
+// @doctest id="d55c"
 ```
 
 
@@ -59,7 +59,7 @@ $response2 = $inference
 
 echo $response2->content() . "\n";
 echo 'Cache read tokens: ' . $response2->usage()->cacheReadTokens . "\n";
-// @doctest id="12e1"
+// @doctest id="ae78"
 ```
 
 The first request populates the provider's cache (you may see `cacheWriteTokens` reported).
@@ -112,7 +112,7 @@ $inference = Inference::using('anthropic')->withCachedContext(
 
 // Each follow-up query reuses the cached system prompt and tool definitions
 $response = $inference->withMessages(Messages::fromString('Extract entities from: "Apple announced the new iPhone in Cupertino."'))->response();
-// @doctest id="88ce"
+// @doctest id="4f8b"
 ```
 
 
@@ -151,7 +151,7 @@ foreach ($questions as $question) {
     echo "A: " . $response->content() . "\n";
     echo "Cache read tokens: " . $response->usage()->cacheReadTokens . "\n\n";
 }
-// @doctest id="b9bb"
+// @doctest id="bec1"
 ```
 
 After the first request populates the provider's cache, subsequent questions benefit from
@@ -179,7 +179,7 @@ echo "Input tokens:       " . $usage->inputTokens . "\n";
 echo "Output tokens:      " . $usage->outputTokens . "\n";
 echo "Cache read tokens:  " . $usage->cacheReadTokens . "\n";
 echo "Cache write tokens: " . $usage->cacheWriteTokens . "\n";
-// @doctest id="bf24"
+// @doctest id="543e"
 ```
 
 

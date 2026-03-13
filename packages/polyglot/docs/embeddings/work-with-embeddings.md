@@ -102,7 +102,6 @@ $response = Embeddings::using('openai')
 
 $usage = $response->usage();
 echo "Input tokens: " . $usage->input() . "\n";
-echo "Output tokens: " . $usage->output() . "\n";
 echo "Total tokens: " . $usage->total() . "\n";
 ```
 

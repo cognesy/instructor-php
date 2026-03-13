@@ -18,7 +18,7 @@ LLM response:
 {"name": "John", "age": 30}
 
 Result: Parsed successfully
-// @doctest id="966d"
+// @doctest id="5c63"
 ```
 
 ### 2. Markdown Code Block Extraction
@@ -28,20 +28,20 @@ Extracts JSON from fenced code blocks. Some providers (particularly Claude) tend
 ```text
 LLM response:
 Here's the data you requested:
-// @doctest id="6030"
+// @doctest id="d136"
 ```json
 {"name": "John", "age": 30}
 ```
 
 Result: Content extracted from between
-// @doctest id="1b3b"
+// @doctest id="047a"
 ```json and ``` markers
 ```
 
 ### 3. Bracket Matching
 
 Finds the first `{` and last `}` in the response to extract JSON from surrounding text.
-// @doctest id="967f"
+// @doctest id="3849"
 ```text
 LLM response:
 The user data is {"name": "John", "age": 30} as extracted from the text.
@@ -52,7 +52,7 @@ Result: JSON extracted from first { to last }
 ### 4. Smart Brace Matching
 
 Handles complex cases with nested braces and escaped quotes inside string values.
-// @doctest id="3cc1"
+// @doctest id="1437"
 ```text
 LLM response:
 Here is {"user": {"name": "John \"The Great\"", "age": 30}} extracted.
@@ -79,7 +79,7 @@ The built-in extractor chain includes these extractors, tried in order:
 | `DirectJsonExtractor` | Parse content directly as JSON |
 | `ResilientJsonExtractor` | Handle malformed JSON (trailing commas, unbalanced braces) |
 | `MarkdownBlockExtractor` | Extract from `
-// @doctest id="e5d7"
+// @doctest id="a920"
 ```json ``` ` blocks |
 | `BracketMatchingExtractor` | Find first `{` to last `}` |
 | `SmartBraceExtractor` | Handle nested braces and escaped quotes in strings |
@@ -88,7 +88,7 @@ Most responses succeed on the first strategy. The subsequent strategies add negl
 
 ## Custom Extractors
 
-You can replace the default extractors with your own by calling `withExtractors()` on the `StructuredOutputRuntime`. Each extractor must implement the `CanExtractResponse` interface.
+You can replace the default extractor with your own by calling `withExtractor()` on the `StructuredOutputRuntime`. Use `ResponseExtractor::fromExtractors()` to compose multiple extractors into a chain.
 
 ```php
 use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
@@ -123,7 +123,7 @@ class XmlCdataExtractor implements CanExtractResponse
         return 'xml_cdata';
     }
 }
-// @doctest id="94c0"
+// @doctest id="4771"
 ```
 
 ### Using Custom Extractors
@@ -134,17 +134,18 @@ Custom extractors are configured on the runtime and apply to both synchronous an
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
+use Cognesy\Instructor\Extraction\ResponseExtractor;
 
 $runtime = StructuredOutputRuntime::fromDefaults()
-    ->withExtractors([
+    ->withExtractor(ResponseExtractor::fromExtractors(
         new DirectJsonExtractor(),
         new XmlCdataExtractor(),
-    ]);
+    ));
 
 $result = (new StructuredOutput($runtime))
     ->with(messages: 'Extract user data', responseModel: User::class)
     ->get();
-// @doctest id="6a2a"
+// @doctest id="61d6"
 ```
 
 The extractors are tried in the order you provide them. When an extractor throws an `ExtractionException`, the next extractor in the chain is attempted. If all extractors fail, Instructor returns an empty result, triggers a validation error, and initiates the retry mechanism (if configured).

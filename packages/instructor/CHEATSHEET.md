@@ -118,10 +118,10 @@ use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 $runtime = StructuredOutputRuntime::fromConfig(LLMConfig::fromDsn('driver=openai,model=gpt-4o-mini'))
-    ->withValidators($validators)
-    ->withTransformers($transformers)
-    ->withDeserializers($deserializers)
-    ->withExtractors($extractors);
+    ->withValidator($validator)
+    ->withTransformer($transformer)
+    ->withDeserializer($deserializer)
+    ->withExtractor($extractor);
 
 $so = (new StructuredOutput)->withRuntime($runtime);
 ```

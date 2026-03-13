@@ -263,8 +263,8 @@ use Cognesy\Agents\Capability\Skills\SkillLibrary;
 use Cognesy\Agents\Capability\Subagent\UseSubagents;
 use Cognesy\Agents\Collections\NameList;
 
-$skillLibrary = new SkillLibrary();
-// ... register skills ...
+$skillLibrary = SkillLibrary::inDirectory(__DIR__ . '/skills');
+// ... skills are loaded from the directory ...
 
 $registry->register(new AgentDefinition(
     name: 'code_reviewer',

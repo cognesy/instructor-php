@@ -132,7 +132,7 @@ use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 $runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
-    ->withValidators([BusinessRulesValidator::class]);
+    ->withValidator(new BusinessRulesValidator());
 
 $order = StructuredOutput::withRuntime($runtime)->with(
     messages: 'Extract order...',
@@ -186,7 +186,7 @@ use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 $runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
-    ->withTransformers([NormalizePhoneNumbers::class]);
+    ->withTransformer(new NormalizePhoneNumbers());
 
 $contact = StructuredOutput::withRuntime($runtime)->with(
     messages: 'Contact: John, phone: (555) 123-4567',

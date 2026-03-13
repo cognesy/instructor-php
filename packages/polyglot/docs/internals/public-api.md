@@ -244,7 +244,7 @@ $response->vectors();       // Vector[] -- all embedding vectors
 $response->all();           // Vector[] -- alias for vectors()
 $response->first();         // ?Vector -- first vector
 $response->last();          // ?Vector -- last vector
-$response->usage();         // InferenceUsage -- token counts
+$response->usage();         // EmbeddingsUsage -- token counts
 $response->toValuesArray(); // array -- raw float arrays
 
 // Split vectors at a given index

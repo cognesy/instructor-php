@@ -56,10 +56,10 @@ $runtime = StructuredOutputRuntime::fromConfig(
 |---|---|
 | `withMaxRetries($n)` | Number of retry attempts after validation failure |
 | `withOutputMode($mode)` | How the model produces structured output (Tools, Json, etc.) |
-| `withValidators($validators)` | Override the validation pipeline |
-| `withTransformers($transformers)` | Override response transformers |
-| `withDeserializers($deserializers)` | Override response deserializers |
-| `withExtractors($extractors)` | Override response extractors |
+| `withValidator($validator)` | Override the validator (implements `CanValidateObject`) |
+| `withTransformer($transformer)` | Override the response transformer (implements `CanTransformData`) |
+| `withDeserializer($deserializer)` | Override the deserializer (implements `CanDeserializeClass`) |
+| `withExtractor($extractor)` | Override the response extractor (implements `CanExtractResponse`) |
 | `withConfig($config)` | Pass a full `StructuredOutputConfig` object |
 | `withDefaultToStdClass($bool)` | Fall back to `stdClass` for unknown types |
 

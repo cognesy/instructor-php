@@ -4,39 +4,48 @@ Strategic overview of the Instructor PHP ecosystem - a comprehensive AI/LLM inte
 
 ## Executive Summary
 
-The Instructor PHP monorepo provides a complete toolkit for integrating LLM/AI capabilities into PHP applications with strict type safety, structured output generation, and enterprise-grade infrastructure. The architecture follows clean separation of concerns with 27 packages that handle everything from low-level HTTP communication to high-level AI response parsing.
+The Instructor PHP monorepo provides a complete toolkit for integrating LLM/AI capabilities into PHP applications with strict type safety, structured output generation, and enterprise-grade infrastructure. The architecture follows clean separation of concerns with 29 packages that handle everything from low-level HTTP communication to high-level AI response parsing.
 
 ## Current Package Inventory (`packages/*`)
 
-The following package directories are currently present in the monorepo:
+### Public Packages
 
-- `addons`
-- `agent-ctrl`
-- `agents`
-- `auxiliary`
-- `config`
-- `doctools`
-- `doctor`
-- `dynamic`
-- `evals`
-- `events`
-- `experimental`
-- `http-client`
-- `hub`
-- `instructor`
-- `laravel`
-- `logging`
-- `messages`
-- `metrics`
-- `pipeline`
-- `polyglot`
-- `sandbox`
-- `schema`
-- `setup`
-- `stream`
-- `tell`
-- `templates`
-- `utils`
+Libraries intended for direct use by end users and published to Packagist.
+
+- `instructor` — Structured data extraction in PHP, powered by LLMs (core library)
+- `polyglot` — Unified LLM connectivity layer for PHP applications
+- `agents` — SDK for building custom AI agents
+- `agent-ctrl` — Unified CLI bridge for code agents (Claude Code, Codex, OpenCode)
+- `laravel` — Laravel integration for Instructor PHP
+- `xprompt` — Prompts-as-code micro-library (classes, composition, variants, registry)
+- `sandbox` — Sandboxed command execution with multiple drivers (Docker, Podman, etc.)
+- `addons` — Optional addons for Instructor and Polyglot
+- `hub` — CLI tool for browsing Instructor code examples and docs
+- `setup` — Setup and configuration tool for Instructor PHP
+
+### Internal Packages
+
+Foundation libraries, dev tooling, and support packages used within the monorepo.
+
+- `config` — Lean config loading utilities
+- `dynamic` — Dynamic structure record and schema builder
+- `events` — Event dispatcher and observability infrastructure
+- `http-client` — Unified HTTP connectivity layer
+- `http-pool` — Concurrent HTTP request execution
+- `logging` — Functional logging pipeline with framework integrations
+- `messages` — Message and message list handling
+- `metrics` — Event-driven metrics collection
+- `pipeline` — Pipeline processing infrastructure
+- `schema` — TypeInfo-first schema and JSON Schema generation
+- `stream` — Stream processing utilities
+- `templates` — Text and chat template engine abstraction
+- `utils` — Core utility classes and data structures
+- `auxiliary` — Auxiliary services and integrations
+- `doctools` — Documentation automation and testing utilities
+- `evals` — LLM evaluation tools
+- `tell` — Experimental CLI tool for LLM inference queries
+- `experimental` — Experimental code for Instructor and Polyglot
+- `doctor` — (placeholder, not yet implemented)
 
 ---
 
