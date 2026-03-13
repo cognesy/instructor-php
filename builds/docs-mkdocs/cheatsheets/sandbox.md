@@ -175,6 +175,13 @@ Command key format for queued responses:
 - `options(): string`
 - `toVolumeArg(): string` (returns `host:container:options`)
 
+## TimeoutReason Enum
+
+`TimeoutReason` values:
+
+- `TimeoutReason::WALL` (`wall`) — wall-clock timeout exceeded
+- `TimeoutReason::IDLE` (`idle`) — idle timeout exceeded
+
 ## Exit Code Constants
 
 `ExitCodes`:

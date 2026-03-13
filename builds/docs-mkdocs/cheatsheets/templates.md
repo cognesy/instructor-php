@@ -1,6 +1,6 @@
 ---
 title: Templates
-description: Template engine abstraction — Twig, Blade, Plates, and DSN-based template resolution
+description: Template engine abstraction — Twig, Blade, Arrowpipe, and DSN-based template resolution
 package: templates
 ---
 
@@ -49,6 +49,13 @@ toText(): string
 toMessages(): Messages
 toMessageStore(): MessageStore
 toArray(): array
+```
+
+## Message Rendering
+
+```php
+renderMessage(Message $message): Message    // render template variables in message text parts
+renderMessages(Messages $messages): Messages // render template variables in all messages
 ```
 
 ## Introspection

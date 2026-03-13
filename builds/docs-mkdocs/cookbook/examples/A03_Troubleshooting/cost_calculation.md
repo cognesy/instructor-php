@@ -6,28 +6,35 @@ id: '59c8'
 ## Overview
 
 When using LLM APIs, tracking costs is essential for budgeting and optimization.
-Instructor supports automatic cost calculation based on token usage and pricing
-configuration in your LLM connection config.
+Cost calculation is decoupled from usage tracking — you use a calculator to
+compute cost from usage and pricing data.
 
 This example demonstrates how to:
-1. Configure pricing in LLM config ($/1M tokens)
-2. Calculate cost after a request using `Usage::calculateCost()`
+1. Define pricing rates ($/1M tokens) with `InferencePricing`
+2. Calculate cost using `FlatRateCostCalculator`
+3. Compare costs across different models
 
 ```php
 <?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Data\Pricing;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferencePricing;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
+use Cognesy\Polyglot\Inference\Pricing\FlatRateCostCalculator;
+use Cognesy\Polyglot\Pricing\Cost;
 
 class User {
     public int $age;
     public string $name;
 }
 
+$calculator = new FlatRateCostCalculator();
+
 // Helper to display cost breakdown
-function printCostBreakdown(Usage $usage, Pricing $pricing): void {
+function printCostBreakdown(InferenceUsage $usage, InferencePricing $pricing, FlatRateCostCalculator $calculator): void {
+    $cost = $calculator->calculate($usage, $pricing);
+
     echo "Token Usage:\n";
     echo "  Input tokens:     {$usage->inputTokens}\n";
     echo "  Output tokens:    {$usage->outputTokens}\n";
@@ -38,29 +45,14 @@ function printCostBreakdown(Usage $usage, Pricing $pricing): void {
     echo "  Input:      \${$pricing->inputPerMToken}\n";
     echo "  Output:     \${$pricing->outputPerMToken}\n";
     echo "  Cache read: \${$pricing->cacheReadPerMToken}\n";
-    echo "\nTotal cost: \$" . number_format($usage->cost($pricing), 6) . "\n";
+    echo "\nTotal cost: \$" . number_format($cost->total, 6) . "\n";
+
+    echo "\nBreakdown:\n";
+    foreach ($cost->breakdown as $category => $amount) {
+        printf("  %-12s \$%.6f\n", $category, $amount);
+    }
 }
 
-// OPTION 1: Configure pricing directly in LLMConfig:
-//
-// $llmConfig = LLMConfig::fromArray([
-//     'driver' => 'openrouter',
-//     'model' => 'anthropic/claude-3.5-sonnet',
-//     'pricing' => [
-//         'input' => 3.0,    // $3 per 1M input tokens
-//         'output' => 15.0,  // $15 per 1M output tokens
-//         // cacheRead, cacheWrite, reasoning default to input price if not set
-//     ],
-// ]);
-//
-// Then calculateCost() works automatically:
-//
-// $response = StructuredOutput::fromConfig($llmConfig)
-//     ->with(messages: $text, responseModel: User::class)
-//     ->response();
-// $cost = $response->usage()->calculateCost();
-
-// OPTION 2: Calculate cost manually with explicit Pricing
 echo "CALCULATING COST WITH EXPLICIT PRICING\n";
 echo str_repeat("=", 50) . "\n\n";
 
@@ -73,21 +65,17 @@ $response = StructuredOutput::using('openai')
     )->response();
 
 // Define pricing for default model gpt-4.1-nano
-$pricing = Pricing::fromArray([
+$pricing = InferencePricing::fromArray([
     'input' => 0.2,     // $0.2 per 1M input tokens
-    'output' => 0.8,   // $0.8 per 1M output tokens
-    'cacheRead' => 0.05, // $0.05 per 1M output tokens
+    'output' => 0.8,    // $0.8 per 1M output tokens
+    'cacheRead' => 0.05, // $0.05 per 1M cache read tokens
 ]);
 
 echo "TEXT: $text\n\n";
-printCostBreakdown($response->usage(), $pricing);
-
-// You can also attach pricing to usage for later calculation
-$usageWithPricing = $response->usage()->withPricing($pricing);
-echo "\nCost via stored pricing: \$" . number_format($usageWithPricing->cost(), 6) . "\n";
+printCostBreakdown($response->usage(), $pricing, $calculator);
 
 
-// OPTION 3: Compare costs across different models
+// COMPARE COSTS ACROSS DIFFERENT MODELS
 echo "\n\n" . str_repeat("=", 50) . "\n";
 echo "COST COMPARISON ACROSS MODELS\n";
 echo str_repeat("=", 50) . "\n\n";
@@ -104,9 +92,9 @@ $models = [
 
 echo "For {$usage->inputTokens} input + {$usage->outputTokens} output tokens:\n\n";
 foreach ($models as $model => $prices) {
-    $pricing = Pricing::fromArray($prices);
-    $cost = $usage->cost($pricing);
-    printf("  %-20s \$%.6f\n", $model, $cost);
+    $pricing = InferencePricing::fromArray($prices);
+    $cost = $calculator->calculate($usage, $pricing);
+    printf("  %-20s \$%.6f\n", $model, $cost->total);
 }
 
 assert($response->value()->name === 'Jason');

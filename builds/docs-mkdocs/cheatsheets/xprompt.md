@@ -108,8 +108,9 @@ new PromptRegistry(
 ### Registration & Retrieval
 
 ```php
-register(string $name, string $class): void   // same name = variant
-get(string $name): Prompt                      // applies overrides
+register(string $name, string $class): void       // same name = variant
+registerClass(string $class): void                 // uses #[AsPrompt] or $promptName
+get(string $name): Prompt                          // applies overrides
 has(string $name): bool
 ```
 
@@ -117,7 +118,7 @@ has(string $name): bool
 
 ```php
 names(bool $includeBlocks = false): array
-all(bool $includeBlocks = false): iterable     // yields [name, class]
+all(bool $includeBlocks = false): iterable     // yields name => class
 variants(string $name): array                  // variant classes for a name
 ```
 
@@ -207,18 +208,17 @@ class Review extends Prompt
 }
 ```
 
-### Integration with Inference / Agents
+### Integration with StructuredOutput / Agents
 
 ```php
-// Polyglot
-(new Inference)
-    ->withSystem(Review::with(content: $doc, strict: true))
-    ->create();
+// StructuredOutput
+StructuredOutput::with(
+    system: Review::with(content: $doc, strict: true),
+    responseModel: MyModel::class,
+)->get();
 
-// Agents
-(new AgentBuilder)
-    ->withSystemPrompt(Review::with(content: $doc))
-    ->create();
+// Agents (via AgentContext)
+$context->withSystemPrompt(Review::with(content: $doc));
 ```
 
 ### Variant swap

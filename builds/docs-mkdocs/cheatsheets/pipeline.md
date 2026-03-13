@@ -89,7 +89,7 @@ TransformState::with(CanCarryState $state)
 ->tagMap(): TagMapInterface
 ->tags(): TagQuery
 ->hasTag(string $tagClass): bool
-->allTags(): array
+->allTags(): array                                     // Note: no parameter (unlike ProcessingState)
 ->recover(mixed $defaultValue): CanCarryState
 ->recoverWith(callable $recovery): CanCarryState
 ->when(callable $conditionFn, callable $transformationFn): self
@@ -100,7 +100,7 @@ TransformState::with(CanCarryState $state)
 ->mergeFrom(CanCarryState $source): self
 ->mergeInto(CanCarryState $target): self
 ->combine(CanCarryState $other, ?callable $resultCombinator = null): self
-->failWhen(callable $conditionFn, string $errorMessage = 'Failure condition met'): self
+->failWhen(callable $conditionFn, string $errorMessage = 'Failure condition met'): self  // Note: fails when condition returns FALSE
 ->map(callable $fn): self
 ->mapResult(callable $fn): self
 ->mapState(callable $fn): self

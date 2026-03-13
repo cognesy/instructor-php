@@ -62,13 +62,17 @@ Data processing pipelines — builder, error strategies, processors, and pipe co
 
 PHP type-to-JSON Schema mapping — schema building, factory, callable schemas, and rendering
 
+## [Setup](setup.md)
+
+CLI commands for publishing package resources and config files, with validation and caching support
+
 ## [Stream](stream.md)
 
 Composable stream transformations — transducers, filters, mappers, and lazy evaluation
 
 ## [Templates](templates.md)
 
-Template engine abstraction — Twig, Blade, Plates, and DSN-based template resolution
+Template engine abstraction — Twig, Blade, Arrowpipe, and DSN-based template resolution
 
 ## [Utils](utils.md)
 

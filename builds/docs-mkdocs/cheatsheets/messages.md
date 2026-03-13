@@ -146,17 +146,17 @@ final readonly class ToolCall {
     $tc->argumentsAsJson();                    // string (JSON-encoded)
     $tc->argsAsJson();                         // string (alias for argumentsAsJson)
     $tc->hasArgs();                            // bool
-    $tc->hasValue();                           // bool
-    $tc->value();                              // mixed (first argument value)
+    $tc->hasValue(string $key);                // bool (checks if argument key exists)
+    $tc->value(string $key, mixed $default = null); // mixed (argument value by key)
     $tc->toArray();                            // Serialized array
     $tc->toString();                           // String representation
 
     // Mutation (immutable)
-    $tc->with($name, $args, $id);             // Replace all fields
+    $tc->with($id, $name, $args);             // Replace fields (all optional, named params)
     $tc->withId($id);                          // Replace ID
     $tc->withName($name);                      // Replace name
-    $tc->withArguments($args);                 // Replace arguments
-    $tc->withArgs($args);                      // Alias for withArguments
+    $tc->withArguments(string|array $args);    // Replace arguments (accepts JSON string or array)
+    $tc->withArgs(string|array $args);         // Alias for withArguments
 }
 ```
 
@@ -227,13 +227,15 @@ final readonly class ToolResult {
 ### Core Message Class
 ```php
 final readonly class Message {
+    public MessageId $id;                      // Generated UUID, preserved across mutations
+    public DateTimeImmutable $createdAt;       // Timestamp, preserved across mutations
+
     protected string $role;
     protected string $name;
     protected Content $content;
     protected ToolCalls $toolCalls;
     protected ?ToolResult $toolResult;
     protected Metadata $metadata;
-    protected ?MessageId $id;
     protected ?MessageId $parentId;
 
     public const DEFAULT_ROLE = 'user';
@@ -243,7 +245,7 @@ final readonly class Message {
 ### Message Construction Patterns
 ```php
 // Basic construction
-new Message($role, $content, $name = '', $metadata = [], $toolCalls = null, $toolResult = null);
+new Message($role, $content, $name = '', $metadata = [], $parentId = null, $toolCalls = null, $toolResult = null, $id = null, $createdAt = null);
 new Message(MessageRole::User, 'Hello world');
 new Message('', 'Content');  // Defaults to 'user' role
 
@@ -316,6 +318,10 @@ final readonly class ContentParts {
     public function last(): ?ContentPart;
     public function get(int $index): ?ContentPart;
     public function count(): int;
+    public function isEmpty(): bool;
+    public function map(callable $callback): array;
+    public function reduce(callable $callback, mixed $initial = null): mixed;
+    public function filter(callable $callback): self;
     public function toArray(): array;
     public function toString(string $separator = "\n"): string;
     public function withoutEmpty(): self;
@@ -564,7 +570,8 @@ class Audio {
 
 ### Metadata Utility Class
 ```php
-final readonly class Metadata {
+// Note: Cognesy\Utils\Metadata (shared utility, not in messages package)
+final readonly class Metadata implements Countable, IteratorAggregate {
     private array $metadata;
 
     // Construction
@@ -575,12 +582,14 @@ final readonly class Metadata {
     // Immutable operations
     $metadata->withKeyValue($key, $value);     // Add/update key-value pair
     $metadata->withoutKey($key);               // Remove key
+    $metadata->withMergedData(array $data);    // Merge array into metadata
 
     // Data access
     $metadata->get($key, $default);            // Get value with default
     $metadata->hasKey($key);                   // Check key existence
     $metadata->keys();                         // All keys array
     $metadata->isEmpty();                      // Check if empty
+    $metadata->count();                        // Number of entries (Countable)
     $metadata->toArray();                      // Convert to array
 
     // Usage patterns for OpenAI content enhancement
@@ -711,6 +720,7 @@ final readonly class MessageStore {
 }
 
 // Construction
+MessageStore::empty();                           // Empty store
 MessageStore::fromSections(Section ...$sections);
 MessageStore::fromMessages(Messages $messages, string $section = 'messages');
 MessageStore::fromArray(array $data);         // Deserialize from array
@@ -729,19 +739,26 @@ $store->toMessages();                         // Flatten to Messages
 $store->toArray();                            // Export structured store array
 $store->toFlatArray();                        // Export flat messages array
 $store->toString();                           // Text representation
+
+// Storage integration
+MessageStore::fromStorage($storage, $sessionId); // Load from CanStoreMessages
+$store->toStorage($storage, $sessionId);         // Save to CanStoreMessages
 ```
 
 ### Section Operator API
 ```php
 // Section access and queries
+$store->section('system')->name();           // Get section name
 $store->section('system')->exists();         // Check if section exists
 $store->section('system')->isEmpty();        // Check if section empty
+$store->section('system')->isNotEmpty();     // Check if section has content
 $store->section('system')->get();            // Get Section object
 $store->section('system')->messages();       // Get section messages
 
 // Section mutations (immutable)
 $store->section('system')->appendMessages($messages);
 $store->section('system')->setMessages($messages);
+$store->section('system')->setSection($section);  // Replace section (renames if needed)
 $store->section('system')->remove();         // Remove entire section
 $store->section('system')->clear();          // Clear section messages
 ```
@@ -815,8 +832,7 @@ final readonly class Sections {
 
 ### Messages Class Structure
 ```php
-final readonly class Messages {
-    /** @var MessageList $messages */
+final readonly class Messages implements Countable, IteratorAggregate {
     private MessageList $messages;
 
     public function __construct(Message ...$messages);
@@ -878,11 +894,11 @@ match(true) {
 ### Messages Access API
 ```php
 // Basic access
-$messages->first();                        // First message or empty
-$messages->last();                         // Last message or empty
+$messages->first();                        // First message (or empty Message if none)
+$messages->last();                         // Last message (or empty Message if none)
 $messages->all();                          // Message[] array (deprecated)
 $messages->messageList();                  // MessageList collection
-$messages->count();                        // Message count
+$messages->count();                        // Message count (Countable)
 
 // Iteration
 $messages->each();                         // Generator<Message>
@@ -973,6 +989,7 @@ if ($messages->hasComposites()) {
 ### Message State Management
 ```php
 // Message access
+$message->id();                            // MessageId
 $message->role();                          // MessageRole enum
 $message->name();                          // Name string
 $message->content();                       // Content object
@@ -981,8 +998,11 @@ $message->contentParts()->all();           // ContentPart[] array
 $message->parentId();                      // ?MessageId
 
 // Role and type checking
-$message->isTool();                        // role === 'tool'
+$message->isUser();                        // role === 'user'
 $message->isAssistant();                   // role === 'assistant'
+$message->isTool();                        // role === 'tool'
+$message->isSystem();                      // role is system or developer
+$message->isDeveloper();                   // role === 'developer'
 $message->hasRole(MessageRole ...$roles);  // Check against multiple roles
 $message->type();                          // MessageType enum (Text, AssistantToolCalls, ToolResult)
 
@@ -1010,7 +1030,7 @@ $message->withToolCalls($toolCalls);       // Replace ToolCalls
 $message->withToolResult($toolResult);     // Replace ToolResult
 $message->withParentId($parentId);         // Set parent message ID
 $message->addContentFrom($sourceMessage); // Merge content from another message
-$message->addContentPart($part);           // Add content part
+$message->addContentPart(string|array|ContentPart $part); // Add content part
 ```
 
 ### Message Serialization

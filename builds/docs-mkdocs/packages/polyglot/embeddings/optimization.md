@@ -23,7 +23,7 @@ $response = Embeddings::using('openai')
     ->get();
 
 $vectors = $response->toValuesArray();
-// @doctest id="aaa3"
+// @doctest id="f17b"
 ```
 
 Each provider has a maximum number of inputs per request (configured as `maxInputs` in the preset). For OpenAI this defaults to 2048; for Cohere it is 96. When processing large datasets, chunk your documents to stay within these limits.
@@ -62,7 +62,7 @@ for ($i = 0; $i < count($allDocuments); $i += $batchSize) {
 }
 
 echo "Processed " . count($vectors) . " embeddings in total.\n";
-// @doctest id="e5e1"
+// @doctest id="ddc2"
 ```
 
 ## Retry Policies
@@ -85,7 +85,7 @@ $response = Embeddings::using('openai')
         retryOnStatus: [408, 429, 500, 502, 503, 504],
     ))
     ->get();
-// @doctest id="7a4c"
+// @doctest id="f399"
 ```
 
 ### Retry Policy Parameters
@@ -195,7 +195,7 @@ class CachedEmbeddings
         return md5($text . serialize($options));
     }
 }
-// @doctest id="e348"
+// @doctest id="a91d"
 ```
 
 Usage:
@@ -216,7 +216,7 @@ $vectors = $cached->embedMany([
     'What is machine learning?',  // cached
     'How do neural networks work?', // API call
 ]);
-// @doctest id="74b3"
+// @doctest id="0d74"
 ```
 
 > **Tip:** For persistent caching across requests, replace the in-memory array with Redis, Memcached, or a database-backed store.
@@ -255,7 +255,7 @@ $compact = Embeddings::using('openai')
 
 echo "Full: " . count($full->values()) . " dimensions\n";
 echo "Compact: " . count($compact->values()) . " dimensions\n";
-// @doctest id="3a62"
+// @doctest id="7b38"
 ```
 
 ## Best Practices
@@ -279,7 +279,7 @@ $response = Embeddings::using('openai')
 
 $usage = $response->usage();
 echo "Tokens used: " . $usage->total() . "\n";
-// @doctest id="0c41"
+// @doctest id="cd93"
 ```
 
 **Match dimensions to your storage.** If you are storing millions of vectors, reducing dimensions from 3072 to 256 can cut storage costs by over 90% with only modest quality loss.

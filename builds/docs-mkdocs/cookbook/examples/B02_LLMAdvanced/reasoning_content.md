@@ -20,8 +20,8 @@ use Cognesy\Polyglot\Inference\Inference;
 
 // EXAMPLE 1: regular API, allows to customize inference options
 $response = Inference::using('deepseek-r')
-    ->withMessages(Messages::fromString('What is the capital of France. Answer with just a name.'))
-    ->withMaxTokens(256)
+    ->withMessages(Messages::fromString('What is the capital of France? Answer with just the city name, nothing else.'))
+    ->withMaxTokens(1024)
     ->response();
 
 echo "\nCASE #1: Sync response\n";
@@ -34,8 +34,8 @@ assert($response->reasoningContent() !== '');
 // EXAMPLE 2: streaming response
 $stream = Inference::using('deepseek-r')
     ->with(
-        messages: Messages::fromString('What is capital of Brasil. Answer with just a name.'),
-        options: ['max_tokens' => 256]
+        messages: Messages::fromString('What is the capital of Brasil? Answer with just the city name, nothing else.'),
+        options: ['max_tokens' => 1024]
     )
     ->withStreaming()
     ->stream();

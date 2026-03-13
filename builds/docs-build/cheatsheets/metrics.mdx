@@ -148,7 +148,7 @@ All metric types implement `Metric` and are `readonly`:
 ```php
 use Cognesy\Metrics\Data\Metric;
 
-interface Metric {
+interface Metric extends JsonSerializable, Stringable {
     public function name(): string;
     public function value(): float;
     public function tags(): Tags;
@@ -156,6 +156,7 @@ interface Metric {
     public function type(): string;       // 'counter', 'gauge', 'histogram', 'timer'
     public function toArray(): array;
     public function jsonSerialize(): array;
+    // Stringable: (string) $metric produces "name{tags} value" format
 }
 ```
 
@@ -203,6 +204,7 @@ All `create()` methods accept an optional `?DateTimeImmutable $timestamp` (defau
 
 ```php
 use Cognesy\Metrics\Data\Tags;
+// Tags implements IteratorAggregate, Countable, Stringable
 
 $tags = Tags::empty();
 $tags = Tags::of(['method' => 'GET', 'status' => 200]);

@@ -1,22 +1,15 @@
 {
-    "name": "Test Docs",
-    "primaryTab": {
-        "name": "Main"
-    },
-    "tabs": [
-        {
-            "name": "Packages",
-            "url": "packages"
-        },
-        {
-            "name": "Cookbook",
-            "url": "cookbook"
-        },
-        {
-            "name": "Cheatsheets",
-            "url": "cheatsheets"
+    "name": "Instructor for PHP",
+    "favicon": "/favicon.svg",
+    "colors": {
+        "primary": "#0D9373",
+        "light": "#07C983",
+        "dark": "#0D9373",
+        "anchors": {
+            "from": "#0D9373",
+            "to": "#07C983"
         }
-    ],
+    },
     "navigation": [
         {
             "group": "Main",
@@ -492,6 +485,7 @@
                 "cookbook/examples/A05_Extras/complex_extraction_claude",
                 "cookbook/examples/A05_Extras/complex_extraction_cohere",
                 "cookbook/examples/A05_Extras/complex_extraction_gemini",
+                "cookbook/examples/A05_Extras/cost_calculation_structured",
                 "cookbook/examples/A05_Extras/custom_extractor",
                 "cookbook/examples/A05_Extras/structured_input",
                 "cookbook/examples/A05_Extras/image_car_damage",
@@ -583,6 +577,7 @@
             "pages": [
                 "cookbook/examples/B05_LLMExtras/chat_with_many_participants",
                 "cookbook/examples/B05_LLMExtras/chat_with_summary",
+                "cookbook/examples/B05_LLMExtras/cost_calculation_inference",
                 "cookbook/examples/B05_LLMExtras/image_data",
                 "cookbook/examples/B05_LLMExtras/metrics_streaming",
                 "cookbook/examples/B05_LLMExtras/streaming_inference_openai_responses",
@@ -806,11 +801,43 @@
                 "cheatsheets/metrics",
                 "cheatsheets/pipeline",
                 "cheatsheets/schema",
+                "cheatsheets/setup",
                 "cheatsheets/stream",
                 "cheatsheets/templates",
                 "cheatsheets/utils",
                 "cheatsheets/xprompt"
             ]
+        }
+    ],
+    "logo": {
+        "dark": "/images/logo/dark.svg",
+        "light": "/images/logo/light.svg"
+    },
+    "topbarLinks": [
+        {
+            "name": "Issues",
+            "url": "https://github.com/cognesy/instructor-php/issues"
+        }
+    ],
+    "topbarCtaButton": {
+        "name": "Github",
+        "url": "https://github.com/cognesy/instructor-php"
+    },
+    "primaryTab": {
+        "name": "Main"
+    },
+    "tabs": [
+        {
+            "name": "Packages",
+            "url": "packages"
+        },
+        {
+            "name": "Cookbook",
+            "url": "cookbook"
+        },
+        {
+            "name": "Cheatsheets",
+            "url": "cheatsheets"
         }
     ]
 }

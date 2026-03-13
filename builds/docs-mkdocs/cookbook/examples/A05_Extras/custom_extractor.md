@@ -32,6 +32,7 @@ use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
 use Cognesy\Instructor\Extraction\Data\ExtractionInput;
 use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
+use Cognesy\Instructor\Extraction\ResponseExtractor;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -115,10 +116,10 @@ echo str_repeat('-', 50) . "\n\n";
 // DirectJson is tried first (will fail), then XmlJsonExtractor (will succeed)
 $person = new StructuredOutput(
         StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
-            ->withExtractors([
+            ->withExtractor(ResponseExtractor::fromExtractors(
                 new DirectJsonExtractor(),
                 new XmlJsonExtractor('json'),
-            ])
+            ))
     )
     ->withResponseClass(Person::class)
     ->withMessages("Extract: Alice Johnson, 28 years old, lives in San Francisco")
@@ -180,10 +181,10 @@ of extractors optimized for streaming (fast extractors by default).
 // Custom extractors work for streaming too
 $stream = new StructuredOutput(
         StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
-            ->withExtractors([
+            ->withExtractor(ResponseExtractor::fromExtractors(
                 new DirectJsonExtractor(),
                 new XmlJsonExtractor('json'),
-            ])
+            ))
     )
     ->withResponseClass(Person::class)
     ->withMessages("Extract person data...")

@@ -6,7 +6,7 @@ id: '57c7'
 ## Overview
 
 Some use cases require tracking the token usage of the API responses.
-This can be done by getting `Usage` object from Instructor LLM response
+This can be done by getting `InferenceUsage` object from Instructor LLM response
 object.
 
 Code below demonstrates how it can be retrieved for both sync and
@@ -19,14 +19,14 @@ streamed requests.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 class User {
     public int $age;
     public string $name;
 }
 
-function printUsage(Usage $usage) : void {
+function printUsage(InferenceUsage $usage) : void {
     echo "Input tokens: $usage->inputTokens\n";
     echo "Output tokens: $usage->outputTokens\n";
     echo "Cache creation tokens: $usage->cacheWriteTokens\n";

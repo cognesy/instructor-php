@@ -26,7 +26,7 @@ function get_weather(
 }
 
 $tool = FunctionTool::fromCallable(get_weather(...));
-// @doctest id="924d"
+// @doctest id="e772"
 ```
 
 The `#[Description]` attribute on the function provides the tool description that the LLM sees. The same attribute on parameters documents individual arguments in the generated JSON schema. Named functions produce meaningful tool names; closures work too, but you should prefer named functions for clarity.
@@ -49,7 +49,7 @@ function get_weather(string $city): string {
 $tools = new Tools(
     FunctionTool::fromCallable(get_weather(...)),
 );
-// @doctest id="6d77"
+// @doctest id="01f3"
 ```
 
 ### Querying the Collection
@@ -65,7 +65,7 @@ $tools->isEmpty();            // bool -- true when collection is empty
 $tools->all();                // array<string, ToolInterface> -- keyed by name
 $tools->descriptions();       // [['name' => ..., 'description' => ...], ...]
 $tools->toToolSchema();       // ToolDefinitions -- schema collection sent to the LLM
-// @doctest id="54ac"
+// @doctest id="be31"
 ```
 
 The `descriptions()` method returns an array of compact summaries (name and description) for each tool. The `toToolSchema()` method returns the full OpenAI-compatible function-calling schema array that gets sent to the LLM as part of the inference request.
@@ -86,7 +86,7 @@ $tools = $tools->withToolRemoved('get_weather');
 
 // Merge two collections (tools from $other override same-named tools)
 $tools = $tools->merge($otherToolsCollection);
-// @doctest id="d118"
+// @doctest id="45b6"
 ```
 
 <a name="multiple-tools"></a>
@@ -117,7 +117,7 @@ $tools = new Tools(
     FunctionTool::fromCallable(get_weather(...)),
     FunctionTool::fromCallable(calculate(...)),
 );
-// @doctest id="cae9"
+// @doctest id="57c5"
 ```
 
 <a name="attaching-tools-to-an-agent"></a>
@@ -139,7 +139,7 @@ $state = AgentState::empty()->withUserMessage('What is the weather in Paris?');
 $result = $loop->execute($state);
 
 echo $result->finalResponse()->toString();
-// @doctest id="aa0b"
+// @doctest id="742c"
 ```
 
 You can also add tools one at a time:
@@ -148,7 +148,7 @@ You can also add tools one at a time:
 $loop = AgentLoop::default()
     ->withTool(FunctionTool::fromCallable(get_weather(...)))
     ->withTool(FunctionTool::fromCallable(calculate(...)));
-// @doctest id="85c3"
+// @doctest id="3eda"
 ```
 
 ### Via the AgentBuilder
@@ -165,7 +165,7 @@ $loop = AgentBuilder::base()
         FunctionTool::fromCallable(calculate(...)),
     ))
     ->build();
-// @doctest id="6b1b"
+// @doctest id="19e3"
 ```
 
 `UseTools` merges the provided tools into any tools already registered on the builder, so you can combine multiple `UseTools` capabilities without overwriting earlier registrations.
@@ -185,7 +185,7 @@ interface ToolInterface {
     public function toToolSchema(): ToolDefinition;      // Schema sent to the LLM
     public function descriptor(): CanDescribeTool;       // Metadata accessor
 }
-// @doctest id="f548"
+// @doctest id="38a5"
 ```
 
 The `use()` method receives the arguments that the LLM provided and returns a `Result` object wrapping either a success value or a failure. The `toToolSchema()` method returns a `ToolDefinition` value object describing the tool's name, description, and parameters. The `descriptor()` method returns the tool's identity and documentation.
@@ -201,7 +201,7 @@ interface CanDescribeTool {
     public function metadata(): array;       // Lightweight info for browsing/discovery
     public function instructions(): array;   // Full specification with parameters
 }
-// @doctest id="d3eb"
+// @doctest id="5ad0"
 ```
 
 **`metadata()`** returns a compact summary suitable for listing tools. The default implementation includes `name` and `summary` keys, with an optional `namespace` key for namespaced tool names (e.g., `file.read` yields namespace `file`).
@@ -216,7 +216,7 @@ Tools that need to read the current agent execution state implement `CanAccessAg
 interface CanAccessAgentState {
     public function withAgentState(AgentState $state): static;
 }
-// @doctest id="42b0"
+// @doctest id="85f2"
 ```
 
 State is read-only from the tool's perspective. The `withAgentState()` method clones the tool and injects the state, ensuring that tool instances remain safe to reuse across invocations. Modifications to agent state should be handled by the agent's state processors, not by tools directly.
@@ -229,7 +229,7 @@ Tools that need access to their invocation context (the raw `ToolCall` object wi
 interface CanAccessToolCall {
     public function withToolCall(ToolCall $toolCall): static;
 }
-// @doctest id="bcba"
+// @doctest id="a4a1"
 ```
 
 Like `CanAccessAgentState`, this method clones the tool and injects the `ToolCall`, preserving immutability.
@@ -248,7 +248,7 @@ interface CanManageTools {
     public function names(): array;
     public function count(): int;
 }
-// @doctest id="5d01"
+// @doctest id="688e"
 ```
 
 The `ToolRegistry` class implements this interface and is used internally by the `ToolsTool` capability for dynamic tool discovery. The `registerFactory()` method accepts a `callable(): ToolInterface` that is only invoked when the tool is first requested, enabling lazy loading of expensive tools.
@@ -261,7 +261,7 @@ The `CanExecuteToolCalls` interface defines the contract for executing a batch o
 interface CanExecuteToolCalls {
     public function executeTools(ToolCalls $toolCalls, AgentState $state): ToolExecutions;
 }
-// @doctest id="3711"
+// @doctest id="a8e4"
 ```
 
 The `ToolExecutor` class is the default implementation, and the `AgentLoop` accepts a custom executor via `withToolExecutor()`.
@@ -289,7 +289,7 @@ SimpleTool                              # descriptor, result wrapping, arg()
   +-- StateAwareTool                    # + CanAccessAgentState
         +-- BaseTool                    # + reflective schema + metadata/instructions
         +-- ContextAwareTool            # + CanAccessToolCall
-// @doctest id="cd67"
+// @doctest id="d23a"
 ```
 
 For most projects, `FunctionTool` or `BaseTool` is all you need. See [Building Tools](06-building-tools.md) for practical guidance, and [Building Tools: Advanced Patterns](17-building-tools-advanced.md) for lower-level patterns.
@@ -316,7 +316,7 @@ The `Tools` collection serializes all tool schemas via `toToolSchema()` and send
         ],
     ],
 ]
-// @doctest id="d60f"
+// @doctest id="c9a1"
 ```
 
 ### 2. Tool Call Parsing
@@ -380,7 +380,7 @@ $execution->wasBlocked();    // bool -- true if blocked by a hook
 $execution->startedAt();     // DateTimeImmutable
 $execution->completedAt();   // DateTimeImmutable
 $execution->toArray();       // array -- serializable representation
-// @doctest id="a0dc"
+// @doctest id="f71c"
 ```
 
 The `ToolExecutions` collection aggregates multiple executions from a single step and provides batch-level queries:
@@ -393,7 +393,7 @@ $executions->hasErrors();     // bool
 $executions->havingErrors();  // ToolExecution[] -- only failed ones
 $executions->errors();        // ErrorList
 $executions->toolCalls();     // ToolCalls -- extract original calls
-// @doctest id="b68d"
+// @doctest id="cc5c"
 ```
 
 <a name="error-handling"></a>
@@ -414,7 +414,7 @@ $executor = new ToolExecutor(
     interceptor: $interceptor,
     throwOnToolFailure: true,
 );
-// @doctest id="57ae"
+// @doctest id="86e8"
 ```
 
 ### Stopping on Blocked Tools
@@ -428,7 +428,7 @@ $executor = new ToolExecutor(
     interceptor: $interceptor,
     stopOnToolBlock: true,
 );
-// @doctest id="9c18"
+// @doctest id="c9c9"
 ```
 
 <a name="the-tool-registry"></a>
@@ -451,7 +451,7 @@ $registry->registerFactory('expensive_tool', function () {
 
 // The tool is only instantiated when first requested
 $tool = $registry->get('expensive_tool');
-// @doctest id="ea36"
+// @doctest id="80dd"
 ```
 
 The `ToolRegistry` is used internally by the `ToolsTool` capability, which exposes a meta-tool that lets the LLM browse, search, and inspect available tools at runtime.
@@ -469,7 +469,7 @@ The simplest form returns the same value regardless of arguments:
 use Cognesy\Agents\Tool\Tools\FakeTool;
 
 $tool = FakeTool::returning('search', 'Search the web', 'result text');
-// @doctest id="7c08"
+// @doctest id="7254"
 ```
 
 ### Dynamic Responses
@@ -482,7 +482,7 @@ $tool = new FakeTool(
     description: 'Search the web',
     handler: fn(string $query) => "Results for: {$query}",
 );
-// @doctest id="6782"
+// @doctest id="ab91"
 ```
 
 ### Full Customization
@@ -519,7 +519,7 @@ $tool = new FakeTool(
         'returns' => 'Search results as a string',
     ],
 );
-// @doctest id="ed2d"
+// @doctest id="e6a0"
 ```
 
 When no custom schema is provided, `FakeTool` generates a minimal schema with an empty `properties` object, which is sufficient for most testing scenarios.
