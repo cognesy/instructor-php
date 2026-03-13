@@ -12,7 +12,7 @@ use Throwable;
 /**
  * Typed configuration for CLI-based agent builders.
  */
-final readonly class AgentConfig
+final readonly class AgentCtrlConfig
 {
     public const CONFIG_GROUP = 'agents';
 
@@ -38,7 +38,7 @@ final readonly class AgentConfig
             $data = json_encode($normalized, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
             throw new InvalidArgumentException(
-                message: "Failed to create AgentConfig from array:\n{$data}\nError: {$e->getMessage()}",
+                message: "Failed to create AgentCtrlConfig from array:\n{$data}\nError: {$e->getMessage()}",
                 previous: $e,
             );
         }

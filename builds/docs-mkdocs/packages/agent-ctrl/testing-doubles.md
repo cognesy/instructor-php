@@ -20,7 +20,7 @@ Most `agent-ctrl` logic is easiest to test at the pure-object level.
 
 That includes:
 
-- config normalization with `AgentConfig`
+- config normalization with `AgentCtrlConfig`
 - command building
 - response parsing
 - session and DTO behavior

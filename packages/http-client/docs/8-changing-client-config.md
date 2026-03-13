@@ -73,6 +73,33 @@ $client = HttpClient::fromConfig(new HttpClientConfig(
 ));
 ```
 
+## Presets
+
+`HttpClientConfig` ships with YAML preset files for common driver configurations. Use `fromPreset()` to load one by name:
+
+```php
+use Cognesy\Http\Config\HttpClientConfig;
+
+$config = HttpClientConfig::fromPreset('guzzle');
+```
+
+Available presets: `curl`, `guzzle`, `symfony`, `http-ollama`.
+
+The `HttpClient` facade offers a shorthand:
+
+```php
+use Cognesy\Http\HttpClient;
+
+$client = HttpClient::using('guzzle');
+```
+
+You can override individual fields after loading a preset:
+
+```php
+$config = HttpClientConfig::fromPreset('symfony')
+    ->withOverrides(['requestTimeout' => 120, 'failOnError' => true]);
+```
+
 ## DSN Strings
 
 For environments where configuration comes from environment variables or strings, you can use DSN format:

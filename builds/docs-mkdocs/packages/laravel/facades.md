@@ -15,7 +15,7 @@ $person = StructuredOutput::with(
     messages: 'John Smith is 30 years old',
     responseModel: PersonData::class,
 )->get();
-// @doctest id="7fbb"
+// @doctest id="24ec"
 ```
 
 ### With System Prompt
@@ -28,7 +28,7 @@ $person = StructuredOutput::with(
     responseModel: PersonData::class,
     system: 'You are a data extraction assistant.',
 )->get();
-// @doctest id="0572"
+// @doctest id="bed1"
 ```
 
 ### With Examples (Few-Shot Learning)
@@ -43,7 +43,7 @@ $person = StructuredOutput::with(
         ['input' => 'Bob is 40', 'output' => new PersonData(name: 'Bob', age: 40)],
     ],
 )->get();
-// @doctest id="b739"
+// @doctest id="9ac7"
 ```
 
 ### Switching Connections
@@ -55,7 +55,7 @@ $person = StructuredOutput::connection('anthropic')->with(
     messages: 'Extract person data...',
     responseModel: PersonData::class,
 )->get();
-// @doctest id="fea2"
+// @doctest id="915e"
 ```
 
 ### Fluent API
@@ -72,7 +72,7 @@ $person = StructuredOutput::withMessages('John is 30')
         StructuredOutputRuntime::fromDefaults()->withMaxRetries(3)
     )
     ->get();
-// @doctest id="5761"
+// @doctest id="cc85"
 ```
 
 ### Return Types
@@ -97,7 +97,7 @@ $valid = StructuredOutput::with(...)->getBoolean();
 
 // Get as array
 $items = StructuredOutput::with(...)->getArray();
-// @doctest id="525f"
+// @doctest id="57c1"
 ```
 
 ### Available Methods
@@ -149,7 +149,7 @@ $response = Inference::with(
 )->get();
 
 echo $response; // "The capital of France is Paris."
-// @doctest id="76b7"
+// @doctest id="9b3a"
 ```
 
 ### With System Message
@@ -165,7 +165,7 @@ $response = Inference::with(
         ['role' => 'user', 'content' => 'Hello!'],
     ]),
 )->get();
-// @doctest id="7df7"
+// @doctest id="b013"
 ```
 
 ### JSON Response
@@ -182,7 +182,7 @@ $data = Inference::with(
 )->asJsonData();
 
 // ['colors' => ['red', 'green', 'blue']]
-// @doctest id="2fdd"
+// @doctest id="5f4f"
 ```
 
 ### Switching Connections
@@ -191,7 +191,7 @@ $data = Inference::with(
 $response = Inference::connection('groq')->with(
     messages: Messages::fromString('Explain quantum computing'),
 )->get();
-// @doctest id="8f52"
+// @doctest id="f456"
 ```
 
 ### Available Methods
@@ -239,7 +239,7 @@ $embeddings = Embeddings::withInputs([
     'First text',
     'Second text',
 ])->vectors();
-// @doctest id="2ba3"
+// @doctest id="4157"
 ```
 
 ### Switching Connections
@@ -248,7 +248,7 @@ $embeddings = Embeddings::withInputs([
 $embedding = Embeddings::connection('ollama')
     ->withInputs('Local embedding test')
     ->first();
-// @doctest id="270b"
+// @doctest id="a469"
 ```
 
 ### With Custom Model
@@ -257,7 +257,7 @@ $embedding = Embeddings::connection('ollama')
 $embedding = Embeddings::withInputs('Test')
     ->withModel('text-embedding-3-large')
     ->first();
-// @doctest id="2bba"
+// @doctest id="f1d3"
 ```
 
 ### Full Response
@@ -269,7 +269,7 @@ $response = Embeddings::withInputs('Test')->get();
 
 $vectors = $response->vectors();
 $usage = $response->usage();
-// @doctest id="2839"
+// @doctest id="2426"
 ```
 
 ### Available Methods
@@ -305,7 +305,7 @@ $response = AgentCtrl::claudeCode()
 if ($response->isSuccess()) {
     echo $response->text();
 }
-// @doctest id="425a"
+// @doctest id="a86c"
 ```
 
 ### Agent Selection
@@ -330,7 +330,7 @@ use Cognesy\AgentCtrl\Enum\AgentType;
 
 $response = AgentCtrl::make(AgentType::ClaudeCode)
     ->execute('Generate API documentation');
-// @doctest id="e7c6"
+// @doctest id="4cbf"
 ```
 
 ### Configuration
@@ -338,18 +338,18 @@ $response = AgentCtrl::make(AgentType::ClaudeCode)
 The facade automatically applies Laravel configuration defaults from `config/instructor.php` for each agent type. Builder methods override those defaults for a single call.
 
 ```php
-use Cognesy\AgentCtrl\Config\AgentConfig;
+use Cognesy\AgentCtrl\Config\AgentCtrlConfig;
 use Cognesy\Sandbox\Enums\SandboxDriver;
 
 $response = AgentCtrl::claudeCode()
-    ->withConfig(new AgentConfig(
+    ->withConfig(new AgentCtrlConfig(
         model: 'claude-opus-4-5',
         timeout: 300,
         workingDirectory: base_path(),
         sandboxDriver: SandboxDriver::Host,
     ))
     ->execute('Your prompt');
-// @doctest id="4ebe"
+// @doctest id="ef1d"
 ```
 
 ### Streaming
@@ -368,7 +368,7 @@ $response = AgentCtrl::claudeCode()
         echo "Done! Exit code: " . $response->exitCode;
     })
     ->executeStreaming('Generate a REST API');
-// @doctest id="3a0c"
+// @doctest id="a795"
 ```
 
 ### Response Object
@@ -397,7 +397,7 @@ foreach ($response->toolCalls as $call) {
     $call->output;           // Tool output
     $call->isError;          // If tool failed
 }
-// @doctest id="b59b"
+// @doctest id="84ba"
 ```
 
 ### Session Management
@@ -415,7 +415,7 @@ $sessionId = $response->sessionId;
 $response = AgentCtrl::claudeCode()
     ->resumeSession($sessionId)
     ->execute('Continue with the Address model');
-// @doctest id="3313"
+// @doctest id="c2b0"
 ```
 
 ### Available Methods
@@ -427,7 +427,7 @@ $response = AgentCtrl::claudeCode()
 | `openCode()` | Get OpenCode agent builder |
 | `make(AgentType)` | Get agent builder by type |
 | `fake(array $responses)` | Create a testing fake |
-| `withConfig(AgentConfig)` | Apply shared typed config |
+| `withConfig(AgentCtrlConfig)` | Apply shared typed config |
 | `withModel(string)` | Set AI model |
 | `withTimeout(int)` | Set execution timeout in seconds |
 | `inDirectory(string)` | Set working directory |
@@ -465,7 +465,7 @@ class MyService
             ->get();
     }
 }
-// @doctest id="d190"
+// @doctest id="735a"
 ```
 
 Dependency injection is particularly useful for:
@@ -483,5 +483,5 @@ All facades proxy to the underlying service classes registered in the container.
 // Each call gets a fresh StructuredOutput instance
 StructuredOutput::connection('openai')->with(...)->get();
 StructuredOutput::connection('anthropic')->with(...)->get();
-// @doctest id="e47d"
+// @doctest id="2ec9"
 ```

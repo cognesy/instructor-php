@@ -2,7 +2,7 @@
 
 namespace Cognesy\AgentCtrl\Contract;
 
-use Cognesy\AgentCtrl\Config\AgentConfig;
+use Cognesy\AgentCtrl\Config\AgentCtrlConfig;
 use Cognesy\Sandbox\Enums\SandboxDriver;
 use Cognesy\AgentCtrl\Dto\AgentResponse;
 
@@ -36,7 +36,7 @@ interface AgentBridgeBuilder
     /**
      * Apply a typed configuration object.
      */
-    public function withConfig(AgentConfig $config): static;
+    public function withConfig(AgentCtrlConfig $config): static;
 
     // Streaming callbacks
 

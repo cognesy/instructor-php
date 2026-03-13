@@ -25,12 +25,12 @@ After the binary is available, configure Laravel defaults in `config/instructor.
 ## Quick Start
 
 ```php
-use Cognesy\AgentCtrl\Config\AgentConfig;
+use Cognesy\AgentCtrl\Config\AgentCtrlConfig;
 use Cognesy\Instructor\Laravel\Facades\AgentCtrl;
 
 // Execute a task with Claude Code
 $response = AgentCtrl::claudeCode()
-    ->withConfig(new AgentConfig(
+    ->withConfig(new AgentCtrlConfig(
         timeout: 300,
         workingDirectory: base_path(),
     ))
@@ -101,11 +101,11 @@ $response = AgentCtrl::make($agentType)
 All agents support the same set of builder methods for configuration. Use `withConfig()` when you want one typed object for the shared options, then layer agent-specific methods on top as needed. Builder methods override any defaults set in the Laravel config file.
 
 ```php
-use Cognesy\AgentCtrl\Config\AgentConfig;
+use Cognesy\AgentCtrl\Config\AgentCtrlConfig;
 use Cognesy\Sandbox\Enums\SandboxDriver;
 
 AgentCtrl::claudeCode()
-    ->withConfig(new AgentConfig(
+    ->withConfig(new AgentCtrlConfig(
         model: 'claude-opus-4-5',
         timeout: 300,
         workingDirectory: '/path/to/project',
@@ -114,7 +114,7 @@ AgentCtrl::claudeCode()
     ->execute('Your prompt');
 ```
 
-`AgentConfig::fromArray()` also accepts the Laravel config-style keys used in `config/instructor.php`, so `directory` and `sandbox` are mapped automatically.
+`AgentCtrlConfig::fromArray()` also accepts the Laravel config-style keys used in `config/instructor.php`, so `directory` and `sandbox` are mapped automatically.
 
 ### Laravel Configuration
 

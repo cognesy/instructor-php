@@ -24,7 +24,7 @@ require 'examples/boot.php';
 
 use Cognesy\AgentCtrl\AgentCtrl;
 use Cognesy\AgentCtrl\Broadcasting\AgentCtrlConsoleLogger;
-use Cognesy\AgentCtrl\Config\AgentConfig;
+use Cognesy\AgentCtrl\Config\AgentCtrlConfig;
 use Cognesy\AgentCtrl\Enum\AgentType;
 
 // Shared console logger - works across all agent types
@@ -52,7 +52,7 @@ foreach ($agents as $agentId => $agentName) {
     try {
         $builder = AgentCtrl::make(AgentType::from($agentId))
             ->wiretap($logger->wiretap())
-            ->withConfig(new AgentConfig(
+            ->withConfig(new AgentCtrlConfig(
                 timeout: 120,
                 workingDirectory: getcwd() ?: null,
             ));

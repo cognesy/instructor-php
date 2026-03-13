@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Tests\AgentCtrl\Unit\Common\AgentConfig;
+namespace Tests\AgentCtrl\Unit\Common\AgentCtrlConfig;
 
 use Cognesy\AgentCtrl\Builder\CodexBridgeBuilder;
-use Cognesy\AgentCtrl\Config\AgentConfig;
+use Cognesy\AgentCtrl\Config\AgentCtrlConfig;
 use Cognesy\Sandbox\Enums\SandboxDriver;
 
 it('hydrates agent config from laravel-style arrays', function () {
-    $config = AgentConfig::fromArray([
+    $config = AgentCtrlConfig::fromArray([
         'model' => 'gpt-5-codex',
         'timeout' => '300',
         'directory' => '/tmp/workspace',
@@ -29,7 +29,7 @@ it('hydrates agent config from laravel-style arrays', function () {
 });
 
 it('merges overrides without nulling existing values', function () {
-    $base = AgentConfig::fromArray([
+    $base = AgentCtrlConfig::fromArray([
         'model' => 'claude-sonnet',
         'timeout' => 300,
         'directory' => '/workspace',
@@ -50,7 +50,7 @@ it('merges overrides without nulling existing values', function () {
 });
 
 it('applies typed config to builders', function () {
-    $builder = (new CodexBridgeBuilder())->withConfig(AgentConfig::fromArray([
+    $builder = (new CodexBridgeBuilder())->withConfig(AgentCtrlConfig::fromArray([
         'model' => 'gpt-5-codex',
         'timeout' => 90,
         'directory' => '/repo',

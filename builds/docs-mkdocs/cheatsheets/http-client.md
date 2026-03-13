@@ -15,6 +15,7 @@ Immutability rule: `with*()` methods return new instances.
 
 ### `HttpClient`
 - `HttpClient::default(): HttpClient`
+- `HttpClient::using(string $preset, ?string $basePath = null): HttpClient`
 - `HttpClient::fromConfig(HttpClientConfig $config): HttpClient`
 - `HttpClient::fromDriver(CanHandleHttpRequest $driver): HttpClient`
 - implements `CanSendHttpRequests`
@@ -72,10 +73,13 @@ Constructor fields:
 
 Methods:
 - `HttpClientConfig::group(): string`
+- `HttpClientConfig::fromPreset(string $preset, ?string $basePath = null): HttpClientConfig`
 - `HttpClientConfig::fromDsn(string $dsn): HttpClientConfig`
 - `HttpClientConfig::fromArray(array $config): HttpClientConfig`
 - `withOverrides(array $overrides): self`
 - `toArray(): array`
+
+Available presets: `curl`, `guzzle`, `symfony`, `http-ollama`
 
 ### `DebugConfig`
 Constructor fields:

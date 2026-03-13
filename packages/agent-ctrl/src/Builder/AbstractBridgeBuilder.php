@@ -3,7 +3,7 @@
 namespace Cognesy\AgentCtrl\Builder;
 
 use Closure;
-use Cognesy\AgentCtrl\Config\AgentConfig;
+use Cognesy\AgentCtrl\Config\AgentCtrlConfig;
 use Cognesy\Sandbox\Enums\SandboxDriver;
 use Cognesy\AgentCtrl\Contract\AgentBridge;
 use Cognesy\AgentCtrl\Contract\AgentBridgeBuilder;
@@ -82,7 +82,7 @@ abstract class AbstractBridgeBuilder implements AgentBridgeBuilder
     }
 
     #[\Override]
-    public function withConfig(AgentConfig $config): static
+    public function withConfig(AgentCtrlConfig $config): static
     {
         if ($config->model !== null) {
             $this->withModel($config->model);

@@ -13,14 +13,14 @@ All configuration methods return `static`, so they can be chained fluently in an
 
 The following methods are defined in the `AgentBridgeBuilder` interface and implemented by every bridge builder. They work identically regardless of which agent you are using.
 
-### `withConfig(AgentConfig $config): static`
+### `withConfig(AgentCtrlConfig $config): static`
 
 Apply a typed config object containing the shared builder options:
 
 ```php
-use Cognesy\AgentCtrl\Config\AgentConfig;
+use Cognesy\AgentCtrl\Config\AgentCtrlConfig;
 
-$config = AgentConfig::fromArray([
+$config = AgentCtrlConfig::fromArray([
     'model' => 'claude-sonnet-4-5',
     'timeout' => 300,
     'directory' => '/projects/my-app',
@@ -122,10 +122,10 @@ AgentCtrl::claudeCode()
 Build the configured bridge without executing a prompt. This is an advanced method for scenarios where you need to call the bridge's `execute()` or `executeStreaming()` methods directly:
 
 ```php
-use Cognesy\AgentCtrl\Config\AgentConfig;
+use Cognesy\AgentCtrl\Config\AgentCtrlConfig;
 
 $bridge = AgentCtrl::claudeCode()
-    ->withConfig(new AgentConfig(
+    ->withConfig(new AgentCtrlConfig(
         model: 'claude-sonnet-4-5',
         timeout: 300,
     ))

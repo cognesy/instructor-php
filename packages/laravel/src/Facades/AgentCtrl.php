@@ -6,7 +6,7 @@ namespace Cognesy\Instructor\Laravel\Facades;
 
 use Cognesy\AgentCtrl\AgentCtrl as BaseAgentCtrl;
 use Cognesy\AgentCtrl\Builder\ClaudeCodeBridgeBuilder;
-use Cognesy\AgentCtrl\Config\AgentConfig;
+use Cognesy\AgentCtrl\Config\AgentCtrlConfig;
 use Cognesy\AgentCtrl\Builder\CodexBridgeBuilder;
 use Cognesy\AgentCtrl\Builder\OpenCodeBridgeBuilder;
 use Cognesy\AgentCtrl\Enum\AgentType;
@@ -122,13 +122,13 @@ class AgentCtrl extends Facade
         ClaudeCodeBridgeBuilder|CodexBridgeBuilder|OpenCodeBridgeBuilder $builder,
         string $agentKey
     ): ClaudeCodeBridgeBuilder|CodexBridgeBuilder|OpenCodeBridgeBuilder {
-        return $builder->withConfig(static::resolveAgentConfig($agentKey));
+        return $builder->withConfig(static::resolveAgentCtrlConfig($agentKey));
     }
 
-    private static function resolveAgentConfig(string $agentKey): AgentConfig
+    private static function resolveAgentCtrlConfig(string $agentKey): AgentCtrlConfig
     {
         $defaults = static::configGet('instructor.agents', []);
-        $globalConfig = AgentConfig::fromArray(is_array($defaults) ? $defaults : []);
+        $globalConfig = AgentCtrlConfig::fromArray(is_array($defaults) ? $defaults : []);
 
         $overrides = static::configGet("instructor.agents.{$agentKey}", []);
 

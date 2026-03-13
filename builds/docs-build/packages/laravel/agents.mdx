@@ -25,12 +25,12 @@ After the binary is available, configure Laravel defaults in `config/instructor.
 ## Quick Start
 
 ```php
-use Cognesy\AgentCtrl\Config\AgentConfig;
+use Cognesy\AgentCtrl\Config\AgentCtrlConfig;
 use Cognesy\Instructor\Laravel\Facades\AgentCtrl;
 
 // Execute a task with Claude Code
 $response = AgentCtrl::claudeCode()
-    ->withConfig(new AgentConfig(
+    ->withConfig(new AgentCtrlConfig(
         timeout: 300,
         workingDirectory: base_path(),
     ))
@@ -40,7 +40,7 @@ $response = AgentCtrl::claudeCode()
 if ($response->isSuccess()) {
     echo $response->text();
 }
-// @doctest id="39ab"
+// @doctest id="602a"
 ```
 
 ## Agent Selection
@@ -60,7 +60,7 @@ $response = AgentCtrl::claudeCode()
 
 echo $response->text();
 echo "Session ID: " . (string) ($response->sessionId() ?? '');
-// @doctest id="3cb8"
+// @doctest id="27af"
 ```
 
 ### Codex
@@ -71,7 +71,7 @@ Best for OpenAI-powered code generation.
 $response = AgentCtrl::codex()
     ->withModel('codex')
     ->execute('Write unit tests for the UserService class');
-// @doctest id="b058"
+// @doctest id="3f05"
 ```
 
 ### OpenCode
@@ -82,7 +82,7 @@ Best for multi-model flexibility. Specify the model using the `provider/model` f
 $response = AgentCtrl::openCode()
     ->withModel('anthropic/claude-sonnet-4-5')
     ->execute('Analyze the codebase architecture');
-// @doctest id="18fa"
+// @doctest id="d7ed"
 ```
 
 ### Dynamic Selection
@@ -96,7 +96,7 @@ $agentType = AgentType::from(config('app.default_agent'));
 
 $response = AgentCtrl::make($agentType)
     ->execute('Generate API documentation');
-// @doctest id="93d5"
+// @doctest id="aa14"
 ```
 
 ## Configuration
@@ -106,21 +106,21 @@ $response = AgentCtrl::make($agentType)
 All agents support the same set of builder methods for configuration. Use `withConfig()` when you want one typed object for the shared options, then layer agent-specific methods on top as needed. Builder methods override any defaults set in the Laravel config file.
 
 ```php
-use Cognesy\AgentCtrl\Config\AgentConfig;
+use Cognesy\AgentCtrl\Config\AgentCtrlConfig;
 use Cognesy\Sandbox\Enums\SandboxDriver;
 
 AgentCtrl::claudeCode()
-    ->withConfig(new AgentConfig(
+    ->withConfig(new AgentCtrlConfig(
         model: 'claude-opus-4-5',
         timeout: 300,
         workingDirectory: '/path/to/project',
         sandboxDriver: SandboxDriver::Host,
     ))
     ->execute('Your prompt');
-// @doctest id="f796"
+// @doctest id="bb10"
 ```
 
-`AgentConfig::fromArray()` also accepts the Laravel config-style keys used in `config/instructor.php`, so `directory` and `sandbox` are mapped automatically.
+`AgentCtrlConfig::fromArray()` also accepts the Laravel config-style keys used in `config/instructor.php`, so `directory` and `sandbox` are mapped automatically.
 
 ### Laravel Configuration
 
@@ -161,7 +161,7 @@ Configure defaults in `config/instructor.php`. The facade automatically reads th
         'sandbox' => env('OPENCODE_SANDBOX'),
     ],
 ],
-// @doctest id="7bab"
+// @doctest id="0e8a"
 ```
 
 Agent-specific settings (e.g., `claude_code.timeout`) take precedence over the global defaults (e.g., `agents.timeout`).
@@ -182,7 +182,7 @@ CODEX_MODEL=codex
 
 # OpenCode
 OPENCODE_MODEL=anthropic/claude-sonnet-4-20250514
-// @doctest id="eea4"
+// @doctest id="9fd0"
 ```
 
 ## Streaming
@@ -205,7 +205,7 @@ $response = AgentCtrl::claudeCode()
         echo "\nDone! Exit code: " . $response->exitCode;
     })
     ->executeStreaming('Generate a REST API for products');
-// @doctest id="72d6"
+// @doctest id="7212"
 ```
 
 ## Response Object
@@ -241,7 +241,7 @@ foreach ($response->toolCalls as $call) {
     $call->output;           // ?string -- Tool output
     $call->isError;          // bool -- Whether the tool call failed
 }
-// @doctest id="4dae"
+// @doctest id="5687"
 ```
 
 ## Session Management
@@ -259,7 +259,7 @@ $sessionId = (string) ($response->sessionId() ?? '');
 $response = AgentCtrl::claudeCode()
     ->resumeSession($sessionId)
     ->execute('Continue with the Address model');
-// @doctest id="92b4"
+// @doctest id="fd16"
 ```
 
 ## Error Handling
@@ -300,7 +300,7 @@ try {
     Log::error('Agent exception', ['error' => $e->getMessage()]);
     return null;
 }
-// @doctest id="3c7e"
+// @doctest id="1e68"
 ```
 
 ## Testing
@@ -327,7 +327,7 @@ test('generates migration code', function () {
 
     expect($result)->toContain('users_table');
 });
-// @doctest id="d9d0"
+// @doctest id="7464"
 ```
 
 ## Real-World Examples
@@ -370,7 +370,7 @@ class CodeGenerationService
         return "Generate a Laravel migration for:\n" . json_encode($schema, JSON_PRETTY_PRINT);
     }
 }
-// @doctest id="1e6b"
+// @doctest id="b5b8"
 ```
 
 ### Queued Code Generation
@@ -411,7 +411,7 @@ GenerateCodeJob::dispatch(
     'Generate a complete CRUD controller for Products',
     app_path('Http/Controllers/ProductController.php')
 );
-// @doctest id="bdba"
+// @doctest id="425b"
 ```
 
 ### Interactive Code Review
@@ -441,7 +441,7 @@ class CodeReviewer
         ];
     }
 }
-// @doctest id="4e0b"
+// @doctest id="16f3"
 ```
 
 ## Sandbox Drivers
@@ -468,7 +468,7 @@ AgentCtrl::claudeCode()
 AgentCtrl::claudeCode()
     ->withSandboxDriver(SandboxDriver::Docker)
     ->execute('...');
-// @doctest id="54cd"
+// @doctest id="c11b"
 ```
 
 ## Best Practices

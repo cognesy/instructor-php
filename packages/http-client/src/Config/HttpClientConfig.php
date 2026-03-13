@@ -2,6 +2,8 @@
 
 namespace Cognesy\Http\Config;
 
+use Cognesy\Config\BasePath;
+use Cognesy\Config\Config;
 use Cognesy\Config\Dsn;
 use InvalidArgumentException;
 
@@ -30,15 +32,13 @@ final class HttpClientConfig
         return self::CONFIG_GROUP;
     }
 
-    /**
-     * Constructor for HttpClientConfig.
-     *
-     * @param string $driver The driver name of HTTP client.
-     * @param int $connectTimeout Max time to connect in seconds.
-     * @param int $requestTimeout Max total request execution time in seconds.
-     * @param int $idleTimeout Idle timeout in seconds (if supported by the driver).
-     * @param bool $failOnError Whether to fail on error.
-     */
+    private const PRESET_PATHS = [
+        'config/http/presets',
+        'packages/http-client/resources/config/http/presets',
+        'vendor/cognesy/instructor-php/packages/http-client/resources/config/http/presets',
+        'vendor/cognesy/instructor-http/resources/config/http/presets',
+    ];
+
     public function __construct(
         public readonly string $driver = 'curl',
         public readonly int    $connectTimeout = 3,
@@ -48,6 +48,18 @@ final class HttpClientConfig
         public readonly int    $streamHeaderTimeout = 5,
         public readonly bool   $failOnError = false,
     ) {}
+
+    public static function fromPreset(string $preset, ?string $basePath = null): self {
+        $basePaths = $basePath !== null ? [$basePath] : self::PRESET_PATHS;
+        $resolvedPaths = BasePath::resolveExisting(...$basePaths);
+        if ($resolvedPaths === []) {
+            throw new InvalidArgumentException("No preset directory found for '{$preset}'. Searched: " . implode(', ', $basePaths));
+        }
+        $data = Config::fromPaths(...$resolvedPaths)
+            ->load("{$preset}.yaml")
+            ->toArray();
+        return self::fromArray($data);
+    }
 
     public static function fromDsn(string $dsn) : HttpClientConfig {
         $data = Dsn::fromString($dsn)->toArray();

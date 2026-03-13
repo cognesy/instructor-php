@@ -13,14 +13,14 @@ All configuration methods return `static`, so they can be chained fluently in an
 
 The following methods are defined in the `AgentBridgeBuilder` interface and implemented by every bridge builder. They work identically regardless of which agent you are using.
 
-### `withConfig(AgentConfig $config): static`
+### `withConfig(AgentCtrlConfig $config): static`
 
 Apply a typed config object containing the shared builder options:
 
 ```php
-use Cognesy\AgentCtrl\Config\AgentConfig;
+use Cognesy\AgentCtrl\Config\AgentCtrlConfig;
 
-$config = AgentConfig::fromArray([
+$config = AgentCtrlConfig::fromArray([
     'model' => 'claude-sonnet-4-5',
     'timeout' => 300,
     'directory' => '/projects/my-app',
@@ -30,7 +30,7 @@ $config = AgentConfig::fromArray([
 AgentCtrl::claudeCode()
     ->withConfig($config)
     ->execute('Review the payment flow.');
-// @doctest id="391e"
+// @doctest id="e426"
 ```
 
 This is the preferred way to pass shared builder defaults around your own application code. The object covers:
@@ -53,7 +53,7 @@ AgentCtrl::codex()->withModel('o4-mini');
 
 // OpenCode: provider/model format
 AgentCtrl::openCode()->withModel('anthropic/claude-sonnet-4-5');
-// @doctest id="0348"
+// @doctest id="6c9f"
 ```
 
 If not specified, each agent uses its own default model.
@@ -66,7 +66,7 @@ Set the maximum execution time in seconds. The default is 120 seconds. The minim
 AgentCtrl::claudeCode()
     ->withTimeout(600) // 10 minutes for complex tasks
     ->execute('Perform a comprehensive codebase review.');
-// @doctest id="b2c6"
+// @doctest id="850b"
 ```
 
 When the timeout is reached, the sandbox executor kills the process. The response will contain whatever output was produced before the timeout and will have a non-zero exit code.
@@ -79,7 +79,7 @@ Set the working directory for the agent. The bridge validates that the directory
 AgentCtrl::codex()
     ->inDirectory('/projects/my-app')
     ->execute('List the source files.');
-// @doctest id="f3b8"
+// @doctest id="444c"
 ```
 
 Always use absolute paths. The bridge changes the PHP process's current working directory for the duration of the execution and restores it afterward.
@@ -94,7 +94,7 @@ use Cognesy\Sandbox\Enums\SandboxDriver;
 AgentCtrl::claudeCode()
     ->withSandboxDriver(SandboxDriver::Docker)
     ->execute('Analyze this codebase.');
-// @doctest id="a422"
+// @doctest id="7219"
 ```
 
 Available drivers: `Host`, `Docker`, `Podman`, `Firejail`, `Bubblewrap`.
@@ -120,7 +120,7 @@ $logger = new AgentCtrlConsoleLogger(showStreaming: true);
 AgentCtrl::claudeCode()
     ->wiretap($logger->wiretap())
     ->execute('Review this code.');
-// @doctest id="7545"
+// @doctest id="75da"
 ```
 
 ### `build(): AgentBridge`
@@ -128,10 +128,10 @@ AgentCtrl::claudeCode()
 Build the configured bridge without executing a prompt. This is an advanced method for scenarios where you need to call the bridge's `execute()` or `executeStreaming()` methods directly:
 
 ```php
-use Cognesy\AgentCtrl\Config\AgentConfig;
+use Cognesy\AgentCtrl\Config\AgentCtrlConfig;
 
 $bridge = AgentCtrl::claudeCode()
-    ->withConfig(new AgentConfig(
+    ->withConfig(new AgentCtrlConfig(
         model: 'claude-sonnet-4-5',
         timeout: 300,
     ))
@@ -139,7 +139,7 @@ $bridge = AgentCtrl::claudeCode()
 
 $response = $bridge->execute('First prompt.');
 $response2 = $bridge->executeStreaming('Second prompt.', $streamHandler);
-// @doctest id="0e9c"
+// @doctest id="ed2d"
 ```
 
 ## Claude Code Options
@@ -154,7 +154,7 @@ Replace the agent's default system prompt entirely with a custom one:
 AgentCtrl::claudeCode()
     ->withSystemPrompt('You are a security auditor. Focus on vulnerabilities.')
     ->execute('Audit the authentication module.');
-// @doctest id="e8e3"
+// @doctest id="f050"
 ```
 
 ### `appendSystemPrompt(string|\Stringable $prompt): static`
@@ -165,7 +165,7 @@ Add instructions on top of the default system prompt without replacing it. This 
 AgentCtrl::claudeCode()
     ->appendSystemPrompt('This project uses Laravel conventions. Follow PSR-12.')
     ->execute('Refactor the UserService class.');
-// @doctest id="219f"
+// @doctest id="4431"
 ```
 
 You can use both `withSystemPrompt()` and `appendSystemPrompt()` together -- `withSystemPrompt()` sets the base and `appendSystemPrompt()` appends to it. Both accept `Stringable` objects (e.g. xprompt `Prompt` classes), which are cast to string at the boundary.
@@ -178,7 +178,7 @@ Limit the number of agentic turns. Each turn represents one cycle where the agen
 AgentCtrl::claudeCode()
     ->withMaxTurns(10)
     ->execute('Make a focused improvement to the README.');
-// @doctest id="ecfb"
+// @doctest id="70eb"
 ```
 
 Without a turn limit, Claude Code continues working until it decides the task is complete or the timeout is reached. For simple tasks, 5-10 turns is often sufficient. Complex refactoring may need 20-50 turns.
@@ -193,7 +193,7 @@ use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\PermissionMode;
 AgentCtrl::claudeCode()
     ->withPermissionMode(PermissionMode::AcceptEdits)
     ->execute('Write unit tests for the PaymentService.');
-// @doctest id="5f07"
+// @doctest id="369c"
 ```
 
 | Mode | Behavior |
@@ -224,7 +224,7 @@ AgentCtrl::claudeCode()
     ->inDirectory('/projects/my-app')
     ->withAdditionalDirs(['/shared/libraries', '/configs/production'])
     ->execute('Update the app to use the latest shared auth library.');
-// @doctest id="9639"
+// @doctest id="c086"
 ```
 
 ### Complete Claude Code Example
@@ -244,7 +244,7 @@ $response = AgentCtrl::claudeCode()
     ->withAdditionalDirs(['/shared/utils'])
     ->onText(fn(string $text) => print($text))
     ->executeStreaming('Review the PaymentService for error handling issues.');
-// @doctest id="ee59"
+// @doctest id="154b"
 ```
 
 ## Codex Options
@@ -261,7 +261,7 @@ use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\SandboxMode;
 AgentCtrl::codex()
     ->withSandbox(SandboxMode::WorkspaceWrite)
     ->execute('Write tests for the UserService.');
-// @doctest id="1dbf"
+// @doctest id="6090"
 ```
 
 | Mode | Filesystem | Network |
@@ -278,7 +278,7 @@ Shorthand for `withSandbox(SandboxMode::DangerFullAccess)`. Provides full filesy
 AgentCtrl::codex()
     ->disableSandbox()
     ->execute('Install dependencies and run the test suite.');
-// @doctest id="9fd5"
+// @doctest id="fabb"
 ```
 
 ### `fullAuto(bool $enabled = true): static`
@@ -289,7 +289,7 @@ Enable full-auto mode, which combines workspace-write sandbox access with automa
 AgentCtrl::codex()
     ->fullAuto()
     ->execute('Refactor the database layer.');
-// @doctest id="fdc7"
+// @doctest id="1e77"
 ```
 
 ### `dangerouslyBypass(bool $enabled = true): static`
@@ -300,7 +300,7 @@ Skip all approval prompts and sandbox restrictions. This is the most permissive 
 AgentCtrl::codex()
     ->dangerouslyBypass()
     ->execute('Deploy to staging.');
-// @doctest id="775c"
+// @doctest id="d2cc"
 ```
 
 ### `skipGitRepoCheck(bool $enabled = true): static`
@@ -312,7 +312,7 @@ AgentCtrl::codex()
     ->skipGitRepoCheck()
     ->inDirectory('/tmp/workspace')
     ->execute('Create a new project skeleton.');
-// @doctest id="26ac"
+// @doctest id="a50e"
 ```
 
 ### `withImages(array $imagePaths): static`
@@ -323,7 +323,7 @@ Attach image files to the prompt for visual analysis:
 AgentCtrl::codex()
     ->withImages(['/tmp/mockup.png', '/tmp/screenshot.png'])
     ->execute('Implement the UI shown in the mockup images.');
-// @doctest id="2730"
+// @doctest id="0e19"
 ```
 
 ### `continueSession(): static`
@@ -342,7 +342,7 @@ Add additional writable directories for the Codex agent:
 AgentCtrl::codex()
     ->withAdditionalDirs(['/shared/assets'])
     ->execute('Update the shared configuration.');
-// @doctest id="e93a"
+// @doctest id="19cd"
 ```
 
 ### Complete Codex Example
@@ -360,7 +360,7 @@ $response = AgentCtrl::codex()
     ->withImages(['/tmp/design-spec.png'])
     ->onText(fn(string $text) => print($text))
     ->executeStreaming('Implement the component shown in the design spec.');
-// @doctest id="57ca"
+// @doctest id="64bf"
 ```
 
 ## OpenCode Options
@@ -375,7 +375,7 @@ Select a named agent within OpenCode (e.g., `'coder'`, `'task'`):
 AgentCtrl::openCode()
     ->withAgent('coder')
     ->execute('Refactor the authentication module.');
-// @doctest id="aee7"
+// @doctest id="5e46"
 ```
 
 ### `withFiles(array $filePaths): static`
@@ -386,7 +386,7 @@ Attach specific files to the prompt for the agent to reference:
 AgentCtrl::openCode()
     ->withFiles(['/projects/my-app/src/UserService.php'])
     ->execute('Review this file for potential issues.');
-// @doctest id="2704"
+// @doctest id="1acc"
 ```
 
 ### `withTitle(string $title): static`
@@ -397,7 +397,7 @@ Set a descriptive title for the session, which appears in OpenCode's session lis
 AgentCtrl::openCode()
     ->withTitle('Payment module refactoring')
     ->execute('Plan the payment module refactoring.');
-// @doctest id="7b3a"
+// @doctest id="08c7"
 ```
 
 ### `shareSession(): static`
@@ -408,7 +408,7 @@ Mark the session for sharing after completion, making it accessible to other use
 AgentCtrl::openCode()
     ->shareSession()
     ->execute('Create a code review summary.');
-// @doctest id="4423"
+// @doctest id="abda"
 ```
 
 ### `continueSession(): static`
@@ -437,7 +437,7 @@ $response = AgentCtrl::openCode()
 if ($response->cost() !== null) {
     echo sprintf("\nCost: $%.4f\n", $response->cost());
 }
-// @doctest id="460f"
+// @doctest id="3c90"
 ```
 
 ## Pi Options
@@ -452,7 +452,7 @@ Set the provider explicitly (e.g., `'anthropic'`, `'openai'`, `'google'`):
 AgentCtrl::pi()
     ->withProvider('anthropic')
     ->execute('Analyze this codebase.');
-// @doctest id="2f35"
+// @doctest id="2fc7"
 ```
 
 ### `withThinking(ThinkingLevel $level): static`
@@ -465,7 +465,7 @@ use Cognesy\AgentCtrl\Pi\Domain\Enum\ThinkingLevel;
 AgentCtrl::pi()
     ->withThinking(ThinkingLevel::High)
     ->execute('Solve this complex problem.');
-// @doctest id="5b9f"
+// @doctest id="088f"
 ```
 
 | Level | Value |
@@ -485,7 +485,7 @@ Replace the agent's default system prompt:
 AgentCtrl::pi()
     ->withSystemPrompt('You are a security auditor.')
     ->execute('Audit the authentication module.');
-// @doctest id="15dd"
+// @doctest id="1b38"
 ```
 
 ### `appendSystemPrompt(string|\Stringable $prompt): static`
@@ -496,7 +496,7 @@ Add instructions on top of the default system prompt:
 AgentCtrl::pi()
     ->appendSystemPrompt('Focus on PSR-12 compliance.')
     ->execute('Review this code.');
-// @doctest id="c3c7"
+// @doctest id="b36f"
 ```
 
 ### `withTools(array $tools): static`
@@ -507,7 +507,7 @@ Enable specific built-in tools:
 AgentCtrl::pi()
     ->withTools(['read', 'bash', 'edit'])
     ->execute('Refactor this file.');
-// @doctest id="0999"
+// @doctest id="2adb"
 ```
 
 ### `noTools(): static`
@@ -522,7 +522,7 @@ Attach files to the prompt:
 AgentCtrl::pi()
     ->withFiles(['/projects/my-app/src/UserService.php'])
     ->execute('Review this file.');
-// @doctest id="a5ce"
+// @doctest id="3125"
 ```
 
 ### `withExtensions(array $extensions): static`
@@ -580,7 +580,7 @@ $response = AgentCtrl::pi()
     ->inDirectory('/projects/my-app')
     ->onText(fn(string $text) => print($text))
     ->executeStreaming('Review the PaymentService for edge cases.');
-// @doctest id="80d0"
+// @doctest id="0000"
 ```
 
 ## Gemini Options
@@ -597,7 +597,7 @@ use Cognesy\AgentCtrl\Gemini\Domain\Enum\ApprovalMode;
 AgentCtrl::gemini()
     ->withApprovalMode(ApprovalMode::Yolo)
     ->execute('Refactor the database layer.');
-// @doctest id="b3c2"
+// @doctest id="fc63"
 ```
 
 | Mode | Value | Behavior |
@@ -615,7 +615,7 @@ Shorthand for `withApprovalMode(ApprovalMode::Yolo)`:
 AgentCtrl::gemini()
     ->yolo()
     ->execute('Implement the feature.');
-// @doctest id="0322"
+// @doctest id="122e"
 ```
 
 ### `planMode(): static`
@@ -626,7 +626,7 @@ Shorthand for `withApprovalMode(ApprovalMode::Plan)`:
 AgentCtrl::gemini()
     ->planMode()
     ->execute('Analyze the codebase architecture.');
-// @doctest id="bfec"
+// @doctest id="ab6b"
 ```
 
 ### `withSandbox(bool $enabled = true): static`
@@ -641,7 +641,7 @@ Add additional workspace directories:
 AgentCtrl::gemini()
     ->withIncludeDirectories(['/shared/libraries', '/configs'])
     ->execute('Review the shared library usage.');
-// @doctest id="fa71"
+// @doctest id="c60d"
 ```
 
 ### `withExtensions(array $extensions): static`
@@ -656,7 +656,7 @@ Restrict which tools the agent can use:
 AgentCtrl::gemini()
     ->withAllowedTools(['read_file', 'search_files', 'list_directory'])
     ->execute('Analyze the codebase structure.');
-// @doctest id="6599"
+// @doctest id="cc2e"
 ```
 
 ### `withAllowedMcpServers(array $names): static`
@@ -693,5 +693,5 @@ $response = AgentCtrl::gemini()
     ->inDirectory('/projects/my-app')
     ->onText(fn(string $text) => print($text))
     ->executeStreaming('Review the authentication module.');
-// @doctest id="2c42"
+// @doctest id="040a"
 ```

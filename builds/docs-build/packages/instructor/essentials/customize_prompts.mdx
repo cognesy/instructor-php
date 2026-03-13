@@ -15,7 +15,7 @@ $result = (new StructuredOutput)
     ->withPrompt('Extract the contact details from the text below.')
     ->with(messages: $text, responseModel: Contact::class)
     ->get();
-// @doctest id="80f2"
+// @doctest id="75d6"
 ```
 
 - **System text** sets the model's persona and overall behavior. Use it for stable
@@ -34,7 +34,7 @@ $result = (new StructuredOutput)
         prompt: 'Extract the contact details.',
     )
     ->get();
-// @doctest id="acb9"
+// @doctest id="c1f7"
 ```
 
 
@@ -52,7 +52,7 @@ $result = (new StructuredOutput)
     ])
     ->with(messages: $text, responseModel: Person::class)
     ->get();
-// @doctest id="9ed4"
+// @doctest id="abd7"
 ```
 
 See the [Demonstrations](demonstrations) page for details on the `Example` class.
@@ -74,7 +74,7 @@ $result = (new StructuredOutput)
     )
     ->with(messages: 'Now extract from this specific paragraph...', responseModel: Entity::class)
     ->get();
-// @doctest id="d789"
+// @doctest id="639b"
 ```
 
 The cached context is placed before the per-request content in the prompt. Content
@@ -109,7 +109,7 @@ $config = new StructuredOutputConfig(
         OutputMode::Json->value => "Respond with a JSON object matching this schema:\n<|json_schema|>\n",
     ],
 );
-// @doctest id="a199"
+// @doctest id="92fe"
 ```
 
 ### Template Placeholders
@@ -125,7 +125,7 @@ $config = new StructuredOutputConfig(
             . "Response must follow this JSON Schema:\n<|json_schema|>\n",
     ],
 );
-// @doctest id="1cb3"
+// @doctest id="3c54"
 ```
 
 
@@ -141,7 +141,7 @@ $config = new StructuredOutputConfig(
     toolName: 'extract_person',
     toolDescription: 'Extract personal information from the provided text.',
 );
-// @doctest id="90a5"
+// @doctest id="e61e"
 ```
 
 The defaults are `extracted_data` and `Function call based on user instructions.`
@@ -159,7 +159,7 @@ conversation. The default is:
 
 ```
 JSON generated incorrectly, fix following errors:
-// @doctest id="27cc"
+// @doctest id="8317"
 ```
 
 You can customize this through the config:
@@ -168,7 +168,7 @@ You can customize this through the config:
 $config = new StructuredOutputConfig(
     retryPrompt: 'The previous response had validation errors. Please correct them:',
 );
-// @doctest id="89c1"
+// @doctest id="71ff"
 ```
 
 
@@ -189,7 +189,7 @@ $config = new StructuredOutputConfig(
         'pre-retries', 'retries', 'post-retries',
     ],
 );
-// @doctest id="d6ad"
+// @doctest id="797d"
 ```
 
 Most applications will never need to modify the chat structure. It is exposed for

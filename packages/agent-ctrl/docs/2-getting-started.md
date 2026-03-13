@@ -31,10 +31,10 @@ The simplest way to use Agent-Ctrl is to pick an agent, pass a prompt, and read 
 
 ```php
 use Cognesy\AgentCtrl\AgentCtrl;
-use Cognesy\AgentCtrl\Config\AgentConfig;
+use Cognesy\AgentCtrl\Config\AgentCtrlConfig;
 
 $response = AgentCtrl::codex()
-    ->withConfig(new AgentConfig(
+    ->withConfig(new AgentCtrlConfig(
         timeout: 300,
         workingDirectory: getcwd() ?: null,
     ))
@@ -69,13 +69,13 @@ When the agent type is determined by configuration or user input rather than bei
 
 ```php
 use Cognesy\AgentCtrl\AgentCtrl;
-use Cognesy\AgentCtrl\Config\AgentConfig;
+use Cognesy\AgentCtrl\Config\AgentCtrlConfig;
 use Cognesy\AgentCtrl\Enum\AgentType;
 
 // AgentType is a backed enum: 'claude-code', 'codex', 'opencode', 'pi', 'gemini'
 $agent = AgentType::from($config['agent']);
 
-$agentConfig = AgentConfig::fromArray([
+$agentConfig = AgentCtrlConfig::fromArray([
     'model' => $config['model'] ?? null,
     'timeout' => $config['timeout'] ?? null,
     'directory' => $config['directory'] ?? null,
@@ -101,14 +101,14 @@ The `AgentType` enum has five cases:
 
 Every builder -- regardless of the agent type -- supports the same set of core configuration methods. These methods are defined in the `AgentBridgeBuilder` interface and implemented by the `AbstractBridgeBuilder` base class.
 
-### `withConfig(AgentConfig $config): static`
+### `withConfig(AgentCtrlConfig $config): static`
 
 Apply a typed config object for the shared builder options:
 
 ```php
-use Cognesy\AgentCtrl\Config\AgentConfig;
+use Cognesy\AgentCtrl\Config\AgentCtrlConfig;
 
-$config = AgentConfig::fromArray([
+$config = AgentCtrlConfig::fromArray([
     'model' => 'o4-mini',
     'timeout' => 300,
     'directory' => '/projects/my-app',
@@ -120,7 +120,7 @@ AgentCtrl::codex()
     ->execute('Review the current directory.');
 ```
 
-`AgentConfig::fromArray()` accepts Laravel-style aliases:
+`AgentCtrlConfig::fromArray()` accepts Laravel-style aliases:
 
 - `directory` -> `workingDirectory`
 - `sandbox` -> `sandboxDriver`

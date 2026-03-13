@@ -322,11 +322,11 @@ $response = AgentCtrl::make(AgentType::ClaudeCode)
 The facade automatically applies Laravel configuration defaults from `config/instructor.php` for each agent type. Builder methods override those defaults for a single call.
 
 ```php
-use Cognesy\AgentCtrl\Config\AgentConfig;
+use Cognesy\AgentCtrl\Config\AgentCtrlConfig;
 use Cognesy\Sandbox\Enums\SandboxDriver;
 
 $response = AgentCtrl::claudeCode()
-    ->withConfig(new AgentConfig(
+    ->withConfig(new AgentCtrlConfig(
         model: 'claude-opus-4-5',
         timeout: 300,
         workingDirectory: base_path(),
@@ -407,7 +407,7 @@ $response = AgentCtrl::claudeCode()
 | `openCode()` | Get OpenCode agent builder |
 | `make(AgentType)` | Get agent builder by type |
 | `fake(array $responses)` | Create a testing fake |
-| `withConfig(AgentConfig)` | Apply shared typed config |
+| `withConfig(AgentCtrlConfig)` | Apply shared typed config |
 | `withModel(string)` | Set AI model |
 | `withTimeout(int)` | Set execution timeout in seconds |
 | `inDirectory(string)` | Set working directory |

@@ -21,6 +21,11 @@ final class HttpClient implements CanSendHttpRequests
         return HttpClientRuntime::fromConfig()->client();
     }
 
+    public static function using(string $preset, ?string $basePath = null): self
+    {
+        return self::fromConfig(HttpClientConfig::fromPreset($preset, $basePath));
+    }
+
     public static function fromConfig(HttpClientConfig $config): self
     {
         return HttpClientRuntime::fromConfig(config: $config)->client();

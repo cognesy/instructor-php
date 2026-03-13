@@ -53,7 +53,15 @@ echo $response->body();       // {"status":"ok"}
 
 ## Choosing a Driver
 
-If you want a specific driver, pass an `HttpClientConfig`:
+If you want a specific driver, use a preset name or pass an `HttpClientConfig`:
+
+```php
+use Cognesy\Http\HttpClient;
+
+$client = HttpClient::using('guzzle');
+```
+
+Or construct the config explicitly:
 
 ```php
 use Cognesy\Http\Config\HttpClientConfig;

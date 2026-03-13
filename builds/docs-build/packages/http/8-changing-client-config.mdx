@@ -16,7 +16,7 @@ $config = new HttpClientConfig(
     streamHeaderTimeout: 5,
     failOnError: false,
 );
-// @doctest id="856a"
+// @doctest id="da25"
 ```
 
 | Option | Type | Default | Description |
@@ -56,7 +56,7 @@ $client = (new HttpClientBuilder())
         failOnError: true,
     ))
     ->create();
-// @doctest id="267f"
+// @doctest id="3c3e"
 ```
 
 Or create the client directly:
@@ -68,7 +68,37 @@ $client = HttpClient::fromConfig(new HttpClientConfig(
     driver: 'symfony',
     requestTimeout: 120,
 ));
-// @doctest id="2b3b"
+// @doctest id="df85"
+```
+
+## Presets
+
+`HttpClientConfig` ships with YAML preset files for common driver configurations. Use `fromPreset()` to load one by name:
+
+```php
+use Cognesy\Http\Config\HttpClientConfig;
+
+$config = HttpClientConfig::fromPreset('guzzle');
+// @doctest id="dfbe"
+```
+
+Available presets: `curl`, `guzzle`, `symfony`, `http-ollama`.
+
+The `HttpClient` facade offers a shorthand:
+
+```php
+use Cognesy\Http\HttpClient;
+
+$client = HttpClient::using('guzzle');
+// @doctest id="45b4"
+```
+
+You can override individual fields after loading a preset:
+
+```php
+$config = HttpClientConfig::fromPreset('symfony')
+    ->withOverrides(['requestTimeout' => 120, 'failOnError' => true]);
+// @doctest id="7a72"
 ```
 
 ## DSN Strings
@@ -79,7 +109,7 @@ For environments where configuration comes from environment variables or strings
 $client = (new HttpClientBuilder())
     ->withDsn('driver=symfony,connectTimeout=2,requestTimeout=20,streamHeaderTimeout=5,failOnError=true')
     ->create();
-// @doctest id="9cfa"
+// @doctest id="2121"
 ```
 
 DSN values are automatically coerced to the correct types -- integers for timeout fields, booleans for `failOnError`, and strings for `driver`.
@@ -93,7 +123,7 @@ $base = new HttpClientConfig(driver: 'guzzle', requestTimeout: 30);
 $strict = $base->withOverrides(['failOnError' => true, 'requestTimeout' => 60]);
 
 $client = HttpClient::fromConfig($strict);
-// @doctest id="a2f1"
+// @doctest id="f43b"
 ```
 
 Only the fields you specify in the override array are changed; everything else carries forward from the base config.
@@ -109,7 +139,7 @@ $config = HttpClientConfig::fromArray([
     'requestTimeout' => 45,
     'failOnError' => true,
 ]);
-// @doctest id="1281"
+// @doctest id="b806"
 ```
 
 ## Debug Configuration
@@ -133,7 +163,7 @@ $client = (new HttpClientBuilder())
         httpResponseStreamByLine: true,
     ))
     ->create();
-// @doctest id="a4b7"
+// @doctest id="5a82"
 ```
 
 | Option | Default | Description |
@@ -178,7 +208,7 @@ $downloadConfig = new HttpClientConfig(
     requestTimeout: 300,
     idleTimeout: 30,
 );
-// @doctest id="ba0b"
+// @doctest id="8674"
 ```
 
 ### Environment-Based Configuration
@@ -196,7 +226,7 @@ $config = new HttpClientConfig(
     requestTimeout: $timeout,
     failOnError: getenv('APP_ENV') !== 'production',
 );
-// @doctest id="c074"
+// @doctest id="9732"
 ```
 
 ## See Also

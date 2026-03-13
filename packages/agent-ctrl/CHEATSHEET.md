@@ -10,7 +10,7 @@ package: agent-ctrl
 
 ```php
 use Cognesy\AgentCtrl\AgentCtrl;
-use Cognesy\AgentCtrl\Config\AgentConfig;
+use Cognesy\AgentCtrl\Config\AgentCtrlConfig;
 use Cognesy\AgentCtrl\Enum\AgentType;
 
 $builder = AgentCtrl::claudeCode();
@@ -41,7 +41,7 @@ Backed values:
 
 All builders support:
 
-- `withConfig(AgentConfig $config): static`
+- `withConfig(AgentCtrlConfig $config): static`
 - `withModel(string $model): static`
 - `withTimeout(int $seconds): static`
 - `inDirectory(string $path): static`
@@ -61,26 +61,26 @@ Callback signatures:
 - `onComplete(fn(AgentResponse $response): void)`
 - `onError(fn(string $message, ?string $code): void)`
 
-`AgentConfig` shared fields:
+`AgentCtrlConfig` shared fields:
 
 - `model`
 - `timeout`
 - `workingDirectory`
 - `sandboxDriver`
 
-`AgentConfig` additional methods:
+`AgentCtrlConfig` additional methods:
 
 - `fromDsn(string $dsn): self`
 - `withOverrides(array $values): self`
 - `toArray(): array`
 
-`AgentConfig::fromArray()` also accepts:
+`AgentCtrlConfig::fromArray()` also accepts:
 
 - `directory` -> `workingDirectory`
 - `sandbox` -> `sandboxDriver`
 
 ```php
-$builder = AgentCtrl::codex()->withConfig(AgentConfig::fromArray([
+$builder = AgentCtrl::codex()->withConfig(AgentCtrlConfig::fromArray([
     'model' => 'gpt-5-codex',
     'timeout' => 300,
     'directory' => getcwd(),
@@ -291,7 +291,7 @@ Sandbox:
 Deterministic test seams:
 
 - core package logic
-  - test `AgentConfig`, command builders, parsers, and DTOs directly
+  - test `AgentCtrlConfig`, command builders, parsers, and DTOs directly
 - `Cognesy\Sandbox\Testing\FakeSandbox`
   - use for deterministic command execution without running a real CLI
   - best for bridge execution paths, timeout behavior, and stdout/stderr handling

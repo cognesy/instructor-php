@@ -4,10 +4,10 @@ Unified CLI bridge for code agents (Claude Code, OpenAI Codex, OpenCode) with on
 
 ```php
 use Cognesy\AgentCtrl\AgentCtrl;
-use Cognesy\AgentCtrl\Config\AgentConfig;
+use Cognesy\AgentCtrl\Config\AgentCtrlConfig;
 
 $response = AgentCtrl::codex()
-    ->withConfig(new AgentConfig(
+    ->withConfig(new AgentCtrlConfig(
         timeout: 300,
         workingDirectory: getcwd() ?: null,
     ))
