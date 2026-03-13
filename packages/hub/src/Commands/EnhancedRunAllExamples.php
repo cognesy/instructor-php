@@ -169,6 +169,18 @@ class EnhancedRunAllExamples extends Command
             if ($result->isSuccessful()) {
                 Cli::out(str_pad("OK", 8, ' ', STR_PAD_BOTH), [Color::GREEN, Color::BOLD]);
                 $success++;
+            } elseif ($result->error?->isAssertion()) {
+                Cli::out(str_pad("ASSERT", 8, ' ', STR_PAD_BOTH), [Color::YELLOW, Color::BOLD]);
+                $errors++;
+
+                Cli::outln('');
+                Cli::outln("    " . Cli::limit($result->error->message, 70), [Color::YELLOW]);
+
+                if ($stopOnError) {
+                    Cli::outln('');
+                    Cli::outln('Stopping on first error as requested.', [Color::YELLOW]);
+                    break;
+                }
             } else {
                 Cli::out(str_pad("ERROR", 8, ' ', STR_PAD_BOTH), [Color::RED, Color::BOLD]);
                 $errors++;

@@ -37,7 +37,7 @@ class User {
 
 $structuredOutput = new StructuredOutput(
     StructuredOutputRuntime::fromProvider(LLMProvider::using('perplexity'))
-        ->withOutputMode(OutputMode::Json)
+        ->withOutputMode(OutputMode::MdJson)
 );
 
 $user = $structuredOutput->with(

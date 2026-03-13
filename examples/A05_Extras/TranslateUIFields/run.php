@@ -20,7 +20,6 @@ require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
-use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 class TextElementModel
@@ -40,7 +39,7 @@ $sourceModel = new TextElementModel(
 $transformedModel = new StructuredOutput(
         StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
             ->withMaxRetries(2)
-            ->withValidators([SymfonyValidator::class])
+            ->withValidator(new \Cognesy\Instructor\Validation\Validators\SymfonyValidator())
     )
     ->withInput($sourceModel)
     ->withResponseClass(get_class($sourceModel))

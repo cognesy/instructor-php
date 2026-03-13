@@ -233,9 +233,19 @@ class ExecutionTracker implements CanTrackExecution
 
     public function removeCompletedStatuses(): int
     {
+        return $this->removeStatusesByType(ExecutionStatus::COMPLETED);
+    }
+
+    public function removeErrorStatuses(): int
+    {
+        return $this->removeStatusesByType(ExecutionStatus::ERROR);
+    }
+
+    private function removeStatusesByType(ExecutionStatus $type): int
+    {
         $removed = 0;
         foreach ($this->statusById as $key => $status) {
-            if ($status->status === ExecutionStatus::COMPLETED) {
+            if ($status->status === $type) {
                 unset($this->statusById[$key]);
                 $removed++;
             }

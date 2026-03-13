@@ -50,6 +50,7 @@ class ExecutionError
     private static function detectErrorType(string $output): string
     {
         return match(true) {
+            str_contains($output, 'AssertionError') => 'assertion',
             str_contains($output, 'Fatal error') => 'fatal_error',
             str_contains($output, 'Parse error') => 'parse_error',
             str_contains($output, 'Uncaught') => 'uncaught_exception',
@@ -69,6 +70,11 @@ class ExecutionError
             }
         }
         return $lines[0] ?? 'Unknown error';
+    }
+
+    public function isAssertion(): bool
+    {
+        return $this->type === 'assertion';
     }
 
     public function toArray(): array

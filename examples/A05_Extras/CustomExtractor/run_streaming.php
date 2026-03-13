@@ -5,6 +5,7 @@ use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
 use Cognesy\Instructor\Extraction\Data\ExtractionInput;
 use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
+use Cognesy\Instructor\Extraction\ResponseExtractor;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -65,10 +66,10 @@ echo "=== Example 2: Custom extractor with streaming updates ===\n\n";
 
 $stream = new StructuredOutput(
         StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
-            ->withExtractors([
+            ->withExtractor(ResponseExtractor::fromExtractors(
                 new DirectJsonExtractor(),
                 new XmlJsonExtractor('json'),
-            ])
+            ))
     )
     ->withResponseClass(Person::class)
     ->withMessages("Extract person data...")

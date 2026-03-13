@@ -7,6 +7,7 @@ use Cognesy\InstructorHub\Contracts\CanTrackExecution;
 use Cognesy\InstructorHub\Core\Cli;
 use Cognesy\InstructorHub\Data\ExecutionStatus;
 use Cognesy\InstructorHub\Services\ExampleRepository;
+use Cognesy\InstructorHub\Services\ExecutionTracker;
 use Cognesy\Utils\Cli\Color;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputOption;
@@ -18,7 +19,7 @@ class ErrorsCommand extends Command
     public function __construct(
         private CanExecuteExample $runner,
         private ExampleRepository $examples,
-        private CanTrackExecution $tracker,
+        private ExecutionTracker $tracker,
     ) {
         parent::__construct();
     }
@@ -28,43 +29,40 @@ class ErrorsCommand extends Command
     {
         $this
             ->setName('errors')
-            ->setDescription('Re-run examples that failed in previous executions')
+            ->setDescription('Manage examples that failed in previous executions')
+            ->addOption('list', null, InputOption::VALUE_NONE,
+                'List failed examples with error details')
+            ->addOption('run', null, InputOption::VALUE_NONE,
+                'Re-run failed examples')
+            ->addOption('clear', null, InputOption::VALUE_NONE,
+                'Clear all error statuses')
             ->addOption('since', 's', InputOption::VALUE_REQUIRED,
                 'Only errors since date (e.g. "yesterday", "1 hour ago")')
             ->addOption('limit', 'l', InputOption::VALUE_REQUIRED,
-                'Limit number of examples to run', 0)
+                'Limit number of examples', 0)
             ->addOption('dry-run', null, InputOption::VALUE_NONE,
-                'Show what would be executed without running')
-            ->addOption('show-errors', null, InputOption::VALUE_NONE,
-                'Show error details without re-running');
+                'Show what would be executed without running');
     }
 
     #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $since = $input->getOption('since');
-        $limit = (int) $input->getOption('limit');
-        $dryRun = $input->getOption('dry-run');
-        $showErrors = $input->getOption('show-errors');
+        $list = $input->getOption('list');
+        $run = $input->getOption('run');
+        $clear = $input->getOption('clear');
 
-        // Get all statuses with errors
-        $errorStatuses = array_filter(
-            $this->tracker->getAllStatuses(),
-            fn($s) => $s->status === ExecutionStatus::ERROR
-        );
+        if (!$list && !$run && !$clear) {
+            return $this->showHelp();
+        }
 
-        // Filter by time if specified
-        if ($since) {
-            try {
-                $sinceTime = new \DateTimeImmutable($since);
-                $errorStatuses = array_filter(
-                    $errorStatuses,
-                    fn($s) => $s->lastExecuted !== null && $s->lastExecuted >= $sinceTime
-                );
-            } catch (\Exception $e) {
-                Cli::outln("Invalid date format: {$since}", [Color::RED]);
-                return Command::FAILURE;
-            }
+        if ($clear) {
+            return $this->clearErrors();
+        }
+
+        $errorStatuses = $this->getErrorStatuses($input);
+
+        if ($errorStatuses === null) {
+            return Command::FAILURE;
         }
 
         if (empty($errorStatuses)) {
@@ -74,21 +72,19 @@ class ErrorsCommand extends Command
             return Command::SUCCESS;
         }
 
-        // Apply limit
-        if ($limit > 0) {
-            $errorStatuses = array_slice($errorStatuses, 0, $limit);
-        }
-
-        Cli::outln('');
-        Cli::outln('Found ' . count($errorStatuses) . ' failed example(s)', [Color::YELLOW, Color::BOLD]);
-        Cli::outln('');
-
-        if ($showErrors) {
+        if ($list) {
+            Cli::outln('');
+            Cli::outln('Found ' . count($errorStatuses) . ' failed example(s)', [Color::YELLOW, Color::BOLD]);
+            Cli::outln('');
             $this->showErrorDetails($errorStatuses);
             return Command::SUCCESS;
         }
 
-        if ($dryRun) {
+        // --run
+        if ($input->getOption('dry-run')) {
+            Cli::outln('');
+            Cli::outln('Found ' . count($errorStatuses) . ' failed example(s)', [Color::YELLOW, Color::BOLD]);
+            Cli::outln('');
             $this->showDryRun($errorStatuses);
             return Command::SUCCESS;
         }
@@ -96,10 +92,72 @@ class ErrorsCommand extends Command
         return $this->reRunErrors($errorStatuses);
     }
 
+    private function showHelp(): int
+    {
+        Cli::outln('');
+        Cli::outln('Manage failed examples:', [Color::YELLOW, Color::BOLD]);
+        Cli::outln('');
+        Cli::outln('  composer hub errors --list              List failed examples with error details', [Color::WHITE]);
+        Cli::outln('  composer hub errors --run               Re-run failed examples', [Color::WHITE]);
+        Cli::outln('  composer hub errors --run --dry-run     Show what would be re-run', [Color::WHITE]);
+        Cli::outln('  composer hub errors --clear             Clear all error statuses', [Color::WHITE]);
+        Cli::outln('');
+        Cli::outln('Options:', [Color::YELLOW]);
+        Cli::outln('  --since, -s    Filter by date (e.g. "yesterday", "1 hour ago")', [Color::DARK_GRAY]);
+        Cli::outln('  --limit, -l    Limit number of examples', [Color::DARK_GRAY]);
+        Cli::outln('');
+        return Command::SUCCESS;
+    }
+
+    private function getErrorStatuses(InputInterface $input): ?array
+    {
+        $since = $input->getOption('since');
+        $limit = (int) $input->getOption('limit');
+
+        $errorStatuses = array_filter(
+            $this->tracker->getAllStatuses(),
+            fn($s) => $s->status === ExecutionStatus::ERROR
+        );
+
+        if ($since) {
+            try {
+                $sinceTime = new \DateTimeImmutable($since);
+                $errorStatuses = array_filter(
+                    $errorStatuses,
+                    fn($s) => $s->lastExecuted !== null && $s->lastExecuted >= $sinceTime
+                );
+            } catch (\Exception $e) {
+                Cli::outln("Invalid date format: {$since}", [Color::RED]);
+                return null;
+            }
+        }
+
+        if ($limit > 0) {
+            $errorStatuses = array_slice($errorStatuses, 0, $limit);
+        }
+
+        return $errorStatuses;
+    }
+
+    private function clearErrors(): int
+    {
+        $removed = $this->tracker->removeErrorStatuses();
+
+        Cli::outln('');
+        if ($removed > 0) {
+            Cli::outln("Cleared {$removed} error status(es).", [Color::GREEN]);
+        } else {
+            Cli::outln('No error statuses to clear.', [Color::YELLOW]);
+        }
+        Cli::outln('');
+
+        return Command::SUCCESS;
+    }
+
     private function showErrorDetails(array $errorStatuses): void
     {
         foreach ($errorStatuses as $status) {
-            Cli::outln("[" . ($status->index + 1) . "] {$status->group}/{$status->name}", [Color::WHITE, Color::BOLD]);
+            Cli::outln("[{$status->index}] {$status->group}/{$status->name}", [Color::WHITE, Color::BOLD]);
 
             $lastError = $status->lastError();
             if ($lastError) {
@@ -136,10 +194,10 @@ class ErrorsCommand extends Command
         $fixed = 0;
         $stillFailing = 0;
 
-        Cli::outln('Re-running failed examples...', [Color::YELLOW]);
+        Cli::outln('');
+        Cli::outln("Re-running {$total} failed example(s)...", [Color::YELLOW, Color::BOLD]);
         Cli::outln('');
 
-        // Map status indices to examples
         $exampleMap = [];
         $this->examples->forEachExample(function($example) use (&$exampleMap) {
             $exampleMap[$example->index] = $example;

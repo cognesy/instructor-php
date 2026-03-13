@@ -7,6 +7,7 @@ use Cognesy\InstructorHub\Config\ExampleGroupingConfig;
 use Cognesy\InstructorHub\Commands\CleanCommand;
 use Cognesy\InstructorHub\Commands\EnhancedRunAllExamples;
 use Cognesy\InstructorHub\Commands\ErrorsCommand;
+use Cognesy\InstructorHub\Commands\ExcludeCommand;
 use Cognesy\InstructorHub\Commands\GenerateExampleIds;
 use Cognesy\InstructorHub\Commands\HubHelpCommand;
 use Cognesy\InstructorHub\Commands\ListAllExamples;
@@ -65,7 +66,8 @@ Hub provides example execution with comprehensive status tracking, selective re-
   run <example> [--track]         Run single example (raw output by default)
   raw <example>                   Run example with raw, unbuffered output
   all [start] [--filter=X]        Run all/bulk examples with tracking
-  errors                          Re-run failed examples
+  errors --list|--run|--clear      Manage failed examples
+  exclude <example>                Exclude example from execution (skip: true)
   stale                           Run examples with modified files
   status [--detailed] [--format]  Show execution status and summaries
   stats [--slowest=N]             Show performance metrics and analytics
@@ -129,6 +131,7 @@ HELP;
 
             // Maintenance commands
             new CleanCommand($this->tracker, $this->statusRepo),
+            new ExcludeCommand($this->exampleRepo),
             new GenerateExampleIds($this->exampleRepo),
         ]);
     }

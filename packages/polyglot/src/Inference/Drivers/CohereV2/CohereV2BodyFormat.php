@@ -43,19 +43,15 @@ class CohereV2BodyFormat extends OpenAICompatibleBodyFormat
         }
 
         // Cohere V2 API supports: json_object with schema, text
+        $schema = $this->normalizeSchemaForCohere(
+            $this->removeDisallowedEntries($request->responseFormat()->schema()),
+        );
+        $jsonObject = empty($schema)
+            ? ['type' => 'json_object']
+            : ['type' => 'json_object', 'schema' => $schema];
         $responseFormat = $request->responseFormat()
-            ->withToJsonObjectHandler(fn() => [
-                'type' => 'json_object',
-                'schema' => $this->normalizeSchemaForCohere(
-                    $this->removeDisallowedEntries($request->responseFormat()->schema()),
-                ),
-            ])
-            ->withToJsonSchemaHandler(fn() => [
-                'type' => 'json_object',
-                'schema' => $this->normalizeSchemaForCohere(
-                    $this->removeDisallowedEntries($request->responseFormat()->schema()),
-                ),
-            ]);
+            ->withToJsonObjectHandler(fn() => $jsonObject)
+            ->withToJsonSchemaHandler(fn() => $jsonObject);
 
         return $this->renderResponseFormatForType($responseFormat, $type);
     }
