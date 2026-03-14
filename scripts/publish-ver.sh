@@ -36,17 +36,14 @@ composer docs gen:mkdocs
 
 # 0.1. Prepare docs bundles for GitHub release artifacts
 echo "Step 0.2: Preparing docs bundles..."
-DOCS_BUNDLE_DIR="release-artifacts/docs"
-mkdir -p "$DOCS_BUNDLE_DIR"
-
-MINTLIFY_BUNDLE="$DOCS_BUNDLE_DIR/docs-build-v$VERSION.tar.gz"
-MKDOCS_BUNDLE="$DOCS_BUNDLE_DIR/docs-mkdocs-v$VERSION.tar.gz"
+MINTLIFY_BUNDLE="builds/docs-mintlify-v$VERSION.tar.gz"
+MKDOCS_BUNDLE="builds/docs-mkdocs-v$VERSION.tar.gz"
 
 tar -czf "$MINTLIFY_BUNDLE" builds/docs-build
 tar -czf "$MKDOCS_BUNDLE" builds/docs-mkdocs
 
 echo "✅ Prepared docs bundles:"
-ls -lh "$DOCS_BUNDLE_DIR"
+ls -lh "$MINTLIFY_BUNDLE" "$MKDOCS_BUNDLE"
 
 # 1. Update all package versions using sync-ver.sh
 echo "Step 1: Updating package versions..."

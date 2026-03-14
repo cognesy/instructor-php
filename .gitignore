@@ -116,6 +116,7 @@ packages/*/coverage/
 # Documentation build artifacts (generated in CI)
 /docs-site/
 /docs-mkdocs/
+/release-artifacts/
 
 # agent files
 AGENTS.md
