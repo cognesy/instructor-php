@@ -2,6 +2,7 @@
 
 namespace Cognesy\Doctools\Docgen\Commands;
 
+use Cognesy\Config\BasePath;
 use Cognesy\Doctools\Docgen\CheatsheetDiscovery;
 use Cognesy\Doctools\Docgen\Data\DocsConfig;
 use Cognesy\Doctools\Docgen\Data\DocumentationConfig;
@@ -109,6 +110,9 @@ class GenerateMkDocsCommand extends Command
     private function generateLlmsDocs(): void
     {
         $docsConfig = DocsConfig::fromFile();
+        $mkdocsTargetDir = BasePath::get($docsConfig->mkdocsTarget);
+        $llmsTargetDir = BasePath::get($docsConfig->llmsTarget);
+        $llmsContentDir = trim($docsConfig->llmsContentDir, '/') ?: 'llms';
 
         if (!$docsConfig->llmsEnabled) {
             return;
@@ -125,14 +129,14 @@ class GenerateMkDocsCommand extends Command
 
         $navBuilder = new NavigationBuilder(
             config: $docsConfig,
-            targetDir: $this->docsTargetDir,
+            targetDir: $mkdocsTargetDir,
             format: 'mkdocs',
         );
 
         // Build navigation
         $packages = $packageDiscovery->discover();
         $exampleGroups = $this->examples->getExampleGroups();
-        $releaseNotes = $this->scanReleaseNotes();
+        $releaseNotes = $this->scanReleaseNotes($mkdocsTargetDir);
         $cheatsheetDiscovery = new CheatsheetDiscovery(
             sourcePattern: $docsConfig->cheatsheetsSourcePattern,
             internal: $docsConfig->packageInternal,
@@ -145,10 +149,11 @@ class GenerateMkDocsCommand extends Command
         $generator = new LlmsDocsGenerator(
             projectName: $docsConfig->mainTitle,
             projectDescription: $docsConfig->llmsProjectDescription,
+            linkPrefix: $docsConfig->llmsLinkPrefix,
         );
 
         Cli::out('  Generating ' . $docsConfig->llmsIndexFile . '... ', [Color::DARK_GRAY]);
-        $indexPath = $this->docsTargetDir . '/' . $docsConfig->llmsIndexFile;
+        $indexPath = $llmsTargetDir . '/' . $docsConfig->llmsIndexFile;
         $indexResult = $generator->generateIndex($navigation, $indexPath);
         if ($indexResult->isSuccess()) {
             Cli::outln($indexResult->message, [Color::GREEN]);
@@ -156,11 +161,23 @@ class GenerateMkDocsCommand extends Command
             Cli::outln('failed', [Color::RED]);
         }
 
+        Cli::out('  Mirroring linked markdown and assets... ', [Color::DARK_GRAY]);
+        $mirrorResult = $generator->mirrorSourceTree(
+            $mkdocsTargetDir,
+            rtrim($llmsTargetDir, '/') . '/' . $llmsContentDir,
+            [$docsConfig->llmsIndexFile, $docsConfig->llmsFullFile],
+        );
+        if ($mirrorResult->isSuccess()) {
+            Cli::outln($mirrorResult->message, [Color::GREEN]);
+        } else {
+            Cli::outln('failed', [Color::RED]);
+        }
+
         Cli::out('  Generating ' . $docsConfig->llmsFullFile . '... ', [Color::DARK_GRAY]);
-        $fullPath = $this->docsTargetDir . '/' . $docsConfig->llmsFullFile;
+        $fullPath = $llmsTargetDir . '/' . $docsConfig->llmsFullFile;
         $fullResult = $generator->generateFull(
             $navigation,
-            $this->docsTargetDir,
+            $mkdocsTargetDir,
             $fullPath,
             $docsConfig->llmsExcludeSections,
         );
@@ -171,9 +188,9 @@ class GenerateMkDocsCommand extends Command
         }
     }
 
-    private function scanReleaseNotes(): array
+    private function scanReleaseNotes(string $docsTargetDir): array
     {
-        $releaseNotesDir = $this->docsTargetDir . '/release-notes';
+        $releaseNotesDir = $docsTargetDir . '/release-notes';
         if (!is_dir($releaseNotesDir)) {
             return [];
         }

@@ -2,6 +2,7 @@
 
 namespace Cognesy\Agents\Tests\Feature\Session;
 
+use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Session\Collections\SessionInfoList;
 use Cognesy\Agents\Session\Contracts\CanControlAgentSession;
 use Cognesy\Agents\Session\Contracts\CanExecuteSessionAction;
@@ -39,6 +40,115 @@ function makeRuntime(): array {
     $runtime = new SessionRuntime($repo, $events);
     return [$runtime, $repo, $events];
 }
+
+it('creates and persists a session through create and save hooks', function () {
+    [, $repo, $events] = makeRuntime();
+    $recorded = [];
+    $events->wiretap(static function (object $event) use (&$recorded): void {
+        $recorded[] = $event::class;
+    });
+
+    $trace = new class {
+        /** @var list<string> */
+        public array $stages = [];
+    };
+
+    $hook = new class($trace) implements CanControlAgentSession {
+        public function __construct(private object $trace) {}
+
+        public function onStage(AgentSessionStage $stage, AgentSession $session): AgentSession {
+            $this->trace->stages[] = $stage->value;
+
+            return match ($stage) {
+                AgentSessionStage::BeforeCreate => $session
+                    ->withState($session->state()->withMetadata('hook.before_create', true)),
+                AgentSessionStage::BeforeSave => $session
+                    ->suspended()
+                    ->withState($session->state()->withMetadata('hook.before_save', true)),
+                AgentSessionStage::AfterSave => $session
+                    ->withState($session->state()->withMetadata('hook.after_save', true)),
+                AgentSessionStage::AfterCreate => $session
+                    ->withState($session->state()->withMetadata('hook.after_create', true)),
+                default => $session,
+            };
+        }
+    };
+
+    $runtime = new SessionRuntime(
+        $repo,
+        $events,
+        SessionHookStack::empty()->with($hook, priority: 100),
+    );
+
+    $created = $runtime->create(
+        new AgentDefinition(
+            name: 'create-agent',
+            description: 'test',
+            systemPrompt: 'Created prompt',
+            label: 'Create Agent',
+        ),
+        AgentState::empty()->withMetadata('seeded', true),
+    );
+    $persisted = $repo->load($created->sessionId());
+
+    expect($created->version())->toBe(1)
+        ->and($created->status()->value)->toBe('suspended')
+        ->and($created->state()->context()->systemPrompt())->toBe('Created prompt')
+        ->and($created->state()->metadata()->get('seeded'))->toBeTrue()
+        ->and($created->state()->metadata()->get('hook.before_create'))->toBeTrue()
+        ->and($created->state()->metadata()->get('hook.before_save'))->toBeTrue()
+        ->and($created->state()->metadata()->get('hook.after_save'))->toBeTrue()
+        ->and($created->state()->metadata()->get('hook.after_create'))->toBeTrue()
+        ->and($persisted->version())->toBe(1)
+        ->and($persisted->status()->value)->toBe('suspended')
+        ->and($persisted->state()->metadata()->get('seeded'))->toBeTrue()
+        ->and($persisted->state()->metadata()->get('hook.before_create'))->toBeTrue()
+        ->and($persisted->state()->metadata()->get('hook.before_save'))->toBeTrue()
+        ->and($persisted->state()->metadata()->hasKey('hook.after_save'))->toBeFalse()
+        ->and($persisted->state()->metadata()->hasKey('hook.after_create'))->toBeFalse()
+        ->and($trace->stages)->toBe(['before_create', 'before_save', 'after_save', 'after_create'])
+        ->and($recorded)->toBe([SessionSaved::class]);
+});
+
+it('create propagates repository create failures and emits save failure event', function () {
+    $repo = new SessionRepository(new class implements CanStoreSessions {
+        public function create(AgentSession $session): AgentSession {
+            throw new SessionConflictException('forced create conflict');
+        }
+
+        public function save(AgentSession $session): AgentSession {
+            return $session;
+        }
+
+        public function load(SessionId $sessionId): ?AgentSession {
+            return null;
+        }
+
+        public function exists(SessionId $sessionId): bool {
+            return false;
+        }
+
+        public function delete(SessionId $sessionId): void {}
+
+        public function listHeaders(): SessionInfoList {
+            return new SessionInfoList();
+        }
+    });
+
+    $events = new EventDispatcher('session-runtime-test');
+    $recorded = [];
+    $events->wiretap(static function (object $event) use (&$recorded): void {
+        $recorded[] = $event::class;
+    });
+    $runtime = new SessionRuntime($repo, $events);
+
+    try {
+        $runtime->create(new AgentDefinition(name: 'agent', description: 'test', systemPrompt: 'Prompt'));
+        throw new \RuntimeException('Expected SessionConflictException was not thrown');
+    } catch (SessionConflictException) {
+        expect($recorded)->toBe([SessionSaveFailed::class]);
+    }
+});
 
 it('executes action via load->executeOn->save and returns persisted session', function () {
     [$runtime, $repo, $events] = makeRuntime();
@@ -118,11 +228,6 @@ it('execute propagates not found exception and emits load failure event', functi
 
 it('execute propagates conflict exception from repository save and emits save failure event', function () {
     $repo = new SessionRepository(new class implements CanStoreSessions {
-        private AgentSession $stored;
-
-        public function __construct() {
-            $this->stored = makeRuntimeSession('conflict');
-        }
 
         public function create(AgentSession $session): AgentSession {
             return $session;

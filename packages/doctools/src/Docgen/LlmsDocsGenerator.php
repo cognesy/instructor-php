@@ -19,6 +19,7 @@ class LlmsDocsGenerator
     public function __construct(
         private string $projectName = 'Instructor for PHP',
         private string $projectDescription = 'Structured data extraction in PHP, powered by LLMs. Define a PHP class, get a validated object back.',
+        private string $linkPrefix = '/llms',
     ) {}
 
     /**
@@ -156,6 +157,70 @@ class LlmsDocsGenerator
     }
 
     /**
+     * Copy the MkDocs markdown and asset tree into the LLM content namespace.
+     */
+    public function mirrorSourceTree(
+        string $sourceDir,
+        string $outputDir,
+        array $excludeBasenames = [],
+    ): GenerationResult {
+        $startTime = microtime(true);
+        $filesCreated = 0;
+        $excludeBasenames = array_values(array_unique([...$excludeBasenames, '.DS_Store']));
+
+        try {
+            if (is_dir($outputDir)) {
+                $this->deleteDirectory($outputDir);
+            }
+
+            mkdir($outputDir, 0755, true);
+
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($sourceDir, \RecursiveDirectoryIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::SELF_FIRST
+            );
+
+            foreach ($iterator as $item) {
+                $relativePath = substr($item->getPathname(), strlen(rtrim($sourceDir, '/')) + 1);
+
+                if (in_array(basename($relativePath), $excludeBasenames, true)) {
+                    continue;
+                }
+
+                $targetPath = rtrim($outputDir, '/') . '/' . $relativePath;
+
+                if ($item->isDir()) {
+                    if (!is_dir($targetPath)) {
+                        mkdir($targetPath, 0755, true);
+                    }
+                    continue;
+                }
+
+                $targetDir = dirname($targetPath);
+                if (!is_dir($targetDir)) {
+                    mkdir($targetDir, 0755, true);
+                }
+
+                copy($item->getPathname(), $targetPath);
+                $filesCreated++;
+            }
+
+            return GenerationResult::success(
+                filesCreated: $filesCreated,
+                duration: microtime(true) - $startTime,
+                message: sprintf('Mirrored LLM content tree (%d files)', $filesCreated),
+            );
+        } catch (\Throwable $e) {
+            return GenerationResult::failure(
+                errors: [$e->getMessage()],
+                filesCreated: $filesCreated,
+                duration: microtime(true) - $startTime,
+                message: 'Failed to mirror LLM content tree',
+            );
+        }
+    }
+
+    /**
      * Render the llms.txt index content.
      */
     private function renderIndex(array $navigation): string
@@ -186,7 +251,7 @@ class LlmsDocsGenerator
             foreach ($item as $title => $value) {
                 if (is_string($value)) {
                     // It's a file path - render as link
-                    $output .= "{$indent}- [{$title}]({$value})\n";
+                    $output .= "{$indent}- [{$title}](" . $this->prefixPath($value) . ")\n";
                 } elseif (is_array($value)) {
                     // It's a nested group
                     if ($depth === 0) {
@@ -203,6 +268,16 @@ class LlmsDocsGenerator
         }
 
         return $output;
+    }
+
+    private function prefixPath(string $path): string
+    {
+        $prefix = trim($this->linkPrefix);
+        if ($prefix === '') {
+            return $path;
+        }
+
+        return rtrim($prefix, '/') . '/' . ltrim($path, '/');
     }
 
     /**
@@ -290,8 +365,8 @@ HEADER;
      */
     private function stripFrontmatter(string $content): string
     {
-        // Match YAML frontmatter at the start of the file
-        if (preg_match('/^---\s*\n.*?\n---\s*\n/s', $content, $matches)) {
+        // Match YAML frontmatter at the start of the file, allowing BOM and CRLF line endings.
+        if (preg_match('/^(?:\xEF\xBB\xBF)?---\r?\n.*?\r?\n---\r?\n/s', $content, $matches)) {
             return substr($content, strlen($matches[0]));
         }
 
@@ -318,5 +393,23 @@ HEADER;
         } else {
             return round($bytes / (1024 * 1024), 1) . ' MB';
         }
+    }
+
+    private function deleteDirectory(string $path): void
+    {
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST
+        );
+
+        foreach ($iterator as $item) {
+            if ($item->isDir()) {
+                rmdir($item->getPathname());
+            } else {
+                unlink($item->getPathname());
+            }
+        }
+
+        rmdir($path);
     }
 }

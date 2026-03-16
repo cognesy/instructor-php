@@ -1,0 +1,38 @@
+---
+title: 'MoonshotAI'
+docname: 'llm_moonshotai'
+id: '83d1'
+---
+## Overview
+
+Support for MoonshotAI's API.
+
+Inference feature compatibility:
+- Instructor markdown-JSON fallback (supported)
+- tool calling (supported)
+- native JSON object response_format (supported)
+- native JSON schema response_format (not supported)
+
+## Example
+
+```php
+<?php
+
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Utils\Str;
+
+require 'examples/boot.php';
+
+$answer = Inference::using('moonshot-kimi')
+    ->with(
+        messages: Messages::fromString('What is the capital of France'),
+        options: ['max_tokens' => 64]
+    )
+    ->get();
+
+echo "USER: What is capital of France\n";
+echo "ASSISTANT: $answer\n";
+assert(Str::contains($answer, 'Paris'));
+?>
+```

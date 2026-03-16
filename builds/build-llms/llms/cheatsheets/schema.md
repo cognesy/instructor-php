@@ -1,0 +1,548 @@
+---
+title: Schema
+description: PHP type-to-JSON Schema mapping — schema building, factory, callable schemas, and rendering
+package: schema
+---
+
+# Schema Package Cheatsheet
+
+## Purpose
+
+`Cognesy\Schema` maps PHP types/classes to schema objects and renders/parses JSON Schema.
+
+Primary classes:
+- `Cognesy\Schema\SchemaBuilder`
+- `Cognesy\Schema\SchemaFactory`
+- `Cognesy\Schema\CallableSchemaFactory`
+- `Cognesy\Schema\TypeInfo`
+- `Cognesy\Schema\JsonSchemaRenderer`
+- `Cognesy\Schema\JsonSchemaParser`
+
+---
+
+## Quick Start
+
+```php
+<?php
+use Cognesy\Schema\SchemaBuilder;
+
+$schema = SchemaBuilder::define('user')
+    ->string('name')
+    ->int('age', required: false)
+    ->schema();
+```
+
+---
+
+## SchemaBuilder API
+
+Create:
+
+- `SchemaBuilder::define(string $name, string $description = ''): SchemaBuilder`
+- `SchemaBuilder::fromSchema(Schema $schema): SchemaBuilder`
+
+Accessors:
+
+- `name(): string`
+- `description(): string`
+- `properties(): array` — returns `array<string, Schema>`
+
+Property methods (all return `SchemaBuilder`):
+
+- `withProperty(string $name, Schema $schema, bool $required = true): SchemaBuilder`
+- `withProperties(array $properties): SchemaBuilder` — accepts `array<string|int, Schema>`
+- `string(string $name, string $description = '', bool $required = true): SchemaBuilder`
+- `int(string $name, string $description = '', bool $required = true): SchemaBuilder`
+- `float(string $name, string $description = '', bool $required = true): SchemaBuilder`
+- `bool(string $name, string $description = '', bool $required = true): SchemaBuilder`
+- `array(string $name, string $description = '', bool $required = true): SchemaBuilder`
+- `enum(string $name, string $enumClass, string $description = '', bool $required = true): SchemaBuilder`
+- `option(string $name, array $values, string $description = '', bool $required = true): SchemaBuilder` — `$values` is `array<string|int>`
+- `object(string $name, string $class, string $description = '', bool $required = true): SchemaBuilder`
+- `collection(string $name, string|Type|Schema $itemType, string $description = '', bool $required = true): SchemaBuilder`
+- `shape(string $name, callable|self|array $shape, string $description = '', bool $required = true): SchemaBuilder`
+
+Build:
+
+- `schema(): ObjectSchema`
+- `build(): ObjectSchema` — alias for `schema()`
+
+Implementation note:
+- `SchemaBuilder` reuses one `SchemaFactory` instance per builder lifecycle.
+
+---
+
+## SchemaFactory API
+
+### Create factory
+
+```php
+<?php
+use Cognesy\Schema\SchemaFactory;
+
+$factory = new SchemaFactory(
+    useObjectReferences: false,   // default; when true, nested objects emit $ref
+    schemaConverter: null,        // ?CanParseJsonSchema
+    schemaRenderer: null,         // ?CanRenderJsonSchema
+);
+// or use the convenience constructor:
+$factory = SchemaFactory::default();
+```
+
+### Main schema entrypoint
+
+`$factory->schema(mixed $anyType): Schema`
+
+Supported inputs:
+- `Schema`
+- `Symfony\Component\TypeInfo\Type`
+- class-string (for example `User::class`)
+- object instance (mapped by runtime class)
+- `CanProvideSchema` (`Cognesy\Schema\Contracts\CanProvideSchema`)
+- `CanProvideJsonSchema` (`Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema`)
+
+### Primitive helpers
+
+```php
+<?php
+$name = $factory->string('name', 'User name');   // returns ScalarSchema
+$age = $factory->int('age');                      // returns ScalarSchema
+$rating = $factory->float('rating');              // returns ScalarSchema
+$active = $factory->bool('active');               // returns ScalarSchema
+$meta = $factory->array('meta');                  // returns ArraySchema
+```
+
+Signatures: `string|int|float|bool(string $name = '', string $description = '')`; `array(string $name = '', string $description = '')`.
+
+### Object / enum / collection
+
+```php
+<?php
+$user = $factory->object(User::class, 'user');
+$status = $factory->enum(Status::class, 'status');
+$tags = $factory->collection('string', 'tags');
+```
+
+Full signatures:
+- `object(string $class, string $name = '', string $description = '', array $properties = [], array $required = []): ObjectSchema`
+- `enum(string $class, string $name = '', string $description = ''): EnumSchema`
+- `collection(string $nestedType, string $name = '', string $description = '', ?Schema $nestedTypeSchema = null): CollectionSchema`
+
+Notes:
+- enum rendering preserves backing values exactly (`string` and `int`)
+- int-backed enums render as JSON Schema `type: integer` with integer `enum` values
+
+### From Symfony TypeInfo `Type`
+
+```php
+<?php
+use Symfony\Component\TypeInfo\Type;
+
+$profile = $factory->fromType(Type::object(Profile::class), 'profile');
+$ids = $factory->fromType(Type::list(Type::int()), 'ids');
+```
+
+Full signature: `fromType(Type $type, string $name = '', string $description = '', bool $hasDefaultValue = false, mixed $defaultValue = null): Schema`
+
+### From reflection helpers
+
+- `fromClassInfo(ClassInfo $classInfo): ObjectSchema`
+- `fromPropertyInfo(PropertyInfo $propertyInfo): Schema`
+
+### Low-level property schema
+
+`propertySchema(Type $type, string $name, string $description, ?array $enumValues = null, ?bool $nullable = null, bool $hasDefaultValue = false, mixed $defaultValue = null): Schema`
+
+### Metadata override
+
+```php
+<?php
+use Cognesy\Schema\SchemaFactory;
+
+$named = SchemaFactory::withMetadata($schema, name: 'payload', description: 'Payload data');
+```
+
+Static method: `withMetadata(Schema $schema, ?string $name = null, ?string $description = null): Schema`
+
+### Parse / render JSON Schema
+
+```php
+<?php
+use Cognesy\Utils\JsonSchema\JsonSchema;
+
+$renderer = $factory->schemaRenderer();   // CanRenderJsonSchema
+$parser = $factory->schemaParser();       // CanParseJsonSchema
+
+$json = $renderer->render($schema);              // JsonSchema object
+$jsonObj = $factory->renderJsonSchema($schema);   // JsonSchema object
+$array = $factory->toJsonSchema($schema);         // array<string,mixed>
+
+$parsed = $parser->parse(JsonSchema::fromArray($array)); // ObjectSchema
+```
+
+Both `toJsonSchema()` and `renderJsonSchema()` accept an optional `?callable $onObjectRef` parameter.
+
+---
+
+## CallableSchemaFactory API
+
+Builds `ObjectSchema` from callable signatures (functions, methods, closures).
+
+```php
+<?php
+use Cognesy\Schema\CallableSchemaFactory;
+
+$csf = new CallableSchemaFactory(
+    schemaFactory: null,    // ?SchemaFactory
+    resolver: null,         // ?TypeResolver
+);
+```
+
+Methods:
+- `fromCallable(callable $callable, ?string $name = null, ?string $description = null): Schema`
+- `fromFunctionName(string $function, ?string $name = null, ?string $description = null): Schema`
+- `fromMethodName(string $class, string $method, ?string $name = null, ?string $description = null): Schema`
+
+All return an `ObjectSchema` whose properties mirror the callable's parameters.
+
+---
+
+## JsonSchemaParser API
+
+`Cognesy\Schema\JsonSchemaParser` implements `CanParseJsonSchema`.
+
+```php
+<?php
+use Cognesy\Schema\JsonSchemaParser;
+
+$parser = new JsonSchemaParser(
+    defaultToolName: 'extract_object',
+    defaultToolDescription: 'Extract data from chat content',
+);
+```
+
+Methods:
+- `parse(JsonSchema $jsonSchema): ObjectSchema` — parses a `JsonSchema` into an `ObjectSchema`
+- `fromJsonSchema(array $jsonSchema, string $customName = '', string $customDescription = ''): ObjectSchema` — convenience wrapper that accepts a raw array
+
+---
+
+## JsonSchemaRenderer API
+
+`Cognesy\Schema\JsonSchemaRenderer` implements `CanRenderJsonSchema`.
+
+Methods:
+- `render(Schema $schema, ?callable $onObjectRef = null): JsonSchema`
+- `toArray(Schema $schema, ?callable $refCallback = null): array` — returns `array<string, mixed>`
+
+---
+
+## Schema Data Objects
+
+Base type:
+- `Cognesy\Schema\Data\Schema` (readonly class)
+
+Specialized types (all readonly, extend `Schema`):
+- `ObjectSchema`
+- `ArrayShapeSchema`
+- `CollectionSchema`
+- `ArraySchema`
+- `ScalarSchema`
+- `EnumSchema`
+- `ObjectRefSchema`
+
+### Schema constructor and public properties
+
+```php
+Schema(
+    public Type $type,
+    public string $name = '',
+    public string $description = '',
+    public ?array $enumValues = null,       // array<string|int>|null
+    public bool $nullable = false,
+    public bool $hasDefaultValue = false,
+    public mixed $defaultValue = null,
+)
+```
+
+### Common methods on `Schema`
+
+- `name(): string`
+- `description(): string`
+- `type(): Type`
+- `isNullable(): bool`
+- `hasDefaultValue(): bool`
+- `defaultValue(): mixed`
+- `isScalar(): bool`
+- `isObject(): bool`
+- `isEnum(): bool`
+- `isArray(): bool`
+- `hasProperties(): bool`
+- `getPropertyNames(): string[]`
+- `getPropertySchemas(): array<string, Schema>`
+- `getPropertySchema(string $name): Schema`
+- `hasProperty(string $name): bool`
+- `toArray(): array<string, mixed>`
+
+### ObjectSchema and ArrayShapeSchema
+
+Additional constructor parameters and public properties:
+- `public array $properties` — `array<string, Schema>`
+- `public array $required` — `array<string>`
+
+Override `hasProperties()`, `getPropertySchemas()`, `getPropertyNames()`, `getPropertySchema()`, `hasProperty()`.
+
+### CollectionSchema
+
+Additional constructor parameter and public property:
+- `public Schema $nestedItemSchema`
+
+### ScalarSchema, ArraySchema, EnumSchema, ObjectRefSchema
+
+No additional properties or methods beyond `Schema`.
+
+Default/nullability behavior:
+- reflection extraction maps constructor/property/setter defaults to schema node metadata
+- JSON bridge preserves `nullable` and `default` in both directions
+- `hasDefaultValue()` distinguishes "no default" from `defaultValue() === null`
+
+---
+
+## TypeInfo Helpers
+
+Class: `Cognesy\Schema\TypeInfo` (final)
+
+### Build and normalize
+- `fromTypeName(?string $typeName, bool $normalize = true): Type`
+- `fromValue(mixed $value): Type`
+- `fromJsonSchema(JsonSchema $json): Type`
+- `normalize(Type $type, bool $throwOnUnsupportedUnion = false): Type`
+
+### Classification
+- `isScalar(Type $type): bool`
+- `isBool(Type $type): bool`
+- `isMixed(Type $type): bool`
+- `isEnum(Type $type): bool`
+- `isObject(Type $type): bool`
+- `isArray(Type $type): bool`
+- `isCollection(Type $type): bool`
+
+### Details
+- `collectionValueType(Type $type): ?Type`
+- `className(Type $type): ?string`
+- `enumValues(Type $type): array`
+- `enumBackingType(Type $type): ?string`
+- `shortName(Type $type): string`
+- `toJsonType(Type $type): JsonSchemaType`
+- `isDateTimeClass(Type $type): bool`
+- `cacheKey(Type $type, ?array $enumValues = null): string`
+
+All methods are `public static`.
+
+---
+
+## Reflection Helpers
+
+### ClassInfo
+
+`Cognesy\Schema\Reflection\ClassInfo`
+
+```php
+<?php
+use Cognesy\Schema\Reflection\ClassInfo;
+
+$classInfo = ClassInfo::fromString(User::class);
+$properties = $classInfo->getProperties();
+$required = $classInfo->getRequiredProperties();
+```
+
+Key methods:
+- `fromString(string $class): ClassInfo` (static)
+- `getClass(): string`
+- `getShortName(): string`
+- `getPropertyNames(): string[]`
+- `getProperties(): array<string, PropertyInfo>`
+- `getProperty(string $name): PropertyInfo`
+- `getPropertyType(string $property): Type`
+- `hasProperty(string $property): bool`
+- `isPublic(string $property): bool`
+- `isReadOnly(string $property): bool`
+- `isNullable(?string $property = null): bool`
+- `getClassDescription(): string`
+- `getPropertyDescription(string $property): string`
+- `getRequiredProperties(): string[]`
+- `isEnum(): bool`
+- `isBacked(): bool`
+- `enumBackingType(): string`
+- `implementsInterface(string $interface): bool`
+- `getFilteredPropertyNames(array $filters): string[]`
+- `getFilteredProperties(array $filters): array<string, PropertyInfo>`
+
+### PropertyInfo
+
+`Cognesy\Schema\Reflection\PropertyInfo`
+
+```php
+<?php
+use Cognesy\Schema\Reflection\PropertyInfo;
+
+$property = PropertyInfo::fromName(User::class, 'email');
+$type = $property->getType();
+```
+
+Key methods:
+- `fromName(string $class, string $property): PropertyInfo` (static)
+- `fromReflection(ReflectionProperty $reflection): PropertyInfo` (static)
+- `getName(): string`
+- `getType(): Type`
+- `getDescription(): string`
+- `isNullable(): bool`
+- `isPublic(): bool`
+- `isReadOnly(): bool`
+- `isStatic(): bool`
+- `isDeserializable(): bool`
+- `isRequired(): bool`
+- `hasDefaultValue(): bool`
+- `defaultValue(): mixed`
+- `hasAttribute(string $attributeClass): bool`
+- `getAttributeValues(string $attributeClass, string $attributeProperty): array`
+- `getClass(): string`
+
+### FunctionInfo
+
+`Cognesy\Schema\Reflection\FunctionInfo`
+
+```php
+<?php
+use Cognesy\Schema\Reflection\FunctionInfo;
+
+$info = FunctionInfo::fromFunctionName('trim');
+$params = $info->getParameters();
+```
+
+Key methods:
+- `fromClosure(Closure $closure): FunctionInfo` (static)
+- `fromFunctionName(string $name): FunctionInfo` (static)
+- `fromMethodName(string $class, string $name): FunctionInfo` (static)
+- `getName(): string`
+- `getShortName(): string`
+- `isClassMethod(): bool`
+- `getDescription(): string`
+- `getParameterDescription(string $argument): string`
+- `hasParameter(string $name): bool`
+- `isNullable(string $name): bool`
+- `isOptional(string $name): bool`
+- `isVariadic(string $name): bool`
+- `hasDefaultValue(string $name): bool`
+- `getDefaultValue(string $name): mixed`
+- `getParameters(): array<string, ReflectionParameter>`
+
+---
+
+## Attributes
+
+### Description
+
+`Cognesy\Schema\Attributes\Description`
+
+Targets: class, property, method, function, parameter. Repeatable.
+
+```php
+<?php
+use Cognesy\Schema\Attributes\Description;
+
+#[Description('A user account')]
+class User {
+    #[Description('Full name of the user')]
+    public string $name;
+}
+```
+
+Constructor: `__construct(public string $text = '')`
+
+### Instructions
+
+`Cognesy\Schema\Attributes\Instructions`
+
+Targets: class, property, method, function, parameter. Repeatable.
+
+```php
+<?php
+use Cognesy\Schema\Attributes\Instructions;
+
+#[Instructions('Extract the user name exactly as written')]
+class User {}
+```
+
+Constructor: `__construct(public string|array $text)`
+
+Methods:
+- `get(): array`
+- `add(string $instruction): void`
+- `clear(): void`
+- `text(): string`
+
+---
+
+## Contracts
+
+- `CanProvideSchema::toSchema(): Schema`
+- `CanRenderJsonSchema::render(Schema $schema, ?callable $onObjectRef = null): JsonSchema`
+- `CanParseJsonSchema::parse(JsonSchema $jsonSchema): Schema`
+
+---
+
+## Utils
+
+### AttributeUtils
+
+`Cognesy\Schema\Utils\AttributeUtils`
+
+- `hasAttribute(ReflectionClass|ReflectionMethod|ReflectionProperty|ReflectionParameter|ReflectionFunction $element, string $attributeClass): bool`
+- `getValues(ReflectionClass|ReflectionMethod|ReflectionProperty|ReflectionParameter|ReflectionFunction $element, string $attributeClass, string $attributeProperty): array`
+
+### Descriptions
+
+`Cognesy\Schema\Utils\Descriptions`
+
+Collects descriptions from `#[Description]`, `#[Instructions]` attributes and docblocks.
+
+- `forClass(string $class): string`
+- `forProperty(string $class, string $propertyName): string`
+- `forFunction(string $functionName): string`
+- `forMethod(string $class, string $methodName): string`
+- `forMethodParameter(string $class, string $methodName, string $parameterName): string`
+- `forFunctionParameter(string $functionName, string $parameterName): string`
+
+### DocblockInfo
+
+`Cognesy\Schema\Utils\DocblockInfo` (final)
+
+- `summary(string $docComment): string`
+- `parameterDescription(string $docComment, string $parameterName): string`
+
+### DocstringUtils
+
+`Cognesy\Schema\Utils\DocstringUtils`
+
+- `descriptionsOnly(string $docComment): string`
+- `getParameterDescription(string $name, string $docComment): string`
+
+---
+
+## Exceptions
+
+- `Cognesy\Schema\Exceptions\ReflectionException` — `classNotFound()`, `propertyNotFound()`, `invalidFilter()`, `unsupportedCallable()`, `parameterNotFound()`
+- `Cognesy\Schema\Exceptions\SchemaMappingException` — `unknownSchemaType()`, `missingObjectClass()`, `invalidCollectionNestedType()`
+- `Cognesy\Schema\Exceptions\SchemaParsingException` — `forRootType()`, `forMissingCollectionItems()`, `forUnresolvableRootSchema()`
+- `Cognesy\Schema\Exceptions\TypeResolutionException` — `emptyTypeSpecification()`, `missingObjectClass()`, `missingEnumClass()`, `unsupportedType()`, `unsupportedUnion()`
+
+---
+
+## Package checks
+
+```bash
+./vendor/bin/pest packages/schema/tests --compact
+./vendor/bin/phpstan analyse packages/schema/src
+./vendor/bin/psalm --config=packages/schema/psalm.xml
+```

@@ -1,0 +1,41 @@
+---
+title: 'Anthropic'
+docname: 'llm_anthropic'
+id: 'ee3f'
+---
+## Overview
+
+Instructor supports Anthropic API - you can find the details on how to configure
+the client in the example below.
+
+Inference feature compatibility:
+- Instructor markdown-JSON fallback, native JSON object response_format - supported
+- tool calling - not supported yet
+
+
+## Example
+
+```php
+<?php
+
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Utils\Str;
+
+require 'examples/boot.php';
+
+$answer = Inference::using('anthropic')
+    // ->withHttpClientPreset('guzzle')
+    // ->wiretap(fn($e) => $e->print())
+    ->with(
+        messages: Messages::fromString('What is the capital of France'),
+        options: ['max_tokens' => 128]
+    )
+    ->withStreaming()
+    ->get();
+
+echo "USER: What is capital of France\n";
+echo "ASSISTANT: $answer\n";
+assert(Str::contains($answer, 'Paris'));
+?>
+```

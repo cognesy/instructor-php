@@ -1,0 +1,35 @@
+---
+title: 'Load LLM Config Data From YAML'
+docname: 'using_config'
+id: '7dda'
+---
+## Overview
+
+Core APIs consume typed config objects.
+At the edge, load raw config data (for example from YAML) and map it to `LLMConfig`.
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\Instructor\StructuredOutput;
+
+class User {
+    public int $age;
+    public string $name;
+}
+
+$structuredOutput = StructuredOutput::using('openai');
+
+$user = $structuredOutput->with(
+    messages: 'Our user Jason is 25 years old.',
+    responseModel: User::class,
+)->get();
+
+dump($user);
+assert(isset($user->name));
+assert(isset($user->age));
+?>
+```

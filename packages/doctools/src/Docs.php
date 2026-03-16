@@ -40,6 +40,7 @@ class Docs extends Application
     private string $docsSourceDir;
     private string $docsTargetDir;
     private string $mkdocsTargetDir;
+    private string $llmsTargetDir;
     private string $cookbookTargetDir;
     private string $mkdocsCookbookTargetDir;
     private string $mintlifySourceIndexFile;
@@ -67,6 +68,7 @@ class Docs extends Application
         $this->docsSourceDir = BasePath::get('docs');
         $this->docsTargetDir = BasePath::get('builds/docs-build');
         $this->mkdocsTargetDir = BasePath::get('builds/docs-mkdocs');
+        $this->llmsTargetDir = BasePath::get('builds/build-llms');
         $this->cookbookTargetDir = BasePath::get('builds/docs-build/cookbook');
         $this->mkdocsCookbookTargetDir = BasePath::get('builds/docs-mkdocs/cookbook');
         $this->mintlifySourceIndexFile = BasePath::get('docs/mint.json');
@@ -179,6 +181,7 @@ class Docs extends Application
             new GenerateLlmsCommand(
                 $this->examples,
                 $this->mkdocsTargetDir,
+                $this->llmsTargetDir,
             ),
             new MarkSnippets(
                 $this->docRepository,

@@ -1,0 +1,49 @@
+---
+title: 'Basic use via StructuredOutput'
+docname: 'basic_use_mixin'
+id: '068c'
+---
+## Overview
+
+Mixin-based inference was removed in 2.0.
+Use `StructuredOutput` directly:
+
+```php
+use Cognesy\Instructor\StructuredOutput;
+
+$user = StructuredOutput::using('openai')
+    ->with(
+        messages: 'Jason is 25 years old and works as an engineer.',
+        responseModel: User::class,
+    )
+    ->getObject();
+```
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\Instructor\StructuredOutput;
+
+class User {
+    public int $age;
+    public string $name;
+}
+
+$user = StructuredOutput::using('openai')
+    ->with(
+        messages: "Jason is 25 years old and works as an engineer.",
+        responseModel: User::class,
+    )
+    ->getObject();
+
+dump($user);
+
+assert(isset($user->name));
+assert(isset($user->age));
+assert($user->name === 'Jason');
+assert($user->age === 25);
+?>
+```

@@ -1,0 +1,39 @@
+---
+title: 'Mixed Type Property'
+docname: 'mixed_type_property'
+id: '3d08'
+---
+## Overview
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Schema\Attributes\Description;
+
+class UserWithMixedTypeProperty
+{
+    public string $name;
+    #[Description('Any extra information about the user')]
+    public mixed $extraInfo = null;
+}
+
+$text = <<<TEXT
+    Jason is 25 years old. He plays football and loves to travel.
+    TEXT;
+
+
+$user = StructuredOutput::using('openai')
+    ->withMessages($text)
+    ->withResponseClass(UserWithMixedTypeProperty::class)
+    ->get();
+
+dump($user);
+
+assert(trim($user->name) === "Jason");
+assert($user->extraInfo === null || $user->extraInfo !== ''); // optional mixed field
+?>
+```

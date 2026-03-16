@@ -1,0 +1,38 @@
+---
+title: 'DeepSeek'
+docname: 'llm_deepseek'
+id: 'e416'
+---
+## Overview
+
+Support for DeepSeek API which provides strong models at affordable price.
+
+Inference feature compatibility:
+- tool calling (supported)
+- native JSON object response_format (supported)
+- native JSON schema response_format (supported)
+- Instructor markdown-JSON fallback (fallback)
+
+## Example
+
+```php
+<?php
+
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Utils\Str;
+
+require 'examples/boot.php';
+
+$answer = Inference::using('deepseek')
+    ->with(
+        messages: Messages::fromString('What is the capital of France'),
+        options: ['max_tokens' => 64]
+    )
+    ->get();
+
+echo "USER: What is capital of France\n";
+echo "ASSISTANT: $answer\n";
+assert(Str::contains($answer, 'Paris'));
+?>
+```

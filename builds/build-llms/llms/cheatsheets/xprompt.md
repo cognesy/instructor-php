@@ -1,0 +1,231 @@
+---
+title: Xprompt
+description: Prompts-as-code — classes, composition, variants, registry, template-backed bodies
+package: xprompt
+---
+
+# Xprompt Package Cheatsheet
+
+Root namespace: `Cognesy\Xprompt`
+
+This file is a quick, code-aligned map of the package surface.
+For narrative guidance and design rationale, see `packages/xprompt/concept.md`.
+
+## 1. Prompt (base class)
+
+```php
+abstract class Prompt implements \Stringable
+```
+
+### Properties
+
+```php
+public string $model = '';
+public bool $isBlock = false;
+public string $templateFile = '';
+public ?string $templateDir = null;
+public array $blocks = [];                // block class names for template composition
+```
+
+### Static Constructors
+
+```php
+Prompt::make(): static
+Prompt::with(mixed ...$ctx): static       // bind context
+```
+
+### Rendering
+
+```php
+render(mixed ...$ctx): string             // merge ctx, call body(), flatten
+__toString(): string                      // delegates to render()
+```
+
+### Override Point
+
+```php
+body(mixed ...$ctx): string|array|null    // return string, array of renderables, or null
+```
+
+### Metadata & Introspection
+
+```php
+meta(): array                             // YAML front matter from templateFile
+variables(): array                        // template variable names
+validationErrors(mixed ...$ctx): array    // missing/extra variable checks
+```
+
+### Config
+
+```php
+withConfig(TemplateEngineConfig $config): static  // clone with config
+```
+
+## 2. NodeSet (structured data prompt)
+
+```php
+class NodeSet extends Prompt
+```
+
+### Properties
+
+```php
+public string $dataFile = '';             // YAML file path
+public string $sortKey = '';              // sort field
+public array $items = [];                 // inline data alternative
+```
+
+### Methods
+
+```php
+nodes(mixed ...$ctx): array              // load + sort items; override for dynamic data
+renderNode(int $index, array $node, mixed ...$ctx): string  // format one item; override for custom
+body(mixed ...$ctx): array               // maps nodes -> renderNode
+```
+
+### Default Node Format
+
+```
+1. **Label** -- content
+   - child content
+```
+
+## 3. PromptRegistry
+
+```php
+class PromptRegistry
+```
+
+### Constructor
+
+```php
+new PromptRegistry(
+    ?TemplateEngineConfig $config = null,
+    array $overrides = [],                // ['name' => VariantClass::class]
+)
+```
+
+### Registration & Retrieval
+
+```php
+register(string $name, string $class): void       // same name = variant
+registerClass(string $class): void                 // uses #[AsPrompt] or $promptName
+get(string $name): Prompt                          // applies overrides
+has(string $name): bool
+```
+
+### Introspection
+
+```php
+names(bool $includeBlocks = false): array
+all(bool $includeBlocks = false): iterable     // yields name => class
+variants(string $name): array                  // variant classes for a name
+```
+
+## 4. AsPrompt Attribute
+
+```php
+#[\Attribute(\Attribute::TARGET_CLASS)]
+class AsPrompt
+{
+    public function __construct(public readonly string $name) {}
+}
+```
+
+Usage:
+
+```php
+#[AsPrompt("reviewer.analyze")]
+class Analyze extends Prompt { ... }
+```
+
+## 5. PromptDiscovery
+
+```php
+class PromptDiscovery
+```
+
+```php
+static register(PromptRegistry $registry, array $namespaces = []): void
+```
+
+Discovery priority: `#[AsPrompt]` > `$promptName` property > FQCN convention.
+
+## 6. flatten()
+
+```php
+function flatten(mixed $node, array $ctx = []): string
+```
+
+- `null` -> `''`
+- `string` -> pass through
+- `Prompt` -> `$node->render(...$ctx)`
+- `array` -> recurse, join with `"\n\n"`, skip empties
+- `Stringable` -> `(string) $node`
+
+## Minimal Examples
+
+### Inline prompt
+
+```php
+class Persona extends Prompt
+{
+    public function body(mixed ...$ctx): string
+    {
+        return "You are a {$ctx['role']} expert.";
+    }
+}
+
+echo Persona::with(role: 'security');
+```
+
+### Template-backed prompt
+
+```php
+class Analyze extends Prompt
+{
+    public string $templateFile = 'analyze.md';
+    public string $templateDir = __DIR__;
+}
+
+echo Analyze::with(content: $doc);
+```
+
+### Composition
+
+```php
+class Review extends Prompt
+{
+    public function body(mixed ...$ctx): array
+    {
+        return [
+            Persona::make(),
+            ScoringRubric::with(format: 'detailed'),
+            "## Document\n\n" . $ctx['content'],
+            $ctx['strict'] ?? false ? Constraints::make() : null,
+        ];
+    }
+}
+```
+
+### Integration with StructuredOutput / Agents
+
+```php
+// StructuredOutput
+StructuredOutput::with(
+    system: Review::with(content: $doc, strict: true),
+    responseModel: MyModel::class,
+)->get();
+
+// Agents (via AgentContext)
+$context->withSystemPrompt(Review::with(content: $doc));
+```
+
+### Variant swap
+
+```php
+$registry = new PromptRegistry(
+    overrides: ['reviewer.analyze' => AnalyzeCoT::class],
+);
+$prompt = $registry->get('reviewer.analyze'); // returns AnalyzeCoT
+```

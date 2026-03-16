@@ -71,6 +71,12 @@ output:
 # LLM-friendly documentation (llms.txt standard)
 llms:
   enabled: true
+  # Output directory for generated LLM artifacts
+  target: './builds/build-llms'
+  # Prefix used in llms.txt links (root-relative on the target host)
+  link_prefix: '/llms'
+  # Subdirectory inside the target which will contain markdown and assets
+  content_dir: 'llms'
   # Output filenames
   index_file: 'llms.txt'
   full_file: 'llms-full.txt'
@@ -83,5 +89,5 @@ llms:
   deploy:
     # Target directory (empty = no deployment, relative to project root)
     target: '../instructor-www/public'
-    # Subfolder for full docs (llms.txt goes to target root)
-    docs_folder: 'docs'
+    # Subfolder for machine-readable markdown and assets
+    docs_folder: 'llms'

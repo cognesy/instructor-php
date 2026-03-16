@@ -1,0 +1,33 @@
+---
+title: 'Perplexity'
+docname: 'llm_perplexity'
+id: 'e1f5'
+---
+## Overview
+
+Perplexity is a search engine that provides an API for generating text. It is designed to
+be used in a variety of applications, including chatbots, content generation, and more.
+
+## Example
+
+```php
+<?php
+
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Utils\Str;
+
+require 'examples/boot.php';
+
+$answer = Inference::using('perplexity')
+    ->with(
+        messages: Messages::fromString('What is the capital of France'),
+        options: ['max_tokens' => 256]
+    )
+    ->get();
+
+echo "USER: What is capital of France\n";
+echo "ASSISTANT: $answer\n";
+assert(Str::contains($answer, 'Paris'));
+?>
+```

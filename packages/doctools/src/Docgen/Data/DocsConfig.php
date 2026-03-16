@@ -34,11 +34,14 @@ readonly class DocsConfig
         public string $mkdocsConfigFile,
         // LLMs documentation
         public bool $llmsEnabled = true,
+        public string $llmsTarget = './builds/build-llms',
+        public string $llmsLinkPrefix = '/llms',
+        public string $llmsContentDir = 'llms',
         public string $llmsIndexFile = 'llms.txt',
         public string $llmsFullFile = 'llms-full.txt',
         public array $llmsExcludeSections = ['release-notes/'],
         public string $llmsDeployTarget = '',
-        public string $llmsDeployDocsFolder = 'docs',
+        public string $llmsDeployDocsFolder = 'llms',
         public string $llmsProjectDescription = 'Structured data extraction in PHP, powered by LLMs. Define a PHP class, get a validated object back.',
     ) {}
 
@@ -90,11 +93,14 @@ readonly class DocsConfig
             mkdocsConfigFile: $config['output']['mkdocs']['config_file'] ?? '',
             // LLMs documentation
             llmsEnabled: $config['llms']['enabled'] ?? true,
+            llmsTarget: $config['llms']['target'] ?? './builds/build-llms',
+            llmsLinkPrefix: $config['llms']['link_prefix'] ?? '/llms',
+            llmsContentDir: $config['llms']['content_dir'] ?? 'llms',
             llmsIndexFile: $config['llms']['index_file'] ?? 'llms.txt',
             llmsFullFile: $config['llms']['full_file'] ?? 'llms-full.txt',
             llmsExcludeSections: $config['llms']['exclude_sections'] ?? ['release-notes/'],
             llmsDeployTarget: $config['llms']['deploy']['target'] ?? '',
-            llmsDeployDocsFolder: $config['llms']['deploy']['docs_folder'] ?? 'docs',
+            llmsDeployDocsFolder: $config['llms']['deploy']['docs_folder'] ?? ($config['llms']['content_dir'] ?? 'llms'),
             llmsProjectDescription: $config['llms']['project_description'] ?? 'Structured data extraction in PHP, powered by LLMs. Define a PHP class, get a validated object back.',
         );
     }
@@ -124,11 +130,14 @@ readonly class DocsConfig
             mkdocsTemplate: './docs/mkdocs.yml.template',
             mkdocsConfigFile: '',
             llmsEnabled: true,
+            llmsTarget: './builds/build-llms',
+            llmsLinkPrefix: '/llms',
+            llmsContentDir: 'llms',
             llmsIndexFile: 'llms.txt',
             llmsFullFile: 'llms-full.txt',
             llmsExcludeSections: ['release-notes/'],
             llmsDeployTarget: '',
-            llmsDeployDocsFolder: 'docs',
+            llmsDeployDocsFolder: 'llms',
             llmsProjectDescription: 'Structured data extraction in PHP, powered by LLMs. Define a PHP class, get a validated object back.',
         );
     }

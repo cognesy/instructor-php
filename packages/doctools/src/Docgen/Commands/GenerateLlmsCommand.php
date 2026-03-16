@@ -26,10 +26,12 @@ class GenerateLlmsCommand extends Command
     private ?PackageDiscovery $packageDiscovery = null;
     private ?NavigationBuilder $navBuilder = null;
     private ?OutputInterface $output = null;
+    private string $llmsContentDir = 'llms';
 
     public function __construct(
         private ExampleRepository $examples,
         private string $mkdocsTargetDir,
+        private string $llmsTargetDir,
     ) {
         parent::__construct();
     }
@@ -98,6 +100,7 @@ class GenerateLlmsCommand extends Command
         $generator = new LlmsDocsGenerator(
             projectName: $this->config->mainTitle,
             projectDescription: $this->config->llmsProjectDescription,
+            linkPrefix: $this->config->llmsLinkPrefix,
         );
 
         $hasErrors = false;
@@ -105,7 +108,7 @@ class GenerateLlmsCommand extends Command
         // Generate llms.txt
         if (!$fullOnly) {
             $this->write('  Generating ' . $this->config->llmsIndexFile . '... ', [Color::DARK_GRAY]);
-            $indexPath = $this->mkdocsTargetDir . '/' . $this->config->llmsIndexFile;
+            $indexPath = $this->llmsTargetDir . '/' . $this->config->llmsIndexFile;
             $indexResult = $generator->generateIndex($navigation, $indexPath);
 
             if ($indexResult->isSuccess()) {
@@ -114,12 +117,26 @@ class GenerateLlmsCommand extends Command
                 $this->writeln('failed: ' . implode(', ', $indexResult->errors), [Color::RED]);
                 $hasErrors = true;
             }
+
+            $this->write('  Mirroring linked markdown and assets... ', [Color::DARK_GRAY]);
+            $mirrorResult = $generator->mirrorSourceTree(
+                $this->mkdocsTargetDir,
+                $this->llmsContentPath(),
+                [$this->config->llmsIndexFile, $this->config->llmsFullFile],
+            );
+
+            if ($mirrorResult->isSuccess()) {
+                $this->writeln($mirrorResult->message, [Color::GREEN]);
+            } else {
+                $this->writeln('failed: ' . implode(', ', $mirrorResult->errors), [Color::RED]);
+                $hasErrors = true;
+            }
         }
 
         // Generate llms-full.txt
         if (!$indexOnly) {
             $this->write('  Generating ' . $this->config->llmsFullFile . '... ', [Color::DARK_GRAY]);
-            $fullPath = $this->mkdocsTargetDir . '/' . $this->config->llmsFullFile;
+            $fullPath = $this->llmsTargetDir . '/' . $this->config->llmsFullFile;
             $fullResult = $generator->generateFull(
                 $navigation,
                 $this->mkdocsTargetDir,
@@ -156,6 +173,11 @@ class GenerateLlmsCommand extends Command
 
     private function initializeServices(): void
     {
+        $this->llmsContentDir = trim($this->config->llmsContentDir, '/');
+        if ($this->llmsContentDir === '') {
+            $this->llmsContentDir = 'llms';
+        }
+
         $this->packageDiscovery = new PackageDiscovery(
             packagesDir: 'packages',
             descriptions: $this->config->packageDescriptions,
@@ -225,7 +247,7 @@ class GenerateLlmsCommand extends Command
 
         // Deploy llms.txt to website root
         if (!$fullOnly) {
-            $source = $this->mkdocsTargetDir . '/' . $this->config->llmsIndexFile;
+            $source = $this->llmsTargetDir . '/' . $this->config->llmsIndexFile;
             $dest = $targetPath . '/' . $this->config->llmsIndexFile;
 
             if (file_exists($source)) {
@@ -237,7 +259,7 @@ class GenerateLlmsCommand extends Command
 
         // Deploy llms-full.txt to website root
         if (!$indexOnly) {
-            $source = $this->mkdocsTargetDir . '/' . $this->config->llmsFullFile;
+            $source = $this->llmsTargetDir . '/' . $this->config->llmsFullFile;
             $dest = $targetPath . '/' . $this->config->llmsFullFile;
 
             if (file_exists($source)) {
@@ -252,10 +274,10 @@ class GenerateLlmsCommand extends Command
             $docsTarget = $targetPath . '/' . $this->config->llmsDeployDocsFolder;
 
             // Count files to deploy
-            $mdFiles = $this->countMarkdownFiles($this->mkdocsTargetDir);
+            $mdFiles = $this->countMarkdownFiles($this->llmsContentPath());
 
-            // Copy docs (excluding llms.txt files)
-            $this->copyDocsFolder($this->mkdocsTargetDir, $docsTarget);
+            // Copy machine-readable markdown and assets
+            $this->copyDocsFolder($this->llmsContentPath(), $docsTarget);
 
             $this->writeln("    → {$docsTarget}/ ({$mdFiles} files)", [Color::GREEN]);
         }
@@ -315,8 +337,17 @@ class GenerateLlmsCommand extends Command
                     mkdir($targetPath, 0755, true);
                 }
             } else {
+                $targetDir = dirname($targetPath);
+                if (!is_dir($targetDir)) {
+                    mkdir($targetDir, 0755, true);
+                }
                 copy($item->getPathname(), $targetPath);
             }
         }
+    }
+
+    private function llmsContentPath(): string
+    {
+        return rtrim($this->llmsTargetDir, '/') . '/' . $this->llmsContentDir;
     }
 }

@@ -1,0 +1,198 @@
+---
+title: Setup
+description: CLI commands for publishing package resources and config files, with validation and caching support
+package: setup
+---
+
+# Setup Package Cheatsheet
+
+## PublishCommand — publish package resources
+
+Symfony Console command (`publish`) that copies `packages/*/resources` directories into a target directory.
+
+```bash
+# Basic usage
+php bin/setup publish <target-dir>
+php bin/setup publish --target-dir=<target-dir>
+
+# Options
+--source-root, -s   Packages root to scan (default: "packages")
+--package, -p       Publish only selected package(s) (repeatable)
+--exclude-package, -x  Exclude package(s) (repeatable)
+--force, -f         Overwrite existing destination directories
+--log-file, -l      Log file path
+--no-op             Dry run: show actions without modifying files
+```
+
+## ConfigPublishCommand — publish package config files
+
+Symfony Console command (`config:publish`) that discovers and publishes individual config files from `packages/*/resources/config` into a target directory.
+
+```bash
+php bin/setup config:publish <target-dir>
+php bin/setup config:publish --target-dir=<target-dir>
+
+# Same options as publish: -s, -p, -x, -f, -l, --no-op
+```
+
+Config discovery reads `composer.json` `extra.instructor.config` for namespace and paths:
+```json
+{
+  "extra": {
+    "instructor": {
+      "config": {
+        "namespace": "polyglot",
+        "paths": ["resources/config/llm/presets/openai.yaml"]
+      }
+    }
+  }
+}
+```
+
+Falls back to scanning `resources/config/` recursively for `.yaml`, `.yml`, `.php` files.
+
+## ConfigValidateCommand — validate published config
+
+Symfony Console command (`config:validate`) that validates published config files against `PublishedConfigRules`.
+
+```bash
+php bin/setup config:validate <target-dir>
+php bin/setup config:validate --target-dir=<target-dir>
+
+# Options: -s, -p, -x, -l
+```
+
+## ConfigCacheCommand — compile config cache
+
+Symfony Console command (`config:cache`) that validates and compiles published config into a PHP cache file.
+
+```bash
+php bin/setup config:cache <target-dir>
+php bin/setup config:cache --target-dir=<target-dir>
+
+# Additional options
+--cache-path, -c     Cache artifact path (default: "var/cache/instructor-config.php")
+--schema-version     Schema version metadata (default: "1")
+# Also: -s, -p, -x, -l
+```
+
+## Supporting Classes
+
+### PackageResourceLocator — discover publishable resources
+
+```php
+use Cognesy\Setup\Resources\PackageResourceLocator;
+
+$locator = new PackageResourceLocator();
+$resources = $locator->locate(
+    packagesRoot: '/path/to/packages',
+    targetRoot: '/path/to/target',
+    onlyPackages: [],       // optional filter
+    excludedPackages: [],   // optional exclusions
+);
+// Returns list<PackageResource>
+```
+
+### PackageResource — resource descriptor
+
+```php
+use Cognesy\Setup\Resources\PackageResource;
+
+// Readonly value object
+$resource->package          // string — package name
+$resource->sourcePath       // string — absolute source path
+$resource->destinationPath  // string — absolute destination path
+```
+
+### PackageConfigDiscovery — discover package config files
+
+```php
+use Cognesy\Setup\Config\PackageConfigDiscovery;
+
+$discovery = new PackageConfigDiscovery();
+$plan = $discovery->discover(
+    packagesRoot: '/path/to/packages',
+    targetRoot: '/path/to/target',
+    onlyPackages: [],
+    excludedPackages: [],
+);
+// Returns ConfigPublishPlan
+```
+
+### ConfigPublishPlan — planned config publish entries
+
+```php
+use Cognesy\Setup\Config\ConfigPublishPlan;
+
+$plan->entries()    // list<ConfigPublishEntry>
+$plan->packages()   // list<string> — unique package names
+$plan->count()      // int
+$plan->isEmpty()    // bool
+```
+
+### ConfigPublishEntry — single config file descriptor
+
+```php
+use Cognesy\Setup\Config\ConfigPublishEntry;
+
+// Readonly value object
+$entry->package          // string — package name
+$entry->namespace        // string — config namespace
+$entry->sourcePath       // string — absolute source path
+$entry->relativePath     // string — relative config path
+$entry->destinationPath  // string — absolute destination path
+```
+
+### Filesystem — file operations with dry-run support
+
+```php
+use Cognesy\Setup\Filesystem;
+
+$fs = new Filesystem(noOp: true, output: $output);
+
+$fs->createDirectory($path)          // int (RESULT_OK | RESULT_ERROR | RESULT_NOOP)
+$fs->removePath($path)               // int
+$fs->copyDir($source, $dest)         // int
+$fs->copyFile($source, $dest)        // int (skips if destination exists)
+$fs->readFile($path)                 // string (throws RuntimeException)
+$fs->writeFile($path, $content)      // int
+$fs->exists($path)                   // bool
+
+// Constants
+Filesystem::RESULT_OK    // 0
+Filesystem::RESULT_ERROR // 1
+Filesystem::RESULT_NOOP  // 2
+```
+
+### Path — path resolution
+
+```php
+use Cognesy\Setup\Path;
+
+Path::resolve('relative/path')   // Prepends cwd if not absolute
+Path::resolve('/absolute/path')  // Returns as-is
+```
+
+### PublishStatus — outcome enum
+
+```php
+use Cognesy\Setup\PublishStatus;
+
+PublishStatus::Published  // 'published'
+PublishStatus::Skipped    // 'skipped'
+PublishStatus::Error      // 'error'
+```
+
+### PublishSummary — aggregated results
+
+```php
+use Cognesy\Setup\PublishSummary;
+
+$summary = new PublishSummary();
+$summary->add(PublishStatus::Published);
+
+$summary->published()   // int
+$summary->skipped()     // int
+$summary->errors()      // int
+$summary->hasErrors()   // bool
+```

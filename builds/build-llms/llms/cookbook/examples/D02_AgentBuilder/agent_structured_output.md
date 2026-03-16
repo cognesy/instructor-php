@@ -1,0 +1,267 @@
+---
+title: 'Agent with Structured Output Extraction'
+docname: 'agent_structured_output'
+order: 3
+id: '9b0f'
+---
+## Overview
+
+Demonstrates how agents can extract structured data from unstructured text using
+the `UseStructuredOutputs` capability powered by Instructor. This pattern enables:
+
+- **Form autofill**: Extract lead/contact data from pasted text or web content
+- **Data transformation**: Convert unstructured text into validated PHP objects
+- **Multi-step workflows**: Chain extraction with API calls using metadata storage
+- **Validation with retry**: Automatic retry on validation failures
+
+Key concepts:
+- `UseStructuredOutputs`: Capability for LLM-powered data extraction
+- `SchemaRegistry`: Pre-registered extraction schemas
+- `structured_output`: Tool to extract data into schema
+- `AgentEventConsoleObserver`: Provides visibility into agent execution stages
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseGuards;
+use Cognesy\Agents\Capability\Core\UseTools;
+use Cognesy\Agents\Capability\Metadata\UseMetadataTools;
+use Cognesy\Agents\Capability\StructuredOutput\SchemaDefinition;
+use Cognesy\Agents\Capability\StructuredOutput\StructuredOutputPolicy;
+use Cognesy\Agents\Capability\StructuredOutput\UseStructuredOutputs;
+use Cognesy\Agents\Capability\StructuredOutput\SchemaRegistry;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Agents\Tool\Tools\BaseTool;
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Polyglot\Inference\Data\ToolDefinition;
+use Symfony\Component\Validator\Constraints as Assert;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
+
+// =============================================================================
+// 1. Define the Lead schema (what we want to extract)
+// =============================================================================
+
+class Lead
+{
+    public function __construct(
+        public string $name = '',
+        #[Assert\Email(message: 'Invalid email format')]
+        public string $email = '',
+        public ?string $company = null,
+        public ?string $phone = null,
+        public ?string $role = null,
+        public ?string $address = null,
+        public ?string $city = null,
+        public ?string $country = null,
+    ) {}
+}
+
+// =============================================================================
+// 2. Create a Lead API tool (simulates CRM API call with metadata access)
+// =============================================================================
+
+class CreateLeadTool extends BaseTool
+{
+    public function __construct() {
+        parent::__construct(
+            name: 'create_lead',
+            description: 'Creates a new lead in the CRM system using data from agent metadata.',
+        );
+    }
+
+    #[\Override]
+    public function __invoke(mixed ...$args): string {
+        $metadataKey = $args['metadata_key'] ?? $args[0] ?? 'current_lead';
+
+        // Read lead data from agent metadata
+        if ($this->agentState === null) {
+            return 'Error: Agent state not available';
+        }
+
+        $leadData = $this->agentState->metadata()->get($metadataKey);
+
+        if ($leadData === null) {
+            return "Error: No lead data found at metadata key '{$metadataKey}'";
+        }
+
+        // Extract lead info for the response
+        $name = match (true) {
+            is_object($leadData) && property_exists($leadData, 'name') => $leadData->name,
+            is_array($leadData) && isset($leadData['name']) => $leadData['name'],
+            default => 'Unknown',
+        };
+
+        $email = match (true) {
+            is_object($leadData) && property_exists($leadData, 'email') => $leadData->email,
+            is_array($leadData) && isset($leadData['email']) => $leadData['email'],
+            default => 'Unknown',
+        };
+
+        // Simulate API call - in real implementation, call actual CRM API
+        $leadId = 'LEAD-' . strtoupper(substr(md5((string) time()), 0, 8));
+
+        return "Lead created successfully!\n" .
+               "  ID: {$leadId}\n" .
+               "  Name: {$name}\n" .
+               "  Email: {$email}\n" .
+               "  Source: metadata key '{$metadataKey}'";
+    }
+
+    #[\Override]
+    public function toToolSchema(): ToolDefinition {
+        return ToolDefinition::fromArray([
+            'type' => 'function',
+            'function' => [
+                'name' => $this->name(),
+                'description' => $this->description(),
+                'parameters' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'metadata_key' => [
+                            'type' => 'string',
+                            'description' => 'The metadata key where lead data is stored (e.g., "current_lead")',
+                        ],
+                    ],
+                    'required' => ['metadata_key'],
+                ],
+            ],
+        ]);
+    }
+}
+
+// =============================================================================
+// 3. Build the agent with structured output and API capabilities
+// =============================================================================
+
+// Create console logger for execution visibility
+$logger = new AgentEventConsoleObserver(
+    useColors: true,
+    showTimestamps: true,
+    showContinuation: true,
+    showToolArgs: true,
+);
+
+// Register extraction schemas
+$schemas = new SchemaRegistry([
+    'lead' => new SchemaDefinition(
+        class: Lead::class,
+        description: 'Business lead with contact information',
+        prompt: 'Extract lead information from the text. Look for names, emails, ' .
+                'phone numbers, company names, job titles, and addresses.',
+    ),
+]);
+
+// Build agent
+$agent = AgentBuilder::base()
+    ->withCapability(new UseStructuredOutputs(
+        schemas: $schemas,
+        structuredOutput: StructuredOutputRuntime::fromProvider(
+            provider: LLMProvider::using('openai'),
+        ),
+        policy: new StructuredOutputPolicy(
+            llm: LLMProvider::using('openai'),
+            defaultMaxRetries: 3,
+        ),
+    ))
+    ->withCapability(new UseMetadataTools())
+    ->withCapability(new UseTools(new CreateLeadTool()))
+    ->withCapability(new UseGuards(maxSteps: 10, maxTokens: 12288, maxExecutionTime: 90))
+    ->build()
+    ->wiretap($logger->wiretap());
+
+// =============================================================================
+// 4. Prepare input data (unstructured text with lead information)
+// =============================================================================
+
+$inputText = <<<TEXT
+Hey, I just got off the phone with a potential client. Here are the details:
+
+His name is John Smith and he works as VP of Engineering at TechCorp Industries.
+They're based in San Francisco, California, USA. You can reach him at
+john.smith@techcorp.io or call him at +1-555-0123.
+
+He's interested in our enterprise plan and wants a demo next week.
+TEXT;
+
+// =============================================================================
+// 5. Create task for the agent
+// =============================================================================
+
+$task = <<<TASK
+Process this lead information and save it to our CRM:
+
+{$inputText}
+
+Steps:
+1. Extract the lead information into structured format using 'lead' schema
+2. Store the extracted data as 'current_lead' in metadata
+3. Call create_lead API with the metadata key 'current_lead'
+
+Report back when complete.
+TASK;
+
+$state = AgentState::empty()->withMessages(
+    Messages::fromString($task)
+);
+
+// =============================================================================
+// 6. Execute agent
+// =============================================================================
+
+echo "=== Agent Execution Log ===\n";
+echo "Input text:\n{$inputText}\n\n";
+
+// Execute agent until completion
+$finalState = $agent->execute($state);
+
+// =============================================================================
+// 7. Show final results
+// =============================================================================
+
+echo "\n=== Result ===\n";
+
+// Get the extracted lead from metadata
+$extractedLead = $finalState->metadata()->get('current_lead');
+$fields = match(true) {
+    is_object($extractedLead) => get_object_vars($extractedLead),
+    is_array($extractedLead) => $extractedLead,
+    default => [],
+};
+
+if ($extractedLead !== null) {
+    echo "Extracted Lead (from metadata):\n";
+    foreach ($fields as $key => $value) {
+        if ($value !== null && $value !== '') {
+            echo "  {$key}: {$value}\n";
+        }
+    }
+    echo "\n";
+}
+
+$response = $finalState->finalResponse()->toString() ?: 'No response';
+echo "Answer: {$response}\n";
+echo "Steps: {$finalState->stepCount()}\n";
+echo "Tokens: {$finalState->usage()->total()}\n";
+echo "Status: {$finalState->status()->value}\n";
+
+if ($finalState->status()->value !== 'completed') {
+    echo "Skipping assertions because execution status is {$finalState->status()->value}.\n";
+    exit(1);
+}
+
+// Assertions
+assert($extractedLead !== null, 'Expected extracted lead in metadata');
+assert(!empty($fields), 'Expected non-empty lead fields');
+assert(!empty($fields['name'] ?? null), 'Expected lead to have a name');
+assert(!empty($fields['email'] ?? null), 'Expected lead to have an email');
+assert(!empty($finalState->finalResponse()->toString()), 'Expected non-empty response');
+assert($finalState->stepCount() >= 1, 'Expected at least 1 step');
+?>
+```

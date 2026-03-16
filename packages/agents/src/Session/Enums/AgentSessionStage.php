@@ -6,6 +6,8 @@ enum AgentSessionStage: string
 {
     case AfterLoad = 'after_load';
     case AfterAction = 'after_action';
+    case BeforeCreate = 'before_create';
+    case AfterCreate = 'after_create';
     case BeforeSave = 'before_save';
     case AfterSave = 'after_save';
 }

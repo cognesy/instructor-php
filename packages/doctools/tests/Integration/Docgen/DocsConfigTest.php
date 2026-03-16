@@ -19,11 +19,14 @@ describe('DocsConfig', function () {
             $config = DocsConfig::defaults();
 
             expect($config->llmsEnabled)->toBeTrue();
+            expect($config->llmsTarget)->toBe('./builds/build-llms');
+            expect($config->llmsLinkPrefix)->toBe('/llms');
+            expect($config->llmsContentDir)->toBe('llms');
             expect($config->llmsIndexFile)->toBe('llms.txt');
             expect($config->llmsFullFile)->toBe('llms-full.txt');
             expect($config->llmsExcludeSections)->toBe(['release-notes/']);
             expect($config->llmsDeployTarget)->toBe('');
-            expect($config->llmsDeployDocsFolder)->toBe('docs');
+            expect($config->llmsDeployDocsFolder)->toBe('llms');
         });
 
     });
@@ -35,11 +38,14 @@ describe('DocsConfig', function () {
             $config = DocsConfig::fromFile('packages/doctools/resources/config/docs.yml');
 
             expect($config->llmsEnabled)->toBeTrue();
+            expect($config->llmsTarget)->toBe('./builds/build-llms');
+            expect($config->llmsLinkPrefix)->toBe('/llms');
+            expect($config->llmsContentDir)->toBe('llms');
             expect($config->llmsIndexFile)->toBe('llms.txt');
             expect($config->llmsFullFile)->toBe('llms-full.txt');
             expect($config->llmsExcludeSections)->toContain('release-notes/');
             expect($config->llmsDeployTarget)->toBe('../instructor-www/public');
-            expect($config->llmsDeployDocsFolder)->toBe('docs');
+            expect($config->llmsDeployDocsFolder)->toBe('llms');
         });
 
         it('falls back to defaults for missing llms config', function () {
@@ -65,6 +71,9 @@ YAML;
 
                 // Should use defaults for llms
                 expect($config->llmsEnabled)->toBeTrue();
+                expect($config->llmsTarget)->toBe('./builds/build-llms');
+                expect($config->llmsLinkPrefix)->toBe('/llms');
+                expect($config->llmsContentDir)->toBe('llms');
                 expect($config->llmsIndexFile)->toBe('llms.txt');
                 expect($config->llmsFullFile)->toBe('llms-full.txt');
             } finally {

@@ -11,6 +11,7 @@ beforeEach(function () {
     $this->generator = new LlmsDocsGenerator(
         projectName: 'Test Project',
         projectDescription: 'A test project for unit testing.',
+        linkPrefix: '/llms',
     );
 });
 
@@ -64,8 +65,8 @@ describe('LlmsDocsGenerator', function () {
 
             $content = file_get_contents($outputPath);
             expect($content)->toContain('## Main');
-            expect($content)->toContain('- [Overview](index.md)');
-            expect($content)->toContain('- [Features](features.md)');
+            expect($content)->toContain('- [Overview](/llms/index.md)');
+            expect($content)->toContain('- [Features](/llms/features.md)');
         });
 
         it('renders nested navigation with proper hierarchy', function () {
@@ -84,9 +85,9 @@ describe('LlmsDocsGenerator', function () {
 
             $content = file_get_contents($outputPath);
             expect($content)->toContain('## Packages');
-            expect($content)->toContain('- [Overview](packages/index.md)');
+            expect($content)->toContain('- [Overview](/llms/packages/index.md)');
             expect($content)->toContain('### Instructor');
-            expect($content)->toContain('- [Introduction](packages/instructor/intro.md)');
+            expect($content)->toContain('- [Introduction](/llms/packages/instructor/intro.md)');
         });
 
         it('handles multiple sections', function () {
@@ -125,6 +126,25 @@ describe('LlmsDocsGenerator', function () {
             expect($result->message)->toMatch('/\d+(\.\d+)?\s*(B|KB|MB)/');
         });
 
+    });
+
+    describe('mirrorSourceTree', function () {
+
+        it('copies markdown and assets into the namespaced content directory', function () {
+            mkdir($this->tempDir . '/source', 0755, true);
+            mkdir($this->tempDir . '/source/images', 0755, true);
+            file_put_contents($this->tempDir . '/source/index.md', '# Welcome');
+            file_put_contents($this->tempDir . '/source/images/logo.svg', '<svg></svg>');
+
+            $result = $this->generator->mirrorSourceTree(
+                $this->tempDir . '/source',
+                $this->tempDir . '/llms',
+            );
+
+            expect($result->isSuccess())->toBeTrue();
+            expect(file_exists($this->tempDir . '/llms/index.md'))->toBeTrue();
+            expect(file_exists($this->tempDir . '/llms/images/logo.svg'))->toBeTrue();
+        });
     });
 
     describe('generateFull', function () {
@@ -211,6 +231,30 @@ MD);
 
             $content = file_get_contents($outputPath);
             expect($content)->not->toContain('---');
+            expect($content)->not->toContain('title: Home');
+            expect($content)->toContain('# Welcome');
+        });
+
+        it('strips YAML frontmatter with CRLF line endings', function () {
+            file_put_contents(
+                $this->tempDir . '/source/index.md',
+                "---\r\ntitle: Home\r\n---\r\n\r\n# Welcome\r\n\r\nThis is the home page.\r\n"
+            );
+
+            $navigation = [
+                ['Main' => [
+                    ['Home' => 'index.md'],
+                ]],
+            ];
+
+            $outputPath = $this->tempDir . '/llms-full.txt';
+            $this->generator->generateFull(
+                $navigation,
+                $this->tempDir . '/source',
+                $outputPath
+            );
+
+            $content = file_get_contents($outputPath);
             expect($content)->not->toContain('title: Home');
             expect($content)->toContain('# Welcome');
         });

@@ -24,8 +24,8 @@ The session system is built around a small set of types, each with a focused res
 | `SessionId` | Value object wrapping a UUID string. Use `SessionId::generate()` to create new IDs. |
 | `SessionStatus` | Enum: `Active`, `Suspended`, `Completed`, `Failed`, `Deleted` |
 | `SessionRepository` | Thin wrapper over a `CanStoreSessions` implementation |
-| `SessionRuntime` | The main orchestrator: load, execute, save with hooks and events |
-| `SessionFactory` | Creates fresh `AgentSession` instances from an `AgentDefinition` |
+| `SessionRuntime` | Preferred create/read/write boundary: creates sessions, executes actions, applies hooks, and emits events |
+| `SessionFactory` | Lower-level helper that builds fresh `AgentSession` instances from an `AgentDefinition` |
 
 ## The Runtime Contract
 
@@ -34,6 +34,7 @@ The `CanManageAgentSessions` interface defines the public API that `SessionRunti
 ```php
 interface CanManageAgentSessions
 {
+    public function create(AgentDefinition $definition, ?AgentState $seed = null): AgentSession;
     public function listSessions(): SessionInfoList;
     public function getSessionInfo(SessionId $sessionId): AgentSessionInfo;
     public function getSession(SessionId $sessionId): AgentSession;
@@ -41,7 +42,7 @@ interface CanManageAgentSessions
 }
 ```
 
-The read methods (`listSessions`, `getSessionInfo`, `getSession`) load data but do not persist any changes. The `execute()` method is the write path -- it loads the session, runs an action, saves the result, and returns the updated session.
+Use `create()` for brand-new root sessions. The read methods (`listSessions`, `getSessionInfo`, `getSession`) load data but do not persist any changes. The `execute()` method updates an existing persisted session by loading it, running an action, saving the result, and returning the updated session.
 
 ## Quick Start
 
@@ -51,13 +52,11 @@ The following example creates a session, sends a message, and retrieves the resu
 use Cognesy\Agents\Capability\AgentCapabilityRegistry;
 use Cognesy\Agents\Capability\Bash\UseBash;
 use Cognesy\Agents\Session\Actions\SendMessage;
-use Cognesy\Agents\Session\SessionFactory;
 use Cognesy\Agents\Session\SessionRepository;
 use Cognesy\Agents\Session\SessionRuntime;
 use Cognesy\Agents\Session\Store\InMemorySessionStore;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Template\Factory\DefinitionLoopFactory;
-use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 
 // 1. Define the agent
@@ -68,14 +67,12 @@ $definition = new AgentDefinition(
 );
 
 // 2. Set up the infrastructure
-$stateFactory = new DefinitionStateFactory();
-$sessionFactory = new SessionFactory($stateFactory);
 $repo = new SessionRepository(new InMemorySessionStore());
 $events = new EventDispatcher('session-runtime');
 $runtime = new SessionRuntime($repo, $events);
 
 // 3. Create a session
-$session = $repo->create($sessionFactory->create($definition));
+$session = $runtime->create($definition);
 
 // 4. Set up the loop factory
 $capabilities = new AgentCapabilityRegistry();
@@ -92,7 +89,25 @@ $updated = $runtime->execute(
 $state = $updated->state();
 ```
 
-## The Execute Pipeline
+## The Create and Execute Pipelines
+
+### The Create Pipeline
+
+When you call `$runtime->create($definition, $seed)`, the following pipeline runs:
+
+1. **Instantiate session** -- A fresh `AgentSession` is created from the `AgentDefinition` and optional seed state.
+2. **BeforeCreate hook** -- The session controller's `onStage(BeforeCreate, ...)` is called. Use this for create-only logic such as setting defaults or assigning IDs.
+3. **BeforeSave hook** -- The session controller's `onStage(BeforeSave, ...)` is called. This fires on both create and execute, so use it for logic that should run before every persist.
+4. **Create** -- The session is persisted through the repository. Stores require a fresh session with version `0` and persist it as version `1`.
+5. **AfterSave hook** -- Post-persistence processing runs on the persisted session returned by the store. Fires on both create and execute.
+6. **AfterCreate hook** -- The session controller's `onStage(AfterCreate, ...)` is called. Use this for create-only post-persist logic such as sending notifications.
+7. **SessionSaved event** -- Emitted to confirm successful persistence.
+
+If persistence fails, `SessionSaveFailed` is emitted and the original exception is rethrown.
+
+Use this path for new root sessions. Reach for `SessionFactory` + repository `create()` only when you already have a concrete `AgentSession` instance to persist, such as a forked branch.
+
+### The Execute Pipeline
 
 When you call `$runtime->execute($sessionId, $action)`, the following pipeline runs:
 
@@ -180,7 +195,7 @@ $forked = $repo->create($forked);
 echo $forked->info()->parentId(); // original session ID
 ```
 
-Note that `ForkSession` is typically used outside the runtime's `execute()` pipeline because it creates a new session rather than modifying the existing one.
+Note that `ForkSession` is typically used outside the runtime's `execute()` pipeline because it creates a new session rather than modifying the existing one. This is the main case where persisting via repository `create()` is still appropriate: you already have a fully constructed `AgentSession`, so you persist that branch directly instead of calling `SessionRuntime::create()`.
 
 ### ChangeSystemPrompt
 

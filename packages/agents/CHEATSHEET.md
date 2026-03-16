@@ -235,9 +235,9 @@ Core:
 - `Session\Data\AgentSessionInfo`
 - `Session\Data\AgentSession`
   - access: `info()`, `definition()`, `state()`, `sessionId()`, `status()`, `version()`
-- `Session\SessionFactory`
-- `Session\SessionRepository`
-- `Session\SessionRuntime`
+- `Session\SessionRuntime` -- preferred API for creating new sessions and applying actions to persisted sessions
+- `Session\SessionRepository` -- low-level persistence boundary over a store implementation
+- `Session\SessionFactory` -- low-level helper for constructing `AgentSession` instances before manual persistence
 
 Contracts:
 
@@ -254,7 +254,7 @@ Stores:
 Actions:
 
 - `Session\Actions\SendMessage` (accepts `string|\Stringable|Message`)
-- `Session\Actions\ForkSession` (returns a new branch session object; persist via repository `create()`)
+- `Session\Actions\ForkSession` (returns a new branch session object; persist that fork via repository `create()`; for brand-new root sessions prefer `SessionRuntime::create()`)
 - `Session\Actions\ResumeSession`
 - `Session\Actions\SuspendSession`
 - `Session\Actions\ClearSession`
@@ -266,7 +266,7 @@ Actions:
 Enums:
 
 - `Session\Enums\SessionStatus` -- `Active`, `Suspended`, `Completed`, `Failed`, `Deleted`
-- `Session\Enums\AgentSessionStage` -- `AfterLoad`, `AfterAction`, `BeforeSave`, `AfterSave`
+- `Session\Enums\AgentSessionStage` -- `AfterLoad`, `AfterAction`, `BeforeCreate`, `AfterCreate`, `BeforeSave`, `AfterSave`
 
 Session hooks:
 

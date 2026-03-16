@@ -11,6 +11,7 @@ beforeEach(function () {
     $this->tempDir = sys_get_temp_dir() . '/llms-command-test-' . uniqid();
     mkdir($this->tempDir, 0755, true);
     mkdir($this->tempDir . '/docs', 0755, true);
+    mkdir($this->tempDir . '/llms', 0755, true);
 
     // Create sample markdown files
     file_put_contents($this->tempDir . '/docs/index.md', <<<'MD'
@@ -38,6 +39,7 @@ MD);
     $this->command = new GenerateLlmsCommand(
         $this->examples,
         $this->tempDir . '/docs',
+        $this->tempDir . '/llms',
     );
 
     // Create application and add command
@@ -71,11 +73,13 @@ describe('GenerateLlmsCommand', function () {
 
         expect($commandTester->getStatusCode())->toBe(0);
 
-        $llmsPath = $this->tempDir . '/docs/llms.txt';
+        $llmsPath = $this->tempDir . '/llms/llms.txt';
         expect(file_exists($llmsPath))->toBeTrue();
 
         $content = file_get_contents($llmsPath);
         expect($content)->toContain('# Instructor for PHP');
+        expect($content)->toContain('(/llms/index.md)');
+        expect(file_exists($this->tempDir . '/llms/llms/index.md'))->toBeTrue();
     });
 
     it('generates llms-full.txt file', function () {
@@ -84,12 +88,14 @@ describe('GenerateLlmsCommand', function () {
 
         expect($commandTester->getStatusCode())->toBe(0);
 
-        $fullPath = $this->tempDir . '/docs/llms-full.txt';
+        $fullPath = $this->tempDir . '/llms/llms-full.txt';
         expect(file_exists($fullPath))->toBeTrue();
 
         $content = file_get_contents($fullPath);
         expect($content)->toContain('# Instructor for PHP');
         expect($content)->toContain('FILE:');
+        expect($content)->not->toContain('title: Home');
+        expect($content)->toContain('# Welcome');
     });
 
     it('generates both files by default', function () {
@@ -98,8 +104,9 @@ describe('GenerateLlmsCommand', function () {
 
         expect($commandTester->getStatusCode())->toBe(0);
 
-        expect(file_exists($this->tempDir . '/docs/llms.txt'))->toBeTrue();
-        expect(file_exists($this->tempDir . '/docs/llms-full.txt'))->toBeTrue();
+        expect(file_exists($this->tempDir . '/llms/llms.txt'))->toBeTrue();
+        expect(file_exists($this->tempDir . '/llms/llms-full.txt'))->toBeTrue();
+        expect(file_exists($this->tempDir . '/llms/llms/index.md'))->toBeTrue();
     });
 
     it('returns success exit code', function () {

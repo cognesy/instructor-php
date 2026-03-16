@@ -1,0 +1,75 @@
+---
+title: 'Cost calculation (StructuredOutput)'
+docname: 'cost_calculation_structured'
+id: 'a5c1'
+---
+## Overview
+
+Calculate the cost of a StructuredOutput extraction call. The response
+provides `InferenceUsage` with token counts. Pair it with `InferencePricing`
+rates and a `FlatRateCostCalculator` to get a `Cost` breakdown.
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Polyglot\Inference\Data\InferencePricing;
+use Cognesy\Polyglot\Inference\Pricing\FlatRateCostCalculator;
+
+class Company {
+    public string $name;
+    public string $industry;
+    public int $foundedYear;
+    /** @var string[] */
+    public array $products;
+}
+
+// 1. Extract structured data
+$text = 'Apple Inc. is an American technology company founded in 1976. '
+    . 'They make the iPhone, iPad, Mac, and Apple Watch.';
+
+$response = StructuredOutput::using('openai')
+    ->with(
+        messages: $text,
+        responseModel: Company::class,
+    )->response();
+
+$company = $response->value();
+$usage = $response->usage();
+
+echo "Extracted:\n";
+echo "  Name:     {$company->name}\n";
+echo "  Industry: {$company->industry}\n";
+echo "  Founded:  {$company->foundedYear}\n";
+echo "  Products: " . implode(', ', $company->products) . "\n\n";
+
+echo "Token usage:\n";
+echo "  Input:  {$usage->inputTokens}\n";
+echo "  Output: {$usage->outputTokens}\n\n";
+
+// 2. Calculate cost
+$calculator = new FlatRateCostCalculator();
+$pricing = InferencePricing::fromArray([
+    'input'  => 0.2,  // gpt-4.1-nano
+    'output' => 0.8,
+]);
+
+$cost = $calculator->calculate($usage, $pricing);
+
+echo "Cost: {$cost->toString()}\n";
+echo "Breakdown:\n";
+foreach ($cost->breakdown as $category => $amount) {
+    if ($amount > 0) {
+        printf("  %-12s \$%.6f\n", $category, $amount);
+    }
+}
+
+assert($company->name === 'Apple Inc.' || $company->name === 'Apple');
+assert($company->foundedYear === 1976);
+assert(count($company->products) >= 3);
+assert($cost->total > 0);
+?>
+```

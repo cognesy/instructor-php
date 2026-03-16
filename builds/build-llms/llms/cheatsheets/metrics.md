@@ -1,0 +1,225 @@
+---
+title: Metrics
+description: Metrics collection and export — collectors, registries, exporters, and event integration
+package: metrics
+---
+
+# Metrics Package Cheatsheet
+
+Code-verified reference for `packages/metrics`.
+
+## Quick Start
+
+```php
+use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Metrics\Metrics;
+use Cognesy\Metrics\Exporters\LogExporter;
+
+$events = new EventDispatcher();
+$metrics = new Metrics($events);
+$metrics
+    ->collect(new MyCollector())
+    ->exportTo(new LogExporter($logger));
+
+// ... events fire, collectors record metrics ...
+
+$metrics->export(); // push all metrics to exporters
+$metrics->clear();  // reset
+```
+
+## Main Entry Point
+
+```php
+use Cognesy\Metrics\Metrics;
+use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Metrics\Contracts\CanStoreMetrics;
+
+$metrics = new Metrics(
+    events: $eventDispatcher,          // CanHandleEvents
+    registry: $customRegistry,         // ?CanStoreMetrics (default: InMemoryRegistry)
+);
+
+$metrics->collect($collector);         // register a CanCollectMetrics, returns self
+$metrics->exportTo($exporter);         // add a CanExportMetrics, returns self
+$metrics->export();                    // push all metrics to all exporters
+$metrics->registry();                  // access underlying CanStoreMetrics
+$metrics->clear();                     // clear all collected metrics
+```
+
+## Registry Contract
+
+```php
+use Cognesy\Metrics\Contracts\CanStoreMetrics;
+use Cognesy\Metrics\Data\Tags;
+
+interface CanStoreMetrics {
+    public function counter(string $name, Tags $tags, float $increment = 1): Counter;
+    public function gauge(string $name, Tags $tags, float $value): Gauge;
+    public function histogram(string $name, Tags $tags, float $value): Histogram;
+    public function timer(string $name, Tags $tags, float $durationMs): Timer;
+    public function all(): iterable;    // yields Metric instances
+    public function find(string $name, ?Tags $tags = null): iterable;
+    public function clear(): void;
+    public function count(): int;
+}
+```
+
+Default implementation: `Cognesy\Metrics\Registry\InMemoryRegistry`
+
+## Building Collectors
+
+```php
+use Cognesy\Metrics\Collectors\MetricsCollector;
+
+class RequestCollector extends MetricsCollector
+{
+    protected function listeners(): array {
+        return [
+            RequestMade::class => 'onRequest',
+            RequestFailed::class => 'onFailure',
+        ];
+    }
+
+    public function onRequest(RequestMade $event): void {
+        $this->counter('requests_total', ['method' => $event->method]);
+        $this->timer('request_duration_ms', $event->durationMs, ['endpoint' => $event->path]);
+    }
+
+    public function onFailure(RequestFailed $event): void {
+        $this->counter('request_failures', ['code' => $event->statusCode]);
+    }
+}
+```
+
+Protected helpers on `MetricsCollector`:
+
+```php
+$this->counter(string $name, array $tags = [], float $increment = 1): Counter;
+$this->gauge(string $name, float $value, array $tags = []): Gauge;
+$this->histogram(string $name, float $value, array $tags = []): Histogram;
+$this->timer(string $name, float $durationMs, array $tags = []): Timer;
+```
+
+Collector contract:
+
+```php
+use Cognesy\Metrics\Contracts\CanCollectMetrics;
+
+interface CanCollectMetrics {
+    public function register(CanHandleEvents $events, CanStoreMetrics $registry): void;
+}
+```
+
+## Exporters
+
+```php
+use Cognesy\Metrics\Exporters\LogExporter;
+use Cognesy\Metrics\Exporters\CallbackExporter;
+use Cognesy\Metrics\Exporters\NullExporter;
+
+// PSR-3 logger
+$exporter = new LogExporter($logger, LogLevel::INFO);
+
+// Custom callback
+$exporter = new CallbackExporter(function (iterable $metrics): void {
+    foreach ($metrics as $metric) {
+        echo $metric->name() . ': ' . $metric->value() . PHP_EOL;
+    }
+});
+
+// No-op (testing/disabling)
+$exporter = new NullExporter();
+```
+
+Exporter contract:
+
+```php
+use Cognesy\Metrics\Contracts\CanExportMetrics;
+
+interface CanExportMetrics {
+    public function export(iterable $metrics): void;
+}
+```
+
+## Metric Data Objects
+
+All metric types implement `Metric` and are `readonly`:
+
+```php
+use Cognesy\Metrics\Data\Metric;
+
+interface Metric extends JsonSerializable, Stringable {
+    public function name(): string;
+    public function value(): float;
+    public function tags(): Tags;
+    public function timestamp(): DateTimeImmutable;
+    public function type(): string;       // 'counter', 'gauge', 'histogram', 'timer'
+    public function toArray(): array;
+    public function jsonSerialize(): array;
+    // Stringable: (string) $metric produces "name{tags} value" format
+}
+```
+
+### Counter
+
+```php
+use Cognesy\Metrics\Data\Counter;
+
+$counter = Counter::create('requests_total', value: 1, tags: ['method' => 'GET']);
+// value must be non-negative
+```
+
+### Gauge
+
+```php
+use Cognesy\Metrics\Data\Gauge;
+
+$gauge = Gauge::create('queue_depth', value: 42.0, tags: ['queue' => 'default']);
+```
+
+### Histogram
+
+```php
+use Cognesy\Metrics\Data\Histogram;
+
+$histogram = Histogram::create('response_size_bytes', value: 1024.0, tags: ['endpoint' => '/api']);
+```
+
+### Timer
+
+```php
+use Cognesy\Metrics\Data\Timer;
+
+$timer = Timer::create('request_duration', durationMs: 123.4, tags: ['method' => 'GET']);
+// durationMs must be non-negative
+
+$timer->durationMs();      // 123.4
+$timer->durationSeconds(); // 0.1234
+$timer->value();           // 123.4 (same as durationMs)
+```
+
+All `create()` methods accept an optional `?DateTimeImmutable $timestamp` (defaults to now).
+
+## Tags
+
+```php
+use Cognesy\Metrics\Data\Tags;
+// Tags implements IteratorAggregate, Countable, Stringable
+
+$tags = Tags::empty();
+$tags = Tags::of(['method' => 'GET', 'status' => 200]);
+
+// Immutable — all methods return new instances
+$tags = $tags->with('region', 'us-east');
+$tags = $tags->without('status');
+$tags = $tags->merge($otherTags);
+
+$tags->get('method');          // 'GET'
+$tags->get('missing', 'n/a'); // 'n/a'
+$tags->has('method');          // true
+$tags->isEmpty();              // false
+$tags->count();                // number of tags
+$tags->toArray();              // ['method' => 'GET', 'region' => 'us-east']
+$tags->toKey();                // canonical sorted string for aggregation
+(string) $tags;                // 'method="GET",region="us-east"'
+```

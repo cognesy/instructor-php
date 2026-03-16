@@ -1,0 +1,708 @@
+# Instructor for PHP
+
+> Structured data extraction in PHP, powered by LLMs. Define a PHP class, get a validated object back.
+
+## Main
+
+- [Overview](/llms/index.md)
+- [Getting Started](/llms/getting-started.md)
+- [Features](/llms/features.md)
+- [Packages](/llms/packages.md)
+- [Use Cases](/llms/use-cases.md)
+- [Why Instructor](/llms/why-instructor.md)
+
+### Release Notes
+
+- [Overview](/llms/release-notes/versions.md)
+- [v2.0.0](/llms/release-notes/v2.0.0.md)
+- [v1.22.0](/llms/release-notes/v1.22.0.md)
+- [v1.21.0](/llms/release-notes/v1.21.0.md)
+- [v1.20.0](/llms/release-notes/v1.20.0.md)
+- [v1.19.0](/llms/release-notes/v1.19.0.md)
+- [v1.18.4](/llms/release-notes/v1.18.4.md)
+- [v1.18.3](/llms/release-notes/v1.18.3.md)
+- [v1.18.2](/llms/release-notes/v1.18.2.md)
+- [v1.18.1](/llms/release-notes/v1.18.1.md)
+- [v1.18.0](/llms/release-notes/v1.18.0.md)
+- [v1.17.0](/llms/release-notes/v1.17.0.md)
+- [v1.16.0](/llms/release-notes/v1.16.0.md)
+- [v1.15.0](/llms/release-notes/v1.15.0.md)
+- [v1.14.0](/llms/release-notes/v1.14.0.md)
+- [v1.13.0](/llms/release-notes/v1.13.0.md)
+- [v1.12.0](/llms/release-notes/v1.12.0.md)
+- [v1.11.0](/llms/release-notes/v1.11.0.md)
+- [v1.10.3](/llms/release-notes/v1.10.3.md)
+- [v1.10.2](/llms/release-notes/v1.10.2.md)
+- [v1.10.1](/llms/release-notes/v1.10.1.md)
+- [v1.10.0](/llms/release-notes/v1.10.0.md)
+- [v1.9.1](/llms/release-notes/v1.9.1.md)
+- [v1.9.0](/llms/release-notes/v1.9.0.md)
+- [v1.8.1](/llms/release-notes/v1.8.1.md)
+- [v1.8.0](/llms/release-notes/v1.8.0.md)
+- [v1.7.0](/llms/release-notes/v1.7.0.md)
+- [v1.6.0](/llms/release-notes/v1.6.0.md)
+- [v1.5.0](/llms/release-notes/v1.5.0.md)
+- [v1.4.2](/llms/release-notes/v1.4.2.md)
+- [v1.4.1](/llms/release-notes/v1.4.1.md)
+- [v1.4.0](/llms/release-notes/v1.4.0.md)
+- [v1.3.0](/llms/release-notes/v1.3.0.md)
+- [v1.2.0](/llms/release-notes/v1.2.0.md)
+- [v1.1.0](/llms/release-notes/v1.1.0.md)
+- [v1.0.0](/llms/release-notes/v1.0.0.md)
+- [v1.0.0-RC22](/llms/release-notes/v1.0.0-RC22.md)
+- [v1.0.0-RC21](/llms/release-notes/v1.0.0-RC21.md)
+- [v1.0.0-RC20](/llms/release-notes/v1.0.0-RC20.md)
+- [v1.0.0-RC19](/llms/release-notes/v1.0.0-RC19.md)
+- [v1.0.0-RC18](/llms/release-notes/v1.0.0-RC18.md)
+- [v1.0.0-RC17](/llms/release-notes/v1.0.0-RC17.md)
+- [v1.0.0-RC16](/llms/release-notes/v1.0.0-RC16.md)
+- [v1.0.0-RC15](/llms/release-notes/v1.0.0-RC15.md)
+- [v1.0.0-RC14](/llms/release-notes/v1.0.0-RC14.md)
+- [v1.0.0-RC13](/llms/release-notes/v1.0.0-RC13.md)
+- [v1.0.0-RC12](/llms/release-notes/v1.0.0-RC12.md)
+- [v1.0.0-RC11](/llms/release-notes/v1.0.0-RC11.md)
+- [v1.0.0-RC10](/llms/release-notes/v1.0.0-RC10.md)
+- [v1.0.0-RC9](/llms/release-notes/v1.0.0-RC9.md)
+- [v1.0.0-RC8](/llms/release-notes/v1.0.0-RC8.md)
+- [v1.0.0-RC7](/llms/release-notes/v1.0.0-RC7.md)
+- [v1.0.0-RC6](/llms/release-notes/v1.0.0-RC6.md)
+- [v1.0.0-rc5](/llms/release-notes/v1.0.0-rc5.md)
+- [v1.0.0-rc4](/llms/release-notes/v1.0.0-rc4.md)
+- [v1.0.0-rc3](/llms/release-notes/v1.0.0-rc3.md)
+- [v1.0.0-rc2](/llms/release-notes/v1.0.0-rc2.md)
+- [v1.0.0-rc1](/llms/release-notes/v1.0.0-rc1.md)
+- [v0.17.12](/llms/release-notes/v0.17.12.md)
+- [v0.17.11](/llms/release-notes/v0.17.11.md)
+- [v0.17.10](/llms/release-notes/v0.17.10.md)
+- [v0.17.9](/llms/release-notes/v0.17.9.md)
+- [v0.17.8](/llms/release-notes/v0.17.8.md)
+- [v0.17.7](/llms/release-notes/v0.17.7.md)
+- [v0.17.6](/llms/release-notes/v0.17.6.md)
+- [v0.17.5](/llms/release-notes/v0.17.5.md)
+- [v0.17.4](/llms/release-notes/v0.17.4.md)
+- [v0.17.3](/llms/release-notes/v0.17.3.md)
+- [v0.17.1](/llms/release-notes/v0.17.1.md)
+- [v0.17.0](/llms/release-notes/v0.17.0.md)
+- [v0.16.0](/llms/release-notes/v0.16.0.md)
+- [v0.15.2](/llms/release-notes/v0.15.2.md)
+- [v0.15.1](/llms/release-notes/v0.15.1.md)
+- [v0.15.0](/llms/release-notes/v0.15.0.md)
+- [v0.14.7](/llms/release-notes/v0.14.7.md)
+- [v0.14.6](/llms/release-notes/v0.14.6.md)
+- [v0.14.5](/llms/release-notes/v0.14.5.md)
+- [v0.14.4](/llms/release-notes/v0.14.4.md)
+- [v0.14.3](/llms/release-notes/v0.14.3.md)
+- [v0.14.2](/llms/release-notes/v0.14.2.md)
+- [v0.14.1](/llms/release-notes/v0.14.1.md)
+- [v0.14.0](/llms/release-notes/v0.14.0.md)
+- [v0.13.0](/llms/release-notes/v0.13.0.md)
+- [v0.12.13](/llms/release-notes/v0.12.13.md)
+- [v0.12.12](/llms/release-notes/v0.12.12.md)
+- [v0.12.11](/llms/release-notes/v0.12.11.md)
+- [v0.12.10](/llms/release-notes/v0.12.10.md)
+- [v0.12.9](/llms/release-notes/v0.12.9.md)
+- [v0.12.8](/llms/release-notes/v0.12.8.md)
+- [v0.12.7](/llms/release-notes/v0.12.7.md)
+- [v0.12.6](/llms/release-notes/v0.12.6.md)
+- [v0.12.5](/llms/release-notes/v0.12.5.md)
+- [v0.12.4](/llms/release-notes/v0.12.4.md)
+- [v0.12.3](/llms/release-notes/v0.12.3.md)
+- [v0.12.2](/llms/release-notes/v0.12.2.md)
+- [v0.12.0](/llms/release-notes/v0.12.0.md)
+- [v0.8.0](/llms/release-notes/v0.8.0.md)
+
+## Packages
+
+- [Overview](/llms/packages/index.md)
+
+### Instructor
+
+- [Introduction](/llms/packages/instructor/introduction.md)
+- [Quickstart](/llms/packages/instructor/quickstart.md)
+- [Setup](/llms/packages/instructor/setup.md)
+- [Testing Doubles](/llms/packages/instructor/testing-doubles.md)
+- [Upgrade](/llms/packages/instructor/upgrade.md)
+- [Cli Tools](/llms/packages/instructor/cli_tools.md)
+
+### Concepts
+
+- [Overview](/llms/packages/instructor/concepts/overview.md)
+- [Why](/llms/packages/instructor/concepts/why.md)
+
+### Essentials
+
+- [Usage](/llms/packages/instructor/essentials/usage.md)
+- [Data Model](/llms/packages/instructor/essentials/data_model.md)
+- [Validation](/llms/packages/instructor/essentials/validation.md)
+- [Modes](/llms/packages/instructor/essentials/modes.md)
+- [Scalars](/llms/packages/instructor/essentials/scalars.md)
+- [Demonstrations](/llms/packages/instructor/essentials/demonstrations.md)
+- [Customize Prompts](/llms/packages/instructor/essentials/customize_prompts.md)
+- [Configuration](/llms/packages/instructor/essentials/configuration.md)
+
+### Advanced
+
+- [Partials](/llms/packages/instructor/advanced/partials.md)
+- [Sequences](/llms/packages/instructor/advanced/sequences.md)
+- [Structures](/llms/packages/instructor/advanced/structures.md)
+- [Function Calls](/llms/packages/instructor/advanced/function_calls.md)
+- [Manual Schemas](/llms/packages/instructor/advanced/manual_schemas.md)
+- [Json Extraction](/llms/packages/instructor/advanced/json_extraction.md)
+- [Output Formats](/llms/packages/instructor/advanced/output_formats.md)
+- [Prompts](/llms/packages/instructor/advanced/prompts.md)
+- [Model Options](/llms/packages/instructor/advanced/model_options.md)
+- [Structure To Structure](/llms/packages/instructor/advanced/structure-to-structure.md)
+
+### Techniques
+
+- [Prompting](/llms/packages/instructor/techniques/prompting.md)
+- [Classification](/llms/packages/instructor/techniques/classification.md)
+- [Search](/llms/packages/instructor/techniques/search.md)
+
+### Internals
+
+- [Instructor](/llms/packages/instructor/internals/instructor.md)
+- [Lifecycle](/llms/packages/instructor/internals/lifecycle.md)
+- [Configuration Path](/llms/packages/instructor/internals/configuration_path.md)
+- [Config Files](/llms/packages/instructor/internals/config_files.md)
+- [Settings Class](/llms/packages/instructor/internals/settings_class.md)
+- [Environment](/llms/packages/instructor/internals/environment.md)
+- [Events](/llms/packages/instructor/internals/events.md)
+- [Response Models](/llms/packages/instructor/internals/response_models.md)
+- [Debugging](/llms/packages/instructor/internals/debugging.md)
+
+### Misc
+
+- [Help](/llms/packages/instructor/misc/help.md)
+- [Llm Providers](/llms/packages/instructor/misc/llm_providers.md)
+- [Philosophy](/llms/packages/instructor/misc/philosophy.md)
+- [Contributing](/llms/packages/instructor/misc/contributing.md)
+
+### Polyglot
+
+- [Overview](/llms/packages/polyglot/overview.md)
+- [Quickstart](/llms/packages/polyglot/quickstart.md)
+- [Setup](/llms/packages/polyglot/setup.md)
+- [Testing Doubles](/llms/packages/polyglot/testing-doubles.md)
+- [Upgrade](/llms/packages/polyglot/upgrade.md)
+
+### Essentials
+
+- [Overview](/llms/packages/polyglot/essentials/overview.md)
+- [Inference Class](/llms/packages/polyglot/essentials/inference-class.md)
+- [Creating Requests](/llms/packages/polyglot/essentials/creating-requests.md)
+- [Request Options](/llms/packages/polyglot/essentials/request-options.md)
+- [Response Handling](/llms/packages/polyglot/essentials/response-handling.md)
+
+### Modes
+
+- [Overview](/llms/packages/polyglot/modes/overview.md)
+- [Tools](/llms/packages/polyglot/modes/tools.md)
+- [Json Schema](/llms/packages/polyglot/modes/json-schema.md)
+- [Json](/llms/packages/polyglot/modes/json.md)
+- [Md Json](/llms/packages/polyglot/modes/md-json.md)
+- [Text](/llms/packages/polyglot/modes/text.md)
+
+### Streaming
+
+- [Overview](/llms/packages/polyglot/streaming/overview.md)
+- [Misc](/llms/packages/polyglot/streaming/misc.md)
+
+### Embeddings
+
+- [Overview](/llms/packages/polyglot/embeddings/overview.md)
+- [Work With Embeddings](/llms/packages/polyglot/embeddings/work-with-embeddings.md)
+- [Optimization](/llms/packages/polyglot/embeddings/optimization.md)
+
+### Advanced
+
+- [Custom Config](/llms/packages/polyglot/advanced/custom-config.md)
+- [Custom Http Client](/llms/packages/polyglot/advanced/custom-http-client.md)
+- [Context Caching](/llms/packages/polyglot/advanced/context-caching.md)
+- [Connection Mgmt](/llms/packages/polyglot/advanced/connection-mgmt.md)
+- [Json Schema](/llms/packages/polyglot/advanced/json-schema.md)
+- [Extending](/llms/packages/polyglot/advanced/extending.md)
+
+### Internals
+
+- [Overview](/llms/packages/polyglot/internals/overview.md)
+- [Lifecycle](/llms/packages/polyglot/internals/lifecycle.md)
+- [Configuration](/llms/packages/polyglot/internals/configuration.md)
+- [Providers](/llms/packages/polyglot/internals/providers.md)
+- [Adapters](/llms/packages/polyglot/internals/adapters.md)
+- [Http Client](/llms/packages/polyglot/internals/http-client.md)
+- [Request Response](/llms/packages/polyglot/internals/request-response.md)
+- [Events](/llms/packages/polyglot/internals/events.md)
+- [Public Api](/llms/packages/polyglot/internals/public-api.md)
+
+### Troubleshooting
+
+- [Overview](/llms/packages/polyglot/troubleshooting/overview.md)
+- [Debugging](/llms/packages/polyglot/troubleshooting/debugging.md)
+- [Issues Connection](/llms/packages/polyglot/troubleshooting/issues-connection.md)
+- [Issues Authentication](/llms/packages/polyglot/troubleshooting/issues-authentication.md)
+- [Issues Configuration](/llms/packages/polyglot/troubleshooting/issues-configuration.md)
+- [Issues Rate Limits](/llms/packages/polyglot/troubleshooting/issues-rate-limits.md)
+- [Issues Streaming](/llms/packages/polyglot/troubleshooting/issues-streaming.md)
+- [Issues Model Specific](/llms/packages/polyglot/troubleshooting/issues-model-specific.md)
+- [Issues Provider Specific](/llms/packages/polyglot/troubleshooting/issues-provider-specific.md)
+
+### Agents
+
+- [Introduction](/llms/packages/agents/01-introduction.md)
+- [Basic Agent](/llms/packages/agents/02-basic-agent.md)
+- [Basic Concepts](/llms/packages/agents/03-basic-concepts.md)
+- [Controlling The Loop](/llms/packages/agents/04-controlling-the-loop.md)
+- [Tools](/llms/packages/agents/05-tools.md)
+- [Building Tools](/llms/packages/agents/06-building-tools.md)
+- [Context And Compilers](/llms/packages/agents/07-context-and-compilers.md)
+- [Hooks](/llms/packages/agents/08-hooks.md)
+- [Stop Conditions](/llms/packages/agents/09-stop-conditions.md)
+- [Testing](/llms/packages/agents/10-testing.md)
+- [State Internals](/llms/packages/agents/11-state-internals.md)
+- [Tool Calling Internals](/llms/packages/agents/12-tool-calling-internals.md)
+- [Agent Builder](/llms/packages/agents/13-agent-builder.md)
+- [Agent Templates](/llms/packages/agents/14-agent-templates.md)
+- [Subagents](/llms/packages/agents/15-subagents.md)
+- [Session Runtime](/llms/packages/agents/16-session-runtime.md)
+- [Building Tools Advanced](/llms/packages/agents/17-building-tools-advanced.md)
+- [Observing Agent Execution](/llms/packages/agents/18-observing-agent-execution.md)
+- [Skills](/llms/packages/agents/19-skills.md)
+- [Testing Doubles](/llms/packages/agents/testing-doubles.md)
+
+### Agent-ctrl
+
+- [Overview](/llms/packages/agent-ctrl/1-overview.md)
+- [Getting Started](/llms/packages/agent-ctrl/2-getting-started.md)
+- [Testing Doubles](/llms/packages/agent-ctrl/testing-doubles.md)
+- [Streaming](/llms/packages/agent-ctrl/3-streaming.md)
+- [Session Management](/llms/packages/agent-ctrl/4-session-management.md)
+- [Agent Options](/llms/packages/agent-ctrl/5-agent-options.md)
+- [Response Object](/llms/packages/agent-ctrl/6-response-object.md)
+- [Troubleshooting](/llms/packages/agent-ctrl/7-troubleshooting.md)
+- [Claude Code Bridge](/llms/packages/agent-ctrl/8-claude-code-bridge.md)
+- [Codex Bridge](/llms/packages/agent-ctrl/9-codex-bridge.md)
+- [Opencode Bridge](/llms/packages/agent-ctrl/10-opencode-bridge.md)
+- [Pi Bridge](/llms/packages/agent-ctrl/11-pi-bridge.md)
+- [Gemini Bridge](/llms/packages/agent-ctrl/12-gemini-bridge.md)
+
+### Sandbox
+
+- [Overview](/llms/packages/sandbox/1-overview.md)
+- [Getting Started](/llms/packages/sandbox/2-getting-started.md)
+- [Execution Policy](/llms/packages/sandbox/3-execution-policy.md)
+- [Drivers](/llms/packages/sandbox/4-drivers.md)
+- [Streaming And Results](/llms/packages/sandbox/5-streaming-and-results.md)
+- [Testing](/llms/packages/sandbox/6-testing.md)
+- [Troubleshooting](/llms/packages/sandbox/7-troubleshooting.md)
+
+### HTTP Client
+
+- [Overview](/llms/packages/http/1-overview.md)
+- [Getting Started](/llms/packages/http/2-getting-started.md)
+- [Testing Doubles](/llms/packages/http/testing-doubles.md)
+- [Making Requests](/llms/packages/http/3-making-requests.md)
+- [Handling Responses](/llms/packages/http/4-handling-responses.md)
+- [Streaming Responses](/llms/packages/http/5-streaming-responses.md)
+- [Pooling](/llms/packages/http/6-pooling.md)
+- [Middleware](/llms/packages/http/10-middleware.md)
+- [Changing Client](/llms/packages/http/7-changing-client.md)
+- [Changing Client Config](/llms/packages/http/8-changing-client-config.md)
+- [Custom Clients](/llms/packages/http/9-1-custom-clients.md)
+
+### Laravel
+
+- [Overview](/llms/packages/laravel/index.md)
+- [Installation](/llms/packages/laravel/installation.md)
+- [Configuration](/llms/packages/laravel/configuration.md)
+- [Facades](/llms/packages/laravel/facades.md)
+- [Response Models](/llms/packages/laravel/response-models.md)
+- [Agents](/llms/packages/laravel/agents.md)
+- [Events](/llms/packages/laravel/events.md)
+- [Commands](/llms/packages/laravel/commands.md)
+- [Testing](/llms/packages/laravel/testing.md)
+- [Advanced](/llms/packages/laravel/advanced.md)
+- [Troubleshooting](/llms/packages/laravel/troubleshooting.md)
+
+### Xprompt
+
+- [Introduction](/llms/packages/xprompt/01-introduction.md)
+- [Getting Started](/llms/packages/xprompt/02-getting-started.md)
+- [Composition](/llms/packages/xprompt/03-composition.md)
+- [Templates](/llms/packages/xprompt/04-templates.md)
+- [Structured Data](/llms/packages/xprompt/05-structured-data.md)
+- [Variants And Registry](/llms/packages/xprompt/06-variants-and-registry.md)
+- [Configuration](/llms/packages/xprompt/07-configuration.md)
+
+## Cookbook
+
+- [Introduction](/llms/cookbook/introduction.md)
+- [Contributing](/llms/cookbook/contributing.md)
+
+### A01_Basics
+
+- [Basic use](/llms/cookbook/examples/A01_Basics/basic_use.md)
+- [Specifying required and optional parameters via constructor](/llms/cookbook/examples/A01_Basics/constructor_parameters.md)
+- [Getters and setters](/llms/cookbook/examples/A01_Basics/getters_and_setters.md)
+- [Private vs public object field](/llms/cookbook/examples/A01_Basics/public_vs_private.md)
+- [Basic use via StructuredOutput](/llms/cookbook/examples/A01_Basics/basic_use_mixin.md)
+- [Fluent API](/llms/cookbook/examples/A01_Basics/fluent_api.md)
+- [Handling errors with `Maybe` helper class](/llms/cookbook/examples/A01_Basics/maybe.md)
+- [Messages API](/llms/cookbook/examples/A01_Basics/messages_api.md)
+- [Mixed Type Property](/llms/cookbook/examples/A01_Basics/mixed_type_property.md)
+- [Modes](/llms/cookbook/examples/A01_Basics/modes.md)
+- [Making some fields optional](/llms/cookbook/examples/A01_Basics/optional_fields.md)
+- [Automatic correction based on validation results](/llms/cookbook/examples/A01_Basics/self_correction.md)
+- [Using attributes](/llms/cookbook/examples/A01_Basics/attributes.md)
+- [Load LLM Config Data From YAML](/llms/cookbook/examples/A01_Basics/using_config.md)
+- [Validation](/llms/cookbook/examples/A01_Basics/validation.md)
+- [Custom validation using Symfony Validator](/llms/cookbook/examples/A01_Basics/custom_validation.md)
+- [Validation across multiple fields](/llms/cookbook/examples/A01_Basics/validation_multifield.md)
+- [Validation with LLM](/llms/cookbook/examples/A01_Basics/validation_with_llm.md)
+
+### A02_Advanced
+
+- [Use custom configuration source](/llms/cookbook/examples/A02_Advanced/config_providers.md)
+- [Context caching (structured output)](/llms/cookbook/examples/A02_Advanced/context_cache_structured.md)
+- [Context caching (structured output, OpenAI)](/llms/cookbook/examples/A02_Advanced/context_cache_structured_oai.md)
+- [Context caching (structured output, OpenAI Responses)](/llms/cookbook/examples/A02_Advanced/context_cache_structured_oai_responses.md)
+- [Customize parameters of LLM driver](/llms/cookbook/examples/A02_Advanced/custom_config.md)
+- [Use custom HTTP client instance](/llms/cookbook/examples/A02_Advanced/custom_http_client.md)
+- [Use custom HTTP client instance - Laravel](/llms/cookbook/examples/A02_Advanced/custom_http_client_laravel.md)
+- [Custom prompts](/llms/cookbook/examples/A02_Advanced/custom_prompts.md)
+- [Customize parameters via DSN](/llms/cookbook/examples/A02_Advanced/custom_llm_with_dsn.md)
+- [Extracting arguments of function or method](/llms/cookbook/examples/A02_Advanced/function_calls.md)
+- [Manual Schema Building](/llms/cookbook/examples/A02_Advanced/manual_schemas.md)
+- [Streaming partial updates during inference](/llms/cookbook/examples/A02_Advanced/partials.md)
+- [Providing example inputs and outputs](/llms/cookbook/examples/A02_Advanced/demonstrations.md)
+- [Extracting scalar values](/llms/cookbook/examples/A02_Advanced/scalars.md)
+- [Extracting sequences of objects](/llms/cookbook/examples/A02_Advanced/sequences.md)
+- [Streaming](/llms/cookbook/examples/A02_Advanced/streaming.md)
+- [Structures](/llms/cookbook/examples/A02_Advanced/structures.md)
+
+### A03_Troubleshooting
+
+- [Calculating request cost](/llms/cookbook/examples/A03_Troubleshooting/cost_calculation.md)
+- [Debugging](/llms/cookbook/examples/A03_Troubleshooting/debugging.md)
+- [Laravel Logging Integration](/llms/cookbook/examples/A03_Troubleshooting/logging_laravel.md)
+- [Monolog Logging with Functional Pipeline](/llms/cookbook/examples/A03_Troubleshooting/logging_monolog.md)
+- [PSR-3 Logging with Functional Pipeline](/llms/cookbook/examples/A03_Troubleshooting/logging_psr.md)
+- [Symfony Logging Integration](/llms/cookbook/examples/A03_Troubleshooting/logging_symfony.md)
+- [Receive specific internal event with onEvent()](/llms/cookbook/examples/A03_Troubleshooting/on_event.md)
+- [Load Config From Custom Path](/llms/cookbook/examples/A03_Troubleshooting/settings.md)
+- [Tracking token usage via events](/llms/cookbook/examples/A03_Troubleshooting/token_usage_events.md)
+- [Receive all internal events with wiretap()](/llms/cookbook/examples/A03_Troubleshooting/wiretap.md)
+
+### A04_APISupport
+
+- [A21](/llms/cookbook/examples/A04_APISupport/a21.md)
+- [Anthropic](/llms/cookbook/examples/A04_APISupport/anthropic.md)
+- [Azure OpenAI](/llms/cookbook/examples/A04_APISupport/azure_openai.md)
+- [Cerebras](/llms/cookbook/examples/A04_APISupport/cerebras.md)
+- [Cohere](/llms/cookbook/examples/A04_APISupport/cohere.md)
+- [DeepSeek](/llms/cookbook/examples/A04_APISupport/deepseek.md)
+- [Fireworks.ai](/llms/cookbook/examples/A04_APISupport/fireworks.md)
+- [Google Gemini](/llms/cookbook/examples/A04_APISupport/google_gemini.md)
+- [Google Gemini (OpenAI compatible API)](/llms/cookbook/examples/A04_APISupport/google_gemini_oai.md)
+- [Groq](/llms/cookbook/examples/A04_APISupport/groq.md)
+- [Hugging Face](/llms/cookbook/examples/A04_APISupport/huggingface.md)
+- [Inception](/llms/cookbook/examples/A04_APISupport/inception.md)
+- [Meta](/llms/cookbook/examples/A04_APISupport/meta.md)
+- [Minimaxi](/llms/cookbook/examples/A04_APISupport/minimaxi.md)
+- [Mistral AI](/llms/cookbook/examples/A04_APISupport/mistralai.md)
+- [MoonshotAI](/llms/cookbook/examples/A04_APISupport/moonshotai.md)
+- [Local / Ollama](/llms/cookbook/examples/A04_APISupport/ollama.md)
+- [OpenAI](/llms/cookbook/examples/A04_APISupport/openai.md)
+- [OpenAI Responses API](/llms/cookbook/examples/A04_APISupport/openai-responses.md)
+- [OpenRouter](/llms/cookbook/examples/A04_APISupport/openrouter.md)
+- [Perplexity](/llms/cookbook/examples/A04_APISupport/perplexity.md)
+- [SambaNova](/llms/cookbook/examples/A04_APISupport/sambanova.md)
+- [Together.ai](/llms/cookbook/examples/A04_APISupport/togetherai.md)
+- [xAI / Grok](/llms/cookbook/examples/A04_APISupport/xai.md)
+
+### A05_Extras
+
+- [Extraction of complex objects](/llms/cookbook/examples/A05_Extras/complex_extraction.md)
+- [Extraction of complex objects (Anthropic)](/llms/cookbook/examples/A05_Extras/complex_extraction_claude.md)
+- [Extraction of complex objects (Cohere)](/llms/cookbook/examples/A05_Extras/complex_extraction_cohere.md)
+- [Extraction of complex objects (Gemini)](/llms/cookbook/examples/A05_Extras/complex_extraction_gemini.md)
+- [Cost calculation (StructuredOutput)](/llms/cookbook/examples/A05_Extras/cost_calculation_structured.md)
+- [Custom Content Extractors](/llms/cookbook/examples/A05_Extras/custom_extractor.md)
+- [Using structured data as an input](/llms/cookbook/examples/A05_Extras/structured_input.md)
+- [Image processing - car damage detection](/llms/cookbook/examples/A05_Extras/image_car_damage.md)
+- [Image to data (OpenAI)](/llms/cookbook/examples/A05_Extras/image_to_data.md)
+- [Image to data (Anthropic)](/llms/cookbook/examples/A05_Extras/image_to_data_anthropic.md)
+- [Image to data (Gemini)](/llms/cookbook/examples/A05_Extras/image_to_data_gemini.md)
+- [Generating JSON Schema from PHP classes](/llms/cookbook/examples/A05_Extras/json_schema.md)
+- [Streaming (Structured Output, OpenAI Responses)](/llms/cookbook/examples/A05_Extras/streaming_structured_openai_responses.md)
+- [Return extracted data as array](/llms/cookbook/examples/A05_Extras/output_format_array.md)
+- [Use different class for schema and output](/llms/cookbook/examples/A05_Extras/output_format_instance_of.md)
+- [Streaming with array output format](/llms/cookbook/examples/A05_Extras/output_format_streaming.md)
+- [Pure Array Processing (No Classes)](/llms/cookbook/examples/A05_Extras/pure_array_processing.md)
+- [Generating JSON Schema from PHP classes](/llms/cookbook/examples/A05_Extras/schema.md)
+- [Generating JSON Schema dynamically](/llms/cookbook/examples/A05_Extras/schema_dynamic.md)
+- [Create tasks from meeting transcription](/llms/cookbook/examples/A05_Extras/transcription_to_tasks.md)
+- [Translating UI text fields](/llms/cookbook/examples/A05_Extras/translate_ui_fields.md)
+- [Web page to PHP objects](/llms/cookbook/examples/A05_Extras/web_to_objects.md)
+
+### B01_LLM
+
+- [Working directly with LLMs](/llms/cookbook/examples/B01_LLM/inference.md)
+- [Working directly with LLMs and JSON - JSON mode](/llms/cookbook/examples/B01_LLM/llm_json.md)
+- [Working directly with LLMs and JSON - JSON Schema mode](/llms/cookbook/examples/B01_LLM/llm_json_schema.md)
+- [Working directly with LLMs and JSON - Markdown JSON prompting](/llms/cookbook/examples/B01_LLM/llm_md_json.md)
+- [Working directly with LLMs and JSON - Tool calling](/llms/cookbook/examples/B01_LLM/llm_tools.md)
+- [Generating JSON Schema from PHP classes](/llms/cookbook/examples/B01_LLM/llm_with_schema_helper.md)
+- [Generating JSON Schema from PHP classes](/llms/cookbook/examples/B01_LLM/llm_with_tools_helper.md)
+
+### B02_LLMAdvanced
+
+- [Use custom configuration source for Inference](/llms/cookbook/examples/B02_LLMAdvanced/llm_config_providers.md)
+- [Context caching (text inference)](/llms/cookbook/examples/B02_LLMAdvanced/context_cache_llm.md)
+- [Context caching (text inference, OpenAI)](/llms/cookbook/examples/B02_LLMAdvanced/context_cache_llm_oai.md)
+- [Customize configuration of LLM driver](/llms/cookbook/examples/B02_LLMAdvanced/llm_custom_config.md)
+- [Custom Embeddings Config](/llms/cookbook/examples/B02_LLMAdvanced/custom_embeddings_config.md)
+- [Using custom LLM driver](/llms/cookbook/examples/B02_LLMAdvanced/custom_llm_driver.md)
+- [Customize LLM Configuration with DSN string](/llms/cookbook/examples/B02_LLMAdvanced/custom_llm_via_dsn.md)
+- [Embeddings utils](/llms/cookbook/examples/B02_LLMAdvanced/embed_utils.md)
+- [Embeddings](/llms/cookbook/examples/B02_LLMAdvanced/embeddings.md)
+- [Work directly with HTTP client facade](/llms/cookbook/examples/B02_LLMAdvanced/http_client.md)
+- [Parallel Calls](/llms/cookbook/examples/B02_LLMAdvanced/parallel_calls.md)
+- [Reasoning Content Access](/llms/cookbook/examples/B02_LLMAdvanced/reasoning_content.md)
+
+### B03_LLMTroubleshooting
+
+- [Debugging HTTP Calls](/llms/cookbook/examples/B03_LLMTroubleshooting/http_debug.md)
+- [Embeddings Logging with Laravel](/llms/cookbook/examples/B03_LLMTroubleshooting/llm_logging_laravel_embeddings.md)
+- [Inference Logging with Laravel](/llms/cookbook/examples/B03_LLMTroubleshooting/llm_logging_laravel_inference.md)
+- [Inference Logging with Monolog](/llms/cookbook/examples/B03_LLMTroubleshooting/llm_logging_monolog.md)
+- [Inference Logging with Symfony](/llms/cookbook/examples/B03_LLMTroubleshooting/llm_logging_symfony.md)
+
+### B04_LLMApiSupport
+
+- [A21](/llms/cookbook/examples/B04_LLMApiSupport/llm_a21.md)
+- [Anthropic](/llms/cookbook/examples/B04_LLMApiSupport/llm_anthropic.md)
+- [Azure OpenAI](/llms/cookbook/examples/B04_LLMApiSupport/llm_azure_openai.md)
+- [Cerebras](/llms/cookbook/examples/B04_LLMApiSupport/llm_cerebras.md)
+- [Cohere](/llms/cookbook/examples/B04_LLMApiSupport/llm_cohere.md)
+- [DeepSeek](/llms/cookbook/examples/B04_LLMApiSupport/llm_deepseek.md)
+- [Fireworks.ai](/llms/cookbook/examples/B04_LLMApiSupport/llm_fireworks.md)
+- [Google Gemini](/llms/cookbook/examples/B04_LLMApiSupport/llm_google_gemini.md)
+- [Google Gemini (OpenAI-compatible)](/llms/cookbook/examples/B04_LLMApiSupport/llm_google_gemini_oai.md)
+- [Groq](/llms/cookbook/examples/B04_LLMApiSupport/llm_groq.md)
+- [Inception](/llms/cookbook/examples/B04_LLMApiSupport/llm_inception.md)
+- [Meta](/llms/cookbook/examples/B04_LLMApiSupport/llm_meta.md)
+- [Minimaxi](/llms/cookbook/examples/B04_LLMApiSupport/llm_minimaxi.md)
+- [Mistral AI](/llms/cookbook/examples/B04_LLMApiSupport/llm_mistralai.md)
+- [MoonshotAI](/llms/cookbook/examples/B04_LLMApiSupport/llm_moonshotai.md)
+- [Local / Ollama](/llms/cookbook/examples/B04_LLMApiSupport/llm_ollama.md)
+- [OpenAI](/llms/cookbook/examples/B04_LLMApiSupport/llm_openai.md)
+- [OpenAI Responses API](/llms/cookbook/examples/B04_LLMApiSupport/llm_openai-responses.md)
+- [OpenRouter](/llms/cookbook/examples/B04_LLMApiSupport/llm_openrouter.md)
+- [Perplexity](/llms/cookbook/examples/B04_LLMApiSupport/llm_perplexity.md)
+- [SambaNova](/llms/cookbook/examples/B04_LLMApiSupport/llm_sambanova.md)
+- [Together.ai](/llms/cookbook/examples/B04_LLMApiSupport/llm_togetherai.md)
+- [xAI / Grok](/llms/cookbook/examples/B04_LLMApiSupport/llm_xai.md)
+
+### B05_LLMExtras
+
+- [Multi-Participant AI Chat Panel Discussion](/llms/cookbook/examples/B05_LLMExtras/chat_with_many_participants.md)
+- [Chat with summary](/llms/cookbook/examples/B05_LLMExtras/chat_with_summary.md)
+- [Cost calculation (Polyglot)](/llms/cookbook/examples/B05_LLMExtras/cost_calculation_inference.md)
+- [Using images in prompts](/llms/cookbook/examples/B05_LLMExtras/image_data.md)
+- [Streaming metrics (Polyglot)](/llms/cookbook/examples/B05_LLMExtras/metrics_streaming.md)
+- [Streaming (Inference, OpenAI Responses)](/llms/cookbook/examples/B05_LLMExtras/streaming_inference_openai_responses.md)
+- [Prompt Templates](/llms/cookbook/examples/B05_LLMExtras/prompt_templates.md)
+- [Simple content summary](/llms/cookbook/examples/B05_LLMExtras/summary_with_llm.md)
+- [Inference and tool use](/llms/cookbook/examples/B05_LLMExtras/tool_use.md)
+- [Inference and tool use (ReAct driver)](/llms/cookbook/examples/B05_LLMExtras/tool_use_react.md)
+
+### C01_Http
+
+- [HTTP Client – Basics](/llms/cookbook/examples/C01_Http/http_client_basics.md)
+- [HTTP Client – Streaming Basics](/llms/cookbook/examples/C01_Http/http_client_streaming_basics.md)
+- [HTTP Middleware (Hooks)](/llms/cookbook/examples/C01_Http/http_middleware_hooks.md)
+- [HTTP Middleware (Stream)](/llms/cookbook/examples/C01_Http/http_middleware_stream.md)
+- [HTTP Middleware (Sync)](/llms/cookbook/examples/C01_Http/http_middleware_sync.md)
+- [HTTP Client – Pool Basics](/llms/cookbook/examples/C01_Http/http_client_pool_basics.md)
+
+### D01_Agents
+
+- [AgentLoop::execute()](/llms/cookbook/examples/D01_Agents/agent_loop_execute.md)
+- [AgentLoop::iterate()](/llms/cookbook/examples/D01_Agents/agent_loop_iterate.md)
+- [Agent with Bash Tool](/llms/cookbook/examples/D01_Agents/agent_loop_bash_tool.md)
+- [Agent with Custom Tool](/llms/cookbook/examples/D01_Agents/agent_loop_custom_tool.md)
+- [Agent Lifecycle Hooks](/llms/cookbook/examples/D01_Agents/agent_loop_hooks.md)
+- [Custom Context Compiler](/llms/cookbook/examples/D01_Agents/agent_loop_context_compiler.md)
+- [Agent Stop Conditions](/llms/cookbook/examples/D01_Agents/agent_loop_stop_conditions.md)
+- [Agent Events and Wiretap](/llms/cookbook/examples/D01_Agents/agent_loop_events.md)
+- [Multi-Execution Conversations](/llms/cookbook/examples/D01_Agents/agent_loop_multi_execution.md)
+
+### D02_AgentBuilder
+
+- [Basic Agent Usage](/llms/cookbook/examples/D02_AgentBuilder/agent_basic.md)
+- [Agent with File System Tools](/llms/cookbook/examples/D02_AgentBuilder/agent_file_system.md)
+- [Agent with Structured Output Extraction](/llms/cookbook/examples/D02_AgentBuilder/agent_structured_output.md)
+- [Agent Hooks - Tool Interception](/llms/cookbook/examples/D02_AgentBuilder/agent_hooks.md)
+- [Agent Self-Critique Pattern](/llms/cookbook/examples/D02_AgentBuilder/agent_self_critique.md)
+- [Agent-Driven Codebase Search](/llms/cookbook/examples/D02_AgentBuilder/agent_search.md)
+- [Agent Subagent Orchestration](/llms/cookbook/examples/D02_AgentBuilder/agent_subagents.md)
+- [Agent Execution Retrospective (D-Mail)](/llms/cookbook/examples/D02_AgentBuilder/agent_retrospective.md)
+- [Agent Planning Subagent Tool](/llms/cookbook/examples/D02_AgentBuilder/agent_planning_subagent.md)
+- [Agent Skills - SKILL.md Open Standard](/llms/cookbook/examples/D02_AgentBuilder/agent_skills.md)
+
+### D03_AgentTemplates
+
+- [Template from Definition](/llms/cookbook/examples/D03_AgentTemplates/template_from_definition.md)
+- [Template from Markdown](/llms/cookbook/examples/D03_AgentTemplates/template_from_markdown.md)
+- [Template from YAML](/llms/cookbook/examples/D03_AgentTemplates/template_from_yaml.md)
+- [Template with Tools and Capabilities](/llms/cookbook/examples/D03_AgentTemplates/template_with_tools_and_capabilities.md)
+- [Template Overrides Seed State](/llms/cookbook/examples/D03_AgentTemplates/template_override_seed_state.md)
+
+### D04_AgentSessions
+
+- [Session Create and Persist](/llms/cookbook/examples/D04_AgentSessions/session_create_and_persist.md)
+- [SessionRuntime Execute Action](/llms/cookbook/examples/D04_AgentSessions/session_runtime_execute_action.md)
+- [SessionRuntime Read APIs](/llms/cookbook/examples/D04_AgentSessions/session_runtime_read_apis.md)
+- [Session SendMessage Action](/llms/cookbook/examples/D04_AgentSessions/session_send_message_action.md)
+- [Session Fork Action](/llms/cookbook/examples/D04_AgentSessions/session_fork_action.md)
+- [Session Conflict Handling](/llms/cookbook/examples/D04_AgentSessions/session_conflict_handling.md)
+- [Session Runtime Hooks](/llms/cookbook/examples/D04_AgentSessions/session_runtime_hooks.md)
+
+### D10_AgentCtrl
+
+- [Basic Agent Control Usage](/llms/cookbook/examples/D10_AgentCtrl/agent_ctrl_basic.md)
+- [Agent Control Events & Monitoring](/llms/cookbook/examples/D10_AgentCtrl/agent_ctrl_events.md)
+- [Agent Control Streaming](/llms/cookbook/examples/D10_AgentCtrl/agent_ctrl_streaming.md)
+- [Agent Control Runtime Switching](/llms/cookbook/examples/D10_AgentCtrl/agent_ctrl_switching.md)
+- [Claude Code CLI - Basic](/llms/cookbook/examples/D10_AgentCtrl/claude_code_basic.md)
+- [Claude Code CLI - Agentic Search](/llms/cookbook/examples/D10_AgentCtrl/claude_code_search.md)
+- [OpenAI Codex CLI - Basic](/llms/cookbook/examples/D10_AgentCtrl/codex_basic.md)
+- [OpenAI Codex CLI - Streaming](/llms/cookbook/examples/D10_AgentCtrl/codex_streaming.md)
+- [Gemini CLI - Basic](/llms/cookbook/examples/D10_AgentCtrl/gemini_basic.md)
+- [Gemini CLI - Streaming](/llms/cookbook/examples/D10_AgentCtrl/gemini_streaming.md)
+- [OpenCode CLI - Basic](/llms/cookbook/examples/D10_AgentCtrl/opencode_basic.md)
+- [OpenCode CLI - Streaming](/llms/cookbook/examples/D10_AgentCtrl/opencode_streaming.md)
+- [Pi CLI - Basic](/llms/cookbook/examples/D10_AgentCtrl/pi_basic.md)
+- [Pi CLI - Streaming](/llms/cookbook/examples/D10_AgentCtrl/pi_streaming.md)
+
+### D20_Sandbox
+
+- [Sandbox: Host ls -Al](/llms/cookbook/examples/D20_Sandbox/sandbox_host_ls.md)
+- [Sandbox: Run PHP Script](/llms/cookbook/examples/D20_Sandbox/sandbox_run_php_script.md)
+- [Sandbox: Streaming Output](/llms/cookbook/examples/D20_Sandbox/sandbox_streaming_output.md)
+- [Sandbox: Timeout Guard](/llms/cookbook/examples/D20_Sandbox/sandbox_timeout_guard.md)
+
+### D21_SandboxAPIs
+
+- [Sandbox API: Bubblewrap](/llms/cookbook/examples/D21_SandboxAPIs/sandbox_api_bubblewrap_echo.md)
+- [Sandbox API: Docker](/llms/cookbook/examples/D21_SandboxAPIs/sandbox_api_docker_echo.md)
+- [Sandbox API: Firejail](/llms/cookbook/examples/D21_SandboxAPIs/sandbox_api_firejail_echo.md)
+- [Sandbox API: Host](/llms/cookbook/examples/D21_SandboxAPIs/sandbox_api_host_echo.md)
+- [Sandbox API: Podman](/llms/cookbook/examples/D21_SandboxAPIs/sandbox_api_podman_echo.md)
+
+### Z01_ZeroShot
+
+- [Assign a Role](/llms/cookbook/examples/Z01_ZeroShot/assign_role.md)
+- [Auto-Refine The Prompt](/llms/cookbook/examples/Z01_ZeroShot/auto_refine.md)
+- [Clarify Ambiguous Information](/llms/cookbook/examples/Z01_ZeroShot/clarify_ambiguity.md)
+- [Define Style](/llms/cookbook/examples/Z01_ZeroShot/define_style.md)
+- [Emotional Stimuli](/llms/cookbook/examples/Z01_ZeroShot/emotional_stimuli.md)
+- [Generate Follow-Up Questions](/llms/cookbook/examples/Z01_ZeroShot/follow_up_questions.md)
+- [Ask Model to Repeat the Query](/llms/cookbook/examples/Z01_ZeroShot/repeat_query.md)
+- [Simulate a Perspective](/llms/cookbook/examples/Z01_ZeroShot/simulate_perspective.md)
+
+### Z02_FewShot
+
+- [Consistency Based Self Adaptive Prompting (COSP)](/llms/cookbook/examples/Z02_FewShot/consistency_based_examples.md)
+- [Example Ordering](/llms/cookbook/examples/Z02_FewShot/example_ordering.md)
+- [Generate In-Context Examples](/llms/cookbook/examples/Z02_FewShot/in_context_examples.md)
+- [Select Effective Examples](/llms/cookbook/examples/Z02_FewShot/select_effective_samples.md)
+
+### Z03_ThoughtGen
+
+- [Analogical Prompting](/llms/cookbook/examples/Z03_ThoughtGen/analogical_prompting.md)
+- [Automate Example Selection](/llms/cookbook/examples/Z03_ThoughtGen/automate_selection.md)
+- [Prioritize Complex Examples](/llms/cookbook/examples/Z03_ThoughtGen/complex_examples.md)
+- [Examine The Context](/llms/cookbook/examples/Z03_ThoughtGen/examine_context.md)
+- [Consider Higher-Level Context](/llms/cookbook/examples/Z03_ThoughtGen/higher_level_context.md)
+- [Include Incorrect Examples](/llms/cookbook/examples/Z03_ThoughtGen/incorrect_examples.md)
+- [Use Majority Voting](/llms/cookbook/examples/Z03_ThoughtGen/majority_voting.md)
+- [Generate Prompt Variations](/llms/cookbook/examples/Z03_ThoughtGen/prompt_variations.md)
+- [Structure The Reasoning](/llms/cookbook/examples/Z03_ThoughtGen/structure_reasoning.md)
+- [Prioritize Uncertain Examples](/llms/cookbook/examples/Z03_ThoughtGen/uncertain_examples.md)
+
+### Z04_Ensembling
+
+- [Combine Multiple Reasoning Chains](/llms/cookbook/examples/Z04_Ensembling/combine_reasoning_chains.md)
+- [Use LLMs to Combine Different Responses](/llms/cookbook/examples/Z04_Ensembling/combine_responses.md)
+- [Combine Different Specialized LLMs](/llms/cookbook/examples/Z04_Ensembling/combine_specialized_llms.md)
+- [Prioritize Consistent Examples](/llms/cookbook/examples/Z04_Ensembling/consistent_examples.md)
+- [Use Distinct Example Subsets](/llms/cookbook/examples/Z04_Ensembling/distinct_examples.md)
+- [Use Ensembles To Test Prompts](/llms/cookbook/examples/Z04_Ensembling/ensemble_test_prompts.md)
+- [Generate Multiple Candidate Responses](/llms/cookbook/examples/Z04_Ensembling/multiple_candidates.md)
+- [Use Task Specific Evaluation Metrics](/llms/cookbook/examples/Z04_Ensembling/task_specific_evals.md)
+- [Use Translation for Paraphrasing](/llms/cookbook/examples/Z04_Ensembling/translation_paraphrasing.md)
+- [Verify Responses over Majority Voting](/llms/cookbook/examples/Z04_Ensembling/verify_majority_voting.md)
+
+### Z05_SelfCriticism
+
+- [Break Down Reasoning Into Multiple Steps](/llms/cookbook/examples/Z05_SelfCriticism/break_down_reasoning.md)
+- [Determine Uncertainty of Reasoning Chain](/llms/cookbook/examples/Z05_SelfCriticism/determine_uncertainty.md)
+- [Improve With Feedback](/llms/cookbook/examples/Z05_SelfCriticism/improve_with_feedback.md)
+- [Reconstruct Prompt from Reasoning Steps](/llms/cookbook/examples/Z05_SelfCriticism/reconstruct_prompt.md)
+- [Self-Verify Responses](/llms/cookbook/examples/Z05_SelfCriticism/self_verify.md)
+- [Independently Verify Responses](/llms/cookbook/examples/Z05_SelfCriticism/verify_independently.md)
+
+### Z06_Decomposition
+
+- [Break Down Complex Tasks](/llms/cookbook/examples/Z06_Decomposition/break_down_complexity.md)
+- [Ditch Vanilla Chain Of Thought](/llms/cookbook/examples/Z06_Decomposition/ditch_vanilla_cot.md)
+- [Generate Code for Intermediate Steps](/llms/cookbook/examples/Z06_Decomposition/generate_code.md)
+- [Generate in Parallel](/llms/cookbook/examples/Z06_Decomposition/generate_in_parallel.md)
+- [Solve Simpler Subproblems](/llms/cookbook/examples/Z06_Decomposition/solve_simpler_subtasks.md)
+- [Leverage Task Specific Systems](/llms/cookbook/examples/Z06_Decomposition/task_specific_systems.md)
+
+### Z07_Misc
+
+- [Arbitrary properties](/llms/cookbook/examples/Z07_Misc/arbitrary_properties.md)
+- [Consistent values of arbitrary properties](/llms/cookbook/examples/Z07_Misc/arbitrary_properties_consistent.md)
+- [Chain of Summaries](/llms/cookbook/examples/Z07_Misc/chain_of_summaries.md)
+- [Chain of Thought](/llms/cookbook/examples/Z07_Misc/chain_of_thought.md)
+- [Single label classification](/llms/cookbook/examples/Z07_Misc/classification.md)
+- [Multiclass classification](/llms/cookbook/examples/Z07_Misc/classification_multiclass.md)
+- [Entity relationship extraction](/llms/cookbook/examples/Z07_Misc/entity_relationships.md)
+- [Handling errors](/llms/cookbook/examples/Z07_Misc/handling_errors.md)
+- [Limiting the length of lists](/llms/cookbook/examples/Z07_Misc/limiting_lists.md)
+- [Reflection Prompting](/llms/cookbook/examples/Z07_Misc/reflection_prompting.md)
+- [Restating instructions](/llms/cookbook/examples/Z07_Misc/restate_instructions.md)
+- [Ask LLM to rewrite instructions](/llms/cookbook/examples/Z07_Misc/rewrite_instructions.md)
+- [Expanding search queries](/llms/cookbook/examples/Z07_Misc/search_query_expansion.md)
+- [Summary with Keywords](/llms/cookbook/examples/Z07_Misc/summary_with_keywords.md)
+- [Reusing components](/llms/cookbook/examples/Z07_Misc/component_reuse.md)
+- [Using CoT to improve interpretation of component data](/llms/cookbook/examples/Z07_Misc/component_reuse_cot.md)
+
+## Cheatsheets
+
+- [Overview](/llms/cheatsheets/index.md)
+- [Instructor](/llms/cheatsheets/instructor.md)
+- [Polyglot](/llms/cheatsheets/polyglot.md)
+- [Agents](/llms/cheatsheets/agents.md)
+- [AgentCtrl](/llms/cheatsheets/agent-ctrl.md)
+- [Sandbox](/llms/cheatsheets/sandbox.md)
+- [HTTP Client](/llms/cheatsheets/http-client.md)
+- [Laravel](/llms/cheatsheets/laravel.md)
+- [Config](/llms/cheatsheets/config.md)
+- [Dynamic](/llms/cheatsheets/dynamic.md)
+- [Events](/llms/cheatsheets/events.md)
+- [Logging](/llms/cheatsheets/logging.md)
+- [Messages](/llms/cheatsheets/messages.md)
+- [Metrics](/llms/cheatsheets/metrics.md)
+- [Pipeline](/llms/cheatsheets/pipeline.md)
+- [Schema](/llms/cheatsheets/schema.md)
+- [Setup](/llms/cheatsheets/setup.md)
+- [Stream](/llms/cheatsheets/stream.md)
+- [Templates](/llms/cheatsheets/templates.md)
+- [Utils](/llms/cheatsheets/utils.md)
+- [Xprompt](/llms/cheatsheets/xprompt.md)
+

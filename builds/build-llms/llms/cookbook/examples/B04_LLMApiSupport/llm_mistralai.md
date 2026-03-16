@@ -1,0 +1,42 @@
+---
+title: 'Mistral AI'
+docname: 'llm_mistralai'
+id: '23fa'
+---
+## Overview
+
+Mistral.ai is a company that builds OS language models, but also offers a platform
+hosting those models. You can use Instructor with Mistral API by configuring the
+client as demonstrated below.
+
+Please note that the larger Mistral models support native JSON object response_format, which is much more
+reliable than Instructor markdown-JSON fallback.
+
+Inference feature compatibility:
+ - tool calling - supported (Mistral-Small / Mistral-Medium / Mistral-Large)
+ - native JSON object response_format - recommended (Mistral-Small / Mistral-Medium / Mistral-Large)
+ - Instructor markdown-JSON fallback - fallback mode (Mistral 7B / Mixtral 8x7B)
+
+## Example
+
+```php
+<?php
+
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Utils\Str;
+
+require 'examples/boot.php';
+
+$answer = Inference::using('mistral')
+    ->with(
+        messages: Messages::fromString('What is the capital of France'),
+        options: ['max_tokens' => 256]
+    )
+    ->get();
+
+echo "USER: What is capital of France\n";
+echo "ASSISTANT: $answer\n";
+assert(Str::contains($answer, 'Paris'));
+?>
+```

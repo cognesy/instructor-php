@@ -2,6 +2,7 @@
 
 namespace Cognesy\Agents\Session;
 
+use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Session\Collections\SessionInfoList;
 use Cognesy\Agents\Session\Contracts\CanControlAgentSession;
 use Cognesy\Agents\Session\Contracts\CanExecuteSessionAction;
@@ -15,19 +16,42 @@ use Cognesy\Agents\Session\Events\SessionLoaded;
 use Cognesy\Agents\Session\Events\SessionLoadFailed;
 use Cognesy\Agents\Session\Events\SessionSaved;
 use Cognesy\Agents\Session\Events\SessionSaveFailed;
+use Cognesy\Agents\Template\Data\AgentDefinition;
+use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Throwable;
 
 final readonly class SessionRuntime implements CanManageAgentSessions
 {
     private CanControlAgentSession $sessionController;
+    private SessionFactory $sessionFactory;
 
     public function __construct(
         private SessionRepository $sessions,
         private CanHandleEvents $events,
         ?CanControlAgentSession $sessionController = null,
+        ?SessionFactory $sessionFactory = null,
     ) {
         $this->sessionController = $sessionController ?? PassThroughSessionController::default();
+        $this->sessionFactory = $sessionFactory ?? new SessionFactory(new DefinitionStateFactory());
+    }
+
+    #[\Override]
+    public function create(AgentDefinition $definition, ?AgentState $seed = null): AgentSession {
+        $session = $this->sessionFactory->create($definition, $seed);
+        $session = $this->onStage(AgentSessionStage::BeforeCreate, $session);
+        $session = $this->onStage(AgentSessionStage::BeforeSave, $session);
+
+        try {
+            $saved = $this->sessions->create($session);
+            $saved = $this->onStage(AgentSessionStage::AfterSave, $saved);
+            $saved = $this->onStage(AgentSessionStage::AfterCreate, $saved);
+            $this->emitSave($saved);
+            return $saved;
+        } catch (Throwable $error) {
+            $this->emitSaveFailed($session->sessionId()->value, $error);
+            throw $error;
+        }
     }
 
     #[\Override]

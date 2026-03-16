@@ -20,25 +20,31 @@ Understanding where files are generated is important:
 
 | Command | Output Location | Purpose |
 |---------|-----------------|---------|
-| `gen:llms` | `docs-mkdocs/` | Local generation |
-| `gen:llms --deploy` | `docs-mkdocs/` + website | Local + deploy to website |
-| `gen:mkdocs --with-llms` | `docs-mkdocs/` | Generate MkDocs then LLM docs |
+| `gen:llms` | `builds/build-llms/` | Local generation |
+| `gen:llms --deploy` | `builds/build-llms/` + website | Local + deploy to website |
+| `gen:mkdocs --with-llms` | `builds/build-llms/` | Generate MkDocs then LLM docs |
 
 ### Directory Structure
 
 ```
 instructor-php/
-├── docs-mkdocs/              # MkDocs output (source for LLM docs)
-│   ├── llms.txt              # Generated here by gen:llms
-│   ├── llms-full.txt         # Generated here by gen:llms
+├── builds/docs-mkdocs/       # MkDocs output (source for LLM docs)
 │   ├── index.md
 │   ├── packages/
 │   └── cookbook/
 │
+├── builds/build-llms/        # LLM artifact output
+│   ├── llms.txt              # Generated here by gen:llms
+│   ├── llms-full.txt         # Generated here by gen:llms
+│   └── llms/                 # Markdown and assets referenced by llms.txt
+│       ├── index.md
+│       ├── packages/
+│       ├── cookbook/
+│       └── images/
 └── ../instructor-www/public/  # Website (deployment target)
     ├── llms.txt              # Deployed here with --deploy
     ├── llms-full.txt         # Deployed here with --deploy
-    └── docs/                 # Full docs deployed here
+    └── llms/                 # Linked markdown and assets deployed here
 ```
 
 ## Commands
@@ -46,7 +52,7 @@ instructor-php/
 ### Basic Generation
 
 ```bash
-# Generate LLM docs to docs-mkdocs/
+# Generate LLM docs to builds/build-llms/
 composer docs gen:llms
 
 # Generate only the index file
@@ -69,11 +75,11 @@ composer docs gen:llms --deploy --target=/path/to/website/public
 ### Combined with MkDocs
 
 ```bash
-# Generate MkDocs first, then LLM docs (to docs-mkdocs/)
+# Generate MkDocs first, then LLM docs (to builds/build-llms/)
 composer docs gen:mkdocs --with-llms
 ```
 
-**Note:** `--with-llms` does NOT deploy to the website. It only generates files in `docs-mkdocs/`.
+**Note:** `--with-llms` does NOT deploy to the website. It only generates files in `builds/build-llms/`.
 
 ## Typical Workflows
 
@@ -83,8 +89,8 @@ composer docs gen:mkdocs --with-llms
 # Regenerate MkDocs and LLM docs
 composer docs gen:mkdocs --with-llms
 
-# Files are now in docs-mkdocs/
-ls docs-mkdocs/llms*.txt
+# Files are now in builds/build-llms/
+ls builds/build-llms/llms*.txt
 ```
 
 ### Production: Generate and Deploy
@@ -118,16 +124,16 @@ A markdown index file with links to all documentation:
 > Structured data extraction in PHP, powered by LLMs.
 
 ## Main
-- [Overview](index.md)
-- [Getting Started](getting-started.md)
-- [Features](features.md)
+- [Overview](/llms/index.md)
+- [Getting Started](/llms/getting-started.md)
+- [Features](/llms/features.md)
 
 ## Packages
-- [Overview](packages/index.md)
+- [Overview](/llms/packages/index.md)
 
 ### Instructor
-- [Introduction](packages/instructor/introduction.md)
-- [Quickstart](packages/instructor/quickstart.md)
+- [Introduction](/llms/packages/instructor/introduction.md)
+- [Quickstart](/llms/packages/instructor/quickstart.md)
 ...
 
 ## Cookbook
@@ -178,6 +184,15 @@ llms:
   # Enable/disable generation
   enabled: true
 
+  # Output directory for generated artifacts
+  target: './builds/build-llms'
+
+  # Prefix used in llms.txt links
+  link_prefix: '/llms'
+
+  # Subdirectory that holds linked markdown and assets
+  content_dir: 'llms'
+
   # Output filenames
   index_file: 'llms.txt'
   full_file: 'llms-full.txt'
@@ -193,8 +208,8 @@ llms:
   deploy:
     # Target directory (relative to project root)
     target: '../instructor-www/public'
-    # Subfolder for markdown files (llms.txt goes to target root)
-    docs_folder: 'docs'
+    # Subfolder for linked markdown files and assets
+    docs_folder: 'llms'
 ```
 
 ### Configuration Options
@@ -202,12 +217,15 @@ llms:
 | Option | Default | Description |
 |--------|---------|-------------|
 | `enabled` | `true` | Enable/disable LLM docs generation |
+| `target` | `./builds/build-llms` | Output directory for generated LLM artifacts |
+| `link_prefix` | `/llms` | Prefix added to links in `llms.txt` |
+| `content_dir` | `llms` | Subdirectory in the build target for linked markdown and assets |
 | `index_file` | `llms.txt` | Filename for the index |
 | `full_file` | `llms-full.txt` | Filename for concatenated docs |
 | `project_description` | (see config) | Description in file headers |
 | `exclude_sections` | `['release-notes/']` | Patterns to exclude from full file |
 | `deploy.target` | `''` | Deployment target directory |
-| `deploy.docs_folder` | `docs` | Subfolder for markdown files |
+| `deploy.docs_folder` | `llms` | Subfolder for linked markdown and assets |
 
 ## Deployment Details
 
@@ -217,7 +235,7 @@ When using `--deploy`, files are copied to the website:
 instructor-www/public/          # deploy.target
 ├── llms.txt                    # → https://instructorphp.com/llms.txt
 ├── llms-full.txt               # → https://instructorphp.com/llms-full.txt
-└── docs/                       # deploy.docs_folder
+└── llms/                       # deploy.docs_folder
     ├── index.md
     ├── getting-started.md
     ├── packages/
@@ -228,7 +246,7 @@ instructor-www/public/          # deploy.target
 
 The deployment:
 1. Copies `llms.txt` and `llms-full.txt` to the target root
-2. Copies all markdown files to `docs/` subfolder
+2. Copies linked markdown files and assets to `llms/` subfolder
 3. Preserves directory structure
 
 ## API
