@@ -26,7 +26,7 @@ $person = (new StructuredOutput)
 
 echo $person->name; // Jason
 echo $person->age;  // 28
-// @doctest id="36e8"
+// @doctest id="0c8e"
 ```
 
 > By default, Instructor looks for the `OPENAI_API_KEY` environment variable. You can also
@@ -49,7 +49,7 @@ $person = (new StructuredOutput)
         model: 'gpt-4o',
     )
     ->get();
-// @doctest id="c42c"
+// @doctest id="52ab"
 ```
 
 When you prefer a more explicit, step-by-step style, use the fluent API:
@@ -62,7 +62,7 @@ $person = (new StructuredOutput)
     ->withPrompt('Identify the person mentioned.')
     ->withModel('gpt-4o')
     ->get();
-// @doctest id="9952"
+// @doctest id="b817"
 ```
 
 Both approaches produce identical requests. Use whichever reads better in your code.
@@ -100,7 +100,7 @@ the `Scalar` adapter):
 $person = (new StructuredOutput)
     ->with(messages: 'Jason is 28 years old.', responseModel: Person::class)
     ->get();
-// @doctest id="8966"
+// @doctest id="02e5"
 ```
 
 ### `response()` - The Full Response Envelope
@@ -115,7 +115,7 @@ $response = (new StructuredOutput)
 
 $person = $response->value();
 $usage  = $response->usage();
-// @doctest id="8166"
+// @doctest id="92dd"
 ```
 
 ### `inferenceResponse()` - The Underlying Inference Response
@@ -127,7 +127,7 @@ direct access to HTTP response data or provider-specific details:
 $raw = (new StructuredOutput)
     ->with(messages: 'Jason is 28 years old.', responseModel: Person::class)
     ->inferenceResponse();
-// @doctest id="a6c4"
+// @doctest id="fbd7"
 ```
 
 ### `stream()` - Streaming Partial Results
@@ -145,7 +145,7 @@ foreach ($stream->partials() as $partial) {
 }
 
 $person = $stream->lastUpdate();
-// @doctest id="79d6"
+// @doctest id="5c39"
 ```
 
 ### `create()` - Lazy Execution
@@ -160,7 +160,7 @@ $pending = (new StructuredOutput)
 
 // execution happens here
 $person = $pending->get();
-// @doctest id="6527"
+// @doctest id="f9e2"
 ```
 
 `PendingStructuredOutput` exposes the same reading methods as `StructuredOutput` plus
@@ -186,7 +186,7 @@ you can skip `get()` and call a typed accessor directly:
 $age = (new StructuredOutput)
     ->with(messages: 'Jason is 28.', responseModel: Scalar::integer('age'))
     ->getInt();
-// @doctest id="0dbd"
+// @doctest id="bb2d"
 ```
 
 Available typed methods: `getString()`, `getInt()`, `getFloat()`, `getBoolean()`,
@@ -202,7 +202,7 @@ user message automatically:
 $person = (new StructuredOutput)
     ->with(messages: 'Jason is 28 years old.', responseModel: Person::class)
     ->get();
-// @doctest id="3be9"
+// @doctest id="0c0f"
 ```
 
 This is equivalent to passing `[['role' => 'user', 'content' => 'Jason is 28 years old.']]`.
@@ -235,7 +235,7 @@ $translated = (new StructuredOutput)
         prompt: 'Translate the text fields to Spanish. Keep other fields unchanged.',
     )
     ->get();
-// @doctest id="246f"
+// @doctest id="97d1"
 ```
 
 
@@ -259,7 +259,7 @@ $dto = (new StructuredOutput)
     ->intoInstanceOf(UserDTO::class)
     ->with(messages: 'Extract user data')
     ->get();
-// @doctest id="8f2b"
+// @doctest id="1ff1"
 ```
 
 Three output format methods are available:
@@ -289,7 +289,7 @@ $person = (new StructuredOutput)
     ->withRuntime($runtime)
     ->with(messages: 'Jason is 28 years old.', responseModel: Person::class)
     ->get();
-// @doctest id="d9c3"
+// @doctest id="2f54"
 ```
 
 The runtime holds settings like retries, output mode, validators, transformers, and
@@ -301,7 +301,7 @@ You can also use the static shorthand to pick a provider without building a full
 $person = StructuredOutput::using('anthropic')
     ->with(messages: 'Jason is 28 years old.', responseModel: Person::class)
     ->get();
-// @doctest id="50e2"
+// @doctest id="bbe4"
 ```
 
 
@@ -322,7 +322,7 @@ foreach ($stream->partials() as $partialPerson) {
 
 // After the stream completes, retrieve the final validated object
 $person = $stream->lastUpdate();
-// @doctest id="c100"
+// @doctest id="1fa1"
 ```
 
 The `StructuredOutputStream` provides several iteration methods:

@@ -26,7 +26,7 @@ $driver = FakeAgentDriver::fromResponses(
     'First execution result',
     'Second execution result',
 );
-// @doctest id="3954"
+// @doctest id="6988"
 ```
 
 When all scripted steps are exhausted, the driver replays the last step indefinitely. This is useful for agents that may be executed multiple times against the same driver instance.
@@ -43,7 +43,7 @@ $driver = FakeAgentDriver::fromSteps(
     ScenarioStep::toolCall('search', ['query' => 'php'], 'Results found'),
     ScenarioStep::final('Based on the search, here is the answer.'),
 );
-// @doctest id="f33a"
+// @doctest id="fffd"
 ```
 
 In this example, the first iteration produces a tool call step (the loop continues), and the second iteration produces a final response (the loop stops).
@@ -58,7 +58,7 @@ Produces a `FinalResponse` step. The agent loop recognizes this as a terminal re
 
 ```php
 ScenarioStep::final('The answer is 42.');
-// @doctest id="dbe3"
+// @doctest id="06da"
 ```
 
 ### `ScenarioStep::tool()`
@@ -67,7 +67,7 @@ Produces a `ToolExecution` step type **without** attaching any tool calls. This 
 
 ```php
 ScenarioStep::tool('Thinking about the problem...');
-// @doctest id="702c"
+// @doctest id="bc8a"
 ```
 
 > **Note:** Because no tool calls are attached, this step will not trigger the `ToolExecutor`. If you need actual tool execution, use `ScenarioStep::toolCall()` instead.
@@ -78,7 +78,7 @@ Produces an `Error` step. The step is created with a `RuntimeException` attached
 
 ```php
 ScenarioStep::error('Something went wrong');
-// @doctest id="81c3"
+// @doctest id="b6f9"
 ```
 
 ### `ScenarioStep::toolCall()`
@@ -92,7 +92,7 @@ ScenarioStep::toolCall(
     response: '',               // Optional LLM text alongside the tool call
     executeTools: true,          // Whether to actually run the tool (default: true)
 );
-// @doctest id="c0b6"
+// @doctest id="471f"
 ```
 
 When `executeTools` is `true`, the tool call is forwarded to the `ToolExecutor`, which resolves the tool from the `Tools` collection and invokes it. Set it to `false` to skip execution entirely -- useful when you only need to verify that the correct tool call was produced.
@@ -106,7 +106,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 
 ScenarioStep::final('Done.', usage: new InferenceUsage(inputTokens: 100, outputTokens: 50));
 ScenarioStep::toolCall('search', ['q' => 'test'], usage: new InferenceUsage(200, 80));
-// @doctest id="4f0a"
+// @doctest id="5cbf"
 ```
 
 ## FakeTool
@@ -121,7 +121,7 @@ The simplest mock returns the same value regardless of the arguments passed:
 use Cognesy\Agents\Tool\Tools\FakeTool;
 
 $tool = FakeTool::returning('search', 'Search the web', 'PHP is great');
-// @doctest id="ba0d"
+// @doctest id="ff8f"
 ```
 
 The three arguments are: tool name, description (used in the tool schema), and the fixed return value.
@@ -136,7 +136,7 @@ $tool = new FakeTool(
     description: 'Format a string',
     handler: fn(string $text) => strtoupper($text),
 );
-// @doctest id="ba06"
+// @doctest id="49fa"
 ```
 
 The callable is invoked with the same arguments the LLM would pass via the tool call. The return value is wrapped in a `Result::from()` automatically.
@@ -166,7 +166,7 @@ $tool = new FakeTool(
         ],
     ],
 );
-// @doctest id="edd1"
+// @doctest id="eaaf"
 ```
 
 ## Full Test Example
@@ -208,7 +208,7 @@ it('executes tools and produces final response', function () {
     expect($result->finalResponse()->toString())->toContain('PHP');
     expect($result->hasErrors())->toBeFalse();
 });
-// @doctest id="df7b"
+// @doctest id="5638"
 ```
 
 ## Using `iterate()` for Step-Level Testing
@@ -229,7 +229,7 @@ expect($steps[0]->lastStepType())->toBe(AgentStepType::ToolExecution);
 // The second yielded state is after the final-response step
 expect($steps[1]->lastStepType())->toBe(AgentStepType::FinalResponse);
 expect($steps[1]->status())->toBe(ExecutionStatus::Completed);
-// @doctest id="bff1"
+// @doctest id="c6c3"
 ```
 
 > **Tip:** The final state yielded by `iterate()` includes the `withExecutionCompleted()` transition, so you can also assert on `ExecutionStatus` and total usage.
@@ -261,7 +261,7 @@ it('handles tool errors without crashing', function () {
     // The tool error is recorded but the agent continues to the final response
     expect($result->hasFinalResponse())->toBeTrue();
 });
-// @doctest id="0e0f"
+// @doctest id="03e9"
 ```
 
 ## Testing Subagent Scenarios
@@ -275,7 +275,7 @@ $driver = FakeAgentDriver::fromSteps(
 )->withChildSteps([
     ScenarioStep::final('Subagent result: found 42 papers.'),
 ]);
-// @doctest id="6c12"
+// @doctest id="7641"
 ```
 
 If no child steps are provided, subagent drivers default to a single `ScenarioStep::final('ok')`.
@@ -300,7 +300,7 @@ $loop->onEvent(AgentStepCompleted::class, function (AgentStepCompleted $event) u
 $result = $loop->execute($state);
 
 expect($stepsCompleted)->toHaveCount(2);
-// @doctest id="b7e4"
+// @doctest id="7fc2"
 ```
 
 ## Summary

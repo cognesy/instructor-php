@@ -49,7 +49,7 @@ AgentState (final readonly)
           |-- inferenceResponse: InferenceResponse
           |-- toolExecutions: ToolExecutions
           |-- errors: ErrorList
-// @doctest id="2105"
+// @doctest id="739a"
 ```
 
 ### Session Data (Persists Across Executions)
@@ -92,7 +92,7 @@ Pending/null --> InProgress  (onBeforeExecution)
 InProgress   --> Completed   (all steps done, no errors)
 InProgress   --> Stopped     (force-stopped by guard or stop signal)
 InProgress   --> Failed      (exception caught or errors accumulated)
-// @doctest id="c20e"
+// @doctest id="dd95"
 ```
 
 ## AgentStep Internals
@@ -109,7 +109,7 @@ final readonly class AgentStep
     private ToolExecutions $toolExecutions;         // Tool execution results
     private ErrorList $errors;            // Accumulated errors
 }
-// @doctest id="da67"
+// @doctest id="83be"
 ```
 
 The step type is **derived**, not stored. `AgentStep::stepType()` inspects the step's contents to determine its type:
@@ -133,7 +133,7 @@ final readonly class StepExecution
     private DateTimeImmutable $startedAt;
     private DateTimeImmutable $completedAt;
 }
-// @doctest id="e4b1"
+// @doctest id="39f5"
 ```
 
 This separation keeps `AgentStep` focused on what happened (messages, tools, errors) while `StepExecution` owns when it happened and whether the loop should continue.
@@ -162,7 +162,7 @@ $state->createdAt();                  // DateTimeImmutable
 $state->updatedAt();                  // DateTimeImmutable -- bumped on every mutation
 $state->executionCount();             // int -- how many times the agent has been executed
 $state->executionDuration();          // ?float -- seconds elapsed in current execution
-// @doctest id="2aea"
+// @doctest id="dc51"
 ```
 
 ### Context
@@ -172,7 +172,7 @@ $state->messages();                   // Messages -- compiled message list
 $state->store();                      // MessageStore -- raw message storage
 $state->metadata();                   // Metadata -- arbitrary key-value pairs
 $state->context()->systemPrompt();    // string -- the system prompt
-// @doctest id="d0c7"
+// @doctest id="1c19"
 ```
 
 ### Execution State
@@ -189,7 +189,7 @@ $state->lastStopReason();            // ?StopReason -- why the last step stopped
 $state->usage();                      // InferenceUsage -- accumulated token usage
 $state->hasErrors();                  // ?bool -- whether any errors occurred
 $state->errors();                     // ErrorList -- all accumulated errors
-// @doctest id="9115"
+// @doctest id="405b"
 ```
 
 ### Final Output
@@ -198,7 +198,7 @@ $state->errors();                     // ErrorList -- all accumulated errors
 $state->hasFinalResponse();           // bool -- true if the last step is a FinalResponse
 $state->finalResponse()->toString();  // string -- the final response text
 $state->currentResponse();            // Messages -- final response or latest step output
-// @doctest id="5fc4"
+// @doctest id="cf75"
 ```
 
 ## Continuation and Stop Signals
@@ -215,7 +215,7 @@ public function shouldStop(): bool {
         default => true,                             // No tool calls, no continuation -- stop
     };
 }
-// @doctest id="114e"
+// @doctest id="b095"
 ```
 
 Stop signals carry a `StopReason` enum with prioritized cases:
@@ -249,7 +249,7 @@ $budget = new ExecutionBudget(
     maxCost: 0.50,         // Maximum cost in dollars
     deadline: new DateTimeImmutable('2025-12-31 23:59:59'),  // Absolute deadline
 );
-// @doctest id="9cc3"
+// @doctest id="5e55"
 ```
 
 All limits are optional -- pass `null` (or omit) for unlimited. You can check whether a budget has any limits set with `isEmpty()`, or whether all limits have been exhausted with `isExhausted()`.
@@ -259,7 +259,7 @@ The `ExecutionBudget::unlimited()` factory returns a budget with all limits set 
 ```php
 $unlimited = ExecutionBudget::unlimited();
 assert($unlimited->isEmpty() === true);
-// @doctest id="0f13"
+// @doctest id="a363"
 ```
 
 Each subagent receives its own declared budget. Recursion depth is controlled separately via `SubagentPolicy` (`maxDepth`), not through the budget.
@@ -281,7 +281,7 @@ $info = $state->debug();
 //     'errors' => ErrorList::empty(),
 //     'usage' => ['inputTokens' => 150, 'outputTokens' => 42, ...],
 // ]
-// @doctest id="43ac"
+// @doctest id="5096"
 ```
 
 ## Serialization
@@ -299,7 +299,7 @@ $restored = AgentState::fromArray($data);
 expect($restored->agentId()->toString())->toBe($state->agentId()->toString());
 expect($restored->stepCount())->toBe($state->stepCount());
 expect($restored->status())->toBe($state->status());
-// @doctest id="1e0d"
+// @doctest id="80a7"
 ```
 
 This is the foundation for session persistence. The `SessionStore` implementations use `toArray()` / `fromArray()` to save and restore agent state between requests or across process boundaries.
@@ -327,5 +327,5 @@ $state->withCurrentStep($step);   // internally calls ensureExecution() again --
 
 // CORRECT -- chain mutations on the same state
 $state = $state->withCurrentStep($step)->withStopSignal($signal);
-// @doctest id="9a11"
+// @doctest id="c6a4"
 ```

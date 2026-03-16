@@ -43,7 +43,7 @@ $client = HttpClient::fromConfig(new HttpClientConfig(driver: 'symfony'));
 
 // Use cURL (default)
 $client = HttpClient::fromConfig(new HttpClientConfig(driver: 'curl'));
-// @doctest id="647d"
+// @doctest id="39a8"
 ```
 
 ### Via the Builder
@@ -57,7 +57,7 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 $client = (new HttpClientBuilder())
     ->withConfig(new HttpClientConfig(driver: 'guzzle'))
     ->create();
-// @doctest id="74a4"
+// @doctest id="cab9"
 ```
 
 ### Injecting a Driver Directly
@@ -70,7 +70,7 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 $client = (new HttpClientBuilder())
     ->withDriver($myCustomDriver)
     ->create();
-// @doctest id="b859"
+// @doctest id="94c0"
 ```
 
 Or use the static shorthand:
@@ -79,7 +79,7 @@ Or use the static shorthand:
 use Cognesy\Http\HttpClient;
 
 $client = HttpClient::fromDriver($myCustomDriver);
-// @doctest id="492a"
+// @doctest id="61a9"
 ```
 
 ## Reusing a Vendor Client Instance
@@ -98,7 +98,7 @@ $guzzle = new Client([
 $client = (new HttpClientBuilder())
     ->withClientInstance('guzzle', $guzzle)
     ->create();
-// @doctest id="8d62"
+// @doctest id="080f"
 ```
 
 The `withClientInstance()` method selects the driver by name and passes your vendor client to it, so the driver uses your instance instead of creating its own.
@@ -111,7 +111,7 @@ use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
 $client = (new HttpClientBuilder())
     ->withClientInstance('symfony', SymfonyHttpClient::create(['timeout' => 30]))
     ->create();
-// @doctest id="bb11"
+// @doctest id="2532"
 ```
 
 ## Using the Mock Driver
@@ -131,7 +131,7 @@ $client = (new HttpClientBuilder())
         );
     })
     ->create();
-// @doctest id="f0b4"
+// @doctest id="f894"
 ```
 
 ## Request Code Stays the Same
@@ -148,7 +148,7 @@ $response = $client->send(new HttpRequest(
 ))->get();
 
 echo $response->body();
-// @doctest id="57d2"
+// @doctest id="9e2a"
 ```
 
 This code works identically with cURL, Guzzle, Symfony, or the mock driver.

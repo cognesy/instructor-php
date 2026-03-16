@@ -20,7 +20,7 @@ class Persona extends Prompt
 
 echo Persona::with(role: 'security');
 // "You are a security expert."
-// @doctest id="a9ea"
+// @doctest id="ddd1"
 ```
 
 ## Why Classes?
@@ -47,7 +47,7 @@ StructuredOutput::with(
 
 // Agents (via AgentContext)
 $context->withSystemPrompt(ReviewSystem::with(content: $doc));
-// @doctest id="a8b1"
+// @doctest id="870e"
 ```
 
 ## What You'll Learn

@@ -14,7 +14,7 @@ class Greeting extends Prompt
         return "Hello, {$ctx['name']}!";
     }
 }
-// @doctest id="c0d1"
+// @doctest id="ea44"
 ```
 
 Render it:
@@ -22,7 +22,7 @@ Render it:
 ```php
 echo Greeting::with(name: 'Alice');
 // "Hello, Alice!"
-// @doctest id="4e1e"
+// @doctest id="04b3"
 ```
 
 ## Creating Instances
@@ -37,7 +37,7 @@ echo $prompt->render(name: 'Bob');
 // Pre-bound context — stored and merged at render time
 $prompt = Greeting::with(name: 'Charlie');
 echo $prompt->render(); // "Hello, Charlie!"
-// @doctest id="a871"
+// @doctest id="9e4d"
 ```
 
 ## Passing Context
@@ -56,7 +56,7 @@ class Welcome extends Prompt
 $prompt = Welcome::with(greeting: 'Hi');
 echo $prompt->render(name: 'Dana');            // "Hi, Dana!"
 echo $prompt->render(name: 'Eve', greeting: 'Hey'); // "Hey, Eve!"
-// @doctest id="9516"
+// @doctest id="ec77"
 ```
 
 ## Stringable
@@ -74,7 +74,7 @@ echo "Using prompt: {$persona}";
 
 // Pass to any API accepting string|Stringable
 $inference->withSystem($persona)->create();
-// @doctest id="b04a"
+// @doctest id="e91e"
 ```
 
 ## Returning Null
@@ -91,7 +91,7 @@ class MaybeDisclaimer extends Prompt
             : null;
     }
 }
-// @doctest id="8f4d"
+// @doctest id="1470"
 ```
 
 ## Next Steps

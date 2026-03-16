@@ -19,7 +19,7 @@ $request = new HttpRequest(
     body: '',
     options: [],
 );
-// @doctest id="dde2"
+// @doctest id="b9ee"
 ```
 
 | Parameter | Type | Description |
@@ -46,7 +46,7 @@ $request = new HttpRequest(
 );
 
 $response = $client->send($request)->get();
-// @doctest id="9f3c"
+// @doctest id="122c"
 ```
 
 ## POST with JSON Body
@@ -69,7 +69,7 @@ $request = new HttpRequest(
 );
 
 $response = $client->send($request)->get();
-// @doctest id="591f"
+// @doctest id="f693"
 ```
 
 You can also pass a pre-encoded JSON string if you need precise control over the encoding. String bodies are sent as-is; the drivers do not parse and reserialize them:
@@ -82,7 +82,7 @@ $request = new HttpRequest(
     body: json_encode(['name' => 'John Doe']),
     options: [],
 );
-// @doctest id="0778"
+// @doctest id="02fa"
 ```
 
 ## PUT, PATCH, and DELETE
@@ -116,7 +116,7 @@ $deleteRequest = new HttpRequest(
     body: '',
     options: [],
 );
-// @doctest id="5685"
+// @doctest id="8737"
 ```
 
 ## Setting Headers
@@ -136,7 +136,7 @@ $request = new HttpRequest(
     body: '',
     options: [],
 );
-// @doctest id="891f"
+// @doctest id="63c2"
 ```
 
 ## Modifying Requests
@@ -146,7 +146,7 @@ $request = new HttpRequest(
 ```php
 $request = $request->withHeader('Authorization', 'Bearer ' . $token);
 $request = $request->withStreaming(true);
-// @doctest id="5d21"
+// @doctest id="e4b8"
 ```
 
 You can read request properties at any time through accessor methods:
@@ -159,7 +159,7 @@ $request->headers('Accept'); // A specific header value
 $request->body();       // The HttpRequestBody instance
 $request->options();    // The options array
 $request->isStreamed(); // Whether streaming is enabled
-// @doctest id="1131"
+// @doctest id="7ed0"
 ```
 
 The body is managed by `HttpRequestBody`, which provides `toString()` and `toArray()` conversions:
@@ -167,7 +167,7 @@ The body is managed by `HttpRequestBody`, which provides `toString()` and `toArr
 ```php
 $bodyString = $request->body()->toString(); // Exact outbound body string
 $bodyArray  = $request->body()->toArray();  // Decoded array when the body contains valid JSON
-// @doctest id="fbeb"
+// @doctest id="5cc0"
 ```
 
 ## Streaming Option
@@ -186,7 +186,7 @@ $request = new HttpRequest(
 
 // Or via the mutator
 $request = $request->withStreaming(true);
-// @doctest id="32b3"
+// @doctest id="43a3"
 ```
 
 When `isStreamed()` returns `true`, calling `stream()` on the `PendingHttpResponse` will yield chunks as they arrive instead of buffering the entire response.
@@ -207,7 +207,7 @@ $client = (new HttpClientBuilder())
         failOnError: true,
     ))
     ->create();
-// @doctest id="20ca"
+// @doctest id="7b2a"
 ```
 
 This gives you a client that uses Guzzle, connects within 5 seconds, times out after 30 seconds, and throws exceptions on 4xx/5xx responses. See [Changing Client Config](8-changing-client-config.md) for the full list of options.
