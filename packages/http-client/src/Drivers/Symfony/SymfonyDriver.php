@@ -61,7 +61,7 @@ class SymfonyDriver implements CanHandleHttpRequest
             $this->dispatchStatusCodeFailed($httpResponse->statusCode(), $request);
             throw $httpException;
         }
-        $this->dispatchResponseReceived($httpResponse);
+        $this->dispatchResponseReceived($httpResponse, $request);
         return $httpResponse;
     }
 
@@ -89,6 +89,7 @@ class SymfonyDriver implements CanHandleHttpRequest
             response: $response,
             events: $this->events,
             isStreamed: $request->isStreamed(),
+            requestId: $request->id,
             connectTimeout: $this->config->connectTimeout,
         ))->toHttpResponse();
     }
@@ -123,6 +124,7 @@ class SymfonyDriver implements CanHandleHttpRequest
 
     private function dispatchRequestSent(HttpRequest $request): void {
         $this->events->dispatch(new HttpRequestSent([
+            'requestId' => $request->id,
             'url' => $request->url(),
             'method' => $request->method(),
             'headers' => $request->headers(),
@@ -132,20 +134,23 @@ class SymfonyDriver implements CanHandleHttpRequest
 
     private function dispatchStatusCodeFailed(int $statusCode, HttpRequest $request): void {
         $this->events->dispatch(new HttpRequestFailed([
+            'requestId' => $request->id,
             'url' => $request->url(),
             'method' => $request->method(),
             'statusCode' => $statusCode,
         ]));
     }
 
-    private function dispatchResponseReceived(HttpResponse $response): void {
+    private function dispatchResponseReceived(HttpResponse $response, HttpRequest $request): void {
         $this->events->dispatch(new HttpResponseReceived([
-            'statusCode' => $response->statusCode()
+            'requestId' => $request->id,
+            'statusCode' => $response->statusCode(),
         ]));
     }
 
     private function dispatchRequestFailed(HttpRequestException $exception, HttpRequest $request): void {
         $this->events->dispatch(new HttpRequestFailed([
+            'requestId' => $request->id,
             'url' => $request->url(),
             'method' => $request->method(),
             'headers' => $request->headers(),

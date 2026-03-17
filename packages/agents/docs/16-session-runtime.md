@@ -96,7 +96,7 @@ $state = $updated->state();
 When you call `$runtime->create($definition, $seed)`, the following pipeline runs:
 
 1. **Instantiate session** -- A fresh `AgentSession` is created from the `AgentDefinition` and optional seed state.
-2. **BeforeCreate hook** -- The session controller's `onStage(BeforeCreate, ...)` is called. Use this for create-only logic such as setting defaults or assigning IDs.
+2. **BeforeCreate hook** -- The session controller's `onStage(BeforeCreate, ...)` is called. Use this for create-only logic such as setting defaults or validating creation-time policy.
 3. **BeforeSave hook** -- The session controller's `onStage(BeforeSave, ...)` is called. This fires on both create and execute, so use it for logic that should run before every persist.
 4. **Create** -- The session is persisted through the repository. Stores require a fresh session with version `0` and persist it as version `1`.
 5. **AfterSave hook** -- Post-persistence processing runs on the persisted session returned by the store. Fires on both create and execute.

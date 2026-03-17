@@ -234,10 +234,10 @@ class InferenceStream
      * Dispatches events and calls callback for the visible delta.
      */
     private function notifyOnDelta(PartialInferenceDelta $delta): void {
-        $this->events->dispatch(new PartialInferenceDeltaCreated(
-            executionId: $this->execution->id->toString(),
-            partialInferenceDelta: $delta,
-        ));
+        $this->events->dispatch(new PartialInferenceDeltaCreated([
+            'executionId' => $this->execution->id->toString(),
+            'contentDelta' => $delta->contentDelta,
+        ]));
 
         if ($this->onDelta !== null) {
             ($this->onDelta)($delta);
@@ -263,7 +263,7 @@ class InferenceStream
             default => $this->execution->withSuccessfulAttempt($response),
         };
 
-        $this->events->dispatch(new InferenceResponseCreated($response));
+        $this->events->dispatch(new InferenceResponseCreated($this->responseEventData($response)));
     }
 
     private function advanceState(PartialInferenceDelta $delta): ?PartialInferenceDelta
@@ -289,6 +289,30 @@ class InferenceStream
             $deltaStream instanceof Traversable => new IteratorIterator($deltaStream),
             default => new ArrayIterator(),
         };
+    }
+
+    private function responseEventData(InferenceResponse $response): array
+    {
+        $payload = [
+            'executionId' => $this->execution->id->toString(),
+            'requestId' => $this->execution->request()->id()->toString(),
+            'model' => $this->execution->request()->model(),
+            'responseId' => $response->id->toString(),
+            'finishReason' => $response->finishReason()->value,
+            'contentLength' => strlen($response->content()),
+            'reasoningContentLength' => strlen($response->reasoningContent()),
+            'hasToolCalls' => $response->hasToolCalls(),
+            'toolCallCount' => $response->toolCalls()->count(),
+            'usage' => $response->usage()->toArray(),
+            'isPartial' => $response->isPartial(),
+        ];
+
+        $statusCode = $response->responseData()->statusCode();
+        if ($statusCode > 0) {
+            $payload['statusCode'] = $statusCode;
+        }
+
+        return $payload;
     }
 
     /**

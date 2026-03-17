@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Instructor\Data\StructuredOutputResponse;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
@@ -28,10 +27,10 @@ it('emits StructuredOutputResponseGenerated exactly once across stream and respo
     $events = new EventDispatcher();
 
     $generatedCount = 0;
-    $generatedResponse = null;
-    $events->addListener(StructuredOutputResponseGenerated::class, function (StructuredOutputResponseGenerated $event) use (&$generatedCount, &$generatedResponse): void {
+    $generatedPayload = null;
+    $events->addListener(StructuredOutputResponseGenerated::class, function (StructuredOutputResponseGenerated $event) use (&$generatedCount, &$generatedPayload): void {
         $generatedCount++;
-        $generatedResponse = $event->data['response'] ?? null;
+        $generatedPayload = $event->data;
     });
 
     $chunks = [
@@ -57,7 +56,10 @@ it('emits StructuredOutputResponseGenerated exactly once across stream and respo
     $final = $stream->finalResponse();
     expect($final->content())->toContain('Alice');
     expect($generatedCount)->toBe(1);
-    expect($generatedResponse)->toBeInstanceOf(StructuredOutputResponse::class);
+    expect($generatedPayload)->toBeArray();
+    expect($generatedPayload)->toHaveKeys(['requestId', 'executionId', 'attemptId', 'phase', 'phaseId']);
+    expect($generatedPayload['phase'])->toBe('response.generated');
+    expect($generatedPayload)->not()->toHaveKey('response');
 
     // response() delegates to cachedStream->finalResponse() — must not dispatch again
     $first = $pending->response();

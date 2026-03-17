@@ -10,7 +10,6 @@ use Cognesy\Agents\Events\AgentExecutionCompleted;
 use Cognesy\Agents\Events\AgentExecutionFailed;
 use Cognesy\Agents\Events\AgentExecutionStarted;
 use Cognesy\Agents\Events\InferenceRequestStarted;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\Events\PartialInferenceDeltaCreated;
 
@@ -45,10 +44,10 @@ it('maps inference stream chunks onto the active agent execution', function () {
         inferenceExecutionId: 'inference-1',
     ));
 
-    $observer->onPartialInferenceDelta(new PartialInferenceDeltaCreated(
-        executionId: 'inference-1',
-        partialInferenceDelta: new PartialInferenceDelta(contentDelta: 'Hello'),
-    ));
+    $observer->onPartialInferenceDelta(new PartialInferenceDeltaCreated([
+        'executionId' => 'inference-1',
+        'contentDelta' => 'Hello',
+    ]));
 
     expect($transport->calls)->toHaveCount(1);
     expect($transport->calls[0]['channel'])->toBe('agent.session-1');
@@ -98,10 +97,10 @@ it('cleans up execution routing after completion', function () {
         errors: null,
     ));
 
-    $observer->onPartialInferenceDelta(new PartialInferenceDeltaCreated(
-        executionId: 'inference-1',
-        partialInferenceDelta: new PartialInferenceDelta(contentDelta: 'ignored'),
-    ));
+    $observer->onPartialInferenceDelta(new PartialInferenceDeltaCreated([
+        'executionId' => 'inference-1',
+        'contentDelta' => 'ignored',
+    ]));
 
     expect($transport->calls)->toBe([]);
 });

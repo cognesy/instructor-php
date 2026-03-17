@@ -42,7 +42,7 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest
     public function makeResponseFor(InferenceRequest $request): InferenceResponse {
         $httpRequest = $this->toHttpRequest($request);
         $httpResponse = $this->makeHttpResponse($httpRequest);
-        return $this->httpResponseToInference($httpResponse);
+        return $this->httpResponseToInference($httpResponse, $request);
     }
 
     /** @return iterable<PartialInferenceDelta> */
@@ -79,7 +79,7 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest
         return $this->requestTranslator->toHttpRequest($request);
     }
 
-    protected function httpResponseToInference(HttpResponse $httpResponse): InferenceResponse {
+    protected function httpResponseToInference(HttpResponse $httpResponse, InferenceRequest $request): InferenceResponse {
         try {
             $inferenceResponse = $this->responseTranslator->fromResponse($httpResponse);
             if ($inferenceResponse === null) {
@@ -90,7 +90,7 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest
             throw $e;
         }
 
-        $this->events->dispatch(new InferenceResponseCreated(['response' => $inferenceResponse->toArray()]));
+        $this->events->dispatch(new InferenceResponseCreated($this->responseEventData($inferenceResponse, $request)));
         return $inferenceResponse;
     }
 
@@ -221,6 +221,29 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest
         $payload['body'] = '[REDACTED]';
         if (isset($payload['options']) && is_array($payload['options'])) {
             $payload['options'] = $this->redactedValues($payload['options']);
+        }
+
+        return $payload;
+    }
+
+    private function responseEventData(InferenceResponse $response, InferenceRequest $request): array
+    {
+        $payload = [
+            'requestId' => $request->id()->toString(),
+            'model' => $request->model(),
+            'responseId' => $response->id->toString(),
+            'finishReason' => $response->finishReason()->value,
+            'contentLength' => strlen($response->content()),
+            'reasoningContentLength' => strlen($response->reasoningContent()),
+            'hasToolCalls' => $response->hasToolCalls(),
+            'toolCallCount' => $response->toolCalls()->count(),
+            'usage' => $response->usage()->toArray(),
+            'isPartial' => $response->isPartial(),
+        ];
+
+        $statusCode = $response->responseData()->statusCode();
+        if ($statusCode > 0) {
+            $payload['statusCode'] = $statusCode;
         }
 
         return $payload;

@@ -54,7 +54,7 @@ class PendingEmbeddings
                 if ($response === null) {
                     throw new \RuntimeException('Failed to create embeddings response from data');
                 }
-                $this->events->dispatch(new EmbeddingsResponseReceived($response));
+                $this->events->dispatch(new EmbeddingsResponseReceived($this->responseEventData($response)));
                 return $response;
             } catch (\Throwable $e) {
                 $shouldRetry = $attempt < $maxAttempts
@@ -68,5 +68,18 @@ class PendingEmbeddings
                 }
             }
         }
+    }
+
+    private function responseEventData(EmbeddingsResponse $response): array
+    {
+        $firstVector = $response->first();
+
+        return [
+            'model' => $this->request->model(),
+            'inputCount' => count($this->request->inputs()),
+            'vectorCount' => count($response->vectors()),
+            'dimensions' => $firstVector === null ? 0 : count($firstVector->values()),
+            'usage' => $response->usage()->toArray(),
+        ];
     }
 }

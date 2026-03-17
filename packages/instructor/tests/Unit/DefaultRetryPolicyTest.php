@@ -84,8 +84,10 @@ it('allows a single retry when maxRetries is one', function () {
 it('records failure and dispatches event', function () {
     $events = new EventDispatcher();
     $eventFired = false;
-    $events->addListener(NewValidationRecoveryAttempt::class, function() use (&$eventFired) {
+    $payload = null;
+    $events->addListener(NewValidationRecoveryAttempt::class, function($event) use (&$eventFired, &$payload) {
         $eventFired = true;
+        $payload = $event->data;
     });
 
     $policy = new DefaultRetryPolicy($events);
@@ -106,6 +108,9 @@ it('records failure and dispatches event', function () {
     expect($updated->attempts()->last()->errors())->toHaveCount(1);
     expect($updated->errors())->toBe(['Validation failed']);
     expect($updated->activeAttempt())->toBeNull();
+    expect($payload)->toBeArray();
+    expect($payload)->toHaveKeys(['requestId', 'executionId', 'attemptId', 'phase', 'phaseId', 'retries', 'errors']);
+    expect($payload['phase'])->toBe('validation.recovery');
 });
 
 it('prepareRetry returns execution unchanged by default', function () {
@@ -147,8 +152,10 @@ it('finalizeOrThrow returns value on success', function () {
 it('finalizeOrThrow throws exception on failure and dispatches event', function () {
     $events = new EventDispatcher();
     $eventFired = false;
-    $events->addListener(StructuredOutputRecoveryLimitReached::class, function() use (&$eventFired) {
+    $payload = null;
+    $events->addListener(StructuredOutputRecoveryLimitReached::class, function($event) use (&$eventFired, &$payload) {
         $eventFired = true;
+        $payload = $event->data;
     });
 
     $policy = new DefaultRetryPolicy($events);
@@ -171,4 +178,7 @@ it('finalizeOrThrow throws exception on failure and dispatches event', function 
         ->toThrow(StructuredOutputRecoveryException::class);
 
     expect($eventFired)->toBeTrue();
+    expect($payload)->toBeArray();
+    expect($payload)->toHaveKeys(['requestId', 'executionId', 'attemptId', 'phase', 'phaseId', 'retries', 'errors']);
+    expect($payload['phase'])->toBe('validation.recovery_limit_reached');
 });

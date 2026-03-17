@@ -35,6 +35,7 @@ final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
         private readonly SplQueue $queue,
         private readonly HeaderParser $headerParser,
         private readonly EventDispatcherInterface $events,
+        private readonly string $requestId = '',
         private readonly int $chunkSize = 256,
         private readonly float $headerTimeoutSeconds = 5.0,
     ) {}
@@ -88,7 +89,10 @@ final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
                 while (!$this->queue->isEmpty()) {
                     $chunk = $this->queue->dequeue();
                     $this->bufferedBody .= $chunk;
-                    $this->events->dispatch(new HttpResponseChunkReceived($chunk));
+                    $this->events->dispatch(new HttpResponseChunkReceived([
+                        'requestId' => $this->requestId,
+                        'chunk' => $chunk,
+                    ]));
                     yield $chunk;
                 }
 

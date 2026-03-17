@@ -49,13 +49,12 @@ class MockHttpDriver implements CanHandleHttpRequest
     #[\Override]
     public function handle(HttpRequest $request): HttpResponse {
         $this->recordRequest($request);
-        $this->dispatchResponseReceived($request);
-
         $response = $this->findMatchingResponse($request);
         if ($response === null) {
             $this->throwNoMatchException($request);
         }
 
+        $this->dispatchResponseReceived($request, $response);
         return $response;
     }
 
@@ -65,9 +64,12 @@ class MockHttpDriver implements CanHandleHttpRequest
         $this->receivedRequests[] = $request;
     }
 
-    private function dispatchResponseReceived(HttpRequest $request): void {
+    private function dispatchResponseReceived(HttpRequest $request, HttpResponse $response): void {
         if ($this->events) {
-            $this->events->dispatch(new HttpResponseReceived($request));
+            $this->events->dispatch(new HttpResponseReceived([
+                'requestId' => $request->id,
+                'statusCode' => $response->statusCode(),
+            ]));
         }
     }
 

@@ -43,6 +43,13 @@ it('dispatches per-chunk updates immediately when streaming', function () {
     $types = array_map(fn($e) => get_class($e), $captured);
     expect(array_filter($types, fn($t) => $t === StructuredOutputResponseUpdated::class))->toHaveCount(1);
     expect(array_filter($types, fn($t) => $t === StructuredOutputResponseGenerated::class))->toHaveCount(0);
+    $firstUpdate = array_values(array_filter(
+        $captured,
+        fn(object $event): bool => $event instanceof StructuredOutputResponseUpdated,
+    ))[0];
+    expect($firstUpdate->data)->toHaveKeys(['requestId', 'executionId', 'attemptId', 'phase', 'phaseId']);
+    expect($firstUpdate->data['phase'])->toBe('response.updated');
+    expect($firstUpdate->data)->not()->toHaveKey('response');
 
     // Step 2
     $iter->next();

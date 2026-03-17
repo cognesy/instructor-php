@@ -103,7 +103,7 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
             config: $this->config,
         );
 
-        $this->events->dispatch(new StructuredOutputRequestReceived(['request' => $request->toArray()]));
+        $this->events->dispatch(new StructuredOutputRequestReceived($this->requestReceivedPayload($execution)));
 
         $pipelineFactory = new StructuredOutputPipelineFactory(
             events: $this->events,
@@ -224,5 +224,43 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
             extractor: $extractor ?? $this->extractor,
             requestMaterializer: $requestMaterializer ?? $this->requestMaterializer,
         );
+    }
+
+    private function requestReceivedPayload(\Cognesy\Instructor\Data\StructuredOutputExecution $execution) : array
+    {
+        $request = $execution->request();
+        $requestedSchema = $request->requestedSchema();
+
+        $payload = [
+            'requestId' => $request->id()->toString(),
+            'executionId' => $execution->id()->toString(),
+            'phase' => 'request.received',
+            'phaseId' => $this->phaseId($execution->id()->toString(), 'request.received'),
+            'model' => $request->model(),
+            'messageCount' => count($request->messages()->toArray()),
+            'isStreamed' => $request->isStreamed(),
+            'requestedSchemaType' => is_array($requestedSchema) ? 'array' : (is_object($requestedSchema) ? 'object' : 'string'),
+        ];
+
+        if (is_array($requestedSchema)) {
+            $payload['requestedSchemaKeyCount'] = count($requestedSchema);
+            return $payload;
+        }
+
+        if ($requestedSchema !== '') {
+            $payload['requestedSchemaClass'] = is_object($requestedSchema)
+                ? $requestedSchema::class
+                : ltrim($requestedSchema, '\\');
+        }
+
+        return $payload;
+    }
+
+    private function phaseId(string $executionId, string $phase, ?string $attemptId = null) : string
+    {
+        return match ($attemptId) {
+            null => "{$executionId}:{$phase}",
+            default => "{$executionId}:{$phase}:{$attemptId}",
+        };
     }
 }

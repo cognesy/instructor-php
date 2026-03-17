@@ -33,14 +33,19 @@ class ResponseTransformer implements CanTransformResponse
     // INTERNAL ////////////////////////////////////////////////////////
 
     protected function transformSelf(CanTransformSelf $object) : Result {
-        $this->events->dispatch(new ResponseTransformationAttempt(['object' => $object]));
+        $summary = $this->valueSummary($object);
+        $this->events->dispatch(new ResponseTransformationAttempt($summary));
         try {
             $transformed = $object->transform();
         } catch (Exception $e) {
-            $this->events->dispatch(new ResponseTransformationFailed(['object' => $object, 'error' => $e->getMessage()]));
+            $this->events->dispatch(new ResponseTransformationFailed([
+                ...$summary,
+                'errorMessage' => $e->getMessage(),
+                'errorType' => $e::class,
+            ]));
             return Result::failure($e->getMessage());
         }
-        $this->events->dispatch(new ResponseTransformed(['response' => json_encode($transformed)]));
+        $this->events->dispatch(new ResponseTransformed($this->valueSummary($transformed)));
         return Result::success($transformed);
     }
 
@@ -55,14 +60,19 @@ class ResponseTransformer implements CanTransformResponse
             default => $input,
         };
 
-        $this->events->dispatch(new ResponseTransformationAttempt(['data' => $data]));
+        $summary = $this->valueSummary($data);
+        $this->events->dispatch(new ResponseTransformationAttempt($summary));
         $result = Result::try(fn() => $this->transformer->transform($data));
         if ($result->isSuccessAndNull()) {
             return Result::success($input);
         }
         if ($result->isFailure()) {
             $errorMessage = $result->exception()->getMessage();
-            $this->events->dispatch(new ResponseTransformationFailed(['data' => $data, 'error' => $errorMessage]));
+            $this->events->dispatch(new ResponseTransformationFailed([
+                ...$summary,
+                'errorMessage' => $errorMessage,
+                'errorType' => $result->exception()::class,
+            ]));
             if ($this->config->throwOnTransformationFailure()) {
                 throw new ResponseTransformationException($errorMessage);
             }
@@ -70,5 +80,23 @@ class ResponseTransformer implements CanTransformResponse
         }
 
         return Result::success($result->unwrap());
+    }
+
+    private function valueSummary(mixed $value) : array
+    {
+        return match (true) {
+            is_object($value) => [
+                'valueType' => $value::class,
+                'fieldCount' => count(get_object_vars($value)),
+            ],
+            is_array($value) => [
+                'valueType' => 'array',
+                'itemCount' => count($value),
+                'keys' => array_slice(array_keys($value), 0, 20),
+            ],
+            default => [
+                'valueType' => get_debug_type($value),
+            ],
+        };
     }
 }

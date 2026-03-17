@@ -213,7 +213,7 @@ class LlmsDocsGenerator
         } catch (\Throwable $e) {
             return GenerationResult::failure(
                 errors: [$e->getMessage()],
-                filesCreated: $filesCreated,
+                filesProcessed: $filesCreated,
                 duration: microtime(true) - $startTime,
                 message: 'Failed to mirror LLM content tree',
             );

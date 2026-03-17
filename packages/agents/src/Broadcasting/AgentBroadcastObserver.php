@@ -50,7 +50,12 @@ final class AgentBroadcastObserver
 
     public function onPartialInferenceDelta(PartialInferenceDeltaCreated $event): void
     {
-        $agentExecutionId = $this->agentExecutionIdByInferenceExecutionId[$event->executionId] ?? null;
+        $inferenceExecutionId = $event->data['executionId'] ?? null;
+        if (!is_string($inferenceExecutionId) || $inferenceExecutionId === '') {
+            return;
+        }
+
+        $agentExecutionId = $this->agentExecutionIdByInferenceExecutionId[$inferenceExecutionId] ?? null;
         if ($agentExecutionId === null) {
             return;
         }

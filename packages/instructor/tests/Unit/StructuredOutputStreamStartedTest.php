@@ -60,6 +60,10 @@ it('dispatches StructuredOutputStarted once across multiple stream reads', funct
     );
 
     expect($startedEvents)->toHaveCount(1);
+    $startedPayload = array_values($startedEvents)[0]->data;
+    expect($startedPayload)->toHaveKeys(['requestId', 'executionId', 'phase', 'phaseId']);
+    expect($startedPayload['phase'])->toBe('execution.started');
+    expect($startedPayload)->not()->toHaveKey('request');
 });
 
 it('does not emit additional start events when reading the raw iterator', function () {
@@ -86,4 +90,8 @@ it('does not emit additional start events when reading the raw iterator', functi
     );
 
     expect($startedEvents)->toHaveCount(1);
+    $startedPayload = array_values($startedEvents)[0]->data;
+    expect($startedPayload)->toHaveKeys(['requestId', 'executionId', 'phase', 'phaseId']);
+    expect($startedPayload['phase'])->toBe('execution.started');
+    expect($startedPayload)->not()->toHaveKey('request');
 });

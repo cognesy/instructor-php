@@ -89,7 +89,7 @@ it('does not re-execute when response() is called after stream() and dispatches 
         $dispatchedEvents[] = 'InferenceAttemptSucceeded';
     });
     $events->addListener(InferenceCompleted::class, function (InferenceCompleted $e) use (&$dispatchedEvents): void {
-        $dispatchedEvents[] = 'InferenceCompleted:' . ($e->isSuccess ? 'success' : 'failure');
+        $dispatchedEvents[] = 'InferenceCompleted:' . (($e->data['isSuccess'] ?? false) ? 'success' : 'failure');
     });
 
     $driver = new FakeInferenceDriver(
@@ -283,9 +283,11 @@ it('reports partial usage in failure event when stream throws after emitting chu
     }
 
     expect($capturedFailure)->not->toBeNull();
-    expect($capturedFailure->partialUsage)->not->toBeNull();
-    expect($capturedFailure->partialUsage->inputTokens)->toBe(10);
-    expect($capturedFailure->partialUsage->outputTokens)->toBe(5);
+    expect($capturedFailure->data)->toMatchArray([
+        'partialInputTokens' => 10,
+        'partialOutputTokens' => 5,
+        'partialTotalTokens' => 15,
+    ]);
 });
 
 /**
@@ -316,11 +318,11 @@ it('is idempotent: response() called twice after stream dispatches lifecycle eve
     });
     $events->addListener(InferenceAttemptSucceeded::class, function (InferenceAttemptSucceeded $e) use (&$eventCounts): void {
         $eventCounts['InferenceAttemptSucceeded']++;
-        expect($e->attemptNumber)->toBe(1);
+        expect($e->data['attemptNumber'])->toBe(1);
     });
     $events->addListener(InferenceCompleted::class, function (InferenceCompleted $e) use (&$eventCounts): void {
         $eventCounts['InferenceCompleted']++;
-        expect($e->isSuccess)->toBeTrue();
+        expect($e->data['isSuccess'])->toBeTrue();
     });
 
     $driver = new FakeInferenceDriver(
@@ -425,9 +427,9 @@ it('throws and dispatches failure events when stream-first response has a failed
 
     expect($thrown)->toBeTrue();
     expect($capturedCompleted)->not->toBeNull();
-    expect($capturedCompleted->isSuccess)->toBeFalse();
+    expect($capturedCompleted->data['isSuccess'])->toBeFalse();
     expect($capturedFailure)->not->toBeNull();
-    expect($capturedFailure->willRetry)->toBeFalse();
+    expect($capturedFailure->data['willRetry'])->toBeFalse();
 });
 
 /**

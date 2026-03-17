@@ -89,7 +89,12 @@ final class AgentEventBroadcaster
             return;
         }
 
-        $this->emitStreamChunk($event->partialInferenceDelta->contentDelta);
+        $contentDelta = $event->data['contentDelta'] ?? '';
+        if (!is_string($contentDelta)) {
+            return;
+        }
+
+        $this->emitStreamChunk($contentDelta);
     }
 
     public function onAgentStepStarted(AgentStepStarted $event): void

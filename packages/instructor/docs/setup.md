@@ -185,7 +185,11 @@ $runtime = StructuredOutputRuntime::fromConfig(
 // Listen for a specific event
 $runtime->onEvent(
     StructuredOutputRequestReceived::class,
-    fn($event) => logger()->info('Request received', $event->toArray()),
+    fn($event) => logger()->info('Request received', [
+        'requestId' => $event->data['requestId'],
+        'executionId' => $event->data['executionId'],
+        'phaseId' => $event->data['phaseId'],
+    ]),
 );
 
 // Or wiretap all events

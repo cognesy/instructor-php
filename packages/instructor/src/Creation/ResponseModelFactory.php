@@ -39,9 +39,9 @@ class ResponseModelFactory
     }
 
     public function fromAny(string|array|object $requestedModel, ?OutputFormat $outputFormat = null) : ResponseModel {
-        $this->events->dispatch(new ResponseModelRequested(['responseModel' => $requestedModel]));
+        $this->events->dispatch(new ResponseModelRequested($this->requestedModelPayload($requestedModel, $outputFormat)));
         $responseModel = $this->buildFrom($requestedModel, $outputFormat);
-        $this->events->dispatch(new ResponseModelBuilt(['responseModel' => $responseModel]));
+        $this->events->dispatch(new ResponseModelBuilt($this->builtModelPayload($responseModel)));
         return $responseModel;
     }
 
@@ -448,5 +448,51 @@ class ResponseModelFactory
 
     private function resolveOutputFormat(?OutputFormat $outputFormat, Schema $schema) : ?OutputFormat {
         return $outputFormat;
+    }
+
+    private function requestedModelPayload(string|array|object $requestedModel, ?OutputFormat $outputFormat) : array
+    {
+        $payload = [
+            'requestedType' => $this->requestedModelType($requestedModel),
+            'outputFormatType' => $outputFormat?->type->value,
+            'outputClass' => $outputFormat?->targetClass(),
+        ];
+
+        if (is_array($requestedModel)) {
+            $payload['requestedKeyCount'] = count($requestedModel);
+            $payload['requestedKeys'] = array_slice(array_keys($requestedModel), 0, 20);
+            return array_filter($payload, fn(mixed $value): bool => $value !== null);
+        }
+
+        $payload['requestedClass'] = is_object($requestedModel)
+            ? $requestedModel::class
+            : ltrim($requestedModel, '\\');
+
+        return array_filter($payload, fn(mixed $value): bool => $value !== null);
+    }
+
+    private function builtModelPayload(ResponseModel $responseModel) : array
+    {
+        $returnedClass = $responseModel->returnedClass();
+
+        return array_filter([
+            'responseClass' => $responseModel->instanceClass(),
+            'returnedClass' => $returnedClass !== '' ? $returnedClass : null,
+            'schemaName' => $responseModel->schemaName(),
+            'propertyCount' => count($responseModel->getPropertyNames()),
+            'returnTarget' => $responseModel->returnTarget()->value,
+            'outputFormatType' => $responseModel->outputFormat()?->type->value,
+            'outputClass' => $responseModel->outputFormat()?->targetClass(),
+        ], fn(mixed $value): bool => $value !== null);
+    }
+
+    private function requestedModelType(string|array|object $requestedModel) : string
+    {
+        return match (true) {
+            is_array($requestedModel) => 'array',
+            is_object($requestedModel) => 'object',
+            class_exists($requestedModel) => 'class-string',
+            default => 'string',
+        };
     }
 }

@@ -50,7 +50,7 @@ class ResponseGenerator implements CanGenerateResponse
         try {
             $data = $this->extractor->extract(ExtractionInput::fromResponse($response, $mode));
         } catch (Throwable $error) {
-            $this->events->dispatch(new ResponseGenerationFailed(['error' => $error]));
+            $this->events->dispatch(new ResponseGenerationFailed($this->errorPayload($error)));
             return Result::failure($error->getMessage());
         }
 
@@ -77,8 +77,8 @@ class ResponseGenerator implements CanGenerateResponse
                 $skipObjectStages => Result::success($response),
                 default => $this->responseTransformer->transform($response, $responseModel)
             })
-            ->tap(fn($response) => $this->events->dispatch(new ResponseConvertedToObject(['object' => json_encode($response)])))
-            ->onFailure(fn($state) => $this->events->dispatch(new ResponseGenerationFailed(['error' => $state->exception()])))
+            ->tap(fn($response) => $this->events->dispatch(new ResponseConvertedToObject($this->valueSummary($response))))
+            ->onFailure(fn($state) => $this->events->dispatch(new ResponseGenerationFailed($this->errorPayload($state->exception()))))
             ->finally(fn(CanCarryState $state) => match (true) {
                 $state->isSuccess() => $state->result(),
                 default => Result::failure(implode('; ', $this->extractErrors($state)))
@@ -99,7 +99,7 @@ class ResponseGenerator implements CanGenerateResponse
 
             return $this->responseTransformer->transform($validated->unwrap(), $responseModel);
         } catch (Throwable $error) {
-            $this->events->dispatch(new ResponseGenerationFailed(['error' => $error]));
+            $this->events->dispatch(new ResponseGenerationFailed($this->errorPayload($error)));
             return Result::failure($error->getMessage());
         }
     }
@@ -112,6 +112,32 @@ class ResponseGenerator implements CanGenerateResponse
             $output instanceof Result && $output->isSuccess() => [],
             $output instanceof Result && $output->isFailure() => [$output->errorMessage()],
             default => []
+        };
+    }
+
+    private function errorPayload(Throwable $error) : array
+    {
+        return [
+            'errorMessage' => $error->getMessage(),
+            'errorType' => $error::class,
+        ];
+    }
+
+    private function valueSummary(mixed $value) : array
+    {
+        return match (true) {
+            is_object($value) => [
+                'responseType' => $value::class,
+                'fieldCount' => count(get_object_vars($value)),
+            ],
+            is_array($value) => [
+                'responseType' => 'array',
+                'itemCount' => count($value),
+                'keys' => array_slice(array_keys($value), 0, 20),
+            ],
+            default => [
+                'responseType' => get_debug_type($value),
+            ],
         };
     }
 }

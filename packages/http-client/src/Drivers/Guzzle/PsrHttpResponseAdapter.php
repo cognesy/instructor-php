@@ -21,6 +21,7 @@ class PsrHttpResponseAdapter implements CanAdaptHttpResponse
     private StreamInterface $stream;
     private EventDispatcherInterface $events;
     private bool $isStreamed;
+    private string $requestId;
     private int $streamChunkSize;
     private ?string $cachedBody = null;
 
@@ -29,12 +30,14 @@ class PsrHttpResponseAdapter implements CanAdaptHttpResponse
         StreamInterface $stream,
         EventDispatcherInterface $events,
         bool $isStreamed,
+        string $requestId,
         int $streamChunkSize = 256,
     ) {
         $this->response = $response;
         $this->stream = $stream;
         $this->events = $events;
         $this->isStreamed = $isStreamed;
+        $this->requestId = $requestId;
         $this->streamChunkSize = $streamChunkSize;
     }
 
@@ -81,7 +84,10 @@ class PsrHttpResponseAdapter implements CanAdaptHttpResponse
     private function stream(): \Generator {
         while (!$this->stream->eof()) {
             $chunk = $this->stream->read($this->streamChunkSize);
-            $this->events->dispatch(new HttpResponseChunkReceived($chunk));
+            $this->events->dispatch(new HttpResponseChunkReceived([
+                'requestId' => $this->requestId,
+                'chunk' => $chunk,
+            ]));
             yield $chunk;
         }
     }

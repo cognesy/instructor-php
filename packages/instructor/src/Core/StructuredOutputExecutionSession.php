@@ -49,7 +49,7 @@ final class StructuredOutputExecutionSession
             return $this->stream()->finalInferenceResponse();
         }
 
-        $this->events->dispatch(new StructuredOutputStarted(['request' => $this->execution->request()->toArray()]));
+        $this->events->dispatch(new StructuredOutputStarted($this->startedPayload($this->execution)));
 
         $driver = $this->executionDriver();
         while ($driver->hasNextEmission()) {
@@ -62,12 +62,14 @@ final class StructuredOutputExecutionSession
             throw new RuntimeException('Failed to get inference response');
         }
 
-        $this->events->dispatch(new StructuredOutputResponseGenerated([
-            'response' => StructuredOutputResponse::final(
+        $this->events->dispatch(new StructuredOutputResponseGenerated($this->responsePayload(
+            execution: $this->execution,
+            response: StructuredOutputResponse::final(
                 value: $this->execution->output(),
                 inferenceResponse: $response,
             ),
-        ]));
+            phase: 'response.generated',
+        )));
 
         return $response;
     }
@@ -102,5 +104,69 @@ final class StructuredOutputExecutionSession
         $this->executionDriver = $this->executionDriverFactory->makeExecutionDriver($this->execution);
 
         return $this->executionDriver;
+    }
+
+    private function startedPayload(StructuredOutputExecution $execution) : array
+    {
+        $request = $execution->request();
+        $executionId = $execution->id()->toString();
+
+        return [
+            'requestId' => $request->id()->toString(),
+            'executionId' => $executionId,
+            'phase' => 'execution.started',
+            'phaseId' => $this->phaseId($executionId, 'execution.started'),
+            'model' => $request->model(),
+            'messageCount' => count($request->messages()->toArray()),
+            'isStreamed' => $request->isStreamed(),
+            'attemptCount' => $execution->attemptCount(),
+        ];
+    }
+
+    private function responsePayload(
+        StructuredOutputExecution $execution,
+        StructuredOutputResponse $response,
+        string $phase,
+    ) : array {
+        $request = $execution->request();
+        $executionId = $execution->id()->toString();
+        $attemptId = $execution->lastFinalizedAttempt()?->id()->toString()
+            ?? $execution->activeAttempt()?->id()->toString();
+        $usage = $response->usage();
+
+        return array_filter([
+            'requestId' => $request->id()->toString(),
+            'executionId' => $executionId,
+            'attemptId' => $attemptId,
+            'phase' => $phase,
+            'phaseId' => $this->phaseId($executionId, $phase, $attemptId),
+            'isPartial' => $response->isPartial(),
+            'hasValue' => $response->hasValue(),
+            'valueType' => $this->valueType($response->value()),
+            'finishReason' => $response->finishReason()->value,
+            'contentLength' => strlen($response->content()),
+            'reasoningContentLength' => strlen($response->reasoningContent()),
+            'hasToolCalls' => !$response->toolCalls()->isEmpty(),
+            'toolCallCount' => $response->toolCalls()->count(),
+            'inputTokens' => $usage->input(),
+            'outputTokens' => $usage->output(),
+            'cacheWriteTokens' => $usage->cacheWriteTokens,
+            'cacheReadTokens' => $usage->cacheReadTokens,
+            'reasoningTokens' => $usage->reasoningTokens,
+            'totalTokens' => $usage->total(),
+        ], fn(mixed $value): bool => $value !== null);
+    }
+
+    private function phaseId(string $executionId, string $phase, ?string $attemptId = null) : string
+    {
+        return match ($attemptId) {
+            null => "{$executionId}:{$phase}",
+            default => "{$executionId}:{$phase}:{$attemptId}",
+        };
+    }
+
+    private function valueType(mixed $value) : string
+    {
+        return is_object($value) ? $value::class : get_debug_type($value);
     }
 }

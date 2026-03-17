@@ -39,6 +39,7 @@ it('reuses provided event bus across structured output runtime graph', function 
 it('allows fluent event registration on structured output runtime', function () {
     $events = new EventDispatcher('test.structured-output.runtime.listeners');
     $received = 0;
+    $payload = null;
     $tapped = 0;
 
     $runtime = StructuredOutputRuntime::fromConfig(
@@ -50,8 +51,9 @@ it('allows fluent event registration on structured output runtime', function () 
         ),
         events: $events,
     )
-        ->onEvent(StructuredOutputRequestReceived::class, static function () use (&$received): void {
+        ->onEvent(StructuredOutputRequestReceived::class, static function ($event) use (&$received, &$payload): void {
             $received++;
+            $payload = $event->data;
         })
         ->wiretap(static function () use (&$tapped): void {
             $tapped++;
@@ -64,4 +66,8 @@ it('allows fluent event registration on structured output runtime', function () 
 
     expect($received)->toBe(1);
     expect($tapped)->toBeGreaterThan(0);
+    expect($payload)->toBeArray();
+    expect($payload)->toHaveKeys(['requestId', 'executionId', 'phase', 'phaseId']);
+    expect($payload['phase'])->toBe('request.received');
+    expect($payload)->not()->toHaveKey('request');
 });

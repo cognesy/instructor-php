@@ -140,7 +140,11 @@ The runtime exposes an event system for observing the processing pipeline:
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputRequestReceived;
 
 $runtime->onEvent(StructuredOutputRequestReceived::class, function ($event) {
-    logger()->info('Request received', $event->data);
+    logger()->info('Request received', [
+        'requestId' => $event->data['requestId'],
+        'executionId' => $event->data['executionId'],
+        'phaseId' => $event->data['phaseId'],
+    ]);
 });
 
 // Or listen to all events

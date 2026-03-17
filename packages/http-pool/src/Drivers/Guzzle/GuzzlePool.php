@@ -90,8 +90,8 @@ class GuzzlePool implements CanHandleRequestPool
     private function createPoolConfiguration(array &$responses, array $requests, int $concurrency): array {
         return [
             'concurrency' => $concurrency,
-            'fulfilled' => function(ResponseInterface $response, $index) use (&$responses) {
-                $responses[$index] = $this->handleFulfilledResponse($response);
+            'fulfilled' => function(ResponseInterface $response, $index) use (&$responses, $requests) {
+                $responses[$index] = $this->handleFulfilledResponse($response, $requests[$index] ?? null);
             },
             'rejected' => function($reason, $index) use (&$responses, $requests) {
                 $responses[$index] = $this->handleRejectedResponse($reason, $requests[$index] ?? null);
@@ -99,14 +99,18 @@ class GuzzlePool implements CanHandleRequestPool
         ];
     }
 
-    private function handleFulfilledResponse(ResponseInterface $response): Result {
-        $this->events->dispatch(new HttpResponseReceived($response->getStatusCode()));
+    private function handleFulfilledResponse(ResponseInterface $response, ?HttpRequest $request): Result {
+        $this->events->dispatch(new HttpResponseReceived([
+            'requestId' => $request?->id ?? '',
+            'statusCode' => $response->getStatusCode(),
+        ]));
         $isStreamed = $this->isStreamed($response);
         return Result::success(new PsrHttpResponseAdapter(
             response: $response,
             stream: $response->getBody(),
             events: $this->events,
             isStreamed: $isStreamed,
+            requestId: $request?->id ?? '',
             streamChunkSize: $this->config->streamChunkSize,
         ));
     }
@@ -119,6 +123,7 @@ class GuzzlePool implements CanHandleRequestPool
         };
 
         $this->events->dispatch(new HttpRequestFailed([
+            'requestId' => $request?->id ?? '',
             'url' => $request?->url() ?? '',
             'method' => $request?->method() ?? '',
             'errors' => $errorMessage,
@@ -133,6 +138,7 @@ class GuzzlePool implements CanHandleRequestPool
 
     private function dispatchRequestEvent(HttpRequest $request): void {
         $this->events->dispatch(new HttpRequestSent([
+            'requestId' => $request->id,
             'url' => $request->url(),
             'method' => $request->method(),
             'headers' => $request->headers(),

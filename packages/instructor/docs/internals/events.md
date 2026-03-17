@@ -146,3 +146,7 @@ Every event inherits the following convenience methods from `Cognesy\Events\Even
 
 Events carry a `$logLevel` property (PSR log level) and a `$data` payload. The
 `print()` method respects a configurable log-level threshold.
+
+Instructor event payloads are normalized arrays. Structured-output lifecycle events
+also expose correlation fields such as `requestId`, `executionId`, `attemptId`,
+`phase`, and `phaseId` where applicable.

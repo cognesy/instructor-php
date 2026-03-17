@@ -33,9 +33,10 @@ readonly class SymfonyPool implements CanHandleRequestPool
     public function pool(HttpRequestList $requests, ?int $maxConcurrent = null): HttpResponseList {
         $maxConcurrent = $maxConcurrent ?? $this->config->maxConcurrent;
         $responses = [];
-        $httpResponses = $this->prepareHttpResponses($requests->all());
+        $requestMap = [];
+        $httpResponses = $this->prepareHttpResponses($requests->all(), $requestMap);
         try {
-            $this->processHttpResponses($httpResponses, $responses, $maxConcurrent);
+            $this->processHttpResponses($httpResponses, $requestMap, $responses, $maxConcurrent);
         } catch (Exception $e) {
             return $this->handlePoolException($e, $httpResponses);
         }
@@ -43,12 +44,13 @@ readonly class SymfonyPool implements CanHandleRequestPool
         return $this->normalizeResponses($responses);
     }
 
-    private function prepareHttpResponses(array $requests): array {
+    private function prepareHttpResponses(array $requests, array &$requestMap): array {
         $httpResponses = [];
         foreach ($requests as $index => $request) {
             if (!$request instanceof HttpRequest) {
                 throw new InvalidArgumentException('Invalid request type in pool');
             }
+            $requestMap[$index] = $request;
             $httpResponses[$index] = $this->prepareRequest($request);
         }
         return $httpResponses;
@@ -70,6 +72,7 @@ readonly class SymfonyPool implements CanHandleRequestPool
             $this->dispatchRequestEvent($request);
         } catch (Exception $e) {
             $this->events->dispatch(new HttpRequestFailed([
+                'requestId' => $request->id,
                 'url' => $request->url(),
                 'method' => $request->method(),
                 'headers' => $request->headers(),
@@ -84,7 +87,7 @@ readonly class SymfonyPool implements CanHandleRequestPool
         return $clientRequest;
     }
 
-    private function processHttpResponses(array $httpResponses, array &$responses, int $maxConcurrent): void {
+    private function processHttpResponses(array $httpResponses, array $requestMap, array &$responses, int $maxConcurrent): void {
         try {
             foreach ($this->client->stream($httpResponses, $this->config->poolTimeout) as $response => $chunk) {
                 try {
@@ -97,7 +100,7 @@ readonly class SymfonyPool implements CanHandleRequestPool
                     }
 
                     if ($chunk->isLast()) {
-                        $this->processLastChunk($response, $httpResponses, $responses);
+                        $this->processLastChunk($response, $httpResponses, $requestMap, $responses);
                         if ($this->isPoolComplete($responses, count($httpResponses), $maxConcurrent)) {
                             break;
                         }
@@ -185,8 +188,9 @@ readonly class SymfonyPool implements CanHandleRequestPool
     /**
      * @param mixed $response
      */
-    private function processLastChunk($response, array $httpResponses, array &$responses): void {
+    private function processLastChunk($response, array $httpResponses, array $requestMap, array &$responses): void {
         $index = array_search($response, $httpResponses, true);
+        $request = $requestMap[$index] ?? null;
 
         try {
             $statusCode = $response->getStatusCode();
@@ -200,11 +204,15 @@ readonly class SymfonyPool implements CanHandleRequestPool
                     response: $response,
                     events: $this->events,
                     isStreamed: $this->isStreamed($response),
+                    requestId: $request?->id ?? '',
                     connectTimeout: $this->config->connectTimeout ?? 3
                 ));
             }
 
-            $this->events->dispatch(new HttpResponseReceived($statusCode));
+            $this->events->dispatch(new HttpResponseReceived([
+                'requestId' => $request?->id ?? '',
+                'statusCode' => $statusCode,
+            ]));
         } catch (Exception $e) {
             $responses[$index] = $this->handleError($e);
         }
@@ -235,6 +243,7 @@ readonly class SymfonyPool implements CanHandleRequestPool
 
     private function dispatchRequestEvent(HttpRequest $request): void {
         $this->events->dispatch(new HttpRequestSent([
+            'requestId' => $request->id,
             'url' => $request->url(),
             'method' => $request->method(),
             'headers' => $request->headers(),

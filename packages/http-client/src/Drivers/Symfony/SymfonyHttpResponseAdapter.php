@@ -28,6 +28,7 @@ class SymfonyHttpResponseAdapter implements CanAdaptHttpResponse
         ResponseInterface $response,
         EventDispatcherInterface $events,
         bool $isStreamed,
+        private readonly string $requestId,
         private float $connectTimeout = 1,
     ) {
         $this->client = $client;
@@ -73,7 +74,10 @@ class SymfonyHttpResponseAdapter implements CanAdaptHttpResponse
                 continue;
             }
             $chunk = $chunk->getContent();
-            $this->events->dispatch(new HttpResponseChunkReceived($chunk));
+            $this->events->dispatch(new HttpResponseChunkReceived([
+                'requestId' => $this->requestId,
+                'chunk' => $chunk,
+            ]));
             yield $chunk;
         }
     }

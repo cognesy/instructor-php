@@ -33,8 +33,8 @@ class ResponseValidator implements CanValidateResponse
             default => $this->validateObject($response)
         };
         $this->events->dispatch(match(true) {
-            $validation->isInvalid() => new ResponseValidationFailed(['validation' => $validation->toArray()]),
-            default => new ResponseValidated(['validation' => $validation->toArray()])
+            $validation->isInvalid() => new ResponseValidationFailed(['validation' => $this->validationPayload($validation)]),
+            default => new ResponseValidated(['validation' => $this->validationPayload($validation)])
         });
         return match(true) {
             $validation->isInvalid() => Result::failure($validation->getErrorMessage()),
@@ -45,12 +45,12 @@ class ResponseValidator implements CanValidateResponse
     // INTERNAL ////////////////////////////////////////////////////////
 
     protected function validateSelf(CanValidateSelf $response) : ValidationResult {
-        $this->events->dispatch(new CustomResponseValidationAttempt(['response' => json_encode($response)]));
+        $this->events->dispatch(new CustomResponseValidationAttempt($this->objectSummary($response)));
         return $response->validate();
     }
 
     protected function validateObject(object $response) : ValidationResult {
-        $this->events->dispatch(new ResponseValidationAttempt(['object' => $response]));
+        $this->events->dispatch(new ResponseValidationAttempt($this->objectSummary($response)));
         try {
             return $this->validator->validate($response);
         } catch (\Throwable $error) {
@@ -59,5 +59,38 @@ class ResponseValidator implements CanValidateResponse
                 'Validator threw an exception',
             );
         }
+    }
+
+    private function objectSummary(object $response) : array
+    {
+        return [
+            'responseClass' => $response::class,
+            'fieldCount' => count(get_object_vars($response)),
+        ];
+    }
+
+    private function validationPayload(ValidationResult $validation) : array
+    {
+        return [
+            'isValid' => $validation->isValid(),
+            'message' => $validation->message,
+            'errors' => array_map(
+                fn(ValidationError $error): array => [
+                    'field' => $error->field,
+                    'value' => $this->normalizeValue($error->value),
+                    'message' => $error->message,
+                ],
+                $validation->errors,
+            ),
+        ];
+    }
+
+    private function normalizeValue(mixed $value) : mixed
+    {
+        return match (true) {
+            is_object($value) => $value::class,
+            is_array($value) => array_map($this->normalizeValue(...), $value),
+            default => $value,
+        };
     }
 }

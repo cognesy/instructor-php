@@ -60,10 +60,10 @@ it('emits sanitized attempt failure telemetry with provider status code', functi
     expect(fn() => $pending->response())->toThrow(ProviderInvalidRequestException::class);
 
     expect($captured)->not->toBeNull()
-        ->and($captured->httpStatusCode)->toBe(401)
-        ->and($captured->errorMessage)->toContain('[REDACTED]')
-        ->and($captured->errorMessage)->toContain('q=ok')
-        ->and($captured->errorMessage)->not->toContain('super-secret')
-        ->and($captured->errorMessage)->not->toContain('url-token')
-        ->and($captured->errorMessage)->not->toContain('user:pass@');
+        ->and($captured->data['httpStatusCode'])->toBe(401)
+        ->and($captured->data['errorMessage'])->toContain('[REDACTED]')
+        ->and($captured->data['errorMessage'])->toContain('q=ok')
+        ->and($captured->data['errorMessage'])->not->toContain('super-secret')
+        ->and($captured->data['errorMessage'])->not->toContain('url-token')
+        ->and($captured->data['errorMessage'])->not->toContain('user:pass@');
 });

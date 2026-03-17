@@ -77,7 +77,7 @@ final class CurlDriver implements CanHandleHttpRequest
 
         $response = $this->toSyncResponseOrFail($adapter, $handle, $request);
         $this->validateStatusCodeOrFail($response, $request);
-        $this->dispatchResponseReceived($response->statusCode());
+        $this->dispatchResponseReceived($response->statusCode(), $request);
 
         return $response;
     }
@@ -102,13 +102,14 @@ final class CurlDriver implements CanHandleHttpRequest
             queue: $queue,
             headerParser: $headerParser,
             events: $this->events,
+            requestId: $request->id,
             chunkSize: $this->config->streamChunkSize ?? 256,
             headerTimeoutSeconds: (float) $this->config->streamHeaderTimeout,
         );
 
         $httpResponse = $response->toHttpResponse();
         $this->validateStatusCodeOrFail($httpResponse, $request);
-        $this->dispatchResponseReceived($httpResponse->statusCode());
+        $this->dispatchResponseReceived($httpResponse->statusCode(), $request);
 
         return $httpResponse;
     }
@@ -166,6 +167,7 @@ final class CurlDriver implements CanHandleHttpRequest
 
     private function dispatchRequestSent(HttpRequest $request): void {
         $this->events->dispatch(new HttpRequestSent([
+            'requestId' => $request->id,
             'url' => $request->url(),
             'method' => $request->method(),
             'headers' => $request->headers(),
@@ -173,12 +175,16 @@ final class CurlDriver implements CanHandleHttpRequest
         ]));
     }
 
-    private function dispatchResponseReceived(int $statusCode): void {
-        $this->events->dispatch(new HttpResponseReceived(['statusCode' => $statusCode]));
+    private function dispatchResponseReceived(int $statusCode, HttpRequest $request): void {
+        $this->events->dispatch(new HttpResponseReceived([
+            'requestId' => $request->id,
+            'statusCode' => $statusCode,
+        ]));
     }
 
     private function dispatchRequestFailed(HttpRequestException $exception, HttpRequest $request): void {
         $this->events->dispatch(new HttpRequestFailed([
+            'requestId' => $request->id,
             'url' => $request->url(),
             'method' => $request->method(),
             'errors' => $exception->getMessage(),

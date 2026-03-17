@@ -57,7 +57,7 @@ class GuzzleDriver implements CanHandleHttpRequest
             $this->dispatchStatusCodeFailed($httpResponse->statusCode(), $request);
             throw $httpException;
         }
-        $this->dispatchResponseReceived($httpResponse);
+        $this->dispatchResponseReceived($httpResponse, $request);
         return $httpResponse;
     }
 
@@ -86,6 +86,7 @@ class GuzzleDriver implements CanHandleHttpRequest
             stream: $response->getBody(),
             events: $this->events,
             isStreamed: $request->isStreamed(),
+            requestId: $request->id,
             streamChunkSize: $this->config->streamChunkSize,
         ))->toHttpResponse();
     }
@@ -113,6 +114,7 @@ class GuzzleDriver implements CanHandleHttpRequest
 
     private function dispatchRequestSent(HttpRequest $request): void {
         $this->events->dispatch(new HttpRequestSent([
+            'requestId' => $request->id,
             'url' => $request->url(),
             'method' => $request->method(),
             'headers' => $request->headers(),
@@ -122,6 +124,7 @@ class GuzzleDriver implements CanHandleHttpRequest
 
     private function dispatchStatusCodeFailed(int $statusCode, HttpRequest $request): void {
         $this->events->dispatch(new HttpRequestFailed([
+            'requestId' => $request->id,
             'url' => $request->url(),
             'method' => $request->method(),
             'statusCode' => $statusCode,
@@ -130,6 +133,7 @@ class GuzzleDriver implements CanHandleHttpRequest
 
     private function dispatchRequestFailed(HttpRequestException $exception, HttpRequest $request): void {
         $this->events->dispatch(new HttpRequestFailed([
+            'requestId' => $request->id,
             'url' => $request->url(),
             'method' => $request->method(),
             'headers' => $request->headers(),
@@ -138,9 +142,10 @@ class GuzzleDriver implements CanHandleHttpRequest
         ]));
     }
 
-    private function dispatchResponseReceived(HttpResponse $response): void {
+    private function dispatchResponseReceived(HttpResponse $response, HttpRequest $request): void {
         $this->events->dispatch(new HttpResponseReceived([
-            'statusCode' => $response->statusCode()
+            'requestId' => $request->id,
+            'statusCode' => $response->statusCode(),
         ]));
     }
 

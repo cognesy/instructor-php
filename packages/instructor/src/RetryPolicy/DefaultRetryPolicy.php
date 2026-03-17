@@ -49,10 +49,12 @@ final readonly class DefaultRetryPolicy implements CanDetermineRetry
         // Emit retry event only if another retry is still allowed
         $maxRetries = $updated->config()->maxRetries();
         if ($updated->attemptCount() <= $maxRetries) {
-            $this->events->dispatch(new NewValidationRecoveryAttempt([
-                'retries' => $updated->attemptCount(),
-                'errors' => $updated->currentErrors(),
-            ]));
+            $this->events->dispatch(new NewValidationRecoveryAttempt($this->recoveryPayload(
+                execution: $updated,
+                phase: 'validation.recovery',
+                retries: $updated->attemptCount(),
+                errors: $updated->currentErrors(),
+            )));
         }
 
         return $updated;
@@ -78,10 +80,12 @@ final readonly class DefaultRetryPolicy implements CanDetermineRetry
         // Failure - dispatch event and throw
         $errors = $execution->errors();
 
-        $this->events->dispatch(new StructuredOutputRecoveryLimitReached([
-            'retries' => $execution->attemptCount(),
-            'errors' => $errors,
-        ]));
+        $this->events->dispatch(new StructuredOutputRecoveryLimitReached($this->recoveryPayload(
+            execution: $execution,
+            phase: 'validation.recovery_limit_reached',
+            retries: $execution->attemptCount(),
+            errors: $errors,
+        )));
 
         $message = "Structured output recovery attempts limit reached after {$execution->attemptCount()} attempt(s) due to: "
             . implode(", ", array_map(fn($e) => is_string($e) ? $e : (string)$e, $errors));
@@ -90,5 +94,35 @@ final readonly class DefaultRetryPolicy implements CanDetermineRetry
             message: $message,
             errors: $errors,
         );
+    }
+
+    private function recoveryPayload(
+        StructuredOutputExecution $execution,
+        string $phase,
+        int $retries,
+        array $errors,
+    ) : array {
+        $requestId = $execution->request()->id()->toString();
+        $executionId = $execution->id()->toString();
+        $attemptId = $execution->lastFinalizedAttempt()?->id()->toString()
+            ?? $execution->activeAttempt()?->id()->toString();
+
+        return array_filter([
+            'requestId' => $requestId,
+            'executionId' => $executionId,
+            'attemptId' => $attemptId,
+            'phase' => $phase,
+            'phaseId' => $this->phaseId($executionId, $phase, $attemptId),
+            'retries' => $retries,
+            'errors' => $errors,
+        ], fn(mixed $value): bool => $value !== null);
+    }
+
+    private function phaseId(string $executionId, string $phase, ?string $attemptId = null) : string
+    {
+        return match ($attemptId) {
+            null => "{$executionId}:{$phase}",
+            default => "{$executionId}:{$phase}:{$attemptId}",
+        };
     }
 }

@@ -14,17 +14,17 @@ class GeneratedEventUser
     public int $age;
 }
 
-it('dispatches StructuredOutputResponseGenerated with StructuredOutputResponse for sync execution', function () {
+it('dispatches StructuredOutputResponseGenerated with normalized payload for sync execution', function () {
     $events = new EventDispatcher();
-    $generatedResponse = null;
+    $generatedPayload = null;
 
-    $events->addListener(StructuredOutputResponseGenerated::class, function (StructuredOutputResponseGenerated $event) use (&$generatedResponse): void {
-        $generatedResponse = $event->data['response'] ?? null;
+    $events->addListener(StructuredOutputResponseGenerated::class, function (StructuredOutputResponseGenerated $event) use (&$generatedPayload): void {
+        $generatedPayload = $event->data;
     });
 
     $pending = (new StructuredOutput(makeStructuredRuntime(
         driver: new FakeInferenceDriver([
-            new InferenceResponse(content: '{"name":"Ava","age":34}'),
+            new InferenceResponse(content: '{"name":"Ava","age":34}', finishReason: 'stop'),
         ]),
         events: $events,
         outputMode: OutputMode::Json,
@@ -38,8 +38,26 @@ it('dispatches StructuredOutputResponseGenerated with StructuredOutputResponse f
     $response = $pending->response();
 
     expect($response)->toBeInstanceOf(StructuredOutputResponse::class);
-    expect($generatedResponse)->toBeInstanceOf(StructuredOutputResponse::class);
-    expect($generatedResponse->isFinal())->toBeTrue();
-    expect($generatedResponse->value())->toBeInstanceOf(GeneratedEventUser::class);
-    expect($generatedResponse->content())->toBe('{"name":"Ava","age":34}');
+    expect($generatedPayload)->toBeArray();
+    expect($generatedPayload)->toHaveKeys([
+        'requestId',
+        'executionId',
+        'attemptId',
+        'phase',
+        'phaseId',
+        'isPartial',
+        'hasValue',
+        'valueType',
+        'finishReason',
+        'contentLength',
+    ]);
+    expect($generatedPayload['phase'])->toBe('response.generated');
+    expect($generatedPayload['phaseId'])->toContain($generatedPayload['executionId']);
+    expect($generatedPayload['phaseId'])->toContain($generatedPayload['attemptId']);
+    expect($generatedPayload['isPartial'])->toBeFalse();
+    expect($generatedPayload['hasValue'])->toBeTrue();
+    expect($generatedPayload['valueType'])->toBe(GeneratedEventUser::class);
+    expect($generatedPayload['finishReason'])->toBe('stop');
+    expect($generatedPayload['contentLength'])->toBe(strlen('{"name":"Ava","age":34}'));
+    expect($generatedPayload)->not()->toHaveKey('response');
 });

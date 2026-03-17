@@ -321,7 +321,7 @@ use Cognesy\Polyglot\Inference\LLMProvider;
 
 $runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
     ->onEvent(StructuredOutputRequestReceived::class, function (object $event): void {
-        // handle selected event
+        // use $event->data['requestId'] / ['executionId'] for correlation
     })
     ->wiretap(function (object $event): void {
         // handle all events
