@@ -137,7 +137,7 @@ model: gpt-4.1-nano
 maxTokens: 1024
 contextLength: 1000000
 maxOutputLength: 16384
-# @doctest id="bab7"
+# @doctest id="af79"
 ```
 
 You can override any preset value at runtime using the fluent API -- for example, `withModel()` to change the model or `withMaxTokens()` to adjust the token limit.

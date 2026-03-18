@@ -30,7 +30,7 @@ $runtime = InferenceRuntime::fromConfig(
 )->onEvent(InferenceResponseCreated::class, function ($event): void {
     // Log or inspect the response
 });
-// @doctest id="e330"
+// @doctest id="292f"
 ```
 
 You can register multiple listeners for the same event class. An optional priority parameter controls the order (higher values run first):
@@ -38,7 +38,7 @@ You can register multiple listeners for the same event class. An optional priori
 ```php
 $runtime->onEvent(InferenceStarted::class, $highPriorityListener, priority: 10);
 $runtime->onEvent(InferenceStarted::class, $lowPriorityListener, priority: 0);
-// @doctest id="6997"
+// @doctest id="19c6"
 ```
 
 ### Wiretap
@@ -49,7 +49,7 @@ Use `wiretap()` to receive all events regardless of type. This is useful for deb
 $runtime->wiretap(function ($event): void {
     echo get_class($event) . "\n";
 });
-// @doctest id="09fd"
+// @doctest id="6d0c"
 ```
 
 
@@ -134,7 +134,7 @@ $runtime->onEvent(InferenceUsageReported::class, function ($event): void {
         'totalTokens' => $event->data['totalTokens'] ?? 0,
     ]);
 });
-// @doctest id="2988"
+// @doctest id="2554"
 ```
 
 ### Measuring Time-to-First-Chunk
@@ -145,7 +145,7 @@ use Cognesy\Polyglot\Inference\Events\StreamFirstChunkReceived;
 $runtime->onEvent(StreamFirstChunkReceived::class, function (StreamFirstChunkReceived $event): void {
     logger()->info("TTFC: {$event->timeToFirstChunkMs}ms for model {$event->model}");
 });
-// @doctest id="ebc6"
+// @doctest id="66a9"
 ```
 
 ### Tracking Retry Attempts
@@ -162,7 +162,7 @@ $runtime->onEvent(InferenceAttemptFailed::class, function (InferenceAttemptFaile
         'httpStatus' => $event->data['httpStatusCode'] ?? null,
     ]);
 });
-// @doctest id="1e84"
+// @doctest id="3b16"
 ```
 
 ### Monitoring Execution Outcomes
@@ -179,7 +179,7 @@ $runtime->onEvent(InferenceCompleted::class, function (InferenceCompleted $event
         'durationMs' => $event->data['durationMs'] ?? 0,
     ]);
 });
-// @doctest id="dd5c"
+// @doctest id="b029"
 ```
 
 
@@ -194,7 +194,7 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 
 $events = new EventDispatcher(name: 'my-app');
 $runtime = InferenceRuntime::fromConfig($config, events: $events);
-// @doctest id="56c4"
+// @doctest id="f1e4"
 ```
 
 The same event dispatcher instance can be shared between inference and embeddings runtimes, allowing a single wiretap listener to observe all Polyglot activity.
