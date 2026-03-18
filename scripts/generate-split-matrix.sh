@@ -15,4 +15,9 @@ while IFS=$'\t' read -r local repo github_name composer_name; do
     echo "          - local: '$local'"
     echo "            repo:  '$repo'"
     echo "            name:  '$github_name'"
-done < <(jq -r '.packages[] | [.local, .repo, .github_name, .composer_name] | @tsv' "$PACKAGES_JSON")
+done < <(jq -r '
+    .packages[]
+    | select((.repo // "") != "" and (.github_name // "") != "")
+    | [.local, .repo, .github_name, .composer_name]
+    | @tsv
+' "$PACKAGES_JSON")

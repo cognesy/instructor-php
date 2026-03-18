@@ -43,10 +43,6 @@
             "tier": "dev"
         },
         {
-            "local": "packages/doctor",
-            "tier": "dev"
-        },
-        {
             "local": "packages/dynamic",
             "repo": "cognesy/instructor-dynamic",
             "github_name": "instructor-dynamic",
@@ -66,10 +62,6 @@
             "github_name": "instructor-events",
             "composer_name": "cognesy/instructor-events",
             "tier": "library"
-        },
-        {
-            "local": "packages/experimental",
-            "tier": "dev"
         },
         {
             "local": "packages/http-client",
