@@ -2,6 +2,10 @@
 title: 'Local / Ollama'
 docname: 'ollama'
 id: '3d6b'
+tags:
+  - 'api-support'
+  - 'ollama'
+  - 'local-models'
 ---
 ## Overview
 

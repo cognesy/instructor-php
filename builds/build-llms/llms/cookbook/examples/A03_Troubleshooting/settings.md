@@ -2,6 +2,10 @@
 title: 'Load Config From Custom Path'
 docname: 'settings'
 id: 'cf65'
+tags:
+  - 'troubleshooting'
+  - 'configuration'
+  - 'custom-path'
 ---
 ## Overview
 

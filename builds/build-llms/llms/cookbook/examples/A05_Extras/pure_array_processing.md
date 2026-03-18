@@ -2,6 +2,10 @@
 title: 'Pure Array Processing (No Classes)'
 docname: 'pure_array_processing'
 id: '0857'
+tags:
+  - 'extras'
+  - 'arrays'
+  - 'no-classes'
 ---
 ## Overview
 

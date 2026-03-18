@@ -2,6 +2,10 @@
 title: 'Use custom configuration source'
 docname: 'config_providers'
 id: '01f2'
+tags:
+  - 'advanced'
+  - 'configuration'
+  - 'config-providers'
 ---
 ## Overview
 

@@ -2,6 +2,10 @@
 title: 'OpenAI Codex CLI - Basic'
 docname: 'codex_basic'
 id: 'daea'
+tags:
+  - 'agent-ctrl'
+  - 'codex'
+  - 'cli-agent'
 ---
 ## Overview
 

@@ -3,6 +3,10 @@ title: 'Session Create and Persist'
 docname: 'session_create_and_persist'
 order: 1
 id: 'f93a'
+tags:
+  - 'agent-sessions'
+  - 'persistence'
+  - 'storage'
 ---
 ## Overview
 
@@ -18,16 +22,13 @@ require 'examples/boot.php';
 use Cognesy\Agents\Capability\AgentCapabilityRegistry;
 use Cognesy\Agents\Session\Actions\SendMessage;
 use Cognesy\Agents\Session\Data\SessionId;
-use Cognesy\Agents\Session\SessionFactory;
 use Cognesy\Agents\Session\SessionRepository;
 use Cognesy\Agents\Session\SessionRuntime;
 use Cognesy\Agents\Session\Store\InMemorySessionStore;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Template\Factory\DefinitionLoopFactory;
-use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 
-$factory = new SessionFactory(new DefinitionStateFactory());
 $repo = new SessionRepository(new InMemorySessionStore());
 $runtime = new SessionRuntime($repo, new EventDispatcher('session-create-and-persist-example'));
 
@@ -41,7 +42,7 @@ $definition = new AgentDefinition(
     llmConfig: 'openai',
 );
 
-$created = $repo->create($factory->create($definition));
+$created = $runtime->create($definition);
 $sessionId = SessionId::from($created->sessionId());
 
 $worked = $runtime->execute(

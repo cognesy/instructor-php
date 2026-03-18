@@ -2,6 +2,10 @@
 title: 'Context caching (structured output)'
 docname: 'context_cache_structured'
 id: 'd7cc'
+tags:
+  - 'advanced'
+  - 'context-caching'
+  - 'structured-output'
 ---
 ## Overview
 

@@ -2,6 +2,10 @@
 title: 'xAI / Grok'
 docname: 'xai'
 id: '8778'
+tags:
+  - 'api-support'
+  - 'xai'
+  - 'grok'
 ---
 ## Overview
 

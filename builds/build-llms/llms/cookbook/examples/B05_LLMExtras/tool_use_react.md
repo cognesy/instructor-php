@@ -2,6 +2,10 @@
 title: 'Inference and tool use (ReAct driver)'
 docname: 'tool_use_react'
 id: 'd7c4'
+tags:
+  - 'llm-extras'
+  - 'tool-use'
+  - 'react'
 ---
 ## Overview
 

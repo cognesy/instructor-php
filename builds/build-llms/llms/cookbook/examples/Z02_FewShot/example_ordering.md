@@ -2,6 +2,10 @@
 title: 'Example Ordering'
 docname: 'example_ordering'
 id: '7510'
+tags:
+  - 'few-shot'
+  - 'example-ordering'
+  - 'prompting'
 ---
 ## Overview
 

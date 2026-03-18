@@ -2,6 +2,10 @@
 title: 'Use custom HTTP client instance'
 docname: 'custom_http_client'
 id: '3fe0'
+tags:
+  - 'advanced'
+  - 'http-client'
+  - 'transport'
 ---
 ## Overview
 

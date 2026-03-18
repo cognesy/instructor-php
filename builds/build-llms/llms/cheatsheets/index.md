@@ -18,6 +18,10 @@ Agent loop, state model, tools, context management, hooks, and subagent orchestr
 
 External coding agent control — Claude Code, Codex, OpenCode, and Gemini CLI bridges
 
+## [Telemetry](telemetry.md)
+
+Quick reference for Telemetry
+
 ## [Sandbox](sandbox.md)
 
 Code execution sandbox — execution policies, drivers, streaming results, and security

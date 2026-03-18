@@ -2,6 +2,10 @@
 title: 'Single label classification'
 docname: 'classification'
 id: 'e89d'
+tags:
+  - 'misc'
+  - 'classification'
+  - 'single-label'
 ---
 ## Overview
 

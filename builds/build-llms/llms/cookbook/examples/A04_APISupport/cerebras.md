@@ -2,6 +2,10 @@
 title: 'Cerebras'
 docname: 'cerebras'
 id: '48c7'
+tags:
+  - 'api-support'
+  - 'cerebras'
+  - 'provider'
 ---
 ## Overview
 

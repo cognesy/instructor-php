@@ -23,7 +23,7 @@ $runtime = StructuredOutputRuntime::fromDefaults()
     ->onEvent(ResponseValidationFailed::class, function ($event) {
         logger()->warning('Validation failed', $event->toArray());
     });
-// @doctest id="1923"
+// @doctest id="4599"
 ```
 
 ### Wiretap (All Events)
@@ -34,7 +34,7 @@ debugging or comprehensive logging:
 ```php
 $runtime = StructuredOutputRuntime::fromDefaults()
     ->wiretap(fn($event) => $event->print());
-// @doctest id="5ece"
+// @doctest id="f824"
 ```
 
 ### Practical Example
@@ -61,7 +61,7 @@ $result = (new StructuredOutput($runtime))
         responseModel: Scalar::integer(),
     )
     ->get();
-// @doctest id="557b"
+// @doctest id="dbd1"
 ```
 
 
@@ -149,3 +149,7 @@ Every event inherits the following convenience methods from `Cognesy\Events\Even
 
 Events carry a `$logLevel` property (PSR log level) and a `$data` payload. The
 `print()` method respects a configurable log-level threshold.
+
+Instructor event payloads are normalized arrays. Structured-output lifecycle events
+also expose correlation fields such as `requestId`, `executionId`, `attemptId`,
+`phase`, and `phaseId` where applicable.

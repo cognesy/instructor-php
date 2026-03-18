@@ -2,6 +2,10 @@
 title: 'Customize LLM Configuration with DSN string'
 docname: 'custom_llm_via_dsn'
 id: '835d'
+tags:
+  - 'llm-advanced'
+  - 'dsn'
+  - 'configuration'
 ---
 ## Overview
 

@@ -2,6 +2,10 @@
 title: 'Pi CLI - Basic'
 docname: 'pi_basic'
 id: 'b4f1'
+tags:
+  - 'agent-ctrl'
+  - 'pi-cli'
+  - 'cli-agent'
 ---
 ## Overview
 

@@ -14,6 +14,8 @@
 ### Release Notes
 
 - [Overview](/llms/release-notes/versions.md)
+- [v2.2.0](/llms/release-notes/v2.2.0.md)
+- [v2.1.0](/llms/release-notes/v2.1.0.md)
 - [v2.0.0](/llms/release-notes/v2.0.0.md)
 - [v1.22.0](/llms/release-notes/v1.22.0.md)
 - [v1.21.0](/llms/release-notes/v1.21.0.md)
@@ -286,6 +288,15 @@
 - [Pi Bridge](/llms/packages/agent-ctrl/11-pi-bridge.md)
 - [Gemini Bridge](/llms/packages/agent-ctrl/12-gemini-bridge.md)
 
+### Telemetry
+
+- [Introduction](/llms/packages/telemetry/01-introduction.md)
+- [Basic Setup](/llms/packages/telemetry/02-basic-setup.md)
+- [Runtime Wiring](/llms/packages/telemetry/03-runtime-wiring.md)
+- [Troubleshooting](/llms/packages/telemetry/04-troubleshooting.md)
+- [Langfuse](/llms/packages/telemetry/05-langfuse.md)
+- [Logfire](/llms/packages/telemetry/06-logfire.md)
+
 ### Sandbox
 
 - [Overview](/llms/packages/sandbox/1-overview.md)
@@ -384,12 +395,15 @@
 
 - [Calculating request cost](/llms/cookbook/examples/A03_Troubleshooting/cost_calculation.md)
 - [Debugging](/llms/cookbook/examples/A03_Troubleshooting/debugging.md)
+- [Read StructuredOutput EventLog JSONL](/llms/cookbook/examples/A03_Troubleshooting/structured_output_eventlog_readback.md)
 - [Laravel Logging Integration](/llms/cookbook/examples/A03_Troubleshooting/logging_laravel.md)
 - [Monolog Logging with Functional Pipeline](/llms/cookbook/examples/A03_Troubleshooting/logging_monolog.md)
 - [PSR-3 Logging with Functional Pipeline](/llms/cookbook/examples/A03_Troubleshooting/logging_psr.md)
 - [Symfony Logging Integration](/llms/cookbook/examples/A03_Troubleshooting/logging_symfony.md)
 - [Receive specific internal event with onEvent()](/llms/cookbook/examples/A03_Troubleshooting/on_event.md)
 - [Load Config From Custom Path](/llms/cookbook/examples/A03_Troubleshooting/settings.md)
+- [Send StructuredOutput telemetry to Langfuse](/llms/cookbook/examples/A03_Troubleshooting/structured_telemetry_langfuse.md)
+- [Send StructuredOutput telemetry to Logfire](/llms/cookbook/examples/A03_Troubleshooting/structured_telemetry_logfire.md)
 - [Tracking token usage via events](/llms/cookbook/examples/A03_Troubleshooting/token_usage_events.md)
 - [Receive all internal events with wiretap()](/llms/cookbook/examples/A03_Troubleshooting/wiretap.md)
 
@@ -472,11 +486,16 @@
 
 ### B03_LLMTroubleshooting
 
+- [Read Inference EventLog JSONL](/llms/cookbook/examples/B03_LLMTroubleshooting/inference_eventlog_readback.md)
 - [Debugging HTTP Calls](/llms/cookbook/examples/B03_LLMTroubleshooting/http_debug.md)
 - [Embeddings Logging with Laravel](/llms/cookbook/examples/B03_LLMTroubleshooting/llm_logging_laravel_embeddings.md)
 - [Inference Logging with Laravel](/llms/cookbook/examples/B03_LLMTroubleshooting/llm_logging_laravel_inference.md)
 - [Inference Logging with Monolog](/llms/cookbook/examples/B03_LLMTroubleshooting/llm_logging_monolog.md)
 - [Inference Logging with Symfony](/llms/cookbook/examples/B03_LLMTroubleshooting/llm_logging_symfony.md)
+- [Send LLM runtime telemetry to Langfuse](/llms/cookbook/examples/B03_LLMTroubleshooting/llm_telemetry_langfuse.md)
+- [Send LLM runtime telemetry to Logfire](/llms/cookbook/examples/B03_LLMTroubleshooting/llm_telemetry_logfire.md)
+- [Send streaming LLM telemetry to Langfuse](/llms/cookbook/examples/B03_LLMTroubleshooting/llm_telemetry_streaming_langfuse.md)
+- [Send streaming LLM telemetry to Logfire](/llms/cookbook/examples/B03_LLMTroubleshooting/llm_telemetry_streaming_logfire.md)
 
 ### B04_LLMApiSupport
 
@@ -569,6 +588,14 @@
 - [Session Conflict Handling](/llms/cookbook/examples/D04_AgentSessions/session_conflict_handling.md)
 - [Session Runtime Hooks](/llms/cookbook/examples/D04_AgentSessions/session_runtime_hooks.md)
 
+### D05_AgentTroubleshooting
+
+- [Read Agent EventLog JSONL](/llms/cookbook/examples/D05_AgentTroubleshooting/agent_eventlog_readback.md)
+- [Send Subagent telemetry to Langfuse](/llms/cookbook/examples/D05_AgentTroubleshooting/agent_subagent_telemetry_langfuse.md)
+- [Send Subagent telemetry to Logfire](/llms/cookbook/examples/D05_AgentTroubleshooting/agent_subagent_telemetry_logfire.md)
+- [Send Agent telemetry to Langfuse](/llms/cookbook/examples/D05_AgentTroubleshooting/agent_telemetry_langfuse.md)
+- [Send Agent telemetry to Logfire](/llms/cookbook/examples/D05_AgentTroubleshooting/agent_telemetry_logfire.md)
+
 ### D10_AgentCtrl
 
 - [Basic Agent Control Usage](/llms/cookbook/examples/D10_AgentCtrl/agent_ctrl_basic.md)
@@ -579,12 +606,15 @@
 - [Claude Code CLI - Agentic Search](/llms/cookbook/examples/D10_AgentCtrl/claude_code_search.md)
 - [OpenAI Codex CLI - Basic](/llms/cookbook/examples/D10_AgentCtrl/codex_basic.md)
 - [OpenAI Codex CLI - Streaming](/llms/cookbook/examples/D10_AgentCtrl/codex_streaming.md)
+- [Read AgentCtrl EventLog JSONL](/llms/cookbook/examples/D10_AgentCtrl/agent_ctrl_eventlog_readback.md)
 - [Gemini CLI - Basic](/llms/cookbook/examples/D10_AgentCtrl/gemini_basic.md)
 - [Gemini CLI - Streaming](/llms/cookbook/examples/D10_AgentCtrl/gemini_streaming.md)
 - [OpenCode CLI - Basic](/llms/cookbook/examples/D10_AgentCtrl/opencode_basic.md)
 - [OpenCode CLI - Streaming](/llms/cookbook/examples/D10_AgentCtrl/opencode_streaming.md)
 - [Pi CLI - Basic](/llms/cookbook/examples/D10_AgentCtrl/pi_basic.md)
 - [Pi CLI - Streaming](/llms/cookbook/examples/D10_AgentCtrl/pi_streaming.md)
+- [Send AgentCtrl telemetry to Langfuse](/llms/cookbook/examples/D10_AgentCtrl/agent_ctrl_telemetry_langfuse.md)
+- [Send AgentCtrl telemetry to Logfire](/llms/cookbook/examples/D10_AgentCtrl/agent_ctrl_telemetry_logfire.md)
 
 ### D20_Sandbox
 
@@ -685,24 +715,4 @@
 ## Cheatsheets
 
 - [Overview](/llms/cheatsheets/index.md)
-- [Instructor](/llms/cheatsheets/instructor.md)
-- [Polyglot](/llms/cheatsheets/polyglot.md)
-- [Agents](/llms/cheatsheets/agents.md)
-- [AgentCtrl](/llms/cheatsheets/agent-ctrl.md)
-- [Sandbox](/llms/cheatsheets/sandbox.md)
-- [HTTP Client](/llms/cheatsheets/http-client.md)
-- [Laravel](/llms/cheatsheets/laravel.md)
-- [Config](/llms/cheatsheets/config.md)
-- [Dynamic](/llms/cheatsheets/dynamic.md)
-- [Events](/llms/cheatsheets/events.md)
-- [Logging](/llms/cheatsheets/logging.md)
-- [Messages](/llms/cheatsheets/messages.md)
-- [Metrics](/llms/cheatsheets/metrics.md)
-- [Pipeline](/llms/cheatsheets/pipeline.md)
-- [Schema](/llms/cheatsheets/schema.md)
-- [Setup](/llms/cheatsheets/setup.md)
-- [Stream](/llms/cheatsheets/stream.md)
-- [Templates](/llms/cheatsheets/templates.md)
-- [Utils](/llms/cheatsheets/utils.md)
-- [Xprompt](/llms/cheatsheets/xprompt.md)
 

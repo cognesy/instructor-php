@@ -2,6 +2,10 @@
 title: 'Extraction of complex objects'
 docname: 'complex_extraction'
 id: '5e55'
+tags:
+  - 'extras'
+  - 'complex-extraction'
+  - 'structured-data'
 ---
 ## Overview
 

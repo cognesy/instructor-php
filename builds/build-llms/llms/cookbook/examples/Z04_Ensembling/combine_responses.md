@@ -2,6 +2,10 @@
 title: 'Use LLMs to Combine Different Responses'
 docname: 'combine_responses'
 id: 'f34d'
+tags:
+  - 'ensembling'
+  - 'response-ranking'
+  - 'self-consistency'
 ---
 ## Overview
 

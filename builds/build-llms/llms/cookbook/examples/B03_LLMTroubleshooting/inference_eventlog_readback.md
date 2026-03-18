@@ -1,0 +1,64 @@
+---
+title: 'Read Inference EventLog JSONL'
+docname: 'inference_eventlog_readback'
+id: '7f4b'
+tags:
+  - 'llm-troubleshooting'
+  - 'eventlog'
+  - 'jsonl'
+---
+## Overview
+
+This example enables the default `EventLog` JSONL sink for a plain inference
+request, then reads the resulting log file and prints the captured entries.
+
+Key concepts:
+- `EventLog::enable()`: programmatic opt-in for default runtime logging
+- `InferenceRuntime::fromProvider(...)`: uses the built-in runtime event wiring
+- JSONL readback: inspect emitted inference and HTTP lifecycle events after the call
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+require_once 'examples/_support/eventlog_readback.php';
+
+use Cognesy\Logging\EventLog;
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
+
+$logPath = ExampleEventLog::path('examples-b03-inference-eventlog');
+
+EventLog::enable($logPath);
+
+try {
+    $runtime = InferenceRuntime::fromProvider(LLMProvider::using('openai'));
+
+    $response = Inference::fromRuntime($runtime)
+        ->with(
+            messages: Messages::fromString('Answer in one sentence: what is the capital of France?'),
+            options: ['max_tokens' => 48],
+        )
+        ->get();
+
+    $entries = ExampleEventLog::read($logPath);
+} finally {
+    EventLog::disable();
+}
+
+echo "=== Inference Result ===\n";
+echo "Response: {$response}\n";
+
+echo "\n=== EventLog Entries ===\n";
+echo "Log file: {$logPath}\n";
+echo 'Entries captured: ' . count($entries) . "\n\n";
+
+ExampleEventLog::print($entries, 8);
+
+assert($response !== '');
+assert($entries !== []);
+?>
+```

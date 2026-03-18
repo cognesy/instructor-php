@@ -2,6 +2,10 @@
 title: 'HTTP Client – Basics'
 docname: 'http_client_basics'
 id: 'c41a'
+tags:
+  - 'http'
+  - 'client'
+  - 'basics'
 ---
 ## Overview
 

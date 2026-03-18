@@ -2,6 +2,10 @@
 title: 'Working directly with LLMs'
 docname: 'inference'
 id: 'e986'
+tags:
+  - 'llm'
+  - 'text-inference'
+  - 'direct-api'
 ---
 ## Overview
 

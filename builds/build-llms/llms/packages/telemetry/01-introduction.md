@@ -1,0 +1,71 @@
+---
+title: 'Introduction'
+description: 'What the Telemetry package does and where it fits in the runtime stack'
+---
+
+# Introduction
+
+The Telemetry package is the shared tracing layer for Instructor PHP runtimes.
+It does not generate runtime events on its own. Runtime packages such as
+`agents`, `agent-ctrl`, `instructor`, `polyglot`, and `http-client` emit events,
+and telemetry projectors turn those events into correlated spans and logs.
+
+At the center is `Cognesy\Telemetry\Application\Telemetry`. You give it:
+
+- a `TraceRegistry` to keep active spans in memory
+- an exporter such as `OtelExporter`, `LogfireExporter`, or `LangfuseExporter`
+
+Then runtime projectors write observations into that shared telemetry instance.
+
+## Main Pieces
+
+### `Telemetry`
+
+`Telemetry` is the main application service. It opens spans, records logs, closes
+spans, stores pending metrics, and flushes exporters.
+
+Common methods:
+
+- `openRoot(string $key, string $name)`
+- `openChild(string $key, string $parentKey, string $name)`
+- `log(string $key, string $name)`
+- `complete(string $key)`
+- `fail(string $key)`
+- `flush()`
+
+### `TraceRegistry`
+
+`TraceRegistry` tracks active spans by key during the current process. The key is
+local to your app. It can be an execution id, request id, or any stable name you
+use while the run is active.
+
+### Exporters
+
+The package ships with three main exporters:
+
+- `OtelExporter` for generic OTEL payloads
+- `LogfireExporter` for Logfire OTLP export
+- `LangfuseExporter` for Langfuse OTLP export
+
+You can combine them with `CompositeTelemetryExporter`.
+
+## Where Runtime Wiring Happens
+
+Projectors live in the packages that own the events, not in `packages/telemetry`.
+Typical examples:
+
+- `Cognesy\Agents\Telemetry\AgentsTelemetryProjector`
+- `Cognesy\AgentCtrl\Telemetry\AgentCtrlTelemetryProjector`
+- `Cognesy\Instructor\Telemetry\InstructorTelemetryProjector`
+- `Cognesy\Polyglot\Telemetry\PolyglotTelemetryProjector`
+- `Cognesy\Http\Telemetry\HttpClientTelemetryProjector`
+
+Use `RuntimeEventBridge` to attach those projectors to a shared event bus.
+
+## Recommended Reading
+
+1. `02-basic-setup.md`
+2. `03-runtime-wiring.md`
+3. `04-troubleshooting.md`
+4. `05-langfuse.md`
+5. `06-logfire.md`

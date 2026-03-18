@@ -2,6 +2,10 @@
 title: 'Extracting scalar values'
 docname: 'scalars'
 id: '318e'
+tags:
+  - 'advanced'
+  - 'scalar-output'
+  - 'extraction'
 ---
 ## Overview
 

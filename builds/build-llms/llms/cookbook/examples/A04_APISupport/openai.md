@@ -2,6 +2,10 @@
 title: 'OpenAI'
 docname: 'openai'
 id: '618c'
+tags:
+  - 'api-support'
+  - 'openai'
+  - 'provider'
 ---
 ## Overview
 

@@ -2,6 +2,10 @@
 title: 'Include Incorrect Examples'
 docname: 'incorrect_examples'
 id: '0dca'
+tags:
+  - 'thought-generation'
+  - 'contrastive-cot'
+  - 'reasoning'
 ---
 ## Overview
 

@@ -2,6 +2,10 @@
 title: 'Google Gemini (OpenAI compatible API)'
 docname: 'google_gemini_oai'
 id: '5cb7'
+tags:
+  - 'api-support'
+  - 'gemini'
+  - 'openai-compatible'
 ---
 ## Overview
 

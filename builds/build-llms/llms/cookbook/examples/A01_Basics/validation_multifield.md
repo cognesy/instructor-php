@@ -2,6 +2,10 @@
 title: 'Validation across multiple fields'
 docname: 'validation_multifield'
 id: 'd758'
+tags:
+  - 'basics'
+  - 'validation'
+  - 'cross-field'
 ---
 ## Overview
 

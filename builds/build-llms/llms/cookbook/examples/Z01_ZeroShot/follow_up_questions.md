@@ -2,6 +2,10 @@
 title: 'Generate Follow-Up Questions'
 docname: 'follow_up_questions'
 id: '88c7'
+tags:
+  - 'zero-shot'
+  - 'follow-up-questions'
+  - 'reasoning'
 ---
 ## Overview
 

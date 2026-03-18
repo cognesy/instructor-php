@@ -2,6 +2,10 @@
 title: 'Receive all internal events with wiretap()'
 docname: 'wiretap'
 id: '83b1'
+tags:
+  - 'troubleshooting'
+  - 'events'
+  - 'wiretap'
 ---
 ## Overview
 

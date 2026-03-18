@@ -2,6 +2,10 @@
 title: 'Sandbox: Timeout Guard'
 docname: 'sandbox_timeout_guard'
 id: 'd204'
+tags:
+  - 'sandbox'
+  - 'timeouts'
+  - 'policy'
 ---
 ## Overview
 

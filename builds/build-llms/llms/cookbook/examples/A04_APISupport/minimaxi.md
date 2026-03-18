@@ -3,6 +3,10 @@ title: 'Minimaxi'
 docname: 'minimaxi'
 id: '1d6f'
 skip: true
+tags:
+  - 'api-support'
+  - 'minimaxi'
+  - 'provider'
 ---
 ## Overview
 

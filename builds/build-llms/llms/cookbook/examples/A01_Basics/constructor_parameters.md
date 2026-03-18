@@ -2,6 +2,10 @@
 title: 'Specifying required and optional parameters via constructor'
 docname: 'constructor_parameters'
 id: '1bde'
+tags:
+  - 'basics'
+  - 'constructor'
+  - 'object-mapping'
 ---
 ## Overview
 

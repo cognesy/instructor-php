@@ -2,6 +2,10 @@
 title: 'Embeddings utils'
 docname: 'embed_utils'
 id: '297f'
+tags:
+  - 'llm-advanced'
+  - 'embeddings'
+  - 'vector-search'
 ---
 ## Overview
 

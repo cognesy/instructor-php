@@ -2,6 +2,10 @@
 title: 'Define Style'
 docname: 'define_style'
 id: '489b'
+tags:
+  - 'zero-shot'
+  - 'style-control'
+  - 'prompting'
 ---
 ## Overview
 

@@ -2,6 +2,10 @@
 title: 'Mixed Type Property'
 docname: 'mixed_type_property'
 id: '3d08'
+tags:
+  - 'basics'
+  - 'mixed-types'
+  - 'schema'
 ---
 ## Overview
 
@@ -24,7 +28,6 @@ class UserWithMixedTypeProperty
 $text = <<<TEXT
     Jason is 25 years old. He plays football and loves to travel.
     TEXT;
-
 
 $user = StructuredOutput::using('openai')
     ->withMessages($text)

@@ -2,6 +2,10 @@
 title: 'HTTP Middleware (Hooks)'
 docname: 'http_middleware_hooks'
 id: 'b6fd'
+tags:
+  - 'http'
+  - 'middleware'
+  - 'hooks'
 ---
 ## Overview
 

@@ -3,6 +3,10 @@ title: 'Template from YAML'
 docname: 'template_from_yaml'
 order: 3
 id: 'c7f3'
+tags:
+  - 'agent-templates'
+  - 'yaml'
+  - 'templates'
 ---
 ## Overview
 

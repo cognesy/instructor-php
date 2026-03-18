@@ -2,6 +2,10 @@
 title: 'Use custom configuration source for Inference'
 docname: 'llm_config_providers'
 id: '7fa3'
+tags:
+  - 'llm-advanced'
+  - 'configuration'
+  - 'config-providers'
 ---
 ## Overview
 

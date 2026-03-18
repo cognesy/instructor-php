@@ -2,6 +2,10 @@
 title: 'Custom validation using Symfony Validator'
 docname: 'custom_validation'
 id: '13a9'
+tags:
+  - 'basics'
+  - 'validation'
+  - 'symfony-validator'
 ---
 ## Overview
 

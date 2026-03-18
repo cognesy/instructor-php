@@ -30,7 +30,7 @@ $runtime = InferenceRuntime::fromConfig(
 )->onEvent(InferenceResponseCreated::class, function ($event): void {
     // Log or inspect the response
 });
-// @doctest id="3107"
+// @doctest id="e330"
 ```
 
 You can register multiple listeners for the same event class. An optional priority parameter controls the order (higher values run first):
@@ -38,7 +38,7 @@ You can register multiple listeners for the same event class. An optional priori
 ```php
 $runtime->onEvent(InferenceStarted::class, $highPriorityListener, priority: 10);
 $runtime->onEvent(InferenceStarted::class, $lowPriorityListener, priority: 0);
-// @doctest id="7bff"
+// @doctest id="6997"
 ```
 
 ### Wiretap
@@ -49,7 +49,7 @@ Use `wiretap()` to receive all events regardless of type. This is useful for deb
 $runtime->wiretap(function ($event): void {
     echo get_class($event) . "\n";
 });
-// @doctest id="3199"
+// @doctest id="09fd"
 ```
 
 
@@ -61,8 +61,8 @@ The inference lifecycle dispatches events in this order:
 
 | Event | When Dispatched | Key Data |
 |---|---|---|
-| `InferenceStarted` | Beginning of execution | execution ID, request, isStreamed |
-| `InferenceCompleted` | End of execution (success or failure) | execution ID, isSuccess, finish reason, usage, attempt count, durationMs, completedAt, response |
+| `InferenceStarted` | Beginning of execution | `data['executionId']`, `data['requestId']`, `data['isStreamed']`, `data['model']`, `data['messageCount']` |
+| `InferenceCompleted` | End of execution (success or failure) | `data['executionId']`, `data['isSuccess']`, `data['finishReason']`, `data['attemptCount']`, `data['durationMs']`, token-count fields |
 
 These events bracket the entire inference operation, including any retry attempts. `InferenceCompleted` is dispatched exactly once per execution, whether it succeeded or failed.
 
@@ -73,9 +73,9 @@ Each retry attempt dispatches its own events:
 | Event | When Dispatched | Key Data |
 |---|---|---|
 | `InferenceAttemptStarted` | Beginning of an attempt | execution ID, attempt ID, attempt number, model |
-| `InferenceAttemptSucceeded` | Attempt completed successfully | execution ID, attempt ID, attemptNumber, finish reason, usage, durationMs |
-| `InferenceAttemptFailed` | Attempt failed | execution ID, attempt ID, attemptNumber, errorMessage, errorType, willRetry, HTTP status code, partial usage, durationMs |
-| `InferenceUsageReported` | After a successful attempt | execution ID, InferenceUsage, model, isFinal |
+| `InferenceAttemptSucceeded` | Attempt completed successfully | `data['executionId']`, `data['attemptId']`, `data['attemptNumber']`, `data['finishReason']`, `data['durationMs']`, token-count fields |
+| `InferenceAttemptFailed` | Attempt failed | `data['executionId']`, `data['attemptId']`, `data['attemptNumber']`, `data['errorMessage']`, `data['errorType']`, `data['willRetry']`, `data['httpStatusCode']`, partial token-count fields, `data['durationMs']` |
+| `InferenceUsageReported` | After a successful attempt | `data['executionId']`, `data['model']`, `data['isFinal']`, token-count fields |
 
 When retries are configured, you may see multiple `InferenceAttemptStarted`/`InferenceAttemptFailed` pairs before a final `InferenceAttemptSucceeded` event. The `attemptNumber` field tracks which attempt is running.
 
@@ -84,7 +84,7 @@ When retries are configured, you may see multiple `InferenceAttemptStarted`/`Inf
 | Event | When Dispatched | Key Data |
 |---|---|---|
 | `InferenceRequested` | Before sending the HTTP request | request data |
-| `InferenceResponseCreated` | After receiving and parsing the response | full `InferenceResponse` |
+| `InferenceResponseCreated` | After receiving and parsing the response | `data['executionId']`, `data['requestId']`, `data['responseId']`, `data['finishReason']`, content-length fields, tool-call summary, `data['usage']` |
 | `InferenceFailed` | On unrecoverable failure | error details |
 
 ### Streaming Events
@@ -92,7 +92,7 @@ When retries are configured, you may see multiple `InferenceAttemptStarted`/`Inf
 | Event | When Dispatched | Key Data |
 |---|---|---|
 | `StreamFirstChunkReceived` | First visible delta arrives | execution ID, timeToFirstChunkMs, receivedAt, model, initial content |
-| `PartialInferenceDeltaCreated` | Each visible delta | execution ID, `PartialInferenceDelta` object |
+| `PartialInferenceDeltaCreated` | Each visible delta | `data['executionId']`, `data['contentDelta']` |
 | `StreamEventReceived` | Raw SSE event received | raw event data |
 | `StreamEventParsed` | SSE event parsed into a delta | parsed event data |
 
@@ -115,7 +115,7 @@ The embeddings lifecycle dispatches a smaller set of events:
 |---|---|---|
 | `EmbeddingsDriverBuilt` | After the embeddings driver is created | driver class, config, HTTP client class |
 | `EmbeddingsRequested` | Before sending the embeddings request | request data |
-| `EmbeddingsResponseReceived` | After receiving the response | `EmbeddingsResponse` object |
+| `EmbeddingsResponseReceived` | After receiving the response | `data['model']`, `data['inputCount']`, `data['vectorCount']`, `data['dimensions']`, `data['usage']` |
 | `EmbeddingsFailed` | On failure | error details |
 
 
@@ -128,11 +128,13 @@ use Cognesy\Polyglot\Inference\Events\InferenceUsageReported;
 
 $runtime->onEvent(InferenceUsageReported::class, function ($event): void {
     logger()->info('Token usage', [
-        'model' => $event->model,
-        'usage' => $event->usage->toString(),
+        'model' => $event->data['model'] ?? null,
+        'inputTokens' => $event->data['inputTokens'] ?? 0,
+        'outputTokens' => $event->data['outputTokens'] ?? 0,
+        'totalTokens' => $event->data['totalTokens'] ?? 0,
     ]);
 });
-// @doctest id="8f13"
+// @doctest id="2988"
 ```
 
 ### Measuring Time-to-First-Chunk
@@ -143,7 +145,7 @@ use Cognesy\Polyglot\Inference\Events\StreamFirstChunkReceived;
 $runtime->onEvent(StreamFirstChunkReceived::class, function (StreamFirstChunkReceived $event): void {
     logger()->info("TTFC: {$event->timeToFirstChunkMs}ms for model {$event->model}");
 });
-// @doctest id="7caf"
+// @doctest id="ebc6"
 ```
 
 ### Tracking Retry Attempts
@@ -152,14 +154,15 @@ $runtime->onEvent(StreamFirstChunkReceived::class, function (StreamFirstChunkRec
 use Cognesy\Polyglot\Inference\Events\InferenceAttemptFailed;
 
 $runtime->onEvent(InferenceAttemptFailed::class, function (InferenceAttemptFailed $event): void {
-    logger()->warning("Attempt {$event->attemptNumber} failed", [
-        'errorMessage' => $event->errorMessage,
-        'errorType' => $event->errorType,
-        'willRetry' => $event->willRetry,
-        'httpStatus' => $event->httpStatusCode,
+    logger()->warning('Attempt failed', [
+        'attemptNumber' => $event->data['attemptNumber'] ?? null,
+        'errorMessage' => $event->data['errorMessage'] ?? null,
+        'errorType' => $event->data['errorType'] ?? null,
+        'willRetry' => $event->data['willRetry'] ?? false,
+        'httpStatus' => $event->data['httpStatusCode'] ?? null,
     ]);
 });
-// @doctest id="471a"
+// @doctest id="1e84"
 ```
 
 ### Monitoring Execution Outcomes
@@ -169,14 +172,14 @@ use Cognesy\Polyglot\Inference\Events\InferenceCompleted;
 
 $runtime->onEvent(InferenceCompleted::class, function (InferenceCompleted $event): void {
     logger()->info('Inference completed', [
-        'success' => $event->isSuccess,
-        'finishReason' => $event->finishReason->value,
-        'attempts' => $event->attemptCount,
-        'totalTokens' => $event->usage->total(),
-        'durationMs' => $event->durationMs,
+        'success' => $event->data['isSuccess'] ?? false,
+        'finishReason' => $event->data['finishReason'] ?? null,
+        'attempts' => $event->data['attemptCount'] ?? 0,
+        'totalTokens' => $event->data['totalTokens'] ?? 0,
+        'durationMs' => $event->data['durationMs'] ?? 0,
     ]);
 });
-// @doctest id="5933"
+// @doctest id="dd5c"
 ```
 
 
@@ -191,7 +194,7 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 
 $events = new EventDispatcher(name: 'my-app');
 $runtime = InferenceRuntime::fromConfig($config, events: $events);
-// @doctest id="aa19"
+// @doctest id="56c4"
 ```
 
 The same event dispatcher instance can be shared between inference and embeddings runtimes, allowing a single wiretap listener to observe all Polyglot activity.

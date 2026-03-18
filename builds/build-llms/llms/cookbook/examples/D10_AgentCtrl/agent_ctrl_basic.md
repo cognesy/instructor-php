@@ -2,6 +2,10 @@
 title: 'Basic Agent Control Usage'
 docname: 'agent_ctrl_basic'
 id: 'e971'
+tags:
+  - 'agent-ctrl'
+  - 'basics'
+  - 'cli-agents'
 ---
 ## Overview
 

@@ -3,6 +3,10 @@ title: 'Monolog Logging with Functional Pipeline'
 docname: 'logging_monolog'
 path: ''
 id: '0cf7'
+tags:
+  - 'troubleshooting'
+  - 'logging'
+  - 'monolog'
 ---
 ## Overview
 

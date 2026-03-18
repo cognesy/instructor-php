@@ -2,6 +2,10 @@
 title: 'Perplexity'
 docname: 'llm_perplexity'
 id: 'e1f5'
+tags:
+  - 'llm-api-support'
+  - 'perplexity'
+  - 'provider'
 ---
 ## Overview
 

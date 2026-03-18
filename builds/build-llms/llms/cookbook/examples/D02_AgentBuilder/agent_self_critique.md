@@ -3,6 +3,10 @@ title: 'Agent Self-Critique Pattern'
 docname: 'agent_self_critique'
 order: 5
 id: 'bfb1'
+tags:
+  - 'agent-builder'
+  - 'self-critique'
+  - 'workflow'
 ---
 ## Overview
 

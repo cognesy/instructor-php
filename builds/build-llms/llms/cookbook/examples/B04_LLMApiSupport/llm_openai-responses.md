@@ -2,6 +2,10 @@
 title: 'OpenAI Responses API'
 docname: 'llm_openai-responses'
 id: '653d'
+tags:
+  - 'llm-api-support'
+  - 'openai-responses'
+  - 'provider'
 ---
 ## Overview
 

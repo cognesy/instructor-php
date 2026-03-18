@@ -2,6 +2,10 @@
 title: 'Expanding search queries'
 docname: 'search_query_expansion'
 id: '0fa6'
+tags:
+  - 'misc'
+  - 'search-query-expansion'
+  - 'retrieval'
 ---
 ## Overview
 

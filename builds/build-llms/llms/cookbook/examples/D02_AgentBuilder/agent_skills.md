@@ -3,6 +3,10 @@ title: 'Agent Skills - SKILL.md Open Standard'
 docname: 'agent_skills'
 order: 10
 id: 'sk01'
+tags:
+  - 'agent-builder'
+  - 'skills'
+  - 'skill-md'
 ---
 ## Overview
 

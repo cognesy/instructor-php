@@ -2,6 +2,10 @@
 title: 'Cost calculation (StructuredOutput)'
 docname: 'cost_calculation_structured'
 id: 'a5c1'
+tags:
+  - 'extras'
+  - 'cost'
+  - 'structured-output'
 ---
 ## Overview
 

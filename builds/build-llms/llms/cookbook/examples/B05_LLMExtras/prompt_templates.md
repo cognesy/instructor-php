@@ -2,6 +2,10 @@
 title: 'Prompt Templates'
 docname: 'prompt_templates'
 id: 'a60c'
+tags:
+  - 'llm-extras'
+  - 'prompt-templates'
+  - 'templating'
 ---
 ## Overview
 
@@ -38,7 +42,7 @@ assert(Str::contains($answer, 'Berlin'));
 
 // DSN now uses engine aliases (twig/blade/arrowpipe), so point twig at a concrete template path
 $prompt = Template::text(
-    pathOrDsn: 'twig:packages/templates/prompts/demo-twig/capital',
+    pathOrDsn: 'twig:packages/templates/resources/prompts/demo-twig/capital',
     variables: ['country' => 'Germany'],
 );
 

@@ -2,6 +2,10 @@
 title: 'Azure OpenAI'
 docname: 'llm_azure_openai'
 id: '50a3'
+tags:
+  - 'llm-api-support'
+  - 'azure-openai'
+  - 'provider'
 ---
 ## Overview
 

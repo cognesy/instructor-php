@@ -2,6 +2,10 @@
 title: 'Using images in prompts'
 docname: 'image_data'
 id: '1c85'
+tags:
+  - 'llm-extras'
+  - 'vision'
+  - 'prompts'
 ---
 ## Overview
 

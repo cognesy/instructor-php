@@ -2,6 +2,10 @@
 title: 'Debugging'
 docname: 'debugging'
 id: '9a35'
+tags:
+  - 'troubleshooting'
+  - 'debugging'
+  - 'observability'
 ---
 ## Overview
 

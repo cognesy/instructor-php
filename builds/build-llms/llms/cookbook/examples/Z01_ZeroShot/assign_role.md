@@ -2,6 +2,10 @@
 title: 'Assign a Role'
 docname: 'assign_role'
 id: '7ff6'
+tags:
+  - 'zero-shot'
+  - 'role-prompting'
+  - 'prompting'
 ---
 ## Overview
 
@@ -42,8 +46,8 @@ class GenerateLeads {
         $rolesStr = Arrays::toBullets($roles);
         return StructuredOutput::using('openai')->with(
             messages: [
-                ['role' => 'user', 'content' => "Your roles:\n{$rolesStr}\n\n"],
-                ['role' => 'user', 'content' => "List companies meeting criteria:\n{$criteriaStr}\n\n"],
+                ['role' => 'system', 'content' => "You are acting in the following roles:\n{$rolesStr}"],
+                ['role' => 'user', 'content' => "List at least 3 real companies meeting these criteria:\n{$criteriaStr}"],
             ],
             responseModel: Sequence::of(Company::class),
         )->get()->toArray();

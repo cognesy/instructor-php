@@ -2,6 +2,10 @@
 title: 'Handling errors with `Maybe` helper class'
 docname: 'maybe'
 id: '122b'
+tags:
+  - 'basics'
+  - 'error-handling'
+  - 'maybe'
 ---
 ## Overview
 

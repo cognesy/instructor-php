@@ -2,6 +2,10 @@
 title: 'Select Effective Examples'
 docname: 'select_effective_samples'
 id: '1fe6'
+tags:
+  - 'few-shot'
+  - 'example-selection'
+  - 'semantic-search'
 ---
 ## Overview
 

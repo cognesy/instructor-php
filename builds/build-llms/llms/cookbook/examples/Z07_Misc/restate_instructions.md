@@ -2,6 +2,10 @@
 title: 'Restating instructions'
 docname: 'restate_instructions'
 id: '70df'
+tags:
+  - 'misc'
+  - 'instruction-restatement'
+  - 'prompting'
 ---
 ## Overview
 

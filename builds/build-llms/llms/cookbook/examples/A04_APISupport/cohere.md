@@ -2,6 +2,10 @@
 title: 'Cohere'
 docname: 'cohere'
 id: 'd290'
+tags:
+  - 'api-support'
+  - 'cohere'
+  - 'provider'
 ---
 ## Overview
 

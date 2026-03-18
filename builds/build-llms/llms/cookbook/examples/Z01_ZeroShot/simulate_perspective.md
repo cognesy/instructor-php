@@ -2,6 +2,10 @@
 title: 'Simulate a Perspective'
 docname: 'simulate_perspective'
 id: 'dea8'
+tags:
+  - 'zero-shot'
+  - 'perspective-taking'
+  - 'prompting'
 ---
 ## Overview
 

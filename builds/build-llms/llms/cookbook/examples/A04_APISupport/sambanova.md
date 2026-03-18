@@ -2,6 +2,10 @@
 title: 'SambaNova'
 docname: 'sambanova'
 id: '0546'
+tags:
+  - 'api-support'
+  - 'sambanova'
+  - 'provider'
 ---
 ## Overview
 

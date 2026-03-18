@@ -2,6 +2,10 @@
 title: 'Streaming (Inference, OpenAI Responses)'
 docname: 'streaming_inference_openai_responses'
 id: '983e'
+tags:
+  - 'llm-extras'
+  - 'streaming'
+  - 'openai-responses'
 ---
 ## Overview
 

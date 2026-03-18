@@ -2,6 +2,10 @@
 title: 'Streaming (Structured Output, OpenAI Responses)'
 docname: 'streaming_structured_openai_responses'
 id: '1f8e'
+tags:
+  - 'extras'
+  - 'streaming'
+  - 'openai-responses'
 ---
 ## Overview
 
@@ -19,7 +23,6 @@ use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Cognesy\Utils\Cli\Console;
 use Cognesy\Utils\Str;
 
 class PersonProfile
@@ -30,6 +33,47 @@ class PersonProfile
     public array $hobbies = [];
 }
 
+function partialScreenState(?bool $active = null): bool {
+    static $state = false;
+
+    if (!is_null($active)) {
+        $state = $active;
+    }
+
+    return $state;
+}
+
+function enterPartialScreen(): void {
+    if (partialScreenState()) {
+        return;
+    }
+
+    partialScreenState(true);
+    register_shutdown_function(static function (): void {
+        exitPartialScreen();
+    });
+
+    echo "\033[?1049h\033[H\033[2J";
+
+    if (defined('STDOUT')) {
+        fflush(STDOUT);
+    }
+}
+
+function exitPartialScreen(): void {
+    if (!partialScreenState()) {
+        return;
+    }
+
+    echo "\033[?1049l";
+
+    if (defined('STDOUT')) {
+        fflush(STDOUT);
+    }
+
+    partialScreenState(false);
+}
+
 $text = <<<TEXT
 Jason is 25 years old. He lives in San Francisco. He enjoys soccer, climbing,
 and cooking.
@@ -38,9 +82,15 @@ TEXT;
 $partialsCount = 0;
 $onPartialUpdate = function (object $partial) use (&$partialsCount): void {
     $partialsCount += 1;
-    Console::clearScreen();
+    enterPartialScreen();
+    echo "\033[H\033[2J";
+
     echo "Partial update #{$partialsCount}:\n";
     dump($partial);
+
+    if (defined('STDOUT')) {
+        fflush(STDOUT);
+    }
 };
 
 $runtime = StructuredOutputRuntime::fromProvider(
@@ -60,6 +110,7 @@ foreach ($stream->partials() as $partial) {
 }
 
 $profile = $stream->finalValue();
+exitPartialScreen();
 
 echo "All tokens received. Final structured profile:\n";
 dump($profile);

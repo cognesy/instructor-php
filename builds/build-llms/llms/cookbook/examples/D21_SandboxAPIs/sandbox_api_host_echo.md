@@ -2,6 +2,10 @@
 title: 'Sandbox API: Host'
 docname: 'sandbox_api_host_echo'
 id: 'd210'
+tags:
+  - 'sandbox-apis'
+  - 'host'
+  - 'drivers'
 ---
 ## Overview
 

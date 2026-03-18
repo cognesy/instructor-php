@@ -3,6 +3,10 @@ title: 'Agent with Custom Tool'
 docname: 'agent_loop_custom_tool'
 order: 4
 id: '1f01'
+tags:
+  - 'agents'
+  - 'tools'
+  - 'custom-tool'
 ---
 ## Overview
 

@@ -2,6 +2,10 @@
 title: 'Groq'
 docname: 'llm_groq'
 id: '7c03'
+tags:
+  - 'llm-api-support'
+  - 'groq'
+  - 'provider'
 ---
 ## Overview
 

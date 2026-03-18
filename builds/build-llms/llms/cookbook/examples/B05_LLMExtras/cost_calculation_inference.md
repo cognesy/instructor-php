@@ -2,6 +2,10 @@
 title: 'Cost calculation (Polyglot)'
 docname: 'cost_calculation_inference'
 id: 'b5c1'
+tags:
+  - 'llm-extras'
+  - 'cost'
+  - 'inference'
 ---
 ## Overview
 

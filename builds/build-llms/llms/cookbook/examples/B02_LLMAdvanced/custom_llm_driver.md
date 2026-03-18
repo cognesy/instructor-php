@@ -2,6 +2,10 @@
 title: 'Using custom LLM driver'
 docname: 'custom_llm_driver'
 id: 'e002'
+tags:
+  - 'llm-advanced'
+  - 'llm-driver'
+  - 'custom-driver'
 ---
 ## Overview
 

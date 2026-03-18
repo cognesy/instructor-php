@@ -3,6 +3,10 @@ title: 'Session Runtime Hooks'
 docname: 'session_runtime_hooks'
 order: 7
 id: 'f2a1'
+tags:
+  - 'agent-sessions'
+  - 'runtime'
+  - 'hooks'
 ---
 ## Overview
 
@@ -21,17 +25,14 @@ use Cognesy\Agents\Session\Contracts\CanControlAgentSession;
 use Cognesy\Agents\Session\Data\AgentSession;
 use Cognesy\Agents\Session\Data\SessionId;
 use Cognesy\Agents\Session\Enums\AgentSessionStage;
-use Cognesy\Agents\Session\SessionFactory;
 use Cognesy\Agents\Session\SessionHookStack;
 use Cognesy\Agents\Session\SessionRepository;
 use Cognesy\Agents\Session\SessionRuntime;
 use Cognesy\Agents\Session\Store\InMemorySessionStore;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Template\Factory\DefinitionLoopFactory;
-use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 
-$factory = new SessionFactory(new DefinitionStateFactory());
 $repo = new SessionRepository(new InMemorySessionStore());
 $events = new EventDispatcher('session-runtime-hooks-example');
 
@@ -64,12 +65,12 @@ $hook = new class($trace) implements CanControlAgentSession {
 $hooks = SessionHookStack::empty()->with($hook, priority: 100);
 $runtime = new SessionRuntime($repo, $events, $hooks);
 
-$created = $repo->create($factory->create(new AgentDefinition(
+$created = $runtime->create(new AgentDefinition(
     name: 'hooks-agent',
     description: 'Session hooks demo',
     systemPrompt: 'You are helpful. Reply in one short sentence.',
     llmConfig: 'openai',
-)));
+));
 
 $sessionId = SessionId::from($created->sessionId());
 $updated = $runtime->execute(

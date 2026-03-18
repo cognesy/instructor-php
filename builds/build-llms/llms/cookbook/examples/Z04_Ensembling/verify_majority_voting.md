@@ -2,6 +2,10 @@
 title: 'Verify Responses over Majority Voting'
 docname: 'verify_majority_voting'
 id: '1cc3'
+tags:
+  - 'ensembling'
+  - 'verification'
+  - 'majority-voting'
 ---
 ## Overview
 

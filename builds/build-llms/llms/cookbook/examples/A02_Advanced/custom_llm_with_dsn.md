@@ -2,6 +2,10 @@
 title: 'Customize parameters via DSN'
 docname: 'custom_llm_with_dsn'
 id: 'fc0f'
+tags:
+  - 'advanced'
+  - 'dsn'
+  - 'configuration'
 ---
 ## Overview
 

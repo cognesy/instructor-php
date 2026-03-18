@@ -2,6 +2,10 @@
 title: 'Generate Code for Intermediate Steps'
 docname: 'generate_code'
 id: '9f72'
+tags:
+  - 'decomposition'
+  - 'code-execution'
+  - 'reasoning'
 ---
 ## Overview
 

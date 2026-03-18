@@ -2,6 +2,10 @@
 title: 'Use Translation for Paraphrasing'
 docname: 'translation_paraphrasing'
 id: 'fe3b'
+tags:
+  - 'ensembling'
+  - 'back-translation'
+  - 'paraphrasing'
 ---
 ## Overview
 

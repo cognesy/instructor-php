@@ -2,6 +2,10 @@
 title: 'OpenAI Codex CLI - Streaming'
 docname: 'codex_streaming'
 id: '9b3e'
+tags:
+  - 'agent-ctrl'
+  - 'codex'
+  - 'streaming'
 ---
 ## Overview
 

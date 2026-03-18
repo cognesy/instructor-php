@@ -2,6 +2,10 @@
 title: 'Using structured data as an input'
 docname: 'structured_input'
 id: 'f7a0'
+tags:
+  - 'extras'
+  - 'structured-input'
+  - 'data-pipelines'
 ---
 ## Overview
 
@@ -30,7 +34,7 @@ class Email {
 }
 
 $email = new Email(
-    address: 'joe@gmail',
+    address: 'joe@gmail.com',
     subject: 'Status update',
     body: 'Your account has been updated.'
 );
@@ -38,8 +42,9 @@ $email = new Email(
 $translatedEmail = StructuredOutput::using('openai')
     ->withInput($email)
     ->withResponseClass(Email::class)
-    ->withPrompt('Translate the subject and body fields to Spanish. Keep the address field unchanged.')
+    ->withPrompt('Return an Email object. Copy the address field exactly as provided. Translate only the subject and body fields to natural Spanish.')
     ->withModel('gpt-4o-mini')
+    ->withOptions(['temperature' => 0])
     ->get();
 
 print_r($translatedEmail);

@@ -2,6 +2,10 @@
 title: 'Consistent values of arbitrary properties'
 docname: 'arbitrary_properties_consistent'
 id: '8767'
+tags:
+  - 'misc'
+  - 'arbitrary-properties'
+  - 'consistency'
 ---
 ## Overview
 

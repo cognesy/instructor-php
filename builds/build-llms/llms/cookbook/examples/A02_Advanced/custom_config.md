@@ -2,6 +2,10 @@
 title: 'Customize parameters of LLM driver'
 docname: 'custom_config'
 id: '5acf'
+tags:
+  - 'advanced'
+  - 'custom-config'
+  - 'llm-driver'
 ---
 ## Overview
 

@@ -2,6 +2,10 @@
 title: 'Mistral AI'
 docname: 'llm_mistralai'
 id: '23fa'
+tags:
+  - 'llm-api-support'
+  - 'mistral'
+  - 'provider'
 ---
 ## Overview
 

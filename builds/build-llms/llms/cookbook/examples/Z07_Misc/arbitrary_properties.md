@@ -2,6 +2,10 @@
 title: 'Arbitrary properties'
 docname: 'arbitrary_properties'
 id: '6f3e'
+tags:
+  - 'misc'
+  - 'arbitrary-properties'
+  - 'extraction'
 ---
 ## Overview
 

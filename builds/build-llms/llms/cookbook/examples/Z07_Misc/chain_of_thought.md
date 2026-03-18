@@ -2,6 +2,10 @@
 title: 'Chain of Thought'
 docname: 'chain_of_thought'
 id: '32ff'
+tags:
+  - 'misc'
+  - 'chain-of-thought'
+  - 'extraction'
 ---
 ## Overview
 

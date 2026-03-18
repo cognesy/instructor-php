@@ -2,6 +2,10 @@
 title: 'OpenCode CLI - Basic'
 docname: 'opencode_basic'
 id: 'd828'
+tags:
+  - 'agent-ctrl'
+  - 'opencode'
+  - 'cli-agent'
 ---
 ## Overview
 

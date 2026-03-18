@@ -2,6 +2,10 @@
 title: 'Chat with summary'
 docname: 'chat_with_summary'
 id: '2425'
+tags:
+  - 'llm-extras'
+  - 'chat'
+  - 'summarization'
 ---
 ## Overview
 

@@ -2,6 +2,10 @@
 title: 'Emotional Stimuli'
 docname: 'emotional_stimuli'
 id: '9f2c'
+tags:
+  - 'zero-shot'
+  - 'emotional-language'
+  - 'prompting'
 ---
 ## Overview
 

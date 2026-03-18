@@ -2,6 +2,10 @@
 title: 'Generate in Parallel'
 docname: 'generate_in_parallel'
 id: '69fe'
+tags:
+  - 'decomposition'
+  - 'parallelism'
+  - 'latency'
 ---
 ## Overview
 

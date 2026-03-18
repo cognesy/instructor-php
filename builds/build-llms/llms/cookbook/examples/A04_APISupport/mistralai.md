@@ -2,6 +2,10 @@
 title: 'Mistral AI'
 docname: 'mistralai'
 id: '1c11'
+tags:
+  - 'api-support'
+  - 'mistral'
+  - 'provider'
 ---
 ## Overview
 

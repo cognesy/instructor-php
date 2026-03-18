@@ -5,6 +5,13 @@ description: 'Control system messages, user prompts, examples, and cached contex
 
 Instructor provides several prompt hooks that let you shape the messages sent to the LLM. These are intentionally simple -- Instructor is not a prompt management framework, but it gives you the building blocks you need for most structured output tasks.
 
+During the current rollout there are two materialization paths:
+
+- `RequestMaterializer` is the legacy/default implementation
+- `StructuredPromptRequestMaterializer` is the new implementation built on prompt classes and markdown templates
+
+You can switch between them via `StructuredOutputRuntime::withRequestMaterializer()` without changing the caller-facing `StructuredOutput` code.
+
 ## Prompt Hooks
 
 ### System Message
@@ -18,7 +25,7 @@ $result = (new StructuredOutput)
     ->withSystem('You are a data extraction assistant. Be precise and thorough.')
     ->with(messages: $text, responseModel: Person::class)
     ->get();
-// @doctest id="2149"
+// @doctest id="157f"
 ```
 
 ### User Prompt
@@ -30,7 +37,7 @@ $result = (new StructuredOutput)
     ->withPrompt('Extract all person information. If age is not stated, estimate based on context.')
     ->with(messages: $text, responseModel: Person::class)
     ->get();
-// @doctest id="bf63"
+// @doctest id="2968"
 ```
 
 ### Examples
@@ -49,7 +56,7 @@ $result = (new StructuredOutput)
     ])
     ->with(messages: $text, responseModel: Person::class)
     ->get();
-// @doctest id="6d6f"
+// @doctest id="cfec"
 ```
 
 ### Combined Usage
@@ -73,7 +80,7 @@ $result = (new StructuredOutput)->with(
     messages: $text,
     responseModel: Person::class,
 )->get();
-// @doctest id="57a8"
+// @doctest id="baab"
 ```
 
 ## Using Stringable Objects as Prompts
@@ -89,7 +96,7 @@ $result = (new StructuredOutput)
     ->withPrompt('Extract person details from the text below.')
     ->with(messages: $text, responseModel: Person::class)
     ->get();
-// @doctest id="4be9"
+// @doctest id="014a"
 ```
 
 ## Cached Context
@@ -106,10 +113,33 @@ $result = (new StructuredOutput)
     )
     ->with(messages: 'Focus on section 3.', responseModel: ContractDetails::class)
     ->get();
-// @doctest id="b6e5"
+// @doctest id="7103"
 ```
 
 Cached context messages are placed before the regular messages in the chat structure. The exact caching behavior depends on the LLM provider -- Anthropic and OpenAI both support prompt caching with different mechanisms.
+
+On the new `StructuredPromptRequestMaterializer` path, cached prompt content is no longer flattened into ordinary live messages. It is projected into `InferenceRequest::cachedContext()` so provider-native caching can take effect, while the per-request prompt remains live.
+
+## Switching Materializers
+
+```php
+use Cognesy\Instructor\Core\RequestMaterializer;
+use Cognesy\Instructor\Core\StructuredPromptRequestMaterializer;
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+
+$runtime = StructuredOutputRuntime::fromDefaults()
+    ->withRequestMaterializer(new StructuredPromptRequestMaterializer());
+
+$legacyRuntime = $runtime->withRequestMaterializer(new RequestMaterializer());
+
+$so = (new StructuredOutput)
+    ->withRuntime($runtime)
+    ->with(messages: $text, responseModel: Person::class);
+// @doctest id="f870"
+```
+
+This lets you run the same requests against both paths while the new materializer is being proven.
 
 ## Template Engine Integration
 
@@ -126,7 +156,7 @@ $rendered = Template::twig()
 $result = (new StructuredOutput)
     ->with(messages: $rendered, responseModel: Person::class)
     ->get();
-// @doctest id="a893"
+// @doctest id="4885"
 ```
 
 The `Template` class supports Twig and Blade template engines, front matter metadata, chat message markup, and template libraries loaded from disk. Render your templates into strings or message arrays, then pass the result into `StructuredOutput`. See the Template package documentation for full details.

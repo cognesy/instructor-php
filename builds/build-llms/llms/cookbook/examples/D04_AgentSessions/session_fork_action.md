@@ -3,6 +3,10 @@ title: 'Session Fork Action'
 docname: 'session_fork_action'
 order: 5
 id: 'd7ab'
+tags:
+  - 'agent-sessions'
+  - 'forking'
+  - 'actions'
 ---
 ## Overview
 
@@ -19,14 +23,12 @@ use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
 use Cognesy\Agents\Session\Actions\ForkSession;
 use Cognesy\Agents\Session\Actions\SendMessage;
 use Cognesy\Agents\Session\Data\SessionId;
-use Cognesy\Agents\Session\SessionFactory;
 use Cognesy\Agents\Session\SessionRepository;
 use Cognesy\Agents\Session\SessionRuntime;
 use Cognesy\Agents\Session\Store\InMemorySessionStore;
 use Cognesy\Agents\Template\Contracts\CanInstantiateAgentLoop;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Template\Factory\DefinitionLoopFactory;
-use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 
 $capabilities = new AgentCapabilityRegistry();
@@ -44,16 +46,15 @@ $loopFactoryWithLogger = new class($loopFactory, $logger) implements CanInstanti
     }
 };
 
-$factory = new SessionFactory(new DefinitionStateFactory());
 $repo = new SessionRepository(new InMemorySessionStore());
 $runtime = new SessionRuntime($repo, new EventDispatcher('session-runtime-example'));
 
-$parent = $repo->create($factory->create(new AgentDefinition(
+$parent = $runtime->create(new AgentDefinition(
     name: 'parent-agent',
     description: 'Travel planner session',
     systemPrompt: 'You are a travel planner. Answer in one short sentence.',
     llmConfig: 'openai',
-)));
+));
 $parentId = $parent->sessionId();
 echo "=== Agent Execution Log ===\n\n";
 echo "[runtime] Seed parent session {$parentId->toString()}\n";

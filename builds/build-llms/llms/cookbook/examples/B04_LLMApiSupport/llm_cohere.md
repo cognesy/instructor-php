@@ -2,6 +2,10 @@
 title: 'Cohere'
 docname: 'llm_cohere'
 id: '9331'
+tags:
+  - 'llm-api-support'
+  - 'cohere'
+  - 'provider'
 ---
 ## Overview
 

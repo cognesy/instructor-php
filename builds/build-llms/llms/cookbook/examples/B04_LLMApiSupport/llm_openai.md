@@ -2,6 +2,10 @@
 title: 'OpenAI'
 docname: 'llm_openai'
 id: '2e9b'
+tags:
+  - 'llm-api-support'
+  - 'openai'
+  - 'provider'
 ---
 ## Overview
 

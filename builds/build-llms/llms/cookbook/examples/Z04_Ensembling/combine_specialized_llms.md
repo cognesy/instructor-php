@@ -2,6 +2,10 @@
 title: 'Combine Different Specialized LLMs'
 docname: 'combine_specialized_llms'
 id: '575d'
+tags:
+  - 'ensembling'
+  - 'mixture-of-experts'
+  - 'routing'
 ---
 ## Overview
 

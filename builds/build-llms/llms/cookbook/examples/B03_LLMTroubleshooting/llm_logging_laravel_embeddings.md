@@ -3,6 +3,10 @@ title: 'Embeddings Logging with Laravel'
 docname: 'llm_logging_laravel_embeddings'
 path: ''
 id: 'ba2a'
+tags:
+  - 'logging'
+  - 'laravel'
+  - 'embeddings'
 ---
 ## Overview
 

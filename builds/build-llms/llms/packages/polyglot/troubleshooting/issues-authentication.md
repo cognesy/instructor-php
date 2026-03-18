@@ -25,7 +25,7 @@ $key = getenv('OPENAI_API_KEY');
 if (empty($key)) {
     echo "OPENAI_API_KEY is not set or is empty.\n";
 }
-// @doctest id="fcd6"
+// @doctest id="61f6"
 ```
 
 If you use a `.env` file with a library like `vlucas/phpdotenv`, make sure the file is loaded before Polyglot resolves the preset:
@@ -36,7 +36,7 @@ If you use a `.env` file with a library like `vlucas/phpdotenv`, make sure the f
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 $dotenv->required(['OPENAI_API_KEY'])->notEmpty();
-// @doctest id="9887"
+// @doctest id="56f0"
 ```
 
 ## Check the Key Format
@@ -54,7 +54,7 @@ $openaiKey = (string) getenv('OPENAI_API_KEY');
 if ($openaiKey !== '' && !str_starts_with($openaiKey, 'sk-')) {
     echo "Warning: OpenAI key does not start with 'sk-'. Verify it was copied correctly.\n";
 }
-// @doctest id="b781"
+// @doctest id="adcb"
 ```
 
 ## Confirm the Preset Matches the Provider
@@ -71,7 +71,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $text = Inference::using('anthropic')
     ->withMessages(Messages::fromString('Hello'))
     ->get();
-// @doctest id="1621"
+// @doctest id="9d34"
 ```
 
 ## Test the Key Directly
@@ -100,7 +100,7 @@ function testPreset(string $preset): void {
 testPreset('openai');
 testPreset('anthropic');
 testPreset('mistral');
-// @doctest id="7b84"
+// @doctest id="d323"
 ```
 
 ## Pass the Key Programmatically
@@ -123,7 +123,7 @@ $inference = Inference::fromConfig(new LLMConfig(
 ));
 
 $text = $inference->withMessages(Messages::fromString('Hello'))->get();
-// @doctest id="d658"
+// @doctest id="c498"
 ```
 
 > **Security note:** Avoid hard-coding API keys in source files that are committed to version control. Use environment variables, secrets managers, or encrypted configuration files.

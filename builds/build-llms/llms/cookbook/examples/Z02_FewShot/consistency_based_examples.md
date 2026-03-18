@@ -2,6 +2,10 @@
 title: 'Consistency Based Self Adaptive Prompting (COSP)'
 docname: 'consistency_based_examples'
 id: '5413'
+tags:
+  - 'few-shot'
+  - 'example-selection'
+  - 'consistency'
 ---
 ## Overview
 

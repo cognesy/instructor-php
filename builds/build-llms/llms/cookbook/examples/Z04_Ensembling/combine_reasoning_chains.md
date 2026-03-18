@@ -2,6 +2,10 @@
 title: 'Combine Multiple Reasoning Chains'
 docname: 'combine_reasoning_chains'
 id: '7549'
+tags:
+  - 'ensembling'
+  - 'meta-cot'
+  - 'reasoning'
 ---
 ## Overview
 
