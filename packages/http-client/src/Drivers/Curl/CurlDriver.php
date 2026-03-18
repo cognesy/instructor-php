@@ -11,6 +11,7 @@ use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
 use Cognesy\Http\Exceptions\HttpExceptionFactory;
 use Cognesy\Http\Exceptions\HttpRequestException;
+use Cognesy\Http\Telemetry\HttpRequestTelemetry;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use RuntimeException;
@@ -77,7 +78,7 @@ final class CurlDriver implements CanHandleHttpRequest
 
         $response = $this->toSyncResponseOrFail($adapter, $handle, $request);
         $this->validateStatusCodeOrFail($response, $request);
-        $this->dispatchResponseReceived($response->statusCode(), $request);
+        $this->dispatchResponseReceived($response->statusCode(), $request, false, $response->body());
 
         return $response;
     }
@@ -109,7 +110,7 @@ final class CurlDriver implements CanHandleHttpRequest
 
         $httpResponse = $response->toHttpResponse();
         $this->validateStatusCodeOrFail($httpResponse, $request);
-        $this->dispatchResponseReceived($httpResponse->statusCode(), $request);
+        $this->dispatchResponseReceived($httpResponse->statusCode(), $request, true);
 
         return $httpResponse;
     }
@@ -172,14 +173,18 @@ final class CurlDriver implements CanHandleHttpRequest
             'method' => $request->method(),
             'headers' => $request->headers(),
             'body' => $request->body()->toArray(),
+            ...HttpRequestTelemetry::metadataForRequest($request),
         ]));
     }
 
-    private function dispatchResponseReceived(int $statusCode, HttpRequest $request): void {
-        $this->events->dispatch(new HttpResponseReceived([
+    private function dispatchResponseReceived(int $statusCode, HttpRequest $request, bool $isStreamed = false, string $body = ''): void {
+        $this->events->dispatch(new HttpResponseReceived(array_filter([
             'requestId' => $request->id,
             'statusCode' => $statusCode,
-        ]));
+            'isStreamed' => $isStreamed,
+            'body' => !$isStreamed && $body !== '' ? $body : null,
+            ...HttpRequestTelemetry::metadataForRequest($request),
+        ], static fn(mixed $v): bool => $v !== null)));
     }
 
     private function dispatchRequestFailed(HttpRequestException $exception, HttpRequest $request): void {
@@ -188,6 +193,7 @@ final class CurlDriver implements CanHandleHttpRequest
             'url' => $request->url(),
             'method' => $request->method(),
             'errors' => $exception->getMessage(),
+            ...HttpRequestTelemetry::metadataForRequest($request),
         ]));
     }
 }

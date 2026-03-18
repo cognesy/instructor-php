@@ -9,7 +9,7 @@ Install the package via Composer:
 
 ```bash
 composer require cognesy/instructor-http-client
-# @doctest id="f96e"
+# @doctest id="8c48"
 ```
 
 You also need at least one supported HTTP library. The default driver uses PHP's built-in cURL extension, so if cURL is available you can start immediately. For other drivers, install the corresponding package:
@@ -20,7 +20,7 @@ composer require guzzlehttp/guzzle
 
 # Symfony HttpClient
 composer require symfony/http-client
-# @doctest id="ef8c"
+# @doctest id="db95"
 ```
 
 ### Requirements
@@ -49,7 +49,7 @@ $response = $client->send(new HttpRequest(
 
 echo $response->statusCode(); // 200
 echo $response->body();       // {"status":"ok"}
-// @doctest id="3da5"
+// @doctest id="c6ee"
 ```
 
 `HttpClient::default()` creates a client with the default cURL driver. The `send()` method returns a `PendingHttpResponse`, which is lazy -- the network call does not happen until you call `get()` or `stream()`.
@@ -62,7 +62,7 @@ If you want a specific driver, use a preset name or pass an `HttpClientConfig`:
 use Cognesy\Http\HttpClient;
 
 $client = HttpClient::using('guzzle');
-// @doctest id="8ef1"
+// @doctest id="c13a"
 ```
 
 Or construct the config explicitly:
@@ -72,7 +72,7 @@ use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\HttpClient;
 
 $client = HttpClient::fromConfig(new HttpClientConfig(driver: 'guzzle'));
-// @doctest id="a618"
+// @doctest id="2d02"
 ```
 
 Or use the builder for more control:
@@ -88,7 +88,7 @@ $client = (new HttpClientBuilder())
         requestTimeout: 30,
     ))
     ->create();
-// @doctest id="eb57"
+// @doctest id="9188"
 ```
 
 ## Error Handling
@@ -107,7 +107,7 @@ try {
         echo "Status: {$e->getResponse()->statusCode()}\n";
     }
 }
-// @doctest id="7e80"
+// @doctest id="e2a4"
 ```
 
 The exception hierarchy gives you granular control:
@@ -151,7 +151,7 @@ $response = $client->send(new HttpRequest(
 ))->get();
 
 echo $response->body(); // {"ok":true}
-// @doctest id="5e75"
+// @doctest id="b9d4"
 ```
 
 The mock driver matches responses by URL and method, making it straightforward to verify that your application sends the right requests.

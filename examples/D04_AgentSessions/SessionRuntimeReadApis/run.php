@@ -3,6 +3,10 @@ title: 'SessionRuntime Read APIs'
 docname: 'session_runtime_read_apis'
 order: 3
 id: 'b8d2'
+tags:
+  - 'agent-sessions'
+  - 'read-apis'
+  - 'runtime'
 ---
 ## Overview
 

@@ -17,7 +17,7 @@ is a preset name that maps to your environment variables:
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 $config = LLMConfig::fromPreset('openai');
-// @doctest id="fd2c"
+// @doctest id="67f3"
 ```
 
 You can also create a `StructuredOutput` directly from a preset:
@@ -28,7 +28,7 @@ use Cognesy\Instructor\StructuredOutput;
 $result = StructuredOutput::using('anthropic')
     ->with(messages: 'Jason is 28.', responseModel: Person::class)
     ->get();
-// @doctest id="1927"
+// @doctest id="0e08"
 ```
 
 Provider configuration covers connection details: API keys, base URLs, default model
@@ -50,7 +50,7 @@ $runtime = StructuredOutputRuntime::fromConfig(
 )
     ->withMaxRetries(3)
     ->withOutputMode(OutputMode::Tools);
-// @doctest id="4579"
+// @doctest id="baaf"
 ```
 
 ### Runtime Settings
@@ -86,7 +86,7 @@ $runtime = StructuredOutputRuntime::fromConfig(
     LLMConfig::fromPreset('openai'),
     structuredConfig: $config,
 );
-// @doctest id="9dea"
+// @doctest id="940e"
 ```
 
 `StructuredOutputConfig` includes settings for:
@@ -118,7 +118,7 @@ $person = (new StructuredOutput)
         model: 'gpt-4o',
     )
     ->get();
-// @doctest id="a184"
+// @doctest id="b5a9"
 ```
 
 ### Request Methods
@@ -145,14 +145,18 @@ The runtime exposes an event system for observing the processing pipeline:
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputRequestReceived;
 
 $runtime->onEvent(StructuredOutputRequestReceived::class, function ($event) {
-    logger()->info('Request received', $event->data);
+    logger()->info('Request received', [
+        'requestId' => $event->data['requestId'],
+        'executionId' => $event->data['executionId'],
+        'phaseId' => $event->data['phaseId'],
+    ]);
 });
 
 // Or listen to all events
 $runtime->wiretap(function ($event) {
     logger()->debug(get_class($event));
 });
-// @doctest id="15f8"
+// @doctest id="587a"
 ```
 
 
@@ -177,7 +181,7 @@ $summary = (new StructuredOutput)
     ->withRuntime($runtime)
     ->with(messages: $text2, responseModel: Summary::class)
     ->get();
-// @doctest id="cdfb"
+// @doctest id="df2b"
 ```
 
 This keeps configuration centralized and each request minimal.

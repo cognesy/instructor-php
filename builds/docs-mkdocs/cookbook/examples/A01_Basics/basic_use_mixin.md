@@ -2,6 +2,10 @@
 title: 'Basic use via StructuredOutput'
 docname: 'basic_use_mixin'
 id: '068c'
+tags:
+  - 'basics'
+  - 'structured-output'
+  - 'mixin'
 ---
 ## Overview
 

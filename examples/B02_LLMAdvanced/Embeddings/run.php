@@ -2,6 +2,10 @@
 title: 'Embeddings'
 docname: 'embeddings'
 id: '4bca'
+tags:
+  - 'llm-advanced'
+  - 'embeddings'
+  - 'vectorization'
 ---
 ## Overview
 

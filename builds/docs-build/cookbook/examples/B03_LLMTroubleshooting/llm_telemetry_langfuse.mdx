@@ -1,0 +1,61 @@
+## Overview
+
+This example uses `InferenceRuntime` directly and sends the LLM and HTTP
+lifecycle to Langfuse. It is useful when you want visibility into the raw LLM
+call path without the additional StructuredOutput layer.
+
+Key concepts:
+- `InferenceRuntime`: direct Polyglot runtime for inference calls
+- `PolyglotTelemetryProjector`: maps inference lifecycle events
+- `HttpClientTelemetryProjector`: captures transport spans
+- `Telemetry::flush()`: pushes the final batch to Langfuse
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+require_once 'examples/_support/langfuse.php';
+
+use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Http\Telemetry\HttpClientTelemetryProjector;
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Polyglot\Telemetry\PolyglotTelemetryProjector;
+use Cognesy\Telemetry\Application\Projector\CompositeTelemetryProjector;
+use Cognesy\Telemetry\Application\Projector\RuntimeEventBridge;
+
+$events = new EventDispatcher('examples.b03.telemetry-langfuse');
+$hub = exampleLangfuseHub();
+
+(new RuntimeEventBridge(new CompositeTelemetryProjector([
+    new PolyglotTelemetryProjector($hub),
+    new HttpClientTelemetryProjector($hub),
+])))->attachTo($events);
+
+$runtime = InferenceRuntime::fromProvider(
+    provider: LLMProvider::using('openai'),
+    events: $events,
+);
+
+$response = Inference::fromRuntime($runtime)
+    ->with(
+        messages: Messages::fromString('Summarize why observability matters for LLM applications in exactly 3 bullet points.'),
+        options: ['max_tokens' => 180],
+    )
+    ->response();
+
+$hub->flush();
+
+echo "Response:\n";
+echo $response->content() . "\n\n";
+if ($response->usage() !== null) {
+    echo "Tokens: {$response->usage()->inputTokens} in / {$response->usage()->outputTokens} out\n";
+}
+echo "Telemetry: flushed to Langfuse\n";
+
+assert($response->content() !== '');
+?>
+```

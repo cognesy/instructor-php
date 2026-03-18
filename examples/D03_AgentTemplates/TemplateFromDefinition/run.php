@@ -3,6 +3,10 @@ title: 'Template from Definition'
 docname: 'template_from_definition'
 order: 1
 id: 'a9d1'
+tags:
+  - 'agent-templates'
+  - 'definitions'
+  - 'templates'
 ---
 ## Overview
 

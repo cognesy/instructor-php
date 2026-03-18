@@ -2,6 +2,10 @@
 title: 'Use different class for schema and output'
 docname: 'output_format_instance_of'
 id: 'e273'
+tags:
+  - 'extras'
+  - 'output-format'
+  - 'schema-mapping'
 ---
 ## Overview
 

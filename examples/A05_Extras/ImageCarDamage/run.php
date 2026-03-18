@@ -2,6 +2,10 @@
 title: 'Image processing - car damage detection'
 docname: 'image_car_damage'
 id: 'ab3d'
+tags:
+  - 'extras'
+  - 'vision'
+  - 'image-extraction'
 ---
 ## Overview
 

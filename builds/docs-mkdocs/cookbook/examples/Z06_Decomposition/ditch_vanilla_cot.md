@@ -2,6 +2,10 @@
 title: 'Ditch Vanilla Chain Of Thought'
 docname: 'ditch_vanilla_cot'
 id: '7c80'
+tags:
+  - 'decomposition'
+  - 'cot-improvement'
+  - 'reasoning'
 ---
 ## Overview
 

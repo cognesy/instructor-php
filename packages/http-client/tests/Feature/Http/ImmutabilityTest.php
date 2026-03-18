@@ -14,13 +14,17 @@ test('HttpRequest mutators return new instances', function() {
     $request = new HttpRequest('https://api.example.com/items', 'GET', [], '', []);
     $withHeader = $request->withHeader('X-Test', '1');
     $withStreaming = $request->withStreaming(true);
+    $withMetadata = $request->withMetadataKey('traceparent', '00-test-test-01');
 
     expect($withHeader)->not()->toBe($request);
     expect($withStreaming)->not()->toBe($request);
+    expect($withMetadata)->not()->toBe($request);
     expect($request->headers())->not()->toHaveKey('X-Test');
     expect($request->isStreamed())->toBeFalse();
+    expect($request->metadata->get('traceparent'))->toBeNull();
     expect($withHeader->headers()['X-Test'])->toBe('1');
     expect($withStreaming->isStreamed())->toBeTrue();
+    expect($withMetadata->metadata->get('traceparent'))->toBe('00-test-test-01');
 });
 
 test('MiddlewareStack mutators do not mutate previous instance', function() {

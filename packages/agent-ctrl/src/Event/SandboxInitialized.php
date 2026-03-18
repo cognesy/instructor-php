@@ -3,6 +3,7 @@
 namespace Cognesy\AgentCtrl\Event;
 
 use Cognesy\AgentCtrl\Enum\AgentType;
+use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Psr\Log\LogLevel;
 
 /**
@@ -14,10 +15,11 @@ final class SandboxInitialized extends AgentEvent
 
     public function __construct(
         AgentType $agentType,
+        AgentCtrlExecutionId $executionId,
         public readonly string $driver,
         public readonly float $initializationDurationMs,
     ) {
-        parent::__construct($agentType, [
+        parent::__construct($agentType, $executionId, [
             'driver' => $driver,
             'initializationDurationMs' => round($initializationDurationMs, 2),
         ]);

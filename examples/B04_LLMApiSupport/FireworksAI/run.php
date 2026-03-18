@@ -2,6 +2,10 @@
 title: 'Fireworks.ai'
 docname: 'llm_fireworks'
 id: 'dc10'
+tags:
+  - 'llm-api-support'
+  - 'fireworks'
+  - 'provider'
 ---
 ## Overview
 

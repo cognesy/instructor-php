@@ -3,6 +3,7 @@
 namespace Cognesy\AgentCtrl\Event;
 
 use Cognesy\AgentCtrl\Enum\AgentType;
+use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Psr\Log\LogLevel;
 use Throwable;
 
@@ -15,24 +16,30 @@ final class AgentErrorOccurred extends AgentEvent
 
     public function __construct(
         AgentType $agentType,
+        AgentCtrlExecutionId $executionId,
         public readonly string $error,
         public readonly ?string $errorClass = null,
         public readonly ?int $exitCode = null,
     ) {
-        parent::__construct($agentType, [
+        parent::__construct($agentType, $executionId, [
             'error' => $error,
             'errorClass' => $errorClass,
             'exitCode' => $exitCode,
         ]);
     }
 
-    public static function fromException(AgentType $agentType, Throwable $e): self
+    public static function fromException(
+        AgentType $agentType,
+        AgentCtrlExecutionId $executionId,
+        Throwable $e,
+    ): self
     {
         return new self(
             agentType: $agentType,
+            executionId: $executionId,
             error: $e->getMessage(),
             errorClass: $e::class,
-            exitCode: $e->getCode() ?: null,
+            exitCode: is_int($e->getCode()) && $e->getCode() !== 0 ? $e->getCode() : null,
         );
     }
 

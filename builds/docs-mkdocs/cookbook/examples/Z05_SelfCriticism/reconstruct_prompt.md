@@ -2,6 +2,10 @@
 title: 'Reconstruct Prompt from Reasoning Steps'
 docname: 'reconstruct_prompt'
 id: '931d'
+tags:
+  - 'self-criticism'
+  - 'reverse-cot'
+  - 'prompt-reconstruction'
 ---
 ## Overview
 

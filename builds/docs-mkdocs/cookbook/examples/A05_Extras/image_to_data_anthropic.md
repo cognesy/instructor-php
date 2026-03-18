@@ -2,6 +2,10 @@
 title: 'Image to data (Anthropic)'
 docname: 'image_to_data_anthropic'
 id: '0577'
+tags:
+  - 'extras'
+  - 'vision'
+  - 'anthropic'
 ---
 ## Overview
 

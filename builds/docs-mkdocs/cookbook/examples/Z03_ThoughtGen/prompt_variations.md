@@ -2,6 +2,10 @@
 title: 'Generate Prompt Variations'
 docname: 'prompt_variations'
 id: 'b2ac'
+tags:
+  - 'thought-generation'
+  - 'prompt-mining'
+  - 'variations'
 ---
 ## Overview
 

@@ -3,6 +3,7 @@
 namespace Cognesy\AgentCtrl\Event;
 
 use Cognesy\AgentCtrl\Enum\AgentType;
+use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Psr\Log\LogLevel;
 
 /**
@@ -14,9 +15,10 @@ final class ProcessExecutionStarted extends AgentEvent
 
     public function __construct(
         AgentType $agentType,
+        AgentCtrlExecutionId $executionId,
         public readonly int $commandCount,
     ) {
-        parent::__construct($agentType, [
+        parent::__construct($agentType, $executionId, [
             'commandCount' => $commandCount,
         ]);
     }

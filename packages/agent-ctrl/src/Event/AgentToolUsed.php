@@ -4,6 +4,7 @@ namespace Cognesy\AgentCtrl\Event;
 
 use Cognesy\AgentCtrl\Dto\ToolCall;
 use Cognesy\AgentCtrl\Enum\AgentType;
+use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Cognesy\AgentCtrl\ValueObject\AgentToolCallId;
 use Psr\Log\LogLevel;
 
@@ -17,6 +18,7 @@ final class AgentToolUsed extends AgentEvent
 
     public function __construct(
         AgentType $agentType,
+        AgentCtrlExecutionId $executionId,
         public readonly string $tool,
         public readonly array $input,
         public readonly ?string $output = null,
@@ -28,7 +30,7 @@ final class AgentToolUsed extends AgentEvent
             default => null,
         };
 
-        parent::__construct($agentType, [
+        parent::__construct($agentType, $executionId, [
             'tool' => $tool,
             'input' => $input,
             'output' => $output,
@@ -36,10 +38,15 @@ final class AgentToolUsed extends AgentEvent
         ]);
     }
 
-    public static function fromToolCall(AgentType $agentType, ToolCall $toolCall): self
+    public static function fromToolCall(
+        AgentType $agentType,
+        AgentCtrlExecutionId $executionId,
+        ToolCall $toolCall,
+    ): self
     {
         return new self(
             agentType: $agentType,
+            executionId: $executionId,
             tool: $toolCall->tool,
             input: $toolCall->input,
             output: $toolCall->output,

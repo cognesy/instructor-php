@@ -2,6 +2,10 @@
 title: 'Entity relationship extraction'
 docname: 'entity_relationships'
 id: '43ce'
+tags:
+  - 'misc'
+  - 'entity-extraction'
+  - 'relationships'
 ---
 ## Overview
 

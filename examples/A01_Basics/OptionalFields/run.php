@@ -2,6 +2,10 @@
 title: 'Making some fields optional'
 docname: 'optional_fields'
 id: 'f3d7'
+tags:
+  - 'basics'
+  - 'optional-fields'
+  - 'nullable-types'
 ---
 ## Overview
 

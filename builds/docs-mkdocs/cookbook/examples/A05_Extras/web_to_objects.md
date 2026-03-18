@@ -2,6 +2,10 @@
 title: 'Web page to PHP objects'
 docname: 'web_to_objects'
 id: 'a3e6'
+tags:
+  - 'extras'
+  - 'web-scraping'
+  - 'structured-data'
 ---
 ## Overview
 

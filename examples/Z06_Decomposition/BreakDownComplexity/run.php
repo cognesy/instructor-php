@@ -2,6 +2,10 @@
 title: 'Break Down Complex Tasks'
 docname: 'break_down_complexity'
 id: 'dffa'
+tags:
+  - 'decomposition'
+  - 'task-breakdown'
+  - 'reasoning'
 ---
 ## Overview
 
@@ -121,7 +125,7 @@ class DecomposedTaskSolver {
     private function deriveActionPlan(string $taskDescription): ActionPlan {
         return StructuredOutput::using('openai')->with(
             messages: [
-                ['role' => 'system', 'content' => 'Generate an action plan to help complete the task. Available actions: Split (split string by character), StrPos (get character at index from each string), Merge (join strings with character)'],
+                ['role' => 'system', 'content' => 'Generate an action plan to solve the task. Set initial_data to the exact input string from the task. Available actions: Split (split string by character into array), StrPos (get character at given index from each string in array), Merge (join array of strings with character). Example: for "get first letter of each word in \'Hi Bob\'", set initial_data="Hi Bob", then Split(" "), StrPos(0), Merge("").'],
                 ['role' => 'user', 'content' => $taskDescription],
             ],
             responseModel: ActionPlan::class,

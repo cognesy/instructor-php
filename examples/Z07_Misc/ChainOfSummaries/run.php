@@ -2,6 +2,10 @@
 title: 'Chain of Summaries'
 docname: 'chain_of_summaries'
 id: '14ef'
+tags:
+  - 'misc'
+  - 'summarization'
+  - 'progressive-refinement'
 ---
 ## Overview
 
@@ -21,6 +25,7 @@ content which are most relevant and missing from the previous iteration.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Schema\Attributes\Description;
 
 $report = <<<EOT
     [2021-09-01]
@@ -48,27 +53,31 @@ $report = <<<EOT
 
 /** Executive level summary of the project */
 class Summary {
-    /** current summary iteration, not bigger than 3 */
+    #[Description('Iteration number: 1, 2, or 3')]
     public int $iteration = 0;
-    /** @var string[] 1-3 facts most relevant from executive perspective and missing from the summary (avoid technical details) */
+    #[Description('1-3 key facts missing from the previous summary, from an executive perspective')]
+    /** @var string[] */
     public array $missingFacts = [];
-    /** denser summary in 1-3 sentences, which covers every fact from the previous summary plus the missing ones */
+    #[Description('Denser summary in 1-3 sentences covering all facts from the previous summary plus the missing ones — must not be empty')]
     public string $expandedSummary = '';
 }
 
 /** Increasingly denser, expanded summaries */
 class ChainOfSummaries {
-    /** simplified, executive view with no details, just a single statement of overall situation */
+    #[Description('Single sentence executive overview of the overall situation — no details')]
     public string $overview = '';
-    /** @var Summary[] contains at least 3 gradually more expanded summaries of the content */
+    #[Description('Exactly 3 gradually more expanded summaries with iterations numbered 1, 2, and 3')]
+    /** @var Summary[] */
     public array $summaries = [];
 }
 
 $summaries = StructuredOutput::using('openai')
     ->with(
-        messages: $report,
+        messages: [
+            ['role' => 'system', 'content' => 'You generate structured summaries. Always fill in the overview field with a single sentence. Always generate exactly 3 summary iterations numbered 1, 2, and 3, each progressively more detailed.'],
+            ['role' => 'user', 'content' => $report],
+        ],
         responseModel: ChainOfSummaries::class,
-        prompt: 'Generate a denser summary based on the provided content.',
         options: [
             'max_tokens' => 4096,
         ],

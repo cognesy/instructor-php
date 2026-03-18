@@ -2,6 +2,10 @@
 title: 'Work directly with HTTP client facade'
 docname: 'http_client'
 id: '6c0f'
+tags:
+  - 'llm-advanced'
+  - 'http-client'
+  - 'transport'
 ---
 ## Overview
 

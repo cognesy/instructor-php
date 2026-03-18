@@ -2,6 +2,10 @@
 title: 'Working directly with LLMs and JSON - JSON mode'
 docname: 'llm_json'
 id: 'efd0'
+tags:
+  - 'llm'
+  - 'json-mode'
+  - 'direct-api'
 ---
 ## Overview
 

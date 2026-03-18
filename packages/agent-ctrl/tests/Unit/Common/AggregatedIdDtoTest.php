@@ -3,6 +3,7 @@
 use Cognesy\AgentCtrl\Dto\AgentResponse;
 use Cognesy\AgentCtrl\Dto\ToolCall;
 use Cognesy\AgentCtrl\Enum\AgentType;
+use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Cognesy\AgentCtrl\ValueObject\AgentSessionId;
 use Cognesy\AgentCtrl\ValueObject\AgentToolCallId;
 
@@ -20,14 +21,17 @@ it('hydrates aggregated tool call id as opaque value object', function () {
 });
 
 it('hydrates aggregated response session id as opaque value object', function () {
+    $executionId = AgentCtrlExecutionId::fromString('execution_abc');
     $response = new AgentResponse(
         agentType: AgentType::OpenCode,
         text: 'done',
         exitCode: 0,
+        executionId: $executionId,
         sessionId: 'session_abc',
     );
 
-    expect((string) ($response->sessionId() ?? ''))->toBe('session_abc')
+    expect($response->executionId()->equals($executionId))->toBeTrue()
+        ->and((string) ($response->sessionId() ?? ''))->toBe('session_abc')
         ->and($response->sessionId())->toBeInstanceOf(AgentSessionId::class)
         ->and((string) ($response->sessionId() ?? ''))->toBe('session_abc');
 });

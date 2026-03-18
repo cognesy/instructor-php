@@ -3,6 +3,10 @@ title: 'Agent with File System Tools'
 docname: 'agent_file_system'
 order: 2
 id: '2b2f'
+tags:
+  - 'agent-builder'
+  - 'file-system'
+  - 'tools'
 ---
 ## Overview
 

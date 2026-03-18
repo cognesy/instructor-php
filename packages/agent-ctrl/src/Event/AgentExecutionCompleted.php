@@ -4,6 +4,7 @@ namespace Cognesy\AgentCtrl\Event;
 
 use Cognesy\AgentCtrl\Dto\AgentResponse;
 use Cognesy\AgentCtrl\Enum\AgentType;
+use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Psr\Log\LogLevel;
 
 /**
@@ -15,13 +16,15 @@ final class AgentExecutionCompleted extends AgentEvent
 
     public function __construct(
         AgentType $agentType,
+        AgentCtrlExecutionId $executionId,
         public readonly int $exitCode,
         public readonly int $toolCallCount,
         public readonly ?float $cost = null,
         public readonly ?int $inputTokens = null,
         public readonly ?int $outputTokens = null,
+        public readonly string $text = '',
     ) {
-        parent::__construct($agentType, [
+        parent::__construct($agentType, $executionId, [
             'exitCode' => $exitCode,
             'toolCallCount' => $toolCallCount,
             'cost' => $cost,
@@ -34,11 +37,13 @@ final class AgentExecutionCompleted extends AgentEvent
     {
         return new self(
             agentType: $response->agentType,
+            executionId: $response->executionId(),
             exitCode: $response->exitCode,
             toolCallCount: count($response->toolCalls),
             cost: $response->cost,
             inputTokens: $response->usage?->input,
             outputTokens: $response->usage?->output,
+            text: $response->text,
         );
     }
 

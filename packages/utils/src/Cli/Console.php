@@ -22,7 +22,6 @@ class Console
 
     public static function clearScreen(): void {
         print("\033[2J\033[;H");
-        //echo chr(27).chr(91).'H'.chr(27).chr(91).'J';
     }
 
     public static function center(string $message, int $width, string|array $color = ''): string {

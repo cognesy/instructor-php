@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
+use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
+use Cognesy\Agents\Capability\Cancellation\CooperativeCancellationHook;
 use Cognesy\Agents\Continuation\StopReason;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Hook\Collections\HookTriggers;
@@ -249,5 +251,58 @@ describe('HookStack composition', function () {
         // Both hooks ran: custom metadata set AND stop signal emitted
         expect($result->state()->metadata()->get('custom_ran'))->toBeTrue();
         expect($result->state()->executionContinuation()->stopSignals()->hasAny())->toBeTrue();
+    });
+});
+
+// ── CooperativeCancellationHook ───────────────────────────────────
+
+describe('CooperativeCancellationHook', function () {
+    it('applies stop signal from the source when no signal is present', function () {
+        $source = new class implements CanProvideCancellationSignal {
+            public function cancellationSignal(\Cognesy\Agents\Data\AgentState $state): ?\Cognesy\Agents\Continuation\StopSignal {
+                return \Cognesy\Agents\Continuation\StopSignal::userRequested('test cancel');
+            }
+        };
+
+        $hook = new CooperativeCancellationHook($source);
+        $result = $hook->handle(HookContext::beforeStep(state: AgentState::empty()));
+
+        expect($result->state()->executionContinuation()->stopSignals()->hasAny())->toBeTrue();
+        expect($result->state()->executionContinuation()->stopSignals()->first()->reason)
+            ->toBe(StopReason::UserRequested);
+    });
+
+    it('passes through when the source returns null', function () {
+        $source = new class implements CanProvideCancellationSignal {
+            public function cancellationSignal(\Cognesy\Agents\Data\AgentState $state): ?\Cognesy\Agents\Continuation\StopSignal {
+                return null;
+            }
+        };
+
+        $hook = new CooperativeCancellationHook($source);
+        $result = $hook->handle(HookContext::beforeStep(state: AgentState::empty()));
+
+        expect($result->state()->executionContinuation()?->stopSignals()->hasAny())->toBeFalsy();
+    });
+
+    it('skips the source call when execution already has a stop signal', function () {
+        $callCount = 0;
+        $source = new class ($callCount) implements CanProvideCancellationSignal {
+            public function __construct(private int &$callCount) {}
+            public function cancellationSignal(\Cognesy\Agents\Data\AgentState $state): ?\Cognesy\Agents\Continuation\StopSignal {
+                $this->callCount++;
+                return null;
+            }
+        };
+
+        // withStopSignal creates an execution and attaches the signal to it
+        $stateWithSignal = AgentState::empty()->withStopSignal(
+            \Cognesy\Agents\Continuation\StopSignal::userRequested('already stopped'),
+        );
+
+        $hook = new CooperativeCancellationHook($source);
+        $hook->handle(HookContext::beforeStep(state: $stateWithSignal));
+
+        expect($callCount)->toBe(0);
     });
 });

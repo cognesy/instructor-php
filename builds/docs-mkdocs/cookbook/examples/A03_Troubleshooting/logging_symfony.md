@@ -3,6 +3,10 @@ title: 'Symfony Logging Integration'
 docname: 'logging_symfony'
 path: ''
 id: '7ab5'
+tags:
+  - 'troubleshooting'
+  - 'logging'
+  - 'symfony'
 ---
 ## Overview
 

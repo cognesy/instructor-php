@@ -3,6 +3,7 @@
 namespace Cognesy\Agents\Events;
 
 use DateTimeImmutable;
+use Psr\Log\LogLevel;
 
 /**
  * Dispatched when a tool call is blocked by a hook.
@@ -10,6 +11,7 @@ use DateTimeImmutable;
  */
 final class ToolCallBlocked extends AgentEvent
 {
+    public string $logLevel = LogLevel::WARNING;
     public readonly DateTimeImmutable $blockedAt;
 
     public function __construct(

@@ -106,6 +106,22 @@ class ExampleRepository {
         return $examples;
     }
 
+    /**
+     * @param string[] $tags
+     * @return Example[]
+     */
+    public function getExamplesMatchingTags(array $tags) : array {
+        $normalizedTags = $this->normalizeTags($tags);
+        if ($normalizedTags === []) {
+            return $this->getAllExamples();
+        }
+
+        return array_values(array_filter(
+            $this->getAllExamples(),
+            fn(Example $example): bool => $this->matchesTags($example, $normalizedTags),
+        ));
+    }
+
     // INTERNAL ////////////////////////////////////////////////////////////////////////////////////////////
 
     /** @return array<string, ExampleGroup> */
@@ -267,6 +283,46 @@ class ExampleRepository {
         }
         $directories = $this->getSubdirectories($source->baseDir, $path);
         return count($directories) > 0;
+    }
+
+    /**
+     * @param string[] $tags
+     */
+    private function matchesTags(Example $example, array $tags) : bool
+    {
+        $exampleTags = $this->normalizeTags($example->tags);
+
+        foreach ($tags as $tag) {
+            if (!in_array($tag, $exampleTags, true)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param string[] $tags
+     * @return string[]
+     */
+    private function normalizeTags(array $tags) : array
+    {
+        $normalized = [];
+        $seen = [];
+
+        foreach ($tags as $tag) {
+            $value = trim(strtolower($tag));
+            if ($value === '') {
+                continue;
+            }
+            if (isset($seen[$value])) {
+                continue;
+            }
+            $normalized[] = $value;
+            $seen[$value] = true;
+        }
+
+        return $normalized;
     }
 
     // DEPRECATED /////////////////////////////////////////////////////////////////////////

@@ -3,6 +3,7 @@
 namespace Cognesy\Polyglot\Inference\Events;
 
 use DateTimeImmutable;
+use Psr\Log\LogLevel;
 
 /**
  * Dispatched when an inference attempt begins.
@@ -10,6 +11,7 @@ use DateTimeImmutable;
  */
 final class InferenceAttemptStarted extends InferenceEvent
 {
+    public string $logLevel = LogLevel::INFO;
     public readonly DateTimeImmutable $startedAt;
 
     public function __construct(
@@ -17,6 +19,7 @@ final class InferenceAttemptStarted extends InferenceEvent
         public readonly string $attemptId,
         public readonly int $attemptNumber,
         public readonly ?string $model = null,
+        array $data = [],
     ) {
         parent::__construct([
             'executionId' => $this->executionId,
@@ -24,6 +27,7 @@ final class InferenceAttemptStarted extends InferenceEvent
             'attemptNumber' => $this->attemptNumber,
             'model' => $this->model,
             'isRetry' => $this->attemptNumber > 1,
+            ...$data,
         ]);
         $this->startedAt = new DateTimeImmutable();
     }

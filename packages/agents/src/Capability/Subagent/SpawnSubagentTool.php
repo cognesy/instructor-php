@@ -18,6 +18,9 @@ use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Agents\Events\SubagentCompleted;
 use Cognesy\Agents\Events\SubagentSpawning;
+use Cognesy\Agents\Telemetry\AgentStateTelemetry;
+use Cognesy\Agents\Telemetry\AgentTelemetry;
+use Cognesy\Agents\Telemetry\AgentTelemetrySeed;
 use Cognesy\Agents\Template\Contracts\CanManageAgentDefinitions;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Tool\Tools\ContextAwareTool;
@@ -29,6 +32,7 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
 use Cognesy\Messages\ToolCall;
 use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Telemetry\Domain\Trace\TraceContext;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
 use DateTimeImmutable;
@@ -217,9 +221,16 @@ final class SpawnSubagentTool extends ContextAwareTool
         $messages = $this->appendSkillMessages($messages, $spec);
         $messages = $messages->appendMessage(Message::asUser($prompt));
 
-        return AgentState::empty()
+        $state = AgentState::empty()
             ->withMessages($messages)
             ->with(parentAgentId: $parentAgentId);
+
+        $seed = $this->telemetrySeedForSubagent();
+
+        return match ($seed) {
+            null => $state,
+            default => AgentStateTelemetry::storeSeed($state, $seed),
+        };
     }
 
     // SKILL INJECTION //////////////////////////////////////////////
@@ -340,7 +351,7 @@ final class SpawnSubagentTool extends ContextAwareTool
         ?int $parentStepNumber,
         ?string $toolCallId,
     ): void {
-        $this->events->dispatch(new SubagentSpawning(
+        $event = new SubagentSpawning(
             parentAgentId: $parentAgentId,
             subagentName: $subagentName,
             prompt: $prompt,
@@ -349,7 +360,9 @@ final class SpawnSubagentTool extends ContextAwareTool
             parentExecutionId: $parentExecutionId,
             parentStepNumber: $parentStepNumber,
             toolCallId: $toolCallId,
-        ));
+        );
+
+        $this->events->dispatch(AgentTelemetry::attach($event, $this->telemetrySeedForCurrentState()));
     }
 
     private function emitSubagentCompleted(
@@ -364,7 +377,7 @@ final class SpawnSubagentTool extends ContextAwareTool
         ?int $parentStepNumber,
         ?string $toolCallId,
     ): void {
-        $this->events->dispatch(new SubagentCompleted(
+        $event = new SubagentCompleted(
             parentAgentId: $parentAgentId,
             subagentId: $subagentId,
             subagentName: $subagentName,
@@ -375,6 +388,47 @@ final class SpawnSubagentTool extends ContextAwareTool
             parentExecutionId: $parentExecutionId,
             parentStepNumber: $parentStepNumber,
             toolCallId: $toolCallId,
-        ));
+        );
+
+        $this->events->dispatch(AgentTelemetry::attach($event, $this->telemetrySeedForCurrentState()));
+    }
+
+    private function telemetrySeedForCurrentState(): ?AgentTelemetrySeed
+    {
+        return match ($this->agentState) {
+            null => null,
+            default => AgentStateTelemetry::loadSeed($this->agentState),
+        };
+    }
+
+    private function telemetrySeedForSubagent(): ?AgentTelemetrySeed
+    {
+        $parentExecutionId = $this->agentState?->execution()?->executionId()->toString();
+        if ($parentExecutionId === null || $parentExecutionId === '') {
+            return null;
+        }
+
+        $parentStepNumber = $this->agentState?->stepCount();
+        $parentSeed = $this->telemetrySeedForCurrentState();
+        $toolCallId = $this->toolCall?->idString() ?? '';
+        $parentOperationId = match (true) {
+            $toolCallId !== '' => $toolCallId,
+            is_int($parentStepNumber) => "{$parentExecutionId}:step:{$parentStepNumber}",
+            default => $parentExecutionId,
+        };
+        $trace = match ($parentSeed?->trace()) {
+            null => null,
+            default => TraceContext::childOf($parentSeed->trace()),
+        };
+
+        return new AgentTelemetrySeed(
+            trace: $trace,
+            rootOperationId: $parentSeed?->rootOperationId() ?? $parentExecutionId,
+            parentOperationId: $parentOperationId,
+            sessionId: $parentSeed?->sessionId(),
+            userId: $parentSeed?->userId(),
+            conversationId: $parentSeed?->conversationId(),
+            requestId: $parentSeed?->requestId(),
+        );
     }
 }

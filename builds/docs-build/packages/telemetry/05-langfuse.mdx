@@ -1,0 +1,69 @@
+# Langfuse Setup
+
+The simplest Langfuse setup uses:
+
+- `LangfuseConfig`
+- `LangfuseHttpTransport`
+- `LangfuseExporter`
+- `Telemetry`
+
+## Minimal Example
+
+```php
+use Cognesy\Telemetry\Adapters\Langfuse\LangfuseConfig;
+use Cognesy\Telemetry\Adapters\Langfuse\LangfuseExporter;
+use Cognesy\Telemetry\Adapters\Langfuse\LangfuseHttpTransport;
+use Cognesy\Telemetry\Application\Registry\TraceRegistry;
+use Cognesy\Telemetry\Application\Telemetry;
+
+$telemetry = new Telemetry(
+    registry: new TraceRegistry(),
+    exporter: new LangfuseExporter(
+        transport: new LangfuseHttpTransport(new LangfuseConfig(
+            baseUrl: $_ENV['LANGFUSE_BASE_URL'],
+            publicKey: $_ENV['LANGFUSE_PUBLIC_KEY'],
+            secretKey: $_ENV['LANGFUSE_SECRET_KEY'],
+        )),
+    ),
+);
+// @doctest id="dd9b"
+```
+
+## Environment Variables
+
+The examples use:
+
+- `LANGFUSE_BASE_URL`
+- `LANGFUSE_PUBLIC_KEY`
+- `LANGFUSE_SECRET_KEY`
+
+See:
+
+- `examples/_support/langfuse.php`
+
+## Agent Runtime Example
+
+The working agent example is:
+
+- `examples/D05_AgentTroubleshooting/TelemetryLangfuse/run.php`
+
+That example shows the full pattern:
+
+1. create telemetry
+2. create a shared event dispatcher
+3. attach `RuntimeEventBridge`
+4. install runtime projectors
+5. execute the agent
+6. call `$hub->flush()`
+
+## Subagent Example
+
+For nested telemetry across parent and child agents, see:
+
+- `examples/D05_AgentTroubleshooting/SubagentTelemetryLangfuse/run.php`
+
+## Notes
+
+- Langfuse uses the base URL and sends traces to `/api/public/otel/v1/traces`
+- request-scoped traces can fall back to request ids as `session.id`
+- if you get a 4xx response, check the base URL and keys first

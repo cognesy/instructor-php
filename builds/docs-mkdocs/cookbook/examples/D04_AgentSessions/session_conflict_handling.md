@@ -3,6 +3,10 @@ title: 'Session Conflict Handling'
 docname: 'session_conflict_handling'
 order: 6
 id: 'e5f1'
+tags:
+  - 'agent-sessions'
+  - 'conflicts'
+  - 'persistence'
 ---
 ## Overview
 

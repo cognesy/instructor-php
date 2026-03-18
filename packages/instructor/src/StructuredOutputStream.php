@@ -8,7 +8,9 @@ use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputResponse;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseUpdated;
+use Cognesy\Instructor\Events\Support\EventValueNormalizer;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted;
+use Cognesy\Instructor\Telemetry\StructuredOutputTelemetry;
 use Cognesy\Instructor\Streaming\Sequence\SequenceTracker;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
@@ -336,6 +338,7 @@ class StructuredOutputStream
             'messageCount' => count($request->messages()->toArray()),
             'isStreamed' => $request->isStreamed(),
             'attemptCount' => $execution->attemptCount(),
+            ...StructuredOutputTelemetry::executionStarted($execution),
         ];
     }
 
@@ -357,17 +360,23 @@ class StructuredOutputStream
             'isPartial' => $response->isPartial(),
             'hasValue' => $response->hasValue(),
             'valueType' => $this->valueType($response->value()),
+            'value' => EventValueNormalizer::normalize($response->value()),
             'finishReason' => $response->finishReason()->value,
+            'content' => $response->content(),
             'contentLength' => strlen($response->content()),
+            'reasoningContent' => $response->reasoningContent(),
             'reasoningContentLength' => strlen($response->reasoningContent()),
+            'toolArgsSnapshot' => $response->toolArgsSnapshot(),
             'hasToolCalls' => !$response->toolCalls()->isEmpty(),
             'toolCallCount' => $response->toolCalls()->count(),
+            'toolCalls' => $response->toolCalls()->toArray(),
             'inputTokens' => $usage->input(),
             'outputTokens' => $usage->output(),
             'cacheWriteTokens' => $usage->cacheWriteTokens,
             'cacheReadTokens' => $usage->cacheReadTokens,
             'reasoningTokens' => $usage->reasoningTokens,
             'totalTokens' => $usage->total(),
+            ...StructuredOutputTelemetry::responseGenerated($execution, $response),
         ], fn(mixed $value): bool => $value !== null);
     }
 

@@ -2,6 +2,10 @@
 title: 'Gemini CLI - Streaming'
 docname: 'gemini_streaming'
 id: 'gm01'
+tags:
+  - 'agent-ctrl'
+  - 'gemini-cli'
+  - 'streaming'
 ---
 ## Overview
 

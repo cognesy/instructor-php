@@ -2,6 +2,10 @@
 title: 'Leverage Task Specific Systems'
 docname: 'task_specific_systems'
 id: '0c86'
+tags:
+  - 'decomposition'
+  - 'task-specific-systems'
+  - 'faithfulness'
 ---
 ## Overview
 

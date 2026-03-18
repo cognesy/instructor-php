@@ -2,6 +2,10 @@
 title: 'OpenCode CLI - Streaming'
 docname: 'opencode_streaming'
 id: 'f138'
+tags:
+  - 'agent-ctrl'
+  - 'opencode'
+  - 'streaming'
 ---
 ## Overview
 

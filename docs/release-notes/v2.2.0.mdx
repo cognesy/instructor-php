@@ -1,0 +1,71 @@
+---
+title: 'v2.2.0'
+---
+
+## What's New
+
+v2.2.0 adds deeper telemetry across the stack. More parts of the system now share stable IDs,
+correlation data, and smaller event payloads, so it is easier to trace one run from agent control,
+through structured output and inference, down to HTTP.
+
+There are also a few user-facing changes: `hub` can now filter examples by tag, streamed tool events
+in `agent-ctrl` are more accurate, and agent stop handling is more predictable.
+
+## Agents And Agent Control
+
+### Telemetry from runs, tools, and subagents
+
+`agent-ctrl` now assigns one `executionId` to each run and keeps it through the whole bridge flow.
+That run can now be traced more clearly in events and in the final response.
+
+Streamed tool events for Claude Code and Gemini were also reworked. Tool-use events now wait for the
+matching tool result, so they report the real tool name, input, output, and error state instead of a
+placeholder.
+
+### Cleaner stop handling in `agents`
+
+`AgentLoop` now checks whether execution should stop before the first step and again after `beforeStep`.
+This lets hooks stop a run cleanly without forcing another model or tool cycle.
+
+When multiple stop signals exist, `agents` now picks the highest-priority reason instead of the first
+one that happened to be recorded. That makes the final stop reason more consistent.
+
+Tool calls and subagents also carry stable IDs and trace data, which makes it easier to connect parent
+and child work in telemetry and logs.
+
+## Structured Output, Inference, And HTTP
+
+### End-to-end telemetry in `instructor` and `polyglot`
+
+`instructor` now emits structured-output events with stable request, execution, and attempt IDs.
+Streaming and non-streaming runs also report the same kind of response summary data, including finish
+reason, token usage, and tool-call counts.
+
+`polyglot` now carries telemetry correlation from `InferenceRequest` down into the underlying
+`HttpRequest`. Stream finalization was also tightened up, so completed and failed streamed runs update
+execution state more reliably.
+
+### Better request correlation in HTTP layers
+
+`http-client` and `http-pool` now keep `requestId` attached more consistently, including pooled
+responses and streamed HTTP events. This makes it easier to match a response or stream event back to
+the request that created it, and to keep one trace chain across higher-level and lower-level layers.
+
+Failure events in `instructor` and `polyglot` were also cleaned up so they report smaller, safer
+summaries instead of large raw payloads.
+
+## Hub
+
+`hub list` now supports `--tag` and `--tags`, and examples can carry normalized tag metadata. This
+makes it easier to find examples by topic without scanning the whole catalog.
+
+## Small Fixes
+
+`doctools` fixes the failure result from `LlmsDocsGenerator` so processed file counts are reported in
+the correct `filesProcessed` field.
+
+## Upgrade Notes
+
+- If you read raw event payloads from `agent-ctrl`, `agents`, `instructor`, `polyglot`, `http-client`, or `http-pool`, review them before upgrading. Several events now include new IDs, summary fields, and different payload shapes.
+- In `agents`, the final stop reason may differ from earlier releases because stop signals are now resolved by priority.
+- In `agent-ctrl`, some streamed tool events are emitted later than before, but they now contain the actual tool result data.

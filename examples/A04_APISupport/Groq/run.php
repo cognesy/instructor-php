@@ -2,6 +2,10 @@
 title: 'Groq'
 docname: 'groq'
 id: '0626'
+tags:
+  - 'api-support'
+  - 'groq'
+  - 'provider'
 ---
 ## Overview
 

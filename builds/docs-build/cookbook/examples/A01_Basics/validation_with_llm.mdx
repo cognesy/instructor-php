@@ -33,19 +33,19 @@ class UserDetails
         return match($this->hasPII()) {
             true => ValidationResult::fieldError(
                 field: 'details',
-                value: implode('\n', $this->details),
-                message: "Details contain PII, remove it from the response."
+                value: implode("\n", $this->details),
+                message: "Details contain sensitive PII (phone numbers, SSNs, financial data) - remove those fields from the response."
             ),
             false => ValidationResult::valid(),
         };
     }
 
     private function hasPII() : bool {
-        $data = implode('\n', $this->details);
+        $data = implode("\n", $this->details);
         return StructuredOutput::using('openai')
             ->with(
-                messages: "Context:\n$data\n",
-                responseModel: Scalar::boolean('hasPII', 'Does the context contain any PII?'),
+                messages: "Text: {$data}\n\nDoes this text contain a phone number (e.g. +1 123 34 45), SSN (e.g. 123-45-6789), credit card, or bank account number? Answer TRUE only for those specific patterns. Answer FALSE for plain age numbers (e.g. 25), names, or job titles like 'developer'.",
+                responseModel: Scalar::boolean('hasPII', 'True only if the text contains a phone number, SSN, credit card, or bank account number. False for age numbers, names, or job titles.'),
             )
             ->getBoolean();
     }
@@ -68,6 +68,6 @@ $user = (new StructuredOutput($runtime))
 
 dump($user);
 
-assert(!Str::contains(implode('\n', $user->details), '123-45-6789'));
+assert(!Str::contains(implode("\n", $user->details), '123-45-6789'));
 ?>
 ```

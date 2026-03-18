@@ -72,6 +72,22 @@ SH, function () {
     });
 });
 
+it('returns different execution ids for separate runs that share one provider session', function () {
+    withTemporaryAgentBinary('codex', <<<'SH'
+#!/bin/sh
+printf '%s\n' '{"type":"thread.started","thread_id":"thread_shared"}'
+printf '%s\n' '{"type":"item.completed","item":{"id":"msg_1","type":"agent_message","status":"completed","text":"hello"}}'
+exit 0
+SH, function () {
+        $first = AgentCtrl::codex()->executeStreaming('first prompt');
+        $second = AgentCtrl::codex()->executeStreaming('second prompt');
+
+        expect((string) ($first->sessionId() ?? ''))->toBe('thread_shared')
+            ->and((string) ($second->sessionId() ?? ''))->toBe('thread_shared')
+            ->and((string) $first->executionId())->not->toBe((string) $second->executionId());
+    });
+});
+
 it('invokes all streaming callbacks through opencode builder', function () {
     withTemporaryAgentBinary('opencode', <<<'SH'
 #!/bin/sh

@@ -25,12 +25,14 @@ it('emits PartialResponseGenerated events while streaming partial updates', func
     );
 
     $seen = [];
+    $payloads = [];
     $runtime = makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json)
-        ->onEvent(PartialResponseGenerated::class, function (PartialResponseGenerated $event) use (&$seen): void {
+        ->onEvent(PartialResponseGenerated::class, function (PartialResponseGenerated $event) use (&$seen, &$payloads): void {
             $partial = $event->partialResponse;
             if ($partial instanceof EvtPartialUser) {
                 $seen[] = $partial->count;
             }
+            $payloads[] = $event->data;
         });
     $stream = (new StructuredOutput($runtime))
         ->withMessages('ignored')
@@ -42,6 +44,20 @@ it('emits PartialResponseGenerated events while streaming partial updates', func
     foreach ($stream->responses() as $_) {}
 
     expect($seen)->toBe([1, 2, 3]);
+    expect($payloads)->toBe([
+        [
+            'valueType' => EvtPartialUser::class,
+            'value' => ['count' => 1],
+        ],
+        [
+            'valueType' => EvtPartialUser::class,
+            'value' => ['count' => 2],
+        ],
+        [
+            'valueType' => EvtPartialUser::class,
+            'value' => ['count' => 3],
+        ],
+    ]);
 });
 
 it('emits SequenceUpdated events including final sequence item', function () {

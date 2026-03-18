@@ -2,6 +2,10 @@
 title: 'Generate In-Context Examples'
 docname: 'in_context_examples'
 id: '3244'
+tags:
+  - 'few-shot'
+  - 'in-context-learning'
+  - 'example-generation'
 ---
 ## Overview
 

@@ -1,0 +1,94 @@
+---
+title: 'Basic Setup'
+description: 'Create a telemetry instance, record a span, and flush it'
+---
+
+# Basic Setup
+
+The smallest useful setup is:
+
+1. create a `TraceRegistry`
+2. create an exporter
+3. create `Telemetry`
+4. open a root span
+5. add logs or child spans
+6. complete the span
+7. call `flush()`
+
+## Minimal Example
+
+```php
+use Cognesy\Telemetry\Adapters\OTel\OtelExporter;
+use Cognesy\Telemetry\Application\Registry\TraceRegistry;
+use Cognesy\Telemetry\Application\Telemetry;
+use Cognesy\Telemetry\Domain\Value\AttributeBag;
+
+$telemetry = new Telemetry(
+    registry: new TraceRegistry(),
+    exporter: new OtelExporter(),
+);
+
+$telemetry->openRoot(
+    key: 'run',
+    name: 'demo.run',
+    attributes: AttributeBag::fromArray([
+        'component' => 'demo',
+    ]),
+);
+
+$telemetry->log(
+    key: 'run',
+    name: 'demo.step',
+    attributes: AttributeBag::fromArray([
+        'status' => 'ok',
+    ]),
+);
+
+$telemetry->complete('run');
+$telemetry->flush();
+// @doctest id="cd40"
+```
+
+## Adding Child Spans
+
+Use `openChild()` when a unit of work should sit under another span:
+
+```php
+$telemetry->openRoot('request', 'http.request');
+$telemetry->openChild('llm', 'request', 'llm.inference');
+
+$telemetry->complete('llm');
+$telemetry->complete('request');
+$telemetry->flush();
+// @doctest id="92e4"
+```
+
+The keys `request` and `llm` are local registry keys. They do not have to match
+the span name.
+
+## Exporting To More Than One Backend
+
+Use `CompositeTelemetryExporter` when you want more than one output:
+
+```php
+use Cognesy\Telemetry\Adapters\OTel\OtelExporter;
+use Cognesy\Telemetry\Application\Exporter\CompositeTelemetryExporter;
+use Cognesy\Telemetry\Application\Registry\TraceRegistry;
+use Cognesy\Telemetry\Application\Telemetry;
+
+$telemetry = new Telemetry(
+    registry: new TraceRegistry(),
+    exporter: new CompositeTelemetryExporter([
+        new OtelExporter(),
+        $logfireExporter,
+        $langfuseExporter,
+    ]),
+);
+// @doctest id="7fc6"
+```
+
+## Notes
+
+- `flush()` matters. Exporters buffer observations until you call it.
+- `TelemetryHub` still exists, but `Telemetry` is the current class to use.
+- `OtelExporter()` without a transport is useful for local debugging and tests.

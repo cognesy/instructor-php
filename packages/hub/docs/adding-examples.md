@@ -25,6 +25,9 @@ The hub reads these from `./config/` at the project root. Package-owned defaults
 title: 'My Example Title'
 docname: 'my_example_title'
 id: 'dXXX'
+tags:
+  - agents
+  - streaming
 ---
 ## Overview
 
@@ -49,10 +52,18 @@ Front-matter fields:
 | `docname` | yes      | Unique slug used as the doc URL path (snake_case)                |
 | `id`      | yes      | Short hex ID for stable `xNNNN` short-link lookup (e.g. `d210`) |
 | `order`   | no       | Integer sort order within a subgroup (lower = earlier)           |
+| `tags`    | no       | YAML list of tags for `composer hub list --tag/--tags` filtering |
 
 Both `docname` and `id` must be **unique across all examples**.
 
 3. **No further steps** if the directory is already covered by an existing subgroup rule in `config/examples-groups.yaml`. Run `composer hub list` to confirm the example appears under the expected group.
+
+To verify tag metadata specifically, run:
+
+```bash
+composer hub -- list --tag=agents
+composer hub -- list --tags='[agents,streaming]'
+```
 
 ---
 

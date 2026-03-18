@@ -271,7 +271,7 @@ final readonly class AgentState
     }
 
     private function wasForceStopped(): bool {
-        $primarySignal = $this->execution?->continuation()->stopSignals()->first();
+        $primarySignal = $this->stopSignal();
         return $primarySignal !== null && $primarySignal->reason->wasForceStopped();
     }
 
@@ -369,20 +369,19 @@ final readonly class AgentState
         return $this->lastStepExecution()?->duration();
     }
 
-    public function lastStopSignal(): ?StopSignal {
-        $fromStep = $this->lastStepExecution()?->continuation()->stopSignals()->first();
-        if ($fromStep !== null) {
-            return $fromStep;
-        }
-        return $this->executionContinuation()?->stopSignals()->first();
+    public function stopSignal(): ?StopSignal {
+        $fromStep = $this->lastStepExecution()?->continuation()->stopSignal();
+        $fromExecution = $this->executionContinuation()?->stopSignal();
+
+        return $this->higherPriorityStopSignal($fromStep, $fromExecution);
     }
 
-    public function lastStopReason(): ?StopReason {
-        return $this->lastStopSignal()?->reason;
+    public function stopReason(): ?StopReason {
+        return $this->stopSignal()?->reason;
     }
 
-    public function lastStopSource(): ?string {
-        return $this->lastStopSignal()?->source;
+    public function stopSource(): ?string {
+        return $this->stopSignal()?->source;
     }
 
     public function lastStepStartedAt(): ?DateTimeImmutable {
@@ -506,6 +505,15 @@ final readonly class AgentState
 
     private function ensureExecution(): ExecutionState {
         return $this->execution ?? ExecutionState::fresh();
+    }
+
+    private function higherPriorityStopSignal(?StopSignal $left, ?StopSignal $right): ?StopSignal {
+        return match (true) {
+            $left === null => $right,
+            $right === null => $left,
+            $left->compare($right) <= 0 => $left,
+            default => $right,
+        };
     }
 
     private function tagMessages(Messages $messages, AgentStep $step, ExecutionState $execution): Messages {

@@ -65,7 +65,7 @@ it('accumulates message text from stream-json message events', function () {
     $response = (new ResponseParser())->parse($result, OutputFormat::StreamJson);
 
     expect($response->decoded()->count())->toBe(2)
-        ->and($response->messageText())->toBe('Hello Claude');
+        ->and($response->messageText())->toBe('Claude');
 });
 
 it('stores raw stdout as message text for text output', function () {

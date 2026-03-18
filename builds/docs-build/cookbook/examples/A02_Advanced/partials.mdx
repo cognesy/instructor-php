@@ -18,7 +18,6 @@ use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Cognesy\Utils\Cli\Console;
 class UserRole
 {
     /** Monotonically increasing identifier */
@@ -37,17 +36,58 @@ class UserDetail
     public array $hobbies;
 }
 
+function partialScreenState(?bool $active = null): bool {
+    static $state = false;
+
+    if (!is_null($active)) {
+        $state = $active;
+    }
+
+    return $state;
+}
+
+function enterPartialScreen(): void {
+    if (partialScreenState()) {
+        return;
+    }
+
+    partialScreenState(true);
+    register_shutdown_function(static function (): void {
+        exitPartialScreen();
+    });
+
+    echo "\033[?1049h\033[H\033[2J";
+
+    if (defined('STDOUT')) {
+        fflush(STDOUT);
+    }
+}
+
+function exitPartialScreen(): void {
+    if (!partialScreenState()) {
+        return;
+    }
+
+    echo "\033[?1049l";
+
+    if (defined('STDOUT')) {
+        fflush(STDOUT);
+    }
+
+    partialScreenState(false);
+}
+
 // This function will be called every time a new token is received
 function partialUpdate($partial) {
-    // Clear the screen and move the cursor to the top
-    Console::clearScreen();
+    enterPartialScreen();
+    echo "\033[H\033[2J";
+
     echo "Updated partial object received:\n";
-    // Display the partial object
     dump($partial);
 
-    // Wait a bit before clearing the screen to make partial changes slower.
-    // Don't use this in your application :)
-    //usleep(250000);
+    if (defined('STDOUT')) {
+        fflush(STDOUT);
+    }
 }
 ?>
 ```
@@ -63,14 +103,26 @@ $text = <<<TEXT
     San Francisco. He likes to play soccer and climb mountains.
     TEXT;
 
+$system = 'You are a precise structured data extraction assistant for JSON output. '
+    . 'Copy values exactly from the source text. '
+    . 'Do not omit explicitly stated person names.';
+
+$prompt = 'Extract one user profile from the text as JSON. '
+    . 'Always fill name, age, location, roles, and hobbies when the source text provides them. '
+    . 'Use the exact person name from the text.';
+
 $stream = (new StructuredOutput(
     StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
         ->withConfig(new StructuredOutputConfig(
             responseCachePolicy: ResponseCachePolicy::None, // use Memory if you need replay
         ))
         ->withOutputMode(OutputMode::Json)
-))->withMessages($text)
-    ->withResponseClass(UserDetail::class)
+))->with(
+        messages: $text,
+        responseModel: UserDetail::class,
+        system: $system,
+        prompt: $prompt,
+    )
     ->withStreaming()
     ->stream();
 
@@ -82,6 +134,7 @@ foreach ($stream->partials() as $partial) {
 }
 
 $user = $stream->finalValue();
+exitPartialScreen();
 
 echo "All tokens received, fully completed object available in `\$user` variable.\n";
 echo '$user = '."\n";

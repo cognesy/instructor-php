@@ -179,7 +179,7 @@ $state->stepCount();                  // int -- number of steps in current execu
 $state->steps();                      // AgentSteps -- collection of completed steps
 $state->lastStep();                   // ?AgentStep -- most recently completed step
 $state->lastStepType();              // ?AgentStepType -- ToolExecution|FinalResponse|Error
-$state->lastStopReason();            // ?StopReason -- why the last step stopped
+$state->stopReason();                // ?StopReason -- why execution stopped
 $state->usage();                      // InferenceUsage -- accumulated token usage
 $state->hasErrors();                  // ?bool -- whether any errors occurred
 $state->errors();                     // ErrorList -- all accumulated errors

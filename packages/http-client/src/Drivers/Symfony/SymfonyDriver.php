@@ -14,6 +14,7 @@ use Cognesy\Http\Exceptions\HttpExceptionFactory;
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Http\Exceptions\NetworkException;
 use Cognesy\Http\Exceptions\TimeoutException;
+use Cognesy\Http\Telemetry\HttpRequestTelemetry;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
 use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
@@ -129,6 +130,7 @@ class SymfonyDriver implements CanHandleHttpRequest
             'method' => $request->method(),
             'headers' => $request->headers(),
             'body' => $request->body()->toArray(),
+            ...HttpRequestTelemetry::metadataForRequest($request),
         ]));
     }
 
@@ -138,14 +140,19 @@ class SymfonyDriver implements CanHandleHttpRequest
             'url' => $request->url(),
             'method' => $request->method(),
             'statusCode' => $statusCode,
+            ...HttpRequestTelemetry::metadataForRequest($request),
         ]));
     }
 
     private function dispatchResponseReceived(HttpResponse $response, HttpRequest $request): void {
-        $this->events->dispatch(new HttpResponseReceived([
+        $isStreamed = $response->isStreamed();
+        $this->events->dispatch(new HttpResponseReceived(array_filter([
             'requestId' => $request->id,
             'statusCode' => $response->statusCode(),
-        ]));
+            'isStreamed' => $isStreamed,
+            'body' => !$isStreamed ? $response->body() : null,
+            ...HttpRequestTelemetry::metadataForRequest($request),
+        ], static fn(mixed $v): bool => $v !== null)));
     }
 
     private function dispatchRequestFailed(HttpRequestException $exception, HttpRequest $request): void {
@@ -156,6 +163,7 @@ class SymfonyDriver implements CanHandleHttpRequest
             'headers' => $request->headers(),
             'body' => $request->body()->toArray(),
             'errors' => $exception->getMessage(),
+            ...HttpRequestTelemetry::metadataForRequest($request),
         ]));
     }
 

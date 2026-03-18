@@ -3,6 +3,7 @@
 namespace Cognesy\AgentCtrl\Event;
 
 use Cognesy\AgentCtrl\Enum\AgentType;
+use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Psr\Log\LogLevel;
 
 /**
@@ -14,10 +15,11 @@ final class ResponseParsingStarted extends AgentEvent
 
     public function __construct(
         AgentType $agentType,
+        AgentCtrlExecutionId $executionId,
         public readonly int $responseSize,
         public readonly string $format,
     ) {
-        parent::__construct($agentType, [
+        parent::__construct($agentType, $executionId, [
             'responseSize' => $responseSize,
             'format' => $format,
         ]);

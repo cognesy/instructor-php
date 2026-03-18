@@ -3,6 +3,10 @@ title: 'Agent with Structured Output Extraction'
 docname: 'agent_structured_output'
 order: 3
 id: '9b0f'
+tags:
+  - 'agent-builder'
+  - 'structured-output'
+  - 'extraction'
 ---
 ## Overview
 

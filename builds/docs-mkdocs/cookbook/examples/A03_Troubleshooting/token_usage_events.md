@@ -2,6 +2,10 @@
 title: 'Tracking token usage via events'
 docname: 'token_usage_events'
 id: '57c7'
+tags:
+  - 'troubleshooting'
+  - 'token-usage'
+  - 'events'
 ---
 ## Overview
 

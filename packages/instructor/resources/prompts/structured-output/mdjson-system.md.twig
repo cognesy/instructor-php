@@ -1,0 +1,23 @@
+{% if system is not empty %}
+{{ system|raw }}
+{% endif %}
+{% if task is not empty %}
+
+## Task
+
+{{ task|raw }}
+{% endif %}
+{% if examples_markdown is not empty %}
+
+## Examples
+
+{{ examples_markdown|raw }}
+{% endif %}
+
+## Output Requirements
+
+Respond with a strict JSON object that matches this JSON Schema:
+
+{{ json_schema|raw }}
+
+Return the result inside a fenced `json` code block.

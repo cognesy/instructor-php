@@ -19,12 +19,12 @@ enum StopReason: string
         return match ($this) {
             self::ErrorForbade => 0,
             self::StopRequested => 1,
-            self::StepsLimitReached => 2,
-            self::TokenLimitReached => 3,
-            self::TimeLimitReached => 4,
-            self::RetryLimitReached => 5,
-            self::FinishReasonReceived => 6,
-            self::UserRequested => 7,
+            self::UserRequested => 2,
+            self::StepsLimitReached => 3,
+            self::TokenLimitReached => 4,
+            self::TimeLimitReached => 5,
+            self::RetryLimitReached => 6,
+            self::FinishReasonReceived => 7,
             self::Completed => 8,
             self::Unknown => 9,
         };

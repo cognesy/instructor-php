@@ -2,6 +2,10 @@
 title: 'Generating JSON Schema from PHP classes'
 docname: 'json_schema'
 id: '0f58'
+tags:
+  - 'extras'
+  - 'json-schema'
+  - 'schema-generation'
 ---
 ## Overview
 

@@ -19,6 +19,7 @@ packages:
     polyglot: 'Unified LLM API abstraction layer'
     agents: 'SDK for building custom AI agents'
     http-client: 'Framework-agnostic HTTP client'
+    telemetry: 'Shared tracing and telemetry correlation layer'
     http-pool: 'Concurrent HTTP request execution'
     laravel: 'Laravel integration for Instructor'
   # Target directory names in output (defaults to package name)
@@ -30,6 +31,7 @@ packages:
     - polyglot
     - agents
     - agent-ctrl
+    - telemetry
     - sandbox
     - http-client
     - laravel

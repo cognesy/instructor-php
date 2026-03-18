@@ -2,6 +2,10 @@
 title: 'HTTP Middleware (Stream)'
 docname: 'http_middleware_stream'
 id: '67c3'
+tags:
+  - 'http'
+  - 'middleware'
+  - 'streaming'
 ---
 ## Overview
 

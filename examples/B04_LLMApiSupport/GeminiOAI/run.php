@@ -2,6 +2,10 @@
 title: 'Google Gemini (OpenAI-compatible)'
 docname: 'llm_google_gemini_oai'
 id: '821d'
+tags:
+  - 'llm-api-support'
+  - 'gemini'
+  - 'openai-compatible'
 ---
 ## Overview
 

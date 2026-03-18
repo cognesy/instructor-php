@@ -2,6 +2,10 @@
 title: 'Limiting the length of lists'
 docname: 'limiting_lists'
 id: 'c871'
+tags:
+  - 'misc'
+  - 'list-limits'
+  - 'extraction'
 ---
 ## Overview
 

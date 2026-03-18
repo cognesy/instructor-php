@@ -2,6 +2,10 @@
 title: 'Agent Control Events & Monitoring'
 docname: 'agent_ctrl_events'
 id: '4074'
+tags:
+  - 'agent-ctrl'
+  - 'events'
+  - 'monitoring'
 ---
 ## Overview
 

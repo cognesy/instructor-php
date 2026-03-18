@@ -2,6 +2,10 @@
 title: 'Agent Control Streaming'
 docname: 'agent_ctrl_streaming'
 id: 'b0bc'
+tags:
+  - 'agent-ctrl'
+  - 'streaming'
+  - 'cli-agents'
 ---
 ## Overview
 

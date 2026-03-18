@@ -2,6 +2,10 @@
 title: 'Getters and setters'
 docname: 'getters_and_setters'
 id: 'e4bb'
+tags:
+  - 'basics'
+  - 'getters-setters'
+  - 'object-mapping'
 ---
 ## Overview
 

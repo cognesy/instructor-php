@@ -3,6 +3,7 @@
 namespace Cognesy\Polyglot\Inference\Drivers\Gemini;
 
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Telemetry\HttpRequestTelemetry;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceRequest;
@@ -17,13 +18,18 @@ class GeminiRequestAdapter implements CanTranslateInferenceRequest
 
     #[\Override]
     public function toHttpRequest(InferenceRequest $request): HttpRequest {
-        return new HttpRequest(
+        $httpRequest = new HttpRequest(
             url: $this->toUrl($request),
             method: 'POST',
             headers: $this->toHeaders($request),
             body: $this->bodyFormat->toRequestBody($request),
             options: ['stream' => $request->isStreamed()],
         );
+
+        return match ($request->telemetryCorrelation()) {
+            null => $httpRequest,
+            default => HttpRequestTelemetry::withCorrelation($httpRequest, $request->telemetryCorrelation()),
+        };
     }
 
     protected function toHeaders(InferenceRequest $request): array {

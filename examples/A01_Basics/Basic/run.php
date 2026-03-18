@@ -3,6 +3,10 @@ title: 'Basic use'
 docname: 'basic_use'
 path: ''
 id: '5265'
+tags:
+  - 'basics'
+  - 'structured-output'
+  - 'extraction'
 ---
 ## Overview
 

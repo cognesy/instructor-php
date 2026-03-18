@@ -108,6 +108,7 @@ final class ClaudeCodeBridgeBuilder extends AbstractBridgeBuilder
     public function build(): AgentBridge
     {
         return new ClaudeCodeBridge(
+            executionId: $this->executionId(),
             model: $this->model,
             systemPrompt: $this->systemPrompt,
             appendSystemPrompt: $this->appendSystemPrompt,

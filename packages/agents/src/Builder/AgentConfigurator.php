@@ -19,6 +19,7 @@ use Cognesy\Agents\Interception\PassThroughInterceptor;
 use Cognesy\Agents\Tool\ToolExecutor;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Logging\EventLog;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
@@ -35,7 +36,9 @@ final readonly class AgentConfigurator implements CanConfigureAgent
     ) {}
 
     public static function base(?CanHandleEvents $parentEvents = null): self {
-        $events = new EventDispatcher('agent-builder', $parentEvents);
+        $events = $parentEvents !== null
+            ? new EventDispatcher('agent-builder', $parentEvents)
+            : EventLog::root('agent-builder');
         $llm = LLMProvider::new();
 
         return new self(

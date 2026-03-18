@@ -3,6 +3,10 @@ title: 'Agent-Driven Codebase Search'
 docname: 'agent_search'
 order: 6
 id: '4e0c'
+tags:
+  - 'agent-builder'
+  - 'search'
+  - 'codebase'
 ---
 ## Overview
 

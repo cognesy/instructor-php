@@ -2,6 +2,10 @@
 title: 'Claude Code CLI - Basic'
 docname: 'claude_code_basic'
 id: '6072'
+tags:
+  - 'agent-ctrl'
+  - 'claude-code'
+  - 'cli-agent'
 ---
 ## Overview
 

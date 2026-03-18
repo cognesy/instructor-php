@@ -3,6 +3,7 @@
 namespace Cognesy\AgentCtrl\Event;
 
 use Cognesy\AgentCtrl\Enum\AgentType;
+use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Psr\Log\LogLevel;
 
 /**
@@ -14,12 +15,13 @@ final class ResponseDataExtracted extends AgentEvent
 
     public function __construct(
         AgentType $agentType,
+        AgentCtrlExecutionId $executionId,
         public readonly int $eventCount,
         public readonly int $toolUseCount,
         public readonly int $textLength,
         public readonly float $extractDurationMs,
     ) {
-        parent::__construct($agentType, [
+        parent::__construct($agentType, $executionId, [
             'eventCount' => $eventCount,
             'toolUseCount' => $toolUseCount,
             'textLength' => $textLength,

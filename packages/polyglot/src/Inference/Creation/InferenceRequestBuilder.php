@@ -12,6 +12,7 @@ use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Data\ToolChoice;
 use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
+use Cognesy\Telemetry\Domain\Envelope\OperationCorrelation;
 
 class InferenceRequestBuilder
 {
@@ -31,6 +32,8 @@ class InferenceRequestBuilder
 
     private ?InferenceRetryPolicy $retryPolicy;
 
+    private ?OperationCorrelation $telemetryCorrelation;
+
     private ?bool $streaming;
 
     private ?int $maxTokens;
@@ -49,6 +52,7 @@ class InferenceRequestBuilder
         ?int $maxTokens = null,
         ?ResponseCachePolicy $responseCachePolicy = null,
         ?InferenceRetryPolicy $retryPolicy = null,
+        ?OperationCorrelation $telemetryCorrelation = null,
     ) {
         $this->messages = $messages;
         $this->model = $model;
@@ -61,6 +65,7 @@ class InferenceRequestBuilder
         $this->cachedContext = $cachedContext ?? new CachedInferenceContext;
         $this->responseCachePolicy = $responseCachePolicy;
         $this->retryPolicy = $retryPolicy;
+        $this->telemetryCorrelation = $telemetryCorrelation;
     }
 
     /**
@@ -161,6 +166,13 @@ class InferenceRequestBuilder
         return $this;
     }
 
+    public function withTelemetryCorrelation(?OperationCorrelation $telemetryCorrelation): static
+    {
+        $this->telemetryCorrelation = $telemetryCorrelation;
+
+        return $this;
+    }
+
     /**
      * Sets a cached context with provided messages, tools, tool choices, and response format.
      *
@@ -197,6 +209,7 @@ class InferenceRequestBuilder
         $this->cachedContext = $request->cachedContext();
         $this->responseCachePolicy = $request->responseCachePolicy();
         $this->retryPolicy = $request->retryPolicy();
+        $this->telemetryCorrelation = $request->telemetryCorrelation();
 
         return $this;
     }
@@ -217,6 +230,7 @@ class InferenceRequestBuilder
             cachedContext: $this->cachedContext,
             responseCachePolicy: $this->responseCachePolicy,
             retryPolicy: $this->retryPolicy,
+            telemetryCorrelation: $this->telemetryCorrelation,
         );
     }
 

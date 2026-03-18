@@ -3,6 +3,7 @@
 namespace Cognesy\AgentCtrl\Event;
 
 use Cognesy\AgentCtrl\Enum\AgentType;
+use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Psr\Log\LogLevel;
 
 /**
@@ -14,11 +15,12 @@ final class ProcessExecutionCompleted extends AgentEvent
 
     public function __construct(
         AgentType $agentType,
+        AgentCtrlExecutionId $executionId,
         public readonly int $totalAttempts,
         public readonly float $totalExecutionDurationMs,
         public readonly int $successAttempt,
     ) {
-        parent::__construct($agentType, [
+        parent::__construct($agentType, $executionId, [
             'totalAttempts' => $totalAttempts,
             'totalExecutionDurationMs' => round($totalExecutionDurationMs, 2),
             'successAttempt' => $successAttempt,

@@ -15,6 +15,19 @@ final readonly class StopSignal
         public ?string $source = null,
     ) {}
 
+    public static function userRequested(
+        string $message = '',
+        array $context = [],
+        ?string $source = null,
+    ): self {
+        return new self(
+            reason: StopReason::UserRequested,
+            message: $message,
+            context: $context,
+            source: $source,
+        );
+    }
+
     public static function fromStopException(AgentStopException $stop) : self {
         return new self(
             reason: StopReason::StopRequested,

@@ -2,6 +2,10 @@
 title: 'Structures'
 docname: 'structures'
 id: '40e1'
+tags:
+  - 'advanced'
+  - 'dynamic-schema'
+  - 'structures'
 ---
 ## Overview
 

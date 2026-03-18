@@ -2,6 +2,10 @@
 title: 'DeepSeek'
 docname: 'llm_deepseek'
 id: 'e416'
+tags:
+  - 'llm-api-support'
+  - 'deepseek'
+  - 'provider'
 ---
 ## Overview
 

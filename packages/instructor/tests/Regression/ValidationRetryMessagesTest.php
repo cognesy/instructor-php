@@ -28,6 +28,7 @@ class ValidationRetryUser
     {
         $data = implode("\n", $this->details);
         $hasPii = Str::contains($data, 'ssn=', false) || Str::contains($data, 'phone=', false);
+        $hasUnnormalizedRole = Str::contains($data, 'role=contractor', false);
 
         return match ($hasPii) {
             true => ValidationResult::fieldError(
@@ -35,7 +36,14 @@ class ValidationRetryUser
                 value: $data,
                 message: 'Details contain PII, remove it from the response.',
             ),
-            false => ValidationResult::valid(),
+            false => match ($hasUnnormalizedRole) {
+                true => ValidationResult::fieldError(
+                    field: 'details',
+                    value: $data,
+                    message: 'Role must be normalized to engineer.',
+                ),
+                false => ValidationResult::valid(),
+            },
         };
     }
 }
@@ -114,7 +122,7 @@ function messageIndexOf(Messages $messages, string $needle): int
     return -1;
 }
 
-it('includes validation errors in retry messages for the next LLM attempt', function () {
+it('carries forward each validation error into subsequent retry message sequences', function () {
     $responses = [
         new InferenceResponse(content: json_encode([
             'name' => 'Jason',
@@ -131,7 +139,15 @@ it('includes validation errors in retry messages for the next LLM attempt', func
             'details' => [
                 'name=Jason',
                 'age=25',
-                'role=developer',
+                'role=contractor',
+            ],
+        ])),
+        new InferenceResponse(content: json_encode([
+            'name' => 'Jason',
+            'details' => [
+                'name=Jason',
+                'age=25',
+                'role=engineer',
             ],
         ])),
     ];
@@ -140,7 +156,7 @@ it('includes validation errors in retry messages for the next LLM attempt', func
     $result = (new StructuredOutput(makeStructuredRuntime(
         driver: $driver,
         outputMode: OutputMode::Json,
-        maxRetries: 1,
+        maxRetries: 2,
     )))
         ->withMessages('Extract details.')
         ->withResponseClass(ValidationRetryUser::class)
@@ -149,14 +165,23 @@ it('includes validation errors in retry messages for the next LLM attempt', func
     expect($result)->toBeInstanceOf(ValidationRetryUser::class);
 
     $requests = $driver->recordedRequests();
-    expect($requests->count())->toBe(2);
+    expect($requests->count())->toBe(3);
 
     $secondMessages = $requests->itemAt(1);
-    $feedbackIndex = messageIndexOf($secondMessages, 'FEEDBACK:');
-    $errorIndex = messageIndexOf($secondMessages, 'Details contain PII');
-    $correctedIndex = messageIndexOf($secondMessages, 'CORRECTED RESPONSE:');
+    $firstResponseIndex = messageIndexOf($secondMessages, 'ssn=123-45-6789');
+    $firstErrorIndex = messageIndexOf($secondMessages, 'Details contain PII');
 
-    expect($feedbackIndex)->toBeGreaterThanOrEqual(0);
-    expect($errorIndex)->toBeGreaterThan($feedbackIndex);
-    expect($correctedIndex)->toBeGreaterThan($errorIndex);
+    expect($firstResponseIndex)->toBeGreaterThanOrEqual(0);
+    expect($firstErrorIndex)->toBeGreaterThan($firstResponseIndex);
+
+    $thirdMessages = $requests->itemAt(2);
+    $thirdFirstResponseIndex = messageIndexOf($thirdMessages, 'ssn=123-45-6789');
+    $thirdFirstErrorIndex = messageIndexOf($thirdMessages, 'Details contain PII');
+    $thirdSecondResponseIndex = messageIndexOf($thirdMessages, 'role=contractor');
+    $thirdSecondErrorIndex = messageIndexOf($thirdMessages, 'Role must be normalized to engineer.');
+
+    expect($thirdFirstResponseIndex)->toBeGreaterThanOrEqual(0);
+    expect($thirdFirstErrorIndex)->toBeGreaterThan($thirdFirstResponseIndex);
+    expect($thirdSecondResponseIndex)->toBeGreaterThan($thirdFirstErrorIndex);
+    expect($thirdSecondErrorIndex)->toBeGreaterThan($thirdSecondResponseIndex);
 });

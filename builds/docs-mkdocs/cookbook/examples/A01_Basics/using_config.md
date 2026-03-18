@@ -2,6 +2,10 @@
 title: 'Load LLM Config Data From YAML'
 docname: 'using_config'
 id: '7dda'
+tags:
+  - 'basics'
+  - 'configuration'
+  - 'yaml'
 ---
 ## Overview
 

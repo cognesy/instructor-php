@@ -36,7 +36,7 @@ final readonly class ExecutionSummary
     public static function fromState(AgentState $state): self
     {
         $execution = $state->execution();
-        $signal = $state->lastStopSignal();
+        $signal = $state->stopSignal();
 
         $status = match (true) {
             $execution?->isFailed() => ExecutionStatus::Failed,

@@ -184,6 +184,13 @@
             "tier": "library"
         },
         {
+            "local": "packages/telemetry",
+            "repo": "cognesy/instructor-telemetry",
+            "github_name": "instructor-telemetry",
+            "composer_name": "cognesy/instructor-telemetry",
+            "tier": "library"
+        },
+        {
             "local": "packages/utils",
             "repo": "cognesy/instructor-utils",
             "github_name": "instructor-utils",

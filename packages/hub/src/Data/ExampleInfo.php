@@ -14,6 +14,8 @@ class ExampleInfo
         public ?int $order = null,
         public string $id = '',
         public bool $skip = false,
+        /** @var string[] */
+        public array $tags = [],
     ) {}
 
     public static function fromFile(string $path, string $name) : ExampleInfo {
@@ -22,8 +24,8 @@ class ExampleInfo
         $docName = $data['docname'] ?? Str::snake($name);
         $order = isset($data['order']) ? (int) $data['order'] : null;
         $id = $data['id'] ?? '';
-
         $skip = (bool) ($data['skip'] ?? false);
+        $tags = self::parseTags($data['tags'] ?? []);
 
         return new ExampleInfo(
             title: $title,
@@ -32,6 +34,7 @@ class ExampleInfo
             order: $order,
             id: $id,
             skip: $skip,
+            tags: $tags,
         );
     }
 
@@ -57,6 +60,34 @@ class ExampleInfo
         return self::cleanStr($header, 60);
     }
 
+    /**
+     * @return string[]
+     */
+    private static function parseTags(mixed $value) : array {
+        $rawTags = match (true) {
+            is_string($value) => preg_split('/\s*,\s*/', trim($value), -1, PREG_SPLIT_NO_EMPTY) ?: [],
+            is_array($value) => $value,
+            default => [],
+        };
+
+        $tags = [];
+        $seen = [];
+        foreach ($rawTags as $tag) {
+            $normalized = self::stringTag($tag);
+            if ($normalized === '') {
+                continue;
+            }
+            $key = strtolower($normalized);
+            if (isset($seen[$key])) {
+                continue;
+            }
+            $tags[] = $normalized;
+            $seen[$key] = true;
+        }
+
+        return $tags;
+    }
+
     private static function cleanStr(string $input, int $limit) : string {
         // remove any \n, \r, PHP tags, md hashes
         $output = str_replace(["\n", "\r", '<?php', '?>', '#'], [' ', '', '', '', ''], $input);
@@ -77,5 +108,13 @@ class ExampleInfo
             }
         }
         return '';
+    }
+
+    private static function stringTag(mixed $value) : string {
+        if (!is_scalar($value) && !$value instanceof \Stringable) {
+            return '';
+        }
+
+        return trim((string) $value);
     }
 }

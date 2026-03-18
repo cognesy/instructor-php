@@ -155,6 +155,7 @@ final class GeminiBridgeBuilder extends AbstractBridgeBuilder
     public function build(): AgentBridge
     {
         return new GeminiBridge(
+            executionId: $this->executionId(),
             model: $this->model,
             approvalMode: $this->approvalMode,
             sandbox: $this->sandbox,

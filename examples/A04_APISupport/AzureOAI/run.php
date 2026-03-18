@@ -2,6 +2,10 @@
 title: 'Azure OpenAI'
 docname: 'azure_openai'
 id: 'f972'
+tags:
+  - 'api-support'
+  - 'azure-openai'
+  - 'provider'
 ---
 ## Overview
 

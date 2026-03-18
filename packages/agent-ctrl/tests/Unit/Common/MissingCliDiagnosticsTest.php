@@ -3,13 +3,14 @@
 use Cognesy\AgentCtrl\Bridge\ClaudeCodeBridge;
 use Cognesy\AgentCtrl\Bridge\CodexBridge;
 use Cognesy\AgentCtrl\Bridge\OpenCodeBridge;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 
 it('provides actionable diagnostics when claude binary is missing', function () {
     $previousPath = getenv('PATH');
     putenv('PATH=/__agent_ctrl_missing__/bin');
 
     try {
-        $bridge = new ClaudeCodeBridge();
+        $bridge = new ClaudeCodeBridge(events: new EventDispatcher());
         expect(fn() => $bridge->execute('hello'))
             ->toThrow(RuntimeException::class, 'Claude Code CLI executable `claude` was not found in PATH');
     } finally {
@@ -22,7 +23,7 @@ it('provides actionable diagnostics when codex binary is missing', function () {
     putenv('PATH=/__agent_ctrl_missing__/bin');
 
     try {
-        $bridge = new CodexBridge();
+        $bridge = new CodexBridge(events: new EventDispatcher());
         expect(fn() => $bridge->execute('hello'))
             ->toThrow(RuntimeException::class, 'Codex CLI executable `codex` was not found in PATH');
     } finally {
@@ -35,7 +36,7 @@ it('provides actionable diagnostics when opencode binary is missing', function (
     putenv('PATH=/__agent_ctrl_missing__/bin');
 
     try {
-        $bridge = new OpenCodeBridge();
+        $bridge = new OpenCodeBridge(events: new EventDispatcher());
         expect(fn() => $bridge->execute('hello'))
             ->toThrow(RuntimeException::class, 'OpenCode CLI executable `opencode` was not found in PATH');
     } finally {

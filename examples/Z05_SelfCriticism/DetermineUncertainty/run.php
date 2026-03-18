@@ -2,6 +2,10 @@
 title: 'Determine Uncertainty of Reasoning Chain'
 docname: 'determine_uncertainty'
 id: 'cd1f'
+tags:
+  - 'self-criticism'
+  - 'uncertainty'
+  - 'self-calibration'
 ---
 ## Overview
 

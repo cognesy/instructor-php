@@ -24,11 +24,13 @@ it('uses custom request materializer when provided on runtime', function () {
     $materializer = new class implements CanMaterializeRequest {
         public bool $called = false;
 
-        public function toMessages(StructuredOutputExecution $execution): Messages
+        public function toInferenceRequest(StructuredOutputExecution $execution): InferenceRequest
         {
             $this->called = true;
 
-            return Messages::fromString('Materialized override', 'system');
+            return new InferenceRequest(
+                messages: Messages::fromString('Materialized override', 'system'),
+            );
         }
     };
 

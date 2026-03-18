@@ -2,6 +2,10 @@
 title: 'Streaming metrics (Polyglot)'
 docname: 'metrics_streaming'
 id: '94c4'
+tags:
+  - 'llm-extras'
+  - 'metrics'
+  - 'streaming'
 ---
 ## Overview
 
@@ -50,11 +54,12 @@ final class StreamMetricsCollector extends MetricsCollector
     }
 
     public function onCompleted(InferenceCompleted $event): void {
-        $durationSeconds = max(0.001, $event->durationMs / 1000);
-        $outputTokens = $event->usage->output();
+        $durationMs = $event->data['durationMs'] ?? 1;
+        $durationSeconds = max(0.001, $durationMs / 1000);
+        $outputTokens = $event->data['outputTokens'] ?? 0;
         $tokensPerSecond = $outputTokens / $durationSeconds;
 
-        $this->timer('llm.stream.duration_ms', $event->durationMs);
+        $this->timer('llm.stream.duration_ms', $durationMs);
         $this->gauge('llm.stream.chunk_count', (float) $this->chunkCount);
         $this->gauge('llm.stream.output_tokens', (float) $outputTokens);
         $this->gauge('llm.stream.output_tokens_per_second', $tokensPerSecond);

@@ -125,6 +125,9 @@ final class PublishedConfigRules
                 'instructor' => true,
                 'instructor-logging' => true,
             ],
+            'logging' => [
+                'event_log' => true,
+            ],
             'polyglot' => [
                 'docs' => true,
                 'embed' => ['default', 'presets'],

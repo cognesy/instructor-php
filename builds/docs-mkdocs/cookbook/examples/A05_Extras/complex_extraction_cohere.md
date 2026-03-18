@@ -2,6 +2,10 @@
 title: 'Extraction of complex objects (Cohere)'
 docname: 'complex_extraction_cohere'
 id: 'a36c'
+tags:
+  - 'extras'
+  - 'complex-extraction'
+  - 'cohere'
 ---
 ## Overview
 

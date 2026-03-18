@@ -5,6 +5,7 @@ namespace Cognesy\Agents\Events;
 use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use DateTimeImmutable;
+use Psr\Log\LogLevel;
 
 /**
  * Dispatched when an agent completes execution.
@@ -12,6 +13,7 @@ use DateTimeImmutable;
  */
 final class AgentExecutionCompleted extends AgentEvent
 {
+    public string $logLevel = LogLevel::INFO;
     public readonly DateTimeImmutable $completedAt;
 
     public function __construct(
@@ -22,6 +24,7 @@ final class AgentExecutionCompleted extends AgentEvent
         public readonly int             $totalSteps,
         public readonly InferenceUsage           $totalUsage,
         public readonly ?string         $errors,
+        public readonly array           $outputMessages = [],
     ) {
         $this->completedAt = new DateTimeImmutable();
 

@@ -2,6 +2,10 @@
 title: 'Fireworks.ai'
 docname: 'fireworks'
 id: '9592'
+tags:
+  - 'api-support'
+  - 'fireworks'
+  - 'provider'
 ---
 ## Overview
 

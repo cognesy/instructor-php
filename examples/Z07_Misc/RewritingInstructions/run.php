@@ -2,6 +2,10 @@
 title: 'Ask LLM to rewrite instructions'
 docname: 'rewrite_instructions'
 id: '57bd'
+tags:
+  - 'misc'
+  - 'instruction-rewriting'
+  - 'prompting'
 ---
 ## Overview
 

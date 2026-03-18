@@ -3,7 +3,7 @@
 namespace Cognesy\Polyglot\Embeddings;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Logging\EventLog;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
@@ -141,7 +141,7 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
         if ($events !== null) {
             return $events;
         }
-        return new EventDispatcher(name: 'polyglot.embeddings.runtime');
+        return EventLog::root('polyglot.embeddings.runtime');
     }
 
     /**

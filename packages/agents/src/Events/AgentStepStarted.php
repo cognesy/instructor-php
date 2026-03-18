@@ -3,6 +3,7 @@
 namespace Cognesy\Agents\Events;
 
 use DateTimeImmutable;
+use Psr\Log\LogLevel;
 
 /**
  * Dispatched when an agent step begins execution.
@@ -10,6 +11,7 @@ use DateTimeImmutable;
  */
 final class AgentStepStarted extends AgentEvent
 {
+    public string $logLevel = LogLevel::INFO;
     public readonly DateTimeImmutable $startedAt;
 
     public function __construct(
@@ -19,6 +21,7 @@ final class AgentStepStarted extends AgentEvent
         public readonly int $stepNumber,
         public readonly int $messageCount,
         public readonly int $availableTools,
+        public readonly array $messages = [],
     ) {
         $this->startedAt = new DateTimeImmutable();
 
@@ -29,6 +32,7 @@ final class AgentStepStarted extends AgentEvent
             'step' => $this->stepNumber,
             'messages' => $this->messageCount,
             'tools' => $this->availableTools,
+            'messagePayload' => $this->messages,
         ]);
     }
 

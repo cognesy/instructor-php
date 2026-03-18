@@ -2,4 +2,9 @@
 
 namespace Cognesy\Polyglot\Inference\Events;
 
-final class InferenceAttemptFailed extends InferenceEvent {}
+use Psr\Log\LogLevel;
+
+final class InferenceAttemptFailed extends InferenceEvent
+{
+    public string $logLevel = LogLevel::WARNING;
+}

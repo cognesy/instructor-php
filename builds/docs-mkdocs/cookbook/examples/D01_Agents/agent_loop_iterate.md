@@ -3,6 +3,10 @@ title: 'AgentLoop::iterate()'
 docname: 'agent_loop_iterate'
 order: 2
 id: '9ff0'
+tags:
+  - 'agents'
+  - 'agent-loop'
+  - 'iteration'
 ---
 ## Overview
 

@@ -2,6 +2,10 @@
 title: 'Structure The Reasoning'
 docname: 'structure_reasoning'
 id: '5023'
+tags:
+  - 'thought-generation'
+  - 'tabular-cot'
+  - 'reasoning'
 ---
 ## Overview
 

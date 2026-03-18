@@ -5,7 +5,6 @@ namespace Cognesy\Instructor\Core;
 use Cognesy\Instructor\Contracts\CanMaterializeRequest;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
-use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\PendingInference;
 
 class InferenceProvider
@@ -16,18 +15,6 @@ class InferenceProvider
     ) {}
 
     public function getInference(StructuredOutputExecution $execution): PendingInference {
-        $request = $execution->request();
-        $responseModel = $execution->responseModel();
-        assert($responseModel !== null, 'Response model cannot be null');
-
-        return $this->inference->create(new InferenceRequest(
-            messages: $this->requestMaterializer->toMessages($execution),
-            model: $request->model(),
-            tools: $responseModel->toolDefinitions(),
-            toolChoice: $responseModel->toolChoice(),
-            responseFormat: $responseModel->responseFormat(),
-            options: $request->options(),
-            responseCachePolicy: $execution->config()->responseCachePolicy(),
-        ));
+        return $this->inference->create($this->requestMaterializer->toInferenceRequest($execution));
     }
 }

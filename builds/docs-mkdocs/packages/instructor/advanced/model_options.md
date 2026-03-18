@@ -18,7 +18,7 @@ $person = (new StructuredOutput)->with(
     model: 'gpt-4o-mini',
     options: ['temperature' => 0],
 )->get();
-// @doctest id="c873"
+// @doctest id="e393"
 ```
 
 You can also use the fluent API for the same result.
@@ -30,7 +30,7 @@ $person = (new StructuredOutput)
     ->withModel('gpt-4o-mini')
     ->withOptions(['temperature' => 0])
     ->get();
-// @doctest id="3231"
+// @doctest id="2791"
 ```
 
 The `options` array is passed directly to the LLM provider. Common options include `temperature`, `max_tokens`, and `top_p`, though available options vary by provider and model.
@@ -60,7 +60,7 @@ $person = $structuredOutput->with(
     responseModel: Person::class,
     options: ['temperature' => 0],
 )->get();
-// @doctest id="ea3b"
+// @doctest id="9d7f"
 ```
 
 Per-request `model` and `options` values override the corresponding `LLMConfig` defaults, so you can set sensible defaults in the config and adjust individual requests as needed.
@@ -73,7 +73,7 @@ If you have named LLM configurations defined in a configuration file, you can lo
 $person = StructuredOutput::using('anthropic')
     ->with(messages: $text, responseModel: Person::class)
     ->get();
-// @doctest id="4686"
+// @doctest id="fc77"
 ```
 
 The preset name is resolved through `LLMConfig::fromPreset()`, which loads the connection details from your configuration.
@@ -94,7 +94,7 @@ $runtime = StructuredOutputRuntime::fromDefaults()
 $person = (new StructuredOutput($runtime))
     ->with(messages: $text, responseModel: Person::class)
     ->get();
-// @doctest id="227f"
+// @doctest id="582f"
 ```
 
 ## Common Options

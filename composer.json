@@ -141,6 +141,7 @@
             "Cognesy\\Setup\\": "packages/setup/src/",
             "Cognesy\\Stream\\": "packages/stream/src/",
             "Cognesy\\Template\\": "packages/templates/src/",
+            "Cognesy\\Telemetry\\": "packages/telemetry/src/",
             "Cognesy\\Utils\\": "packages/utils/src/",
             "Cognesy\\Xprompt\\": "packages/xprompt/src/"
         },
@@ -174,6 +175,7 @@
             "Cognesy\\Schema\\Tests\\": "packages/schema/tests/",
             "Cognesy\\Setup\\Tests\\": "packages/setup/tests/",
             "Cognesy\\Stream\\Tests\\": "packages/stream/tests/",
+            "Cognesy\\Telemetry\\Tests\\": "packages/telemetry/tests/",
             "Cognesy\\Templates\\Tests\\": "packages/templates/tests/",
             "Cognesy\\Utils\\Tests\\": "packages/utils/tests/",
             "Cognesy\\Xprompt\\Tests\\": "packages/xprompt/tests/",

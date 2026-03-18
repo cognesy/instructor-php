@@ -99,6 +99,7 @@ final class ResponseParser
         $items = [];
         $events = [];
         $messageText = '';
+        $currentAssistantText = '';
         foreach ($lines as $lineIndex => $line) {
             $trimmed = trim($line);
             if ($trimmed === '') {
@@ -117,10 +118,24 @@ final class ResponseParser
             $event = StreamEvent::fromArray($decoded);
             $events[] = $event;
             if ($event instanceof MessageEvent) {
-                foreach ($event->message->textContent() as $textContent) {
-                    $messageText .= $textContent->text;
+                if ($event->message->role === 'assistant') {
+                    // Replace current turn's text — handles partial message snapshots
+                    $currentAssistantText = implode('', array_map(
+                        fn($tc) => $tc->text,
+                        $event->message->textContent(),
+                    ));
+                } else {
+                    // Non-assistant message (e.g. user/tool_result) — commit assistant turn
+                    if ($currentAssistantText !== '') {
+                        $messageText .= $currentAssistantText;
+                        $currentAssistantText = '';
+                    }
                 }
             }
+        }
+        // Commit final assistant turn
+        if ($currentAssistantText !== '') {
+            $messageText .= $currentAssistantText;
         }
         return new ClaudeResponse(
             result: $result,

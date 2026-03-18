@@ -53,12 +53,20 @@ it('forwards typed request pieces from instructor into inference request', funct
         }
     };
 
-    $materializer = new class($materializedMessages) implements CanMaterializeRequest {
-        public function __construct(private Messages $messages) {}
+    $materializedRequest = new InferenceRequest(
+        messages: $materializedMessages,
+        model: 'gpt-4o-mini',
+        tools: $responseModel->toolDefinitions(),
+        toolChoice: $responseModel->toolChoice(),
+        responseFormat: $responseModel->responseFormat(),
+    );
 
-        public function toMessages(StructuredOutputExecution $execution): Messages
+    $materializer = new class($materializedRequest) implements CanMaterializeRequest {
+        public function __construct(private InferenceRequest $request) {}
+
+        public function toInferenceRequest(StructuredOutputExecution $execution): InferenceRequest
         {
-            return $this->messages;
+            return $this->request;
         }
     };
 
@@ -66,6 +74,7 @@ it('forwards typed request pieces from instructor into inference request', funct
 
     expect($pending)->toBeInstanceOf(PendingInference::class)
         ->and($capturingInference->captured)->toBeInstanceOf(InferenceRequest::class)
+        ->and($capturingInference->captured)->toBe($materializedRequest)
         ->and($capturingInference->captured?->messages())->toBe($materializedMessages)
         ->and($capturingInference->captured?->tools())->toBeInstanceOf(ToolDefinitions::class)
         ->and($capturingInference->captured?->tools()->toArray())->toBe($responseModel->toolDefinitions()->toArray())

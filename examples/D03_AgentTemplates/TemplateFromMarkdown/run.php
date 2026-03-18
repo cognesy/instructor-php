@@ -3,6 +3,10 @@ title: 'Template from Markdown'
 docname: 'template_from_markdown'
 order: 2
 id: 'b2e4'
+tags:
+  - 'agent-templates'
+  - 'markdown'
+  - 'templates'
 ---
 ## Overview
 

@@ -85,6 +85,7 @@ final class OpenCodeBridgeBuilder extends AbstractBridgeBuilder
     public function build(): AgentBridge
     {
         return new OpenCodeBridge(
+            executionId: $this->executionId(),
             model: $this->model,
             agent: $this->agent,
             files: $this->files,

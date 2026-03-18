@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Events\Extraction;
 
 use Cognesy\Instructor\Events\StructuredOutputEvent;
+use Psr\Log\LogLevel;
 
 /**
  * Dispatched when a specific extraction strategy fails.
@@ -11,4 +12,7 @@ use Cognesy\Instructor\Events\StructuredOutputEvent;
  * - strategy: Name of the failed strategy
  * - error: Error message describing why it failed
  */
-final class ExtractionStrategyFailed extends StructuredOutputEvent {}
+final class ExtractionStrategyFailed extends StructuredOutputEvent
+{
+    public string $logLevel = LogLevel::WARNING;
+}

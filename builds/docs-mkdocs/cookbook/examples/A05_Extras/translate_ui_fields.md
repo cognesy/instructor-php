@@ -2,6 +2,10 @@
 title: 'Translating UI text fields'
 docname: 'translate_ui_fields'
 id: '8cdb'
+tags:
+  - 'extras'
+  - 'translation'
+  - 'ui-localization'
 ---
 ## Overview
 

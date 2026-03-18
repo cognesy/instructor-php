@@ -2,6 +2,10 @@
 title: 'Reflection Prompting'
 docname: 'reflection_prompting'
 id: 'd2dc'
+tags:
+  - 'misc'
+  - 'reflection-prompting'
+  - 'reasoning'
 ---
 ## Overview
 

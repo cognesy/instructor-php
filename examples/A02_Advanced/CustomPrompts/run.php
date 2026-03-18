@@ -2,6 +2,10 @@
 title: 'Custom prompts'
 docname: 'custom_prompts'
 id: '2b77'
+tags:
+  - 'advanced'
+  - 'prompt-customization'
+  - 'templates'
 ---
 ## Overview
 

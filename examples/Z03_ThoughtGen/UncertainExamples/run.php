@@ -2,6 +2,10 @@
 title: 'Prioritize Uncertain Examples'
 docname: 'uncertain_examples'
 id: '52cc'
+tags:
+  - 'thought-generation'
+  - 'active-learning'
+  - 'example-selection'
 ---
 ## Overview
 

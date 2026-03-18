@@ -2,6 +2,10 @@
 title: 'Working directly with LLMs and JSON - JSON Schema mode'
 docname: 'llm_json_schema'
 id: 'd247'
+tags:
+  - 'llm'
+  - 'json-schema'
+  - 'direct-api'
 ---
 ## Overview
 

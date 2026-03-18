@@ -2,6 +2,10 @@
 title: 'Context caching (text inference, OpenAI)'
 docname: 'context_cache_llm_oai'
 id: '63a7'
+tags:
+  - 'llm-advanced'
+  - 'context-caching'
+  - 'openai'
 ---
 ## Overview
 

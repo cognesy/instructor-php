@@ -2,6 +2,10 @@
 title: 'Perplexity'
 docname: 'perplexity'
 id: 'bfc0'
+tags:
+  - 'api-support'
+  - 'perplexity'
+  - 'provider'
 ---
 ## Overview
 

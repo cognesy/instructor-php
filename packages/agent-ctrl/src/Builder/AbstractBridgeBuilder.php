@@ -17,8 +17,12 @@ use Cognesy\AgentCtrl\Event\AgentExecutionCompleted;
 use Cognesy\AgentCtrl\Event\AgentExecutionStarted;
 use Cognesy\AgentCtrl\Event\AgentTextReceived;
 use Cognesy\AgentCtrl\Event\AgentToolUsed;
+use Cognesy\AgentCtrl\Event\AgentEvent;
+use Cognesy\AgentCtrl\Telemetry\AgentCtrlEventTelemetry;
+use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Events\Event;
+use Cognesy\Logging\EventLog;
 use Cognesy\Events\Traits\HandlesEvents;
 use Throwable;
 
@@ -33,6 +37,7 @@ abstract class AbstractBridgeBuilder implements AgentBridgeBuilder
     protected int $timeout = 120;
     protected ?string $workingDirectory = null;
     protected SandboxDriver $sandboxDriver = SandboxDriver::Host;
+    protected ?AgentCtrlExecutionId $currentExecutionId = null;
 
     /** @var (Closure(string): void)|null */
     protected ?Closure $onTextCallback = null;
@@ -48,10 +53,20 @@ abstract class AbstractBridgeBuilder implements AgentBridgeBuilder
 
     public function __construct()
     {
-        $this->events = new EventDispatcher(name: 'agent-ctrl.bridge-builder');
+        $this->events = EventLog::root('agent-ctrl.bridge-builder');
     }
 
     abstract public function agentType(): AgentType;
+
+    public function dispatch(Event $event): object
+    {
+        $enriched = match (true) {
+            $event instanceof AgentEvent => AgentCtrlEventTelemetry::attach($event),
+            default => $event,
+        };
+
+        return $this->events->dispatch($enriched);
+    }
 
     #[\Override]
     public function withModel(string $model): static
@@ -135,22 +150,23 @@ abstract class AbstractBridgeBuilder implements AgentBridgeBuilder
     public function execute(string|\Stringable $prompt): AgentResponse
     {
         $prompt = (string) $prompt;
+        $executionId = AgentCtrlExecutionId::fresh();
         $this->dispatch(new AgentExecutionStarted(
             agentType: $this->agentType(),
+            executionId: $executionId,
             prompt: $prompt,
             model: $this->model,
             workingDirectory: $this->workingDirectory,
         ));
 
         try {
-            $bridge = $this->build();
-            $response = $bridge->execute($prompt);
+            $response = $this->withExecutionId($executionId, fn() => $this->build()->execute($prompt));
 
             $this->dispatch(AgentExecutionCompleted::fromResponse($response));
 
             return $response;
         } catch (Throwable $e) {
-            $this->dispatch(AgentErrorOccurred::fromException($this->agentType(), $e));
+            $this->dispatch(AgentErrorOccurred::fromException($this->agentType(), $executionId, $e));
             throw $e;
         }
     }
@@ -159,17 +175,21 @@ abstract class AbstractBridgeBuilder implements AgentBridgeBuilder
     public function executeStreaming(string|\Stringable $prompt): AgentResponse
     {
         $prompt = (string) $prompt;
+        $executionId = AgentCtrlExecutionId::fresh();
         $this->dispatch(new AgentExecutionStarted(
             agentType: $this->agentType(),
+            executionId: $executionId,
             prompt: $prompt,
             model: $this->model,
             workingDirectory: $this->workingDirectory,
         ));
 
         try {
-            $bridge = $this->build();
-            $handler = $this->buildStreamHandler();
-            $response = $bridge->executeStreaming($prompt, $handler);
+            $handler = $this->buildStreamHandler($executionId);
+            $response = $this->withExecutionId(
+                $executionId,
+                fn() => $this->build()->executeStreaming($prompt, $handler),
+            );
 
             if ($handler !== null) {
                 $handler->onComplete($response);
@@ -179,34 +199,35 @@ abstract class AbstractBridgeBuilder implements AgentBridgeBuilder
 
             return $response;
         } catch (Throwable $e) {
-            $this->dispatch(AgentErrorOccurred::fromException($this->agentType(), $e));
+            $this->dispatch(AgentErrorOccurred::fromException($this->agentType(), $executionId, $e));
             throw $e;
         }
     }
 
-    protected function buildStreamHandler(): ?StreamHandler
+    protected function buildStreamHandler(AgentCtrlExecutionId $executionId): ?StreamHandler
     {
         // We always want a handler to emit events, even if user didn't provide callbacks
         return new CallbackStreamHandler(
-            onText: function(string $text): void {
+            onText: function(string $text) use ($executionId): void {
                 if ($text === '') {
                     return;
                 }
-                $this->dispatch(new AgentTextReceived($this->agentType(), $text));
+                $this->dispatch(new AgentTextReceived($this->agentType(), $executionId, $text));
                 if ($this->onTextCallback !== null) {
                     ($this->onTextCallback)($text);
                 }
             },
-            onToolUse: function($toolCall): void {
-                $this->dispatch(AgentToolUsed::fromToolCall($this->agentType(), $toolCall));
+            onToolUse: function($toolCall) use ($executionId): void {
+                $this->dispatch(AgentToolUsed::fromToolCall($this->agentType(), $executionId, $toolCall));
                 if ($this->onToolUseCallback !== null) {
                     ($this->onToolUseCallback)($toolCall->tool, $toolCall->input, $toolCall->output);
                 }
             },
             onComplete: $this->onCompleteCallback,
-            onError: function(StreamError $error): void {
+            onError: function(StreamError $error) use ($executionId): void {
                 $this->dispatch(new AgentErrorOccurred(
                     agentType: $this->agentType(),
+                    executionId: $executionId,
                     error: $error->message,
                 ));
                 if ($this->onErrorCallback !== null) {
@@ -214,5 +235,27 @@ abstract class AbstractBridgeBuilder implements AgentBridgeBuilder
                 }
             },
         );
+    }
+
+    protected function executionId(): AgentCtrlExecutionId
+    {
+        return $this->currentExecutionId ?? AgentCtrlExecutionId::fresh();
+    }
+
+    /**
+     * @template T
+     * @param callable(): T $callback
+     * @return T
+     */
+    private function withExecutionId(AgentCtrlExecutionId $executionId, callable $callback): mixed
+    {
+        $previous = $this->currentExecutionId;
+        $this->currentExecutionId = $executionId;
+
+        try {
+            return $callback();
+        } finally {
+            $this->currentExecutionId = $previous;
+        }
     }
 }

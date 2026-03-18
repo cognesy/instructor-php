@@ -2,6 +2,10 @@
 title: 'Handling errors'
 docname: 'handling_errors'
 id: '670b'
+tags:
+  - 'misc'
+  - 'error-handling'
+  - 'result-types'
 ---
 ## Overview
 

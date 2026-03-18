@@ -23,12 +23,16 @@ class ExecutionContinuation
     }
 
     public function shouldStop(): bool {
-        return $this->stopSignals->hasAny()
+        return $this->stopSignal() !== null
             && !$this->isContinuationRequested;
     }
 
     public function stopSignals(): StopSignals {
         return $this->stopSignals;
+    }
+
+    public function stopSignal(): ?StopSignal {
+        return $this->stopSignals->highest();
     }
 
     public function isContinuationRequested(): bool {

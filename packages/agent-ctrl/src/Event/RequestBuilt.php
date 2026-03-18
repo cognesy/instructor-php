@@ -3,6 +3,7 @@
 namespace Cognesy\AgentCtrl\Event;
 
 use Cognesy\AgentCtrl\Enum\AgentType;
+use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Psr\Log\LogLevel;
 
 /**
@@ -14,10 +15,11 @@ final class RequestBuilt extends AgentEvent
 
     public function __construct(
         AgentType $agentType,
+        AgentCtrlExecutionId $executionId,
         public readonly string $requestType,
         public readonly float $buildDurationMs,
     ) {
-        parent::__construct($agentType, [
+        parent::__construct($agentType, $executionId, [
             'requestType' => $requestType,
             'buildDurationMs' => round($buildDurationMs, 2),
         ]);

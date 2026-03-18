@@ -7,6 +7,13 @@ Instructor builds a structured prompt from several components: system text, user
 a mode-specific instruction prompt, examples, and retry context. You can customize most
 of these to tune extraction behavior without changing the underlying extraction flow.
 
+There are currently two prompt materializers in the package:
+
+- `RequestMaterializer` is the legacy/default path
+- `StructuredPromptRequestMaterializer` is the new path using prompt classes and markdown templates
+
+Both can be selected through `StructuredOutputRuntime::withRequestMaterializer()`.
+
 
 ## System And Prompt Text
 
@@ -20,13 +27,14 @@ $result = (new StructuredOutput)
     ->withPrompt('Extract the contact details from the text below.')
     ->with(messages: $text, responseModel: Contact::class)
     ->get();
-// @doctest id="fd6e"
+// @doctest id="a62e"
 ```
 
 - **System text** sets the model's persona and overall behavior. Use it for stable
   instructions that apply across many requests.
 - **Prompt text** provides task-specific instructions for this particular extraction.
-  Instructor appends it to the conversation alongside the mode-specific extraction prompt.
+  On the new structured prompt path it is rendered inside the single system prompt body
+  alongside the mode-specific extraction instructions.
 
 You can also pass both through the `with()` method:
 
@@ -39,14 +47,14 @@ $result = (new StructuredOutput)
         prompt: 'Extract the contact details.',
     )
     ->get();
-// @doctest id="3d3b"
+// @doctest id="9ac4"
 ```
 
 
 ## Examples
 
-Few-shot examples are another prompt component. They are appended to the conversation
-to demonstrate the expected extraction style:
+Few-shot examples are another prompt component. On the new structured prompt path they
+are rendered as markdown inside the system prompt to demonstrate the expected extraction style:
 
 ```php
 use Cognesy\Instructor\Extras\Example\Example;
@@ -57,7 +65,7 @@ $result = (new StructuredOutput)
     ])
     ->with(messages: $text, responseModel: Person::class)
     ->get();
-// @doctest id="77c9"
+// @doctest id="aeb1"
 ```
 
 See the [Demonstrations](demonstrations.md) page for details on the `Example` class.
@@ -79,19 +87,21 @@ $result = (new StructuredOutput)
     )
     ->with(messages: 'Now extract from this specific paragraph...', responseModel: Entity::class)
     ->get();
-// @doctest id="c16a"
+// @doctest id="70de"
 ```
 
-The cached context is placed before the per-request content in the prompt. Content
-passed through `withCachedContext()` is marked with cache control headers where the
+The cached context is placed before the per-request content in the prompt. On the new
+structured prompt path, cached system text, cached task text, and cached examples are
+rendered into a cached system prompt and projected through provider-native cached context.
+Content passed through `withCachedContext()` is marked with cache control headers where the
 provider supports them.
 
 
 ## Mode-Specific Prompts
 
 Instructor uses a default prompt for each output mode that tells the model how to format
-its response. These prompts are configured in `StructuredOutputConfig` and can be
-customized per mode:
+its response. On the legacy path these prompts are inline strings. On the new path they
+are prompt classes backed by markdown templates and configured in `StructuredOutputConfig`.
 
 | Mode | Default prompt behavior |
 |---|---|
@@ -102,7 +112,7 @@ customized per mode:
 
 ### Overriding Mode Prompts
 
-You can replace the default prompt for any mode through the config:
+Legacy inline prompt override:
 
 ```php
 use Cognesy\Instructor\Config\StructuredOutputConfig;
@@ -114,7 +124,37 @@ $config = new StructuredOutputConfig(
         OutputMode::Json->value => "Respond with a JSON object matching this schema:\n<|json_schema|>\n",
     ],
 );
-// @doctest id="fb08"
+// @doctest id="d73d"
+```
+
+New prompt-class override:
+
+```php
+$config = new StructuredOutputConfig(
+    modePromptClasses: [
+        OutputMode::Tools->value => App\Prompts\ToolsSystemPrompt::class,
+        OutputMode::Json->value => App\Prompts\JsonSystemPrompt::class,
+        OutputMode::JsonSchema->value => App\Prompts\JsonSchemaSystemPrompt::class,
+        OutputMode::MdJson->value => App\Prompts\MdJsonSystemPrompt::class,
+    ],
+    retryPromptClass: App\Prompts\RetryFeedbackPrompt::class,
+    deserializationErrorPromptClass: App\Prompts\DeserializationRepairPrompt::class,
+);
+// @doctest id="d558"
+```
+
+If you store these in YAML, use FQN strings:
+
+```yaml
+modePromptClasses:
+  tool_call: 'App\\Prompts\\ToolsSystemPrompt'
+  json: 'App\\Prompts\\JsonSystemPrompt'
+  json_schema: 'App\\Prompts\\JsonSchemaSystemPrompt'
+  md_json: 'App\\Prompts\\MdJsonSystemPrompt'
+
+retryPromptClass: 'App\\Prompts\\RetryFeedbackPrompt'
+deserializationErrorPromptClass: 'App\\Prompts\\DeserializationRepairPrompt'
+# @doctest id="5d79"
 ```
 
 ### Template Placeholders
@@ -130,7 +170,7 @@ $config = new StructuredOutputConfig(
             . "Response must follow this JSON Schema:\n<|json_schema|>\n",
     ],
 );
-// @doctest id="8c6b"
+// @doctest id="1ccf"
 ```
 
 
@@ -146,7 +186,7 @@ $config = new StructuredOutputConfig(
     toolName: 'extract_person',
     toolDescription: 'Extract personal information from the provided text.',
 );
-// @doctest id="5866"
+// @doctest id="9857"
 ```
 
 The defaults are `extracted_data` and `Function call based on user instructions.`
@@ -164,17 +204,28 @@ conversation. The default is:
 
 ```
 JSON generated incorrectly, fix following errors:
-// @doctest id="7581"
+// @doctest id="2bf5"
 ```
 
-You can customize this through the config:
+Legacy inline retry prompt override:
 
 ```php
 $config = new StructuredOutputConfig(
     retryPrompt: 'The previous response had validation errors. Please correct them:',
 );
-// @doctest id="7064"
+// @doctest id="1581"
 ```
+
+New prompt-class override:
+
+```php
+$config = new StructuredOutputConfig(
+    retryPromptClass: App\Prompts\RetryFeedbackPrompt::class,
+);
+// @doctest id="a65d"
+```
+
+The same pattern applies to deserialization repair via `deserializationErrorPromptClass`.
 
 
 ## Chat Structure
@@ -194,7 +245,7 @@ $config = new StructuredOutputConfig(
         'pre-retries', 'retries', 'post-retries',
     ],
 );
-// @doctest id="04d9"
+// @doctest id="5af9"
 ```
 
 Most applications will never need to modify the chat structure. It is exposed for

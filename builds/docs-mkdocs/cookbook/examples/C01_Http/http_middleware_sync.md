@@ -2,6 +2,10 @@
 title: 'HTTP Middleware (Sync)'
 docname: 'http_middleware_sync'
 id: 'bd7e'
+tags:
+  - 'http'
+  - 'middleware'
+  - 'sync'
 ---
 ## Overview
 

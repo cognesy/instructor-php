@@ -4,6 +4,7 @@ namespace Cognesy\Http\Creation;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Logging\EventLog;
 use Cognesy\Http\Config\DebugConfig;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
@@ -38,7 +39,7 @@ final class HttpClientBuilder
 
     public function __construct(?CanHandleEvents $events = null)
     {
-        $this->events = $events ?? new EventDispatcher(name: 'http.client.builder');
+        $this->events = $events ?? EventLog::root('http.client.builder');
     }
 
     public function withConfig(HttpClientConfig $config): self

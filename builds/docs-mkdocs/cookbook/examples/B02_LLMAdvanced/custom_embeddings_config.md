@@ -2,6 +2,10 @@
 title: 'Custom Embeddings Config'
 docname: 'custom_embeddings_config'
 id: '5656'
+tags:
+  - 'llm-advanced'
+  - 'embeddings'
+  - 'custom-driver'
 ---
 ## Overview
 

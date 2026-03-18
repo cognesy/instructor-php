@@ -3,6 +3,10 @@ title: 'Agent Subagent Orchestration'
 docname: 'agent_subagents'
 order: 7
 id: '1961'
+tags:
+  - 'agent-builder'
+  - 'subagents'
+  - 'orchestration'
 ---
 ## Overview
 

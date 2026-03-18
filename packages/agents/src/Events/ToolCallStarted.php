@@ -18,6 +18,7 @@ final class ToolCallStarted extends AgentEvent
         public readonly string $tool,
         public readonly mixed $args,
         public readonly DateTimeImmutable $startedAt,
+        public readonly string $toolCallId = '',
     ) {
         parent::__construct([
             'agentId' => $this->agentId,
@@ -27,6 +28,7 @@ final class ToolCallStarted extends AgentEvent
             'tool' => $this->tool,
             'args' => $this->args,
             'at' => $this->startedAt->format(DateTimeImmutable::ATOM),
+            'toolCallId' => $this->toolCallId,
         ]);
     }
 

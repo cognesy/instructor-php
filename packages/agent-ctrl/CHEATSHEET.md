@@ -155,7 +155,7 @@ $builder = AgentCtrl::codex()->withConfig(AgentCtrlConfig::fromArray([
 - `resumeSession(string $sessionId): static`
 - `debug(bool $enabled = true): static`
 
-## Sessions
+## Sessions and Executions
 
 ```php
 use Cognesy\AgentCtrl\AgentCtrl;
@@ -175,7 +175,13 @@ if ($sessionId !== null) {
 }
 ```
 
-`sessionId()` returns `AgentSessionId|null`.
+Identity rules:
+
+- `executionId()` returns `AgentCtrlExecutionId`
+- `sessionId()` returns `AgentSessionId|null`
+- `executionId()` is generated once per `execute()` or `executeStreaming()` call
+- `sessionId()` is provider continuity metadata for resumed conversations
+- separate runs may share one `sessionId()` and still have different `executionId()` values
 
 ## Response
 
@@ -192,6 +198,7 @@ if ($sessionId !== null) {
 
 `AgentResponse` methods:
 
+- `executionId(): AgentCtrlExecutionId`
 - `sessionId(): ?AgentSessionId`
 - `isSuccess(): bool`
 - `text(): string`

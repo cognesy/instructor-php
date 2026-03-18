@@ -3,6 +3,7 @@
 namespace Cognesy\Agents\Events;
 
 use DateTimeImmutable;
+use Psr\Log\LogLevel;
 
 /**
  * Dispatched when validation fails for extracted data or decisions.
@@ -10,6 +11,7 @@ use DateTimeImmutable;
  */
 final class ValidationFailed extends AgentEvent
 {
+    public string $logLevel = LogLevel::WARNING;
     public readonly DateTimeImmutable $failedAt;
 
     public function __construct(

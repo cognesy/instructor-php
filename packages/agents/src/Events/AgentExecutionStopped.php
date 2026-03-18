@@ -20,6 +20,7 @@ final class AgentExecutionStopped extends AgentEvent
         public readonly string      $stopMessage,
         public readonly ?string     $source,
         public readonly int         $totalSteps,
+        public readonly array       $stopContext = [],
     ) {
         $this->stoppedAt = new DateTimeImmutable();
 
@@ -31,6 +32,7 @@ final class AgentExecutionStopped extends AgentEvent
             'stopMessage' => $this->stopMessage,
             'source' => $this->source,
             'steps' => $this->totalSteps,
+            'stopContext' => $this->stopContext,
         ]);
     }
 

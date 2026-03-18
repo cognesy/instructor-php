@@ -137,6 +137,7 @@ nav:
       -
         'Release Notes':
           - { Overview: release-notes/versions.md }
+          - { v2.2.0: release-notes/v2.2.0.md }
           - { v2.1.0: release-notes/v2.1.0.md }
           - { v2.0.0: release-notes/v2.0.0.md }
           - { v1.22.0: release-notes/v1.22.0.md }
@@ -304,6 +305,14 @@ nav:
           - { 'Pi Bridge': packages/agent-ctrl/11-pi-bridge.md }
           - { 'Gemini Bridge': packages/agent-ctrl/12-gemini-bridge.md }
       -
+        Telemetry:
+          - { Introduction: packages/telemetry/01-introduction.md }
+          - { 'Basic Setup': packages/telemetry/02-basic-setup.md }
+          - { 'Runtime Wiring': packages/telemetry/03-runtime-wiring.md }
+          - { Troubleshooting: packages/telemetry/04-troubleshooting.md }
+          - { Langfuse: packages/telemetry/05-langfuse.md }
+          - { Logfire: packages/telemetry/06-logfire.md }
+      -
         Sandbox:
           - { Overview: packages/sandbox/1-overview.md }
           - { 'Getting Started': packages/sandbox/2-getting-started.md }
@@ -396,12 +405,15 @@ nav:
         A03_Troubleshooting:
           - { 'Calculating request cost': cookbook/examples/A03_Troubleshooting/cost_calculation.md }
           - { Debugging: cookbook/examples/A03_Troubleshooting/debugging.md }
+          - { 'Read StructuredOutput EventLog JSONL': cookbook/examples/A03_Troubleshooting/structured_output_eventlog_readback.md }
           - { 'Laravel Logging Integration': cookbook/examples/A03_Troubleshooting/logging_laravel.md }
           - { 'Monolog Logging with Functional Pipeline': cookbook/examples/A03_Troubleshooting/logging_monolog.md }
           - { 'PSR-3 Logging with Functional Pipeline': cookbook/examples/A03_Troubleshooting/logging_psr.md }
           - { 'Symfony Logging Integration': cookbook/examples/A03_Troubleshooting/logging_symfony.md }
           - { 'Receive specific internal event with onEvent()': cookbook/examples/A03_Troubleshooting/on_event.md }
           - { 'Load Config From Custom Path': cookbook/examples/A03_Troubleshooting/settings.md }
+          - { 'Send StructuredOutput telemetry to Langfuse': cookbook/examples/A03_Troubleshooting/structured_telemetry_langfuse.md }
+          - { 'Send StructuredOutput telemetry to Logfire': cookbook/examples/A03_Troubleshooting/structured_telemetry_logfire.md }
           - { 'Tracking token usage via events': cookbook/examples/A03_Troubleshooting/token_usage_events.md }
           - { 'Receive all internal events with wiretap()': cookbook/examples/A03_Troubleshooting/wiretap.md }
       -
@@ -479,11 +491,16 @@ nav:
           - { 'Reasoning Content Access': cookbook/examples/B02_LLMAdvanced/reasoning_content.md }
       -
         B03_LLMTroubleshooting:
+          - { 'Read Inference EventLog JSONL': cookbook/examples/B03_LLMTroubleshooting/inference_eventlog_readback.md }
           - { 'Debugging HTTP Calls': cookbook/examples/B03_LLMTroubleshooting/http_debug.md }
           - { 'Embeddings Logging with Laravel': cookbook/examples/B03_LLMTroubleshooting/llm_logging_laravel_embeddings.md }
           - { 'Inference Logging with Laravel': cookbook/examples/B03_LLMTroubleshooting/llm_logging_laravel_inference.md }
           - { 'Inference Logging with Monolog': cookbook/examples/B03_LLMTroubleshooting/llm_logging_monolog.md }
           - { 'Inference Logging with Symfony': cookbook/examples/B03_LLMTroubleshooting/llm_logging_symfony.md }
+          - { 'Send LLM runtime telemetry to Langfuse': cookbook/examples/B03_LLMTroubleshooting/llm_telemetry_langfuse.md }
+          - { 'Send LLM runtime telemetry to Logfire': cookbook/examples/B03_LLMTroubleshooting/llm_telemetry_logfire.md }
+          - { 'Send streaming LLM telemetry to Langfuse': cookbook/examples/B03_LLMTroubleshooting/llm_telemetry_streaming_langfuse.md }
+          - { 'Send streaming LLM telemetry to Logfire': cookbook/examples/B03_LLMTroubleshooting/llm_telemetry_streaming_logfire.md }
       -
         B04_LLMApiSupport:
           - { A21: cookbook/examples/B04_LLMApiSupport/llm_a21.md }
@@ -569,6 +586,13 @@ nav:
           - { 'Session Conflict Handling': cookbook/examples/D04_AgentSessions/session_conflict_handling.md }
           - { 'Session Runtime Hooks': cookbook/examples/D04_AgentSessions/session_runtime_hooks.md }
       -
+        D05_AgentTroubleshooting:
+          - { 'Read Agent EventLog JSONL': cookbook/examples/D05_AgentTroubleshooting/agent_eventlog_readback.md }
+          - { 'Send Subagent telemetry to Langfuse': cookbook/examples/D05_AgentTroubleshooting/agent_subagent_telemetry_langfuse.md }
+          - { 'Send Subagent telemetry to Logfire': cookbook/examples/D05_AgentTroubleshooting/agent_subagent_telemetry_logfire.md }
+          - { 'Send Agent telemetry to Langfuse': cookbook/examples/D05_AgentTroubleshooting/agent_telemetry_langfuse.md }
+          - { 'Send Agent telemetry to Logfire': cookbook/examples/D05_AgentTroubleshooting/agent_telemetry_logfire.md }
+      -
         D10_AgentCtrl:
           - { 'Basic Agent Control Usage': cookbook/examples/D10_AgentCtrl/agent_ctrl_basic.md }
           - { 'Agent Control Events & Monitoring': cookbook/examples/D10_AgentCtrl/agent_ctrl_events.md }
@@ -578,12 +602,15 @@ nav:
           - { 'Claude Code CLI - Agentic Search': cookbook/examples/D10_AgentCtrl/claude_code_search.md }
           - { 'OpenAI Codex CLI - Basic': cookbook/examples/D10_AgentCtrl/codex_basic.md }
           - { 'OpenAI Codex CLI - Streaming': cookbook/examples/D10_AgentCtrl/codex_streaming.md }
+          - { 'Read AgentCtrl EventLog JSONL': cookbook/examples/D10_AgentCtrl/agent_ctrl_eventlog_readback.md }
           - { 'Gemini CLI - Basic': cookbook/examples/D10_AgentCtrl/gemini_basic.md }
           - { 'Gemini CLI - Streaming': cookbook/examples/D10_AgentCtrl/gemini_streaming.md }
           - { 'OpenCode CLI - Basic': cookbook/examples/D10_AgentCtrl/opencode_basic.md }
           - { 'OpenCode CLI - Streaming': cookbook/examples/D10_AgentCtrl/opencode_streaming.md }
           - { 'Pi CLI - Basic': cookbook/examples/D10_AgentCtrl/pi_basic.md }
           - { 'Pi CLI - Streaming': cookbook/examples/D10_AgentCtrl/pi_streaming.md }
+          - { 'Send AgentCtrl telemetry to Langfuse': cookbook/examples/D10_AgentCtrl/agent_ctrl_telemetry_langfuse.md }
+          - { 'Send AgentCtrl telemetry to Logfire': cookbook/examples/D10_AgentCtrl/agent_ctrl_telemetry_logfire.md }
       -
         D20_Sandbox:
           - { 'Sandbox: Host ls -Al': cookbook/examples/D20_Sandbox/sandbox_host_ls.md }
@@ -683,6 +710,8 @@ nav:
         Agents: cheatsheets/agents.md
       -
         AgentCtrl: cheatsheets/agent-ctrl.md
+      -
+        Telemetry: cheatsheets/telemetry.md
       -
         Sandbox: cheatsheets/sandbox.md
       -

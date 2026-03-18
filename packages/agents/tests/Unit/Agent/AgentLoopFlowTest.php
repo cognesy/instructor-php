@@ -4,12 +4,15 @@ namespace Cognesy\Agents\Tests\Unit\Agent;
 
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Collections\Tools;
+use Cognesy\Agents\Continuation\StopReason;
+use Cognesy\Agents\Continuation\StopSignal;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Data\AgentStep;
 use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Agents\Events\AgentExecutionCompleted;
 use Cognesy\Agents\Events\AgentExecutionFailed;
+use Cognesy\Agents\Events\AgentExecutionStopped;
 use Cognesy\Agents\Events\AgentStepCompleted;
 use Cognesy\Agents\Events\AgentStepStarted;
 use Cognesy\Agents\Events\ToolCallBlocked;
@@ -91,6 +94,79 @@ final class BlockingBeforeToolUseInterceptor implements CanInterceptAgentLifecyc
             HookTrigger::BeforeToolUse => $context->withToolExecutionBlocked('blocked by new interceptor'),
             default => $context,
         };
+    }
+}
+
+final class MixedStopPriorityInterceptor implements CanInterceptAgentLifecycle
+{
+    public function intercept(HookContext $context): HookContext
+    {
+        return match ($context->triggerType()) {
+            HookTrigger::BeforeStep => $context->withState(
+                $context->state()->withCurrentStep(new AgentStep()),
+            ),
+            HookTrigger::AfterStep => $context->withState(
+                $context->state()->withStopSignal(new StopSignal(
+                    reason: StopReason::Completed,
+                    message: 'step finished',
+                    source: 'AfterStepInterceptor',
+                )),
+            ),
+            HookTrigger::OnStop => $context->withState(
+                $context->state()->withStopSignal(new StopSignal(
+                    reason: StopReason::UserRequested,
+                    message: 'cancelled by user',
+                    source: 'OnStopInterceptor',
+                )),
+            ),
+            default => $context,
+        };
+    }
+}
+
+final class CrossLayerStopPriorityInterceptor implements CanInterceptAgentLifecycle
+{
+    private int $beforeStepCount = 0;
+
+    public function intercept(HookContext $context): HookContext
+    {
+        return match ($context->triggerType()) {
+            HookTrigger::BeforeStep => $this->onBeforeStep($context),
+            HookTrigger::AfterStep => $this->onAfterStep($context),
+            default => $context,
+        };
+    }
+
+    private function onBeforeStep(HookContext $context): HookContext
+    {
+        $this->beforeStepCount++;
+
+        return match ($this->beforeStepCount) {
+            1 => $context->withState($context->state()->withCurrentStep(new AgentStep())),
+            2 => $context->withState($context->state()->withStopSignal(new StopSignal(
+                reason: StopReason::UserRequested,
+                message: 'cancelled before step two',
+                source: 'CheckpointInterceptor',
+            ))),
+            default => $context,
+        };
+    }
+
+    private function onAfterStep(HookContext $context): HookContext
+    {
+        if ($this->beforeStepCount !== 1) {
+            return $context;
+        }
+
+        return $context->withState(
+            $context->state()
+                ->withStopSignal(new StopSignal(
+                    reason: StopReason::Completed,
+                    message: 'step one finished',
+                    source: 'ArchivedStepInterceptor',
+                ))
+                ->withExecutionContinued(),
+        );
     }
 }
 
@@ -333,5 +409,83 @@ describe('AgentLoop flow', function () {
         // The event must carry the final status, not the transient in-progress status
         expect($listener->finishedStatus)->toBe(ExecutionStatus::Completed);
         expect($finalState->status())->toBe(ExecutionStatus::Completed);
+    });
+
+    it('uses the highest-priority stop signal for stopped events and terminal status', function () {
+        $tools = new Tools();
+        $events = new EventDispatcher();
+        $captured = [];
+        $interceptor = new MixedStopPriorityInterceptor();
+
+        $events->wiretap(static function (object $event) use (&$captured): void {
+            $captured[] = $event;
+        });
+
+        $driver = new class implements CanUseTools {
+            public function useTools(AgentState $state): AgentState
+            {
+                return $state;
+            }
+        };
+
+        $loop = new AgentLoop(
+            tools: $tools,
+            toolExecutor: new ToolExecutor($tools, $events, $interceptor),
+            driver: $driver,
+            events: $events,
+            interceptor: $interceptor,
+        );
+
+        $finalState = $loop->execute(AgentState::empty());
+        $stopped = current(array_values(array_filter(
+            $captured,
+            static fn(object $event): bool => $event instanceof AgentExecutionStopped,
+        )));
+
+        expect($stopped)->toBeInstanceOf(AgentExecutionStopped::class)
+            ->and($stopped->stopReason)->toBe(StopReason::UserRequested)
+            ->and($stopped->stopMessage)->toBe('cancelled by user')
+            ->and($stopped->source)->toBe('OnStopInterceptor')
+            ->and($finalState->status())->toBe(ExecutionStatus::Stopped)
+            ->and($finalState->stopReason())->toBe(StopReason::UserRequested);
+    });
+
+    it('prefers a higher-priority checkpoint signal over an archived step signal', function () {
+        $tools = new Tools();
+        $events = new EventDispatcher();
+        $captured = [];
+        $interceptor = new CrossLayerStopPriorityInterceptor();
+
+        $events->wiretap(static function (object $event) use (&$captured): void {
+            $captured[] = $event;
+        });
+
+        $driver = new class implements CanUseTools {
+            public function useTools(AgentState $state): AgentState
+            {
+                return $state;
+            }
+        };
+
+        $loop = new AgentLoop(
+            tools: $tools,
+            toolExecutor: new ToolExecutor($tools, $events, $interceptor),
+            driver: $driver,
+            events: $events,
+            interceptor: $interceptor,
+        );
+
+        $finalState = $loop->execute(AgentState::empty());
+        $stopped = current(array_values(array_filter(
+            $captured,
+            static fn(object $event): bool => $event instanceof AgentExecutionStopped,
+        )));
+
+        expect($stopped)->toBeInstanceOf(AgentExecutionStopped::class)
+            ->and($stopped->stopReason)->toBe(StopReason::UserRequested)
+            ->and($stopped->stopMessage)->toBe('cancelled before step two')
+            ->and($stopped->source)->toBe('CheckpointInterceptor')
+            ->and($finalState->status())->toBe(ExecutionStatus::Stopped)
+            ->and($finalState->stopReason())->toBe(StopReason::UserRequested);
     });
 });

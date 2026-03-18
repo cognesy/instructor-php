@@ -2,4 +2,9 @@
 
 namespace Cognesy\Http\Events;
 
-final class HttpRequestFailed extends HttpClientEvent {}
+use Psr\Log\LogLevel;
+
+final class HttpRequestFailed extends HttpClientEvent
+{
+    public string $logLevel = LogLevel::WARNING;
+}

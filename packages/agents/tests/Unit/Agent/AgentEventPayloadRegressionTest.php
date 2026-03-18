@@ -2,6 +2,8 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
+use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Builder\AgentBuilder;
 use Cognesy\Agents\Capability\Core\UseDriver;
 use Cognesy\Agents\Continuation\AgentStopException;
@@ -17,7 +19,38 @@ use Cognesy\Agents\Events\AgentExecutionCompleted;
 use Cognesy\Agents\Events\AgentExecutionFailed;
 use Cognesy\Agents\Events\AgentExecutionStopped;
 use Cognesy\Agents\Events\ContinuationEvaluated;
+use Cognesy\Agents\Hook\Data\HookContext;
+use Cognesy\Agents\Hook\Enums\HookTrigger;
+use Cognesy\Agents\Interception\CanInterceptAgentLifecycle;
+use Cognesy\Agents\Tool\ToolExecutor;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Messages;
+
+final class MixedContinuationPriorityInterceptor implements CanInterceptAgentLifecycle
+{
+    public function intercept(HookContext $context): HookContext
+    {
+        return match ($context->triggerType()) {
+            HookTrigger::BeforeStep => $context->withState(
+                $context->state()->withCurrentStep(new AgentStep(inputMessages: $context->state()->messages())),
+            ),
+            HookTrigger::AfterStep => $context->withState(
+                $context->state()
+                    ->withStopSignal(new StopSignal(
+                        reason: StopReason::Completed,
+                        message: 'lower priority stop',
+                        source: 'LowPrioritySource',
+                    ))
+                    ->withStopSignal(new StopSignal(
+                        reason: StopReason::UserRequested,
+                        message: 'higher priority stop',
+                        source: 'HighPrioritySource',
+                    )),
+            ),
+            default => $context,
+        };
+    }
+}
 
 describe('Agent event payload regression', function () {
     it('emits sequential continuation payloads and completed execution status', function () {
@@ -141,5 +174,51 @@ describe('Agent event payload regression', function () {
         expect($failed->exception)->toBeInstanceOf(\RuntimeException::class);
         expect($failed->status)->toBe(ExecutionStatus::Failed);
         expect($final->status())->toBe(ExecutionStatus::Failed);
+    });
+
+    it('uses the same highest-priority stop signal for continuation and stopped events', function () {
+        $tools = new Tools();
+        $events = new EventDispatcher();
+        $captured = [];
+        $interceptor = new MixedContinuationPriorityInterceptor();
+
+        $events->wiretap(static function (object $event) use (&$captured): void {
+            $captured[] = $event;
+        });
+
+        $driver = new class implements CanUseTools {
+            public function useTools(AgentState $state): AgentState
+            {
+                return $state;
+            }
+        };
+
+        $loop = new AgentLoop(
+            tools: $tools,
+            toolExecutor: new ToolExecutor($tools, $events, $interceptor),
+            driver: $driver,
+            events: $events,
+            interceptor: $interceptor,
+        );
+
+        $final = $loop->execute(AgentState::empty()->withMessages(Messages::fromString('ping')));
+        $continuation = current(array_values(array_filter(
+            $captured,
+            static fn(object $event): bool => $event instanceof ContinuationEvaluated,
+        )));
+        $stopped = current(array_values(array_filter(
+            $captured,
+            static fn(object $event): bool => $event instanceof AgentExecutionStopped,
+        )));
+
+        expect($continuation)->toBeInstanceOf(ContinuationEvaluated::class);
+        expect($continuation->stopReason())->toBe(StopReason::UserRequested)
+            ->and($continuation->resolvedBy())->toBe('HighPrioritySource')
+            ->and($continuation->stopSignal()?->message)->toBe('higher priority stop');
+        expect($stopped)->toBeInstanceOf(AgentExecutionStopped::class);
+        expect($stopped->stopReason)->toBe(StopReason::UserRequested)
+            ->and($stopped->source)->toBe('HighPrioritySource')
+            ->and($stopped->stopMessage)->toBe('higher priority stop');
+        expect($final->status())->toBe(ExecutionStatus::Stopped);
     });
 });

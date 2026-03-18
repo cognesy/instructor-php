@@ -2,6 +2,10 @@
 title: 'DeepSeek'
 docname: 'deepseek'
 id: '2302'
+tags:
+  - 'api-support'
+  - 'deepseek'
+  - 'provider'
 ---
 ## Overview
 

@@ -2,6 +2,10 @@
 title: 'Context caching (structured output, OpenAI)'
 docname: 'context_cache_structured_oai'
 id: '4054'
+tags:
+  - 'advanced'
+  - 'context-caching'
+  - 'openai'
 ---
 ## Overview
 

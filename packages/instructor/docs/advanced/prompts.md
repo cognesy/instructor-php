@@ -5,6 +5,13 @@ description: 'Control system messages, user prompts, examples, and cached contex
 
 Instructor provides several prompt hooks that let you shape the messages sent to the LLM. These are intentionally simple -- Instructor is not a prompt management framework, but it gives you the building blocks you need for most structured output tasks.
 
+During the current rollout there are two materialization paths:
+
+- `RequestMaterializer` is the legacy/default implementation
+- `StructuredPromptRequestMaterializer` is the new implementation built on prompt classes and markdown templates
+
+You can switch between them via `StructuredOutputRuntime::withRequestMaterializer()` without changing the caller-facing `StructuredOutput` code.
+
 ## Prompt Hooks
 
 ### System Message
@@ -104,6 +111,28 @@ $result = (new StructuredOutput)
 ```
 
 Cached context messages are placed before the regular messages in the chat structure. The exact caching behavior depends on the LLM provider -- Anthropic and OpenAI both support prompt caching with different mechanisms.
+
+On the new `StructuredPromptRequestMaterializer` path, cached prompt content is no longer flattened into ordinary live messages. It is projected into `InferenceRequest::cachedContext()` so provider-native caching can take effect, while the per-request prompt remains live.
+
+## Switching Materializers
+
+```php
+use Cognesy\Instructor\Core\RequestMaterializer;
+use Cognesy\Instructor\Core\StructuredPromptRequestMaterializer;
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+
+$runtime = StructuredOutputRuntime::fromDefaults()
+    ->withRequestMaterializer(new StructuredPromptRequestMaterializer());
+
+$legacyRuntime = $runtime->withRequestMaterializer(new RequestMaterializer());
+
+$so = (new StructuredOutput)
+    ->withRuntime($runtime)
+    ->with(messages: $text, responseModel: Person::class);
+```
+
+This lets you run the same requests against both paths while the new materializer is being proven.
 
 ## Template Engine Integration
 

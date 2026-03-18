@@ -75,6 +75,8 @@ $so = (new StructuredOutput)->with(
 ## Runtime / Provider Setup
 
 ```php
+use Cognesy\Instructor\Core\RequestMaterializer;
+use Cognesy\Instructor\Core\StructuredPromptRequestMaterializer;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
@@ -93,8 +95,42 @@ $runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new());
 $runtime = $runtime->withConfig(StructuredOutputConfig::fromArray([...]));
 $runtime = $runtime->withConfig(StructuredOutputConfig::fromDsn('outputMode=json,maxRetries=2'));
 $runtime = $runtime->withRequestMaterializer($customMaterializer);
+$runtime = $runtime->withRequestMaterializer(new RequestMaterializer()); // legacy/default path
+$runtime = $runtime->withRequestMaterializer(new StructuredPromptRequestMaterializer()); // new structured prompt path
 
 $so = (new StructuredOutput)->withRuntime($runtime);
+```
+
+`RequestMaterializer` remains the legacy/default implementation during rollout.
+`StructuredPromptRequestMaterializer` is the new path: it renders one system prompt text,
+keeps examples inside that system prompt, and sends cached prompt content through
+`InferenceRequest::cachedContext()` when used with the current runtime.
+
+## Prompt Config References
+
+```php
+use Cognesy\Instructor\Config\StructuredOutputConfig;
+use Cognesy\Instructor\Enums\OutputMode;
+
+$config = new StructuredOutputConfig(
+    modePromptClasses: [
+        OutputMode::Json->value => App\Prompts\JsonSystemPrompt::class,
+        OutputMode::Tools->value => App\Prompts\ToolsSystemPrompt::class,
+    ],
+    retryPromptClass: App\Prompts\RetryFeedbackPrompt::class,
+    deserializationErrorPromptClass: App\Prompts\DeserializationRepairPrompt::class,
+);
+```
+
+YAML-safe shape uses FQN strings:
+
+```yaml
+modePromptClasses:
+  json: 'App\\Prompts\\JsonSystemPrompt'
+  tool_call: 'App\\Prompts\\ToolsSystemPrompt'
+
+retryPromptClass: 'App\\Prompts\\RetryFeedbackPrompt'
+deserializationErrorPromptClass: 'App\\Prompts\\DeserializationRepairPrompt'
 ```
 
 ## OutputMode Enum

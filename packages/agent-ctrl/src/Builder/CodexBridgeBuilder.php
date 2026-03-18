@@ -121,6 +121,7 @@ final class CodexBridgeBuilder extends AbstractBridgeBuilder
     public function build(): AgentBridge
     {
         return new CodexBridge(
+            executionId: $this->executionId(),
             model: $this->model,
             sandboxMode: $this->sandboxMode,
             fullAuto: $this->fullAuto,

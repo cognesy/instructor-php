@@ -2,6 +2,10 @@
 title: 'OpenRouter'
 docname: 'llm_openrouter'
 id: 'e2ef'
+tags:
+  - 'llm-api-support'
+  - 'openrouter'
+  - 'provider'
 ---
 ## Overview
 

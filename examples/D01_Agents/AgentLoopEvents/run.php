@@ -3,6 +3,10 @@ title: 'Agent Events and Wiretap'
 docname: 'agent_loop_events'
 order: 8
 id: '58c9'
+tags:
+  - 'agents'
+  - 'events'
+  - 'wiretap'
 ---
 ## Overview
 

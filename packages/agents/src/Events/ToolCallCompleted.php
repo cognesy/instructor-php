@@ -3,6 +3,7 @@
 namespace Cognesy\Agents\Events;
 
 use DateTimeImmutable;
+use Psr\Log\LogLevel;
 
 /**
  * Dispatched when a tool call completes execution.
@@ -10,6 +11,8 @@ use DateTimeImmutable;
  */
 final class ToolCallCompleted extends AgentEvent
 {
+    public string $logLevel = LogLevel::INFO;
+
     public function __construct(
         public readonly string $agentId,
         public readonly string $executionId,
@@ -20,6 +23,8 @@ final class ToolCallCompleted extends AgentEvent
         public readonly ?string $error,
         public readonly DateTimeImmutable $startedAt,
         public readonly DateTimeImmutable $completedAt,
+        public readonly mixed $result = null,
+        public readonly string $toolCallId = '',
     ) {
         parent::__construct([
             'agentId' => $this->agentId,
@@ -29,9 +34,11 @@ final class ToolCallCompleted extends AgentEvent
             'tool' => $this->tool,
             'success' => $this->success,
             'error' => $this->error,
+            'result' => $this->result,
             'started' => $this->startedAt->format(DateTimeImmutable::ATOM),
             'completed' => $this->completedAt->format(DateTimeImmutable::ATOM),
             'duration_ms' => $this->getDurationMs(),
+            'toolCallId' => $this->toolCallId,
         ]);
     }
 

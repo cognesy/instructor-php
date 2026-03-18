@@ -2,6 +2,10 @@
 title: 'Working directly with LLMs and JSON - Tool calling'
 docname: 'llm_tools'
 id: '3778'
+tags:
+  - 'llm'
+  - 'tool-calling'
+  - 'direct-api'
 ---
 ## Overview
 

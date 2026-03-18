@@ -78,6 +78,10 @@ final class ResponseModel implements CanProvideJsonSchema
         return $this->schemaName ?: ($this->schema()->name() ?: 'default_schema');
     }
 
+    public function schemaDescription() : string {
+        return $this->schemaDescription ?: ($this->config->schemaDescription() ?: '');
+    }
+
     public function schema() : Schema {
         return $this->schema;
     }

@@ -3,12 +3,14 @@
 namespace Cognesy\Agents\Events;
 
 use DateTimeImmutable;
+use Psr\Log\LogLevel;
 
 /**
  * Dispatched when an agent begins execution.
  */
 final class AgentExecutionStarted extends AgentEvent
 {
+    public string $logLevel = LogLevel::INFO;
     public readonly DateTimeImmutable $startedAt;
 
     public function __construct(
@@ -17,6 +19,7 @@ final class AgentExecutionStarted extends AgentEvent
         public readonly ?string $parentAgentId,
         public readonly int $messageCount,
         public readonly int $availableTools,
+        public readonly array $messages = [],
     ) {
         $this->startedAt = new DateTimeImmutable();
 
@@ -26,6 +29,7 @@ final class AgentExecutionStarted extends AgentEvent
             'parentAgentId' => $this->parentAgentId,
             'messages' => $this->messageCount,
             'tools' => $this->availableTools,
+            'messagePayload' => $this->messages,
         ]);
     }
 

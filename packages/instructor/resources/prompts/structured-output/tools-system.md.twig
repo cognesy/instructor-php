@@ -1,0 +1,25 @@
+{% if system is not empty %}
+{{ system|raw }}
+{% endif %}
+{% if task is not empty %}
+
+## Task
+
+{{ task|raw }}
+{% endif %}
+{% if examples_markdown is not empty %}
+
+## Examples
+
+{{ examples_markdown|raw }}
+{% endif %}
+
+## Tool Use
+
+Use the provided tool{% if tool_name is not empty %} `{{ tool_name }}`{% endif %} to extract correct and accurate structured data from the input.
+{% if tool_description is not empty %}
+
+Tool purpose: {{ tool_description|raw }}
+{% endif %}
+
+Call the tool with the best supported arguments for the requested extraction.

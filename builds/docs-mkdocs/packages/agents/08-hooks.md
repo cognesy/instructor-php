@@ -42,7 +42,7 @@ HookTrigger::AfterStep;         // 'after_step'
 HookTrigger::OnStop;            // 'on_stop'
 HookTrigger::AfterExecution;    // 'after_execution'
 HookTrigger::OnError;           // 'on_error'
-// @doctest id="a030"
+// @doctest id="82e1"
 ```
 
 The following diagram illustrates the typical flow through these triggers during a single execution:
@@ -64,7 +64,7 @@ BeforeExecution
   +---> OnStop (when stop condition detected)
   |
   +---> AfterExecution
-// @doctest id="024a"
+// @doctest id="f1b8"
 ```
 
 If an error occurs at any point, the `OnError` trigger fires with the accumulated error information.
@@ -87,7 +87,7 @@ class LogStepsHook implements HookInterface
         return $context;
     }
 }
-// @doctest id="095b"
+// @doctest id="b816"
 ```
 
 <a name="hook-context"></a>
@@ -120,7 +120,7 @@ $ctx = HookContext::afterStep($state);
 $ctx = HookContext::onStop($state);
 $ctx = HookContext::afterExecution($state);
 $ctx = HookContext::onError($state, $errorList);
-// @doctest id="c037"
+// @doctest id="6e44"
 ```
 
 <a name="registering-hooks"></a>
@@ -143,7 +143,7 @@ $agent = AgentBuilder::base()
         name: 'log_steps',
     ))
     ->build();
-// @doctest id="ed64"
+// @doctest id="d94c"
 ```
 
 A hook can listen to multiple triggers by combining them with `HookTriggers::of()`:
@@ -160,7 +160,7 @@ $agent = AgentBuilder::base()
         ),
     ))
     ->build();
-// @doctest id="f716"
+// @doctest id="c632"
 ```
 
 The `HookTriggers` class provides convenience constructors for every trigger type, as well as the ability to combine them:
@@ -179,7 +179,7 @@ HookTriggers::onError();         // Just OnError
 
 // Combine multiple triggers
 HookTriggers::of(HookTrigger::BeforeStep, HookTrigger::AfterStep);
-// @doctest id="87b4"
+// @doctest id="c346"
 ```
 
 ### Via HookStack (Manual)
@@ -199,7 +199,7 @@ $stack = $stack->with(
 );
 
 $loop = AgentLoop::default()->withInterceptor($stack);
-// @doctest id="77d0"
+// @doctest id="ad5c"
 ```
 
 The `HookStack` is immutable -- each `with()` call returns a new instance with the hook added and the collection re-sorted by priority. You can chain multiple hooks fluently:
@@ -209,7 +209,7 @@ $stack = $stack
     ->with($hookA, HookTriggers::beforeStep(), priority: 100)
     ->with($hookB, HookTriggers::afterStep(), priority: 50)
     ->with($hookC, HookTriggers::onError(), priority: 0);
-// @doctest id="fa21"
+// @doctest id="14fb"
 ```
 
 You can also add a pre-built `RegisteredHook` directly:
@@ -225,7 +225,7 @@ $registeredHook = new RegisteredHook(
 );
 
 $stack = $stack->withHook($registeredHook);
-// @doctest id="a6e1"
+// @doctest id="2ab7"
 ```
 
 <a name="callable-hook"></a>
@@ -248,7 +248,7 @@ $agent = AgentBuilder::base()
         triggers: HookTriggers::afterStep(),
     ))
     ->build();
-// @doctest id="6fb5"
+// @doctest id="791d"
 ```
 
 `CallableHook` accepts any `callable` that takes a `HookContext` and returns a `HookContext`. It converts the callable to a `Closure` internally for type safety.
@@ -281,7 +281,7 @@ $hook = new CallableHook(function (HookContext $ctx): HookContext {
     $state = $ctx->state()->withMetadata('processed_at', time());
     return $ctx->withState($state);
 });
-// @doctest id="b144"
+// @doctest id="b395"
 ```
 
 State modifications flow through the hook pipeline and back into the loop. This makes hooks suitable for:
@@ -303,7 +303,7 @@ $hook = new CallableHook(function (HookContext $ctx): HookContext {
     }
     return $ctx->withState($state);
 });
-// @doctest id="8662"
+// @doctest id="2087"
 ```
 
 <a name="blocking-tools"></a>
@@ -329,7 +329,7 @@ class BlockDangerousTools implements HookInterface
         return $context;
     }
 }
-// @doctest id="138e"
+// @doctest id="0eca"
 ```
 
 Register it on the `BeforeToolUse` trigger with a high priority to ensure it runs before other hooks:
@@ -343,7 +343,7 @@ $agent = AgentBuilder::base()
         name: 'block_dangerous_tools',
     ))
     ->build();
-// @doctest id="e5c7"
+// @doctest id="2578"
 ```
 
 When a tool is blocked, several things happen internally:
@@ -362,7 +362,7 @@ $context->withToolExecutionBlocked('This tool requires admin privileges.');
 
 // With default message (includes HookContext details)
 $context->withToolExecutionBlocked();
-// @doctest id="e821"
+// @doctest id="a3e3"
 ```
 
 <a name="context-config"></a>
@@ -377,7 +377,7 @@ $hook = new ApplyContextConfigHook(
     systemPrompt: 'You are a data analysis assistant.',
     responseFormat: $responseFormat,
 );
-// @doctest id="9788"
+// @doctest id="3137"
 ```
 
 This hook runs on `BeforeExecution` and modifies the `AgentContext` inside the state, ensuring the system prompt and format are in place before the first LLM call. It only applies non-empty values -- an empty system prompt or a `null` / empty response format will leave the existing context values unchanged.
@@ -402,7 +402,7 @@ $agent = AgentBuilder::base()
         finishReasons: [],
     ))
     ->build();
-// @doctest id="acf3"
+// @doctest id="b81e"
 ```
 
 Each parameter is optional and nullable -- pass `null` to disable a specific guard. The defaults are:
@@ -429,7 +429,7 @@ $guard = new StepsLimitHook(
     maxSteps: 10,
     stepCounter: fn($state) => $state->stepCount(),
 );
-// @doctest id="9f98"
+// @doctest id="c000"
 ```
 
 When the limit is reached, it emits a `StopSignal` with reason `StepsLimitReached` and a descriptive message like `"Step limit reached: 10/10"`.
@@ -442,7 +442,7 @@ Stops the loop when cumulative token usage (input + output tokens across all LLM
 use Cognesy\Agents\Hook\Hooks\TokenUsageLimitHook;
 
 $guard = new TokenUsageLimitHook(maxTotalTokens: 5000);
-// @doctest id="a3f0"
+// @doctest id="af72"
 ```
 
 When the limit is reached, it emits a `StopSignal` with reason `TokenLimitReached`.
@@ -463,7 +463,7 @@ $stack = $stack->with(
     HookTriggers::of(HookTrigger::BeforeExecution, HookTrigger::BeforeStep),
     priority: 200,
 );
-// @doctest id="9970"
+// @doctest id="78a1"
 ```
 
 The hook uses microsecond-precision timestamps (`DateTimeImmutable` with `U.u` format) for accurate timing. When the limit is reached, it emits a `StopSignal` with reason `TimeLimitReached`.
@@ -482,7 +482,7 @@ $guard = new FinishReasonHook(
     stopReasons: [InferenceFinishReason::Stop],
     finishReasonResolver: fn($state) => $state->currentStep()?->finishReason(),
 );
-// @doctest id="395a"
+// @doctest id="e861"
 ```
 
 When registered through `UseGuards`, this hook receives a priority of **-200** (running after other `AfterStep` hooks) to ensure all post-step processing has completed before checking the finish reason.
@@ -498,7 +498,7 @@ Trigger fires
   -> Hook B (priority 100) -> modified context
   -> Hook C (priority 0)   -> final context
   -> Loop continues with final context
-// @doctest id="3974"
+// @doctest id="e9be"
 ```
 
 Hooks that do not match the current trigger type are silently skipped. Each successful hook execution dispatches a `HookExecuted` event containing the trigger type, hook name, and execution timestamp -- enabling external observability and performance monitoring.
@@ -509,7 +509,7 @@ The `HookStack` implements `CanInterceptAgentLifecycle`, meaning it can be repla
 use Cognesy\Agents\Interception\PassThroughInterceptor;
 
 $loop = AgentLoop::default()->withInterceptor(new PassThroughInterceptor());
-// @doctest id="a98e"
+// @doctest id="ebd1"
 ```
 
 <a name="practical-examples"></a>
@@ -543,7 +543,7 @@ class AuditTrailHook implements HookInterface
         return $this->log;
     }
 }
-// @doctest id="c8eb"
+// @doctest id="5db7"
 ```
 
 ### Rate Limiting Hook
@@ -574,7 +574,7 @@ class RateLimitHook implements HookInterface
         return $context;
     }
 }
-// @doctest id="abd2"
+// @doctest id="e8c1"
 ```
 
 ### Conditional Tool Access
@@ -603,5 +603,5 @@ class RoleBasedAccessHook implements HookInterface
         return $context;
     }
 }
-// @doctest id="34a2"
+// @doctest id="509d"
 ```

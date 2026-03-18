@@ -2,6 +2,10 @@
 title: 'Google Gemini'
 docname: 'llm_google_gemini'
 id: '7936'
+tags:
+  - 'llm-api-support'
+  - 'gemini'
+  - 'provider'
 ---
 ## Overview
 

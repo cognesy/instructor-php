@@ -11,9 +11,11 @@ use Cognesy\Instructor\Data\StructuredOutputAttempt;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Extras\Example\Example;
+use Cognesy\Instructor\Telemetry\StructuredOutputTelemetry;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\MessageStore;
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Template\Template;
 use Cognesy\Utils\Arrays;
 use Exception;
@@ -21,6 +23,24 @@ use Exception;
 class RequestMaterializer implements CanMaterializeRequest
 {
     #[\Override]
+    public function toInferenceRequest(StructuredOutputExecution $execution): InferenceRequest
+    {
+        $request = $execution->request();
+        $responseModel = $execution->responseModel();
+        assert($responseModel !== null, 'Response model cannot be null');
+
+        return new InferenceRequest(
+            messages: $this->toMessages($execution),
+            model: $request->model(),
+            tools: $responseModel->toolDefinitions(),
+            toolChoice: $responseModel->toolChoice(),
+            responseFormat: $responseModel->responseFormat(),
+            options: $request->options(),
+            responseCachePolicy: $execution->config()->responseCachePolicy(),
+            telemetryCorrelation: StructuredOutputTelemetry::inferenceCorrelation($execution),
+        );
+    }
+
     public function toMessages(StructuredOutputExecution $execution): Messages
     {
         $request = $execution->request();

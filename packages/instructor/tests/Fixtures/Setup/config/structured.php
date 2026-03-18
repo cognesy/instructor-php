@@ -36,6 +36,12 @@ return [
             'defaultJsonSchemaPrompt' => "Response must follow provided JSON Schema. Respond correctly with strict JSON object.\n",
             'defaultToolsPrompt' => "Extract correct and accurate data from the input using provided tools.\n",
             'defaultMdJsonPrompt' => "Response must validate against this JSON Schema:\n<|json_schema|>\n. Respond correctly with strict JSON object within a ```json {} ``` codeblock.\n",
+            'defaultRetryPromptClass' => 'Cognesy\\Instructor\\Prompts\\StructuredOutput\\RetryFeedbackPrompt',
+            'defaultJsonPromptClass' => 'Cognesy\\Instructor\\Prompts\\StructuredOutput\\JsonSystemPrompt',
+            'defaultJsonSchemaPromptClass' => 'Cognesy\\Instructor\\Prompts\\StructuredOutput\\JsonSchemaSystemPrompt',
+            'defaultToolsPromptClass' => 'Cognesy\\Instructor\\Prompts\\StructuredOutput\\ToolsSystemPrompt',
+            'defaultMdJsonPromptClass' => 'Cognesy\\Instructor\\Prompts\\StructuredOutput\\MdJsonSystemPrompt',
+            'defaultDeserializationErrorPromptClass' => 'Cognesy\\Instructor\\Prompts\\StructuredOutput\\DeserializationRepairPrompt',
 
             // default chat structure - order of sections in the structured output chat sequence
             'defaultChatStructure' => [

@@ -24,7 +24,7 @@ class ScoringCriteria extends NodeSet
 }
 
 echo ScoringCriteria::make();
-// @doctest id="5720"
+// @doctest id="b4ff"
 ```
 
 Output:
@@ -35,7 +35,7 @@ Output:
 2. **Evidence** -- Claims are supported by sources
 
 3. **Structure** -- Argument flows logically
-// @doctest id="9a39"
+// @doctest id="be47"
 ```
 
 ## YAML Data Files
@@ -49,7 +49,7 @@ class ReviewCriteria extends NodeSet
     public ?string $templateDir = __DIR__ . '/data';
     public string $sortKey = 'priority';
 }
-// @doctest id="ac80"
+// @doctest id="97f0"
 ```
 
 The file `data/criteria.yml`:
@@ -66,7 +66,7 @@ The file `data/criteria.yml`:
   children:
     - id: citations
       content: All sources are properly cited
-# @doctest id="92ed"
+# @doctest id="0b7a"
 ```
 
 Items are sorted by `priority` and children render as indented sub-items:
@@ -76,7 +76,7 @@ Items are sorted by `priority` and children render as indented sub-items:
 
 2. **Evidence** -- Claims are supported by sources
    - All sources are properly cited
-// @doctest id="19d6"
+// @doctest id="a84f"
 ```
 
 > **Note:** YAML data files require `symfony/yaml`. Install it with `composer require symfony/yaml`.
@@ -98,7 +98,7 @@ class NumberedLabels extends NodeSet
         return "- [{$node['label']}] {$node['content']}";
     }
 }
-// @doctest id="3efa"
+// @doctest id="34b7"
 ```
 
 Output:
@@ -107,7 +107,7 @@ Output:
 - [Bug] Functional defect
 
 - [Style] Code style issue
-// @doctest id="8e2e"
+// @doctest id="dab0"
 ```
 
 ## Dynamic Data
@@ -127,7 +127,7 @@ class DynamicLabels extends NodeSet
 }
 
 echo DynamicLabels::with(labels: ['Bug', 'Feature', 'Chore']);
-// @doctest id="135a"
+// @doctest id="8a30"
 ```
 
 ## Using in Composition
@@ -147,7 +147,7 @@ class ReviewSystem extends Prompt
         ];
     }
 }
-// @doctest id="1489"
+// @doctest id="4ed4"
 ```
 
 ## Next Steps

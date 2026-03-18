@@ -3,6 +3,10 @@ title: 'Agent Hooks - Tool Interception'
 docname: 'agent_hooks'
 order: 4
 id: '9185'
+tags:
+  - 'agent-builder'
+  - 'hooks'
+  - 'tool-interception'
 ---
 ## Overview
 

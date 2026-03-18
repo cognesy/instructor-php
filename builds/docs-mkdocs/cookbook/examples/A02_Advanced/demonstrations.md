@@ -2,6 +2,10 @@
 title: 'Providing example inputs and outputs'
 docname: 'demonstrations'
 id: 'b438'
+tags:
+  - 'advanced'
+  - 'few-shot'
+  - 'demonstrations'
 ---
 ## Overview
 

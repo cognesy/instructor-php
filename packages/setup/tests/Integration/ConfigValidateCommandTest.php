@@ -54,6 +54,21 @@ it('fails when a required default config is missing', function () {
         ->and(runConfigValidateCommand($projectRoot, ['target' => 'published']))->toBe(1);
 });
 
+it('validates published logging config files', function () {
+    $projectRoot = configValidateProjectRoot();
+    configValidatePackage(
+        $projectRoot,
+        'logging',
+        'logging',
+        [
+            'resources/config/event_log.yaml' => "path: ''\nlevel: info\nincludePayload: true\n",
+        ],
+    );
+
+    expect(runConfigValidatePublish($projectRoot, ['target' => 'published']))->toBe(0)
+        ->and(runConfigValidateCommand($projectRoot, ['target' => 'published']))->toBe(0);
+});
+
 /**
  * @param array<string, mixed> $arguments
  */

@@ -35,6 +35,7 @@ use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Polyglot\Inference\PendingInference;
+use Cognesy\Telemetry\Domain\Envelope\OperationCorrelation;
 use Cognesy\Utils\Json\JsonExtractor;
 use DateTimeImmutable;
 use Override;
@@ -206,9 +207,23 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
             options: $options,
             cachedContext: $cache,
             retryPolicy: $this->retryPolicy,
+            telemetryCorrelation: $this->telemetryCorrelationFor($state),
         );
 
         return $this->inference->create($request);
+    }
+
+    private function telemetryCorrelationFor(AgentState $state): ?OperationCorrelation
+    {
+        $executionId = $state->execution()?->executionId()->toString() ?? '';
+        if ($executionId === '') {
+            return null;
+        }
+
+        return OperationCorrelation::child(
+            rootOperationId: $executionId,
+            parentOperationId: "{$executionId}:step:" . ($state->stepCount() + 1),
+        );
     }
 
     private function buildStepFromResponse(

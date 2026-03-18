@@ -2,6 +2,10 @@
 title: 'Custom Content Extractors'
 docname: 'custom_extractor'
 id: '4005'
+tags:
+  - 'extras'
+  - 'custom-extractor'
+  - 'parsing'
 ---
 ## Overview
 

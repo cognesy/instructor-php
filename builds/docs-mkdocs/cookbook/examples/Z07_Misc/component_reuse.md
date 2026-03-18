@@ -2,6 +2,10 @@
 title: 'Reusing components'
 docname: 'component_reuse'
 id: '4733'
+tags:
+  - 'misc'
+  - 'component-reuse'
+  - 'time-ranges'
 ---
 ## Overview
 

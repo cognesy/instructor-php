@@ -3,7 +3,7 @@
 namespace Cognesy\Http;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Logging\EventLog;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\CanProvideHttpDrivers;
@@ -33,7 +33,7 @@ final class HttpClientRuntime
         ?object $clientInstance = null,
         ?MiddlewareStack $middlewareStack = null,
     ): self {
-        $events = $events ?? new EventDispatcher(name: 'http.client.runtime');
+        $events = $events ?? EventLog::root('http.client.runtime');
         $config = $config ?? new HttpClientConfig();
         $stack = $middlewareStack ?? new MiddlewareStack($events);
         $resolvedDriver = $driver ?? self::resolveDrivers($drivers)->makeDriver(

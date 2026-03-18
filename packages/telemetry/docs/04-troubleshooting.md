@@ -1,0 +1,85 @@
+---
+title: 'Troubleshooting'
+description: 'Common telemetry setup problems and how to debug them'
+---
+
+# Troubleshooting
+
+## Nothing Is Sent To The Backend
+
+Check these first:
+
+- did you call `$telemetry->flush()` at the end of the run
+- did you attach `RuntimeEventBridge` to the same event bus used by the runtime
+- did you add the right projectors for the packages in play
+- are your backend credentials and endpoints set correctly
+
+If you skip `flush()`, exporters can keep data in memory and never send it.
+
+## Spans Are Missing Or Not Connected
+
+Usually this means one of two things:
+
+1. different parts of the app are using different event dispatchers
+2. the relevant runtime projector is missing
+
+Telemetry correlation depends on one shared event flow. If `agents` emits on one
+event bus and `polyglot` emits on another, you will get broken or partial traces.
+
+## Check Payloads Locally First
+
+For local debugging, use `OtelExporter` without a transport and inspect what it
+captured:
+
+```php
+use Cognesy\Telemetry\Adapters\OTel\OtelExporter;
+use Cognesy\Telemetry\Application\Registry\TraceRegistry;
+use Cognesy\Telemetry\Application\Telemetry;
+
+$exporter = new OtelExporter();
+$telemetry = new Telemetry(new TraceRegistry(), $exporter);
+
+// run your code
+
+$telemetry->flush();
+
+var_dump($exporter->observations());
+var_dump($exporter->tracesPayload());
+```
+
+This is the fastest way to answer: "Did the app produce telemetry at all?"
+
+## HTTP Export Errors
+
+Transport errors throw explicit exceptions. Typical cases:
+
+- bad token or key: HTTP 4xx
+- backend unavailable: HTTP 5xx
+- invalid endpoint or network issue: transport exception before a valid status
+
+The exception message includes the target URL, which usually makes configuration
+problems obvious.
+
+## Langfuse-Specific Note
+
+Langfuse export goes to:
+
+- `/api/public/otel/v1/traces`
+
+Give `LangfuseConfig` the base URL, not the full traces URL.
+
+## Logfire-Specific Note
+
+Logfire export uses the OTLP base endpoint. Give `LogfireConfig` the base OTLP
+URL, not a full `/v1/traces` or `/v1/metrics` path.
+
+The example helper in `examples/_support/logfire.php` normalizes this for you.
+
+## Good Reference Points
+
+If your own setup is not working, compare it with:
+
+- `examples/_support/langfuse.php`
+- `examples/_support/logfire.php`
+- `examples/D05_AgentTroubleshooting/TelemetryLangfuse/run.php`
+- `examples/D05_AgentTroubleshooting/TelemetryLogfire/run.php`

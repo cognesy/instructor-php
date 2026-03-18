@@ -2,6 +2,10 @@
 title: 'Self-Verify Responses'
 docname: 'self_verify'
 id: '4ac5'
+tags:
+  - 'self-criticism'
+  - 'self-verification'
+  - 'candidate-selection'
 ---
 ## Overview
 

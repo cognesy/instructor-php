@@ -2,6 +2,10 @@
 title: 'Sandbox: Host ls -Al'
 docname: 'sandbox_host_ls'
 id: 'd201'
+tags:
+  - 'sandbox'
+  - 'host'
+  - 'commands'
 ---
 ## Overview
 

@@ -2,6 +2,10 @@
 title: 'Manual Schema Building'
 docname: 'manual_schemas'
 id: '44ad'
+tags:
+  - 'advanced'
+  - 'schemas'
+  - 'manual-schema'
 ---
 ## Overview
 

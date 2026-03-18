@@ -2,6 +2,8 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
+use Cognesy\Agents\Continuation\StopReason;
+use Cognesy\Agents\Continuation\StopSignal;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Data\AgentStep;
 use Cognesy\Agents\Data\AgentStepId;
@@ -69,4 +71,45 @@ it('fails with an error and records a failure step', function () {
     expect($failed->status())->toBe(ExecutionStatus::Failed)
         ->and($lastStep)->not->toBeNull()
         ->and($lastStep?->hasErrors())->toBeTrue();
+});
+
+it('uses the highest-priority stop signal for terminal execution status', function () {
+    $state = AgentState::empty()
+        ->withCurrentStep(new AgentStep(id: new AgentStepId('00000000-0000-4000-8000-000000000002')))
+        ->withStopSignal(new StopSignal(
+            reason: StopReason::Completed,
+            message: 'step finished',
+            source: 'AfterStepHook',
+        ))
+        ->withStopSignal(new StopSignal(
+            reason: StopReason::UserRequested,
+            message: 'cancelled by user',
+            source: 'OnStopHook',
+        ))
+        ->withExecutionCompleted();
+
+    expect($state->status())->toBe(ExecutionStatus::Stopped)
+        ->and($state->stopReason())->toBe(StopReason::UserRequested)
+        ->and($state->stopSource())->toBe('OnStopHook');
+});
+
+it('prefers a higher-priority execution stop signal over an archived step signal', function () {
+    $state = AgentState::empty()
+        ->withCurrentStep(new AgentStep(id: new AgentStepId('00000000-0000-4000-8000-000000000003')))
+        ->withStopSignal(new StopSignal(
+            reason: StopReason::Completed,
+            message: 'step finished',
+            source: 'ArchivedStepHook',
+        ))
+        ->withCurrentStepCompleted()
+        ->withStopSignal(new StopSignal(
+            reason: StopReason::UserRequested,
+            message: 'cancelled before next step',
+            source: 'CheckpointHook',
+        ))
+        ->withExecutionCompleted();
+
+    expect($state->status())->toBe(ExecutionStatus::Stopped)
+        ->and($state->stopReason())->toBe(StopReason::UserRequested)
+        ->and($state->stopSource())->toBe('CheckpointHook');
 });

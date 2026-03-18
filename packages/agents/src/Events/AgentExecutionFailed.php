@@ -5,6 +5,7 @@ namespace Cognesy\Agents\Events;
 use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use DateTimeImmutable;
+use Psr\Log\LogLevel;
 use Throwable;
 
 /**
@@ -13,6 +14,7 @@ use Throwable;
  */
 final class AgentExecutionFailed extends AgentEvent
 {
+    public string $logLevel = LogLevel::ERROR;
     public readonly DateTimeImmutable $failedAt;
 
     public function __construct(

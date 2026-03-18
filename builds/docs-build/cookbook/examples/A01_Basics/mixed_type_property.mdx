@@ -20,7 +20,6 @@ $text = <<<TEXT
     Jason is 25 years old. He plays football and loves to travel.
     TEXT;
 
-
 $user = StructuredOutput::using('openai')
     ->withMessages($text)
     ->withResponseClass(UserWithMixedTypeProperty::class)

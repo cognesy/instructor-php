@@ -148,7 +148,7 @@ by an external request:
 ```php
 use Cognesy\Agents\Continuation\StopReason;
 
-$reason = $state->lastStopReason(); // StopReason enum
+$reason = $state->stopReason(); // StopReason enum
 
 match ($reason) {
     StopReason::Completed           => 'Agent finished naturally',
@@ -167,7 +167,7 @@ match ($reason) {
 You can also retrieve the full stop signal for additional context:
 
 ```php
-$signal = $state->lastStopSignal();
+$signal = $state->stopSignal();
 
 $signal->reason;   // StopReason enum
 $signal->message;  // Human-readable explanation

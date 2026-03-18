@@ -2,6 +2,10 @@
 title: 'HTTP Client – Pool Basics'
 docname: 'http_client_pool_basics'
 id: 'bb83'
+tags:
+  - 'http'
+  - 'pool'
+  - 'concurrency'
 ---
 ## Overview
 

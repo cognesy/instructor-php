@@ -8,6 +8,7 @@ use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Events\HttpResponseReceived;
+use Cognesy\Http\Telemetry\HttpRequestTelemetry;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -66,10 +67,14 @@ class MockHttpDriver implements CanHandleHttpRequest
 
     private function dispatchResponseReceived(HttpRequest $request, HttpResponse $response): void {
         if ($this->events) {
-            $this->events->dispatch(new HttpResponseReceived([
+            $isStreamed = $response->isStreamed();
+            $this->events->dispatch(new HttpResponseReceived(array_filter([
                 'requestId' => $request->id,
                 'statusCode' => $response->statusCode(),
-            ]));
+                'isStreamed' => $isStreamed,
+                'body' => !$isStreamed ? $response->body() : null,
+                ...HttpRequestTelemetry::metadataForRequest($request),
+            ], static fn(mixed $v): bool => $v !== null)));
         }
     }
 

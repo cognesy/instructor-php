@@ -3,6 +3,10 @@ title: 'SessionRuntime Execute Action'
 docname: 'session_runtime_execute_action'
 order: 2
 id: 'a6ce'
+tags:
+  - 'agent-sessions'
+  - 'runtime'
+  - 'actions'
 ---
 ## Overview
 

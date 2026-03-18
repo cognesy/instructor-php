@@ -3,6 +3,10 @@ title: 'Agent Execution Retrospective (D-Mail)'
 docname: 'agent_retrospective'
 order: 8
 id: 'f3a1'
+tags:
+  - 'agent-builder'
+  - 'retrospective'
+  - 'workflow'
 ---
 ## Overview
 

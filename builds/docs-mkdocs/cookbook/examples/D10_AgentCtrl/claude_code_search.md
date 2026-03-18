@@ -2,6 +2,10 @@
 title: 'Claude Code CLI - Agentic Search'
 docname: 'claude_code_search'
 id: 'e4a3'
+tags:
+  - 'agent-ctrl'
+  - 'claude-code'
+  - 'search'
 ---
 ## Overview
 

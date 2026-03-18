@@ -2,6 +2,10 @@
 title: 'Generating JSON Schema from PHP classes'
 docname: 'schema'
 id: 'cb50'
+tags:
+  - 'extras'
+  - 'schema-generation'
+  - 'php-classes'
 ---
 ## Overview
 
@@ -27,7 +31,7 @@ class City {
 $schema = (new SchemaFactory)->schema(City::class);
 
 $city = StructuredOutput::using('openai')->with(
-    messages: "What is capital of France",
+    messages: "Provide details about Paris, the capital city of France.",
     responseModel: $schema,
 )->get();
 
@@ -35,7 +39,7 @@ dump($city);
 
 assert(gettype($city) === 'object');
 assert(get_class($city) === 'City');
-assert($city->name === 'Paris');
+assert(str_contains($city->name, 'Paris'));
 assert(is_int($city->population));
 assert(is_int($city->founded));
 

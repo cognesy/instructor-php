@@ -101,6 +101,46 @@ From `InstructorServiceProvider`:
 - `instructor-config` -> publishes `config/instructor.php`
 - `instructor-stubs` -> publishes `resources/stubs` to `stubs/instructor`
 
+## Logging
+
+Logging is handled by `InstructorLoggingServiceProvider`, which attaches a `LoggingPipeline`
+wiretap to the shared `CanHandleEvents` event bus. The pipeline writes to a PSR-3 logger
+(Laravel log channel).
+
+Config file: `packages/laravel/resources/config/instructor-logging.php`
+
+Relevant env vars:
+- `INSTRUCTOR_LOGGING_ENABLED` (default: `true`)
+- `INSTRUCTOR_LOGGING_PRESET` (`default` | `production` | `custom`)
+- `INSTRUCTOR_LOG_CHANNEL` — Laravel log channel name (default: `instructor`)
+- `INSTRUCTOR_LOG_LEVEL` — minimum PSR log level (default: `debug`)
+
+Presets:
+- `default` — warning level, excludes HTTP debug events, adds human-readable message templates
+- `production` — warning level, minimal set of events
+- `custom` — reads full config array from `instructor-logging.config`
+
+### Structured / JSONL output
+
+`INSTRUCTOR_LOG_PATH` (the standalone JSONL env var from `EventLog`) **has no effect inside
+Laravel**. All runtimes receive a user-provided `CanHandleEvents` from the container, so
+`EventLog::root()` is never called.
+
+To get machine-parseable JSON log lines in Laravel, configure a log channel with Monolog's
+`JsonFormatter`:
+
+```php
+// config/logging.php
+'instructor-json' => [
+    'driver'    => 'single',
+    'path'      => storage_path('logs/instructor.jsonl'),
+    'level'     => 'debug',
+    'formatter' => Monolog\Formatter\JsonFormatter::class,
+],
+```
+
+Then point `INSTRUCTOR_LOG_CHANNEL=instructor-json` at it.
+
 ## Config File
 
 Main config file:

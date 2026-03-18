@@ -2,6 +2,10 @@
 title: 'Extracting arguments of function or method'
 docname: 'function_calls'
 id: 'bce8'
+tags:
+  - 'advanced'
+  - 'function-calling'
+  - 'argument-extraction'
 ---
 ## Overview
 

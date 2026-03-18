@@ -3,6 +3,10 @@ title: 'Fluent API'
 docname: 'fluent_api'
 path: ''
 id: '0769'
+tags:
+  - 'basics'
+  - 'fluent-api'
+  - 'structured-output'
 ---
 ## Overview
 

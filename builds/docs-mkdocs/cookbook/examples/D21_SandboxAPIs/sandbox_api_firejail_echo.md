@@ -2,6 +2,10 @@
 title: 'Sandbox API: Firejail'
 docname: 'sandbox_api_firejail_echo'
 id: 'd213'
+tags:
+  - 'sandbox-apis'
+  - 'firejail'
+  - 'drivers'
 ---
 ## Overview
 

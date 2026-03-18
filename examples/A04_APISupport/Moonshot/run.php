@@ -2,6 +2,10 @@
 title: 'MoonshotAI'
 docname: 'moonshotai'
 id: '167c'
+tags:
+  - 'api-support'
+  - 'moonshot'
+  - 'provider'
 ---
 ## Overview
 

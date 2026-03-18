@@ -12,6 +12,7 @@ use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseChunkReceived;
 use Cognesy\Http\Events\HttpResponseReceived;
+use Cognesy\Http\Events\HttpStreamCompleted;
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Http\Tests\Support\IntegrationTestServer;
 use GuzzleHttp\Client;
@@ -68,6 +69,64 @@ it('includes a stable requestId across http request response and chunk events', 
     }
 })->with(['guzzle', 'symfony', 'curl']);
 
+it('emits completed stream outcome with body after full stream consumption', function (string $driverType) {
+    $events = new EventDispatcher();
+    $captured = [];
+    $events->wiretap(function (object $event) use (&$captured): void {
+        $captured[] = $event;
+    });
+
+    $driver = createCorrelationDriver(
+        type: $driverType,
+        config: new HttpClientConfig(failOnError: false),
+        events: $events,
+    );
+
+    $request = new HttpRequest($this->baseUrl . '/stream/2', 'GET', [], '', ['stream' => true]);
+    $response = $driver->handle($request);
+
+    foreach ($response->stream() as $_chunk) {
+    }
+
+    $streamCompleted = collectEvent($captured, HttpStreamCompleted::class);
+
+    expect($streamCompleted->data)->toBeArray()->toHaveKey('requestId', $request->id);
+    expect($streamCompleted->data)->toHaveKey('outcome', 'completed');
+    expect($streamCompleted->data['body'] ?? null)->toBeString()->not->toBe('');
+})->with(['guzzle', 'symfony', 'curl']);
+
+it('emits abandoned stream outcome without body after early consumer exit', function (string $driverType) {
+    $events = new EventDispatcher();
+    $captured = [];
+    $events->wiretap(function (object $event) use (&$captured): void {
+        $captured[] = $event;
+    });
+
+    $driver = createCorrelationDriver(
+        type: $driverType,
+        config: new HttpClientConfig(failOnError: false),
+        events: $events,
+    );
+
+    $request = new HttpRequest($this->baseUrl . '/stream/3', 'GET', [], '', ['stream' => true]);
+    $response = $driver->handle($request);
+
+    foreach ($response->stream() as $index => $_chunk) {
+        if ($index === 0) {
+            break;
+        }
+    }
+
+    unset($response);
+    gc_collect_cycles();
+
+    $streamCompleted = collectEvent($captured, HttpStreamCompleted::class);
+
+    expect($streamCompleted->data)->toBeArray()->toHaveKey('requestId', $request->id);
+    expect($streamCompleted->data)->toHaveKey('outcome', 'abandoned');
+    expect(array_key_exists('body', $streamCompleted->data))->toBeFalse();
+})->with(['guzzle', 'symfony', 'curl']);
+
 it('includes a stable requestId across http failure events', function (string $driverType) {
     $events = new EventDispatcher();
     $captured = [];
@@ -119,6 +178,8 @@ it('mock driver emits normalized response payload with requestId', function () {
     expect($responseReceived->data)->toBe([
         'requestId' => $request->id,
         'statusCode' => 200,
+        'isStreamed' => false,
+        'body' => '{"ok":true}',
     ]);
 
     foreach ($responseReceived->data as $value) {

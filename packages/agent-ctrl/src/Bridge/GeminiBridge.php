@@ -21,6 +21,8 @@ use Cognesy\AgentCtrl\Event\ResponseParsingStarted;
 use Cognesy\AgentCtrl\Event\StreamChunkProcessed;
 use Cognesy\AgentCtrl\Event\StreamProcessingCompleted;
 use Cognesy\AgentCtrl\Event\StreamProcessingStarted;
+use Cognesy\AgentCtrl\Event\AgentEvent;
+use Cognesy\AgentCtrl\Telemetry\AgentCtrlEventTelemetry;
 use Cognesy\AgentCtrl\Gemini\Application\Builder\GeminiCommandBuilder;
 use Cognesy\AgentCtrl\Gemini\Application\Dto\GeminiRequest;
 use Cognesy\AgentCtrl\Gemini\Application\Parser\ResponseParser;
@@ -31,7 +33,9 @@ use Cognesy\AgentCtrl\Gemini\Domain\Dto\StreamEvent\ToolResultEvent;
 use Cognesy\AgentCtrl\Gemini\Domain\Dto\StreamEvent\ToolUseEvent;
 use Cognesy\AgentCtrl\Gemini\Domain\Enum\ApprovalMode;
 use Cognesy\AgentCtrl\Gemini\Domain\Enum\OutputFormat;
+use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Sandbox\Enums\SandboxDriver;
 use Cognesy\Utils\Json\JsonParsingException;
 use JsonException;
@@ -43,6 +47,8 @@ final class GeminiBridge implements AgentBridge
 {
     private GeminiCommandBuilder $commandBuilder;
     private ResponseParser $responseParser;
+    private AgentCtrlExecutionId $executionId;
+    private CanHandleEvents $events;
 
     public function __construct(
         private ?string $model = null,
@@ -63,16 +69,24 @@ final class GeminiBridge implements AgentBridge
         private ?string $workingDirectory = null,
         private SandboxDriver $sandboxDriver = SandboxDriver::Host,
         private int $timeout = 120,
-        private ?CanHandleEvents $events = null,
+        ?CanHandleEvents $events = null,
         private bool $failFast = true,
+        ?AgentCtrlExecutionId $executionId = null,
     ) {
+        $this->events = $events ?? new EventDispatcher();
+        $this->executionId = $executionId ?? AgentCtrlExecutionId::fresh();
         $this->commandBuilder = new GeminiCommandBuilder();
         $this->responseParser = new ResponseParser($this->failFast);
     }
 
     private function dispatch(object $event): void
     {
-        $this->events?->dispatch($event);
+        $enriched = match (true) {
+            $event instanceof AgentEvent => AgentCtrlEventTelemetry::attach($event),
+            default => $event,
+        };
+
+        $this->events->dispatch($enriched);
     }
 
     #[\Override]
@@ -94,18 +108,18 @@ final class GeminiBridge implements AgentBridge
             $requestStart = microtime(true);
             $request = $this->buildRequest($prompt);
             $requestDuration = (microtime(true) - $requestStart) * 1000;
-            $this->dispatch(new RequestBuilt(AgentType::Gemini, 'GeminiRequest', $requestDuration));
+            $this->dispatch(new RequestBuilt(AgentType::Gemini, $this->executionId, 'GeminiRequest', $requestDuration));
 
             // Build command spec with timing
             $commandStart = microtime(true);
             $spec = $this->commandBuilder->build($request);
             $commandDuration = (microtime(true) - $commandStart) * 1000;
-            $this->dispatch(new CommandSpecCreated(AgentType::Gemini, count($spec->argv()->toArray()), $commandDuration));
+            $this->dispatch(new CommandSpecCreated(AgentType::Gemini, $this->executionId, count($spec->argv()->toArray()), $commandDuration));
 
-            $executor = SandboxCommandExecutor::forGemini($this->sandboxDriver, $this->timeout, $this->events);
+            $executor = SandboxCommandExecutor::forGemini($this->executionId, $this->sandboxDriver, $this->timeout, $this->events);
 
             // Emit process execution start
-            $this->dispatch(new ProcessExecutionStarted(AgentType::Gemini, count($spec->argv()->toArray())));
+            $this->dispatch(new ProcessExecutionStarted(AgentType::Gemini, $this->executionId, count($spec->argv()->toArray())));
 
             $collectedText = '';
             $toolCalls = [];
@@ -117,7 +131,7 @@ final class GeminiBridge implements AgentBridge
 
             $streamStart = $handler !== null ? microtime(true) : null;
             if ($handler !== null && $streamStart !== null) {
-                $this->dispatch(new StreamProcessingStarted(AgentType::Gemini));
+                $this->dispatch(new StreamProcessingStarted(AgentType::Gemini, $this->executionId));
             }
 
             $streamCallback = $handler !== null ? function (string $type, string $chunk) use ($handler, $jsonLinesBuffer, &$collectedText, &$toolCalls, &$pendingToolUses, &$chunkCount, &$totalBytesProcessed): void {
@@ -137,6 +151,7 @@ final class GeminiBridge implements AgentBridge
                 $chunkDuration = (microtime(true) - $chunkStart) * 1000;
                 $this->dispatch(new StreamChunkProcessed(
                     AgentType::Gemini,
+                    $this->executionId,
                     $chunkCount,
                     $chunkSize,
                     'json-lines',
@@ -157,6 +172,7 @@ final class GeminiBridge implements AgentBridge
                 $streamDuration = (microtime(true) - $streamStart) * 1000;
                 $this->dispatch(new StreamProcessingCompleted(
                     AgentType::Gemini,
+                    $this->executionId,
                     $chunkCount,
                     $streamDuration,
                     $totalBytesProcessed
@@ -165,7 +181,7 @@ final class GeminiBridge implements AgentBridge
 
             // Parse response for non-streaming or to extract final data
             $responseStart = microtime(true);
-            $this->dispatch(new ResponseParsingStarted(AgentType::Gemini, strlen($execResult->stdout()), 'stream-json'));
+            $this->dispatch(new ResponseParsingStarted(AgentType::Gemini, $this->executionId, strlen($execResult->stdout()), 'stream-json'));
             $response = $this->responseParser->parse($execResult);
 
             // Always extract from parsed response to avoid stream callback data loss.
@@ -190,6 +206,7 @@ final class GeminiBridge implements AgentBridge
             $extractDuration = (microtime(true) - $extractStart) * 1000;
             $this->dispatch(new ResponseDataExtracted(
                 AgentType::Gemini,
+                $this->executionId,
                 $eventCount,
                 $toolUseCount,
                 $textLength,
@@ -201,7 +218,7 @@ final class GeminiBridge implements AgentBridge
 
             // Emit response parsing completion
             $responseDuration = (microtime(true) - $responseStart) * 1000;
-            $this->dispatch(new ResponseParsingCompleted(AgentType::Gemini, $responseDuration, $normalizedSessionId));
+            $this->dispatch(new ResponseParsingCompleted(AgentType::Gemini, $this->executionId, $responseDuration, $normalizedSessionId));
 
             // Convert usage if available
             $usage = $response->usage() !== null
@@ -212,6 +229,7 @@ final class GeminiBridge implements AgentBridge
                 agentType: AgentType::Gemini,
                 text: $collectedText,
                 exitCode: $response->exitCode(),
+                executionId: $this->executionId,
                 sessionId: $normalizedSessionId,
                 usage: $usage,
                 cost: null, // Gemini CLI doesn't expose cost

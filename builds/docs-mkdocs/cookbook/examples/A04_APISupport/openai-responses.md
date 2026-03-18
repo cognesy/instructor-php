@@ -2,6 +2,10 @@
 title: 'OpenAI Responses API'
 docname: 'openai-responses'
 id: 'aada'
+tags:
+  - 'api-support'
+  - 'openai-responses'
+  - 'provider'
 ---
 ## Overview
 

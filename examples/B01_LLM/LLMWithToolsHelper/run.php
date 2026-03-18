@@ -2,6 +2,10 @@
 title: 'Generating JSON Schema from PHP classes'
 docname: 'llm_with_tools_helper'
 id: '012f'
+tags:
+  - 'llm'
+  - 'tool-calling'
+  - 'schema-helper'
 ---
 ## Overview
 

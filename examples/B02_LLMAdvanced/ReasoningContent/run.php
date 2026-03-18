@@ -3,6 +3,10 @@ title: 'Reasoning Content Access'
 docname: 'reasoning_content'
 path: ''
 id: '0b56'
+tags:
+  - 'llm-advanced'
+  - 'reasoning'
+  - 'response-inspection'
 ---
 ## Overview
 

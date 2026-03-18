@@ -2,6 +2,10 @@
 title: 'Automate Example Selection'
 docname: 'automate_selection'
 id: 'c5a2'
+tags:
+  - 'thought-generation'
+  - 'example-selection'
+  - 'clustering'
 ---
 ## Overview
 

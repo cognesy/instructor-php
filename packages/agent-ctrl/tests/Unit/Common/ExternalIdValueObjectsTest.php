@@ -5,6 +5,7 @@ use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodeCallId;
 use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodeMessageId;
 use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodePartId;
 use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodeSessionId;
+use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Cognesy\AgentCtrl\ValueObject\AgentSessionId;
 use Cognesy\AgentCtrl\ValueObject\AgentToolCallId;
 
@@ -14,6 +15,7 @@ it('supports opaque provider session and thread ids', function () {
     $messageId = OpenCodeMessageId::fromString('msg_123');
     $partId = OpenCodePartId::fromString('part_456');
     $callId = OpenCodeCallId::fromString('call_789');
+    $executionId = AgentCtrlExecutionId::fromString('execution_global');
     $agentSessionId = AgentSessionId::fromString('session_global');
     $agentToolCallId = AgentToolCallId::fromString('call_global');
 
@@ -22,6 +24,7 @@ it('supports opaque provider session and thread ids', function () {
         ->and($messageId->toString())->toBe('msg_123')
         ->and($partId->toString())->toBe('part_456')
         ->and($callId->toString())->toBe('call_789')
+        ->and($executionId->toString())->toBe('execution_global')
         ->and($agentSessionId->toString())->toBe('session_global')
         ->and($agentToolCallId->toString())->toBe('call_global');
 });

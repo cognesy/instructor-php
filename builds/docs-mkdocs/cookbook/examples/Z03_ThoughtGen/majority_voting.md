@@ -2,6 +2,10 @@
 title: 'Use Majority Voting'
 docname: 'majority_voting'
 id: 'abf5'
+tags:
+  - 'thought-generation'
+  - 'majority-voting'
+  - 'self-consistency'
 ---
 ## Overview
 

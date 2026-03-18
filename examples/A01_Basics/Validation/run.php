@@ -2,6 +2,10 @@
 title: 'Validation'
 docname: 'validation'
 id: '052b'
+tags:
+  - 'basics'
+  - 'validation'
+  - 'symfony-validator'
 ---
 ## Overview
 

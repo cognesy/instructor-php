@@ -3,6 +3,10 @@ title: 'Agent Stop Conditions'
 docname: 'agent_loop_stop_conditions'
 order: 7
 id: '368a'
+tags:
+  - 'agents'
+  - 'stop-conditions'
+  - 'agent-loop'
 ---
 ## Overview
 
@@ -129,7 +133,7 @@ echo "currentResponse(): " . ($current !== '' ? $current : '(empty)') . "\n";
 echo "hasFinalResponse(): " . ($finalState->hasFinalResponse() ? 'true' : 'false') . "\n";
 
 // The stop signal carries the reason and context set by the tool
-$stopSignal = $finalState->lastStopSignal();
+$stopSignal = $finalState->stopSignal();
 echo "Stop reason: " . ($stopSignal?->toString() ?? 'unknown') . "\n";
 echo "Stop context: " . json_encode($stopSignal?->context ?? []) . "\n";
 
@@ -143,8 +147,8 @@ if ($finalState->status()->value === 'failed') {
 
 // Assertions
 assert($finalState->hasFinalResponse() === false, 'Expected no final response (agent was stopped)');
-assert($finalState->lastStopSignal() !== null, 'Expected a stop signal');
-assert($finalState->lastStopSignal()->context['final_count'] === 3, 'Expected counter to reach 3');
+assert($finalState->stopSignal() !== null, 'Expected a stop signal');
+assert($finalState->stopSignal()->context['final_count'] === 3, 'Expected counter to reach 3');
 assert($finalState->stepCount() >= 1, 'Expected at least 1 step');
 ?>
 ```

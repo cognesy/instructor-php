@@ -3,6 +3,10 @@ title: 'Minimaxi'
 docname: 'llm_minimaxi'
 id: '89a2'
 skip: true
+tags:
+  - 'llm-api-support'
+  - 'minimaxi'
+  - 'provider'
 ---
 ## Overview
 

@@ -3,6 +3,10 @@ title: 'Basic Agent Usage'
 docname: 'agent_basic'
 order: 1
 id: '67ca'
+tags:
+  - 'agent-builder'
+  - 'basics'
+  - 'agents'
 ---
 ## Overview
 

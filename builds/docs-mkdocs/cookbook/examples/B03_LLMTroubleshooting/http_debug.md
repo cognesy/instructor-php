@@ -2,6 +2,10 @@
 title: 'Debugging HTTP Calls'
 docname: 'http_debug'
 id: 'f26a'
+tags:
+  - 'llm-troubleshooting'
+  - 'http-debug'
+  - 'observability'
 ---
 ## Overview
 

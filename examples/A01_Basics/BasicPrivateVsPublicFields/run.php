@@ -2,6 +2,10 @@
 title: 'Private vs public object field'
 docname: 'public_vs_private'
 id: '8c1a'
+tags:
+  - 'basics'
+  - 'field-access'
+  - 'object-mapping'
 ---
 ## Overview
 

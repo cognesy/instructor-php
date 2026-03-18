@@ -1,0 +1,11 @@
+path: ''
+level: info
+includeEvents: []
+excludeEvents: []
+useHierarchyFilter: true
+excludeHttpDebug: false
+includePayload: true
+includeCorrelation: true
+includeEventMetadata: true
+includeComponentMetadata: true
+stringClipLength: 0

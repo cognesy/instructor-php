@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Cognesy\AgentCtrl\Bridge\OpenCodeBridge;
 use Cognesy\AgentCtrl\Dto\CallbackStreamHandler;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\AgentCtrl\Dto\StreamError;
 use Cognesy\AgentCtrl\Dto\ToolCall;
 use Cognesy\AgentCtrl\Enum\AgentType;
@@ -36,7 +37,7 @@ SH);
     $streamErrors = [];
 
     try {
-        $bridge = new OpenCodeBridge();
+        $bridge = new OpenCodeBridge(events: new EventDispatcher());
         $handler = new CallbackStreamHandler(
             onText: function (string $text) use (&$streamText): void {
                 $streamText .= $text;
@@ -97,7 +98,7 @@ SH);
     putenv('COGNESY_STDBUF=0');
 
     try {
-        $bridge = new OpenCodeBridge();
+        $bridge = new OpenCodeBridge(events: new EventDispatcher());
         expect(fn() => $bridge->executeStreaming('ignored prompt', new CallbackStreamHandler()))
             ->toThrow(JsonParsingException::class);
     } finally {
@@ -127,7 +128,7 @@ SH);
     putenv('COGNESY_STDBUF=0');
 
     try {
-        $bridge = new OpenCodeBridge(failFast: false);
+        $bridge = new OpenCodeBridge(failFast: false, events: new EventDispatcher());
         $response = $bridge->executeStreaming('ignored prompt', new CallbackStreamHandler());
     } finally {
         restoreOpenCodeEnv('PATH', $previousPath);

@@ -2,6 +2,10 @@
 title: 'Hugging Face'
 docname: 'huggingface'
 id: 'da2a'
+tags:
+  - 'api-support'
+  - 'huggingface'
+  - 'provider'
 ---
 ## Overview
 

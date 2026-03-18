@@ -2,6 +2,10 @@
 title: 'Anthropic'
 docname: 'anthropic'
 id: '1b36'
+tags:
+  - 'api-support'
+  - 'anthropic'
+  - 'provider'
 ---
 ## Overview
 

@@ -2,6 +2,10 @@
 title: 'Multiclass classification'
 docname: 'classification_multiclass'
 id: '8167'
+tags:
+  - 'misc'
+  - 'classification'
+  - 'multiclass'
 ---
 ## Overview
 

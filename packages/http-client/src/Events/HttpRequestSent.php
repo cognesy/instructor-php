@@ -2,4 +2,9 @@
 
 namespace Cognesy\Http\Events;
 
-final class HttpRequestSent extends HttpClientEvent {}
+use Psr\Log\LogLevel;
+
+final class HttpRequestSent extends HttpClientEvent
+{
+    public string $logLevel = LogLevel::INFO;
+}

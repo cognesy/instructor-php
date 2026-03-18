@@ -2,6 +2,10 @@
 title: 'xAI / Grok'
 docname: 'llm_xai'
 id: '59fd'
+tags:
+  - 'llm-api-support'
+  - 'xai'
+  - 'grok'
 ---
 ## Overview
 

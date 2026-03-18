@@ -130,7 +130,7 @@ final class StructuredOutput implements CanCreateStructuredOutput
     }
 
     public function withCachedContext(
-        string|array $messages = '',
+        string|array|Message|Messages $messages = '',
         string $system = '',
         string $prompt = '',
         array $examples = [],
@@ -246,7 +246,7 @@ final class StructuredOutput implements CanCreateStructuredOutput
         return $this->create()->getArray();
     }
 
-    private static function normalizeCachedMessages(string|array $messages): Messages
+    private static function normalizeCachedMessages(string|array|Message|Messages $messages): Messages
     {
         return match (true) {
             $messages === '' => Messages::empty(),

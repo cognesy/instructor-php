@@ -2,6 +2,10 @@
 title: 'OpenRouter'
 docname: 'openrouter'
 id: '0b8d'
+tags:
+  - 'api-support'
+  - 'openrouter'
+  - 'provider'
 ---
 ## Overview
 

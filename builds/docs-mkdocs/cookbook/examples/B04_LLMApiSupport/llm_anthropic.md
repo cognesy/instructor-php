@@ -2,6 +2,10 @@
 title: 'Anthropic'
 docname: 'llm_anthropic'
 id: 'ee3f'
+tags:
+  - 'llm-api-support'
+  - 'anthropic'
+  - 'provider'
 ---
 ## Overview
 

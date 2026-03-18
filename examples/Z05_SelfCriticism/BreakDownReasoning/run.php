@@ -2,6 +2,10 @@
 title: 'Break Down Reasoning Into Multiple Steps'
 docname: 'break_down_reasoning'
 id: 'cc73'
+tags:
+  - 'self-criticism'
+  - 'stepwise-reasoning'
+  - 'verification'
 ---
 ## Overview
 
@@ -19,28 +23,29 @@ use Cognesy\Schema\Attributes\Description;
 enum Prediction : string { case False = 'False'; case True = 'True'; case Unknown = 'Unknown'; }
 
 class Proposition {
-    public string $premise1;
-    public string $premise2;
-    public string $reasoning;
-    public string $proposition;
+    public string $premise1 = '';
+    public string $premise2 = '';
+    public string $reasoning = '';
+    public string $proposition = '';
 }
 
 class ProposerOutput {
-    public string $reasoning;
-    #[Description('Deduced propositions relevant to the hypothesis')]
-    public array $valid_propositions; // of Proposition
-    public Prediction $prediction;
+    public string $reasoning = '';
+    #[Description('List of deduced propositions, each with two source premises, reasoning, and the resulting proposition statement')]
+    /** @var Proposition[] */
+    public array $valid_propositions = [];
+    public Prediction $prediction = Prediction::Unknown;
 }
 
 class VerifiedProposition {
-    public string $proposition;
-    public string $reasoning;
-    public bool $is_valid;
+    public string $proposition = '';
+    public string $reasoning = '';
+    public bool $is_valid = false;
 }
 
 class ReporterOutput {
-    public string $reasoning;
-    public bool $is_valid_hypothesis;
+    public string $reasoning = '';
+    public bool $is_valid_hypothesis = false;
 }
 
 class CumulativeReasoningPipeline {

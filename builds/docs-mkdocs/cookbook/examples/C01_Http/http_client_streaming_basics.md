@@ -2,6 +2,10 @@
 title: 'HTTP Client – Streaming Basics'
 docname: 'http_client_streaming_basics'
 id: '1eed'
+tags:
+  - 'http'
+  - 'streaming'
+  - 'client'
 ---
 ## Overview
 

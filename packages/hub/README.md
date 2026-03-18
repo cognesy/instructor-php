@@ -11,6 +11,8 @@ composer hub run basics/Basic
 
 # List all examples
 composer hub list
+composer hub -- list --tag=agents
+composer hub -- list --tags='[agents,streaming]'
 
 # Run all examples with tracking
 composer hub all
@@ -121,6 +123,21 @@ composer hub -- clean --all --backup   # Reset all (with backup)
 ```
 
 ## Filtering System
+
+### Example Metadata Filtering
+```bash
+# List examples with a single tag
+composer hub -- list --tag=agents
+
+# Repeat --tag to require multiple tags
+composer hub -- list --tag=agents --tag=streaming
+
+# Or pass multiple tags as a bracket/comma list
+composer hub -- list --tags='[agents,streaming]'
+composer hub -- list --tags='agents,streaming'
+```
+
+When multiple tags are provided, hub lists examples that contain all requested tags.
 
 ### Filter Modes
 - `all` - All examples (default)

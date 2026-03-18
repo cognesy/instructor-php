@@ -48,6 +48,6 @@ describe('SelfCritique Capability', function () {
             break;
         }
 
-        expect($next->lastStopReason())->toBe(StopReason::RetryLimitReached);
+        expect($next->stopReason())->toBe(StopReason::RetryLimitReached);
     });
 });

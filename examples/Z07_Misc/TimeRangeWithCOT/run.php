@@ -2,6 +2,10 @@
 title: 'Using CoT to improve interpretation of component data'
 docname: 'component_reuse_cot'
 id: '46bd'
+tags:
+  - 'misc'
+  - 'component-reuse'
+  - 'chain-of-thought'
 ---
 ## Overview
 

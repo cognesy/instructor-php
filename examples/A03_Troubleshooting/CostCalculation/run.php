@@ -2,6 +2,10 @@
 title: 'Calculating request cost'
 docname: 'cost_calculation'
 id: '59c8'
+tags:
+  - 'troubleshooting'
+  - 'cost'
+  - 'usage'
 ---
 ## Overview
 

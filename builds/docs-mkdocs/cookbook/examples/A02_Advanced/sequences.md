@@ -2,6 +2,10 @@
 title: 'Extracting sequences of objects'
 docname: 'sequences'
 id: 'afb7'
+tags:
+  - 'advanced'
+  - 'sequences'
+  - 'collections'
 ---
 ## Overview
 

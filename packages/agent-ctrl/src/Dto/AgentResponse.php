@@ -3,6 +3,7 @@
 namespace Cognesy\AgentCtrl\Dto;
 
 use Cognesy\AgentCtrl\Enum\AgentType;
+use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Cognesy\AgentCtrl\ValueObject\AgentSessionId;
 
 /**
@@ -10,6 +11,7 @@ use Cognesy\AgentCtrl\ValueObject\AgentSessionId;
  */
 final readonly class AgentResponse
 {
+    private AgentCtrlExecutionId $executionId;
     private ?AgentSessionId $sessionId;
     /** @var list<string> */
     private array $parseFailureSamples;
@@ -30,6 +32,7 @@ final readonly class AgentResponse
         public AgentType $agentType,
         public string $text,
         public int $exitCode,
+        AgentCtrlExecutionId|string $executionId,
         AgentSessionId|string|null $sessionId = null,
         public ?TokenUsage $usage = null,
         public ?float $cost = null,
@@ -38,12 +41,21 @@ final readonly class AgentResponse
         public int $parseFailures = 0,
         array $parseFailureSamples = [],
     ) {
+        $this->executionId = match (true) {
+            $executionId instanceof AgentCtrlExecutionId => $executionId,
+            default => AgentCtrlExecutionId::fromString($executionId),
+        };
         $this->sessionId = match (true) {
             $sessionId instanceof AgentSessionId => $sessionId,
             is_string($sessionId) && $sessionId !== '' => AgentSessionId::fromString($sessionId),
             default => null,
         };
         $this->parseFailureSamples = array_values($parseFailureSamples);
+    }
+
+    public function executionId(): AgentCtrlExecutionId
+    {
+        return $this->executionId;
     }
 
     public function sessionId(): ?AgentSessionId

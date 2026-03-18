@@ -2,6 +2,10 @@
 title: 'Prioritize Complex Examples'
 docname: 'complex_examples'
 id: '0906'
+tags:
+  - 'thought-generation'
+  - 'complexity-based'
+  - 'reasoning'
 ---
 ## Overview
 

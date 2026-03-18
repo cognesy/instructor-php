@@ -21,6 +21,8 @@ use Cognesy\AgentCtrl\Event\ResponseParsingStarted;
 use Cognesy\AgentCtrl\Event\StreamChunkProcessed;
 use Cognesy\AgentCtrl\Event\StreamProcessingCompleted;
 use Cognesy\AgentCtrl\Event\StreamProcessingStarted;
+use Cognesy\AgentCtrl\Event\AgentEvent;
+use Cognesy\AgentCtrl\Telemetry\AgentCtrlEventTelemetry;
 use Cognesy\AgentCtrl\OpenCode\Application\Builder\OpenCodeCommandBuilder;
 use Cognesy\AgentCtrl\OpenCode\Application\Dto\OpenCodeRequest;
 use Cognesy\AgentCtrl\OpenCode\Application\Parser\ResponseParser;
@@ -29,7 +31,9 @@ use Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent\StreamEvent;
 use Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent\TextEvent;
 use Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent\ToolUseEvent;
 use Cognesy\AgentCtrl\OpenCode\Domain\Enum\OutputFormat;
+use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Sandbox\Enums\SandboxDriver;
 use Cognesy\Utils\Json\JsonParsingException;
 use JsonException;
@@ -41,6 +45,8 @@ final class OpenCodeBridge implements AgentBridge
 {
     private OpenCodeCommandBuilder $commandBuilder;
     private ResponseParser $responseParser;
+    private AgentCtrlExecutionId $executionId;
+    private CanHandleEvents $events;
 
     public function __construct(
         private ?string $model = null,
@@ -54,16 +60,24 @@ final class OpenCodeBridge implements AgentBridge
         private ?string $workingDirectory = null,
         private SandboxDriver $sandboxDriver = SandboxDriver::Host,
         private int $timeout = 120,
-        private ?CanHandleEvents $events = null,
+        ?CanHandleEvents $events = null,
         private bool $failFast = true,
+        ?AgentCtrlExecutionId $executionId = null,
     ) {
+        $this->events = $events ?? new EventDispatcher();
+        $this->executionId = $executionId ?? AgentCtrlExecutionId::fresh();
         $this->commandBuilder = new OpenCodeCommandBuilder();
         $this->responseParser = new ResponseParser($this->failFast);
     }
 
     private function dispatch(object $event): void
     {
-        $this->events?->dispatch($event);
+        $enriched = match (true) {
+            $event instanceof AgentEvent => AgentCtrlEventTelemetry::attach($event),
+            default => $event,
+        };
+
+        $this->events->dispatch($enriched);
     }
 
     #[\Override]
@@ -85,18 +99,18 @@ final class OpenCodeBridge implements AgentBridge
             $requestStart = microtime(true);
             $request = $this->buildRequest($prompt);
             $requestDuration = (microtime(true) - $requestStart) * 1000;
-            $this->dispatch(new RequestBuilt(AgentType::OpenCode, 'OpenCodeRequest', $requestDuration));
+            $this->dispatch(new RequestBuilt(AgentType::OpenCode, $this->executionId, 'OpenCodeRequest', $requestDuration));
 
             // Build command spec with timing
             $commandStart = microtime(true);
             $spec = $this->commandBuilder->buildRun($request);
             $commandDuration = (microtime(true) - $commandStart) * 1000;
-            $this->dispatch(new CommandSpecCreated(AgentType::OpenCode, count($spec->argv()->toArray()), $commandDuration));
+            $this->dispatch(new CommandSpecCreated(AgentType::OpenCode, $this->executionId, count($spec->argv()->toArray()), $commandDuration));
 
-            $executor = SandboxCommandExecutor::forOpenCode($this->sandboxDriver, $this->timeout, $this->events);
+            $executor = SandboxCommandExecutor::forOpenCode($this->executionId, $this->sandboxDriver, $this->timeout, $this->events);
 
             // Emit process execution start
-            $this->dispatch(new ProcessExecutionStarted(AgentType::OpenCode, count($spec->argv()->toArray())));
+            $this->dispatch(new ProcessExecutionStarted(AgentType::OpenCode, $this->executionId, count($spec->argv()->toArray())));
 
             $collectedText = '';
             $toolCalls = [];
@@ -106,7 +120,7 @@ final class OpenCodeBridge implements AgentBridge
 
             $streamStart = $handler !== null ? microtime(true) : null;
             if ($handler !== null && $streamStart !== null) {
-                $this->dispatch(new StreamProcessingStarted(AgentType::OpenCode));
+                $this->dispatch(new StreamProcessingStarted(AgentType::OpenCode, $this->executionId));
             }
 
             $streamCallback = $handler !== null ? function (string $type, string $chunk) use ($handler, $jsonLinesBuffer, &$collectedText, &$toolCalls, &$chunkCount, &$totalBytesProcessed): void {
@@ -126,6 +140,7 @@ final class OpenCodeBridge implements AgentBridge
                 $chunkDuration = (microtime(true) - $chunkStart) * 1000;
                 $this->dispatch(new StreamChunkProcessed(
                     AgentType::OpenCode,
+                    $this->executionId,
                     $chunkCount,
                     $chunkSize,
                     'json-lines',
@@ -146,6 +161,7 @@ final class OpenCodeBridge implements AgentBridge
                 $streamDuration = (microtime(true) - $streamStart) * 1000;
                 $this->dispatch(new StreamProcessingCompleted(
                     AgentType::OpenCode,
+                    $this->executionId,
                     $chunkCount,
                     $streamDuration,
                     $totalBytesProcessed
@@ -154,7 +170,7 @@ final class OpenCodeBridge implements AgentBridge
 
             // Parse response for non-streaming or to extract final data
             $responseStart = microtime(true);
-            $this->dispatch(new ResponseParsingStarted(AgentType::OpenCode, strlen($execResult->stdout()), 'json'));
+            $this->dispatch(new ResponseParsingStarted(AgentType::OpenCode, $this->executionId, strlen($execResult->stdout()), 'json'));
             $response = $this->responseParser->parse($execResult, OutputFormat::Json);
 
             // Always extract from parsed response to avoid stream callback data loss.
@@ -187,6 +203,7 @@ final class OpenCodeBridge implements AgentBridge
             $extractDuration = (microtime(true) - $extractStart) * 1000;
             $this->dispatch(new ResponseDataExtracted(
                 AgentType::OpenCode,
+                $this->executionId,
                 $eventCount,
                 $toolUseCount,
                 $textLength,
@@ -198,7 +215,7 @@ final class OpenCodeBridge implements AgentBridge
 
             // Emit response parsing completion
             $responseDuration = (microtime(true) - $responseStart) * 1000;
-            $this->dispatch(new ResponseParsingCompleted(AgentType::OpenCode, $responseDuration, $normalizedSessionId));
+            $this->dispatch(new ResponseParsingCompleted(AgentType::OpenCode, $this->executionId, $responseDuration, $normalizedSessionId));
 
             // Convert usage if available
             $usage = $response->usage() !== null
@@ -209,6 +226,7 @@ final class OpenCodeBridge implements AgentBridge
                 agentType: AgentType::OpenCode,
                 text: $collectedText,
                 exitCode: $response->exitCode(),
+                executionId: $this->executionId,
                 sessionId: $normalizedSessionId,
                 usage: $usage,
                 cost: $response->cost(),

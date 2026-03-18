@@ -3,7 +3,7 @@
 namespace Cognesy\Polyglot\Inference;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Logging\EventLog;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Contracts\CanManageStreamCache;
 use Cognesy\Http\Contracts\CanSendHttpRequests;
@@ -128,7 +128,7 @@ final class InferenceRuntime implements CanCreateInference
         if ($events !== null) {
             return $events;
         }
-        return new EventDispatcher(name: 'polyglot.inference.runtime');
+        return EventLog::root('polyglot.inference.runtime');
     }
 
     private static function withStreamCacheManager(

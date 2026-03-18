@@ -2,6 +2,10 @@
 title: 'Generate Multiple Candidate Responses'
 docname: 'multiple_candidates'
 id: '42ae'
+tags:
+  - 'ensembling'
+  - 'self-consistency'
+  - 'candidate-generation'
 ---
 ## Overview
 

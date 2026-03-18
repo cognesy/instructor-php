@@ -3,6 +3,10 @@ title: 'Session Create and Persist'
 docname: 'session_create_and_persist'
 order: 1
 id: 'f93a'
+tags:
+  - 'agent-sessions'
+  - 'persistence'
+  - 'storage'
 ---
 ## Overview
 

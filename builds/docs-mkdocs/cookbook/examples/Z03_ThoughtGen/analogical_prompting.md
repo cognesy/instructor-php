@@ -2,6 +2,10 @@
 title: 'Analogical Prompting'
 docname: 'analogical_prompting'
 id: '6cc3'
+tags:
+  - 'thought-generation'
+  - 'analogical-prompting'
+  - 'reasoning'
 ---
 ## Overview
 

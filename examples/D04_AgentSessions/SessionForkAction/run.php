@@ -3,6 +3,10 @@ title: 'Session Fork Action'
 docname: 'session_fork_action'
 order: 5
 id: 'd7ab'
+tags:
+  - 'agent-sessions'
+  - 'forking'
+  - 'actions'
 ---
 ## Overview
 

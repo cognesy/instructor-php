@@ -15,12 +15,17 @@ use Cognesy\Agents\Context\Compilers\SelectedSections;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
+use Cognesy\Agents\Events\AgentExecutionStarted;
 use Cognesy\Agents\Events\SubagentCompleted;
 use Cognesy\Agents\Events\SubagentSpawning;
+use Cognesy\Agents\Events\ToolCallStarted;
+use Cognesy\Agents\Telemetry\AgentStateTelemetry;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Tests\Support\FakeSubagentProvider;
 use Cognesy\Agents\Tool\Tools\FakeTool;
 use Cognesy\Messages\Messages;
+use Cognesy\Telemetry\Domain\Continuation\TelemetryContinuation;
+use Cognesy\Telemetry\Domain\Trace\TraceContext;
 
 describe('Subagent Capability', function () {
     it('marks tool execution as failed when subagent spec not found', function () {
@@ -269,6 +274,64 @@ describe('Subagent Capability', function () {
         expect($completedEvents)->toHaveCount(1);
         expect($completedEvents[0]->subagentName)->toBe('emitter');
         expect($completedEvents[0]->steps)->toBeGreaterThanOrEqual(0);
+    });
+
+    it('stores subagent telemetry seed for nested execution correlation', function () {
+        $spec = new AgentDefinition(
+            name: 'reviewer',
+            description: 'Reviews code',
+            systemPrompt: 'You are a reviewer',
+            llmConfig: '',
+        );
+        $provider = new FakeSubagentProvider($spec);
+
+        $driver = (new FakeAgentDriver([
+            ScenarioStep::toolCall('spawn_subagent', [
+                'subagent' => 'reviewer',
+                'prompt' => 'Review this code',
+            ], executeTools: true),
+        ]))->withChildSteps([
+            ScenarioStep::final('I found 3 issues'),
+        ]);
+
+        $events = [];
+        $agent = AgentBuilder::base()
+            ->withCapability(new UseDriver($driver))
+            ->withCapability(new UseSubagents(provider: $provider))
+            ->build()
+            ->wiretap(static function (object $event) use (&$events): void {
+                $events[] = $event;
+            });
+
+        $state = AgentStateTelemetry::storeContinuation(
+            AgentState::empty()->withMessages(Messages::fromString('Please review my code', 'user')),
+            new TelemetryContinuation(TraceContext::fresh(), ['session_id' => 'session-123']),
+        );
+
+        $next = null;
+        foreach ($agent->iterate($state) as $stepState) {
+            $next = $stepState;
+            break;
+        }
+
+        $toolResult = $next?->lastStepToolExecutions()->all()[0]->value();
+        $parentExecutionStarted = current(array_values(array_filter(
+            $events,
+            static fn(object $event): bool => $event instanceof AgentExecutionStarted && $event->parentAgentId === null,
+        )));
+        $parentToolCallStarted = current(array_values(array_filter(
+            $events,
+            static fn(object $event): bool => $event instanceof ToolCallStarted,
+        )));
+        $seed = $toolResult instanceof AgentState ? AgentStateTelemetry::loadSeed($toolResult) : null;
+
+        expect($toolResult)->toBeInstanceOf(AgentState::class);
+        expect($parentExecutionStarted)->toBeInstanceOf(AgentExecutionStarted::class);
+        expect($parentToolCallStarted)->toBeInstanceOf(ToolCallStarted::class);
+        expect($seed)->not->toBeNull();
+        expect($seed?->rootOperationId())->toBe($parentExecutionStarted->executionId);
+        expect($seed?->parentOperationId())->toBe($parentToolCallStarted->toolCallId);
+        expect($seed?->sessionId())->toBe('session-123');
     });
 
     it('applies toolsDeny to filter out denied tools', function () {

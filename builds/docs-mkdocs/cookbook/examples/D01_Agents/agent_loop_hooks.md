@@ -3,6 +3,10 @@ title: 'Agent Lifecycle Hooks'
 docname: 'agent_loop_hooks'
 order: 5
 id: '407a'
+tags:
+  - 'agents'
+  - 'hooks'
+  - 'lifecycle'
 ---
 ## Overview
 

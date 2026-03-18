@@ -22,6 +22,8 @@ use Cognesy\AgentCtrl\Event\ResponseParsingStarted;
 use Cognesy\AgentCtrl\Event\StreamChunkProcessed;
 use Cognesy\AgentCtrl\Event\StreamProcessingCompleted;
 use Cognesy\AgentCtrl\Event\StreamProcessingStarted;
+use Cognesy\AgentCtrl\Event\AgentEvent;
+use Cognesy\AgentCtrl\Telemetry\AgentCtrlEventTelemetry;
 use Cognesy\AgentCtrl\OpenAICodex\Application\Builder\CodexCommandBuilder;
 use Cognesy\AgentCtrl\OpenAICodex\Application\Dto\CodexRequest;
 use Cognesy\AgentCtrl\OpenAICodex\Application\Parser\ResponseParser;
@@ -39,7 +41,9 @@ use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\StreamEvent\ErrorEvent as CodexErro
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\StreamEvent\StreamEvent;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\SandboxMode;
+use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Sandbox\Enums\SandboxDriver;
 use Cognesy\Utils\Json\JsonParsingException;
 use JsonException;
@@ -51,6 +55,8 @@ final class CodexBridge implements AgentBridge
 {
     private CodexCommandBuilder $commandBuilder;
     private ResponseParser $responseParser;
+    private AgentCtrlExecutionId $executionId;
+    private CanHandleEvents $events;
 
     public function __construct(
         private ?string $model = null,
@@ -66,16 +72,24 @@ final class CodexBridge implements AgentBridge
         private ?string $workingDirectory = null,
         private SandboxDriver $sandboxDriver = SandboxDriver::Host,
         private int $timeout = 120,
-        private ?CanHandleEvents $events = null,
+        ?CanHandleEvents $events = null,
         private bool $failFast = true,
+        ?AgentCtrlExecutionId $executionId = null,
     ) {
+        $this->events = $events ?? new EventDispatcher();
+        $this->executionId = $executionId ?? AgentCtrlExecutionId::fresh();
         $this->commandBuilder = new CodexCommandBuilder();
         $this->responseParser = new ResponseParser($this->failFast);
     }
 
     private function dispatch(object $event): void
     {
-        $this->events?->dispatch($event);
+        $enriched = match (true) {
+            $event instanceof AgentEvent => AgentCtrlEventTelemetry::attach($event),
+            default => $event,
+        };
+
+        $this->events->dispatch($enriched);
     }
 
     #[\Override]
@@ -94,18 +108,18 @@ final class CodexBridge implements AgentBridge
         $requestStart = microtime(true);
         $request = $this->buildRequest($prompt);
         $requestDuration = (microtime(true) - $requestStart) * 1000;
-        $this->dispatch(new RequestBuilt(AgentType::Codex, 'CodexRequest', $requestDuration));
+        $this->dispatch(new RequestBuilt(AgentType::Codex, $this->executionId, 'CodexRequest', $requestDuration));
 
         // Build command spec with timing
         $commandStart = microtime(true);
         $spec = $this->commandBuilder->buildExec($request);
         $commandDuration = (microtime(true) - $commandStart) * 1000;
-        $this->dispatch(new CommandSpecCreated(AgentType::Codex, count($spec->argv()->toArray()), $commandDuration));
+        $this->dispatch(new CommandSpecCreated(AgentType::Codex, $this->executionId, count($spec->argv()->toArray()), $commandDuration));
 
-        $executor = SandboxCommandExecutor::forCodex($this->sandboxDriver, $this->timeout, $this->events);
+        $executor = SandboxCommandExecutor::forCodex($this->executionId, $this->sandboxDriver, $this->timeout, $this->events);
 
         // Emit process execution start
-        $this->dispatch(new ProcessExecutionStarted(AgentType::Codex, count($spec->argv()->toArray())));
+        $this->dispatch(new ProcessExecutionStarted(AgentType::Codex, $this->executionId, count($spec->argv()->toArray())));
 
         $collectedText = '';
         $toolCalls = [];
@@ -115,7 +129,7 @@ final class CodexBridge implements AgentBridge
 
         $streamStart = $handler !== null ? microtime(true) : null;
         if ($handler !== null && $streamStart !== null) {
-            $this->dispatch(new StreamProcessingStarted(AgentType::Codex));
+            $this->dispatch(new StreamProcessingStarted(AgentType::Codex, $this->executionId));
         }
 
         $streamCallback = $handler !== null ? function (string $type, string $chunk) use ($handler, $jsonLinesBuffer, &$collectedText, &$toolCalls, &$chunkCount, &$totalBytesProcessed): void {
@@ -135,6 +149,7 @@ final class CodexBridge implements AgentBridge
             $chunkDuration = (microtime(true) - $chunkStart) * 1000;
             $this->dispatch(new StreamChunkProcessed(
                 AgentType::Codex,
+                $this->executionId,
                 $chunkCount,
                 $chunkSize,
                 'json-lines',
@@ -155,6 +170,7 @@ final class CodexBridge implements AgentBridge
             $streamDuration = (microtime(true) - $streamStart) * 1000;
             $this->dispatch(new StreamProcessingCompleted(
                 AgentType::Codex,
+                $this->executionId,
                 $chunkCount,
                 $streamDuration,
                 $totalBytesProcessed
@@ -163,7 +179,7 @@ final class CodexBridge implements AgentBridge
 
         // Parse response for non-streaming or to extract final data
         $responseStart = microtime(true);
-        $this->dispatch(new ResponseParsingStarted(AgentType::Codex, strlen($execResult->stdout()), 'json'));
+        $this->dispatch(new ResponseParsingStarted(AgentType::Codex, $this->executionId, strlen($execResult->stdout()), 'json'));
         $response = $this->responseParser->parse($execResult, OutputFormat::Json);
 
         // Always extract from parsed response to avoid stream callback data loss.
@@ -192,6 +208,7 @@ final class CodexBridge implements AgentBridge
         $extractDuration = (microtime(true) - $extractStart) * 1000;
         $this->dispatch(new ResponseDataExtracted(
             AgentType::Codex,
+            $this->executionId,
             $eventCount,
             $toolUseCount,
             $textLength,
@@ -203,7 +220,7 @@ final class CodexBridge implements AgentBridge
 
         // Emit response parsing completion
         $responseDuration = (microtime(true) - $responseStart) * 1000;
-        $this->dispatch(new ResponseParsingCompleted(AgentType::Codex, $responseDuration, $normalizedSessionId));
+        $this->dispatch(new ResponseParsingCompleted(AgentType::Codex, $this->executionId, $responseDuration, $normalizedSessionId));
 
         // Convert usage if available
         $usage = $response->usage() !== null
@@ -214,6 +231,7 @@ final class CodexBridge implements AgentBridge
             agentType: AgentType::Codex,
             text: $collectedText,
             exitCode: $response->exitCode(),
+            executionId: $this->executionId,
             sessionId: $normalizedSessionId,
             usage: $usage,
             cost: null, // Codex doesn't expose cost

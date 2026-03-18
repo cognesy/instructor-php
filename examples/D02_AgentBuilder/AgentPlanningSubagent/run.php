@@ -3,6 +3,10 @@ title: 'Agent Planning Subagent Tool'
 docname: 'agent_planning_subagent'
 order: 9
 id: '2c71'
+tags:
+  - 'agent-builder'
+  - 'planning'
+  - 'subagents'
 ---
 ## Overview
 

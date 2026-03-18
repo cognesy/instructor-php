@@ -2,6 +2,10 @@
 title: 'Sandbox: Run PHP Script'
 docname: 'sandbox_run_php_script'
 id: 'd202'
+tags:
+  - 'sandbox'
+  - 'php'
+  - 'commands'
 ---
 ## Overview
 

@@ -14,6 +14,7 @@ use Cognesy\Http\Exceptions\HttpExceptionFactory;
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Http\Exceptions\NetworkException;
 use Cognesy\Http\Exceptions\TimeoutException;
+use Cognesy\Http\Telemetry\HttpRequestTelemetry;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
@@ -119,6 +120,7 @@ class GuzzleDriver implements CanHandleHttpRequest
             'method' => $request->method(),
             'headers' => $request->headers(),
             'body' => $request->body()->toArray(),
+            ...HttpRequestTelemetry::metadataForRequest($request),
         ]));
     }
 
@@ -128,6 +130,7 @@ class GuzzleDriver implements CanHandleHttpRequest
             'url' => $request->url(),
             'method' => $request->method(),
             'statusCode' => $statusCode,
+            ...HttpRequestTelemetry::metadataForRequest($request),
         ]));
     }
 
@@ -139,14 +142,19 @@ class GuzzleDriver implements CanHandleHttpRequest
             'headers' => $request->headers(),
             'body' => $request->body()->toArray(),
             'errors' => $exception->getMessage(),
+            ...HttpRequestTelemetry::metadataForRequest($request),
         ]));
     }
 
     private function dispatchResponseReceived(HttpResponse $response, HttpRequest $request): void {
-        $this->events->dispatch(new HttpResponseReceived([
+        $isStreamed = $response->isStreamed();
+        $this->events->dispatch(new HttpResponseReceived(array_filter([
             'requestId' => $request->id,
             'statusCode' => $response->statusCode(),
-        ]));
+            'isStreamed' => $isStreamed,
+            'body' => !$isStreamed ? $response->body() : null,
+            ...HttpRequestTelemetry::metadataForRequest($request),
+        ], static fn(mixed $v): bool => $v !== null)));
     }
 
 }

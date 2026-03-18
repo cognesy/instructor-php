@@ -7,12 +7,15 @@ use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Continuation\AgentStopException;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Data\ToolExecution;
+use Cognesy\Agents\Data\ToolExecutionId;
 use Cognesy\Agents\Events\ToolCallCompleted;
 use Cognesy\Agents\Events\ToolCallStarted;
 use Cognesy\Agents\Exceptions\InvalidToolArgumentsException;
 use Cognesy\Agents\Exceptions\ToolExecutionException;
 use Cognesy\Agents\Hook\Data\HookContext;
 use Cognesy\Agents\Interception\CanInterceptAgentLifecycle;
+use Cognesy\Agents\Telemetry\AgentStateTelemetry;
+use Cognesy\Agents\Telemetry\AgentTelemetry;
 use Cognesy\Agents\Tool\Contracts\CanAccessAgentState;
 use Cognesy\Agents\Tool\Contracts\CanAccessToolCall;
 use Cognesy\Agents\Tool\Contracts\CanExecuteToolCalls;
@@ -80,14 +83,22 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
                 continue;
             }
 
+            // Generate shared ID for this tool call's span
+            $toolCallId = $toolCall->idString();
+            $toolCallId = match ($toolCallId === '') {
+                true => ToolExecutionId::generate()->toString(),
+                false => $toolCallId,
+            };
+            $toolCall = $toolCall->withId($toolCallId);
+
             // Emit tool call started event
-            $this->emitToolCallStarted($toolCall, $state, new DateTimeImmutable());
+            $this->emitToolCallStarted($toolCall, $state, new DateTimeImmutable(), $toolCallId);
 
             // Execute the tool call
             $execution = $this->executeToolCall($toolCall, $state);
 
             // Emit tool call completed event
-            $this->emitToolCallCompleted($execution, $state);
+            $this->emitToolCallCompleted($execution, $state, $toolCallId);
 
             // After tool use hook
             $hookContext = $this->interceptor->intercept(HookContext::afterToolUse($state, $execution));
@@ -197,8 +208,8 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
 
     // EVENT EMISSION ////////////////////////////////////////////
 
-    private function emitToolCallStarted(ToolCall $toolCall, AgentState $state, DateTimeImmutable $startedAt): void {
-        $this->events->dispatch(new ToolCallStarted(
+    private function emitToolCallStarted(ToolCall $toolCall, AgentState $state, DateTimeImmutable $startedAt, string $toolCallId): void {
+        $event = new ToolCallStarted(
             agentId: $state->agentId()->toString(),
             executionId: $state->execution()?->executionId()->toString() ?? '',
             parentAgentId: $state->parentAgentId() !== null ? (string) $state->parentAgentId() : null,
@@ -206,11 +217,14 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
             tool: $toolCall->name(),
             args: $toolCall->args(),
             startedAt: $startedAt,
-        ));
+            toolCallId: $toolCallId,
+        );
+
+        $this->events->dispatch(AgentTelemetry::attach($event, AgentStateTelemetry::loadSeed($state)));
     }
 
-    private function emitToolCallCompleted(ToolExecution $execution, AgentState $state): void {
-        $this->events->dispatch(new ToolCallCompleted(
+    private function emitToolCallCompleted(ToolExecution $execution, AgentState $state, string $toolCallId): void {
+        $event = new ToolCallCompleted(
             agentId: $state->agentId()->toString(),
             executionId: $state->execution()?->executionId()->toString() ?? '',
             parentAgentId: $state->parentAgentId() !== null ? (string) $state->parentAgentId() : null,
@@ -220,6 +234,10 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
             error: $execution->errorAsString(),
             startedAt: $execution->startedAt(),
             completedAt: $execution->completedAt(),
-        ));
+            result: $execution->value(),
+            toolCallId: $toolCallId,
+        );
+
+        $this->events->dispatch(AgentTelemetry::attach($event, AgentStateTelemetry::loadSeed($state)));
     }
 }

@@ -12,6 +12,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
+use Cognesy\Telemetry\Domain\Envelope\OperationCorrelation;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 use Cognesy\Polyglot\Inference\Events\InferenceAttemptFailed;
@@ -22,12 +23,14 @@ use Cognesy\Polyglot\Inference\Events\InferenceStarted;
 use Cognesy\Polyglot\Inference\Events\InferenceUsageReported;
 use Cognesy\Polyglot\Inference\Exceptions\ProviderException;
 use Cognesy\Polyglot\Inference\Streaming\InferenceStream;
+use Cognesy\Polyglot\Telemetry\InferenceTelemetry;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 final class InferenceExecutionSession
 {
+    private ?OperationCorrelation $executionTelemetryCorrelation = null;
     private ?DateTimeImmutable $startedAt = null;
 
     private ?DateTimeImmutable $attemptStartedAt = null;
@@ -39,12 +42,15 @@ final class InferenceExecutionSession
     private ?InferenceStream $cachedStream = null;
 
     private ?\Throwable $terminalError = null;
+    private bool $finalizingCachedStreamViaResponse = false;
 
     public function __construct(
         private InferenceExecution $execution,
         private readonly CanProcessInferenceRequest $driver,
         private readonly EventDispatcherInterface $events,
-    ) {}
+    ) {
+        $this->executionTelemetryCorrelation = $execution->request()->telemetryCorrelation();
+    }
 
     public function isStreamed(): bool
     {
@@ -73,6 +79,8 @@ final class InferenceExecutionSession
             driver: $this->driver,
             eventDispatcher: $this->events,
             decorateFinalResponse: null,
+            onFinalizedExecution: $this->onStreamFinalized(...),
+            onStreamFailed: $this->onStreamFailed(...),
         );
 
         return $this->cachedStream;
@@ -162,28 +170,11 @@ final class InferenceExecutionSession
             $response = $this->cachedStream?->final()
                 ?? throw new \RuntimeException('Failed to generate final response from stream');
         } catch (\Throwable $e) {
-            $partialUsage = $this->livePartialUsage();
-            $this->execution = $this->execution->withFailedAttempt(null, $partialUsage, $e);
-            $this->handleAttemptFailure($e, null, false);
-            $this->dispatchInferenceCompleted(isSuccess: false);
-            $this->terminalError = $e;
-            throw $e;
+            throw $this->terminalError ?? $e;
         }
 
-        if ($response->hasFinishedWithFailure()) {
-            $this->execution = $this->execution->withFailedAttempt(
-                response: $response,
-                usage: $response->usage(),
-            );
-            $this->failTerminalResponse($response);
-        }
-
-        $this->execution = $this->execution->withSuccessfulAttempt(response: $response);
-        $this->handleAttemptSuccess($response);
-        $this->dispatchInferenceCompleted(isSuccess: true);
-
-        if ($this->shouldCache()) {
-            $this->cachedResponse = $response;
+        if ($this->terminalError !== null) {
+            throw $this->terminalError;
         }
 
         return $response;
@@ -249,8 +240,19 @@ final class InferenceExecutionSession
     {
         return match ($this->isStreamed()) {
             false => $this->driver->makeResponseFor($request),
-            true => $this->stream()->final() ?? throw new \RuntimeException('Failed to generate final response from stream'),
+            true => $this->finalizeCachedStreamForResponse(),
         };
+    }
+
+    private function finalizeCachedStreamForResponse(): InferenceResponse
+    {
+        $this->finalizingCachedStreamViaResponse = true;
+
+        try {
+            return $this->stream()->final() ?? throw new \RuntimeException('Failed to generate final response from stream');
+        } finally {
+            $this->finalizingCachedStreamViaResponse = false;
+        }
     }
 
     private function ensureLifecycleStartedForCurrentAttempt(): void
@@ -276,6 +278,7 @@ final class InferenceExecutionSession
             'isStreamed' => $this->isStreamed(),
             'model' => $this->execution->request()->model(),
             'messageCount' => count($this->execution->request()->messages()),
+            ...InferenceTelemetry::execution($this->execution, $this->executionTelemetryCorrelation),
         ]));
     }
 
@@ -284,12 +287,14 @@ final class InferenceExecutionSession
         $this->attemptNumber++;
         $this->attemptStartedAt = new DateTimeImmutable;
         $this->execution = $this->execution->startAttempt();
+        $this->execution = $this->execution->withRequest($this->requestForCurrentAttempt($this->execution->request()));
 
         $this->events->dispatch(new InferenceAttemptStarted(
             executionId: $this->execution->id->toString(),
             attemptId: $this->currentAttemptId(),
             attemptNumber: $this->attemptNumber,
             model: $this->execution->request()->model(),
+            data: InferenceTelemetry::attempt($this->execution),
         ));
     }
 
@@ -309,6 +314,7 @@ final class InferenceExecutionSession
             'cacheReadTokens' => $usage->cacheReadTokens,
             'reasoningTokens' => $usage->reasoningTokens,
             'totalTokens' => $usage->total(),
+            ...InferenceTelemetry::attempt($this->execution),
         ]));
 
         $this->events->dispatch(new InferenceUsageReported([
@@ -321,6 +327,7 @@ final class InferenceExecutionSession
             'cacheReadTokens' => $usage->cacheReadTokens,
             'reasoningTokens' => $usage->reasoningTokens,
             'totalTokens' => $usage->total(),
+            ...InferenceTelemetry::usage($this->execution),
         ]));
     }
 
@@ -344,7 +351,44 @@ final class InferenceExecutionSession
             willRetry: $willRetry,
             httpStatusCode: $statusCode,
             partialUsage: $partialUsage,
-        )));
+        ) + InferenceTelemetry::attempt($this->execution)));
+    }
+
+    private function onStreamFinalized(InferenceExecution $execution): void
+    {
+        $this->execution = $execution;
+        $response = $execution->response();
+
+        if ($response === null || $this->finalizingCachedStreamViaResponse) {
+            return;
+        }
+
+        if ($response->hasFinishedWithFailure()) {
+            $error = new \RuntimeException('Inference execution failed: '.$response->finishReason()->value);
+            $this->handleAttemptFailure($error, $response, false);
+            $this->dispatchInferenceCompleted(isSuccess: false);
+            $this->terminalError = $error;
+            return;
+        }
+
+        $this->handleAttemptSuccess($response);
+        $this->dispatchInferenceCompleted(isSuccess: true);
+
+        if ($this->shouldCache()) {
+            $this->cachedResponse = $response;
+        }
+    }
+
+    private function onStreamFailed(\Throwable $error, InferenceUsage $partialUsage): void
+    {
+        if ($this->finalizingCachedStreamViaResponse) {
+            return;
+        }
+
+        $this->execution = $this->execution->withFailedAttempt(null, $partialUsage, $error);
+        $this->handleAttemptFailure($error, null, false);
+        $this->dispatchInferenceCompleted(isSuccess: false);
+        $this->terminalError = $error;
     }
 
     private function livePartialUsage(): InferenceUsage
@@ -393,6 +437,7 @@ final class InferenceExecutionSession
             'cacheReadTokens' => $usage->cacheReadTokens,
             'reasoningTokens' => $usage->reasoningTokens,
             'totalTokens' => $usage->total(),
+            ...InferenceTelemetry::execution($this->execution, $this->executionTelemetryCorrelation),
         ]));
     }
 
@@ -404,6 +449,32 @@ final class InferenceExecutionSession
         }
 
         return $currentAttempt->id->toString();
+    }
+
+    private function requestForCurrentAttempt(InferenceRequest $request): InferenceRequest
+    {
+        return $request->withTelemetryCorrelation($this->correlationForCurrentAttempt($request));
+    }
+
+    private function correlationForCurrentAttempt(InferenceRequest $request): OperationCorrelation
+    {
+        $correlation = $request->telemetryCorrelation();
+
+        return match ($correlation) {
+            null => OperationCorrelation::child(
+                rootOperationId: $this->executionId(),
+                parentOperationId: $this->currentAttemptId(),
+                requestId: $request->id()->toString(),
+            ),
+            default => OperationCorrelation::child(
+                rootOperationId: $correlation->rootOperationId(),
+                parentOperationId: $this->currentAttemptId(),
+                sessionId: $correlation->sessionId(),
+                userId: $correlation->userId(),
+                conversationId: $correlation->conversationId(),
+                requestId: $request->id()->toString(),
+            ),
+        };
     }
 
     private function durationMsSince(?DateTimeImmutable $startedAt): float

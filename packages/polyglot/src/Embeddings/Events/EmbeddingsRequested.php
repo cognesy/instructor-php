@@ -2,4 +2,9 @@
 
 namespace Cognesy\Polyglot\Embeddings\Events;
 
-class EmbeddingsRequested extends EmbeddingsEvent {}
+use Psr\Log\LogLevel;
+
+class EmbeddingsRequested extends EmbeddingsEvent
+{
+    public string $logLevel = LogLevel::INFO;
+}

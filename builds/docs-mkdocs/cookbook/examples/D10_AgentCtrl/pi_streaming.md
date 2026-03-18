@@ -2,6 +2,10 @@
 title: 'Pi CLI - Streaming'
 docname: 'pi_streaming'
 id: 'pi01'
+tags:
+  - 'agent-ctrl'
+  - 'pi-cli'
+  - 'streaming'
 ---
 ## Overview
 

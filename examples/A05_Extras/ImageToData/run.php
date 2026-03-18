@@ -2,6 +2,10 @@
 title: 'Image to data (OpenAI)'
 docname: 'image_to_data'
 id: '32bd'
+tags:
+  - 'extras'
+  - 'vision'
+  - 'openai'
 ---
 ## Overview
 

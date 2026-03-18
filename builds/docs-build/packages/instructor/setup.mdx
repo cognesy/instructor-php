@@ -8,7 +8,7 @@ Getting started with Instructor requires two things:
 
 ```bash
 composer require cognesy/instructor-struct
-# @doctest id="8f58"
+# @doctest id="e5a6"
 ```
 
 > Instructor requires **PHP 8.3** or later.
@@ -22,7 +22,7 @@ is to set them in your shell or a `.env` file at the root of your project:
 ```ini
 # .env
 OPENAI_API_KEY=sk-your-key-here
-# @doctest id="425b"
+# @doctest id="28d1"
 ```
 
 For other providers, set the corresponding variable:
@@ -32,7 +32,7 @@ ANTHROPIC_API_KEY=your-key
 GEMINI_API_KEY=your-key
 GROQ_API_KEY=your-key
 MISTRAL_API_KEY=your-key
-# @doctest id="0bd0"
+# @doctest id="e107"
 ```
 
 > Never commit API keys to version control. Add `.env` to your `.gitignore` file.
@@ -52,7 +52,7 @@ $result = StructuredOutput::using('openai')
         responseModel: City::class,
     )
     ->get();
-// @doctest id="8e26"
+// @doctest id="f7cc"
 ```
 
 You can switch providers by changing the preset name:
@@ -65,7 +65,7 @@ $result = StructuredOutput::using('anthropic')
         responseModel: City::class,
     )
     ->get();
-// @doctest id="20ae"
+// @doctest id="f49d"
 ```
 
 
@@ -84,7 +84,7 @@ $result = StructuredOutput::fromConfig(
     messages: 'What is the capital of France?',
     responseModel: City::class,
 )->get();
-// @doctest id="a856"
+// @doctest id="1c3d"
 ```
 
 You can also construct `LLMConfig` from an array for more detailed configuration:
@@ -106,7 +106,7 @@ $result = StructuredOutput::fromConfig($config)
         responseModel: City::class,
     )
     ->get();
-// @doctest id="162d"
+// @doctest id="b6cd"
 ```
 
 
@@ -133,7 +133,7 @@ $city = $structured
         responseModel: City::class,
     )
     ->get();
-// @doctest id="097a"
+// @doctest id="33ef"
 ```
 
 ### What Belongs Where
@@ -160,7 +160,7 @@ use Cognesy\Instructor\Enums\OutputMode;
 $runtime = StructuredOutputRuntime::fromConfig(
     LLMConfig::fromPreset('openai')
 )->withOutputMode(OutputMode::JsonSchema);
-// @doctest id="6168"
+// @doctest id="c22c"
 ```
 
 Available modes:
@@ -189,14 +189,18 @@ $runtime = StructuredOutputRuntime::fromConfig(
 // Listen for a specific event
 $runtime->onEvent(
     StructuredOutputRequestReceived::class,
-    fn($event) => logger()->info('Request received', $event->toArray()),
+    fn($event) => logger()->info('Request received', [
+        'requestId' => $event->data['requestId'],
+        'executionId' => $event->data['executionId'],
+        'phaseId' => $event->data['phaseId'],
+    ]),
 );
 
 // Or wiretap all events
 $runtime->wiretap(
     fn($event) => logger()->debug(get_class($event)),
 );
-// @doctest id="8d09"
+// @doctest id="9114"
 ```
 
 
@@ -215,7 +219,7 @@ $result = StructuredOutput::fromConfig(
     messages: 'What is the capital of France?',
     responseModel: City::class,
 )->get();
-// @doctest id="1106"
+// @doctest id="51ba"
 ```
 
 

@@ -2,6 +2,10 @@
 title: 'Examine The Context'
 docname: 'examine_context'
 id: '3247'
+tags:
+  - 'thought-generation'
+  - 'context-analysis'
+  - 'reasoning'
 ---
 ## Overview
 

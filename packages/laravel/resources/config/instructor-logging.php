@@ -23,6 +23,10 @@ return [
                 'HTTP {method} {url} → {status_code}',
         ],
     ],
+    // NOTE: INSTRUCTOR_LOG_PATH (the standalone JSONL env var) has no effect here.
+    // Laravel always provides its own CanHandleEvents dispatcher, so EventLog::root()
+    // is never called. For structured JSON output, configure a Laravel log channel
+    // with Monolog\Formatter\JsonFormatter and point INSTRUCTOR_LOG_CHANNEL at it.
     'channels' => [
         'instructor' => [
             'driver' => 'daily',

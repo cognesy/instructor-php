@@ -20,7 +20,7 @@ php artisan make:response-model CompanyProfile --nested
 
 # With a custom description in the class docblock
 php artisan make:response-model Invoice --description="Invoice extracted from PDF"
-# @doctest id="deba"
+# @doctest id="ec05"
 ```
 
 ### Manual Creation
@@ -45,7 +45,7 @@ final class PersonData
         public readonly ?string $email = null,
     ) {}
 }
-// @doctest id="e0ac"
+// @doctest id="3c53"
 ```
 
 The class requires no base class, interface, or attribute -- any PHP class with typed constructor properties works. The package inspects the constructor signature and docblocks at runtime to build the JSON Schema that guides the LLM.
@@ -66,7 +66,7 @@ final class BasicTypes
         public readonly bool $isActive,
     ) {}
 }
-// @doctest id="f2e1"
+// @doctest id="7b76"
 ```
 
 ### Nullable Properties
@@ -82,7 +82,7 @@ final class WithOptional
         public readonly ?int $maybeNumber = null,
     ) {}
 }
-// @doctest id="5b48"
+// @doctest id="5898"
 ```
 
 ### Arrays
@@ -100,7 +100,7 @@ final class WithArrays
         public readonly array $scores,
     ) {}
 }
-// @doctest id="3b59"
+// @doctest id="2d75"
 ```
 
 ### Enums
@@ -122,7 +122,7 @@ final class Task
         public readonly Priority $priority,
     ) {}
 }
-// @doctest id="58c1"
+// @doctest id="9c37"
 ```
 
 ### Nested Objects
@@ -146,7 +146,7 @@ final class Person
         public readonly Address $address,
     ) {}
 }
-// @doctest id="bd6f"
+// @doctest id="6c9a"
 ```
 
 ### Collections
@@ -174,7 +174,7 @@ final class Order
         public readonly float $total,
     ) {}
 }
-// @doctest id="647c"
+// @doctest id="e736"
 ```
 
 ## Property Descriptions
@@ -198,7 +198,7 @@ final class ProductReview
         public readonly ?array $concerns = null,
     ) {}
 }
-// @doctest id="1cf8"
+// @doctest id="9700"
 ```
 
 ## Using Response Models
@@ -217,7 +217,7 @@ $person = StructuredOutput::with(
 echo $person->name;  // "John Smith"
 echo $person->age;   // 30
 echo $person->email; // "john@example.com"
-// @doctest id="3af2"
+// @doctest id="7e21"
 ```
 
 ### With Array Schema
@@ -239,7 +239,7 @@ $person = StructuredOutput::with(
 
 echo $person['name']; // "John"
 echo $person['age'];  // 30
-// @doctest id="119a"
+// @doctest id="8c92"
 ```
 
 ### Extracting Collections
@@ -266,7 +266,7 @@ $products = StructuredOutput::with(
 foreach ($products as $product) {
     echo "{$product->name}: \${$product->price}\n";
 }
-// @doctest id="1b4c"
+// @doctest id="cc13"
 ```
 
 ## Validation
@@ -293,7 +293,7 @@ final class UserRegistration
         public readonly int $age,
     ) {}
 }
-// @doctest id="add0"
+// @doctest id="f7e3"
 ```
 
 ### Custom Validation
@@ -319,7 +319,7 @@ class AgeValidator implements CanValidateObject
         return ValidationResult::valid();
     }
 }
-// @doctest id="a26a"
+// @doctest id="e8c6"
 ```
 
 Custom validators are registered on the `StructuredOutputRuntime`, not on the facade directly:
@@ -335,7 +335,7 @@ $user = StructuredOutput::withRuntime($runtime)->with(
     messages: 'User: John, age -5',
     responseModel: UserData::class,
 )->get();
-// @doctest id="a21b"
+// @doctest id="1acd"
 ```
 
 ## Best Practices
@@ -350,7 +350,7 @@ public readonly string $customerEmailAddress;
 
 // Less clear
 public readonly string $email;
-// @doctest id="64e0"
+// @doctest id="738f"
 ```
 
 ### 2. Add Detailed Descriptions
@@ -365,7 +365,7 @@ public function __construct(
      */
     public readonly string $sku,
 ) {}
-// @doctest id="5976"
+// @doctest id="014d"
 ```
 
 ### 3. Use Appropriate Types
@@ -381,7 +381,7 @@ public readonly float $price;
 
 // Use enums for fixed options
 public readonly Status $status;
-// @doctest id="abcb"
+// @doctest id="cca3"
 ```
 
 ### 4. Make Optional Properties Nullable
@@ -394,7 +394,7 @@ public readonly string $name,
 
 // Optional
 public readonly ?string $nickname = null,
-// @doctest id="97c5"
+// @doctest id="5f38"
 ```
 
 ### 5. Use Readonly Properties
@@ -407,7 +407,7 @@ public readonly string $name;
 
 // Mutable -- avoid unless necessary
 public string $name;
-// @doctest id="5bd2"
+// @doctest id="5b01"
 ```
 
 ## Generated Stubs
@@ -430,7 +430,7 @@ final class {{ class }}
         public readonly ?string $email = null,
     ) {}
 }
-// @doctest id="c19e"
+// @doctest id="2bb0"
 ```
 
 ### Collection Stub (`--collection`)
@@ -451,7 +451,7 @@ final class {{ class }}Item
         public readonly ?string $description = null,
     ) {}
 }
-// @doctest id="fcc4"
+// @doctest id="b1b9"
 ```
 
 ### Nested Stub (`--nested`)
@@ -482,5 +482,5 @@ final class {{ class }}Address
         public readonly string $country,
     ) {}
 }
-// @doctest id="fb06"
+// @doctest id="8586"
 ```

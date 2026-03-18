@@ -7,6 +7,13 @@ Instructor builds a structured prompt from several components: system text, user
 a mode-specific instruction prompt, examples, and retry context. You can customize most
 of these to tune extraction behavior without changing the underlying extraction flow.
 
+There are currently two prompt materializers in the package:
+
+- `RequestMaterializer` is the legacy/default path
+- `StructuredPromptRequestMaterializer` is the new path using prompt classes and markdown templates
+
+Both can be selected through `StructuredOutputRuntime::withRequestMaterializer()`.
+
 
 ## System And Prompt Text
 
@@ -25,7 +32,8 @@ $result = (new StructuredOutput)
 - **System text** sets the model's persona and overall behavior. Use it for stable
   instructions that apply across many requests.
 - **Prompt text** provides task-specific instructions for this particular extraction.
-  Instructor appends it to the conversation alongside the mode-specific extraction prompt.
+  On the new structured prompt path it is rendered inside the single system prompt body
+  alongside the mode-specific extraction instructions.
 
 You can also pass both through the `with()` method:
 
@@ -43,8 +51,8 @@ $result = (new StructuredOutput)
 
 ## Examples
 
-Few-shot examples are another prompt component. They are appended to the conversation
-to demonstrate the expected extraction style:
+Few-shot examples are another prompt component. On the new structured prompt path they
+are rendered as markdown inside the system prompt to demonstrate the expected extraction style:
 
 ```php
 use Cognesy\Instructor\Extras\Example\Example;
@@ -78,16 +86,18 @@ $result = (new StructuredOutput)
     ->get();
 ```
 
-The cached context is placed before the per-request content in the prompt. Content
-passed through `withCachedContext()` is marked with cache control headers where the
+The cached context is placed before the per-request content in the prompt. On the new
+structured prompt path, cached system text, cached task text, and cached examples are
+rendered into a cached system prompt and projected through provider-native cached context.
+Content passed through `withCachedContext()` is marked with cache control headers where the
 provider supports them.
 
 
 ## Mode-Specific Prompts
 
 Instructor uses a default prompt for each output mode that tells the model how to format
-its response. These prompts are configured in `StructuredOutputConfig` and can be
-customized per mode:
+its response. On the legacy path these prompts are inline strings. On the new path they
+are prompt classes backed by markdown templates and configured in `StructuredOutputConfig`.
 
 | Mode | Default prompt behavior |
 |---|---|
@@ -98,7 +108,7 @@ customized per mode:
 
 ### Overriding Mode Prompts
 
-You can replace the default prompt for any mode through the config:
+Legacy inline prompt override:
 
 ```php
 use Cognesy\Instructor\Config\StructuredOutputConfig;
@@ -110,6 +120,34 @@ $config = new StructuredOutputConfig(
         OutputMode::Json->value => "Respond with a JSON object matching this schema:\n<|json_schema|>\n",
     ],
 );
+```
+
+New prompt-class override:
+
+```php
+$config = new StructuredOutputConfig(
+    modePromptClasses: [
+        OutputMode::Tools->value => App\Prompts\ToolsSystemPrompt::class,
+        OutputMode::Json->value => App\Prompts\JsonSystemPrompt::class,
+        OutputMode::JsonSchema->value => App\Prompts\JsonSchemaSystemPrompt::class,
+        OutputMode::MdJson->value => App\Prompts\MdJsonSystemPrompt::class,
+    ],
+    retryPromptClass: App\Prompts\RetryFeedbackPrompt::class,
+    deserializationErrorPromptClass: App\Prompts\DeserializationRepairPrompt::class,
+);
+```
+
+If you store these in YAML, use FQN strings:
+
+```yaml
+modePromptClasses:
+  tool_call: 'App\\Prompts\\ToolsSystemPrompt'
+  json: 'App\\Prompts\\JsonSystemPrompt'
+  json_schema: 'App\\Prompts\\JsonSchemaSystemPrompt'
+  md_json: 'App\\Prompts\\MdJsonSystemPrompt'
+
+retryPromptClass: 'App\\Prompts\\RetryFeedbackPrompt'
+deserializationErrorPromptClass: 'App\\Prompts\\DeserializationRepairPrompt'
 ```
 
 ### Template Placeholders
@@ -159,13 +197,23 @@ conversation. The default is:
 JSON generated incorrectly, fix following errors:
 ```
 
-You can customize this through the config:
+Legacy inline retry prompt override:
 
 ```php
 $config = new StructuredOutputConfig(
     retryPrompt: 'The previous response had validation errors. Please correct them:',
 );
 ```
+
+New prompt-class override:
+
+```php
+$config = new StructuredOutputConfig(
+    retryPromptClass: App\Prompts\RetryFeedbackPrompt::class,
+);
+```
+
+The same pattern applies to deserialization repair via `deserializationErrorPromptClass`.
 
 
 ## Chat Structure

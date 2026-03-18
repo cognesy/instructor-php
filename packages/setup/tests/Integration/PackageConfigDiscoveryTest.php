@@ -50,6 +50,22 @@ it('falls back to scanning resources config files when metadata is absent', func
         ->and($plan->entries()[1]->destinationPath)->toBe($root . '/published/auxiliary/web/scrapers/firecrawl.yaml');
 });
 
+it('publishes top-level config files from resources config root', function () {
+    $root = setupConfigRoot('top-level');
+    setupPackageWithoutMetadata(
+        $root,
+        'logging',
+        [
+            'resources/config/event_log.yaml' => "path: ''\nlevel: info\n",
+        ],
+    );
+
+    $plan = (new PackageConfigDiscovery())->discover($root . '/packages', $root . '/published');
+
+    expect($plan->count())->toBe(1)
+        ->and($plan->entries()[0]->destinationPath)->toBe($root . '/published/logging/event_log.yaml');
+});
+
 it('supports include and exclude package filters', function () {
     $root = setupConfigRoot('filters');
     setupPackageWithoutMetadata($root, 'polyglot', [

@@ -2,6 +2,10 @@
 title: 'Simple content summary'
 docname: 'summary_with_llm'
 id: 'e1a5'
+tags:
+  - 'llm-extras'
+  - 'summarization'
+  - 'inference'
 ---
 ## Overview
 

@@ -13,6 +13,8 @@ class StructuredOutputConfigBuilder
     private ?int $maxRetries;
     private ?string $retryPrompt;
     private ?array $modePrompts;
+    private ?array $modePromptClasses;
+    private ?string $retryPromptClass = null;
     private ?string $schemaName;
     private ?string $schemaDescription;
     private ?string $toolName;
@@ -20,7 +22,7 @@ class StructuredOutputConfigBuilder
     private ?string $defaultOutputClass;
     private ?array $chatStructure;
     private ?bool $defaultToStdClass = null;
-    private ?string $deserializationErrorPrompt = null;
+    private ?string $deserializationErrorPromptClass = null;
     private ?bool $throwOnTransformationFailure = null;
     private ?ResponseCachePolicy $responseCachePolicy = null;
 
@@ -32,24 +34,30 @@ class StructuredOutputConfigBuilder
         ?int              $maxRetries = null,
         ?string           $retryPrompt = null,
         ?array            $modePrompts = null,
+        ?array            $modePromptClasses = null,
+        ?string           $retryPromptClass = null,
         ?string           $schemaName = null,
         ?string           $schemaDescription = null,
         ?string           $toolName = null,
         ?string           $toolDescription = null,
         ?array            $chatStructure = null,
         ?string           $defaultOutputClass = null,
+        ?string           $deserializationErrorPromptClass = null,
     ) {
         $this->outputMode = $outputMode;
         $this->useObjectReferences = $useObjectReferences;
         $this->maxRetries = $maxRetries;
         $this->retryPrompt = $retryPrompt;
         $this->modePrompts = $modePrompts ?? [];
+        $this->modePromptClasses = $modePromptClasses ?? [];
+        $this->retryPromptClass = $retryPromptClass;
         $this->schemaName = $schemaName;
         $this->schemaDescription = $schemaDescription;
         $this->toolName = $toolName;
         $this->toolDescription = $toolDescription;
         $this->chatStructure = $chatStructure ?? [];
         $this->defaultOutputClass = $defaultOutputClass;
+        $this->deserializationErrorPromptClass = $deserializationErrorPromptClass;
     }
 
     public function withOutputMode(?OutputMode $outputMode) : static {
@@ -102,6 +110,21 @@ class StructuredOutputConfigBuilder
         return $this;
     }
 
+    public function withModePromptClass(OutputMode $mode, string $promptClass) : static {
+        $this->modePromptClasses[$mode->value] = $promptClass;
+        return $this;
+    }
+
+    public function withModePromptClasses(array $modePromptClasses) : static {
+        $this->modePromptClasses = $modePromptClasses;
+        return $this;
+    }
+
+    public function withRetryPromptClass(string $retryPromptClass) : static {
+        $this->retryPromptClass = $retryPromptClass;
+        return $this;
+    }
+
     public function withChatStructure(array $chatStructure) : static {
         $this->chatStructure = $chatStructure;
         return $this;
@@ -117,8 +140,8 @@ class StructuredOutputConfigBuilder
         return $this;
     }
 
-    public function withDeserializationErrorPrompt(string $deserializationErrorPrompt) : self {
-        $this->deserializationErrorPrompt = $deserializationErrorPrompt;
+    public function withDeserializationErrorPromptClass(string $deserializationErrorPromptClass) : self {
+        $this->deserializationErrorPromptClass = $deserializationErrorPromptClass;
         return $this;
     }
 
@@ -138,24 +161,30 @@ class StructuredOutputConfigBuilder
         ?int $maxRetries = null,
         ?string $retryPrompt = null,
         ?array $modePrompts = null,
+        ?array $modePromptClasses = null,
+        ?string $retryPromptClass = null,
         ?string $schemaName = null,
         ?string $toolName = null,
         ?string $toolDescription = null,
         ?array $chatStructure = null,
         ?string $defaultOutputClass = null,
-        ?ResponseCachePolicy $responseCachePolicy = null
+        ?ResponseCachePolicy $responseCachePolicy = null,
+        ?string $deserializationErrorPromptClass = null,
     ) : self {
         $this->outputMode = $outputMode ?? $this->outputMode;
         $this->useObjectReferences = $useObjectReferences ?? $this->useObjectReferences;
         $this->maxRetries = $maxRetries ?? $this->maxRetries;
         $this->retryPrompt = $retryPrompt ?? $this->retryPrompt;
         $this->modePrompts = $modePrompts ?? $this->modePrompts;
+        $this->modePromptClasses = $modePromptClasses ?? $this->modePromptClasses;
+        $this->retryPromptClass = $retryPromptClass ?? $this->retryPromptClass;
         $this->schemaName = $schemaName ?? $this->schemaName;
         $this->toolName = $toolName ?? $this->toolName;
         $this->toolDescription = $toolDescription ?? $this->toolDescription;
         $this->chatStructure = $chatStructure ?? $this->chatStructure;
         $this->defaultOutputClass = $defaultOutputClass ?? $this->defaultOutputClass;
         $this->responseCachePolicy = $responseCachePolicy ?? $this->responseCachePolicy;
+        $this->deserializationErrorPromptClass = $deserializationErrorPromptClass ?? $this->deserializationErrorPromptClass;
         return $this;
     }
 
@@ -177,10 +206,12 @@ class StructuredOutputConfigBuilder
             toolName: $this->toolName ?? $defaults->toolName(),
             toolDescription: $this->toolDescription ?? $defaults->toolDescription(),
             modePrompts: array_merge($defaults->modePrompts(), $this->modePrompts ?? []),
+            modePromptClasses: array_merge($defaults->modePromptClasses(), $this->modePromptClasses ?? []),
             retryPrompt: $this->retryPrompt ?? $defaults->retryPrompt(),
+            retryPromptClass: $this->retryPromptClass ?? $defaults->retryPromptClass(),
             chatStructure: array_merge($defaults->chatStructure(), $this->chatStructure ?? []),
             defaultToStdClass: $this->defaultToStdClass ?? $defaults->defaultToStdClass(),
-            deserializationErrorPrompt: $this->deserializationErrorPrompt ?? $defaults->deserializationErrorPrompt(),
+            deserializationErrorPromptClass: $this->deserializationErrorPromptClass ?? $defaults->deserializationErrorPromptClass(),
             throwOnTransformationFailure: $this->throwOnTransformationFailure ?? $defaults->throwOnTransformationFailure(),
             responseCachePolicy: $this->responseCachePolicy ?? $defaults->responseCachePolicy(),
         );

@@ -3,6 +3,7 @@
 namespace Cognesy\AgentCtrl\Event;
 
 use Cognesy\AgentCtrl\Enum\AgentType;
+use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Cognesy\AgentCtrl\ValueObject\AgentSessionId;
 use Psr\Log\LogLevel;
 
@@ -16,6 +17,7 @@ final class ResponseParsingCompleted extends AgentEvent
 
     public function __construct(
         AgentType $agentType,
+        AgentCtrlExecutionId $executionId,
         public readonly float $totalDurationMs,
         AgentSessionId|string|null $sessionId = null,
     ) {
@@ -25,7 +27,7 @@ final class ResponseParsingCompleted extends AgentEvent
             default => null,
         };
 
-        parent::__construct($agentType, [
+        parent::__construct($agentType, $executionId, [
             'totalDurationMs' => round($totalDurationMs, 2),
             'sessionId' => $this->sessionId !== null ? (string) $this->sessionId : null,
         ]);

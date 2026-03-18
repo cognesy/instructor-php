@@ -2,6 +2,10 @@
 title: 'Automatic correction based on validation results'
 docname: 'self_correction'
 id: '0f49'
+tags:
+  - 'basics'
+  - 'self-correction'
+  - 'validation'
 ---
 ## Overview
 

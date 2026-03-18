@@ -3,6 +3,10 @@ title: 'Agent with Bash Tool'
 docname: 'agent_loop_bash_tool'
 order: 3
 id: '06e7'
+tags:
+  - 'agents'
+  - 'tools'
+  - 'bash'
 ---
 ## Overview
 

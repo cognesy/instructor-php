@@ -2,6 +2,10 @@
 title: 'Together.ai'
 docname: 'togetherai'
 id: '07b3'
+tags:
+  - 'api-support'
+  - 'togetherai'
+  - 'provider'
 ---
 ## Overview
 

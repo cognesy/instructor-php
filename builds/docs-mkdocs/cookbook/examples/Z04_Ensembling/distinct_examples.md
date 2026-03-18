@@ -2,6 +2,10 @@
 title: 'Use Distinct Example Subsets'
 docname: 'distinct_examples'
 id: '3eef'
+tags:
+  - 'ensembling'
+  - 'demonstration-ensembling'
+  - 'few-shot'
 ---
 ## Overview
 

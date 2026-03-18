@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Cognesy\Instructor\Contracts;
 
 use Cognesy\Instructor\Data\StructuredOutputExecution;
-use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 
 interface CanMaterializeRequest
 {
-    public function toMessages(StructuredOutputExecution $execution): Messages;
+    public function toInferenceRequest(StructuredOutputExecution $execution): InferenceRequest;
 }

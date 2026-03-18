@@ -2,6 +2,10 @@
 title: 'Independently Verify Responses'
 docname: 'verify_independently'
 id: '7157'
+tags:
+  - 'self-criticism'
+  - 'chain-of-verification'
+  - 'fact-checking'
 ---
 ## Overview
 

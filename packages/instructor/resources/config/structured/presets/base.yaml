@@ -45,13 +45,4 @@ chatStructure:
   - retries
   - post-retries
 defaultToStdClass: false
-deserializationErrorPrompt: |
-  Failed to serialize response:
-  <|json|>
-
-  Serializer error:
-  <|error|>
-
-  Expected schema:
-  <|jsonSchema|>
 throwOnTransformationFailure: false

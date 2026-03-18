@@ -2,6 +2,10 @@
 title: 'Google Gemini'
 docname: 'google_gemini'
 id: '65f3'
+tags:
+  - 'api-support'
+  - 'gemini'
+  - 'provider'
 ---
 ## Overview
 

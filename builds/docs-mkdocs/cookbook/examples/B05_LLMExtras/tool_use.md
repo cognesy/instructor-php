@@ -2,6 +2,10 @@
 title: 'Inference and tool use'
 docname: 'tool_use'
 id: '37aa'
+tags:
+  - 'llm-extras'
+  - 'tool-use'
+  - 'inference'
 ---
 ## Overview
 

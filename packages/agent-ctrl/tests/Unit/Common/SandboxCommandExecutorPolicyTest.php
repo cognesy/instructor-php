@@ -2,6 +2,7 @@
 
 use Cognesy\AgentCtrl\Common\Execution\ExecutionPolicy;
 use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
+use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 
 it('uses 120s timeout in default execution policy', function () {
     $policy = ExecutionPolicy::default()->toSandboxPolicy();
@@ -11,14 +12,14 @@ it('uses 120s timeout in default execution policy', function () {
 });
 
 it('uses 120s timeout for codex executor by default', function () {
-    $executor = SandboxCommandExecutor::forCodex();
+    $executor = SandboxCommandExecutor::forCodex(AgentCtrlExecutionId::fresh());
 
     expect($executor->policy()->toSandboxPolicy()->timeoutSeconds())
         ->toBe(ExecutionPolicy::DEFAULT_TIMEOUT_SECONDS);
 });
 
 it('preserves inherited env and cache writable path when timeout is overridden', function () {
-    $executor = SandboxCommandExecutor::forCodex(timeout: 30);
+    $executor = SandboxCommandExecutor::forCodex(AgentCtrlExecutionId::fresh(), timeout: 30);
     $policy = $executor->policy()->toSandboxPolicy();
     $baseDir = getcwd() ?: '/tmp';
 

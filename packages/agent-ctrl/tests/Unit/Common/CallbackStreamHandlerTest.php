@@ -4,6 +4,7 @@ use Cognesy\AgentCtrl\Dto\AgentResponse;
 use Cognesy\AgentCtrl\Dto\CallbackStreamHandler;
 use Cognesy\AgentCtrl\Dto\StreamError;
 use Cognesy\AgentCtrl\Enum\AgentType;
+use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 
 it('delivers onComplete callback only once', function () {
     $calls = 0;
@@ -16,6 +17,7 @@ it('delivers onComplete callback only once', function () {
         agentType: AgentType::OpenCode,
         text: 'done',
         exitCode: 0,
+        executionId: AgentCtrlExecutionId::fromString('execution_123'),
     );
 
     $handler->onComplete($response);

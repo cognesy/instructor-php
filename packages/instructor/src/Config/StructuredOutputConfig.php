@@ -21,13 +21,15 @@ final readonly class StructuredOutputConfig
     private int $maxRetries;
     private string $retryPrompt;
     private array $modePrompts;
+    private array $modePromptClasses;
+    private string $retryPromptClass;
     private string $schemaName;
     private string $schemaDescription;
     private string $toolName;
     private string $toolDescription;
     private string $outputClass;
     private bool $defaultToStdClass;
-    private string $deserializationErrorPrompt;
+    private string $deserializationErrorPromptClass;
     private bool $throwOnTransformationFailure;
     private array $chatStructure;
     private ResponseCachePolicy $responseCachePolicy;
@@ -43,10 +45,12 @@ final readonly class StructuredOutputConfig
         ?string $toolName = null,
         ?string $toolDescription = null,
         ?array $modePrompts = null,
+        ?array $modePromptClasses = null,
         ?string $retryPrompt = null,
+        ?string $retryPromptClass = null,
         ?array $chatStructure = null,
         ?bool $defaultToStdClass = null,
-        ?string $deserializationErrorPrompt = null,
+        ?string $deserializationErrorPromptClass = null,
         ?bool $throwOnTransformationFailure = null,
         ?ResponseCachePolicy $responseCachePolicy = null,
         ?int $streamMaterializationInterval = null,
@@ -64,6 +68,14 @@ final readonly class StructuredOutputConfig
             OutputMode::JsonSchema->value => "Response must follow provided JSON Schema. Respond correctly with strict JSON object.\n",
             OutputMode::Tools->value => "Extract correct and accurate data from the input using provided tools.\n",
         ];
+        $this->modePromptClasses = $modePromptClasses ?? [
+            OutputMode::MdJson->value => 'Cognesy\\Instructor\\Prompts\\StructuredOutput\\MdJsonSystemPrompt',
+            OutputMode::Json->value => 'Cognesy\\Instructor\\Prompts\\StructuredOutput\\JsonSystemPrompt',
+            OutputMode::JsonSchema->value => 'Cognesy\\Instructor\\Prompts\\StructuredOutput\\JsonSchemaSystemPrompt',
+            OutputMode::Tools->value => 'Cognesy\\Instructor\\Prompts\\StructuredOutput\\ToolsSystemPrompt',
+        ];
+        $this->retryPromptClass = $retryPromptClass
+            ?? 'Cognesy\\Instructor\\Prompts\\StructuredOutput\\RetryFeedbackPrompt';
         $this->schemaName = $schemaName ?? 'default_schema';
         $this->schemaDescription = $schemaDescription ?? '';
         $this->toolName = $toolName ?? 'extracted_data';
@@ -84,7 +96,8 @@ final readonly class StructuredOutputConfig
         ];
         $this->outputClass = $outputClass ?? 'Cognesy\Dynamic\Structure';
         $this->defaultToStdClass = $defaultToStdClass ?? false;
-        $this->deserializationErrorPrompt = $deserializationErrorPrompt ?? "Failed to serialize response:\n<|json|>\n\nSerializer error:\n<|error|>\n\nExpected schema:\n<|jsonSchema|>\n";
+        $this->deserializationErrorPromptClass = $deserializationErrorPromptClass
+            ?? 'Cognesy\\Instructor\\Prompts\\StructuredOutput\\DeserializationRepairPrompt';
         $this->throwOnTransformationFailure = $throwOnTransformationFailure ?? false;
         $this->responseCachePolicy = $responseCachePolicy ?? ResponseCachePolicy::None;
         $this->streamMaterializationInterval = max(1, $streamMaterializationInterval ?? 1);
@@ -97,6 +110,8 @@ final readonly class StructuredOutputConfig
             'maxRetries' => $this->maxRetries,
             'retryPrompt' => $this->retryPrompt,
             'modePrompts' => $this->modePrompts,
+            'modePromptClasses' => $this->modePromptClasses,
+            'retryPromptClass' => $this->retryPromptClass,
             'toolName' => $this->toolName,
             'toolDescription' => $this->toolDescription,
             'chatStructure' => $this->chatStructure,
@@ -104,7 +119,7 @@ final readonly class StructuredOutputConfig
             'schemaDescription' => $this->schemaDescription,
             'outputClass' => $this->outputClass,
             'defaultToStdClass' => $this->defaultToStdClass,
-            'deserializationErrorPrompt' => $this->deserializationErrorPrompt,
+            'deserializationErrorPromptClass' => $this->deserializationErrorPromptClass,
             'throwOnTransformationFailure' => $this->throwOnTransformationFailure,
             'responseCachePolicy' => $this->responseCachePolicy->value,
             'streamMaterializationInterval' => $this->streamMaterializationInterval,
@@ -161,8 +176,20 @@ final readonly class StructuredOutputConfig
         return $this->modePrompts;
     }
 
+    public function modePromptClass(OutputMode $mode): string {
+        return $this->modePromptClasses[$mode->value] ?? '';
+    }
+
+    public function modePromptClasses(): array {
+        return $this->modePromptClasses;
+    }
+
     public function retryPrompt(): string {
         return $this->retryPrompt;
+    }
+
+    public function retryPromptClass(): string {
+        return $this->retryPromptClass;
     }
 
     public function chatStructure(): array {
@@ -201,8 +228,8 @@ final readonly class StructuredOutputConfig
         return $this->outputClass;
     }
 
-    public function deserializationErrorPrompt(): string {
-        return $this->deserializationErrorPrompt;
+    public function deserializationErrorPromptClass(): string {
+        return $this->deserializationErrorPromptClass;
     }
 
     public function defaultToStdClass(): bool {
@@ -271,12 +298,30 @@ final readonly class StructuredOutputConfig
         return $this->with(modePrompts: $modePrompts);
     }
 
+    public function withModePromptClass(OutputMode $mode, string $promptClass): static {
+        return $this->withModePromptClasses(array_merge($this->modePromptClasses, [
+            $mode->value => $promptClass,
+        ]));
+    }
+
+    public function withModePromptClasses(array $modePromptClasses): static {
+        return $this->with(modePromptClasses: $modePromptClasses);
+    }
+
+    public function withRetryPromptClass(string $retryPromptClass): static {
+        return $this->with(retryPromptClass: $retryPromptClass);
+    }
+
     public function withChatStructure(array $chatStructure): static {
         return $this->with(chatStructure: $chatStructure);
     }
 
     public function withDefaultOutputClass(string $defaultOutputClass): static {
         return $this->with(outputClass: $defaultOutputClass);
+    }
+
+    public function withDeserializationErrorPromptClass(string $deserializationErrorPromptClass): static {
+        return $this->with(deserializationErrorPromptClass: $deserializationErrorPromptClass);
     }
 
     // INTERNAL ////////////////////////////////////////////////////
@@ -291,10 +336,12 @@ final readonly class StructuredOutputConfig
         ?string $toolName = null,
         ?string $toolDescription = null,
         ?array $modePrompts = null,
+        ?array $modePromptClasses = null,
         ?string $retryPrompt = null,
+        ?string $retryPromptClass = null,
         ?array $chatStructure = null,
         ?bool $defaultToStdClass = null,
-        ?string $deserializationErrorPrompt = null,
+        ?string $deserializationErrorPromptClass = null,
         ?bool $throwOnTransformationFailure = null,
         ?ResponseCachePolicy $responseCachePolicy = null,
         ?int $streamMaterializationInterval = null,
@@ -309,10 +356,12 @@ final readonly class StructuredOutputConfig
             toolName: $toolName ?? $this->toolName,
             toolDescription: $toolDescription ?? $this->toolDescription,
             modePrompts: $modePrompts ?? $this->modePrompts,
+            modePromptClasses: $modePromptClasses ?? $this->modePromptClasses,
             retryPrompt: $retryPrompt ?? $this->retryPrompt,
+            retryPromptClass: $retryPromptClass ?? $this->retryPromptClass,
             chatStructure: $chatStructure ?? $this->chatStructure,
             defaultToStdClass: $defaultToStdClass ?? $this->defaultToStdClass,
-            deserializationErrorPrompt: $deserializationErrorPrompt ?? $this->deserializationErrorPrompt,
+            deserializationErrorPromptClass: $deserializationErrorPromptClass ?? $this->deserializationErrorPromptClass,
             throwOnTransformationFailure: $throwOnTransformationFailure ?? $this->throwOnTransformationFailure,
             responseCachePolicy: $responseCachePolicy ?? $this->responseCachePolicy,
             streamMaterializationInterval: $streamMaterializationInterval ?? $this->streamMaterializationInterval,

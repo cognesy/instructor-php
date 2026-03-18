@@ -22,6 +22,8 @@ class Example
         public string $runPath = '',
         public ?int   $order = null,
         public bool   $skip = false,
+        /** @var string[] */
+        public array $tags = [],
     ) {}
 
     /**
@@ -76,6 +78,7 @@ class Example
             runPath: $baseDir . $path . '/run.php',
             order: $info->order,
             skip: $info->skip,
+            tags: $info->tags,
         );
     }
 }

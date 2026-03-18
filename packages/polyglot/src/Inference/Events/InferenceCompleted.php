@@ -2,4 +2,9 @@
 
 namespace Cognesy\Polyglot\Inference\Events;
 
-final class InferenceCompleted extends InferenceEvent {}
+use Psr\Log\LogLevel;
+
+final class InferenceCompleted extends InferenceEvent
+{
+    public string $logLevel = LogLevel::INFO;
+}

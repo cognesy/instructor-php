@@ -57,8 +57,8 @@ describe('AgentStopException', function () {
         // handleStopException only extracts the stop signal, not the step.
         expect($finalState->stepCount())->toBe(0);
         // fromStopException always maps to StopRequested, with source from the exception
-        expect($finalState->lastStopReason())->toBe(StopReason::StopRequested);
-        expect($finalState->lastStopSource())->toBe('TestStop');
+        expect($finalState->stopReason())->toBe(StopReason::StopRequested);
+        expect($finalState->stopSource())->toBe('TestStop');
         expect($events)->toHaveCount(1);
         expect($events[0]->stopReason())->toBe(StopReason::StopRequested);
         expect($events[0]->resolvedBy())->toBe('TestStop');

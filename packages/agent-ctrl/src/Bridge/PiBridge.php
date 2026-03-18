@@ -21,6 +21,8 @@ use Cognesy\AgentCtrl\Event\ResponseParsingStarted;
 use Cognesy\AgentCtrl\Event\StreamChunkProcessed;
 use Cognesy\AgentCtrl\Event\StreamProcessingCompleted;
 use Cognesy\AgentCtrl\Event\StreamProcessingStarted;
+use Cognesy\AgentCtrl\Event\AgentEvent;
+use Cognesy\AgentCtrl\Telemetry\AgentCtrlEventTelemetry;
 use Cognesy\AgentCtrl\Pi\Application\Builder\PiCommandBuilder;
 use Cognesy\AgentCtrl\Pi\Application\Dto\PiRequest;
 use Cognesy\AgentCtrl\Pi\Application\Parser\ResponseParser;
@@ -30,7 +32,9 @@ use Cognesy\AgentCtrl\Pi\Domain\Dto\StreamEvent\StreamEvent;
 use Cognesy\AgentCtrl\Pi\Domain\Dto\StreamEvent\ToolExecutionEndEvent;
 use Cognesy\AgentCtrl\Pi\Domain\Enum\OutputMode;
 use Cognesy\AgentCtrl\Pi\Domain\Enum\ThinkingLevel;
+use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Sandbox\Enums\SandboxDriver;
 use Cognesy\Utils\Json\JsonParsingException;
 use JsonException;
@@ -42,6 +46,8 @@ final class PiBridge implements AgentBridge
 {
     private PiCommandBuilder $commandBuilder;
     private ResponseParser $responseParser;
+    private AgentCtrlExecutionId $executionId;
+    private CanHandleEvents $events;
 
     public function __construct(
         private ?string $model = null,
@@ -69,16 +75,24 @@ final class PiBridge implements AgentBridge
         private ?string $workingDirectory = null,
         private SandboxDriver $sandboxDriver = SandboxDriver::Host,
         private int $timeout = 120,
-        private ?CanHandleEvents $events = null,
+        ?CanHandleEvents $events = null,
         private bool $failFast = true,
+        ?AgentCtrlExecutionId $executionId = null,
     ) {
+        $this->events = $events ?? new EventDispatcher();
+        $this->executionId = $executionId ?? AgentCtrlExecutionId::fresh();
         $this->commandBuilder = new PiCommandBuilder();
         $this->responseParser = new ResponseParser($this->failFast);
     }
 
     private function dispatch(object $event): void
     {
-        $this->events?->dispatch($event);
+        $enriched = match (true) {
+            $event instanceof AgentEvent => AgentCtrlEventTelemetry::attach($event),
+            default => $event,
+        };
+
+        $this->events->dispatch($enriched);
     }
 
     #[\Override]
@@ -100,18 +114,18 @@ final class PiBridge implements AgentBridge
             $requestStart = microtime(true);
             $request = $this->buildRequest($prompt);
             $requestDuration = (microtime(true) - $requestStart) * 1000;
-            $this->dispatch(new RequestBuilt(AgentType::Pi, 'PiRequest', $requestDuration));
+            $this->dispatch(new RequestBuilt(AgentType::Pi, $this->executionId, 'PiRequest', $requestDuration));
 
             // Build command spec with timing
             $commandStart = microtime(true);
             $spec = $this->commandBuilder->build($request);
             $commandDuration = (microtime(true) - $commandStart) * 1000;
-            $this->dispatch(new CommandSpecCreated(AgentType::Pi, count($spec->argv()->toArray()), $commandDuration));
+            $this->dispatch(new CommandSpecCreated(AgentType::Pi, $this->executionId, count($spec->argv()->toArray()), $commandDuration));
 
-            $executor = SandboxCommandExecutor::forPi($this->sandboxDriver, $this->timeout, $this->events);
+            $executor = SandboxCommandExecutor::forPi($this->executionId, $this->sandboxDriver, $this->timeout, $this->events);
 
             // Emit process execution start
-            $this->dispatch(new ProcessExecutionStarted(AgentType::Pi, count($spec->argv()->toArray())));
+            $this->dispatch(new ProcessExecutionStarted(AgentType::Pi, $this->executionId, count($spec->argv()->toArray())));
 
             $collectedText = '';
             $toolCalls = [];
@@ -121,7 +135,7 @@ final class PiBridge implements AgentBridge
 
             $streamStart = $handler !== null ? microtime(true) : null;
             if ($handler !== null && $streamStart !== null) {
-                $this->dispatch(new StreamProcessingStarted(AgentType::Pi));
+                $this->dispatch(new StreamProcessingStarted(AgentType::Pi, $this->executionId));
             }
 
             $streamCallback = $handler !== null ? function (string $type, string $chunk) use ($handler, $jsonLinesBuffer, &$collectedText, &$toolCalls, &$chunkCount, &$totalBytesProcessed): void {
@@ -141,6 +155,7 @@ final class PiBridge implements AgentBridge
                 $chunkDuration = (microtime(true) - $chunkStart) * 1000;
                 $this->dispatch(new StreamChunkProcessed(
                     AgentType::Pi,
+                    $this->executionId,
                     $chunkCount,
                     $chunkSize,
                     'json-lines',
@@ -161,6 +176,7 @@ final class PiBridge implements AgentBridge
                 $streamDuration = (microtime(true) - $streamStart) * 1000;
                 $this->dispatch(new StreamProcessingCompleted(
                     AgentType::Pi,
+                    $this->executionId,
                     $chunkCount,
                     $streamDuration,
                     $totalBytesProcessed
@@ -169,7 +185,7 @@ final class PiBridge implements AgentBridge
 
             // Parse response for non-streaming or to extract final data
             $responseStart = microtime(true);
-            $this->dispatch(new ResponseParsingStarted(AgentType::Pi, strlen($execResult->stdout()), 'json'));
+            $this->dispatch(new ResponseParsingStarted(AgentType::Pi, $this->executionId, strlen($execResult->stdout()), 'json'));
             $response = $this->responseParser->parse($execResult, OutputMode::Json);
 
             // Always extract from parsed response to avoid stream callback data loss.
@@ -200,6 +216,7 @@ final class PiBridge implements AgentBridge
             $extractDuration = (microtime(true) - $extractStart) * 1000;
             $this->dispatch(new ResponseDataExtracted(
                 AgentType::Pi,
+                $this->executionId,
                 $eventCount,
                 $toolUseCount,
                 $textLength,
@@ -211,7 +228,7 @@ final class PiBridge implements AgentBridge
 
             // Emit response parsing completion
             $responseDuration = (microtime(true) - $responseStart) * 1000;
-            $this->dispatch(new ResponseParsingCompleted(AgentType::Pi, $responseDuration, $normalizedSessionId));
+            $this->dispatch(new ResponseParsingCompleted(AgentType::Pi, $this->executionId, $responseDuration, $normalizedSessionId));
 
             // Convert usage if available
             $usage = $response->usage() !== null
@@ -222,6 +239,7 @@ final class PiBridge implements AgentBridge
                 agentType: AgentType::Pi,
                 text: $collectedText,
                 exitCode: $response->exitCode(),
+                executionId: $this->executionId,
                 sessionId: $normalizedSessionId,
                 usage: $usage,
                 cost: $response->cost(),

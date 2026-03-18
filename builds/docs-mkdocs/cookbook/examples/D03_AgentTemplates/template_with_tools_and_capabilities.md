@@ -3,6 +3,10 @@ title: 'Template with Tools and Capabilities'
 docname: 'template_with_tools_and_capabilities'
 order: 4
 id: 'd4a8'
+tags:
+  - 'agent-templates'
+  - 'tools'
+  - 'capabilities'
 ---
 ## Overview
 

@@ -2,6 +2,10 @@
 title: 'Modes'
 docname: 'modes'
 id: '1e8d'
+tags:
+  - 'basics'
+  - 'output-modes'
+  - 'response-processing'
 ---
 ## Overview
 

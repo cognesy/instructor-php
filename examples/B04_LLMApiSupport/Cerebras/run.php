@@ -2,6 +2,10 @@
 title: 'Cerebras'
 docname: 'llm_cerebras'
 id: '134c'
+tags:
+  - 'llm-api-support'
+  - 'cerebras'
+  - 'provider'
 ---
 ## Overview
 

@@ -1,0 +1,64 @@
+---
+title: 'Runtime Wiring'
+description: 'Attach telemetry to a shared event bus with projectors and RuntimeEventBridge'
+---
+
+# Runtime Wiring
+
+In normal application code, telemetry is usually driven by runtime events rather
+than manual `openRoot()` calls.
+
+The pattern is:
+
+1. create one shared event dispatcher
+2. create one shared `Telemetry` instance
+3. create the projectors for the runtimes you use
+4. attach them through `RuntimeEventBridge`
+5. build your runtime objects with the same event dispatcher
+
+## Minimal Wiring Example
+
+```php
+use Cognesy\Agents\Telemetry\AgentsTelemetryProjector;
+use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Http\Telemetry\HttpClientTelemetryProjector;
+use Cognesy\Polyglot\Telemetry\PolyglotTelemetryProjector;
+use Cognesy\Telemetry\Application\Projector\CompositeTelemetryProjector;
+use Cognesy\Telemetry\Application\Projector\RuntimeEventBridge;
+
+$events = new EventDispatcher('app');
+
+(new RuntimeEventBridge(new CompositeTelemetryProjector([
+    new AgentsTelemetryProjector($telemetry),
+    new PolyglotTelemetryProjector($telemetry),
+    new HttpClientTelemetryProjector($telemetry),
+])))->attachTo($events);
+// @doctest id="9088"
+```
+
+Pass `$events` into the runtime objects that should emit telemetry.
+
+## Which Projectors To Add
+
+Add only the projectors for the packages you actually use:
+
+- agents: `AgentsTelemetryProjector`
+- agent control: `AgentCtrlTelemetryProjector`
+- instructor: `InstructorTelemetryProjector`
+- polyglot: `PolyglotTelemetryProjector`
+- http client: `HttpClientTelemetryProjector`
+
+If a package has no matching projector attached, its events will not be turned
+into telemetry.
+
+## Practical Examples
+
+The examples directory has working end-to-end setups:
+
+- `examples/D05_AgentTroubleshooting/TelemetryLangfuse/run.php`
+- `examples/D05_AgentTroubleshooting/TelemetryLogfire/run.php`
+- `examples/D05_AgentTroubleshooting/SubagentTelemetryLangfuse/run.php`
+- `examples/D05_AgentTroubleshooting/SubagentTelemetryLogfire/run.php`
+
+These examples keep normal console output and add telemetry export at the same
+time.

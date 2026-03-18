@@ -2,6 +2,10 @@
 title: 'Clarify Ambiguous Information'
 docname: 'clarify_ambiguity'
 id: 'a2cc'
+tags:
+  - 'zero-shot'
+  - 'ambiguity'
+  - 'clarification'
 ---
 ## Overview
 

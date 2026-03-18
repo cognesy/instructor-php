@@ -2,6 +2,10 @@
 title: 'Ask Model to Repeat the Query'
 docname: 'repeat_query'
 id: '35e5'
+tags:
+  - 'zero-shot'
+  - 'query-repetition'
+  - 'prompting'
 ---
 ## Overview
 

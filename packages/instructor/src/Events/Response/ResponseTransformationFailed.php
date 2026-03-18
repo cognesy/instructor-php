@@ -3,5 +3,9 @@
 namespace Cognesy\Instructor\Events\Response;
 
 use Cognesy\Instructor\Events\StructuredOutputEvent;
+use Psr\Log\LogLevel;
 
-final class ResponseTransformationFailed extends StructuredOutputEvent {}
+final class ResponseTransformationFailed extends StructuredOutputEvent
+{
+    public string $logLevel = LogLevel::WARNING;
+}

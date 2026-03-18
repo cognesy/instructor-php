@@ -3,6 +3,7 @@
 namespace Cognesy\AgentCtrl\Event;
 
 use Cognesy\AgentCtrl\Enum\AgentType;
+use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Psr\Log\LogLevel;
 
 /**
@@ -14,10 +15,12 @@ final class CommandSpecCreated extends AgentEvent
 
     public function __construct(
         AgentType $agentType,
+        AgentCtrlExecutionId $executionId,
         public readonly int $argvCount,
         public readonly float $commandDurationMs,
+        public readonly array $argv = [],
     ) {
-        parent::__construct($agentType, [
+        parent::__construct($agentType, $executionId, [
             'argvCount' => $argvCount,
             'commandDurationMs' => round($commandDurationMs, 2),
         ]);

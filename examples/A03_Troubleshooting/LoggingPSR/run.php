@@ -3,6 +3,10 @@ title: 'PSR-3 Logging with Functional Pipeline'
 docname: 'logging_psr'
 path: ''
 id: '7cbd'
+tags:
+  - 'troubleshooting'
+  - 'logging'
+  - 'psr-3'
 ---
 ## Overview
 

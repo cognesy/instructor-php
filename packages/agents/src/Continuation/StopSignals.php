@@ -24,6 +24,18 @@ class StopSignals
         return $this->signals[0] ?? null;
     }
 
+    public function highest() : ?StopSignal {
+        if ($this->signals === []) {
+            return null;
+        }
+        return array_reduce(
+            $this->signals,
+            static fn(?StopSignal $carry, StopSignal $signal) => $carry === null || $signal->compare($carry) < 0
+                ? $signal
+                : $carry,
+        );
+    }
+
     public function hasAny() : bool {
         return $this->signals !== [];
     }

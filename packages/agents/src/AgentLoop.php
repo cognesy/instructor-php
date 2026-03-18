@@ -10,8 +10,8 @@ use Cognesy\Agents\Continuation\StopSignal;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Drivers\CanAcceptToolRuntime;
 use Cognesy\Agents\Drivers\CanUseTools;
-use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
+use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Agents\Events\AgentExecutionCompleted;
 use Cognesy\Agents\Events\AgentExecutionFailed;
 use Cognesy\Agents\Events\AgentExecutionStarted;
@@ -27,16 +27,20 @@ use Cognesy\Agents\Exceptions\ToolExecutionBlockedException;
 use Cognesy\Agents\Hook\Data\HookContext;
 use Cognesy\Agents\Interception\CanInterceptAgentLifecycle;
 use Cognesy\Agents\Interception\PassThroughInterceptor;
+use Cognesy\Agents\Telemetry\AgentStateTelemetry;
+use Cognesy\Agents\Telemetry\AgentTelemetry;
 use Cognesy\Agents\Tool\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Tool\Contracts\ToolInterface;
 use Cognesy\Agents\Tool\ToolExecutor;
 use Cognesy\Events\Contracts\CanAcceptEventHandler;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Logging\EventLog;
 use Cognesy\Messages\ToolCall;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
+use DateTimeImmutable;
+use Override;
 use Throwable;
 
 /**
@@ -56,8 +60,8 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
         private CanInterceptAgentLifecycle $interceptor,
     ) {}
 
-    public static function default() : self {
-        $events = new EventDispatcher('agent-loop');
+    public static function default(): self {
+        $events = EventLog::root('agent-loop');
         $interceptor = new PassThroughInterceptor();
         $tools = new Tools();
         $llm = LLMProvider::new();
@@ -81,7 +85,7 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
 
     // PUBLIC API //////////////////////////////////
 
-    #[\Override]
+    #[Override]
     public function execute(AgentState $state): AgentState {
         $finalState = $state;
         foreach ($this->iterate($state) as $stepState) {
@@ -90,14 +94,28 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
         return $finalState;
     }
 
-    #[\Override]
+    #[Override]
     public function iterate(AgentState $state): iterable {
         $driver = $this->bindToolRuntime($this->driver);
         $state = $this->onBeforeExecution($state);
+        if ($this->shouldStopAtCheckpoint($state)) {
+            $state = $this->onStop($state);
+            $finalState = $this->onAfterExecution($state);
+            if ($finalState->updatedAt() !== $state->updatedAt()) {
+                yield $finalState;
+            }
+            return;
+        }
+
         while (true) {
             $stepStarted = false;
             try {
                 $state = $this->onBeforeStep($state);
+                if ($this->shouldStopAtCheckpoint($state)) {
+                    $state = $this->onStop($state);
+                    break;
+                }
+
                 $stepStarted = true;
                 $state = $this->handleToolUse($state, $driver);
             } catch (AgentStopException $stop) {
@@ -117,7 +135,7 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
             $state = $state->withCurrentStepCompleted();
             yield $state;
         }
-        $finalState = match(true) {
+        $finalState = match (true) {
             $state->hasCurrentStep() => $state->withCurrentStepCompleted(),
             default => $state,
         };
@@ -150,7 +168,7 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
         return $state;
     }
 
-    private function onStop(AgentState $state) : AgentState {
+    private function onStop(AgentState $state): AgentState {
         $state = $this->interceptor->intercept(HookContext::onStop($state))->state();
         $this->emitExecutionStopped($state);
         return $state;
@@ -172,7 +190,7 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
 
     // INTERNAL ///////////////////////////////////////////
 
-    private function handleToolUse(AgentState $state, CanUseTools $driver) : AgentState {
+    private function handleToolUse(AgentState $state, CanUseTools $driver): AgentState {
         try {
             $state = $this->useTools($state, $driver);
         } catch (ToolExecutionBlockedException $block) {
@@ -181,7 +199,7 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
         return $state;
     }
 
-    private function handleToolBlockException(AgentState $state, ToolExecutionBlockedException $stop) : AgentState {
+    private function handleToolBlockException(AgentState $state, ToolExecutionBlockedException $stop): AgentState {
         $this->emitToolCallBlocked($state, $stop->toolCall, $stop->getMessage(), $stop->hookName);
         return $this->onError($state, $stop);
     }
@@ -200,11 +218,20 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
     }
 
     protected function shouldStop(AgentState $state): bool {
-        $shouldStop = match(true) {
+        $shouldStop = match (true) {
             $state->shouldStop() => true,
             default => false,
         };
         $this->emitContinuationEvaluated($state);
+        return $shouldStop;
+    }
+
+    private function shouldStopAtCheckpoint(AgentState $state): bool {
+        $shouldStop = $state->executionContinuation()?->shouldStop() ?? false;
+        if ($shouldStop) {
+            $this->emitContinuationEvaluated($state);
+        }
+
         return $shouldStop;
     }
 
@@ -225,12 +252,14 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
 
     // EVENT DELEGATION ///////////////////////////////////
 
-    public function wiretap(callable $listener): self {
+    /** @param callable(object): void $listener */
+    public function wiretap(callable $listener): static {
         $this->events->wiretap($listener);
         return $this;
     }
 
-    public function onEvent(string $eventClass, callable $listener): self {
+    /** @param callable(object): void $listener */
+    public function onEvent(string $eventClass, callable $listener): static {
         $this->events->addListener($eventClass, $listener);
         return $this;
     }
@@ -265,7 +294,7 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
         ?CanUseTools $driver = null,
         ?CanHandleEvents $events = null,
         ?CanInterceptAgentLifecycle $interceptor = null,
-    ): self {
+    ): static {
         $resolvedTools = $tools ?? $this->tools;
         $resolvedEvents = $events ?? $this->events;
         $resolvedInterceptor = $interceptor ?? $this->interceptor;
@@ -277,7 +306,7 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
             default => $this->toolExecutor,
         };
 
-        return new self(
+        return new static(
             tools: $resolvedTools,
             toolExecutor: $resolvedExecutor,
             driver: $driver ?? $this->driver,
@@ -313,31 +342,37 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
     // EVENT EMISSION ////////////////////////////////////////
 
     private function emitExecutionStarted(AgentState $state, int $availableTools): void {
-        $this->events->dispatch(new AgentExecutionStarted(
+        $event = new AgentExecutionStarted(
             agentId: $state->agentId()->toString(),
             executionId: $state->execution()?->executionId()->toString() ?? '',
             parentAgentId: $state->parentAgentId() !== null ? (string) $state->parentAgentId() : null,
             messageCount: $state->messages()->count(),
             availableTools: $availableTools,
-        ));
+            messages: $state->messages()->toArray(),
+        );
+
+        $this->events->dispatch(AgentTelemetry::attach($event, AgentStateTelemetry::loadSeed($state)));
     }
 
     private function emitStepStarted(AgentState $state): void {
-        $this->events->dispatch(new AgentStepStarted(
+        $event = new AgentStepStarted(
             agentId: $state->agentId()->toString(),
             executionId: $state->execution()?->executionId()->toString() ?? '',
             parentAgentId: $state->parentAgentId() !== null ? (string) $state->parentAgentId() : null,
             stepNumber: $state->stepCount() + 1,
             messageCount: $state->messages()->count(),
             availableTools: 0,
-        ));
+            messages: $state->messages()->toArray(),
+        );
+
+        $this->events->dispatch(AgentTelemetry::attach($event, AgentStateTelemetry::loadSeed($state)));
     }
 
     private function emitStepCompleted(AgentState $state): void {
         $usage = $state->currentStep()?->usage() ?? new InferenceUsage(0, 0);
         $durationMs = ($state->currentStepDuration() ?? 0.0) * 1000;
 
-        $this->events->dispatch(new AgentStepCompleted(
+        $event = new AgentStepCompleted(
             agentId: $state->agentId()->toString(),
             executionId: $state->execution()?->executionId()->toString() ?? '',
             parentAgentId: $state->parentAgentId() !== null ? (string) $state->parentAgentId() : null,
@@ -347,12 +382,15 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
             errorMessages: $state->currentStep()?->errorsAsString() ?? '',
             usage: $usage,
             finishReason: $state->currentStep()?->finishReason(),
-            startedAt: new \DateTimeImmutable(),
+            startedAt: new DateTimeImmutable(),
             durationMs: $durationMs,
-        ));
+            outputMessages: $state->currentStep()?->outputMessages()->toArray() ?? [],
+        );
+
+        $this->events->dispatch(AgentTelemetry::attach($event, AgentStateTelemetry::loadSeed($state)));
 
         if ($usage->total() > 0) {
-            $this->events->dispatch(new TokenUsageReported(
+            $usageEvent = new TokenUsageReported(
                 agentId: $state->agentId()->toString(),
                 executionId: $state->execution()?->executionId()->toString() ?? '',
                 parentAgentId: $state->parentAgentId() !== null ? (string) $state->parentAgentId() : null,
@@ -362,46 +400,57 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
                     'step' => $state->stepCount(),
                     'hasToolCalls' => $state->currentStep()?->hasToolCalls() ?? false,
                 ],
-            ));
+            );
+
+            $this->events->dispatch(AgentTelemetry::attach($usageEvent, AgentStateTelemetry::loadSeed($state)));
         }
     }
 
     private function emitExecutionStopped(AgentState $state): void {
-        $signal = $state->executionContinuation()?->stopSignals()->first();
-        $this->events->dispatch(new AgentExecutionStopped(
+        $signal = $state->stopSignal();
+        $event = new AgentExecutionStopped(
             agentId: $state->agentId()->toString(),
             executionId: $state->execution()?->executionId()->toString() ?? '',
             parentAgentId: $state->parentAgentId() !== null ? (string) $state->parentAgentId() : null,
-            stopReason: $signal?->reason ?? StopReason::Unknown,
+            stopReason: $signal?->reason ?? StopReason::Completed,
             stopMessage: $signal?->message ?? '',
             source: $signal?->source,
             totalSteps: $state->stepCount(),
-        ));
+            stopContext: $signal?->context ?? [],
+        );
+
+        $this->events->dispatch(AgentTelemetry::attach($event, AgentStateTelemetry::loadSeed($state)));
     }
 
     private function emitExecutionFinished(AgentState $state): void {
-        $this->events->dispatch(new AgentExecutionCompleted(
+        $assistantMessages = $state->messages()->forRoles(['assistant']);
+        $event = new AgentExecutionCompleted(
             agentId: $state->agentId()->toString(),
             executionId: $state->execution()?->executionId()->toString() ?? '',
             parentAgentId: $state->parentAgentId() !== null ? (string) $state->parentAgentId() : null,
-            status: $state->status(),
+            status: $state->status() ?? ExecutionStatus::Completed,
             totalSteps: $state->stepCount(),
             totalUsage: $state->usage(),
             errors: $state->currentStep()?->errorsAsString(),
-        ));
+            outputMessages: $assistantMessages->isEmpty() ? [] : [$assistantMessages->last()->toArray()],
+        );
+
+        $this->events->dispatch(AgentTelemetry::attach($event, AgentStateTelemetry::loadSeed($state)));
     }
 
     private function emitExecutionFailed(AgentState $state, Throwable $exception): void {
-        $this->events->dispatch(new AgentExecutionFailed(
+        $event = new AgentExecutionFailed(
             agentId: $state->agentId()->toString(),
             executionId: $state->execution()?->executionId()->toString() ?? '',
             parentAgentId: $state->parentAgentId() !== null ? (string) $state->parentAgentId() : null,
             exception: $exception,
-            status: $state->status(),
+            status: $state->status() ?? ExecutionStatus::Failed,
             stepsCompleted: $state->stepCount(),
             totalUsage: $state->usage(),
             errors: $state->currentStep()?->errorsAsString(),
-        ));
+        );
+
+        $this->events->dispatch(AgentTelemetry::attach($event, AgentStateTelemetry::loadSeed($state)));
     }
 
     private function emitContinuationEvaluated(AgentState $state): void {
@@ -415,7 +464,7 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
     }
 
     private function emitToolCallBlocked(AgentState $state, ToolCall $toolCall, string $reason, ?string $hookName): void {
-        $this->events->dispatch(new ToolCallBlocked(
+        $event = new ToolCallBlocked(
             agentId: $state->agentId()->toString(),
             executionId: $state->execution()?->executionId()->toString() ?? '',
             parentAgentId: $state->parentAgentId() !== null ? (string) $state->parentAgentId() : null,
@@ -424,7 +473,9 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
             args: $toolCall->args(),
             reason: $reason,
             hookName: $hookName,
-        ));
+        );
+
+        $this->events->dispatch(AgentTelemetry::attach($event, AgentStateTelemetry::loadSeed($state)));
     }
 
     private function emitStopSignalReceived(StopSignal $signal): void {

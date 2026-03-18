@@ -151,7 +151,7 @@ if ($result->hasErrors()) {
 }
 
 // Why the loop stopped
-$stopReason = $result->lastStopReason();
+$stopReason = $result->stopReason();
 echo $stopReason?->value; // "completed", "steps_limit", "token_limit", etc.
 
 // Debug summary (useful during development)

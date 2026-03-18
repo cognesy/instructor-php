@@ -46,9 +46,15 @@ class InferenceStream
     private bool $firstChunkReceived = false;
     /** @var (Closure(InferenceResponse): InferenceResponse)|null */
     private ?Closure $decorateFinalResponse = null;
+    /** @var (Closure(InferenceExecution): void)|null */
+    private ?Closure $onFinalizedExecution = null;
+    /** @var (Closure(\Throwable, InferenceUsage): void)|null */
+    private ?Closure $onStreamFailed = null;
 
     /**
      * @param (Closure(InferenceResponse):InferenceResponse)|null $decorateFinalResponse
+     * @param (Closure(InferenceExecution):void)|null $onFinalizedExecution
+     * @param (Closure(\Throwable, InferenceUsage):void)|null $onStreamFailed
      */
     public function __construct(
         InferenceExecution         $execution,
@@ -56,6 +62,8 @@ class InferenceStream
         EventDispatcherInterface   $eventDispatcher,
         ?DateTimeImmutable         $startedAt = null,
         ?Closure                   $decorateFinalResponse = null,
+        ?Closure                   $onFinalizedExecution = null,
+        ?Closure                   $onStreamFailed = null,
     ) {
         $this->execution = $execution;
         $this->driver = $driver;
@@ -65,6 +73,8 @@ class InferenceStream
         $this->state = new InferenceStreamState();
         $this->visibility = new VisibilityTracker();
         $this->decorateFinalResponse = $decorateFinalResponse;
+        $this->onFinalizedExecution = $onFinalizedExecution;
+        $this->onStreamFailed = $onStreamFailed;
     }
 
     /**
@@ -184,23 +194,31 @@ class InferenceStream
     private function emitVisibleDeltas(): Generator {
         $this->initializeDeltaStream();
 
-        while ($this->deltaStream->valid()) {
-            $delta = $this->deltaStream->current();
-            assert($delta instanceof PartialInferenceDelta);
+        try {
+            while ($this->deltaStream->valid()) {
+                $delta = $this->deltaStream->current();
+                assert($delta instanceof PartialInferenceDelta);
 
-            $visibleDelta = $this->advanceState($delta);
-            $this->deltaStream->next();
-            if ($visibleDelta === null) {
-                continue;
+                $visibleDelta = $this->advanceState($delta);
+                $this->deltaStream->next();
+                if ($visibleDelta === null) {
+                    continue;
+                }
+
+                if (!$this->firstChunkReceived) {
+                    $this->dispatchFirstChunkReceived($visibleDelta);
+                    $this->firstChunkReceived = true;
+                }
+
+                $this->notifyOnDelta($visibleDelta);
+                yield $visibleDelta;
+            }
+        } catch (\Throwable $error) {
+            if ($this->onStreamFailed !== null) {
+                ($this->onStreamFailed)($error, $this->state->usage());
             }
 
-            if (!$this->firstChunkReceived) {
-                $this->dispatchFirstChunkReceived($visibleDelta);
-                $this->firstChunkReceived = true;
-            }
-
-            $this->notifyOnDelta($visibleDelta);
-            yield $visibleDelta;
+            throw $error;
         }
 
         $this->finalizeDeltaStream();
@@ -264,6 +282,10 @@ class InferenceStream
         };
 
         $this->events->dispatch(new InferenceResponseCreated($this->responseEventData($response)));
+
+        if ($this->onFinalizedExecution !== null) {
+            ($this->onFinalizedExecution)($this->execution);
+        }
     }
 
     private function advanceState(PartialInferenceDelta $delta): ?PartialInferenceDelta

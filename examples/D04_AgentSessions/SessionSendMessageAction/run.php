@@ -3,6 +3,10 @@ title: 'Session SendMessage Action'
 docname: 'session_send_message_action'
 order: 4
 id: 'c1e7'
+tags:
+  - 'agent-sessions'
+  - 'messaging'
+  - 'actions'
 ---
 ## Overview
 

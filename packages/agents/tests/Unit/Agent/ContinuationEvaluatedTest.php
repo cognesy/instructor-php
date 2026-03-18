@@ -45,3 +45,29 @@ it('uses stop signal metadata when provided', function () {
     expect($event->stopReason())->toBe(StopReason::TokenLimitReached)
         ->and($event->resolvedBy())->toBe('CustomSource');
 });
+
+it('prefers the highest-priority stop signal when multiple signals are present', function () {
+    $executionState = ExecutionState::fresh()
+        ->withStopSignal(new StopSignal(
+            reason: StopReason::Completed,
+            message: 'lower priority',
+            source: 'LowPrioritySource',
+        ))
+        ->withStopSignal(new StopSignal(
+            reason: StopReason::UserRequested,
+            message: 'higher priority',
+            source: 'HighPrioritySource',
+        ));
+
+    $event = new ContinuationEvaluated(
+        agentId: 'agent-12345678',
+        executionId: 'exec-12345678',
+        parentAgentId: null,
+        stepNumber: 1,
+        executionState: $executionState,
+    );
+
+    expect($event->stopReason())->toBe(StopReason::UserRequested)
+        ->and($event->resolvedBy())->toBe('HighPrioritySource')
+        ->and($event->stopSignal()?->message)->toBe('higher priority');
+});

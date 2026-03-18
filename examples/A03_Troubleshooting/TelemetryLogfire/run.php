@@ -1,0 +1,76 @@
+---
+title: 'Send StructuredOutput telemetry to Logfire'
+docname: 'structured_telemetry_logfire'
+id: 'b7a1'
+tags:
+  - 'troubleshooting'
+  - 'telemetry'
+  - 'logfire'
+---
+## Overview
+
+This example shows how to export Instructor runtime telemetry to Logfire while
+keeping the example itself simple. It wires the existing event bus into the
+telemetry projectors and then runs one small structured extraction.
+
+Key concepts:
+- `RuntimeEventBridge`: attaches telemetry projection to the runtime event bus
+- `LogfireExporter`: sends canonical telemetry to Logfire via OTLP/HTTP
+- `InstructorTelemetryProjector`: maps structured output lifecycle events
+- `PolyglotTelemetryProjector`: captures the nested LLM inference spans
+- `HttpClientTelemetryProjector`: captures outbound HTTP spans
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+require_once 'examples/_support/logfire.php';
+
+use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Http\Telemetry\HttpClientTelemetryProjector;
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Instructor\Telemetry\InstructorTelemetryProjector;
+use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Polyglot\Telemetry\PolyglotTelemetryProjector;
+use Cognesy\Telemetry\Application\Projector\CompositeTelemetryProjector;
+use Cognesy\Telemetry\Application\Projector\RuntimeEventBridge;
+
+class SupportTicket
+{
+    public string $priority;
+    public string $summary;
+}
+
+$events = new EventDispatcher('examples.a03.telemetry-logfire');
+$hub = exampleLogfireHub('examples.a03.telemetry-logfire');
+
+(new RuntimeEventBridge(new CompositeTelemetryProjector([
+    new InstructorTelemetryProjector($hub),
+    new PolyglotTelemetryProjector($hub),
+    new HttpClientTelemetryProjector($hub),
+])))->attachTo($events);
+
+$runtime = StructuredOutputRuntime::fromProvider(
+    provider: LLMProvider::using('openai'),
+    events: $events,
+);
+
+$ticket = (new StructuredOutput($runtime))
+    ->with(
+        messages: 'Customer report: The checkout page returns a 500 error after payment. Treat this as urgent and summarize it in one sentence.',
+        responseModel: SupportTicket::class,
+    )
+    ->get();
+
+$hub->flush();
+
+echo "Priority: {$ticket->priority}\n";
+echo "Summary: {$ticket->summary}\n";
+echo "Telemetry: flushed to Logfire\n";
+
+assert($ticket->priority !== '');
+assert($ticket->summary !== '');
+?>
+```

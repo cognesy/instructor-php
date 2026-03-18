@@ -3,6 +3,10 @@ title: 'Parallel Calls'
 docname: 'parallel_calls'
 path: ''
 id: '4bae'
+tags:
+  - 'llm-advanced'
+  - 'parallelism'
+  - 'concurrency'
 ---
 ## Overview
 

@@ -103,6 +103,7 @@ class HttpRequest
         return $this->copyWith(
             headers: $headers,
             options: $this->options,
+            metadata: $this->metadata,
         );
     }
 
@@ -116,7 +117,20 @@ class HttpRequest
         return $this->copyWith(
             headers: $this->headers,
             options: $options,
+            metadata: $this->metadata,
         );
+    }
+
+    public function withMetadata(Metadata $metadata) : self {
+        return $this->copyWith(
+            headers: $this->headers,
+            options: $this->options,
+            metadata: $metadata,
+        );
+    }
+
+    public function withMetadataKey(string $key, mixed $value) : self {
+        return $this->withMetadata($this->metadata->withKeyValue($key, $value));
     }
 
     // SERIALIZATION ////////////////////////////////////////////////////////////////
@@ -163,7 +177,7 @@ class HttpRequest
         );
     }
 
-    private function copyWith(array $headers, array $options) : self {
+    private function copyWith(array $headers, array $options, Metadata $metadata) : self {
         return new self(
             url: $this->url,
             method: $this->method,
@@ -173,7 +187,7 @@ class HttpRequest
             id: $this->id,
             createdAt: $this->createdAt,
             updatedAt: new DateTimeImmutable(),
-            metadata: $this->metadata,
+            metadata: $metadata,
         );
     }
 }

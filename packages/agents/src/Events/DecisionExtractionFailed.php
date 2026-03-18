@@ -3,6 +3,7 @@
 namespace Cognesy\Agents\Events;
 
 use DateTimeImmutable;
+use Psr\Log\LogLevel;
 
 /**
  * Dispatched when decision/structured output extraction fails.
@@ -10,6 +11,7 @@ use DateTimeImmutable;
  */
 final class DecisionExtractionFailed extends AgentEvent
 {
+    public string $logLevel = LogLevel::WARNING;
     public readonly DateTimeImmutable $failedAt;
 
     public function __construct(

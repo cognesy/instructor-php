@@ -1,0 +1,173 @@
+---
+title: 'Send Subagent telemetry to Logfire'
+docname: 'agent_subagent_telemetry_logfire'
+id: '2c4f'
+tags:
+  - 'agent-troubleshooting'
+  - 'logfire'
+  - 'subagents'
+---
+## Overview
+
+This example extends the existing agent telemetry pattern with delegated work.
+The parent agent stays visible in the console, but the same event stream is also
+projected to Logfire so you can inspect the full parent and subagent trace tree.
+
+Key concepts:
+- `UseSubagents`: lets the parent delegate work through `spawn_subagent`
+- `AgentDefinitionRegistry`: defines the available delegated workers
+- `RuntimeEventBridge`: projects the full parent and child event stream into telemetry
+- `AgentsTelemetryProjector`: maps agent execution, tool, and subagent lifecycle events
+- `UseBash`: gives the delegated subagent a real tool boundary to emit nested telemetry
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+require_once 'examples/_support/logfire.php';
+
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Bash\UseBash;
+use Cognesy\Agents\Capability\Core\UseContextConfig;
+use Cognesy\Agents\Capability\Core\UseGuards;
+use Cognesy\Agents\Capability\Core\UseLLMConfig;
+use Cognesy\Agents\Capability\Subagent\UseSubagents;
+use Cognesy\Agents\Collections\NameList;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Enums\ExecutionStatus;
+use Cognesy\Agents\Events\SubagentCompleted;
+use Cognesy\Agents\Events\SubagentSpawning;
+use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
+use Cognesy\Agents\Telemetry\AgentsTelemetryProjector;
+use Cognesy\Agents\Template\AgentDefinitionRegistry;
+use Cognesy\Agents\Template\Data\AgentDefinition;
+use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Http\Telemetry\HttpClientTelemetryProjector;
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Polyglot\Telemetry\PolyglotTelemetryProjector;
+use Cognesy\Telemetry\Application\Projector\CompositeTelemetryProjector;
+use Cognesy\Telemetry\Application\Projector\RuntimeEventBridge;
+
+$events = new EventDispatcher('examples.d05.subagent-telemetry-logfire');
+$hub = exampleLogfireHub('examples.d05.subagent-telemetry-logfire');
+
+(new RuntimeEventBridge(new CompositeTelemetryProjector([
+    new AgentsTelemetryProjector($hub),
+    new PolyglotTelemetryProjector($hub),
+    new HttpClientTelemetryProjector($hub),
+])))->attachTo($events);
+
+$logger = new AgentEventConsoleObserver(
+    useColors: true,
+    showTimestamps: true,
+    showContinuation: true,
+    showToolArgs: true,
+);
+
+$workDir = dirname(__DIR__, 3);
+$registry = new AgentDefinitionRegistry();
+$registry->register(new AgentDefinition(
+    name: 'repo_inspector',
+    description: 'Inspects repository paths with bash and reports concise evidence',
+    systemPrompt: <<<'SYSTEM'
+        You inspect repositories with the bash tool.
+        Every factual claim must come from bash output.
+        Use bash at least 3 separate times.
+        Never combine commands with && or ;.
+        SYSTEM,
+    tools: NameList::fromArray(['bash']),
+));
+
+$subagentSpawns = [];
+$subagentCompletions = [];
+
+$agent = AgentBuilder::base($events)
+    ->withCapability(new UseContextConfig(systemPrompt: <<<'SYSTEM'
+        You are an orchestration agent.
+        When repository inspection is needed and a suitable subagent exists, delegate the inspection.
+        Do not use bash directly when `repo_inspector` can do the work.
+        Summarize delegated findings clearly and briefly.
+        SYSTEM))
+    ->withCapability(new UseLLMConfig(llm: LLMProvider::using('openai')))
+    ->withCapability(new UseBash(baseDir: $workDir))
+    ->withCapability(new UseSubagents(provider: $registry))
+    ->withCapability(new UseGuards(maxSteps: 8, maxTokens: 12288, maxExecutionTime: 60))
+    ->build()
+    ->wiretap($logger->wiretap())
+    ->wiretap(static function (object $event) use (&$subagentSpawns, &$subagentCompletions): void {
+        if ($event instanceof SubagentSpawning) {
+            $subagentSpawns[] = $event;
+        }
+        if ($event instanceof SubagentCompleted) {
+            $subagentCompletions[] = $event;
+        }
+    });
+
+$task = <<<'TASK'
+Inspect this repository by delegating the inspection to the `repo_inspector` subagent.
+
+Requirements for the delegated subagent work:
+- Use bash at least 3 separate times.
+- Do not combine commands with && or ;.
+- Run these as separate bash calls:
+  1. pwd
+  2. ls examples/D05_AgentTroubleshooting
+  3. rg -n "UseSubagents|SpawnSubagentTool|SubagentSpawning" packages/agents/src/Capability/Subagent/*.php packages/agents/src/Events/Subagent*.php
+
+Then answer in 3 short bullets:
+1. What kind of repository this is
+2. Where the agent telemetry examples live
+3. What the subagent telemetry path records
+TASK;
+
+$state = AgentState::empty()->withMessages(Messages::fromString($task));
+
+echo "=== Agent Execution Log ===\n\n";
+
+$finalState = $agent->execute($state);
+$hub->flush();
+
+$collectToolNames = function (AgentState $state) use (&$collectToolNames): array {
+    return array_reduce(
+        $state->stepExecutions()->all(),
+        static function (array $names, $stepExecution) use (&$collectToolNames): array {
+            $stepNames = [];
+            foreach ($stepExecution->step()->toolExecutions()->all() as $toolExecution) {
+                $stepNames[] = $toolExecution->name();
+                $value = $toolExecution->value();
+                if ($value instanceof AgentState) {
+                    $stepNames = [...$stepNames, ...$collectToolNames($value)];
+                }
+            }
+
+            return [...$names, ...$stepNames];
+        },
+        [],
+    );
+};
+
+$toolNames = $collectToolNames($finalState);
+$toolCallCount = count($toolNames);
+$bashCallCount = count(array_filter($toolNames, static fn(string $name): bool => $name === 'bash'));
+
+echo "\n=== Result ===\n";
+$response = $finalState->finalResponse()->toString() ?: 'No response';
+echo "Answer: {$response}\n";
+echo "Status: {$finalState->status()->value}\n";
+echo "Steps: {$finalState->stepCount()}\n";
+echo "Tools used: " . implode(' > ', $toolNames) . "\n";
+echo "Total tool calls: {$toolCallCount}\n";
+echo "Bash calls across parent/child runs: {$bashCallCount}\n";
+echo "Subagents spawned: " . count($subagentSpawns) . "\n";
+echo "Subagents completed: " . count($subagentCompletions) . "\n";
+echo "Telemetry: flushed to Logfire\n";
+
+assert($finalState->status() === ExecutionStatus::Completed);
+assert($response !== '');
+assert(count($subagentSpawns) >= 1);
+assert(count($subagentCompletions) >= 1);
+assert($bashCallCount >= 3);
+?>
+```

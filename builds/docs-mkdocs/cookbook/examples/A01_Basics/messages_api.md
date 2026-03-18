@@ -3,6 +3,10 @@ title: 'Messages API'
 docname: 'messages_api'
 path: ''
 id: 'e4e7'
+tags:
+  - 'basics'
+  - 'messages'
+  - 'prompting'
 ---
 ## Overview
 

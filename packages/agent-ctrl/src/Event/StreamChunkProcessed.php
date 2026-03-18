@@ -3,6 +3,7 @@
 namespace Cognesy\AgentCtrl\Event;
 
 use Cognesy\AgentCtrl\Enum\AgentType;
+use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Psr\Log\LogLevel;
 
 /**
@@ -14,12 +15,13 @@ final class StreamChunkProcessed extends AgentEvent
 
     public function __construct(
         AgentType $agentType,
+        AgentCtrlExecutionId $executionId,
         public readonly int $chunkNumber,
         public readonly int $chunkSize,
         public readonly string $contentType,
         public readonly float $processingDurationMs,
     ) {
-        parent::__construct($agentType, [
+        parent::__construct($agentType, $executionId, [
             'chunkNumber' => $chunkNumber,
             'chunkSize' => $chunkSize,
             'contentType' => $contentType,

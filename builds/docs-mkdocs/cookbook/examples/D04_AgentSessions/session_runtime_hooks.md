@@ -3,6 +3,10 @@ title: 'Session Runtime Hooks'
 docname: 'session_runtime_hooks'
 order: 7
 id: 'f2a1'
+tags:
+  - 'agent-sessions'
+  - 'runtime'
+  - 'hooks'
 ---
 ## Overview
 

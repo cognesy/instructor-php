@@ -29,7 +29,11 @@ use Cognesy\AgentCtrl\Event\ResponseParsingStarted;
 use Cognesy\AgentCtrl\Event\StreamChunkProcessed;
 use Cognesy\AgentCtrl\Event\StreamProcessingCompleted;
 use Cognesy\AgentCtrl\Event\StreamProcessingStarted;
+use Cognesy\AgentCtrl\Event\AgentEvent;
+use Cognesy\AgentCtrl\Telemetry\AgentCtrlEventTelemetry;
+use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Sandbox\Enums\SandboxDriver;
 use Cognesy\Utils\Json\JsonParsingException;
 use JsonException;
@@ -41,6 +45,8 @@ final class ClaudeCodeBridge implements AgentBridge
 {
     private ClaudeCommandBuilder $commandBuilder;
     private ResponseParser $responseParser;
+    private AgentCtrlExecutionId $executionId;
+    private CanHandleEvents $events;
 
     public function __construct(
         private ?string $model = null,
@@ -56,16 +62,24 @@ final class ClaudeCodeBridge implements AgentBridge
         private ?string $workingDirectory = null,
         private SandboxDriver $sandboxDriver = SandboxDriver::Host,
         private int $timeout = 120,
-        private ?CanHandleEvents $events = null,
+        ?CanHandleEvents $events = null,
         private bool $failFast = true,
+        ?AgentCtrlExecutionId $executionId = null,
     ) {
+        $this->events = $events ?? new EventDispatcher();
+        $this->executionId = $executionId ?? AgentCtrlExecutionId::fresh();
         $this->commandBuilder = new ClaudeCommandBuilder();
         $this->responseParser = new ResponseParser($this->failFast);
     }
 
     private function dispatch(object $event): void
     {
-        $this->events?->dispatch($event);
+        $enriched = match (true) {
+            $event instanceof AgentEvent => AgentCtrlEventTelemetry::attach($event),
+            default => $event,
+        };
+
+        $this->events->dispatch($enriched);
     }
 
     #[\Override]
@@ -87,21 +101,23 @@ final class ClaudeCodeBridge implements AgentBridge
             $requestStart = microtime(true);
             $request = $this->buildRequest($prompt);
             $requestDuration = (microtime(true) - $requestStart) * 1000;
-            $this->dispatch(new RequestBuilt(AgentType::ClaudeCode, 'ClaudeRequest', $requestDuration));
+            $this->dispatch(new RequestBuilt(AgentType::ClaudeCode, $this->executionId, 'ClaudeRequest', $requestDuration));
 
             // Build command spec with timing
             $commandStart = microtime(true);
             $spec = $this->commandBuilder->buildHeadless($request);
             $commandDuration = (microtime(true) - $commandStart) * 1000;
-            $this->dispatch(new CommandSpecCreated(AgentType::ClaudeCode, count($spec->argv()->toArray()), $commandDuration));
+            $this->dispatch(new CommandSpecCreated(AgentType::ClaudeCode, $this->executionId, count($spec->argv()->toArray()), $commandDuration));
 
-            $executor = SandboxCommandExecutor::forClaudeCode($this->sandboxDriver, $this->timeout, $this->events);
+            $executor = SandboxCommandExecutor::forClaudeCode($this->executionId, $this->sandboxDriver, $this->timeout, $this->events);
 
             // Emit process execution start
-            $this->dispatch(new ProcessExecutionStarted(AgentType::ClaudeCode, count($spec->argv()->toArray())));
+            $this->dispatch(new ProcessExecutionStarted(AgentType::ClaudeCode, $this->executionId, count($spec->argv()->toArray())));
 
             $collectedText = '';
             $toolCalls = [];
+            /** @var array<string, array{tool:string,input:array}> */
+            $pendingToolUses = [];
             $sessionId = null;
             $chunkCount = 0;
             $totalBytesProcessed = 0;
@@ -109,10 +125,10 @@ final class ClaudeCodeBridge implements AgentBridge
 
             $streamStart = $handler !== null ? microtime(true) : null;
             if ($handler !== null && $streamStart !== null) {
-                $this->dispatch(new StreamProcessingStarted(AgentType::ClaudeCode));
+                $this->dispatch(new StreamProcessingStarted(AgentType::ClaudeCode, $this->executionId));
             }
 
-            $streamCallback = $handler !== null ? function (string $type, string $chunk) use ($handler, $jsonLinesBuffer, &$collectedText, &$toolCalls, &$sessionId, &$chunkCount, &$totalBytesProcessed): void {
+            $streamCallback = $handler !== null ? function (string $type, string $chunk) use ($handler, $jsonLinesBuffer, &$collectedText, &$toolCalls, &$pendingToolUses, &$sessionId, &$chunkCount, &$totalBytesProcessed): void {
                 if ($type !== 'out') {
                     return;
                 }
@@ -123,12 +139,13 @@ final class ClaudeCodeBridge implements AgentBridge
                 $totalBytesProcessed += $chunkSize;
 
                 foreach ($jsonLinesBuffer->consume($chunk) as $line) {
-                    $this->handleStreamJsonLine($line, $handler, $collectedText, $toolCalls, $sessionId);
+                    $this->handleStreamJsonLine($line, $handler, $collectedText, $toolCalls, $pendingToolUses, $sessionId);
                 }
 
                 $chunkDuration = (microtime(true) - $chunkStart) * 1000;
                 $this->dispatch(new StreamChunkProcessed(
                     AgentType::ClaudeCode,
+                    $this->executionId,
                     $chunkCount,
                     $chunkSize,
                     'json-lines',
@@ -140,7 +157,7 @@ final class ClaudeCodeBridge implements AgentBridge
 
             if ($handler !== null && $jsonLinesBuffer !== null) {
                 foreach ($jsonLinesBuffer->flush() as $line) {
-                    $this->handleStreamJsonLine($line, $handler, $collectedText, $toolCalls, $sessionId);
+                    $this->handleStreamJsonLine($line, $handler, $collectedText, $toolCalls, $pendingToolUses, $sessionId);
                 }
             }
 
@@ -149,6 +166,7 @@ final class ClaudeCodeBridge implements AgentBridge
                 $streamDuration = (microtime(true) - $streamStart) * 1000;
                 $this->dispatch(new StreamProcessingCompleted(
                     AgentType::ClaudeCode,
+                    $this->executionId,
                     $chunkCount,
                     $streamDuration,
                     $totalBytesProcessed
@@ -157,7 +175,7 @@ final class ClaudeCodeBridge implements AgentBridge
 
             // Parse response for non-streaming or to extract final data
             $responseStart = microtime(true);
-            $this->dispatch(new ResponseParsingStarted(AgentType::ClaudeCode, strlen($execResult->stdout()), 'stream-json'));
+            $this->dispatch(new ResponseParsingStarted(AgentType::ClaudeCode, $this->executionId, strlen($execResult->stdout()), 'stream-json'));
             $response = $this->responseParser->parse($execResult, OutputFormat::StreamJson);
 
             // Always extract from parsed response to avoid stream callback data loss.
@@ -208,6 +226,7 @@ final class ClaudeCodeBridge implements AgentBridge
             $extractDuration = (microtime(true) - $extractStart) * 1000;
             $this->dispatch(new ResponseDataExtracted(
                 AgentType::ClaudeCode,
+                $this->executionId,
                 $eventCount,
                 $toolUseCount,
                 $textLength,
@@ -216,12 +235,13 @@ final class ClaudeCodeBridge implements AgentBridge
 
             // Emit response parsing completion
             $responseDuration = (microtime(true) - $responseStart) * 1000;
-            $this->dispatch(new ResponseParsingCompleted(AgentType::ClaudeCode, $responseDuration, $sessionId));
+            $this->dispatch(new ResponseParsingCompleted(AgentType::ClaudeCode, $this->executionId, $responseDuration, $sessionId));
 
             return new AgentResponse(
                 agentType: AgentType::ClaudeCode,
                 text: $collectedText,
                 exitCode: $execResult->exitCode(),
+                executionId: $this->executionId,
                 sessionId: $sessionId,
                 usage: null, // ClaudeCode doesn't expose token usage
                 cost: null,  // ClaudeCode doesn't expose cost
@@ -255,12 +275,14 @@ final class ClaudeCodeBridge implements AgentBridge
 
     /**
      * @param list<ToolCall> $toolCalls
+     * @param array<string, array{tool:string,input:array}> $pendingToolUses
      */
     private function handleStreamJsonLine(
         string $line,
         StreamHandler $handler,
         string &$collectedText,
         array &$toolCalls,
+        array &$pendingToolUses,
         ?string &$sessionId,
     ): void {
         $decoded = $this->decodeStreamJsonLine($line, 'Claude stream JSON line');
@@ -286,6 +308,10 @@ final class ClaudeCodeBridge implements AgentBridge
                     input: $toolUse->input,
                     callId: $toolUse->id,
                 );
+                $pendingToolUses[$toolUse->id] = [
+                    'tool' => $toolUse->name,
+                    'input' => $toolUse->input,
+                ];
                 $toolCalls[] = $toolCall;
                 $handler->onToolUse($toolCall);
             }
@@ -294,12 +320,13 @@ final class ClaudeCodeBridge implements AgentBridge
                 $toolCall = new ToolCall(
                     tool: 'tool_result',
                     input: ['tool_use_id' => $toolResult->toolUseId],
-                    output: $toolResult->content,
+                    output: $toolResult->content !== '' ? $toolResult->content : null,
                     callId: $toolResult->toolUseId,
                     isError: $toolResult->isError,
                 );
                 $toolCalls[] = $toolCall;
                 $handler->onToolUse($toolCall);
+                unset($pendingToolUses[$toolResult->toolUseId]);
             }
         }
 

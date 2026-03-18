@@ -2,6 +2,10 @@
 title: 'Using attributes'
 docname: 'attributes'
 id: '4f7a'
+tags:
+  - 'basics'
+  - 'attributes'
+  - 'schema-hints'
 ---
 ## Overview
 

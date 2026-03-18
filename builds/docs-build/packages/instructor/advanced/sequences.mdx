@@ -22,7 +22,7 @@ $list = (new StructuredOutput)->with(
     messages: $text,
     responseModel: Sequence::of(Person::class),
 )->get();
-// @doctest id="a138"
+// @doctest id="2c48"
 ```
 
 The returned `$list` is a `Sequence` instance containing fully validated `Person` objects.
@@ -46,7 +46,7 @@ foreach ($list as $person) {
 
 // Array access
 $person = $list[0];
-// @doctest id="8280"
+// @doctest id="eba5"
 ```
 
 ## Streaming Sequences
@@ -68,7 +68,7 @@ foreach ($stream->sequence() as $person) {
 
 // Get the final, fully validated sequence
 $people = $stream->finalValue();
-// @doctest id="47d7"
+// @doctest id="c8f8"
 ```
 
 This is ideal for progressive UI updates -- you can render each person in a list as soon as the LLM finishes generating their data, without waiting for the entire response.
@@ -88,7 +88,7 @@ $list = (new StructuredOutput)->with(
         description: 'Action items extracted from a meeting transcript',
     ),
 )->get();
-// @doctest id="1563"
+// @doctest id="7d46"
 ```
 
 ## Combining with Output Formats
@@ -103,5 +103,5 @@ $data = (new StructuredOutput)
     ->get();
 
 // Result: ['list' => [['name' => 'Jason', 'age' => 25], ...]]
-// @doctest id="6dbe"
+// @doctest id="0530"
 ```

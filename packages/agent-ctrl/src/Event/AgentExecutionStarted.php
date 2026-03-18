@@ -3,6 +3,7 @@
 namespace Cognesy\AgentCtrl\Event;
 
 use Cognesy\AgentCtrl\Enum\AgentType;
+use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Psr\Log\LogLevel;
 
 /**
@@ -14,11 +15,12 @@ final class AgentExecutionStarted extends AgentEvent
 
     public function __construct(
         AgentType $agentType,
+        AgentCtrlExecutionId $executionId,
         public readonly string $prompt,
         public readonly ?string $model = null,
         public readonly ?string $workingDirectory = null,
     ) {
-        parent::__construct($agentType, [
+        parent::__construct($agentType, $executionId, [
             'prompt' => $this->truncatePrompt($prompt),
             'model' => $model,
             'workingDirectory' => $workingDirectory,

@@ -48,7 +48,7 @@ final class ContinuationEvaluated extends AgentEvent
     }
 
     public function stopSignal(): ?StopSignal {
-        return $this->executionState?->continuation()->stopSignals()->first();
+        return $this->executionState?->continuation()->stopSignal();
     }
 
     public function stopReason(): ?StopReason {

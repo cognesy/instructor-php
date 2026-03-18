@@ -2,6 +2,10 @@
 title: 'Generating JSON Schema dynamically'
 docname: 'schema_dynamic'
 id: '8ba1'
+tags:
+  - 'extras'
+  - 'dynamic-schema'
+  - 'schema-generation'
 ---
 ## Overview
 

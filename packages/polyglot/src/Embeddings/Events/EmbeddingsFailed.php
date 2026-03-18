@@ -2,5 +2,10 @@
 
 namespace Cognesy\Polyglot\Embeddings\Events;
 
-class EmbeddingsFailed extends EmbeddingsEvent {}
+use Psr\Log\LogLevel;
+
+class EmbeddingsFailed extends EmbeddingsEvent
+{
+    public string $logLevel = LogLevel::WARNING;
+}
 

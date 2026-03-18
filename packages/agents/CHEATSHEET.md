@@ -35,7 +35,8 @@ For narrative guidance and examples, use `packages/agents/docs/*.md`.
   - context access: `context()`, `store()`, `messages()`, `metadata()`
   - result access: `finalResponse()`, `currentResponse()`, `hasFinalResponse()`
   - execution access: `execution()`, `status()`, `stepCount()`, `steps()`, `usage()`, `errors()`, `hasErrors()`
-  - last-step accessors: `lastStep()`, `lastStepExecution()`, `lastStepToolExecutions()`, `lastToolExecution()`, `lastStepErrors()`, `lastStepType()`, `lastStepUsage()`, `lastStepDuration()`, `lastStopSignal()`, `lastStopReason()`, `lastStopSource()`
+  - last-step accessors: `lastStep()`, `lastStepExecution()`, `lastStepToolExecutions()`, `lastToolExecution()`, `lastStepErrors()`, `lastStepType()`, `lastStepUsage()`, `lastStepDuration()`
+  - stop accessors: `stopSignal()`, `stopReason()`, `stopSource()`
   - control: `shouldStop()`, `forNextExecution()`
   - serialization: `debug()`, `toArray()`, `fromArray()`
 - `Data\ExecutionState`
@@ -189,6 +190,38 @@ Core capabilities:
 Domain capabilities:
 
 - `Capability\Bash\UseBash`
+- `Capability\Cancellation\UseCooperativeCancellation`
+  - adds checkpoint-based cooperative cancellation to the loop
+  - cancellation is **cooperative**: stops at `BeforeExecution` / `BeforeStep` checkpoints only — does **not** interrupt in-flight HTTP or tool calls
+  - requires a `CanProvideCancellationSignal` implementation; built-in: `InMemoryCancellationSource`
+  - stop reason reported as `StopReason::UserRequested`
+
+  ```php
+  use Cognesy\Agents\Capability\Cancellation\UseCooperativeCancellation;
+  use Cognesy\Agents\Capability\Cancellation\InMemoryCancellationSource;
+
+  $source = new InMemoryCancellationSource();
+
+  $agent = AgentBuilder::base()
+      ->withCapability(new UseCooperativeCancellation($source))
+      ->build();
+
+  // cancel from outside (e.g. signal handler, HTTP request, timer):
+  $source->cancel('user pressed stop');
+
+  // custom source (Redis key, DB flag, HTTP endpoint, …):
+  $agent = AgentBuilder::base()
+      ->withCapability(new UseCooperativeCancellation(
+          new class implements CanProvideCancellationSignal {
+              public function cancellationSignal(AgentState $state): ?StopSignal {
+                  return redis_get("cancel:{$state->agentId()}")
+                      ? StopSignal::userRequested('cancelled via redis')
+                      : null;
+              }
+          }
+      ))
+      ->build();
+  ```
 - `Capability\File\UseFileTools`
   - installs: `read_file`, `write_file`, `edit_file`
   - standalone file tools also available: `SearchFilesTool`, `ListDirTool`

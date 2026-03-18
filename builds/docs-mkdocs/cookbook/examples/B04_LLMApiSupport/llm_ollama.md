@@ -2,6 +2,10 @@
 title: 'Local / Ollama'
 docname: 'llm_ollama'
 id: '90ec'
+tags:
+  - 'llm-api-support'
+  - 'ollama'
+  - 'local-models'
 ---
 ## Overview
 

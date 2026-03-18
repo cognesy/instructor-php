@@ -2,6 +2,10 @@
 title: 'MoonshotAI'
 docname: 'llm_moonshotai'
 id: '83d1'
+tags:
+  - 'llm-api-support'
+  - 'moonshot'
+  - 'provider'
 ---
 ## Overview
 

@@ -48,8 +48,13 @@ it('dispatches StructuredOutputResponseGenerated with normalized payload for syn
         'isPartial',
         'hasValue',
         'valueType',
+        'value',
         'finishReason',
+        'content',
         'contentLength',
+        'reasoningContent',
+        'toolArgsSnapshot',
+        'toolCalls',
     ]);
     expect($generatedPayload['phase'])->toBe('response.generated');
     expect($generatedPayload['phaseId'])->toContain($generatedPayload['executionId']);
@@ -57,7 +62,15 @@ it('dispatches StructuredOutputResponseGenerated with normalized payload for syn
     expect($generatedPayload['isPartial'])->toBeFalse();
     expect($generatedPayload['hasValue'])->toBeTrue();
     expect($generatedPayload['valueType'])->toBe(GeneratedEventUser::class);
+    expect($generatedPayload['value'])->toBe([
+        'name' => 'Ava',
+        'age' => 34,
+    ]);
     expect($generatedPayload['finishReason'])->toBe('stop');
+    expect($generatedPayload['content'])->toBe('{"name":"Ava","age":34}');
     expect($generatedPayload['contentLength'])->toBe(strlen('{"name":"Ava","age":34}'));
+    expect($generatedPayload['reasoningContent'])->toBe('');
+    expect($generatedPayload['toolArgsSnapshot'])->toBe('');
+    expect($generatedPayload['toolCalls'])->toBe([]);
     expect($generatedPayload)->not()->toHaveKey('response');
 });

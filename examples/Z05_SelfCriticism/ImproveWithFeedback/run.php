@@ -2,6 +2,10 @@
 title: 'Improve With Feedback'
 docname: 'improve_with_feedback'
 id: '600f'
+tags:
+  - 'self-criticism'
+  - 'self-refine'
+  - 'feedback'
 ---
 ## Overview
 

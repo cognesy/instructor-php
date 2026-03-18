@@ -27,6 +27,7 @@ final class AgentStepCompleted extends AgentEvent
         public readonly ?InferenceFinishReason $finishReason,
         DateTimeImmutable $startedAt,
         ?float $durationMs = null,
+        public readonly array $outputMessages = [],
     ) {
         $this->completedAt = new DateTimeImmutable();
         $this->durationMs = $durationMs ?? $this->calculateDurationMs($startedAt);

@@ -15,3 +15,22 @@ $response = AgentCtrl::codex()
 
 echo $response->text();
 ```
+
+## Execution Identity
+
+Each `execute()` or `executeStreaming()` call gets its own internal `executionId()`.
+That id is the canonical correlation key for `agent-ctrl` events and telemetry.
+
+`sessionId()` is different:
+
+- `executionId()` is per run
+- `sessionId()` is provider continuity metadata used for `continueSession()` and `resumeSession()`
+
+That means multiple runs may share one `sessionId()` while still having different `executionId()` values.
+
+```php
+$response = AgentCtrl::codex()->execute('Create a plan.');
+
+echo (string) $response->executionId(); // one run
+echo (string) ($response->sessionId() ?? ''); // provider session, if available
+```

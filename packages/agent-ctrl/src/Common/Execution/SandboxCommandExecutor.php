@@ -11,6 +11,9 @@ use Cognesy\AgentCtrl\Event\ProcessExecutionCompleted;
 use Cognesy\AgentCtrl\Event\SandboxInitialized;
 use Cognesy\AgentCtrl\Event\SandboxPolicyConfigured;
 use Cognesy\AgentCtrl\Event\SandboxReady;
+use Cognesy\AgentCtrl\Event\AgentEvent;
+use Cognesy\AgentCtrl\Telemetry\AgentCtrlEventTelemetry;
+use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Sandbox\Contracts\CanExecuteCommand;
 use Cognesy\Sandbox\Data\ExecResult;
@@ -29,6 +32,7 @@ final class SandboxCommandExecutor implements CommandExecutor
 
     public function __construct(
         ExecutionPolicy $policy,
+        private AgentCtrlExecutionId $executionId,
         SandboxDriver $driver = SandboxDriver::Host,
         int $timeout = ExecutionPolicy::DEFAULT_TIMEOUT_SECONDS,
         private ?CanHandleEvents $events = null,
@@ -46,6 +50,7 @@ final class SandboxCommandExecutor implements CommandExecutor
         $policyDuration = (microtime(true) - $policyStart) * 1000;
         $this->dispatch(new SandboxPolicyConfigured(
             $this->agentType,
+            $this->executionId,
             $driver->value,
             $effectiveTimeout,
             true, // networkEnabled - could be extracted from policy
@@ -56,24 +61,34 @@ final class SandboxCommandExecutor implements CommandExecutor
         $initStart = microtime(true);
         $this->sandbox = $this->makeSandbox($this->policy, $driver);
         $initDuration = (microtime(true) - $initStart) * 1000;
-        $this->dispatch(new SandboxInitialized($this->agentType, $driver->value, $initDuration));
+        $this->dispatch(new SandboxInitialized($this->agentType, $this->executionId, $driver->value, $initDuration));
 
         // Emit ready event
         $totalSetupDuration = (microtime(true) - $setupStart) * 1000;
-        $this->dispatch(new SandboxReady($this->agentType, $driver->value, $totalSetupDuration));
+        $this->dispatch(new SandboxReady($this->agentType, $this->executionId, $driver->value, $totalSetupDuration));
     }
 
     private function dispatch(object $event): void
     {
-        $this->events?->dispatch($event);
+        $enriched = match (true) {
+            $event instanceof AgentEvent => AgentCtrlEventTelemetry::attach($event),
+            default => $event,
+        };
+
+        $this->events?->dispatch($enriched);
     }
 
     /**
      * Create default executor (Host sandbox).
      */
-    public static function default(?CanHandleEvents $events = null, AgentType $agentType = AgentType::ClaudeCode): self {
+    public static function default(
+        AgentCtrlExecutionId $executionId,
+        ?CanHandleEvents $events = null,
+        AgentType $agentType = AgentType::ClaudeCode,
+    ): self {
         return new self(
             ExecutionPolicy::default(),
+            $executionId,
             SandboxDriver::Host,
             ExecutionPolicy::DEFAULT_TIMEOUT_SECONDS,
             $events,
@@ -85,55 +100,60 @@ final class SandboxCommandExecutor implements CommandExecutor
      * Create executor configured for Claude Code CLI.
      */
     public static function forClaudeCode(
+        AgentCtrlExecutionId $executionId,
         SandboxDriver $driver = SandboxDriver::Host,
         int $timeout = ExecutionPolicy::DEFAULT_TIMEOUT_SECONDS,
         ?CanHandleEvents $events = null,
     ): self {
-        return new self(ExecutionPolicy::forClaudeCode(), $driver, $timeout, $events, AgentType::ClaudeCode);
+        return new self(ExecutionPolicy::forClaudeCode(), $executionId, $driver, $timeout, $events, AgentType::ClaudeCode);
     }
 
     /**
      * Create executor configured for OpenAI Codex CLI.
      */
     public static function forCodex(
+        AgentCtrlExecutionId $executionId,
         SandboxDriver $driver = SandboxDriver::Host,
         int $timeout = ExecutionPolicy::DEFAULT_TIMEOUT_SECONDS,
         ?CanHandleEvents $events = null,
     ): self {
-        return new self(ExecutionPolicy::forCodex(), $driver, $timeout, $events, AgentType::Codex);
+        return new self(ExecutionPolicy::forCodex(), $executionId, $driver, $timeout, $events, AgentType::Codex);
     }
 
     /**
      * Create executor configured for OpenCode CLI.
      */
     public static function forOpenCode(
+        AgentCtrlExecutionId $executionId,
         SandboxDriver $driver = SandboxDriver::Host,
         int $timeout = ExecutionPolicy::DEFAULT_TIMEOUT_SECONDS,
         ?CanHandleEvents $events = null,
     ): self {
-        return new self(ExecutionPolicy::forOpenCode(), $driver, $timeout, $events, AgentType::OpenCode);
+        return new self(ExecutionPolicy::forOpenCode(), $executionId, $driver, $timeout, $events, AgentType::OpenCode);
     }
 
     /**
      * Create executor configured for Pi CLI.
      */
     public static function forPi(
+        AgentCtrlExecutionId $executionId,
         SandboxDriver $driver = SandboxDriver::Host,
         int $timeout = ExecutionPolicy::DEFAULT_TIMEOUT_SECONDS,
         ?CanHandleEvents $events = null,
     ): self {
-        return new self(ExecutionPolicy::forPi(), $driver, $timeout, $events, AgentType::Pi);
+        return new self(ExecutionPolicy::forPi(), $executionId, $driver, $timeout, $events, AgentType::Pi);
     }
 
     /**
      * Create executor configured for Gemini CLI.
      */
     public static function forGemini(
+        AgentCtrlExecutionId $executionId,
         SandboxDriver $driver = SandboxDriver::Host,
         int $timeout = ExecutionPolicy::DEFAULT_TIMEOUT_SECONDS,
         ?CanHandleEvents $events = null,
     ): self {
-        return new self(ExecutionPolicy::forGemini(), $driver, $timeout, $events, AgentType::Gemini);
+        return new self(ExecutionPolicy::forGemini(), $executionId, $driver, $timeout, $events, AgentType::Gemini);
     }
 
     /**
@@ -168,6 +188,7 @@ final class SandboxCommandExecutor implements CommandExecutor
             $attemptDuration = (microtime(true) - $attemptStart) * 1000;
             $this->dispatch(new ExecutionAttempted(
                 $this->agentType,
+                $this->executionId,
                 $attempt,
                 $attemptDuration
             ));
@@ -175,6 +196,7 @@ final class SandboxCommandExecutor implements CommandExecutor
             $totalDuration = (microtime(true) - $executionStart) * 1000;
             $this->dispatch(new ProcessExecutionCompleted(
                 $this->agentType,
+                $this->executionId,
                 $attempt,
                 $totalDuration,
                 $attempt
@@ -185,6 +207,7 @@ final class SandboxCommandExecutor implements CommandExecutor
             $attemptDuration = (microtime(true) - $attemptStart) * 1000;
             $this->dispatch(new ExecutionAttempted(
                 $this->agentType,
+                $this->executionId,
                 $attempt,
                 $attemptDuration,
                 $error->getMessage()

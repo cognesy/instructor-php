@@ -2,6 +2,10 @@
 title: 'Summary with Keywords'
 docname: 'summary_with_keywords'
 id: '8ad6'
+tags:
+  - 'misc'
+  - 'summarization'
+  - 'keywords'
 ---
 ## Overview
 
@@ -14,6 +18,10 @@ This is an example of a simple summarization with keyword extraction.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Instructor\Validation\Traits\ValidationMixin;
+use Cognesy\Instructor\Validation\ValidationResult;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Schema\Attributes\Description;
 
 $report = <<<EOT
@@ -41,13 +49,45 @@ $report = <<<EOT
     EOT;
 
 class Summary {
+    use ValidationMixin;
+
     #[Description('Project summary, not longer than 3 sentences')]
     public string $summary = '';
-    #[Description('5 most relevant keywords extracted from the summary')]
+
+    #[Description('Exactly 5 most relevant keywords extracted from the summary')]
+    /** @var string[] */
     public array $keywords = [];
+
+    public function validate() : ValidationResult
+    {
+        return match (true) {
+            count($this->keywords) !== 5 => ValidationResult::fieldError(
+                field: 'keywords',
+                value: json_encode($this->keywords),
+                message: 'Provide exactly 5 keywords.',
+            ),
+            $this->hasBlankKeywords() => ValidationResult::fieldError(
+                field: 'keywords',
+                value: json_encode($this->keywords),
+                message: 'Each keyword must be a non-empty string.',
+            ),
+            default => ValidationResult::valid(),
+        };
+    }
+
+    private function hasBlankKeywords() : bool
+    {
+        return count(array_filter(
+            $this->keywords,
+            fn(mixed $keyword): bool => !is_string($keyword) || trim($keyword) === '',
+        )) > 0;
+    }
 }
 
-$summary = StructuredOutput::using('openai')
+$runtime = StructuredOutputRuntime::fromProvider(LLMProvider::using('openai'))
+    ->withMaxRetries(2);
+
+$summary = (new StructuredOutput($runtime))
     ->with(
         messages: $report,
         responseModel: Summary::class,

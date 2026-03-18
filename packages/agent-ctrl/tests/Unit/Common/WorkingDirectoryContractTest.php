@@ -5,6 +5,7 @@ namespace Tests\AgentCtrl\Unit\Common\WorkingDirectory;
 use InvalidArgumentException;
 use Cognesy\AgentCtrl\Bridge\ClaudeCodeBridge;
 use Cognesy\AgentCtrl\Bridge\OpenCodeBridge;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\AgentCtrl\Builder\ClaudeCodeBridgeBuilder;
 use Cognesy\AgentCtrl\Builder\CodexBridgeBuilder;
 use Cognesy\AgentCtrl\Builder\OpenCodeBridgeBuilder;
@@ -35,7 +36,7 @@ it('passes working directory to opencode bridge', function () {
 
 it('fails early when claude working directory does not exist', function () {
     $missingPath = '/tmp/agent-ctrl-missing-claude-' . uniqid('', true);
-    $bridge = new ClaudeCodeBridge(workingDirectory: $missingPath);
+    $bridge = new ClaudeCodeBridge(workingDirectory: $missingPath, events: new EventDispatcher());
 
     expect(fn() => $bridge->execute('test'))->toThrow(
         InvalidArgumentException::class,
@@ -45,7 +46,7 @@ it('fails early when claude working directory does not exist', function () {
 
 it('fails early when opencode working directory does not exist', function () {
     $missingPath = '/tmp/agent-ctrl-missing-opencode-' . uniqid('', true);
-    $bridge = new OpenCodeBridge(workingDirectory: $missingPath);
+    $bridge = new OpenCodeBridge(workingDirectory: $missingPath, events: new EventDispatcher());
 
     expect(fn() => $bridge->execute('test'))->toThrow(
         InvalidArgumentException::class,

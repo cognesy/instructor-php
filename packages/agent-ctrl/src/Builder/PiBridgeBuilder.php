@@ -205,6 +205,7 @@ final class PiBridgeBuilder extends AbstractBridgeBuilder
     public function build(): AgentBridge
     {
         return new PiBridge(
+            executionId: $this->executionId(),
             model: $this->model,
             provider: $this->provider,
             thinkingLevel: $this->thinkingLevel,

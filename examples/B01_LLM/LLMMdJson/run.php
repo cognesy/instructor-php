@@ -2,6 +2,10 @@
 title: 'Working directly with LLMs and JSON - Markdown JSON prompting'
 docname: 'llm_md_json'
 id: 'b490'
+tags:
+  - 'llm'
+  - 'markdown-json'
+  - 'prompting'
 ---
 ## Overview
 

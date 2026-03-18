@@ -5,6 +5,7 @@ namespace Cognesy\Http\Drivers\Curl;
 use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Events\HttpResponseChunkReceived;
+use Cognesy\Http\Events\HttpStreamCompleted;
 use Cognesy\Http\Exceptions\NetworkException;
 use Cognesy\Http\Exceptions\TimeoutException;
 use Cognesy\Http\Stream\IterableStream;
@@ -83,6 +84,8 @@ final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
 
     public function stream(): Generator {
         $active = 1;
+        $outcome = 'abandoned';
+        $error = null;
         try {
             while (true) {
                 // Yield buffered chunks
@@ -108,9 +111,21 @@ final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
                     curl_multi_select($this->multi, 0.1);
                 }
             }
+            $outcome = 'completed';
+        } catch (\Throwable $error) {
+            $outcome = 'failed';
+            throw $error;
         } finally {
             $this->completed = true;
             $this->cleanup();
+            $payload = ['requestId' => $this->requestId, 'outcome' => $outcome];
+            $payload = match (true) {
+                $error !== null => [...$payload, 'error' => $error->getMessage()],
+                $outcome === 'completed' => [...$payload, 'body' => $this->bufferedBody],
+                default => $payload,
+            };
+
+            $this->events->dispatch(new HttpStreamCompleted($payload));
         }
     }
 

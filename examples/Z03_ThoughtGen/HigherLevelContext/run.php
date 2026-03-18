@@ -2,6 +2,10 @@
 title: 'Consider Higher-Level Context'
 docname: 'higher_level_context'
 id: '1496'
+tags:
+  - 'thought-generation'
+  - 'step-back-prompting'
+  - 'context'
 ---
 ## Overview
 

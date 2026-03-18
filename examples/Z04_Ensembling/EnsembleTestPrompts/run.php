@@ -2,6 +2,10 @@
 title: 'Use Ensembles To Test Prompts'
 docname: 'ensemble_test_prompts'
 id: 'c50c'
+tags:
+  - 'ensembling'
+  - 'prompt-testing'
+  - 'evaluation'
 ---
 ## Overview
 
@@ -22,7 +26,7 @@ require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
 
-class CoT { /** @var string[] */ public array $chain_of_thought; public int $answer; }
+class CoT { /** @var string[] */ public array $chain_of_thought = []; public int $answer = 0; }
 class PromptScore { public string $prompt; public float $score; }
 
 class PromptEnsembler {

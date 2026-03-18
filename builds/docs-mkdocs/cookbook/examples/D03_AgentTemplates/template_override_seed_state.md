@@ -3,6 +3,10 @@ title: 'Template Overrides Seed State'
 docname: 'template_override_seed_state'
 order: 5
 id: 'e1bc'
+tags:
+  - 'agent-templates'
+  - 'seed-state'
+  - 'overrides'
 ---
 ## Overview
 

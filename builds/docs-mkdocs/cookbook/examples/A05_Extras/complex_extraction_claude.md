@@ -2,6 +2,10 @@
 title: 'Extraction of complex objects (Anthropic)'
 docname: 'complex_extraction_claude'
 id: '522c'
+tags:
+  - 'extras'
+  - 'complex-extraction'
+  - 'anthropic'
 ---
 ## Overview
 

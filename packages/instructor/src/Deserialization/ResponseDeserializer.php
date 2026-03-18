@@ -13,8 +13,9 @@ use Cognesy\Instructor\Events\Response\CustomResponseDeserializationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseDeserializationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseDeserializationFailed;
 use Cognesy\Instructor\Events\Response\ResponseDeserialized;
-use Cognesy\Template\Template;
 use Cognesy\Utils\Result\Result;
+use Cognesy\Xprompt\Prompt;
+use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 class ResponseDeserializer implements CanDeserializeResponse
@@ -108,11 +109,7 @@ class ResponseDeserializer implements CanDeserializeResponse
         $this->events->dispatch(new ResponseDeserializationFailed(['error' => $result->errorMessage()]));
         return match (true) {
             $returnTarget === ReturnTarget::UntypedObject => Result::success($this->toAnonymousObject($data)),
-            default => Result::failure($this->makeFailureMessage($this->config->deserializationErrorPrompt(), [
-                'json' => json_encode($data),
-                'error' => $result->errorMessage(),
-                'jsonSchema' => json_encode($responseModel->toJsonSchema()),
-            ])),
+            default => Result::failure($this->makeFailureMessage($data, $result->errorMessage(), $responseModel)),
         };
     }
 
@@ -142,10 +139,24 @@ class ResponseDeserializer implements CanDeserializeResponse
         ];
     }
 
-    private function makeFailureMessage(string $template, array $context) : string {
-        return Template::arrowpipe()
-            ->withTemplateContent($template)
-            ->withValues($context)
-            ->toText();
+    private function makeFailureMessage(array $data, string $error, ResponseModel $responseModel) : string {
+        $promptClass = $this->config->deserializationErrorPromptClass();
+        if (!class_exists($promptClass)) {
+            throw new InvalidArgumentException("Prompt class does not exist: {$promptClass}");
+        }
+        if (!is_a($promptClass, Prompt::class, true)) {
+            throw new InvalidArgumentException("Prompt class must extend " . Prompt::class . ": {$promptClass}");
+        }
+
+        return trim($promptClass::with(
+            invalid_payload: $this->encodeJson($data),
+            error: $error,
+            json_schema: $this->encodeJson($responseModel->toJsonSchema()),
+        )->render());
+    }
+
+    private function encodeJson(mixed $value): string {
+        return json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
+            ?: 'null';
     }
 }

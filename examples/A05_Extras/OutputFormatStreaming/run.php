@@ -2,6 +2,10 @@
 title: 'Streaming with array output format'
 docname: 'output_format_streaming'
 id: 'a9a8'
+tags:
+  - 'extras'
+  - 'streaming'
+  - 'output-format'
 ---
 ## Overview
 

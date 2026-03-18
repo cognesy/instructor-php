@@ -2,6 +2,10 @@
 title: 'Return extracted data as array'
 docname: 'output_format_array'
 id: '4923'
+tags:
+  - 'extras'
+  - 'output-format'
+  - 'arrays'
 ---
 ## Overview
 
