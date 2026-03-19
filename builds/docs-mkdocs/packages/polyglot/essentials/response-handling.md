@@ -26,7 +26,7 @@ $pending = Inference::using('openai')
 // Get the response as plain text
 $text = $pending->get();
 echo $text; // "The capital of France is Paris."
-// @doctest id="3d98"
+// @doctest id="b519"
 ```
 
 ## Retrieving JSON Data
@@ -52,7 +52,7 @@ echo $data['status'];
 
 // Or get the raw JSON string
 $json = $pending->asJson();
-// @doctest id="539f"
+// @doctest id="7397"
 ```
 
 ## Working with `InferenceResponse`
@@ -88,7 +88,7 @@ echo "Cache tokens: " . $usage->cache() . "\n";
 
 // Raw HTTP response data
 $httpResponse = $response->responseData();
-// @doctest id="3f58"
+// @doctest id="b1f9"
 ```
 
 ### Available `InferenceResponse` Methods
@@ -141,7 +141,7 @@ $usage->input();   // Same as inputTokens
 $usage->output();  // outputTokens + reasoningTokens
 $usage->cache();   // cacheWriteTokens + cacheReadTokens
 $usage->total();   // Sum of all token counts
-// @doctest id="b15b"
+// @doctest id="67a3"
 ```
 
 ## Handling Tool Calls
@@ -202,7 +202,7 @@ if ($response->hasToolCalls()) {
         $unit = $call->value('unit', 'celsius');
     }
 }
-// @doctest id="c92e"
+// @doctest id="083a"
 ```
 
 ### Quick JSON Extraction from Tool Calls
@@ -218,7 +218,7 @@ $args = $pending->asToolCallJsonData();
 
 // Or as a JSON string
 $json = $pending->asToolCallJson();
-// @doctest id="b235"
+// @doctest id="7721"
 ```
 
 > **Note:** When a single tool call is present, `asToolCallJsonData()` returns that
@@ -247,7 +247,7 @@ foreach ($stream->deltas() as $delta) {
 // After iteration, get the finalized response
 $finalResponse = $stream->final();
 echo "\n\nTokens used: " . $finalResponse->usage()->total();
-// @doctest id="beb3"
+// @doctest id="286e"
 ```
 
 ### The `PartialInferenceDelta` Object
@@ -298,7 +298,7 @@ $allDeltas = $stream->all();
 
 // Get the finalized response (drains the stream if needed)
 $response = $stream->final();
-// @doctest id="9774"
+// @doctest id="f57b"
 ```
 
 ### Using the `onDelta` Callback
@@ -328,7 +328,7 @@ $stream->onDelta(function ($delta) {
 
 // Drain the stream to trigger all callbacks
 $response = $stream->final();
-// @doctest id="6676"
+// @doctest id="5ef4"
 ```
 
 ### Stream Lifecycle
@@ -360,5 +360,5 @@ if ($pending->isStreamed()) {
 } else {
     echo $pending->get();
 }
-// @doctest id="e3ca"
+// @doctest id="a536"
 ```

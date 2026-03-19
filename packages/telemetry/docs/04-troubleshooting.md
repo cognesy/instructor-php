@@ -73,13 +73,20 @@ Give `LangfuseConfig` the base URL, not the full traces URL.
 Logfire export uses the OTLP base endpoint. Give `LogfireConfig` the base OTLP
 URL, not a full `/v1/traces` or `/v1/metrics` path.
 
-The example helper in `examples/_support/logfire.php` normalizes this for you.
-
 ## Good Reference Points
 
 If your own setup is not working, compare it with:
 
-- `examples/_support/langfuse.php`
-- `examples/_support/logfire.php`
+- `examples/A03_Troubleshooting/TelemetryLangfuse/run.php`
+- `examples/A03_Troubleshooting/TelemetryLogfire/run.php`
 - `examples/D05_AgentTroubleshooting/TelemetryLangfuse/run.php`
 - `examples/D05_AgentTroubleshooting/TelemetryLogfire/run.php`
+
+For live backend proof, run:
+
+```bash
+TELEMETRY_INTEROP_ENABLED=1 composer test:telemetry-interop
+```
+
+That suite writes real telemetry and then queries Logfire or Langfuse back to
+confirm the records are visible remotely.

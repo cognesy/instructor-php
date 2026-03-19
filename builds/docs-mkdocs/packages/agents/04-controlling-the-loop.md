@@ -32,7 +32,7 @@ $state = AgentState::empty()
 $finalState = $loop->execute($state);
 
 echo $finalState->finalResponse()->toString();
-// @doctest id="fcfc"
+// @doctest id="9b1a"
 ```
 
 Internally, `execute()` is a thin wrapper around `iterate()` -- it simply
@@ -56,7 +56,7 @@ foreach ($loop->iterate($state) as $stepState) {
         $step?->usage()->total() ?? 0,
     );
 }
-// @doctest id="ce2e"
+// @doctest id="e96f"
 ```
 
 Each yielded `$stepState` is a complete `AgentState` snapshot. You can
@@ -82,7 +82,7 @@ $state->stepCount();          // Number of completed steps
 $state->executionDuration();  // Total wall-clock time (seconds)
 $state->usage();              // Accumulated token usage across all steps
 $state->executionCount();     // How many times this agent has been executed
-// @doctest id="da39"
+// @doctest id="5dee"
 ```
 
 ### Step History
@@ -102,7 +102,7 @@ foreach ($state->stepExecutions()->all() as $stepExecution) {
         $stepExecution->duration(),
     );
 }
-// @doctest id="51c7"
+// @doctest id="33ab"
 ```
 
 For quick access to the most recent step:
@@ -113,7 +113,7 @@ $state->lastStepType();          // AgentStepType enum value
 $state->lastStepUsage();         // Token usage for the last step
 $state->lastStepDuration();      // Duration of the last step (seconds)
 $state->lastStepErrors();        // ErrorList from the last step
-// @doctest id="9fad"
+// @doctest id="a8eb"
 ```
 
 ### Tool Execution Details
@@ -129,7 +129,7 @@ if ($toolExec !== null) {
     echo $toolExec->hasError();   // Whether the tool call failed
     echo $toolExec->value();      // The return value on success
 }
-// @doctest id="3a7a"
+// @doctest id="f2dc"
 ```
 
 To see all tool executions from the last step:
@@ -143,7 +143,7 @@ foreach ($state->lastStepToolExecutions()->all() as $toolExec) {
         $toolExec->hasError() ? 'ERROR: ' . $toolExec->errorMessage() : 'OK',
     );
 }
-// @doctest id="6b5b"
+// @doctest id="dcb0"
 ```
 
 ### Stop Reason
@@ -169,7 +169,7 @@ match ($reason) {
     StopReason::UserRequested       => 'The user requested a stop',
     default                         => 'Unknown reason',
 };
-// @doctest id="a432"
+// @doctest id="3af5"
 ```
 
 You can also retrieve the full stop signal for additional context:
@@ -181,7 +181,7 @@ $signal->reason;   // StopReason enum
 $signal->message;  // Human-readable explanation
 $signal->context;  // Array of contextual data
 $signal->source;   // The class that emitted the signal
-// @doctest id="865e"
+// @doctest id="a5fe"
 ```
 
 
@@ -201,7 +201,7 @@ the execution ended mid-tool-use or with an error, this returns an empty
 if ($state->hasFinalResponse()) {
     echo $state->finalResponse()->toString();
 }
-// @doctest id="f9f7"
+// @doctest id="ee9e"
 ```
 
 ### currentResponse()
@@ -213,7 +213,7 @@ you want to show the latest output even if the agent has not finished:
 
 ```php
 echo $state->currentResponse()->toString();
-// @doctest id="73c6"
+// @doctest id="0c13"
 ```
 
 A typical pattern after execution combines both:
@@ -222,7 +222,7 @@ A typical pattern after execution combines both:
 $text = $state->hasFinalResponse()
     ? $state->finalResponse()->toString()
     : $state->currentResponse()->toString();
-// @doctest id="6988"
+// @doctest id="d720"
 ```
 
 
@@ -249,7 +249,7 @@ $loop->onEvent(AgentStepCompleted::class, function (AgentStepCompleted $event) {
         $event->durationMs,
     );
 });
-// @doctest id="a865"
+// @doctest id="e2ed"
 ```
 
 ### Wiretap (All Events)
@@ -261,7 +261,7 @@ invaluable for debugging and logging:
 $loop->wiretap(function (object $event) {
     echo get_class($event) . "\n";
 });
-// @doctest id="5879"
+// @doctest id="1c0e"
 ```
 
 ### Available Events
@@ -309,7 +309,7 @@ $info = $state->debug();
 //     'errors'         => ErrorList(...),
 //     'usage'          => ['input' => 150, 'output' => 42],
 // ]
-// @doctest id="f1e4"
+// @doctest id="509e"
 ```
 
 This is particularly useful when logging or when you need a quick overview

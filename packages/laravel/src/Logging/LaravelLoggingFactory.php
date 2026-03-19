@@ -96,20 +96,16 @@ final class LaravelLoggingFactory
         $excludeEvents = self::configGet($app, 'instructor.logging.exclude_events', [
             \Cognesy\Http\Events\DebugRequestBodyUsed::class,
             \Cognesy\Http\Events\DebugResponseBodyReceived::class,
+            \Cognesy\Polyglot\Inference\Events\PartialInferenceDeltaCreated::class,
+            \Cognesy\Polyglot\Inference\Events\StreamEventParsed::class,
         ]);
+        $templates = self::configGet($app, 'instructor.logging.templates', []);
 
         return self::create($app, [
             'channel' => $channel,
             'level' => $level,
             'exclude_events' => is_array($excludeEvents) ? $excludeEvents : [],
-            'templates' => [
-                \Cognesy\Instructor\Events\StructuredOutputStarted::class =>
-                    'Starting {responseClass} generation with {model}',
-                \Cognesy\Instructor\Events\ResponseValidationFailed::class =>
-                    'Validation failed for {responseClass}: {error}',
-                \Cognesy\Http\Events\HttpRequestSent::class =>
-                    'HTTP {method} {url}',
-            ],
+            'templates' => array_merge(self::defaultTemplates(), is_array($templates) ? $templates : []),
         ]);
     }
 
@@ -117,16 +113,46 @@ final class LaravelLoggingFactory
     public static function productionSetup(Application $app): callable
     {
         $channel = (string) self::configGet($app, 'instructor.logging.channel', 'instructor');
+        $excludeEvents = self::configGet($app, 'instructor.logging.exclude_events', []);
+        $configured = is_array($excludeEvents) ? $excludeEvents : [];
 
         return self::create($app, [
             'channel' => $channel,
             'level' => 'warning',
-            'exclude_events' => [
+            'exclude_events' => array_values(array_unique([
+                ...$configured,
                 \Cognesy\Http\Events\DebugRequestBodyUsed::class,
                 \Cognesy\Http\Events\DebugResponseBodyReceived::class,
                 \Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated::class,
-            ],
+                \Cognesy\Polyglot\Inference\Events\PartialInferenceDeltaCreated::class,
+                \Cognesy\Polyglot\Inference\Events\StreamEventParsed::class,
+            ])),
         ]);
+    }
+
+    /** @return array<class-string, string> */
+    private static function defaultTemplates(): array
+    {
+        return [
+            \Cognesy\Instructor\Events\StructuredOutputStarted::class =>
+                'Starting {responseClass} generation with {model}',
+            \Cognesy\Instructor\Events\ResponseValidationFailed::class =>
+                'Validation failed for {responseClass}: {error}',
+            \Cognesy\Http\Events\HttpRequestSent::class =>
+                'HTTP {method} {url}',
+            \Cognesy\Agents\Events\AgentExecutionStarted::class =>
+                'Native agent {agentId} started with {messageCount} messages and {availableTools} tools',
+            \Cognesy\Agents\Events\AgentStepCompleted::class =>
+                'Native agent {agentId} step {stepNumber} completed in {durationMs}ms',
+            \Cognesy\Agents\Events\AgentExecutionFailed::class =>
+                'Native agent {agentId} failed: {errors}',
+            \Cognesy\AgentCtrl\Event\AgentExecutionStarted::class =>
+                'Code agent {agentType} started',
+            \Cognesy\AgentCtrl\Event\AgentExecutionCompleted::class =>
+                'Code agent {agentType} completed with exit code {exitCode}',
+            \Cognesy\AgentCtrl\Event\AgentErrorOccurred::class =>
+                'Code agent {agentType} failed: {error}',
+        ];
     }
 
     private static function configGet(Application $app, string $path, mixed $default): mixed

@@ -1,6 +1,6 @@
 # Configuration
 
-After publishing the configuration file with `php artisan vendor:publish --tag=instructor-config`, you will find it at `config/instructor.php`. This file controls every aspect of the package, from LLM provider connections and extraction behavior to HTTP transport, logging, event bridging, and response caching.
+After publishing the configuration file with `php artisan vendor:publish --tag=instructor-config`, you will find it at `config/instructor.php`. This file controls every aspect of the package, from LLM provider connections and extraction behavior to HTTP transport, logging, event bridging, code-agent execution, native-agent runtime boundaries, and response caching.
 
 This is Laravel-native configuration. The Laravel integration reads `config('instructor.*')` through Laravel's config repository and converts those arrays into typed runtime config objects internally. It does not ask the standalone `packages/config` YAML loader to parse `config/instructor.php`.
 
@@ -8,7 +8,7 @@ This is Laravel-native configuration. The Laravel integration reads `config('ins
 
 ```php
 'default' => env('INSTRUCTOR_CONNECTION', 'openai'),
-// @doctest id="bd42"
+// @doctest id="5011"
 ```
 
 This determines which LLM connection is used when you call a facade without specifying one explicitly. You can override it at runtime with `->connection('name')` on any facade, or by passing an `LLMConfig` object via `->fromConfig(...)`.
@@ -62,7 +62,7 @@ Configure multiple LLM provider connections. Each connection defines its driver,
         'max_tokens' => env('OLLAMA_MAX_TOKENS', 4096),
     ],
 ],
-// @doctest id="f930"
+// @doctest id="ec38"
 ```
 
 ### Supported Drivers
@@ -96,7 +96,7 @@ Any OpenAI-compatible API can be used by setting the `openai` driver and pointin
         'max_tokens' => 4096,
     ],
 ],
-// @doctest id="84c9"
+// @doctest id="ab2a"
 ```
 
 ## Embeddings Connections
@@ -125,7 +125,7 @@ Configure embedding model connections separately from inference connections. The
         ],
     ],
 ],
-// @doctest id="bf92"
+// @doctest id="ae7f"
 ```
 
 ## Extraction Settings
@@ -143,7 +143,7 @@ Configure defaults for structured output extraction. These values apply to every
     // Prompt template for retry attempts
     'retry_prompt' => 'The response did not pass validation. Please fix the following errors and try again: {errors}',
 ],
-// @doctest id="a001"
+// @doctest id="400d"
 ```
 
 ### Output Modes
@@ -172,7 +172,7 @@ Configure the underlying HTTP transport. The Laravel package ships with its own 
     // Connection timeout in seconds
     'connect_timeout' => env('INSTRUCTOR_HTTP_CONNECT_TIMEOUT', 30),
 ],
-// @doctest id="83d4"
+// @doctest id="30b3"
 ```
 
 The service provider binds `Cognesy\Http\Contracts\CanSendHttpRequests` to the Laravel-backed HTTP transport. All higher-level services (Inference, Embeddings, StructuredOutput) depend on that contract, ensuring consistent HTTP behavior across the entire package.
@@ -199,17 +199,22 @@ The package includes a logging pipeline that enriches log entries with Laravel r
     'exclude_events' => [
         Cognesy\Http\Events\DebugRequestBodyUsed::class,
         Cognesy\Http\Events\DebugResponseBodyReceived::class,
+        Cognesy\Polyglot\Inference\Events\PartialInferenceDeltaCreated::class,
+        Cognesy\Polyglot\Inference\Events\StreamEventParsed::class,
     ],
+
+    // Optional class-specific message templates
+    'templates' => [],
 ],
-// @doctest id="a2ae"
+// @doctest id="d227"
 ```
 
 ### Logging Presets
 
 | Preset | Description |
 |--------|-------------|
-| `default` | Verbose logging suitable for local development; includes message templates for key events and excludes debug-level HTTP body events |
-| `production` | Minimal logging at `warning` level and above; excludes verbose HTTP and partial-response events for lower overhead |
+| `default` | Development-friendly logging with request enrichment, native-agent and AgentCtrl templates, and noisy streaming events excluded by default |
+| `production` | Minimal logging at `warning` level and above; excludes verbose HTTP, partial-response, and streaming delta events for lower overhead |
 | `custom` | Fully configurable pipeline -- supply your own `channel`, `level`, `exclude_events`, `include_events`, and `templates` arrays |
 
 Both the `default` and `production` presets automatically attach lazy enrichers that add the current HTTP request context (request ID, user ID, session ID, route, method, URL) to every log record.
@@ -228,7 +233,7 @@ Configure how Instructor's internal events are bridged to Laravel's event dispat
         // \Cognesy\Instructor\Events\ExtractionComplete::class,
     ],
 ],
-// @doctest id="08d6"
+// @doctest id="d57c"
 ```
 
 When `bridge_events` is empty (the default), every Instructor event is forwarded to Laravel. To limit traffic, list only the event classes you care about. See the [Events](events.md) guide for the full list of available events and listener examples.
@@ -251,8 +256,110 @@ Configure response caching to avoid redundant API calls for identical inputs.
     // Cache key prefix
     'prefix' => 'instructor',
 ],
-// @doctest id="2068"
+// @doctest id="bcc6"
 ```
+
+## Native Agents Settings
+
+The `agents` namespace is reserved for native `Cognesy\Agents` runtime integration. This keeps native runtime, persistence, and observability settings separate from `AgentCtrl` code-agent execution.
+
+```php
+'agents' => [
+    'enabled' => env('INSTRUCTOR_NATIVE_AGENTS_ENABLED', true),
+    'session_store' => env('INSTRUCTOR_NATIVE_AGENT_SESSION_STORE', 'memory'),
+    'definitions' => [
+        base_path('resources/agents'),
+    ],
+    'tools' => [
+        App\Agents\Tools\LookupAccountTool::class,
+    ],
+    'capabilities' => [
+        App\Agents\Capabilities\UseStructuredOutputs::class,
+    ],
+    'schemas' => [
+        'lead' => App\Data\LeadData::class,
+    ],
+    'broadcasting' => [
+        'enabled' => env('INSTRUCTOR_NATIVE_AGENT_BROADCASTING_ENABLED', false),
+        'connection' => env('INSTRUCTOR_NATIVE_AGENT_BROADCAST_CONNECTION'),
+        'event_name' => env('INSTRUCTOR_NATIVE_AGENT_BROADCAST_EVENT', 'instructor.agent.event'),
+        'preset' => env('INSTRUCTOR_NATIVE_AGENT_BROADCAST_PRESET', 'standard'),
+    ],
+],
+// @doctest id="9d64"
+```
+
+The Laravel package resolves `tools` and `capabilities` through the container before registration, so constructor dependencies are supported. `definitions` accepts file or directory paths. `schemas` accepts class strings or schema-definition arrays.
+
+If you prefer explicit service-provider wiring, use the first-party tag constants in `Cognesy\Instructor\Laravel\Agents\AgentRegistryTags` for definitions, tools, capabilities, and tagged `SchemaRegistration` objects.
+
+For long-lived sessions, switch `session_store` to `database` and publish the package migration with `php artisan vendor:publish --tag=instructor-migrations`.
+
+For broadcast envelopes, enable `agents.broadcasting.enabled` and set the Laravel broadcasting connection you want to use.
+
+## Code Agents (`AgentCtrl`) Settings
+
+`AgentCtrl` now reads from the dedicated `agent_ctrl` namespace. The facade still falls back to the legacy `agents` key so existing published configs continue to work.
+
+```php
+'agent_ctrl' => [
+    'timeout' => env('INSTRUCTOR_AGENT_TIMEOUT', 300),
+    'directory' => env('INSTRUCTOR_AGENT_DIRECTORY'),
+    'sandbox' => env('INSTRUCTOR_AGENT_SANDBOX', 'host'),
+
+    'claude_code' => [
+        'model' => env('CLAUDE_CODE_MODEL', 'claude-sonnet-4-20250514'),
+        'timeout' => env('CLAUDE_CODE_TIMEOUT'),
+        'directory' => env('CLAUDE_CODE_DIRECTORY'),
+        'sandbox' => env('CLAUDE_CODE_SANDBOX'),
+    ],
+],
+// @doctest id="96c0"
+```
+
+## Telemetry Settings
+
+The `telemetry` namespace is the first-class home for Laravel telemetry wiring.
+
+```php
+'telemetry' => [
+    'enabled' => env('INSTRUCTOR_TELEMETRY_ENABLED', false),
+    'driver' => env('INSTRUCTOR_TELEMETRY_DRIVER', 'null'),
+    'service_name' => env('INSTRUCTOR_TELEMETRY_SERVICE_NAME', env('APP_NAME', 'laravel')),
+    'projectors' => [
+        'instructor' => true,
+        'polyglot' => true,
+        'http' => true,
+        'agent_ctrl' => true,
+        'agents' => true,
+    ],
+    'http' => [
+        'capture_streaming_chunks' => env('INSTRUCTOR_TELEMETRY_HTTP_CAPTURE_STREAMING_CHUNKS', false),
+    ],
+    'drivers' => [
+        'composite' => [
+            'exporters' => [],
+        ],
+        'otel' => [
+            'endpoint' => env('INSTRUCTOR_TELEMETRY_OTEL_ENDPOINT'),
+            'headers' => [],
+        ],
+        'langfuse' => [
+            'host' => env('INSTRUCTOR_TELEMETRY_LANGFUSE_HOST'),
+            'public_key' => env('INSTRUCTOR_TELEMETRY_LANGFUSE_PUBLIC_KEY'),
+            'secret_key' => env('INSTRUCTOR_TELEMETRY_LANGFUSE_SECRET_KEY'),
+        ],
+        'logfire' => [
+            'endpoint' => env('INSTRUCTOR_TELEMETRY_LOGFIRE_ENDPOINT'),
+            'write_token' => env('INSTRUCTOR_TELEMETRY_LOGFIRE_WRITE_TOKEN'),
+            'headers' => [],
+        ],
+    ],
+],
+// @doctest id="2678"
+```
+
+`driver` accepts `null`, `otel`, `langfuse`, `logfire`, or `composite`. The package binds telemetry, projector composition, and the runtime event bridge from this namespace automatically.
 
 ## Environment Variables Reference
 
@@ -291,7 +398,7 @@ $result = StructuredOutput::connection('anthropic')  // Switch connection
         responseModel: MyModel::class,
     )
     ->get();
-// @doctest id="2763"
+// @doctest id="b52d"
 ```
 
 For full programmatic control, build an `LLMConfig` object and pass it directly:
@@ -310,5 +417,5 @@ $config = LLMConfig::fromArray([
 $result = StructuredOutput::fromConfig($config)
     ->with(messages: '...', responseModel: MyModel::class)
     ->get();
-// @doctest id="3639"
+// @doctest id="46ac"
 ```

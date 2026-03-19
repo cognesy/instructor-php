@@ -13,7 +13,7 @@ Getting started with Instructor requires two things:
 
 ```bash
 composer require cognesy/instructor-struct
-# @doctest id="8c9e"
+# @doctest id="8993"
 ```
 
 > Instructor requires **PHP 8.3** or later.
@@ -27,7 +27,7 @@ is to set them in your shell or a `.env` file at the root of your project:
 ```ini
 # .env
 OPENAI_API_KEY=sk-your-key-here
-# @doctest id="56cd"
+# @doctest id="3f78"
 ```
 
 For other providers, set the corresponding variable:
@@ -37,7 +37,7 @@ ANTHROPIC_API_KEY=your-key
 GEMINI_API_KEY=your-key
 GROQ_API_KEY=your-key
 MISTRAL_API_KEY=your-key
-# @doctest id="5f56"
+# @doctest id="4d43"
 ```
 
 > Never commit API keys to version control. Add `.env` to your `.gitignore` file.
@@ -57,7 +57,7 @@ $result = StructuredOutput::using('openai')
         responseModel: City::class,
     )
     ->get();
-// @doctest id="285f"
+// @doctest id="e9e6"
 ```
 
 You can switch providers by changing the preset name:
@@ -70,7 +70,7 @@ $result = StructuredOutput::using('anthropic')
         responseModel: City::class,
     )
     ->get();
-// @doctest id="cc90"
+// @doctest id="b850"
 ```
 
 
@@ -89,7 +89,7 @@ $result = StructuredOutput::fromConfig(
     messages: 'What is the capital of France?',
     responseModel: City::class,
 )->get();
-// @doctest id="6e3b"
+// @doctest id="4bf3"
 ```
 
 You can also construct `LLMConfig` from an array for more detailed configuration:
@@ -111,7 +111,7 @@ $result = StructuredOutput::fromConfig($config)
         responseModel: City::class,
     )
     ->get();
-// @doctest id="7e9c"
+// @doctest id="7459"
 ```
 
 
@@ -138,7 +138,7 @@ $city = $structured
         responseModel: City::class,
     )
     ->get();
-// @doctest id="ef62"
+// @doctest id="057f"
 ```
 
 ### What Belongs Where
@@ -165,7 +165,7 @@ use Cognesy\Instructor\Enums\OutputMode;
 $runtime = StructuredOutputRuntime::fromConfig(
     LLMConfig::fromPreset('openai')
 )->withOutputMode(OutputMode::JsonSchema);
-// @doctest id="bb7f"
+// @doctest id="16da"
 ```
 
 Available modes:
@@ -205,7 +205,7 @@ $runtime->onEvent(
 $runtime->wiretap(
     fn($event) => logger()->debug(get_class($event)),
 );
-// @doctest id="c95c"
+// @doctest id="6258"
 ```
 
 
@@ -224,7 +224,7 @@ $result = StructuredOutput::fromConfig(
     messages: 'What is the capital of France?',
     responseModel: City::class,
 )->get();
-// @doctest id="6b01"
+// @doctest id="1aad"
 ```
 
 

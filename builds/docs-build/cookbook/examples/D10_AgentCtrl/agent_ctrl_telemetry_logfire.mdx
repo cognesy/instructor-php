@@ -1,10 +1,11 @@
 ## Overview
 
-This example combines the built-in `AgentCtrlConsoleLogger` with Logfire export.
-You still see the live execution locally, and the same run is also emitted as
-correlated telemetry through the `AgentCtrl` projector.
+This example combines the built-in `AgentCtrlConsoleLogger` with an inline
+Logfire connection. You still see the live execution locally, and the same run
+is also emitted as correlated telemetry through the `AgentCtrl` projector.
 
 Key concepts:
+- explicit `LogfireConfig` / `LogfireExporter` setup
 - `AgentCtrlConsoleLogger`: local execution visibility
 - `AgentCtrlTelemetryProjector`: correlates the full run by `executionId`
 - `executeStreaming()`: shows progress as the CLI agent works
@@ -16,15 +17,36 @@ Key concepts:
 ```php
 <?php
 require 'examples/boot.php';
-require_once 'examples/_support/logfire.php';
 
 use Cognesy\AgentCtrl\AgentCtrl;
 use Cognesy\AgentCtrl\Broadcasting\AgentCtrlConsoleLogger;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\SandboxMode;
 use Cognesy\AgentCtrl\Telemetry\AgentCtrlTelemetryProjector;
+use Cognesy\Config\Env;
+use Cognesy\Telemetry\Adapters\Logfire\LogfireConfig;
+use Cognesy\Telemetry\Adapters\Logfire\LogfireExporter;
+use Cognesy\Telemetry\Application\Registry\TraceRegistry;
+use Cognesy\Telemetry\Application\Telemetry;
 use Cognesy\Telemetry\Application\Projector\RuntimeEventBridge;
 
-$hub = exampleLogfireHub('examples.d10.telemetry-logfire');
+$serviceName = 'examples.d10.telemetry-logfire';
+$token = (string) Env::get('LOGFIRE_TOKEN', '');
+if ($token === '') {
+    throw new RuntimeException('Set LOGFIRE_TOKEN in .env to run this example.');
+}
+$endpoint = (string) Env::get('LOGFIRE_OTLP_ENDPOINT', '');
+if ($endpoint === '') {
+    throw new RuntimeException('Set LOGFIRE_OTLP_ENDPOINT in .env to run this example.');
+}
+
+$hub = new Telemetry(
+    registry: new TraceRegistry(),
+    exporter: new LogfireExporter(new LogfireConfig(
+        endpoint: rtrim($endpoint, '/'),
+        serviceName: $serviceName,
+        headers: ['Authorization' => $token],
+    )),
+);
 $bridge = new RuntimeEventBridge(new AgentCtrlTelemetryProjector($hub));
 
 $logger = new AgentCtrlConsoleLogger(

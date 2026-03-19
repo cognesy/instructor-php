@@ -205,7 +205,14 @@ return [
         'exclude_events' => [
             Cognesy\Http\Events\DebugRequestBodyUsed::class,
             Cognesy\Http\Events\DebugResponseBodyReceived::class,
+            Cognesy\Polyglot\Inference\Events\PartialInferenceDeltaCreated::class,
+            Cognesy\Polyglot\Inference\Events\StreamEventParsed::class,
         ],
+
+        /*
+        | Optional class-specific message templates.
+        */
+        'templates' => [],
 
     ],
 
@@ -270,6 +277,63 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Native Agents Settings
+    |--------------------------------------------------------------------------
+    |
+    | Reserve this namespace for native Cognesy\Agents runtime integration.
+    | Container bindings, persistence, broadcasting, and telemetry wiring are
+    | added on top of this surface in later integration slices.
+    |
+    */
+
+    'agents' => [
+
+        /*
+        | Enable or disable native agent integration once registered.
+        */
+        'enabled' => env('INSTRUCTOR_NATIVE_AGENTS_ENABLED', true),
+
+        /*
+        | Default session storage driver for native agents.
+        | Options: memory, database
+        */
+        'session_store' => env('INSTRUCTOR_NATIVE_AGENT_SESSION_STORE', 'memory'),
+
+        /*
+        | Container or config contributions registered for native agents.
+        */
+        'definitions' => [
+            // base_path('resources/agents'),
+        ],
+        'tools' => [
+            // App\Agents\Tools\LookupAccountTool::class,
+        ],
+        'capabilities' => [
+            // App\Agents\Capabilities\UseStructuredOutputs::class,
+        ],
+        'schemas' => [
+            // 'lead' => App\Data\LeadData::class,
+        ],
+
+        /*
+        | Native agent broadcasting defaults.
+        */
+        'broadcasting' => [
+            'enabled' => env('INSTRUCTOR_NATIVE_AGENT_BROADCASTING_ENABLED', false),
+            'connection' => env('INSTRUCTOR_NATIVE_AGENT_BROADCAST_CONNECTION'),
+            'event_name' => env('INSTRUCTOR_NATIVE_AGENT_BROADCAST_EVENT', 'instructor.agent.event'),
+            'preset' => env('INSTRUCTOR_NATIVE_AGENT_BROADCAST_PRESET', 'standard'),
+            'include_stream_chunks' => env('INSTRUCTOR_NATIVE_AGENT_BROADCAST_STREAM_CHUNKS', true),
+            'include_continuation_trace' => env('INSTRUCTOR_NATIVE_AGENT_BROADCAST_CONTINUATION_TRACE', false),
+            'include_tool_args' => env('INSTRUCTOR_NATIVE_AGENT_BROADCAST_TOOL_ARGS', false),
+            'max_arg_length' => env('INSTRUCTOR_NATIVE_AGENT_BROADCAST_MAX_ARG_LENGTH', 100),
+            'auto_status_tracking' => env('INSTRUCTOR_NATIVE_AGENT_BROADCAST_AUTO_STATUS', true),
+        ],
+
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Code Agents Settings
     |--------------------------------------------------------------------------
     |
@@ -278,7 +342,7 @@ return [
     |
     */
 
-    'agents' => [
+    'agent_ctrl' => [
 
         /*
         | Default execution timeout in seconds for all agents.
@@ -325,6 +389,76 @@ return [
             'timeout' => env('OPENCODE_TIMEOUT'),
             'directory' => env('OPENCODE_DIRECTORY'),
             'sandbox' => env('OPENCODE_SANDBOX'),
+        ],
+
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Telemetry Settings
+    |--------------------------------------------------------------------------
+    |
+    | Configure Instructor telemetry export once telemetry integration is
+    | enabled through the Laravel package.
+    |
+    */
+
+    'telemetry' => [
+
+        /*
+        | Enable or disable telemetry integration.
+        */
+        'enabled' => env('INSTRUCTOR_TELEMETRY_ENABLED', false),
+
+        /*
+        | Default telemetry exporter driver.
+        */
+        'driver' => env('INSTRUCTOR_TELEMETRY_DRIVER', 'null'),
+
+        /*
+        | Service name reported to telemetry backends.
+        */
+        'service_name' => env('INSTRUCTOR_TELEMETRY_SERVICE_NAME', env('APP_NAME', 'laravel')),
+
+        /*
+        | Runtime projectors the Laravel package should attach when available.
+        */
+        'projectors' => [
+            'instructor' => true,
+            'polyglot' => true,
+            'http' => true,
+            'agent_ctrl' => true,
+            'agents' => true,
+        ],
+
+        /*
+        | Projector-specific options.
+        */
+        'http' => [
+            'capture_streaming_chunks' => env('INSTRUCTOR_TELEMETRY_HTTP_CAPTURE_STREAMING_CHUNKS', false),
+        ],
+
+        /*
+        | Exporter-specific settings.
+        */
+        'drivers' => [
+            'composite' => [
+                'exporters' => [],
+            ],
+            'otel' => [
+                'endpoint' => env('INSTRUCTOR_TELEMETRY_OTEL_ENDPOINT'),
+                'headers' => [],
+            ],
+            'langfuse' => [
+                'host' => env('INSTRUCTOR_TELEMETRY_LANGFUSE_HOST'),
+                'public_key' => env('INSTRUCTOR_TELEMETRY_LANGFUSE_PUBLIC_KEY'),
+                'secret_key' => env('INSTRUCTOR_TELEMETRY_LANGFUSE_SECRET_KEY'),
+            ],
+            'logfire' => [
+                'endpoint' => env('INSTRUCTOR_TELEMETRY_LOGFIRE_ENDPOINT'),
+                'write_token' => env('INSTRUCTOR_TELEMETRY_LOGFIRE_WRITE_TOKEN'),
+                'headers' => [],
+            ],
         ],
 
     ],

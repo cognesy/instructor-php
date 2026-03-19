@@ -19,7 +19,7 @@ The agent type that produced this response. This is one of `AgentType::ClaudeCod
 
 ```php
 echo "Produced by: {$response->agentType->value}"; // e.g., "claude-code"
-// @doctest id="72b3"
+// @doctest id="d905"
 ```
 
 ### `text: string`
@@ -30,7 +30,7 @@ The agent's main text output. This is the concatenation of all text content bloc
 echo $response->text;
 // or
 echo $response->text();
-// @doctest id="0b14"
+// @doctest id="b5b5"
 ```
 
 ### `exitCode: int`
@@ -41,7 +41,7 @@ The process exit code. A value of `0` indicates success. Non-zero values indicat
 if ($response->exitCode !== 0) {
     echo "Process failed with exit code: {$response->exitCode}";
 }
-// @doctest id="9bc4"
+// @doctest id="1140"
 ```
 
 Common exit codes:
@@ -61,7 +61,7 @@ if ($usage !== null) {
     echo "Output tokens: {$usage->output}\n";
     echo "Total tokens: {$usage->total()}\n";
 }
-// @doctest id="a390"
+// @doctest id="470b"
 ```
 
 ### `cost: ?float`
@@ -72,7 +72,7 @@ The estimated cost in USD, when available. Currently, OpenCode and Pi expose cos
 if ($response->cost !== null) {
     echo sprintf("Cost: $%.4f", $response->cost);
 }
-// @doctest id="aced"
+// @doctest id="ea7e"
 ```
 
 ### `toolCalls: array`
@@ -81,7 +81,7 @@ An array of `ToolCall` objects representing every tool invocation made during th
 
 ```php
 echo "Tool calls made: " . count($response->toolCalls);
-// @doctest id="a790"
+// @doctest id="cec3"
 ```
 
 ### `rawResponse: mixed`
@@ -91,7 +91,7 @@ The original bridge-specific response object (`ClaudeResponse`, `CodexResponse`,
 ```php
 // Access the raw Codex response for agent-specific data
 $codexResponse = $response->rawResponse;
-// @doctest id="8b51"
+// @doctest id="e70d"
 ```
 
 ### `parseFailures: int`
@@ -102,7 +102,7 @@ The number of malformed JSON lines that were skipped during response parsing:
 if ($response->parseFailures > 0) {
     echo "Warning: {$response->parseFailures} JSON parse failures";
 }
-// @doctest id="bb4e"
+// @doctest id="c139"
 ```
 
 ## Response Methods
@@ -120,7 +120,7 @@ if ($response->isSuccess()) {
     echo "Failed with exit code: {$response->exitCode}";
     echo "Partial output: " . $response->text();
 }
-// @doctest id="fb22"
+// @doctest id="b17e"
 ```
 
 A completed execution with a non-zero exit code does **not** throw an exception. Always check `isSuccess()` before treating the text output as authoritative.
@@ -131,7 +131,7 @@ Returns the agent's text output. Equivalent to accessing the `text` property dir
 
 ```php
 echo $response->text();
-// @doctest id="9db4"
+// @doctest id="6f5b"
 ```
 
 ### `sessionId(): ?AgentSessionId`
@@ -145,7 +145,7 @@ if ($sessionId !== null) {
     // Store for later resumption
     $cache->set('last_session', (string) $sessionId);
 }
-// @doctest id="014d"
+// @doctest id="a29d"
 ```
 
 ### `usage(): ?TokenUsage`
@@ -157,7 +157,7 @@ $usage = $response->usage();
 if ($usage !== null) {
     echo "Tokens used: {$usage->total()}";
 }
-// @doctest id="b2fd"
+// @doctest id="571e"
 ```
 
 ### `cost(): ?float`
@@ -169,7 +169,7 @@ $cost = $response->cost();
 if ($cost !== null) {
     echo sprintf("This execution cost $%.4f", $cost);
 }
-// @doctest id="1261"
+// @doctest id="8668"
 ```
 
 ### `parseFailures(): int`
@@ -178,7 +178,7 @@ Returns the number of malformed JSON lines encountered during parsing:
 
 ```php
 echo "Parse failures: {$response->parseFailures()}";
-// @doctest id="30d7"
+// @doctest id="7bf1"
 ```
 
 ### `parseFailureSamples(): array`
@@ -192,7 +192,7 @@ if ($response->parseFailures() > 0) {
         echo "  - {$sample}\n";
     }
 }
-// @doctest id="a41f"
+// @doctest id="8db5"
 ```
 
 ## Tool Calls
@@ -257,7 +257,7 @@ foreach ($response->toolCalls as $toolCall) {
 
     echo "---\n";
 }
-// @doctest id="89cb"
+// @doctest id="3bae"
 ```
 
 ## Token Usage
@@ -316,7 +316,7 @@ $cost = $response->cost();
 if ($cost !== null) {
     echo sprintf("Cost: $%.4f\n", $cost);
 }
-// @doctest id="0b8c"
+// @doctest id="ce64"
 ```
 
 ## Complete Example
@@ -369,5 +369,5 @@ foreach ($toolSummary as $tool => $count) {
 if ($response->parseFailures() > 0) {
     echo "Warning: {$response->parseFailures()} parse failures\n";
 }
-// @doctest id="b8f1"
+// @doctest id="fde0"
 ```

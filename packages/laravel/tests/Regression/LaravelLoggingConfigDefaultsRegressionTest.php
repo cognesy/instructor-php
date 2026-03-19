@@ -17,6 +17,8 @@ it('ships production-safe logging defaults in laravel config', function () {
             ->and($config['logging']['exclude_events'])->toContain(
                 Cognesy\Http\Events\DebugRequestBodyUsed::class,
                 Cognesy\Http\Events\DebugResponseBodyReceived::class,
+                Cognesy\Polyglot\Inference\Events\PartialInferenceDeltaCreated::class,
+                Cognesy\Polyglot\Inference\Events\StreamEventParsed::class,
             );
     } finally {
         match (true) {

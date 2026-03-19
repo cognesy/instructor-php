@@ -43,6 +43,23 @@ Exporter setup:
 - use `CompositeTelemetryExporter([...])` when you want to fan out to multiple backends
 - call `flush()` after the run to send buffered observations and metrics
 
+## Live Interop Suite
+
+Run the live backend interop suite from the monorepo root:
+
+```bash
+TELEMETRY_INTEROP_ENABLED=1 composer test:telemetry-interop
+```
+
+Notes:
+
+- tests live under `packages/telemetry/tests/Integration`
+- the suite is opt-in and skips cleanly when disabled
+- backend contract tests cover direct exporter write/read interop
+- runtime smoke tests cover inference, streaming, agent, and AgentCtrl paths
+- inference, streaming, and agent runtime smoke coverage also require `OPENAI_API_KEY`
+- AgentCtrl smoke coverage also requires a usable `codex` CLI with working auth/config
+
 ## Logfire
 
 Basic setup:
@@ -67,8 +84,8 @@ Notes:
 
 - `endpoint` is the base OTLP URL, not the full `/v1/traces` path
 - `LogfireExporter` requires either `LogfireConfig` or a custom transport
-- working helper: `examples/_support/logfire.php`
 - practical examples:
+  - `examples/A03_Troubleshooting/TelemetryLogfire/run.php`
   - `examples/D05_AgentTroubleshooting/TelemetryLogfire/run.php`
   - `examples/D05_AgentTroubleshooting/SubagentTelemetryLogfire/run.php`
 
@@ -99,8 +116,8 @@ Notes:
 
 - Langfuse traces are sent to `/api/public/otel/v1/traces`
 - request-scoped traces fall back to request ids as `session.id` values
-- working helper: `examples/_support/langfuse.php`
 - practical examples:
+  - `examples/A03_Troubleshooting/TelemetryLangfuse/run.php`
   - `examples/D05_AgentTroubleshooting/TelemetryLangfuse/run.php`
   - `examples/D05_AgentTroubleshooting/SubagentTelemetryLangfuse/run.php`
 
@@ -130,6 +147,7 @@ Runtime notes:
 - `AgentCtrlTelemetryProjector` correlates `agent-ctrl` by `executionId`
 - `agent_ctrl.session_id` is continuation metadata, not the primary trace key
 - request-scoped traces fall back to request ids as `session.id` values for Langfuse
+- use the Integration suite when you need live backend proof, not just local payload inspection
 
 Adapter namespaces:
 

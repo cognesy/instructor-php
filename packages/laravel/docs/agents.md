@@ -1,6 +1,8 @@
-# Code Agents
+# Code Agents With `AgentCtrl`
 
 The `AgentCtrl` facade provides a unified interface for invoking CLI-based code agents that can execute code, modify files, and perform complex multi-step tasks. Each agent runs as an external process, and the facade handles process management, output parsing, and response structuring.
+
+This guide is specifically for external CLI code agents. Native `Cognesy\Agents` runtime integration uses a separate Laravel config namespace under `instructor.agents` and is documented separately in [Native Agents](native-agents.md).
 
 ## Setup
 
@@ -12,7 +14,7 @@ Before using `AgentCtrl`, install the CLI agent you want to run and make sure it
 | Codex | `codex` | Install the Codex CLI and ensure `codex` resolves on the server running Laravel |
 | OpenCode | `opencode` | Install OpenCode and ensure `opencode` resolves on the server running Laravel |
 
-After the binary is available, configure Laravel defaults in `config/instructor.php` under `agents` for timeout, working directory, sandbox driver, and per-agent model overrides.
+After the binary is available, configure Laravel defaults in `config/instructor.php` under `agent_ctrl` for timeout, working directory, sandbox driver, and per-agent model overrides.
 
 ## Supported Agents
 
@@ -121,7 +123,7 @@ AgentCtrl::claudeCode()
 Configure defaults in `config/instructor.php`. The facade automatically reads these values and applies them when you create a builder. Builder methods then override any defaults for that specific call.
 
 ```php
-'agents' => [
+'agent_ctrl' => [
     // Default timeout for all agents
     'timeout' => env('INSTRUCTOR_AGENT_TIMEOUT', 300),
 
@@ -157,7 +159,7 @@ Configure defaults in `config/instructor.php`. The facade automatically reads th
 ],
 ```
 
-Agent-specific settings (e.g., `claude_code.timeout`) take precedence over the global defaults (e.g., `agents.timeout`).
+Agent-specific settings (e.g., `claude_code.timeout`) take precedence over the global defaults (e.g., `agent_ctrl.timeout`).
 
 ### Environment Variables
 

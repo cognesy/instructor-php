@@ -31,23 +31,23 @@ $telemetry = new Telemetry(
 
 ## Environment Variables
 
-The example helpers look for:
+The telemetry examples use:
 
 - `LOGFIRE_TOKEN`
-- `LOGFIRE_API_TOKEN`
 - `LOGFIRE_OTLP_ENDPOINT`
-- `LOGFIRE_BASE_URL`
 
-See:
-
-- `examples/_support/logfire.php`
+Use `LOGFIRE_TOKEN` as the Logfire write token for OTLP telemetry export.
 
 ## Endpoint Rule
 
 `LogfireConfig` expects the OTLP base endpoint. Do not pass a full `/v1/traces`
 or `/v1/metrics` path.
 
-The helper in `examples/_support/logfire.php` strips those suffixes if present.
+## Reference Example
+
+The inline reference example is:
+
+- `examples/A03_Troubleshooting/TelemetryLogfire/run.php`
 
 ## Agent Runtime Example
 

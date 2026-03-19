@@ -4,6 +4,33 @@ Backend-neutral telemetry core for Instructor PHP.
 
 Use it to correlate spans across runtimes and export them to OTEL, Logfire, or Langfuse.
 
+## Live Interop Tests
+
+The package now includes env-gated live backend interop tests under
+`packages/telemetry/tests/Integration`.
+
+Use them to prove both:
+
+- write-path export to Logfire or Langfuse
+- read-path queryback through the backend API
+
+Run from the monorepo root:
+
+```bash
+TELEMETRY_INTEROP_ENABLED=1 composer test:telemetry-interop
+```
+
+Required env:
+
+- Logfire: `LOGFIRE_TOKEN`, `LOGFIRE_OTLP_ENDPOINT`, `LOGFIRE_READ_TOKEN`
+- Langfuse: `LANGFUSE_BASE_URL`, `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`
+- inference, streaming, and agent runtime smoke tests also require `OPENAI_API_KEY`
+- AgentCtrl smoke tests also require a usable `codex` CLI in `PATH`
+  and a working Codex authentication/configuration state
+
+The suite is opt-in by design. Without `TELEMETRY_INTEROP_ENABLED=1`, the
+integration tests skip cleanly.
+
 ## Example
 
 ```php
@@ -39,7 +66,10 @@ $telemetry->flush();
 - `packages/telemetry/docs/04-troubleshooting.md`
 - `packages/telemetry/docs/05-langfuse.md`
 - `packages/telemetry/docs/06-logfire.md`
-- `examples/_support/logfire.php`
-- `examples/_support/langfuse.php`
+- `packages/telemetry/tests/Integration/`
+- `examples/A03_Troubleshooting/TelemetryLogfire/run.php`
+- `examples/A03_Troubleshooting/TelemetryLangfuse/run.php`
 - `examples/D05_AgentTroubleshooting/TelemetryLogfire/run.php`
 - `examples/D05_AgentTroubleshooting/TelemetryLangfuse/run.php`
+- `examples/D05_AgentTroubleshooting/SubagentTelemetryLogfire/run.php`
+- `examples/D05_AgentTroubleshooting/SubagentTelemetryLangfuse/run.php`

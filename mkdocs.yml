@@ -340,6 +340,7 @@ nav:
           - { Installation: packages/laravel/installation.md }
           - { Configuration: packages/laravel/configuration.md }
           - { Facades: packages/laravel/facades.md }
+          - { 'Native Agents': packages/laravel/native-agents.md }
           - { 'Response Models': packages/laravel/response-models.md }
           - { Agents: packages/laravel/agents.md }
           - { Events: packages/laravel/events.md }

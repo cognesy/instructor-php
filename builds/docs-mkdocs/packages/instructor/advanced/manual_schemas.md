@@ -24,7 +24,7 @@ $schema = [
 $data = (new StructuredOutput)
     ->with(messages: 'Jane is 31 years old.', responseModel: $schema)
     ->getArray();
-// @doctest id="b0aa"
+// @doctest id="f54f"
 ```
 
 When a schema array is provided instead of a class name, the result is returned as an associative array. You can also call `->get()` which will return a `Structure` object with dynamic property access.
@@ -48,7 +48,7 @@ $schema = JsonSchema::object(
     ],
     requiredProperties: ['name', 'age'],
 );
-// @doctest id="e506"
+// @doctest id="01ce"
 ```
 
 ### Primitive Types
@@ -58,7 +58,7 @@ JsonSchema::string(name: 'email', description: 'Email address');
 JsonSchema::integer(name: 'count', description: 'Number of items');
 JsonSchema::number(name: 'price', description: 'Product price');
 JsonSchema::boolean(name: 'verified', description: 'Is verified');
-// @doctest id="a7d6"
+// @doctest id="c24d"
 ```
 
 ### Arrays and Collections
@@ -81,7 +81,7 @@ JsonSchema::collection(
     ),
     description: 'List of users',
 );
-// @doctest id="3607"
+// @doctest id="f79c"
 ```
 
 ### Enums
@@ -92,7 +92,7 @@ JsonSchema::enum(
     enumValues: ['pending', 'active', 'completed'],
     description: 'Order status',
 );
-// @doctest id="5048"
+// @doctest id="468d"
 ```
 
 ### Parsing an Existing Array
@@ -108,7 +108,7 @@ $schema = JsonSchema::fromArray([
     ],
     'required' => ['name'],
 ]);
-// @doctest id="1f8c"
+// @doctest id="6986"
 ```
 
 ## Using JsonSchema with StructuredOutput
@@ -134,7 +134,7 @@ $user = (new StructuredOutput)
         responseModel: $userSchema,
     )
     ->get();
-// @doctest id="a7f1"
+// @doctest id="d65e"
 ```
 
 ## Complex Example
@@ -184,7 +184,7 @@ $order = (new StructuredOutput)
         responseModel: $orderSchema,
     )
     ->get();
-// @doctest id="e7ce"
+// @doctest id="490c"
 ```
 
 ## When to Use Manual Schemas

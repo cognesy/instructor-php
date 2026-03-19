@@ -649,3 +649,31 @@ public function test_uses_correct_model(): void
     $fake->assertUsedModel('claude-3-5-sonnet-20241022');
 }
 ```
+
+---
+
+## Native Agent Testing
+
+Resolve `Cognesy\Instructor\Laravel\Testing\NativeAgentTesting` from the container when you want native-agent runtime tests without app-local glue.
+
+It can:
+- register a `FakeAgentDriver` capability
+- swap session storage to in-memory mode
+- replace broadcasting with a recording transport
+- replace telemetry export with a recording exporter
+
+Example:
+
+```php
+use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
+use Cognesy\Instructor\Laravel\Testing\NativeAgentTesting;
+
+$testing = app(NativeAgentTesting::class);
+
+$driver = $testing->fakeDriver(FakeAgentDriver::fromResponses('done'));
+$sessions = $testing->fakeSessions();
+$broadcasts = $testing->fakeBroadcasts();
+$telemetry = $testing->captureTelemetry();
+```
+
+Those helpers are container-aware, so the native runtime bindings exposed by `packages/laravel` immediately use the swapped testing surfaces.

@@ -9,11 +9,13 @@ tags:
 ---
 ## Overview
 
-This example shows how to export Instructor runtime telemetry to Langfuse while
-keeping the example itself simple. It wires the existing event bus into the
-telemetry projectors and then runs one small structured extraction.
+This example shows the Langfuse connection inline, using the actual Langfuse
+environment variables already present in this repository. It wires the existing
+event bus into the telemetry projectors and then runs one small structured
+extraction.
 
 Key concepts:
+- explicit `LangfuseConfig` / `LangfuseHttpTransport` / `LangfuseExporter` setup
 - `RuntimeEventBridge`: attaches telemetry projection to the runtime event bus
 - `LangfuseExporter`: sends canonical telemetry to Langfuse over HTTP
 - `InstructorTelemetryProjector`: maps structured output lifecycle events
@@ -25,8 +27,8 @@ Key concepts:
 ```php
 <?php
 require 'examples/boot.php';
-require_once 'examples/_support/langfuse.php';
 
+use Cognesy\Config\Env;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Telemetry\HttpClientTelemetryProjector;
 use Cognesy\Instructor\StructuredOutput;
@@ -34,6 +36,11 @@ use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Telemetry\InstructorTelemetryProjector;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Polyglot\Telemetry\PolyglotTelemetryProjector;
+use Cognesy\Telemetry\Adapters\Langfuse\LangfuseConfig;
+use Cognesy\Telemetry\Adapters\Langfuse\LangfuseExporter;
+use Cognesy\Telemetry\Adapters\Langfuse\LangfuseHttpTransport;
+use Cognesy\Telemetry\Application\Registry\TraceRegistry;
+use Cognesy\Telemetry\Application\Telemetry;
 use Cognesy\Telemetry\Application\Projector\CompositeTelemetryProjector;
 use Cognesy\Telemetry\Application\Projector\RuntimeEventBridge;
 
@@ -43,8 +50,31 @@ class SupportTicket
     public string $summary;
 }
 
-$events = new EventDispatcher('examples.a03.telemetry-langfuse');
-$hub = exampleLangfuseHub();
+$serviceName = 'examples.a03.telemetry-langfuse';
+$baseUrl = (string) Env::get('LANGFUSE_BASE_URL', '');
+if ($baseUrl === '') {
+    throw new RuntimeException('Set LANGFUSE_BASE_URL in .env to run this example.');
+}
+$publicKey = (string) Env::get('LANGFUSE_PUBLIC_KEY', '');
+if ($publicKey === '') {
+    throw new RuntimeException('Set LANGFUSE_PUBLIC_KEY in .env to run this example.');
+}
+$secretKey = (string) Env::get('LANGFUSE_SECRET_KEY', '');
+if ($secretKey === '') {
+    throw new RuntimeException('Set LANGFUSE_SECRET_KEY in .env to run this example.');
+}
+
+$events = new EventDispatcher($serviceName);
+$hub = new Telemetry(
+    registry: new TraceRegistry(),
+    exporter: new LangfuseExporter(
+        transport: new LangfuseHttpTransport(new LangfuseConfig(
+            baseUrl: $baseUrl,
+            publicKey: $publicKey,
+            secretKey: $secretKey,
+        )),
+    ),
+);
 
 (new RuntimeEventBridge(new CompositeTelemetryProjector([
     new InstructorTelemetryProjector($hub),

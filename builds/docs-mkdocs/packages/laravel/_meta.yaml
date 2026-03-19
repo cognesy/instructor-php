@@ -4,6 +4,7 @@ order:
   - installation
   - configuration
   - facades
+  - native-agents
   - response-models
   - agents
   - events

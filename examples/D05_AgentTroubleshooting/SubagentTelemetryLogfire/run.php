@@ -9,11 +9,13 @@ tags:
 ---
 ## Overview
 
-This example extends the existing agent telemetry pattern with delegated work.
-The parent agent stays visible in the console, but the same event stream is also
-projected to Logfire so you can inspect the full parent and subagent trace tree.
+This example extends the existing agent telemetry pattern with delegated work
+and shows the Logfire connection inline. The parent agent stays visible in the
+console, but the same event stream is also projected to Logfire so you can
+inspect the full parent and subagent trace tree.
 
 Key concepts:
+- explicit `LogfireConfig` / `LogfireExporter` setup
 - `UseSubagents`: lets the parent delegate work through `spawn_subagent`
 - `AgentDefinitionRegistry`: defines the available delegated workers
 - `RuntimeEventBridge`: projects the full parent and child event stream into telemetry
@@ -25,7 +27,6 @@ Key concepts:
 ```php
 <?php
 require 'examples/boot.php';
-require_once 'examples/_support/logfire.php';
 
 use Cognesy\Agents\Builder\AgentBuilder;
 use Cognesy\Agents\Capability\Bash\UseBash;
@@ -42,16 +43,38 @@ use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
 use Cognesy\Agents\Telemetry\AgentsTelemetryProjector;
 use Cognesy\Agents\Template\AgentDefinitionRegistry;
 use Cognesy\Agents\Template\Data\AgentDefinition;
+use Cognesy\Config\Env;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Telemetry\HttpClientTelemetryProjector;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Polyglot\Telemetry\PolyglotTelemetryProjector;
+use Cognesy\Telemetry\Adapters\Logfire\LogfireConfig;
+use Cognesy\Telemetry\Adapters\Logfire\LogfireExporter;
+use Cognesy\Telemetry\Application\Registry\TraceRegistry;
+use Cognesy\Telemetry\Application\Telemetry;
 use Cognesy\Telemetry\Application\Projector\CompositeTelemetryProjector;
 use Cognesy\Telemetry\Application\Projector\RuntimeEventBridge;
 
-$events = new EventDispatcher('examples.d05.subagent-telemetry-logfire');
-$hub = exampleLogfireHub('examples.d05.subagent-telemetry-logfire');
+$serviceName = 'examples.d05.subagent-telemetry-logfire';
+$token = (string) Env::get('LOGFIRE_TOKEN', '');
+if ($token === '') {
+    throw new RuntimeException('Set LOGFIRE_TOKEN in .env to run this example.');
+}
+$endpoint = (string) Env::get('LOGFIRE_OTLP_ENDPOINT', '');
+if ($endpoint === '') {
+    throw new RuntimeException('Set LOGFIRE_OTLP_ENDPOINT in .env to run this example.');
+}
+
+$events = new EventDispatcher($serviceName);
+$hub = new Telemetry(
+    registry: new TraceRegistry(),
+    exporter: new LogfireExporter(new LogfireConfig(
+        endpoint: rtrim($endpoint, '/'),
+        serviceName: $serviceName,
+        headers: ['Authorization' => $token],
+    )),
+);
 
 (new RuntimeEventBridge(new CompositeTelemetryProjector([
     new AgentsTelemetryProjector($hub),

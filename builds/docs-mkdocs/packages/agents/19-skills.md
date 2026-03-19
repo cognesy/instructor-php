@@ -27,7 +27,7 @@ skills/
     ├── SKILL.md
     └── references/
         └── openapi.yaml
-// @doctest id="cf33"
+// @doctest id="b97c"
 ```
 
 Resource folders (`scripts/`, `references/`, `assets/`, `examples/`) are automatically discovered and listed in the skill's `resources` property.
@@ -52,7 +52,7 @@ When reviewing code, check for:
 4. Style consistency
 
 Focus on $ARGUMENTS if provided.
-# @doctest id="37f3"
+# @doctest id="b31f"
 ```
 
 ### Frontmatter Fields
@@ -104,7 +104,7 @@ $skills = $library->listSkills();
 if ($library->hasSkill('code-review')) {
     $skill = $library->getSkill('code-review');
 }
-// @doctest id="9794"
+// @doctest id="a944"
 ```
 
 Skills are lazy-loaded: only frontmatter is read during discovery, full content is loaded on first `getSkill()` call and cached thereafter.
@@ -123,7 +123,7 @@ $library = SkillLibrary::inDirectory(__DIR__ . '/skills');
 $agent = AgentBuilder::base()
     ->withCapability(new UseSkills($library))
     ->build();
-// @doctest id="5c3b"
+// @doctest id="1c27"
 ```
 
 This does two things:
@@ -151,7 +151,7 @@ argument-hint: "[issue-number]"
 ---
 
 Fix GitHub issue $ARGUMENTS following our coding standards.
-# @doctest id="eb16"
+# @doctest id="51f1"
 ```
 
 When loaded with `load_skill(skill_name: "fix-issue", arguments: "123")`, the body becomes "Fix GitHub issue 123 following our coding standards."
@@ -177,7 +177,7 @@ Deploy the application:
 1. Run tests
 2. Build
 3. Push to production
-# @doctest id="9264"
+# @doctest id="96d7"
 ```
 
 ## Components
@@ -207,7 +207,7 @@ $skill->render();              // Full skill content with XML tags
 $skill->render('arg1 arg2');   // With argument substitution
 $skill->renderMetadata();      // "[name]: description"
 $skill->toArray();             // All non-null fields as array
-// @doctest id="da37"
+// @doctest id="47b6"
 ```
 
 ### SkillLibrary
@@ -222,7 +222,7 @@ $library->listSkills(userInvocable: true);        // Exclude background
 $library->hasSkill('name');                       // bool
 $library->getSkill('name');                       // ?Skill
 $library->renderSkillList();                      // Formatted list
-// @doctest id="e1c9"
+// @doctest id="4a07"
 ```
 
 ### LoadSkillTool
@@ -233,7 +233,7 @@ Tool exposed to the LLM for loading skills:
 load_skill(skill_name: "code-review")              // Load a skill
 load_skill(skill_name: "fix-issue", arguments: "123")  // With args
 load_skill(list_skills: true)                      // List available
-// @doctest id="b777"
+// @doctest id="2b0f"
 ```
 
 ### AppendSkillMetadataHook
@@ -267,7 +267,7 @@ Current branch: !`git branch --show-current`
 Recent changes: !`git log --oneline -5`
 
 Review the code in $ARGUMENTS.
-# @doctest id="f02e"
+# @doctest id="ebfb"
 ```
 
 When loaded, the `` !`...` `` patterns are replaced with live command output, giving the LLM up-to-date context.
@@ -290,7 +290,7 @@ $preprocessor = new SkillPreprocessor(
 $agent = AgentBuilder::base()
     ->withCapability(new UseSkills($library, $preprocessor))
     ->build();
-// @doctest id="7d25"
+// @doctest id="44c4"
 ```
 
 Commands that fail or time out are replaced with `[error: ...]` markers instead of crashing the skill load.

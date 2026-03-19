@@ -127,12 +127,45 @@ class AgentCtrl extends Facade
 
     private static function resolveAgentCtrlConfig(string $agentKey): AgentCtrlConfig
     {
-        $defaults = static::configGet('instructor.agents', []);
-        $globalConfig = AgentCtrlConfig::fromArray(is_array($defaults) ? $defaults : []);
+        $defaults = static::resolveAgentCtrlDefaults();
+        $globalConfig = AgentCtrlConfig::fromArray($defaults);
 
-        $overrides = static::configGet("instructor.agents.{$agentKey}", []);
+        $overrides = static::resolveAgentCtrlOverrides($agentKey);
 
         return $globalConfig->withOverrides(is_array($overrides) ? $overrides : []);
+    }
+
+    /**
+     * Prefer the dedicated AgentCtrl config namespace, but keep the legacy
+     * instructor.agents path working for already-published configs.
+     *
+     * @return array<string, mixed>
+     */
+    private static function resolveAgentCtrlDefaults(): array
+    {
+        $current = static::configGet('instructor.agent_ctrl');
+        if (is_array($current)) {
+            return $current;
+        }
+
+        $legacy = static::configGet('instructor.agents', []);
+
+        return is_array($legacy) ? $legacy : [];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function resolveAgentCtrlOverrides(string $agentKey): array
+    {
+        $current = static::configGet("instructor.agent_ctrl.{$agentKey}");
+        if (is_array($current)) {
+            return $current;
+        }
+
+        $legacy = static::configGet("instructor.agents.{$agentKey}", []);
+
+        return is_array($legacy) ? $legacy : [];
     }
 
     private static function configGet(string $key, mixed $default = null): mixed

@@ -29,7 +29,7 @@ it('routes AgentCtrl facade builder entrypoints through fake root', function () 
     $app = new Container();
     $app->instance('config', new MinimalConfigRepository([
         'instructor' => [
-            'agents' => [],
+            'agent_ctrl' => [],
         ],
     ]));
     Container::setInstance($app);
@@ -48,7 +48,7 @@ it('records executions and returns fake response via facade entrypoints', functi
     $app = new Container();
     $app->instance('config', new MinimalConfigRepository([
         'instructor' => [
-            'agents' => [],
+            'agent_ctrl' => [],
         ],
     ]));
     Container::setInstance($app);
@@ -71,7 +71,7 @@ it('hydrates agent builder defaults through typed config conventions', function 
     $app = new Container();
     $app->instance('config', new MinimalConfigRepository([
         'instructor' => [
-            'agents' => [
+            'agent_ctrl' => [
                 'timeout' => 300,
                 'directory' => '/workspace',
                 'sandbox' => 'host',
@@ -93,6 +93,31 @@ it('hydrates agent builder defaults through typed config conventions', function 
         ->and(builderProperty($builder, 'timeout'))->toBe(45)
         ->and(builderProperty($builder, 'workingDirectory'))->toBe('/workspace')
         ->and((string) builderProperty($builder, 'sandboxDriver')->value)->toBe('docker');
+});
+
+it('keeps legacy instructor.agents config working for AgentCtrl defaults', function () {
+    $app = new Container();
+    $app->instance('config', new MinimalConfigRepository([
+        'instructor' => [
+            'agents' => [
+                'timeout' => 180,
+                'directory' => '/legacy-workspace',
+                'sandbox' => 'host',
+                'claude_code' => [
+                    'model' => 'claude-sonnet-4-5',
+                ],
+            ],
+        ],
+    ]));
+    Container::setInstance($app);
+    Facade::setFacadeApplication($app);
+    Facade::clearResolvedInstances();
+
+    $builder = AgentCtrlFacade::claudeCode();
+
+    expect(builderProperty($builder, 'model'))->toBe('claude-sonnet-4-5')
+        ->and(builderProperty($builder, 'timeout'))->toBe(180)
+        ->and(builderProperty($builder, 'workingDirectory'))->toBe('/legacy-workspace');
 });
 
 function builderProperty(object $object, string $property): mixed

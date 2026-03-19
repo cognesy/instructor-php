@@ -31,7 +31,7 @@ $telemetry = new Telemetry(
         )),
     ),
 );
-// @doctest id="895d"
+// @doctest id="9c66"
 ```
 
 ## Environment Variables
@@ -42,9 +42,11 @@ The examples use:
 - `LANGFUSE_PUBLIC_KEY`
 - `LANGFUSE_SECRET_KEY`
 
-See:
+## Reference Example
 
-- `examples/_support/langfuse.php`
+The inline reference example is:
+
+- `examples/A03_Troubleshooting/TelemetryLangfuse/run.php`
 
 ## Agent Runtime Example
 

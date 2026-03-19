@@ -26,8 +26,21 @@ Provided by `InstructorServiceProvider::provides()`:
 - `Cognesy\Polyglot\Inference\Contracts\CanCreateInference`
 - `Cognesy\Polyglot\Embeddings\Contracts\CanCreateEmbeddings`
 - `Cognesy\Instructor\Contracts\CanCreateStructuredOutput`
+- `Cognesy\Agents\Template\Contracts\CanManageAgentDefinitions`
+- `Cognesy\Agents\Tool\Contracts\CanManageTools`
+- `Cognesy\Agents\Capability\CanManageAgentCapabilities`
+- `Cognesy\Agents\Capability\StructuredOutput\CanManageSchemas`
+- `Cognesy\Agents\Session\Contracts\CanStoreSessions`
+- `Cognesy\Agents\Session\Contracts\CanManageAgentSessions`
+- `Cognesy\Agents\Template\Contracts\CanInstantiateAgentLoop`
+- `Cognesy\Agents\Broadcasting\BroadcastConfig`
+- `Cognesy\Agents\Broadcasting\CanBroadcastAgentEvents`
+- `Cognesy\Instructor\Laravel\Agents\Broadcasting\LaravelAgentBroadcasting`
+- `Cognesy\Telemetry\Application\Telemetry`
+- `Cognesy\Telemetry\Application\Projector\RuntimeEventBridge`
 - `Cognesy\Instructor\Laravel\Testing\StructuredOutputFake`
 - `Cognesy\Instructor\Laravel\Testing\AgentCtrlFake`
+- `Cognesy\Instructor\Laravel\Testing\NativeAgentTesting`
 
 ## Facades
 
@@ -83,6 +96,12 @@ Provided by `InstructorServiceProvider::provides()`:
 - inspection: `getExecutions(): array`, `reset(): void`
 - static helpers: `AgentCtrlFake::response(...)`, `AgentCtrlFake::toolCall(...)`
 
+`NativeAgentTesting`:
+- `fakeDriver(?FakeAgentDriver $driver = null, string $capabilityName = 'use_test_driver'): FakeAgentDriver`
+- `fakeSessions(?InMemorySessionStore $store = null): InMemorySessionStore`
+- `fakeBroadcasts(?RecordingAgentEventTransport $transport = null): RecordingAgentEventTransport`
+- `captureTelemetry(?RecordingTelemetryExporter $exporter = null): RecordingTelemetryExporter`
+
 ## Artisan Commands
 
 - `instructor:install {--force}`
@@ -94,46 +113,23 @@ Provided by `InstructorServiceProvider::provides()`:
 From `InstructorServiceProvider`:
 - `instructor-config` -> publishes `config/instructor.php`
 - `instructor-stubs` -> publishes `resources/stubs` to `stubs/instructor`
+- `instructor-migrations` -> publishes native-agent session migration(s)
 
 ## Logging
 
-Logging is handled by `InstructorLoggingServiceProvider`, which attaches a `LoggingPipeline`
-wiretap to the shared `CanHandleEvents` event bus. The pipeline writes to a PSR-3 logger
-(Laravel log channel).
-
-Config file: `packages/laravel/resources/config/instructor-logging.php`
+Logging is configured through `config/instructor.php` and applied from `InstructorServiceProvider`.
+The pipeline writes to a Laravel log channel and enriches records with request context.
 
 Relevant env vars:
 - `INSTRUCTOR_LOGGING_ENABLED` (default: `true`)
 - `INSTRUCTOR_LOGGING_PRESET` (`default` | `production` | `custom`)
-- `INSTRUCTOR_LOG_CHANNEL` — Laravel log channel name (default: `instructor`)
-- `INSTRUCTOR_LOG_LEVEL` — minimum PSR log level (default: `debug`)
+- `INSTRUCTOR_LOG_CHANNEL` — Laravel log channel name (default: `stack`)
+- `INSTRUCTOR_LOG_LEVEL` — minimum PSR log level (default: `warning`)
 
 Presets:
-- `default` — warning level, excludes HTTP debug events, adds human-readable message templates
-- `production` — warning level, minimal set of events
-- `custom` — reads full config array from `instructor-logging.config`
-
-### Structured / JSONL output
-
-`INSTRUCTOR_LOG_PATH` (the standalone JSONL env var from `EventLog`) **has no effect inside
-Laravel**. All runtimes receive a user-provided `CanHandleEvents` from the container, so
-`EventLog::root()` is never called.
-
-To get machine-parseable JSON log lines in Laravel, configure a log channel with Monolog's
-`JsonFormatter`:
-
-```php
-// config/logging.php
-'instructor-json' => [
-    'driver'    => 'single',
-    'path'      => storage_path('logs/instructor.jsonl'),
-    'level'     => 'debug',
-    'formatter' => Monolog\Formatter\JsonFormatter::class,
-],
-```
-
-Then point `INSTRUCTOR_LOG_CHANNEL=instructor-json` at it.
+- `default` — request-enriched development logging with agent-aware templates
+- `production` — warning-level logging with streaming/partial noise excluded
+- `custom` — uses `logging.channel`, `logging.level`, `logging.exclude_events`, `logging.include_events`, and `logging.templates`
 
 ## Config File
 
@@ -150,3 +146,10 @@ Top-level keys:
 - `events`
 - `cache`
 - `agents`
+- `agent_ctrl`
+- `telemetry`
+
+Config namespace split:
+- `agents` reserves the native `Cognesy\Agents` runtime surface for Laravel container, persistence, and observability integration.
+- `agent_ctrl` configures CLI code agents used by the `AgentCtrl` facade.
+- `telemetry` configures Laravel-side telemetry export and runtime projector wiring.

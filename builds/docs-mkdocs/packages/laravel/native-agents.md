@@ -1,0 +1,149 @@
+# Native Agents
+
+Native `Cognesy\Agents` runtime integration is a different Laravel surface from `AgentCtrl`.
+
+Use this distinction:
+- `AgentCtrl` runs external CLI code agents such as Claude Code, Codex, and OpenCode
+- native `Cognesy\Agents` is the in-process agent runtime shipped by `cognesy/agents`
+
+Laravel now reserves `config('instructor.agents')` for the native runtime so it no longer collides with `AgentCtrl` defaults.
+
+## Current Laravel Surface
+
+`packages/laravel` now ships the native runtime as a first-class Laravel surface.
+
+```php
+'agents' => [
+    'enabled' => env('INSTRUCTOR_NATIVE_AGENTS_ENABLED', true),
+    'session_store' => env('INSTRUCTOR_NATIVE_AGENT_SESSION_STORE', 'memory'),
+    'definitions' => [],
+    'tools' => [],
+    'capabilities' => [],
+    'schemas' => [],
+    'broadcasting' => [
+        'enabled' => env('INSTRUCTOR_NATIVE_AGENT_BROADCASTING_ENABLED', false),
+        'connection' => env('INSTRUCTOR_NATIVE_AGENT_BROADCAST_CONNECTION'),
+        'event_name' => env('INSTRUCTOR_NATIVE_AGENT_BROADCAST_EVENT', 'instructor.agent.event'),
+        'preset' => env('INSTRUCTOR_NATIVE_AGENT_BROADCAST_PRESET', 'standard'),
+    ],
+],
+// @doctest id="5330"
+```
+
+The package resolves and exposes:
+- native agent registries for definitions, tools, capabilities, and schemas
+- `DefinitionLoopFactory` and `SessionRuntime`
+- in-memory or database-backed session storage
+- Laravel broadcasting transport and helper builders for agent event envelopes
+- telemetry projection through the shared Laravel event bus
+- Laravel-native testing helpers for native-agent runtime surfaces
+
+## Registering Contributions
+
+Laravel can populate the native registries from config and explicit container tags.
+
+Config-driven contributions:
+
+```php
+'agents' => [
+    'definitions' => [
+        base_path('resources/agents'),
+    ],
+    'tools' => [
+        App\Agents\Tools\LookupAccountTool::class,
+    ],
+    'capabilities' => [
+        App\Agents\Capabilities\UseStructuredOutputs::class,
+    ],
+    'schemas' => [
+        'lead' => App\Data\LeadData::class,
+    ],
+],
+// @doctest id="fe1f"
+```
+
+Tag-driven contributions:
+
+```php
+use Cognesy\Instructor\Laravel\Agents\AgentRegistryTags;
+use Cognesy\Instructor\Laravel\Agents\SchemaRegistration;
+
+$this->app->tag(App\Agents\Tools\LookupAccountTool::class, AgentRegistryTags::TOOLS);
+$this->app->tag(App\Agents\Capabilities\UseStructuredOutputs::class, AgentRegistryTags::CAPABILITIES);
+$this->app->tag(App\Agents\Definition\SalesAssistant::class, AgentRegistryTags::DEFINITIONS);
+$this->app->bind(App\Agents\Schemas\LeadSchema::class, fn () => new SchemaRegistration(
+    name: 'lead',
+    schema: App\Data\LeadData::class,
+));
+$this->app->tag(App\Agents\Schemas\LeadSchema::class, AgentRegistryTags::SCHEMAS);
+// @doctest id="4cde"
+```
+
+## Persistence
+
+For database-backed sessions:
+
+```bash
+php artisan vendor:publish --tag=instructor-migrations
+php artisan migrate
+# @doctest id="e0eb"
+```
+
+Then set:
+
+```env
+INSTRUCTOR_NATIVE_AGENT_SESSION_STORE=database
+// @doctest id="6fd3"
+```
+
+If you keep the default `memory` store, native sessions stay process-local and ephemeral.
+
+## Runtime Bindings
+
+The Laravel container now provides the native runtime graph directly:
+
+- `Cognesy\Agents\Template\Contracts\CanManageAgentDefinitions`
+- `Cognesy\Agents\Tool\Contracts\CanManageTools`
+- `Cognesy\Agents\Capability\CanManageAgentCapabilities`
+- `Cognesy\Agents\Capability\StructuredOutput\CanManageSchemas`
+- `Cognesy\Agents\Session\Contracts\CanStoreSessions`
+- `Cognesy\Agents\Session\Contracts\CanManageAgentSessions`
+- `Cognesy\Agents\Template\Contracts\CanInstantiateAgentLoop`
+
+That means Laravel applications can register definitions, build loops, create sessions, and persist state without their own package-local integration layer.
+
+## Broadcasting
+
+Laravel can now provide native-agent event envelopes through the container.
+
+The first-party helper is `Cognesy\Instructor\Laravel\Agents\Broadcasting\LaravelAgentBroadcasting`.
+
+It can create:
+- an `AgentEventBroadcaster` with Laravel-configured defaults
+- an `AgentBroadcastObserver` for event-listener style integration
+- a `UseAgentBroadcasting` capability for native agents
+
+If broadcasting is disabled, the package falls back to a no-op transport instead of failing.
+
+## Telemetry and Logging
+
+Native agent events now participate in the same Laravel observability story as the rest of the package:
+- telemetry projectors attach to the shared Laravel event bus when `instructor.telemetry.enabled` is true
+- logging presets include native-agent and `AgentCtrl` templates
+- production logging excludes the noisiest streaming delta events by default
+
+## Testing Helpers
+
+Laravel now ships `Cognesy\Instructor\Laravel\Testing\NativeAgentTesting` for native-agent tests.
+
+It can:
+- register a `FakeAgentDriver` capability
+- swap native agent sessions to in-memory storage
+- replace broadcasting with a recording transport
+- replace telemetry export with a recording exporter
+
+## What Uses `agent_ctrl`
+
+`config('instructor.agent_ctrl')` is only for the `AgentCtrl` facade and external CLI agent processes.
+
+If your application previously published an older config file, `AgentCtrl` still falls back to the legacy `config('instructor.agents')` path. New installs and docs use `agent_ctrl` so native and external agent concepts stay separate.

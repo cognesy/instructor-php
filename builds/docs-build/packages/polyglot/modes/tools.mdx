@@ -29,7 +29,7 @@ $weatherTool = [
         ],
     ],
 ];
-// @doctest id="9ec1"
+// @doctest id="e7fe"
 ```
 
 ## Making a Tool Call Request
@@ -51,7 +51,7 @@ $response = Inference::using('openai')
         toolChoice: ToolChoice::auto(),
     )
     ->response();
-// @doctest id="dcf5"
+// @doctest id="59a6"
 ```
 
 ## Processing Tool Call Results
@@ -75,7 +75,7 @@ if ($response->hasToolCalls()) {
     // The model responded with text instead
     echo $response->content();
 }
-// @doctest id="64d8"
+// @doctest id="ac25"
 ```
 
 ## Convenience Accessors
@@ -107,7 +107,7 @@ $data = Inference::using('openai')
         toolChoice: ToolChoice::auto(),
     )
     ->asToolCallJsonData();
-// @doctest id="5ebc"
+// @doctest id="8bb2"
 ```
 
 When the model returns a single tool call, `asToolCallJsonData()` returns that call's arguments as an array. When multiple tool calls are returned, it returns an array of all calls.
@@ -152,7 +152,7 @@ $response = Inference::using('openai')
         toolChoice: ToolChoice::none(),
     )
     ->response();
-// @doctest id="d4cd"
+// @doctest id="9c61"
 ```
 
 ## Multiple Tools
@@ -206,7 +206,7 @@ $response = Inference::using('openai')
         toolChoice: ToolChoice::auto(),
     )
     ->response();
-// @doctest id="1914"
+// @doctest id="611e"
 ```
 
 ## Using the Fluent API
@@ -226,7 +226,7 @@ $response = Inference::using('openai')
     ->withTools(ToolDefinitions::fromArray([$weatherTool]))
     ->withToolChoice(ToolChoice::auto())
     ->response();
-// @doctest id="2809"
+// @doctest id="183f"
 ```
 
 ## Provider Support

@@ -9,6 +9,7 @@ All commands below run from the monorepo root unless noted otherwise.
 | `composer qa` | Full QA pipeline (PHPStan + Psalm + Pint + Semgrep) |
 | `composer test` | Unit + Feature + Regression tests |
 | `composer test-all` | Every test in the monorepo, no exclusions |
+| `composer test:telemetry-interop` | Telemetry live-backend integration suite (requires opt-in env) |
 | `composer bench` | PHPBench benchmarks (instructor + polyglot) |
 | `composer docs qa` | Docs QA checks across all packages |
 | `composer docs drift` | Detect documentation drift per package |
@@ -30,7 +31,31 @@ composer test
 
 # Everything, including Integration
 composer test-all
+
+# Telemetry live backend interop only
+TELEMETRY_INTEROP_ENABLED=1 composer test:telemetry-interop
 ```
+
+### Opt-In Live Backend Suites
+
+Some Integration coverage talks to real third-party services and is therefore
+opt-in. The telemetry backend interop suite is the current example.
+
+It lives at `packages/telemetry/tests/Integration` and requires:
+
+- `TELEMETRY_INTEROP_ENABLED=1`
+- Logfire env for Logfire cases:
+  - `LOGFIRE_TOKEN`
+  - `LOGFIRE_OTLP_ENDPOINT`
+  - `LOGFIRE_READ_TOKEN`
+- Langfuse env for Langfuse cases:
+  - `LANGFUSE_BASE_URL`
+  - `LANGFUSE_PUBLIC_KEY`
+  - `LANGFUSE_SECRET_KEY`
+- `OPENAI_API_KEY` for the inference, streaming, and agent runtime smoke portion
+- a usable `codex` CLI with working auth/config for the AgentCtrl smoke portion
+
+When the opt-in env is missing, the suite skips instead of failing.
 
 ### Package-Level Tests
 

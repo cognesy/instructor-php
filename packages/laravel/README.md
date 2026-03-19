@@ -7,8 +7,16 @@ It provides:
 - Facades for `StructuredOutput`, `Inference`, `Embeddings`, and `AgentCtrl`
 - Laravel-specific HTTP client and HTTP pool drivers
 - a Laravel-bound `CanSendHttpRequests` transport implementation
-- testing fakes for facade-based tests
+- native `Cognesy\Agents` container bindings, registry loading, and session runtime
+- database-backed native agent sessions, broadcasting helpers, telemetry wiring, and logging presets
+- testing fakes for facade-based tests and Laravel-native helper utilities for native agents
 - Artisan commands for install, smoke-test, and response-model scaffolding
+
+The package now treats native `Cognesy\\Agents` runtime configuration and `AgentCtrl`
+code-agent execution as separate Laravel surfaces:
+- `agents` is reserved for native agent runtime integration
+- `agent_ctrl` configures CLI code agents exposed through the `AgentCtrl` facade
+- `telemetry` is the first-class config namespace for Laravel telemetry wiring
 
 ## Example
 

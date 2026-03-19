@@ -43,7 +43,7 @@ $user = (new StructuredOutput)
         ],
     )
     ->get();
-// @doctest id="3c98"
+// @doctest id="3acb"
 ```
 
 Instructor appends the examples to the prompt, rendering each output array as JSON.
@@ -62,7 +62,7 @@ $example = Example::fromText(
     input: 'Ian is 27 years old.',
     output: ['name' => 'Ian', 'age' => 27],
 );
-// @doctest id="089e"
+// @doctest id="5f68"
 ```
 
 ### `fromChat()` - Chat Messages
@@ -76,7 +76,7 @@ $example = Example::fromChat(
     ],
     output: ['name' => 'Ian', 'age' => 27],
 );
-// @doctest id="e878"
+// @doctest id="859f"
 ```
 
 ### `fromData()` - Structured Data
@@ -88,7 +88,7 @@ $example = Example::fromData(
     input: ['firstName' => 'Ian', 'lastName' => 'Brown', 'birthDate' => '1994-01-01'],
     output: ['name' => 'Ian Brown', 'age' => 27],
 );
-// @doctest id="5873"
+// @doctest id="5543"
 ```
 
 
@@ -106,7 +106,7 @@ $user = (new StructuredOutput)
         responseModel: User::class,
     )
     ->get();
-// @doctest id="92c4"
+// @doctest id="edc1"
 ```
 
 
@@ -121,7 +121,7 @@ $example = new Example(
     output: ['name' => 'John', 'age' => 50],
     template: "EXAMPLE:\n<|input|> => <|output|>\n",
 );
-// @doctest id="e12b"
+// @doctest id="aadc"
 ```
 
 When the input or output is an array, Instructor automatically converts it to a JSON

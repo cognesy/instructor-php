@@ -3,8 +3,10 @@
 namespace Cognesy\Instructor\Laravel\Tests\Unit\Logging\LaravelLoggingFactoryDefaultsRegressionTest;
 
 use ArrayAccess;
+use Cognesy\Agents\Events\AgentExecutionStarted;
 use Cognesy\Events\Event;
 use Cognesy\Instructor\Laravel\Logging\LaravelLoggingFactory;
+use Cognesy\Polyglot\Inference\Events\PartialInferenceDeltaCreated;
 use Illuminate\Contracts\Foundation\Application;
 use Mockery;
 use Psr\Log\AbstractLogger;
@@ -96,4 +98,41 @@ it('keeps warning-level visibility in default setup', function () {
 
     expect($logger->records)->toHaveCount(1)
         ->and($logger->records[0]['level'])->toBe(LogLevel::WARNING);
+});
+
+it('uses agent-aware templates in default setup when info logging is enabled', function () {
+    $logger = new InMemoryLogger();
+    /** @var Application&ArrayAccess<string, mixed> $app */
+    $app = makeLaravelAppMock(config: [
+        'instructor' => [
+            'logging' => [
+                'level' => 'info',
+            ],
+        ],
+    ], logger: $logger);
+
+    $pipeline = LaravelLoggingFactory::defaultSetup($app);
+    $pipeline(new AgentExecutionStarted(
+        agentId: 'agent-42',
+        executionId: 'exec-42',
+        parentAgentId: null,
+        messageCount: 3,
+        availableTools: 2,
+    ));
+
+    expect($logger->records)->toHaveCount(1)
+        ->and($logger->records[0]['message'])->toContain('Native agent agent-42 started');
+});
+
+it('keeps streaming deltas out of production logging even when severity is elevated', function () {
+    $logger = new InMemoryLogger();
+    /** @var Application&ArrayAccess<string, mixed> $app */
+    $app = makeLaravelAppMock(config: [], logger: $logger);
+
+    $pipeline = LaravelLoggingFactory::productionSetup($app);
+    $event = new PartialInferenceDeltaCreated(['chunk' => 'hello']);
+    $event->logLevel = LogLevel::WARNING;
+    $pipeline($event);
+
+    expect($logger->records)->toBe([]);
 });

@@ -11,10 +11,16 @@ This package provides seamless integration between Instructor PHP and Laravel, g
 - **Laravel Facades** -- Use `StructuredOutput::`, `Inference::`, `Embeddings::`, and `AgentCtrl::` facades for expressive, framework-native access to LLM capabilities.
 - **Dependency Injection** -- Inject `StructuredOutput`, `Inference`, or `Embeddings` directly into your classes through Laravel's service container.
 - **Testing Fakes** -- Mock LLM responses with `StructuredOutput::fake()`, `Inference::fake()`, `Embeddings::fake()`, and `AgentCtrl::fake()`, complete with assertion helpers for verifying extraction calls, connection usage, and model selection.
+- **Native Agent Runtime** -- Resolve native `Cognesy\Agents` registries, loop factories, session runtime, broadcasting helpers, and telemetry wiring directly from Laravel's container.
 - **Laravel HTTP Client** -- All API calls go through Laravel's `Http::` client under the hood, which means `Http::fake()` works out of the box in your test suite.
 - **Event Bridge** -- Instructor's internal events are automatically dispatched through Laravel's event system, so you can attach listeners, subscribers, and queued handlers with no extra wiring.
+- **Batteries Included Observability** -- Native agent broadcasting, telemetry projectors, and Laravel logging presets are wired through first-party config instead of app-local glue.
 - **Artisan Commands** -- Generate response model scaffolding with `make:response-model`, verify your API configuration with `instructor:test`, and bootstrap the package with `instructor:install`.
 - **Configuration Publishing** -- Laravel-style config file with environment variable support for all settings, from API keys and model selection to HTTP timeouts and logging presets.
+
+The package deliberately separates two agent surfaces:
+- native `Cognesy\Agents` runtime integration under `config('instructor.agents')`
+- external CLI code agents via `AgentCtrl` under `config('instructor.agent_ctrl')`
 
 ## Quick Start
 
@@ -22,7 +28,7 @@ This package provides seamless integration between Instructor PHP and Laravel, g
 
 ```bash
 composer require cognesy/instructor-laravel
-# @doctest id="ff4e"
+# @doctest id="fbaa"
 ```
 
 ### 2. Configure API Key
@@ -31,7 +37,7 @@ Add to your `.env`:
 
 ```env
 OPENAI_API_KEY=your-openai-api-key
-// @doctest id="4d78"
+// @doctest id="c8dc"
 ```
 
 ### 3. Extract Structured Data
@@ -56,7 +62,7 @@ $person = StructuredOutput::with(
 
 echo $person->name; // "John Smith"
 echo $person->age;  // 30
-// @doctest id="63b9"
+// @doctest id="0e13"
 ```
 
 ## Documentation
@@ -66,9 +72,10 @@ echo $person->age;  // 30
 | [Installation](installation.md) | Detailed installation and setup instructions |
 | [Configuration](configuration.md) | Complete configuration reference |
 | [Facades](facades.md) | Using StructuredOutput, Inference, Embeddings, and AgentCtrl facades |
+| [Native Agents](native-agents.md) | Terminology and config boundaries for native `Cognesy\Agents` integration |
 | [Response Models](response-models.md) | Creating and using response models |
-| [Code Agents](agents.md) | Using AgentCtrl for Claude Code, Codex, and OpenCode |
-| [Testing](testing.md) | Testing with fakes and assertions |
+| [Code Agents](agents.md) | Using `AgentCtrl` for Claude Code, Codex, and OpenCode |
+| [Testing](testing.md) | Testing with facade fakes plus native-agent helper utilities |
 | [Events](events.md) | Event handling and Laravel integration |
 | [Commands](commands.md) | Artisan command reference |
 | [Advanced](advanced.md) | Streaming, validation, and advanced patterns |
@@ -109,7 +116,7 @@ public function test_extracts_invoice_data(): void
     $this->assertEquals('INV-001', $invoice->invoiceNumber);
     $fake->assertExtracted(InvoiceData::class);
 }
-// @doctest id="983e"
+// @doctest id="fa73"
 ```
 
 ## Requirements

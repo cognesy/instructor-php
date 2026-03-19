@@ -9,8 +9,9 @@ tags:
 ---
 ## Overview
 
-This example uses `InferenceRuntime` with **streaming** enabled and sends the
-full LLM and HTTP lifecycle — including the complete response body — to Logfire.
+This example uses `InferenceRuntime` with **streaming** enabled and shows the
+Logfire connection inline while sending the full LLM and HTTP lifecycle —
+including the complete response body — to Logfire.
 
 For streaming responses the HTTP span stays open while chunks arrive and closes
 only when the stream is exhausted (`HttpStreamCompleted`). By enabling
@@ -19,6 +20,7 @@ under the `http.client.request` span, which is useful for debugging but should
 be left off in production.
 
 Key concepts:
+- explicit `LogfireConfig` / `LogfireExporter` setup
 - `withStreaming()`: requests a server-sent-events stream from the LLM provider
 - `HttpClientTelemetryProjector($hub, captureStreamingChunks: true)`: records
   each chunk and closes the HTTP span with the full body on stream completion
@@ -30,8 +32,8 @@ Key concepts:
 ```php
 <?php
 require 'examples/boot.php';
-require_once 'examples/_support/logfire.php';
 
+use Cognesy\Config\Env;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Telemetry\HttpClientTelemetryProjector;
 use Cognesy\Messages\Messages;
@@ -39,11 +41,32 @@ use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Polyglot\Telemetry\PolyglotTelemetryProjector;
+use Cognesy\Telemetry\Adapters\Logfire\LogfireConfig;
+use Cognesy\Telemetry\Adapters\Logfire\LogfireExporter;
+use Cognesy\Telemetry\Application\Registry\TraceRegistry;
+use Cognesy\Telemetry\Application\Telemetry;
 use Cognesy\Telemetry\Application\Projector\CompositeTelemetryProjector;
 use Cognesy\Telemetry\Application\Projector\RuntimeEventBridge;
 
-$events = new EventDispatcher('examples.b03.telemetry-streaming-logfire');
-$hub = exampleLogfireHub('examples.b03.telemetry-streaming-logfire');
+$serviceName = 'examples.b03.telemetry-streaming-logfire';
+$token = (string) Env::get('LOGFIRE_TOKEN', '');
+if ($token === '') {
+    throw new RuntimeException('Set LOGFIRE_TOKEN in .env to run this example.');
+}
+$endpoint = (string) Env::get('LOGFIRE_OTLP_ENDPOINT', '');
+if ($endpoint === '') {
+    throw new RuntimeException('Set LOGFIRE_OTLP_ENDPOINT in .env to run this example.');
+}
+
+$events = new EventDispatcher($serviceName);
+$hub = new Telemetry(
+    registry: new TraceRegistry(),
+    exporter: new LogfireExporter(new LogfireConfig(
+        endpoint: rtrim($endpoint, '/'),
+        serviceName: $serviceName,
+        headers: ['Authorization' => $token],
+    )),
+);
 
 (new RuntimeEventBridge(new CompositeTelemetryProjector([
     new PolyglotTelemetryProjector($hub),

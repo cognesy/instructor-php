@@ -382,6 +382,7 @@
                 "packages/laravel/installation",
                 "packages/laravel/configuration",
                 "packages/laravel/facades",
+                "packages/laravel/native-agents",
                 "packages/laravel/response-models",
                 "packages/laravel/agents",
                 "packages/laravel/events",

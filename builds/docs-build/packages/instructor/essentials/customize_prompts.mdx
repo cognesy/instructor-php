@@ -22,7 +22,7 @@ $result = (new StructuredOutput)
     ->withPrompt('Extract the contact details from the text below.')
     ->with(messages: $text, responseModel: Contact::class)
     ->get();
-// @doctest id="9476"
+// @doctest id="20dc"
 ```
 
 - **System text** sets the model's persona and overall behavior. Use it for stable
@@ -42,7 +42,7 @@ $result = (new StructuredOutput)
         prompt: 'Extract the contact details.',
     )
     ->get();
-// @doctest id="ff6f"
+// @doctest id="b86e"
 ```
 
 
@@ -60,7 +60,7 @@ $result = (new StructuredOutput)
     ])
     ->with(messages: $text, responseModel: Person::class)
     ->get();
-// @doctest id="5d68"
+// @doctest id="82b3"
 ```
 
 See the [Demonstrations](demonstrations) page for details on the `Example` class.
@@ -82,7 +82,7 @@ $result = (new StructuredOutput)
     )
     ->with(messages: 'Now extract from this specific paragraph...', responseModel: Entity::class)
     ->get();
-// @doctest id="ef65"
+// @doctest id="266f"
 ```
 
 The cached context is placed before the per-request content in the prompt. On the new
@@ -119,7 +119,7 @@ $config = new StructuredOutputConfig(
         OutputMode::Json->value => "Respond with a JSON object matching this schema:\n<|json_schema|>\n",
     ],
 );
-// @doctest id="3380"
+// @doctest id="f17b"
 ```
 
 New prompt-class override:
@@ -135,7 +135,7 @@ $config = new StructuredOutputConfig(
     retryPromptClass: App\Prompts\RetryFeedbackPrompt::class,
     deserializationErrorPromptClass: App\Prompts\DeserializationRepairPrompt::class,
 );
-// @doctest id="71e3"
+// @doctest id="e5d7"
 ```
 
 If you store these in YAML, use FQN strings:
@@ -149,7 +149,7 @@ modePromptClasses:
 
 retryPromptClass: 'App\\Prompts\\RetryFeedbackPrompt'
 deserializationErrorPromptClass: 'App\\Prompts\\DeserializationRepairPrompt'
-# @doctest id="89a0"
+# @doctest id="c574"
 ```
 
 ### Template Placeholders
@@ -165,7 +165,7 @@ $config = new StructuredOutputConfig(
             . "Response must follow this JSON Schema:\n<|json_schema|>\n",
     ],
 );
-// @doctest id="a851"
+// @doctest id="7d27"
 ```
 
 
@@ -181,7 +181,7 @@ $config = new StructuredOutputConfig(
     toolName: 'extract_person',
     toolDescription: 'Extract personal information from the provided text.',
 );
-// @doctest id="0dce"
+// @doctest id="f12a"
 ```
 
 The defaults are `extracted_data` and `Function call based on user instructions.`
@@ -199,7 +199,7 @@ conversation. The default is:
 
 ```
 JSON generated incorrectly, fix following errors:
-// @doctest id="5fd4"
+// @doctest id="5faa"
 ```
 
 Legacy inline retry prompt override:
@@ -208,7 +208,7 @@ Legacy inline retry prompt override:
 $config = new StructuredOutputConfig(
     retryPrompt: 'The previous response had validation errors. Please correct them:',
 );
-// @doctest id="c639"
+// @doctest id="156d"
 ```
 
 New prompt-class override:
@@ -217,7 +217,7 @@ New prompt-class override:
 $config = new StructuredOutputConfig(
     retryPromptClass: App\Prompts\RetryFeedbackPrompt::class,
 );
-// @doctest id="c5e6"
+// @doctest id="1479"
 ```
 
 The same pattern applies to deserialization repair via `deserializationErrorPromptClass`.
@@ -240,7 +240,7 @@ $config = new StructuredOutputConfig(
         'pre-retries', 'retries', 'post-retries',
     ],
 );
-// @doctest id="4747"
+// @doctest id="b9c7"
 ```
 
 Most applications will never need to modify the chat structure. It is exposed for

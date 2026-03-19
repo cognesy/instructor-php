@@ -14,6 +14,11 @@ composer require cognesy/instructor-laravel
 
 The package uses Laravel's package auto-discovery mechanism, so the service provider and all four facades (`StructuredOutput`, `Inference`, `Embeddings`, `AgentCtrl`) are registered automatically. No manual registration is required for typical Laravel applications.
 
+Laravel config now separates native agent runtime settings from `AgentCtrl` code-agent settings:
+- `config('instructor.agents')` is reserved for native `Cognesy\Agents`
+- `config('instructor.agent_ctrl')` configures CLI code agents used by `AgentCtrl`
+- `config('instructor.telemetry')` owns Laravel telemetry wiring
+
 ## Publish Configuration
 
 Publish the configuration file to customize connections, extraction defaults, and other settings:
@@ -53,8 +58,45 @@ The standalone `packages/config` YAML loader is not responsible for reading `con
 |-------|-------------|----------------|---------------|
 | `packages/instructor` | `StructuredOutput` facade and `Cognesy\Instructor\StructuredOutput` | Configure your default LLM connection, extraction defaults, and response models | [Facades](facades.md), [Response Models](response-models.md), [Configuration](configuration.md) |
 | `packages/polyglot` | `Inference` and `Embeddings` facades plus `Cognesy\Polyglot\Inference\Inference` and `Cognesy\Polyglot\Embeddings\Embeddings` | Configure inference connections in `connections` and embedding models in `embeddings.connections` | [Facades](facades.md), [Configuration](configuration.md), [Events](events.md) |
-| `packages/agent-ctrl` | `AgentCtrl` facade | Install the CLI agent you want to use, ensure its binary is available in `PATH`, then configure timeouts, working directory, and sandbox defaults in `agents` | [Code Agents](agents.md), [Testing](testing.md) |
+| `packages/agents` | Native `Cognesy\Agents` runtime | Laravel now reserves the `agents` config namespace for native agent runtime, persistence, and observability wiring. First-class container/runtime bindings are documented separately. | [Native Agents](native-agents.md), [Configuration](configuration.md) |
+| `packages/agent-ctrl` | `AgentCtrl` facade | Install the CLI agent you want to use, ensure its binary is available in `PATH`, then configure timeouts, working directory, and sandbox defaults in `agent_ctrl` | [Code Agents](agents.md), [Testing](testing.md) |
 | `packages/http-client` | Internal Laravel-backed transport | No separate install is required; keep `http.driver` set to `laravel` to route requests through Laravel's HTTP client and `Http::fake()` | [Configuration](configuration.md), [Testing](testing.md) |
+
+### `packages/agents` Under Laravel
+
+Laravel keeps native agent runtime configuration under `config/instructor.php` in the `agents` section so it no longer collides with `AgentCtrl`.
+
+The Laravel package now ships the native runtime integration end to end:
+
+- `agents.enabled`
+- `agents.session_store`
+- `agents.definitions`
+- `agents.tools`
+- `agents.capabilities`
+- `agents.schemas`
+- `agents.broadcasting`
+
+If you want database-backed native agent sessions:
+
+```bash
+php artisan vendor:publish --tag=instructor-migrations
+php artisan migrate
+```
+
+Then set:
+
+```env
+INSTRUCTOR_NATIVE_AGENT_SESSION_STORE=database
+```
+
+If you want Laravel broadcasting for native agent envelopes:
+
+```env
+INSTRUCTOR_NATIVE_AGENT_BROADCASTING_ENABLED=true
+INSTRUCTOR_NATIVE_AGENT_BROADCAST_CONNECTION=reverb
+```
+
+Telemetry is configured separately under `config('instructor.telemetry')`.
 
 ### `packages/instructor` Under Laravel
 
@@ -82,7 +124,7 @@ Both use the same published config file. Inference reads from `connections`; emb
 - install the agent CLI you want to use
 - make sure its executable is available in `PATH`
 - authenticate that CLI using its own provider workflow
-- set Laravel defaults for timeout, working directory, model, and sandbox in `agents`
+- set Laravel defaults for timeout, working directory, model, and sandbox in `agent_ctrl`
 
 ### `packages/http-client` Under Laravel
 
