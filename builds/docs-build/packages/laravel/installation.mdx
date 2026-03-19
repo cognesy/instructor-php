@@ -10,7 +10,7 @@
 
 ```bash
 composer require cognesy/instructor-laravel
-# @doctest id="1866"
+# @doctest id="e730"
 ```
 
 The package uses Laravel's package auto-discovery mechanism, so the service provider and all four facades (`StructuredOutput`, `Inference`, `Embeddings`, `AgentCtrl`) are registered automatically. No manual registration is required for typical Laravel applications.
@@ -21,7 +21,7 @@ Publish the configuration file to customize connections, extraction defaults, an
 
 ```bash
 php artisan vendor:publish --tag=instructor-config
-# @doctest id="802a"
+# @doctest id="0f28"
 ```
 
 This creates `config/instructor.php` with all available options. The file ships with sensible defaults, so you can start using the package with just an API key and customize later as your needs grow.
@@ -41,7 +41,7 @@ ANTHROPIC_API_KEY=sk-ant-...
 GEMINI_API_KEY=...
 GROQ_API_KEY=...
 MISTRAL_API_KEY=...
-// @doctest id="a2f2"
+// @doctest id="551d"
 ```
 
 You can configure multiple providers simultaneously and switch between them at runtime using the `connection()` method on any facade.
@@ -101,7 +101,7 @@ Run the installation command to verify everything is configured correctly:
 
 ```bash
 php artisan instructor:install
-# @doctest id="af22"
+# @doctest id="bfb9"
 ```
 
 This will:
@@ -115,7 +115,7 @@ Test that your API configuration is working by making a real API call:
 
 ```bash
 php artisan instructor:test
-# @doctest id="2e20"
+# @doctest id="e338"
 ```
 
 This command displays your current configuration (connection name, driver, model, masked API key) and then performs a structured output extraction to confirm the full pipeline is operational.
@@ -124,14 +124,14 @@ To test a specific connection:
 
 ```bash
 php artisan instructor:test --connection=anthropic
-# @doctest id="c866"
+# @doctest id="2585"
 ```
 
 To test raw inference (without structured output extraction):
 
 ```bash
 php artisan instructor:test --inference
-# @doctest id="25bb"
+# @doctest id="34f6"
 ```
 
 ## Optional: Publish Stubs
@@ -140,7 +140,7 @@ If you want to customize the response model templates used by `make:response-mod
 
 ```bash
 php artisan vendor:publish --tag=instructor-stubs
-# @doctest id="d74d"
+# @doctest id="84cf"
 ```
 
 This publishes stubs to `stubs/instructor/` in your application root. The command will prefer your custom stubs over the package defaults when generating new response models.
@@ -162,7 +162,7 @@ If you have disabled Laravel's package auto-discovery, manually register the ser
     'Embeddings' => Cognesy\Instructor\Laravel\Facades\Embeddings::class,
     'AgentCtrl' => Cognesy\Instructor\Laravel\Facades\AgentCtrl::class,
 ],
-// @doctest id="a844"
+// @doctest id="cc6d"
 ```
 
 In Laravel 11 and 12, register the provider in `bootstrap/providers.php`.
@@ -173,7 +173,7 @@ When upgrading to a new version, republish the configuration if there are new op
 
 ```bash
 php artisan vendor:publish --tag=instructor-config --force
-# @doctest id="4344"
+# @doctest id="aa98"
 ```
 
 Review the [changelog](https://github.com/cognesy/instructor-php/blob/main/CHANGELOG.md) for breaking changes before upgrading major versions.

@@ -25,7 +25,7 @@ $result = $sandbox->execute(
         }
     }
 );
-// @doctest id="26de"
+// @doctest id="f536"
 ```
 
 The callback receives two arguments:
@@ -55,7 +55,7 @@ $result = $sandbox->execute(
 fclose($logFile);
 
 // $result->stdout() may be truncated, but the log file has everything
-// @doctest id="b276"
+// @doctest id="ed88"
 ```
 
 ### Streaming with Standard Input
@@ -70,7 +70,7 @@ $result = $sandbox->execute(
         echo $chunk; // "HELLO WORLD"
     }
 );
-// @doctest id="61cd"
+// @doctest id="2718"
 ```
 
 ### Idle Timeout Interaction
@@ -86,7 +86,7 @@ $result = $sandbox->execute(
         echo "[{$timestamp}] {$type}: " . strlen($chunk) . " bytes\n";
     }
 );
-// @doctest id="38c7"
+// @doctest id="b4ae"
 ```
 
 ## The ExecResult API
@@ -99,7 +99,7 @@ Every call to `execute()` returns an `ExecResult` instance -- a readonly value o
 $result->stdout();         // string -- captured standard output
 $result->stderr();         // string -- captured standard error
 $result->combinedOutput(); // string -- stdout + stderr joined with newline
-// @doctest id="355e"
+// @doctest id="37c3"
 ```
 
 The `combinedOutput()` method appends stderr to stdout, separated by a newline if both are non-empty. This is convenient when you do not need to distinguish between the two streams.
@@ -109,7 +109,7 @@ The `combinedOutput()` method appends stderr to stdout, separated by a newline i
 ```php
 $result->exitCode(); // int -- the process exit code
 $result->success();  // bool -- true when exitCode is 0 AND no timeout occurred
-// @doctest id="7ace"
+// @doctest id="e487"
 ```
 
 The `success()` method checks both the exit code and the timeout flag. A command that exits with code 0 but was forcefully terminated due to a timeout is not considered successful.
@@ -129,7 +129,7 @@ Common exit codes:
 
 ```php
 $result->duration(); // float -- wall-clock seconds (e.g., 1.234)
-// @doctest id="c702"
+// @doctest id="e459"
 ```
 
 The duration measures the wall-clock time from process start to completion (or termination). It is always available, even for timed-out executions.
@@ -138,7 +138,7 @@ The duration measures the wall-clock time from process start to completion (or t
 
 ```php
 $result->timedOut(); // bool -- true if wall-clock or idle timeout was triggered
-// @doctest id="93f6"
+// @doctest id="7257"
 ```
 
 When a timeout occurs, the exit code is set to `124` and `timedOut()` returns `true`. The output captured up to the point of termination is still available through `stdout()` and `stderr()`.
@@ -148,7 +148,7 @@ When a timeout occurs, the exit code is set to `124` and `timedOut()` returns `t
 ```php
 $result->truncatedStdout(); // bool -- true if stdout exceeded the output cap
 $result->truncatedStderr(); // bool -- true if stderr exceeded the output cap
-// @doctest id="59f8"
+// @doctest id="6418"
 ```
 
 When truncation occurs, only the most recent bytes (up to the cap size) are retained. Earlier output is discarded. This tail-preserving strategy ensures you always have the most recent output, which typically contains error messages and final status information.
@@ -167,7 +167,7 @@ $result->toArray();
 //     'truncated_stderr' => false,
 //     'success'          => true,
 // ]
-// @doctest id="08da"
+// @doctest id="3fc1"
 ```
 
 The `toArray()` method returns a flat associative array suitable for JSON serialization, logging, or passing to the `FakeSandbox` for test fixtures.
@@ -188,7 +188,7 @@ if (!$result->success()) {
 }
 
 echo $result->stdout();
-// @doctest id="f8b9"
+// @doctest id="0c74"
 ```
 
 ### Capture Output with Timeout Awareness
@@ -206,7 +206,7 @@ if ($result->timedOut()) {
 } else {
     logger()->info('Import complete: ' . $result->stdout());
 }
-// @doctest id="c085"
+// @doctest id="a56b"
 ```
 
 ### Real-Time Progress with Final Summary
@@ -229,7 +229,7 @@ $result = $sandbox->execute(
 
 echo "\n";
 echo "Finished in {$result->duration()}s with exit code {$result->exitCode()}\n";
-// @doctest id="086a"
+// @doctest id="b03d"
 ```
 
 ### Parsing Structured Output
@@ -243,7 +243,7 @@ if ($result->success()) {
     $data = json_decode($result->stdout(), true);
     echo "Count: " . $data['count'];
 }
-// @doctest id="b0c3"
+// @doctest id="018e"
 ```
 
 ### Handling Truncated Output
@@ -259,5 +259,5 @@ if ($result->truncatedStdout()) {
         . 'using a streaming callback to capture the full output.'
     );
 }
-// @doctest id="da3d"
+// @doctest id="186d"
 ```

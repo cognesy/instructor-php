@@ -136,17 +136,20 @@ Adds Laravel-specific conveniences: service provider, facades, config publishing
 ```php
 <?php
 // Use the facade
-use Cognesy\Instructor\Facades\Instructor;
+use Cognesy\Instructor\Laravel\Facades\StructuredOutput;
 
-$person = Instructor::respond()
-    ->withResponseClass(Person::class)
-    ->withMessages($text)
-    ->get();
+$person = StructuredOutput::using('openai')
+    ->with(
+        messages: $text,
+        responseModel: Person::class,
+    )->get();
 
 // Or inject via dependency injection
-public function extract(StructuredOutput $instructor)
+public function extract(\Cognesy\Instructor\StructuredOutput $instructor)
 {
-    return $instructor->withResponseClass(Person::class)->get();
+    return $instructor
+        ->with(messages: $text, responseModel: Person::class)
+        ->get();
 }
 ```
 

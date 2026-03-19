@@ -46,7 +46,7 @@ $telemetry->log(
 
 $telemetry->complete('run');
 $telemetry->flush();
-// @doctest id="e3ac"
+// @doctest id="f6be"
 ```
 
 ## Adding Child Spans
@@ -60,7 +60,7 @@ $telemetry->openChild('llm', 'request', 'llm.inference');
 $telemetry->complete('llm');
 $telemetry->complete('request');
 $telemetry->flush();
-// @doctest id="b0ee"
+// @doctest id="4ceb"
 ```
 
 The keys `request` and `llm` are local registry keys. They do not have to match
@@ -84,7 +84,7 @@ $telemetry = new Telemetry(
         $langfuseExporter,
     ]),
 );
-// @doctest id="fda6"
+// @doctest id="f228"
 ```
 
 ## Notes

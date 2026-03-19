@@ -25,7 +25,7 @@ $result = (new StructuredOutput)
     ->withSystem('You are a data extraction assistant. Be precise and thorough.')
     ->with(messages: $text, responseModel: Person::class)
     ->get();
-// @doctest id="8b30"
+// @doctest id="0acd"
 ```
 
 ### User Prompt
@@ -37,7 +37,7 @@ $result = (new StructuredOutput)
     ->withPrompt('Extract all person information. If age is not stated, estimate based on context.')
     ->with(messages: $text, responseModel: Person::class)
     ->get();
-// @doctest id="1820"
+// @doctest id="cd78"
 ```
 
 ### Examples
@@ -56,7 +56,7 @@ $result = (new StructuredOutput)
     ])
     ->with(messages: $text, responseModel: Person::class)
     ->get();
-// @doctest id="de92"
+// @doctest id="6293"
 ```
 
 ### Combined Usage
@@ -80,7 +80,7 @@ $result = (new StructuredOutput)->with(
     messages: $text,
     responseModel: Person::class,
 )->get();
-// @doctest id="9826"
+// @doctest id="c1a4"
 ```
 
 ## Using Stringable Objects as Prompts
@@ -96,7 +96,7 @@ $result = (new StructuredOutput)
     ->withPrompt('Extract person details from the text below.')
     ->with(messages: $text, responseModel: Person::class)
     ->get();
-// @doctest id="ab7d"
+// @doctest id="cd71"
 ```
 
 ## Cached Context
@@ -113,7 +113,7 @@ $result = (new StructuredOutput)
     )
     ->with(messages: 'Focus on section 3.', responseModel: ContractDetails::class)
     ->get();
-// @doctest id="e650"
+// @doctest id="9455"
 ```
 
 Cached context messages are placed before the regular messages in the chat structure. The exact caching behavior depends on the LLM provider -- Anthropic and OpenAI both support prompt caching with different mechanisms.
@@ -136,7 +136,7 @@ $legacyRuntime = $runtime->withRequestMaterializer(new RequestMaterializer());
 $so = (new StructuredOutput)
     ->withRuntime($runtime)
     ->with(messages: $text, responseModel: Person::class);
-// @doctest id="b01d"
+// @doctest id="83c0"
 ```
 
 This lets you run the same requests against both paths while the new materializer is being proven.
@@ -156,7 +156,7 @@ $rendered = Template::twig()
 $result = (new StructuredOutput)
     ->with(messages: $rendered, responseModel: Person::class)
     ->get();
-// @doctest id="34f9"
+// @doctest id="5434"
 ```
 
 The `Template` class supports Twig and Blade template engines, front matter metadata, chat message markup, and template libraries loaded from disk. Render your templates into strings or message arrays, then pass the result into `StructuredOutput`. See the Template package documentation for full details.

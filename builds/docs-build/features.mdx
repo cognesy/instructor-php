@@ -529,17 +529,20 @@ Outputs:
 // Service provider auto-registers
 
 // Use facade
-use Cognesy\Instructor\Facades\Instructor;
+use Cognesy\Instructor\Laravel\Facades\StructuredOutput;
 
-$result = Instructor::respond()
-    ->withResponseClass(Person::class)
-    ->withMessages($text)
-    ->get();
+$result = StructuredOutput::using('openai')
+    ->with(
+        messages: $text,
+        responseModel: Person::class,
+    )->get();
 
-// Or inject
-public function handle(StructuredOutput $instructor)
+// Or inject via dependency injection
+public function handle(\Cognesy\Instructor\StructuredOutput $instructor)
 {
-    return $instructor->withResponseClass(Person::class)->get();
+    return $instructor
+        ->with(messages: $text, responseModel: Person::class)
+        ->get();
 }
 ```
 
