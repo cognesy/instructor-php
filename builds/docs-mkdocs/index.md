@@ -42,18 +42,18 @@ echo $person->occupation; // "software engineer"
 
 Choose your path:
 
-- **[Quick Start](./instructor/quickstart.md)** - Get up and running in 5 minutes
-- **[Setup Guide](./instructor/setup.md)** - Detailed installation and configuration
-- **[Cookbook](./cookbook/introduction.md)** - Practical examples and recipes
+- **[Quick Start](/packages/instructor/quickstart)** - Get up and running in 5 minutes
+- **[Setup Guide](/packages/instructor/setup)** - Detailed installation and configuration
+- **[Cookbook](/cookbook/introduction)** - Practical examples and recipes
 
 ## Architecture
 
 This project consists of several modular packages:
 
-- **[Instructor](./instructor/introduction.md)** - Main structured output library
-- **[Polyglot](./polyglot/overview.md)** - Low-level LLM abstraction layer  
-- **[HTTP Client](./http/1-overview.md)** - Flexible HTTP client for API calls
-- **[HTTP Pool](./http-pool/overview.md)** - Concurrent request execution for fan-out workloads
+- **[Instructor](/packages/instructor/introduction)** - Main structured output library
+- **[Polyglot](/packages/polyglot/overview)** - Low-level LLM abstraction layer
+- **[HTTP Client](/packages/http/1-overview)** - Flexible HTTP client for API calls
+- **[HTTP Pool](/packages/http/6-pooling)** - Concurrent request execution for fan-out workloads
 
 ## Community
 

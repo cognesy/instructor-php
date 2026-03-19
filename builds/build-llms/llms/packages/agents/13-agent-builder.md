@@ -35,7 +35,7 @@ $agent = AgentBuilder::base()
 
 $state = AgentState::empty()->withUserMessage('List files in /tmp');
 $result = $agent->execute($state);
-// @doctest id="196f"
+// @doctest id="3595"
 ```
 
 The `AgentBuilder::base()` factory creates a builder pre-configured with sensible defaults: a `ToolCallingDriver` backed by the default LLM provider, the `ConversationWithCurrentToolTrace` message compiler, and an empty hook stack. Every `withCapability()` call returns a **new builder instance** -- the builder is immutable, so you can safely branch configurations from a shared base.
@@ -58,7 +58,7 @@ $coder = $base
 $reviewer = $base
     ->withCapability(new UseFileTools('/my/project'))
     ->build();
-// @doctest id="4a22"
+// @doctest id="9b8f"
 ```
 
 ## The Build Pipeline
@@ -87,8 +87,8 @@ use Cognesy\Polyglot\Inference\LLMProvider;
 new UseLLMConfig(
     llm: LLMProvider::using('anthropic'),
     maxRetries: 3,
-)
-// @doctest id="d799"
+);
+// @doctest id="57c4"
 ```
 
 | Parameter | Type | Default | Description |
@@ -113,8 +113,8 @@ new UseGuards(
     finishReasons: [         // stop on specific LLM finish reasons
         InferenceFinishReason::EndTurn,
     ],
-)
-// @doctest id="ef32"
+);
+// @doctest id="a9e7"
 ```
 
 | Parameter | Type | Default | Description |
@@ -133,8 +133,8 @@ Adds one or more tool instances to the agent. Tools are merged with any previous
 ```php
 use Cognesy\Agents\Capability\Core\UseTools;
 
-new UseTools($searchTool, $calculatorTool)
-// @doctest id="ec10"
+new UseTools($searchTool, $calculatorTool);
+// @doctest id="38d0"
 ```
 
 You may call `UseTools` multiple times across different capabilities. Each invocation merges additional tools into the existing set.
@@ -152,8 +152,8 @@ new UseHook(
     triggers: HookTriggers::afterStep(),
     priority: 10,
     name: 'my_custom_hook',
-)
-// @doctest id="aae2"
+);
+// @doctest id="ef61"
 ```
 
 | Parameter | Type | Default | Description |
@@ -170,8 +170,8 @@ Replaces the default tool-use driver entirely. Use this when you need a complete
 ```php
 use Cognesy\Agents\Capability\Core\UseDriver;
 
-new UseDriver($customDriver)
-// @doctest id="b968"
+new UseDriver($customDriver);
+// @doctest id="d9a9"
 ```
 
 ### UseDriverDecorator
@@ -184,8 +184,8 @@ use Cognesy\Agents\Drivers\CanUseTools;
 
 new UseDriverDecorator(
     fn(CanUseTools $inner) => new LoggingDriver($inner)
-)
-// @doctest id="470b"
+);
+// @doctest id="0197"
 ```
 
 ### UseContextCompiler
@@ -195,8 +195,8 @@ Replaces the message compiler that prepares the conversation history for the LLM
 ```php
 use Cognesy\Agents\Capability\Core\UseContextCompiler;
 
-new UseContextCompiler($customCompiler)
-// @doctest id="cb9a"
+new UseContextCompiler($customCompiler);
+// @doctest id="f374"
 ```
 
 ### UseContextCompilerDecorator
@@ -209,8 +209,8 @@ use Cognesy\Agents\Context\CanCompileMessages;
 
 new UseContextCompilerDecorator(
     fn(CanCompileMessages $inner) => new TokenLimitCompiler($inner, maxTokens: 4000)
-)
-// @doctest id="83ad"
+);
+// @doctest id="7a42"
 ```
 
 ### UseContextConfig
@@ -223,8 +223,8 @@ use Cognesy\Agents\Capability\Core\UseContextConfig;
 new UseContextConfig(
     systemPrompt: 'You are a helpful coding assistant.',
     responseFormat: new ResponseFormat(type: 'json_object'),
-)
-// @doctest id="a6ed"
+);
+// @doctest id="d243"
 ```
 
 Both a `string` system prompt and a `ResponseFormat` object are accepted. If both are empty, the capability is a no-op.
@@ -243,8 +243,8 @@ new UseReActConfig(
     model: 'gpt-4o',
     maxRetries: 2,
     mode: OutputMode::Json,
-)
-// @doctest id="6fab"
+);
+// @doctest id="42a4"
 ```
 
 ### UseToolFactory
@@ -260,8 +260,8 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 new UseToolFactory(
     fn(Tools $tools, CanUseTools $driver, CanHandleEvents $events) =>
         new MyDynamicTool($tools, $driver)
-)
-// @doctest id="2124"
+);
+// @doctest id="d933"
 ```
 
 The callback receives three arguments: the resolved `Tools` collection, the finalized `CanUseTools` driver, and the `CanHandleEvents` event dispatcher. It must return a single `ToolInterface` instance.
@@ -312,7 +312,7 @@ final readonly class UseRateLimiting implements CanProvideAgentCapability
         );
     }
 }
-// @doctest id="d2b7"
+// @doctest id="a65e"
 ```
 
 The `CanConfigureAgent` interface provides read and write access to all configurable components:
@@ -350,7 +350,7 @@ $rootEvents->wiretap(fn($event) => logger()->debug((string) $event));
 $agent = AgentBuilder::base(parentEvents: $rootEvents)
     ->withCapability(new UseBash())
     ->build();
-// @doctest id="c449"
+// @doctest id="4ec6"
 ```
 
 This is particularly useful when running subagents or sessions, where you want a unified event stream across all agent activity.

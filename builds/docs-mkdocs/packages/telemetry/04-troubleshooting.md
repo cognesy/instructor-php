@@ -45,7 +45,7 @@ $telemetry->flush();
 
 var_dump($exporter->observations());
 var_dump($exporter->tracesPayload());
-// @doctest id="3976"
+// @doctest id="d091"
 ```
 
 This is the fastest way to answer: "Did the app produce telemetry at all?"

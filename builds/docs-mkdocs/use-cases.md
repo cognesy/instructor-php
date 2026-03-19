@@ -476,4 +476,4 @@ class Entity {
 4. **Iterate on prompts** - Use system messages to guide extraction
 5. **Handle edge cases** - Set appropriate retry limits
 
-See the [Cookbook](/cookbook) for complete working examples of these patterns.
+See the [Cookbook](/cookbook/introduction) for complete working examples of these patterns.

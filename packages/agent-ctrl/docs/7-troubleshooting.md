@@ -29,8 +29,8 @@ Claude Code CLI executable `claude` was not found in PATH. Install Claude Code C
 3. **Check PATH visibility.** The binary must be in the system `PATH` visible to your PHP process. This is not always the same as your shell's `PATH`. If you installed the CLI in a non-standard location (e.g., via `nvm` or a custom prefix), ensure that location is included in the `PATH` used by your web server, supervisor, or CLI runner.
 
    You can verify the PATH available to PHP:
-   ```php
-   echo getenv('PATH');
+   ```bash
+   php -r "echo getenv('PATH');"
    ```
 
 4. **Consider the sandbox driver.** The binary preflight check behaves differently depending on the sandbox driver:

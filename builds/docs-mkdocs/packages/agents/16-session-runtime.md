@@ -40,7 +40,7 @@ interface CanManageAgentSessions
     public function getSession(SessionId $sessionId): AgentSession;
     public function execute(SessionId $sessionId, CanExecuteSessionAction $action): AgentSession;
 }
-// @doctest id="4f9b"
+// @doctest id="8962"
 ```
 
 Use `create()` for brand-new root sessions. The read methods (`listSessions`, `getSessionInfo`, `getSession`) load data but do not persist any changes. The `execute()` method updates an existing persisted session by loading it, running an action, saving the result, and returning the updated session.
@@ -88,7 +88,7 @@ $updated = $runtime->execute(
 
 // 6. The session now contains the agent's response
 $state = $updated->state();
-// @doctest id="5621"
+// @doctest id="a180"
 ```
 
 ## The Create and Execute Pipelines
@@ -135,7 +135,7 @@ interface CanExecuteSessionAction
 {
     public function executeOn(AgentSession $session): AgentSession;
 }
-// @doctest id="cfa6"
+// @doctest id="43e4"
 ```
 
 Each action receives the current session and returns a new session with the desired changes applied.
@@ -151,7 +151,7 @@ $runtime->execute($sessionId, new SendMessage(
     message: 'Explain how dependency injection works.',
     loopFactory: $loopFactory,
 ));
-// @doctest id="ba33"
+// @doctest id="97c2"
 ```
 
 The `message` parameter accepts a `string`, `\Stringable`, or `Message` object. `Stringable` values are cast to string at the boundary. The `loopFactory` must implement `CanInstantiateAgentLoop` -- typically a `DefinitionLoopFactory`.
@@ -169,7 +169,7 @@ $runtime->execute($sessionId, new SuspendSession());
 
 // Resume it later
 $runtime->execute($sessionId, new ResumeSession());
-// @doctest id="9934"
+// @doctest id="7ffd"
 ```
 
 `SuspendSession` sets the status to `Suspended`. `ResumeSession` sets it back to `Active`.
@@ -182,7 +182,7 @@ Resets the session's agent state while preserving the session identity and defin
 use Cognesy\Agents\Session\Actions\ClearSession;
 
 $runtime->execute($sessionId, new ClearSession());
-// @doctest id="6b36"
+// @doctest id="0b43"
 ```
 
 ### ForkSession
@@ -199,7 +199,7 @@ $forked = $repo->create($forked);
 
 // The forked session has a parent reference
 echo $forked->info()->parentId(); // original session ID
-// @doctest id="5fb3"
+// @doctest id="f999"
 ```
 
 Note that `ForkSession` is typically used outside the runtime's `execute()` pipeline because it creates a new session rather than modifying the existing one. This is the main case where persisting via repository `create()` is still appropriate: you already have a fully constructed `AgentSession`, so you persist that branch directly instead of calling `SessionRuntime::create()`.
@@ -214,7 +214,7 @@ use Cognesy\Agents\Session\Actions\ChangeSystemPrompt;
 $runtime->execute($sessionId, new ChangeSystemPrompt(
     'You are concise and direct. Respond in bullet points.'
 ));
-// @doctest id="ad80"
+// @doctest id="911a"
 ```
 
 ### ChangeModel
@@ -228,7 +228,7 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 $runtime->execute($sessionId, new ChangeModel(
     LLMConfig::fromArray(['driver' => 'openai', 'model' => 'gpt-4o'])
 ));
-// @doctest id="b7d6"
+// @doctest id="6c5c"
 ```
 
 ### WriteMetadata
@@ -240,7 +240,7 @@ use Cognesy\Agents\Session\Actions\WriteMetadata;
 
 $runtime->execute($sessionId, new WriteMetadata('ticket_id', 'OPS-142'));
 $runtime->execute($sessionId, new WriteMetadata('priority', 'high'));
-// @doctest id="1649"
+// @doctest id="63da"
 ```
 
 ### UpdateTask
@@ -251,7 +251,7 @@ Updates the task description associated with the session.
 use Cognesy\Agents\Session\Actions\UpdateTask;
 
 $runtime->execute($sessionId, new UpdateTask('Refactor the authentication module'));
-// @doctest id="7291"
+// @doctest id="1c9b"
 ```
 
 ## Versioning and Optimistic Locking
@@ -277,7 +277,7 @@ try {
     // Reload and retry, or inform the user
     $fresh = $runtime->getSession($sessionId);
 }
-// @doctest id="0f41"
+// @doctest id="70aa"
 ```
 
 ### Exception Types
@@ -301,7 +301,7 @@ use Cognesy\Agents\Session\Store\InMemorySessionStore;
 
 $store = new InMemorySessionStore();
 $repo = new SessionRepository($store);
-// @doctest id="4265"
+// @doctest id="91a2"
 ```
 
 Sessions are lost when the process ends. All version checks and conflict detection still work correctly.
@@ -315,7 +315,7 @@ use Cognesy\Agents\Session\Store\FileSessionStore;
 
 $store = new FileSessionStore('/var/data/sessions');
 $repo = new SessionRepository($store);
-// @doctest id="0d7d"
+// @doctest id="09e8"
 ```
 
 The store creates the directory if it does not exist. Each session is stored as `{session_id}.json` with atomic writes (write to `.tmp`, then rename). Lock files (`{session_id}.lock`) are used for mutual exclusion during create and save operations.
@@ -339,7 +339,7 @@ class RedisSessionStore implements CanStoreSessions
     public function delete(SessionId $sessionId): void { /* ... */ }
     public function listHeaders(): SessionInfoList { /* ... */ }
 }
-// @doctest id="155b"
+// @doctest id="444e"
 ```
 
 Your implementation must enforce the version semantics: `create()` requires version `0`, and `save()` must match the stored version. Use `AgentSession::reconstitute()` to set the next version and timestamp before persisting.
@@ -356,7 +356,7 @@ The session lifecycle tracks the overall status of the agent conversation across
 Active -> Suspended -> Active -> Completed
                               -> Failed
                               -> Deleted
-// @doctest id="8b3f"
+// @doctest id="b50b"
 ```
 
 The `AgentSession::withState()` method updates the agent state without changing the session status. This is intentional: the session status represents a cross-run concern (is this conversation still active?), while the execution status represents a per-run concern (did this particular run succeed?).
@@ -378,7 +378,7 @@ interface CanControlAgentSession
 {
     public function onStage(AgentSessionStage $stage, AgentSession $session): AgentSession;
 }
-// @doctest id="cdd4"
+// @doctest id="cb96"
 ```
 
 The `AgentSessionStage` enum defines the four interception points:
@@ -413,7 +413,7 @@ $autoSuspend = new class implements CanControlAgentSession {
 
 $hooks = SessionHookStack::empty()->with($autoSuspend, priority: 100);
 $runtime = new SessionRuntime($repo, $events, $hooks);
-// @doctest id="e2f5"
+// @doctest id="696c"
 ```
 
 Higher priority hooks run first. The `SessionHookStack` itself implements `CanControlAgentSession`, so you can also pass a single controller directly to the runtime constructor.
@@ -446,7 +446,7 @@ $events->addListener(SessionActionExecuted::class, function (SessionActionExecut
 $events->addListener(SessionSaveFailed::class, function (SessionSaveFailed $e) {
     logger()->error("Session {$e->sessionId}: save failed - {$e->error}");
 });
-// @doctest id="23ce"
+// @doctest id="1490"
 ```
 
 ## Writing Custom Actions
@@ -474,7 +474,7 @@ final readonly class ArchiveSession implements CanExecuteSessionAction
 
 // Usage
 $runtime->execute($sessionId, new ArchiveSession('Ticket resolved'));
-// @doctest id="30b2"
+// @doctest id="bec9"
 ```
 
 Actions should be pure transformations on the session. Side effects (external API calls, notifications) are better handled through session controllers or event listeners.

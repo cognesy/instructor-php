@@ -96,7 +96,7 @@ Simple string input:
 
 ```php
 <?php
-->withMessages("John is 25 years old and works at Acme Corp")
+$instructor->withMessages("John is 25 years old and works at Acme Corp");
 ```
 
 ### Chat Messages
@@ -105,10 +105,10 @@ OpenAI-style message arrays:
 
 ```php
 <?php
-->withMessages([
+$instructor->withMessages([
     ['role' => 'system', 'content' => 'You are a data extraction expert.'],
     ['role' => 'user', 'content' => 'Extract the person: John, 25, engineer']
-])
+]);
 ```
 
 ### Image Input
@@ -119,8 +119,8 @@ Process images with vision-capable models:
 <?php
 use Cognesy\Addons\Image\Image;
 
-->with(messages: Image::fromFile('path/to/image.jpg')->toMessage())
-->withPrompt("Extract all text from this document")
+$instructor->with(messages: Image::fromFile('path/to/image.jpg')->toMessage())
+    ->withPrompt("Extract all text from this document");
 ```
 
 **Supported formats:** JPEG, PNG, GIF, WebP
@@ -514,7 +514,7 @@ See all LLM interactions:
 
 ```php
 <?php
-$runtime->wiretap(fn($event) => logger()->debug((string) $event))
+$runtime->wiretap(fn($event) => logger()->debug((string) $event));
 ```
 
 Outputs:
@@ -541,31 +541,41 @@ $result = StructuredOutput::using('openai')
         messages: $text,
         responseModel: Person::class,
     )->get();
+```
 
+```php
+<?php
 // Or inject via dependency injection
-public function handle(\Cognesy\Instructor\StructuredOutput $instructor)
+class MyController
 {
-    return $instructor
-        ->with(messages: $text, responseModel: Person::class)
-        ->get();
+    public function handle(\Cognesy\Instructor\StructuredOutput $instructor)
+    {
+        return $instructor
+            ->with(messages: $text, responseModel: Person::class)
+            ->get();
+    }
 }
 ```
 
 ### Symfony
 
-```php
-<?php
-// Configure as service
-// services.yaml
+```yaml
+# services.yaml
 services:
     Cognesy\Instructor\StructuredOutput:
         autowire: true
+```
 
+```php
+<?php
 // Use in controller
-public function extract(StructuredOutput $instructor): Response
+class MyController extends AbstractController
 {
-    $result = $instructor->withResponseClass(Person::class)->get();
-    return $this->json($result);
+    public function extract(\Cognesy\Instructor\StructuredOutput $instructor): Response
+    {
+        $result = $instructor->with(messages: $text, responseModel: Person::class)->get();
+        return $this->json($result);
+    }
 }
 ```
 
@@ -623,5 +633,5 @@ $runtime->onEvent('*', function($event) {
 - **[Getting Started](getting-started)** - Quick installation guide
 - **[Why Instructor](why-instructor)** - Understanding the value proposition
 - **[Use Cases](use-cases)** - Industry-specific examples
-- **[Cookbook](/cookbook)** - 60+ working examples
+- **[Cookbook](/cookbook/introduction)** - 60+ working examples
 - **[API Reference](/packages/instructor/introduction)** - Complete documentation

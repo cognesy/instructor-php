@@ -51,13 +51,13 @@ Called whenever the agent invokes a tool or receives a tool result. The handler 
 - `?string $output` -- The tool's output, or `null` if the tool has not completed yet
 
 ```php
-->onToolUse(function (string $tool, array $input, ?string $output): void {
+$agent->onToolUse(function (string $tool, array $input, ?string $output): void {
     echo "[Tool: {$tool}]";
     if ($output !== null) {
         echo " => " . substr($output, 0, 100);
     }
     echo "\n";
-})
+});
 ```
 
 The tool names and input structures are normalized across all agents. For example, Codex `CommandExecution` items become `'bash'` tool calls with `['command' => '...']` input, and Codex `FileChange` items become `'file_change'` tool calls with `['path' => '...', 'action' => '...']` input.
@@ -67,10 +67,10 @@ The tool names and input structures are normalized across all agents. For exampl
 Called exactly once when the agent finishes and the final `AgentResponse` is assembled. The handler receives the complete response object:
 
 ```php
-->onComplete(function (AgentResponse $response): void {
+$agent->onComplete(function (AgentResponse $response): void {
     echo "\nCompleted with exit code: {$response->exitCode}";
     echo "\nTool calls made: " . count($response->toolCalls);
-})
+});
 ```
 
 The completion callback is deduplicated internally -- even if the bridge processes both streamed and parsed data, your handler is invoked only once.
@@ -83,9 +83,9 @@ Called when the agent emits an error event during streaming. These are operation
 - `?string $code` -- An optional error code (agent-specific)
 
 ```php
-->onError(function (string $message, ?string $code): void {
+$agent->onError(function (string $message, ?string $code): void {
     error_log("Agent stream error [{$code}]: {$message}");
-})
+});
 ```
 
 Stream errors do not terminate the execution. The agent may recover and continue working after emitting an error event.

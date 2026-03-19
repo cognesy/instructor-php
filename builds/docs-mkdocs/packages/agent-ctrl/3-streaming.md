@@ -23,7 +23,7 @@ $response = AgentCtrl::claudeCode()
     ->onComplete(fn(AgentResponse $response) => print("\nDone\n"))
     ->onError(fn(string $message, ?string $code) => print("\nError: {$message}\n"))
     ->executeStreaming('Explain the architecture of this project.');
-// @doctest id="affa"
+// @doctest id="0acf"
 ```
 
 `executeStreaming()` returns the final `AgentResponse` just like `execute()` does. The callbacks provide real-time visibility into the work, but the complete result is always available at the end for inspection, storage, or further processing.
@@ -35,11 +35,11 @@ $response = AgentCtrl::claudeCode()
 Called whenever the agent produces text content. The handler receives a single `string` argument containing the text fragment. Text is delivered incrementally -- each call may contain a word, a sentence, or a paragraph depending on how the agent's CLI emits output.
 
 ```php
-->onText(function (string $text): void {
+$agent->onText(function (string $text): void {
     // Append to a buffer, write to a stream, or display directly
     echo $text;
-})
-// @doctest id="753e"
+});
+// @doctest id="5f47"
 ```
 
 Empty text fragments are filtered out before reaching your callback.
@@ -53,14 +53,14 @@ Called whenever the agent invokes a tool or receives a tool result. The handler 
 - `?string $output` -- The tool's output, or `null` if the tool has not completed yet
 
 ```php
-->onToolUse(function (string $tool, array $input, ?string $output): void {
+$agent->onToolUse(function (string $tool, array $input, ?string $output): void {
     echo "[Tool: {$tool}]";
     if ($output !== null) {
         echo " => " . substr($output, 0, 100);
     }
     echo "\n";
-})
-// @doctest id="c04e"
+});
+// @doctest id="2287"
 ```
 
 The tool names and input structures are normalized across all agents. For example, Codex `CommandExecution` items become `'bash'` tool calls with `['command' => '...']` input, and Codex `FileChange` items become `'file_change'` tool calls with `['path' => '...', 'action' => '...']` input.
@@ -70,11 +70,11 @@ The tool names and input structures are normalized across all agents. For exampl
 Called exactly once when the agent finishes and the final `AgentResponse` is assembled. The handler receives the complete response object:
 
 ```php
-->onComplete(function (AgentResponse $response): void {
+$agent->onComplete(function (AgentResponse $response): void {
     echo "\nCompleted with exit code: {$response->exitCode}";
     echo "\nTool calls made: " . count($response->toolCalls);
-})
-// @doctest id="8ee5"
+});
+// @doctest id="1147"
 ```
 
 The completion callback is deduplicated internally -- even if the bridge processes both streamed and parsed data, your handler is invoked only once.
@@ -87,10 +87,10 @@ Called when the agent emits an error event during streaming. These are operation
 - `?string $code` -- An optional error code (agent-specific)
 
 ```php
-->onError(function (string $message, ?string $code): void {
+$agent->onError(function (string $message, ?string $code): void {
     error_log("Agent stream error [{$code}]: {$message}");
-})
-// @doctest id="c466"
+});
+// @doctest id="953a"
 ```
 
 Stream errors do not terminate the execution. The agent may recover and continue working after emitting an error event.
@@ -111,7 +111,7 @@ $response = AgentCtrl::codex()->execute('Create a short summary.');
 $response = AgentCtrl::codex()
     ->onText(fn(string $text) => print($text))
     ->executeStreaming('Create a short summary.');
-// @doctest id="2ce4"
+// @doctest id="4195"
 ```
 
 ## How Streaming Works Internally
@@ -147,7 +147,7 @@ $response = AgentCtrl::claudeCode()
     ->wiretap($logger->wiretap())
     ->onText(fn(string $text) => print($text))
     ->executeStreaming('Analyze the test suite.');
-// @doctest id="8b78"
+// @doctest id="6133"
 ```
 
 The console logger displays color-coded events for execution lifecycle, tool usage, stream processing, and response parsing, while your `onText` callback displays the agent's actual output.
@@ -190,5 +190,5 @@ if (!$response->isSuccess()) {
 }
 
 echo "Total tool calls: " . count($toolLog) . "\n";
-// @doctest id="f9a0"
+// @doctest id="20dc"
 ```

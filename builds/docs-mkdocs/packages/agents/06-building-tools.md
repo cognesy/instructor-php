@@ -31,7 +31,7 @@ function get_weather(
 }
 
 $tool = FunctionTool::fromCallable(get_weather(...));
-// @doctest id="54ab"
+// @doctest id="b330"
 ```
 
 The generated tool will have the name `get_weather`, the description from the function-level `#[Description]` attribute, and a JSON schema with a required `city` string parameter documented with its own description.
@@ -51,7 +51,7 @@ $tool = FunctionTool::fromCallable(
         return "Results for: {$query}";
     }
 );
-// @doctest id="bcf0"
+// @doctest id="76f8"
 ```
 
 ### Multiple Parameters and Types
@@ -70,7 +70,7 @@ function create_event(
 }
 
 $tool = FunctionTool::fromCallable(create_event(...));
-// @doctest id="a3e9"
+// @doctest id="24f6"
 ```
 
 ### Using Static or Instance Methods
@@ -92,7 +92,7 @@ class WeatherService {
 
 $service = new WeatherService();
 $tool = FunctionTool::fromCallable($service->forecast(...));
-// @doctest id="7abf"
+// @doctest id="1024"
 ```
 
 ### How Schema Generation Works
@@ -113,7 +113,7 @@ If you need to retrieve the original callable (for example, for testing), use th
 ```php
 $callback = $tool->function(); // Returns the Closure
 $result = $callback('Paris');
-// @doctest id="7b25"
+// @doctest id="527d"
 ```
 
 <a name="base-tool"></a>
@@ -160,7 +160,7 @@ class WeatherTool extends BaseTool
         )->toArray());
     }
 }
-// @doctest id="692a"
+// @doctest id="09cb"
 ```
 
 ### Why Override `toToolSchema()`?
@@ -176,7 +176,8 @@ use Cognesy\Polyglot\Inference\Data\ToolDefinition;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
 
-public function toToolSchema(): ToolDefinition
+class MyTool extends BaseTool {
+    public function toToolSchema(): ToolDefinition
 {
     return ToolDefinition::fromArray(ToolSchema::make(
         name: $this->name(),
@@ -193,7 +194,8 @@ public function toToolSchema(): ToolDefinition
             ->withRequiredProperties(['query'])
     )->toArray());
 }
-// @doctest id="37dc"
+}
+// @doctest id="1987"
 ```
 
 Available `JsonSchema` factory methods include: `string()`, `integer()`, `number()`, `boolean()`, `enum()`, `array()`, `object()`, and `any()`. Each accepts a name, description, and optional configuration like nullability.
@@ -211,7 +213,7 @@ public function __invoke(mixed ...$args): string
 
     // ... perform search
 }
-// @doctest id="dca6"
+// @doctest id="c47f"
 ```
 
 The lookup order is: `$args['query']` first, then `$args[0]`, then the default `''`.
@@ -228,7 +230,7 @@ public function __invoke(mixed ...$args): string
 
     return "Processed after {$stepCount} steps in the conversation.";
 }
-// @doctest id="8e96"
+// @doctest id="b997"
 ```
 
 State is read-only from the tool's perspective. The framework clones the tool and injects the state before each call, so tools are safe to use across multiple invocations without shared mutable state.
@@ -246,7 +248,7 @@ parent::__construct(
 
 // Class-name fallback (less readable in LLM prompts)
 parent::__construct();
-// @doctest id="666b"
+// @doctest id="6820"
 ```
 
 ### Custom Metadata and Instructions
@@ -254,30 +256,32 @@ parent::__construct();
 `BaseTool` provides default implementations of `metadata()` and `instructions()` that derive values from the tool name and description. Override them when your tool needs richer documentation for tool registries or browsing:
 
 ```php
-public function metadata(): array
-{
-    return [
-        'name' => $this->name(),
-        'summary' => 'Search across indexed documents',
-        'namespace' => 'search',
-        'tags' => ['retrieval', 'rag'],
-    ];
-}
+class MyTool extends BaseTool {
+    public function metadata(): array
+    {
+        return [
+            'name' => $this->name(),
+            'summary' => 'Search across indexed documents',
+            'namespace' => 'search',
+            'tags' => ['retrieval', 'rag'],
+        ];
+    }
 
-public function instructions(): array
-{
-    return [
-        'name' => $this->name(),
-        'description' => $this->description(),
-        'parameters' => [
-            'query' => 'The search query. Supports boolean operators.',
-            'limit' => 'Maximum number of results. Default: 10.',
-        ],
-        'returns' => 'JSON string with search results',
-        'notes' => ['Results are sorted by relevance score'],
-    ];
+    public function instructions(): array
+    {
+        return [
+            'name' => $this->name(),
+            'description' => $this->description(),
+            'parameters' => [
+                'query' => 'The search query. Supports boolean operators.',
+                'limit' => 'Maximum number of results. Default: 10.',
+            ],
+            'returns' => 'JSON string with search results',
+            'notes' => ['Results are sorted by relevance score'],
+        ];
+    }
 }
-// @doctest id="4f62"
+// @doctest id="d585"
 ```
 
 The default `metadata()` implementation supports automatic namespace extraction from dotted tool names (e.g., `file.read` extracts namespace `file`) and automatic summary extraction from the first sentence of the description. The `instructions()` method returns the full specification including the reflective parameter schema. This two-level design supports the `ToolsTool` registry pattern where agents can discover tools without loading their complete documentation.
@@ -292,7 +296,7 @@ This means you cannot write:
 ```php
 // This will NOT work -- PHP fatal error
 public function __invoke(string $city): string { ... }
-// @doctest id="9190"
+// @doctest id="e3d3"
 ```
 
 Instead, use `$this->arg()` to extract named or positional parameters:
@@ -303,7 +307,7 @@ public function __invoke(mixed ...$args): string
     $city = (string) $this->arg($args, 'city', 0, '');
     return "Weather in {$city}: 72F, sunny";
 }
-// @doctest id="7be9"
+// @doctest id="b8b5"
 ```
 
 If you want typed parameters with compile-time safety and auto-generated schema, use `FunctionTool::fromCallable()` instead.
@@ -327,7 +331,7 @@ $tool = new FakeTool(
     description: 'Evaluate math expressions',
     handler: fn(string $expression) => (string) eval("return {$expression};"),
 );
-// @doctest id="6274"
+// @doctest id="0005"
 ```
 
 ### Testing FunctionTool Directly
@@ -345,7 +349,7 @@ assert($result === 'Weather in Paris: 72F, sunny');
 $result = $tool->use(city: 'Paris');
 assert($result->isSuccess());
 assert($result->unwrap() === 'Weather in Paris: 72F, sunny');
-// @doctest id="1345"
+// @doctest id="769c"
 ```
 
 ### Testing BaseTool Subclasses
@@ -362,7 +366,7 @@ $result = $tool('Paris');
 $state = AgentState::empty()->withUserMessage('test');
 $tool = $tool->withAgentState($state);
 $result = $tool('Paris');
-// @doctest id="2e3c"
+// @doctest id="e868"
 ```
 
 <a name="choosing-a-base-class"></a>
