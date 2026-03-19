@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Facade;
  * Facade for Inference
  *
  * @method static \Cognesy\Polyglot\Inference\Inference connection(string $name)
+ * @method static \Cognesy\Polyglot\Inference\Inference using(string $name)
  * @method static \Cognesy\Polyglot\Inference\Inference fromConfig(\Cognesy\Polyglot\Inference\Config\LLMConfig $config)
  * @method static \Cognesy\Polyglot\Inference\Inference withRuntime(\Cognesy\Polyglot\Inference\Contracts\CanCreateInference $runtime)
  * @method static \Cognesy\Polyglot\Inference\Inference with(?\Cognesy\Messages\Messages $messages = null, ?string $model = null, ?\Cognesy\Polyglot\Inference\Data\ToolDefinitions $tools = null, ?\Cognesy\Polyglot\Inference\Data\ToolChoice $toolChoice = null, ?\Cognesy\Polyglot\Inference\Data\ResponseFormat $responseFormat = null, ?array $options = null)
@@ -65,6 +66,14 @@ class Inference extends Facade
     public static function connection(string $name): BaseInference|InferenceFake
     {
         return static::fromConfig(static::resolveLLMConfig($name));
+    }
+
+    /**
+     * Alias for connection() — matches the base Inference::using() API.
+     */
+    public static function using(string $name): BaseInference|InferenceFake
+    {
+        return static::connection($name);
     }
 
     /**

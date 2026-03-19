@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Facade;
  * Facade for StructuredOutput
  *
  * @method static \Cognesy\Instructor\StructuredOutput connection(string $name)
+ * @method static \Cognesy\Instructor\StructuredOutput using(string $name)
  * @method static \Cognesy\Instructor\StructuredOutput fromConfig(\Cognesy\Polyglot\Inference\Config\LLMConfig $config)
  * @method static \Cognesy\Instructor\StructuredOutput withRuntime(\Cognesy\Instructor\Contracts\CanCreateStructuredOutput $runtime)
  * @method static \Cognesy\Instructor\StructuredOutput with(string|array|\Cognesy\Messages\Message|\Cognesy\Messages\Messages|null $messages = null, string|array|object|null $responseModel = null, ?string $system = null, ?string $prompt = null, ?array $examples = null, ?string $model = null, ?array $options = null)
@@ -72,6 +73,14 @@ class StructuredOutput extends Facade
     public static function connection(string $name): BaseStructuredOutput|StructuredOutputFake
     {
         return static::fromConfig(static::resolveLLMConfig($name));
+    }
+
+    /**
+     * Alias for connection() — matches the base StructuredOutput::using() API.
+     */
+    public static function using(string $name): BaseStructuredOutput|StructuredOutputFake
+    {
+        return static::connection($name);
     }
 
     /**

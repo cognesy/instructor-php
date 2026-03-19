@@ -125,7 +125,7 @@ class InstructorInstallCommand extends Command
         $this->newLine();
 
         $this->line('  3. Extract structured data:');
-        $this->line('     <comment>$person = Instructor::with(</comment>');
+        $this->line('     <comment>$person = StructuredOutput::with(</comment>');
         $this->line('         <comment>messages: "John is 30 years old",</comment>');
         $this->line('         <comment>responseModel: PersonData::class,</comment>');
         $this->line('     <comment>)->get();</comment>');

@@ -77,3 +77,15 @@ rules:
     scope: markdown
     pattern: '/\bwithLLMConfigOverrides\s*\(/'
     message: 'Use `withConfigOverrides(...)` on LLMProvider.'
+
+  - id: instructor.no_instructor_facade
+    engine: regex
+    scope: markdown
+    pattern: '/\bFacades\\\\Instructor\b/'
+    message: 'There is no Instructor facade. Use `Cognesy\Instructor\Laravel\Facades\StructuredOutput` instead.'
+
+  - id: instructor.no_instructor_static_call
+    engine: regex
+    scope: markdown
+    pattern: '/\bInstructor::(respond|with|create)\s*\(/'
+    message: 'Instructor has no static facade methods. Use `StructuredOutput::with(...)` or `(new StructuredOutput)->with(...)` instead.'

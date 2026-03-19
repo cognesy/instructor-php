@@ -41,7 +41,7 @@ Next steps:
      php artisan make:response-model PersonData
 
   3. Extract structured data:
-     $person = Instructor::with(
+     $person = StructuredOutput::with(
          messages: "John is 30 years old",
          responseModel: PersonData::class,
      )->get();
