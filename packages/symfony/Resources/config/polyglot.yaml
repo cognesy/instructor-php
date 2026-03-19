@@ -1,0 +1,38 @@
+services:
+  Cognesy\Polyglot\Inference\Config\LLMConfig:
+    factory: ['@Cognesy\Instructor\Symfony\Support\SymfonyConfigProvider', 'llm']
+
+  Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig:
+    factory: ['@Cognesy\Instructor\Symfony\Support\SymfonyConfigProvider', 'embeddings']
+
+  Cognesy\Polyglot\Inference\InferenceRuntime:
+    factory: ['Cognesy\Polyglot\Inference\InferenceRuntime', 'fromConfig']
+    arguments:
+      $config: '@Cognesy\Polyglot\Inference\Config\LLMConfig'
+      $events: '@Cognesy\Events\Contracts\CanHandleEvents'
+      $httpClient: '@Cognesy\Http\Contracts\CanSendHttpRequests'
+
+  Cognesy\Polyglot\Inference\Contracts\CanCreateInference:
+    alias: Cognesy\Polyglot\Inference\InferenceRuntime
+    public: true
+
+  Cognesy\Polyglot\Inference\Inference:
+    arguments:
+      $runtime: '@Cognesy\Polyglot\Inference\Contracts\CanCreateInference'
+    public: true
+
+  Cognesy\Polyglot\Embeddings\EmbeddingsRuntime:
+    factory: ['Cognesy\Polyglot\Embeddings\EmbeddingsRuntime', 'fromConfig']
+    arguments:
+      $config: '@Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig'
+      $events: '@Cognesy\Events\Contracts\CanHandleEvents'
+      $httpClient: '@Cognesy\Http\Contracts\CanSendHttpRequests'
+
+  Cognesy\Polyglot\Embeddings\Contracts\CanCreateEmbeddings:
+    alias: Cognesy\Polyglot\Embeddings\EmbeddingsRuntime
+    public: true
+
+  Cognesy\Polyglot\Embeddings\Embeddings:
+    arguments:
+      $runtime: '@Cognesy\Polyglot\Embeddings\Contracts\CanCreateEmbeddings'
+    public: true

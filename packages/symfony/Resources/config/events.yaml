@@ -1,0 +1,17 @@
+services:
+  Cognesy\Instructor\Symfony\Support\SymfonyEventBusFactory: ~
+
+  Cognesy\Events\Dispatchers\SymfonyEventDispatcher:
+    factory: ['@Cognesy\Instructor\Symfony\Support\SymfonyEventBusFactory', 'bridge']
+    arguments:
+      $symfonyDispatcher: '@?event_dispatcher'
+
+  Cognesy\Events\Dispatchers\EventDispatcher:
+    factory: ['@Cognesy\Instructor\Symfony\Support\SymfonyEventBusFactory', 'bus']
+    arguments:
+      $configProvider: '@Cognesy\Instructor\Symfony\Support\SymfonyConfigProvider'
+      $bridge: '@Cognesy\Events\Dispatchers\SymfonyEventDispatcher'
+
+  Cognesy\Events\Contracts\CanHandleEvents:
+    alias: Cognesy\Events\Dispatchers\EventDispatcher
+    public: true

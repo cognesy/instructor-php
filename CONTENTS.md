@@ -11,6 +11,7 @@ Contains all independent PHP packages that make up the Instructor ecosystem. Eac
 - **Development tools**: `evals`, `experimental`, `doctor`, `doctools`
 - **Agent control**: `agent-ctrl` - Unified CLI bridge for code agents
 - **Agents SDK**: `agents` - SDK for building custom AI agents
+- **Framework integration**: `laravel`, `symfony`
 - **Observability**: `metrics`, `logging`
 - **HTTP client**: `http-client`
 - **HTTP pooling**: `http-pool`
@@ -73,7 +74,7 @@ Root-level PHP source files (e.g., polyfills shared across packages).
 
 ### Documentation
 - `README.md` - Main project documentation and getting started guide
-- `CONTRIBUTOR_GUIDE.md` - Comprehensive guide for contributors and developers
+- `CONTRIBUTING.md` - Comprehensive guide for contributors and developers
 - `AGENTS.md` - Key reference files for AI agents working in this codebase
 - `PACKAGES.md` - Strategic overview of the package architecture
 - `LICENSE` - Project license information

@@ -1,0 +1,74 @@
+{
+  "name": "cognesy/instructor-symfony",
+  "description": "Batteries-included Symfony integration for Instructor PHP",
+  "type": "library",
+  "license": "MIT",
+  "homepage": "https://instructorphp.com",
+  "support": {
+    "issues": "https://github.com/cognesy/instructor-php/issues",
+    "source": "https://github.com/cognesy/instructor-php"
+  },
+  "keywords": [
+    "symfony",
+    "instructor",
+    "llm",
+    "ai",
+    "agents",
+    "agentctrl",
+    "telemetry",
+    "logging"
+  ],
+  "authors": [
+    {
+      "name": "Dariusz Debowczyk",
+      "email": "ddebowczyk@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Cognesy\\Instructor\\Symfony\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Cognesy\\Instructor\\Symfony\\Tests\\": "tests/"
+    }
+  },
+  "require": {
+    "php": "^8.3",
+    "cognesy/agent-ctrl": "^1.22",
+    "cognesy/agents": "^2.2",
+    "cognesy/instructor-config": "^2.2",
+    "cognesy/instructor-events": "^2.2",
+    "cognesy/instructor-http-client": "^2.2",
+    "cognesy/instructor-http-pool": "^2.2",
+    "cognesy/instructor-polyglot": "^2.2",
+    "cognesy/instructor-struct": "^2.2",
+    "cognesy/instructor-telemetry": "^2.2",
+    "cognesy/instructor-logging": "^2.2",
+    "cognesy/instructor-utils": "^2.2",
+    "symfony/config": "^6.4|^7.0",
+    "symfony/dependency-injection": "^6.4|^7.0",
+    "symfony/event-dispatcher": "^6.4|^7.0",
+    "symfony/framework-bundle": "^6.4|^7.0",
+    "symfony/http-client": "^6.4|^7.0",
+    "symfony/http-kernel": "^6.4|^7.0",
+    "symfony/yaml": "^6.4|^7.0"
+  },
+  "require-dev": {
+    "pestphp/pest": "^2.34",
+    "phpstan/phpstan": "^1.11"
+  },
+  "scripts": {
+    "tests": "@php ../../vendor/bin/pest --configuration=phpunit.xml --bootstrap=../../vendor/autoload.php tests",
+    "phpstan": "@php ../../vendor/bin/phpstan analyse -c phpstan.neon"
+  },
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    },
+    "sort-packages": true
+  },
+  "minimum-stability": "RC",
+  "prefer-stable": true
+}

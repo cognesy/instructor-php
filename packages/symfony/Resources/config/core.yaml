@@ -1,0 +1,50 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Cognesy\Instructor\Symfony\Support\SymfonyConfigProvider:
+    arguments:
+      $config: '%instructor.symfony.config%'
+
+  Cognesy\Config\Contracts\CanProvideConfig:
+    alias: Cognesy\Instructor\Symfony\Support\SymfonyConfigProvider
+    public: true
+
+  Cognesy\Instructor\Config\StructuredOutputConfig:
+    factory: ['@Cognesy\Instructor\Symfony\Support\SymfonyConfigProvider', 'structuredOutput']
+
+  Cognesy\Http\Config\HttpClientConfig:
+    factory: ['@Cognesy\Instructor\Symfony\Support\SymfonyConfigProvider', 'httpClient']
+
+  Cognesy\Instructor\Symfony\Support\SymfonyHttpTransportFactory: ~
+
+  Cognesy\Http\HttpClient:
+    factory: ['@Cognesy\Instructor\Symfony\Support\SymfonyHttpTransportFactory', 'create']
+    arguments:
+      $config: '@Cognesy\Http\Config\HttpClientConfig'
+      $frameworkHttpClient: '@?http_client'
+      $events: '@Cognesy\Events\Contracts\CanHandleEvents'
+    public: true
+
+  Cognesy\Http\Contracts\CanSendHttpRequests:
+    alias: Cognesy\Http\HttpClient
+    public: true
+
+  Cognesy\Instructor\StructuredOutputRuntime:
+    factory: ['Cognesy\Instructor\StructuredOutputRuntime', 'fromConfig']
+    arguments:
+      $config: '@Cognesy\Polyglot\Inference\Config\LLMConfig'
+      $events: '@Cognesy\Events\Contracts\CanHandleEvents'
+      $httpClient: '@Cognesy\Http\Contracts\CanSendHttpRequests'
+      $structuredConfig: '@Cognesy\Instructor\Config\StructuredOutputConfig'
+
+  Cognesy\Instructor\Contracts\CanCreateStructuredOutput:
+    alias: Cognesy\Instructor\StructuredOutputRuntime
+    public: true
+
+  Cognesy\Instructor\StructuredOutput:
+    arguments:
+      $runtime: '@Cognesy\Instructor\Contracts\CanCreateStructuredOutput'
+    public: true

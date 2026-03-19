@@ -17,14 +17,25 @@ final class Polling
     ): mixed {
         sleep($initialDelaySeconds);
         $deadline = microtime(true) + max(0, $timeoutSeconds - $initialDelaySeconds);
+        $lastError = null;
 
         while (true) {
-            $result = $probe();
+            try {
+                $result = $probe();
+            } catch (\Throwable $error) {
+                $lastError = $error;
+                $result = null;
+            }
+
             if ($result !== null) {
                 return $result;
             }
 
             if (microtime(true) >= $deadline) {
+                if ($lastError !== null) {
+                    throw $lastError;
+                }
+
                 return null;
             }
 

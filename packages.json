@@ -162,6 +162,13 @@
             "tier": "library"
         },
         {
+            "local": "packages/symfony",
+            "repo": "cognesy/instructor-symfony",
+            "github_name": "instructor-symfony",
+            "composer_name": "cognesy/instructor-symfony",
+            "tier": "public"
+        },
+        {
             "local": "packages/tell",
             "repo": "cognesy/instructor-tell",
             "github_name": "instructor-tell",

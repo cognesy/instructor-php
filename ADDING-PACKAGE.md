@@ -43,7 +43,7 @@ Then update:
 - root `composer.json` autoload and autoload-dev
 - root `README.md`
 - [CONTENTS.md](/Users/ddebowczyk/projects/instructor-php/CONTENTS.md)
-- [CONTRIBUTOR_GUIDE.md](/Users/ddebowczyk/projects/instructor-php/CONTRIBUTOR_GUIDE.md)
+- [CONTRIBUTING.md](/Users/ddebowczyk/projects/instructor-php/CONTRIBUTING.md)
 - any docs registries under `packages/*/resources/config/docs.yaml` or `.yml`
 - docs landing pages if the package should appear there
 - examples/docs pointers if this package splits functionality out of another package

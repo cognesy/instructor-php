@@ -7,6 +7,11 @@ This monorepo contains a set of dev-friendly, framework agnostic components offe
 - **Polyglot for PHP** - unified LLM API - write code once, deploy with any LLM provider: OpenAI chat completions API, OpenAI responses API, Anthropic, Gemini, Ollama, etc.; you can write own LLM drivers,
 - **Agent SDK for PHP** - lightweight but powerful agent SDK, supports custom tools, lifecycle hooks, subagents, context management, custom stop / continuation criteria, observability via events, packaged capabilities, agent templates, session management, and more.
 
+Framework integration packages:
+
+- **Laravel Package** - first-party Laravel integration for facades, HTTP transport, native agents, telemetry, logging, and testing
+- **Symfony Package** - first-party batteries-included Symfony integration package, currently being introduced under `packages/symfony`
+
 ## Read More
 
 - Official website https://instructorphp.com
@@ -95,6 +100,14 @@ $response = AgentCtrl::codex()->execute('Summarize this repository.');
 ```
 
 Detailed docs: [packages/agent-ctrl/docs/](packages/agent-ctrl/docs/)
+
+### Framework integration
+
+Purpose: install framework-native runtime wiring instead of assembling your own glue.
+Benefit: get a supported bundle or package surface for container bindings, events, observability, and testing.
+
+- Laravel package: [packages/laravel/](packages/laravel/)
+- Symfony package: [packages/symfony/](packages/symfony/)
 
 
 ## What is Instructor?
