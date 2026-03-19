@@ -105,6 +105,10 @@ The boundary between `\Core` and `\Hook` is **whether the behavior is optional**
 - Before writing tests make sure that the code is easily testable - if not propose refactorings
 - Use PHPStan and Psalm for static analysis
 
+# Build Artifacts
+
+The `./builds/` directory is **ephemeral** — it is auto-generated and should never be manually edited. Any changes made there will be overwritten on the next build. Always edit source files in `packages/` or `docs/` instead.
+
 # Development Tools
 
 - ast-grep - import documentation from: @./notes/tools/AST_GREP.md

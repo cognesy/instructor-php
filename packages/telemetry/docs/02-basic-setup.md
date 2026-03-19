@@ -87,5 +87,4 @@ $telemetry = new Telemetry(
 ## Notes
 
 - `flush()` matters. Exporters buffer observations until you call it.
-- `TelemetryHub` still exists, but `Telemetry` is the current class to use.
 - `OtelExporter()` without a transport is useful for local debugging and tests.

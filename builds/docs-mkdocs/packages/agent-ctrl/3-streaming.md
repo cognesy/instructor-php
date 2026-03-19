@@ -23,7 +23,7 @@ $response = AgentCtrl::claudeCode()
     ->onComplete(fn(AgentResponse $response) => print("\nDone\n"))
     ->onError(fn(string $message, ?string $code) => print("\nError: {$message}\n"))
     ->executeStreaming('Explain the architecture of this project.');
-// @doctest id="c467"
+// @doctest id="affa"
 ```
 
 `executeStreaming()` returns the final `AgentResponse` just like `execute()` does. The callbacks provide real-time visibility into the work, but the complete result is always available at the end for inspection, storage, or further processing.
@@ -39,7 +39,7 @@ Called whenever the agent produces text content. The handler receives a single `
     // Append to a buffer, write to a stream, or display directly
     echo $text;
 })
-// @doctest id="56d1"
+// @doctest id="753e"
 ```
 
 Empty text fragments are filtered out before reaching your callback.
@@ -60,7 +60,7 @@ Called whenever the agent invokes a tool or receives a tool result. The handler 
     }
     echo "\n";
 })
-// @doctest id="e5fd"
+// @doctest id="c04e"
 ```
 
 The tool names and input structures are normalized across all agents. For example, Codex `CommandExecution` items become `'bash'` tool calls with `['command' => '...']` input, and Codex `FileChange` items become `'file_change'` tool calls with `['path' => '...', 'action' => '...']` input.
@@ -74,7 +74,7 @@ Called exactly once when the agent finishes and the final `AgentResponse` is ass
     echo "\nCompleted with exit code: {$response->exitCode}";
     echo "\nTool calls made: " . count($response->toolCalls);
 })
-// @doctest id="eade"
+// @doctest id="8ee5"
 ```
 
 The completion callback is deduplicated internally -- even if the bridge processes both streamed and parsed data, your handler is invoked only once.
@@ -90,7 +90,7 @@ Called when the agent emits an error event during streaming. These are operation
 ->onError(function (string $message, ?string $code): void {
     error_log("Agent stream error [{$code}]: {$message}");
 })
-// @doctest id="848d"
+// @doctest id="c466"
 ```
 
 Stream errors do not terminate the execution. The agent may recover and continue working after emitting an error event.
@@ -111,7 +111,7 @@ $response = AgentCtrl::codex()->execute('Create a short summary.');
 $response = AgentCtrl::codex()
     ->onText(fn(string $text) => print($text))
     ->executeStreaming('Create a short summary.');
-// @doctest id="e82d"
+// @doctest id="2ce4"
 ```
 
 ## How Streaming Works Internally
@@ -147,7 +147,7 @@ $response = AgentCtrl::claudeCode()
     ->wiretap($logger->wiretap())
     ->onText(fn(string $text) => print($text))
     ->executeStreaming('Analyze the test suite.');
-// @doctest id="d1b5"
+// @doctest id="8b78"
 ```
 
 The console logger displays color-coded events for execution lifecycle, tool usage, stream processing, and response parsing, while your `onText` callback displays the agent's actual output.
@@ -190,5 +190,5 @@ if (!$response->isSuccess()) {
 }
 
 echo "Total tool calls: " . count($toolLog) . "\n";
-// @doctest id="3d4f"
+// @doctest id="f9a0"
 ```

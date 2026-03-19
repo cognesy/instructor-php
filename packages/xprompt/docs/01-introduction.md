@@ -39,10 +39,11 @@ Xprompt is a leaf package with no opinion about how you call an LLM. Every promp
 
 ```php
 // StructuredOutput (accepts Stringable for system prompt)
-StructuredOutput::with(
-    system: Persona::with(role: 'analyst'),
-    responseModel: MyModel::class,
-)->get();
+(new StructuredOutput)
+    ->with(
+        system: Persona::with(role: 'analyst'),
+        responseModel: MyModel::class,
+    )->get();
 
 // Agents (via AgentContext)
 $context->withSystemPrompt(ReviewSystem::with(content: $doc));

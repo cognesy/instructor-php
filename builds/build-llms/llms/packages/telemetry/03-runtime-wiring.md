@@ -33,7 +33,7 @@ $events = new EventDispatcher('app');
     new PolyglotTelemetryProjector($telemetry),
     new HttpClientTelemetryProjector($telemetry),
 ])))->attachTo($events);
-// @doctest id="6d9e"
+// @doctest id="49cc"
 ```
 
 Pass `$events` into the runtime objects that should emit telemetry.

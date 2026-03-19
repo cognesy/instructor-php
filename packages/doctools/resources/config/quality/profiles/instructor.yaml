@@ -72,6 +72,12 @@ rules:
     pattern: '/\bStructuredOutput::create\s*\(/'
     message: 'Use `(new StructuredOutput)->with(...)->get()` or `->create()` on an instance.'
 
+  - id: instructor.no_structuredoutput_with_static
+    engine: regex
+    scope: markdown
+    pattern: '/\bStructuredOutput::with\s*\(/'
+    message: 'StructuredOutput::with() is not a static method. Use `StructuredOutput::using(''preset'')->with(...)` (Laravel facade) or `(new StructuredOutput)->with(...)` (standalone).'
+
   - id: instructor.no_withllmconfigoverrides
     engine: regex
     scope: markdown
@@ -88,4 +94,4 @@ rules:
     engine: regex
     scope: markdown
     pattern: '/\bInstructor::(respond|with|create)\s*\(/'
-    message: 'Instructor has no static facade methods. Use `StructuredOutput::with(...)` or `(new StructuredOutput)->with(...)` instead.'
+    message: 'Instructor has no static facade methods. Use `StructuredOutput::using(''preset'')->with(...)` (Laravel) or `(new StructuredOutput)->with(...)` (standalone) instead.'

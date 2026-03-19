@@ -46,7 +46,7 @@ $telemetry->log(
 
 $telemetry->complete('run');
 $telemetry->flush();
-// @doctest id="f6be"
+// @doctest id="35c7"
 ```
 
 ## Adding Child Spans
@@ -60,7 +60,7 @@ $telemetry->openChild('llm', 'request', 'llm.inference');
 $telemetry->complete('llm');
 $telemetry->complete('request');
 $telemetry->flush();
-// @doctest id="4ceb"
+// @doctest id="7376"
 ```
 
 The keys `request` and `llm` are local registry keys. They do not have to match
@@ -84,11 +84,10 @@ $telemetry = new Telemetry(
         $langfuseExporter,
     ]),
 );
-// @doctest id="f228"
+// @doctest id="8bf3"
 ```
 
 ## Notes
 
 - `flush()` matters. Exporters buffer observations until you call it.
-- `TelemetryHub` still exists, but `Telemetry` is the current class to use.
 - `OtelExporter()` without a transport is useful for local debugging and tests.

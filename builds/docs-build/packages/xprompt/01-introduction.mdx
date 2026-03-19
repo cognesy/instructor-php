@@ -15,7 +15,7 @@ class Persona extends Prompt
 
 echo Persona::with(role: 'security');
 // "You are a security expert."
-// @doctest id="3c48"
+// @doctest id="bf26"
 ```
 
 ## Why Classes?
@@ -35,14 +35,15 @@ Xprompt is a leaf package with no opinion about how you call an LLM. Every promp
 
 ```php
 // StructuredOutput (accepts Stringable for system prompt)
-StructuredOutput::with(
-    system: Persona::with(role: 'analyst'),
-    responseModel: MyModel::class,
-)->get();
+(new StructuredOutput)
+    ->with(
+        system: Persona::with(role: 'analyst'),
+        responseModel: MyModel::class,
+    )->get();
 
 // Agents (via AgentContext)
 $context->withSystemPrompt(ReviewSystem::with(content: $doc));
-// @doctest id="ee66"
+// @doctest id="af83"
 ```
 
 ## What You'll Learn

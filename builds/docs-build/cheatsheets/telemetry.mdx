@@ -34,7 +34,6 @@ Core concepts:
 Application services:
 
 - `Telemetry`
-- `TelemetryHub` (deprecated alias)
 - `TraceRegistry`
 - `CompositeTelemetryExporter`
 

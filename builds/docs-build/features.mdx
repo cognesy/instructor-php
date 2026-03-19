@@ -536,13 +536,19 @@ $result = StructuredOutput::using('openai')
         messages: $text,
         responseModel: Person::class,
     )->get();
+```
 
+```php
+<?php
 // Or inject via dependency injection
-public function handle(\Cognesy\Instructor\StructuredOutput $instructor)
+class MyController
 {
-    return $instructor
-        ->with(messages: $text, responseModel: Person::class)
-        ->get();
+    public function handle(\Cognesy\Instructor\StructuredOutput $instructor)
+    {
+        return $instructor
+            ->with(messages: $text, responseModel: Person::class)
+            ->get();
+    }
 }
 ```
 
