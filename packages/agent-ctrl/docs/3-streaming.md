@@ -34,10 +34,10 @@ $response = AgentCtrl::claudeCode()
 Called whenever the agent produces text content. The handler receives a single `string` argument containing the text fragment. Text is delivered incrementally -- each call may contain a word, a sentence, or a paragraph depending on how the agent's CLI emits output.
 
 ```php
-->onText(function (string $text): void {
+$agent->onText(function (string $text): void {
     // Append to a buffer, write to a stream, or display directly
     echo $text;
-})
+});
 ```
 
 Empty text fragments are filtered out before reaching your callback.

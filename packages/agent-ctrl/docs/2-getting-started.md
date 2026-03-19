@@ -205,11 +205,11 @@ if ($response->isSuccess()) {
 }
 ```
 
-See the [Response Object](/agent-ctrl/response-object) documentation for the full set of properties and methods available on `AgentResponse`.
+See the [Response Object](/packages/agent-ctrl/6-response-object) documentation for the full set of properties and methods available on `AgentResponse`.
 
 ## Next Steps
 
-- [Streaming](/agent-ctrl/streaming) -- Receive real-time updates while the agent is working
-- [Session Management](/agent-ctrl/session-management) -- Continue or resume agent sessions
-- [Agent Options](/agent-ctrl/agent-options) -- Explore shared and agent-specific configuration
-- [Claude Code Bridge](/agent-ctrl/claude-code-bridge), [Codex Bridge](/agent-ctrl/codex-bridge), [OpenCode Bridge](/agent-ctrl/opencode-bridge), [Pi Bridge](/agent-ctrl/pi-bridge), [Gemini Bridge](/agent-ctrl/gemini-bridge) -- Deep dives into each agent's unique capabilities
+- [Streaming](/packages/agent-ctrl/3-streaming) -- Receive real-time updates while the agent is working
+- [Session Management](/packages/agent-ctrl/4-session-management) -- Continue or resume agent sessions
+- [Agent Options](/packages/agent-ctrl/5-agent-options) -- Explore shared and agent-specific configuration
+- [Claude Code Bridge](/packages/agent-ctrl/8-claude-code-bridge), [Codex Bridge](/packages/agent-ctrl/9-codex-bridge), [OpenCode Bridge](/packages/agent-ctrl/10-opencode-bridge), [Pi Bridge](/packages/agent-ctrl/11-pi-bridge), [Gemini Bridge](/packages/agent-ctrl/12-gemini-bridge) -- Deep dives into each agent's unique capabilities

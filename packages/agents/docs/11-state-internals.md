@@ -198,14 +198,16 @@ $state->currentResponse();            // Messages -- final response or latest st
 The agent loop uses `ExecutionContinuation` to decide whether to keep iterating. After each step, the loop calls `$state->shouldStop()`, which delegates to:
 
 ```php
-// ExecutionState::shouldStop()
-public function shouldStop(): bool {
+class ExecutionState {
+    // shouldStop()
+    public function shouldStop(): bool {
     return match(true) {
         $this->continuation->shouldStop() => true,  // Stop signals present and no override
         $this->continuation->isContinuationRequested() => false,  // Hook requested continuation
         $this->hasToolCalls() => false,              // Tool calls need execution
         default => true,                             // No tool calls, no continuation -- stop
     };
+    }
 }
 ```
 

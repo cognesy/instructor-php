@@ -507,27 +507,30 @@ All manual schemas use the `ToolSchema` and `JsonSchema` helpers:
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
 
-public function toToolSchema(): ToolDefinition
+class SearchTool extends BaseTool
 {
-    return ToolDefinition::fromArray(ToolSchema::make(
-        name: $this->name(),
-        description: $this->description(),
-        parameters: JsonSchema::object('parameters')
-            ->withProperties([
-                JsonSchema::string('query', 'Search query'),
-                JsonSchema::integer('limit', 'Max results')
-                    ->withMeta(['minimum' => 1, 'maximum' => 100]),
-                JsonSchema::enum('format', ['json', 'text'], 'Output format'),
-                JsonSchema::array('tags')
-                    ->withItemSchema(JsonSchema::string()),
-                JsonSchema::object('filters')
-                    ->withProperties([
-                        JsonSchema::string('category', 'Filter by category'),
-                        JsonSchema::string('date_from', 'Start date (YYYY-MM-DD)'),
-                    ]),
-            ])
-            ->withRequiredProperties(['query'])
-    )->toArray());
+    public function toToolSchema(): ToolDefinition
+    {
+        return ToolDefinition::fromArray(ToolSchema::make(
+            name: $this->name(),
+            description: $this->description(),
+            parameters: JsonSchema::object('parameters')
+                ->withProperties([
+                    JsonSchema::string('query', 'Search query'),
+                    JsonSchema::integer('limit', 'Max results')
+                        ->withMeta(['minimum' => 1, 'maximum' => 100]),
+                    JsonSchema::enum('format', ['json', 'text'], 'Output format'),
+                    JsonSchema::array('tags')
+                        ->withItemSchema(JsonSchema::string()),
+                    JsonSchema::object('filters')
+                        ->withProperties([
+                            JsonSchema::string('category', 'Filter by category'),
+                            JsonSchema::string('date_from', 'Start date (YYYY-MM-DD)'),
+                        ]),
+                ])
+                ->withRequiredProperties(['query'])
+        )->toArray());
+    }
 }
 ```
 

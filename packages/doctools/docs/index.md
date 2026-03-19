@@ -1,9 +1,9 @@
 ---
-title: 'Doctor'
+title: 'Doctools'
 description: 'Documentation generation tools for Instructor PHP'
 ---
 
-Doctor is an internal package that handles documentation generation for the Instructor PHP project. It supports multiple output formats (Mintlify, MkDocs) and provides autodiscovery of package documentation.
+Doctools is an internal package that handles documentation generation for the Instructor PHP project. It supports multiple output formats (Mintlify, MkDocs) and provides autodiscovery of package documentation.
 
 ## Features
 
@@ -57,7 +57,9 @@ examples/                # Cookbook examples
 
 ## Topics
 
+- [Internals](internals.md) - Architecture, processing flow, config files, and extension points
 - [LLM Documentation](llm-docs.md) - Generate LLM-friendly documentation (llms.txt)
 - [Examples Configuration](examples-configuration.md) - Control example sources and cookbook grouping
 - [Navigation Ordering](navigation-ordering.md) - Control documentation structure with metadata
 - [Package Discovery](package-discovery.md) - How packages are autodiscovered
+- [Quality Rules](quality-rules.md) - Documentation QA and drift-checking rules

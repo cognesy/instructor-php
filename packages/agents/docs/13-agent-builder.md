@@ -85,7 +85,7 @@ use Cognesy\Polyglot\Inference\LLMProvider;
 new UseLLMConfig(
     llm: LLMProvider::using('anthropic'),
     maxRetries: 3,
-)
+);
 ```
 
 | Parameter | Type | Default | Description |
@@ -110,7 +110,7 @@ new UseGuards(
     finishReasons: [         // stop on specific LLM finish reasons
         InferenceFinishReason::EndTurn,
     ],
-)
+);
 ```
 
 | Parameter | Type | Default | Description |
@@ -129,7 +129,7 @@ Adds one or more tool instances to the agent. Tools are merged with any previous
 ```php
 use Cognesy\Agents\Capability\Core\UseTools;
 
-new UseTools($searchTool, $calculatorTool)
+new UseTools($searchTool, $calculatorTool);
 ```
 
 You may call `UseTools` multiple times across different capabilities. Each invocation merges additional tools into the existing set.
@@ -147,7 +147,7 @@ new UseHook(
     triggers: HookTriggers::afterStep(),
     priority: 10,
     name: 'my_custom_hook',
-)
+);
 ```
 
 | Parameter | Type | Default | Description |
@@ -164,7 +164,7 @@ Replaces the default tool-use driver entirely. Use this when you need a complete
 ```php
 use Cognesy\Agents\Capability\Core\UseDriver;
 
-new UseDriver($customDriver)
+new UseDriver($customDriver);
 ```
 
 ### UseDriverDecorator
@@ -177,7 +177,7 @@ use Cognesy\Agents\Drivers\CanUseTools;
 
 new UseDriverDecorator(
     fn(CanUseTools $inner) => new LoggingDriver($inner)
-)
+);
 ```
 
 ### UseContextCompiler
@@ -187,7 +187,7 @@ Replaces the message compiler that prepares the conversation history for the LLM
 ```php
 use Cognesy\Agents\Capability\Core\UseContextCompiler;
 
-new UseContextCompiler($customCompiler)
+new UseContextCompiler($customCompiler);
 ```
 
 ### UseContextCompilerDecorator
@@ -200,7 +200,7 @@ use Cognesy\Agents\Context\CanCompileMessages;
 
 new UseContextCompilerDecorator(
     fn(CanCompileMessages $inner) => new TokenLimitCompiler($inner, maxTokens: 4000)
-)
+);
 ```
 
 ### UseContextConfig
@@ -213,7 +213,7 @@ use Cognesy\Agents\Capability\Core\UseContextConfig;
 new UseContextConfig(
     systemPrompt: 'You are a helpful coding assistant.',
     responseFormat: new ResponseFormat(type: 'json_object'),
-)
+);
 ```
 
 Both a `string` system prompt and a `ResponseFormat` object are accepted. If both are empty, the capability is a no-op.
@@ -232,7 +232,7 @@ new UseReActConfig(
     model: 'gpt-4o',
     maxRetries: 2,
     mode: OutputMode::Json,
-)
+);
 ```
 
 ### UseToolFactory
@@ -248,7 +248,7 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 new UseToolFactory(
     fn(Tools $tools, CanUseTools $driver, CanHandleEvents $events) =>
         new MyDynamicTool($tools, $driver)
-)
+);
 ```
 
 The callback receives three arguments: the resolved `Tools` collection, the finalized `CanUseTools` driver, and the `CanHandleEvents` event dispatcher. It must return a single `ToolInterface` instance.

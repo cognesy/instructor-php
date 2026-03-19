@@ -112,7 +112,6 @@ This ordering matters when compilers assemble messages from multiple sections. B
 Before each model call, the driver asks a `CanCompileMessages` implementation to select and arrange the messages the model should receive. The compiler reads from `AgentState` and returns a flat `Messages` collection:
 
 ```php
-use Cognesy\Agents\Context\CanCompileMessages;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Messages\Messages;
 
@@ -182,7 +181,7 @@ $compiler = new SelectedSections(['summary', 'messages']);
 
 If a named section does not exist in the store, it is silently skipped. When an empty sections array is provided, the compiler falls back to returning just the default section's messages.
 
-This compiler pairs naturally with the [Summarization capability](/docs/agents/context-and-compilers#context-sections) -- as older messages are condensed into summaries, the `SelectedSections` compiler can send the summary section followed by only recent conversation messages, keeping the context compact.
+This compiler pairs naturally with the [Summarization capability](#context-sections) -- as older messages are condensed into summaries, the `SelectedSections` compiler can send the summary section followed by only recent conversation messages, keeping the context compact.
 
 <a name="installing-compiler"></a>
 ## Installing a Custom Compiler

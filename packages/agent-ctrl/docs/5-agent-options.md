@@ -96,7 +96,7 @@ Available drivers: `Host`, `Docker`, `Podman`, `Firejail`, `Bubblewrap`.
 
 ### Streaming Callbacks
 
-Four callback methods are shared across all builders. See the [Streaming](/agent-ctrl/streaming) documentation for full details.
+Four callback methods are shared across all builders. See the [Streaming](/packages/agent-ctrl/3-streaming) documentation for full details.
 
 - `onText(callable $handler): static` -- Receive incremental text output
 - `onToolUse(callable $handler): static` -- Receive normalized tool call events
@@ -198,11 +198,11 @@ Enable or disable verbose output. Verbose mode is required for proper stream-JSO
 
 ### `continueSession(): static`
 
-Continue the most recent Claude Code session. See [Session Management](/agent-ctrl/session-management).
+Continue the most recent Claude Code session. See [Session Management](/packages/agent-ctrl/4-session-management).
 
 ### `resumeSession(string $sessionId): static`
 
-Resume a specific Claude Code session by its ID. See [Session Management](/agent-ctrl/session-management).
+Resume a specific Claude Code session by its ID. See [Session Management](/packages/agent-ctrl/4-session-management).
 
 ### `withAdditionalDirs(array $paths): static`
 
@@ -309,11 +309,11 @@ AgentCtrl::codex()
 
 ### `continueSession(): static`
 
-Continue the most recent Codex session. See [Session Management](/agent-ctrl/session-management).
+Continue the most recent Codex session. See [Session Management](/packages/agent-ctrl/4-session-management).
 
 ### `resumeSession(string $sessionId): static`
 
-Resume a specific Codex session by its thread ID. See [Session Management](/agent-ctrl/session-management).
+Resume a specific Codex session by its thread ID. See [Session Management](/packages/agent-ctrl/4-session-management).
 
 ### `withAdditionalDirs(array $paths): static`
 
@@ -388,11 +388,11 @@ AgentCtrl::openCode()
 
 ### `continueSession(): static`
 
-Continue the most recent OpenCode session. See [Session Management](/agent-ctrl/session-management).
+Continue the most recent OpenCode session. See [Session Management](/packages/agent-ctrl/4-session-management).
 
 ### `resumeSession(string $sessionId): static`
 
-Resume a specific OpenCode session by its ID. See [Session Management](/agent-ctrl/session-management).
+Resume a specific OpenCode session by its ID. See [Session Management](/packages/agent-ctrl/4-session-management).
 
 ### Complete OpenCode Example
 
@@ -527,11 +527,11 @@ Enable verbose output.
 
 ### `continueSession(): static`
 
-Continue the most recent Pi session. See [Session Management](/agent-ctrl/session-management).
+Continue the most recent Pi session. See [Session Management](/packages/agent-ctrl/4-session-management).
 
 ### `resumeSession(string $sessionId): static`
 
-Resume a specific Pi session by its ID. See [Session Management](/agent-ctrl/session-management).
+Resume a specific Pi session by its ID. See [Session Management](/packages/agent-ctrl/4-session-management).
 
 ### Complete Pi Example
 
@@ -635,11 +635,11 @@ Enable debug output for troubleshooting CLI behavior.
 
 ### `continueSession(): static`
 
-Continue the most recent Gemini session (resumes `'latest'` internally). See [Session Management](/agent-ctrl/session-management).
+Continue the most recent Gemini session (resumes `'latest'` internally). See [Session Management](/packages/agent-ctrl/4-session-management).
 
 ### `resumeSession(string $sessionId): static`
 
-Resume a specific Gemini session by its ID or index. See [Session Management](/agent-ctrl/session-management).
+Resume a specific Gemini session by its ID or index. See [Session Management](/packages/agent-ctrl/4-session-management).
 
 ### Complete Gemini Example
 

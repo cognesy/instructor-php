@@ -170,7 +170,8 @@ use Cognesy\Polyglot\Inference\Data\ToolDefinition;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
 
-public function toToolSchema(): ToolDefinition
+class MyTool extends BaseTool {
+    public function toToolSchema(): ToolDefinition
 {
     return ToolDefinition::fromArray(ToolSchema::make(
         name: $this->name(),
@@ -186,6 +187,7 @@ public function toToolSchema(): ToolDefinition
             ])
             ->withRequiredProperties(['query'])
     )->toArray());
+}
 }
 ```
 
@@ -244,28 +246,30 @@ parent::__construct();
 `BaseTool` provides default implementations of `metadata()` and `instructions()` that derive values from the tool name and description. Override them when your tool needs richer documentation for tool registries or browsing:
 
 ```php
-public function metadata(): array
-{
-    return [
-        'name' => $this->name(),
-        'summary' => 'Search across indexed documents',
-        'namespace' => 'search',
-        'tags' => ['retrieval', 'rag'],
-    ];
-}
+class MyTool extends BaseTool {
+    public function metadata(): array
+    {
+        return [
+            'name' => $this->name(),
+            'summary' => 'Search across indexed documents',
+            'namespace' => 'search',
+            'tags' => ['retrieval', 'rag'],
+        ];
+    }
 
-public function instructions(): array
-{
-    return [
-        'name' => $this->name(),
-        'description' => $this->description(),
-        'parameters' => [
-            'query' => 'The search query. Supports boolean operators.',
-            'limit' => 'Maximum number of results. Default: 10.',
-        ],
-        'returns' => 'JSON string with search results',
-        'notes' => ['Results are sorted by relevance score'],
-    ];
+    public function instructions(): array
+    {
+        return [
+            'name' => $this->name(),
+            'description' => $this->description(),
+            'parameters' => [
+                'query' => 'The search query. Supports boolean operators.',
+                'limit' => 'Maximum number of results. Default: 10.',
+            ],
+            'returns' => 'JSON string with search results',
+            'notes' => ['Results are sorted by relevance score'],
+        ];
+    }
 }
 ```
 

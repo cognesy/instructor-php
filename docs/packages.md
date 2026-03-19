@@ -7,7 +7,7 @@ title: 'Packages'
 **Most PHP developers need just one package:**
 
 ```bash
-composer require cognesy/instructor-php
+composer require cognesy/instructor-struct
 ```
 
 This gives you everything: structured output extraction, validation, retries, and support for all major LLM providers. You're ready to go.
@@ -79,7 +79,7 @@ $response = (new LLM)->using('gemini')->chat("Explain PHP generators");
 - Streaming, embeddings, tool calling
 - Test with cheap/fast models, deploy with powerful ones
 
-[**→ Polyglot Documentation**](/packages/polyglot/introduction)
+[**→ Polyglot Documentation**](/packages/polyglot/overview)
 
 ---
 
@@ -106,7 +106,7 @@ foreach ($client->stream($request) as $chunk) {
 - Multiple backends
 - Single-request transport only
 
-[**→ HTTP Client Documentation**](/packages/http-client/introduction)
+[**→ HTTP Client Documentation**](/packages/http/1-overview)
 
 ---
 
@@ -127,7 +127,7 @@ $responses = $pool->pool($requests, maxConcurrent: 4);
 - Typed request and response collections
 - Separate from single-request transport
 
-[**→ HTTP Pool Documentation**](/packages/http-pool/overview)
+[**→ HTTP Pool Documentation**](/packages/http/6-pooling)
 
 ---
 
@@ -169,7 +169,7 @@ class PersonController
 - Testing fakes for unit tests
 - Integrates with Laravel's logging
 
-[**→ Laravel Documentation**](/packages/laravel/introduction)
+[**→ Laravel Documentation**](/packages/laravel/installation)
 
 ---
 
@@ -209,7 +209,7 @@ These packages are used internally by Instructor and Polyglot. They're not meant
 
 ```bash
 # Most developers - get everything
-composer require cognesy/instructor-php
+composer require cognesy/instructor-struct
 
 # Direct LLM access only (no structured extraction)
 composer require cognesy/polyglot

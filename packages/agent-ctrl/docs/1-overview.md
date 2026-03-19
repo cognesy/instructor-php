@@ -98,14 +98,14 @@ The `gemini` CLI (from @google/gemini-cli). Google's terminal coding agent with 
 
 ## Documentation
 
-- [Getting Started](/agent-ctrl/getting-started) -- Installation, first request, and basic configuration
-- [Streaming](/agent-ctrl/streaming) -- Real-time text, tool activity, completion, and error callbacks
-- [Session Management](/agent-ctrl/session-management) -- Continuing and resuming agent sessions
-- [Agent Options](/agent-ctrl/agent-options) -- Shared and provider-specific builder configuration
-- [Response Object](/agent-ctrl/response-object) -- Reading text, session, usage, cost, and tool data from AgentResponse
-- [Troubleshooting](/agent-ctrl/troubleshooting) -- Diagnosing binary, directory, timeout, streaming, and parse issues
-- [Claude Code Bridge](/agent-ctrl/claude-code-bridge) -- System prompts, permissions, turns, and Claude Code-specific features
-- [Codex Bridge](/agent-ctrl/codex-bridge) -- Sandbox modes, auto-approval, images, and Codex-specific features
-- [OpenCode Bridge](/agent-ctrl/opencode-bridge) -- Model flexibility, agents, files, sharing, and OpenCode-specific features
-- [Pi Bridge](/agent-ctrl/pi-bridge) -- Thinking levels, extensions, skills, tool control, and Pi-specific features
-- [Gemini Bridge](/agent-ctrl/gemini-bridge) -- Approval modes, sandbox, extensions, MCP servers, and Gemini-specific features
+- [Getting Started](/packages/agent-ctrl/2-getting-started) -- Installation, first request, and basic configuration
+- [Streaming](/packages/agent-ctrl/3-streaming) -- Real-time text, tool activity, completion, and error callbacks
+- [Session Management](/packages/agent-ctrl/4-session-management) -- Continuing and resuming agent sessions
+- [Agent Options](/packages/agent-ctrl/5-agent-options) -- Shared and provider-specific builder configuration
+- [Response Object](/packages/agent-ctrl/6-response-object) -- Reading text, session, usage, cost, and tool data from AgentResponse
+- [Troubleshooting](/packages/agent-ctrl/7-troubleshooting) -- Diagnosing binary, directory, timeout, streaming, and parse issues
+- [Claude Code Bridge](/packages/agent-ctrl/8-claude-code-bridge) -- System prompts, permissions, turns, and Claude Code-specific features
+- [Codex Bridge](/packages/agent-ctrl/9-codex-bridge) -- Sandbox modes, auto-approval, images, and Codex-specific features
+- [OpenCode Bridge](/packages/agent-ctrl/10-opencode-bridge) -- Model flexibility, agents, files, sharing, and OpenCode-specific features
+- [Pi Bridge](/packages/agent-ctrl/11-pi-bridge) -- Thinking levels, extensions, skills, tool control, and Pi-specific features
+- [Gemini Bridge](/packages/agent-ctrl/12-gemini-bridge) -- Approval modes, sandbox, extensions, MCP servers, and Gemini-specific features

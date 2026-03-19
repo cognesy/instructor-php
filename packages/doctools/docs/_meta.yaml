@@ -1,6 +1,9 @@
-# Navigation order for Doctor documentation
+# Navigation order for Doctools documentation
 order:
   - index
+  - internals
+  - examples-configuration
   - navigation-ordering
   - package-discovery
   - quality-rules
+  - llm-docs
