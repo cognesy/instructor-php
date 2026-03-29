@@ -606,7 +606,7 @@ final class SymfonyConfigProvider implements CanProvideConfig
     }
 
     /** @param array<string, mixed> $data */
-    /** @param list<string> $keys */
+    /** @param array<int|string, string> $keys */
     private function firstDefinedValue(array $data, array $keys): mixed
     {
         foreach ($keys as $key) {

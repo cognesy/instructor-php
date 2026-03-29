@@ -68,7 +68,7 @@ composer phpstan
 - `composer tell` - Run Tell CLI
 - `composer setup` - Run setup wizard
 
-For the full list of QA commands, testing options, semgrep/ast-grep rules, docs QA, drift detection, dead-code analysis, and benchmarks see **[QUALITY.md](QUALITY.md)**.
+For the full testing strategy, QA command catalog, local `act` workflow, CI matrix details, semgrep/ast-grep rules, docs QA, drift detection, dead-code analysis, and benchmarks see **[QUALITY.md](QUALITY.md)**.
 
 #### Package-level commands:
 Each package supports:

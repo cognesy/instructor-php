@@ -62,7 +62,7 @@ final readonly class Skill
 
         if ($this->resources !== []) {
             $parts[] = "";
-            $parts[] = "## Available Resources";
+            $parts[] = "## Available resources";
             foreach ($this->resources as $resource) {
                 $parts[] = "- {$resource}";
             }

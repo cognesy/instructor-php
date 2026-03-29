@@ -25,6 +25,7 @@ use Cognesy\Polyglot\Embeddings\EmbeddingsRuntime;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\EventDispatcher\EventDispatcher as SymfonyFrameworkEventDispatcher;
@@ -74,17 +75,17 @@ it('registers the baseline core contracts and entrypoint services', function ():
     $embeddingsRuntime = $container->get(CanCreateEmbeddings::class);
     $structuredRuntime = $container->get(CanCreateStructuredOutput::class);
 
-    expect($config)->toBeInstanceOf(SymfonyConfigProvider::class)
-        ->and($config->get('llm.default'))->toBe('openai')
-        ->and($events)->toBeInstanceOf(EventDispatcher::class)
-        ->and($http)->toBeInstanceOf(HttpClient::class)
-        ->and($http->config()->driver)->toBe('symfony')
-        ->and($inferenceRuntime)->toBeInstanceOf(InferenceRuntime::class)
-        ->and($embeddingsRuntime)->toBeInstanceOf(EmbeddingsRuntime::class)
-        ->and($structuredRuntime)->toBeInstanceOf(StructuredOutputRuntime::class)
-        ->and($container->get(Inference::class))->toBeInstanceOf(Inference::class)
-        ->and($container->get(Embeddings::class))->toBeInstanceOf(Embeddings::class)
-        ->and($container->get(StructuredOutput::class))->toBeInstanceOf(StructuredOutput::class);
+    expect($config)->toBeInstanceOf(SymfonyConfigProvider::class);
+    expect($config->get('llm.default'))->toBe('openai');
+    expect($events)->toBeInstanceOf(EventDispatcher::class);
+    expect($http)->toBeInstanceOf(HttpClient::class);
+    expect($http->config()->driver)->toBe('symfony');
+    expect($inferenceRuntime)->toBeInstanceOf(InferenceRuntime::class);
+    expect($embeddingsRuntime)->toBeInstanceOf(EmbeddingsRuntime::class);
+    expect($structuredRuntime)->toBeInstanceOf(StructuredOutputRuntime::class);
+    expect($container->get(Inference::class))->toBeInstanceOf(Inference::class);
+    expect($container->get(Embeddings::class))->toBeInstanceOf(Embeddings::class);
+    expect($container->get(StructuredOutput::class))->toBeInstanceOf(StructuredOutput::class);
 });
 
 it('uses the framework http client service for the symfony transport', function (): void {
@@ -341,5 +342,47 @@ it('does not require request-scoped services in an http-integrated container', f
         ->and($container->get(CanCreateEmbeddings::class))->toBeInstanceOf(EmbeddingsRuntime::class)
         ->and($container->get(CanCreateStructuredOutput::class))->toBeInstanceOf(StructuredOutputRuntime::class);
 });
+
+it('rejects invalid connections subtree shapes during configuration processing', function (): void {
+    $container = new ContainerBuilder;
+    $extension = new \Cognesy\Instructor\Symfony\DependencyInjection\InstructorSymfonyExtension;
+
+    $load = static fn () => $extension->load([[
+        'connections' => 'openai',
+    ]], $container);
+
+    expect($load)->toThrow(\InvalidArgumentException::class, 'instructor.connections');
+});
+
+it('rejects invalid flat connection entries during configuration processing', function (): void {
+    $container = new ContainerBuilder;
+    $extension = new \Cognesy\Instructor\Symfony\DependencyInjection\InstructorSymfonyExtension;
+
+    $load = static fn () => $extension->load([[
+        'connections' => [
+            'openai' => 'not-an-array',
+        ],
+    ]], $container);
+
+    expect($load)->toThrow(InvalidConfigurationException::class, 'instructor.connections.openai');
+});
+
+it('rejects invalid http and events subtree shapes during configuration processing', function (string $subtree): void {
+    $container = new ContainerBuilder;
+    $extension = new \Cognesy\Instructor\Symfony\DependencyInjection\InstructorSymfonyExtension;
+
+    $load = static fn () => $extension->load([[
+        'connections' => [
+            'openai' => [
+                'driver' => 'openai',
+                'api_key' => 'test-key',
+                'model' => 'gpt-4o-mini',
+            ],
+        ],
+        $subtree => 'invalid',
+    ]], $container);
+
+    expect($load)->toThrow(\InvalidArgumentException::class, "instructor.{$subtree}");
+})->with(['http', 'events']);
 
 final class SymfonyBridgeProbeEvent {}

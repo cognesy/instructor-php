@@ -1,5 +1,5 @@
 # Navigation order for Symfony integration documentation
 order:
   - overview
-  - configuration
   - quickstart
+  - configuration

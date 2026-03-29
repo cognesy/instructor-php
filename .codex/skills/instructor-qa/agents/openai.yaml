@@ -1,0 +1,7 @@
+interface:
+  display_name: "Instructor QA"
+  short_description: "InstructorPHP QA specialist"
+  default_prompt: "Use $instructor-qa to validate this change and choose the right verification lanes."
+
+policy:
+  allow_implicit_invocation: true

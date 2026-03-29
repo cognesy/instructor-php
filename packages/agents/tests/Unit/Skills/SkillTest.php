@@ -177,7 +177,7 @@ describe('Skill', function () {
 
         $rendered = $skill->render();
 
-        expect($rendered)->toContain('## Available Resources');
+        expect($rendered)->toContain('## Available resources');
         expect($rendered)->toContain('- helper.php');
         expect($rendered)->toContain('- utils.php');
     });
@@ -192,7 +192,7 @@ describe('Skill', function () {
 
         $rendered = $skill->render();
 
-        expect($rendered)->not->toContain('## Available Resources');
+        expect($rendered)->not->toContain('## Available resources');
     });
 
     it('substitutes $ARGUMENTS with full argument string', function () {

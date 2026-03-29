@@ -2,10 +2,10 @@
 
 ## Monorepo Root
 
-- **CONTRIBUTOR_GUIDE.md** - Development workflows, package management, and contribution guidelines
+- **CONTRIBUTING.md** - Development workflows, package management, and contribution guidelines
 - **CONTENTS.md** - Project structure and package overview
 - **README.md** - Main project documentation
-- **HARD REFERENCE** - `CONTRIBUTOR_GUIDE.md` is the source of truth for QA execution (`composer qa`, `qa:*`) and contribution workflow details.
+- **HARD REFERENCE** - `CONTRIBUTING.md` is the source of truth for QA execution (`composer qa`, `qa:*`) and contribution workflow details.
 
 ## Individual Subpackages
 

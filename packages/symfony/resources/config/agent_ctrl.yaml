@@ -1,0 +1,93 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Cognesy\Instructor\Symfony\AgentCtrl\SymfonyAgentCtrl:
+    arguments:
+      $configProvider: '@Cognesy\Config\Contracts\CanProvideConfig'
+    public: true
+
+  Cognesy\Instructor\Symfony\AgentCtrl\SymfonyAgentCtrlRuntimes:
+    arguments:
+      $agentCtrl: '@Cognesy\Instructor\Symfony\AgentCtrl\SymfonyAgentCtrl'
+      $configProvider: '@Cognesy\Config\Contracts\CanProvideConfig'
+    public: true
+
+  instructor.agent_ctrl:
+    alias: Cognesy\Instructor\Symfony\AgentCtrl\SymfonyAgentCtrl
+    public: true
+
+  instructor.agent_ctrl.runtimes:
+    alias: Cognesy\Instructor\Symfony\AgentCtrl\SymfonyAgentCtrlRuntimes
+    public: true
+
+  instructor.agent_ctrl.runtime.cli:
+    class: Cognesy\Instructor\Symfony\AgentCtrl\SymfonyAgentCtrlRuntime
+    factory: ['@Cognesy\Instructor\Symfony\AgentCtrl\SymfonyAgentCtrlRuntimes', 'cli']
+    public: true
+    shared: false
+
+  instructor.agent_ctrl.runtime.http:
+    class: Cognesy\Instructor\Symfony\AgentCtrl\SymfonyAgentCtrlRuntime
+    factory: ['@Cognesy\Instructor\Symfony\AgentCtrl\SymfonyAgentCtrlRuntimes', 'http']
+    public: true
+    shared: false
+
+  instructor.agent_ctrl.runtime.messenger:
+    class: Cognesy\Instructor\Symfony\AgentCtrl\SymfonyAgentCtrlRuntime
+    factory: ['@Cognesy\Instructor\Symfony\AgentCtrl\SymfonyAgentCtrlRuntimes', 'messenger']
+    public: true
+    shared: false
+
+  Cognesy\AgentCtrl\Builder\ClaudeCodeBridgeBuilder:
+    factory: ['@Cognesy\Instructor\Symfony\AgentCtrl\SymfonyAgentCtrl', 'claudeCode']
+    public: true
+    shared: false
+
+  instructor.agent_ctrl.builder.claude_code:
+    alias: Cognesy\AgentCtrl\Builder\ClaudeCodeBridgeBuilder
+    public: true
+
+  Cognesy\AgentCtrl\Builder\CodexBridgeBuilder:
+    factory: ['@Cognesy\Instructor\Symfony\AgentCtrl\SymfonyAgentCtrl', 'codex']
+    public: true
+    shared: false
+
+  instructor.agent_ctrl.builder.codex:
+    alias: Cognesy\AgentCtrl\Builder\CodexBridgeBuilder
+    public: true
+
+  Cognesy\AgentCtrl\Builder\OpenCodeBridgeBuilder:
+    factory: ['@Cognesy\Instructor\Symfony\AgentCtrl\SymfonyAgentCtrl', 'openCode']
+    public: true
+    shared: false
+
+  instructor.agent_ctrl.builder.opencode:
+    alias: Cognesy\AgentCtrl\Builder\OpenCodeBridgeBuilder
+    public: true
+
+  Cognesy\AgentCtrl\Builder\PiBridgeBuilder:
+    factory: ['@Cognesy\Instructor\Symfony\AgentCtrl\SymfonyAgentCtrl', 'pi']
+    public: true
+    shared: false
+
+  instructor.agent_ctrl.builder.pi:
+    alias: Cognesy\AgentCtrl\Builder\PiBridgeBuilder
+    public: true
+
+  Cognesy\AgentCtrl\Builder\GeminiBridgeBuilder:
+    factory: ['@Cognesy\Instructor\Symfony\AgentCtrl\SymfonyAgentCtrl', 'gemini']
+    public: true
+    shared: false
+
+  instructor.agent_ctrl.builder.gemini:
+    alias: Cognesy\AgentCtrl\Builder\GeminiBridgeBuilder
+    public: true
+
+  instructor.agent_ctrl.builder.default:
+    class: Cognesy\AgentCtrl\Contract\AgentBridgeBuilder
+    factory: ['@Cognesy\Instructor\Symfony\AgentCtrl\SymfonyAgentCtrl', 'defaultBuilder']
+    public: true
+    shared: false

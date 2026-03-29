@@ -1,0 +1,7 @@
+interface:
+  display_name: "Instructor Release"
+  short_description: "InstructorPHP release orchestration"
+  default_prompt: "Use $instructor-release to prepare a new InstructorPHP release with deterministic bd tracking."
+
+policy:
+  allow_implicit_invocation: true

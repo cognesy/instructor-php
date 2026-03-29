@@ -2,243 +2,237 @@
 
 All commands below run from the monorepo root unless noted otherwise.
 
+## Purpose
+
+This repository uses multiple verification layers on purpose:
+
+- tests catch behavioral regressions
+- static analysis catches type and API misuse early
+- style and structural rules keep the codebase consistent
+- docs QA protects public examples and package documentation
+- matrix builds catch dependency-compatibility breakage across supported environments
+
+No single command is sufficient for every change. Pick the smallest useful set locally, then use the full matrix for compatibility-sensitive work.
+
 ## Quick Reference
 
-| Command | What it does |
-|---------|-------------|
-| `composer qa` | Full QA pipeline (PHPStan + Psalm + Pint + Semgrep) |
-| `composer test` | Unit + Feature + Regression tests |
-| `composer test-all` | Every test in the monorepo, no exclusions |
-| `composer test:telemetry-interop` | Telemetry live-backend integration suite (requires opt-in env) |
-| `composer bench` | PHPBench benchmarks (instructor + polyglot) |
-| `composer docs qa` | Docs QA checks across all packages |
-| `composer docs drift` | Detect documentation drift per package |
+| Command | Use it when | What it does |
+|---------|-------------|--------------|
+| `composer test` | default local test run | Unit + Feature + Regression suites |
+| `composer test-all` | cross-package or release-sensitive changes | every suite, including Integration |
+| `composer test:telemetry-interop` | telemetry live-backend validation | opt-in telemetry integration suite |
+| `composer qa` | normal code QA | PHPStan + Psalm + Pint + Semgrep |
+| `composer qa:docs` | docs/API example changes | docs QA across package docs |
+| `composer docs drift` | docs freshness review | detects package docs drift |
+| `composer dead-code` | cleanup and refactors | dead code detection via PHPStan |
+| `composer unused-deps` | dependency cleanup | unused Composer dependency detection |
+| `composer bench` | performance-sensitive changes | PHPBench benchmarks |
+| `act pull_request -W .github/workflows/php.yml -j build` | local CI reproduction | executes the real GitHub Actions test workflow locally |
 
-## Testing
+## Testing Strategy
 
-### Test Suites
+### Test taxonomy
 
-Tests are organised into four Pest/PHPUnit suites defined in `phpunit.xml`:
+Tests are organized around intent, not just location.
 
-- **Unit** — fast, isolated tests per package
-- **Feature** — higher-level behaviour tests (docs-qa Feature tests are excluded from the default run)
-- **Integration** — tests that hit real services or cross package boundaries
-- **Regression** — tests covering previously-fixed bugs
+- **Unit**: fast, isolated domain and service tests
+- **Feature**: higher-level behavior inside the monorepo boundary
+- **Integration**: external systems, cross-boundary behavior, or realistic end-to-end flows
+- **Regression**: permanent coverage for previously fixed bugs
+
+The default local run is intentionally biased toward fast, high-signal coverage:
 
 ```bash
-# Default run: Unit + Feature + Regression
 composer test
-
-# Everything, including Integration
-composer test-all
-
-# Telemetry live backend interop only
-TELEMETRY_INTEROP_ENABLED=1 composer test:telemetry-interop
 ```
 
-### Opt-In Live Backend Suites
+That executes Pest with:
 
-Some Integration coverage talks to real third-party services and is therefore
-opt-in. The telemetry backend interop suite is the current example.
+- `Unit`
+- `Feature`
+- `Regression`
 
-It lives at `packages/telemetry/tests/Integration` and requires:
+and excludes the `docs-qa` group from the default run.
 
-- `TELEMETRY_INTEROP_ENABLED=1`
-- Logfire env for Logfire cases:
-  - `LOGFIRE_TOKEN`
-  - `LOGFIRE_OTLP_ENDPOINT`
-  - `LOGFIRE_READ_TOKEN`
-- Langfuse env for Langfuse cases:
-  - `LANGFUSE_BASE_URL`
-  - `LANGFUSE_PUBLIC_KEY`
-  - `LANGFUSE_SECRET_KEY`
-- `OPENAI_API_KEY` for the inference, streaming, and agent runtime smoke portion
-- a usable `codex` CLI with working auth/config for the AgentCtrl smoke portion
+For the broadest test run:
 
-When the opt-in env is missing, the suite skips instead of failing.
+```bash
+composer test-all
+```
 
-### Package-Level Tests
+### What to run by change type
 
-Each package can be tested independently:
+Use this as the default policy:
+
+- **small implementation change in one package**: `composer test`
+- **serializer/schema/deserialization/config/runtime changes**: `composer test && composer qa`
+- **dependency constraint changes**: `composer test && composer qa && act pull_request -W .github/workflows/php.yml -j build`
+- **docs or example changes**: `composer qa:docs`
+- **release-sensitive or compatibility work**: `composer test-all && composer qa && act pull_request -W .github/workflows/php.yml -j build`
+
+### Package-level tests
+
+Packages can still be tested independently:
 
 ```bash
 cd packages/instructor
 composer test
+composer phpstan
+composer psalm
 ```
 
-> **Note:** Package-level tests resolve dependencies from Packagist, so they may not reflect unpublished monorepo changes.
+Use package-level runs for focused iteration. They are not a substitute for monorepo-root verification when internal package interactions changed.
 
-## Static Analysis
+## Integration Tests
+
+Integration tests are intentionally not part of the default `composer test` path.
+
+Use them when:
+
+- code crosses package boundaries in non-trivial ways
+- a real backend or protocol matters
+- you are validating release-sensitive behavior
+
+### Opt-in live backend suites
+
+The telemetry interoperability suite is the current live-backend example:
+
+```bash
+TELEMETRY_INTEROP_ENABLED=1 composer test:telemetry-interop
+```
+
+Current environment requirements:
+
+- `TELEMETRY_INTEROP_ENABLED=1`
+- Logfire env:
+  - `LOGFIRE_TOKEN`
+  - `LOGFIRE_OTLP_ENDPOINT`
+  - `LOGFIRE_READ_TOKEN`
+- Langfuse env:
+  - `LANGFUSE_BASE_URL`
+  - `LANGFUSE_PUBLIC_KEY`
+  - `LANGFUSE_SECRET_KEY`
+- `OPENAI_API_KEY` for inference, streaming, and agent runtime smoke coverage
+- a working `codex` CLI with valid auth/config for the AgentCtrl smoke portion
+
+When these env vars are absent, those suites should skip rather than fail.
+
+## Static Analysis And QA
 
 ### PHPStan
 
 ```bash
-composer qa:phpstan        # or: composer phpstan
+composer qa:phpstan
+# or
+composer phpstan
 ```
 
-Configuration: `phpstan.neon` (with `phpstan-baseline.neon` for suppressed issues).
+Primary configuration:
+
+- `phpstan.neon`
+- `phpstan-baseline.neon`
+
+Use PHPStan for broad type and API correctness across the monorepo.
 
 ### Psalm
 
 ```bash
-composer qa:psalm          # or: composer psalm
-composer psalm-unused      # find unused code via Psalm
+composer qa:psalm
+# or
+composer psalm
+
+composer psalm-unused
 ```
 
-Configuration: `packages/instructor/psalm.xml`.
+Primary configuration:
 
-### Pint (Code Style)
+- `packages/instructor/psalm.xml`
+
+Use Psalm as the second static-analysis pass. It catches issues PHPStan misses and supports unused-code discovery.
+
+### Pint
 
 ```bash
-composer qa:pint           # dry-run check (exits non-zero on diff)
-composer pint              # apply fixes
+composer qa:pint
+composer pint
 ```
 
-Configuration: `packages/agents/pint.json`.
+- `composer qa:pint` is the non-destructive check
+- `composer pint` applies formatting
 
-## Semgrep (Source Code Rules)
+Primary configuration:
+
+- `packages/agents/pint.json`
+
+### Semgrep
 
 ```bash
 composer qa:semgrep
 ```
 
-Scans PHP source files for architectural anti-patterns using [Semgrep](https://semgrep.dev/).
+Semgrep enforces repository-specific structural and architectural rules that ordinary linters do not capture.
 
-### Rule Layout
+Rule layout:
 
 | Location | Scope |
 |----------|-------|
-| `.qa/semgrep/*.yml` | Global cross-package rules |
-| `packages/<pkg>/.qa/semgrep.yml` | Package-specific rules |
+| `.qa/semgrep/*.yml` | global cross-package rules |
+| `packages/<pkg>/.qa/semgrep.yml` | package-specific rules |
 
-### Current Global Rule Files
+Current rule themes include:
 
-- **`global.yml`** — EventBusResolver ban, no optional `CanHandleEvents` in constructors
-- **`config-model.yml`** — No `Settings::*` / `CanReadConfig` in core runtime, no preset selectors, no `using(string)` static constructors, no `with*Config(...)` mutators outside builders
-- **`method-conventions.yml`** — `fromXxx(...)` must be static; `withXxx(...)` must be instance
-- **`test-placement.yml`** — No filesystem I/O, sleep, or subprocess execution in Unit/Feature/Regression tests
+- event bus usage restrictions
+- config model conventions
+- method naming conventions
+- test placement rules
 
-Each rule file contains `paths.include` / `paths.exclude` to scope scanning and an `exclude` list for approved exceptions.
-
-### Writing Semgrep Rules
-
-Rules follow the [Semgrep rule syntax](https://semgrep.dev/docs/writing-rules/rule-syntax/). Each YAML file has a top-level `rules` list:
-
-```yaml
-rules:
-  - id: my-package.no-bad-pattern
-    message: "Explanation of why this is wrong and what to do instead."
-    severity: ERROR
-    languages: [php]
-    paths:
-      include:
-        - "/packages/my-package/src/**/*.php"
-    pattern-regex: "\\bBadPattern\\b"
-```
-
-Keep package-only rules inside the package; keep shared rules at repo root.
-
-## Docs QA (Documentation Quality)
+### Dead code and dependency hygiene
 
 ```bash
-composer docs qa                    # alias: composer qa:docs
+composer dead-code
+composer dead-code-debug
+composer unused-deps
+composer psalm-unused
 ```
 
-Runs `scripts/docs-qa-all.sh` which iterates over `packages/*/docs/` and invokes the `qa` command from `bin/instructor-docs` with the appropriate profile per package.
+Use these when refactoring, splitting packages, or tightening package boundaries.
 
-### What It Checks
+## Docs QA
 
-1. **Anti-pattern regex rules** — catches references to removed/renamed APIs in markdown text
-2. **PHP snippet regex rules** — same, scoped to fenced `\`\`\`php` code blocks
-3. **AST-grep rules** — structural pattern matching on PHP snippets using [ast-grep](https://ast-grep.github.io/)
-4. **Broken local links** — validates relative markdown links resolve to existing files
-5. **PHP lint** — runs `php -l` on each fenced PHP block
-6. **Incomplete snippet detection** — auto-skips blocks with unmatched braces
-
-### Rule Profiles
-
-Profiles live in `packages/doctools/resources/config/quality/profiles/`:
-
-| Profile | Rules | Typical package |
-|---------|-------|----------------|
-| `instructor` | 14 | instructor |
-| `polyglot` | 8 | polyglot |
-| `http-client` | 7 | http-client |
-| `agents` | 5 | agents |
-| `agent-ctrl` | 0 | agent-ctrl |
-| `none` | 0 | everything else |
-
-The script auto-selects the profile based on package name.
-
-### Skipping Snippets
-
-Code blocks are automatically skipped when they contain:
-
-- `...` (ellipsis / incomplete code)
-- `{{...}}` or `{%...%}` (template syntax)
-- HTML tags
-- `qa:skip` comment
-- `qa:expect-fail` comment
-
-### Package-Local Rules
-
-Place a `.qa/rules.yaml` inside any `packages/<pkg>/docs/` directory to add package-specific rules that layer on top of the profile:
-
-```yaml
-version: 1
-rules:
-  - id: local.no-legacy-token
-    engine: regex
-    scope: markdown
-    pattern: '/\blegacyToken\b/'
-    message: 'legacyToken must not appear in docs.'
-```
-
-### Running on a Single Package
+Documentation is part of the product surface and has its own verification path.
 
 ```bash
-php bin/instructor-docs qa --source-dir=packages/polyglot/docs --profile=polyglot
+composer qa:docs
+# or
+composer docs qa
 ```
 
-Options: `--profile`, `--rules`, `--extensions`, `--format` (text|json), `--strict`/`--no-strict`, `--ast-grep-bin`.
+Docs QA checks:
 
-### Writing Docs QA Rules
+1. anti-drift regex rules
+2. PHP-snippet regex rules
+3. AST-grep rules on fenced PHP snippets
+4. broken relative links
+5. `php -l` on fenced PHP blocks
+6. incomplete snippet detection and safe skipping
 
-Rules are YAML files with `version: 1` and a `rules` list. Each rule needs:
+Profiles live in:
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| `id` | yes | Unique rule identifier (e.g. `pkg.no_bad_api`) |
-| `engine` | yes | `regex` or `ast-grep` |
-| `scope` | yes | `markdown` (full file) or `php-snippet` (fenced blocks) |
-| `pattern` | yes | Regex string or ast-grep pattern |
-| `message` | yes | Guidance shown when matched |
-| `language` | ast-grep only | Language for ast-grep (e.g. `php`) |
-| `severity` | no | Defaults to `error` |
+- `packages/doctools/resources/config/quality/profiles/`
 
-## Documentation Drift Detection
+Package-local docs rules can be added in:
+
+- `packages/<pkg>/docs/.qa/rules.yaml`
+
+### Drift detection
 
 ```bash
-composer docs drift                            # all packages
-composer docs drift --tier=public              # only public-facing
-composer docs drift --tier=public,library -r high  # high-risk public+library
-composer docs drift -f packages -r medium      # bare names for scripting
-composer docs drift -f json                    # full JSON output
-composer docs drift polyglot sandbox           # specific packages
+composer docs drift
+composer docs drift --tier=public
+composer docs drift -f json
 ```
 
-Compares `packages/*/src/` and `packages/*/docs/` modification timestamps to identify stale documentation.
-
-### Risk Score (0–100)
-
-| Factor | Points | Description |
-|--------|--------|-------------|
-| Drift age | 0–35 | 5 pts/day src is ahead of docs (max 7 days) |
-| Change ratio | 0–25 | % of src files newer than newest doc |
-| Docs spread | 0–15 | Gap between newest and oldest doc (0.5 pts/day, max 30 days) |
-| Missing docs | 0–25 | +15 if no CHEATSHEET.md, +10 if no docs/ and >10 src files |
-
-Risk levels: **HIGH** (≥70), **MED** (≥30), **LOW** (<30).
+Use drift detection to identify packages where `src/` has moved ahead of docs.
 
 ## Benchmarks
 
@@ -246,39 +240,172 @@ Risk levels: **HIGH** (≥70), **MED** (≥30), **LOW** (<30).
 composer bench
 ```
 
-Runs [PHPBench](https://phpbench.readthedocs.io/) across benchmark files matching `*Bench.php` in:
+Use benchmarks only when performance is part of the change. They are not a substitute for behavioral tests.
 
-- `packages/instructor/tests/Benchmarks/`
-- `packages/polyglot/tests/Benchmarks/`
+Benchmark configuration:
 
-Configuration: `phpbench.json`.
+- `phpbench.json`
 
-## Dead Code & Unused Dependencies
+## CI Matrix
+
+The primary compatibility workflow lives in:
+
+- `.github/workflows/php.yml`
+
+This is the source of truth for the supported dependency matrix. Local helpers must not redefine that matrix independently.
+
+### Current matrix axes
+
+The workflow currently exercises:
+
+- PHP: `8.3`, `8.4`, `8.5`
+- Symfony line: `^7.3`, `^8.0`
+- Composer strategy: `--prefer-stable`, `--prefer-lowest`
+- DocBlock line: `^5.6` by default, with an explicit compatibility include for `^6.0.3`
+
+Matrix exclusion:
+
+- PHP `8.3` with Symfony `^8.0`
+
+Targeted compatibility include:
+
+- PHP `8.4`
+- Symfony `^8.0`
+- Composer `--prefer-stable`
+- `phpdocumentor/reflection-docblock:^6.0.3`
+
+That explicit include exists to catch the Symfony 8 + DocBlock 6 compatibility path that previously regressed.
+
+## Running CI Locally With `act`
+
+Prefer `act` over duplicating the GitHub Actions matrix in shell scripts. `act` executes the workflow YAML directly, which keeps local CI aligned with GitHub Actions.
+
+Repository-local defaults live in:
+
+- `.actrc`
+
+### Prerequisites
+
+- Docker-compatible runtime
+- Colima on macOS is supported
+- `act` installed locally
+
+Install `act`:
 
 ```bash
-composer dead-code          # ShipMonk dead-code detector via PHPStan
-composer dead-code-debug    # same, with verbose diagnostics (-vvv)
-composer psalm-unused       # Psalm --find-unused-code
-composer unused-deps        # composer-unused (find unused Composer deps)
+brew install act
 ```
 
-Dead-code configuration: `phpstan-unused.neon`. To debug why a specific symbol is flagged, add it under `parameters.shipmonkDeadCode.debug.usagesOf` in that file.
+### Colima setup on macOS
 
-## Full QA Pipeline
+Typical startup sequence:
 
 ```bash
+colima start
+docker context use colima
+docker ps
+```
+
+This repo already commits the runner mapping in `.actrc`, so the basic commands should be non-interactive. If you need to override it manually:
+
+```bash
+act pull_request \
+  -W .github/workflows/php.yml \
+  -j build \
+  -P ubuntu-24.04=shivammathur/node:24.04 \
+  --container-daemon-socket -
+```
+
+Current repo-local defaults:
+
+- `ubuntu-24.04` maps to `shivammathur/node:24.04`
+- `--container-daemon-socket -` avoids Colima host socket mount issues on macOS
+
+### Useful `act` commands
+
+List workflows:
+
+```bash
+act --list
+```
+
+Validate workflow resolution without running containers:
+
+```bash
+act pull_request -W .github/workflows/php.yml -j build --dryrun
+```
+
+Run the full test workflow locally:
+
+```bash
+act pull_request -W .github/workflows/php.yml -j build
+```
+
+Run one matrix combination:
+
+```bash
+act pull_request \
+  -W .github/workflows/php.yml \
+  -j build \
+  --matrix php:8.4 \
+  --matrix symfony:^8.0 \
+  --matrix composer:--prefer-stable \
+  --matrix reflection_docblock:^6.0.3
+```
+
+Use `act` for:
+
+- dependency compatibility work
+- workflow debugging
+- reproducing a CI-only failure locally
+
+On Apple Silicon, if a workflow image or action misbehaves under the native architecture, retry with:
+
+```bash
+act pull_request -W .github/workflows/php.yml -j build --container-architecture linux/amd64
+```
+
+## Preferred Local Verification Flow
+
+For most code changes:
+
+```bash
+composer test
 composer qa
 ```
 
-Runs in order: `qa:phpstan` → `qa:psalm` → `qa:pint` → `qa:semgrep`.
+For dependency or compatibility changes:
 
-> **Note:** `qa:docs` is not included in the composite `qa` command — run it separately with `composer docs qa` or `composer qa:docs`.
+```bash
+composer test
+composer qa
+act pull_request -W .github/workflows/php.yml -j build
+```
+
+For release-sensitive work:
+
+```bash
+composer test-all
+composer qa
+composer qa:docs
+act pull_request -W .github/workflows/php.yml -j build
+```
 
 ## External Tool Requirements
 
 | Tool | Purpose | Install |
 |------|---------|---------|
-| [Semgrep](https://semgrep.dev/) | Source code pattern rules | `brew install semgrep` or `pip install semgrep` |
-| [ast-grep](https://ast-grep.github.io/) | Structural PHP snippet matching | `brew install ast-grep` or `npm i -g @ast-grep/cli` |
-| PHP 8.3+ | Lint, tests, analysis | — |
-| Composer | Dependency management | — |
+| PHP 8.3+ | runtime, tests, static analysis | project requirement |
+| Composer | dependency management and script entrypoint | project requirement |
+| Docker / Colima | container runtime for local CI via `act` | `brew install colima docker` |
+| `act` | run GitHub Actions workflows locally | `brew install act` |
+| [Semgrep](https://semgrep.dev/) | structural source-code rules | `brew install semgrep` or `pip install semgrep` |
+| [ast-grep](https://ast-grep.github.io/) | structural docs snippet checks | `brew install ast-grep` or `npm i -g @ast-grep/cli` |
+| `gh` | GitHub workflow and release operations | `brew install gh` |
+
+## Notes
+
+- `composer qa` does **not** include docs QA; run `composer qa:docs` separately when docs changed.
+- `composer test` is the fast default, not the exhaustive one.
+- package-level verification is useful for focused work, but monorepo-root verification is authoritative for shared dependency and integration changes.
+- prefer `act` for matrix reproduction because the workflow file is the single source of truth.

@@ -1,0 +1,5 @@
+{"id":"int-363e31e4","kind":"field_change","created_at":"2026-03-29T06:55:06.225251Z","actor":"Dariusz Debowczyk","issue_id":"instructor-2xnd.1","extra":{"field":"status","new_value":"closed","old_value":"in_progress","reason":"Done"}}
+{"id":"int-8e7956da","kind":"field_change","created_at":"2026-03-29T07:00:16.707387Z","actor":"Dariusz Debowczyk","issue_id":"instructor-2xnd.2","extra":{"field":"status","new_value":"closed","old_value":"in_progress","reason":"Done"}}
+{"id":"int-43465959","kind":"field_change","created_at":"2026-03-29T07:02:20.790329Z","actor":"Dariusz Debowczyk","issue_id":"instructor-2xnd.3","extra":{"field":"status","new_value":"closed","old_value":"in_progress","reason":"Done"}}
+{"id":"int-052e2568","kind":"field_change","created_at":"2026-03-29T07:19:37.359459Z","actor":"Dariusz Debowczyk","issue_id":"instructor-3bp1","extra":{"field":"status","new_value":"closed","old_value":"in_progress","reason":"Done"}}
+{"id":"int-73cfdeec","kind":"field_change","created_at":"2026-03-29T07:39:05.029057Z","actor":"Dariusz Debowczyk","issue_id":"instructor-wsc8","extra":{"field":"status","new_value":"closed","old_value":"in_progress","reason":"Done"}}

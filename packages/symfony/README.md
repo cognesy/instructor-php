@@ -12,8 +12,8 @@ It is intended to become the first-party framework package for Symfony applicati
 - testing helpers and Symfony-native bundle integration
 
 The package is being introduced in phases.
-The current baseline already includes the bundle surface, config translation, and initial container bindings for core runtime services.
-Later tasks will expand event wiring, transport specialization, AgentCtrl, native agents, persistence, observability, testing, and the migration path.
+The current baseline already includes the bundle surface, config translation, initial container bindings for core runtime services, and the first AgentCtrl container/runtime adapters.
+Later tasks will expand native agents, persistence, observability, testing, and the migration path.
 
 ## Planned Surface
 
@@ -27,12 +27,16 @@ The package now registers the initial core contracts and developer-facing servic
 
 - `Cognesy\Config\Contracts\CanProvideConfig`
 - `Cognesy\Http\Contracts\CanSendHttpRequests`
+- `Cognesy\Instructor\Symfony\AgentCtrl\SymfonyAgentCtrl`
+- `Cognesy\Instructor\Symfony\AgentCtrl\SymfonyAgentCtrlRuntimes`
 - `Cognesy\Polyglot\Inference\Contracts\CanCreateInference`
 - `Cognesy\Polyglot\Embeddings\Contracts\CanCreateEmbeddings`
 - `Cognesy\Instructor\Contracts\CanCreateStructuredOutput`
 - `Cognesy\Polyglot\Inference\Inference`
 - `Cognesy\Polyglot\Embeddings\Embeddings`
 - `Cognesy\Instructor\StructuredOutput`
+
+The AgentCtrl runtime layer now includes context-aware `cli`, `http`, and `messenger` adapters plus typed continuation and handoff references for future queue and persistence integration.
 
 Ownership boundaries:
 

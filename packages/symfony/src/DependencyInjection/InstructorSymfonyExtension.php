@@ -32,7 +32,7 @@ final class InstructorSymfonyExtension extends Extension
 
         $loader = new YamlFileLoader(
             $container,
-            new FileLocator(__DIR__.'/../../Resources/config'),
+            new FileLocator(__DIR__.'/../../resources/config'),
         );
 
         foreach (self::SERVICE_FILES as $file) {

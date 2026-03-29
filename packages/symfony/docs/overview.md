@@ -1,22 +1,32 @@
 # Symfony Overview
 
-`packages/symfony` is the planned batteries-included Symfony integration package for InstructorPHP.
+`packages/symfony` is the first-party Symfony integration package for InstructorPHP.
 
-The package will consolidate first-party Symfony glue that is currently scattered across other packages, especially event and logging integrations, into one supported framework package.
-
-The target outcome is a Symfony-native installation path that gives applications:
+The package is still landing in phases, but the baseline framework surface is already live:
 
 - one bundle to register
-- one coherent config root
-- container bindings for core runtime services
-- native integrations for agents, observability, and testing
+- one coherent `instructor` config root
+- core runtime bindings for Inference, Embeddings, StructuredOutput, HTTP, and events
+- initial AgentCtrl builders and context-aware runtime adapters
 
-The public framework config root is reserved as `instructor`, with explicit subtrees for core runtime, agents, AgentCtrl, sessions, telemetry, logging, testing, and delivery concerns.
+The package consolidates Symfony-facing glue that would otherwise be scattered across application code or lower-level packages.
+The intent is one supported installation path for Symfony apps instead of ad hoc event, HTTP, and container wiring.
+
+The public framework config root remains `instructor`, with explicit subtrees for:
+
+- core runtime configuration
+- AgentCtrl
+- native agents
+- sessions
+- telemetry
+- logging
+- testing
+- delivery
 
 Framework ownership is split intentionally:
 
 - `packages/symfony` owns Symfony-specific registration, config, and service wiring
 - `packages/events` keeps reusable event-dispatch primitives
-- `packages/logging` keeps reusable logging primitives while the Symfony package becomes the framework-facing entrypoint
+- `packages/logging` keeps reusable logging primitives while the Symfony package remains the framework-facing entrypoint
 
-This file is intentionally minimal until the bundle, config tree, and service wiring are implemented.
+Use the quickstart for installation and first-working examples, then the configuration guide for the full supported config surface.
