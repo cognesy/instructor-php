@@ -13,20 +13,22 @@ Laravel now reserves `config('instructor.agents')` for the native runtime so it 
 `packages/laravel` now ships the native runtime as a first-class Laravel surface.
 
 ```php
-'agents' => [
-    'enabled' => env('INSTRUCTOR_NATIVE_AGENTS_ENABLED', true),
-    'session_store' => env('INSTRUCTOR_NATIVE_AGENT_SESSION_STORE', 'memory'),
-    'definitions' => [],
-    'tools' => [],
-    'capabilities' => [],
-    'schemas' => [],
-    'broadcasting' => [
-        'enabled' => env('INSTRUCTOR_NATIVE_AGENT_BROADCASTING_ENABLED', false),
-        'connection' => env('INSTRUCTOR_NATIVE_AGENT_BROADCAST_CONNECTION'),
-        'event_name' => env('INSTRUCTOR_NATIVE_AGENT_BROADCAST_EVENT', 'instructor.agent.event'),
-        'preset' => env('INSTRUCTOR_NATIVE_AGENT_BROADCAST_PRESET', 'standard'),
+return [
+    'agents' => [
+        'enabled' => env('INSTRUCTOR_NATIVE_AGENTS_ENABLED', true),
+        'session_store' => env('INSTRUCTOR_NATIVE_AGENT_SESSION_STORE', 'memory'),
+        'definitions' => [],
+        'tools' => [],
+        'capabilities' => [],
+        'schemas' => [],
+        'broadcasting' => [
+            'enabled' => env('INSTRUCTOR_NATIVE_AGENT_BROADCASTING_ENABLED', false),
+            'connection' => env('INSTRUCTOR_NATIVE_AGENT_BROADCAST_CONNECTION'),
+            'event_name' => env('INSTRUCTOR_NATIVE_AGENT_BROADCAST_EVENT', 'instructor.agent.event'),
+            'preset' => env('INSTRUCTOR_NATIVE_AGENT_BROADCAST_PRESET', 'standard'),
+        ],
     ],
-],
+];
 ```
 
 The package resolves and exposes:
@@ -44,20 +46,22 @@ Laravel can populate the native registries from config and explicit container ta
 Config-driven contributions:
 
 ```php
-'agents' => [
-    'definitions' => [
-        base_path('resources/agents'),
+return [
+    'agents' => [
+        'definitions' => [
+            base_path('resources/agents'),
+        ],
+        'tools' => [
+            App\Agents\Tools\LookupAccountTool::class,
+        ],
+        'capabilities' => [
+            App\Agents\Capabilities\UseStructuredOutputs::class,
+        ],
+        'schemas' => [
+            'lead' => App\Data\LeadData::class,
+        ],
     ],
-    'tools' => [
-        App\Agents\Tools\LookupAccountTool::class,
-    ],
-    'capabilities' => [
-        App\Agents\Capabilities\UseStructuredOutputs::class,
-    ],
-    'schemas' => [
-        'lead' => App\Data\LeadData::class,
-    ],
-],
+];
 ```
 
 Tag-driven contributions:

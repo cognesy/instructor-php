@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-require_once __DIR__.'/../../src/Support/SymfonyConfigProvider.php';
-
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\Symfony\Support\SymfonyConfigProvider;
 

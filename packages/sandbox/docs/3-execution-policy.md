@@ -128,14 +128,15 @@ In container drivers, these are mounted at `/mnt/rw0`, `/mnt/rw1`, etc.
 ### Important Notes
 
 - Both methods **replace** the current list of paths. Pass all paths in a single call:
-  ```php
-  // Correct -- both paths are included
-  $policy = $policy->withReadablePaths('/data/a', '/data/b');
 
-  // Incorrect -- only '/data/b' survives
-  $policy = $policy->withReadablePaths('/data/a');
-  $policy = $policy->withReadablePaths('/data/b');
-  ```
+```php
+// Correct -- both paths are included
+$policy = $policy->withReadablePaths('/data/a', '/data/b');
+
+// Incorrect -- only '/data/b' survives
+$policy = $policy->withReadablePaths('/data/a');
+$policy = $policy->withReadablePaths('/data/b');
+```
 - Paths containing symlinks, `..` components, or colons are silently skipped for safety. Use `realpath()` to resolve symlinks before passing paths to the policy.
 
 ## Environment Variables

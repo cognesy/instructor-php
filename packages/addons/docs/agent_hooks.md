@@ -329,16 +329,21 @@ When priorities are equal, hooks run in registration order.
 ```php
 // Before tool execution
 $builder->onBeforeToolUse(
-    callback: callable,  // (ToolHookContext) -> HookOutcome|ToolCall|null|void
-    priority: int = 0,
-    matcher: string|HookMatcher|null = null,
+    callback: static function (ToolHookContext $context) {
+        // return HookOutcome, ToolCall, null, or nothing
+        return null;
+    },
+    priority: 0,
+    matcher: null,
 );
 
 // After tool execution
 $builder->onAfterToolUse(
-    callback: callable,  // (ToolHookContext) -> HookOutcome|AgentExecution|void
-    priority: int = 0,
-    matcher: string|HookMatcher|null = null,
+    callback: static function (ToolHookContext $context) {
+        // return HookOutcome, AgentExecution, or nothing
+    },
+    priority: 0,
+    matcher: null,
 );
 ```
 
@@ -347,12 +352,16 @@ $builder->onAfterToolUse(
 ```php
 // Before each step
 $builder->onBeforeStep(
-    callback: callable,  // (AgentState) -> AgentState
+    callback: static function (AgentState $state): AgentState {
+        return $state;
+    },
 );
 
 // After each step
 $builder->onAfterStep(
-    callback: callable,  // (AgentState) -> AgentState
+    callback: static function (AgentState $state): AgentState {
+        return $state;
+    },
 );
 ```
 
@@ -361,14 +370,18 @@ $builder->onAfterStep(
 ```php
 // When execution starts
 $builder->onExecutionStart(
-    callback: callable,  // (ExecutionHookContext) -> HookOutcome|void
-    priority: int = 0,
+    callback: static function (ExecutionHookContext $context) {
+        // return HookOutcome or nothing
+    },
+    priority: 0,
 );
 
 // When execution ends
 $builder->onExecutionEnd(
-    callback: callable,  // (ExecutionHookContext) -> HookOutcome|void
-    priority: int = 0,
+    callback: static function (ExecutionHookContext $context) {
+        // return HookOutcome or nothing
+    },
+    priority: 0,
 );
 ```
 
@@ -377,14 +390,18 @@ $builder->onExecutionEnd(
 ```php
 // When agent is about to stop
 $builder->onStop(
-    callback: callable,  // (StopHookContext) -> HookOutcome|void
-    priority: int = 0,
+    callback: static function (StopHookContext $context) {
+        // return HookOutcome or nothing
+    },
+    priority: 0,
 );
 
 // When subagent is about to stop
 $builder->onSubagentStop(
-    callback: callable,  // (StopHookContext) -> HookOutcome|void
-    priority: int = 0,
+    callback: static function (StopHookContext $context) {
+        // return HookOutcome or nothing
+    },
+    priority: 0,
 );
 ```
 
@@ -393,8 +410,10 @@ $builder->onSubagentStop(
 ```php
 // When agent fails
 $builder->onAgentFailed(
-    callback: callable,  // (FailureHookContext) -> HookOutcome|void
-    priority: int = 0,
+    callback: static function (FailureHookContext $context) {
+        // return HookOutcome or nothing
+    },
+    priority: 0,
 );
 ```
 

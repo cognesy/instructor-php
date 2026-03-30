@@ -330,11 +330,14 @@ $user = StructuredOutput::withRuntime($runtime)->with(
 Property names are part of the schema the LLM sees. Clear names reduce ambiguity and improve extraction accuracy.
 
 ```php
-// Good
-public readonly string $customerEmailAddress;
+final class CustomerContactData
+{
+    // Good
+    public readonly string $customerEmailAddress;
 
-// Less clear
-public readonly string $email;
+    // Less clear
+    public readonly string $email;
+}
 ```
 
 ### 2. Add Detailed Descriptions
@@ -342,13 +345,16 @@ public readonly string $email;
 Docblock descriptions are your primary tool for steering the LLM. Be specific about formats, ranges, and edge cases.
 
 ```php
-public function __construct(
-    /**
-     * The product SKU in format XXX-YYYY-ZZZ
-     * Example: ABC-1234-XYZ
-     */
-    public readonly string $sku,
-) {}
+final class ProductData
+{
+    public function __construct(
+        /**
+         * The product SKU in format XXX-YYYY-ZZZ
+         * Example: ABC-1234-XYZ
+         */
+        public readonly string $sku,
+    ) {}
+}
 ```
 
 ### 3. Use Appropriate Types
@@ -356,14 +362,17 @@ public function __construct(
 Choose the most specific type available. Enums are preferable to free-form strings for fields with a fixed set of values.
 
 ```php
-// Use int for counts
-public readonly int $quantity;
+final class OrderLineData
+{
+    // Use int for counts
+    public readonly int $quantity;
 
-// Use float for prices
-public readonly float $price;
+    // Use float for prices
+    public readonly float $price;
 
-// Use enums for fixed options
-public readonly Status $status;
+    // Use enums for fixed options
+    public readonly Status $status;
+}
 ```
 
 ### 4. Make Optional Properties Nullable
@@ -371,11 +380,15 @@ public readonly Status $status;
 Distinguish between required and optional fields clearly. Required properties should not have defaults; optional ones should be nullable with a `null` default.
 
 ```php
-// Required
-public readonly string $name,
-
-// Optional
-public readonly ?string $nickname = null,
+final class PersonData
+{
+    public function __construct(
+        // Required
+        public readonly string $name,
+        // Optional
+        public readonly ?string $nickname = null,
+    ) {}
+}
 ```
 
 ### 5. Use Readonly Properties
@@ -383,11 +396,17 @@ public readonly ?string $nickname = null,
 Readonly properties enforce immutability, which prevents accidental mutation of extracted data. This is the recommended approach for all response models.
 
 ```php
-// Immutable -- recommended
-public readonly string $name;
+final class ImmutablePersonData
+{
+    // Immutable -- recommended
+    public readonly string $name;
+}
 
-// Mutable -- avoid unless necessary
-public string $name;
+final class MutablePersonData
+{
+    // Mutable -- avoid unless necessary
+    public string $name;
+}
 ```
 
 ## Generated Stubs

@@ -2,4 +2,12 @@
 order:
   - overview
   - quickstart
+  - runtime-surfaces
   - configuration
+  - sessions
+  - testing
+  - telemetry
+  - logging
+  - delivery
+  - operations
+  - migration

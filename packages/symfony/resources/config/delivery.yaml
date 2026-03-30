@@ -1,0 +1,36 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Cognesy\Instructor\Symfony\Delivery\Progress\ProgressEventDispatcher:
+    public: true
+
+  Cognesy\Instructor\Symfony\Delivery\Progress\Contracts\CanHandleProgressUpdates:
+    alias: Cognesy\Instructor\Symfony\Delivery\Progress\ProgressEventDispatcher
+    public: true
+
+  Cognesy\Instructor\Symfony\Delivery\Progress\RuntimeProgressProjector:
+    public: true
+
+  instructor.delivery.progress_bridge:
+    class: Cognesy\Instructor\Symfony\Delivery\Progress\RuntimeProgressBridge
+    arguments:
+      $progressUpdates: '@Cognesy\Instructor\Symfony\Delivery\Progress\Contracts\CanHandleProgressUpdates'
+      $projector: '@Cognesy\Instructor\Symfony\Delivery\Progress\RuntimeProgressProjector'
+    public: false
+
+  Cognesy\Instructor\Symfony\Delivery\Cli\SymfonyCliObservationFormatter:
+    public: true
+
+  Cognesy\Instructor\Symfony\Delivery\Cli\SymfonyCliObservationPrinter:
+    arguments:
+      $formatter: '@Cognesy\Instructor\Symfony\Delivery\Cli\SymfonyCliObservationFormatter'
+      $useColors: '%instructor.delivery.cli.use_colors%'
+      $showTimestamps: '%instructor.delivery.cli.show_timestamps%'
+    public: true
+
+  instructor.delivery.cli.observer:
+    alias: Cognesy\Instructor\Symfony\Delivery\Cli\SymfonyCliObservationPrinter
+    public: true

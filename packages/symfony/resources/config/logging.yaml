@@ -1,1 +1,4 @@
-services: {}
+services:
+  # Framework-facing Symfony logging registration belongs in packages/symfony.
+  # Reusable logging pipeline primitives stay in packages/logging.
+  Cognesy\Instructor\Symfony\Support\SymfonyLoggingFactory: ~

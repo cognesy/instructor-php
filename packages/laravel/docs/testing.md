@@ -141,24 +141,28 @@ The `InferenceFake` intercepts raw inference calls and returns responses based o
 ```php
 use Cognesy\Instructor\Laravel\Facades\Inference;
 use Cognesy\Messages\Messages;
+use Tests\TestCase;
 
-public function test_calls_inference(): void
+final class InferenceFakeTest extends TestCase
 {
-    // Arrange
-    $fake = Inference::fake([
-        'What is 2+2?' => 'The answer is 4.',
-        'default' => 'I don\'t know.',
-    ]);
+    public function test_calls_inference(): void
+    {
+        // Arrange
+        $fake = Inference::fake([
+            'What is 2+2?' => 'The answer is 4.',
+            'default' => 'I don\'t know.',
+        ]);
 
-    // Act
-    $response = Inference::with(
-        messages: Messages::fromString('What is 2+2?'),
-    )->get();
+        // Act
+        $response = Inference::with(
+            messages: Messages::fromString('What is 2+2?'),
+        )->get();
 
-    // Assert
-    $this->assertEquals('The answer is 4.', $response);
-    $fake->assertCalled();
-    $fake->assertCalledWith('What is 2+2?');
+        // Assert
+        $this->assertEquals('The answer is 4.', $response);
+        $fake->assertCalled();
+        $fake->assertCalledWith('What is 2+2?');
+    }
 }
 ```
 
@@ -238,21 +242,25 @@ The `EmbeddingsFake` intercepts embedding requests and returns predefined or ran
 
 ```php
 use Cognesy\Instructor\Laravel\Facades\Embeddings;
+use Tests\TestCase;
 
-public function test_generates_embeddings(): void
+final class EmbeddingsFakeTest extends TestCase
 {
-    // Arrange
-    $fake = Embeddings::fake([
-        'hello' => [0.1, 0.2, 0.3, 0.4, 0.5],
-    ]);
+    public function test_generates_embeddings(): void
+    {
+        // Arrange
+        $fake = Embeddings::fake([
+            'hello' => [0.1, 0.2, 0.3, 0.4, 0.5],
+        ]);
 
-    // Act
-    $embedding = Embeddings::withInputs('hello world')->first();
+        // Act
+        $embedding = Embeddings::withInputs('hello world')->first();
 
-    // Assert
-    $this->assertIsArray($embedding);
-    $fake->assertCalled();
-    $fake->assertCalledWith('hello world');
+        // Assert
+        $this->assertIsArray($embedding);
+        $fake->assertCalled();
+        $fake->assertCalledWith('hello world');
+    }
 }
 ```
 
@@ -315,24 +323,28 @@ The `AgentCtrlFake` intercepts code agent executions and returns predefined resp
 
 ```php
 use Cognesy\Instructor\Laravel\Facades\AgentCtrl;
+use Tests\TestCase;
 
-public function test_generates_code(): void
+final class AgentCtrlFakeTest extends TestCase
 {
-    // Arrange -- setup fake with expected responses
-    $fake = AgentCtrl::fake([
-        'Generated migration file: 2024_01_01_create_users_table.php',
-    ]);
+    public function test_generates_code(): void
+    {
+        // Arrange -- setup fake with expected responses
+        $fake = AgentCtrl::fake([
+            'Generated migration file: 2024_01_01_create_users_table.php',
+        ]);
 
-    // Act -- your code calls AgentCtrl
-    $result = AgentCtrl::claudeCode()
-        ->execute('Generate a users table migration');
+        // Act -- your code calls AgentCtrl
+        $result = AgentCtrl::claudeCode()
+            ->execute('Generate a users table migration');
 
-    // Assert
-    $this->assertEquals(0, $result->exitCode);
-    $this->assertStringContainsString('migration', $result->text());
+        // Assert
+        $this->assertEquals(0, $result->exitCode);
+        $this->assertStringContainsString('migration', $result->text());
 
-    $fake->assertExecuted();
-    $fake->assertExecutedWith('migration');
+        $fake->assertExecuted();
+        $fake->assertExecutedWith('migration');
+    }
 }
 ```
 
@@ -451,6 +463,7 @@ $fake->reset();
 
 ```php
 use Cognesy\Instructor\Laravel\Facades\AgentCtrl;
+use Tests\TestCase;
 
 class CodeGeneratorService
 {
@@ -468,19 +481,21 @@ class CodeGeneratorService
     }
 }
 
-// Test
-public function test_generates_migration(): void
+final class CodeGeneratorServiceTest extends TestCase
 {
-    $fake = AgentCtrl::fake([
-        'Migration created successfully',
-    ]);
+    public function test_generates_migration(): void
+    {
+        $fake = AgentCtrl::fake([
+            'Migration created successfully',
+        ]);
 
-    $service = app(CodeGeneratorService::class);
-    $result = $service->generateMigration(['table' => 'users']);
+        $service = app(CodeGeneratorService::class);
+        $result = $service->generateMigration(['table' => 'users']);
 
-    $this->assertStringContainsString('Migration', $result);
-    $fake->assertUsedClaudeCode();
-    $fake->assertExecutedWith('users');
+        $this->assertStringContainsString('Migration', $result);
+        $fake->assertUsedClaudeCode();
+        $fake->assertExecutedWith('users');
+    }
 }
 ```
 
@@ -492,27 +507,31 @@ Since the package routes all HTTP traffic through Laravel's HTTP client (`Illumi
 
 ```php
 use Illuminate\Support\Facades\Http;
+use Tests\TestCase;
 
-public function test_with_http_fake(): void
+final class HttpFakeTest extends TestCase
 {
-    Http::fake([
-        'api.openai.com/*' => Http::response([
-            'choices' => [
-                [
-                    'message' => [
-                        'content' => '{"name":"John","age":30}',
+    public function test_with_http_fake(): void
+    {
+        Http::fake([
+            'api.openai.com/*' => Http::response([
+                'choices' => [
+                    [
+                        'message' => [
+                            'content' => '{"name":"John","age":30}',
+                        ],
                     ],
                 ],
-            ],
-        ]),
-    ]);
+            ]),
+        ]);
 
-    // Your StructuredOutput calls will use the fake HTTP response
-    $person = StructuredOutput::with(...)->get();
+        // Your StructuredOutput calls will use the fake HTTP response
+        $person = StructuredOutput::with(...)->get();
 
-    Http::assertSent(function ($request) {
-        return $request->url() === 'https://api.openai.com/v1/chat/completions';
-    });
+        Http::assertSent(function ($request) {
+            return $request->url() === 'https://api.openai.com/v1/chat/completions';
+        });
+    }
 }
 ```
 
@@ -526,6 +545,7 @@ When testing services that use Instructor through dependency injection, the faca
 
 ```php
 use Cognesy\Instructor\StructuredOutput;
+use Tests\TestCase;
 
 class PersonExtractor
 {
@@ -541,18 +561,20 @@ class PersonExtractor
     }
 }
 
-// In your test
-public function test_extracts_person(): void
+final class PersonExtractorTest extends TestCase
 {
-    $fake = StructuredOutput::fake([
-        PersonData::class => new PersonData(name: 'John', age: 30),
-    ]);
+    public function test_extracts_person(): void
+    {
+        $fake = StructuredOutput::fake([
+            PersonData::class => new PersonData(name: 'John', age: 30),
+        ]);
 
-    // The container will resolve the fake
-    $extractor = app(PersonExtractor::class);
-    $person = $extractor->extract('Some text');
+        // The container will resolve the fake
+        $extractor = app(PersonExtractor::class);
+        $person = $extractor->extract('Some text');
 
-    $this->assertEquals('John', $person->name);
+        $this->assertEquals('John', $person->name);
+    }
 }
 ```
 
@@ -565,16 +587,21 @@ public function test_extracts_person(): void
 Call `fake()` before any code that might trigger an extraction. Setting up a fake after the fact has no effect on calls that already happened.
 
 ```php
-public function test_example(): void
+use Tests\TestCase;
+
+final class StructuredOutputBestPracticesTest extends TestCase
 {
-    // FIRST: Setup fake
-    $fake = StructuredOutput::fake([...]);
+    public function test_example(): void
+    {
+        // FIRST: Setup fake
+        $fake = StructuredOutput::fake([...]);
 
-    // THEN: Run your code
-    $result = $this->service->process();
+        // THEN: Run your code
+        $result = $this->service->process();
 
-    // FINALLY: Assert
-    $fake->assertExtracted(...);
+        // FINALLY: Assert
+        $fake->assertExtracted(...);
+    }
 }
 ```
 
@@ -607,30 +634,35 @@ $fake = StructuredOutput::fake([
 Verify that your code handles empty collections, null optional fields, and other boundary conditions correctly.
 
 ```php
-public function test_handles_empty_response(): void
+use Tests\TestCase;
+
+final class StructuredOutputEdgeCaseTest extends TestCase
 {
-    $fake = StructuredOutput::fake([
-        ItemList::class => new ItemList(items: []),
-    ]);
+    public function test_handles_empty_response(): void
+    {
+        $fake = StructuredOutput::fake([
+            ItemList::class => new ItemList(items: []),
+        ]);
 
-    $result = $this->service->getItems();
+        $result = $this->service->getItems();
 
-    $this->assertEmpty($result->items);
-}
+        $this->assertEmpty($result->items);
+    }
 
-public function test_handles_null_optional_fields(): void
-{
-    $fake = StructuredOutput::fake([
-        PersonData::class => new PersonData(
-            name: 'John',
-            age: 30,
-            email: null, // Optional field
-        ),
-    ]);
+    public function test_handles_null_optional_fields(): void
+    {
+        $fake = StructuredOutput::fake([
+            PersonData::class => new PersonData(
+                name: 'John',
+                age: 30,
+                email: null, // Optional field
+            ),
+        ]);
 
-    $person = $this->service->getPerson();
+        $person = $this->service->getPerson();
 
-    $this->assertNull($person->email);
+        $this->assertNull($person->email);
+    }
 }
 ```
 
@@ -639,14 +671,19 @@ public function test_handles_null_optional_fields(): void
 Assert that your code routes requests to the correct provider and model, especially when different code paths use different connections.
 
 ```php
-public function test_uses_correct_model(): void
+use Tests\TestCase;
+
+final class StructuredOutputConnectionTest extends TestCase
 {
-    $fake = StructuredOutput::fake([...]);
+    public function test_uses_correct_model(): void
+    {
+        $fake = StructuredOutput::fake([...]);
 
-    $this->service->processWithClaude();
+        $this->service->processWithClaude();
 
-    $fake->assertUsedConnection('anthropic');
-    $fake->assertUsedModel('claude-3-5-sonnet-20241022');
+        $fake->assertUsedConnection('anthropic');
+        $fake->assertUsedModel('claude-3-5-sonnet-20241022');
+    }
 }
 ```
 

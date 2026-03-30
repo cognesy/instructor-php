@@ -26,7 +26,11 @@ final class ExplicitEventBusConsumer implements CanHandleEvents
     public function wiretap(callable $listener): void {}
 }
 
-function compiledLoggingContainer(string $preset, ?string $eventBusService = null): ContainerBuilder
+function compiledLoggingContainer(
+    string $preset,
+    ?string $eventBusService = null,
+    bool $captureDeprecation = true,
+): ContainerBuilder
 {
     $container = new ContainerBuilder();
     $container->register('logger', NullLogger::class)->setPublic(true);
@@ -40,11 +44,40 @@ function compiledLoggingContainer(string $preset, ?string $eventBusService = nul
     if ($eventBusService !== null) {
         $extensionConfig['event_bus_service'] = $eventBusService;
     }
-    $extension->load([$extensionConfig], $container);
+    match ($captureDeprecation) {
+        true => captureLoggingBundleDeprecations(static function () use ($extension, $extensionConfig, $container): void {
+            $extension->load([$extensionConfig], $container);
+        }),
+        false => $extension->load([$extensionConfig], $container),
+    };
 
     $container->compile();
 
     return $container;
+}
+
+/** @return list<string> */
+function captureLoggingBundleDeprecations(callable $callback): array
+{
+    $messages = [];
+
+    set_error_handler(static function (int $severity, string $message) use (&$messages): bool {
+        if ($severity !== E_USER_DEPRECATED) {
+            return false;
+        }
+
+        $messages[] = $message;
+
+        return true;
+    });
+
+    try {
+        $callback();
+    } finally {
+        restore_error_handler();
+    }
+
+    return $messages;
 }
 
 it('wires explicit event bus service and preserves preset factory method', function (string $preset, string $expectedFactoryMethod) {
@@ -71,6 +104,7 @@ it('wires explicit event bus service and preserves preset factory method', funct
         expect($pipelineFactoryDefinition->getFactory())->toBe([SymfonyLoggingFactory::class, $expectedFactoryMethod]);
     }
 })->with([
+    ['development', 'defaultSetup'],
     ['default', 'defaultSetup'],
     ['production', 'productionSetup'],
     ['custom', 'create'],
@@ -85,11 +119,13 @@ it('supports custom event bus service id configuration', function () {
     $bundle->build($container);
 
     $extension = new InstructorLoggingExtension();
-    $extension->load([[
-        'enabled' => true,
-        'preset' => 'default',
-        'event_bus_service' => 'app.custom_event_bus',
-    ]], $container);
+    captureLoggingBundleDeprecations(static function () use ($extension, $container): void {
+        $extension->load([[
+            'enabled' => true,
+            'preset' => 'default',
+            'event_bus_service' => 'app.custom_event_bus',
+        ]], $container);
+    });
 
     $container->compile();
 
@@ -100,4 +136,14 @@ it('supports custom event bus service id configuration', function () {
     ));
 
     expect($wiretapCalls)->toHaveCount(1);
+});
+
+it('emits a deprecation when the legacy Symfony logging bundle path is loaded', function () {
+    $messages = captureLoggingBundleDeprecations(static function (): void {
+        compiledLoggingContainer('development', captureDeprecation: false);
+    });
+
+    expect($messages)->toHaveCount(1)
+        ->and($messages[0])->toContain('InstructorLoggingBundle')
+        ->and($messages[0])->toContain('instructor.logging');
 });

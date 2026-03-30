@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cognesy\Logging\Factories;
 
 use Cognesy\Logging\Enrichers\LazyEnricher;
+use Cognesy\Logging\Enrichers\TelemetryCorrelationEnricher;
 use Cognesy\Logging\Filters\EventHierarchyFilter;
 use Cognesy\Logging\Filters\LogLevelFilter;
 use Cognesy\Logging\Formatters\MessageTemplateFormatter;
@@ -51,6 +52,9 @@ final class SymfonyLoggingFactory
             ));
         }
 
+        // Add correlation extracted from telemetry envelopes and runtime payloads.
+        $pipeline->enrich(new TelemetryCorrelationEnricher());
+
         // Add Symfony-specific enrichment (lazy evaluation)
         $pipeline->enrich(LazyEnricher::framework(function () use ($container, &$lastRequest, &$fallbackRequestId) {
             if (!$container->has('request_stack')) {
@@ -76,14 +80,14 @@ final class SymfonyLoggingFactory
                 $requestId = $fallbackRequestId;
             }
 
-            return [
+            return array_filter([
                 'request_id' => $requestId,
                 'session_id' => $request->hasSession() ? $request->getSession()->getId() : null,
                 'route' => $request->attributes->get('_route'),
                 'method' => $request->getMethod(),
                 'url' => $request->getUri(),
                 'client_ip' => $request->getClientIp(),
-            ];
+            ], static fn (mixed $value): bool => $value !== null && $value !== '');
         }));
 
         // Add user context enrichment
@@ -159,6 +163,12 @@ final class SymfonyLoggingFactory
             'level' => $container->hasParameter('kernel.debug') && $container->getParameter('kernel.debug')
                 ? 'debug'
                 : 'info',
+            'exclude_events' => [
+                \Cognesy\Http\Events\DebugRequestBodyUsed::class,
+                \Cognesy\Http\Events\DebugResponseBodyReceived::class,
+                \Cognesy\Polyglot\Inference\Events\PartialInferenceDeltaCreated::class,
+                \Cognesy\Polyglot\Inference\Events\StreamEventParsed::class,
+            ],
             'templates' => [
                 \Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted::class =>
                     'Starting {responseClass} generation with {model}',
@@ -166,6 +176,18 @@ final class SymfonyLoggingFactory
                     'Validation failed for {responseClass}: {error}',
                 \Cognesy\Http\Events\HttpRequestSent::class =>
                     'HTTP {method} {url}',
+                \Cognesy\Agents\Events\AgentExecutionStarted::class =>
+                    'Native agent {agentId} started with {messages} messages and {tools} tools',
+                \Cognesy\Agents\Events\AgentStepCompleted::class =>
+                    'Native agent {agentId} step {step} completed in {durationMs}ms',
+                \Cognesy\Agents\Events\AgentExecutionFailed::class =>
+                    'Native agent {agentId} failed: {error}',
+                \Cognesy\AgentCtrl\Event\AgentExecutionStarted::class =>
+                    'Code agent {agentType} started',
+                \Cognesy\AgentCtrl\Event\AgentExecutionCompleted::class =>
+                    'Code agent {agentType} completed with exit code {exitCode}',
+                \Cognesy\AgentCtrl\Event\AgentErrorOccurred::class =>
+                    'Code agent {agentType} failed: {error}',
             ],
         ]);
     }
@@ -184,6 +206,8 @@ final class SymfonyLoggingFactory
                 \Cognesy\Http\Events\DebugRequestBodyUsed::class,
                 \Cognesy\Http\Events\DebugResponseBodyReceived::class,
                 \Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated::class,
+                \Cognesy\Polyglot\Inference\Events\PartialInferenceDeltaCreated::class,
+                \Cognesy\Polyglot\Inference\Events\StreamEventParsed::class,
             ],
         ]);
     }

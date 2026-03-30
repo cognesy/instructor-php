@@ -2,13 +2,10 @@
 
 declare(strict_types=1);
 
-require_once __DIR__.'/../../src/DependencyInjection/InstructorSymfonyExtension.php';
-require_once __DIR__.'/../../src/DependencyInjection/Configuration.php';
-require_once __DIR__.'/../../src/InstructorSymfonyBundle.php';
-
 use Cognesy\Instructor\Symfony\DependencyInjection\Configuration;
 use Cognesy\Instructor\Symfony\DependencyInjection\InstructorSymfonyExtension;
 use Cognesy\Instructor\Symfony\InstructorSymfonyBundle;
+use Cognesy\Instructor\Symfony\Tests\Support\SymfonyTestApp;
 use Symfony\Component\Config\Definition\Processor;
 
 it('defines the symfony bundle surface', function (): void {
@@ -18,6 +15,27 @@ it('defines the symfony bundle surface', function (): void {
         ->toBeInstanceOf(InstructorSymfonyExtension::class)
         ->and($bundle->getContainerExtension()?->getAlias())
         ->toBe('instructor');
+});
+
+it('boots the symfony bundle through a reusable test kernel harness', function (): void {
+    SymfonyTestApp::using(
+        callback: static function (SymfonyTestApp $app): void {
+            expect($app->container()->has('kernel'))->toBeTrue()
+                ->and($app->kernel()->getBundles())->toHaveKey('InstructorSymfonyBundle');
+        },
+        instructorConfig: [
+        'connections' => [
+            'default' => 'openai',
+            'items' => [
+                'openai' => [
+                    'driver' => 'openai',
+                    'api_key' => 'test-key',
+                    'model' => 'gpt-4o-mini',
+                ],
+            ],
+        ],
+    ],
+    );
 });
 
 it('reserves the instructor config tree for the package surface', function (): void {

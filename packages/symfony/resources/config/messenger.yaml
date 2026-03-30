@@ -1,1 +1,23 @@
-services: {}
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Cognesy\Instructor\Symfony\Delivery\Messenger\ExecuteAgentCtrlPromptMessageHandler:
+    arguments:
+      $runtime: '@instructor.agent_ctrl.runtime.messenger'
+    public: true
+    tags:
+      - name: messenger.message_handler
+        handles: Cognesy\Instructor\Symfony\Delivery\Messenger\ExecuteAgentCtrlPromptMessage
+
+  Cognesy\Instructor\Symfony\Delivery\Messenger\ExecuteNativeAgentPromptMessageHandler:
+    arguments:
+      $definitions: '@Cognesy\Agents\Template\Contracts\CanManageAgentDefinitions'
+      $sessions: '@Cognesy\Agents\Session\Contracts\CanManageAgentSessions'
+      $loopFactory: '@Cognesy\Agents\Template\Contracts\CanInstantiateAgentLoop'
+    public: true
+    tags:
+      - name: messenger.message_handler
+        handles: Cognesy\Instructor\Symfony\Delivery\Messenger\ExecuteNativeAgentPromptMessage

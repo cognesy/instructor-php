@@ -1,1 +1,10 @@
-services: {}
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Cognesy\Agents\Session\Store\FileSessionStore:
+    arguments:
+      $directory: '%instructor.sessions.file.directory%'
+    public: true

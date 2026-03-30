@@ -20,7 +20,7 @@ The hub reads these from `./config/` at the project root. Package-owned defaults
 
 2. **Add `run.php`** with a YAML front-matter header followed by a markdown overview and a fenced PHP code block:
 
-```php
+````md
 ---
 title: 'My Example Title'
 docname: 'my_example_title'
@@ -42,7 +42,7 @@ require 'examples/boot.php';
 // ... example code ...
 ?>
 ```
-```
+````
 
 Front-matter fields:
 

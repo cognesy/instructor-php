@@ -393,6 +393,22 @@
             ]
         },
         {
+            "group": "Symfony",
+            "pages": [
+                "packages/symfony/overview",
+                "packages/symfony/quickstart",
+                "packages/symfony/runtime-surfaces",
+                "packages/symfony/configuration",
+                "packages/symfony/sessions",
+                "packages/symfony/testing",
+                "packages/symfony/telemetry",
+                "packages/symfony/logging",
+                "packages/symfony/delivery",
+                "packages/symfony/operations",
+                "packages/symfony/migration"
+            ]
+        },
+        {
             "group": "Xprompt",
             "pages": [
                 "packages/xprompt/01-introduction",

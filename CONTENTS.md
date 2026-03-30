@@ -11,7 +11,7 @@ Contains all independent PHP packages that make up the Instructor ecosystem. Eac
 - **Development tools**: `evals`, `experimental`, `doctor`, `doctools`
 - **Agent control**: `agent-ctrl` - Unified CLI bridge for code agents
 - **Agents SDK**: `agents` - SDK for building custom AI agents
-- **Framework integration**: `laravel`, `symfony`
+- **Framework integration**: `laravel`, `symfony` - first-party framework packages with package-local docs under `packages/*/docs/` and root discoverability through `docs/packages.md`
 - **Observability**: `metrics`, `logging`
 - **HTTP client**: `http-client`
 - **HTTP pooling**: `http-pool`
@@ -33,7 +33,7 @@ Development and maintenance automation scripts:
 - `make-package` / `make-package-enhanced` - Generate new package structure
 
 ### `docs/`
-Documentation website skeleton and root-level files. These are merged with documentation files from `./packages/*/docs/` to build the complete documentation distribution in `./builds/docs-build/`.
+Documentation website skeleton and root-level files. These are merged with documentation files from `./packages/*/docs/` to build the complete documentation distribution in `./builds/docs-build/`. Framework packages such as `packages/laravel` and `packages/symfony` also surface through `docs/packages.md`, `docs/mint.json`, and `docs/mkdocs.yml.template`.
 
 ### `bin/`
 Executable CLI tools:
@@ -88,4 +88,3 @@ Root-level PHP source files (e.g., polyfills shared across packages).
 - `vendor/` - Composer dependencies
 - `tmp/` - Temporary files and build artifacts
 - `tests/` - Root-level test files and configuration
-- `test-matrix/` - Test matrix configuration files

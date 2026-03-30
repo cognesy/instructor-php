@@ -232,7 +232,9 @@
         "spatie/browsershot": "^5.1",
         "symfony/css-selector": "^7.3 || ^8.0",
         "symfony/dom-crawler": "^7.3 || ^8.0",
+        "symfony/framework-bundle": "^7.3 || ^8.0",
         "symfony/http-client": "^7.3 || ^8.0",
+        "symfony/messenger": "^7.3 || ^8.0",
         "toolkit/cli-utils": "^2.0",
         "twig/twig": "^3.0",
         "vimeo/psalm": "^6.0"

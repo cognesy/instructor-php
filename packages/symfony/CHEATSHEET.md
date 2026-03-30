@@ -26,6 +26,7 @@ Service definitions loaded by `InstructorSymfonyExtension`:
 - `packages/symfony/resources/config/core.yaml`
 - `packages/symfony/resources/config/polyglot.yaml`
 - `packages/symfony/resources/config/events.yaml`
+- `packages/symfony/resources/config/delivery.yaml`
 - `packages/symfony/resources/config/agent_ctrl.yaml`
 - `packages/symfony/resources/config/agents.yaml`
 - `packages/symfony/resources/config/sessions.yaml`
@@ -107,6 +108,14 @@ Registered support services:
 - `Cognesy\Polyglot\Inference\InferenceRuntime`
 - `Cognesy\Polyglot\Embeddings\EmbeddingsRuntime`
 - `Cognesy\Instructor\StructuredOutputRuntime`
+- `Cognesy\Instructor\Symfony\Delivery\Progress\ProgressEventDispatcher`
+- `Cognesy\Instructor\Symfony\Delivery\Progress\Contracts\CanHandleProgressUpdates`
+- `Cognesy\Instructor\Symfony\Delivery\Cli\SymfonyCliObservationFormatter`
+- `Cognesy\Instructor\Symfony\Delivery\Cli\SymfonyCliObservationPrinter`
+- `Cognesy\Telemetry\Application\Telemetry`
+- `Cognesy\Telemetry\Domain\Contract\CanExportObservations`
+- `Cognesy\Instructor\Symfony\Telemetry\NullTelemetryExporter`
+- `Cognesy\Instructor\Symfony\Support\SymfonyLoggingFactory`
 
 ## Event Wiring
 
@@ -157,31 +166,39 @@ Structured output:
 - `Cognesy\Instructor\Contracts\CanCreateStructuredOutput` aliases that runtime
 - `Cognesy\Instructor\StructuredOutput` is registered as a public service
 
-## Current Placeholder Areas
+## Service File Status
 
-These service files are loaded today but currently contain `services: {}` only:
+Service files that are currently placeholder-only:
 - `packages/symfony/resources/config/agents.yaml`
 - `packages/symfony/resources/config/sessions.yaml`
+- `packages/symfony/resources/config/testing.yaml`
+
+Service files that now back real package behavior:
+- `packages/symfony/resources/config/core.yaml`
+- `packages/symfony/resources/config/polyglot.yaml`
+- `packages/symfony/resources/config/events.yaml`
+- `packages/symfony/resources/config/delivery.yaml`
+- `packages/symfony/resources/config/agent_ctrl.yaml`
 - `packages/symfony/resources/config/telemetry.yaml`
 - `packages/symfony/resources/config/logging.yaml`
-- `packages/symfony/resources/config/testing.yaml`
 - `packages/symfony/resources/config/messenger.yaml`
 
-That means the current implemented Symfony surface is:
+That means the current implemented Symfony surface includes:
 - bundle registration
 - config tree and config translation
-- AgentCtrl container entrypoints
+- AgentCtrl container entrypoints and runtime adapters
 - core event wiring
 - HTTP transport wiring
 - public inference, embeddings, and structured output services
+- native-agent registry and session-store seams
+- telemetry services and lifecycle hooks
+- logging services and presets
+- progress projection, CLI observation, and Messenger delivery seams
+- repository-local testing helpers and documented override patterns
 
-Not implemented yet in this package:
-- native agents wiring
-- session services
-- telemetry services
-- logging services
-- testing helpers
-- messenger integration
+Still intentionally repository-local or not yet published as public runtime API:
+- classes under `packages/symfony/tests/Support`
+- split-package publication bootstrap and Packagist registration
 
 ## Documentation
 
@@ -190,3 +207,11 @@ Reference docs:
 - `packages/symfony/docs/overview.md`
 - `packages/symfony/docs/configuration.md`
 - `packages/symfony/docs/quickstart.md`
+- `packages/symfony/docs/runtime-surfaces.md`
+- `packages/symfony/docs/sessions.md`
+- `packages/symfony/docs/testing.md`
+- `packages/symfony/docs/telemetry.md`
+- `packages/symfony/docs/logging.md`
+- `packages/symfony/docs/delivery.md`
+- `packages/symfony/docs/operations.md`
+- `packages/symfony/docs/migration.md`

@@ -125,6 +125,8 @@ The AgentCtrl container entry points are:
 
 - `Cognesy\Instructor\Symfony\AgentCtrl\SymfonyAgentCtrl`
 - `Cognesy\Instructor\Symfony\AgentCtrl\SymfonyAgentCtrlRuntimes`
+- `Cognesy\Instructor\Symfony\Delivery\Messenger\ExecuteAgentCtrlPromptMessage`
+- `Cognesy\Instructor\Symfony\Delivery\Messenger\ExecuteNativeAgentPromptMessage`
 
 Example controller using the HTTP runtime:
 
@@ -136,6 +138,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use Cognesy\Instructor\Symfony\AgentCtrl\SymfonyAgentCtrlRuntimes;
+use Cognesy\Instructor\Symfony\Delivery\Messenger\ExecuteAgentCtrlPromptMessage;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Messenger\MessageBusInterface;
 
@@ -152,10 +155,9 @@ final readonly class RefactorController
         $prompt = 'Refactor src/Service/UserService.php';
 
         if ($runtime->policy()->requiresMessengerDispatch()) {
-            $this->messageBus->dispatch(new RunAgentCtrlMessage(
+            $this->messageBus->dispatch(new ExecuteAgentCtrlPromptMessage(
                 prompt: $prompt,
                 backend: 'codex',
-                continuation: null,
             ));
 
             return new JsonResponse(['queued' => true]);
@@ -171,7 +173,21 @@ final readonly class RefactorController
 }
 ```
 
-## 6. Current Boundaries
+## 6. Optionally Enable Persisted Native-Agent Sessions
+
+If you want resumable native-agent sessions across CLI, HTTP, or Messenger worker boots, enable the file-backed adapter:
+
+```yaml
+instructor:
+  sessions:
+    store: file
+    file:
+      directory: '%kernel.cache_dir%/instructor/agent-sessions'
+```
+
+This keeps the persistence seam package-owned while still letting applications override `Cognesy\Agents\Session\Contracts\CanStoreSessions` if they need a custom backend later.
+
+## 7. Current Boundaries
 
 Already supported:
 
@@ -180,13 +196,18 @@ Already supported:
 - Symfony-aware HTTP transport selection
 - package-owned event bus with optional Symfony event bridging
 - AgentCtrl builder and runtime adapters
+- native-agent session store selection with built-in memory and file adapters
+- package-owned testing patterns built around public container override seams
+- telemetry exporter selection, projector composition, and lifecycle hooks
 
 Still landing in later tasks:
 
-- native `Cognesy\Agents` runtime integration
-- session persistence
-- telemetry and logging presets
-- broader Symfony testing harnesses
-- migration guidance for older scattered Symfony glue
+- logging presets
+- split-package publication bootstrap and Packagist registration
 
+For a practical “which runtime surface should I use?” guide, see `packages/symfony/docs/runtime-surfaces.md`.
 For the detailed config surface, see `packages/symfony/docs/configuration.md`.
+For the telemetry-specific runtime and exporter guidance, see `packages/symfony/docs/telemetry.md`.
+For the package testing model and public helper boundary, see `packages/symfony/docs/testing.md`.
+For app-shape observability and delivery guidance, see `packages/symfony/docs/operations.md`.
+For migration from older scattered Symfony glue, see `packages/symfony/docs/migration.md`.

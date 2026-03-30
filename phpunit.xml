@@ -53,6 +53,7 @@
             <directory suffix="Test.php">./packages/http-client/tests/Feature</directory>
             <directory suffix="Test.php">./packages/hub/tests/Feature</directory>
             <directory suffix="Test.php">./packages/instructor/tests/Feature</directory>
+            <directory suffix="Test.php">./packages/symfony/tests/Feature</directory>
             <directory suffix="Test.php">./packages/logging/tests/Feature</directory>
             <directory suffix="Test.php">./packages/messages/tests/Feature</directory>
             <directory suffix="Test.php">./packages/metrics/tests/Feature</directory>
@@ -134,6 +135,7 @@
             <directory suffix=".php">./packages/http-client/src</directory>
             <directory suffix=".php">./packages/hub/src</directory>
             <directory suffix=".php">./packages/instructor/src</directory>
+            <directory suffix=".php">./packages/symfony/src</directory>
             <directory suffix=".php">./packages/logging/src</directory>
             <directory suffix=".php">./packages/messages/src</directory>
             <directory suffix=".php">./packages/metrics/src</directory>

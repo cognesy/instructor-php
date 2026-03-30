@@ -1,0 +1,220 @@
+# Symfony Operations Guide
+
+This guide explains how the current Symfony package behaves in the runtime shapes that matter most in production:
+
+- web controllers and page requests
+- JSON APIs and streaming endpoints
+- Messenger workers
+- CLI commands
+
+The package already ships one coherent operational baseline.
+What changes by app shape is which optional delivery layer you put on top of that baseline.
+
+## Built-In Baseline
+
+The built-in operational surface is:
+
+- one package-owned runtime bus at `Cognesy\Events\Contracts\CanHandleEvents`
+- optional Symfony EventDispatcher mirroring controlled by `instructor.events.dispatch_to_symfony`
+- optional projected progress updates at `Cognesy\Instructor\Symfony\Delivery\Progress\Contracts\CanHandleProgressUpdates`
+- optional Messenger observation forwarding under `instructor.delivery.messenger`
+- optional CLI observation output under `instructor.delivery.cli`
+- package-owned telemetry exporter selection, projector composition, and lifecycle cleanup
+- package-owned logging presets attached to the same runtime bus
+
+That means:
+
+- logging and telemetry are built in once enabled
+- Symfony listener mirroring is optional
+- Messenger observation forwarding is optional
+- SSE, WebSockets, Mercure, and polling layers are still application-owned
+
+## Web Controllers
+
+Typical shape:
+
+- synchronous request or form handling
+- normal Symfony controller lifecycle
+- request-scoped route and request metadata available for enrichment
+
+Recommended package setup:
+
+```yaml
+instructor:
+  events:
+    dispatch_to_symfony: true
+
+  logging:
+    enabled: true
+    preset: development
+
+  telemetry:
+    enabled: true
+    driver: otel
+```
+
+What is built in:
+
+- the runtime bus remains the source of truth
+- Symfony listeners can observe mirrored lifecycle events
+- telemetry flushes on kernel terminate
+- logging enrichers can use request-aware framework data when available
+
+What stays application-specific:
+
+- controller-specific domain listeners
+- UI notifications
+- any transport from runtime progress into browser-visible updates
+
+## JSON APIs And Streaming Endpoints
+
+Typical shape:
+
+- HTTP request/response flow
+- API monitoring and correlation matter more than controller-local side effects
+- partial progress may need to feed SSE, WebSockets, Mercure, or polling
+
+Recommended package setup:
+
+```yaml
+instructor:
+  telemetry:
+    enabled: true
+    driver: otel
+
+  logging:
+    enabled: true
+    preset: production
+
+  delivery:
+    progress:
+      enabled: true
+```
+
+What is built in:
+
+- the raw event stream stays on `CanHandleEvents`
+- the package projects stable `RuntimeProgressUpdate` objects onto the progress bus
+- telemetry and logging stay attached to the internal bus instead of depending on Symfony listeners
+
+What stays application-specific:
+
+- SSE response formatting
+- WebSocket or Mercure publication
+- API-specific mapping from `RuntimeProgressUpdate` into client-visible payloads
+
+The important rule is:
+build transport-specific streaming on top of `RuntimeProgressUpdate`, not on assumptions that every raw runtime event should become a public API payload.
+
+## Messenger Workers
+
+Typical shape:
+
+- queued execution
+- background follow-up work
+- no active `RequestStack`
+
+Recommended package setup:
+
+```yaml
+instructor:
+  delivery:
+    messenger:
+      enabled: true
+      bus_service: message_bus
+      observe_events:
+        - Cognesy\Agents\Events\AgentExecutionCompleted
+        - Cognesy\AgentCtrl\Event\AgentExecutionCompleted
+
+  telemetry:
+    enabled: true
+    driver: otel
+
+  logging:
+    enabled: true
+    preset: production
+```
+
+What is built in:
+
+- `ExecuteAgentCtrlPromptMessage` for queued AgentCtrl execution
+- `ExecuteNativeAgentPromptMessage` for queued native-agent execution and optional session resume
+- `RuntimeObservationMessage` for explicit observation forwarding
+- telemetry flush and shutdown hooks around handled, failed, and stopped worker lifecycle events
+
+What stays application-specific:
+
+- which runtime events should be forwarded onto Messenger
+- worker-specific retry, dead-letter, or alerting policy
+- downstream consumers of forwarded observation messages
+
+Keep Messenger observation explicit.
+Use `observe_events` as an allow-list instead of treating Messenger as a generic mirror for the entire raw runtime stream.
+
+## CLI Commands
+
+Typical shape:
+
+- console command or long-running CLI workflow
+- no HTTP request context
+- human-readable live observation can be useful
+
+Recommended package setup:
+
+```yaml
+instructor:
+  delivery:
+    cli:
+      enabled: true
+      use_colors: true
+      show_timestamps: true
+
+  telemetry:
+    enabled: true
+    driver: otel
+
+  logging:
+    enabled: true
+    preset: development
+```
+
+What is built in:
+
+- the same runtime bus semantics as HTTP and Messenger flows
+- projected progress updates formatted by `SymfonyCliObservationPrinter`
+- telemetry flush and shutdown around console terminate and error events
+
+What stays application-specific:
+
+- command-specific output structure
+- custom progress formatting beyond the built-in printer
+- command orchestration and retries
+
+CLI output is opt-in for a reason:
+the package keeps runtime correctness on the internal bus and treats terminal formatting as a view over projected progress, not as a second event model.
+
+## Built-In Versus Optional
+
+Built in once enabled by config:
+
+- logging presets
+- telemetry exporter selection
+- telemetry lifecycle cleanup
+- progress projection
+- Messenger execution handlers
+- Messenger observation bridge
+- CLI progress printer
+
+Still application-owned:
+
+- browser delivery transports
+- SSE and WebSocket response format
+- Mercure integration
+- alert routing and incident handling
+- domain-specific listeners and notifications
+
+## Operational Rule Of Thumb
+
+Use the package-owned runtime bus for correctness and observability.
+Use the projected progress bus for transport-specific UX.
+Use Symfony listeners and Messenger forwarding only where they improve application integration, not as the primary source of runtime truth.

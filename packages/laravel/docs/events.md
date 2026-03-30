@@ -9,17 +9,17 @@ The bridge is implemented by `Cognesy\Instructor\Laravel\Events\LaravelEventDisp
 Configure event bridging in `config/instructor.php`:
 
 ```php
-'events' => [
-    // Enable bridging to Laravel's event dispatcher
-    'dispatch_to_laravel' => env('INSTRUCTOR_DISPATCH_EVENTS', true),
-
-    // Specify which events to bridge (empty = all events)
-    'bridge_events' => [
-        // Only bridge specific events
-        \Cognesy\Instructor\Events\Extraction\ExtractionCompleted::class,
-        \Cognesy\Instructor\Events\Extraction\ExtractionFailed::class,
+return [
+    'events' => [
+        // Enable bridging to Laravel's event dispatcher
+        'dispatch_to_laravel' => env('INSTRUCTOR_DISPATCH_EVENTS', true),
+        // Specify which events to bridge (empty = all events)
+        'bridge_events' => [
+            \Cognesy\Instructor\Events\Extraction\ExtractionCompleted::class,
+            \Cognesy\Instructor\Events\Extraction\ExtractionFailed::class,
+        ],
     ],
-],
+];
 ```
 
 When `bridge_events` is empty (the default), every Instructor event is forwarded to Laravel's dispatcher. To reduce overhead in production, list only the event classes your listeners actually need.
@@ -133,19 +133,25 @@ For lightweight listeners, register closures directly in a service provider's `b
 
 ```php
 // app/Providers/AppServiceProvider.php
+namespace App\Providers;
+
 use Cognesy\Instructor\Events\Extraction\ExtractionCompleted;
 use Cognesy\Instructor\Events\Extraction\ExtractionFailed;
+use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Event;
 
-public function boot(): void
+class AppServiceProvider extends ServiceProvider
 {
-    Event::listen(ExtractionCompleted::class, function ($event) {
-        // Handle successful extraction
-    });
+    public function boot(): void
+    {
+        Event::listen(ExtractionCompleted::class, function ($event) {
+            // Handle successful extraction
+        });
 
-    Event::listen(ExtractionFailed::class, function ($event) {
-        // Handle failed extraction
-    });
+        Event::listen(ExtractionFailed::class, function ($event) {
+            // Handle failed extraction
+        });
+    }
 }
 ```
 
@@ -188,11 +194,23 @@ class InstructorEventSubscriber
         ];
     }
 }
+```
 
-// Register in EventServiceProvider
-protected $subscribe = [
-    InstructorEventSubscriber::class,
-];
+Register it in `EventServiceProvider`:
+
+```php
+// app/Providers/EventServiceProvider.php
+namespace App\Providers;
+
+use App\Listeners\InstructorEventSubscriber;
+use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+
+class EventServiceProvider extends ServiceProvider
+{
+    protected $subscribe = [
+        InstructorEventSubscriber::class,
+    ];
+}
 ```
 
 ## Common Use Cases
@@ -299,10 +317,11 @@ The `LaravelEventDispatcher` itself also supports `wiretap` for registering glob
 To disable event bridging entirely (for example, in high-throughput scenarios where the overhead is unacceptable):
 
 ```php
-// config/instructor.php
-'events' => [
-    'dispatch_to_laravel' => false,
-],
+return [
+    'events' => [
+        'dispatch_to_laravel' => false,
+    ],
+];
 ```
 
 Or via environment variable:
@@ -319,18 +338,23 @@ Use Laravel's `Event::fake()` to assert that specific events were dispatched dur
 
 ```php
 use Cognesy\Instructor\Events\Extraction\ExtractionCompleted;
+use Cognesy\Instructor\Laravel\Facades\StructuredOutput;
 use Illuminate\Support\Facades\Event;
+use Tests\TestCase;
 
-public function test_dispatches_extraction_event(): void
+final class EventBridgeTest extends TestCase
 {
-    Event::fake([ExtractionCompleted::class]);
+    public function test_dispatches_extraction_event(): void
+    {
+        Event::fake([ExtractionCompleted::class]);
 
-    StructuredOutput::with(
-        messages: 'John is 30',
-        responseModel: PersonData::class,
-    )->get();
+        StructuredOutput::with(
+            messages: 'John is 30',
+            responseModel: PersonData::class,
+        )->get();
 
-    Event::assertDispatched(ExtractionCompleted::class);
+        Event::assertDispatched(ExtractionCompleted::class);
+    }
 }
 ```
 

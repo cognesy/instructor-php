@@ -1,1 +1,53 @@
-services: {}
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Cognesy\Instructor\Symfony\Telemetry\SymfonyTelemetryFactory: ~
+
+  Cognesy\Instructor\Symfony\Telemetry\NullTelemetryExporter: ~
+
+  Cognesy\Telemetry\Domain\Contract\CanExportObservations:
+    factory: ['@Cognesy\Instructor\Symfony\Telemetry\SymfonyTelemetryFactory', 'exporter']
+    arguments:
+      $config: '%instructor.telemetry.config%'
+    public: true
+
+  Cognesy\Telemetry\Application\Registry\TraceRegistry:
+    public: true
+
+  Cognesy\Telemetry\Application\Telemetry:
+    arguments:
+      $registry: '@Cognesy\Telemetry\Application\Registry\TraceRegistry'
+      $exporter: '@Cognesy\Telemetry\Domain\Contract\CanExportObservations'
+    public: true
+
+  Cognesy\Telemetry\Domain\Contract\CanFlushTelemetry:
+    alias: Cognesy\Telemetry\Application\Telemetry
+    public: true
+
+  Cognesy\Telemetry\Domain\Contract\CanShutdownTelemetry:
+    alias: Cognesy\Telemetry\Application\Telemetry
+    public: true
+
+  Cognesy\Telemetry\Application\Projector\CanProjectTelemetry:
+    factory: ['@Cognesy\Instructor\Symfony\Telemetry\SymfonyTelemetryFactory', 'projector']
+    arguments:
+      $telemetry: '@Cognesy\Telemetry\Application\Telemetry'
+      $config: '%instructor.telemetry.config%'
+    public: true
+
+  Cognesy\Telemetry\Application\Projector\RuntimeEventBridge:
+    arguments:
+      $projector: '@Cognesy\Telemetry\Application\Projector\CanProjectTelemetry'
+    public: true
+
+  instructor.telemetry.observation_bridge:
+    class: Cognesy\Instructor\Symfony\Telemetry\TelemetryObservationBridge
+    arguments:
+      $bridge: '@Cognesy\Telemetry\Application\Projector\RuntimeEventBridge'
+    public: false
+
+  Cognesy\Instructor\Symfony\Telemetry\TelemetryLifecycleSubscriber:
+    public: false

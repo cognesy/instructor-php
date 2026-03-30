@@ -12,7 +12,8 @@ Symfony integration is included.
 
 Framework integration wiring is explicit in 2.0:
 - Laravel integration lives in `packages/laravel`.
-- Symfony uses `instructor_logging.event_bus_service` (default `Cognesy\Events\Contracts\CanHandleEvents`).
+- Symfony legacy bundle wiring uses `instructor_logging.event_bus_service` (default `Cognesy\Events\Contracts\CanHandleEvents`).
+- The legacy Symfony bundle path is deprecated in favor of `cognesy/instructor-symfony` and `instructor.logging`.
 
 ## Example
 

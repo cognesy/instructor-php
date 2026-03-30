@@ -1,1 +1,64 @@
-services: {}
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Cognesy\Agents\Template\AgentDefinitionRegistry:
+    public: true
+
+  Cognesy\Agents\Template\Contracts\CanManageAgentDefinitions:
+    alias: Cognesy\Agents\Template\AgentDefinitionRegistry
+    public: true
+
+  Cognesy\Agents\Tool\ToolRegistry:
+    public: true
+
+  Cognesy\Agents\Tool\Contracts\CanManageTools:
+    alias: Cognesy\Agents\Tool\ToolRegistry
+    public: true
+
+  Cognesy\Agents\Capability\AgentCapabilityRegistry:
+    public: true
+
+  Cognesy\Agents\Capability\CanManageAgentCapabilities:
+    alias: Cognesy\Agents\Capability\AgentCapabilityRegistry
+    public: true
+
+  Cognesy\Agents\Capability\StructuredOutput\SchemaRegistry:
+    public: true
+
+  Cognesy\Agents\Capability\StructuredOutput\CanManageSchemas:
+    alias: Cognesy\Agents\Capability\StructuredOutput\SchemaRegistry
+    public: true
+
+  Cognesy\Agents\Session\Store\InMemorySessionStore:
+    public: true
+
+  Cognesy\Agents\Session\Contracts\CanStoreSessions:
+    alias: Cognesy\Agents\Session\Store\InMemorySessionStore
+    public: true
+
+  Cognesy\Agents\Session\SessionRepository:
+    public: true
+
+  Cognesy\Agents\Template\Factory\DefinitionLoopFactory:
+    arguments:
+      $capabilities: '@Cognesy\Agents\Capability\CanManageAgentCapabilities'
+      $tools: '@Cognesy\Agents\Tool\Contracts\CanManageTools'
+      $events: '@Cognesy\Events\Contracts\CanHandleEvents'
+    public: true
+
+  Cognesy\Agents\Template\Contracts\CanInstantiateAgentLoop:
+    alias: Cognesy\Agents\Template\Factory\DefinitionLoopFactory
+    public: true
+
+  Cognesy\Agents\Session\SessionRuntime:
+    arguments:
+      $sessions: '@Cognesy\Agents\Session\SessionRepository'
+      $events: '@Cognesy\Events\Contracts\CanHandleEvents'
+    public: true
+
+  Cognesy\Agents\Session\Contracts\CanManageAgentSessions:
+    alias: Cognesy\Agents\Session\SessionRuntime
+    public: true

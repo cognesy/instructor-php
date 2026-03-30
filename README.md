@@ -109,6 +109,13 @@ Benefit: get a supported bundle or package surface for container bindings, event
 - Laravel package: [packages/laravel/](packages/laravel/)
 - Symfony package: [packages/symfony/](packages/symfony/)
 
+Symfony docs highlights:
+
+- quickstart: [packages/symfony/docs/quickstart.md](packages/symfony/docs/quickstart.md)
+- configuration: [packages/symfony/docs/configuration.md](packages/symfony/docs/configuration.md)
+- operations: [packages/symfony/docs/operations.md](packages/symfony/docs/operations.md)
+- migration: [packages/symfony/docs/migration.md](packages/symfony/docs/migration.md)
+
 
 ## What is Instructor?
 

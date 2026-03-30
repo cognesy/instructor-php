@@ -5,6 +5,8 @@ use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated;
 use Cognesy\Instructor\Events\Response\ResponseValidationFailed;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted;
+use Cognesy\Polyglot\Inference\Events\PartialInferenceDeltaCreated;
+use Cognesy\Polyglot\Inference\Events\StreamEventParsed;
 use Cognesy\Logging\Factories\SymfonyLoggingFactory;
 use Psr\Log\AbstractLogger;
 use Psr\Log\LogLevel;
@@ -100,6 +102,16 @@ it('excludes partial response events in the production setup using the actual ev
     $event = new PartialResponseGenerated(['step' => 1]);
     $event->logLevel = LogLevel::WARNING;
     $pipeline($event);
+
+    expect($logger->records)->toBe([]);
+});
+
+it('suppresses low-value polyglot stream events in the default setup', function () {
+    $logger = new SymfonyRegressionLogger();
+    $pipeline = SymfonyLoggingFactory::defaultSetup(symfonyRegressionContainer(), $logger);
+
+    $pipeline(new PartialInferenceDeltaCreated());
+    $pipeline(new StreamEventParsed('delta'));
 
     expect($logger->records)->toBe([]);
 });

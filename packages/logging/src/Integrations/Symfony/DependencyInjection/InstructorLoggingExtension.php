@@ -19,6 +19,11 @@ class InstructorLoggingExtension extends Extension
 {
     public function load(array $configs, ContainerBuilder $container): void
     {
+        @trigger_error(
+            'Cognesy\\Logging\\Integrations\\Symfony\\InstructorLoggingBundle is deprecated; use Cognesy\\Instructor\\Symfony\\InstructorSymfonyBundle with instructor.logging instead.',
+            E_USER_DEPRECATED,
+        );
+
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.yaml');
 
@@ -35,8 +40,8 @@ class InstructorLoggingExtension extends Extension
     private function configureLogging(ContainerBuilder $container, array $config): void
     {
         $factoryMethod = match ($config['preset']) {
+            'development', 'default' => 'defaultSetup',
             'production' => 'productionSetup',
-            'default' => 'defaultSetup',
             'custom' => 'create',
         };
 

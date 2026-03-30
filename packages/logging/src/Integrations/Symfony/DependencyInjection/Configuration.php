@@ -23,7 +23,7 @@ class Configuration implements ConfigurationInterface
                     ->defaultTrue()
                 ->end()
                 ->enumNode('preset')
-                    ->values(['default', 'production', 'custom'])
+                    ->values(['development', 'default', 'production', 'custom'])
                     ->defaultValue('default')
                 ->end()
                 ->scalarNode('event_bus_service')

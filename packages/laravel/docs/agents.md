@@ -123,40 +123,37 @@ AgentCtrl::claudeCode()
 Configure defaults in `config/instructor.php`. The facade automatically reads these values and applies them when you create a builder. Builder methods then override any defaults for that specific call.
 
 ```php
-'agent_ctrl' => [
-    // Default timeout for all agents
-    'timeout' => env('INSTRUCTOR_AGENT_TIMEOUT', 300),
-
-    // Default working directory
-    'directory' => env('INSTRUCTOR_AGENT_DIRECTORY'),
-
-    // Default sandbox driver: host, docker, podman, firejail, bubblewrap
-    'sandbox' => env('INSTRUCTOR_AGENT_SANDBOX', 'host'),
-
-    // Claude Code specific
-    'claude_code' => [
-        'model' => env('CLAUDE_CODE_MODEL', 'claude-sonnet-4-20250514'),
-        'timeout' => env('CLAUDE_CODE_TIMEOUT'),
-        'directory' => env('CLAUDE_CODE_DIRECTORY'),
-        'sandbox' => env('CLAUDE_CODE_SANDBOX'),
+return [
+    'agent_ctrl' => [
+        // Default timeout for all agents
+        'timeout' => env('INSTRUCTOR_AGENT_TIMEOUT', 300),
+        // Default working directory
+        'directory' => env('INSTRUCTOR_AGENT_DIRECTORY'),
+        // Default sandbox driver: host, docker, podman, firejail, bubblewrap
+        'sandbox' => env('INSTRUCTOR_AGENT_SANDBOX', 'host'),
+        // Claude Code specific
+        'claude_code' => [
+            'model' => env('CLAUDE_CODE_MODEL', 'claude-sonnet-4-20250514'),
+            'timeout' => env('CLAUDE_CODE_TIMEOUT'),
+            'directory' => env('CLAUDE_CODE_DIRECTORY'),
+            'sandbox' => env('CLAUDE_CODE_SANDBOX'),
+        ],
+        // Codex specific
+        'codex' => [
+            'model' => env('CODEX_MODEL', 'codex'),
+            'timeout' => env('CODEX_TIMEOUT'),
+            'directory' => env('CODEX_DIRECTORY'),
+            'sandbox' => env('CODEX_SANDBOX'),
+        ],
+        // OpenCode specific
+        'opencode' => [
+            'model' => env('OPENCODE_MODEL', 'anthropic/claude-sonnet-4-20250514'),
+            'timeout' => env('OPENCODE_TIMEOUT'),
+            'directory' => env('OPENCODE_DIRECTORY'),
+            'sandbox' => env('OPENCODE_SANDBOX'),
+        ],
     ],
-
-    // Codex specific
-    'codex' => [
-        'model' => env('CODEX_MODEL', 'codex'),
-        'timeout' => env('CODEX_TIMEOUT'),
-        'directory' => env('CODEX_DIRECTORY'),
-        'sandbox' => env('CODEX_SANDBOX'),
-    ],
-
-    // OpenCode specific
-    'opencode' => [
-        'model' => env('OPENCODE_MODEL', 'anthropic/claude-sonnet-4-20250514'),
-        'timeout' => env('OPENCODE_TIMEOUT'),
-        'directory' => env('OPENCODE_DIRECTORY'),
-        'sandbox' => env('OPENCODE_SANDBOX'),
-    ],
-],
+];
 ```
 
 Agent-specific settings (e.g., `claude_code.timeout`) take precedence over the global defaults (e.g., `agent_ctrl.timeout`).

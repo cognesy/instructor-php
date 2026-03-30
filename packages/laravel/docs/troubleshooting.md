@@ -32,10 +32,11 @@ Class 'Cognesy\Instructor\Laravel\Facades\StructuredOutput' not found
 If auto-discovery is disabled in your `composer.json`, manually register the provider:
 
 ```php
-// config/app.php (Laravel 10)
-'providers' => [
-    Cognesy\Instructor\Laravel\InstructorServiceProvider::class,
-],
+return [
+    'providers' => [
+        Cognesy\Instructor\Laravel\InstructorServiceProvider::class,
+    ],
+];
 ```
 
 If auto-discovery is enabled but the provider is not loading, clear the cached package manifest:
@@ -209,11 +210,12 @@ The API call took longer than the configured timeout. This is common with large 
 Increase the timeout in configuration:
 
 ```php
-// config/instructor.php
-'http' => [
-    'timeout' => 300, // 5 minutes
-    'connect_timeout' => 60,
-],
+return [
+    'http' => [
+        'timeout' => 300, // 5 minutes
+        'connect_timeout' => 60,
+    ],
+];
 ```
 
 Or override per-request using options:
@@ -270,10 +272,11 @@ $fake = StructuredOutput::fake([...]); // Too late
 Ensure the HTTP driver is set to `'laravel'` in your configuration. If a different driver is configured, the package will not route requests through Laravel's HTTP client.
 
 ```php
-// config/instructor.php
-'http' => [
-    'driver' => 'laravel',
-],
+return [
+    'http' => [
+        'driver' => 'laravel',
+    ],
+];
 ```
 
 Also verify that your test environment is not overriding this setting via an environment variable.

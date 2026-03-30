@@ -21,9 +21,10 @@ This page covers the most common issues you may encounter when using the Sandbox
    ```
 
 2. Check what PHP sees as `PATH`. In web server or systemd contexts, the `PATH` is often more restrictive than your shell's:
-   ```php
-   echo getenv('PATH');
-   ```
+
+```php
+echo getenv('PATH');
+```
 
 3. Set the binary path explicitly through an environment variable before your PHP process starts:
    ```bash
@@ -34,12 +35,13 @@ This page covers the most common issues you may encounter when using the Sandbox
    ```
 
 4. Pass the binary path directly to the static factory:
-   ```php
-   $sandbox = Sandbox::docker($policy, dockerBin: '/usr/local/bin/docker');
-   $sandbox = Sandbox::podman($policy, podmanBin: '/usr/bin/podman');
-   $sandbox = Sandbox::firejail($policy, firejailBin: '/usr/bin/firejail');
-   $sandbox = Sandbox::bubblewrap($policy, bubblewrapBin: '/usr/bin/bwrap');
-   ```
+
+```php
+$sandbox = Sandbox::docker($policy, dockerBin: '/usr/local/bin/docker');
+$sandbox = Sandbox::podman($policy, podmanBin: '/usr/bin/podman');
+$sandbox = Sandbox::firejail($policy, firejailBin: '/usr/bin/firejail');
+$sandbox = Sandbox::bubblewrap($policy, bubblewrapBin: '/usr/bin/bwrap');
+```
 
 The package searches the following directories in addition to `PATH`: `/usr/bin`, `/usr/local/bin`, `/opt/homebrew/bin`, `/opt/local/bin`, and `/snap/bin`. On Windows, `.exe` extensions are tried automatically.
 
@@ -68,22 +70,25 @@ The valid string values are: `host`, `docker`, `podman`, `firejail`, `bubblewrap
 **Solutions:**
 
 1. Increase the wall-clock timeout:
-   ```php
-   $policy = $policy->withTimeout(60); // 60 seconds
-   ```
+
+```php
+$policy = $policy->withTimeout(60); // 60 seconds
+```
 
 2. If the process produces output in bursts with long pauses, increase or disable the idle timeout:
-   ```php
-   $policy = $policy->withIdleTimeout(30);  // 30 seconds of no output
-   $policy = $policy->withIdleTimeout(null); // disable idle timeout entirely
-   ```
+
+```php
+$policy = $policy->withIdleTimeout(30);  // 30 seconds of no output
+$policy = $policy->withIdleTimeout(null); // disable idle timeout entirely
+```
 
 3. Use the streaming callback to monitor progress and identify where the command stalls:
-   ```php
-   $result = $sandbox->execute($argv, null, function (string $type, string $chunk) {
-       echo "[" . date('H:i:s') . "] {$type}: {$chunk}";
-   });
-   ```
+
+```php
+$result = $sandbox->execute($argv, null, function (string $type, string $chunk) {
+    echo "[" . date('H:i:s') . "] {$type}: {$chunk}";
+});
+```
 
 4. For container drivers, keep in mind that the timeout includes container startup time. If image pulling is needed on the first run, it may consume a significant portion of the budget. Pre-pull images to avoid this.
 

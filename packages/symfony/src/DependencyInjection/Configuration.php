@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cognesy\Instructor\Symfony\DependencyInjection;
 
+use Cognesy\Events\Contracts\CanHandleEvents;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
@@ -45,6 +46,41 @@ final class Configuration implements ConfigurationInterface
         'resume_session',
     ];
 
+    /** @var list<string> */
+    private const LOGGING_PRESETS = [
+        'development',
+        'default',
+        'production',
+        'custom',
+    ];
+
+    /** @var list<string> */
+    private const LOG_LEVELS = [
+        'emergency',
+        'alert',
+        'critical',
+        'error',
+        'warning',
+        'notice',
+        'info',
+        'debug',
+    ];
+
+    /** @var list<string> */
+    private const SESSION_STORE_DRIVERS = [
+        'memory',
+        'file',
+    ];
+
+    /** @var list<string> */
+    private const TELEMETRY_DRIVERS = [
+        'null',
+        'otel',
+        'langfuse',
+        'logfire',
+        'composite',
+    ];
+
     public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('instructor');
@@ -62,21 +98,13 @@ final class Configuration implements ConfigurationInterface
             ->variableNode('agents')
             ->defaultValue([])
             ->end()
-            ->variableNode('sessions')
-            ->defaultValue([])
-            ->end()
-            ->variableNode('telemetry')
-            ->defaultValue([])
-            ->end()
-            ->variableNode('logging')
-            ->defaultValue([])
-            ->end()
+            ->append($this->sessionsNode())
+            ->append($this->telemetryNode())
+            ->append($this->loggingNode())
             ->variableNode('testing')
             ->defaultValue([])
             ->end()
-            ->variableNode('delivery')
-            ->defaultValue([])
-            ->end()
+            ->append($this->deliveryNode())
             ->end();
 
         return $treeBuilder;
@@ -267,11 +295,109 @@ final class Configuration implements ConfigurationInterface
             ->ifTrue(static fn (mixed $value): bool => ! is_array($value))
             ->thenInvalid('Expected instructor.events to be an array, got %s.')
             ->end()
+            ->beforeNormalization()
+            ->ifArray()
+            ->then(static function (array $value): array {
+                if (array_key_exists('dispatch_to_symfony', $value)) {
+                    return $value;
+                }
+
+                if (! array_key_exists('bridge_to_symfony', $value)) {
+                    return $value;
+                }
+
+                $value['dispatch_to_symfony'] = $value['bridge_to_symfony'];
+
+                return $value;
+            })
+            ->end()
             ->addDefaultsIfNotSet()
             ->children()
             ->scalarNode('dispatch_to_symfony')->defaultTrue()->end()
             ->scalarNode('bridge_to_symfony')->defaultNull()->end()
             ->end();
+    }
+
+    private function loggingNode(): ArrayNodeDefinition
+    {
+        $treeBuilder = new TreeBuilder('logging');
+        $node = $treeBuilder->getRootNode();
+
+        $node
+            ->beforeNormalization()
+            ->ifTrue(static fn (mixed $value): bool => ! is_array($value))
+            ->thenInvalid('Expected instructor.logging to be an array, got %s.')
+            ->end()
+            ->addDefaultsIfNotSet()
+            ->children()
+            ->booleanNode('enabled')
+            ->defaultFalse()
+            ->end()
+            ->enumNode('preset')
+            ->values(self::LOGGING_PRESETS)
+            ->defaultValue('production')
+            ->end()
+            ->scalarNode('event_bus_service')
+            ->defaultValue(CanHandleEvents::class)
+            ->cannotBeEmpty()
+            ->end()
+            ->scalarNode('channel')
+            ->defaultValue('instructor')
+            ->cannotBeEmpty()
+            ->end()
+            ->enumNode('level')
+            ->values(self::LOG_LEVELS)
+            ->defaultValue('warning')
+            ->end()
+            ->arrayNode('exclude_events')
+            ->scalarPrototype()->end()
+            ->defaultValue([])
+            ->end()
+            ->arrayNode('include_events')
+            ->scalarPrototype()->end()
+            ->defaultValue([])
+            ->end()
+            ->arrayNode('templates')
+            ->scalarPrototype()->end()
+            ->defaultValue([])
+            ->end()
+            ->end();
+
+        return $node;
+    }
+
+    private function sessionsNode(): ArrayNodeDefinition
+    {
+        $treeBuilder = new TreeBuilder('sessions');
+        $node = $treeBuilder->getRootNode();
+
+        $node
+            ->beforeNormalization()
+            ->ifTrue(static fn (mixed $value): bool => ! is_array($value))
+            ->thenInvalid('Expected instructor.sessions to be an array, got %s.')
+            ->end()
+            ->beforeNormalization()
+            ->ifArray()
+            ->then(static fn (array $value): array => self::normalizeSessionsRoot($value))
+            ->end()
+            ->addDefaultsIfNotSet()
+            ->children()
+            ->enumNode('store')
+            ->values(self::SESSION_STORE_DRIVERS)
+            ->defaultValue('memory')
+            ->end()
+            ->arrayNode('file')
+            ->addDefaultsIfNotSet()
+            ->children()
+            ->scalarNode('directory')
+            ->defaultValue('%kernel.cache_dir%/instructor/agent-sessions')
+            ->cannotBeEmpty()
+            ->end()
+            ->end()
+            ->end()
+            ->end();
+
+        return $node;
     }
 
     private function agentCtrlNode(): ArrayNodeDefinition
@@ -297,6 +423,262 @@ final class Configuration implements ConfigurationInterface
             ->append($this->agentCtrlExecutionNode())
             ->append($this->agentCtrlContinuationNode())
             ->append($this->agentCtrlBackendsNode())
+            ->end();
+
+        return $node;
+    }
+
+    private function telemetryNode(): ArrayNodeDefinition
+    {
+        $treeBuilder = new TreeBuilder('telemetry');
+        $node = $treeBuilder->getRootNode();
+
+        $node
+            ->beforeNormalization()
+            ->ifTrue(static fn (mixed $value): bool => ! is_array($value))
+            ->thenInvalid('Expected instructor.telemetry to be an array, got %s.')
+            ->end()
+            ->addDefaultsIfNotSet()
+            ->children()
+            ->booleanNode('enabled')
+            ->defaultFalse()
+            ->end()
+            ->enumNode('driver')
+            ->values(self::TELEMETRY_DRIVERS)
+            ->defaultValue('null')
+            ->end()
+            ->scalarNode('service_name')
+            ->defaultValue('symfony')
+            ->cannotBeEmpty()
+            ->end()
+            ->append($this->telemetryProjectorsNode())
+            ->append($this->telemetryHttpNode())
+            ->append($this->telemetryDriversNode())
+            ->end();
+
+        return $node;
+    }
+
+    private function deliveryNode(): ArrayNodeDefinition
+    {
+        $treeBuilder = new TreeBuilder('delivery');
+        $node = $treeBuilder->getRootNode();
+
+        $node
+            ->addDefaultsIfNotSet()
+            ->children()
+            ->append($this->messengerDeliveryNode())
+            ->append($this->progressDeliveryNode())
+            ->append($this->cliDeliveryNode())
+            ->end();
+
+        return $node;
+    }
+
+    private function progressDeliveryNode(): ArrayNodeDefinition
+    {
+        $treeBuilder = new TreeBuilder('progress');
+        $node = $treeBuilder->getRootNode();
+
+        $node
+            ->addDefaultsIfNotSet()
+            ->children()
+            ->booleanNode('enabled')
+            ->defaultTrue()
+            ->end()
+            ->end();
+
+        return $node;
+    }
+
+    private function cliDeliveryNode(): ArrayNodeDefinition
+    {
+        $treeBuilder = new TreeBuilder('cli');
+        $node = $treeBuilder->getRootNode();
+
+        $node
+            ->addDefaultsIfNotSet()
+            ->children()
+            ->booleanNode('enabled')
+            ->defaultFalse()
+            ->end()
+            ->booleanNode('use_colors')
+            ->defaultTrue()
+            ->end()
+            ->booleanNode('show_timestamps')
+            ->defaultTrue()
+            ->end()
+            ->end();
+
+        return $node;
+    }
+
+    private function telemetryProjectorsNode(): ArrayNodeDefinition
+    {
+        $treeBuilder = new TreeBuilder('projectors');
+        $node = $treeBuilder->getRootNode();
+
+        $node
+            ->addDefaultsIfNotSet()
+            ->children()
+            ->booleanNode('instructor')
+            ->defaultTrue()
+            ->end()
+            ->booleanNode('polyglot')
+            ->defaultTrue()
+            ->end()
+            ->booleanNode('http')
+            ->defaultTrue()
+            ->end()
+            ->booleanNode('agent_ctrl')
+            ->defaultTrue()
+            ->end()
+            ->booleanNode('agents')
+            ->defaultTrue()
+            ->end()
+            ->end();
+
+        return $node;
+    }
+
+    private function telemetryHttpNode(): ArrayNodeDefinition
+    {
+        $treeBuilder = new TreeBuilder('http');
+        $node = $treeBuilder->getRootNode();
+
+        $node
+            ->addDefaultsIfNotSet()
+            ->children()
+            ->booleanNode('capture_streaming_chunks')
+            ->defaultFalse()
+            ->end()
+            ->end();
+
+        return $node;
+    }
+
+    private function telemetryDriversNode(): ArrayNodeDefinition
+    {
+        $treeBuilder = new TreeBuilder('drivers');
+        $node = $treeBuilder->getRootNode();
+
+        $node
+            ->addDefaultsIfNotSet()
+            ->children()
+            ->append($this->telemetryCompositeDriverNode())
+            ->append($this->telemetryOtelDriverNode())
+            ->append($this->telemetryLangfuseDriverNode())
+            ->append($this->telemetryLogfireDriverNode())
+            ->end();
+
+        return $node;
+    }
+
+    private function telemetryCompositeDriverNode(): ArrayNodeDefinition
+    {
+        $treeBuilder = new TreeBuilder('composite');
+        $node = $treeBuilder->getRootNode();
+
+        $node
+            ->addDefaultsIfNotSet()
+            ->children()
+            ->arrayNode('exporters')
+            ->enumPrototype()
+            ->values(['otel', 'langfuse', 'logfire'])
+            ->end()
+            ->defaultValue([])
+            ->end()
+            ->end();
+
+        return $node;
+    }
+
+    private function telemetryOtelDriverNode(): ArrayNodeDefinition
+    {
+        $treeBuilder = new TreeBuilder('otel');
+        $node = $treeBuilder->getRootNode();
+
+        $node
+            ->addDefaultsIfNotSet()
+            ->children()
+            ->scalarNode('endpoint')
+            ->defaultNull()
+            ->end()
+            ->arrayNode('headers')
+            ->normalizeKeys(false)
+            ->scalarPrototype()->end()
+            ->defaultValue([])
+            ->end()
+            ->end();
+
+        return $node;
+    }
+
+    private function telemetryLangfuseDriverNode(): ArrayNodeDefinition
+    {
+        $treeBuilder = new TreeBuilder('langfuse');
+        $node = $treeBuilder->getRootNode();
+
+        $node
+            ->addDefaultsIfNotSet()
+            ->children()
+            ->scalarNode('host')
+            ->defaultNull()
+            ->end()
+            ->scalarNode('public_key')
+            ->defaultNull()
+            ->end()
+            ->scalarNode('secret_key')
+            ->defaultNull()
+            ->end()
+            ->end();
+
+        return $node;
+    }
+
+    private function telemetryLogfireDriverNode(): ArrayNodeDefinition
+    {
+        $treeBuilder = new TreeBuilder('logfire');
+        $node = $treeBuilder->getRootNode();
+
+        $node
+            ->addDefaultsIfNotSet()
+            ->children()
+            ->scalarNode('endpoint')
+            ->defaultNull()
+            ->end()
+            ->scalarNode('write_token')
+            ->defaultNull()
+            ->end()
+            ->arrayNode('headers')
+            ->normalizeKeys(false)
+            ->scalarPrototype()->end()
+            ->defaultValue([])
+            ->end()
+            ->end();
+
+        return $node;
+    }
+
+    private function messengerDeliveryNode(): ArrayNodeDefinition
+    {
+        $treeBuilder = new TreeBuilder('messenger');
+        $node = $treeBuilder->getRootNode();
+
+        $node
+            ->addDefaultsIfNotSet()
+            ->children()
+            ->booleanNode('enabled')
+            ->defaultFalse()
+            ->end()
+            ->scalarNode('bus_service')
+            ->defaultValue('message_bus')
+            ->cannotBeEmpty()
+            ->end()
+            ->arrayNode('observe_events')
+            ->scalarPrototype()->end()
+            ->defaultValue([])
+            ->end()
             ->end();
 
         return $node;
@@ -518,6 +900,31 @@ final class Configuration implements ConfigurationInterface
         }
 
         return self::withoutAgentCtrlLegacyKeys($normalized);
+    }
+
+    /** @param array<string, mixed> $value */
+    private static function normalizeSessionsRoot(array $value): array
+    {
+        $normalized = $value;
+        $store = $normalized['store'] ?? $normalized['driver'] ?? $normalized['session_store'] ?? null;
+
+        if (is_string($store) && $store !== '') {
+            $normalized['store'] = $store;
+        }
+
+        $directory = $normalized['directory'] ?? null;
+        if (! is_string($directory) || $directory === '') {
+            return $normalized;
+        }
+
+        $file = self::arrayValue($normalized, 'file');
+        if (array_key_exists('directory', $file)) {
+            return $normalized;
+        }
+
+        $normalized['file'] = [...$file, 'directory' => $directory];
+
+        return $normalized;
     }
 
     /** @param array<string, mixed> $value */
