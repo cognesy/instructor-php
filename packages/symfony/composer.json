@@ -47,14 +47,14 @@
     "cognesy/instructor-telemetry": "^2.2",
     "cognesy/instructor-logging": "^2.2",
     "cognesy/instructor-utils": "^2.2",
-    "symfony/config": "^6.4|^7.0",
-    "symfony/dependency-injection": "^6.4|^7.0",
-    "symfony/event-dispatcher": "^6.4|^7.0",
-    "symfony/framework-bundle": "^6.4|^7.0",
-    "symfony/http-client": "^6.4|^7.0",
-    "symfony/http-kernel": "^6.4|^7.0",
-    "symfony/messenger": "^6.4|^7.0",
-    "symfony/yaml": "^6.4|^7.0"
+    "symfony/config": "^6.4|^7.0|^8.0",
+    "symfony/dependency-injection": "^6.4|^7.0|^8.0",
+    "symfony/event-dispatcher": "^6.4|^7.0|^8.0",
+    "symfony/framework-bundle": "^6.4|^7.0|^8.0",
+    "symfony/http-client": "^6.4|^7.0|^8.0",
+    "symfony/http-kernel": "^6.4|^7.0|^8.0",
+    "symfony/messenger": "^6.4|^7.0|^8.0",
+    "symfony/yaml": "^6.4|^7.0|^8.0"
   },
   "require-dev": {
     "pestphp/pest": "^2.34",
