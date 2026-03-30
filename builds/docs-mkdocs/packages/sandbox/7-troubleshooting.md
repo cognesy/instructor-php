@@ -24,7 +24,7 @@ This page covers the most common issues you may encounter when using the Sandbox
 
 ```php
 echo getenv('PATH');
-// @doctest id="ce37"
+// @doctest id="8a1e"
 ```
 
 3. Set the binary path explicitly through an environment variable before your PHP process starts:
@@ -42,7 +42,7 @@ $sandbox = Sandbox::docker($policy, dockerBin: '/usr/local/bin/docker');
 $sandbox = Sandbox::podman($policy, podmanBin: '/usr/bin/podman');
 $sandbox = Sandbox::firejail($policy, firejailBin: '/usr/bin/firejail');
 $sandbox = Sandbox::bubblewrap($policy, bubblewrapBin: '/usr/bin/bwrap');
-// @doctest id="fabc"
+// @doctest id="eb74"
 ```
 
 The package searches the following directories in addition to `PATH`: `/usr/bin`, `/usr/local/bin`, `/opt/homebrew/bin`, `/opt/local/bin`, and `/snap/bin`. On Windows, `.exe` extensions are tried automatically.
@@ -59,7 +59,7 @@ The package searches the following directories in addition to `PATH`: `/usr/bin`
 use Cognesy\Sandbox\Enums\SandboxDriver;
 
 $sandbox = Sandbox::fromPolicy($policy)->using(SandboxDriver::Docker);
-// @doctest id="d4d3"
+// @doctest id="0357"
 ```
 
 The valid string values are: `host`, `docker`, `podman`, `firejail`, `bubblewrap`. These match the `SandboxDriver` enum's backing values exactly.
@@ -76,7 +76,7 @@ The valid string values are: `host`, `docker`, `podman`, `firejail`, `bubblewrap
 
 ```php
 $policy = $policy->withTimeout(60); // 60 seconds
-// @doctest id="d50e"
+// @doctest id="d12b"
 ```
 
 2. If the process produces output in bursts with long pauses, increase or disable the idle timeout:
@@ -84,7 +84,7 @@ $policy = $policy->withTimeout(60); // 60 seconds
 ```php
 $policy = $policy->withIdleTimeout(30);  // 30 seconds of no output
 $policy = $policy->withIdleTimeout(null); // disable idle timeout entirely
-// @doctest id="3f3d"
+// @doctest id="e39c"
 ```
 
 3. Use the streaming callback to monitor progress and identify where the command stalls:
@@ -93,7 +93,7 @@ $policy = $policy->withIdleTimeout(null); // disable idle timeout entirely
 $result = $sandbox->execute($argv, null, function (string $type, string $chunk) {
     echo "[" . date('H:i:s') . "] {$type}: {$chunk}";
 });
-// @doctest id="1f4c"
+// @doctest id="38b1"
 ```
 
 4. For container drivers, keep in mind that the timeout includes container startup time. If image pulling is needed on the first run, it may consume a significant portion of the budget. Pre-pull images to avoid this.
@@ -113,7 +113,7 @@ $policy = $policy->withOutputCaps(
     stdoutBytes: 10 * 1024 * 1024, // 10 MB
     stderrBytes: 2 * 1024 * 1024,  // 2 MB
 );
-// @doctest id="de3a"
+// @doctest id="0df9"
 ```
 
 The default cap is 1 MB (1,048,576 bytes) for each stream. The minimum is 1024 bytes -- values below this are clamped upward.
@@ -129,7 +129,7 @@ $result = $sandbox->execute($argv, null, function (string $type, string $chunk) 
 
 fclose($logFile);
 // $result->stdout() may be truncated, but /tmp/full-output.log has everything
-// @doctest id="228c"
+// @doctest id="b00a"
 ```
 
 ## Working Directory Errors
@@ -240,7 +240,7 @@ If you still encounter issues, verify that:
 
 ```php
 $policy = $policy->withNetwork(true);
-// @doctest id="fa9f"
+// @doctest id="91a7"
 ```
 
 **How network isolation is implemented per driver:**

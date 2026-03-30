@@ -16,7 +16,7 @@ $base = ExecutionPolicy::in('/tmp')->withTimeout(10);
 
 // $base is unchanged -- $extended is a new instance
 $extended = $base->withMemory('256M')->withNetwork(true);
-// @doctest id="1ddc"
+// @doctest id="9a66"
 ```
 
 ## Creating a Policy
@@ -27,7 +27,7 @@ The most common way to create a policy is with the `in()` static factory, which 
 
 ```php
 $policy = ExecutionPolicy::in('/var/sandbox');
-// @doctest id="573c"
+// @doctest id="da14"
 ```
 
 The base directory must exist and be writable. For container drivers (Docker, Podman, Firejail, Bubblewrap), a unique temporary subdirectory is created inside this path for each execution and automatically cleaned up afterward.
@@ -38,7 +38,7 @@ When you do not need a specific directory, use `default()`, which sets the base 
 
 ```php
 $policy = ExecutionPolicy::default();
-// @doctest id="7f00"
+// @doctest id="c886"
 ```
 
 ### Default Values
@@ -67,7 +67,7 @@ The wall-clock timeout defines the maximum number of seconds a command may run b
 
 ```php
 $policy = $policy->withTimeout(30); // 30 seconds
-// @doctest id="e276"
+// @doctest id="00de"
 ```
 
 When a timeout occurs, the resulting `ExecResult` will have `timedOut()` returning `true` and an exit code of `124` (matching the GNU `timeout` convention).
@@ -78,14 +78,14 @@ The idle timeout terminates a command if it produces no output for the specified
 
 ```php
 $policy = $policy->withIdleTimeout(10); // Kill after 10 seconds of silence
-// @doctest id="b6aa"
+// @doctest id="4e97"
 ```
 
 To disable the idle timeout (the default), pass `null`:
 
 ```php
 $policy = $policy->withIdleTimeout(null);
-// @doctest id="7a90"
+// @doctest id="56d1"
 ```
 
 The idle timeout is tracked independently of the wall-clock timeout. A command is terminated as soon as either limit is reached, whichever comes first. The `TimeoutTracker` internally records the reason (`TimeoutReason::WALL` or `TimeoutReason::IDLE`) for diagnostic purposes.
@@ -96,7 +96,7 @@ The memory limit controls the maximum amount of RAM a sandboxed process may use.
 
 ```php
 $policy = $policy->withMemory('256M');
-// @doctest id="5f00"
+// @doctest id="9035"
 ```
 
 Accepted formats include numeric values with `K`, `M`, or `G` suffixes (e.g., `512K`, `256M`, `1G`). The value is normalized internally to megabytes and clamped to a maximum of 1 GB. An `InvalidArgumentException` is thrown for invalid formats or if `-1` (unbounded) is passed.
@@ -106,7 +106,7 @@ Accepted formats include numeric values with `K`, `M`, or `G` suffixes (e.g., `5
 $policy->withMemory('512M');  // 512 megabytes
 $policy->withMemory('1G');    // Clamped to 1024M
 $policy->withMemory('65536K'); // Normalized to 64M
-// @doctest id="a187"
+// @doctest id="3040"
 ```
 
 ## File-System Access
@@ -119,7 +119,7 @@ Mount host paths as read-only inside the sandbox:
 
 ```php
 $policy = $policy->withReadablePaths('/data/config', '/etc/app');
-// @doctest id="4035"
+// @doctest id="c4a6"
 ```
 
 In container drivers, these are mounted at sequential container paths: `/mnt/ro0`, `/mnt/ro1`, and so on. Your command should reference these container paths, not the host paths.
@@ -130,7 +130,7 @@ Mount host paths as read-write inside the sandbox:
 
 ```php
 $policy = $policy->withWritablePaths('/data/output', '/var/cache');
-// @doctest id="1df2"
+// @doctest id="5575"
 ```
 
 In container drivers, these are mounted at `/mnt/rw0`, `/mnt/rw1`, etc.
@@ -146,7 +146,7 @@ $policy = $policy->withReadablePaths('/data/a', '/data/b');
 // Incorrect -- only '/data/b' survives
 $policy = $policy->withReadablePaths('/data/a');
 $policy = $policy->withReadablePaths('/data/b');
-// @doctest id="82d6"
+// @doctest id="d600"
 ```
 - Paths containing symlinks, `..` components, or colons are silently skipped for safety. Use `realpath()` to resolve symlinks before passing paths to the policy.
 
@@ -163,7 +163,7 @@ $policy = $policy->withEnv([
     'APP_ENV' => 'testing',
     'LOG_LEVEL' => 'debug',
 ]);
-// @doctest id="ef01"
+// @doctest id="e1be"
 ```
 
 ### Inheriting the Host Environment
@@ -175,14 +175,14 @@ $policy = $policy->withEnv(
     ['APP_ENV' => 'staging'],
     inherit: true,
 );
-// @doctest id="09d5"
+// @doctest id="f6fe"
 ```
 
 You can also toggle inheritance independently:
 
 ```php
 $policy = $policy->inheritEnvironment(true);
-// @doctest id="a029"
+// @doctest id="e4ae"
 ```
 
 ### Blocked Variables
@@ -200,7 +200,7 @@ Network access is disabled by default. Enable it when your command needs to reac
 
 ```php
 $policy = $policy->withNetwork(true);
-// @doctest id="2f31"
+// @doctest id="34cf"
 ```
 
 For container drivers, this controls the `--network` flag (`none` vs. default bridge). For the host driver, this setting serves as a policy declaration only -- no OS-level network restriction is enforced. For Firejail, the `--net=none` flag is used. For Bubblewrap, the `--unshare-net` flag isolates the network namespace.
@@ -214,7 +214,7 @@ $policy = $policy->withOutputCaps(
     stdoutBytes: 5 * 1024 * 1024,  // 5 MB for stdout
     stderrBytes: 1 * 1024 * 1024,  // 1 MB for stderr
 );
-// @doctest id="4ede"
+// @doctest id="d270"
 ```
 
 The minimum cap is 1024 bytes. Values below this threshold are automatically clamped upward. The default cap is 1 MB (1,048,576 bytes) for each stream.
@@ -232,7 +232,7 @@ $policy = $policy->with(
     networkEnabled: true,
     inheritEnv: true,
 );
-// @doctest id="c185"
+// @doctest id="bd99"
 ```
 
 This is the same mechanism that all `with*()` convenience methods use internally.
@@ -253,7 +253,7 @@ $policy->inheritEnv();        // bool
 $policy->networkEnabled();    // bool
 $policy->stdoutLimitBytes();  // int
 $policy->stderrLimitBytes();  // int
-// @doctest id="4c0f"
+// @doctest id="f4f6"
 ```
 
 These accessors are useful when building custom drivers or when your application logic needs to inspect the policy (for example, to display timeout values in a UI).

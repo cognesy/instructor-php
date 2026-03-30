@@ -55,10 +55,12 @@ class StructuredOutput extends Facade
      */
     public static function fromConfig(LLMConfig $config): BaseStructuredOutput|StructuredOutputFake
     {
-        $root = static::getFacadeRoot();
-        if ($root instanceof StructuredOutputFake) {
-            return $root->withLLMConfig($config);
+        $fake = static::activeFake();
+        if ($fake instanceof StructuredOutputFake) {
+            return new BaseStructuredOutput($fake->withLLMConfig($config));
         }
+
+        $root = static::getFacadeRoot();
         if ($root instanceof BaseStructuredOutput) {
             return $root->withRuntime(\Cognesy\Instructor\StructuredOutputRuntime::fromConfig(
                 $config,
@@ -72,6 +74,11 @@ class StructuredOutput extends Facade
      */
     public static function connection(string $name): BaseStructuredOutput|StructuredOutputFake
     {
+        $fake = static::activeFake();
+        if ($fake instanceof StructuredOutputFake) {
+            $fake->connection($name);
+        }
+
         return static::fromConfig(static::resolveLLMConfig($name));
     }
 
@@ -89,7 +96,16 @@ class StructuredOutput extends Facade
     public static function fake(array $responses = []): StructuredOutputFake
     {
         $fake = new StructuredOutputFake($responses);
-        static::swap($fake);
+        $app = static::getFacadeApplication();
+
+        if ($app !== null) {
+            $app->instance(StructuredOutputFake::class, $fake);
+            $app->instance(\Cognesy\Instructor\Contracts\CanCreateStructuredOutput::class, $fake);
+            $app->instance(BaseStructuredOutput::class, new BaseStructuredOutput($fake));
+        }
+
+        static::clearResolvedInstance(static::getFacadeAccessor());
+
         return $fake;
     }
 
@@ -134,5 +150,18 @@ class StructuredOutput extends Facade
             'gemini' => "/models/{$model}:generateContent",
             default => '/chat/completions',
         };
+    }
+
+    private static function activeFake(): ?StructuredOutputFake
+    {
+        $app = static::getFacadeApplication();
+
+        if ($app === null || !$app->bound(\Cognesy\Instructor\Contracts\CanCreateStructuredOutput::class)) {
+            return null;
+        }
+
+        $runtime = $app->make(\Cognesy\Instructor\Contracts\CanCreateStructuredOutput::class);
+
+        return $runtime instanceof StructuredOutputFake ? $runtime : null;
     }
 }

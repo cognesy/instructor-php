@@ -14,14 +14,14 @@ $request = new HttpRequest(
     body: '',
     options: ['stream' => true],
 );
-// @doctest id="734d"
+// @doctest id="1f45"
 ```
 
 You can also enable streaming on an existing request using `withStreaming()`:
 
 ```php
 $request = $request->withStreaming(true);
-// @doctest id="20b6"
+// @doctest id="7c82"
 ```
 
 ## Consuming the Stream
@@ -33,7 +33,7 @@ foreach ($client->send($request)->stream() as $chunk) {
     echo $chunk;
     flush();
 }
-// @doctest id="b443"
+// @doctest id="09c9"
 ```
 
 Each chunk is a raw string as received from the transport layer. The size of individual chunks depends on the driver and the `streamChunkSize` setting in `HttpClientConfig` (default: 256 bytes).
@@ -66,7 +66,7 @@ foreach ($client->send($request)->stream() as $chunk) {
     echo $chunk;
     flush();
 }
-// @doctest id="899b"
+// @doctest id="053b"
 ```
 
 The raw chunks from the transport layer will contain server-sent event framing (e.g., `data: {...}\n\n`). To parse these into clean payloads, use the `EventSourceMiddleware`.
@@ -83,7 +83,7 @@ $client = $client->withMiddleware(
         ->withParser(fn(string $payload): string => $payload),
     'eventsource',
 );
-// @doctest id="9410"
+// @doctest id="3ca0"
 ```
 
 The parser callback receives the raw payload string from each `data:` line and returns the value to yield. Return `false` to skip an event. This is useful for filtering out `[DONE]` markers or parsing JSON:
@@ -99,7 +99,7 @@ $client = $client->withMiddleware(
         }),
     'eventsource',
 );
-// @doctest id="123d"
+// @doctest id="6e3f"
 ```
 
 You can also attach listeners for debugging or event dispatching:
@@ -111,7 +111,7 @@ use Cognesy\Http\Config\DebugConfig;
 $middleware = (new EventSourceMiddleware(true))
     ->withListeners(new PrintToConsole(new DebugConfig(httpEnabled: true)))
     ->withParser(fn(string $payload): string => $payload);
-// @doctest id="b3a7"
+// @doctest id="ff0e"
 ```
 
 ## Downloading Large Files
@@ -134,7 +134,7 @@ foreach ($client->send($request)->stream() as $chunk) {
 }
 
 fclose($handle);
-// @doctest id="5cf8"
+// @doctest id="7614"
 ```
 
 ## Considerations

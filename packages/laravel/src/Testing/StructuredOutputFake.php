@@ -4,11 +4,19 @@ declare(strict_types=1);
 
 namespace Cognesy\Instructor\Laravel\Testing;
 
+use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Instructor\Config\StructuredOutputConfig;
+use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
+use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
+use Cognesy\Instructor\PendingStructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
+use JsonException;
 use PHPUnit\Framework\Assert as PHPUnit;
 
 /**
@@ -35,7 +43,7 @@ use PHPUnit\Framework\Assert as PHPUnit;
  * $fake->assertExtractedTimes(PersonData::class, 1);
  * ```
  */
-class StructuredOutputFake
+class StructuredOutputFake implements CanCreateStructuredOutput
 {
     /** @var array<class-string, mixed> */
     protected array $responses = [];
@@ -62,6 +70,10 @@ class StructuredOutputFake
 
     protected array $options = [];
 
+    private readonly EventDispatcher $events;
+
+    private readonly StructuredOutputConfig $config;
+
     /**
      * Create a new fake instance.
      *
@@ -70,6 +82,8 @@ class StructuredOutputFake
     public function __construct(array $responses = [])
     {
         $this->responses = $responses;
+        $this->events = new EventDispatcher('laravel-structured-output-fake');
+        $this->config = new StructuredOutputConfig();
     }
 
     /**
@@ -254,9 +268,21 @@ class StructuredOutputFake
         return $this;
     }
 
-    public function create(): self
+    #[\Override]
+    public function create(?StructuredOutputRequest $request = null): PendingStructuredOutput
     {
-        return $this;
+        $request = $request ?? $this->buildRequest();
+        $this->recordRequest($request);
+
+        $runtime = new StructuredOutputRuntime(
+            inference: new InferenceFakeRuntime(new InferenceFakeDriver($this->responseFor($request))),
+            events: $this->events,
+            config: $this->config,
+        );
+
+        $this->resetState();
+
+        return $runtime->create($request);
     }
 
     /**
@@ -264,7 +290,7 @@ class StructuredOutputFake
      */
     public function get(): mixed
     {
-        return $this->resolveResponse();
+        return $this->create()->get();
     }
 
     public function getString(): string
@@ -300,23 +326,17 @@ class StructuredOutputFake
 
     public function response(): object
     {
-        return (object) [
-            'value' => $this->get(),
-        ];
+        return $this->create()->response();
     }
 
     public function inferenceResponse(): object
     {
-        return (object) [
-            'content' => '',
-            'toolCalls' => [],
-            'finishReason' => 'stop',
-        ];
+        return $this->create()->inferenceResponse();
     }
 
     public function stream(): iterable
     {
-        yield $this->get();
+        yield from $this->create()->stream();
     }
 
     /**
@@ -324,44 +344,7 @@ class StructuredOutputFake
      */
     protected function resolveResponse(): mixed
     {
-        $class = $this->getResponseModelClass();
-
-        // Record the extraction
-        $this->recorded[] = [
-            'class' => $class,
-            'messages' => $this->messages,
-            'model' => $this->model,
-            'connection' => $this->connection,
-            'llmConfig' => $this->llmConfig,
-        ];
-
-        // Reset state
-        $this->messages = null;
-        $this->model = null;
-        $this->connection = null;
-        $this->llmConfig = null;
-        $this->responseModel = null;
-        $this->system = null;
-        $this->prompt = null;
-        $this->examples = null;
-
-        // Find matching response
-        if (isset($this->responses[$class])) {
-            $response = $this->responses[$class];
-
-            // Handle sequence of responses
-            if (is_array($response) && !empty($response) && array_is_list($response)) {
-                return array_shift($this->responses[$class]);
-            }
-
-            return $response;
-        }
-
-        // No fake response defined - throw helpful error
-        throw new \RuntimeException(
-            "No fake response defined for [{$class}]. " .
-            "Use StructuredOutput::fake(['{$class}' => \$response]) to define one."
-        );
+        return $this->create()->get();
     }
 
     /**
@@ -378,6 +361,81 @@ class StructuredOutputFake
         }
 
         return 'unknown';
+    }
+
+    private function buildRequest(): StructuredOutputRequest
+    {
+        return new StructuredOutputRequest(
+            messages: $this->messages ?? Messages::empty(),
+            requestedSchema: $this->responseModel,
+            system: $this->system,
+            prompt: $this->prompt,
+            examples: $this->examples,
+            model: $this->model,
+            options: $this->options,
+        );
+    }
+
+    private function recordRequest(StructuredOutputRequest $request): void
+    {
+        $this->recorded[] = [
+            'class' => $this->requestedSchemaKey($request),
+            'messages' => $request->messages(),
+            'model' => $request->model(),
+            'connection' => $this->connection,
+            'llmConfig' => $this->llmConfig,
+        ];
+    }
+
+    private function resetState(): void
+    {
+        $this->messages = null;
+        $this->model = null;
+        $this->connection = null;
+        $this->llmConfig = null;
+        $this->responseModel = null;
+        $this->system = null;
+        $this->prompt = null;
+        $this->examples = null;
+        $this->options = [];
+    }
+
+    private function responseFor(StructuredOutputRequest $request): InferenceResponse
+    {
+        $class = $this->requestedSchemaKey($request);
+        $response = $this->responses[$class]
+            ?? throw new \RuntimeException(
+                "No fake response defined for [{$class}]. " .
+                "Use StructuredOutput::fake(['{$class}' => \$response]) to define one."
+            );
+
+        if (is_array($response) && !empty($response) && array_is_list($response)) {
+            $resolved = array_shift($this->responses[$class]);
+
+            return new InferenceResponse(content: $this->encodeResponse($resolved));
+        }
+
+        return new InferenceResponse(content: $this->encodeResponse($response));
+    }
+
+    private function requestedSchemaKey(StructuredOutputRequest $request): string
+    {
+        $schema = $request->requestedSchema();
+
+        return match (true) {
+            is_string($schema) => $schema,
+            is_object($schema) => $schema::class,
+            default => 'unknown',
+        };
+    }
+
+    private function encodeResponse(mixed $response): string
+    {
+        try {
+            return json_encode($response, JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new \RuntimeException('Failed to encode fake structured output response.', 0, $exception);
+        }
     }
 
     // Assertions

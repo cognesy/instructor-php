@@ -21,7 +21,7 @@ The most common connection problem is an incorrect `apiUrl` or `endpoint` in you
 driver: openai
 apiUrl: 'https://api.openai.com/v1'
 endpoint: /chat/completions
-# @doctest id="32f5"
+# @doctest id="8eac"
 ```
 
 Common mistakes include trailing slashes on `apiUrl`, missing the version prefix (e.g. `/v1`), or using an endpoint path that does not match the driver.
@@ -39,7 +39,7 @@ curl -s -o /dev/null -w "%{http_code}" https://api.openai.com/v1/models \
 curl -s -o /dev/null -w "%{http_code}" https://api.anthropic.com/v1/messages \
   -H "x-api-key: $ANTHROPIC_API_KEY" \
   -H "anthropic-version: 2023-06-01"
-# @doctest id="05de"
+# @doctest id="89fc"
 ```
 
 If the `curl` command fails, the problem is at the network layer, not in Polyglot.
@@ -71,7 +71,7 @@ $runtime = InferenceRuntime::fromConfig(
 $text = Inference::fromRuntime($runtime)
     ->withMessages(Messages::fromString('Summarize quantum computing in 200 words.'))
     ->get();
-// @doctest id="1ed2"
+// @doctest id="9d21"
 ```
 
 ## Proxy Configuration
@@ -83,7 +83,7 @@ The approach depends on your HTTP client driver. For the default cURL driver, yo
 ```bash
 export HTTP_PROXY=http://proxy.example.com:8080
 export HTTPS_PROXY=http://proxy.example.com:8080
-# @doctest id="e3ec"
+# @doctest id="94ac"
 ```
 
 Alternatively, configure a custom HTTP client with explicit proxy settings for your chosen driver.
@@ -105,7 +105,7 @@ If DNS is not resolving the provider's domain, you will see connection failures 
 ```bash
 nslookup api.openai.com
 dig api.anthropic.com
-# @doctest id="44d4"
+# @doctest id="c483"
 ```
 
 In containerized environments, check that the container's DNS resolver is configured correctly (e.g. `/etc/resolv.conf`).
@@ -117,7 +117,7 @@ For local providers like Ollama, confirm that the service is running and listeni
 ```bash
 # Check if Ollama is running
 curl http://localhost:11434/api/version
-# @doctest id="a0ab"
+# @doctest id="9bea"
 ```
 
 If Ollama is running on a different host or port, update the `apiUrl` in your preset:
@@ -127,7 +127,7 @@ driver: ollama
 apiUrl: 'http://192.168.1.100:11434/v1'
 endpoint: /chat/completions
 model: 'llama3'
-# @doctest id="dc89"
+# @doctest id="977f"
 ```
 
 ## Retry Transient Failures
@@ -150,7 +150,7 @@ $text = Inference::using('openai')
     ))
     ->withMessages(Messages::fromString('Hello'))
     ->get();
-// @doctest id="cb15"
+// @doctest id="d962"
 ```
 
 The retry policy automatically retries on `TimeoutException` and `NetworkException` by default.

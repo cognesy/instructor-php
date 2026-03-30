@@ -58,7 +58,7 @@ SymfonyTestApp::using(
         ],
     ],
 );
-// @doctest id="485d"
+// @doctest id="f415"
 ```
 
 Treat `SymfonyTestApp`, `TestKernel`, and the rest of `tests/Support` as repository-local test infrastructure.

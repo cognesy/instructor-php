@@ -51,7 +51,7 @@ instructor:
   telemetry:
     enabled: true
     driver: otel
-# @doctest id="4002"
+# @doctest id="63ac"
 ```
 
 What is built in:
@@ -90,7 +90,7 @@ instructor:
   delivery:
     progress:
       enabled: true
-# @doctest id="3dc9"
+# @doctest id="edab"
 ```
 
 What is built in:
@@ -135,7 +135,7 @@ instructor:
   logging:
     enabled: true
     preset: production
-# @doctest id="5b7d"
+# @doctest id="1d02"
 ```
 
 What is built in:
@@ -179,7 +179,7 @@ instructor:
   logging:
     enabled: true
     preset: development
-# @doctest id="99de"
+# @doctest id="0835"
 ```
 
 What is built in:
