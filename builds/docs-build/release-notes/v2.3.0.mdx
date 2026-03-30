@@ -1,0 +1,77 @@
+## What's New
+
+v2.3.0 introduces the first substantial Symfony integration baseline for InstructorPHP.
+The monorepo now includes a first-party `Cognesy\Instructor\Symfony\` bundle surface with
+framework-owned configuration, service wiring, delivery seams, observability, and testing support.
+
+This release also broadens Symfony 8 compatibility in the root package, tightens the Symfony-facing
+logging path, and expands the framework documentation significantly.
+
+## Symfony Integration
+
+### First-party bundle surface in the monorepo
+
+The main package now autoloads `Cognesy\Instructor\Symfony\` and includes the initial Symfony
+bundle/configuration baseline directly in the monorepo. The package now owns:
+
+- one `instructor` config root with explicit subtrees
+- container bindings for core runtime services
+- framework-native wiring for inference, embeddings, and structured output
+- AgentCtrl runtime seams for HTTP, CLI, and Messenger flows
+- native-agent registry, schema, tool, capability, and session wiring
+
+This is the first release where Symfony stops looking like scattered integration glue and starts
+looking like a supported framework surface.
+
+### Delivery, progress, telemetry, and sessions
+
+`packages/symfony` now includes explicit delivery seams for queued AgentCtrl prompts, queued
+native-agent prompts, runtime observation forwarding, CLI observation formatting, progress updates,
+and package-owned telemetry/exporter lifecycle wiring.
+
+Session persistence is also now explicit under `instructor.sessions`, with built-in in-memory and
+file-backed paths for native agents.
+
+### Testing and migration guidance
+
+Symfony now ships a much broader test harness and documentation set, including quickstart,
+configuration, runtime surfaces, sessions, telemetry, logging, delivery, operations, testing, and
+migration guides.
+
+That gives Symfony users a clearer path for both greenfield adoption and migration from custom
+bundle glue.
+
+## Logging And Observability
+
+Symfony-facing logging ownership moved further toward the framework package in this release.
+
+`packages/symfony` now includes package-owned logging factory/wiring, while `packages/logging`
+adds correlation enrichment that merges telemetry and runtime identifiers more consistently.
+
+The legacy standalone Symfony logging bundle path remains present, but it is now documented as a
+deprecated compatibility path in favor of `instructor.logging` and the first-party Symfony package.
+
+## Compatibility
+
+### Symfony 8 and DocBlock 6
+
+The root package now allows `phpdocumentor/reflection-docblock:^5.6 || ^6.0`.
+
+This removes the Composer conflict that blocked Symfony 8 applications already pinned to
+`phpdocumentor/reflection-docblock:^6`, which was the main compatibility issue reported after the
+v2.2.0 release.
+
+## Documentation And QA
+
+This release adds a large amount of framework documentation and also restores docs QA coverage that
+had regressed in several packages.
+
+That work is mostly invisible in runtime behavior, but it matters for release quality: the docs
+snippets now lint cleanly again across the release-notes/docs QA sweep.
+
+## Upgrade Notes
+
+- If you are integrating with Symfony, start from the new `packages/symfony/docs/` guides and the `instructor` config root instead of building custom container glue around lower-level packages.
+- If you depend on the legacy Symfony logging bundle wiring from `packages/logging`, treat it as a compatibility path. The forward-looking integration surface is the Symfony package plus `instructor.logging`.
+- If your Symfony 8 application already requires `phpdocumentor/reflection-docblock:^6`, this release removes the root-package conflict and should install cleanly.
+- The Symfony integration now ships in the monorepo package. Dedicated split-package publication for `cognesy/instructor-symfony` follows the normal split/bootstrap flow and may lag behind the monorepo release momentarily.

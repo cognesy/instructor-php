@@ -28,7 +28,7 @@ $user = (new StructuredOutput)
     ->get();
 
 // $user is a fully typed User object -- no parsing, no guessing.
-// @doctest id="07c0"
+// @doctest id="8b5f"
 ```
 
 
@@ -63,7 +63,7 @@ final class UserDetails {
     #[Assert\Email]
     public string $email;
 }
-// @doctest id="b7ad"
+// @doctest id="7239"
 ```
 
 You can also build fully custom validation logic using Symfony's `#[Assert\Callback]`
@@ -88,7 +88,7 @@ final class UserDetails {
         }
     }
 }
-// @doctest id="dbda"
+// @doctest id="c87f"
 ```
 
 ### Self-Correcting Retries
@@ -114,7 +114,7 @@ $user = (new StructuredOutput)
 // The LLM may initially return "jason@gmailcom". Instructor catches the
 // validation failure, feeds the error back, and the model self-corrects
 // to "jason@gmail.com" on the next attempt.
-// @doctest id="6c74"
+// @doctest id="12d1"
 ```
 
 This retry loop dramatically improves reliability without any manual intervention.
@@ -134,7 +134,7 @@ foreach ($stream->partials() as $partial) {
 }
 
 $user = $stream->lastUpdate();
-// @doctest id="673f"
+// @doctest id="f4e9"
 ```
 
 For lists of objects, the `Sequence` wrapper combined with `stream()->sequence()` yields
@@ -157,7 +157,7 @@ $user = StructuredOutput::using('openai')
 $user = StructuredOutput::using('anthropic')
     ->with(messages: 'Jason is 25 years old.', responseModel: User::class)
     ->get();
-// @doctest id="1bee"
+// @doctest id="287f"
 ```
 
 Your response models, validation rules, and application logic remain identical regardless
@@ -177,7 +177,7 @@ final class Lead {
     public string $company;
     public string $email;
 }
-// @doctest id="dba7"
+// @doctest id="a13d"
 ```
 
 **Step 2: Extract.** Pass your input and the response model to `StructuredOutput`:
@@ -189,7 +189,7 @@ $lead = (new StructuredOutput)
         responseModel: Lead::class,
     )
     ->get();
-// @doctest id="7e61"
+// @doctest id="da71"
 ```
 
 **Step 3: Use the result.** The returned object is fully typed, validated, and ready to
@@ -199,7 +199,7 @@ use in your application -- no additional parsing required:
 echo $lead->name;    // "Jason Liu"
 echo $lead->company; // "Acme Corp"
 echo $lead->email;   // "jason@acme.com"
-// @doctest id="21db"
+// @doctest id="09a0"
 ```
 
 

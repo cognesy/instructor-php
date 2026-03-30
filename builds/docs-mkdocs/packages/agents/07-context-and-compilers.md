@@ -39,7 +39,7 @@ $state->context()->systemPrompt();   // 'You are a helpful assistant.'
 $state->context()->metadata();       // Metadata instance
 $state->context()->messages();       // Messages from the DEFAULT section
 $state->context()->store();          // Full MessageStore with all sections
-// @doctest id="c0de"
+// @doctest id="70f1"
 ```
 
 ### Constructing AgentContext Directly
@@ -58,7 +58,7 @@ $context = new AgentContext(
     systemPrompt: 'You are a data analyst.',
     responseFormat: $responseFormat,            // ResponseFormat instance or null
 );
-// @doctest id="d83b"
+// @doctest id="6575"
 ```
 
 ### Mutating Context
@@ -82,7 +82,7 @@ $updated = $context
 $updated = $context->withMessages($messages);           // Replace all messages in DEFAULT section
 $updated = $context->withAppendedMessages($messages);   // Append to DEFAULT section
 $updated = $context->withMessageStore($store);          // Replace the entire store
-// @doctest id="a392"
+// @doctest id="4bc4"
 ```
 
 <a name="context-sections"></a>
@@ -103,7 +103,7 @@ use Cognesy\Agents\Context\ContextSections;
 
 ContextSections::inferenceOrder();
 // Returns: ['summary', 'buffer', 'messages']
-// @doctest id="567c"
+// @doctest id="93aa"
 ```
 
 This ordering matters when compilers assemble messages from multiple sections. By placing summaries before the primary conversation, the model gets a high-level understanding of past exchanges before diving into the current interaction.
@@ -123,7 +123,7 @@ interface CanCompileMessages
 {
     public function compile(AgentState $state): Messages;
 }
-// @doctest id="8143"
+// @doctest id="4f70"
 ```
 
 The compiler is the **single point** where you control what the model sees. It can filter, reorder, truncate, or inject messages -- all without modifying the underlying message store. This makes compilers the ideal place to implement context window management, message redaction, or any transformation that should only affect the model's view of the conversation.
@@ -141,7 +141,7 @@ The default compiler provides intelligent trace filtering for multi-step agent e
 use Cognesy\Agents\Context\Compilers\ConversationWithCurrentToolTrace;
 
 $compiler = new ConversationWithCurrentToolTrace();
-// @doctest id="48cb"
+// @doctest id="9584"
 ```
 
 Messages are distinguished by metadata. Each message carries two metadata flags:
@@ -155,7 +155,7 @@ The compiler's logic is straightforward: include a message if it is either not a
 // Pseudocode of the filtering logic:
 $include = !$message->metadata()->get('is_trace')
     || $message->metadata()->get('execution_id') === $currentExecutionId;
-// @doctest id="ffad"
+// @doctest id="346e"
 ```
 
 This compiler is particularly valuable when building agents that invoke sub-agents or perform multi-step tool calling, as it ensures each execution sees only its own internal state while preserving the full conversational history.
@@ -168,7 +168,7 @@ The simplest compiler -- it sends every message from every section, with no filt
 use Cognesy\Agents\Context\Compilers\AllSections;
 
 $compiler = new AllSections();
-// @doctest id="17bf"
+// @doctest id="b078"
 ```
 
 > **Warning:** In production agents with long-running conversations, `AllSections` can quickly exceed the model's context window. Consider using it primarily for development and debugging.
@@ -185,7 +185,7 @@ $compiler = SelectedSections::default();
 
 // Or specify exactly which sections to include and their order
 $compiler = new SelectedSections(['summary', 'messages']);
-// @doctest id="e317"
+// @doctest id="ade4"
 ```
 
 If a named section does not exist in the store, it is silently skipped. When an empty sections array is provided, the compiler falls back to returning just the default section's messages.
@@ -207,7 +207,7 @@ use Cognesy\Agents\Context\Compilers\AllSections;
 $agent = AgentBuilder::base()
     ->withCapability(new UseContextCompiler(new AllSections()))
     ->build();
-// @doctest id="bea1"
+// @doctest id="f2fd"
 ```
 
 ### Via Driver (Manual)
@@ -219,7 +219,7 @@ use Cognesy\Agents\Context\CanAcceptMessageCompiler;
 
 $driver = $driver->withMessageCompiler(new AllSections());
 $loop = AgentLoop::default()->withDriver($driver);
-// @doctest id="e37b"
+// @doctest id="c008"
 ```
 
 The `CanAcceptMessageCompiler` interface requires two methods:
@@ -230,7 +230,7 @@ interface CanAcceptMessageCompiler
     public function messageCompiler(): CanCompileMessages;
     public function withMessageCompiler(CanCompileMessages $compiler): static;
 }
-// @doctest id="8450"
+// @doctest id="b02e"
 ```
 
 <a name="custom-compiler"></a>
@@ -256,7 +256,7 @@ class RecentMessagesCompiler implements CanCompileMessages
         return new Messages(...$recent);
     }
 }
-// @doctest id="2bff"
+// @doctest id="6333"
 ```
 
 <a name="decorating-compiler"></a>
@@ -273,7 +273,7 @@ $agent = AgentBuilder::base()
         fn(CanCompileMessages $inner) => new TokenLimitCompiler($inner, maxTokens: 4000)
     ))
     ->build();
-// @doctest id="8a6d"
+// @doctest id="a8ea"
 ```
 
 This approach composes naturally -- multiple decorators can be stacked, and each one wraps the result of the previous. This is the recommended pattern when you want to add constraints (like token limits or message filtering) on top of an existing compilation strategy.
@@ -313,7 +313,7 @@ class TokenLimitCompiler implements CanCompileMessages
         return new Messages(...$kept);
     }
 }
-// @doctest id="d5eb"
+// @doctest id="ed1f"
 ```
 
 > **Note:** The token estimate here uses a simple `strlen / 4` heuristic. For production use, consider integrating a proper tokenizer for your target model.
@@ -347,7 +347,7 @@ class RAGCompiler implements CanCompileMessages
         return new Messages($contextMessage, ...$messages->all());
     }
 }
-// @doctest id="8976"
+// @doctest id="0714"
 ```
 
 <a name="serialization"></a>
@@ -362,7 +362,7 @@ $data = $context->toArray();
 
 // Restore from array
 $restored = AgentContext::fromArray($data);
-// @doctest id="c7ce"
+// @doctest id="9f2b"
 ```
 
 <a name="use-cases"></a>

@@ -28,7 +28,7 @@
   },
   "require": {
     "php": "^8.3",
-    "cognesy/instructor-templates": "^2.2"
+    "cognesy/instructor-templates": "^2.3"
   },
   "require-dev": {
     "pestphp/pest": "^2.34"

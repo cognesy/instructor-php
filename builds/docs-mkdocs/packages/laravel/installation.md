@@ -10,7 +10,7 @@
 
 ```bash
 composer require cognesy/instructor-laravel
-# @doctest id="b04d"
+# @doctest id="34ce"
 ```
 
 The package uses Laravel's package auto-discovery mechanism, so the service provider and all four facades (`StructuredOutput`, `Inference`, `Embeddings`, `AgentCtrl`) are registered automatically. No manual registration is required for typical Laravel applications.
@@ -26,7 +26,7 @@ Publish the configuration file to customize connections, extraction defaults, an
 
 ```bash
 php artisan vendor:publish --tag=instructor-config
-# @doctest id="2bc7"
+# @doctest id="2449"
 ```
 
 This creates `config/instructor.php` with all available options. The file ships with sensible defaults, so you can start using the package with just an API key and customize later as your needs grow.
@@ -46,7 +46,7 @@ ANTHROPIC_API_KEY=sk-ant-...
 GEMINI_API_KEY=...
 GROQ_API_KEY=...
 MISTRAL_API_KEY=...
-// @doctest id="4011"
+// @doctest id="6312"
 ```
 
 You can configure multiple providers simultaneously and switch between them at runtime using the `connection()` method on any facade.
@@ -84,14 +84,14 @@ If you want database-backed native agent sessions:
 ```bash
 php artisan vendor:publish --tag=instructor-migrations
 php artisan migrate
-# @doctest id="aa43"
+# @doctest id="4ab1"
 ```
 
 Then set:
 
 ```env
 INSTRUCTOR_NATIVE_AGENT_SESSION_STORE=database
-// @doctest id="5ee4"
+// @doctest id="9496"
 ```
 
 If you want Laravel broadcasting for native agent envelopes:
@@ -99,7 +99,7 @@ If you want Laravel broadcasting for native agent envelopes:
 ```env
 INSTRUCTOR_NATIVE_AGENT_BROADCASTING_ENABLED=true
 INSTRUCTOR_NATIVE_AGENT_BROADCAST_CONNECTION=reverb
-// @doctest id="65a3"
+// @doctest id="76a1"
 ```
 
 Telemetry is configured separately under `config('instructor.telemetry')`.
@@ -146,7 +146,7 @@ Run the installation command to verify everything is configured correctly:
 
 ```bash
 php artisan instructor:install
-# @doctest id="df51"
+# @doctest id="f2d1"
 ```
 
 This will:
@@ -160,7 +160,7 @@ Test that your API configuration is working by making a real API call:
 
 ```bash
 php artisan instructor:test
-# @doctest id="00e0"
+# @doctest id="daec"
 ```
 
 This command displays your current configuration (connection name, driver, model, masked API key) and then performs a structured output extraction to confirm the full pipeline is operational.
@@ -169,14 +169,14 @@ To test a specific connection:
 
 ```bash
 php artisan instructor:test --connection=anthropic
-# @doctest id="ac70"
+# @doctest id="e033"
 ```
 
 To test raw inference (without structured output extraction):
 
 ```bash
 php artisan instructor:test --inference
-# @doctest id="50b2"
+# @doctest id="ce06"
 ```
 
 ## Optional: Publish Stubs
@@ -185,7 +185,7 @@ If you want to customize the response model templates used by `make:response-mod
 
 ```bash
 php artisan vendor:publish --tag=instructor-stubs
-# @doctest id="ef7b"
+# @doctest id="86c7"
 ```
 
 This publishes stubs to `stubs/instructor/` in your application root. The command will prefer your custom stubs over the package defaults when generating new response models.
@@ -207,7 +207,7 @@ If you have disabled Laravel's package auto-discovery, manually register the ser
     'Embeddings' => Cognesy\Instructor\Laravel\Facades\Embeddings::class,
     'AgentCtrl' => Cognesy\Instructor\Laravel\Facades\AgentCtrl::class,
 ],
-// @doctest id="cc0f"
+// @doctest id="bedc"
 ```
 
 In Laravel 11 and 12, register the provider in `bootstrap/providers.php`.
@@ -218,7 +218,7 @@ When upgrading to a new version, republish the configuration if there are new op
 
 ```bash
 php artisan vendor:publish --tag=instructor-config --force
-# @doctest id="7fa4"
+# @doctest id="da73"
 ```
 
 Review the [changelog](https://github.com/cognesy/instructor-php/blob/main/CHANGELOG.md) for breaking changes before upgrading major versions.

@@ -25,6 +25,7 @@
             "group": "Release Notes",
             "pages": [
                 "release-notes/versions",
+                "release-notes/v2.3.0",
                 "release-notes/v2.2.0",
                 "release-notes/v2.1.0",
                 "release-notes/v2.0.0",
@@ -390,6 +391,22 @@
                 "packages/laravel/testing",
                 "packages/laravel/advanced",
                 "packages/laravel/troubleshooting"
+            ]
+        },
+        {
+            "group": "Symfony",
+            "pages": [
+                "packages/symfony/overview",
+                "packages/symfony/quickstart",
+                "packages/symfony/runtime-surfaces",
+                "packages/symfony/configuration",
+                "packages/symfony/sessions",
+                "packages/symfony/testing",
+                "packages/symfony/telemetry",
+                "packages/symfony/logging",
+                "packages/symfony/delivery",
+                "packages/symfony/operations",
+                "packages/symfony/migration"
             ]
         },
         {
@@ -839,6 +856,7 @@
                 "cheatsheets/schema",
                 "cheatsheets/setup",
                 "cheatsheets/stream",
+                "cheatsheets/symfony",
                 "cheatsheets/templates",
                 "cheatsheets/utils",
                 "cheatsheets/xprompt"

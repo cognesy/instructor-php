@@ -13,21 +13,23 @@ Laravel now reserves `config('instructor.agents')` for the native runtime so it 
 `packages/laravel` now ships the native runtime as a first-class Laravel surface.
 
 ```php
-'agents' => [
-    'enabled' => env('INSTRUCTOR_NATIVE_AGENTS_ENABLED', true),
-    'session_store' => env('INSTRUCTOR_NATIVE_AGENT_SESSION_STORE', 'memory'),
-    'definitions' => [],
-    'tools' => [],
-    'capabilities' => [],
-    'schemas' => [],
-    'broadcasting' => [
-        'enabled' => env('INSTRUCTOR_NATIVE_AGENT_BROADCASTING_ENABLED', false),
-        'connection' => env('INSTRUCTOR_NATIVE_AGENT_BROADCAST_CONNECTION'),
-        'event_name' => env('INSTRUCTOR_NATIVE_AGENT_BROADCAST_EVENT', 'instructor.agent.event'),
-        'preset' => env('INSTRUCTOR_NATIVE_AGENT_BROADCAST_PRESET', 'standard'),
+return [
+    'agents' => [
+        'enabled' => env('INSTRUCTOR_NATIVE_AGENTS_ENABLED', true),
+        'session_store' => env('INSTRUCTOR_NATIVE_AGENT_SESSION_STORE', 'memory'),
+        'definitions' => [],
+        'tools' => [],
+        'capabilities' => [],
+        'schemas' => [],
+        'broadcasting' => [
+            'enabled' => env('INSTRUCTOR_NATIVE_AGENT_BROADCASTING_ENABLED', false),
+            'connection' => env('INSTRUCTOR_NATIVE_AGENT_BROADCAST_CONNECTION'),
+            'event_name' => env('INSTRUCTOR_NATIVE_AGENT_BROADCAST_EVENT', 'instructor.agent.event'),
+            'preset' => env('INSTRUCTOR_NATIVE_AGENT_BROADCAST_PRESET', 'standard'),
+        ],
     ],
-],
-// @doctest id="5330"
+];
+// @doctest id="02fa"
 ```
 
 The package resolves and exposes:
@@ -45,21 +47,23 @@ Laravel can populate the native registries from config and explicit container ta
 Config-driven contributions:
 
 ```php
-'agents' => [
-    'definitions' => [
-        base_path('resources/agents'),
+return [
+    'agents' => [
+        'definitions' => [
+            base_path('resources/agents'),
+        ],
+        'tools' => [
+            App\Agents\Tools\LookupAccountTool::class,
+        ],
+        'capabilities' => [
+            App\Agents\Capabilities\UseStructuredOutputs::class,
+        ],
+        'schemas' => [
+            'lead' => App\Data\LeadData::class,
+        ],
     ],
-    'tools' => [
-        App\Agents\Tools\LookupAccountTool::class,
-    ],
-    'capabilities' => [
-        App\Agents\Capabilities\UseStructuredOutputs::class,
-    ],
-    'schemas' => [
-        'lead' => App\Data\LeadData::class,
-    ],
-],
-// @doctest id="fe1f"
+];
+// @doctest id="82f8"
 ```
 
 Tag-driven contributions:
@@ -76,7 +80,7 @@ $this->app->bind(App\Agents\Schemas\LeadSchema::class, fn () => new SchemaRegist
     schema: App\Data\LeadData::class,
 ));
 $this->app->tag(App\Agents\Schemas\LeadSchema::class, AgentRegistryTags::SCHEMAS);
-// @doctest id="4cde"
+// @doctest id="e0d7"
 ```
 
 ## Persistence
@@ -86,14 +90,14 @@ For database-backed sessions:
 ```bash
 php artisan vendor:publish --tag=instructor-migrations
 php artisan migrate
-# @doctest id="e0eb"
+# @doctest id="389e"
 ```
 
 Then set:
 
 ```env
 INSTRUCTOR_NATIVE_AGENT_SESSION_STORE=database
-// @doctest id="6fd3"
+// @doctest id="fe1d"
 ```
 
 If you keep the default `memory` store, native sessions stay process-local and ephemeral.

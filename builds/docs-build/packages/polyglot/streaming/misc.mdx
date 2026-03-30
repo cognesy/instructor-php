@@ -20,7 +20,7 @@ $text = Inference::using('openai')
     );
 
 echo $text;
-// @doctest id="31eb"
+// @doctest id="19a4"
 ```
 
 Because `reduce()` drains the entire stream before returning, it blocks until the response is complete.
@@ -43,7 +43,7 @@ $stream = Inference::using('openai')
 foreach ($stream->map(fn($delta) => strtoupper($delta->contentDelta)) as $chunk) {
     echo $chunk;
 }
-// @doctest id="110d"
+// @doctest id="b695"
 ```
 
 
@@ -65,7 +65,7 @@ $stream = Inference::using('openai')
 foreach ($stream->filter(fn($delta) => preg_match('/\d/', $delta->contentDelta)) as $delta) {
     echo $delta->contentDelta;
 }
-// @doctest id="2072"
+// @doctest id="aeaf"
 ```
 
 
@@ -85,7 +85,7 @@ $deltas = Inference::using('openai')
     ->all();
 
 echo "Received " . count($deltas) . " deltas.\n";
-// @doctest id="5969"
+// @doctest id="b5d7"
 ```
 
 
@@ -104,7 +104,7 @@ foreach ($stream->deltas() as $delta) {
 
 $last = $stream->lastDelta();
 echo $last->finishReason; // e.g. "stop"
-// @doctest id="497f"
+// @doctest id="ae45"
 ```
 
 This is particularly useful for inspecting the finish reason or final usage data without keeping track of it manually during iteration.
@@ -125,7 +125,7 @@ foreach ($stream->deltas() as $delta) {
 
 $usage = $stream->usage();
 echo "\nTokens used: input={$usage->inputTokens}, output={$usage->outputTokens}\n";
-// @doctest id="d600"
+// @doctest id="329a"
 ```
 
 
@@ -143,7 +143,7 @@ $stream->final(); // ensure stream is consumed
 $execution = $stream->execution();
 echo "Execution ID: " . $execution->id->toString() . "\n";
 echo "Model used: " . $execution->request()->model() . "\n";
-// @doctest id="5088"
+// @doctest id="8a28"
 ```
 
 

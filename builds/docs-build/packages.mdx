@@ -169,6 +169,44 @@ class PersonController
 
 ---
 
+### Symfony Integration
+
+**Use this if you're building with Symfony.**
+
+Adds a first-party bundle surface for config translation, framework-owned event delivery, telemetry, logging, Messenger handoff, and package-aligned testing seams.
+
+```php
+<?php
+
+use Cognesy\Polyglot\Inference\Inference;
+
+final readonly class SummarizeController
+{
+    public function __construct(
+        private Inference $inference,
+    ) {}
+
+    public function __invoke(): array
+    {
+        return [
+            'summary' => $this->inference
+                ->withMessages('Summarize the current support ticket in one sentence.')
+                ->get(),
+        ];
+    }
+}
+```
+
+**Why use it:**
+- one `instructor` config root instead of scattered Symfony glue
+- package-owned event, delivery, telemetry, and logging wiring
+- AgentCtrl and native-agent seams that work in HTTP, Messenger, and CLI contexts
+- documented testing and migration path
+
+[**→ Symfony Documentation**](/packages/symfony/overview)
+
+---
+
 ## Internal Packages
 
 These packages are used internally by Instructor and Polyglot. They're not meant for direct use, but they're available if you're extending the library or curious about the architecture.
@@ -196,6 +234,7 @@ These packages are used internally by Instructor and Polyglot. They're not meant
 | Build a chatbot or agent | **Polyglot** |
 | Switch between LLM providers easily | **Polyglot** (or Instructor, which includes it) |
 | Use Instructor in Laravel | **Instructor** + **Laravel** package |
+| Use Instructor in Symfony | **Instructor** + **Symfony** package |
 | Build custom LLM integrations | **HTTP Client** + **Polyglot** |
 | Just get started quickly | **Instructor** (includes everything) |
 
@@ -212,6 +251,9 @@ composer require cognesy/polyglot
 
 # Laravel integration
 composer require cognesy/instructor-laravel
+
+# Symfony integration
+composer require cognesy/instructor-symfony
 
 # Low-level HTTP only
 composer require cognesy/http-client

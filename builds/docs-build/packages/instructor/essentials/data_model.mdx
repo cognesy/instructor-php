@@ -11,7 +11,7 @@ class Person {
     public string $name;
     public int $age;
 }
-// @doctest id="7135"
+// @doctest id="d9cd"
 ```
 
 Instructor reads the property types, builds a JSON Schema from them, and hydrates the
@@ -46,7 +46,7 @@ class Person {
     public ?int $age;
     public Address $address;
 }
-// @doctest id="7706"
+// @doctest id="036a"
 ```
 
 > Instructor only sets public fields. Private and protected fields are ignored unless the
@@ -68,7 +68,7 @@ class Person {
     /** @var Address $address Person's home address */
     public $address;
 }
-// @doctest id="b370"
+// @doctest id="a64f"
 ```
 
 
@@ -83,7 +83,7 @@ class Event {
     /** @var Person[] List of event participants */
     public array $participants;
 }
-// @doctest id="86cb"
+// @doctest id="7e24"
 ```
 
 When you need a top-level list rather than an object with an array property, use the
@@ -102,7 +102,7 @@ $people = (new StructuredOutput)
 foreach ($people as $person) {
     echo $person->name;
 }
-// @doctest id="d00d"
+// @doctest id="bbe7"
 ```
 
 
@@ -138,7 +138,7 @@ $person = (new StructuredOutput)
 
 echo $person->skills[0]->name; // PHP
 echo $person->skills[0]->type; // SkillType::Technical
-// @doctest id="de49"
+// @doctest id="4a3b"
 ```
 
 
@@ -162,7 +162,7 @@ class Skill {
     /** Directly quoted, full sentence mentioning the skill */
     public string $context;
 }
-// @doctest id="ef47"
+// @doctest id="0985"
 ```
 
 ### Attributes
@@ -184,7 +184,7 @@ class User {
     #[Instructions("Ignore hobbies, identify only the profession")]
     public string $job;
 }
-// @doctest id="b1f4"
+// @doctest id="32c7"
 ```
 
 You can combine attributes and DocBlocks on the same class. Instructor merges them
@@ -212,7 +212,7 @@ if ($result->hasValue()) {
 } else {
     echo 'Not found: ' . $result->error();
 }
-// @doctest id="0df8"
+// @doctest id="8cf7"
 ```
 
 `Maybe` asks the model to set a `hasValue` boolean and, when the data is missing, to

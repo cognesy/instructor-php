@@ -9,18 +9,18 @@ The bridge is implemented by `Cognesy\Instructor\Laravel\Events\LaravelEventDisp
 Configure event bridging in `config/instructor.php`:
 
 ```php
-'events' => [
-    // Enable bridging to Laravel's event dispatcher
-    'dispatch_to_laravel' => env('INSTRUCTOR_DISPATCH_EVENTS', true),
-
-    // Specify which events to bridge (empty = all events)
-    'bridge_events' => [
-        // Only bridge specific events
-        \Cognesy\Instructor\Events\Extraction\ExtractionCompleted::class,
-        \Cognesy\Instructor\Events\Extraction\ExtractionFailed::class,
+return [
+    'events' => [
+        // Enable bridging to Laravel's event dispatcher
+        'dispatch_to_laravel' => env('INSTRUCTOR_DISPATCH_EVENTS', true),
+        // Specify which events to bridge (empty = all events)
+        'bridge_events' => [
+            \Cognesy\Instructor\Events\Extraction\ExtractionCompleted::class,
+            \Cognesy\Instructor\Events\Extraction\ExtractionFailed::class,
+        ],
     ],
-],
-// @doctest id="16f7"
+];
+// @doctest id="f44a"
 ```
 
 When `bridge_events` is empty (the default), every Instructor event is forwarded to Laravel's dispatcher. To reduce overhead in production, list only the event classes your listeners actually need.
@@ -106,7 +106,7 @@ class LogExtractionCompleted
         ]);
     }
 }
-// @doctest id="91d9"
+// @doctest id="b871"
 ```
 
 Register in `EventServiceProvider`:
@@ -127,7 +127,7 @@ class EventServiceProvider extends ServiceProvider
         ],
     ];
 }
-// @doctest id="e522"
+// @doctest id="1ec3"
 ```
 
 ### Using Closures
@@ -136,21 +136,27 @@ For lightweight listeners, register closures directly in a service provider's `b
 
 ```php
 // app/Providers/AppServiceProvider.php
+namespace App\Providers;
+
 use Cognesy\Instructor\Events\Extraction\ExtractionCompleted;
 use Cognesy\Instructor\Events\Extraction\ExtractionFailed;
+use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Event;
 
-public function boot(): void
+class AppServiceProvider extends ServiceProvider
 {
-    Event::listen(ExtractionCompleted::class, function ($event) {
-        // Handle successful extraction
-    });
+    public function boot(): void
+    {
+        Event::listen(ExtractionCompleted::class, function ($event) {
+            // Handle successful extraction
+        });
 
-    Event::listen(ExtractionFailed::class, function ($event) {
-        // Handle failed extraction
-    });
+        Event::listen(ExtractionFailed::class, function ($event) {
+            // Handle failed extraction
+        });
+    }
 }
-// @doctest id="6ab1"
+// @doctest id="dd0a"
 ```
 
 ### Using Event Subscribers
@@ -192,12 +198,25 @@ class InstructorEventSubscriber
         ];
     }
 }
+// @doctest id="0c4a"
+```
 
-// Register in EventServiceProvider
-protected $subscribe = [
-    InstructorEventSubscriber::class,
-];
-// @doctest id="58f3"
+Register it in `EventServiceProvider`:
+
+```php
+// app/Providers/EventServiceProvider.php
+namespace App\Providers;
+
+use App\Listeners\InstructorEventSubscriber;
+use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+
+class EventServiceProvider extends ServiceProvider
+{
+    protected $subscribe = [
+        InstructorEventSubscriber::class,
+    ];
+}
+// @doctest id="e3c4"
 ```
 
 ## Common Use Cases
@@ -224,7 +243,7 @@ Event::listen(ExtractionFailed::class, function ($event) {
         'data' => $event->data,
     ]);
 });
-// @doctest id="0dd2"
+// @doctest id="b67f"
 ```
 
 ### Metrics and Analytics
@@ -239,7 +258,7 @@ Event::listen(ExtractionCompleted::class, function ($event) {
         'data' => $event->data,
     ]);
 });
-// @doctest id="a49a"
+// @doctest id="0d64"
 ```
 
 ### Alerting on Failures
@@ -253,7 +272,7 @@ Event::listen(ExtractionFailed::class, function ($event) {
     Notification::route('slack', config('services.slack.webhook'))
         ->notify(new ExtractionFailedNotification($event));
 });
-// @doctest id="6832"
+// @doctest id="2573"
 ```
 
 ### Queued Event Listeners
@@ -276,7 +295,7 @@ class ProcessExtractionAnalytics implements ShouldQueue
         // Heavy analytics processing runs on the queue
     }
 }
-// @doctest id="a13b"
+// @doctest id="cf28"
 ```
 
 ## Wiretap (Direct Event Handling)
@@ -299,7 +318,7 @@ $person = StructuredOutput::withRuntime($runtime)->with(
     responseModel: PersonData::class,
 )
 ->get();
-// @doctest id="e220"
+// @doctest id="a29d"
 ```
 
 The `LaravelEventDispatcher` itself also supports `wiretap` for registering global listeners that receive every event, regardless of class. These listeners run at the lowest priority after all class-specific and bridged listeners have executed.
@@ -309,18 +328,19 @@ The `LaravelEventDispatcher` itself also supports `wiretap` for registering glob
 To disable event bridging entirely (for example, in high-throughput scenarios where the overhead is unacceptable):
 
 ```php
-// config/instructor.php
-'events' => [
-    'dispatch_to_laravel' => false,
-],
-// @doctest id="4a7b"
+return [
+    'events' => [
+        'dispatch_to_laravel' => false,
+    ],
+];
+// @doctest id="f5b5"
 ```
 
 Or via environment variable:
 
 ```env
 INSTRUCTOR_DISPATCH_EVENTS=false
-// @doctest id="b85e"
+// @doctest id="6753"
 ```
 
 Disabling the bridge only stops events from being forwarded to Laravel's dispatcher. Internal Instructor event listeners and wiretaps continue to work normally.
@@ -331,20 +351,25 @@ Use Laravel's `Event::fake()` to assert that specific events were dispatched dur
 
 ```php
 use Cognesy\Instructor\Events\Extraction\ExtractionCompleted;
+use Cognesy\Instructor\Laravel\Facades\StructuredOutput;
 use Illuminate\Support\Facades\Event;
+use Tests\TestCase;
 
-public function test_dispatches_extraction_event(): void
+final class EventBridgeTest extends TestCase
 {
-    Event::fake([ExtractionCompleted::class]);
+    public function test_dispatches_extraction_event(): void
+    {
+        Event::fake([ExtractionCompleted::class]);
 
-    StructuredOutput::with(
-        messages: 'John is 30',
-        responseModel: PersonData::class,
-    )->get();
+        StructuredOutput::with(
+            messages: 'John is 30',
+            responseModel: PersonData::class,
+        )->get();
 
-    Event::assertDispatched(ExtractionCompleted::class);
+        Event::assertDispatched(ExtractionCompleted::class);
+    }
 }
-// @doctest id="9d30"
+// @doctest id="8fd9"
 ```
 
 Assert event data with a closure:
@@ -353,5 +378,5 @@ Assert event data with a closure:
 Event::assertDispatched(ExtractionCompleted::class, function ($event) {
     return !empty($event->data);
 });
-// @doctest id="beaa"
+// @doctest id="aecc"
 ```

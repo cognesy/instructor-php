@@ -137,6 +137,7 @@ nav:
       -
         'Release Notes':
           - { Overview: release-notes/versions.md }
+          - { v2.3.0: release-notes/v2.3.0.md }
           - { v2.2.0: release-notes/v2.2.0.md }
           - { v2.1.0: release-notes/v2.1.0.md }
           - { v2.0.0: release-notes/v2.0.0.md }
@@ -348,6 +349,19 @@ nav:
           - { Testing: packages/laravel/testing.md }
           - { Advanced: packages/laravel/advanced.md }
           - { Troubleshooting: packages/laravel/troubleshooting.md }
+      -
+        Symfony:
+          - { Overview: packages/symfony/overview.md }
+          - { Quickstart: packages/symfony/quickstart.md }
+          - { 'Runtime Surfaces': packages/symfony/runtime-surfaces.md }
+          - { Configuration: packages/symfony/configuration.md }
+          - { Sessions: packages/symfony/sessions.md }
+          - { Testing: packages/symfony/testing.md }
+          - { Telemetry: packages/symfony/telemetry.md }
+          - { Logging: packages/symfony/logging.md }
+          - { Delivery: packages/symfony/delivery.md }
+          - { Operations: packages/symfony/operations.md }
+          - { Migration: packages/symfony/migration.md }
       -
         Xprompt:
           - { Introduction: packages/xprompt/01-introduction.md }
@@ -739,6 +753,8 @@ nav:
         Setup: cheatsheets/setup.md
       -
         Stream: cheatsheets/stream.md
+      -
+        Symfony: cheatsheets/symfony.md
       -
         Templates: cheatsheets/templates.md
       -

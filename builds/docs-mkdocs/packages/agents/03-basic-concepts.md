@@ -20,7 +20,7 @@ Each iteration of the loop follows a well-defined lifecycle:
 
 ```
 BeforeExecution -> [ BeforeStep -> UseTools -> AfterStep -> ShouldStop? ] -> AfterExecution
-// @doctest id="e4d6"
+// @doctest id="a440"
 ```
 
 The loop begins with a `BeforeExecution` phase where the execution state is
@@ -39,7 +39,7 @@ constructor:
 use Cognesy\Agents\AgentLoop;
 
 $loop = AgentLoop::default();
-// @doctest id="ce5f"
+// @doctest id="2c8e"
 ```
 
 This creates a loop wired with the default tool-calling driver, an event
@@ -82,7 +82,7 @@ use Cognesy\Agents\Data\AgentState;
 $state = AgentState::empty()
     ->withSystemPrompt('You are a helpful assistant.')
     ->withUserMessage('What is the capital of France?');
-// @doctest id="dd13"
+// @doctest id="0da9"
 ```
 
 Because every `with*` method returns a new instance, you can chain calls
@@ -116,7 +116,7 @@ $state = AgentState::empty()
     ->withSystemPrompt('You are a research assistant.')
     ->withUserMessage('Summarize this article.')
     ->withMetadata('user_id', 42);
-// @doctest id="5ff3"
+// @doctest id="fecc"
 ```
 
 When the loop calls the LLM, the driver's message compiler (implementing
@@ -151,7 +151,7 @@ use Cognesy\Agents\Enums\AgentStepType;
 $step->stepType(); // AgentStepType::FinalResponse
                    // AgentStepType::ToolExecution
                    // AgentStepType::Error
-// @doctest id="61e0"
+// @doctest id="201f"
 ```
 
 A step is classified as `ToolExecution` when the LLM requested tool calls,
@@ -184,7 +184,7 @@ $stepExecution->completedAt();   // DateTimeImmutable
 $stepExecution->duration();      // float (seconds)
 $stepExecution->continuation();  // ExecutionContinuation snapshot
 $stepExecution->usage();         // Token usage for this step
-// @doctest id="114d"
+// @doctest id="9d90"
 ```
 
 
@@ -213,7 +213,7 @@ $state->stepCount();        // 3
 $state->usage();            // Accumulated token usage across all steps
 $state->executionDuration();// Total wall-clock time in seconds
 $state->shouldStop();       // Whether the loop should terminate
-// @doctest id="2b36"
+// @doctest id="dbec"
 ```
 
 The `shouldStop()` logic follows a clear priority chain. If a stop signal
@@ -242,7 +242,7 @@ $toolExec->error();       // null (or a Throwable on failure)
 $toolExec->wasBlocked();  // true if a hook blocked execution
 $toolExec->startedAt();   // DateTimeImmutable
 $toolExec->completedAt(); // DateTimeImmutable
-// @doctest id="454d"
+// @doctest id="a22f"
 ```
 
 Tool executions are collected within each `AgentStep` via its

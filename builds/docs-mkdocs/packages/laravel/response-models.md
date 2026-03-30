@@ -20,7 +20,7 @@ php artisan make:response-model CompanyProfile --nested
 
 # With a custom description in the class docblock
 php artisan make:response-model Invoice --description="Invoice extracted from PDF"
-# @doctest id="9826"
+# @doctest id="a17e"
 ```
 
 ### Manual Creation
@@ -45,7 +45,7 @@ final class PersonData
         public readonly ?string $email = null,
     ) {}
 }
-// @doctest id="d327"
+// @doctest id="dfc2"
 ```
 
 The class requires no base class, interface, or attribute -- any PHP class with typed constructor properties works. The package inspects the constructor signature and docblocks at runtime to build the JSON Schema that guides the LLM.
@@ -66,7 +66,7 @@ final class BasicTypes
         public readonly bool $isActive,
     ) {}
 }
-// @doctest id="15bc"
+// @doctest id="63c7"
 ```
 
 ### Nullable Properties
@@ -82,7 +82,7 @@ final class WithOptional
         public readonly ?int $maybeNumber = null,
     ) {}
 }
-// @doctest id="ba03"
+// @doctest id="20a7"
 ```
 
 ### Arrays
@@ -100,7 +100,7 @@ final class WithArrays
         public readonly array $scores,
     ) {}
 }
-// @doctest id="c905"
+// @doctest id="ef43"
 ```
 
 ### Enums
@@ -122,7 +122,7 @@ final class Task
         public readonly Priority $priority,
     ) {}
 }
-// @doctest id="2925"
+// @doctest id="4274"
 ```
 
 ### Nested Objects
@@ -146,7 +146,7 @@ final class Person
         public readonly Address $address,
     ) {}
 }
-// @doctest id="5d31"
+// @doctest id="ccc0"
 ```
 
 ### Collections
@@ -174,7 +174,7 @@ final class Order
         public readonly float $total,
     ) {}
 }
-// @doctest id="cfc4"
+// @doctest id="11f3"
 ```
 
 ## Property Descriptions
@@ -198,7 +198,7 @@ final class ProductReview
         public readonly ?array $concerns = null,
     ) {}
 }
-// @doctest id="c9a3"
+// @doctest id="a57e"
 ```
 
 ## Using Response Models
@@ -217,7 +217,7 @@ $person = StructuredOutput::with(
 echo $person->name;  // "John Smith"
 echo $person->age;   // 30
 echo $person->email; // "john@example.com"
-// @doctest id="dc9e"
+// @doctest id="038c"
 ```
 
 ### With Array Schema
@@ -239,7 +239,7 @@ $person = StructuredOutput::with(
 
 echo $person['name']; // "John"
 echo $person['age'];  // 30
-// @doctest id="ce99"
+// @doctest id="c185"
 ```
 
 ### Extracting Collections
@@ -266,7 +266,7 @@ $products = StructuredOutput::with(
 foreach ($products as $product) {
     echo "{$product->name}: \${$product->price}\n";
 }
-// @doctest id="f24e"
+// @doctest id="06c6"
 ```
 
 ## Validation
@@ -293,7 +293,7 @@ final class UserRegistration
         public readonly int $age,
     ) {}
 }
-// @doctest id="a440"
+// @doctest id="9560"
 ```
 
 ### Custom Validation
@@ -319,7 +319,7 @@ class AgeValidator implements CanValidateObject
         return ValidationResult::valid();
     }
 }
-// @doctest id="7a42"
+// @doctest id="7802"
 ```
 
 Custom validators are registered on the `StructuredOutputRuntime`, not on the facade directly:
@@ -335,7 +335,7 @@ $user = StructuredOutput::withRuntime($runtime)->with(
     messages: 'User: John, age -5',
     responseModel: UserData::class,
 )->get();
-// @doctest id="75a6"
+// @doctest id="348b"
 ```
 
 ## Best Practices
@@ -345,12 +345,15 @@ $user = StructuredOutput::withRuntime($runtime)->with(
 Property names are part of the schema the LLM sees. Clear names reduce ambiguity and improve extraction accuracy.
 
 ```php
-// Good
-public readonly string $customerEmailAddress;
+final class CustomerContactData
+{
+    // Good
+    public readonly string $customerEmailAddress;
 
-// Less clear
-public readonly string $email;
-// @doctest id="ab5b"
+    // Less clear
+    public readonly string $email;
+}
+// @doctest id="4c03"
 ```
 
 ### 2. Add Detailed Descriptions
@@ -358,14 +361,17 @@ public readonly string $email;
 Docblock descriptions are your primary tool for steering the LLM. Be specific about formats, ranges, and edge cases.
 
 ```php
-public function __construct(
-    /**
-     * The product SKU in format XXX-YYYY-ZZZ
-     * Example: ABC-1234-XYZ
-     */
-    public readonly string $sku,
-) {}
-// @doctest id="5574"
+final class ProductData
+{
+    public function __construct(
+        /**
+         * The product SKU in format XXX-YYYY-ZZZ
+         * Example: ABC-1234-XYZ
+         */
+        public readonly string $sku,
+    ) {}
+}
+// @doctest id="e1b3"
 ```
 
 ### 3. Use Appropriate Types
@@ -373,15 +379,18 @@ public function __construct(
 Choose the most specific type available. Enums are preferable to free-form strings for fields with a fixed set of values.
 
 ```php
-// Use int for counts
-public readonly int $quantity;
+final class OrderLineData
+{
+    // Use int for counts
+    public readonly int $quantity;
 
-// Use float for prices
-public readonly float $price;
+    // Use float for prices
+    public readonly float $price;
 
-// Use enums for fixed options
-public readonly Status $status;
-// @doctest id="544a"
+    // Use enums for fixed options
+    public readonly Status $status;
+}
+// @doctest id="c7ff"
 ```
 
 ### 4. Make Optional Properties Nullable
@@ -389,12 +398,16 @@ public readonly Status $status;
 Distinguish between required and optional fields clearly. Required properties should not have defaults; optional ones should be nullable with a `null` default.
 
 ```php
-// Required
-public readonly string $name,
-
-// Optional
-public readonly ?string $nickname = null,
-// @doctest id="6d58"
+final class PersonData
+{
+    public function __construct(
+        // Required
+        public readonly string $name,
+        // Optional
+        public readonly ?string $nickname = null,
+    ) {}
+}
+// @doctest id="f65d"
 ```
 
 ### 5. Use Readonly Properties
@@ -402,12 +415,18 @@ public readonly ?string $nickname = null,
 Readonly properties enforce immutability, which prevents accidental mutation of extracted data. This is the recommended approach for all response models.
 
 ```php
-// Immutable -- recommended
-public readonly string $name;
+final class ImmutablePersonData
+{
+    // Immutable -- recommended
+    public readonly string $name;
+}
 
-// Mutable -- avoid unless necessary
-public string $name;
-// @doctest id="4121"
+final class MutablePersonData
+{
+    // Mutable -- avoid unless necessary
+    public string $name;
+}
+// @doctest id="db5e"
 ```
 
 ## Generated Stubs
@@ -430,7 +449,7 @@ final class {{ class }}
         public readonly ?string $email = null,
     ) {}
 }
-// @doctest id="6948"
+// @doctest id="8b92"
 ```
 
 ### Collection Stub (`--collection`)
@@ -451,7 +470,7 @@ final class {{ class }}Item
         public readonly ?string $description = null,
     ) {}
 }
-// @doctest id="c110"
+// @doctest id="7c37"
 ```
 
 ### Nested Stub (`--nested`)
@@ -482,5 +501,5 @@ final class {{ class }}Address
         public readonly string $country,
     ) {}
 }
-// @doctest id="9bf4"
+// @doctest id="3397"
 ```

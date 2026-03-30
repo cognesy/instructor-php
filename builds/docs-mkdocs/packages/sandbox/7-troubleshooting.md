@@ -21,9 +21,11 @@ This page covers the most common issues you may encounter when using the Sandbox
    ```
 
 2. Check what PHP sees as `PATH`. In web server or systemd contexts, the `PATH` is often more restrictive than your shell's:
-   ```php
-   echo getenv('PATH');
-   ```
+
+```php
+echo getenv('PATH');
+// @doctest id="ce37"
+```
 
 3. Set the binary path explicitly through an environment variable before your PHP process starts:
    ```bash
@@ -34,12 +36,14 @@ This page covers the most common issues you may encounter when using the Sandbox
    ```
 
 4. Pass the binary path directly to the static factory:
-   ```php
-   $sandbox = Sandbox::docker($policy, dockerBin: '/usr/local/bin/docker');
-   $sandbox = Sandbox::podman($policy, podmanBin: '/usr/bin/podman');
-   $sandbox = Sandbox::firejail($policy, firejailBin: '/usr/bin/firejail');
-   $sandbox = Sandbox::bubblewrap($policy, bubblewrapBin: '/usr/bin/bwrap');
-   ```
+
+```php
+$sandbox = Sandbox::docker($policy, dockerBin: '/usr/local/bin/docker');
+$sandbox = Sandbox::podman($policy, podmanBin: '/usr/bin/podman');
+$sandbox = Sandbox::firejail($policy, firejailBin: '/usr/bin/firejail');
+$sandbox = Sandbox::bubblewrap($policy, bubblewrapBin: '/usr/bin/bwrap');
+// @doctest id="fabc"
+```
 
 The package searches the following directories in addition to `PATH`: `/usr/bin`, `/usr/local/bin`, `/opt/homebrew/bin`, `/opt/local/bin`, and `/snap/bin`. On Windows, `.exe` extensions are tried automatically.
 
@@ -55,7 +59,7 @@ The package searches the following directories in addition to `PATH`: `/usr/bin`
 use Cognesy\Sandbox\Enums\SandboxDriver;
 
 $sandbox = Sandbox::fromPolicy($policy)->using(SandboxDriver::Docker);
-// @doctest id="06ab"
+// @doctest id="d4d3"
 ```
 
 The valid string values are: `host`, `docker`, `podman`, `firejail`, `bubblewrap`. These match the `SandboxDriver` enum's backing values exactly.
@@ -69,22 +73,28 @@ The valid string values are: `host`, `docker`, `podman`, `firejail`, `bubblewrap
 **Solutions:**
 
 1. Increase the wall-clock timeout:
-   ```php
-   $policy = $policy->withTimeout(60); // 60 seconds
-   ```
+
+```php
+$policy = $policy->withTimeout(60); // 60 seconds
+// @doctest id="d50e"
+```
 
 2. If the process produces output in bursts with long pauses, increase or disable the idle timeout:
-   ```php
-   $policy = $policy->withIdleTimeout(30);  // 30 seconds of no output
-   $policy = $policy->withIdleTimeout(null); // disable idle timeout entirely
-   ```
+
+```php
+$policy = $policy->withIdleTimeout(30);  // 30 seconds of no output
+$policy = $policy->withIdleTimeout(null); // disable idle timeout entirely
+// @doctest id="3f3d"
+```
 
 3. Use the streaming callback to monitor progress and identify where the command stalls:
-   ```php
-   $result = $sandbox->execute($argv, null, function (string $type, string $chunk) {
-       echo "[" . date('H:i:s') . "] {$type}: {$chunk}";
-   });
-   ```
+
+```php
+$result = $sandbox->execute($argv, null, function (string $type, string $chunk) {
+    echo "[" . date('H:i:s') . "] {$type}: {$chunk}";
+});
+// @doctest id="1f4c"
+```
 
 4. For container drivers, keep in mind that the timeout includes container startup time. If image pulling is needed on the first run, it may consume a significant portion of the budget. Pre-pull images to avoid this.
 
@@ -103,7 +113,7 @@ $policy = $policy->withOutputCaps(
     stdoutBytes: 10 * 1024 * 1024, // 10 MB
     stderrBytes: 2 * 1024 * 1024,  // 2 MB
 );
-// @doctest id="e34c"
+// @doctest id="de3a"
 ```
 
 The default cap is 1 MB (1,048,576 bytes) for each stream. The minimum is 1024 bytes -- values below this are clamped upward.
@@ -119,7 +129,7 @@ $result = $sandbox->execute($argv, null, function (string $type, string $chunk) 
 
 fclose($logFile);
 // $result->stdout() may be truncated, but /tmp/full-output.log has everything
-// @doctest id="090f"
+// @doctest id="228c"
 ```
 
 ## Working Directory Errors
@@ -230,7 +240,7 @@ If you still encounter issues, verify that:
 
 ```php
 $policy = $policy->withNetwork(true);
-// @doctest id="daff"
+// @doctest id="fa9f"
 ```
 
 **How network isolation is implemented per driver:**

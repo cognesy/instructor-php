@@ -26,7 +26,7 @@ $text = Inference::using('openai')
     ))
     ->withMessages(Messages::fromString('What is the capital of France?'))
     ->get();
-// @doctest id="4641"
+// @doctest id="1b99"
 ```
 
 ### Retry Policy Parameters
@@ -67,7 +67,7 @@ $text = Inference::using('openai')
     ))
     ->withMessages(Messages::fromString('Write a detailed essay about climate change.'))
     ->get();
-// @doctest id="d09c"
+// @doctest id="a4f2"
 ```
 
 ## Retry Policy for Embeddings
@@ -85,7 +85,7 @@ $retryPolicy = new EmbeddingsRetryPolicy(
     maxDelayMs: 10000,
     jitter: 'full',
 );
-// @doctest id="4cb9"
+// @doctest id="eec8"
 ```
 
 ## Application-Level Throttling
@@ -129,7 +129,7 @@ for ($i = 0; $i < 10; $i++) {
 
     echo "Response $i: $text\n";
 }
-// @doctest id="69d4"
+// @doctest id="e5c1"
 ```
 
 ## Batch Requests to Reduce Volume
@@ -158,7 +158,7 @@ foreach ($questions as $i => $q) {
 $text = Inference::using('openai')
     ->withMessages(Messages::fromString($batchPrompt))
     ->get();
-// @doctest id="73aa"
+// @doctest id="d3ad"
 ```
 
 This reduces the number of API calls from N to 1, dramatically lowering rate limit pressure.

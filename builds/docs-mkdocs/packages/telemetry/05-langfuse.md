@@ -31,7 +31,7 @@ $telemetry = new Telemetry(
         )),
     ),
 );
-// @doctest id="9c66"
+// @doctest id="e3f2"
 ```
 
 ## Environment Variables

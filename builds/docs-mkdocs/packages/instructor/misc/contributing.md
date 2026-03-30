@@ -3,7 +3,7 @@ title: Contributing
 description: 'Where to look when changing this package or its docs.'
 ---
 
-For contribution workflow, quality gates, and repository conventions, use the repository root `CONTRIBUTOR_GUIDE.md`.
+For contribution workflow, quality gates, and repository conventions, use the repository root `CONTRIBUTING.md`.
 
 For this package in particular:
 

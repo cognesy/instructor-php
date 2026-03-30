@@ -79,7 +79,7 @@ $loop = AgentBuilder::base()
     ->withCapability(new UseBash())
     ->withCapability(new UseGuards(maxSteps: 10))
     ->build();
-// @doctest id="f7ad"
+// @doctest id="9e57"
 ```
 
 ## Package Structure
@@ -109,7 +109,7 @@ Template/                 # Agent definitions, parsers (MD/YAML/JSON), registry
 Session/                  # AgentSession, SessionRuntime, actions, stores
 
 Broadcasting/             # AgentEventBroadcaster for SSE/WebSocket streaming
-// @doctest id="78c1"
+// @doctest id="66e9"
 ```
 
 ## Minimal Example
@@ -123,7 +123,7 @@ $state = AgentState::empty()->withUserMessage('Hello!');
 $result = $loop->execute($state);
 
 echo $result->finalResponse()->toString();
-// @doctest id="163b"
+// @doctest id="0c1a"
 ```
 
 This sends a single message to the default LLM provider, receives a text response (no tool calls), and prints it. The loop detects there are no tool calls to execute, so it stops after one step. The entire execution is captured in the returned `AgentState`, which you can inspect for usage statistics, step history, errors, and timing information.

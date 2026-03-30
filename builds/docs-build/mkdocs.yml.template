@@ -225,6 +225,18 @@ nav:
     - Commands: laravel/commands.md
     - Advanced: laravel/advanced.md
     - Troubleshooting: laravel/troubleshooting.md
+  - Symfony:
+    - Overview: symfony/overview.md
+    - Quickstart: symfony/quickstart.md
+    - Runtime Surfaces: symfony/runtime-surfaces.md
+    - Configuration: symfony/configuration.md
+    - Sessions: symfony/sessions.md
+    - Testing: symfony/testing.md
+    - Telemetry: symfony/telemetry.md
+    - Logging: symfony/logging.md
+    - Delivery: symfony/delivery.md
+    - Operations: symfony/operations.md
+    - Migration: symfony/migration.md
   - Cookbook:
     - Introduction: cookbook/introduction.md
     - Contributing: cookbook/contributing.md
