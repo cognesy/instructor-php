@@ -1,0 +1,57 @@
+project:
+  name: instructor-php
+
+tools:
+  pest:
+    command: php -d memory_limit=512M ./vendor/bin/pest --testsuite=Unit,Feature,Regression --exclude-group=docs-qa
+    format: junit
+    format_args: --log-junit=.xqa/state/pest-junit.xml
+    output_file: .xqa/state/pest-junit.xml
+    category: correctness
+  phpstan:
+    command: php ./vendor/bin/phpstan analyse -c phpstan.neon
+    format: json
+    format_args: --error-format=json
+    category: correctness
+  psalm:
+    command: php ./vendor/bin/psalm -c packages/instructor/psalm.xml
+    format: json
+    format_args: --output-format=json
+    category: correctness
+  semgrep:
+    command: semgrep scan --disable-version-check --metrics=off --config .qa/semgrep --config packages/logging/.qa/semgrep.yml .
+    format: json
+    format_args: --json
+    category: correctness
+
+scopes: {}
+
+profiles:
+  default:
+    description: Default local behavioral verification lane for InstructorPHP
+    tools:
+      - pest
+  phpstan:
+    description: PHPStan static analysis
+    tools:
+      - phpstan
+  psalm:
+    description: Psalm static analysis
+    tools:
+      - psalm
+  architecture:
+    description: Semgrep structural and architectural audit
+    tools:
+      - semgrep
+  analysis:
+    description: Standard static-analysis and architectural QA bundle
+    tools:
+      - phpstan
+      - psalm
+      - semgrep
+
+policy_packs: {}
+
+storage:
+  backend: sqlite
+  path: .xqa/state/xqa.db

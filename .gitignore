@@ -154,6 +154,7 @@ tasks.json
 
 # QA tooling local caches
 .qa/.semgrep/
+.xqa/state/
 
 # Dolt database files (added by bd init)
 .dolt/
