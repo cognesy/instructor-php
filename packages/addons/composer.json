@@ -28,6 +28,8 @@
   },
   "require": {
     "php": "^8.3",
+    "cognesy/instructor-contracts": "^2.3",
+    "cognesy/instructor-events": "^2.3",
     "ext-fileinfo": "*",
     "ext-libxml": "*",
     "cognesy/instructor-dynamic": "^2.3",

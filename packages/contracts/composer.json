@@ -1,6 +1,6 @@
 {
-  "name": "cognesy/agent-ctrl",
-  "description": "Unified CLI bridge for code agents (Claude Code, OpenAI Codex, OpenCode)",
+  "name": "cognesy/instructor-contracts",
+  "description": "Shared contracts and value objects for Instructor PHP library",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
   "support": {
@@ -15,31 +15,31 @@
   ],
   "autoload": {
     "psr-4": {
-      "Cognesy\\AgentCtrl\\": "src/"
+      "Cognesy\\Instructor\\": "src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Cognesy\\AgentCtrl\\Tests\\": "tests/"
+      "Cognesy\\Instructor\\Contracts\\Tests\\": "tests/"
     }
   },
   "require": {
     "php": "^8.3",
-    "cognesy/instructor-config": "^2.3",
-    "cognesy/instructor-events": "^2.3",
-    "cognesy/logging": "^2.3",
-    "cognesy/instructor-sandbox": "^2.3",
-    "cognesy/instructor-telemetry": "^2.3",
     "cognesy/instructor-utils": "^2.3"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",
+    "icanhazstring/composer-unused": "^0.9.0",
+    "jetbrains/phpstorm-attributes": "^1.2",
+    "maglnet/composer-require-checker": "^4.16",
     "pestphp/pest": "^2.34",
-    "phpstan/phpstan": "^1.11"
+    "phpstan/phpstan": "^1.11",
+    "vimeo/psalm": "^6.0"
   },
   "scripts": {
     "tests": "@php vendor/bin/pest",
-    "phpstan": "@php vendor/bin/phpstan -c phpstan.neon"
+    "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
+    "psalm": "@php vendor/bin/psalm"
   },
   "config": {
     "allow-plugins": {

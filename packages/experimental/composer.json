@@ -25,6 +25,12 @@
   },
   "require": {
     "php": "^8.3",
+    "cognesy/instructor-addons": "^2.3",
+    "cognesy/instructor-auxiliary": "^2.3",
+    "cognesy/instructor-events": "^2.3",
+    "cognesy/instructor-hub": "^2.3",
+    "cognesy/instructor-stream": "^2.3",
+    "cognesy/instructor-templates": "^2.3",
     "cognesy/instructor-dynamic": "^2.2",
     "cognesy/instructor-messages": "^2.2",
     "cognesy/instructor-pipeline": "^2.2",

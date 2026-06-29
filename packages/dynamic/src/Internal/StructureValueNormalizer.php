@@ -3,7 +3,7 @@
 namespace Cognesy\Dynamic\Internal;
 
 use Cognesy\Dynamic\Structure;
-use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Schema\Data\ArrayShapeSchema;
 use Cognesy\Schema\Data\CollectionSchema;
 use Cognesy\Schema\Data\ObjectSchema;
@@ -12,9 +12,14 @@ use Cognesy\Schema\TypeInfo;
 
 final class StructureValueNormalizer
 {
+    private readonly CanDeserializeClass $deserializer;
+
     public function __construct(
         private readonly Schema $schema,
-    ) {}
+        ?CanDeserializeClass $deserializer = null,
+    ) {
+        $this->deserializer = $deserializer ?? new SymfonyStructureDeserializer();
+    }
 
     /** @param array<string,mixed> $values
      *  @return array<string,mixed>
@@ -93,7 +98,7 @@ final class StructureValueNormalizer
                 $className = TypeInfo::className($schema->type());
                 if ($className !== null && $className !== Structure::class && $className !== \stdClass::class && class_exists($className)) {
                     try {
-                        return (new SymfonyDeserializer())->fromArray($normalized, $className);
+                        return $this->deserializer->fromArray($normalized, $className);
                     } catch (\Throwable) {
                         return $normalized;
                     }
