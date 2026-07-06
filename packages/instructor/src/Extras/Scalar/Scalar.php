@@ -50,7 +50,7 @@ final class Scalar implements CanProvideJsonSchema, CanDeserializeSelf, CanTrans
         string $description = 'Response value',
         bool $required = true,
         mixed $defaultValue = null,
-    ) : self {
+    ) : Scalar {
         return new self(
             name: $name,
             description: $description,
@@ -65,7 +65,7 @@ final class Scalar implements CanProvideJsonSchema, CanDeserializeSelf, CanTrans
         string $description = 'Response value',
         bool $required = true,
         mixed $defaultValue = null,
-    ) : self {
+    ) : Scalar {
         return new self(
             name: $name,
             description: $description,
@@ -80,7 +80,7 @@ final class Scalar implements CanProvideJsonSchema, CanDeserializeSelf, CanTrans
         string $description = 'Response value',
         bool $required = true,
         mixed $defaultValue = null,
-    ) : self {
+    ) : Scalar {
         return new self(
             name: $name,
             description: $description,
@@ -95,7 +95,7 @@ final class Scalar implements CanProvideJsonSchema, CanDeserializeSelf, CanTrans
         string $description = 'Response value',
         bool $required = true,
         mixed $defaultValue = null,
-    ) : self {
+    ) : Scalar {
         return new self(
             name: $name,
             description: $description,
@@ -112,7 +112,7 @@ final class Scalar implements CanProvideJsonSchema, CanDeserializeSelf, CanTrans
         string $description = 'Select correct option',
         bool $required = true,
         mixed $defaultValue = null,
-    ) : self {
+    ) : Scalar {
         if (!self::isEnum($enumType)) {
             throw new Exception("Enum class does not exist or is not BackedEnum: {$enumType}");
         }

@@ -126,7 +126,7 @@ final readonly class StructuredOutputConfig
         ];
     }
 
-    public static function fromArray(array $config): self {
+    public static function fromArray(array $config): StructuredOutputConfig {
         try {
             // Ensure 'outputMode' is set to a valid OutputMode enum value
             $config['outputMode'] = match (true) {
@@ -152,12 +152,12 @@ final readonly class StructuredOutputConfig
         return $instance;
     }
 
-    public static function fromDsn(string $dsn): self {
+    public static function fromDsn(string $dsn): StructuredOutputConfig {
         $data = Dsn::fromString($dsn)->toArray();
         return self::fromArray($data);
     }
 
-    public function withOverrides(array $values): self {
+    public function withOverrides(array $values): StructuredOutputConfig {
         $config = array_merge($this->toArray(), $values);
         return self::fromArray($config);
     }
@@ -351,7 +351,7 @@ final readonly class StructuredOutputConfig
         ?bool $throwOnTransformationFailure = null,
         ?ResponseCachePolicy $responseCachePolicy = null,
         ?int $streamMaterializationInterval = null,
-    ): self {
+    ): StructuredOutputConfig {
         return new self(
             outputMode: $outputMode ?? $this->outputMode,
             outputClass: $outputClass ?? $this->outputClass,

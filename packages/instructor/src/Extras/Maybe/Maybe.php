@@ -26,7 +26,7 @@ final class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
         private readonly CanDeserializeClass $deserializer = new SymfonyDeserializer(),
     ) {}
 
-    public static function is(string $class, string $name = '', string $description = '') : self {
+    public static function is(string $class, string $name = '', string $description = '') : Maybe {
         $instance = new self();
         $instance->class = $class;
         $instance->name = $name;
