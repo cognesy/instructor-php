@@ -33,23 +33,23 @@ final class Inference implements CanCreateInference
         $this->runtime = $runtime ?? InferenceRuntime::fromProvider(LLMProvider::new());
     }
 
-    public static function fromConfig(LLMConfig $config, ?CanProvideInferenceDrivers $drivers = null): self {
+    public static function fromConfig(LLMConfig $config, ?CanProvideInferenceDrivers $drivers = null): Inference {
         return new self(InferenceRuntime::fromConfig($config, drivers: $drivers));
     }
 
-    public static function fromProvider(LLMProvider $provider, ?CanProvideInferenceDrivers $drivers = null): self {
+    public static function fromProvider(LLMProvider $provider, ?CanProvideInferenceDrivers $drivers = null): Inference {
         return new self(InferenceRuntime::fromProvider($provider, drivers: $drivers));
     }
 
-    public static function fromRuntime(CanCreateInference $runtime): self {
+    public static function fromRuntime(CanCreateInference $runtime): Inference {
         return new self($runtime);
     }
 
-    public static function using(string $preset, ?string $basePath = null, ?CanProvideInferenceDrivers $drivers = null): self {
+    public static function using(string $preset, ?string $basePath = null, ?CanProvideInferenceDrivers $drivers = null): Inference {
         return self::fromConfig(LLMConfig::fromPreset($preset, $basePath), drivers: $drivers);
     }
 
-    public function withRuntime(CanCreateInference $runtime): self {
+    public function withRuntime(CanCreateInference $runtime): Inference {
         $copy = clone $this;
         $copy->runtime = $runtime;
         return $copy;

@@ -162,7 +162,7 @@ class InferenceStream
      *
      * @param callable(PartialInferenceDelta): void $callback
      */
-    public function onDelta(callable $callback): self {
+    public function onDelta(callable $callback): InferenceStream {
         $this->onDelta = $callback(...);
         return $this;
     }
@@ -351,7 +351,7 @@ class InferenceStream
      *
      * @param callable(PartialInferenceDelta): void $callback
      */
-    public function onPartialResponse(callable $callback): self {
+    public function onPartialResponse(callable $callback): InferenceStream {
         return $this->onDelta($callback);
     }
 

@@ -44,7 +44,7 @@ final class InferenceRuntime implements CanCreateInference
         ?CanSendHttpRequests $httpClient = null,
         ?CanManageStreamCache $streamCacheManager = null,
         ?CanProvideInferenceDrivers $drivers = null,
-    ): self {
+    ): InferenceRuntime {
         $events = self::resolveEvents($events);
         $httpClient = self::resolveHttpClient($events, $httpClient);
         $driver = self::makeDriver(
@@ -66,7 +66,7 @@ final class InferenceRuntime implements CanCreateInference
         ?CanSendHttpRequests $httpClient = null,
         ?CanManageStreamCache $streamCacheManager = null,
         ?CanProvideInferenceDrivers $drivers = null,
-    ): self {
+    ): InferenceRuntime {
         $events = self::resolveEvents($events);
         $config = $resolver->resolveConfig();
         $httpClient = self::resolveHttpClient($events, $httpClient);
@@ -94,7 +94,7 @@ final class InferenceRuntime implements CanCreateInference
         ?CanSendHttpRequests $httpClient = null,
         ?CanManageStreamCache $streamCacheManager = null,
         ?CanProvideInferenceDrivers $drivers = null,
-    ): self {
+    ): InferenceRuntime {
         return self::fromResolver(
             resolver: $provider,
             events: $events,
@@ -105,13 +105,13 @@ final class InferenceRuntime implements CanCreateInference
     }
 
     /** @param callable(object):void $listener */
-    public function onEvent(string $class, callable $listener, int $priority = 0): self {
+    public function onEvent(string $class, callable $listener, int $priority = 0): InferenceRuntime {
         $this->events->addListener($class, $listener, $priority);
         return $this;
     }
 
     /** @param callable(object):void $listener */
-    public function wiretap(callable $listener): self {
+    public function wiretap(callable $listener): InferenceRuntime {
         $this->events->wiretap($listener);
         return $this;
     }

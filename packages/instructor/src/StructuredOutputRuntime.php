@@ -41,7 +41,7 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
         ?CanHandleEvents $events = null,
         ?CanSendHttpRequests $httpClient = null,
         ?StructuredOutputConfig $structuredConfig = null,
-    ): self {
+    ): StructuredOutputRuntime {
         $events = self::resolveEvents($events);
         return new self(
             inference: InferenceRuntime::fromConfig(
@@ -59,7 +59,7 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
         ?CanSendHttpRequests $httpClient = null,
         ?StructuredOutputConfig $structuredConfig = null,
         ?LLMConfig $llmConfig = null,
-    ): self {
+    ): StructuredOutputRuntime {
         return self::fromConfig(
             config: $llmConfig ?? LLMProvider::new()->resolveConfig(),
             events: $events,
@@ -73,7 +73,7 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
         ?CanHandleEvents $events = null,
         ?CanSendHttpRequests $httpClient = null,
         ?StructuredOutputConfig $structuredConfig = null,
-    ): self {
+    ): StructuredOutputRuntime {
         $events = self::resolveEvents($events);
         return new self(
             inference: InferenceRuntime::fromProvider(
@@ -129,13 +129,13 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
     }
 
     /** @param callable(object):void $listener */
-    public function onEvent(string $class, callable $listener, int $priority = 0): self {
+    public function onEvent(string $class, callable $listener, int $priority = 0): StructuredOutputRuntime {
         $this->events->addListener($class, $listener, $priority);
         return $this;
     }
 
     /** @param callable(object):void $listener */
-    public function wiretap(callable $listener): self {
+    public function wiretap(callable $listener): StructuredOutputRuntime {
         $this->events->wiretap($listener);
         return $this;
     }
@@ -164,39 +164,39 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
         return $this->requestMaterializer;
     }
 
-    public function withConfig(StructuredOutputConfig $config): self {
+    public function withConfig(StructuredOutputConfig $config): StructuredOutputRuntime {
         return $this->with(config: $config);
     }
 
-    public function withDefaultToStdClass(bool $defaultToStdClass = true): self {
+    public function withDefaultToStdClass(bool $defaultToStdClass = true): StructuredOutputRuntime {
         return $this->withConfig($this->config->with(defaultToStdClass: $defaultToStdClass));
     }
 
-    public function withOutputMode(\Cognesy\Instructor\Enums\OutputMode $outputMode): self {
+    public function withOutputMode(\Cognesy\Instructor\Enums\OutputMode $outputMode): StructuredOutputRuntime {
         return $this->withConfig($this->config->withOutputMode($outputMode));
     }
 
-    public function withMaxRetries(int $maxRetries): self {
+    public function withMaxRetries(int $maxRetries): StructuredOutputRuntime {
         return $this->withConfig($this->config->withMaxRetries($maxRetries));
     }
 
-    public function withValidator(CanValidateObject $validator): self {
+    public function withValidator(CanValidateObject $validator): StructuredOutputRuntime {
         return $this->with(validator: $validator);
     }
 
-    public function withTransformer(CanTransformData $transformer): self {
+    public function withTransformer(CanTransformData $transformer): StructuredOutputRuntime {
         return $this->with(transformer: $transformer);
     }
 
-    public function withDeserializer(CanDeserializeClass $deserializer): self {
+    public function withDeserializer(CanDeserializeClass $deserializer): StructuredOutputRuntime {
         return $this->with(deserializer: $deserializer);
     }
 
-    public function withExtractor(CanExtractResponse $extractor): self {
+    public function withExtractor(CanExtractResponse $extractor): StructuredOutputRuntime {
         return $this->with(extractor: $extractor);
     }
 
-    public function withRequestMaterializer(CanMaterializeRequest $requestMaterializer): self {
+    public function withRequestMaterializer(CanMaterializeRequest $requestMaterializer): StructuredOutputRuntime {
         return $this->with(requestMaterializer: $requestMaterializer);
     }
 

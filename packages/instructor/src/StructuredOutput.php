@@ -29,39 +29,39 @@ final class StructuredOutput implements CanCreateStructuredOutput
         $this->request = new StructuredOutputRequest();
     }
 
-    public function withRuntime(CanCreateStructuredOutput $runtime): self {
+    public function withRuntime(CanCreateStructuredOutput $runtime): StructuredOutput {
         $copy = clone $this;
         $copy->runtime = $runtime;
         return $copy;
     }
 
-    public static function fromConfig(LLMConfig $config): self {
+    public static function fromConfig(LLMConfig $config): StructuredOutput {
         return new self(StructuredOutputRuntime::fromConfig($config));
     }
 
-    public static function using(string $preset, ?string $basePath = null): self {
+    public static function using(string $preset, ?string $basePath = null): StructuredOutput {
         return self::fromConfig(LLMConfig::fromPreset($preset, $basePath));
     }
 
-    public function withMessages(string|array|Message|Messages $messages): self {
+    public function withMessages(string|array|Message|Messages $messages): StructuredOutput {
         $copy = clone $this;
         $copy->request = $copy->request->withMessages(Messages::fromAny($messages));
         return $copy;
     }
 
-    public function withInput(string|array|object $input): self {
+    public function withInput(string|array|object $input): StructuredOutput {
         $copy = clone $this;
         $copy->request = $copy->request->withMessages(Messages::fromInput($input));
         return $copy;
     }
 
-    public function withResponseModel(string|array|object $responseModel): self {
+    public function withResponseModel(string|array|object $responseModel): StructuredOutput {
         $copy = clone $this;
         $copy->request = $copy->request->withRequestedSchema($responseModel);
         return $copy;
     }
 
-    public function withResponseJsonSchema(array|CanProvideJsonSchema $jsonSchema): self {
+    public function withResponseJsonSchema(array|CanProvideJsonSchema $jsonSchema): StructuredOutput {
         $copy = clone $this;
         $copy->request = $copy->request->withRequestedSchema($jsonSchema);
         return $copy;
@@ -87,43 +87,43 @@ final class StructuredOutput implements CanCreateStructuredOutput
         return $copy;
     }
 
-    public function withSystem(string|\Stringable $system): self {
+    public function withSystem(string|\Stringable $system): StructuredOutput {
         $copy = clone $this;
         $copy->request = $copy->request->withSystem((string) $system);
         return $copy;
     }
 
-    public function withPrompt(string|\Stringable $prompt): self {
+    public function withPrompt(string|\Stringable $prompt): StructuredOutput {
         $copy = clone $this;
         $copy->request = $copy->request->withPrompt((string) $prompt);
         return $copy;
     }
 
-    public function withExamples(array $examples): self {
+    public function withExamples(array $examples): StructuredOutput {
         $copy = clone $this;
         $copy->request = $copy->request->withExamples($examples);
         return $copy;
     }
 
-    public function withModel(string $model): self {
+    public function withModel(string $model): StructuredOutput {
         $copy = clone $this;
         $copy->request = $copy->request->withModel($model);
         return $copy;
     }
 
-    public function withOptions(array $options): self {
+    public function withOptions(array $options): StructuredOutput {
         $copy = clone $this;
         $copy->request = $copy->request->withOptions($options);
         return $copy;
     }
 
-    public function withOption(string $key, mixed $value): self {
+    public function withOption(string $key, mixed $value): StructuredOutput {
         $copy = clone $this;
         $copy->request = $copy->request->withOptions([$key => $value]);
         return $copy;
     }
 
-    public function withStreaming(bool $stream = true): self {
+    public function withStreaming(bool $stream = true): StructuredOutput {
         $copy = clone $this;
         $copy->request = $copy->request->withStreamed($stream);
         return $copy;
@@ -134,7 +134,7 @@ final class StructuredOutput implements CanCreateStructuredOutput
         string $system = '',
         string $prompt = '',
         array $examples = [],
-    ): self {
+    ): StructuredOutput {
         $copy = clone $this;
         $copy->request = $copy->request->withCachedContext(
             new CachedContext(
@@ -147,26 +147,26 @@ final class StructuredOutput implements CanCreateStructuredOutput
         return $copy;
     }
 
-    public function intoArray(): self {
+    public function intoArray(): StructuredOutput {
         $copy = clone $this;
         $copy->request = $copy->request->withOutputFormat(OutputFormat::array());
         return $copy;
     }
 
     /** @param class-string $class */
-    public function intoInstanceOf(string $class): self {
+    public function intoInstanceOf(string $class): StructuredOutput {
         $copy = clone $this;
         $copy->request = $copy->request->withOutputFormat(OutputFormat::instanceOf($class));
         return $copy;
     }
 
-    public function intoObject(CanDeserializeSelf $object): self {
+    public function intoObject(CanDeserializeSelf $object): StructuredOutput {
         $copy = clone $this;
         $copy->request = $copy->request->withOutputFormat(OutputFormat::selfDeserializing($object));
         return $copy;
     }
 
-    public function withRequest(StructuredOutputRequest $request): self {
+    public function withRequest(StructuredOutputRequest $request): StructuredOutput {
         $copy = clone $this;
         $copy->request = $request;
         return $copy;
@@ -183,7 +183,7 @@ final class StructuredOutput implements CanCreateStructuredOutput
         ?array $examples = null,
         ?string $model = null,
         ?array $options = null,
-    ): self {
+    ): StructuredOutput {
         $copy = clone $this;
         $copy->request = $copy->request->with(
             messages: $messages !== null ? Messages::fromAny($messages) : null,

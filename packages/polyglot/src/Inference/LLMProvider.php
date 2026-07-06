@@ -17,19 +17,19 @@ final class LLMProvider implements CanResolveLLMConfig, HasExplicitInferenceDriv
 
     // FACTORIES /////////////////////////////////////////////////////////////
 
-    public static function new(?LLMConfig $config = null): self {
+    public static function new(?LLMConfig $config = null): LLMProvider {
         return new self(config: $config ?? LLMConfig::fromPreset('openai'));
     }
 
-    public static function using(string $preset, ?string $basePath = null): self {
+    public static function using(string $preset, ?string $basePath = null): LLMProvider {
         return self::fromLLMConfig(LLMConfig::fromPreset($preset, $basePath));
     }
 
-    public static function fromLLMConfig(LLMConfig $config): self {
+    public static function fromLLMConfig(LLMConfig $config): LLMProvider {
         return new self(config: $config);
     }
 
-    public static function fromArray(array $config): self {
+    public static function fromArray(array $config): LLMProvider {
         return self::fromLLMConfig(LLMConfig::fromArray($config));
     }
 
@@ -50,7 +50,7 @@ final class LLMProvider implements CanResolveLLMConfig, HasExplicitInferenceDriv
     public function with(
         ?LLMConfig $config = null,
         ?CanProcessInferenceRequest $explicitDriver = null,
-    ): self {
+    ): LLMProvider {
         return new self(
             config: $config ?? $this->config,
             explicitDriver: $explicitDriver ?? $this->explicitDriver,
@@ -62,15 +62,15 @@ final class LLMProvider implements CanResolveLLMConfig, HasExplicitInferenceDriv
         return $this->with(config: $config);
     }
 
-    public function withConfigOverrides(array $overrides): self {
+    public function withConfigOverrides(array $overrides): LLMProvider {
         return $this->with(config: $this->config->withOverrides($overrides));
     }
 
-    public function withDriver(CanProcessInferenceRequest $driver): self {
+    public function withDriver(CanProcessInferenceRequest $driver): LLMProvider {
         return $this->with(explicitDriver: $driver);
     }
 
-    public function withModel(string $model): self {
+    public function withModel(string $model): LLMProvider {
         return $this->with(config: $this->config->withOverrides(['model' => $model]));
     }
 }
