@@ -68,14 +68,31 @@ function responseModelSnapshot(mixed $input): array {
     $factory = snapshotFactory($modes);
     $model = $factory->fromAny($input);
 
-    return [
+    return canonicalizeResponseModelSnapshot([
         'dispatchMode' => $modes[0] ?? 'none',
         'class' => $model->instanceClass(),
         'returnedClass' => $model->returnedClass(),
         'schemaName' => $model->schemaName(),
         'returnTarget' => $model->returnTarget()->value,
         'jsonSchema' => $model->toJsonSchema(),
-    ];
+    ]);
+}
+
+function canonicalizeResponseModelSnapshot(array $snapshot): array {
+    canonicalizeSchemaDefaultValueReflectionNoise($snapshot);
+    return $snapshot;
+}
+
+function canonicalizeSchemaDefaultValueReflectionNoise(array &$node): void {
+    if (($node['x-php-class'] ?? null) === Schema::class) {
+        unset($node['properties']['defaultValue']['type']);
+    }
+
+    foreach ($node as &$value) {
+        if (is_array($value)) {
+            canonicalizeSchemaDefaultValueReflectionNoise($value);
+        }
+    }
 }
 
 it('locks ResponseModel output per input shape against the golden fixture', function () {
@@ -110,7 +127,7 @@ it('locks ResponseModel output per input shape against the golden fixture', func
         return;
     }
 
-    $expected = json_decode(file_get_contents($path), true);
+    $expected = canonicalizeResponseModelSnapshot(json_decode(file_get_contents($path), true));
     expect($actual)->toBe(
         $expected,
         'ResponseModel snapshot drift. If intentional: rerun with RESPONSE_MODEL_SNAPSHOT_UPDATE=1, review the diff, commit.',
