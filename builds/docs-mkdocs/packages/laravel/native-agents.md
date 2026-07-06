@@ -29,7 +29,7 @@ return [
         ],
     ],
 ];
-// @doctest id="f597"
+// @doctest id="f551"
 ```
 
 The package resolves and exposes:
@@ -63,7 +63,7 @@ return [
         ],
     ],
 ];
-// @doctest id="0a3e"
+// @doctest id="cc83"
 ```
 
 Tag-driven contributions:
@@ -80,7 +80,7 @@ $this->app->bind(App\Agents\Schemas\LeadSchema::class, fn () => new SchemaRegist
     schema: App\Data\LeadData::class,
 ));
 $this->app->tag(App\Agents\Schemas\LeadSchema::class, AgentRegistryTags::SCHEMAS);
-// @doctest id="4777"
+// @doctest id="f8b4"
 ```
 
 ## Persistence
@@ -90,14 +90,14 @@ For database-backed sessions:
 ```bash
 php artisan vendor:publish --tag=instructor-migrations
 php artisan migrate
-# @doctest id="c815"
+# @doctest id="bf48"
 ```
 
 Then set:
 
 ```env
 INSTRUCTOR_NATIVE_AGENT_SESSION_STORE=database
-// @doctest id="8d9f"
+// @doctest id="2e30"
 ```
 
 If you keep the default `memory` store, native sessions stay process-local and ephemeral.

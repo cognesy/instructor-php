@@ -28,7 +28,7 @@ The package deliberately separates two agent surfaces:
 
 ```bash
 composer require cognesy/instructor-laravel
-# @doctest id="5b10"
+# @doctest id="3773"
 ```
 
 ### 2. Configure API Key
@@ -37,7 +37,7 @@ Add to your `.env`:
 
 ```env
 OPENAI_API_KEY=your-openai-api-key
-// @doctest id="4cef"
+// @doctest id="5895"
 ```
 
 ### 3. Extract Structured Data
@@ -62,7 +62,7 @@ $person = StructuredOutput::with(
 
 echo $person->name; // "John Smith"
 echo $person->age;  // 30
-// @doctest id="e7d2"
+// @doctest id="526e"
 ```
 
 ## Documentation
@@ -116,7 +116,7 @@ public function test_extracts_invoice_data(): void
     $this->assertEquals('INV-001', $invoice->invoiceNumber);
     $fake->assertExtracted(InvoiceData::class);
 }
-// @doctest id="6ec7"
+// @doctest id="d94b"
 ```
 
 ## Requirements

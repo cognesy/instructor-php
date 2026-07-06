@@ -16,7 +16,7 @@ $result = (new StructuredOutput)
     ->withInput(['name' => 'Jane', 'bio' => 'Engineer from Berlin'])
     ->withResponseClass(Profile::class)
     ->get();
-// @doctest id="189d"
+// @doctest id="b17a"
 ```
 
 ## Object-to-Object Transformation
@@ -51,7 +51,7 @@ $translation = (new StructuredOutput)
 //     subject: "Actualización de estado",
 //     body: "Su cuenta ha sido actualizada."
 // }
-// @doctest id="7f0c"
+// @doctest id="8aeb"
 ```
 
 The input object is serialized into the message content, and the LLM produces a new object of the specified response model class. The `prompt` parameter provides instructions for how to transform the data.
@@ -70,7 +70,7 @@ $result = (new StructuredOutput)
     ->withPrompt('Generate a marketing-friendly product listing from this data.')
     ->withResponseClass(ProductListing::class)
     ->get();
-// @doctest id="1d83"
+// @doctest id="40e5"
 ```
 
 ## String Input
@@ -82,7 +82,7 @@ $result = (new StructuredOutput)
     ->withInput('Jane Doe, 31, Berlin')
     ->withResponseClass(Person::class)
     ->get();
-// @doctest id="69a8"
+// @doctest id="be74"
 ```
 
 ## When to Use Structure-to-Structure

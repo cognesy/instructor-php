@@ -23,7 +23,7 @@ foreach ($stream->partials() as $partial) {
 
 // Get final complete result
 $company = $stream->finalValue();
-// @doctest id="e993"
+// @doctest id="faf9"
 ```
 
 ### Streaming with `partials()`
@@ -43,7 +43,7 @@ foreach ($stream->partials() as $partial) {
 }
 
 $result = $stream->finalValue();
-// @doctest id="57cc"
+// @doctest id="922f"
 ```
 
 ### Streaming Sequences
@@ -64,7 +64,7 @@ $stream = StructuredOutput::with(
 foreach ($stream->sequence() as $items) {
     echo "Found: {$items->last()->name}\n";
 }
-// @doctest id="a45b"
+// @doctest id="e3b4"
 ```
 
 ---
@@ -99,7 +99,7 @@ $user = StructuredOutput::with(
     responseModel: UserData::class,
     maxRetries: 3,
 )->get();
-// @doctest id="306c"
+// @doctest id="3dac"
 ```
 
 ### Custom Validators
@@ -127,7 +127,7 @@ class BusinessRulesValidator implements CanValidateObject
         return ValidationResult::valid();
     }
 }
-// @doctest id="b198"
+// @doctest id="3401"
 ```
 
 Custom validators are registered on the `StructuredOutputRuntime`, not on the facade directly:
@@ -143,7 +143,7 @@ $order = StructuredOutput::withRuntime($runtime)->with(
     messages: 'Extract order...',
     responseModel: OrderData::class,
 )->get();
-// @doctest id="aebb"
+// @doctest id="68b0"
 ```
 
 ### Custom Retry Prompt
@@ -157,7 +157,7 @@ $result = StructuredOutput::with(
     maxRetries: 3,
     retryPrompt: 'The extraction failed validation. Errors: {errors}. Please correct and try again.',
 )->get();
-// @doctest id="afb6"
+// @doctest id="1758"
 ```
 
 ---
@@ -184,7 +184,7 @@ class NormalizePhoneNumbers implements CanTransformData
         return preg_replace('/[^0-9+]/', '', $phone);
     }
 }
-// @doctest id="0404"
+// @doctest id="c6ef"
 ```
 
 Custom transformers are registered on the `StructuredOutputRuntime`, not on the facade directly:
@@ -202,7 +202,7 @@ $contact = StructuredOutput::withRuntime($runtime)->with(
 )->get();
 
 // $contact->phone === '+15551234567'
-// @doctest id="dcea"
+// @doctest id="edf3"
 ```
 
 ---
@@ -247,7 +247,7 @@ $result = StructuredOutput::withRuntime($jsonRuntime)
 $result = StructuredOutput::withRuntime($mdJsonRuntime)
     ->with(...)
     ->get();
-// @doctest id="fe31"
+// @doctest id="3f69"
 ```
 
 ---
@@ -279,7 +279,7 @@ $person = StructuredOutput::with(
         ],
     ],
 )->get();
-// @doctest id="5e0d"
+// @doctest id="dd88"
 ```
 
 ---
@@ -299,7 +299,7 @@ $medical = StructuredOutput::with(
         If information is unclear, mark as null rather than guessing.
         PROMPT,
 )->get();
-// @doctest id="82fd"
+// @doctest id="cfba"
 ```
 
 ---
@@ -315,7 +315,7 @@ $result = StructuredOutput::with(
     toolName: 'extract_invoice',
     toolDescription: 'Extracts structured invoice data including line items, totals, and payment terms.',
 )->get();
-// @doctest id="3726"
+// @doctest id="d80b"
 ```
 
 ---
@@ -352,7 +352,7 @@ class AIService
             ->get();
     }
 }
-// @doctest id="be6e"
+// @doctest id="f091"
 ```
 
 ---
@@ -369,7 +369,7 @@ $result = StructuredOutput::withCachedContext(
     messages: $newDocument,
     responseModel: LegalAnalysis::class,
 )->get();
-// @doctest id="9d09"
+// @doctest id="20c5"
 ```
 
 ---
@@ -397,7 +397,7 @@ class CachedExtractor
         });
     }
 }
-// @doctest id="8acb"
+// @doctest id="a6c1"
 ```
 
 ### Semantic Caching
@@ -431,7 +431,7 @@ class SemanticCache
         return $result;
     }
 }
-// @doctest id="1b01"
+// @doctest id="9bc4"
 ```
 
 ---
@@ -466,7 +466,7 @@ class BatchExtractor
             ->dispatch();
     }
 }
-// @doctest id="cec0"
+// @doctest id="c6b9"
 ```
 
 ---
@@ -499,7 +499,7 @@ class ResilientExtractor
         }
     }
 }
-// @doctest id="b360"
+// @doctest id="87e8"
 ```
 
 ### Fallback Providers
@@ -529,7 +529,7 @@ class FallbackExtractor
         throw new RuntimeException('All providers failed');
     }
 }
-// @doctest id="a48f"
+// @doctest id="7547"
 ```
 
 ---
@@ -550,7 +550,7 @@ $result = StructuredOutput::with(
 $result = StructuredOutput::withModel('gpt-4o-mini')
     ->with(messages: $text, responseModel: SimpleModel::class)
     ->get();
-// @doctest id="55f5"
+// @doctest id="8bb4"
 ```
 
 ### Parallel Extraction
@@ -565,5 +565,5 @@ $results = Concurrency::run([
     fn () => StructuredOutput::with(messages: $text2, responseModel: Model::class)->get(),
     fn () => StructuredOutput::with(messages: $text3, responseModel: Model::class)->get(),
 ]);
-// @doctest id="a582"
+// @doctest id="7850"
 ```

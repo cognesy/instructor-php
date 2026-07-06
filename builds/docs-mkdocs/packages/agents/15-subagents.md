@@ -49,7 +49,7 @@ $state = AgentState::empty()->withUserMessage(
     'Review src/AgentLoop.php and summarize key issues.'
 );
 $result = $agent->execute($state);
-// @doctest id="98c2"
+// @doctest id="f1c8"
 ```
 
 The parent model decides on its own when to call `spawn_subagent`. The tool schema includes a description of all available subagents and their purposes, giving the LLM the information it needs to choose the right one.
@@ -97,7 +97,7 @@ $registry->register(new AgentDefinition(
     tools: new NameList('read_file', 'edit_file'),
     budget: new ExecutionBudget(maxSteps: 12, maxTokens: 8000),
 ));
-// @doctest id="673b"
+// @doctest id="65d3"
 ```
 
 ### File-Based Registration
@@ -106,7 +106,7 @@ Definitions can be loaded from `.md`, `.yaml`, or `.json` files:
 
 ```php
 $registry->loadFromDirectory('/agents', recursive: true);
-// @doctest id="c99c"
+// @doctest id="b323"
 ```
 
 See [Agent Templates](14-agent-templates.md) for the full file format specification.
@@ -126,7 +126,7 @@ new AgentDefinition(
     systemPrompt: 'Help with any task.',
     // tools: null -- inherits all parent tools
 );
-// @doctest id="d1d7"
+// @doctest id="9cd4"
 ```
 
 ### Allow-List
@@ -140,7 +140,7 @@ new AgentDefinition(
     systemPrompt: 'Analyze files but never modify them.',
     tools: new NameList('read_file', 'search_files'),
 );
-// @doctest id="ef27"
+// @doctest id="1de6"
 ```
 
 ### Deny-List
@@ -156,7 +156,7 @@ new AgentDefinition(
     toolsDeny: new NameList('write_file'),
 );
 // Result: child only has 'read_file' and 'edit_file'
-// @doctest id="af0c"
+// @doctest id="84bd"
 ```
 
 ### spawn_subagent in Children
@@ -170,7 +170,7 @@ new AgentDefinition(
     systemPrompt: 'Complete the task directly.',
     toolsDeny: new NameList('spawn_subagent'),
 );
-// @doctest id="3c26"
+// @doctest id="e352"
 ```
 
 ## Depth Control
@@ -190,7 +190,7 @@ $agent = AgentBuilder::base()
         policy: new SubagentPolicy(maxDepth: 2),
     ))
     ->build();
-// @doctest id="88cb"
+// @doctest id="35a6"
 ```
 
 The default `maxDepth` is `3`. A depth of `0` means the parent itself; a depth of `2` means the parent can spawn children, and those children can spawn grandchildren, but no further.
@@ -203,7 +203,7 @@ For simple depth configuration, use the static `forDepth()` factory:
 $agent = AgentBuilder::base()
     ->withCapability(UseSubagents::forDepth(2, provider: $registry))
     ->build();
-// @doctest id="afb4"
+// @doctest id="afaa"
 ```
 
 ### Depth Exceeded Behavior
@@ -229,7 +229,7 @@ new AgentDefinition(
         maxSeconds: 20.0,
     ),
 );
-// @doctest id="545c"
+// @doctest id="6e53"
 ```
 
 If no budget is declared, the child runs without guards (unless the parent's guards indirectly limit it through total token accounting).
@@ -251,7 +251,7 @@ new AgentDefinition(
     ]),
     budget: new ExecutionBudget(maxSteps: 3),
 );
-// @doctest id="f25d"
+// @doctest id="00cd"
 ```
 
 If no `llmConfig` is specified, the child inherits the parent's LLM configuration. You can also pass just a driver name as a string:
@@ -263,7 +263,7 @@ new AgentDefinition(
     systemPrompt: 'Complete the task.',
     llmConfig: 'anthropic',
 );
-// @doctest id="16cc"
+// @doctest id="f7e9"
 ```
 
 ## Skill Injection
@@ -291,7 +291,7 @@ $agent = AgentBuilder::base()
         skillLibrary: $skillLibrary,
     ))
     ->build();
-// @doctest id="bd08"
+// @doctest id="b856"
 ```
 
 ## Events
@@ -310,7 +310,7 @@ $agent->onEvent(SubagentSpawning::class, function (SubagentSpawning $e) {
     echo "Parent agent: {$e->parentAgentId}\n";
     echo "Prompt: {$e->prompt}\n";
 });
-// @doctest id="d59d"
+// @doctest id="e28c"
 ```
 
 The event includes:
@@ -332,7 +332,7 @@ $agent->onEvent(SubagentCompleted::class, function (SubagentCompleted $e) {
     echo "'{$e->subagentName}' completed: status={$e->status->value}, "
        . "steps={$e->steps}, tokens={$tokens}\n";
 });
-// @doctest id="948b"
+// @doctest id="db9e"
 ```
 
 The event includes:

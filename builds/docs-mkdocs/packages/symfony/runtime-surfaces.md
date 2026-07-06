@@ -45,7 +45,7 @@ final readonly class AiRuntime
         private StructuredOutput $structuredOutput,
     ) {}
 }
-// @doctest id="12ee"
+// @doctest id="26bb"
 ```
 
 Choose this surface when you do not need agent-style continuation, registry-driven tools, or external code-agent processes.
@@ -110,7 +110,7 @@ final readonly class RefactorController
         ]);
     }
 }
-// @doctest id="598e"
+// @doctest id="cbac"
 ```
 
 Choose `AgentCtrl` when the real unit of work is an external coding agent process, not an in-process InstructorPHP runtime.
@@ -168,7 +168,7 @@ final readonly class SupportAgentRuntime
         return $session->sessionId()->value;
     }
 }
-// @doctest id="8a07"
+// @doctest id="9f2f"
 ```
 
 Queued resume example:
@@ -198,7 +198,7 @@ final readonly class ResumeSupportAgentController
         ));
     }
 }
-// @doctest id="904b"
+// @doctest id="f013"
 ```
 
 Choose native agents when you want long-lived application-owned agent definitions and resumable state inside the Symfony service graph.

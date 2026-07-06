@@ -14,14 +14,14 @@ $request = new HttpRequest(
     body: '',
     options: ['stream' => true],
 );
-// @doctest id="f630"
+// @doctest id="7fb5"
 ```
 
 You can also enable streaming on an existing request using `withStreaming()`:
 
 ```php
 $request = $request->withStreaming(true);
-// @doctest id="5d3b"
+// @doctest id="982f"
 ```
 
 ## Consuming the Stream
@@ -33,7 +33,7 @@ foreach ($client->send($request)->stream() as $chunk) {
     echo $chunk;
     flush();
 }
-// @doctest id="c539"
+// @doctest id="3e43"
 ```
 
 Each chunk is a raw string as received from the transport layer. The size of individual chunks depends on the driver and the `streamChunkSize` setting in `HttpClientConfig` (default: 256 bytes).
@@ -66,7 +66,7 @@ foreach ($client->send($request)->stream() as $chunk) {
     echo $chunk;
     flush();
 }
-// @doctest id="6f64"
+// @doctest id="879a"
 ```
 
 The raw chunks from the transport layer will contain server-sent event framing (e.g., `data: {...}\n\n`). To parse these into clean payloads, use the `EventSourceMiddleware`.
@@ -83,7 +83,7 @@ $client = $client->withMiddleware(
         ->withParser(fn(string $payload): string => $payload),
     'eventsource',
 );
-// @doctest id="110e"
+// @doctest id="0631"
 ```
 
 The parser callback receives the raw payload string from each `data:` line and returns the value to yield. Return `false` to skip an event. This is useful for filtering out `[DONE]` markers or parsing JSON:
@@ -99,7 +99,7 @@ $client = $client->withMiddleware(
         }),
     'eventsource',
 );
-// @doctest id="134d"
+// @doctest id="04a8"
 ```
 
 You can also attach listeners for debugging or event dispatching:
@@ -111,7 +111,7 @@ use Cognesy\Http\Config\DebugConfig;
 $middleware = (new EventSourceMiddleware(true))
     ->withListeners(new PrintToConsole(new DebugConfig(httpEnabled: true)))
     ->withParser(fn(string $payload): string => $payload);
-// @doctest id="e95d"
+// @doctest id="af83"
 ```
 
 ## Downloading Large Files
@@ -134,7 +134,7 @@ foreach ($client->send($request)->stream() as $chunk) {
 }
 
 fclose($handle);
-// @doctest id="2412"
+// @doctest id="1633"
 ```
 
 ## Capturing stream contents for inspection
@@ -158,7 +158,7 @@ foreach ($response->stream() as $chunk) {
 $capture = $response->streamCapture();
 echo $capture->preview();          // captured prefix of the raw stream
 $stats = $capture->stats();        // bytes, chunks, capturedBytes, truncated
-// @doctest id="4601"
+// @doctest id="4ec9"
 ```
 
 Policies bound memory explicitly:

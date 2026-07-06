@@ -27,7 +27,7 @@ $telemetry = new Telemetry(
         headers: ['Authorization' => $_ENV['LOGFIRE_TOKEN']],
     )),
 );
-// @doctest id="2842"
+// @doctest id="36a9"
 ```
 
 ## Environment Variables

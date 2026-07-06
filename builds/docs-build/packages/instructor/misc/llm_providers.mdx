@@ -17,7 +17,7 @@ $so = StructuredOutput::using('anthropic');
 $so = StructuredOutput::fromConfig(
     LLMConfig::fromPreset('openai')
 );
-// @doctest id="912a"
+// @doctest id="01f5"
 ```
 
 Presets are YAML files stored in the `config/llm/presets` directory. Each file defines the API
@@ -81,5 +81,5 @@ $result = StructuredOutput::fromConfig($config)
         responseModel: MyModel::class,
     )
     ->get();
-// @doctest id="8e88"
+// @doctest id="018a"
 ```

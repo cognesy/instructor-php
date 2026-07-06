@@ -22,7 +22,7 @@ final class UserDetail {
     /** Assign the most appropriate role based on context. */
     public ?Role $role = null;
 }
-// @doctest id="4a27"
+// @doctest id="cd21"
 ```
 
 ## Nullable Fields for Optional Data
@@ -36,7 +36,7 @@ final class UserDetail {
     public string $name;
     public ?string $nickname = null;
 }
-// @doctest id="de7f"
+// @doctest id="015a"
 ```
 
 ## Enums for Standardized Fields
@@ -58,7 +58,7 @@ final class UserDetail {
     /** Correctly assign one of the predefined roles to the user. */
     public Role $role;
 }
-// @doctest id="6f86"
+// @doctest id="4543"
 ```
 
 ## Chain of Thought
@@ -79,7 +79,7 @@ final class UserDetail {
     public string $name;
     public Role $role;
 }
-// @doctest id="4fdb"
+// @doctest id="0582"
 ```
 
 You can make chain of thought modular by embedding it inside nested components rather than at
@@ -97,7 +97,7 @@ final class Role {
     public string $instructions;
     public string $title;
 }
-// @doctest id="4730"
+// @doctest id="0f09"
 ```
 
 ## Handle Arbitrary Properties
@@ -116,7 +116,7 @@ final class UserDetail {
     /** @var Property[] Extract any other relevant properties. */
     public array $properties;
 }
-// @doctest id="38ed"
+// @doctest id="c2c3"
 ```
 
 ### Limiting List Length
@@ -131,7 +131,7 @@ final class UserDetail {
     /** @var Property[] Extracted properties, no more than 3. */
     public array $properties;
 }
-// @doctest id="4a2a"
+// @doctest id="c0b1"
 ```
 
 ### Consistent Keys Across Records
@@ -144,7 +144,7 @@ final class UserDetails {
     /** @var UserDetail[] Use consistent key names for properties across users. */
     public array $users;
 }
-// @doctest id="4649"
+// @doctest id="12c6"
 ```
 
 ## Define Entity Relationships
@@ -167,7 +167,7 @@ final class UserRelationships {
     /** @var UserDetail[] Capture all users and their relationships. */
     public array $users;
 }
-// @doctest id="2173"
+// @doctest id="21a3"
 ```
 
 ## Reuse Components Across Contexts
@@ -190,7 +190,7 @@ final class UserDetail {
     /** Time range reserved for leisure activities. */
     public TimeRange $leisureTime;
 }
-// @doctest id="8137"
+// @doctest id="25e8"
 ```
 
 ## Error Handling with Wrapper Models
@@ -208,5 +208,5 @@ final class MaybeUser {
         return $this->error ? null : $this->result;
     }
 }
-// @doctest id="3bcf"
+// @doctest id="7367"
 ```
