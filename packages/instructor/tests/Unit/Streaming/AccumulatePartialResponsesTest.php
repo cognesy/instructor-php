@@ -29,8 +29,7 @@ it('hydrates recoverable json partials and refines them as snapshots grow', func
         TransformationStream::from($responses)->using(Transformation::define(
             new AccumulatePartialResponses(
                 mode: OutputMode::Json,
-                deserializer: accumulatingDeserializer(),
-                transformer: accumulatingTransformer(),
+                hydrator: makeTestHydrator(accumulatingDeserializer(), accumulatingTransformer()),
                 responseModel: makeAnyResponseModel(AccumulatedUser::class),
             ),
         )),
@@ -66,8 +65,7 @@ it('preserves the last-good parsed value for unchanged snapshots', function () {
         TransformationStream::from($responses)->using(Transformation::define(
             new AccumulatePartialResponses(
                 mode: OutputMode::Json,
-                deserializer: $deserializer,
-                transformer: accumulatingTransformer(),
+                hydrator: makeTestHydrator($deserializer, accumulatingTransformer()),
                 responseModel: makeAnyResponseModel(AccumulatedUser::class),
             ),
         )),
@@ -109,8 +107,7 @@ it('preserves the last-good parsed value when only usage changes', function () {
         TransformationStream::from($responses)->using(Transformation::define(
             new AccumulatePartialResponses(
                 mode: OutputMode::Json,
-                deserializer: $deserializer,
-                transformer: accumulatingTransformer(),
+                hydrator: makeTestHydrator($deserializer, accumulatingTransformer()),
                 responseModel: makeAnyResponseModel(AccumulatedUser::class),
             ),
         )),
@@ -135,8 +132,7 @@ it('hydrates recoverable tool argument partials and refines them as snapshots gr
         TransformationStream::from($responses)->using(Transformation::define(
             new AccumulatePartialResponses(
                 mode: OutputMode::Tools,
-                deserializer: accumulatingDeserializer(),
-                transformer: accumulatingTransformer(),
+                hydrator: makeTestHydrator(accumulatingDeserializer(), accumulatingTransformer()),
                 responseModel: makeAnyResponseModel(AccumulatedUser::class),
             ),
         )),

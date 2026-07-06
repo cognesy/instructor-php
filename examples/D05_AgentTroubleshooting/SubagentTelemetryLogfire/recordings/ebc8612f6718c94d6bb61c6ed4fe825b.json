@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"You inspect repositories with the bash tool.\\nEvery factual claim must come from bash output.\\nUse bash at least 3 separate times.\\nNever combine commands with && or ;.\"},{\"role\":\"user\",\"content\":\"Inspect the repository and answer these questions. Requirements: use bash at least 3 separate times, do not combine commands with && or ;, and run these as separate bash calls exactly: 1) pwd 2) ls examples\\\/D05_AgentTroubleshooting 3) rg -n \\\"UseSubagents|SpawnSubagentTool|SubagentSpawning\\\" packages\\\/agents\\\/src\\\/Capability\\\/Subagent\\\/*.php packages\\\/agents\\\/src\\\/Events\\\/Subagent*.php. Then determine: (1) what kind of repository this is, (2) where the agent telemetry examples live, and (3) what the subagent telemetry path records. Return concise evidence-based findings.\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_cy915McabSRavPJRyczAp7d1\",\"type\":\"function\",\"function\":{\"name\":\"bash\",\"arguments\":\"{\\\"command\\\":\\\"pwd\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_cy915McabSRavPJRyczAp7d1\",\"content\":\"\\\/Users\\\/ddebowczyk\\\/projects\\\/instructor-php\\n\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_8jl5WUexJwKCIrg9SnBB3U4L\",\"type\":\"function\",\"function\":{\"name\":\"bash\",\"arguments\":\"{\\\"command\\\":\\\"ls examples\\\\\\\/D05_AgentTroubleshooting\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_8jl5WUexJwKCIrg9SnBB3U4L\",\"content\":\"EventLogReadbackAgent\\nSubagentTelemetryLangfuse\\nSubagentTelemetryLogfire\\nTelemetryLangfuse\\nTelemetryLogfire\\n\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_DlLUHawPPgYpjFZZjPRqIIkn\",\"type\":\"function\",\"function\":{\"name\":\"bash\",\"arguments\":\"{\\\"command\\\":\\\"rg -n \\\\\\\"UseSubagents|SpawnSubagentTool|SubagentSpawning\\\\\\\" packages\\\\\\\/agents\\\\\\\/src\\\\\\\/Capability\\\\\\\/Subagent\\\\\\\/*.php packages\\\\\\\/agents\\\\\\\/src\\\\\\\/Events\\\\\\\/Subagent*.php\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_DlLUHawPPgYpjFZZjPRqIIkn\",\"content\":\"packages\\\/agents\\\/src\\\/Events\\\/SubagentSpawning.php:11:final class SubagentSpawning extends AgentEvent\\npackages\\\/agents\\\/src\\\/Capability\\\/Subagent\\\/UseSubagents.php:13:final class UseSubagents implements CanProvideAgentCapability\\npackages\\\/agents\\\/src\\\/Capability\\\/Subagent\\\/UseSubagents.php:57:                return new Tools(new SpawnSubagentTool(\\npackages\\\/agents\\\/src\\\/Capability\\\/Subagent\\\/SpawnSubagentTool.php:20:use Cognesy\\\\Agents\\\\Events\\\\SubagentSpawning;\\npackages\\\/agents\\\/src\\\/Capability\\\/Subagent\\\/SpawnSubagentTool.php:40:final class SpawnSubagentTool extends ContextAwareTool\\npackages\\\/agents\\\/src\\\/Capability\\\/Subagent\\\/SpawnSubagentTool.php:59:        parent::__construct(new SpawnSubagentToolDescriptor($provider));\\npackages\\\/agents\\\/src\\\/Capability\\\/Subagent\\\/SpawnSubagentTool.php:131:        $this->emitSubagentSpawning(\\npackages\\\/agents\\\/src\\\/Capability\\\/Subagent\\\/SpawnSubagentTool.php:344:    private function emitSubagentSpawning(\\npackages\\\/agents\\\/src\\\/Capability\\\/Subagent\\\/SpawnSubagentTool.php:354:        $event = new SubagentSpawning(\\npackages\\\/agents\\\/src\\\/Capability\\\/Subagent\\\/SpawnSubagentToolDescriptor.php:8:final readonly class SpawnSubagentToolDescriptor extends ToolDescriptor\\n\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_zRRD2iHRSK0gYt0X0pls0z5c\",\"type\":\"function\",\"function\":{\"name\":\"bash\",\"arguments\":\"{\\\"command\\\":\\\"sed -n '1,220p' packages\\\\\\\/agents\\\\\\\/src\\\\\\\/Events\\\\\\\/SubagentSpawning.php\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_zRRD2iHRSK0gYt0X0pls0z5c\",\"content\":\"<?php declare(strict_types=1);\\n\\nnamespace Cognesy\\\\Agents\\\\Events;\\n\\nuse DateTimeImmutable;\\n\\n\\\/**\\n * Dispatched when a parent agent is about to spawn a subagent.\\n * Use to track subagent orchestration and nesting depth.\\n *\\\/\\nfinal class SubagentSpawning extends AgentEvent\\n{\\n    public readonly DateTimeImmutable $startedAt;\\n\\n    public function __construct(\\n        public readonly string $parentAgentId,\\n        public readonly string $subagentName,\\n        public readonly string $prompt,\\n        public readonly int $depth,\\n        public readonly int $maxDepth,\\n        public readonly ?string $parentExecutionId = null,\\n        public readonly ?int $parentStepNumber = null,\\n        public readonly ?string $toolCallId = null,\\n    ) {\\n        $this->startedAt = new DateTimeImmutable();\\n\\n        parent::__construct([\\n            'parentAgentId' => $this->parentAgentId,\\n            'parentExecutionId' => $this->parentExecutionId,\\n            'parentStepNumber' => $this->parentStepNumber,\\n            'toolCallId' => $this->toolCallId,\\n            'subagent' => $this->subagentName,\\n            'prompt' => mb_substr($this->prompt, 0, 100) . (mb_strlen($this->prompt) > 100 ? '...' : ''),\\n            'depth' => $this->depth,\\n            'maxDepth' => $this->maxDepth,\\n        ]);\\n    }\\n\\n    #[\\\\Override]\\n    public function __toString(): string {\\n        return sprintf(\\n            'Agent [%s] spawning subagent \\\"%s\\\" [depth=%d\\\/%d]',\\n            substr($this->parentAgentId, 0, 8),\\n            $this->subagentName,\\n            $this->depth + 1,\\n            $this->maxDepth\\n        );\\n    }\\n}\\n\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"bash\",\"description\":\"Execute a bash command and return stdout\\\/stderr. Use for shell operations, not file reading.\\n\\nExamples:\\n- \\\"git status\\\" \\u2192 check git state\\n- \\\"composer install\\\" \\u2192 install dependencies\\n- \\\"php artisan migrate\\\" \\u2192 run migrations\\n- \\\"grep -r 'TODO' src\\\/\\\" \\u2192 search file contents\\n- \\\"npm run build\\\" \\u2192 run build scripts\\n\\nPrefer dedicated tools when available: read_file over cat, search_files over find.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"command\":{\"type\":\"string\",\"description\":\"The bash command to execute\"}},\"required\":[\"command\"],\"additionalProperties\":false}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:59 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1122"
+            ],
+            "cf-ray": [
+                "a16eae548dd0275e-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "892"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999078"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "13ms"
+            ],
+            "x-request-id": [
+                "req_604340d654b54b938667e0dbb66721f0"
+            ],
+            "set-cookie": [
+                "__cf_bm=QJP.qWliX0VyoFyiXKLZqb.7PAnWwAZ8qvuuBgtLmHE-1783341658.3271604-1.0.1.1-niniypHc3J7.fcnnQpI54RmX9MSOBL3O9V3Fvw2fdXO17vmy0n0t0wC0_Trl2wgnnKLUTlcRawURYaBWw14yn5_Z5ctSuqLHLWTHGax_JQr_6KAAaj.QhEfQ9gP.5J4r; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:59 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-Dycv4SKAUKTn1lMvNfuO4cSNuBnPK\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341658,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_yIEc5tqMzHv2NvvX20XBMVsy\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"bash\",\n              \"arguments\": \"{\\\"command\\\":\\\"sed -n '1,220p' packages\/agents\/src\/Capability\/Subagent\/SpawnSubagentTool.php\\\"}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 1269,\n    \"completion_tokens\": 39,\n    \"total_tokens\": 1308,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

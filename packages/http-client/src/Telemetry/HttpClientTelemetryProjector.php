@@ -140,24 +140,29 @@ final readonly class HttpClientTelemetryProjector implements CanProjectTelemetry
             return;
         }
 
-        $body = EventData::string($data, 'body');
         $outcome = EventData::string($data, 'outcome') ?? 'completed';
-        $attributes = match ($outcome) {
-            'failed' => $this->attributes([
-                'http.stream.outcome' => 'failed',
-                'error.message' => EventData::string($data, 'error'),
-            ]),
-            'abandoned' => $this->attributes(['http.stream.outcome' => 'abandoned']),
-            default => match ($body) {
-                null => AttributeBag::empty(),
-                '' => AttributeBag::empty(),
-                default => $this->attributes(['http.response.body' => $body]),
-            },
-        };
+        $attributes = $this->streamAttributes($data, $outcome);
 
         match ($outcome) {
             'failed' => $this->telemetry->fail($requestId, $attributes),
             default => $this->telemetry->complete($requestId, $attributes),
+        };
+    }
+
+    private function streamAttributes(array $data, string $outcome): AttributeBag
+    {
+        $attributes = [
+            'http.stream.outcome' => $outcome,
+            'http.stream.bytes' => EventData::int($data, 'bytes'),
+            'http.stream.chunks' => EventData::int($data, 'chunks'),
+        ];
+
+        return match ($outcome) {
+            'failed' => $this->attributes([
+                ...$attributes,
+                'error.message' => EventData::string($data, 'error'),
+            ]),
+            default => $this->attributes($attributes),
         };
     }
 

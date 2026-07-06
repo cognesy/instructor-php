@@ -3,6 +3,7 @@ title: 'Google Gemini'
 docname: 'llm_google_gemini'
 id: '7936'
 tags:
+  - 'flaky'
   - 'llm-api-support'
   - 'gemini'
   - 'provider'

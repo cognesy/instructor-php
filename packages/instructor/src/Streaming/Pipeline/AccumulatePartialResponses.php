@@ -2,9 +2,8 @@
 
 namespace Cognesy\Instructor\Streaming\Pipeline;
 
+use Cognesy\Instructor\Core\ObjectHydrator;
 use Cognesy\Instructor\Data\ResponseModel;
-use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
-use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Stream\Contracts\Reducer;
 use Cognesy\Stream\Contracts\Transducer;
@@ -14,14 +13,14 @@ use Cognesy\Stream\Contracts\Transducer;
  *
  * It replaces the frame-based extract -> deserialize -> enrich chain for the
  * hot streaming path. Accumulation ownership lives in StructuredOutputStreamState
- * and the reducer forwards the mutable state object downstream.
+ * and the reducer forwards the mutable state object downstream. Hydration of
+ * parsed partial arrays is delegated to ObjectHydrator (partial mode).
  */
 final readonly class AccumulatePartialResponses implements Transducer
 {
     public function __construct(
         private OutputMode $mode,
-        private CanDeserializeResponse $deserializer,
-        private CanTransformResponse $transformer,
+        private ObjectHydrator $hydrator,
         private ResponseModel $responseModel,
         private int $materializationInterval = 1,
     ) {}
@@ -31,8 +30,7 @@ final readonly class AccumulatePartialResponses implements Transducer
         return new AccumulatePartialResponsesReducer(
             inner: $reducer,
             mode: $this->mode,
-            deserializer: $this->deserializer,
-            transformer: $this->transformer,
+            hydrator: $this->hydrator,
             responseModel: $this->responseModel,
             materializationInterval: $this->materializationInterval,
         );

@@ -2,7 +2,7 @@
 
 use Cognesy\Events\Event;
 use Cognesy\Http\Events\HttpRequestSent;
-use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated;
+use Cognesy\Instructor\Events\Streaming\PartialResponseGenerated;
 use Cognesy\Instructor\Events\Response\ResponseValidationFailed;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted;
 use Cognesy\Polyglot\Inference\Events\PartialInferenceDeltaCreated;

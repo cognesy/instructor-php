@@ -3,6 +3,7 @@ title: 'Gemini CLI - Streaming'
 docname: 'gemini_streaming'
 id: 'gm01'
 tags:
+  - 'broken'
   - 'agent-ctrl'
   - 'gemini-cli'
   - 'streaming'

@@ -19,14 +19,14 @@ $request = new HttpRequest(
     body: '',
     options: ['stream' => true],
 );
-// @doctest id="3d66"
+// @doctest id="ef1f"
 ```
 
 You can also enable streaming on an existing request using `withStreaming()`:
 
 ```php
 $request = $request->withStreaming(true);
-// @doctest id="4949"
+// @doctest id="6fe4"
 ```
 
 ## Consuming the Stream
@@ -38,7 +38,7 @@ foreach ($client->send($request)->stream() as $chunk) {
     echo $chunk;
     flush();
 }
-// @doctest id="5b36"
+// @doctest id="7ee1"
 ```
 
 Each chunk is a raw string as received from the transport layer. The size of individual chunks depends on the driver and the `streamChunkSize` setting in `HttpClientConfig` (default: 256 bytes).
@@ -71,7 +71,7 @@ foreach ($client->send($request)->stream() as $chunk) {
     echo $chunk;
     flush();
 }
-// @doctest id="6f4e"
+// @doctest id="d42b"
 ```
 
 The raw chunks from the transport layer will contain server-sent event framing (e.g., `data: {...}\n\n`). To parse these into clean payloads, use the `EventSourceMiddleware`.
@@ -88,7 +88,7 @@ $client = $client->withMiddleware(
         ->withParser(fn(string $payload): string => $payload),
     'eventsource',
 );
-// @doctest id="8b37"
+// @doctest id="0e9f"
 ```
 
 The parser callback receives the raw payload string from each `data:` line and returns the value to yield. Return `false` to skip an event. This is useful for filtering out `[DONE]` markers or parsing JSON:
@@ -104,7 +104,7 @@ $client = $client->withMiddleware(
         }),
     'eventsource',
 );
-// @doctest id="04c1"
+// @doctest id="29a7"
 ```
 
 You can also attach listeners for debugging or event dispatching:
@@ -116,7 +116,7 @@ use Cognesy\Http\Config\DebugConfig;
 $middleware = (new EventSourceMiddleware(true))
     ->withListeners(new PrintToConsole(new DebugConfig(httpEnabled: true)))
     ->withParser(fn(string $payload): string => $payload);
-// @doctest id="90c0"
+// @doctest id="7579"
 ```
 
 ## Downloading Large Files
@@ -139,8 +139,46 @@ foreach ($client->send($request)->stream() as $chunk) {
 }
 
 fclose($handle);
-// @doctest id="2fa2"
+// @doctest id="2efe"
 ```
+
+## Capturing stream contents for inspection
+
+Streamed bodies are consumed once and normally leave no trace. When you need to
+inspect what actually came over the wire — debugging a malformed SSE stream,
+building replay tooling, capturing a postmortem sample — enable opt-in capture
+on the response before consuming it:
+
+```php
+use Cognesy\Http\Stream\StreamCapturingPolicy;
+
+$response = $client->send($request)
+    ->get()
+    ->withStreamCapture(StreamCapturingPolicy::preview()); // first 64KB
+
+foreach ($response->stream() as $chunk) {
+    // process chunks as usual — capture happens transparently
+}
+
+$capture = $response->streamCapture();
+echo $capture->preview();          // captured prefix of the raw stream
+$stats = $capture->stats();        // bytes, chunks, capturedBytes, truncated
+// @doctest id="f1a2"
+```
+
+Policies bound memory explicitly:
+
+- `StreamCapturingPolicy::preview(int $maxBytes = 65536)` — capture a prefix,
+  enough to see what the stream looked like
+- `StreamCapturingPolicy::chunks(int $maxBytes = 1048576)` — retain individual
+  chunks (via `capturedChunks()`) up to the byte budget
+- `StreamCapturingPolicy::full(int $maxBytes)` — capture everything up to an
+  explicit cap (`capturedBody()` returns the concatenated content)
+- `StreamCapturingPolicy::disabled()` — pass-through, zero retention
+
+Capture is per-response and off by default; it never changes what the consumer
+of `stream()` sees. The `truncated` flag in `stats()` tells you when the byte
+budget cut the capture short.
 
 ## Considerations
 

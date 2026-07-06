@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"You are an orchestration agent.\\nIf `repo_inspector` is available, you must delegate repository inspection to it.\\nYour first tool call must be `spawn_subagent`.\\nDo not use bash directly when `repo_inspector` can do the work.\\nIf you skip delegation, the task is incomplete.\\nSummarize delegated findings clearly and briefly.\"},{\"role\":\"user\",\"content\":\"You must call `spawn_subagent` as your first tool call.\\nUse subagent `repo_inspector`.\\nDo not call bash yourself.\\n\\nPass this task to the subagent:\\n\\nInspect this repository with bash.\\n\\nRequirements:\\n- Use bash at least 3 separate times.\\n- Do not combine commands with && or ;.\\n- Run these as separate bash calls:\\n  1. pwd\\n  2. ls examples\\\/D05_AgentTroubleshooting\\n  3. rg -n \\\"UseSubagents|SpawnSubagentTool|SubagentSpawning\\\" packages\\\/agents\\\/src\\\/Capability\\\/Subagent\\\/*.php packages\\\/agents\\\/src\\\/Events\\\/Subagent*.php\\n\\nReturn exactly 3 short bullets:\\n1. What kind of repository this is\\n2. Where the agent telemetry examples live\\n3. What the subagent telemetry path records\\n\\nAfter the subagent returns, provide only its 3 bullets as the final answer.\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_a4b3D6ClDVNaa3ZXnnyLheD0\",\"type\":\"function\",\"function\":{\"name\":\"spawn_subagent\",\"arguments\":\"{\\\"subagent\\\":\\\"repo_inspector\\\",\\\"prompt\\\":\\\"Inspect this repository with bash.\\\\n\\\\nRequirements:\\\\n- Use bash at least 3 separate times.\\\\n- Do not combine commands with && or ;.\\\\n- Run these as separate bash calls:\\\\n  1. pwd\\\\n  2. ls examples\\\\\\\/D05_AgentTroubleshooting\\\\n  3. rg -n \\\\\\\"UseSubagents|SpawnSubagentTool|SubagentSpawning\\\\\\\" packages\\\\\\\/agents\\\\\\\/src\\\\\\\/Capability\\\\\\\/Subagent\\\\\\\/*.php packages\\\\\\\/agents\\\\\\\/src\\\\\\\/Events\\\\\\\/Subagent*.php\\\\n\\\\nReturn exactly 3 short bullets:\\\\n1. What kind of repository this is\\\\n2. Where the agent telemetry examples live\\\\n3. What the subagent telemetry path records\\\\n\\\\nAfter the subagent returns, provide only its 3 bullets as the final answer.\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_a4b3D6ClDVNaa3ZXnnyLheD0\",\"content\":\"- This is a PHP repository for an agents\\\/instructor-style framework.\\n- The agent troubleshooting examples live under `examples\\\/D05_AgentTroubleshooting`, including `SubagentTelemetryLangfuse` and `SubagentTelemetryLogfire`.\\n- The subagent telemetry path records `SubagentSpawning` events emitted by `SpawnSubagentTool` in the `UseSubagents` capability flow.\\n\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"bash\",\"description\":\"Execute a bash command and return stdout\\\/stderr. Use for shell operations, not file reading.\\n\\nExamples:\\n- \\\"git status\\\" \\u2192 check git state\\n- \\\"composer install\\\" \\u2192 install dependencies\\n- \\\"php artisan migrate\\\" \\u2192 run migrations\\n- \\\"grep -r 'TODO' src\\\/\\\" \\u2192 search file contents\\n- \\\"npm run build\\\" \\u2192 run build scripts\\n\\nPrefer dedicated tools when available: read_file over cat, search_files over find.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"command\":{\"type\":\"string\",\"description\":\"The bash command to execute\"}},\"required\":[\"command\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"spawn_subagent\",\"description\":\"Spawn a specialized subagent for a focused task. Returns only the final response.\\n\\nEach subagent has specific expertise, tools, and capabilities optimized for its domain.\\nChoose the most appropriate subagent based on the task requirements.\\n\\nAvailable subagents:\\n- repo_inspector: Inspects repository paths with bash and reports concise evidence (tools: bash)\",\"parameters\":{\"type\":\"object\",\"properties\":{\"subagent\":{\"type\":\"string\",\"description\":\"Which subagent to spawn\",\"enum\":[\"repo_inspector\"]},\"prompt\":{\"type\":\"string\",\"description\":\"The task or question for the subagent\"}},\"required\":[\"subagent\",\"prompt\"],\"additionalProperties\":false}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:41:02 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1134"
+            ],
+            "cf-ray": [
+                "a16eae659b92bc36-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "892"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999639"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "5ms"
+            ],
+            "x-request-id": [
+                "req_dd14c6c4471e4c3ebae19771a351d3b1"
+            ],
+            "set-cookie": [
+                "__cf_bm=28RjT.dPYR68t2Q.IShTtEs9388n7.lDu1Yqjua9rv8-1783341661.0601845-1.0.1.1-i71t39zOhubyo2UlpCmaJ9VRExyG_YvQjx4hmbzjfFzs8Hw.GcwOgGT0OQVVoewUPZFUa7G.JVKfOewZ2Ea46R2EZ6zQa1oZ3RUbco6OX8o4lOR_Y3xAzNp9WR.Iwiio; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:11:02 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-Dycv7k3f7EPZB3Gtm2wMPJ0HTpBtI\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341661,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"- This is a PHP repository for an agents\/instructor-style framework.\\n- The agent troubleshooting examples live under `examples\/D05_AgentTroubleshooting`, including `SubagentTelemetryLangfuse` and `SubagentTelemetryLogfire`.\\n- The subagent telemetry path records `SubagentSpawning` events emitted by `SpawnSubagentTool` in the `UseSubagents` capability flow.\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 864,\n    \"completion_tokens\": 83,\n    \"total_tokens\": 947,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

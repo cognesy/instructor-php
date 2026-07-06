@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## Tool Use\\n\\nUse the provided tool `extracted_data` to extract correct and accurate structured data from the input.\\n\\nTool purpose: Function call based on user instructions.\\n\\nCall the tool with the best supported arguments for the requested extraction.\"},{\"role\":\"user\",\"content\":\"Jason is 25 years old. He is a Python programmer.\\\\\\n Amanda is UX designer.\\\\\\n John is 40yo and he's CEO.\"}],\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\",\"description\":\"Function call based on user instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"users\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"description\":\"Correctly extract items of type: UserDetail\",\"properties\":{\"id\":{\"type\":\"integer\"},\"key\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"id\",\"key\",\"value\"],\"additionalProperties\":false},\"description\":\"Use consistent key names for properties across users.\",\"default\":[]}},\"additionalProperties\":false}}}],\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\"}}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:42:27 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1459"
+            ],
+            "cf-ray": [
+                "a16eb078ebb2cce9-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1077"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999908"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "1ms"
+            ],
+            "x-request-id": [
+                "req_b1c50723b4db45508042af7dca67b917"
+            ],
+            "set-cookie": [
+                "__cf_bm=YLPe5zlgpe4ftwnF4kT3FV0L79KpnRbH6N5v7GZC_Ew-1783341746.0682197-1.0.1.1-avEzxNGWJcUKbh8LfOIfEQiUsR._VZjJIFaANU23MOA.4WvfCOjjJB6CcBP8WimLsB0uwn48LYzR66LYdEjJ_6NCGforMcjyIADw3GpUMn.Uo.kYwuCPQQviWrDHj8Vz; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:12:27 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycwUHuZZYgKMMQcA6YAJTWuD0w2D\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341746,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_vPKhr8J9aLMTNFvhEIITaM75\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"users\\\":[{\\\"id\\\":1,\\\"key\\\":\\\"name\\\",\\\"value\\\":\\\"Jason\\\"},{\\\"id\\\":1,\\\"key\\\":\\\"age\\\",\\\"value\\\":\\\"25\\\"},{\\\"id\\\":1,\\\"key\\\":\\\"occupation\\\",\\\"value\\\":\\\"Python programmer\\\"},{\\\"id\\\":2,\\\"key\\\":\\\"name\\\",\\\"value\\\":\\\"Amanda\\\"},{\\\"id\\\":2,\\\"key\\\":\\\"occupation\\\",\\\"value\\\":\\\"UX designer\\\"},{\\\"id\\\":3,\\\"key\\\":\\\"name\\\",\\\"value\\\":\\\"John\\\"},{\\\"id\\\":3,\\\"key\\\":\\\"age\\\",\\\"value\\\":\\\"40\\\"},{\\\"id\\\":3,\\\"key\\\":\\\"occupation\\\",\\\"value\\\":\\\"CEO\\\"}]}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 242,\n    \"completion_tokens\": 116,\n    \"total_tokens\": 358,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

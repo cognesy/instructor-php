@@ -1,0 +1,72 @@
+{
+    "request": {
+        "url": "https:\/\/api.inceptionlabs.ai\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"mercury\",\"messages\":[{\"role\":\"user\",\"content\":\"What is the capital of France\"}],\"max_completion_tokens\":64}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "437"
+            ],
+            "date": [
+                "Mon, 06 Jul 2026 12:40:11 GMT"
+            ],
+            "server": [
+                "uvicorn"
+            ],
+            "x-request-id": [
+                "e98095a6-bff3-45fa-9c7b-7002e2f438e6"
+            ],
+            "x-process-time": [
+                "0.16785573959350586"
+            ],
+            "deprecation": [
+                "05-03-2026"
+            ],
+            "warning": [
+                "The Mercury model will be deprecated effective March 5, 2026. Please migrate to using Mercury 2 instead."
+            ],
+            "x-cache": [
+                "Miss from cloudfront"
+            ],
+            "via": [
+                "1.1 80bcffad35f0e189a9bd523dae37d460.cloudfront.net (CloudFront)"
+            ],
+            "x-amz-cf-pop": [
+                "WAW51-P1"
+            ],
+            "x-amz-cf-id": [
+                "z9JN28tNO9F7j9kawZPVq95sdimmKbA3O-171pKL6TDG3keQzvIuQw=="
+            ],
+            "x-xss-protection": [
+                "1; mode=block"
+            ],
+            "x-frame-options": [
+                "SAMEORIGIN"
+            ],
+            "referrer-policy": [
+                "strict-origin-when-cross-origin"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000"
+            ]
+        },
+        "body": "{\"id\":\"chatcmpl-23bb5663-0149-424f-902f-61093a462bd2\",\"object\":\"chat.completion\",\"created\":1783341611,\"model\":\"mercury\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"The capital of France is **Paris**.\",\"tool_calls\":[],\"tool_call_id\":null},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":8,\"reasoning_tokens\":33,\"completion_tokens\":10,\"total_tokens\":51,\"cached_input_tokens\":4},\"warning\":null,\"reasoning_summary\":null}"
+    }
+}

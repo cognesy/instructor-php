@@ -114,23 +114,43 @@ class LaravelDriver implements CanHandleHttpRequest
             $pendingRequest = $pendingRequest
                 ->timeout($this->config->requestTimeout)
                 ->connectTimeout($this->config->connectTimeout)
-                ->withHeaders($headers);
+                ->withHeaders($headers)
+                ->withOptions($this->requestOptions($streaming));
 
-            return match ($streaming) {
-                true => $pendingRequest->withOptions(['stream' => true]),
-                default => $pendingRequest,
-            };
+            return $pendingRequest;
         }
 
         /** @phpstan-ignore-next-line */
         $pendingRequest = $this->factory
             ->timeout($this->config->requestTimeout)
             ->connectTimeout($this->config->connectTimeout)
-            ->withHeaders($headers);
+            ->withHeaders($headers)
+            ->withOptions($this->requestOptions($streaming));
 
-        return match ($streaming) {
-            true => $pendingRequest->withOptions(['stream' => true]),
-            default => $pendingRequest,
+        return $pendingRequest;
+    }
+
+    private function requestOptions(bool $streaming): array {
+        $options = [
+            'verify' => $this->config->verifyTls,
+            'allow_redirects' => $this->redirectOptions(),
+        ];
+
+        if ($streaming) {
+            $options['stream'] = true;
+        }
+
+        if ($this->config->httpVersion !== null) {
+            $options['version'] = $this->config->httpVersion;
+        }
+
+        return $options;
+    }
+
+    private function redirectOptions(): bool|array {
+        return match ($this->config->followRedirects) {
+            true => $this->config->maxRedirects === null ? true : ['max' => $this->config->maxRedirects],
+            false => false,
         };
     }
 

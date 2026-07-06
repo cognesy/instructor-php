@@ -30,7 +30,7 @@ $city = StructuredOutput::using('openai')
 echo $city->name;       // Paris
 echo $city->country;    // France
 echo $city->population; // 2148000
-// @doctest id="5ec4"
+// @doctest id="ef04"
 ```
 
 The package is distributed as `cognesy/instructor-struct` and requires PHP 8.3+.

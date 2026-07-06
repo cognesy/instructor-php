@@ -3,6 +3,7 @@ title: 'Sandbox API: Firejail'
 docname: 'sandbox_api_firejail_echo'
 id: 'd213'
 tags:
+  - 'no-replay'
   - 'sandbox-apis'
   - 'firejail'
   - 'drivers'

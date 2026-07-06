@@ -10,15 +10,22 @@ namespace Cognesy\Http\Data;
 class HttpRequestBody
 {
     public string $body;
+    private ?string $decodedBodySource = null;
+
+    /** @var array<string,mixed>|array<int,mixed> */
+    private array $decodedBody = [];
 
     public function __construct(
         string|array $body,
     ) {
-        $this->body = match (true) {
-            is_string($body) => $body,
-            is_array($body) => $this->encodeJsonBody($body),
-            default => ''
-        };
+        if (is_array($body)) {
+            $this->body = $this->encodeJsonBody($body);
+            $this->decodedBodySource = $this->body;
+            $this->decodedBody = $body;
+            return;
+        }
+
+        $this->body = $body;
     }
 
     /**
@@ -36,17 +43,28 @@ class HttpRequestBody
      * @return array
      */
     public function toArray() : array {
-        if (empty($this->body)) {
+        if ($this->decodedBodySource === $this->body) {
+            return $this->decodedBody;
+        }
+
+        $this->decodedBody = $this->decodeJsonBody($this->body);
+        $this->decodedBodySource = $this->body;
+
+        return $this->decodedBody;
+    }
+
+    private function decodeJsonBody(string $body) : array {
+        if ($body === '') {
             return [];
         }
 
-        // check if the body is a valid JSON string
-        $data =  json_decode($this->body, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
+        try {
+            $data = json_decode($body, true, flags: JSON_THROW_ON_ERROR);
+        } catch (\JsonException) {
             return [];
         }
 
-        return $data;
+        return is_array($data) ? $data : [];
     }
 
     /** @param array<string,mixed>|array<int,mixed> $body */

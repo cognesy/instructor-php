@@ -42,6 +42,7 @@ final class LLMConfig
         'packages/polyglot/resources/config/llm/presets',
         'vendor/cognesy/instructor-php/packages/polyglot/resources/config/llm/presets',
         'vendor/cognesy/instructor-polyglot/resources/config/llm/presets',
+        __DIR__ . '/../../../resources/config/llm/presets',
     ];
 
     public static function fromPreset(string $preset, ?string $basePath = null): self {

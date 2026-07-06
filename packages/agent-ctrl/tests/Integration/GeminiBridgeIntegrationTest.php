@@ -8,7 +8,7 @@ use Cognesy\AgentCtrl\Gemini\Domain\Enum\ApprovalMode;
 use Cognesy\Config\Env;
 
 /**
- * Integration smoke tests for Gemini CLI bridge.
+ * Deprecated integration smoke tests for Gemini CLI bridge.
  *
  * These tests require:
  * - `gemini` binary in PATH (npm install -g @google/gemini-cli or brew install gemini-cli)
@@ -30,6 +30,8 @@ function geminiHasAuth(): bool
 
 function skipIfGeminiUnavailable(): void
 {
+    test()->markTestSkipped('Gemini CLI bridge is deprecated because the upstream Google CLI flow is obsolete for this package.');
+
     if (!geminiIsAvailable()) {
         test()->markTestSkipped('gemini binary not found in PATH');
     }

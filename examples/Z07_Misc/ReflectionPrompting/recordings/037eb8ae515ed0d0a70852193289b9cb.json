@@ -1,0 +1,59 @@
+{
+    "request": {
+        "url": "https:\/\/api.anthropic.com\/v1\/messages",
+        "method": "POST",
+        "headers": {
+            "x-api-key": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "accept": "application\/json",
+            "anthropic-version": "2023-06-01",
+            "anthropic-beta": "prompt-caching-2024-07-31"
+        },
+        "body": "{\"model\":\"claude-haiku-4-5\",\"max_tokens\":2048,\"system\":[{\"type\":\"text\",\"text\":\"## Output Requirements\\n\\nRespond with a strict JSON object that matches this JSON Schema:\\n\\n{\\n    \\\"type\\\": \\\"object\\\",\\n    \\\"x-title\\\": \\\"ReflectiveResponse\\\",\\n    \\\"properties\\\": {\\n        \\\"assessment\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"description\\\": \\\"Is problem solvable and what domain expertise it requires\\\"\\n        },\\n        \\\"persona\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"description\\\": \\\"Describe an expert persona who would be able to solve this problem, their skills and experience\\\"\\n        },\\n        \\\"initialThinking\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"description\\\": \\\"Initial analysis and expert persona's approach to the problem\\\"\\n        },\\n        \\\"chainOfThought\\\": {\\n            \\\"type\\\": \\\"array\\\",\\n            \\\"items\\\": {\\n                \\\"type\\\": \\\"string\\\",\\n                \\\"description\\\": \\\"Correctly extract items of type: string\\\"\\n            },\\n            \\\"description\\\": \\\"Steps of reasoning leading to the final answer - expert persona thinking through the problem\\\"\\n        },\\n        \\\"reflection\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"description\\\": \\\"Critical examination of the reasoning process - what could go wrong, what are the assumptions\\\"\\n        },\\n        \\\"finalOutput\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"description\\\": \\\"Final answer after reflection\\\"\\n        }\\n    },\\n    \\\"required\\\": [\\n        \\\"assessment\\\",\\n        \\\"persona\\\",\\n        \\\"initialThinking\\\",\\n        \\\"chainOfThought\\\",\\n        \\\"reflection\\\",\\n        \\\"finalOutput\\\"\\n    ],\\n    \\\"x-php-class\\\": \\\"ReflectiveResponse\\\",\\n    \\\"additionalProperties\\\": false\\n}\\n\\nReturn the result inside a fenced `json` code block.\"}],\"messages\":[{\"role\":\"user\",\"content\":\"Solve the equation x+y=x-y\"}]}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:42:37 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "request-id": [
+                "req_011Cckpf3A8n3fzQHJ35RCn6"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "anthropic-organization-id": [
+                "03d89e5a-78a9-42ee-95c6-d9b595403b39"
+            ],
+            "traceresponse": [
+                "00-c59845a73bd0f4f26b321267546314b8-2d12500635e6b3f0-01"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "vary": [
+                "Accept-Encoding"
+            ],
+            "x-robots-tag": [
+                "none"
+            ],
+            "content-security-policy": [
+                "default-src 'none'; frame-ancestors 'none'"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "cf-ray": [
+                "a16eb09d6f9bb4bb-WAW"
+            ]
+        },
+        "body": "{\"model\":\"claude-haiku-4-5-20251001\",\"id\":\"msg_01Hn2nVAPopsWqTLMd15njHL\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[{\"type\":\"text\",\"text\":\"```json\\n{\\n    \\\"assessment\\\": \\\"This is a solvable algebraic problem requiring basic mathematical skills. It's a simple linear equation that tests understanding of equation manipulation and logical reasoning.\\\",\\n    \\\"persona\\\": \\\"A high school algebra teacher or mathematician with expertise in solving linear equations, understanding algebraic properties, and recognizing when equations have specific solution constraints.\\\",\\n    \\\"initialThinking\\\": \\\"This equation appears to have two variables but only one equation. My approach will be to simplify and manipulate the equation algebraically to understand what constraint it places on x and y. The fact that both sides reference x suggests we should isolate y and see what relationship emerges.\\\",\\n    \\\"chainOfThought\\\": [\\n        \\\"Start with the equation: x + y = x - y\\\",\\n        \\\"Subtract x from both sides: x + y - x = x - y - x\\\",\\n        \\\"Simplify: y = -y\\\",\\n        \\\"Add y to both sides: y + y = -y + y\\\",\\n        \\\"Simplify: 2y = 0\\\",\\n        \\\"Divide both sides by 2: y = 0\\\",\\n        \\\"Conclusion: The equation is satisfied when y = 0, regardless of the value of x\\\",\\n        \\\"This means x can be any real number, but y must equal zero\\\"\\n    ],\\n    \\\"reflection\\\": \\\"The reasoning is sound and straightforward. The equation x + y = x - y has a unique constraint but not a unique solution point. The critical insight is recognizing that x cancels out during algebraic manipulation, leaving only a constraint on y. One could verify this by substituting y = 0 back into the original equation: x + 0 = x - 0, which simplifies to x = x (always true). The assumption here is that we're working within real numbers and standard algebraic properties hold. There are no hidden complications or edge cases.\\\",\\n    \\\"finalOutput\\\": \\\"The equation x + y = x - y has infinitely many solutions. The constraint is that y = 0, while x can be any real number. The solution set can be expressed as {(x, 0) | x \u2208 \u211d}, or in other words: y must equal 0, and x is arbitrary.\\\"\\n}\\n```\"}],\"stop_reason\":\"end_turn\",\"stop_sequence\":null,\"stop_details\":null,\"usage\":{\"input_tokens\":409,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":0},\"output_tokens\":502,\"service_tier\":\"standard\",\"inference_geo\":\"not_available\"}}"
+    }
+}

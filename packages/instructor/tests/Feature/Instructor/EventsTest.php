@@ -1,9 +1,9 @@
 <?php
 
 //use Cognesy\Instructor\Events\Instructor\ErrorRaised;
-use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
-use Cognesy\Instructor\Events\Request\ResponseModelBuilt;
-use Cognesy\Instructor\Events\Request\StructuredOutputRecoveryLimitReached;
+use Cognesy\Instructor\Events\Attempt\NewValidationRecoveryAttempt;
+use Cognesy\Instructor\Events\ResponseModel\ResponseModelBuilt;
+use Cognesy\Instructor\Events\Attempt\StructuredOutputRecoveryLimitReached;
 use Cognesy\Instructor\Events\Response\CustomResponseDeserializationAttempt;
 use Cognesy\Instructor\Events\Response\CustomResponseValidationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseDeserializationAttempt;

@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## Output Requirements\\n\\nRespond with a strict JSON object that matches this JSON Schema:\\n\\n{\\n    \\\"type\\\": \\\"object\\\",\\n    \\\"x-title\\\": \\\"Company\\\",\\n    \\\"properties\\\": {\\n        \\\"name\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"default\\\": \\\"\\\"\\n        },\\n        \\\"location\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"default\\\": \\\"\\\"\\n        },\\n        \\\"description\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"default\\\": \\\"\\\"\\n        },\\n        \\\"minProjectBudget\\\": {\\n            \\\"type\\\": \\\"integer\\\",\\n            \\\"default\\\": 0\\n        },\\n        \\\"companySize\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"default\\\": \\\"\\\"\\n        },\\n        \\\"websiteUrl\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"description\\\": \\\"Remove any tracking parameters from the URL\\\",\\n            \\\"default\\\": \\\"\\\"\\n        },\\n        \\\"clients\\\": {\\n            \\\"type\\\": \\\"array\\\",\\n            \\\"items\\\": {\\n                \\\"type\\\": \\\"string\\\",\\n                \\\"description\\\": \\\"Correctly extract items of type: string\\\"\\n            },\\n            \\\"default\\\": []\\n        }\\n    },\\n    \\\"x-php-class\\\": \\\"Company\\\",\\n    \\\"additionalProperties\\\": false\\n}\"},{\"role\":\"user\",\"content\":\"### Northwind Studios\\n\\n<div class=\\\"location\\\">Denver, CO<\\\/div><div class=\\\"description\\\">E-commerce platforms and analytics dashboards.<\\\/div><div class=\\\"budget\\\">Minimum project size $15,000+<\\\/div><div class=\\\"company-size\\\">2 - 9<\\\/div> [Website](https:\\\/\\\/northwind.studio?ref=sample)- Stark Industries\\n- Wayne Enterprises\\n \"}],\"max_completion_tokens\":1024,\"response_format\":{\"type\":\"json_object\"}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:01 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1056"
+            ],
+            "cf-ray": [
+                "a16eacee0919ef97-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "828"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999647"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "5ms"
+            ],
+            "x-request-id": [
+                "req_57d96ae0d1ca4553970ade6235720ebe"
+            ],
+            "set-cookie": [
+                "__cf_bm=m1_V77vGEEP5rY0GQoSQUfzTeLDV.OCAZthPuZ.URjQ-1783341600.968074-1.0.1.1-gAQmpCVKzBFSW9rjrd9Oy.lxF4b.zdK_pLEyV37GBgSXrVz2Ihf0ajmBDby.CRXHmiyw48NqkgyIZF0VjL6Vy7b8d3QYAVPIONhG6nvJ3rPPRI5SfniqrwJcLl8q4Lo4; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:01 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-Dycu9bSnzG6qTe5QcU1dsyv2l044x\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341601,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"{\\\"name\\\":\\\"Northwind Studios\\\",\\\"location\\\":\\\"Denver, CO\\\",\\\"description\\\":\\\"E-commerce platforms and analytics dashboards.\\\",\\\"minProjectBudget\\\":15000,\\\"companySize\\\":\\\"2 - 9\\\",\\\"websiteUrl\\\":\\\"https:\/\/northwind.studio\\\",\\\"clients\\\":[\\\"Stark Industries\\\",\\\"Wayne Enterprises\\\"]}\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 327,\n    \"completion_tokens\": 64,\n    \"total_tokens\": 391,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

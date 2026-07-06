@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated;
-use Cognesy\Instructor\Events\Request\SequenceUpdated;
+use Cognesy\Instructor\Events\Streaming\PartialResponseGenerated;
+use Cognesy\Instructor\Events\Streaming\SequenceUpdated;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
@@ -26,13 +26,15 @@ it('emits PartialResponseGenerated events while streaming partial updates', func
 
     $seen = [];
     $payloads = [];
+    $serialized = [];
     $runtime = makeStructuredRuntime(driver: $driver, outputMode: OutputMode::Json)
-        ->onEvent(PartialResponseGenerated::class, function (PartialResponseGenerated $event) use (&$seen, &$payloads): void {
+        ->onEvent(PartialResponseGenerated::class, function (PartialResponseGenerated $event) use (&$seen, &$payloads, &$serialized): void {
             $partial = $event->partialResponse;
             if ($partial instanceof EvtPartialUser) {
                 $seen[] = $partial->count;
             }
             $payloads[] = $event->data;
+            $serialized[] = $event->serializedValue();
         });
     $stream = (new StructuredOutput($runtime))
         ->withMessages('ignored')
@@ -47,16 +49,21 @@ it('emits PartialResponseGenerated events while streaming partial updates', func
     expect($payloads)->toBe([
         [
             'valueType' => EvtPartialUser::class,
-            'value' => ['count' => 1],
+            'hasValue' => true,
         ],
         [
             'valueType' => EvtPartialUser::class,
-            'value' => ['count' => 2],
+            'hasValue' => true,
         ],
         [
             'valueType' => EvtPartialUser::class,
-            'value' => ['count' => 3],
+            'hasValue' => true,
         ],
+    ]);
+    expect($serialized)->toBe([
+        ['count' => 1],
+        ['count' => 2],
+        ['count' => 3],
     ]);
 });
 

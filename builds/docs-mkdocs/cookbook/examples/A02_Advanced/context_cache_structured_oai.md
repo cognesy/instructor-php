@@ -100,7 +100,8 @@ assert($project1->description !== '');
 
 // get usage information from inferenceResponse() when you need transport-level metadata
 $usage1 = $response1->inferenceResponse()->usage();
-echo "Usage: {$usage1->inputTokens} prompt tokens, {$usage1->cacheWriteTokens} cache write tokens\n";
+echo "Usage: {$usage1->inputTokens} prompt tokens, {$usage1->cacheReadTokens} cache read tokens\n";
+echo "Note: OpenAI reports prompt cache hits as cache read tokens; it does not report cache write tokens.\n";
 ?>
 ```
 Now we can use the same context to ask the user to describe the project for a different

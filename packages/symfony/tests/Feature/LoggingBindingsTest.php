@@ -8,7 +8,7 @@ use Cognesy\AgentCtrl\Enum\AgentType;
 use Cognesy\AgentCtrl\Event\AgentExecutionCompleted as AgentCtrlExecutionCompleted;
 use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Cognesy\Agents\Events\AgentExecutionStarted;
-use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated;
+use Cognesy\Instructor\Events\Streaming\PartialResponseGenerated;
 use Cognesy\Instructor\Symfony\DependencyInjection\Configuration;
 use Cognesy\Instructor\Symfony\DependencyInjection\InstructorSymfonyExtension;
 use Cognesy\Instructor\Symfony\InstructorSymfonyBundle;

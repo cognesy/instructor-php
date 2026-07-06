@@ -1,0 +1,81 @@
+{
+    "request": {
+        "url": "https:\/\/api.groq.com\/openai\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"meta-llama\\\/llama-4-scout-17b-16e-instruct\",\"messages\":[{\"role\":\"user\",\"content\":\"What is the capital of France\"}],\"max_completion_tokens\":64}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:14 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "620"
+            ],
+            "cache-control": [
+                "private, max-age=0, no-store, no-cache, must-revalidate"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "vary": [
+                "Origin"
+            ],
+            "x-groq-region": [
+                "fra"
+            ],
+            "x-ratelimit-limit-requests": [
+                "1000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "30000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "29920"
+            ],
+            "x-ratelimit-reset-requests": [
+                "1m26.4s"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "160ms"
+            ],
+            "x-request-id": [
+                "req_01kwvq2xwne059t6j7v4axms25"
+            ],
+            "via": [
+                "1.1 google"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "strict-transport-security": [
+                "max-age=15552000"
+            ],
+            "set-cookie": [
+                "__cf_bm=We3VsJeoOmz1m5fdwhNVf4FgTHA.Qfp8MIKlVVQ6z0o-1783341610.8877964-1.0.1.1-yGuO43d2OXp0.BwW.XoYEiezkOfQEfNXME.iDOCdbRnGJZd7htSVroa72LXWd9iT8rI2.tKS768JQpnVXkh3wu00n5YtPfKy7VtSMXoHxTFu9R92dfIbZJVDhbuRhwrl; HttpOnly; Secure; Path=\/; Domain=groq.com; Expires=Mon, 06 Jul 2026 13:10:14 GMT"
+            ],
+            "cf-ray": [
+                "a16ead2c0cdaeeba-WAW"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\"id\":\"chatcmpl-3f76e7c2-7ccf-4cc9-8f01-7426c0a1951d\",\"object\":\"chat.completion\",\"created\":1783341614,\"model\":\"meta-llama\/llama-4-scout-17b-16e-instruct\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"The capital of France is Paris.\"},\"logprobs\":null,\"finish_reason\":\"stop\"}],\"usage\":{\"queue_time\":3.988676206,\"prompt_tokens\":16,\"prompt_time\":0.000562829,\"completion_tokens\":8,\"completion_time\":0.018149909,\"total_tokens\":24,\"total_time\":0.018712738},\"usage_breakdown\":null,\"system_fingerprint\":\"fp_fa001c7fdb\",\"x_groq\":{\"id\":\"req_01kwvq2xwne059t6j7v4axms25\",\"seed\":75582886},\"service_tier\":\"on_demand\"}\n"
+    }
+}

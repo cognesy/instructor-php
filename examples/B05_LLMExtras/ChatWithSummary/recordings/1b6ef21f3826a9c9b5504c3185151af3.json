@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a helpful assistant explaining Challenger Sale. Be very brief (one sentence), pragmatic and focused on practical bizdev problems.\"},{\"role\":\"user\",\"content\":\"The conversation started with a sales coaching thread. The assistant advised using the **Challenger Sale** approach: identify the customer\\u2019s hidden cost of inaction, teach a better way to solve the problem, and tailor the pitch to the buyer\\u2019s specific pain points rather than just listing features.\\n\\nNext, when asked what to do next, the assistant recommended:\\n- choosing one target account,\\n- identifying a measurable pain point,\\n- and running a **3-question discovery call** to uncover impact, decision process, and current workaround.\\n\\nWhen asked for another actionable tip, the assistant suggested:\\n- bringing in an **industry insight** that reframes the problem,\\n- then asking how the prospect is currently handling it and what that is costing them.\\n\\nAfter that, the conversation content shifted to a different topic: a summary of **Instructor for PHP**. That summary described it as a framework-agnostic PHP library for integrating LLMs into applications and extracting **structured, validated data**. Key points included:\\n- converting LLM responses into **type-safe PHP classes**,\\n- supporting **text, chat, and images**,\\n- allowing output definitions via **static classes** or **dynamic JSON Schema**,\\n- using **validation and retries** to improve results,\\n- providing a **unified API** across multiple providers,\\n- working with frameworks like **Laravel** and **Symfony**,\\n- and supporting features such as **observability, streaming, embeddings, and context caching**.\\n\\nIt also listed supported providers like OpenAI, Anthropic, Google, Cohere, Groq, Mistral, and Ollama, and described a typical workflow of installing via Composer, defining a data model, and running inference to receive structured output.\"},{\"role\":\"user\",\"content\":\"How could I apply this in practice?\",\"name\":\"student\"},{\"role\":\"assistant\",\"content\":\"Use it in your next call by opening with a sharp industry insight, then ask 2\\u20133 questions that quantify the business cost of the current approach and only then link your offer to that gap.\",\"name\":\"expert\"},{\"role\":\"user\",\"content\":\"What are some common pitfalls to avoid?\",\"name\":\"student\"},{\"role\":\"assistant\",\"content\":\"Avoid leading with features, talking too much before diagnosing, and ending the call without a quantified pain or clear next step.\",\"name\":\"expert\"},{\"role\":\"user\",\"content\":\"Is there a specific mindset I should adopt?\",\"name\":\"student\"},{\"role\":\"assistant\",\"content\":\"Think like a business consultant, not a vendor: your job is to challenge assumptions, surface hidden costs, and guide the buyer to a clearer decision.\",\"name\":\"expert\"},{\"role\":\"user\",\"content\":\"Can you provide an example of a successful sales interaction using Challenger Sale?\",\"name\":\"student\"},{\"role\":\"assistant\",\"content\":\"A rep opens with a market insight about rising downtime costs, asks how the prospect is handling it today, quantifies lost revenue from the current workaround, and then positions the solution as the lowest-risk way to close that gap.\",\"name\":\"expert\"},{\"role\":\"user\",\"content\":\"How can I tailor my approach to different types of clients?\",\"name\":\"student\"}],\"max_completion_tokens\":1024}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:37 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "959"
+            ],
+            "cf-ray": [
+                "a16eadcda92534cc-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1003"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999283"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "10ms"
+            ],
+            "x-request-id": [
+                "req_4473fbac28474263b6733166b0106328"
+            ],
+            "set-cookie": [
+                "__cf_bm=SB15Q8eJ3tJbCoTB27inMuR_.L9xVDHwGFMmVKL9tuA-1783341636.748546-1.0.1.1-HiYASgAgepfNuuoIH0vPisMjZVIII0WOcWpvADN0fSy6tN9WjNFhY2dTVjGHFXCbuEAtCoakwPWTgxg.U6GO7GhSkufinu3cfE.WYA1JwXmv9VzwIPzmPGYqZ8mDD53q; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:37 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycujkOhA9SDj6zvjsvdpicdvFXqS\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341637,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"Adjust the insight and questions to each client\u2019s priorities, decision process, and measurable pain, so you challenge what matters to them instead of using the same pitch everywhere.\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 633,\n    \"completion_tokens\": 36,\n    \"total_tokens\": 669,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

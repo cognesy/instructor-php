@@ -75,6 +75,9 @@ class LaravelPool implements CanHandleRequestPool
                     'timeout' => $this->config->requestTimeout,
                     'connect_timeout' => $this->config->connectTimeout,
                     'headers' => $request->headers(),
+                    'verify' => $this->config->verifyTls,
+                    'allow_redirects' => $this->redirectOptions(),
+                    ...$this->httpVersionOption(),
                 ]);
 
                 /** @phpstan-ignore-next-line */
@@ -86,6 +89,20 @@ class LaravelPool implements CanHandleRequestPool
 
             return $poolRequests;
         });
+    }
+
+    private function redirectOptions(): bool|array {
+        return match ($this->config->followRedirects) {
+            true => $this->config->maxRedirects === null ? true : ['max' => $this->config->maxRedirects],
+            false => false,
+        };
+    }
+
+    private function httpVersionOption(): array {
+        return match ($this->config->httpVersion) {
+            null => [],
+            default => ['version' => $this->config->httpVersion],
+        };
     }
 
     private function processBatchResponses(array $batchResponses): array

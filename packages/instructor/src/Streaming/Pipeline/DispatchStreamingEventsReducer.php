@@ -2,15 +2,16 @@
 
 namespace Cognesy\Instructor\Streaming\Pipeline;
 
+use Cognesy\Events\Contracts\CanCheckListeners;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Instructor\Contracts\Sequenceable;
-use Cognesy\Instructor\Events\PartialsGenerator\ChunkReceived;
-use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated;
-use Cognesy\Instructor\Events\PartialsGenerator\StreamedResponseReceived;
-use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallCompleted;
-use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallStarted;
-use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallUpdated;
-use Cognesy\Instructor\Events\Request\SequenceUpdated;
+use Cognesy\Instructor\Events\Streaming\ChunkReceived;
+use Cognesy\Instructor\Events\Streaming\PartialResponseGenerated;
+use Cognesy\Instructor\Events\Streaming\StreamedResponseReceived;
+use Cognesy\Instructor\Events\Streaming\StreamedToolCallCompleted;
+use Cognesy\Instructor\Events\Streaming\StreamedToolCallStarted;
+use Cognesy\Instructor\Events\Streaming\StreamedToolCallUpdated;
+use Cognesy\Instructor\Events\Streaming\SequenceUpdated;
 use Cognesy\Instructor\Streaming\EmissionSnapshot;
 use Cognesy\Instructor\Streaming\StructuredOutputStreamState;
 use Cognesy\Messages\ToolCalls;
@@ -20,6 +21,12 @@ use Cognesy\Stream\Contracts\Reducer;
 
 /**
  * Single decorator that dispatches ALL domain events for partial streaming.
+ *
+ * When the dispatcher supports listener introspection (CanCheckListeners),
+ * event families nobody listens to are skipped entirely — including the
+ * payload construction that would otherwise run on every delta. Gates are
+ * resolved once per stream (at init); listeners registered mid-stream are
+ * not picked up until the next attempt.
  */
 final class DispatchStreamingEventsReducer implements Reducer
 {
@@ -28,6 +35,13 @@ final class DispatchStreamingEventsReducer implements Reducer
     private ?InferenceResponse $lastInferenceResponse;
     private int $previousSequenceLength;
     private ?Sequenceable $currentSequence;
+
+    private bool $emitChunkEvents = true;
+    private bool $emitToolEvents = true;
+    private bool $emitPartialResponseEvents = true;
+    private bool $emitSequenceEvents = true;
+    private bool $emitFinalResponseEvent = true;
+    private bool $hasPartialEventListeners = true;
 
     public function __construct(
         private readonly Reducer $inner,
@@ -48,7 +62,27 @@ final class DispatchStreamingEventsReducer implements Reducer
         $this->lastInferenceResponse = null;
         $this->previousSequenceLength = 0;
         $this->currentSequence = null;
+        $this->resolveEventGates();
         return $this->inner->init();
+    }
+
+    private function resolveEventGates(): void {
+        $this->emitChunkEvents = $this->hasListenersFor(ChunkReceived::class);
+        $this->emitToolEvents = $this->hasListenersFor(StreamedToolCallStarted::class)
+            || $this->hasListenersFor(StreamedToolCallUpdated::class)
+            || $this->hasListenersFor(StreamedToolCallCompleted::class);
+        $this->emitPartialResponseEvents = $this->hasListenersFor(PartialResponseGenerated::class);
+        $this->emitSequenceEvents = $this->hasListenersFor(SequenceUpdated::class);
+        $this->emitFinalResponseEvent = $this->hasListenersFor(StreamedResponseReceived::class);
+        $this->hasPartialEventListeners = $this->emitChunkEvents
+            || $this->emitToolEvents
+            || $this->emitPartialResponseEvents
+            || $this->emitSequenceEvents;
+    }
+
+    private function hasListenersFor(string $eventClass): bool {
+        return !($this->events instanceof CanCheckListeners)
+            || $this->events->hasListenersFor($eventClass);
     }
 
     #[\Override]
@@ -63,18 +97,20 @@ final class DispatchStreamingEventsReducer implements Reducer
     #[\Override]
     public function complete(mixed $accumulator): mixed {
         // Finalize tool calls
-        if ($this->expectedToolName !== '' && $this->hasActiveTool()) {
+        if ($this->emitToolEvents && $this->expectedToolName !== '' && $this->hasActiveTool()) {
             $this->emitToolCompletedForActive($this->lastToolCalls);
         }
 
         // Finalize sequence
-        if ($this->currentSequence !== null && count($this->currentSequence) > 0) {
+        if ($this->emitSequenceEvents && $this->currentSequence !== null && count($this->currentSequence) > 0) {
             $this->events->dispatch(new SequenceUpdated($this->currentSequence));
         }
 
-        $this->events->dispatch(new StreamedResponseReceived([
-            'finalResponse' => $this->finalResponse(),
-        ]));
+        if ($this->emitFinalResponseEvent) {
+            $this->events->dispatch(new StreamedResponseReceived([
+                'finalResponse' => $this->finalResponse(),
+            ]));
+        }
 
         return $this->inner->complete($accumulator);
     }
@@ -82,23 +118,34 @@ final class DispatchStreamingEventsReducer implements Reducer
     // INTERNAL EVENT DISPATCH ///////////////////////////////////////////////
 
     private function dispatchPartialEvents(StructuredOutputStreamState $state): void {
-        $snapshot = $state->snapshot();
+        if ($this->hasPartialEventListeners) {
+            $snapshot = $state->snapshot();
 
-        $this->events->dispatch(new ChunkReceived([
-            'contentLength' => strlen($state->content()),
-            'hasValue' => $state->hasValue(),
-            'finishReason' => $state->finishReason(),
-            'snapshotRevision' => $state->snapshotRevision(),
-        ]));
+            if ($this->emitChunkEvents) {
+                $this->events->dispatch(new ChunkReceived([
+                    'contentLength' => strlen($state->content()),
+                    'hasValue' => $state->hasValue(),
+                    'finishReason' => $state->finishReason(),
+                    'snapshotRevision' => $state->snapshotRevision(),
+                ]));
+            }
 
-        if ($this->expectedToolName !== '') {
-            $this->handleToolCallEventsFromState($state, $snapshot);
+            if ($this->emitToolEvents && $this->expectedToolName !== '') {
+                $this->handleToolCallEventsFromState($state, $snapshot);
+            }
+
+            if ($this->emitPartialResponseEvents) {
+                $this->dispatchPartialResponseFromState($state);
+            }
+            if ($this->emitSequenceEvents) {
+                $this->handleSequenceEventsForSnapshot($snapshot);
+            }
         }
 
-        $this->dispatchPartialResponseFromState($state);
-        $this->handleSequenceEventsForSnapshot($snapshot);
-        // Capture immutable response now rather than keeping a mutable state reference
-        $this->lastInferenceResponse = $state->finalInferenceResponse();
+        if ($this->emitFinalResponseEvent) {
+            // Capture immutable response now rather than keeping a mutable state reference
+            $this->lastInferenceResponse = $state->finalInferenceResponse();
+        }
     }
 
     private function handleToolCallEventsFromState(

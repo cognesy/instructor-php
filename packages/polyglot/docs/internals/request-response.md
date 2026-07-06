@@ -243,8 +243,8 @@ $usage = $response->usage();
 
 $usage->inputTokens;       // int -- prompt tokens
 $usage->outputTokens;      // int -- completion tokens
-$usage->cacheWriteTokens;  // int -- tokens written to cache
-$usage->cacheReadTokens;   // int -- tokens read from cache
+$usage->cacheWriteTokens;  // int -- tokens written to cache when reported by provider
+$usage->cacheReadTokens;   // int -- tokens read from cache when reported by provider
 $usage->reasoningTokens;   // int -- tokens used for reasoning
 
 // Aggregate accessors

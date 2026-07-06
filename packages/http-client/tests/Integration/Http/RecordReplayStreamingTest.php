@@ -68,6 +68,12 @@ test('recording middleware keeps streamed response consumable and preserves head
     expect($record?->getResponseHeaders())->toBe($headers);
     expect($record?->getResponseBody())->toBe(implode('', $chunks));
     expect($record?->getChunks())->toBe($chunks);
+
+    $recordFiles = glob($this->storageDir . '/*.json');
+    expect($recordFiles)->toBeArray()->toHaveCount(1);
+    $recordData = json_decode((string) file_get_contents($recordFiles[0]), true);
+    expect($recordData['response'])->not->toHaveKey('body');
+    expect($recordData['chunks'])->toBe($chunks);
 });
 
 test('replay middleware restores streamed record with status headers and chunk boundaries', function() {

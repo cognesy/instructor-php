@@ -10,12 +10,10 @@ use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputResponse;
 use Cognesy\Instructor\Streaming\EmissionSnapshot;
-use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\Streaming\EmissionFingerprint;
 use Cognesy\Instructor\Streaming\Pipeline\AccumulatePartialResponses;
 use Cognesy\Instructor\Streaming\Pipeline\DispatchStreamingEvents;
 use Cognesy\Instructor\Streaming\StructuredOutputStreamState;
-use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Instructor\Enums\OutputMode;
@@ -36,8 +34,7 @@ final class StreamingExecutionDriver implements CanEmitStreamingUpdates
     public function __construct(
         StructuredOutputExecution $execution,
         private readonly InferenceProvider $inferenceProvider,
-        private readonly CanDeserializeResponse $deserializer,
-        private readonly CanTransformResponse $transformer,
+        private readonly ObjectHydrator $hydrator,
         CanGenerateResponse $responseGenerator,
         CanDetermineRetry $retryPolicy,
         private readonly CanHandleEvents $events,
@@ -164,8 +161,7 @@ final class StreamingExecutionDriver implements CanEmitStreamingUpdates
         $stages = [
             new AccumulatePartialResponses(
                 mode: $mode,
-                deserializer: $this->deserializer,
-                transformer: $this->transformer,
+                hydrator: $this->hydrator,
                 responseModel: $responseModel,
                 materializationInterval: $responseModel->config()->streamMaterializationInterval(),
             ),

@@ -45,7 +45,7 @@ $telemetry->flush();
 
 var_dump($exporter->observations());
 var_dump($exporter->tracesPayload());
-// @doctest id="929d"
+// @doctest id="2aa5"
 ```
 
 This is the fastest way to answer: "Did the app produce telemetry at all?"
@@ -87,7 +87,7 @@ For live backend proof, run:
 
 ```bash
 TELEMETRY_INTEROP_ENABLED=1 composer test:telemetry-interop
-# @doctest id="b1e0"
+# @doctest id="ec82"
 ```
 
 That suite writes real telemetry and then queries Logfire or Langfuse back to

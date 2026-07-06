@@ -83,13 +83,15 @@ class PsrHttpResponseAdapter implements CanAdaptHttpResponse
      * @return \Generator<string>
      */
     private function stream(): \Generator {
-        $accumulated = '';
+        $bytes = 0;
+        $chunkCount = 0;
         $outcome = 'abandoned';
         $error = null;
         try {
             while (!$this->stream->eof()) {
                 $chunk = $this->stream->read($this->streamChunkSize);
-                $accumulated .= $chunk;
+                $bytes += strlen($chunk);
+                $chunkCount++;
                 $this->events->dispatch(new HttpResponseChunkReceived([
                     'requestId' => $this->requestId,
                     'chunk' => $chunk,
@@ -101,10 +103,14 @@ class PsrHttpResponseAdapter implements CanAdaptHttpResponse
             $outcome = 'failed';
             throw $error;
         } finally {
-            $payload = ['requestId' => $this->requestId, 'outcome' => $outcome];
+            $payload = [
+                'requestId' => $this->requestId,
+                'outcome' => $outcome,
+                'bytes' => $bytes,
+                'chunks' => $chunkCount,
+            ];
             $payload = match (true) {
                 $error !== null => [...$payload, 'error' => $error->getMessage()],
-                $outcome === 'completed' => [...$payload, 'body' => $accumulated],
                 default => $payload,
             };
 

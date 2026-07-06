@@ -3,6 +3,7 @@ title: 'Send Agent telemetry to Logfire'
 docname: 'agent_telemetry_logfire'
 id: '9ac2'
 tags:
+  - 'no-replay'
   - 'agent-troubleshooting'
   - 'logfire'
   - 'telemetry'

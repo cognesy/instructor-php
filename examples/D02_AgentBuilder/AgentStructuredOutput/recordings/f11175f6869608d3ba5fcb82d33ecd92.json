@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"user\",\"content\":\"Process this lead information and save it to our CRM:\\n\\nHey, I just got off the phone with a potential client. Here are the details:\\n\\nHis name is John Smith and he works as VP of Engineering at TechCorp Industries.\\nThey're based in San Francisco, California, USA. You can reach him at\\njohn.smith@techcorp.io or call him at +1-555-0123.\\n\\nHe's interested in our enterprise plan and wants a demo next week.\\n\\nSteps:\\n1. Extract the lead information into structured format using 'lead' schema\\n2. Store the extracted data as 'current_lead' in metadata\\n3. Call create_lead API with the metadata key 'current_lead'\\n\\nReport back when complete.\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"structured_output\",\"description\":\"Extract structured data from unstructured text using a predefined schema.\\n\\nThe extraction uses AI to parse the input and populate a validated data structure.\\nIf extraction fails validation, the system will retry automatically.\\n\\nUse 'store_as' parameter to save the extracted data in agent metadata for use by other tools.\\n\\n\\nAvailable schemas:\\n- lead: Business lead with contact information\",\"parameters\":{\"type\":\"object\",\"properties\":{\"input\":{\"type\":\"string\",\"description\":\"The unstructured text to extract data from\"},\"schema\":{\"type\":\"string\",\"description\":\"Name of the schema to extract into\",\"enum\":[\"lead\"]},\"store_as\":{\"type\":\"string\",\"description\":\"Optional: metadata key to store the extracted data for use by other tools\"}},\"required\":[\"input\",\"schema\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"store_metadata\",\"description\":\"Store a value in agent metadata for use by other tools.\\n\\nUse this to pass data between tool calls. For example:\\n1. Extract data and store: store_metadata(key: \\\"current_lead\\\", value: {\\\"name\\\": \\\"John\\\", \\\"email\\\": \\\"john@example.com\\\"})\\n2. Later tool reads it: save_lead(metadata_key: \\\"current_lead\\\")\\n\\nKeys should be descriptive: \\\"current_lead\\\", \\\"extracted_contacts\\\", \\\"scraped_content\\\", etc.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"key\":{\"type\":\"string\",\"description\":\"Unique identifier for this data (e.g., \\\"current_lead\\\", \\\"scraped_content\\\")\"},\"value\":{\"description\":\"The data to store. Can be any JSON-serializable value: string, number, object, array.\"}},\"required\":[\"key\",\"value\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"read_metadata\",\"description\":\"Read a value from agent metadata that was previously stored.\\n\\nUse this to inspect data stored by previous tool calls.\\nReturns the value as JSON, or an error if the key doesn't exist.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"key\":{\"type\":\"string\",\"description\":\"The key to read from metadata\"}},\"required\":[\"key\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"list_metadata\",\"description\":\"List all keys currently stored in agent metadata.\\n\\nReturns a list of available keys with their value types.\\nUse this to see what data has been stored by previous tool calls.\",\"parameters\":{\"type\":\"object\",\"properties\":{},\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"create_lead\",\"description\":\"Creates a new lead in the CRM system using data from agent metadata.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"metadata_key\":{\"type\":\"string\",\"description\":\"The metadata key where lead data is stored (e.g., \\\"current_lead\\\")\"}},\"required\":[\"metadata_key\"]}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:44 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1464"
+            ],
+            "cf-ray": [
+                "a16eadf849016332-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "947"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999839"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "2ms"
+            ],
+            "x-request-id": [
+                "req_24a99a54e364451fb7e4bef649c8c983"
+            ],
+            "set-cookie": [
+                "__cf_bm=_l0pSH2BQ1eeZZ5QVvpfHHbSO_PTyNodqRCbIRnHOMw-1783341643.5647035-1.0.1.1-VR6ZV25R8et52a_Rq6DtGPRYN.fPhGm6EmAlKYPbHDNQWf1fjr62_y_jIsJ4mprwG1_qdGZQJ.J9t5lfXjAZWVIMD3V4qaX9Vmdj0COf3P9Nt7wnZjGcN2bX4yZWanc3; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:44 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycupUms7EA3Jbwvgal0PFtLTkUPk\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341643,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_tPTiukoOpQbtAbVxjrDYxzvK\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"structured_output\",\n              \"arguments\": \"{\\\"input\\\":\\\"Hey, I just got off the phone with a potential client. Here are the details:\\\\n\\\\nHis name is John Smith and he works as VP of Engineering at TechCorp Industries.\\\\nThey're based in San Francisco, California, USA. You can reach him at\\\\njohn.smith@techcorp.io or call him at +1-555-0123.\\\\n\\\\nHe's interested in our enterprise plan and wants a demo next week.\\\",\\\"schema\\\":\\\"lead\\\",\\\"store_as\\\":\\\"current_lead\\\"}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 688,\n    \"completion_tokens\": 115,\n    \"total_tokens\": 803,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

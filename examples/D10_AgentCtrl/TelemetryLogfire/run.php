@@ -3,6 +3,7 @@ title: 'Send AgentCtrl telemetry to Logfire'
 docname: 'agent_ctrl_telemetry_logfire'
 id: 'e61f'
 tags:
+  - 'no-replay'
   - 'agent-ctrl'
   - 'logfire'
   - 'telemetry'

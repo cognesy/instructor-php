@@ -3,8 +3,8 @@
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
-use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
-use Cognesy\Instructor\Events\Request\StructuredOutputRecoveryLimitReached;
+use Cognesy\Instructor\Events\Attempt\NewValidationRecoveryAttempt;
+use Cognesy\Instructor\Events\Attempt\StructuredOutputRecoveryLimitReached;
 use Cognesy\Instructor\Exceptions\StructuredOutputRecoveryException;
 use Cognesy\Instructor\RetryPolicy\DefaultRetryPolicy;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;

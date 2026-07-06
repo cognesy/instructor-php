@@ -105,6 +105,9 @@ final readonly class SymfonyAgentCtrlRuntime
         return $builder;
     }
 
+    /**
+     * @deprecated Gemini CLI bridge is deprecated because the upstream Google CLI flow is obsolete for this package.
+     */
     public function gemini(): GeminiBridgeBuilder
     {
         /** @var GeminiBridgeBuilder $builder */

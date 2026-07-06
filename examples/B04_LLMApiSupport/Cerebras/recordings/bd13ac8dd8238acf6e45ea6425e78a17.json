@@ -1,0 +1,54 @@
+{
+    "request": {
+        "url": "https:\/\/api.cerebras.ai\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"llama3.1-8b\",\"messages\":[{\"role\":\"user\",\"content\":\"What is the capital of France\"}],\"max_completion_tokens\":-1}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 404,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:43:58 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "145"
+            ],
+            "set-cookie": [
+                "__cf_bm=Rof_oQdUaGH6s7eryFHVP1qwCdJKtr9TpaUzDnHniDc-1783341838.637446-1.0.1.1-MlmeJsarMXGcflFSLemJZdNUIbZTaddXtinVuiuwZVXE.XHIkb91N1Nym3yOokvZNhpvvZ7KBWHhp8mxM22uSTB4B_RiavMSeZGv_nr0maQWS4vaveGSFXGGTxLqK6nO; HttpOnly; Secure; Path=\/; Domain=api.cerebras.ai; Expires=Mon, 06 Jul 2026 13:13:58 GMT"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "referrer-policy": [
+                "strict-origin-when-cross-origin"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "strict-transport-security": [
+                "max-age=15552000; includeSubDomains; preload"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "cf-ray": [
+                "a16eb2bb7b8321be-WAW"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\"message\":\"Model llama3.1-8b does not exist or you do not have access to it.\",\"type\":\"not_found_error\",\"param\":\"model\",\"code\":\"model_not_found\"}"
+    }
+}

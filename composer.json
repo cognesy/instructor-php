@@ -58,16 +58,17 @@
         "symfony/validator": "^7.3 || ^8.0",
         "symfony/var-dumper": "^7.3 || ^8.0",
         "symfony/yaml": "^7.3 || ^8.0",
+        "twig/twig": "^3.0",
         "vlucas/phpdotenv": "^5.6"
     },
     "scripts": {
         "bench": "@php ./vendor/bin/phpbench run",
         "docs": "@php ./bin/instructor-docs",
-        "docs:qa": "bash ./scripts/docs-qa-all.sh",
+        "docs:qa": "bash ./scripts/docs/docs-qa-all.sh",
         "qa:phpstan": "@php ./vendor/bin/phpstan analyse -c phpstan.neon",
         "qa:psalm": "@php ./vendor/bin/psalm -c packages/instructor/psalm.xml",
         "qa:pint": "@php ./vendor/bin/pint --config packages/agents/pint.json packages/agents/src/ --test",
-        "qa:docs": "bash ./scripts/docs-qa-all.sh",
+        "qa:docs": "bash ./scripts/docs/docs-qa-all.sh",
         "qa:semgrep": "bash -lc 'set -euo pipefail; export HOME=\"$PWD/.qa\"; export SSL_CERT_FILE=\"${SSL_CERT_FILE:-/opt/homebrew/etc/openssl@3/cert.pem}\"; for cfg in .qa/semgrep/*.yml; do [ -f \"$cfg\" ] || continue; semgrep scan --disable-version-check --metrics=off --config \"$cfg\" --error; done; for cfg in packages/*/.qa/semgrep.yml; do [ -f \"$cfg\" ] || continue; pkg_dir=$(dirname \"$(dirname \"$cfg\")\"); semgrep scan --disable-version-check --metrics=off --config \"$cfg\" --error \"$pkg_dir\"; done'",
         "qa": [
             "@qa:phpstan",
@@ -80,8 +81,8 @@
         "psalm": "@php ./vendor/bin/psalm -c packages/instructor/psalm.xml",
         "psalm-unused": "@php ./vendor/bin/psalm --find-unused-code",
         "tell": "bin/tell",
-    "test": "@php -d memory_limit=512M ./vendor/bin/pest --compact --testsuite=Unit,Feature,Regression --exclude-group=docs-qa",
-    "tests": "@php -d memory_limit=512M ./vendor/bin/pest --compact --testsuite=Unit,Feature,Regression --exclude-group=docs-qa",
+    "test": "@php -d memory_limit=512M ./vendor/bin/pest --compact --testsuite=Unit,Feature,Regression,Serial --exclude-group=docs-qa",
+    "tests": "@php -d memory_limit=512M ./vendor/bin/pest --compact --testsuite=Unit,Feature,Regression,Serial --exclude-group=docs-qa",
     "test:docs-qa": "@php -d memory_limit=512M ./vendor/bin/pest --compact --group=docs-qa",
     "test:telemetry-interop": "@php -d memory_limit=512M ./vendor/bin/pest --compact packages/telemetry/tests/Integration",
     "test-all": "@php ./vendor/bin/pest",
@@ -90,7 +91,7 @@
         "unused-deps": "@php ./vendor/bin/composer-unused",
         "publish": "bin/instructor-setup publish",
         "setup": "bin/instructor-setup",
-        "make-package": "scripts/make-package",
+        "make-package": "scripts/packages/make-package",
         "pint": "@php ./vendor/bin/pint --config packages/agents/pint.json packages/agents/src/",
         "pint:test": "@php ./vendor/bin/pint --config packages/agents/pint.json packages/agents/src/ --test"
     },
@@ -99,7 +100,7 @@
         "bin/instructor-hub",
         "bin/instructor-docs",
         "bin/tell",
-        "scripts/make-package",
+        "scripts/packages/make-package",
         "packages/auxiliary/bin/tbd"
     ],
     "suggest": {
@@ -131,7 +132,10 @@
             "Cognesy\\Http\\": "packages/http-client/src/",
             "Cognesy\\HttpPool\\": "packages/http-pool/src/",
             "Cognesy\\InstructorHub\\": "packages/hub/src/",
-            "Cognesy\\Instructor\\": "packages/instructor/src/",
+            "Cognesy\\Instructor\\": [
+                "packages/instructor/src/",
+                "packages/contracts/src/"
+            ],
             "Cognesy\\Instructor\\Laravel\\": "packages/laravel/src/",
             "Cognesy\\Logging\\": "packages/logging/src/",
             "Cognesy\\Messages\\": "packages/messages/src/",
@@ -170,6 +174,7 @@
             "Cognesy\\Http\\Tests\\": "packages/http-client/tests/",
             "Cognesy\\HttpPool\\Tests\\": "packages/http-pool/tests/",
             "Cognesy\\Instructor\\Tests\\": "packages/instructor/tests/",
+            "Cognesy\\Instructor\\Contracts\\Tests\\": "packages/contracts/tests/",
             "Cognesy\\Logging\\Tests\\": "packages/logging/tests/",
             "Cognesy\\Messages\\Tests\\": "packages/messages/tests/",
             "Cognesy\\Pipeline\\Tests\\": "packages/pipeline/tests/",
@@ -236,7 +241,6 @@
         "symfony/http-client": "^7.3 || ^8.0",
         "symfony/messenger": "^7.3 || ^8.0",
         "toolkit/cli-utils": "^2.0",
-        "twig/twig": "^3.0",
         "vimeo/psalm": "^6.0"
     }
 }

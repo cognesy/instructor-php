@@ -3,10 +3,17 @@ dolt/
 dolt-access.lock
 
 # Runtime files
+.env
 bd.sock
 bd.sock.startlock
 sync-state.json
+export-state.json
+last_pull
 last-touched
+.beads-credential-key
+proxied_server_client_info.json
+daemon.*
+*.lock
 
 # Local version tracking (prevents upgrade notification spam after git ops)
 .local_version
@@ -19,6 +26,11 @@ redirect
 # These files are machine-specific and should not be shared across clones
 .sync.lock
 export-state/
+
+# Dolt server/proxy runtime directories
+embeddeddolt/
+proxieddb/
+*.corrupt.backup/
 
 # Ephemeral store (SQLite - wisps/molecules, intentionally not versioned)
 ephemeral.sqlite3

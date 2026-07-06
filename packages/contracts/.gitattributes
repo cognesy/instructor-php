@@ -1,0 +1,50 @@
+# Exclude unnecessary files from Composer and Git exports
+/.github/         export-ignore
+/.gitignore       export-ignore
+/.gitattributes   export-ignore
+/composer.lock    export-ignore
+/phpunit.xml      export-ignore
+/phpstan.neon     export-ignore
+/phpstan.neon.dist export-ignore
+/phpunit.xml.dist export-ignore
+/psalm.xml        export-ignore
+
+# Project specific ignores
+/tests/           export-ignore
+/docs/            export-ignore
+/release-notes/   export-ignore
+
+# Line ending normalization
+# Ensure PHP, JS, and text files have consistent line endings
+*.bat             text eol=lf
+*.css             text eol=lf
+*.html            text eol=lf
+*.js              text eol=lf
+*.md              text eol=lf
+*.mdx             text eol=lf
+*.php             text eol=lf
+*.sh              text eol=lf
+*.txt             text eol=lf
+*.xml             text eol=lf
+*.yml             text eol=lf
+*.yaml            text eol=lf
+
+# Treat binary files as binary
+*.gif             binary
+*.ico             binary
+*.jpg             binary
+*.jpeg            binary
+*.pdf             binary
+*.png             binary
+*.svg             binary
+
+# Linguist overrides (optional for GitHub)
+/vendor/          linguist-vendored
+
+# Ignore logs and temp files in exports (optional)
+*.bak             export-ignore
+*.log             export-ignore
+*.swp             export-ignore
+/cache/           export-ignore
+/temp/            export-ignore
+/tmp/             export-ignore

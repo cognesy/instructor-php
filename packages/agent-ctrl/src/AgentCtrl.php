@@ -45,6 +45,8 @@ final class AgentCtrl
      * Create a new agent builder for the specified agent type.
      *
      * @return ClaudeCodeBridgeBuilder|CodexBridgeBuilder|OpenCodeBridgeBuilder|PiBridgeBuilder|GeminiBridgeBuilder
+     *
+     * @deprecated AgentType::Gemini remains for compatibility only.
      */
     public static function make(AgentType $type): AgentBridgeBuilder
     {
@@ -91,6 +93,8 @@ final class AgentCtrl
 
     /**
      * Create a Gemini agent builder.
+     *
+     * @deprecated Gemini CLI bridge is deprecated because the upstream Google CLI flow is obsolete for this package.
      */
     public static function gemini(): GeminiBridgeBuilder
     {

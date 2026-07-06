@@ -88,3 +88,27 @@ it('Cohere V2: keeps sequential no-id tool calls at local index zero distinct', 
     expect($tools[0]->value('q'))->toBe('alpha');
     expect($tools[1]->value('q'))->toBe('beta');
 });
+
+it('Cohere V2: extracts tool fields from a single-object tool_calls delta', function () {
+    $adapter = new \Cognesy\Polyglot\Inference\Drivers\CohereV2\CohereV2ResponseAdapter(
+        new \Cognesy\Polyglot\Inference\Drivers\CohereV2\CohereV2UsageFormat(),
+    );
+
+    $event = json_encode([
+        'delta' => [
+            'message' => [
+                'tool_calls' => [
+                    'id' => 'call_9',
+                    'function' => ['name' => 'search', 'arguments' => '{"q":"x"}'],
+                ],
+            ],
+        ],
+    ]);
+
+    $deltas = iterator_to_array($adapter->fromStreamDeltas([$event]));
+
+    expect($deltas)->toHaveCount(1);
+    expect($deltas[0]->toolName)->toBe('search');
+    expect($deltas[0]->toolArgs)->toBe('{"q":"x"}');
+    expect((string) $deltas[0]->toolId)->not->toBe('');
+});

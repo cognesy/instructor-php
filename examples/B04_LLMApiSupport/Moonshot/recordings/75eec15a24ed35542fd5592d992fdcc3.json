@@ -1,0 +1,57 @@
+{
+    "request": {
+        "url": "https:\/\/api.moonshot.cn\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"kimi-latest\",\"messages\":[{\"role\":\"user\",\"content\":\"What is the capital of France\"}],\"max_completion_tokens\":64}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 404,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:44:05 GMT"
+            ],
+            "content-type": [
+                "application\/json; charset=utf-8"
+            ],
+            "content-length": [
+                "110"
+            ],
+            "set-cookie": [
+                "aliyungf_tc=fe2819dc8a7d81428c24e1913ebd72c91d824567921c30141f3afbd1c326d6d1; Path=\/; HttpOnly"
+            ],
+            "msh-gid": [
+                "free"
+            ],
+            "msh-org-id": [
+                "org-b4f7b9226eec469a8461a0c7646ec0c1"
+            ],
+            "msh-project-id": [
+                "proj-d3033d3ad7d349be82945f6b75878408"
+            ],
+            "msh-request-id": [
+                "5fd3c347-7938-11f1-9cb9-760564a2ea7d"
+            ],
+            "msh-trace-mode": [
+                "on"
+            ],
+            "msh-uid": [
+                "cuair0ahra0btvgue8qg"
+            ],
+            "vary": [
+                "Origin"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains"
+            ]
+        },
+        "body": "{\"error\":{\"message\":\"Not found the model kimi-latest or Permission denied\",\"type\":\"resource_not_found_error\"}}"
+    }
+}

@@ -25,7 +25,7 @@ class OpenAIBodyFormat implements CanMapRequestBody
     {
         $request = $request->withCacheApplied();
 
-        $options = array_merge($this->config->options, $request->options());
+        $options = $this->filterOptions(array_merge($this->config->options, $request->options()));
 
         $messages = RequestMessages::forMapping($request, $this->supportsAlternatingRoles($request));
 
@@ -35,15 +35,8 @@ class OpenAIBodyFormat implements CanMapRequestBody
             'messages' => $this->messageFormat->map($messages),
         ]), $options);
 
-        // max_tokens is deprecated in OpenAI API, use max_completion_tokens instead.
-        // Preserve an explicitly provided max_completion_tokens (from options) if present.
-        if (array_key_exists('max_tokens', $requestBody) && ! array_key_exists('max_completion_tokens', $requestBody)) {
-            $requestBody['max_completion_tokens'] = $requestBody['max_tokens'];
-        }
-        unset($requestBody['max_tokens']);
-        if ($options['stream'] ?? false) {
-            $requestBody['stream_options']['include_usage'] = true;
-        }
+        $requestBody = $this->normalizeTokenLimits($requestBody);
+        $requestBody = $this->applyStreamOptions($requestBody, $options);
 
         $requestBody['response_format'] = match (true) {
             $request->hasTools() && ! $this->supportsNonTextResponseForTools($request) => [],
@@ -57,6 +50,55 @@ class OpenAIBodyFormat implements CanMapRequestBody
         }
 
         return RequestPayload::filterEmptyValues($requestBody);
+    }
+
+    // PROVIDER VARIATION HOOKS ///////////////////////////////
+
+    /**
+     * Filter/adjust merged request options before they land in the body.
+     * Override to drop options the provider rejects.
+     *
+     * @param array<string,mixed> $options
+     * @return array<string,mixed>
+     */
+    protected function filterOptions(array $options): array
+    {
+        return $options;
+    }
+
+    /**
+     * max_tokens is deprecated in OpenAI API, use max_completion_tokens instead.
+     * Preserve an explicitly provided max_completion_tokens (from options) if present.
+     * Override for providers that still use max_tokens.
+     *
+     * @param array<string,mixed> $requestBody
+     * @return array<string,mixed>
+     */
+    protected function normalizeTokenLimits(array $requestBody): array
+    {
+        if (array_key_exists('max_tokens', $requestBody) && ! array_key_exists('max_completion_tokens', $requestBody)) {
+            $requestBody['max_completion_tokens'] = $requestBody['max_tokens'];
+        }
+        unset($requestBody['max_tokens']);
+
+        return $requestBody;
+    }
+
+    /**
+     * Streaming extras (usage reporting). Override for providers without
+     * stream_options support.
+     *
+     * @param array<string,mixed> $requestBody
+     * @param array<string,mixed> $options
+     * @return array<string,mixed>
+     */
+    protected function applyStreamOptions(array $requestBody, array $options): array
+    {
+        if ($options['stream'] ?? false) {
+            $requestBody['stream_options']['include_usage'] = true;
+        }
+
+        return $requestBody;
     }
 
     // CAPABILITIES ///////////////////////////////////////////

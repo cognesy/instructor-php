@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"INSTRUCTIONS:\\nYou are a ReAct-style agent using Thought\\\/Action\\\/Observation steps.\\nAt each step, output strictly valid JSON that matches the provided schema.\\nWhen you act, set type=call_tool and provide tool + args.\\nWhen acting, args must be a JSON object whose keys match the selected tool parameters.\\nDo not perform calculations yourself. Always use the tools to compute results.\\nContinue calling tools as needed until the task is complete.\\nOnly when no more tool actions are required, set type=final_answer and provide the final answer.\\nKeep the thought concise and actionable.\\nUse only the available tools and their parameter schemas.\\n\\nTOOL CATALOG (names, descriptions):\\n[{\\\"name\\\":\\\"add_numbers\\\",\\\"description\\\":\\\"\\\"},{\\\"name\\\":\\\"subtract_numbers\\\",\\\"description\\\":\\\"\\\"}]\\n\\nTOOL SCHEMAS (name, parameters):\\n[{\\\"name\\\":\\\"add_numbers\\\",\\\"parameters\\\":{\\\"type\\\":\\\"object\\\",\\\"x-title\\\":\\\"add_numbers\\\",\\\"properties\\\":{\\\"a\\\":{\\\"type\\\":\\\"integer\\\"},\\\"b\\\":{\\\"type\\\":\\\"integer\\\"}},\\\"required\\\":[\\\"a\\\",\\\"b\\\"],\\\"x-php-class\\\":\\\"stdClass\\\",\\\"additionalProperties\\\":false}},{\\\"name\\\":\\\"subtract_numbers\\\",\\\"parameters\\\":{\\\"type\\\":\\\"object\\\",\\\"x-title\\\":\\\"subtract_numbers\\\",\\\"properties\\\":{\\\"a\\\":{\\\"type\\\":\\\"integer\\\"},\\\"b\\\":{\\\"type\\\":\\\"integer\\\"}},\\\"required\\\":[\\\"a\\\",\\\"b\\\"],\\\"x-php-class\\\":\\\"stdClass\\\",\\\"additionalProperties\\\":false}}]\\n\\n## Tool Use\\n\\nUse the provided tool `extracted_data` to extract correct and accurate structured data from the input.\\n\\nTool purpose: Function call based on user instructions.\\n\\nCall the tool with the best supported arguments for the requested extraction.\"},{\"role\":\"user\",\"content\":\"Add 2455 and 3558 then subtract 4344 from the result.\"},{\"role\":\"assistant\",\"content\":\"Thought: Need to compute sum then subtract.\\nAction: add_numbers\\nAction Input: {\\\"a\\\":2455,\\\"b\\\":3558}\"},{\"role\":\"user\",\"content\":\"Observation: 6013\"}],\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\",\"description\":\"Function call based on user instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"thought\":{\"type\":\"string\",\"description\":\"Brief reasoning for the next action\",\"default\":\"\"},\"type\":{\"type\":\"string\",\"description\":\"Decision type - call_tool or final_answer\",\"default\":\"\"},\"tool\":{\"type\":\"string\",\"description\":\"Tool name to call when type=call_tool\",\"nullable\":true,\"default\":null},\"args\":{\"type\":\"array\",\"items\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"integer\"},{\"type\":\"number\"},{\"type\":\"boolean\"},{\"type\":\"object\"}]},\"description\":\"Arguments for the selected tool as a JSON object (not array) with parameter names as keys, e.g. {\\\"arg1\\\": \\\"val1\\\", \\\"arg2\\\": 123}\",\"default\":[]},\"answer\":{\"type\":\"string\",\"description\":\"Final answer when type=final_answer\",\"nullable\":true,\"default\":null}},\"additionalProperties\":false}}}],\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\"}}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:31 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1202"
+            ],
+            "cf-ray": [
+                "a16ead8b3b8def8f-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "5024"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999580"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "6ms"
+            ],
+            "x-request-id": [
+                "req_7749feb88e1a48e1b7817af3f5b8dd80"
+            ],
+            "set-cookie": [
+                "__cf_bm=Esogkjibe_yYHNll7nv4TSnYs0M.VFcxCAf2CUlP1tc-1783341626.1175866-1.0.1.1-ePJVD.w1_q8HlARKhoZ5LRywGIEAXN6b0w7o23BHIUo9VqRu0HItZxbj6ht.cTHdUMv..h6X1_yZxvHouw9cq_12WFCmtI0u_dITV1.gl6eEADpshr64.TYyPJKzJGiG; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:31 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycuYapQWLghqqvUwpl4sli3Ivoqq\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341626,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_Vc1yvE0iHbsVuTu4rsf1dNrF\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"thought\\\":\\\"Proceed with the next arithmetic step using the observed sum.\\\",\\\"type\\\":\\\"call_tool\\\",\\\"tool\\\":\\\"subtract_numbers\\\",\\\"args\\\":[{\\\"a\\\":6013,\\\"b\\\":4344}]}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 638,\n    \"completion_tokens\": 51,\n    \"total_tokens\": 689,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

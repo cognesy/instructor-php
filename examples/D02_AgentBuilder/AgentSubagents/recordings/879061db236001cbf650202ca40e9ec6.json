@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"You review code files and identify issues. Read the file and provide a concise assessment focusing on code quality, potential bugs, and improvements.\"},{\"role\":\"user\",\"content\":\"Review the PHP capability file packages\\\/agents\\\/src\\\/Capability\\\/Core\\\/UseTools.php. Identify its purpose, structure, notable implementation details, and any issues or risks. Focus on code quality, correctness, design, and maintainability. Return concise findings suitable for a summary.\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_QPyKiHg0YPaeS5srbPA1qmP2\",\"type\":\"function\",\"function\":{\"name\":\"read_file\",\"arguments\":\"{\\\"path\\\":\\\"packages\\\\\\\/agents\\\\\\\/src\\\\\\\/Capability\\\\\\\/Core\\\\\\\/UseTools.php\\\",\\\"offset\\\":0,\\\"limit\\\":400}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_QPyKiHg0YPaeS5srbPA1qmP2\",\"content\":\"     1\\t<?php declare(strict_types=1);\\n     2\\t\\n     3\\tnamespace Cognesy\\\\Agents\\\\Capability\\\\Core;\\n     4\\t\\n     5\\tuse Cognesy\\\\Agents\\\\Builder\\\\Contracts\\\\CanConfigureAgent;\\n     6\\tuse Cognesy\\\\Agents\\\\Builder\\\\Contracts\\\\CanProvideAgentCapability;\\n     7\\tuse Cognesy\\\\Agents\\\\Collections\\\\Tools;\\n     8\\tuse Cognesy\\\\Agents\\\\Tool\\\\Contracts\\\\ToolInterface;\\n     9\\t\\n    10\\tfinal readonly class UseTools implements CanProvideAgentCapability\\n    11\\t{\\n    12\\t    \\\/** @var list<ToolInterface> *\\\/\\n    13\\t    private array $tools;\\n    14\\t\\n    15\\t    public function __construct(ToolInterface ...$tools) {\\n    16\\t        $this->tools = $tools;\\n    17\\t    }\\n    18\\t\\n    19\\t    #[\\\\Override]\\n    20\\t    public static function capabilityName(): string {\\n    21\\t        return 'use_tools';\\n    22\\t    }\\n    23\\t\\n    24\\t    #[\\\\Override]\\n    25\\t    public function configure(CanConfigureAgent $agent): CanConfigureAgent {\\n    26\\t        return $agent->withTools(\\n    27\\t            $agent->tools()->merge(new Tools(...$this->tools))\\n    28\\t        );\\n    29\\t    }\\n    30\\t}\\n    31\\t\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"read_file\",\"description\":\"Read the contents of a file with line numbers. Use to examine file content after finding it with search_files.\\n\\nExamples:\\n- \\\"composer.json\\\" \\u2192 read composer.json from project root\\n- \\\"src\\\/Config.php\\\" \\u2192 read specific file by path\\n- {\\\"path\\\": \\\"large.log\\\", \\\"offset\\\": 100, \\\"limit\\\": 50} \\u2192 read lines 101-150\\n\\nReturns numbered lines. For large files, use offset\\\/limit to read specific sections.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"File path (relative to project root or absolute). Example: \\\"composer.json\\\" or \\\"src\\\/Config.php\\\"\"},\"offset\":{\"type\":\"integer\",\"description\":\"Line number to start reading from (0-indexed)\"},\"limit\":{\"type\":\"integer\",\"description\":\"Maximum number of lines to read (default: 2000)\"}},\"required\":[\"path\"],\"additionalProperties\":false}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:50 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "3152"
+            ],
+            "cf-ray": [
+                "a16eae09fc93bf88-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "3779"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999625"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "5ms"
+            ],
+            "x-request-id": [
+                "req_0eb4e71344ba4202bb90e2fee1a2ccfe"
+            ],
+            "set-cookie": [
+                "__cf_bm=nIFHcttUkoK69zHXk2qy.3.7E_SqmsTTpbyfA4WJ9RE-1783341646.3946404-1.0.1.1-YI.W29UMOVltjYEPGrS410.scaBqdvNGtHh0S.Qv69U8GFczhU7AMOEBd4LRiGRvUk4mGsY21XTMKAQtdKAG3qKvlMOBV3pJDBRwf7zLWTNUMK92zkA.b_Z8vH7cIDT4; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:50 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-Dycus73hS7ygTKPQPcxXavhjpx8aT\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341646,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"### Purpose\\n`UseTools` is a small agent capability object that adds one or more `ToolInterface` instances to an agent during configuration. It exposes the capability name `use_tools` and merges the provided tools into the agent\u2019s existing tool collection.\\n\\n### Structure\\n- `final readonly class UseTools implements CanProvideAgentCapability`\\n- Stores a variadic list of `ToolInterface` in a private array.\\n- Implements:\\n  - `capabilityName(): string` \u2192 returns `'use_tools'`\\n  - `configure(CanConfigureAgent $agent): CanConfigureAgent` \u2192 merges current agent tools with the new tools and returns the configured agent\\n\\n### Notable implementation details\\n- Uses PHP 8.1+ features:\\n  - `readonly` class\\n  - `#[\\\\Override]` attributes\\n  - variadic constructor for tools\\n- Tool addition is additive: existing tools are preserved via `merge(...)`.\\n- `Tools` collection is constructed from the variadic list and passed into the agent\u2019s existing tool set.\\n\\n### Issues \/ risks\\n- **Potential duplicate tool handling ambiguity**: `merge(new Tools(...$this->tools))` may allow duplicates unless `Tools::merge()` deduplicates. If duplicates are possible, this can cause repeated tool registration or unpredictable resolution.\\n- **No validation \/ guardrails**: The class assumes all passed tools are valid and compatible; there\u2019s no explicit check for empty tool sets, duplicate names, or conflicting capabilities.\\n- **Tight coupling to collection API**: It relies on `agent->tools()->merge(...)` and `withTools(...)` behavior. If either method is mutable or semantically unclear, configuration side effects may be hard to reason about.\\n- **Minimal abstraction clarity**: `configure()` returns a new\/updated agent but doesn\u2019t document whether the agent is cloned or mutated, which can matter for maintainability and bug avoidance.\\n- **Very thin wrapper**: The class is straightforward, but its value is mostly naming\/packaging; if more capability types emerge, consistency and lifecycle rules should be documented to avoid fragmented configuration behavior.\\n\\n### Summary\\nA small, clear capability class that appends tools to an agent. Code quality is good overall, but correctness depends on `Tools::merge()` semantics and the agent configuration contract; duplicate\/conflicting tool handling and mutation semantics are the main maintainability risks.\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 697,\n    \"completion_tokens\": 485,\n    \"total_tokens\": 1182,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

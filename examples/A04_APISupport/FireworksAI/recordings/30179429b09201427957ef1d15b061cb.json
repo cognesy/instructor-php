@@ -1,0 +1,57 @@
+{
+    "request": {
+        "url": "https:\/\/api.fireworks.ai\/inference\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"accounts\\\/fireworks\\\/models\\\/deepseek-v3p1\",\"messages\":[{\"role\":\"system\",\"content\":\"## Examples\\n\\nEXAMPLE INPUT:\\n    Ive got email Frank - their developer, who's 30. He asked to come back to him frank@hk.ch. Btw, he plays on drums!\\n    \\n    EXAMPLE OUTPUT:\\n    ```json\\n    {\\\"age\\\":30,\\\"name\\\":\\\"Frank\\\",\\\"username\\\":\\\"frank@hk.ch\\\",\\\"role\\\":\\\"developer\\\",\\\"hobbies\\\":[\\\"playing drums\\\"]}\\n    ```\\n\\n## Output Requirements\\n\\nRespond with a strict JSON object that matches this JSON Schema:\\n\\n{\\n    \\\"type\\\": \\\"object\\\",\\n    \\\"x-title\\\": \\\"User\\\",\\n    \\\"properties\\\": {\\n        \\\"age\\\": {\\n            \\\"type\\\": \\\"integer\\\"\\n        },\\n        \\\"name\\\": {\\n            \\\"type\\\": \\\"string\\\"\\n        },\\n        \\\"username\\\": {\\n            \\\"type\\\": \\\"string\\\"\\n        },\\n        \\\"role\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"enum\\\": [\\n                \\\"guest\\\",\\n                \\\"user\\\",\\n                \\\"admin\\\"\\n            ],\\n            \\\"x-php-class\\\": \\\"UserType\\\"\\n        },\\n        \\\"hobbies\\\": {\\n            \\\"type\\\": \\\"array\\\",\\n            \\\"items\\\": {\\n                \\\"type\\\": \\\"string\\\",\\n                \\\"description\\\": \\\"Correctly extract items of type: string\\\"\\n            }\\n        }\\n    },\\n    \\\"required\\\": [\\n        \\\"age\\\",\\n        \\\"name\\\",\\n        \\\"username\\\",\\n        \\\"role\\\",\\n        \\\"hobbies\\\"\\n    ],\\n    \\\"x-php-class\\\": \\\"User\\\",\\n    \\\"additionalProperties\\\": false\\n}\"},{\"role\":\"user\",\"content\":\"Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.\"}],\"max_completion_tokens\":1024,\"response_format\":{\"type\":\"json_object\"}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 404,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:43:55 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "181"
+            ],
+            "cf-ray": [
+                "a16eb2a5fe2db39a-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "access-control-allow-origin": [
+                "*"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "vary": [
+                "Origin"
+            ],
+            "via": [
+                "1.1 google"
+            ],
+            "server-timing": [
+                "total;dur=44.0;desc=\"Total Response Time\""
+            ],
+            "x-request-id": [
+                "chatcmpl-7c1bfc69dd2b46b0b9655c401c1678b8"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\"error\":{\"message\":\"Model not found, inaccessible, and\/or not deployed\",\"param\":\"model\",\"code\":\"NOT_FOUND\",\"type\":\"error\"},\"request_id\":\"chatcmpl-7c1bfc69dd2b46b0b9655c401c1678b8\"}"
+    }
+}

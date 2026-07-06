@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Data;
 
-use Cognesy\Instructor\Collections\StructuredOutputAttemptList;
+use Cognesy\Instructor\Data\StructuredOutputAttemptList;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Enums\ExecutionStatus;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;

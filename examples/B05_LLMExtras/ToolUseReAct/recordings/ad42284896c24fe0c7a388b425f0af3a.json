@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"Return only the final answer as plain text.\"},{\"role\":\"user\",\"content\":\"Add 2455 and 3558 then subtract 4344 from the result.\"},{\"role\":\"assistant\",\"content\":\"Thought: Extract the arithmetic task and proceed step by step with tools.\\nAction: add_numbers\\nAction Input: [{\\\"a\\\":2455,\\\"b\\\":3558}]\"},{\"role\":\"assistant\",\"content\":\"Thought: Need to compute the requested arithmetic in sequence using tools.\\nAction: add_numbers\\nAction Input: {\\\"a\\\":2455,\\\"b\\\":3558}\"},{\"role\":\"user\",\"content\":\"Observation: 6013\"},{\"role\":\"assistant\",\"content\":\"Thought: Continue the arithmetic sequence using the observed sum.\\nAction: subtract_numbers\\nAction Input: [{\\\"a\\\":6013,\\\"b\\\":4344}]\"},{\"role\":\"assistant\",\"content\":\"Thought: Need continue from observed sum and compute final subtraction.\\nAction: subtract_numbers\\nAction Input: {\\\"a\\\":6013,\\\"b\\\":4344}\"},{\"role\":\"user\",\"content\":\"Observation: 1669\"}],\"max_completion_tokens\":1024}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:25 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "778"
+            ],
+            "cf-ray": [
+                "a16ead8099e234cd-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "551"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999830"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "2ms"
+            ],
+            "x-request-id": [
+                "req_ca93b04244984e3a8348aba7f8e6c60d"
+            ],
+            "set-cookie": [
+                "__cf_bm=FYRi0xLyqoeGx7xBHSLfOtqVrQSPDJ2lcwDnMOLbl8w-1783341624.4207501-1.0.1.1-vW.3w54UPvCeDBreH6Up9SF_vSldAbzDNWPa3jiNtJqqobgsoEYQ4zHIgM4414o7ZoqbLUasfBZag4Wt.W55wVc0fcmTrZ_TIKnJxIkSsToauD0JRjWa.Omo9ghbBJ_Z; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:25 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycuWhXPaLytn9t3tN2Ld69r4X1u6\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341624,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"1669\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 204,\n    \"completion_tokens\": 5,\n    \"total_tokens\": 209,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

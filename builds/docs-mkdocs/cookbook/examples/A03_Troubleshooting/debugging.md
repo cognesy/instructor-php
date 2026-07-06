@@ -3,6 +3,7 @@ title: 'Debugging'
 docname: 'debugging'
 id: '9a35'
 tags:
+  - 'no-replay'
   - 'troubleshooting'
   - 'debugging'
   - 'observability'

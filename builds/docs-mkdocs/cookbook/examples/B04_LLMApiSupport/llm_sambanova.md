@@ -3,6 +3,7 @@ title: 'SambaNova'
 docname: 'llm_sambanova'
 id: '32f9'
 tags:
+  - 'broken'
   - 'llm-api-support'
   - 'sambanova'
   - 'provider'

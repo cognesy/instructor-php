@@ -129,8 +129,8 @@ $usage = $response->usage();
 
 $usage->inputTokens;       // Input / prompt tokens
 $usage->outputTokens;      // Output / completion tokens
-$usage->cacheWriteTokens;  // Tokens written to cache
-$usage->cacheReadTokens;   // Tokens read from cache
+$usage->cacheWriteTokens;  // Tokens written to cache when reported by provider
+$usage->cacheReadTokens;   // Tokens read from cache when reported by provider
 $usage->reasoningTokens;   // Reasoning / thinking tokens
 
 // Convenience accessors

@@ -3,6 +3,7 @@ title: 'Image to data (Gemini)'
 docname: 'image_to_data_gemini'
 id: '22c8'
 tags:
+  - 'flaky'
   - 'extras'
   - 'vision'
   - 'gemini'

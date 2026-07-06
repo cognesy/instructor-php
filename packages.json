@@ -36,6 +36,13 @@
             "tier": "library"
         },
         {
+            "local": "packages/contracts",
+            "repo": "cognesy/instructor-contracts",
+            "github_name": "instructor-contracts",
+            "composer_name": "cognesy/instructor-contracts",
+            "tier": "library"
+        },
+        {
             "local": "packages/doctools",
             "repo": "cognesy/instructor-doctools",
             "github_name": "instructor-doctools",

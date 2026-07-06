@@ -38,6 +38,10 @@ Laravel integration — service provider, facades, config publishing, and Artisa
 
 Configuration loading — config files, base paths, entries, and environment resolution
 
+## [Contracts](contracts.md)
+
+Quick reference for Contracts
+
 ## [Dynamic](dynamic.md)
 
 Runtime data structures — schema-driven immutable objects with validation

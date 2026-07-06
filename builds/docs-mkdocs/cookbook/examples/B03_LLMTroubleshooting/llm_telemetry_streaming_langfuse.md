@@ -3,6 +3,7 @@ title: 'Send streaming LLM telemetry to Langfuse'
 docname: 'llm_telemetry_streaming_langfuse'
 id: '3b9e'
 tags:
+  - 'no-replay'
   - 'telemetry'
   - 'langfuse'
   - 'streaming'

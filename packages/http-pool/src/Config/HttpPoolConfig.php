@@ -9,7 +9,7 @@ final class HttpPoolConfig
 {
     public const CONFIG_GROUP = 'pool';
     /** @var list<string> */
-    private const STRING_FIELDS = ['driver'];
+    private const STRING_FIELDS = ['driver', 'httpVersion'];
     /** @var list<string> */
     private const INT_FIELDS = [
         'connectTimeout',
@@ -18,9 +18,14 @@ final class HttpPoolConfig
         'streamChunkSize',
         'maxConcurrent',
         'poolTimeout',
+        'maxRedirects',
     ];
     /** @var list<string> */
-    private const BOOL_FIELDS = ['failOnError'];
+    private const BOOL_FIELDS = [
+        'failOnError',
+        'verifyTls',
+        'followRedirects',
+    ];
 
     public function __construct(
         public readonly string $driver = 'curl',
@@ -31,6 +36,10 @@ final class HttpPoolConfig
         public readonly int $maxConcurrent = 5,
         public readonly int $poolTimeout = 120,
         public readonly bool $failOnError = false,
+        public readonly bool $verifyTls = true,
+        public readonly bool $followRedirects = true,
+        public readonly ?int $maxRedirects = null,
+        public readonly ?string $httpVersion = null,
     ) {}
 
     public static function group(): string
@@ -73,6 +82,10 @@ final class HttpPoolConfig
             'maxConcurrent' => $this->maxConcurrent,
             'poolTimeout' => $this->poolTimeout,
             'failOnError' => $this->failOnError,
+            'verifyTls' => $this->verifyTls,
+            'followRedirects' => $this->followRedirects,
+            'maxRedirects' => $this->maxRedirects,
+            'httpVersion' => $this->httpVersion,
         ];
     }
 

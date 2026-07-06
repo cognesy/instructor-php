@@ -2,6 +2,7 @@
 
 namespace Cognesy\Events\Dispatchers;
 
+use Cognesy\Events\Contracts\CanCheckListeners;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\EventDispatcher\StoppableEventInterface;
@@ -17,7 +18,7 @@ use Psr\EventDispatcher\StoppableEventInterface;
  *
  * It implements PSR-14, which defines a standard for event dispatching in PHP.
  */
-class EventDispatcher implements CanHandleEvents
+class EventDispatcher implements CanHandleEvents, CanCheckListeners
 {
     private string $name;
     private ?EventDispatcherInterface $parent;
@@ -62,6 +63,7 @@ class EventDispatcher implements CanHandleEvents
      */
     #[\Override]
     public function addListener(string $name, callable $listener, int $priority = 0): void {
+        $name = self::canonicalEventName($name);
         $this->listeners[$name] ??= [];
         $this->listeners[$name][] = [
             'listener' => $listener,
@@ -72,6 +74,18 @@ class EventDispatcher implements CanHandleEvents
         if ($name === '*') {
             $this->sortedTaps = null; // invalidate tap cache
         }
+    }
+
+    /**
+     * Resolves class aliases (deprecated event FQCNs kept via class_alias)
+     * to their canonical class name, so listeners registered under an old
+     * name still match events dispatched under the new one.
+     */
+    private static function canonicalEventName(string $name): string {
+        if ($name === '*' || !class_exists($name)) {
+            return $name;
+        }
+        return (new \ReflectionClass($name))->getName();
     }
 
     /**
@@ -133,6 +147,33 @@ class EventDispatcher implements CanHandleEvents
         return $event;
     }
 
+    /**
+     * Whether any listener (class-specific, inherited, tap, or parent
+     * dispatcher) would receive an event of the given class.
+     *
+     * @param class-string $eventClass
+     */
+    #[\Override]
+    public function hasListenersFor(string $eventClass): bool {
+        $eventClass = self::canonicalEventName($eventClass);
+        if ($this->listeners !== []) {
+            if (($this->listeners['*'] ?? []) !== []) {
+                return true;
+            }
+            foreach (self::typesForClass($eventClass) as $type) {
+                if (($this->listeners[$type] ?? []) !== []) {
+                    return true;
+                }
+            }
+        }
+
+        return match (true) {
+            $this->parent === null => false,
+            $this->parent instanceof CanCheckListeners => $this->parent->hasListenersFor($eventClass),
+            default => true, // unknown parent dispatcher — assume it listens
+        };
+    }
+
     // INTERNAL /////////////////////////////////////////////////////////////////////
 
     /**
@@ -142,11 +183,19 @@ class EventDispatcher implements CanHandleEvents
      */
     private static function eventTypes(object $event): array
     {
-        $class = get_class($event);
+        return self::typesForClass(get_class($event));
+    }
+
+    /**
+     * @param class-string $class
+     * @return string[]
+     */
+    private static function typesForClass(string $class): array
+    {
         return self::$typeCache[$class] ??= array_merge(
             [$class],
-            class_parents($event),
-            class_implements($event),
+            class_parents($class) ?: [],
+            class_implements($class) ?: [],
         );
     }
 

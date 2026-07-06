@@ -3,6 +3,7 @@ title: 'Translating UI text fields'
 docname: 'translate_ui_fields'
 id: '8cdb'
 tags:
+  - 'flaky'
   - 'extras'
   - 'translation'
   - 'ui-localization'

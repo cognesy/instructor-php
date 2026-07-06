@@ -2,10 +2,6 @@
 
 namespace Cognesy\Utils;
 
-use Cognesy\Pipeline\Enums\ErrorStrategy;
-use Cognesy\Pipeline\Pipeline;
-use Cognesy\Pipeline\ProcessingState;
-
 /**
  * String manipulation utilities.
  */
@@ -93,35 +89,36 @@ class Str
      * @return string The Sentence case string.
      */
     static private function spaceSeparated(string $input) : string {
-        $pipeline = Pipeline::builder(ErrorStrategy::FailFast)
-            ->throughAll(
-                // separate groups of capitalized words
-                fn (string $data): string => preg_replace('/([A-Z])([a-z])/', ' $1$2', $data) ?? $data,
-                // de-camel
-                //fn ($data) => preg_replace('/([A-Z]{2,})([A-Z])([a-z])/', '$1 $2$3', $data),
-                //fn ($data) => preg_replace('/([a-z])([A-Z])([a-z])/', '$1 $2$3', $data),
-                // separate groups of capitalized words of 2+ characters with spaces
-                fn (string $data): string => preg_replace('/([A-Z]{2,})/', ' $1 ', $data) ?? $data,
-                // de-kebab
-                fn (string $data): string => str_replace('-', ' ', $data),
-                // de-snake
-                fn (string $data): string => str_replace('_', ' ', $data),
-                // remove double spaces
-                fn (string $data): string => preg_replace('/\s+/', ' ', $data) ?? $data,
-                // remove leading _
-                fn (string $data): string => ltrim($data, '_'),
-                // remove leading -
-                fn (string $data): string => ltrim($data, '-'),
-                // trim space
-                fn (string $data): string => trim($data),
-            )
-            ->create();
+        // Apply each normalization transform in sequence. Kept dependency-free
+        // (no Pipeline) so that `utils` does not depend on the `pipeline` package,
+        // which would create a circular dependency. The Pipeline-based variant of
+        // this routine lives in \Cognesy\Pipeline\Extras\StringNormalizer.
+        $transforms = [
+            // separate groups of capitalized words
+            fn (string $data): string => preg_replace('/([A-Z])([a-z])/', ' $1$2', $data) ?? $data,
+            // separate groups of capitalized words of 2+ characters with spaces
+            fn (string $data): string => preg_replace('/([A-Z]{2,})/', ' $1 ', $data) ?? $data,
+            // de-kebab
+            fn (string $data): string => str_replace('-', ' ', $data),
+            // de-snake
+            fn (string $data): string => str_replace('_', ' ', $data),
+            // remove double spaces
+            fn (string $data): string => preg_replace('/\s+/', ' ', $data) ?? $data,
+            // remove leading _
+            fn (string $data): string => ltrim($data, '_'),
+            // remove leading -
+            fn (string $data): string => ltrim($data, '-'),
+            // trim space
+            fn (string $data): string => trim($data),
+        ];
 
-        $result = $pipeline
-            ->executeWith(ProcessingState::with($input))
-            ->value();
+        $result = array_reduce(
+            $transforms,
+            fn (string $carry, callable $transform): string => $transform($carry),
+            $input,
+        );
 
-        return is_string($result) ? $result : $input;
+        return $result;
     }
 
     /**

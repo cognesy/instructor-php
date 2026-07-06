@@ -52,8 +52,9 @@ echo $response->content()."\n";
 assert(! empty($response->content()));
 assert(Str::contains($response->content(), 'lead', false));
 if ($response->usage()->cacheReadTokens === 0 && $response->usage()->cacheWriteTokens === 0) {
-    echo "Note: cacheReadTokens/cacheWriteTokens are 0. Prompt caching applies only to eligible models and prompt sizes.\n";
+    echo "Note: cacheReadTokens is 0. Prompt caching applies only to eligible models and prompt sizes.\n";
 }
+echo "Note: OpenAI reports prompt cache hits as cache read tokens; it does not report cache write tokens.\n";
 
 $response2 = $inference
     ->with(

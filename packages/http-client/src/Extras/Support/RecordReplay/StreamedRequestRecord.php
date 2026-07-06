@@ -5,6 +5,7 @@ namespace Cognesy\Http\Extras\Support\RecordReplay;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Drivers\Mock\MockHttpResponseFactory;
+use Cognesy\Http\Extras\Support\RecordReplay\Redaction\RequestRedactor;
 
 /**
  * A specialized value object for handling streamed HTTP interactions.
@@ -19,7 +20,7 @@ class StreamedRequestRecord extends RequestRecord
         $this->chunks = $chunks;
     }
 
-    public static function fromStreamedInteraction(HttpRequest $request, HttpResponse $response): self {
+    public static function fromStreamedInteraction(HttpRequest $request, HttpResponse $response, ?RequestRedactor $redactor = null): self {
         $requestData = [
             'url' => $request->url(),
             'method' => $request->method(),
@@ -27,13 +28,20 @@ class StreamedRequestRecord extends RequestRecord
             'body' => $request->body()->toString(),
             'options' => $request->options(),
         ];
+        if ($redactor !== null) {
+            $requestData = $redactor->redact($requestData);
+        }
 
+        // Chunks are the canonical body store; getResponseBody() derives from them.
         $chunks = [];
-        $body = '';
+        $responseData = [
+            'statusCode' => $response->statusCode(),
+            'headers' => $response->headers(),
+        ];
+
         if ($response->isStreamed()) {
             foreach ($response->stream() as $chunk) {
                 $chunks[] = $chunk;
-                $body .= $chunk;
             }
         } else {
             $body = $response->body();
@@ -41,12 +49,6 @@ class StreamedRequestRecord extends RequestRecord
                 $chunks[] = $body;
             }
         }
-
-        $responseData = [
-            'statusCode' => $response->statusCode(),
-            'headers' => $response->headers(),
-            'body' => $body,
-        ];
 
         return new self($requestData, $responseData, $chunks);
     }
@@ -63,9 +65,16 @@ class StreamedRequestRecord extends RequestRecord
 
     #[\Override]
     public function toJson(bool $prettyPrint = true): string {
+        $responseData = $this->getResponseData();
+        // Legacy records stored the body both in response data and as chunks.
+        // Chunks are canonical — drop the duplicate when it carries no extra info.
+        if (($responseData['body'] ?? '') === implode('', $this->chunks)) {
+            unset($responseData['body']);
+        }
+
         $data = [
             'request' => $this->getRequestData(),
-            'response' => $this->getResponseData(),
+            'response' => $responseData,
             'chunks' => $this->chunks,
         ];
         return json_encode($data, $prettyPrint ? JSON_PRETTY_PRINT : 0) ?: '';
@@ -90,6 +99,16 @@ class StreamedRequestRecord extends RequestRecord
 
     public function getChunks(): array {
         return $this->chunks;
+    }
+
+    #[\Override]
+    public function getResponseBody(): string {
+        $body = parent::getResponseBody();
+
+        return match ($body) {
+            '' => implode('', $this->chunks),
+            default => $body,
+        };
     }
 
     public function getChunkCount(): int {

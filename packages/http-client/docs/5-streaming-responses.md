@@ -134,6 +134,43 @@ foreach ($client->send($request)->stream() as $chunk) {
 fclose($handle);
 ```
 
+## Capturing stream contents for inspection
+
+Streamed bodies are consumed once and normally leave no trace. When you need to
+inspect what actually came over the wire — debugging a malformed SSE stream,
+building replay tooling, capturing a postmortem sample — enable opt-in capture
+on the response before consuming it:
+
+```php
+use Cognesy\Http\Stream\StreamCapturingPolicy;
+
+$response = $client->send($request)
+    ->get()
+    ->withStreamCapture(StreamCapturingPolicy::preview()); // first 64KB
+
+foreach ($response->stream() as $chunk) {
+    // process chunks as usual — capture happens transparently
+}
+
+$capture = $response->streamCapture();
+echo $capture->preview();          // captured prefix of the raw stream
+$stats = $capture->stats();        // bytes, chunks, capturedBytes, truncated
+```
+
+Policies bound memory explicitly:
+
+- `StreamCapturingPolicy::preview(int $maxBytes = 65536)` — capture a prefix,
+  enough to see what the stream looked like
+- `StreamCapturingPolicy::chunks(int $maxBytes = 1048576)` — retain individual
+  chunks (via `capturedChunks()`) up to the byte budget
+- `StreamCapturingPolicy::full(int $maxBytes)` — capture everything up to an
+  explicit cap (`capturedBody()` returns the concatenated content)
+- `StreamCapturingPolicy::disabled()` — pass-through, zero retention
+
+Capture is per-response and off by default; it never changes what the consumer
+of `stream()` sees. The `truncated` flag in `stats()` tells you when the byte
+budget cut the capture short.
+
 ## Considerations
 
 When working with streaming responses, keep these points in mind:

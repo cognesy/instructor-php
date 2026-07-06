@@ -7,34 +7,30 @@ use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
-use Cognesy\Polyglot\Inference\Streaming\StreamingUsageState;
+use Cognesy\Polyglot\Inference\Streaming\InferenceStreamState;
 
+/**
+ * Structured-output view over the shared stream accumulator.
+ *
+ * Delta/tool/usage accumulation is delegated to polyglot's
+ * InferenceStreamState (single owner of tool-key semantics — including
+ * repeated-name continuation and pre-key args buffering). This class adds
+ * what structured output needs on top: the materialized value, snapshot
+ * revisions for the throttle, memoized derived objects, and
+ * StructuredOutputResponse construction.
+ */
 final class StructuredOutputStreamState
 {
-    private string $content = '';
-    private string $reasoningContent = '';
-    private string $finishReason = '';
+    private InferenceStreamState $inner;
+
     private int $snapshotRevision = 0;
     private mixed $value = null;
-
-    private string $contentDelta = '';
-    private string $reasoningContentDelta = '';
-    private string $toolId = '';
-    private string $toolName = '';
-    private string $toolArgs = '';
-
-    /** @var array<string,array{id:string,name:string,args:string}> */
-    private array $tools = [];
-    private int $toolsCount = 0;
-    private string $lastToolKey = '';
     private ?ToolCalls $memoizedToolCalls = null;
     private ?EmissionSnapshot $memoizedSnapshot = null;
 
-    private StreamingUsageState $usage;
-
     public function __construct()
     {
-        $this->usage = new StreamingUsageState();
+        $this->inner = new InferenceStreamState();
     }
 
     public static function empty(): self
@@ -44,48 +40,19 @@ final class StructuredOutputStreamState
 
     public function reset(): void
     {
-        $this->content = '';
-        $this->reasoningContent = '';
-        $this->finishReason = '';
+        $this->inner = new InferenceStreamState();
         $this->snapshotRevision = 0;
         $this->value = null;
-        $this->contentDelta = '';
-        $this->reasoningContentDelta = '';
-        $this->toolId = '';
-        $this->toolName = '';
-        $this->toolArgs = '';
-        $this->tools = [];
-        $this->toolsCount = 0;
-        $this->lastToolKey = '';
         $this->memoizedToolCalls = null;
         $this->memoizedSnapshot = null;
-        $this->usage = new StreamingUsageState();
     }
 
     public function applyDelta(PartialInferenceDelta $delta): void
     {
-        $this->contentDelta = $delta->contentDelta;
-        $this->reasoningContentDelta = $delta->reasoningContentDelta;
-        $this->toolId = match (true) {
-            is_string($delta->toolId) => $delta->toolId,
-            $delta->toolId !== null => $delta->toolId->toString(),
-            default => '',
-        };
-        $this->toolName = $delta->toolName;
-        $this->toolArgs = $delta->toolArgs;
         $this->invalidateDerivedState();
+        $this->inner->applyDelta($delta);
 
-        $snapshotChanged = $this->contentDelta !== '';
-        $this->content .= $this->contentDelta;
-        $this->reasoningContent .= $this->reasoningContentDelta;
-        $this->finishReason = match ($delta->finishReason) {
-            '' => $this->finishReason,
-            default => $delta->finishReason,
-        };
-        $this->usage->apply($delta->usage, $delta->usageIsCumulative);
-        $this->accumulateToolDelta();
-
-        if ($snapshotChanged || $this->toolArgs !== '') {
+        if ($delta->contentDelta !== '' || $delta->toolArgs !== '') {
             $this->snapshotRevision += 1;
         }
     }
@@ -114,17 +81,17 @@ final class StructuredOutputStreamState
 
     public function content(): string
     {
-        return $this->content;
+        return $this->inner->content();
     }
 
     public function reasoningContent(): string
     {
-        return $this->reasoningContent;
+        return $this->inner->reasoningContent();
     }
 
     public function finishReason(): string
     {
-        return $this->finishReason;
+        return $this->inner->finishReason();
     }
 
     public function snapshotRevision(): int
@@ -134,43 +101,22 @@ final class StructuredOutputStreamState
 
     public function usage(): InferenceUsage
     {
-        return $this->usage->toUsage();
+        return $this->inner->usage();
     }
 
     public function toolArgsSnapshot(): string
     {
-        if ($this->lastToolKey === '' || !isset($this->tools[$this->lastToolKey])) {
-            return '';
-        }
-
-        return (string) ($this->tools[$this->lastToolKey]['args'] ?? '');
+        return $this->inner->toolArgsSnapshot();
     }
 
     public function toolKey(): string
     {
-        return $this->lastToolKey;
+        return $this->inner->toolKey();
     }
 
     public function toolCalls(): ToolCalls
     {
-        if ($this->memoizedToolCalls instanceof ToolCalls) {
-            return $this->memoizedToolCalls;
-        }
-
-        if ($this->tools === []) {
-            return $this->memoizedToolCalls = ToolCalls::empty();
-        }
-
-        $items = [];
-        foreach ($this->tools as $entry) {
-            $items[] = [
-                'id' => $entry['id'] ?? '',
-                'name' => $entry['name'] ?? '',
-                'arguments' => $entry['args'] ?? '',
-            ];
-        }
-
-        return $this->memoizedToolCalls = ToolCalls::fromArray($items);
+        return $this->memoizedToolCalls ??= $this->inner->toolCalls();
     }
 
     public function snapshot(): EmissionSnapshot
@@ -180,9 +126,9 @@ final class StructuredOutputStreamState
         }
 
         return $this->memoizedSnapshot = new EmissionSnapshot(
-            content: $this->content,
-            finishReason: $this->finishReason,
-            toolKey: $this->lastToolKey,
+            content: $this->content(),
+            finishReason: $this->finishReason(),
+            toolKey: $this->toolKey(),
             toolArgsSnapshot: $this->toolArgsSnapshot(),
             value: $this->value,
         );
@@ -191,10 +137,10 @@ final class StructuredOutputStreamState
     public function partialInferenceResponse(): InferenceResponse
     {
         return (new InferenceResponse(
-            content: $this->content,
-            finishReason: $this->finishReason,
+            content: $this->content(),
+            finishReason: $this->finishReason(),
             toolCalls: $this->toolCalls(),
-            reasoningContent: $this->reasoningContent,
+            reasoningContent: $this->reasoningContent(),
             usage: $this->usage(),
             isPartial: true,
         ))->withReasoningContentFallbackFromContent();
@@ -212,10 +158,10 @@ final class StructuredOutputStreamState
     public function finalInferenceResponse(): InferenceResponse
     {
         return (new InferenceResponse(
-            content: $this->content,
-            finishReason: $this->finishReason,
+            content: $this->content(),
+            finishReason: $this->finishReason(),
             toolCalls: $this->toolCalls(),
-            reasoningContent: $this->reasoningContent,
+            reasoningContent: $this->reasoningContent(),
             usage: $this->usage(),
             isPartial: false,
         ))->withReasoningContentFallbackFromContent();
@@ -230,51 +176,9 @@ final class StructuredOutputStreamState
         );
     }
 
-    private function accumulateToolDelta(): void
-    {
-        if ($this->toolId === '' && $this->toolName === '' && $this->toolArgs === '') {
-            return;
-        }
-
-        $key = $this->resolveToolKey($this->toolId, $this->toolName);
-
-        if ($this->toolId !== '' && ($key !== $this->lastToolKey || !isset($this->tools[$key]))) {
-            $this->toolsCount += 1;
-            $this->tools[$key] = ['id' => $this->toolId, 'name' => $this->toolName, 'args' => ''];
-        }
-
-        if ($this->toolId !== '' && $this->toolName !== '' && isset($this->tools[$key])) {
-            $this->tools[$key]['name'] = $this->toolName;
-        }
-
-        if ($this->toolId === '' && $this->toolName !== '' && $key !== $this->lastToolKey) {
-            $this->toolsCount += 1;
-            $this->tools[$key] = ['id' => '', 'name' => $this->toolName, 'args' => ''];
-        }
-
-        $this->lastToolKey = $key;
-
-        if ($this->toolArgs === '' || $key === '' || !isset($this->tools[$key])) {
-            return;
-        }
-
-        $this->tools[$key]['args'] .= $this->toolArgs;
-    }
-
-    private function resolveToolKey(string $toolId, string $toolName): string
-    {
-        return match (true) {
-            $toolId !== '' => 'id:' . $toolId,
-            $toolName !== '' => 'name:' . $toolName . '#' . ($this->toolsCount + 1),
-            $this->lastToolKey !== '' && isset($this->tools[$this->lastToolKey]) => $this->lastToolKey,
-            default => '',
-        };
-    }
-
     private function invalidateDerivedState(): void
     {
         $this->memoizedToolCalls = null;
         $this->memoizedSnapshot = null;
     }
-
 }

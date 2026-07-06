@@ -34,6 +34,7 @@ final class EmbeddingsConfig
         'packages/polyglot/resources/config/embed/presets',
         'vendor/cognesy/instructor-php/packages/polyglot/resources/config/embed/presets',
         'vendor/cognesy/instructor-polyglot/resources/config/embed/presets',
+        __DIR__ . '/../../../resources/config/embed/presets',
     ];
 
     public static function fromPreset(string $preset, ?string $basePath = null): self {

@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## System Instructions\\n\\nYou are a world class AI who excels at generating reasoning steps to answer a question. Generate a list of reasoning steps needed to answer the question.\\n\\nFor each reasoning step, provide:\\n- id: step number starting from 1\\n- rationale: array of strings explaining the reasoning\\n- dependencies: array of step IDs this step depends on\\n- eval_string: valid PHP code (without <?php tags) that can be evaluated\\n\\nAt each step you should either:\\n- declare a variable to be referenced later on (e.g., \\\"$cars = 3;\\\")\\n- combine multiple variables together to generate a new result (e.g., \\\"$total = $cars + $more;\\\")\\n\\nThe final step must store the answer in a variable called $answer.\\n\\nExample eval_string values:\\n- \\\"$cars = 3;\\\"\\n- \\\"$more_cars = 2;\\\"\\n- \\\"$answer = $cars + $more_cars;\\\"\\n\\nUse only valid PHP syntax for variable assignments in eval_string.\\n\\n## Tool Use\\n\\nUse the provided tool `extracted_data` to extract correct and accurate structured data from the input.\\n\\nTool purpose: Function call based on user instructions.\\n\\nCall the tool with the best supported arguments for the requested extraction.\"},{\"role\":\"user\",\"content\":\"If there are 3 cars in the parking lot and 2 more cars arrive, how many cars are in the parking lot after another 2 more arrive?\"}],\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\",\"description\":\"Function call based on user instructions.\",\"parameters\":{\"type\":\"object\",\"description\":\"A collection of ReasoningStep\",\"properties\":{\"list\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"rationale\":{\"type\":\"array\",\"items\":{\"type\":\"string\",\"description\":\"Correctly extract items of type: string\"}},\"dependencies\":{\"type\":\"array\",\"items\":{\"type\":\"integer\",\"description\":\"Correctly extract items of type: int\"}},\"eval_string\":{\"type\":\"string\",\"default\":\"\"}},\"required\":[\"id\",\"rationale\",\"dependencies\"],\"additionalProperties\":false}}},\"required\":[\"list\"],\"additionalProperties\":false}}}],\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\"}}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:42:25 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1706"
+            ],
+            "cf-ray": [
+                "a16eb069df8783eb-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1401"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999686"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "4ms"
+            ],
+            "x-request-id": [
+                "req_20fe7029e869430087d2c40f30fbe2a6"
+            ],
+            "set-cookie": [
+                "__cf_bm=fBX4t66BUaKSPj6m5mFXQisx4Hzg1PNqR2zstzP0EdY-1783341743.657156-1.0.1.1-lV4SVGHPWgoNGlloOB9enYXIrvxTDM34rx6lJFwPyGcsMLZWqmyl0q18LU4WWpippMdOr0SUgWiVD14iC0eBZwOKiDg7aqKRfAX6FiKjTDLNgg9CwpncJ0hOwbvr4wIt; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:12:25 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycwRmaGxAqpR9XTFxYAtl0RRc9oD\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341743,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_mOXpDG68EulMTUcTZBP0Cmgf\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"list\\\":[{\\\"id\\\":1,\\\"rationale\\\":[\\\"Identify the initial number of cars in the parking lot.\\\",\\\"This sets the starting value for the calculation.\\\"],\\\"dependencies\\\":[],\\\"eval_string\\\":\\\"$cars = 3;\\\"},{\\\"id\\\":2,\\\"rationale\\\":[\\\"Add the first group of arriving cars to the initial count.\\\",\\\"This gives the updated number after 2 more cars arrive.\\\"],\\\"dependencies\\\":[1],\\\"eval_string\\\":\\\"$cars_after_first_arrival = $cars + 2;\\\"},{\\\"id\\\":3,\\\"rationale\\\":[\\\"Add the second group of arriving cars to the updated count.\\\",\\\"This produces the final number of cars in the parking lot.\\\"],\\\"dependencies\\\":[2],\\\"eval_string\\\":\\\"$answer = $cars_after_first_arrival + 2;\\\"}]}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 468,\n    \"completion_tokens\": 165,\n    \"total_tokens\": 633,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

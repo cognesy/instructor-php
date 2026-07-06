@@ -1,0 +1,174 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/responses",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "text\/event-stream"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"instructions\":\"## Output Requirements\\n\\nRespond with a strict JSON object that follows the provided JSON Schema.\\n\\nSchema name: `PersonProfile`\\n\\n{\\n    \\\"type\\\": \\\"object\\\",\\n    \\\"x-title\\\": \\\"PersonProfile\\\",\\n    \\\"properties\\\": {\\n        \\\"name\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"default\\\": \\\"\\\"\\n        },\\n        \\\"age\\\": {\\n            \\\"type\\\": \\\"integer\\\",\\n            \\\"default\\\": 0\\n        },\\n        \\\"hobbies\\\": {\\n            \\\"type\\\": \\\"array\\\",\\n            \\\"items\\\": {\\n                \\\"type\\\": \\\"string\\\",\\n                \\\"description\\\": \\\"Correctly extract items of type: string\\\"\\n            },\\n            \\\"default\\\": []\\n        }\\n    },\\n    \\\"x-php-class\\\": \\\"PersonProfile\\\",\\n    \\\"additionalProperties\\\": false\\n}\",\"input\":[{\"type\":\"message\",\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"Jason is 25 years old. He lives in San Francisco. He enjoys soccer, climbing,\\nand cooking.\"}]}],\"max_output_tokens\":384,\"stream\":true,\"text\":{\"format\":{\"type\":\"json_schema\",\"name\":\"PersonProfile\",\"schema\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\",\"default\":\"\"},\"age\":{\"type\":\"integer\",\"default\":0},\"hobbies\":{\"type\":\"array\",\"items\":{\"type\":\"string\",\"description\":\"Correctly extract items of type: string\"},\"default\":[]}},\"additionalProperties\":false,\"required\":[\"name\",\"age\",\"hobbies\"]},\"strict\":true}}}",
+        "options": {
+            "stream": true
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:39:55 GMT"
+            ],
+            "content-type": [
+                "text\/event-stream; charset=utf-8"
+            ],
+            "cf-ray": [
+                "a16eaccb587983eb-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "199"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999596"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "6ms"
+            ],
+            "x-request-id": [
+                "6a2d10f1-7253-42d6-82e9-17e08fcd2e16"
+            ],
+            "set-cookie": [
+                "__cf_bm=orMppa136xKl5tWZNpeW7tp7B3qUmzZA2qhgBjm7orA-1783341595.4137232-1.0.1.1-SOSlg7DzpjKyzbWcAWE6jdyJH9KJiD.HtNTJ2jG1IB4GerRoSn9HXTxavGR0a4NwjuNRtxCwvRJqG23cy2GF.jUpQtbCpnys6.Vm1ZGu._LqtPxx15Ve3T.FjSK5c_wy; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:09:55 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        }
+    },
+    "chunks": [
+        "event: response.created\ndata: {\"type\":\"response.created\",\"response\":{\"id\":\"resp_0a33e7c16c946b4b006a4ba21b89b0819e805be1d6900797fc\",\"object\":\"response\",\"created_at\":1783341595,\"status\":\"in_progress\",\"background\":false,\"completed_at\":null,\"error\":null,\"freq",
+        "uency_penalty\":0.0,\"incomplete_details\":null,\"instructions\":\"## Output Requirements\\n\\nRespond with a strict JSON object that follows the provided JSON Schema.\\n\\nSchema name: `PersonProfile`\\n\\n{\\n    \\\"type\\\": \\\"object\\\",\\n    \\\"x-title\\\": \\\"PersonProfil",
+        "e\\\",\\n    \\\"properties\\\": {\\n        \\\"name\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"default\\\": \\\"\\\"\\n        },\\n        \\\"age\\\": {\\n            \\\"type\\\": \\\"integer\\\",\\n            \\\"default\\\": 0\\n        },\\n        \\\"hobbies\\\": {\\n        ",
+        "    \\\"type\\\": \\\"array\\\",\\n            \\\"items\\\": {\\n                \\\"type\\\": \\\"string\\\",\\n                \\\"description\\\": \\\"Correctly extract items of type: string\\\"\\n            },\\n            \\\"default\\\": []\\n        }\\n    },\\n    \\\"x-php-class\\\": \\\"",
+        "PersonProfile\\\",\\n    \\\"additionalProperties\\\": false\\n}\",\"max_output_tokens\":384,\"max_tool_calls\":null,\"model\":\"gpt-5.4-mini-2026-03-17\",\"moderation\":null,\"output\":[],\"parallel_tool_calls\":true,\"presence_penalty\":0.0,\"previous_response_id\":null,\"prompt_ca",
+        "che_key\":null,\"prompt_cache_retention\":\"24h\",\"reasoning\":{\"context\":\"current_tur",
+        "n\",\"effort\":\"none\",\"mode\":\"standard\",\"summary\":null},\"safety_identifier\":null,\"service_tier\":\"auto\",\"store\":true,\"temperature\":1.0,\"text\":{\"format\":{\"type\":\"json_schema\",\"description\":null,\"name\":\"PersonProfile\",\"schema\":{\"type\":\"object\",\"properties\":{\"nam",
+        "e\":{\"type\":\"string\",\"default\":\"\"},\"age\":{\"type\":\"integer\",\"default\":0},\"hobbies\":{\"type\":\"array\",\"items\":{\"type\":\"string\",\"description\":\"Correctly extract items of type: string\"},\"default\":[]}},\"additionalProperties\":false,\"required\":[\"name\",\"age\",\"hobbies",
+        "\"]},\"strict\":true},\"verbosity\":\"medium\"},\"tool_choice\":\"auto\",\"tool_usage\":{\"image_gen\":{\"input_tokens\":0,\"input_tokens_details\":{\"image_tokens\":0,\"text_tokens\":0},\"output_tokens\":0,\"output_tokens_details\":{\"image_tokens\":0,\"text_tokens\":0},\"total_tokens\":",
+        "0},\"web_search\":{\"num_requests\":0}},\"tools\":[],\"top_logprobs\":0,\"top_p\":0.98,\"truncation\":\"disabled\",\"usage\":null,\"user\":null,\"metadata\":{}},\"sequence_number\":0}\n\n",
+        "event: response.in_progress",
+        "\ndata: {\"type\":\"response.in_progress\",\"response\":{\"id\":\"resp_0a33e7c16c946b4b006a4ba21b89b0819e805be1d6900797fc\",\"object\":\"response\",\"created_at\":1783341595,\"status\":\"in_progress\",\"background\":false,\"completed_at\":null,\"error\":null,\"frequency_penalty\":0.0,",
+        "\"incomplete_details\":null,\"instructions\":\"## Output Requirements\\n\\nRespond with a strict JSON object that follows the provided JSON Schema.\\n\\nSchema name: `PersonProfile`\\n\\n{\\n    \\\"type\\\": \\\"object\\\",\\n    \\\"x-title\\\": \\\"PersonProfile\\\",\\n    \\\"propert",
+        "ies\\\": {\\n        \\\"name\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"default\\\": \\\"\\\"\\n        },\\n        \\\"age\\\": {\\n            \\\"type\\\": \\\"integer\\\",\\n            \\\"default\\\": 0\\n        },\\n        \\\"hobbies\\\": {\\n            \\\"type\\\": \\\"arr",
+        "ay\\\",\\n            \\\"items\\\": {\\n                \\\"type\\\": \\\"string\\\",\\n                \\\"description\\\": \\\"Correctly extract items of type: string\\\"\\n            },\\n            \\\"default\\\": []\\n        }\\n    },\\n    \\\"x-php-class\\\": \\\"PersonProfile\\\",\\n ",
+        "   \\\"additionalProperties\\\": false\\n}\",\"max_output_tokens\":384,\"max_tool_calls\":null,\"model\":\"gpt-5.4-mini-2026-03-17\",\"moderation\":null,\"output\":[],\"parallel_tool_calls\":true,\"presence_penalty\":0.0,\"previous_response_id\":null,\"prompt_cache_key\":null,\"prom",
+        "pt_cache_retention\":\"24h\",\"reasoning\":{\"context\":\"current_turn\",\"effort\":\"none\",",
+        "\"mode\":\"standard\",\"summary\":null},\"safety_identifier\":null,\"service_tier\":\"auto\",\"store\":true,\"temperature\":1.0,\"text\":{\"format\":{\"type\":\"json_schema\",\"description\":null,\"name\":\"PersonProfile\",\"schema\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"",
+        ",\"default\":\"\"},\"age\":{\"type\":\"integer\",\"default\":0},\"hobbies\":{\"type\":\"array\",\"items\":{\"type\":\"string\",\"description\":\"Correctly extract items of type: string\"},\"default\":[]}},\"additionalProperties\":false,\"required\":[\"name\",\"age\",\"hobbies\"]},\"strict\":true},",
+        "\"verbosity\":\"medium\"},\"tool_choice\":\"auto\",\"tool_usage\":{\"image_gen\":{\"input_tokens\":0,\"input_tokens_details\":{\"image_tokens\":0,\"text_tokens\":0},\"output_tokens\":0,\"output_tokens_details\":{\"image_tokens\":0,\"text_tokens\":0},\"total_tokens\":0},\"web_search\":{\"n",
+        "um_requests\":0}},\"tools\":[],\"top_logprobs\":0,\"top_p\":0.98,\"truncation\":\"disabled\",\"usage\":null,\"user\":null,\"metadata\":{}},\"sequence_number\":1}\n\n",
+        "event: response.output_item.added\ndata: {\"type\":\"response.output_item.added\",\"item\":{\"id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"type\":\"message\",\"status\":\"in_progress\",\"content\":[],\"phase\":\"final_answer\",\"role\":\"assistant\"},\"output_index",
+        "\":0,\"sequence_number\":2}\n\nevent: response.content_part.added\ndata: {\"type\":\"response.content_part.added\",\"content_index\":0,\"item_id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"output_index\":0,\"part\":{\"type\":\"output_text\",\"annotations\":[],\"lo",
+        "gprobs\":[],\"text\":\"\"},\"sequence_number\":3}\n\n",
+        "event: response.output_text",
+        ".delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\"{\\\"\",\"item_id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"logprobs\":[],\"obfuscation\":\"VK7scNBA5LGhMm\",\"output_index\":0,\"sequence_number\":4}\n\n",
+        "event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\"name\",\"item_id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"logprobs\":[],\"obfuscation\":\"k5uCNHKtJY18\",\"output_index\":0,\"sequence_number\":5",
+        "}\n\n",
+        "event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\"\\\":\\\"\",\"item_id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"logprobs\":[],\"obfuscation\":\"IVNdBqyTNZtnL\",\"output_index\":0,\"sequence_number\"",
+        ":6}\n\n",
+        "event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\"Jason\",\"item_id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"logprobs\":[],\"obfuscation\":\"pvseu0a707Y\",\"output_index\":0,\"sequence_number\":7",
+        "}\n\n",
+        "event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\"\\\",\\\"\",\"item_id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"logprobs\":[],\"obfuscation\":\"U9VAu2H4Qvc6B\",\"output_index\":0,\"sequence_number\"",
+        ":8}\n\n",
+        "event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\"age\",\"item_id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"logprobs\":[],\"obfuscation\":\"u1GoAE6rqMsIL\",\"output_index\":0,\"sequence_number\":9",
+        "}\n\n",
+        "event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\"\\\":\",\"item_id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"logprobs\":[],\"obfuscation\":\"7MyLEnPxmtefas\",\"output_index\":0,\"sequence_number\":",
+        "10}\n\n",
+        "event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\"25\",\"item_id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"logprobs\":[],\"obfuscation\":\"1m72c2VCH5ikOu\",\"output_index\":0,\"sequence_number\":1",
+        "1}\n\n",
+        "event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\",\\\"\",\"item_id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"logprobs\":[],\"obfuscation\":\"9mxisQk9fxl9cl\",\"output_index\":0,\"sequence_number\":",
+        "12}\n\n",
+        "event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\"h\",\"item_id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"logprobs\":[],\"obfuscation\":\"ZCLsPwiqSXti87x\",\"output_index\":0,\"sequence_number\":1",
+        "3}\n\n",
+        "event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\"obbies\",\"item_id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"logprobs\":[],\"obfuscation\":\"qGPEwht4cy\",\"output_index\":0,\"sequence_number\":1",
+        "4}\n\n",
+        "event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\"\\\":[\\\"\",\"item_id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"logprobs\":[],\"obfuscation\":\"Edev1hmrE9tS\",\"output_index\":0,\"sequence_number\"",
+        ":15}\n\n",
+        "event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\"soc\",\"item_id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"logprobs\":[],\"obfuscation\":\"oVt2WxwEQlYWd\",\"output_index\":0,\"sequence_number\":1",
+        "6}\n\n",
+        "event: response.output_text",
+        ".delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\"cer\",\"item_id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"logprobs\":[],\"obfuscation\":\"WRdZ6nAoNZxl2\",\"output_index\":0,\"sequence_number\":17}\n\n",
+        "event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\"\\\",\\\"\",\"item_id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"logprobs\":[],\"obfuscation\":\"ELD4W2T1KtJqY\",\"output_index\":0,\"sequence_number\"",
+        ":18}\n\n",
+        "event: response.output_text",
+        ".delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\"cl\",\"item_id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"logprobs\":[],\"obfuscation\":\"aTlPvepEBZwSn4\",\"output_index\":0,\"sequence_number\":19}\n\n",
+        "event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\"imbing\",\"item_id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"logprobs\":[],\"obfuscation\":\"fBFdVue0kB\",\"output_index\":0,\"sequence_number\":2",
+        "0}\n\n",
+        "event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\"\\\",\\\"\",\"item_id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"logprobs\":[],\"obfuscation\":\"5SMzn2UPv0NL5\",\"output_index\":0,\"sequence_number\"",
+        ":21}\n\n",
+        "event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\"c\",\"item_id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"logprobs\":[],\"obfuscation\":\"nTipzT9sBsKqtO2\",\"output_index\":0,\"sequence_number\":2",
+        "2}\n\n",
+        "event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\"ooking\",\"item_id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"logprobs\":[],\"obfuscation\":\"lKqKCuT6Ev\",\"output_index\":0,\"sequence_number\":2",
+        "3}\n\n",
+        "event: response.output_text",
+        ".delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\"\\\"]\",\"item_id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"logprobs\":[],\"obfuscation\":\"D2fIt9TMPdKh5e\",\"output_index\":0,\"sequence_number\":24}\n\nevent: response.output",
+        "_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\"}\",\"item_id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"logprobs\":[],\"obfuscation\":\"72cYm0bXmKFd7xx\",\"output_index\":0,\"sequence_number\":25}\n\n",
+        "event: response.output_text",
+        ".done\ndata: {\"type\":\"response.output_text.done\",\"content_index\":0,\"item_id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"logprobs\":[],\"output_index\":0,\"sequence_number\":26,\"text\":\"{\\\"name\\\":\\\"Jason\\\",\\\"age\\\":25,\\\"hobbies\\\":[\\\"soccer\\\",\\\"climbi",
+        "ng\\\",\\\"cooking\\\"]}\"}\n\n",
+        "event: response.content_part.done\ndata: {\"type\":\"response.content_part.done\",\"content_index\":0,\"item_id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"output_index\":0,\"part\":{\"type\":\"output_text\",\"annotations\":[],\"logprobs\":[],\"text\":\"{\\\"name\\\"",
+        ":\\\"Jason\\\",\\\"age\\\":25,\\\"hobbies\\\":[\\\"soccer\\\",\\\"climbing\\\",\\\"cooking\\\"]}\"},\"sequence_number\":27}\n\n",
+        "event: response.output_item.done\ndata: {\"type\":\"response.output_item.done\",\"item\":{\"id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"type\":\"message\",\"status\":\"completed\",\"content\":[{\"type\":\"output_text\",\"annotations\":[],\"logprobs\":[],\"text\":\"{",
+        "\\\"name\\\":\\\"Jason\\\",\\\"age\\\":25,\\\"hobbies\\\":[\\\"soccer\\\",\\\"climbing\\\",\\\"cooking\\\"]}\"}],\"phase\":\"final_answer\",\"role\":\"assistant\"},\"output_index\":0,\"sequence_number\":28}\n\n",
+        "event: response.completed\ndata: {\"type\":\"response.completed\",\"response\":{\"id\":\"resp_0a33e7c16c946b4b006a4ba21b89b0819e805be1d6900797fc\",\"object\":\"response\",\"created_at\":1783341595,\"status\":\"completed\",\"background\":false,\"completed_at\":1783341596,\"error\":nu",
+        "ll,\"frequency_penalty\":0.0,\"incomplete_details\":null,\"instructions\":\"## Output Requirements\\n\\nRespond with a strict JSON object that follows the provided JSON Schema.\\n\\nSchema name: `PersonProfile`\\n\\n{\\n    \\\"type\\\": \\\"object\\\",\\n    \\\"x-title\\\": \\\"Pers",
+        "onProfile\\\",\\n    \\\"properties\\\": {\\n        \\\"name\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"default\\\": \\\"\\\"\\n        },\\n        \\\"age\\\": {\\n            \\\"type\\\": \\\"integer\\\",\\n            \\\"default\\\": 0\\n        },\\n        \\\"hobbies\\\": {\\n",
+        "            \\\"type\\\": \\\"array\\\",\\n            \\\"items\\\": {\\n                \\\"type\\\": \\\"string\\\",\\n                \\\"description\\\": \\\"Correctly extract items of type: string\\\"\\n            },\\n            \\\"default\\\": []\\n        }\\n    },\\n    \\\"x-php-cla",
+        "ss\\\": \\\"PersonProfile\\\",\\n    \\\"additionalProperties\\\": false\\n}\",\"max_output_tokens\":384,\"max_tool_calls\":null,\"model\":\"gpt-5.4-mini-2026-03-17\",\"moderation\":null,\"output\":[{\"id\":\"msg_0a33e7c16c946b4b006a4ba21be75c819e833ab667167f8825\",\"type\":\"message\",\"s",
+        "tatus\":\"completed\",\"content\":[{\"type\":\"output_text\",\"annotations\":[],\"logprobs\":",
+        "[],\"text\":\"{\\\"name\\\":\\\"Jason\\\",\\\"age\\\":25,\\\"hobbies\\\":[\\\"soccer\\\",\\\"climbing\\\",\\\"cooking\\\"]}\"}],\"phase\":\"final_answer\",\"role\":\"assistant\"}],\"parallel_tool_calls\":true,\"presence_penalty\":0.0,\"previous_response_id\":null,\"prompt_cache_key\":null,\"prompt_cache_",
+        "retention\":\"24h\",\"reasoning\":{\"context\":\"current_turn\",\"effort\":\"none\",\"mode\":\"standard\",\"summary\":null},\"safety_identifier\":null,\"service_tier\":\"default\",\"store\":true,\"temperature\":1.0,\"text\":{\"format\":{\"type\":\"json_schema\",\"description\":null,\"name\":\"Pers",
+        "onProfile\",\"schema\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\",\"default\":\"\"},\"age\":{\"type\":\"integer\",\"default\":0},\"hobbies\":{\"type\":\"array\",\"items\":{\"type\":\"string\",\"description\":\"Correctly extract items of type: string\"},\"default\":[]}},\"additi",
+        "onalProperties\":false,\"required\":[\"name\",\"age\",\"hobbies\"]},\"strict\":true},\"verbosity\":\"medium\"},\"tool_choice\":\"auto\",\"tool_usage\":{\"image_gen\":{\"input_tokens\":0,\"input_tokens_details\":{\"image_tokens\":0,\"text_tokens\":0},\"output_tokens\":0,\"output_tokens_deta",
+        "ils\":{\"image_tokens\":0,\"text_tokens\":0},\"total_tokens\":0},\"web_search\":{\"num_requests\":0}},\"tools\":[],\"top_logprobs\":0,\"top_p\":0.98,\"truncation\":\"disabled\",\"usage\":{\"input_tokens\":241,\"input_tokens_details\":{\"cached_tokens\":0},\"output_tokens\":30,\"output_to",
+        "kens_details\":{\"reasoning_tokens\":0},\"total_tokens\":271},\"user\":null,\"metadata\":{}},\"sequ",
+        "ence_number\":29}\n\n"
+    ]
+}

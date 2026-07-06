@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Instructor\Events\PartialsGenerator\ChunkReceived;
-use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated;
-use Cognesy\Instructor\Events\PartialsGenerator\StreamedResponseReceived;
-use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallCompleted;
-use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallStarted;
-use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallUpdated;
-use Cognesy\Instructor\Events\Request\SequenceUpdated;
+use Cognesy\Instructor\Events\Streaming\ChunkReceived;
+use Cognesy\Instructor\Events\Streaming\PartialResponseGenerated;
+use Cognesy\Instructor\Events\Streaming\StreamedResponseReceived;
+use Cognesy\Instructor\Events\Streaming\StreamedToolCallCompleted;
+use Cognesy\Instructor\Events\Streaming\StreamedToolCallStarted;
+use Cognesy\Instructor\Events\Streaming\StreamedToolCallUpdated;
+use Cognesy\Instructor\Events\Streaming\SequenceUpdated;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\Streaming\StructuredOutputStreamState;
 use Cognesy\Instructor\Streaming\Pipeline\DispatchStreamingEvents;
@@ -84,43 +84,3 @@ it('dispatches tool lifecycle events for streamed tool calls', function () {
     expect(eventCount($recorded, StreamedToolCallCompleted::class))->toBe(1);
     expect(eventCount($recorded, StreamedResponseReceived::class))->toBe(1);
 });
-
-function eventCount(array $events, string $class): int {
-    return count(array_filter(
-        $events,
-        static fn(object $event): bool => $event instanceof $class,
-    ));
-}
-
-/**
- * @param list<PartialInferenceDelta> $prior
- */
-function stateSnapshot(
-    mixed $value = null,
-    string $finishReason = '',
-    string $toolId = '',
-    string $toolName = '',
-    string $toolArgs = '',
-    array $prior = [],
-): StructuredOutputStreamState {
-    $state = StructuredOutputStreamState::empty();
-
-    foreach ($prior as $delta) {
-        $state->applyDelta($delta);
-    }
-
-    if ($toolId !== '' || $toolName !== '' || $toolArgs !== '' || $finishReason !== '') {
-        $state->applyDelta(new PartialInferenceDelta(
-            toolId: $toolId,
-            toolName: $toolName,
-            toolArgs: $toolArgs,
-            finishReason: $finishReason,
-        ));
-    }
-
-    if ($value !== null) {
-        $state->setValue($value);
-    }
-
-    return $state;
-}

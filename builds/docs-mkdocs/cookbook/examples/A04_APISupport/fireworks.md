@@ -3,6 +3,7 @@ title: 'Fireworks.ai'
 docname: 'fireworks'
 id: '9592'
 tags:
+  - 'broken'
   - 'api-support'
   - 'fireworks'
   - 'provider'

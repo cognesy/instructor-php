@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## Examples\\n\\nEXAMPLE INPUT:\\n    This movie was incredibly impressive, even if I didn\\u2019t catch every part of the plot.\\n    \\n    EXAMPLE OUTPUT:\\n    ```json\\n    positive\\n    ```\\n\\nEXAMPLE INPUT:\\n    I really enjoyed this film; it was so strong that I still found it impressive despite missing some of the story.\\n    \\n    EXAMPLE OUTPUT:\\n    ```json\\n    positive\\n    ```\\n\\nEXAMPLE INPUT:\\n    A very impressive movie with enough style and impact to keep me hooked, even though I lost track of part of the plot.\\n    \\n    EXAMPLE OUTPUT:\\n    ```json\\n    positive\\n    ```\\n\\nEXAMPLE INPUT:\\n    Even with some plot details slipping by me, this movie still felt outstanding and highly enjoyable.\\n    \\n    EXAMPLE OUTPUT:\\n    ```json\\n    positive\\n    ```\\n\\nEXAMPLE INPUT:\\n    The movie looked impressive at first, but the plot was so confusing that I lost track halfway through and ended up frustrated.\\n    \\n    EXAMPLE OUTPUT:\\n    ```json\\n    negative\\n    ```\\n\\nEXAMPLE INPUT:\\n    Visually it had potential, but the story was a mess and I couldn\\u2019t follow enough of it to care.\\n    \\n    EXAMPLE OUTPUT:\\n    ```json\\n    negative\\n    ```\\n\\nEXAMPLE INPUT:\\n    I wanted to like it, yet the confusing plot made the whole experience feel disjointed and disappointing.\\n    \\n    EXAMPLE OUTPUT:\\n    ```json\\n    negative\\n    ```\\n\\nEXAMPLE INPUT:\\n    It was trying to be impressive, but losing half the plot made it hard to enjoy and impossible to recommend.\\n    \\n    EXAMPLE OUTPUT:\\n    ```json\\n    negative\\n    ```\\n\\n## Tool Use\\n\\nUse the provided tool `extracted_data` to extract correct and accurate structured data from the input.\\n\\nTool purpose: Function call based on user instructions.\\n\\nCall the tool with the best supported arguments for the requested extraction.\"},{\"role\":\"user\",\"content\":\"Review: This movie has been very impressive, even considering I lost half of the plot.\"}],\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\",\"description\":\"Function call based on user instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"enum\":{\"description\":\"Select correct option\",\"type\":\"string\",\"enum\":[\"positive\",\"negative\"]}},\"required\":[\"enum\"]}}}],\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\"}}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:41:46 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1058"
+            ],
+            "cf-ray": [
+                "a16eaf7f1b0bbd18-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "630"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999539"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "6ms"
+            ],
+            "x-request-id": [
+                "req_059f86ed9a8f43ab94e63789555d7285"
+            ],
+            "set-cookie": [
+                "__cf_bm=2EdW3_DWLeyP.TFulQzCipVVcmvKgMGYAWIQgEd_QuQ-1783341706.0960155-1.0.1.1-4KYeEqCmLX3bvd0ewmQMjMpqo6z8Gw8zptWsJWDLoxFGa3M4vcpBofme6DLV3wIOIxw6zEcptTA7ziedncvVgIK7LHgN_ryAB_roq8Istdrhx6dLc_j4fznPlS_cDXp8; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:11:46 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycvqkrxPcWcOPDfqEpMPl0vcdnGj\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341706,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_A0Cxb68WgqsFRVfiSJ94ONeC\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"enum\\\":\\\"positive\\\"}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 548,\n    \"completion_tokens\": 18,\n    \"total_tokens\": 566,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

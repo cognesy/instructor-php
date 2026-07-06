@@ -205,7 +205,7 @@ final class SymfonyLoggingFactory
             'exclude_events' => [
                 \Cognesy\Http\Events\DebugRequestBodyUsed::class,
                 \Cognesy\Http\Events\DebugResponseBodyReceived::class,
-                \Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated::class,
+                \Cognesy\Instructor\Events\Streaming\PartialResponseGenerated::class,
                 \Cognesy\Polyglot\Inference\Events\PartialInferenceDeltaCreated::class,
                 \Cognesy\Polyglot\Inference\Events\StreamEventParsed::class,
             ],

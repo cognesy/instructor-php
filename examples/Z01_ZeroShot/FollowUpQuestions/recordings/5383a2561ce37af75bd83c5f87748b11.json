@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## Tool Use\\n\\nUse the provided tool `extracted_data` to extract correct and accurate structured data from the input.\\n\\nTool purpose: Function call based on user instructions.\\n\\nCall the tool with the best supported arguments for the requested extraction.\"},{\"role\":\"user\",\"content\":\"    Query: Who succeeded the president of France ruling when Bulgaria joined EU?\\n    Are follow-up questions needed?\\n    If so, generate follow-up questions, their answers, and then the final answer to the query.\"}],\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\",\"description\":\"Function call based on user instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"followUpsRequired\":{\"type\":\"boolean\"},\"followUps\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"description\":\"Correctly extract items of type: FollowUp\",\"properties\":{\"question\":{\"type\":\"string\",\"description\":\"Follow-up question\"},\"answer\":{\"type\":\"string\",\"description\":\"Answer to the follow-up question\"}},\"required\":[\"question\",\"answer\"],\"additionalProperties\":false}},\"finalAnswer\":{\"type\":\"string\"}},\"required\":[\"followUpsRequired\",\"followUps\",\"finalAnswer\"],\"additionalProperties\":false}}}],\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\"}}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:41:42 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1511"
+            ],
+            "cf-ray": [
+                "a16eaf5deb9fad22-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1083"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999881"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "1ms"
+            ],
+            "x-request-id": [
+                "req_4766240c653c4dee839a76643ede0b3b"
+            ],
+            "set-cookie": [
+                "__cf_bm=Sx24j3Sc_h2c0uZNxWQl9CR3KffO9ZKCcz2K_DlSv9A-1783341700.784979-1.0.1.1-.eTW7UnWVh.fUUKITrtVirSuTwdzs_kGhy9VufTGnhOgK4dyoMbvJo386CKbdP_fUFo.TaP5fG54LK1jxjfxC5dnlHovDDDLYqvdj0fC5CnZ8YITPHO81vrJC2Xj6k20; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:11:42 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycvlPzHlAbfkCTjLZXglhq1c9S6w\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341701,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_ovcBUFY5pHrvYEYHaYQjRnAk\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"followUpsRequired\\\":true,\\\"followUps\\\":[{\\\"question\\\":\\\"Which president of France was in office when Bulgaria joined the EU?\\\",\\\"answer\\\":\\\"Jacques Chirac was the President of France when Bulgaria joined the EU on January 1, 2007.\\\"},{\\\"question\\\":\\\"Who succeeded Jacques Chirac as President of France?\\\",\\\"answer\\\":\\\"Nicolas Sarkozy succeeded Jacques Chirac as President of France.\\\"}],\\\"finalAnswer\\\":\\\"Nicolas Sarkozy succeeded Jacques Chirac as President of France.\\\"}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 264,\n    \"completion_tokens\": 111,\n    \"total_tokens\": 375,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

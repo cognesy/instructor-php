@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"user\",\"content\":\"Content to summarize:\"},{\"role\":\"user\",\"content\":\"[2021-09-01]\\nAcme Insurance project to implement SalesTech CRM solution is currently\\nin RED status due to delayed delivery of document production system, led\\nby 3rd party vendor - Alfatech. Customer (Acme) is discussing the resolution\\nwith the vendor. Due to dependencies it will result in delay of the\\necommerce track by 2 sprints. System integrator (SysCorp) are working\\nto absorb some of the delay by deploying extra resources to speed up\\ndevelopment when the doc production is done. Another issue is that the\\ncustomer is not able to provide the test data for the ecommerce track.\\nSysCorp notified it will impact stabilization schedule unless resolved by\\nthe end of the month. Steerco has been informed last week about the\\npotential impact of the issues, but insists on maintaining release schedule\\ndue to marketing campaign already ongoing. Customer executives are asking\\nus - SalesTech team - to confirm SysCorp's assessment of the situation.\\nWe're struggling with that due to communication issues - SysCorp team has\\nnot shown up on 2 recent calls. Lack of insight has been escalated to\\nSysCorp's leadership team yesterday, but we've got no response yet. The\\npreviously reported Integration Proxy connectivity issue which was blocking\\npolicy track has been resolved on 2021-08-30 - the track is now GREEN.\\nProduction deployment plan has been finalized on Aug 15th and awaiting\\ncustomer approval.\"},{\"role\":\"user\",\"content\":\"Concise summary of project report in 2-3 sentences:\"}],\"max_completion_tokens\":1024}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:19 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1394"
+            ],
+            "cf-ray": [
+                "a16ead559894ee42-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1413"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999628"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "5ms"
+            ],
+            "x-request-id": [
+                "req_6a46f28e2006440983c348c168b5285c"
+            ],
+            "set-cookie": [
+                "__cf_bm=ggUlttPoYIkvNRcPP9SQb2BUHUC.Xcjtrw9Fy4cQoHE-1783341617.5314324-1.0.1.1-aKFNA7OSu6U.R5ziXHMRbxflZniWkaB1Ou6FFp1Is197GQZmpbx7v14YCx80NxCvteKeqMfIJaZZpLHE0CDcKGfnv.ZEMXrsF7x19Gvnd41d9WCE4JuLiWfFFvufTDNO; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:19 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycuPDytUN2puRHfbEe1gvAMZPOVK\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341617,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"The Acme Insurance SalesTech CRM project is currently in RED status due to delays in the vendor-led document production system, which is pushing the ecommerce track back by two sprints. Additional risk remains because the customer has not yet provided test data for the ecommerce track, and SysCorp says this could affect stabilization if not resolved by month-end. The Integration Proxy issue blocking the policy track has been fixed, the production deployment plan is finalized and awaiting approval, and the customer is asking SalesTech to confirm SysCorp\u2019s assessment amid communication gaps with the integrator.\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 329,\n    \"completion_tokens\": 114,\n    \"total_tokens\": 443,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

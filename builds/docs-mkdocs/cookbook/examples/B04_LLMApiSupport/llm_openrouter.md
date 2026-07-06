@@ -3,6 +3,7 @@ title: 'OpenRouter'
 docname: 'llm_openrouter'
 id: 'e2ef'
 tags:
+  - 'broken'
   - 'llm-api-support'
   - 'openrouter'
   - 'provider'

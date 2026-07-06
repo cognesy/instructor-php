@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"user\",\"content\":\"What testing framework does this project use? Be specific. Provide fragments of files as evidence.\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_abpAlb50oJM1yQlP07M4t1WI\",\"type\":\"function\",\"function\":{\"name\":\"search_files\",\"arguments\":\"{\\\"patterns\\\":[\\\"composer.json\\\",\\\"phpunit.xml*\\\",\\\"*.xml\\\",\\\"*.dist\\\",\\\"*.lock\\\",\\\"package.json\\\",\\\"pytest.ini\\\",\\\"tox.ini\\\",\\\"jest.config.*\\\",\\\"vitest.config.*\\\",\\\"go.mod\\\",\\\"Cargo.toml\\\"]}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_abpAlb50oJM1yQlP07M4t1WI\",\"content\":\"Found 10 files:\\n\\n[composer.json]\\npackages\\\/metrics\\\/composer.json\\npackages\\\/http-pool\\\/composer.json\\npackages\\\/pipeline\\\/composer.json\\npackages\\\/experimental\\\/composer.json\\npackages\\\/evals\\\/composer.json\\n... and 209 more\\n[phpunit.xml*]\\nphpunit.xml\\n[*.xml]\\nphpunit.xml\\npsalm.xml\\n[*.dist]\\nphpstan.neon.dist\\n[*.lock]\\ncomposer.lock\\nuv.lock\\n[package.json]\\nvendor\\\/felixfbecker\\\/language-server-protocol\\\/package.json\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"read_file\",\"description\":\"Read the contents of a file with line numbers. Use to examine file content after finding it with search_files.\\n\\nExamples:\\n- \\\"composer.json\\\" \\u2192 read composer.json from project root\\n- \\\"src\\\/Config.php\\\" \\u2192 read specific file by path\\n- {\\\"path\\\": \\\"large.log\\\", \\\"offset\\\": 100, \\\"limit\\\": 50} \\u2192 read lines 101-150\\n\\nReturns numbered lines. For large files, use offset\\\/limit to read specific sections.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"File path (relative to project root or absolute). Example: \\\"composer.json\\\" or \\\"src\\\/Config.php\\\"\"},\"offset\":{\"type\":\"integer\",\"description\":\"Line number to start reading from (0-indexed)\"},\"limit\":{\"type\":\"integer\",\"description\":\"Maximum number of lines to read (default: 2000)\"}},\"required\":[\"path\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"write_file\",\"description\":\"Write content to a file. Creates file and parent directories if needed. Overwrites existing files.\\n\\nExamples:\\n- path=\\\"config.json\\\", content='{\\\"debug\\\": true}'\\n- path=\\\"src\\\/NewClass.php\\\", content=\\\"<?php\\\\n\\\\nclass NewClass {}\\\\n\\\"\\n\\nUse edit_file for partial changes. write_file replaces entire file content.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"The path to the file to write\"},\"content\":{\"type\":\"string\",\"description\":\"The content to write to the file\"}},\"required\":[\"path\",\"content\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"edit_file\",\"description\":\"Edit a file by replacing exact string matches. old_string must match exactly including whitespace.\\n\\nExamples:\\n- Fix typo: old_string=\\\"teh\\\", new_string=\\\"the\\\"\\n- Change function: old_string=\\\"function old()\\\", new_string=\\\"function new()\\\"\\n- Update config: old_string='\\\"debug\\\": false', new_string='\\\"debug\\\": true'\\n- Rename all: old_string=\\\"OldClass\\\", new_string=\\\"NewClass\\\", replace_all=true\\n\\nIMPORTANT: Include enough context in old_string to make it unique. If multiple matches exist, use replace_all=true or provide more surrounding code.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"The path to the file to edit\"},\"old_string\":{\"type\":\"string\",\"description\":\"Exact string to find (include whitespace). Must be unique unless using replace_all\"},\"new_string\":{\"type\":\"string\",\"description\":\"Replacement string. Can be empty to delete old_string\"},\"replace_all\":{\"type\":\"boolean\",\"description\":\"If true, replace all occurrences. If false (default), old_string must be unique.\"}},\"required\":[\"path\",\"old_string\",\"new_string\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"list_dir\",\"description\":\"List directory contents. Shows files and subdirectories with [file] or [dir] markers.\\n\\nExamples:\\n- \\\".\\\" or \\\"\\\" \\u2192 list project root\\n- \\\"src\\\" \\u2192 list src directory\\n- \\\"packages\\\/addons\\\/src\\\" \\u2192 list nested directory\\n\\nUse to explore project structure before searching for specific files.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"Directory path. Examples: \\\".\\\" (root), \\\"src\\\", \\\"packages\\\/addons\\\"\"}},\"required\":[\"path\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"search_files\",\"description\":\"Search for files by name\\\/path pattern (not content). Returns matching file paths.\\n\\nExamples:\\n- \\\"composer.json\\\" \\u2192 finds composer.json recursively in all directories\\n- \\\"*.php\\\" \\u2192 finds PHP files in root directory only\\n- \\\"**\\\/*.php\\\" \\u2192 finds PHP files recursively in all directories\\n- \\\"src\\\/**\\\/*.php\\\" \\u2192 finds PHP files recursively under src\\\/\\n- \\\".\\\/composer.json\\\" \\u2192 finds composer.json in root directory only\\n- \\\"Config\\\" \\u2192 finds files with \\\"Config\\\" in their name, recursively\\n\\nNote: Use read_file to examine file contents after finding them.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"pattern\":{\"type\":\"string\",\"description\":\"Search pattern. Examples: \\\"composer.json\\\" (recursive), \\\"**\\\/*.php\\\" (recursive glob), \\\"*.json\\\" (root only), \\\".\\\/README.md\\\" (exact path)\"},\"patterns\":{\"type\":\"array\",\"description\":\"Multiple patterns to search at once. Example: [\\\"composer.json\\\", \\\"package.json\\\", \\\"*.xml\\\"]\",\"items\":{\"type\":\"string\"}}},\"additionalProperties\":false}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:44:13 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1087"
+            ],
+            "cf-ray": [
+                "a16eb314b826b607-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "633"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999872"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "1ms"
+            ],
+            "x-request-id": [
+                "req_468be222b0f044df90b5b236338d3226"
+            ],
+            "set-cookie": [
+                "__cf_bm=QZsEEKYo52MOK_sWNr_UpEevO_71sIrphaBVIzyndG8-1783341852.9172451-1.0.1.1-dJj8Yrlw1sSKeDABB6C6ZQih40jgIksp2CjePNsoedwS_pxFy_Dc7hUcvueR2ZkRBKlcrN.QN.UhP6GT8TIHX9W5dfABeqxqdzt.e.5tMw1gQAEplcU99jHIRAmuC2Q3; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:14:13 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycyDP1WQXdhSliURFBULZeUUh98E\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341853,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_OBLdw5ZsnEcuppwOJx8Mcky6\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"read_file\",\n              \"arguments\": \"{\\\"path\\\":\\\"composer.json\\\",\\\"offset\\\":0,\\\"limit\\\":220}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 1069,\n    \"completion_tokens\": 26,\n    \"total_tokens\": 1095,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

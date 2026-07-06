@@ -218,6 +218,10 @@ final class LaravelConfigProvider implements CanProvideConfig
             'driver' => $config['driver'] ?? 'laravel',
             'requestTimeout' => $config['timeout'] ?? 120,
             'connectTimeout' => $config['connect_timeout'] ?? 30,
+            'verifyTls' => $config['verify_tls'] ?? true,
+            'followRedirects' => $config['follow_redirects'] ?? true,
+            'maxRedirects' => $config['max_redirects'] ?? null,
+            'httpVersion' => $config['http_version'] ?? null,
         ];
     }
 

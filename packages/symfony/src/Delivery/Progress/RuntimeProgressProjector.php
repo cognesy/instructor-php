@@ -30,7 +30,7 @@ use Cognesy\Events\Event;
 use Cognesy\Http\Events\DebugStreamChunkReceived;
 use Cognesy\Http\Events\DebugStreamLineReceived;
 use Cognesy\Http\Events\HttpRequestSent;
-use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated;
+use Cognesy\Instructor\Events\Streaming\PartialResponseGenerated;
 use Cognesy\Instructor\Events\Response\ResponseTransformationFailed;
 use Cognesy\Instructor\Events\Response\ResponseValidated;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted;

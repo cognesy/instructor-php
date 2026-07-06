@@ -1,0 +1,84 @@
+{
+    "request": {
+        "url": "https:\/\/api.x.ai\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"grok-3\",\"messages\":[{\"role\":\"system\",\"content\":\"## Tool Use\\n\\nUse the provided tool `extracted_data` to extract correct and accurate structured data from the input.\\n\\nTool purpose: Function call based on user instructions.\\n\\nCall the tool with the best supported arguments for the requested extraction.\"},{\"role\":\"user\",\"content\":\"Our user Jason is 25 years old.\"}],\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\",\"description\":\"Function call based on user instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"age\":{\"type\":\"integer\"},\"name\":{\"type\":\"string\"}},\"required\":[\"age\",\"name\"],\"additionalProperties\":false}}}],\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\"}}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:39:32 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "947"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000"
+            ],
+            "set-cookie": [
+                "__cf_bm=z1od5V.AE_tnCj_vg0B6v8GFathGns_R6rTfQVxv4OM-1783341569.4720678-1.0.1.1-bWNNiZVAQCNL68aWvsGp72rSMbGecnXhndnrstbosW8hM0bUQLxXBFqapi.3Gy_WVkM_gsCIfd5c78zPuIty4du3EKt1nbjhXNC1Lct_LkzD7ygD5RgHlahfEeBDyIUR; HttpOnly; Secure; Path=\/; Domain=x.ai; Expires=Mon, 06 Jul 2026 13:09:32 GMT"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "10000000"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "10000000"
+            ],
+            "x-zero-data-retention": [
+                "false"
+            ],
+            "x-ratelimit-limit-requests": [
+                "1800"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "1800"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "x-request-id": [
+                "faba230c-d082-9204-be4d-23884d82f4df"
+            ],
+            "x-metrics-ttft-ms": [
+                "1287.0"
+            ],
+            "x-metrics-mean-itl-ms": [
+                "8.2"
+            ],
+            "x-metrics-e2e-ms": [
+                "2983.8"
+            ],
+            "traceparent": [
+                "00-4c1d832c1a9c033a1222b00ecf1285f0-5b2a70f500077d5d-01"
+            ],
+            "vary": [
+                "origin, access-control-request-method, access-control-request-headers"
+            ],
+            "access-control-allow-origin": [
+                "*"
+            ],
+            "access-control-expose-headers": [
+                "*"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "cf-ray": [
+                "a16eac293cfcbbcc-WAW"
+            ]
+        },
+        "body": "{\"id\":\"faba230c-d082-9204-be4d-23884d82f4df\",\"object\":\"chat.completion\",\"created\":1783341571,\"model\":\"grok-4.3\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"\",\"reasoning_content\":\"The task is to use the tool \\\"extracted_data\\\" to extract correct and accurate structured data from the input.\\n\",\"tool_calls\":[{\"id\":\"call-b41b0402-e60e-4f3b-bb19-a445e2398f83-0\",\"function\":{\"name\":\"extracted_data\",\"arguments\":\"{\\\"age\\\":25,\\\"name\\\":\\\"Jason\\\"}\"},\"type\":\"function\"}],\"refusal\":null},\"finish_reason\":\"tool_calls\"}],\"usage\":{\"prompt_tokens\":298,\"completion_tokens\":17,\"total_tokens\":485,\"prompt_tokens_details\":{\"text_tokens\":298,\"audio_tokens\":0,\"image_tokens\":0,\"cached_tokens\":128},\"completion_tokens_details\":{\"reasoning_tokens\":170,\"audio_tokens\":0,\"accepted_prediction_tokens\":0,\"rejected_prediction_tokens\":0},\"num_sources_used\":0,\"cost_in_usd_ticks\":7056000},\"system_fingerprint\":\"fp_eb3c003fc66c14ed\",\"service_tier\":\"default\"}"
+    }
+}

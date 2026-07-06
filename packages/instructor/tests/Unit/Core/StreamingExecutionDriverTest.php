@@ -62,19 +62,18 @@ it('emits live partials and one final response from the streaming driver', funct
             },
             requestMaterializer: new RequestMaterializer(),
         ),
-        deserializer: new class implements CanDeserializeResponse {
+        hydrator: makeTestHydrator(new class implements CanDeserializeResponse {
             public function deserialize(array $data, ResponseModel $responseModel): Result {
                 return Result::success($data);
             }
-        },
-        transformer: new class implements CanTransformResponse {
+        }, new class implements CanTransformResponse {
             public function transform(mixed $data, ResponseModel $responseModel): Result {
                 return Result::success(new StreamingDriverUser(
                     name: (string) ($data['name'] ?? ''),
                     age: (int) ($data['age'] ?? 0),
                 ));
             }
-        },
+        }),
         responseGenerator: new class implements CanGenerateResponse {
             public function makeResponse(
                 InferenceResponse $response,

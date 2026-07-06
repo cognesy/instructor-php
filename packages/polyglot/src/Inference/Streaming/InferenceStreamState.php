@@ -73,6 +73,24 @@ final class InferenceStreamState
         $this->accumulateToolDelta();
     }
 
+    public function content(): string
+    {
+        return $this->content;
+    }
+
+    public function reasoningContent(): string
+    {
+        return $this->reasoningContent;
+    }
+
+    /**
+     * Key of the tool call currently receiving deltas ('' when none).
+     */
+    public function toolKey(): string
+    {
+        return $this->lastToolKey;
+    }
+
     public function contentLength(): int
     {
         return $this->contentLength;

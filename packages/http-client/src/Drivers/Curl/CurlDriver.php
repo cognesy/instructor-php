@@ -8,7 +8,7 @@ use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
-use Cognesy\Http\Events\HttpResponseReceived;
+use Cognesy\Http\Drivers\DispatchesHttpDriverEvents;
 use Cognesy\Http\Exceptions\HttpExceptionFactory;
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Http\Telemetry\HttpRequestTelemetry;
@@ -31,6 +31,8 @@ use Throwable;
  */
 final class CurlDriver implements CanHandleHttpRequest
 {
+    use DispatchesHttpDriverEvents;
+
     private readonly CurlFactory $factory;
     private readonly CurlErrorMapper $errorMapper;
 
@@ -78,7 +80,7 @@ final class CurlDriver implements CanHandleHttpRequest
 
         $response = $this->toSyncResponseOrFail($adapter, $handle, $request);
         $this->validateStatusCodeOrFail($response, $request);
-        $this->dispatchResponseReceived($response->statusCode(), $request, false, $response->body());
+        $this->dispatchResponseReceived($request, $response->statusCode(), false, $response->body());
 
         return $response;
     }
@@ -110,7 +112,7 @@ final class CurlDriver implements CanHandleHttpRequest
 
         $httpResponse = $response->toHttpResponse();
         $this->validateStatusCodeOrFail($httpResponse, $request);
-        $this->dispatchResponseReceived($httpResponse->statusCode(), $request, true);
+        $this->dispatchResponseReceived($request, $httpResponse->statusCode(), true, null);
 
         return $httpResponse;
     }
@@ -166,34 +168,6 @@ final class CurlDriver implements CanHandleHttpRequest
         throw $exception;
     }
 
-    private function dispatchRequestSent(HttpRequest $request): void {
-        $this->events->dispatch(new HttpRequestSent([
-            'requestId' => $request->id,
-            'url' => $request->url(),
-            'method' => $request->method(),
-            'headers' => $request->headers(),
-            'body' => $request->body()->toArray(),
-            ...HttpRequestTelemetry::metadataForRequest($request),
-        ]));
-    }
 
-    private function dispatchResponseReceived(int $statusCode, HttpRequest $request, bool $isStreamed = false, string $body = ''): void {
-        $this->events->dispatch(new HttpResponseReceived(array_filter([
-            'requestId' => $request->id,
-            'statusCode' => $statusCode,
-            'isStreamed' => $isStreamed,
-            'body' => !$isStreamed && $body !== '' ? $body : null,
-            ...HttpRequestTelemetry::metadataForRequest($request),
-        ], static fn(mixed $v): bool => $v !== null)));
-    }
 
-    private function dispatchRequestFailed(HttpRequestException $exception, HttpRequest $request): void {
-        $this->events->dispatch(new HttpRequestFailed([
-            'requestId' => $request->id,
-            'url' => $request->url(),
-            'method' => $request->method(),
-            'errors' => $exception->getMessage(),
-            ...HttpRequestTelemetry::metadataForRequest($request),
-        ]));
-    }
 }

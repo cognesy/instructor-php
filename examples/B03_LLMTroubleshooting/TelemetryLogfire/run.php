@@ -3,6 +3,7 @@ title: 'Send LLM runtime telemetry to Logfire'
 docname: 'llm_telemetry_logfire'
 id: '4d3c'
 tags:
+  - 'no-replay'
   - 'telemetry'
   - 'logfire'
   - 'inference'

@@ -1,0 +1,78 @@
+{
+    "request": {
+        "url": "https:\/\/api.cohere.ai\/v2\/chat",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "X-Client-Name": ""
+        },
+        "body": "{\"model\":\"command-r-plus-08-2024\",\"messages\":[{\"role\":\"user\",\"content\":\"What is the capital of France\"}],\"max_tokens\":64}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "access-control-expose-headers": [
+                "X-Debug-Trace-ID"
+            ],
+            "cache-control": [
+                "no-cache, no-store, no-transform, must-revalidate, private, max-age=0"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "expires": [
+                "Thu, 01 Jan 1970 00:00:00 GMT"
+            ],
+            "num_chars": [
+                "1207"
+            ],
+            "num_tokens": [
+                "13"
+            ],
+            "pragma": [
+                "no-cache"
+            ],
+            "vary": [
+                "Origin"
+            ],
+            "x-accel-expires": [
+                "0"
+            ],
+            "x-debug-trace-id": [
+                "22f9d83e050c82e85ebb2abee80038d9"
+            ],
+            "x-endpoint-monthly-call-limit": [
+                "1000"
+            ],
+            "x-trial-endpoint-call-limit": [
+                "40"
+            ],
+            "x-trial-endpoint-call-remaining": [
+                "37"
+            ],
+            "date": [
+                "Mon, 06 Jul 2026 12:44:01 GMT"
+            ],
+            "content-length": [
+                "302"
+            ],
+            "x-envoy-upstream-service-time": [
+                "235"
+            ],
+            "server": [
+                "envoy"
+            ],
+            "via": [
+                "1.1 google"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=2592000"
+            ]
+        },
+        "body": "{\"id\":\"a2a0aeb6-a414-41df-a933-5da262f8bd44\",\"message\":{\"role\":\"assistant\",\"content\":[{\"type\":\"text\",\"text\":\"The capital of France is Paris.\"}]},\"finish_reason\":\"COMPLETE\",\"usage\":{\"billed_units\":{\"input_tokens\":6,\"output_tokens\":7},\"tokens\":{\"input_tokens\":207,\"output_tokens\":7},\"cached_tokens\":192}}"
+    }
+}

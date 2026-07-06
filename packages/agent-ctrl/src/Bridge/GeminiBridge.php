@@ -42,6 +42,8 @@ use JsonException;
 
 /**
  * Bridge implementation for Gemini CLI.
+ *
+ * @deprecated Gemini CLI bridge is deprecated because the upstream Google CLI flow is obsolete for this package.
  */
 final class GeminiBridge implements AgentBridge
 {

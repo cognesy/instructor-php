@@ -1,0 +1,33 @@
+{
+    "request": {
+        "url": "https:\/\/api.sambanova.ai\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"Meta-Llama-3.1-8B-Instruct\",\"messages\":[{\"role\":\"user\",\"content\":\"What is the capital of France\"}],\"max_completion_tokens\":64}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 402,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:44:04 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "x-request-id": [
+                "d95q65068sc94ejklsp0"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains"
+            ]
+        },
+        "body": "{\"error\":{\"balance_units\":0,\"billing_portal_url\":\"https:\/\/fast-snova-ai-prod-1-ui.cloud.snova.ai\/plans\/billing\",\"code\":\"PAYMENT_METHOD_REQUIRED\",\"message\":\"A payment method is required. Add one at https:\/\/fast-snova-ai-prod-1-ui.cloud.snova.ai\/plans\/billing to continue.\"}}\n"
+    }
+}

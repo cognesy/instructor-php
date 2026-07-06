@@ -3,6 +3,7 @@ title: 'Sandbox API: Bubblewrap'
 docname: 'sandbox_api_bubblewrap_echo'
 id: 'd214'
 tags:
+  - 'no-replay'
   - 'sandbox-apis'
   - 'bubblewrap'
   - 'drivers'

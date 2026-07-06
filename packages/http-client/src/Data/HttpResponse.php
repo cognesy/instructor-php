@@ -4,6 +4,8 @@ namespace Cognesy\Http\Data;
 
 use Cognesy\Http\Stream\BufferedStream;
 use Cognesy\Http\Stream\NullStream;
+use Cognesy\Http\Stream\CapturingStream;
+use Cognesy\Http\Stream\StreamCapturingPolicy;
 use Cognesy\Http\Stream\StreamInterface;
 use Generator;
 use LogicException;
@@ -132,6 +134,24 @@ class HttpResponse
             isStreamed: $this->isStreamed,
             stream: $stream,
         );
+    }
+
+    /**
+     * Opt-in stream capture: returns a new response whose stream records
+     * consumed chunks per the given policy (for debugging, replay tooling,
+     * or postmortem inspection). Consume the returned response's stream,
+     * then read results via streamCapture()->stats()/preview()/capturedBody().
+     */
+    public function withStreamCapture(StreamCapturingPolicy $policy): self {
+        return $this->withStream(new CapturingStream($this->stream, $policy));
+    }
+
+    /**
+     * The capturing stream decorator, when capture was enabled via
+     * withStreamCapture(); null otherwise.
+     */
+    public function streamCapture(): ?CapturingStream {
+        return $this->stream instanceof CapturingStream ? $this->stream : null;
     }
 
     // SERIALIZATION //////////////////////////////////////////////////

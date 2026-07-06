@@ -1,0 +1,86 @@
+{
+    "plain": {
+        "model": "mistral-small-latest",
+        "max_tokens": 1024,
+        "messages": [
+            {
+                "role": "user",
+                "content": "Extract the data."
+            }
+        ]
+    },
+    "streaming-with-options": {
+        "model": "mistral-small-latest",
+        "max_tokens": 1024,
+        "messages": [
+            {
+                "role": "user",
+                "content": "Extract the data."
+            }
+        ],
+        "stream": true,
+        "temperature": 0.5
+    },
+    "json-schema": {
+        "model": "mistral-small-latest",
+        "max_tokens": 1024,
+        "messages": [
+            {
+                "role": "user",
+                "content": "Extract the data."
+            }
+        ],
+        "response_format": {
+            "type": "json_schema",
+            "json_schema": {
+                "name": "thing",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "a": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "strict": true
+            }
+        }
+    },
+    "tools": {
+        "model": "mistral-small-latest",
+        "max_tokens": 1024,
+        "messages": [
+            {
+                "role": "user",
+                "content": "Extract the data."
+            }
+        ],
+        "tools": [
+            {
+                "type": "function",
+                "function": {
+                    "name": "extract",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "tool_choice": "auto"
+    },
+    "max-tokens-passthrough": {
+        "model": "mistral-small-latest",
+        "max_tokens": 512,
+        "messages": [
+            {
+                "role": "user",
+                "content": "Extract the data."
+            }
+        ]
+    }
+}

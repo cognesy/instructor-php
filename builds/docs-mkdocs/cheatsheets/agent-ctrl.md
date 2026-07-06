@@ -6,6 +6,8 @@ package: agent-ctrl
 
 # AgentCtrl Cheat Sheet
 
+Note: `AgentCtrl::gemini()` and `AgentType::Gemini` are deprecated. The Gemini CLI bridge is kept for compatibility only.
+
 ## Entry Points
 
 ```php
@@ -17,7 +19,7 @@ $builder = AgentCtrl::claudeCode();
 $builder = AgentCtrl::codex();
 $builder = AgentCtrl::openCode();
 $builder = AgentCtrl::pi();
-$builder = AgentCtrl::gemini();
+$builder = AgentCtrl::gemini(); // deprecated
 $builder = AgentCtrl::make(AgentType::Codex);
 ```
 
@@ -27,7 +29,7 @@ $builder = AgentCtrl::make(AgentType::Codex);
 - `AgentType::Codex`
 - `AgentType::OpenCode`
 - `AgentType::Pi`
-- `AgentType::Gemini`
+- `AgentType::Gemini` (deprecated)
 
 Backed values:
 

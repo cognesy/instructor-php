@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## System Instructions\\n\\nYou are a world class AI system that excels at answering user queries in a systematic and detailed manner. Generate a valid PHP program that can be executed to answer the user query.\\n\\nReturn only valid PHP code as a string value for program_code.\\nDo not include Markdown fences.\\nUse valid PHP variable syntax with `$` prefixes.\\n\\nMake sure to begin your generated program with the following structure:\\n<?php\\nfunction solver() {\\n    \\\/\\\/ Your step-by-step logic here\\n    \\\/\\\/ Define variables, perform calculations\\n    \\\/\\\/ Return the final answer\\n}\\nreturn solver();\\n\\n## Tool Use\\n\\nUse the provided tool `extracted_data` to extract correct and accurate structured data from the input.\\n\\nTool purpose: Function call based on user instructions.\\n\\nCall the tool with the best supported arguments for the requested extraction.\"},{\"role\":\"user\",\"content\":\"A trader sold an article at a profit of 20% for Rs.360. What is the cost price of the article?\"}],\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\",\"description\":\"Function call based on user instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"program_code\":{\"type\":\"string\"}},\"required\":[\"program_code\"],\"additionalProperties\":false}}}],\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\"}}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:42:22 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1299"
+            ],
+            "cf-ray": [
+                "a16eb05cd940348c-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "867"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999764"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "3ms"
+            ],
+            "x-request-id": [
+                "req_f8064733e9934cb2bbf8379a07e55f2d"
+            ],
+            "set-cookie": [
+                "__cf_bm=xkJzQt5rYpijXpIV1vMJOEOL_fR1dIVwx3bTB1vG.78-1783341741.5760694-1.0.1.1-euf8Yhn6kM57TDfH9BLXCyJ0y.Iw2.4Zqh0R71z9qihl1zk7.gRmhsF5qRJWl64BhoN0vTKHQ4HrPjp4nPF9.OZs.7Gwt1hlPxtKVh5CW8qM7A9s9rrbfLgufYOINfTI; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:12:22 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycwPIWyPH1pC3yCFUDJA3C4Cx1M3\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341741,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_GOTGp1ZxxWR3JW6LkGW5wF27\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"program_code\\\":\\\"<?php\\\\nfunction solver() {\\\\n    $sellingPrice = 360;\\\\n    $profitPercent = 20;\\\\n    $costPrice = $sellingPrice * 100 \/ (100 + $profitPercent);\\\\n    return \\\\\\\"The cost price of the article is Rs.\\\\\\\" . $costPrice;\\\\n}\\\\nreturn solver();\\\"}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 317,\n    \"completion_tokens\": 87,\n    \"total_tokens\": 404,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

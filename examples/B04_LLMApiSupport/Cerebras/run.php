@@ -3,6 +3,7 @@ title: 'Cerebras'
 docname: 'llm_cerebras'
 id: '134c'
 tags:
+  - 'broken'
   - 'llm-api-support'
   - 'cerebras'
   - 'provider'

@@ -74,12 +74,13 @@ class OpenAIResponseAdapter implements CanTranslateInferenceResponse
         }
     }
 
+    /**
+     * Tool-call fields are populated by fromStreamDeltas() from
+     * extractStreamToolDeltas() — do not parse `tool_calls` here.
+     */
     protected function fromDecodedStreamData(array $data, ?HttpResponse $responseData = null): PartialInferenceDelta {
         return new PartialInferenceDelta(
             contentDelta: $this->makeContentDelta($data),
-            toolId: $this->makeToolId($data),
-            toolName: $this->makeToolNameDelta($data),
-            toolArgs: $this->makeToolArgsDelta($data),
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
             usage: $this->usageFormat->fromData($data),
             usageIsCumulative: true,
@@ -125,18 +126,6 @@ class OpenAIResponseAdapter implements CanTranslateInferenceResponse
 
     protected function makeContentDelta(array $data): string {
         return $data['choices'][0]['delta']['content'] ?? '';
-    }
-
-    protected function makeToolId(array $data) : string {
-        return $data['choices'][0]['delta']['tool_calls'][0]['id'] ?? '';
-    }
-
-    protected function makeToolNameDelta(array $data) : string {
-        return $data['choices'][0]['delta']['tool_calls'][0]['function']['name'] ?? '';
-    }
-
-    protected function makeToolArgsDelta(array $data) : string {
-        return $data['choices'][0]['delta']['tool_calls'][0]['function']['arguments'] ?? '';
     }
 
     /**

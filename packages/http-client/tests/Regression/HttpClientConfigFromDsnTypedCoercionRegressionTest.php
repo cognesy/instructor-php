@@ -4,7 +4,7 @@ use Cognesy\Http\Config\HttpClientConfig;
 
 it('coerces typed http client config values from dsn', function () {
     $config = HttpClientConfig::fromDsn(
-        'driver=symfony,connectTimeout=1,requestTimeout=20,idleTimeout=-1,streamChunkSize=512,streamHeaderTimeout=4,failOnError=true'
+        'driver=symfony,connectTimeout=1,requestTimeout=20,idleTimeout=-1,streamChunkSize=512,streamHeaderTimeout=4,failOnError=true,verifyTls=false,followRedirects=false,maxRedirects=2,httpVersion=1.1'
     );
 
     expect($config->driver)->toBe('symfony')
@@ -13,7 +13,11 @@ it('coerces typed http client config values from dsn', function () {
         ->and($config->idleTimeout)->toBe(-1)
         ->and($config->streamChunkSize)->toBe(512)
         ->and($config->streamHeaderTimeout)->toBe(4)
-        ->and($config->failOnError)->toBeTrue();
+        ->and($config->failOnError)->toBeTrue()
+        ->and($config->verifyTls)->toBeFalse()
+        ->and($config->followRedirects)->toBeFalse()
+        ->and($config->maxRedirects)->toBe(2)
+        ->and($config->httpVersion)->toBe('1.1');
 });
 
 it('throws configuration exception for invalid integer dsn values', function () {

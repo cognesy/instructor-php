@@ -26,8 +26,8 @@
   },
   "require": {
     "php": "^8.3",
-    "cognesy/instructor-utils": "^2.3",
-    "cognesy/instructor-pipeline": "^2.3",
+    "cognesy/instructor-utils": "^2.4",
+    "cognesy/instructor-pipeline": "^2.4",
     "symfony/property-info": "^7.3 || ^8.0",
     "symfony/type-info": "^7.3 || ^8.0"
   },

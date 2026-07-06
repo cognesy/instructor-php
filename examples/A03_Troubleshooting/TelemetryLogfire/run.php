@@ -3,6 +3,7 @@ title: 'Send StructuredOutput telemetry to Logfire'
 docname: 'structured_telemetry_logfire'
 id: 'b7a1'
 tags:
+  - 'no-replay'
   - 'troubleshooting'
   - 'telemetry'
   - 'logfire'

@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"user\",\"content\":\"Summarize the content of following sequence of messages for further reference:\"},{\"role\":\"system\",\"content\":\"# CONTEXT\\n\\n**Instructor for PHP** is a developer-friendly, framework-agnostic PHP library designed to simplify the integration of Large Language Models (LLMs) into PHP applications. It enables the extraction of structured, validated data from LLM outputs, allowing developers to focus on application logic rather than handling complex data extraction processes. \\n\\n### Key Features:\\n- **Structured Responses**: Converts LLM outputs into type-safe PHP classes.\\n- **Multiple Input Types**: Supports text, chat messages, and images for structured data extraction.\\n- **Flexible Response Models**: Allows defining response models statically (via classes) or dynamically (via JSON Schema or structures).\\n- **Validation & Retries**: Automatically validates LLM responses and retries with feedback for self-correction.\\n- **Developer Experience**: Offers a simple API, customizable behavior, and minimal library footprint.\\n- **Unified API**: Supports multiple LLM providers (OpenAI, Anthropic, Google, Cohere, etc.) and allows easy switching between them.\\n- **Framework Agnostic**: Works seamlessly with any PHP framework, including Laravel and Symfony.\\n- **Observability**: Provides detailed event systems for monitoring, logging, and debugging LLM interactions.\\n- **Streaming Support**: Enables real-time partial updates for responsive applications.\\n- **Embeddings & Context Caching**: Unified APIs for generating embeddings and caching context to reduce inference costs and time.\\n  \\n### Use Cases:\\n- **E-commerce**: Product description enrichment, customer support automation, and review analysis.\\n- **Healthcare**: Medical record processing and clinical document analysis.\\n- **Education**: Course content structuring and assignment analysis.\\n- **Financial Services**: Document processing and risk analysis.\\n- **Real Estate**: Property listing analysis and document processing.\\n- **Recruitment & HR**: Resume processing and employee documentation.\\n  \\n### Getting Started:\\n1. Install the library via Composer:\\n```bash\\n   composer require cognesy\\\/instructor-php\\n```\\n2. Define your data structure (e.g., a `City` class).\\n3. Use Instructor to run LLM inference and extract structured data.\\n   \\n### Example:\\n\\n```php\\nuse Cognesy\\\\Instructor\\\\StructuredOutput;\\n\\nclass City {\\n    public string $name;\\n    public string $country;\\n    public int $population;\\n}\\n\\n$city = StructuredOutput::fromConfig(LLMConfig::fromArray(['driver' => 'openai']))->with(\\n    messages: 'What is the capital of France?',\\n    responseModel: City::class,\\n)->get();\\n\\nvar_dump($city); \\\/\\\/ Outputs structured data about Paris\\n```\\n\\n### Advanced Features:\\n- **Validation**: Uses Symfony validation to ensure data integrity.\\n- **Max Retries**: Automatically retries failed inferences with feedback.\\n- **Streaming**: Supports real-time partial updates for responsive applications.\\n- **Dynamic Data Schemas**: Allows runtime definition of data structures using the `Structure` class.\\n- **Customization**: Developers can customize prompts, validation, and deserialization logic.\\n\\n### Supported LLM Providers:\\n- OpenAI, Anthropic, Google, Cohere, Groq, Mistral, Ollama, and more.\\n\\n### Documentation & Examples:\\n- Extensive documentation, 60+ examples, and 25+ prompting techniques are available to help developers get started.\\n\\nInstructor for PHP is a powerful tool for automating data extraction and processing tasks, making it easier to integrate LLMs into PHP applications across various industries.\\n\"}],\"max_completion_tokens\":512}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:18 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "2376"
+            ],
+            "cf-ray": [
+                "a16ead4a5fb4c01c-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "2461"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999115"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "13ms"
+            ],
+            "x-request-id": [
+                "req_648ea591acf54c7aabd4cc049911c21b"
+            ],
+            "set-cookie": [
+                "__cf_bm=TGWb4QDMYmGX9aMW2s6FfZHo30vw1cd5FXpU2ejQkQ8-1783341615.7351103-1.0.1.1-CNAXHSxscdoeIQHYcZiRG_OwOL6Oobz8VsAG1o7NqO4mpZN5SsUUYL84Ri3UmoaA6CFY7STU1lcOMstr_G0AAPCkMru24F.MgzEwyXgkUDz5wT9K9cieQsY38773yxH8; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:18 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycuNpKQfYwpVFuw7cp8l9NNs7BgR\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341615,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"Here\u2019s a concise summary of the provided content for future reference:\\n\\n**Instructor for PHP** is a framework-agnostic PHP library that simplifies integrating LLMs into PHP apps by extracting **structured, validated data** from model outputs.\\n\\n### Core points\\n- Converts LLM responses into **type-safe PHP classes**.\\n- Supports **text, chat messages, and images** as inputs.\\n- Lets developers define output structures **statically** (classes) or **dynamically** (JSON Schema \/ structures).\\n- Includes **validation and automatic retries** with feedback to improve failed outputs.\\n- Provides a **unified API** for multiple LLM providers, making it easy to switch between them.\\n- Works with any PHP framework, including **Laravel** and **Symfony**.\\n- Offers **observability**, **streaming**, **embeddings**, and **context caching**.\\n\\n### Supported providers\\n- OpenAI, Anthropic, Google, Cohere, Groq, Mistral, Ollama, and others.\\n\\n### Typical workflow\\n1. Install via Composer.\\n2. Define a PHP data model.\\n3. Call Instructor to run inference and return structured results.\\n\\n### Example\\nThe example shows using `StructuredOutput` with an `LLMConfig` set to OpenAI to extract a `City` object from the prompt \u201cWhat is the capital of France?\u201d, producing structured data like Paris.\\n\\n### Use cases\\n- E-commerce\\n- Healthcare\\n- Education\\n- Financial services\\n- Real estate\\n- Recruitment \/ HR\\n\\n### Overall\\nInstructor for PHP is positioned as a lightweight, developer-friendly tool for automating structured data extraction and LLM workflow integration in PHP applications.\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 732,\n    \"completion_tokens\": 341,\n    \"total_tokens\": 1073,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

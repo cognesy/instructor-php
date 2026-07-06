@@ -1,0 +1,46 @@
+{
+    "request": {
+        "url": "https:\/\/api.perplexity.ai\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"sonar\",\"max_tokens\":256,\"messages\":[{\"role\":\"user\",\"content\":\"What is the capital of France\"}]}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:14 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "x-request-id": [
+                "0121fb87-d6b0-4e96-892c-e7bc7c73c388"
+            ],
+            "set-cookie": [
+                "__cf_bm=qLq3DmqSZ3vQejNgy2s5XsmUGA0GOyvLnktqvtL.bo8-1783341612.9983685-1.0.1.1-PjqM6keqqgQmw8R3cPJRT.nrXXWcnA5oi86Qo4KgmnKfN1qgFnuIi7IW8DxvRCG7EJAyYjF2W962eo3gjaP_sHVp2oyz_p_9TraXWCGBOtvSythrL.g9LWRLycTCAmWj; HttpOnly; Secure; Path=\/; Domain=perplexity.ai; Expires=Mon, 06 Jul 2026 13:10:14 GMT",
+                "__cflb=04dToWaRite5R1fQA5HfyWsXiTjNxDHenuC5ppBqXb; HttpOnly; SameSite=None; Secure; Path=\/; Expires=Mon, 06 Jul 2026 13:10:14 GMT"
+            ],
+            "strict-transport-security": [
+                "max-age=15552000; includeSubDomains; preload"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "cf-ray": [
+                "a16ead393b3dbf22-WAW"
+            ]
+        },
+        "body": "{\"choices\":[{\"delta\":{\"content\":\"\",\"role\":\"assistant\"},\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"The capital of France is **Paris**[1][2].\\n\\n**Paris** is the largest and most well-known city in France, serving as the seat of the nation's government, parliament, and highest courts[3][5]. It has an estimated city population of 2.04 million and is famous for landmarks like the **Eiffel Tower**, the **Arc de Triomphe**, and the **Louvre**[2][3]. The city has remained the capital of France since the liberation in 1944[4].\",\"role\":\"assistant\"}}],\"citations\":[\"https:\/\/home.adelphi.edu\/~ca19535\/page%204.html\",\"https:\/\/study.com\/academy\/lesson\/facts-about-france-location-population-history.html\",\"https:\/\/en.wikipedia.org\/wiki\/Paris\",\"https:\/\/en.wikipedia.org\/wiki\/List_of_capitals_of_France\",\"https:\/\/www.britannica.com\/place\/France\",\"https:\/\/www.cia-france.com\/french-kids-teenage-courses\/paris-school\/visit-paris\",\"https:\/\/www.facebook.com\/61584844971881\/videos\/paris-the-capital-of-france-is-famed-for-its-elegant-architecture-world-class-mu\/1639433957138936\/\",\"https:\/\/www.youtube.com\/shorts\/doFTuSWo7rE\"],\"created\":1783341614,\"id\":\"0121fb87-d6b0-4e96-892c-e7bc7c73c388\",\"model\":\"sonar\",\"object\":\"chat.completion\",\"search_results\":[{\"date\":null,\"last_updated\":\"2026-03-19\",\"place_metadata\":null,\"snippet\":\"Paris is the capital of France, the largest country of Europe with 550 000 km2 (65 millions inhabitants). Paris has 2.234 million inhabitants end 2011.\\nParis, France\\n## Paris facts: Paris, the capital of France\\nParis is the **capital of France**, the largest country of Europe with 550 000 km2 (65 millions inhabitants).\\n...\\nParis remained the capital of\\nFrance until today, with one four year interruption.\",\"source\":\"web\",\"title\":\"Paris facts: the capital of France in history\",\"url\":\"https:\/\/home.adelphi.edu\/~ca19535\/page%204.html\"},{\"date\":null,\"last_updated\":\"2026-06-25\",\"place_metadata\":null,\"snippet\":\"France's capital is Paris. France has a population of 68 million. The language of France (French) is spoken by many more millions of people across the world.\\n**France** is a large European country.\\nThe capital of France is **Paris**, a well-known city.\\n...\\nThe capital city of Paris can be found in the northern part of the country.\\n...\\nParis is the capital of France and one of the most well-known cities in the world.\\n...\\n**France ** is a Western European country.\\nIts capital is **Paris**, which is well-known for various important sites such as the Eiffel Tower, the Arc de Triomphe, and the Louvre.\\nIt has a population of roughly 68 million.\\n...\\nFrance's capital is Paris.\\nFrance has a population of 68 million.\",\"source\":\"web\",\"title\":\"Facts About France | Map, Population \\u0026 Capital - Study.com\",\"url\":\"https:\/\/study.com\/academy\/lesson\/facts-about-france-location-population-history.html\"},{\"date\":\"2001-11-06\",\"last_updated\":\"2026-07-05\",\"place_metadata\":null,\"snippet\":\"As the capital of France, Paris is the seat of France's national government ; Both houses of the French Parliament ; France's highest courts are located in Paris.\\n**Paris** is the capital and largest city of France, with an estimated city population of 2.04 million in an area of 105.4 km^2^ (40.7 sq mi), and a metropolitan population of 13.2 million as of January 2026.\\n...\\nAs the capital of France, Paris is the seat of France's national government.\",\"source\":\"web\",\"title\":\"Paris - Wikipedia\",\"url\":\"https:\/\/en.wikipedia.org\/wiki\/Paris\"},{\"date\":\"2003-01-15\",\"last_updated\":\"2026-07-02\",\"place_metadata\":null,\"snippet\":\"The capital of France has been Paris since its liberation in 1944.\\nThis is a chronological list of capitals of France.\\nThe capital of France has been Paris since its liberation in 1944.\\n...\\n- Paris (1945\u2013present day).\",\"source\":\"web\",\"title\":\"List of capitals of France - Wikipedia\",\"url\":\"https:\/\/en.wikipedia.org\/wiki\/List_of_capitals_of_France\"},{\"date\":\"2026-06-10\",\"last_updated\":\"2026-06-11\",\"place_metadata\":null,\"snippet\":\"France, country of northwestern Europe. Historically and culturally among the most important nations in the Western world.\\nPrime minister: S\u00e9bastien Lecornu\\n- **Capital:**\\nParis\\n- **Population:**\\n...\\n\u2026\\nThe capital and by far the most important city of France is Paris, one of the world\u2019s preeminent cultural and commercial centres.\",\"source\":\"web\",\"title\":\"France | History, Maps, Flag, Population, Cities, Capital, \\u0026 Facts\",\"url\":\"https:\/\/www.britannica.com\/place\/France\"},{\"date\":\"2022-12-01\",\"last_updated\":\"2026-04-08\",\"place_metadata\":null,\"snippet\":\"Paris is the city of romance par excellence, the fashion capital and the best example of French art de vivre. Exploring Paris is an essential rite of passage\u00a0...\\n## Paris is the city of romance par excellence, the fashion capital and the best example of French art de vivre.\\nParis is the city of romance par excellence, the fashion capital and the best example of French art de vivre.\",\"source\":\"web\",\"title\":\"Discover the city of Paris | Paris the capital city of France\",\"url\":\"https:\/\/www.cia-france.com\/french-kids-teenage-courses\/paris-school\/visit-paris\"},{\"date\":\"2026-05-29\",\"last_updated\":\"2026-07-05\",\"place_metadata\":null,\"snippet\":\"Paris, the capital of France, is famed for its elegant architecture, world-class museums, romantic atmosphere, and iconic landmarks.\\nParis, the capital of France, is famed for its elegant architecture, world-class museums, romantic atmosphere, and iconic landmarks.\\nFrom the Eiffel Tower to charming caf\u00e9s and fashion houses, Paris blends history, art, culture, and timeless beauty.\\n...\\nParis, the capital of France, is famed for its elegant architecture, world-class museums, romantic a\u2026\",\"source\":\"web\",\"title\":\"Paris, the capital of France, is famed for its elegant architecture ...\",\"url\":\"https:\/\/www.facebook.com\/61584844971881\/videos\/paris-the-capital-of-france-is-famed-for-its-elegant-architecture-world-class-mu\/1639433957138936\/\"},{\"date\":\"2026-04-07\",\"last_updated\":null,\"place_metadata\":null,\"snippet\":\"What is the capital of FRANCE? 112K. 4,510. Share. Video unavailable. This content isn't available. Skip video.\",\"source\":\"web\",\"title\":\"What is the capital of FRANCE? - YouTube\",\"url\":\"https:\/\/www.youtube.com\/shorts\/doFTuSWo7rE\"}],\"usage\":{\"completion_tokens\":109,\"cost\":{\"input_tokens_cost\":0.00001,\"output_tokens_cost\":0.00011,\"request_cost\":0.005,\"total_cost\":0.00512},\"prompt_tokens\":6,\"search_context_size\":\"low\",\"total_tokens\":115}}\n"
+    }
+}

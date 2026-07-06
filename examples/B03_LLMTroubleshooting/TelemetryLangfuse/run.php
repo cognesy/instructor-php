@@ -3,6 +3,7 @@ title: 'Send LLM runtime telemetry to Langfuse'
 docname: 'llm_telemetry_langfuse'
 id: '76c8'
 tags:
+  - 'no-replay'
   - 'telemetry'
   - 'langfuse'
   - 'inference'

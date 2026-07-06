@@ -16,6 +16,23 @@ No single command is sufficient for every change. Pick the smallest useful set l
 
 ## Quick Reference
 
+All of the commands below are also exposed through the **`just`** task runner
+(run `just` for the full grouped catalog). The most useful shortcuts:
+
+| `just` command | Equivalent | Notes |
+|----------------|------------|-------|
+| `just test` | faster `composer test` | Parallel fast lane (~6s vs ~16s), same coverage |
+| `just test-package <pkg>` | — | Fast lanes for one package (parallel) |
+| `just test-changed` | — | Fast lanes for packages changed vs `main` |
+| `just qa` | `composer qa` | Full QA suite |
+| `just verify` | `composer test && composer qa` | Pre-push gate |
+| `just ci` | `act pull_request …` | Local CI reproduction |
+| `just examples-replay-all` | — | Run `./examples/` against recorded HTTP (deterministic, keyless) — see [Deterministic Examples](#deterministic-examples-http-recordreplay) |
+
+The parallel fast lane runs the bulk under paratest and a tiny serial pass for
+the `Serial` testsuite (parallel-unsafe tests); `composer test` / CI run the
+whole thing serially and remain the authoritative green gate.
+
 | Command | Use it when | What it does |
 |---------|-------------|--------------|
 | `composer test` | default local test run | Unit + Feature + Regression suites |
@@ -116,6 +133,96 @@ Current environment requirements:
 - a working `codex` CLI with valid auth/config for the AgentCtrl smoke portion
 
 When these env vars are absent, those suites should skip rather than fail.
+
+## Deterministic Examples (HTTP Record/Replay)
+
+`./examples/` is the de-facto end-to-end suite. Running it live costs 1h+ and token
+spend and is nondeterministic (LLM output varies run to run). The record/replay switch
+runs examples against **recorded** HTTP responses instead — deterministic, free, fast,
+and keyless — while keeping live runs available as a periodic refresh.
+
+Three modes, selected per run; the library default is `pass` (zero behavior change):
+
+| Mode | Effect |
+|------|--------|
+| `pass` (default) | normal live calls, nothing recorded |
+| `record` | live call, response saved to disk (redacted) |
+| `replay` | no network — response served from disk (hermetic; missing recording throws) |
+
+### Usage
+
+Preferred entrypoint is `just` (uses env vars, so no `composer --` quoting issues):
+
+```bash
+# one example
+just examples-record getters_and_setters     # live, saves recording (needs API keys)
+just examples-replay getters_and_setters      # offline, instant, keyless
+
+# whole corpus (accepts --limit=N / --filter=errors)
+just examples-record-all --limit=20           # heavy: live calls across providers
+just examples-replay-all                       # the deterministic examples gate
+```
+
+Equivalent forms:
+
+```bash
+# via the hub binary directly (flags; no `--` needed)
+php bin/instructor-hub run  getters_and_setters --replay
+php bin/instructor-hub all  --replay --recordings-dir=examples-recordings
+
+# via composer — REQUIRES `--` or composer swallows the flag and runs live
+composer hub -- run getters_and_setters --replay
+
+# via env vars — works with any invocation, including a raw example file
+INSTRUCTOR_EXAMPLES_HTTP=replay INSTRUCTOR_EXAMPLES_RECORDINGS_DIR=examples-recordings \
+  php examples/A01_Basics/BasicGetSet/run.php
+```
+
+Env vars: `INSTRUCTOR_EXAMPLES_HTTP=pass|record|replay`,
+`INSTRUCTOR_EXAMPLES_RECORDINGS_DIR=<dir>` (default `./tmp/examples-recordings`).
+
+### How it works
+
+- **Ambient middleware, implicit clients only.** In record/replay mode, `examples/boot.php`
+  registers a `RecordReplayMiddleware` via `HttpClientDefaults`. Runtimes consult it only
+  when they build an HTTP client *implicitly* — examples that construct their own client
+  (custom-client / mock demos) are untouched.
+- **Per-example namespacing.** Recordings live under
+  `<dir>/<Group>/<Example>/…json`, so a refresh is scoped to one folder and
+  cross-example collisions are impossible.
+- **Secrets redacted on save.** Auth headers (`Authorization`, `x-api-key`,
+  `x-goog-api-key`, cookies) are masked to `[REDACTED]` before anything hits disk — safe
+  to inspect and commit.
+- **Replay is hermetic and keyless.** No network; provider keys are stubbed. A missing
+  recording throws `RecordingNotFoundException` — that is the built-in change-impact
+  signal (it names exactly which examples a change affected), not a failure to fix blindly.
+- **Status tags (treat `./examples/` with caution, not blind faith).** Not every
+  example is a clean pass signal — some are broken, some can't replay, some fail
+  occasionally from LLM non-determinism. Four front-matter markers make the state
+  explicit so a failure is never ambiguous:
+
+  | marker | meaning | `hub all` (live) | `hub all --replay` |
+  |--------|---------|------------------|--------------------|
+  | `skip: true` | excluded for any reason (e.g. no-key provider) | not run | not run |
+  | `broken` (tag) | known-failing (e.g. broken API integration) | **not run** (logged, with reason) | not run |
+  | `no-replay` (tag) | works live but can't be recorded (explicit-client, telemetry, sandbox, interactive) | run normally | **skipped** (logged) |
+  | `flaky` (tag) | fails occasionally from LLM non-determinism | run; failure **tolerated** (`FLAKY`, doesn't fail the gate) | run — replay makes it deterministic, so a failure here is **real** |
+
+  The run-all gate fails on real errors only; `flaky` failures are bucketed separately
+  (`Flaky: N (tolerated)`) so agents and CI don't panic on non-deterministic noise.
+  Recording a `flaky` example is the *fix* — under replay it becomes deterministic.
+  Tags are lowercase; add several as needed (e.g. `broken` + `gemini`).
+
+### Storage & CI
+
+Recordings are committed as plain, pretty-printed JSON under `examples/**/recordings/`
+(the `examples/` tree is already `export-ignore`d, so they never ship to Packagist; no
+git-LFS). A keyless CI job can run `just examples-replay-all` as a deterministic
+examples gate. Design notes and rollout runbook:
+`research/robust-and-practical-record-replay.md`.
+
+> Status (2026-07): mechanism complete and verified; the recording corpus is not yet
+> populated — the first record pass (live, key-gated) is a maintainer step.
 
 ## Static Analysis And QA
 

@@ -2,58 +2,13 @@
 
 namespace Cognesy\Polyglot\Inference\Drivers\Deepseek;
 
-use Cognesy\Http\Data\HttpResponse;
-use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
-use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIResponseAdapter;
+use Cognesy\Polyglot\Inference\Drivers\OpenAICompatible\OpenAICompatibleReasoningAdapter;
 
-class DeepseekResponseAdapter extends OpenAIResponseAdapter
+/**
+ * Thin provider-named subclass — behavior lives in the shared
+ * OpenAICompatibleReasoningAdapter (reasoning-key extraction, cumulative
+ * streamed usage). Kept so direct class references remain valid.
+ */
+class DeepseekResponseAdapter extends OpenAICompatibleReasoningAdapter
 {
-    #[\Override]
-    public function fromResponse(HttpResponse $response): ?InferenceResponse {
-        $data = $this->decodeResponseData($response->body());
-        $inferenceResponse = new InferenceResponse(
-            content: $this->makeContent($data),
-            finishReason: $data['choices'][0]['finish_reason'] ?? '',
-            toolCalls: $this->makeToolCalls($data),
-            reasoningContent: $this->makeReasoningContent($data),
-            usage: $this->usageFormat->fromData($data),
-            responseData: $response,
-        );
-        return $inferenceResponse->withReasoningContentFallbackFromContent();
-    }
-
-    #[\Override]
-    protected function fromDecodedStreamData(array $data, ?HttpResponse $responseData = null): PartialInferenceDelta {
-        return new PartialInferenceDelta(
-            contentDelta: $this->makeContentDelta($data),
-            reasoningContentDelta: $this->makeReasoningContentDelta($data),
-            toolId: $this->makeToolId($data),
-            toolName: $this->makeToolNameDelta($data),
-            toolArgs: $this->makeToolArgsDelta($data),
-            finishReason: $data['choices'][0]['finish_reason'] ?? '',
-            usage: $this->usageFormat->fromData($data),
-            responseData: $responseData,
-        );
-    }
-
-    private function makeReasoningContent(array $data): string {
-        $message = $data['choices'][0]['message'] ?? [];
-        return match (true) {
-            array_key_exists('reasoning_content', $message) => (string) $message['reasoning_content'],
-            array_key_exists('reasoning', $message) => (string) $message['reasoning'],
-            array_key_exists('analysis', $message) => (string) $message['analysis'],
-            default => '',
-        };
-    }
-
-    private function makeReasoningContentDelta(array $data): string {
-        $delta = $data['choices'][0]['delta'] ?? [];
-        return match (true) {
-            array_key_exists('reasoning_content', $delta) => (string) $delta['reasoning_content'],
-            array_key_exists('reasoning', $delta) => (string) $delta['reasoning'],
-            array_key_exists('analysis', $delta) => (string) $delta['analysis'],
-            default => '',
-        };
-    }
 }

@@ -3,6 +3,7 @@ title: 'Sandbox: Timeout Guard'
 docname: 'sandbox_timeout_guard'
 id: 'd204'
 tags:
+  - 'no-replay'
   - 'sandbox'
   - 'timeouts'
   - 'policy'

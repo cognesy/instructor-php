@@ -18,6 +18,7 @@ class TemplateEngineConfig
         'packages/templates/resources/config/prompt/presets',
         'vendor/cognesy/instructor-php/packages/templates/resources/config/prompt/presets',
         'vendor/cognesy/instructor-templates/resources/config/prompt/presets',
+        __DIR__ . '/../../resources/config/prompt/presets',
     ];
 
     public function __construct(

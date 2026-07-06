@@ -114,7 +114,7 @@ instructor:
       bus_service: message_bus
       observe_events:
         - Cognesy\Agents\Session\Events\SessionSaved
-# @doctest id="dfe9"
+# @doctest id="a1d0"
 ```
 
 This is intentionally opt-in and explicit:
@@ -176,7 +176,7 @@ $progress->wiretap(static function (object $event): void {
         'operationId' => $event->operationId,
     ];
 });
-// @doctest id="d292"
+// @doctest id="49bc"
 ```
 
 ## Relation To Logging And Telemetry

@@ -3,6 +3,7 @@ title: 'Sandbox: Streaming Output'
 docname: 'sandbox_streaming_output'
 id: 'd203'
 tags:
+  - 'no-replay'
   - 'sandbox'
   - 'streaming'
   - 'commands'

@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a helpful assistant explaining Challenger Sale. Be very brief (one sentence), pragmatic and focused on practical bizdev problems.\"},{\"role\":\"user\",\"content\":\"Here\\u2019s a concise summary for reference:\\n\\nThe discussion began with **sales coaching** focused on the **Challenger Sale** method. The advice emphasized:\\n- uncovering the customer\\u2019s hidden cost of inaction,\\n- teaching a better way to approach the problem,\\n- and tailoring the pitch to the buyer\\u2019s specific pain points instead of leading with product features.\\n\\nPractical guidance included:\\n- selecting one target account,\\n- identifying a measurable pain point,\\n- and using a **3-question discovery call** to uncover impact, decision-making, and current workarounds.\\n\\nAnother recommendation was to:\\n- open with an **industry insight** that reframes the problem,\\n- then ask what the prospect is doing today and what that approach is costing them.\\n\\nThe conversation then shifted to **Instructor for PHP**, described as a framework-agnostic PHP library for working with LLMs and extracting **structured, validated data**. Key points:\\n- converts LLM outputs into **type-safe PHP classes**,\\n- supports **text, chat, and images**,\\n- allows output schemas via **static classes** or **dynamic JSON Schema**,\\n- includes **validation and retries**,\\n- offers a **unified API** across providers,\\n- works with **Laravel** and **Symfony**,\\n- and supports features like **observability, streaming, embeddings, and context caching**.\\n\\nSupported providers mentioned included:\\n- OpenAI,\\n- Anthropic,\\n- Google,\\n- Cohere,\\n- Groq,\\n- Mistral,\\n- and Ollama.\\n\\nTypical usage was described as:\\n- installing via Composer,\\n- defining a data model,\\n- and running inference to get structured output.\\n\\nIf you want, I can also turn this into a **short bullet-point meeting note** or a **timeline of the conversation**.\"},{\"role\":\"user\",\"content\":\"How can I tailor my approach to different types of clients?\",\"name\":\"student\"},{\"role\":\"assistant\",\"content\":\"Adjust the insight and questions to each client\\u2019s priorities, decision process, and measurable pain, so you challenge what matters to them instead of using the same pitch everywhere.\",\"name\":\"expert\"},{\"role\":\"user\",\"content\":\"What questions should I be asking my prospects?\",\"name\":\"student\"},{\"role\":\"assistant\",\"content\":\"Ask what\\u2019s driving the problem, how they handle it today, what it costs them, and who needs to sign off\\u2014so you uncover pain, impact, and the buying process fast.\",\"name\":\"expert\"},{\"role\":\"user\",\"content\":\"How do I handle objections effectively?\",\"name\":\"student\"},{\"role\":\"assistant\",\"content\":\"Acknowledge the objection, reframe it with a relevant insight, and ask a question that surfaces the real risk or cost behind it.\",\"name\":\"expert\"},{\"role\":\"user\",\"content\":\"What should I focus on to improve my sales approach?\",\"name\":\"student\"},{\"role\":\"assistant\",\"content\":\"Focus on one target account, one measurable pain point, and one strong insight that changes how the prospect sees the problem.\",\"name\":\"expert\"},{\"role\":\"user\",\"content\":\"How can I measure the success of these strategies?\",\"name\":\"student\"},{\"role\":\"assistant\",\"content\":\"Measure whether your calls uncover clearer pain, stronger urgency, and a faster path to decision\\u2014e.g., more meetings progressing to next steps, shorter sales cycles, and better close rates.\",\"name\":\"expert\"},{\"role\":\"user\",\"content\":\"What resources can I use to learn more about Challenger Sale?\",\"name\":\"student\"}],\"max_completion_tokens\":1024}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:47 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "924"
+            ],
+            "cf-ray": [
+                "a16eae0a8fb89e2a-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "867"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999254"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "11ms"
+            ],
+            "x-request-id": [
+                "req_6fd127104c7e47cc96ee3d8ee183aaa1"
+            ],
+            "set-cookie": [
+                "__cf_bm=i23f8Omw.q9mlZgqSG.zzpq.FifrCyiQBo2ePjCWT_I-1783341646.486749-1.0.1.1-ZNlIHSvKVL0F0yc2Qz1Mlsa7zAV6oZbOdWHC0YfNO1hLn8gZEE3e.WjToVKozq.crzPqQ3eCLj.cZ.BaKLh1B4L1zlqOeOiS6Uasnq_iXjbGW5xURRr8vMdUI2PEW095; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:47 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycusydmEUwnAaJOWYmdZlOwWmyFa\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341646,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"Read *The Challenger Sale*, practice insight-led discovery calls, and review successful win\/loss notes to see which reframes actually move prospects.\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 693,\n    \"completion_tokens\": 31,\n    \"total_tokens\": 724,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

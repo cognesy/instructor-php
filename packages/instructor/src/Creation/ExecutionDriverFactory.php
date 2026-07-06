@@ -8,6 +8,7 @@ use Cognesy\Instructor\Contracts\CanEmitStreamingUpdates;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanMaterializeRequest;
 use Cognesy\Instructor\Core\InferenceProvider;
+use Cognesy\Instructor\Core\ObjectHydrator;
 use Cognesy\Instructor\Core\ResponseGenerator;
 use Cognesy\Instructor\Core\StreamingExecutionDriver;
 use Cognesy\Instructor\Core\SyncExecutionDriver;
@@ -58,8 +59,7 @@ final class ExecutionDriverFactory
         return new StreamingExecutionDriver(
             execution: $execution,
             inferenceProvider: $this->makeInferenceProvider(),
-            deserializer: $this->responseDeserializer,
-            transformer: $this->responseTransformer,
+            hydrator: $this->makeHydrator(),
             responseGenerator: $this->makeResponseGenerator(),
             retryPolicy: $this->makeRetryPolicy(),
             events: $this->events,
@@ -85,6 +85,14 @@ final class ExecutionDriverFactory
     private function makeRetryPolicy(): CanDetermineRetry {
         return new DefaultRetryPolicy(
             events: $this->events,
+        );
+    }
+
+    private function makeHydrator(): ObjectHydrator {
+        return new ObjectHydrator(
+            deserializer: $this->responseDeserializer,
+            validator: $this->responseValidator,
+            transformer: $this->responseTransformer,
         );
     }
 

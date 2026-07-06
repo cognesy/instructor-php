@@ -3,6 +3,7 @@ title: 'Send Agent telemetry to Langfuse'
 docname: 'agent_telemetry_langfuse'
 id: '5306'
 tags:
+  - 'no-replay'
   - 'agent-troubleshooting'
   - 'langfuse'
   - 'telemetry'

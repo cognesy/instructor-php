@@ -184,6 +184,9 @@ class InferenceCases
                 return true;
             }
 
+            if (!($driver instanceof \Cognesy\Polyglot\Inference\Contracts\CanDescribeCapabilities)) {
+                return true;
+            }
             $capabilities = $driver->capabilities();
             $supportsMode = match ($case->mode) {
                 OutputMode::Json => $capabilities->supportsResponseFormatJsonObject(),

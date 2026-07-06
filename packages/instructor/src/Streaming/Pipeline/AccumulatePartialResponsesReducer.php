@@ -2,10 +2,9 @@
 
 namespace Cognesy\Instructor\Streaming\Pipeline;
 
+use Cognesy\Instructor\Core\ObjectHydrator;
 use Cognesy\Instructor\Data\ResponseModel;
-use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\Streaming\StructuredOutputStreamState;
-use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Stream\Contracts\Reducer;
@@ -14,6 +13,9 @@ use Throwable;
 
 final class AccumulatePartialResponsesReducer implements Reducer
 {
+    private const MIN_GROWTH_BYTES = 8;
+    private const GROWTH_DIVISOR = 32;
+
     private int $lastSnapshotRevision = -1;
     private StructuredOutputStreamState $state;
     private bool $hasProducedValue = false;
@@ -21,12 +23,12 @@ final class AccumulatePartialResponsesReducer implements Reducer
     private IncrementalJsonParser $jsonParser;
     private string $activeToolKey = '';
     private int $deltaSinceLastMaterialization = 0;
+    private int $lastMaterializedLength = 0;
 
     public function __construct(
         private readonly Reducer $inner,
         private readonly OutputMode $mode,
-        private readonly CanDeserializeResponse $deserializer,
-        private readonly CanTransformResponse $transformer,
+        private readonly ObjectHydrator $hydrator,
         private readonly ResponseModel $responseModel,
         private readonly int $materializationInterval = 1,
     ) {
@@ -43,6 +45,7 @@ final class AccumulatePartialResponsesReducer implements Reducer
         $this->jsonParser->reset();
         $this->activeToolKey = '';
         $this->deltaSinceLastMaterialization = 0;
+        $this->lastMaterializedLength = 0;
         return $this->inner->init();
     }
 
@@ -87,10 +90,11 @@ final class AccumulatePartialResponsesReducer implements Reducer
         }
 
         $this->deltaSinceLastMaterialization++;
-        if ($this->shouldSkipMaterialization($state)) {
+        if ($this->shouldSkipMaterialization($state, strlen($snapshot))) {
             return $state;
         }
         $this->deltaSinceLastMaterialization = 0;
+        $this->lastMaterializedLength = strlen($snapshot);
 
         $parsed = $this->parseCurrentState($snapshot);
         if ($parsed === null) {
@@ -108,18 +112,35 @@ final class AccumulatePartialResponsesReducer implements Reducer
     }
 
     /**
-     * Skip materialization when throttle interval has not elapsed yet,
+     * Skip materialization when the throttle has not elapsed yet,
      * unless this is the first value (time-to-first-response priority)
      * or the stream is finishing.
+     *
+     * With the default interval (1) an adaptive byte-growth gate applies:
+     * the buffer must grow by max(MIN_GROWTH_BYTES, length/GROWTH_DIVISOR)
+     * since the last materialization. This keeps early updates frequent while
+     * bounding total parse+deserialize work to O(n) over the whole stream
+     * (per-delta materialization is O(n²) on long outputs).
+     * An explicit interval > 1 uses pure delta-count throttling.
      */
-    private function shouldSkipMaterialization(StructuredOutputStreamState $state): bool {
+    private function shouldSkipMaterialization(StructuredOutputStreamState $state, int $snapshotLength): bool {
         if (!$this->hasProducedValue) {
             return false;
         }
         if ($state->finishReason() !== '') {
             return false;
         }
-        return $this->deltaSinceLastMaterialization < $this->materializationInterval;
+        if ($this->materializationInterval > 1) {
+            return $this->deltaSinceLastMaterialization < $this->materializationInterval;
+        }
+
+        // Snapshot shrunk — new document started (e.g. next tool call): materialize now.
+        if ($snapshotLength < $this->lastMaterializedLength) {
+            return false;
+        }
+
+        $requiredGrowth = max(self::MIN_GROWTH_BYTES, intdiv($snapshotLength, self::GROWTH_DIVISOR));
+        return ($snapshotLength - $this->lastMaterializedLength) < $requiredGrowth;
     }
 
     private function snapshotContent(): string {
@@ -145,23 +166,17 @@ final class AccumulatePartialResponsesReducer implements Reducer
     }
 
     private function createObject(array $data): mixed {
-        try {
-            $deserialized = $this->deserializer->deserialize($data, $this->responseModel);
-            if ($deserialized->isFailure()) {
-                return null;
+        $hydrated = $this->hydrator->hydratePartial($data, $this->responseModel);
+        if ($hydrated->isFailure()) {
+            $error = $hydrated->error();
+            if ($error instanceof Throwable) {
+                $this->lastCreationError = $error;
             }
-
-            $transformed = $this->transformer->transform($deserialized->unwrap(), $this->responseModel);
-            if ($transformed->isFailure()) {
-                return null;
-            }
-
-            $this->hasProducedValue = true;
-            return $transformed->unwrap();
-        } catch (Throwable $e) {
-            $this->lastCreationError = $e;
             return null;
         }
+
+        $this->hasProducedValue = true;
+        return $hydrated->unwrap();
     }
 
     /**

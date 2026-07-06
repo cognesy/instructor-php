@@ -9,6 +9,8 @@ use Cognesy\AgentCtrl\Gemini\Domain\Enum\ApprovalMode;
 
 /**
  * Fluent builder for Gemini CLI bridge.
+ *
+ * @deprecated Gemini CLI bridge is deprecated because the upstream Google CLI flow is obsolete for this package.
  */
 final class GeminiBridgeBuilder extends AbstractBridgeBuilder
 {

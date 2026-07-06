@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a helpful assistant explaining Challenger Sale. Be very brief (one sentence), pragmatic and focused on practical bizdev problems.\"},{\"role\":\"system\",\"content\":\"# CONTEXT\\n\\n**Instructor for PHP** is a developer-friendly, framework-agnostic PHP library designed to simplify the integration of Large Language Models (LLMs) into PHP applications. It enables the extraction of structured, validated data from LLM outputs, allowing developers to focus on application logic rather than handling complex data extraction processes. \\n\\n### Key Features:\\n- **Structured Responses**: Converts LLM outputs into type-safe PHP classes.\\n- **Multiple Input Types**: Supports text, chat messages, and images for structured data extraction.\\n- **Flexible Response Models**: Allows defining response models statically (via classes) or dynamically (via JSON Schema or structures).\\n- **Validation & Retries**: Automatically validates LLM responses and retries with feedback for self-correction.\\n- **Developer Experience**: Offers a simple API, customizable behavior, and minimal library footprint.\\n- **Unified API**: Supports multiple LLM providers (OpenAI, Anthropic, Google, Cohere, etc.) and allows easy switching between them.\\n- **Framework Agnostic**: Works seamlessly with any PHP framework, including Laravel and Symfony.\\n- **Observability**: Provides detailed event systems for monitoring, logging, and debugging LLM interactions.\\n- **Streaming Support**: Enables real-time partial updates for responsive applications.\\n- **Embeddings & Context Caching**: Unified APIs for generating embeddings and caching context to reduce inference costs and time.\\n  \\n### Use Cases:\\n- **E-commerce**: Product description enrichment, customer support automation, and review analysis.\\n- **Healthcare**: Medical record processing and clinical document analysis.\\n- **Education**: Course content structuring and assignment analysis.\\n- **Financial Services**: Document processing and risk analysis.\\n- **Real Estate**: Property listing analysis and document processing.\\n- **Recruitment & HR**: Resume processing and employee documentation.\\n  \\n### Getting Started:\\n1. Install the library via Composer:\\n```bash\\n   composer require cognesy\\\/instructor-php\\n```\\n2. Define your data structure (e.g., a `City` class).\\n3. Use Instructor to run LLM inference and extract structured data.\\n   \\n### Example:\\n\\n```php\\nuse Cognesy\\\\Instructor\\\\StructuredOutput;\\n\\nclass City {\\n    public string $name;\\n    public string $country;\\n    public int $population;\\n}\\n\\n$city = StructuredOutput::fromConfig(LLMConfig::fromArray(['driver' => 'openai']))->with(\\n    messages: 'What is the capital of France?',\\n    responseModel: City::class,\\n)->get();\\n\\nvar_dump($city); \\\/\\\/ Outputs structured data about Paris\\n```\\n\\n### Advanced Features:\\n- **Validation**: Uses Symfony validation to ensure data integrity.\\n- **Max Retries**: Automatically retries failed inferences with feedback.\\n- **Streaming**: Supports real-time partial updates for responsive applications.\\n- **Dynamic Data Schemas**: Allows runtime definition of data structures using the `Structure` class.\\n- **Customization**: Developers can customize prompts, validation, and deserialization logic.\\n\\n### Supported LLM Providers:\\n- OpenAI, Anthropic, Google, Cohere, Groq, Mistral, Ollama, and more.\\n\\n### Documentation & Examples:\\n- Extensive documentation, 60+ examples, and 25+ prompting techniques are available to help developers get started.\\n\\nInstructor for PHP is a powerful tool for automating data extraction and processing tasks, making it easier to integrate LLMs into PHP applications across various industries.\\n\"},{\"role\":\"user\",\"content\":\"Help me get better sales results.\",\"name\":\"student\"}],\"max_completion_tokens\":1024}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:15 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1005"
+            ],
+            "cf-ray": [
+                "a16ead430b8cf8e7-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "929"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999091"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "13ms"
+            ],
+            "x-request-id": [
+                "req_43d0b484a98c46e7b71907a654406c8b"
+            ],
+            "set-cookie": [
+                "__cf_bm=xc6mgz4WyYfbtaV2KpIG5gS.7P5TWEhQlTktqo2FuUM-1783341614.5666924-1.0.1.1-VdRfN_U8jGbVoxnxlTpO2ReaKbCRzU_JmDqOo2UvXtE0RcSg514PGkwUt.PKkoJFnmQgr99NueDsXxnfli3R0zSItzuVrzIQ0u_faFVbPyZXUL7V1tkOyl3hkvk5UyMo; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:15 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycuMGkk4wJbxXLrbGompRmHW8eK0\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341614,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"Use Challenger Sale: diagnose the customer\u2019s hidden cost of doing nothing, teach them a new way to solve it, and tailor the message to the buyer\u2019s specific business pain so you create urgency instead of just pitching features.\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 756,\n    \"completion_tokens\": 47,\n    \"total_tokens\": 803,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

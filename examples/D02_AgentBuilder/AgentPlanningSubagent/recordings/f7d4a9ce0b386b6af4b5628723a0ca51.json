@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"For tasks that involve multiple implementation steps, call `plan_with_subagent` first.\\n\\nParent execution tools available (hard constraint): read_file\\n\\nWhen you execute after planning, use only the parent execution tools listed above.\\n\\nWhen calling `plan_with_subagent`, provide a task specification with these sections:\\n- Goal\\n- Context\\n- Constraints\\n- Expected Outcomes\\n- Acceptance Criteria\"},{\"role\":\"user\",\"content\":\"Prepare a realistic plan for a small docs update about planning capability in this repository.\\n\\nFirst, create a plan.\\nThen execute only the analysis part of the plan and provide a concise proposal:\\n1. Capability purpose section outline\\n2. Configuration options outline\\n3. Example usage outline\\n\\nConstraints:\\n- planner subagent may use bash\\\/search for discovery\\n- parent execution may use only read_file\\n- do not modify any files\\n- keep the final response under 180 words\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"read_file\",\"description\":\"Read the contents of a file with line numbers. Use to examine file content after finding it with search_files.\\n\\nExamples:\\n- \\\"composer.json\\\" \\u2192 read composer.json from project root\\n- \\\"src\\\/Config.php\\\" \\u2192 read specific file by path\\n- {\\\"path\\\": \\\"large.log\\\", \\\"offset\\\": 100, \\\"limit\\\": 50} \\u2192 read lines 101-150\\n\\nReturns numbered lines. For large files, use offset\\\/limit to read specific sections.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"File path (relative to project root or absolute). Example: \\\"composer.json\\\" or \\\"src\\\/Config.php\\\"\"},\"offset\":{\"type\":\"integer\",\"description\":\"Line number to start reading from (0-indexed)\"},\"limit\":{\"type\":\"integer\",\"description\":\"Maximum number of lines to read (default: 2000)\"}},\"required\":[\"path\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"plan_with_subagent\",\"description\":\"Generate an implementation plan using an isolated planning subagent.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"specification\":{\"type\":\"string\",\"description\":\"Task specification text with goal, context, expected outcomes, and acceptance criteria.\"}},\"required\":[\"specification\"],\"additionalProperties\":false}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:37 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "2274"
+            ],
+            "cf-ray": [
+                "a16eadbdfec6ee48-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "2790"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999781"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "3ms"
+            ],
+            "x-request-id": [
+                "req_a9b66acc9665490499b15ea9e87fe9af"
+            ],
+            "set-cookie": [
+                "__cf_bm=iWyhWg8.82Aa5dEZ21ibz5EvcXebOCpy_u.wcYAwZPA-1783341634.2360911-1.0.1.1-FvL1G9OHow9HyqmT5T.6SpC_uxZ6tD5q_gJIBlu9eMEbRtTDKv7fS2Q37mb93a_H.070Jx1nKwqIccoLTG50xBwMvd1AcrO4kn6QfGuo00sQ5XM7QJ094tWcVrTzP2Va; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:37 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycugkvyHAWSWPFUrnffUCgJEkFvf\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341634,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_T1hfjSLC3UungU4EP0q4U0OR\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"plan_with_subagent\",\n              \"arguments\": \"{\\\"specification\\\":\\\"Goal\\\\nPrepare a realistic plan for a small documentation update about the repository's planning capability.\\\\n\\\\nContext\\\\nThe user wants a concise proposal for a docs update, specifically after planning, to include only the analysis portion of the plan. The final response must provide: (1) Capability purpose section outline, (2) Configuration options outline, and (3) Example usage outline. No files should be modified.\\\\n\\\\nConstraints\\\\n- The planner subagent may use bash\/search for discovery.\\\\n- Parent execution may use only read_file.\\\\n- Do not modify any files.\\\\n- Keep the final response under 180 words.\\\\n- Execute only the analysis part of the plan after planning.\\\\n\\\\nExpected Outcomes\\\\n- A realistic implementation plan for a small docs update.\\\\n- A concise, analysis-only proposal summarizing the three requested outlines.\\\\n- The proposal should reflect repository-specific terminology where possible, based on discovered docs\/content.\\\\n\\\\nAcceptance Criteria\\\\n- Plan includes clear steps for discovery, analysis, and drafting.\\\\n- Final response contains exactly the three requested outline sections.\\\\n- No code or file changes are made.\\\\n- Final response remains under 180 words.\\\"}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 490,\n    \"completion_tokens\": 258,\n    \"total_tokens\": 748,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

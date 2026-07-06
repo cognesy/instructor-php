@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## Tool Use\\n\\nUse the provided tool `extracted_data` to extract correct and accurate structured data from the input.\\n\\nTool purpose: Function call based on user instructions.\\n\\nCall the tool with the best supported arguments for the requested extraction.\"},{\"role\":\"user\",\"content\":\"Generate 4 various negative reviews based on the input review:\\nThis movie has been very impressive, even considering I lost half of the plot.\"},{\"role\":\"user\",\"content\":\"Generated review:\"}],\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\",\"description\":\"Function call based on user instructions.\",\"parameters\":{\"type\":\"object\",\"description\":\"A collection of GeneratedReview\",\"properties\":{\"list\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"review\":{\"type\":\"string\"},\"sentiment\":{\"type\":\"string\",\"enum\":[\"positive\",\"negative\"]}},\"required\":[\"review\",\"sentiment\"],\"additionalProperties\":false}}},\"required\":[\"list\"],\"additionalProperties\":false}}}],\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\"}}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:41:46 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1662"
+            ],
+            "cf-ray": [
+                "a16eaf740ff65906-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1564"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999893"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "1ms"
+            ],
+            "x-request-id": [
+                "req_6da40dc027db48309e156099eadd402e"
+            ],
+            "set-cookie": [
+                "__cf_bm=zfwRiJUXVbDCj6FKsTAVd40ufNqk5oidXdGNjIRGbjo-1783341704.325267-1.0.1.1-RffBlSqVUVO.jOZsrnSmsiXJXdjDyfgVrAUd903.1N7O_8QyAwyr.SYiaqSGElcTr_mMNd534hUg4ApeEFWw0vMIyJ6z8pU4kiI2myvZHrx9z7hQw3MtCZs.mksTmOS.; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:11:46 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-Dycvo8kAFJ0KrKTxA5JWVsos4rUne\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341704,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_xylAllNHJlFejYd18Ha9px5X\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"list\\\":[{\\\"review\\\":\\\"The movie looked impressive at first, but the plot was so confusing that I lost track halfway through and ended up frustrated.\\\",\\\"sentiment\\\":\\\"negative\\\"},{\\\"review\\\":\\\"Visually it had potential, but the story was a mess and I couldn\u2019t follow enough of it to care.\\\",\\\"sentiment\\\":\\\"negative\\\"},{\\\"review\\\":\\\"I wanted to like it, yet the confusing plot made the whole experience feel disjointed and disappointing.\\\",\\\"sentiment\\\":\\\"negative\\\"},{\\\"review\\\":\\\"It was trying to be impressive, but losing half the plot made it hard to enjoy and impossible to recommend.\\\",\\\"sentiment\\\":\\\"negative\\\"}]}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 232,\n    \"completion_tokens\": 136,\n    \"total_tokens\": 368,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

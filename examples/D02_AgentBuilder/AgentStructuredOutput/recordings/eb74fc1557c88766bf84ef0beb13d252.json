@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"user\",\"content\":\"Process this lead information and save it to our CRM:\\n\\nHey, I just got off the phone with a potential client. Here are the details:\\n\\nHis name is John Smith and he works as VP of Engineering at TechCorp Industries.\\nThey're based in San Francisco, California, USA. You can reach him at\\njohn.smith@techcorp.io or call him at +1-555-0123.\\n\\nHe's interested in our enterprise plan and wants a demo next week.\\n\\nSteps:\\n1. Extract the lead information into structured format using 'lead' schema\\n2. Store the extracted data as 'current_lead' in metadata\\n3. Call create_lead API with the metadata key 'current_lead'\\n\\nReport back when complete.\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_tPTiukoOpQbtAbVxjrDYxzvK\",\"type\":\"function\",\"function\":{\"name\":\"structured_output\",\"arguments\":\"{\\\"input\\\":\\\"Hey, I just got off the phone with a potential client. Here are the details:\\\\n\\\\nHis name is John Smith and he works as VP of Engineering at TechCorp Industries.\\\\nThey're based in San Francisco, California, USA. You can reach him at\\\\njohn.smith@techcorp.io or call him at +1-555-0123.\\\\n\\\\nHe's interested in our enterprise plan and wants a demo next week.\\\",\\\"schema\\\":\\\"lead\\\",\\\"store_as\\\":\\\"current_lead\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_tPTiukoOpQbtAbVxjrDYxzvK\",\"content\":\"Extracted lead (stored as 'current_lead'): {\\\"name\\\":\\\"John Smith\\\",\\\"email\\\":\\\"john.smith@techcorp.io\\\",\\\"company\\\":\\\"TechCorp Industries\\\",\\\"phone\\\":\\\"+1-555-0123\\\",\\\"role\\\":\\\"VP of Engineering\\\",\\\"address\\\":null,\\\"city\\\":\\\"San Francisco\\\",\\\"country\\\":\\\"USA\\\"}\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_L2xRLy5ydFR7pS9s9gzN61ol\",\"type\":\"function\",\"function\":{\"name\":\"create_lead\",\"arguments\":\"{\\\"metadata_key\\\":\\\"current_lead\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_L2xRLy5ydFR7pS9s9gzN61ol\",\"content\":\"Lead created successfully!\\n  ID: LEAD-14C233FD\\n  Name: John Smith\\n  Email: john.smith@techcorp.io\\n  Source: metadata key 'current_lead'\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"structured_output\",\"description\":\"Extract structured data from unstructured text using a predefined schema.\\n\\nThe extraction uses AI to parse the input and populate a validated data structure.\\nIf extraction fails validation, the system will retry automatically.\\n\\nUse 'store_as' parameter to save the extracted data in agent metadata for use by other tools.\\n\\n\\nAvailable schemas:\\n- lead: Business lead with contact information\",\"parameters\":{\"type\":\"object\",\"properties\":{\"input\":{\"type\":\"string\",\"description\":\"The unstructured text to extract data from\"},\"schema\":{\"type\":\"string\",\"description\":\"Name of the schema to extract into\",\"enum\":[\"lead\"]},\"store_as\":{\"type\":\"string\",\"description\":\"Optional: metadata key to store the extracted data for use by other tools\"}},\"required\":[\"input\",\"schema\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"store_metadata\",\"description\":\"Store a value in agent metadata for use by other tools.\\n\\nUse this to pass data between tool calls. For example:\\n1. Extract data and store: store_metadata(key: \\\"current_lead\\\", value: {\\\"name\\\": \\\"John\\\", \\\"email\\\": \\\"john@example.com\\\"})\\n2. Later tool reads it: save_lead(metadata_key: \\\"current_lead\\\")\\n\\nKeys should be descriptive: \\\"current_lead\\\", \\\"extracted_contacts\\\", \\\"scraped_content\\\", etc.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"key\":{\"type\":\"string\",\"description\":\"Unique identifier for this data (e.g., \\\"current_lead\\\", \\\"scraped_content\\\")\"},\"value\":{\"description\":\"The data to store. Can be any JSON-serializable value: string, number, object, array.\"}},\"required\":[\"key\",\"value\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"read_metadata\",\"description\":\"Read a value from agent metadata that was previously stored.\\n\\nUse this to inspect data stored by previous tool calls.\\nReturns the value as JSON, or an error if the key doesn't exist.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"key\":{\"type\":\"string\",\"description\":\"The key to read from metadata\"}},\"required\":[\"key\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"list_metadata\",\"description\":\"List all keys currently stored in agent metadata.\\n\\nReturns a list of available keys with their value types.\\nUse this to see what data has been stored by previous tool calls.\",\"parameters\":{\"type\":\"object\",\"properties\":{},\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"create_lead\",\"description\":\"Creates a new lead in the CRM system using data from agent metadata.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"metadata_key\":{\"type\":\"string\",\"description\":\"The metadata key where lead data is stored (e.g., \\\"current_lead\\\")\"}},\"required\":[\"metadata_key\"]}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:47 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "946"
+            ],
+            "cf-ray": [
+                "a16eae0c7cddc61b-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "693"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999744"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "3ms"
+            ],
+            "x-request-id": [
+                "req_4a7c97a05cef422097526f761b4fb8e7"
+            ],
+            "set-cookie": [
+                "__cf_bm=CxUiAGFT1qPLjk64B9rOs6xze5rcx_5ICCPQ76I5Ouo-1783341646.7927275-1.0.1.1-rlpUzFsFxewl0tFAWJ.7kAinf6FsAeLdhf_Jbz1uL5ZG6D6PmvD.GCJRvGUzBrmF3Zae.5swC6CTdxJ.xuci8zQDOES2eYUyg9jLj2YIIQffmz133PEcOZkBCIzJev5b; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:47 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycuslMvyiymVaYrJhMny4rBSLKDO\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341646,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"Done \u2014 the lead was extracted and saved to the CRM successfully.\\n\\nLead ID: LEAD-14C233FD\\nName: John Smith\\nEmail: john.smith@techcorp.io\\nCompany: TechCorp Industries\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 950,\n    \"completion_tokens\": 47,\n    \"total_tokens\": 997,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

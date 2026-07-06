@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 
+// @deprecated 2.5 — moved to \Cognesy\Instructor\Events\Streaming\StreamedToolCallUpdated. This alias file will be removed
+// in the next major release; update imports to the new namespace.
+
 namespace Cognesy\Instructor\Events\PartialsGenerator;
 
-use Cognesy\Instructor\Events\StructuredOutputEvent;
-
-final class StreamedToolCallUpdated extends StructuredOutputEvent {}
+\class_alias(\Cognesy\Instructor\Events\Streaming\StreamedToolCallUpdated::class, StreamedToolCallUpdated::class);

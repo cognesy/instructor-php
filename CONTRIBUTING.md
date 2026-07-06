@@ -41,7 +41,7 @@ Each package is independently publishable to Packagist with its own `composer.js
 
 3. Install dependencies for all packages:
    ```bash
-   ./scripts/composer-install-all.sh
+   just pkg-install-all
    ```
 
 ## Development Workflows
@@ -59,14 +59,30 @@ composer phpstan
 
 ### Available Commands
 
-#### Root-level commands (via `composer.json`):
-- `composer test` - Run Unit + Feature + Regression tests
-- `composer test-all` - Run every test in the monorepo
-- `composer qa` - Run full QA pipeline (PHPStan + Psalm + Pint + Semgrep)
-- `composer bench` - Run PHPBench benchmarks
-- `composer hub` - Run Instructor Hub CLI
-- `composer tell` - Run Tell CLI
-- `composer setup` - Run setup wizard
+The single entrypoint for every workflow is **`just`** (task runner). Run `just`
+with no arguments for the full, grouped catalog of commands:
+
+```bash
+just                 # list every command, grouped by area (test/qa/docs/packages/release/…)
+just test            # fast lane — Unit+Feature+Regression, parallel (~6s)
+just test-package X   # fast lanes for one package, e.g. `just test-package agents`
+just test-changed     # fast lanes for packages changed vs main
+just qa               # PHPStan + Psalm + Pint + Semgrep
+just verify           # pre-push: fast tests + full QA
+```
+
+Recipes are thin and live in modular files under `just/*.just`; they delegate to
+composer scripts and `scripts/<group>/*.sh`. The `justfile` is the map of "how do
+I run X"; the heavy logic stays in `scripts/`.
+
+#### Root-level commands (still available via `composer.json`):
+- `composer test` / `just test-serial` - Unit + Feature + Regression (serial)
+- `composer test-all` / `just test-all` - every test in the monorepo
+- `composer qa` / `just qa` - full QA pipeline (PHPStan + Psalm + Pint + Semgrep)
+- `composer bench` / `just bench` - PHPBench benchmarks
+- `composer hub` / `just hub` - Instructor Hub CLI
+- `composer tell` / `just tell` - Tell CLI
+- `composer setup` / `just setup-cli` - setup wizard
 
 For the full testing strategy, QA command catalog, local `act` workflow, CI matrix details, semgrep/ast-grep rules, docs QA, drift detection, dead-code analysis, and benchmarks see **[QUALITY.md](QUALITY.md)**.
 
@@ -105,7 +121,7 @@ Create a JSON configuration file (see `package-config.example.json`):
 ### 2. Generate Package Structure
 
 ```bash
-php scripts/create-package.php my-package-config.json
+just pkg-new my-package-config.json
 ```
 
 This script:
@@ -129,7 +145,7 @@ Add your new package to `packages.json`:
 Update the GitHub Actions workflow:
 
 ```bash
-./scripts/update-split-yml.sh
+just pkg-update-split
 ```
 
 ### 4. Complete Package Setup
@@ -155,7 +171,7 @@ This monorepo uses a centralized configuration system to manage packages and avo
 All packages follow semantic versioning and are released together:
 
 ```bash
-./scripts/sync-ver.sh 1.2.0
+just pkg-sync-ver 1.2.0
 ```
 
 This script:
@@ -170,13 +186,13 @@ This script:
 
 2. **Run the release script**:
    ```bash
-   ./scripts/publish-ver.sh 1.2.0
+   just release 1.2.0
    ```
 
 The release process:
 - **Step 0**: Rebuilds documentation (`./bin/instructor-hub gendocs`)
 - **Step 0.1**: Prepares docs bundles for release artifacts
-- **Step 1**: Updates all package versions (`./scripts/sync-ver.sh`)
+- **Step 1**: Updates all package versions (`just pkg-sync-ver` — runs `./scripts/packages/sync-ver.sh`)
 - **Step 2**: Distributes release notes to all packages
 - **Step 3-4**: Commits changes if any exist
 - **Step 5**: Creates Git tag (`v1.2.0`)
@@ -193,17 +209,17 @@ After the main release is created, GitHub Actions automatically:
 ## Utilities and Helper Scripts
 
 ### Package Configuration Management
-- `./scripts/load-packages.sh` - Load centralized package configuration (used by other scripts)
-- `./scripts/generate-split-matrix.sh` - Generate GitHub Actions matrix from `packages.json`
-- `./scripts/update-split-yml.sh` - Update `.github/workflows/split.yml` with current package configuration
+- `./scripts/packages/load-packages.sh` - Load centralized package configuration (used by other scripts)
+- `just pkg-split-matrix` — runs `./scripts/packages/generate-split-matrix.sh` - Generate GitHub Actions matrix from `packages.json`
+- `just pkg-update-split` — runs `./scripts/packages/update-split-yml.sh` - Update `.github/workflows/split.yml` with current package configuration
 
 ### Composer Operations
-- `./scripts/composer-install-all.sh` - Install dependencies for all packages
-- `./scripts/composer-update-all.sh` - Update dependencies for all packages
-- `./scripts/clean-composer.sh` - Clean composer cache and autoload files
+- `just pkg-install-all` — runs `./scripts/packages/composer-install-all.sh` - Install dependencies for all packages
+- `just pkg-update-all` — runs `./scripts/packages/composer-update-all.sh` - Update dependencies for all packages
+- `just pkg-clean` — runs `./scripts/packages/clean-composer.sh` - Clean composer cache and autoload files
 
 ### Development Tools
-- `./scripts/code2md.sh` - Convert code to markdown (documentation helper)
+- `just docs-code2md` — runs `./scripts/docs/code2md.sh` - Convert code to markdown (documentation helper)
 
 ## Working with Documentation
 
@@ -263,10 +279,10 @@ Common dev dependencies across packages:
 
 ### Common Issues
 
-1. **Dependency conflicts**: Run `./scripts/composer-update-all.sh`
+1. **Dependency conflicts**: Run `just pkg-update-all` — runs `./scripts/packages/composer-update-all.sh`
 2. **Test failures**: Check individual package with `cd packages/[name] && composer test`
-3. **Version mismatches**: Run `./scripts/sync-ver.sh [version]`
-4. **Missing dependencies**: Run `./scripts/composer-install-all.sh`
+3. **Version mismatches**: Run `just pkg-sync-ver [version]`
+4. **Missing dependencies**: Run `just pkg-install-all` — runs `./scripts/packages/composer-install-all.sh`
 
 ### Getting Help
 

@@ -1,0 +1,89 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-4o-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## System Instructions\\n\\nGive a concrete prompt that could generate this answer.\\nInclude all necessary information and ask for one result.\\n\\nReasoning: Mary received 18 new potted plants yesterday. She already has 2 potted plants on each of the 40 window ledges, which is calculated as 2 * 40 = 80 potted plants. Adding the new plants to her existing plants gives 80 + 18 = 98 potted plants in total. Therefore, Mary will remain with 98 potted plants.\\nResponse: 98\\n\\n## Tool Use\\n\\nUse the provided tool `extracted_data` to extract correct and accurate structured data from the input.\\n\\nTool purpose: Function call based on user instructions.\\n\\nCall the tool with the best supported arguments for the requested extraction.\"}],\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\",\"description\":\"Function call based on user instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"chain_of_thought\":{\"type\":\"string\"},\"reconstructed_prompt\":{\"type\":\"string\",\"description\":\"Reconstructed prompt that could yield the given reasoning and answer\"}},\"required\":[\"chain_of_thought\",\"reconstructed_prompt\"],\"additionalProperties\":false}}}],\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\"}}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:42:15 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "cf-ray": [
+                "a16eb028ea54f58e-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1954"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999819"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "2ms"
+            ],
+            "x-request-id": [
+                "req_1e65a31e1bd2469ea1d12a3918f16a1d"
+            ],
+            "set-cookie": [
+                "__cf_bm=Tr1PvbU3Q.ZsUzOgmk7FMrk_anAkZGJ48VE8O4XDB6o-1783341733.2683604-1.0.1.1-AMp9B1zw0t_jUVL6PxedrE5PhXm7qVqyEC4VnB8OEGA3XihmWHb4og6iGp6GaPFG_pRunPMw0xQjISZWCU6a5e4gj42r8nGO94GKmzHT49RYtLN6BMNiu5.bCdjj2Cqx; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:12:15 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycwHiuGFJqNewAYzWempiwPfIgmo\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341733,\n  \"model\": \"gpt-4o-mini-2024-07-18\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_jawvhhshzS21hirAtPRgbDIJ\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"chain_of_thought\\\":\\\"Mary received 18 new potted plants yesterday. She already has 2 potted plants on each of the 40 window ledges, which is calculated as 2 * 40 = 80 potted plants. Adding the new plants to her existing plants gives 80 + 18 = 98 potted plants in total. Therefore, Mary will remain with 98 potted plants.\\\",\\\"reconstructed_prompt\\\":\\\"How many potted plants does Mary have after receiving 18 new ones if she already has 2 plants on each of her 40 window ledges?\\\"}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"logprobs\": null,\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 230,\n    \"completion_tokens\": 121,\n    \"total_tokens\": 351,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": \"fp_bd1115524b\"\n}\n"
+    }
+}

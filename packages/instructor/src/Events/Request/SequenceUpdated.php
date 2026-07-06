@@ -1,28 +1,8 @@
 <?php declare(strict_types=1);
 
+// @deprecated 2.5 — moved to \Cognesy\Instructor\Events\Streaming\SequenceUpdated. This alias file will be removed
+// in the next major release; update imports to the new namespace.
+
 namespace Cognesy\Instructor\Events\Request;
 
-use Cognesy\Instructor\Contracts\Sequenceable;
-use Cognesy\Instructor\Events\StructuredOutputEvent;
-use Cognesy\Utils\Json\Json;
-
-final class SequenceUpdated extends StructuredOutputEvent
-{
-    public function __construct(
-        public Sequenceable $sequence,
-        public int $completedIndex = -1,
-    ) {
-        if ($this->completedIndex < 0) {
-            $this->completedIndex = max(0, count($sequence) - 1);
-        }
-        parent::__construct();
-    }
-
-    public function completedItem(): mixed {
-        return $this->sequence->get($this->completedIndex);
-    }
-
-    public function __toString() : string {
-        return Json::encode($this->sequence);
-    }
-}
+\class_alias(\Cognesy\Instructor\Events\Streaming\SequenceUpdated::class, SequenceUpdated::class);

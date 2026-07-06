@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"user\",\"content\":\"Call the counter tool repeatedly until it stops you.\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_GELC45KxuVdmo9R7b6fVfPYl\",\"type\":\"function\",\"function\":{\"name\":\"counter\",\"arguments\":\"[]\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_GELC45KxuVdmo9R7b6fVfPYl\",\"content\":\"Counter is at 1. Keep going \\u2014 call counter again.\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"counter\",\"description\":\"Increments a counter and returns the current value. Call this tool repeatedly.\",\"parameters\":{\"type\":\"object\",\"properties\":{},\"additionalProperties\":false}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:32 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1030"
+            ],
+            "cf-ray": [
+                "a16eadad799bef8f-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "491"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999970"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "0s"
+            ],
+            "x-request-id": [
+                "req_121cee535dec4d6fbec24ab573118322"
+            ],
+            "set-cookie": [
+                "__cf_bm=0ebThMs1eBiT9gEqQNrQHEvfOk1j07ffPqaiWA4b3NY-1783341631.5918076-1.0.1.1-58uwoi7ZFm3b90_6cAeho9M0DZVy.jtCoKTkymjG6Ze.r.AcYweEfaF3iDf85mNh6Ylqzd_FMfLE.iSJXX42kvUgloQ1FGKC7C3DVMHlcKmlSQOH88wgP0t4FUTXH1Jo; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:32 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-Dycude06dqacF0h5ZRRoEnO1GoCyO\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341631,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_Pwe5pkeQa5Uhfa5SHA0W8B5b\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"counter\",\n              \"arguments\": \"{}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 171,\n    \"completion_tokens\": 12,\n    \"total_tokens\": 183,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

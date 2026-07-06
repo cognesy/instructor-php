@@ -1,0 +1,279 @@
+{
+    "class-string": {
+        "dispatchMode": "fromClassString",
+        "class": "SnapshotUser",
+        "returnedClass": "SnapshotUser",
+        "schemaName": "SnapshotUser",
+        "returnTarget": "typed_object",
+        "jsonSchema": {
+            "type": "object",
+            "x-title": "SnapshotUser",
+            "description": "C1 verification (research/v2-cleanup-plan/02): golden snapshots of the\nResponseModel produced for every supported input shape. Doubles as\ncompatibility evidence \u2014 any change to schema derivation, naming, or\ndispatch mode shows up as a fixture diff.\nRegenerate intentionally with:\nRESPONSE_MODEL_SNAPSHOT_UPDATE=1 vendor/bin/pest .../ResponseModelGoldenSnapshotTest.php",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "default": ""
+                },
+                "age": {
+                    "type": "integer",
+                    "default": 0
+                }
+            },
+            "x-php-class": "SnapshotUser",
+            "additionalProperties": false
+        }
+    },
+    "instance": {
+        "dispatchMode": "fromInstance",
+        "class": "SnapshotUser",
+        "returnedClass": "SnapshotUser",
+        "schemaName": "default_schema",
+        "returnTarget": "typed_object",
+        "jsonSchema": {
+            "type": "object",
+            "x-title": "SnapshotUser",
+            "description": "C1 verification (research/v2-cleanup-plan/02): golden snapshots of the\nResponseModel produced for every supported input shape. Doubles as\ncompatibility evidence \u2014 any change to schema derivation, naming, or\ndispatch mode shows up as a fixture diff.\nRegenerate intentionally with:\nRESPONSE_MODEL_SNAPSHOT_UPDATE=1 vendor/bin/pest .../ResponseModelGoldenSnapshotTest.php",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "default": ""
+                },
+                "age": {
+                    "type": "integer",
+                    "default": 0
+                }
+            },
+            "x-php-class": "SnapshotUser",
+            "additionalProperties": false
+        }
+    },
+    "json-schema-array": {
+        "dispatchMode": "fromJsonSchema",
+        "class": "Cognesy\\Dynamic\\Structure",
+        "returnedClass": "",
+        "schemaName": "custom_thing",
+        "returnTarget": "array",
+        "jsonSchema": {
+            "type": "object",
+            "name": "custom_thing",
+            "description": "A custom thing",
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "count": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "title"
+            ]
+        }
+    },
+    "schema-object": {
+        "dispatchMode": "fromSchema",
+        "class": "SnapshotUser",
+        "returnedClass": "SnapshotUser",
+        "schemaName": "SnapshotUser",
+        "returnTarget": "typed_object",
+        "jsonSchema": {
+            "type": "object",
+            "x-title": "SnapshotUser",
+            "description": "C1 verification (research/v2-cleanup-plan/02): golden snapshots of the\nResponseModel produced for every supported input shape. Doubles as\ncompatibility evidence \u2014 any change to schema derivation, naming, or\ndispatch mode shows up as a fixture diff.\nRegenerate intentionally with:\nRESPONSE_MODEL_SNAPSHOT_UPDATE=1 vendor/bin/pest .../ResponseModelGoldenSnapshotTest.php",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "default": ""
+                },
+                "age": {
+                    "type": "integer",
+                    "default": 0
+                }
+            },
+            "x-php-class": "SnapshotUser",
+            "additionalProperties": false
+        }
+    },
+    "json-schema-provider": {
+        "dispatchMode": "fromJsonSchemaProvider",
+        "class": "Cognesy\\Instructor\\Extras\\Scalar\\Scalar",
+        "returnedClass": "Cognesy\\Instructor\\Extras\\Scalar\\Scalar",
+        "schemaName": "default_schema",
+        "returnTarget": "typed_object",
+        "jsonSchema": {
+            "type": "object",
+            "properties": {
+                "age": {
+                    "x-php-class": "",
+                    "description": "Response value",
+                    "type": "integer"
+                }
+            },
+            "x-php-class": "Cognesy\\Instructor\\Extras\\Scalar\\Scalar",
+            "required": [
+                "age"
+            ]
+        }
+    },
+    "schema-provider": {
+        "dispatchMode": "fromSchemaProvider",
+        "class": "Cognesy\\Instructor\\Extras\\Sequence\\Sequence",
+        "returnedClass": "Cognesy\\Instructor\\Extras\\Sequence\\Sequence",
+        "schemaName": "collectionOfSnapshotUser",
+        "returnTarget": "typed_object",
+        "jsonSchema": {
+            "type": "object",
+            "x-title": "collectionOfSnapshotUser",
+            "description": "A collection of SnapshotUser",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "x-title": "SnapshotUser",
+                        "description": "C1 verification (research/v2-cleanup-plan/02): golden snapshots of the\nResponseModel produced for every supported input shape. Doubles as\ncompatibility evidence \u2014 any change to schema derivation, naming, or\ndispatch mode shows up as a fixture diff.\nRegenerate intentionally with:\nRESPONSE_MODEL_SNAPSHOT_UPDATE=1 vendor/bin/pest .../ResponseModelGoldenSnapshotTest.php",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "default": ""
+                            },
+                            "age": {
+                                "type": "integer",
+                                "default": 0
+                            }
+                        },
+                        "x-php-class": "SnapshotUser",
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "required": [
+                "list"
+            ],
+            "x-php-class": "Cognesy\\Instructor\\Extras\\Sequence\\Sequence",
+            "additionalProperties": false
+        }
+    },
+    "tool-selection-provider": {
+        "dispatchMode": "fromJsonSchemaProvider",
+        "class": "SnapshotToolSelector",
+        "returnedClass": "",
+        "schemaName": "SnapshotUser",
+        "returnTarget": "array",
+        "jsonSchema": {
+            "type": "object",
+            "properties": {
+                "choice": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "choice"
+            ]
+        }
+    },
+    "empty-array-default": {
+        "dispatchMode": "fromClassString",
+        "class": "Cognesy\\Dynamic\\Structure",
+        "returnedClass": "Cognesy\\Dynamic\\Structure",
+        "schemaName": "Cognesy_Dynamic_Structure",
+        "returnTarget": "typed_object",
+        "jsonSchema": {
+            "type": "object",
+            "x-title": "Structure",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "boolean"
+                            },
+                            {
+                                "type": "object"
+                            }
+                        ]
+                    },
+                    "description": "",
+                    "default": []
+                },
+                "schema": {
+                    "type": "object",
+                    "x-title": "schema",
+                    "properties": {
+                        "type": {
+                            "type": "object",
+                            "x-title": "type",
+                            "x-php-class": "Symfony\\Component\\TypeInfo\\Type",
+                            "additionalProperties": false
+                        },
+                        "name": {
+                            "type": "string",
+                            "default": ""
+                        },
+                        "description": {
+                            "type": "string",
+                            "default": ""
+                        },
+                        "enumValues": {
+                            "type": "array",
+                            "items": {
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "integer"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "object"
+                                    }
+                                ]
+                            },
+                            "description": "",
+                            "nullable": true,
+                            "default": null
+                        },
+                        "nullable": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "hasDefaultValue": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "defaultValue": {
+                            "nullable": true,
+                            "default": null
+                        }
+                    },
+                    "required": [
+                        "type"
+                    ],
+                    "x-php-class": "Cognesy\\Schema\\Data\\Schema",
+                    "additionalProperties": false
+                }
+            },
+            "required": [
+                "schema"
+            ],
+            "x-php-class": "Cognesy\\Dynamic\\Structure",
+            "additionalProperties": false
+        }
+    }
+}

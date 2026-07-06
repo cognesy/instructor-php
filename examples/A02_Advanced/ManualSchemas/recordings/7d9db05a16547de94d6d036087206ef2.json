@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## Tool Use\\n\\nUse the provided tool `extracted_data` to extract correct and accurate structured data from the input.\\n\\nTool purpose: Function call based on user instructions.\\n\\nCall the tool with the best supported arguments for the requested extraction.\"},{\"role\":\"user\",\"content\":\"John Doe (john.doe@example.com) is a 35-year-old admin user. He lives in\\nNew York at 123 Main St, NYC, 10001. His skills include PHP, JavaScript,\\nand Docker.\"}],\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\",\"description\":\"Function call based on user instructions.\",\"parameters\":{\"type\":\"object\",\"description\":\"User information extracted from text\",\"properties\":{\"name\":{\"type\":\"string\",\"description\":\"Full name of the user\"},\"age\":{\"type\":\"integer\",\"description\":\"Age in years\"},\"email\":{\"type\":\"string\",\"description\":\"Email address\"},\"role\":{\"type\":\"string\",\"description\":\"User role\",\"enum\":[\"admin\",\"user\",\"guest\"]},\"address\":{\"type\":\"object\",\"description\":\"User address\",\"properties\":{\"street\":{\"type\":\"string\"},\"city\":{\"type\":\"string\"},\"zip\":{\"type\":\"string\"}},\"required\":[\"city\"],\"additionalProperties\":false},\"skills\":{\"type\":\"array\",\"description\":\"List of skills\",\"items\":{\"type\":\"string\"}}},\"required\":[\"name\",\"email\"],\"additionalProperties\":false}}}],\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\"}}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:39:31 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1246"
+            ],
+            "cf-ray": [
+                "a16eac308fe9bf31-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1105"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999895"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "1ms"
+            ],
+            "x-request-id": [
+                "req_687cbe491db44caabd13150a477dc0d5"
+            ],
+            "set-cookie": [
+                "__cf_bm=rJPt.VcHZcW0raWYxFKlJB2.hbv6mm4olW_vSyihilg-1783341570.6504102-1.0.1.1-e4TOJliSl0yIBnexiKUXIfoEwnIvkqGZZWkgcp9R65PQB_7py3LY2iwZRdbe8Vn.V6QN9jZPWbFStPHKs1kH88YmeaA1mBCy.Y6XlzCw145rp5erGhxdonPinWxbxGDh; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:09:31 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DyctekuQdTZpANhCpgOnthy0FXTK7\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341570,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_acHE6Ai6Ys7CyvP6c4viur4A\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"name\\\":\\\"John Doe\\\",\\\"age\\\":35,\\\"email\\\":\\\"john.doe@example.com\\\",\\\"role\\\":\\\"admin\\\",\\\"address\\\":{\\\"street\\\":\\\"123 Main St\\\",\\\"city\\\":\\\"NYC\\\",\\\"zip\\\":\\\"10001\\\"},\\\"skills\\\":[\\\"PHP\\\",\\\"JavaScript\\\",\\\"Docker\\\"]}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 293,\n    \"completion_tokens\": 64,\n    \"total_tokens\": 357,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

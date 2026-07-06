@@ -1,11 +1,8 @@
 <?php declare(strict_types=1);
 
+// @deprecated 2.5 — moved to \Cognesy\Instructor\Events\Streaming\PartialResponseGenerationFailed. This alias file will be removed
+// in the next major release; update imports to the new namespace.
+
 namespace Cognesy\Instructor\Events\PartialsGenerator;
 
-use Cognesy\Instructor\Events\StructuredOutputEvent;
-use Psr\Log\LogLevel;
-
-final class PartialResponseGenerationFailed extends StructuredOutputEvent
-{
-    public string $logLevel = LogLevel::WARNING;
-}
+\class_alias(\Cognesy\Instructor\Events\Streaming\PartialResponseGenerationFailed::class, PartialResponseGenerationFailed::class);

@@ -301,6 +301,10 @@ final class SymfonyConfigProvider implements CanProvideConfig
             'streamChunkSize' => $this->intValue($config, 256, 'streamChunkSize', 'stream_chunk_size'),
             'streamHeaderTimeout' => $this->intValue($config, 5, 'streamHeaderTimeout', 'stream_header_timeout'),
             'failOnError' => $this->boolValue($config, false, 'failOnError', 'fail_on_error'),
+            'verifyTls' => $this->boolValue($config, true, 'verifyTls', 'verify_tls'),
+            'followRedirects' => $this->boolValue($config, true, 'followRedirects', 'follow_redirects'),
+            'maxRedirects' => $this->nullableIntValue($config, 'maxRedirects', 'max_redirects'),
+            'httpVersion' => $this->nullableStringValue($config, 'httpVersion', 'http_version'),
         ];
     }
 
@@ -560,6 +564,17 @@ final class SymfonyConfigProvider implements CanProvideConfig
     }
 
     /** @param array<string, mixed> $data */
+    private function nullableStringValue(array $data, string ...$keys): ?string
+    {
+        $value = $this->stringValue($data, ...$keys);
+
+        return match ($value) {
+            '' => null,
+            default => $value,
+        };
+    }
+
+    /** @param array<string, mixed> $data */
     private function intValue(array $data, int $default, string ...$keys): int
     {
         $value = $this->firstDefinedValue($data, $keys);
@@ -569,6 +584,19 @@ final class SymfonyConfigProvider implements CanProvideConfig
             is_string($value) && preg_match('/^-?\d+$/', $value) === 1 => (int) $value,
             is_float($value) => (int) $value,
             default => $default,
+        };
+    }
+
+    /** @param array<string, mixed> $data */
+    private function nullableIntValue(array $data, string ...$keys): ?int
+    {
+        $value = $this->firstDefinedValue($data, $keys);
+
+        return match (true) {
+            is_int($value) => $value,
+            is_string($value) && preg_match('/^-?\d+$/', $value) === 1 => (int) $value,
+            is_float($value) => (int) $value,
+            default => null,
         };
     }
 

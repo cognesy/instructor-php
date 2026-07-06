@@ -3,6 +3,7 @@ title: 'Send Subagent telemetry to Langfuse'
 docname: 'agent_subagent_telemetry_langfuse'
 id: '9b71'
 tags:
+  - 'no-replay'
   - 'agent-troubleshooting'
   - 'langfuse'
   - 'subagents'

@@ -14,10 +14,10 @@
   },
   "require": {
     "php": "^8.3",
-    "cognesy/instructor-config": "^2.3",
-    "cognesy/instructor-events": "^2.3",
-    "cognesy/instructor-http-client": "^2.3",
-    "cognesy/instructor-utils": "^2.3"
+    "cognesy/instructor-config": "^2.4",
+    "cognesy/instructor-events": "^2.4",
+    "cognesy/instructor-http-client": "^2.4",
+    "cognesy/instructor-utils": "^2.4"
   },
   "require-dev": {
     "guzzlehttp/guzzle": "^7.4",

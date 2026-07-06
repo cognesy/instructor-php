@@ -35,8 +35,9 @@ it('keeps structured stream replay cache empty with none policy', function () {
     iterator_to_array($stream->responses());
 
     $reflection = new ReflectionClass($stream);
-    $property = $reflection->getProperty('cachedResponses');
-    $cached = $property->getValue($stream);
+    $cacheProperty = $reflection->getProperty('cache');
+    $cache = $cacheProperty->getValue($stream);
+    $cached = $cache->replay();
 
     expect(count($cached))->toBe(0);
 });
@@ -67,8 +68,9 @@ it('stores structured stream replay cache with memory policy', function () {
     iterator_to_array($stream->responses());
 
     $reflection = new ReflectionClass($stream);
-    $property = $reflection->getProperty('cachedResponses');
-    $cached = $property->getValue($stream);
+    $cacheProperty = $reflection->getProperty('cache');
+    $cache = $cacheProperty->getValue($stream);
+    $cached = $cache->replay();
 
     expect(count($cached))->toBe(2);
 });

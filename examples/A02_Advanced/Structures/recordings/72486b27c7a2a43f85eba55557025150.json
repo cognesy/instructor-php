@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## Tool Use\\n\\nUse the provided tool `extracted_data` to extract correct and accurate structured data from the input.\\n\\nTool purpose: Function call based on user instructions.\\n\\nCall the tool with the best supported arguments for the requested extraction.\"},{\"role\":\"user\",\"content\":\"Jane Doe lives in Springfield, 50210. She is 25 years old and works as manager at McDonald's.\\nMcDonald's in New York is located at 456 Elm St, NYC, 12345. Her favourite books are \\\"The Lord\\nof the Rings\\\" and \\\"The Hobbit\\\" by JRR Tolkien.\"}],\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\",\"description\":\"Function call based on user instructions.\",\"parameters\":{\"type\":\"object\",\"description\":\"A person object\",\"properties\":{\"name\":{\"type\":\"string\",\"description\":\"Name of the person\"},\"age\":{\"type\":\"integer\",\"description\":\"Age of the person\"},\"gender\":{\"type\":\"string\",\"description\":\"Gender of the person\",\"enum\":[\"male\",\"female\"]},\"address\":{\"type\":\"object\",\"description\":\"Address of the person\",\"properties\":{\"street\":{\"type\":\"string\",\"description\":\"Street name\"},\"city\":{\"type\":\"string\",\"description\":\"City name\"},\"zip\":{\"type\":\"string\",\"description\":\"Zip code\"}},\"required\":[\"city\"],\"additionalProperties\":false},\"role\":{\"type\":\"string\",\"description\":\"Role of the person\",\"enum\":[\"manager\",\"line\"]},\"favourite_books\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"description\":\"Favorite book data\",\"properties\":{\"author\":{\"type\":\"string\",\"description\":\"Book author\"},\"title\":{\"type\":\"string\",\"description\":\"Book title\"}},\"required\":[\"title\"],\"additionalProperties\":false},\"description\":\"Favorite books of the person\"}},\"required\":[\"name\",\"age\",\"address\",\"role\",\"favourite_books\"],\"additionalProperties\":false}}}],\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\"}}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:39:35 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1310"
+            ],
+            "cf-ray": [
+                "a16eac464c4b270b-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "805"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999875"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "1ms"
+            ],
+            "x-request-id": [
+                "req_017ab2c6613f4dd89e625473a4fa70a2"
+            ],
+            "set-cookie": [
+                "__cf_bm=io9a9hZc9yv_jE29Teu00n5czLu4DDWGiUNSp1yOZWw-1783341574.1216445-1.0.1.1-W9bwDkSNMH.xG79my1M0ovPGAjLfj70GeGnC5Vn3YWVvo.vGLo4HDqomMQia4R5eu8sVhw6TUPxlnCYo0JiR6XsZFCTiGOc1C6_TQILkwSZLZtMYrMRWpeuVnu.3MDcL; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:09:35 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DyctiO2OwXv2kBNiNkhCYzaXg5uzm\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341574,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_782lDj4EXMf9GuAM7ZLurs2f\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"name\\\":\\\"Jane Doe\\\",\\\"age\\\":25,\\\"gender\\\":\\\"female\\\",\\\"address\\\":{\\\"city\\\":\\\"Springfield\\\",\\\"zip\\\":\\\"50210\\\"},\\\"role\\\":\\\"manager\\\",\\\"favourite_books\\\":[{\\\"title\\\":\\\"The Lord of the Rings\\\",\\\"author\\\":\\\"JRR Tolkien\\\"},{\\\"title\\\":\\\"The Hobbit\\\",\\\"author\\\":\\\"JRR Tolkien\\\"}]}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 353,\n    \"completion_tokens\": 75,\n    \"total_tokens\": 428,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

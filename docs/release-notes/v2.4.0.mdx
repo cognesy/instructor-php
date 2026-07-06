@@ -1,0 +1,60 @@
+---
+title: 'v2.4.0'
+---
+
+## What's New
+
+v2.4.0 is an internal architecture and dependency-hygiene release. It introduces a new
+low-level package, `cognesy/instructor-contracts`, and uses it to break a circular
+dependency between `cognesy/instructor-struct` and `cognesy/instructor-dynamic`. It also
+repairs a set of cross-package dependency declarations across the monorepo so that each
+package now declares exactly what it uses — which makes standalone (split-package)
+installs resolve correctly.
+
+There are no breaking changes to public APIs. Class names and namespaces are unchanged;
+the moved contracts keep their existing `Cognesy\Instructor\…` namespaces.
+
+## New package: `cognesy/instructor-contracts`
+
+A new foundation package holds the small, dependency-light abstractions that several
+Instructor packages share — validation, transformation, and deserialization contracts
+plus their value objects. It depends only on `cognesy/instructor-utils`.
+
+Moved into the package (namespaces preserved, so no consumer code changes):
+
+- `Cognesy\Instructor\Validation\ValidationResult`, `ValidationError`
+- `Cognesy\Instructor\Validation\Contracts\CanValidateSelf`, `CanValidateObject`, `CanValidateValue`
+- `Cognesy\Instructor\Transformation\Contracts\CanTransformSelf`, `CanTransformData`
+- `Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass`, `CanDeserializeSelf`
+
+The response-level orchestration classes (`ResponseValidator`, `ResponseTransformer`,
+and the `*Response` contracts) remain in `cognesy/instructor-struct`.
+
+## Broken dependency cycle: `instructor-struct` ↔ `dynamic`
+
+Previously `instructor-struct` and `dynamic` depended on each other in code (each imported
+the other's classes), which only worked because the monorepo autoloads every namespace.
+Both now depend on `cognesy/instructor-contracts` instead, removing the cycle:
+
+- `dynamic` no longer depends on `instructor-struct`.
+- `dynamic` deserializes nested concrete-class fields through the `CanDeserializeClass`
+  contract, with a self-contained Symfony-based default implementation
+  (`SymfonyStructureDeserializer`). `instructor-struct`'s `SymfonyDeserializer` is unchanged.
+
+## Cross-package dependency repairs
+
+- **`cognesy/logging` naming.** Six packages required a non-existent
+  `cognesy/instructor-logging`; they now correctly require `cognesy/logging`. The
+  Laravel package's stale `^1.22` constraint on it is aligned to the current line.
+- **Undeclared dependencies.** Packages that used a sibling's classes without declaring a
+  Composer dependency on it now declare it, across 14 packages. This is invisible inside
+  the monorepo but is required for correct standalone installs.
+- **`utils` ↔ `pipeline` cycle.** `Cognesy\Utils\Str` no longer depends on the `pipeline`
+  package; its case-normalization is now dependency-free. The Pipeline-based variant is
+  available as `Cognesy\Pipeline\Extras\StringNormalizer`.
+
+## Upgrade notes
+
+No action required. All changes preserve existing class names, namespaces, and public
+behavior. Standalone consumers of individual `cognesy/*` packages benefit from the
+corrected dependency metadata automatically.

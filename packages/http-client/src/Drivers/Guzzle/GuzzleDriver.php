@@ -8,7 +8,7 @@ use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
-use Cognesy\Http\Events\HttpResponseReceived;
+use Cognesy\Http\Drivers\DispatchesHttpDriverEvents;
 use Cognesy\Http\Exceptions\ConnectionException;
 use Cognesy\Http\Exceptions\HttpExceptionFactory;
 use Cognesy\Http\Exceptions\HttpRequestException;
@@ -24,6 +24,8 @@ use Psr\Http\Message\ResponseInterface;
 
 class GuzzleDriver implements CanHandleHttpRequest
 {
+    use DispatchesHttpDriverEvents;
+
     protected HttpClientConfig $config;
     protected EventDispatcherInterface $events;
     protected ClientInterface $client;
@@ -58,7 +60,7 @@ class GuzzleDriver implements CanHandleHttpRequest
             $this->dispatchStatusCodeFailed($httpResponse->statusCode(), $request);
             throw $httpException;
         }
-        $this->dispatchResponseReceived($httpResponse, $request);
+        $this->dispatchResponseReceived($request, $httpResponse->statusCode(), $httpResponse->isStreamed(), $httpResponse->isStreamed() ? null : $httpResponse->body());
         return $httpResponse;
     }
 
@@ -72,13 +74,25 @@ class GuzzleDriver implements CanHandleHttpRequest
             'timeout' => $this->config->requestTimeout ?? 30,
             'stream' => $request->isStreamed(),
             'http_errors' => false, // Disable Guzzle's automatic HTTP error handling
+            'verify' => $this->config->verifyTls,
+            'allow_redirects' => $this->redirectOptions(),
         ];
+        if ($this->config->httpVersion !== null) {
+            $options['version'] = $this->config->httpVersion;
+        }
 
         if ($body !== '') {
             $options['body'] = $body;
         }
 
         return $this->client->request($request->method(), $request->url(), $options);
+    }
+
+    private function redirectOptions(): bool|array {
+        return match ($this->config->followRedirects) {
+            true => $this->config->maxRedirects === null ? true : ['max' => $this->config->maxRedirects],
+            false => false,
+        };
     }
 
     private function buildHttpResponse(ResponseInterface $response, HttpRequest $request): HttpResponse {
@@ -113,48 +127,8 @@ class GuzzleDriver implements CanHandleHttpRequest
 
     // event dispatching
 
-    private function dispatchRequestSent(HttpRequest $request): void {
-        $this->events->dispatch(new HttpRequestSent([
-            'requestId' => $request->id,
-            'url' => $request->url(),
-            'method' => $request->method(),
-            'headers' => $request->headers(),
-            'body' => $request->body()->toArray(),
-            ...HttpRequestTelemetry::metadataForRequest($request),
-        ]));
-    }
 
-    private function dispatchStatusCodeFailed(int $statusCode, HttpRequest $request): void {
-        $this->events->dispatch(new HttpRequestFailed([
-            'requestId' => $request->id,
-            'url' => $request->url(),
-            'method' => $request->method(),
-            'statusCode' => $statusCode,
-            ...HttpRequestTelemetry::metadataForRequest($request),
-        ]));
-    }
 
-    private function dispatchRequestFailed(HttpRequestException $exception, HttpRequest $request): void {
-        $this->events->dispatch(new HttpRequestFailed([
-            'requestId' => $request->id,
-            'url' => $request->url(),
-            'method' => $request->method(),
-            'headers' => $request->headers(),
-            'body' => $request->body()->toArray(),
-            'errors' => $exception->getMessage(),
-            ...HttpRequestTelemetry::metadataForRequest($request),
-        ]));
-    }
 
-    private function dispatchResponseReceived(HttpResponse $response, HttpRequest $request): void {
-        $isStreamed = $response->isStreamed();
-        $this->events->dispatch(new HttpResponseReceived(array_filter([
-            'requestId' => $request->id,
-            'statusCode' => $response->statusCode(),
-            'isStreamed' => $isStreamed,
-            'body' => !$isStreamed ? $response->body() : null,
-            ...HttpRequestTelemetry::metadataForRequest($request),
-        ], static fn(mixed $v): bool => $v !== null)));
-    }
 
 }

@@ -1,0 +1,84 @@
+{
+    "request": {
+        "url": "https:\/\/api.x.ai\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"grok-3\",\"messages\":[{\"role\":\"user\",\"content\":\"What is the capital of France\"}],\"max_completion_tokens\":64}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:14 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "745"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000"
+            ],
+            "set-cookie": [
+                "__cf_bm=Q0Yz6Eh5yVFmfuQeOJw5Ku5fmSxMQh4Dv_AG_skbwzs-1783341613.4862-1.0.1.1-nk5pK0n8wVGxX7R2Mj34No8usnJhkOnXZirQeHUVwNlDBiTJFoJoFFKliStm6r1X8HYRurFjwr4_NKcLy74RQW_AtTpcQ6KFp91F6YSSlxyCFrqQcFlM2cWkIG.ZJYiF; HttpOnly; Secure; Path=\/; Domain=x.ai; Expires=Mon, 06 Jul 2026 13:10:14 GMT"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "10000000"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "10000000"
+            ],
+            "x-zero-data-retention": [
+                "false"
+            ],
+            "x-ratelimit-limit-requests": [
+                "1800"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "1800"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "x-request-id": [
+                "94bee85c-dc84-9e40-a065-853e220f97aa"
+            ],
+            "x-metrics-ttft-ms": [
+                "362.8"
+            ],
+            "x-metrics-mean-itl-ms": [
+                "7.4"
+            ],
+            "x-metrics-e2e-ms": [
+                "1242.3"
+            ],
+            "traceparent": [
+                "00-6fb853cebc5998b2ab3ba621a6a3623f-203ac1dc00003e40-01"
+            ],
+            "vary": [
+                "origin, access-control-request-method, access-control-request-headers"
+            ],
+            "access-control-allow-origin": [
+                "*"
+            ],
+            "access-control-expose-headers": [
+                "*"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "cf-ray": [
+                "a16ead3c4c3bc3b3-WAW"
+            ]
+        },
+        "body": "{\"id\":\"94bee85c-dc84-9e40-a065-853e220f97aa\",\"object\":\"chat.completion\",\"created\":1783341614,\"model\":\"grok-4.3\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"**Paris** is the capital of France.\",\"reasoning_content\":\"The question is: \\\"What is the capital of France\\\"\\n\",\"refusal\":null},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":136,\"completion_tokens\":9,\"total_tokens\":238,\"prompt_tokens_details\":{\"text_tokens\":136,\"audio_tokens\":0,\"image_tokens\":0,\"cached_tokens\":128},\"completion_tokens_details\":{\"reasoning_tokens\":93,\"audio_tokens\":0,\"accepted_prediction_tokens\":0,\"rejected_prediction_tokens\":0},\"num_sources_used\":0,\"cost_in_usd_ticks\":2906000},\"system_fingerprint\":\"fp_eb3c003fc66c14ed\",\"service_tier\":\"default\"}"
+    }
+}

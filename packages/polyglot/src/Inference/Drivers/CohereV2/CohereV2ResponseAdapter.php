@@ -40,13 +40,14 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
         );
     }
 
+    /**
+     * Tool-call fields are populated by fromStreamDeltas() from
+     * extractStreamToolDeltas() — do not parse `tool_calls` here.
+     */
     #[\Override]
     protected function fromDecodedStreamData(array $data, ?HttpResponse $responseData = null): PartialInferenceDelta {
         return new PartialInferenceDelta(
             contentDelta: $this->makeContentDelta($data),
-            toolId: $data['delta']['message']['tool_calls']['function']['id'] ?? '',
-            toolName: $data['delta']['message']['tool_calls']['function']['name'] ?? '',
-            toolArgs: $data['delta']['message']['tool_calls']['function']['arguments'] ?? '',
             finishReason: $data['delta']['finish_reason'] ?? '',
             usage: $this->usageFormat->fromData($data),
             responseData: $responseData,

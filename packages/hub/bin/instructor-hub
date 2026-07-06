@@ -26,6 +26,35 @@ function findAutoload()
 
 require findAutoload();
 
+// Record/replay switch: consume --record / --replay / --recordings-dir=<dir> before
+// dispatch and translate them into env vars. Set on putenv AND $_ENV/$_SERVER so they
+// reach the per-example subprocesses regardless of whether the runner inherits the
+// environment (run-all) or builds an explicit env from $_ENV/$_SERVER (single run).
+// Pure sugar over setting INSTRUCTOR_EXAMPLES_HTTP / INSTRUCTOR_EXAMPLES_RECORDINGS_DIR.
+(static function (): void {
+    $setEnv = static function (string $key, string $value): void {
+        putenv("{$key}={$value}");
+        $_ENV[$key] = $value;
+        $_SERVER[$key] = $value;
+    };
+    $argv = $_SERVER['argv'] ?? [];
+    $kept = [];
+    foreach ($argv as $i => $arg) {
+        if ($i === 0) { $kept[] = $arg; continue; }
+        if ($arg === '--record') { $setEnv('INSTRUCTOR_EXAMPLES_HTTP', 'record'); continue; }
+        if ($arg === '--replay') { $setEnv('INSTRUCTOR_EXAMPLES_HTTP', 'replay'); continue; }
+        if (str_starts_with($arg, '--recordings-dir=')) {
+            $setEnv('INSTRUCTOR_EXAMPLES_RECORDINGS_DIR', substr($arg, strlen('--recordings-dir=')));
+            continue;
+        }
+        $kept[] = $arg;
+    }
+    $_SERVER['argv'] = $kept;
+    $_SERVER['argc'] = count($kept);
+    $GLOBALS['argv'] = $kept;
+    $GLOBALS['argc'] = count($kept);
+})();
+
 // run the app
 $app = new Hub();
 $app->run();

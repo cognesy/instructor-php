@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## Output Requirements\\n\\nRespond with a strict JSON object that matches this JSON Schema:\\n\\n{\\n    \\\"type\\\": \\\"object\\\",\\n    \\\"x-title\\\": \\\"Tasks\\\",\\n    \\\"properties\\\": {\\n        \\\"meetingDate\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"x-title\\\": \\\"meetingDate\\\",\\n            \\\"x-php-class\\\": \\\"DateTime\\\"\\n        },\\n        \\\"tasks\\\": {\\n            \\\"type\\\": \\\"array\\\",\\n            \\\"items\\\": {\\n                \\\"type\\\": \\\"object\\\",\\n                \\\"x-title\\\": \\\"item\\\",\\n                \\\"description\\\": \\\"Correctly extract items of type: Task\\\",\\n                \\\"properties\\\": {\\n                    \\\"title\\\": {\\n                        \\\"type\\\": \\\"string\\\"\\n                    },\\n                    \\\"description\\\": {\\n                        \\\"type\\\": \\\"string\\\"\\n                    },\\n                    \\\"dueDate\\\": {\\n                        \\\"type\\\": \\\"string\\\",\\n                        \\\"x-title\\\": \\\"dueDate\\\",\\n                        \\\"x-php-class\\\": \\\"DateTimeImmutable\\\"\\n                    },\\n                    \\\"owner\\\": {\\n                        \\\"type\\\": \\\"string\\\",\\n                        \\\"enum\\\": [\\n                            \\\"pm\\\",\\n                            \\\"dev\\\"\\n                        ],\\n                        \\\"x-php-class\\\": \\\"Role\\\"\\n                    },\\n                    \\\"status\\\": {\\n                        \\\"type\\\": \\\"string\\\",\\n                        \\\"enum\\\": [\\n                            \\\"pending\\\",\\n                            \\\"completed\\\"\\n                        ],\\n                        \\\"x-php-class\\\": \\\"TaskStatus\\\"\\n                    }\\n                },\\n                \\\"required\\\": [\\n                    \\\"title\\\",\\n                    \\\"description\\\",\\n                    \\\"dueDate\\\",\\n                    \\\"owner\\\",\\n                    \\\"status\\\"\\n                ],\\n                \\\"x-php-class\\\": \\\"\\\\\\\\Task\\\",\\n                \\\"additionalProperties\\\": false\\n            }\\n        }\\n    },\\n    \\\"required\\\": [\\n        \\\"meetingDate\\\",\\n        \\\"tasks\\\"\\n    ],\\n    \\\"x-php-class\\\": \\\"Tasks\\\",\\n    \\\"additionalProperties\\\": false\\n}\"},{\"role\":\"user\",\"content\":\"Transcription of meeting from 2024-01-15, 16:00\\n---\\nPM: Hey, how's progress on the video transcription engine?\\nDev: I've got basic functionality working, but accuracy isn't great yet. Might need to switch to a different API.\\nPM: So the plan is to research alternatives and provide a comparison? Is it possible by Jan 20th?\\nDev: Sure, I'll make it available before the meeting.\\nPM: The one at 12?\\nDev: Yes, at 12. By the way, are we still planning to support real-time transcription?\\nPM: Yes, it's a key feature. Speaking of which, I need to update the product roadmap. I'll have that ready by Jan 18th.\\nDev: Got it. I'll keep that in mind while evaluating APIs. Oh, and the UI for the summary view is ready for review.\\nPM: Great, I'll take a look tomorrow by 10.\"}],\"max_completion_tokens\":1024,\"response_format\":{\"type\":\"json_object\"}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:00 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1453"
+            ],
+            "cf-ray": [
+                "a16eacdedafe1027-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1704"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999314"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "10ms"
+            ],
+            "x-request-id": [
+                "req_a0825b373b6341e8a44c4d3ef3f365f7"
+            ],
+            "set-cookie": [
+                "__cf_bm=SFYPxacm1rRle048mOlpw7YkEsj3Zum9Kqq7Bys4rxg-1783341598.5335631-1.0.1.1-GjDKF6c8YcigYXYTAJJcu5gEOpORctFB0Qo_UQp3cDPfn3k31chwx1EWnUJh7rt6RO5CK7iruUltD.G7pHhE5N2yIF283A4CcFk75lDOh8eh8dmqJsxRgoMR7s4VyBBk; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:00 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-Dycu6KXszfJPYns9F2Xm5qr6kmCnf\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341598,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"{\\\"meetingDate\\\":\\\"2024-01-15T16:00:00\\\",\\\"tasks\\\":[{\\\"title\\\":\\\"Research transcription API alternatives\\\",\\\"description\\\":\\\"Investigate alternative APIs for the video transcription engine and provide a comparison.\\\",\\\"dueDate\\\":\\\"2024-01-20T00:00:00\\\",\\\"owner\\\":\\\"dev\\\",\\\"status\\\":\\\"pending\\\"},{\\\"title\\\":\\\"Update product roadmap\\\",\\\"description\\\":\\\"Update the product roadmap, including support for real-time transcription.\\\",\\\"dueDate\\\":\\\"2024-01-18T00:00:00\\\",\\\"owner\\\":\\\"pm\\\",\\\"status\\\":\\\"pending\\\"},{\\\"title\\\":\\\"Review summary view UI\\\",\\\"description\\\":\\\"Review the UI for the summary view.\\\",\\\"dueDate\\\":\\\"2024-01-16T10:00:00\\\",\\\"owner\\\":\\\"pm\\\",\\\"status\\\":\\\"pending\\\"}]}\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 555,\n    \"completion_tokens\": 159,\n    \"total_tokens\": 714,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

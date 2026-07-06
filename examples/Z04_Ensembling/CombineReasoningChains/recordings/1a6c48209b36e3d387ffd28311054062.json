@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## System Instructions\\n\\nGiven a question and context, answer step-by-step.\\nIf unsure, answer \\\"Unknown\\\".\\n\\n## Tool Use\\n\\nUse the provided tool `extracted_data` to extract correct and accurate structured data from the input.\\n\\nTool purpose: Function call based on user instructions.\\n\\nCall the tool with the best supported arguments for the requested extraction.\"},{\"role\":\"user\",\"content\":\"<question>\\nWould Arnold Schwarzenegger have been able to deadlift an adult Black rhinoceros at his peak strength?\\n<\\\/question>\\n<context>\\nCompare Arnold Schwarzenegger's peak conventional deadlift to an adult Black rhinoceros's mass, then account for the fact that deadlifting an animal is much harder than deadlifting an equivalent static barbell because of shape, balance, and safe grip\\\/positioning constraints.\\nNo, it is very unlikely. Arnold Schwarzenegger\\u2019s peak deadlift was roughly in the 250\\u2013320 kg range (depending on source and lift type), while an adult Black rhinoceros typically weighs about 800\\u20131,400 kg. Even ignoring the animal\\u2019s awkward body shape, that is several times beyond his likely max, so he could not practically deadlift a full adult Black rhino.\\n<\\\/context>\"}],\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\",\"description\":\"Function call based on user instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"intermediate_reasoning\":{\"type\":\"string\"},\"correct_answer\":{\"type\":\"string\"}},\"required\":[\"intermediate_reasoning\",\"correct_answer\"],\"additionalProperties\":false}}}],\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\"}}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:41:56 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1889"
+            ],
+            "cf-ray": [
+                "a16eafb54a7ab607-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1509"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999710"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "4ms"
+            ],
+            "x-request-id": [
+                "req_9a85ac25031c478e9de88d9a438a7b3f"
+            ],
+            "set-cookie": [
+                "__cf_bm=S8tWBnb3TS.xMWWG.CSyz9uRFKPfAbY1nmQJLzgxjxU-1783341714.7655637-1.0.1.1-Rx4rSP1W52l4w39CmwDPk5nA6TZcvII7izvFKTFV4kYgf6N8Jyy8znuATMdFEn4aepIseyTODuh67hsZ7ZI4X0Ec8QtUjLPigvfxrcNU6mR0_aMawgZHSh8eJT0dNK3w; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:11:56 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycvzblzriJjABpSenNeGECcBnNHP\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341715,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_Ant8k7SvP6eOM7a9HTNnFZqq\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"intermediate_reasoning\\\":\\\"The question asks whether Arnold Schwarzenegger could deadlift an adult Black rhinoceros at his peak strength. The context provides the relevant comparison: Arnold's peak conventional deadlift was roughly 250\u2013320 kg, while an adult Black rhinoceros weighs about 800\u20131,400 kg. Because the rhino is several times heavier and much harder to deadlift safely due to shape, balance, and grip\/positioning issues, the answer is no, very unlikely.\\\",\\\"correct_answer\\\":\\\"No. Arnold Schwarzenegger\u2019s peak conventional deadlift was roughly 250\u2013320 kg, while an adult Black rhinoceros typically weighs about 800\u20131,400 kg. Since the rhino is several times heavier and much harder to deadlift safely because of its shape, balance, and grip\/positioning constraints, he could not practically deadlift a full adult Black rhino.\\\"}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 372,\n    \"completion_tokens\": 196,\n    \"total_tokens\": 568,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

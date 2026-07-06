@@ -8,7 +8,7 @@ use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
-use Cognesy\Http\Events\HttpResponseReceived;
+use Cognesy\Http\Drivers\DispatchesHttpDriverEvents;
 use Cognesy\Http\Exceptions\ConnectionException;
 use Cognesy\Http\Exceptions\HttpExceptionFactory;
 use Cognesy\Http\Exceptions\HttpRequestException;
@@ -24,6 +24,8 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class SymfonyDriver implements CanHandleHttpRequest
 {
+    use DispatchesHttpDriverEvents;
+
     protected HttpClientConfig $config;
     protected EventDispatcherInterface $events;
     protected HttpClientInterface $client;
@@ -38,7 +40,12 @@ class SymfonyDriver implements CanHandleHttpRequest
         if ($clientInstance !== null && !($clientInstance instanceof HttpClientInterface)) {
             throw new \InvalidArgumentException('Client instance of SymfonyDriver must be of type Symfony\Contracts\HttpClient\HttpClientInterface');
         }
-        $this->client = $clientInstance ?? SymfonyHttpClient::create(['http_version' => '2.0']);
+        $this->client = $clientInstance ?? SymfonyHttpClient::create([
+            'http_version' => $this->configuredHttpVersion(),
+            'verify_peer' => $this->config->verifyTls,
+            'verify_host' => $this->config->verifyTls,
+            'max_redirects' => $this->configuredMaxRedirects(),
+        ]);
     }
 
     #[\Override]
@@ -62,7 +69,7 @@ class SymfonyDriver implements CanHandleHttpRequest
             $this->dispatchStatusCodeFailed($httpResponse->statusCode(), $request);
             throw $httpException;
         }
-        $this->dispatchResponseReceived($httpResponse, $request);
+        $this->dispatchResponseReceived($request, $httpResponse->statusCode(), $httpResponse->isStreamed(), $httpResponse->isStreamed() ? null : $httpResponse->body());
         return $httpResponse;
     }
 
@@ -80,8 +87,23 @@ class SymfonyDriver implements CanHandleHttpRequest
                 'timeout' => $this->config->idleTimeout,
                 'max_duration' => $this->config->requestTimeout,
                 'buffer' => !$request->isStreamed(),
+                'verify_peer' => $this->config->verifyTls,
+                'verify_host' => $this->config->verifyTls,
+                'max_redirects' => $this->configuredMaxRedirects(),
+                'http_version' => $this->configuredHttpVersion(),
             ]
         );
+    }
+
+    private function configuredMaxRedirects(): int {
+        return match ($this->config->followRedirects) {
+            true => $this->config->maxRedirects ?? 20,
+            false => 0,
+        };
+    }
+
+    private function configuredHttpVersion(): string {
+        return $this->config->httpVersion ?? '2.0';
     }
 
     private function buildHttpResponse(ResponseInterface $response, HttpRequest $request): HttpResponse {
@@ -123,48 +145,8 @@ class SymfonyDriver implements CanHandleHttpRequest
 
     // event dispatching
 
-    private function dispatchRequestSent(HttpRequest $request): void {
-        $this->events->dispatch(new HttpRequestSent([
-            'requestId' => $request->id,
-            'url' => $request->url(),
-            'method' => $request->method(),
-            'headers' => $request->headers(),
-            'body' => $request->body()->toArray(),
-            ...HttpRequestTelemetry::metadataForRequest($request),
-        ]));
-    }
 
-    private function dispatchStatusCodeFailed(int $statusCode, HttpRequest $request): void {
-        $this->events->dispatch(new HttpRequestFailed([
-            'requestId' => $request->id,
-            'url' => $request->url(),
-            'method' => $request->method(),
-            'statusCode' => $statusCode,
-            ...HttpRequestTelemetry::metadataForRequest($request),
-        ]));
-    }
 
-    private function dispatchResponseReceived(HttpResponse $response, HttpRequest $request): void {
-        $isStreamed = $response->isStreamed();
-        $this->events->dispatch(new HttpResponseReceived(array_filter([
-            'requestId' => $request->id,
-            'statusCode' => $response->statusCode(),
-            'isStreamed' => $isStreamed,
-            'body' => !$isStreamed ? $response->body() : null,
-            ...HttpRequestTelemetry::metadataForRequest($request),
-        ], static fn(mixed $v): bool => $v !== null)));
-    }
 
-    private function dispatchRequestFailed(HttpRequestException $exception, HttpRequest $request): void {
-        $this->events->dispatch(new HttpRequestFailed([
-            'requestId' => $request->id,
-            'url' => $request->url(),
-            'method' => $request->method(),
-            'headers' => $request->headers(),
-            'body' => $request->body()->toArray(),
-            'errors' => $exception->getMessage(),
-            ...HttpRequestTelemetry::metadataForRequest($request),
-        ]));
-    }
 
 }

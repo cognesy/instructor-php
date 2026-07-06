@@ -69,7 +69,7 @@ it('includes a stable requestId across http request response and chunk events', 
     }
 })->with(['guzzle', 'symfony', 'curl']);
 
-it('emits completed stream outcome with body after full stream consumption', function (string $driverType) {
+it('emits completed stream outcome with stats after full stream consumption', function (string $driverType) {
     $events = new EventDispatcher();
     $captured = [];
     $events->wiretap(function (object $event) use (&$captured): void {
@@ -85,14 +85,18 @@ it('emits completed stream outcome with body after full stream consumption', fun
     $request = new HttpRequest($this->baseUrl . '/stream/2', 'GET', [], '', ['stream' => true]);
     $response = $driver->handle($request);
 
-    foreach ($response->stream() as $_chunk) {
+    $chunks = [];
+    foreach ($response->stream() as $chunk) {
+        $chunks[] = $chunk;
     }
 
     $streamCompleted = collectEvent($captured, HttpStreamCompleted::class);
 
     expect($streamCompleted->data)->toBeArray()->toHaveKey('requestId', $request->id);
     expect($streamCompleted->data)->toHaveKey('outcome', 'completed');
-    expect($streamCompleted->data['body'] ?? null)->toBeString()->not->toBe('');
+    expect($streamCompleted->data)->toHaveKey('bytes', array_sum(array_map(strlen(...), $chunks)));
+    expect($streamCompleted->data)->toHaveKey('chunks', count($chunks));
+    expect(array_key_exists('body', $streamCompleted->data))->toBeFalse();
 })->with(['guzzle', 'symfony', 'curl']);
 
 it('emits abandoned stream outcome without body after early consumer exit', function (string $driverType) {
@@ -124,6 +128,8 @@ it('emits abandoned stream outcome without body after early consumer exit', func
 
     expect($streamCompleted->data)->toBeArray()->toHaveKey('requestId', $request->id);
     expect($streamCompleted->data)->toHaveKey('outcome', 'abandoned');
+    expect($streamCompleted->data)->toHaveKey('bytes');
+    expect($streamCompleted->data)->toHaveKey('chunks');
     expect(array_key_exists('body', $streamCompleted->data))->toBeFalse();
 })->with(['guzzle', 'symfony', 'curl']);
 

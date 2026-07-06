@@ -1,0 +1,89 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-4o-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## System Instructions\\n\\nAnalyze and compare two lists of conditions.\\nOriginal Condition List:\\n- 18\\n- 2\\n- 40\\n\\nReconstructed Condition List:\\n- 40\\n- 2\\n- 18\\n\\nDetermine rough equivalence. If not equivalent, provide targeted feedback.\\n\\n## Tool Use\\n\\nUse the provided tool `extracted_data` to extract correct and accurate structured data from the input.\\n\\nTool purpose: Function call based on user instructions.\\n\\nCall the tool with the best supported arguments for the requested extraction.\"}],\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\",\"description\":\"Function call based on user instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"detected_inconsistencies\":{\"type\":\"array\",\"items\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"integer\"},{\"type\":\"number\"},{\"type\":\"boolean\"},{\"type\":\"object\"}]},\"description\":\"Detected inconsistencies between original and reconstructed condition lists\"},\"feedback\":{\"type\":\"string\"},\"is_equal\":{\"type\":\"boolean\"}},\"required\":[\"detected_inconsistencies\",\"feedback\",\"is_equal\"],\"additionalProperties\":false}}}],\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\"}}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:42:20 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "cf-ray": [
+                "a16eb04eafd2bbcc-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "939"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999877"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "1ms"
+            ],
+            "x-request-id": [
+                "req_8d2476532d2e4091964f7f7b36e73398"
+            ],
+            "set-cookie": [
+                "__cf_bm=mSCnysvKHKXYJhMITW5OdH.7zb77Vima735rRv7imrM-1783341739.3072786-1.0.1.1-6Q6JqWif3cmEsA1R_Tlj66ImZZAQbHLSG7dFHjTq1PCbyGFMMEwSwpVWR7V_P4eBVWIScdk843w5AiFC2SgRrvnxWJLIMnU_0LDL1i472W3viNpYbiO5DP40WDvKAowt; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:12:20 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycwNv4ovKVs5sLAHC2Z5gJPbuRd3\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341739,\n  \"model\": \"gpt-4o-mini-2024-07-18\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_cJDXNbOCxGY5bMasTeZZoTZG\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"detected_inconsistencies\\\":[18,2,40],\\\"feedback\\\":\\\"The two lists contain the same numbers but are arranged in different orders. As such, they are not equivalent, but the elements themselves are correct. Maintaining the correct order is essential for equivalence in this context.\\\",\\\"is_equal\\\":false}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"logprobs\": null,\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 190,\n    \"completion_tokens\": 63,\n    \"total_tokens\": 253,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": \"fp_85fd54540d\"\n}\n"
+    }
+}

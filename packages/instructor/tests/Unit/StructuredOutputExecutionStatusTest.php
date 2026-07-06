@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Messages\Messages;
-use Cognesy\Instructor\Collections\StructuredOutputAttemptList;
+use Cognesy\Instructor\Data\StructuredOutputAttemptList;
 use Cognesy\Instructor\Data\StructuredOutputAttempt;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Enums\ExecutionStatus;

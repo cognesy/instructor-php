@@ -3,6 +3,7 @@ title: 'Send Subagent telemetry to Logfire'
 docname: 'agent_subagent_telemetry_logfire'
 id: '2c4f'
 tags:
+  - 'no-replay'
   - 'agent-troubleshooting'
   - 'logfire'
   - 'subagents'

@@ -157,5 +157,12 @@ tasks.json
 .xqa/state/
 
 # Dolt database files (added by bd init)
+.beads-credential-key
+.beads/.beads-credential-key
+.beads/dolt/
+.beads/proxieddb/
 .dolt/
 *.db
+
+# CodeGraph local database/cache
+.codegraph/

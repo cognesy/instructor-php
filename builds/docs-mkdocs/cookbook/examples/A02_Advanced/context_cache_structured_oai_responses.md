@@ -93,7 +93,6 @@ $response1 = (new StructuredOutput($jsonSchemaRuntime))
     ->with(
         messages: 'Describe the project in a way compelling to my audience: P&C insurance CIOs.',
         responseModel: Project::class,
-        model: 'gpt-4.1',
         options: $optionsBase,
     )->create();
 
@@ -113,7 +112,8 @@ if ($previousResponseId === '') {
 
 // get usage information from inferenceResponse() when you need transport-level metadata
 $usage1 = $response1->inferenceResponse()->usage();
-echo "Usage #1: {$usage1->inputTokens} prompt tokens, {$usage1->cacheWriteTokens} cache write tokens\n";
+echo "Usage #1: {$usage1->inputTokens} prompt tokens, {$usage1->cacheReadTokens} cache read tokens\n";
+echo "Note: OpenAI reports prompt cache hits as cache read tokens; it does not report cache write tokens.\n";
 ?>
 ```
 Now we can use the same context to ask the user to describe the project for a different
@@ -138,7 +138,6 @@ $response2 = (new StructuredOutput($jsonSchemaRuntime))
     ->with(
         messages: "Describe the project in a way compelling to my audience: boutique CMS consulting company owner.",
         responseModel: Project::class,
-        model: 'gpt-4.1',
         options: $options2,
     )->create();
 

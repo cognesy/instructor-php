@@ -1,0 +1,57 @@
+{
+    "request": {
+        "url": "https:\/\/api.deepseek.com\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"deepseek-reasoner\",\"max_tokens\":1024,\"messages\":[{\"role\":\"user\",\"content\":\"What is the capital of France? Answer with just the city name, nothing else.\"}]}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "content-type": [
+                "application\/json"
+            ],
+            "date": [
+                "Mon, 06 Jul 2026 12:40:05 GMT"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "server": [
+                "elb"
+            ],
+            "vary": [
+                "origin, access-control-request-method, access-control-request-headers"
+            ],
+            "access-control-allow-credentials": [
+                "true"
+            ],
+            "x-ds-trace-id": [
+                "dca1ad4c82f95ac0c23425c5dfc940c2"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-cache": [
+                "Miss from cloudfront"
+            ],
+            "via": [
+                "1.1 2e4b77c76f89825e36f12179cf1b33ea.cloudfront.net (CloudFront)"
+            ],
+            "x-amz-cf-pop": [
+                "WAW51-P1"
+            ],
+            "x-amz-cf-id": [
+                "Q6xCCSd2dHEK0P3z-MCcOCcZsZi717ictlbZY6nLhVv-F0DSl58puA=="
+            ]
+        },
+        "body": "{\"id\":\"47859fd8-ebb0-43de-9ef4-193dc55c6749\",\"object\":\"chat.completion\",\"created\":1783341604,\"model\":\"deepseek-v4-flash\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"Paris\",\"reasoning_content\":\"We need to answer: \\\"What is the capital of France?\\\" with just the city name. The city is Paris. So output: Paris\"},\"logprobs\":null,\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":21,\"completion_tokens\":30,\"total_tokens\":51,\"prompt_tokens_details\":{\"cached_tokens\":0},\"completion_tokens_details\":{\"reasoning_tokens\":28},\"prompt_cache_hit_tokens\":0,\"prompt_cache_miss_tokens\":21},\"system_fingerprint\":\"fp_8b330d02d0_prod0820_fp8_kvcache_20260402\"}"
+    }
+}

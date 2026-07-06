@@ -3,6 +3,7 @@ title: 'Send streaming LLM telemetry to Logfire'
 docname: 'llm_telemetry_streaming_logfire'
 id: '8f2a'
 tags:
+  - 'no-replay'
   - 'telemetry'
   - 'logfire'
   - 'streaming'

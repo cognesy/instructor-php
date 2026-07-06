@@ -2,12 +2,13 @@
 
 namespace Cognesy\Events\Dispatchers;
 
+use Cognesy\Events\Contracts\CanCheckListeners;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Psr\EventDispatcher\StoppableEventInterface;
 use SplPriorityQueue;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface as SymfonyDispatcher;
 
-final class SymfonyEventDispatcher implements CanHandleEvents
+final class SymfonyEventDispatcher implements CanHandleEvents, CanCheckListeners
 {
     /** @var SplPriorityQueue<int, callable(object): void> */
     private SplPriorityQueue $taps;
@@ -24,7 +25,19 @@ final class SymfonyEventDispatcher implements CanHandleEvents
             $this->taps->insert($listener, $priority);
             return;
         }
-        $this->dispatcher->addListener($name, $listener, $priority);
+        $this->dispatcher->addListener(self::canonicalEventName($name), $listener, $priority);
+    }
+
+    /**
+     * Resolves class aliases (deprecated event FQCNs kept via class_alias)
+     * to their canonical class name, so listeners registered under an old
+     * name still match events dispatched under the new one.
+     */
+    private static function canonicalEventName(string $name): string {
+        if (!class_exists($name)) {
+            return $name;
+        }
+        return (new \ReflectionClass($name))->getName();
     }
 
     /**
@@ -76,6 +89,30 @@ final class SymfonyEventDispatcher implements CanHandleEvents
             $listeners = $this->dispatcher->getListeners($type);
             yield from $listeners;
         }
+    }
+
+    /**
+     * @param class-string $eventClass
+     */
+    #[\Override]
+    public function hasListenersFor(string $eventClass): bool {
+        if (!$this->taps->isEmpty()) {
+            return true;
+        }
+
+        $eventClass = self::canonicalEventName($eventClass);
+        $types = array_values(array_unique(array_merge(
+            [$eventClass],
+            class_parents($eventClass) ?: [],
+            class_implements($eventClass) ?: [],
+        )));
+        foreach ($types as $type) {
+            if ($this->dispatcher->hasListeners($type)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /** @return list<string> */

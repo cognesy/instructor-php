@@ -7,7 +7,7 @@ use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
-use Cognesy\Http\Events\HttpResponseReceived;
+use Cognesy\Http\Drivers\DispatchesHttpDriverEvents;
 use Cognesy\Http\Telemetry\HttpRequestTelemetry;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -20,6 +20,8 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  */
 class MockHttpDriver implements CanHandleHttpRequest
 {
+    use DispatchesHttpDriverEvents;
+
     /** @var array Array of legacy request matchers to predefined responses */
     private array $responses = [];
     /** @var array<int,array{matchers: array<callable(HttpRequest): bool>, times: int|null, response: (callable(HttpRequest): HttpResponse)|HttpResponse}> */
@@ -55,7 +57,7 @@ class MockHttpDriver implements CanHandleHttpRequest
             $this->throwNoMatchException($request);
         }
 
-        $this->dispatchResponseReceived($request, $response);
+        $this->dispatchResponseReceived($request, $response->statusCode(), $response->isStreamed(), $response->isStreamed() ? null : $response->body());
         return $response;
     }
 
@@ -65,18 +67,6 @@ class MockHttpDriver implements CanHandleHttpRequest
         $this->receivedRequests[] = $request;
     }
 
-    private function dispatchResponseReceived(HttpRequest $request, HttpResponse $response): void {
-        if ($this->events) {
-            $isStreamed = $response->isStreamed();
-            $this->events->dispatch(new HttpResponseReceived(array_filter([
-                'requestId' => $request->id,
-                'statusCode' => $response->statusCode(),
-                'isStreamed' => $isStreamed,
-                'body' => !$isStreamed ? $response->body() : null,
-                ...HttpRequestTelemetry::metadataForRequest($request),
-            ], static fn(mixed $v): bool => $v !== null)));
-        }
-    }
 
     private function findMatchingResponse(HttpRequest $request): ?HttpResponse {
         // 1) Check new-style expectations first (fluent DSL)

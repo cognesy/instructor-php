@@ -5,6 +5,8 @@ description: 'Use the Gemini bridge for Google''s CLI coding agent with model al
 
 ## Overview
 
+> Deprecated: the Gemini CLI bridge is kept for compatibility only. The upstream Google CLI flow is obsolete for this package, so new integrations should use another AgentCtrl backend.
+
 The Gemini bridge wraps the `gemini` CLI (from [@google/gemini-cli](https://github.com/google-gemini/gemini-cli)), Google's terminal-based coding agent. Gemini CLI supports model aliases, approval modes (default, auto_edit, yolo, plan), sandbox isolation, extensions, MCP servers, policy files, session management, and stream-json event streaming. It provides token usage data including cached token counts.
 
 The bridge is implemented by `GeminiBridge` and configured through `GeminiBridgeBuilder`. Access the builder through the `AgentCtrl` facade:

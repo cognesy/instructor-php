@@ -3,6 +3,7 @@ title: 'Debugging HTTP Calls'
 docname: 'http_debug'
 id: 'f26a'
 tags:
+  - 'no-replay'
   - 'llm-troubleshooting'
   - 'http-debug'
   - 'observability'

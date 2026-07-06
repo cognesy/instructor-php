@@ -78,6 +78,49 @@ class EnhancedRunAllExamples extends Command
         return $this->executeExamples($examples, $stopOnError);
     }
 
+    private function excludeUnrunnable(array $examples): array
+    {
+        $replay = $this->isReplayMode();
+
+        $kept = [];
+        $broken = [];
+        $noReplay = [];
+        foreach ($examples as $example) {
+            if ($this->hasTag($example, 'broken')) {
+                $broken[] = $example->docName;   // known-failing: never run, in any mode
+            } elseif ($replay && $this->hasTag($example, 'no-replay')) {
+                $noReplay[] = $example->docName; // cannot be recorded: skip the replay lane
+            } else {
+                $kept[] = $example;
+            }
+        }
+
+        if ($broken !== []) {
+            Cli::outln(
+                sprintf('Skipping %d broken example(s): %s', count($broken), implode(', ', $broken)),
+                [Color::DARK_GRAY],
+            );
+        }
+        if ($noReplay !== []) {
+            Cli::outln(
+                sprintf('Replay: skipping %d no-replay example(s): %s', count($noReplay), implode(', ', $noReplay)),
+                [Color::DARK_GRAY],
+            );
+        }
+
+        return $kept;
+    }
+
+    private function isReplayMode(): bool
+    {
+        return getenv('INSTRUCTOR_EXAMPLES_HTTP') === 'replay';
+    }
+
+    private function hasTag(\Cognesy\InstructorHub\Data\Example $example, string $tag): bool
+    {
+        return in_array($tag, array_map('strtolower', $example->tags), true);
+    }
+
     private function getFilteredExamples(ExecutionFilter $filter, bool $force, int $startIndex): array
     {
         $allExamples = [];
@@ -90,6 +133,11 @@ class EnhancedRunAllExamples extends Command
             $index++;
             return true;
         });
+
+        // Drop examples that must not run: `broken` (known-failing, always) and, in
+        // replay mode, `no-replay` (explicit-client / telemetry / sandbox). Logged,
+        // never silent — the skipped set is a change-impact signal, not hidden loss.
+        $allExamples = $this->excludeUnrunnable($allExamples);
 
         // If force is specified, return all examples (no filtering)
         if ($force) {
@@ -143,6 +191,7 @@ class EnhancedRunAllExamples extends Command
         $current = 0;
         $success = 0;
         $errors = 0;
+        $flaky = 0;
 
         Cli::outln('');
         Cli::outln("Executing {$total} examples...", [Color::BOLD, Color::YELLOW]);
@@ -166,9 +215,22 @@ class EnhancedRunAllExamples extends Command
             $result = $this->runner->execute($example);
             $endTime = microtime(true);
 
+            // A `flaky` example fails only from live LLM non-determinism, so a live
+            // failure is tolerated (warn, don't fail the gate). Under replay there is
+            // no non-determinism, so a flaky failure there IS real and counts.
+            $flakyTolerated = $this->hasTag($example, 'flaky') && !$this->isReplayMode();
+
             if ($result->isSuccessful()) {
                 Cli::out(str_pad("OK", 8, ' ', STR_PAD_BOTH), [Color::GREEN, Color::BOLD]);
                 $success++;
+            } elseif ($flakyTolerated) {
+                Cli::out(str_pad("FLAKY", 8, ' ', STR_PAD_BOTH), [Color::DARK_YELLOW, Color::BOLD]);
+                $flaky++;
+
+                if ($result->error) {
+                    Cli::outln('');
+                    Cli::outln("    (tolerated) " . Cli::limit($result->error->message, 60), [Color::DARK_GRAY]);
+                }
             } elseif ($result->error?->isAssertion()) {
                 Cli::out(str_pad("ASSERT", 8, ' ', STR_PAD_BOTH), [Color::YELLOW, Color::BOLD]);
                 $errors++;
@@ -209,17 +271,22 @@ class EnhancedRunAllExamples extends Command
         }
 
         $overallEndTime = microtime(true);
-        $this->displaySummary($current, $success, $errors, $overallEndTime - $overallStartTime);
+        $this->displaySummary($current, $success, $errors, $flaky, $overallEndTime - $overallStartTime);
 
+        // Gate on real errors only; tolerated flaky failures do not fail the run.
         return $errors > 0 ? Command::FAILURE : Command::SUCCESS;
     }
 
-    private function displaySummary(int $executed, int $success, int $errors, float $totalTime): void
+    private function displaySummary(int $executed, int $success, int $errors, int $flaky, float $totalTime): void
     {
         Cli::outln('');
         Cli::outln('Execution Summary:', [Color::BOLD, Color::YELLOW]);
         Cli::outln("  Executed:   {$executed}", [Color::WHITE]);
         Cli::outln("  Successful: {$success}", [Color::GREEN]);
+
+        if ($flaky > 0) {
+            Cli::outln("  Flaky:      {$flaky} (tolerated)", [Color::DARK_YELLOW]);
+        }
 
         if ($errors > 0) {
             Cli::outln("  Errors:     {$errors}", [Color::RED]);

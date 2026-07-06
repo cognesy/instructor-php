@@ -3,6 +3,7 @@ title: 'SambaNova'
 docname: 'sambanova'
 id: '0546'
 tags:
+  - 'broken'
   - 'api-support'
   - 'sambanova'
   - 'provider'

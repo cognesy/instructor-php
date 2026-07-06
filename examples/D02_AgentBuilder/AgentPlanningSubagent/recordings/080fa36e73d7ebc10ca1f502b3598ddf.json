@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a planning specialist.\\nCreate a dense markdown plan with explicit checkpoints and tool-aware execution steps.\\nUse discovery tools (`bash`, `search_files`, `list_dir`) to inspect local context if needed.\\nUse `bash` with `rg` for fast discovery when helpful.\\nDo not implement changes.\\n\\nParent execution tools (must be respected by the final plan): read_file\\nAll execution steps in the final plan must be feasible using only those parent tools.\"},{\"role\":\"user\",\"content\":\"Goal\\nPrepare a realistic plan for a small documentation update about the repository's planning capability.\\n\\nContext\\nThe user wants a concise proposal for a docs update, specifically after planning, to include only the analysis portion of the plan. The final response must provide: (1) Capability purpose section outline, (2) Configuration options outline, and (3) Example usage outline. No files should be modified.\\n\\nConstraints\\n- The planner subagent may use bash\\\/search for discovery.\\n- Parent execution may use only read_file.\\n- Do not modify any files.\\n- Keep the final response under 180 words.\\n- Execute only the analysis part of the plan after planning.\\n\\nExpected Outcomes\\n- A realistic implementation plan for a small docs update.\\n- A concise, analysis-only proposal summarizing the three requested outlines.\\n- The proposal should reflect repository-specific terminology where possible, based on discovered docs\\\/content.\\n\\nAcceptance Criteria\\n- Plan includes clear steps for discovery, analysis, and drafting.\\n- Final response contains exactly the three requested outline sections.\\n- No code or file changes are made.\\n- Final response remains under 180 words.\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_cvfZXJ3GdlXPGqwPFX0ve0Va\",\"type\":\"function\",\"function\":{\"name\":\"list_dir\",\"arguments\":\"{\\\"path\\\":\\\".\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_cvfZXJ3GdlXPGqwPFX0ve0Va\",\"content\":\"[dir] .archlet\\n[dir] .beads\\n[dir] .claude\\n[dir] .codegraph\\n[dir] .codex\\n[dir] .git\\n[dir] .github\\n[dir] .idea\\n[dir] .instructor-hub\\n[dir] .logfire\\n[dir] .qa\\n[dir] .venv-semgrep\\n[dir] .xqa\\n[dir] bin\\n[dir] builds\\n[dir] data\\n[dir] docs\\n[dir] evals\\n[dir] examples\\n[dir] just\\n[dir] packages\\n[dir] research\\n[dir] scripts\\n[dir] src\\n[dir] tests\\n[dir] tmp\\n[dir] vendor\\n[file] .actrc\\n[file] .env\\n[file] .env-dist\\n[file] .gitattributes\\n[file] .gitignore\\n[file] .phpunit.result.cache\\n[file] .semgrepignore\\n[file] ADDING-PACKAGE.md\\n[file] AGENTS.md\\n[file] composer.json\\n[file] composer.lock\\n[file] composer.phar\\n[file] CONTENTS.md\\n[file] CONTRIBUTING.md\\n[file] Doxyfile\\n[file] justfile\\n[file] LICENSE\\n[file] mago.toml\\n[file] mkdocs.yml\\n[file] mkdocs.yml.bak\\n[file] package-config-enhanced.example.json\\n[file] package-config.example.json\\n[file] packages.json\\n... and 14 more entries\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_HuInR8cI7gUMMVsfXq3sCcZX\",\"type\":\"function\",\"function\":{\"name\":\"search_files\",\"arguments\":\"{\\\"patterns\\\":[\\\"docs\\\\\\\/**\\\\\\\/*.md\\\",\\\"README.md\\\",\\\"AGENTS.md\\\",\\\"CONTRIBUTING.md\\\",\\\"docs\\\\\\\/**\\\\\\\/*planning*\\\",\\\"docs\\\\\\\/**\\\\\\\/*plan*\\\"]}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_HuInR8cI7gUMMVsfXq3sCcZX\",\"content\":\"Found 10 files:\\n\\n[docs\\\/**\\\/*.md]\\ndocs\\\/why-instructor.md\\ndocs\\\/getting-started.md\\ndocs\\\/index.md\\ndocs\\\/dev\\\/plans\\\/instructor-xqa-stage1.md\\ndocs\\\/packages.md\\n... and 2 more\\n[README.md]\\nresearch\\\/logfire\\\/README.md\\nresearch\\\/better-events\\\/README.md\\nresearch\\\/v2-cleanup-plan\\\/README.md\\nresearch\\\/studies\\\/comparative-analysis-2026-01\\\/README.md\\nresearch\\\/studies\\\/2026-01-02-better-errors\\\/README.md\\n... and 199 more\\n[AGENTS.md]\\nAGENTS.md\\n[CONTRIBUTING.md]\\nCONTRIBUTING.md\\nvendor\\\/hamcrest\\\/hamcrest-php\\\/CONTRIBUTING.md\\nvendor\\\/mockery\\\/mockery\\\/CONTRIBUTING.md\\nvendor\\\/composer-unused\\\/contracts\\\/CONTRIBUTING.md\\nvendor\\\/amphp\\\/dns\\\/CONTRIBUTING.md\\n... and 2 more\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"read_file\",\"description\":\"Read the contents of a file with line numbers. Use to examine file content after finding it with search_files.\\n\\nExamples:\\n- \\\"composer.json\\\" \\u2192 read composer.json from project root\\n- \\\"src\\\/Config.php\\\" \\u2192 read specific file by path\\n- {\\\"path\\\": \\\"large.log\\\", \\\"offset\\\": 100, \\\"limit\\\": 50} \\u2192 read lines 101-150\\n\\nReturns numbered lines. For large files, use offset\\\/limit to read specific sections.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"File path (relative to project root or absolute). Example: \\\"composer.json\\\" or \\\"src\\\/Config.php\\\"\"},\"offset\":{\"type\":\"integer\",\"description\":\"Line number to start reading from (0-indexed)\"},\"limit\":{\"type\":\"integer\",\"description\":\"Maximum number of lines to read (default: 2000)\"}},\"required\":[\"path\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"bash\",\"description\":\"Execute a bash command and return stdout\\\/stderr. Use for shell operations, not file reading.\\n\\nExamples:\\n- \\\"git status\\\" \\u2192 check git state\\n- \\\"composer install\\\" \\u2192 install dependencies\\n- \\\"php artisan migrate\\\" \\u2192 run migrations\\n- \\\"grep -r 'TODO' src\\\/\\\" \\u2192 search file contents\\n- \\\"npm run build\\\" \\u2192 run build scripts\\n\\nPrefer dedicated tools when available: read_file over cat, search_files over find.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"command\":{\"type\":\"string\",\"description\":\"The bash command to execute\"}},\"required\":[\"command\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"search_files\",\"description\":\"Search for files by name\\\/path pattern (not content). Returns matching file paths.\\n\\nExamples:\\n- \\\"composer.json\\\" \\u2192 finds composer.json recursively in all directories\\n- \\\"*.php\\\" \\u2192 finds PHP files in root directory only\\n- \\\"**\\\/*.php\\\" \\u2192 finds PHP files recursively in all directories\\n- \\\"src\\\/**\\\/*.php\\\" \\u2192 finds PHP files recursively under src\\\/\\n- \\\".\\\/composer.json\\\" \\u2192 finds composer.json in root directory only\\n- \\\"Config\\\" \\u2192 finds files with \\\"Config\\\" in their name, recursively\\n\\nNote: Use read_file to examine file contents after finding them.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"pattern\":{\"type\":\"string\",\"description\":\"Search pattern. Examples: \\\"composer.json\\\" (recursive), \\\"**\\\/*.php\\\" (recursive glob), \\\"*.json\\\" (root only), \\\".\\\/README.md\\\" (exact path)\"},\"patterns\":{\"type\":\"array\",\"description\":\"Multiple patterns to search at once. Example: [\\\"composer.json\\\", \\\"package.json\\\", \\\"*.xml\\\"]\",\"items\":{\"type\":\"string\"}}},\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"list_dir\",\"description\":\"List directory contents. Shows files and subdirectories with [file] or [dir] markers.\\n\\nExamples:\\n- \\\".\\\" or \\\"\\\" \\u2192 list project root\\n- \\\"src\\\" \\u2192 list src directory\\n- \\\"packages\\\/addons\\\/src\\\" \\u2192 list nested directory\\n\\nUse to explore project structure before searching for specific files.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"Directory path. Examples: \\\".\\\" (root), \\\"src\\\", \\\"packages\\\/addons\\\"\"}},\"required\":[\"path\"],\"additionalProperties\":false}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:43 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1083"
+            ],
+            "cf-ray": [
+                "a16eadf40c0f01ee-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "655"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999214"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "11ms"
+            ],
+            "x-request-id": [
+                "req_c5fa054e496c4d90a5841c3ee5a7750e"
+            ],
+            "set-cookie": [
+                "__cf_bm=.YgIzjabwBT2gu_Jem._bWQ998Iol4hN7Ytq7bYIYyE-1783341642.8893473-1.0.1.1-id6phWR2xO1X9H1ItHW_6Kq7TTi9WkS2bzHXoy6mrI2Er6T2m7azwX5CZ_zb_b1PcrldcCBbjytieE0rbeN48Tmw5IV_LiE.4ZaOXgam7sS1Ea8GQu76VGZl2WW9I7Xw; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:43 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycupZg3rhSpNY3R4uZK3hQfGzIY9\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341643,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_wkgXYDysXs5pf1hqDJNfQN1F\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"read_file\",\n              \"arguments\": \"{\\\"path\\\":\\\"AGENTS.md\\\",\\\"offset\\\":0,\\\"limit\\\":220}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 1591,\n    \"completion_tokens\": 27,\n    \"total_tokens\": 1618,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

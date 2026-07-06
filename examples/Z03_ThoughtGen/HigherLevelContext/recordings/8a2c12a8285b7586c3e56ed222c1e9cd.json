@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## Tool Use\\n\\nUse the provided tool `extracted_data` to extract correct and accurate structured data from the input.\\n\\nTool purpose: Function call based on user instructions.\\n\\nCall the tool with the best supported arguments for the requested extraction.\"},{\"role\":\"user\",\"content\":\"You are an expert at world knowledge. Step back and paraphrase a question to a more generic step-back question, which is easier to answer.\\n\\nOriginal Question: Which position did Knox Cunningham hold from May 1955 to Apr 1956?\\nStep-back Question: Which positions has Knox Cunningham held in his career?\\nOriginal Question: Who was the spouse of Anna Karina from 1968 to 1974?\\nStep-back Question: Who were the spouses of Anna Karina?\\nOriginal Question: Which team did Thierry Audel play for from 2007 to 2008?\\nStep-back Question: Which teams did Thierry Audel play for in his career?\\n\\nNow, generate the step-back question for: Estella Leopold went to which school between Aug 1954 and Nov 1954?\"}],\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\",\"description\":\"Function call based on user instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"original_question\":{\"type\":\"string\"},\"abstract_question\":{\"type\":\"string\"}},\"required\":[\"original_question\",\"abstract_question\"],\"additionalProperties\":false}}}],\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\"}}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:41:49 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1210"
+            ],
+            "cf-ray": [
+                "a16eaf8baf85ef8f-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1002"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999761"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "3ms"
+            ],
+            "x-request-id": [
+                "req_34a5524159f34520a3b2fc399967b736"
+            ],
+            "set-cookie": [
+                "__cf_bm=tCRZJ6CLzisGPDR9i9HVDHqekX.wm30Q5LYmvQrmDDk-1783341708.1034076-1.0.1.1-r0EFc4AR4QJAIfy.rjMXGRCv9263E6TYtrgGEsjdpaLuCqlP8TV0vTbNZrAtvkHN6Dop4e_nrZMNpeMj_6BAI6bWqRGE5w0tVdwJJO_6OJHDlTX.M1R_Wtf9Ne9W5Q5E; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:11:49 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycvsF1QjN6ZPZ0O6XYAJJxVM7Asc\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341708,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_V6PCjItHG7jE7NUFwUnEqKsR\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"original_question\\\":\\\"Estella Leopold went to which school between Aug 1954 and Nov 1954?\\\",\\\"abstract_question\\\":\\\"Which schools did Estella Leopold attend in her life?\\\"}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 340,\n    \"completion_tokens\": 51,\n    \"total_tokens\": 391,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

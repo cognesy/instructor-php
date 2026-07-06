@@ -32,6 +32,7 @@ final class DebugConfig
         'packages/http-client/resources/config/debug/presets',
         'vendor/cognesy/instructor-php/packages/http-client/resources/config/debug/presets',
         'vendor/cognesy/instructor-http/resources/config/debug/presets',
+        __DIR__ . '/../../resources/config/debug/presets',
     ];
 
     public static function fromPreset(string $preset, ?string $basePath = null): self {

@@ -3,6 +3,7 @@ title: 'Local / Ollama'
 docname: 'llm_ollama'
 id: '90ec'
 tags:
+  - 'broken'
   - 'llm-api-support'
   - 'ollama'
   - 'local-models'

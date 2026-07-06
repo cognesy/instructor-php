@@ -6,35 +6,35 @@ use Cognesy\Instructor\Contracts\CanEmitStreamingUpdates;
 use Cognesy\Instructor\Contracts\Sequenceable;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputResponse;
-use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
-use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseUpdated;
-use Cognesy\Instructor\Events\Support\EventValueNormalizer;
-use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted;
-use Cognesy\Instructor\Telemetry\StructuredOutputTelemetry;
+use Cognesy\Instructor\Streaming\ResponseCache;
 use Cognesy\Instructor\Streaming\Sequence\SequenceTracker;
+use Cognesy\Instructor\Telemetry\StreamEventProjector;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
-use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 use Generator;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use RuntimeException;
 
 /**
+ * Consumption API over a streaming structured-output execution: partial
+ * values, sequence items, response snapshots, and the final result.
+ *
+ * Event payload construction lives in StreamEventProjector; opt-in replay
+ * retention lives in ResponseCache.
+ *
  * @template TResponse
  */
 class StructuredOutputStream
 {
     private CanEmitStreamingUpdates $emitter;
-    private EventDispatcherInterface $events;
+    private StreamEventProjector $projector;
+    private ResponseCache $cache;
 
     private StructuredOutputExecution $execution;
     private ?StructuredOutputResponse $lastResponse = null;
     private ?StructuredOutputResponse $finalizedResponse = null;
     private mixed $lastValue = null;
     private bool $streamCompleted = false;
-    private ResponseCachePolicy $cachePolicy;
-    /** @var list<StructuredOutputResponse> */
-    private array $cachedResponses = [];
 
     /**
      * @param StructuredOutputExecution $execution
@@ -48,9 +48,9 @@ class StructuredOutputStream
     ) {
         $this->execution = $execution;
         $this->emitter = $emitter;
-        $this->events = $events;
-        $this->cachePolicy = $execution->config()->responseCachePolicy();
-        $this->events->dispatch(new StructuredOutputStarted($this->startedPayload($execution)));
+        $this->projector = new StreamEventProjector($events);
+        $this->cache = new ResponseCache($execution->config()->responseCachePolicy());
+        $this->projector->started($execution);
     }
 
     /**
@@ -80,7 +80,7 @@ class StructuredOutputStream
      */
     public function partials() : Generator {
         foreach ($this->streamResponses() as $partialResponse) {
-            $value = $this->responseValue($partialResponse);
+            $value = $partialResponse->value();
             if ($value === null) {
                 continue;
             }
@@ -102,7 +102,7 @@ class StructuredOutputStream
         $lastSequence = null;
 
         foreach ($this->streamResponses() as $partialResponse) {
-            $value = $this->responseValue($partialResponse);
+            $value = $partialResponse->value();
             if ($value === null) {
                 continue;
             }
@@ -162,39 +162,22 @@ class StructuredOutputStream
             return $this->finalizedResponse;
         }
 
-        if ($this->streamCompleted) {
-            $response = $this->resolveFinalResponse();
-            if ($response === null) {
-                throw new RuntimeException(
-                    'Final response is unavailable: stream completed without finalized inference response.'
-                );
+        if (!$this->streamCompleted) {
+            foreach ($this->streamResponses() as $_) {
+                // Just consume the stream, streamResponses() handles the updates
             }
-            $this->finalizedResponse = $response;
-            $this->lastValue = $this->execution->output();
-            $this->events->dispatch(new StructuredOutputResponseGenerated($this->responsePayload(
-                response: $response,
-                phase: 'response.generated',
-            )));
-            return $this->finalizedResponse;
-        }
-
-        foreach ($this->streamResponses() as $_) {
-            // Just consume the stream, streamResponses() handles the updates
         }
 
         $response = $this->resolveFinalResponse();
         if ($response === null) {
             throw new RuntimeException(
-                'Final response is unavailable: no finalized inference response after stream consumption.'
+                'Final response is unavailable: stream completed without finalized inference response.'
             );
         }
 
         $this->finalizedResponse = $response;
         $this->lastValue = $this->execution->output();
-        $this->events->dispatch(new StructuredOutputResponseGenerated($this->responsePayload(
-            response: $response,
-            phase: 'response.generated',
-        )));
+        $this->projector->generated($response, $this->executionForEvent($response));
 
         return $this->finalizedResponse;
     }
@@ -224,30 +207,31 @@ class StructuredOutputStream
         return $this->currentResponse()?->usage() ?? $this->execution->usage();
     }
 
+    public function finalInferenceResponse() : InferenceResponse {
+        return $this->finalResponse()->inferenceResponse();
+    }
+
     // INTERNAL ///////////////////////////////////////////////////////////
 
     /**
-     * Handles stream iteration, usage accumulation, and last response tracking.
+     * Handles stream iteration, replay, and last response tracking.
      * Dispatches per-item StructuredOutputResponseUpdated events.
      *
      * @return Generator<StructuredOutputResponse> Yields partial and final responses.
      */
     private function streamResponses(): Generator {
         if ($this->streamCompleted) {
-            if ($this->shouldCache()) {
-                foreach ($this->cachedResponses as $response) {
-                    $this->rememberResponse($response);
-                    $this->events->dispatch(new StructuredOutputResponseUpdated($this->responsePayload(
-                        response: $response,
-                        phase: 'response.updated',
-                    )));
-                    yield $response;
-                }
-                return;
+            if (!$this->cache->canReplay()) {
+                throw new RuntimeException(
+                    'Stream is exhausted and cannot be replayed. Enable response stream caching to iterate again.'
+                );
             }
-            throw new RuntimeException(
-                'Stream is exhausted and cannot be replayed. Enable response stream caching to iterate again.'
-            );
+            foreach ($this->cache->replay() as $response) {
+                $this->rememberResponse($response);
+                $this->projector->updated($response, $this->executionForEvent($response));
+                yield $response;
+            }
+            return;
         }
 
         while ($this->emitter->hasNextEmission()) {
@@ -256,24 +240,15 @@ class StructuredOutputStream
                 continue;
             }
 
-            if ($this->shouldCache()) {
-                $this->cachedResponses[] = $response;
-            }
+            $this->cache->remember($response);
             $this->rememberResponse($response);
             $this->syncExecutionState($response);
-            $this->events->dispatch(new StructuredOutputResponseUpdated($this->responsePayload(
-                response: $response,
-                phase: 'response.updated',
-            )));
+            $this->projector->updated($response, $this->executionForEvent($response));
             yield $response;
         }
 
         $this->execution = $this->emitter->execution();
         $this->streamCompleted = true;
-    }
-
-    private function shouldCache(): bool {
-        return $this->cachePolicy->shouldCache();
     }
 
     private function resolveFinalResponse(): ?StructuredOutputResponse {
@@ -296,17 +271,8 @@ class StructuredOutputStream
         return null;
     }
 
-    public function finalInferenceResponse() : InferenceResponse {
-        return $this->finalResponse()->inferenceResponse();
-    }
-
     private function currentResponse(): ?StructuredOutputResponse {
         return $this->lastResponse;
-    }
-
-    private function responseValue(StructuredOutputResponse $response): mixed
-    {
-        return $response->value();
     }
 
     private function rememberResponse(StructuredOutputResponse $response): void {
@@ -324,62 +290,6 @@ class StructuredOutputStream
         $this->lastValue = $this->execution->output();
     }
 
-    private function startedPayload(StructuredOutputExecution $execution) : array
-    {
-        $request = $execution->request();
-        $executionId = $execution->id()->toString();
-
-        return [
-            'requestId' => $request->id()->toString(),
-            'executionId' => $executionId,
-            'phase' => 'execution.started',
-            'phaseId' => $this->phaseId($executionId, 'execution.started'),
-            'model' => $request->model(),
-            'messageCount' => count($request->messages()->toArray()),
-            'isStreamed' => $request->isStreamed(),
-            'attemptCount' => $execution->attemptCount(),
-            ...StructuredOutputTelemetry::executionStarted($execution),
-        ];
-    }
-
-    private function responsePayload(StructuredOutputResponse $response, string $phase) : array
-    {
-        $execution = $this->executionForEvent($response);
-        $request = $execution->request();
-        $executionId = $execution->id()->toString();
-        $attemptId = $execution->activeAttempt()?->id()->toString()
-            ?? $execution->lastFinalizedAttempt()?->id()->toString();
-        $usage = $response->usage();
-
-        return array_filter([
-            'requestId' => $request->id()->toString(),
-            'executionId' => $executionId,
-            'attemptId' => $attemptId,
-            'phase' => $phase,
-            'phaseId' => $this->phaseId($executionId, $phase, $attemptId),
-            'isPartial' => $response->isPartial(),
-            'hasValue' => $response->hasValue(),
-            'valueType' => $this->valueType($response->value()),
-            'value' => EventValueNormalizer::normalize($response->value()),
-            'finishReason' => $response->finishReason()->value,
-            'content' => $response->content(),
-            'contentLength' => strlen($response->content()),
-            'reasoningContent' => $response->reasoningContent(),
-            'reasoningContentLength' => strlen($response->reasoningContent()),
-            'toolArgsSnapshot' => $response->toolArgsSnapshot(),
-            'hasToolCalls' => !$response->toolCalls()->isEmpty(),
-            'toolCallCount' => $response->toolCalls()->count(),
-            'toolCalls' => $response->toolCalls()->toArray(),
-            'inputTokens' => $usage->input(),
-            'outputTokens' => $usage->output(),
-            'cacheWriteTokens' => $usage->cacheWriteTokens,
-            'cacheReadTokens' => $usage->cacheReadTokens,
-            'reasoningTokens' => $usage->reasoningTokens,
-            'totalTokens' => $usage->total(),
-            ...StructuredOutputTelemetry::responseGenerated($execution, $response),
-        ], fn(mixed $value): bool => $value !== null);
-    }
-
     private function executionForEvent(StructuredOutputResponse $response) : StructuredOutputExecution
     {
         if ($response->isPartial()) {
@@ -388,18 +298,4 @@ class StructuredOutputStream
 
         return $this->execution;
     }
-
-    private function phaseId(string $executionId, string $phase, ?string $attemptId = null) : string
-    {
-        return match ($attemptId) {
-            null => "{$executionId}:{$phase}",
-            default => "{$executionId}:{$phase}:{$attemptId}",
-        };
-    }
-
-    private function valueType(mixed $value) : string
-    {
-        return is_object($value) ? $value::class : get_debug_type($value);
-    }
-
 }
