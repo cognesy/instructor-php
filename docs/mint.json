@@ -1,7 +1,9 @@
 {
     "name": "Test Docs",
     "favicon": "",
-    "colors": [],
+    "colors": {
+        "primary": "#0D9373"
+    },
     "navigation": [
         {
             "group": "Main",
