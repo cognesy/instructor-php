@@ -53,12 +53,21 @@ it('dispatches per-chunk updates immediately when streaming', function () {
         'attemptId',
         'phase',
         'phaseId',
-        'content',
-        'value',
+        'contentLength',
+        'valueType',
+        'hasValue',
     ]);
     expect($firstUpdate->data['phase'])->toBe('response.updated');
-    expect($firstUpdate->data['content'])->toBe('{"name":"Ann"');
-    expect($firstUpdate->data['value'])->toBe(['name' => 'Ann']);
+    expect($firstUpdate->data['contentLength'])->toBe(strlen('{"name":"Ann"'));
+    expect($firstUpdate->data)->not()->toHaveKeys([
+        'content',
+        'value',
+        'reasoningContent',
+        'toolArgsSnapshot',
+        'toolCalls',
+    ]);
+    expect($firstUpdate->response?->content())->toBe('{"name":"Ann"');
+    expect($firstUpdate->serializedValue())->toBe(['name' => 'Ann']);
     expect($firstUpdate->data)->not()->toHaveKey('response');
 
     // Step 2

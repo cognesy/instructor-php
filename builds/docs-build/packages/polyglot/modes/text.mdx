@@ -1,3 +1,8 @@
+---
+title: 'Plain Text Responses'
+description: 'Plain text is the default inference path -- no configuration required.'
+---
+
 Text is the simplest and most portable output format. When you do not set `responseFormat`, Polyglot asks the provider for a normal text response. Every provider supports this shape, making it the safest default for any use case.
 
 ## Basic Usage
@@ -13,7 +18,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $text = Inference::using('openai')
     ->withMessages(Messages::fromString('What is the single responsibility principle?'))
     ->get();
-// @doctest id="b2b7"
+// @doctest id="98c5"
 ```
 
 The `get()` method returns the raw string content from the model's response. There is no JSON parsing, no schema validation -- just the text the model produced.
@@ -47,7 +52,7 @@ $response = Inference::using('openai')
 $response = Inference::using('anthropic')
     ->withMessages(Messages::fromString('Write a short poem about the ocean.'))
     ->get();
-// @doctest id="bdf9"
+// @doctest id="26e1"
 ```
 
 ## Using the `with()` Method
@@ -66,7 +71,7 @@ $response = Inference::using('openai')
         options: ['temperature' => 0.3],
     )
     ->get();
-// @doctest id="f677"
+// @doctest id="9645"
 ```
 
 ## Streaming Text Responses
@@ -86,7 +91,7 @@ $stream = Inference::using('openai')
 foreach ($stream->deltas() as $delta) {
     echo $delta->contentDelta;
 }
-// @doctest id="be24"
+// @doctest id="1f83"
 ```
 
 Each delta contains a `contentDelta` with the next chunk of text from the model. Streaming works with all providers that support it.
@@ -108,5 +113,5 @@ $response = Inference::using('openai')
 $text = $response->content();
 $usage = $response->usage();
 $reason = $response->finishReason();
-// @doctest id="2509"
+// @doctest id="5fe6"
 ```

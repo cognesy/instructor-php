@@ -20,6 +20,7 @@ test('creates from streamed HTTP interaction', function() {
     
     // Act
     $record = StreamedRequestRecord::fromStreamedInteraction($request, $response);
+    $json = json_decode($record->toJson(), true);
     
     // Assert
     expect($record)->toBeInstanceOf(StreamedRequestRecord::class);
@@ -30,6 +31,8 @@ test('creates from streamed HTTP interaction', function() {
     expect($record->getChunks())->toBe($chunks);
     expect($record->getChunkCount())->toBe(3);
     expect($record->hasChunks())->toBeTrue();
+    expect($json['response'])->not->toHaveKey('body');
+    expect($json['chunks'])->toBe($chunks);
 });
 
 test('converts streamed record to and from JSON', function() {
@@ -49,9 +52,11 @@ test('converts streamed record to and from JSON', function() {
     // Act
     $original = StreamedRequestRecord::fromStreamedInteraction($request, $response);
     $json = $original->toJson();
+    $data = json_decode($json, true);
     $recreated = StreamedRequestRecord::fromJson($json);
     
     // Assert
+    expect($data['response'])->not->toHaveKey('body');
     expect($recreated)->not()->toBeNull();
     expect($recreated)->toBeInstanceOf(StreamedRequestRecord::class);
     expect($recreated->getChunks())->toBe($chunks);

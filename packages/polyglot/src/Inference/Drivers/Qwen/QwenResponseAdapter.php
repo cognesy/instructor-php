@@ -29,9 +29,6 @@ class QwenResponseAdapter extends OpenAIResponseAdapter
         return new PartialInferenceDelta(
             contentDelta: $this->makeContentDelta($data),
             reasoningContentDelta: $this->makeReasoningContentDelta($data),
-            toolId: $this->makeToolId($data),
-            toolName: $this->makeToolNameDelta($data),
-            toolArgs: $this->makeToolArgsDelta($data),
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
             usage: $this->usageFormat->fromData($data),
             usageIsCumulative: true,

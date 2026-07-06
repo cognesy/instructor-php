@@ -20,6 +20,7 @@ use Cognesy\Telemetry\Application\Telemetry;
 use Cognesy\Telemetry\Domain\Contract\CanExportObservations;
 use Cognesy\Telemetry\Domain\Contract\CanFlushTelemetry;
 use Cognesy\Telemetry\Domain\Contract\CanShutdownTelemetry;
+use Psr\Log\NullLogger;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\ConsoleEvents;
 use Symfony\Component\Console\Event\ConsoleErrorEvent;
@@ -215,6 +216,9 @@ it('flushes and shuts down telemetry across http, console, and messenger lifecyc
         instructorConfig: telemetryTestConfig(),
         containerConfigurators: [
             SymfonyTelemetryServiceOverrides::exporter($exporter),
+            static function (ContainerBuilder $container): void {
+                $container->setDefinition('logger', new Definition(NullLogger::class));
+            },
         ],
     );
 });

@@ -1,3 +1,8 @@
+---
+title: Troubleshooting
+description: 'Common telemetry setup problems and how to debug them'
+---
+
 # Troubleshooting
 
 ## Nothing Is Sent To The Backend
@@ -40,7 +45,7 @@ $telemetry->flush();
 
 var_dump($exporter->observations());
 var_dump($exporter->tracesPayload());
-// @doctest id="cb97"
+// @doctest id="953f"
 ```
 
 This is the fastest way to answer: "Did the app produce telemetry at all?"
@@ -82,7 +87,7 @@ For live backend proof, run:
 
 ```bash
 TELEMETRY_INTEROP_ENABLED=1 composer test:telemetry-interop
-# @doctest id="5391"
+# @doctest id="81aa"
 ```
 
 That suite writes real telemetry and then queries Logfire or Langfuse back to

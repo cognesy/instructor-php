@@ -2,12 +2,13 @@
 
 namespace Cognesy\Events\Dispatchers;
 
+use Cognesy\Events\Contracts\CanCheckListeners;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Psr\EventDispatcher\StoppableEventInterface;
 use SplPriorityQueue;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface as SymfonyDispatcher;
 
-final class SymfonyEventDispatcher implements CanHandleEvents
+final class SymfonyEventDispatcher implements CanHandleEvents, CanCheckListeners
 {
     /** @var SplPriorityQueue<int, callable(object): void> */
     private SplPriorityQueue $taps;
@@ -76,6 +77,29 @@ final class SymfonyEventDispatcher implements CanHandleEvents
             $listeners = $this->dispatcher->getListeners($type);
             yield from $listeners;
         }
+    }
+
+    /**
+     * @param class-string $eventClass
+     */
+    #[\Override]
+    public function hasListenersFor(string $eventClass): bool {
+        if (!$this->taps->isEmpty()) {
+            return true;
+        }
+
+        $types = array_values(array_unique(array_merge(
+            [$eventClass],
+            class_parents($eventClass) ?: [],
+            class_implements($eventClass) ?: [],
+        )));
+        foreach ($types as $type) {
+            if ($this->dispatcher->hasListeners($type)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /** @return list<string> */

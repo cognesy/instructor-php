@@ -1,3 +1,8 @@
+---
+title: 'Tool Calling'
+description: 'Request native tool calls with explicit tool definitions and process the results.'
+---
+
 Tool calling enables the model to request specific actions from your application. Instead of generating a text response, the model returns structured function calls with arguments, which your code can execute and optionally feed back into the conversation. This is the foundation for building agents, assistants, and any application that needs to interact with external systems.
 
 ## Defining Tools
@@ -29,7 +34,7 @@ $weatherTool = [
         ],
     ],
 ];
-// @doctest id="e9e3"
+// @doctest id="1682"
 ```
 
 ## Making a Tool Call Request
@@ -51,7 +56,7 @@ $response = Inference::using('openai')
         toolChoice: ToolChoice::auto(),
     )
     ->response();
-// @doctest id="ed3f"
+// @doctest id="56c1"
 ```
 
 ## Processing Tool Call Results
@@ -75,7 +80,7 @@ if ($response->hasToolCalls()) {
     // The model responded with text instead
     echo $response->content();
 }
-// @doctest id="4cd4"
+// @doctest id="10ee"
 ```
 
 ## Convenience Accessors
@@ -107,7 +112,7 @@ $data = Inference::using('openai')
         toolChoice: ToolChoice::auto(),
     )
     ->asToolCallJsonData();
-// @doctest id="5bf4"
+// @doctest id="6921"
 ```
 
 When the model returns a single tool call, `asToolCallJsonData()` returns that call's arguments as an array. When multiple tool calls are returned, it returns an array of all calls.
@@ -152,7 +157,7 @@ $response = Inference::using('openai')
         toolChoice: ToolChoice::none(),
     )
     ->response();
-// @doctest id="8ee7"
+// @doctest id="a320"
 ```
 
 ## Multiple Tools
@@ -206,7 +211,7 @@ $response = Inference::using('openai')
         toolChoice: ToolChoice::auto(),
     )
     ->response();
-// @doctest id="c547"
+// @doctest id="a34c"
 ```
 
 ## Using the Fluent API
@@ -226,7 +231,7 @@ $response = Inference::using('openai')
     ->withTools(ToolDefinitions::fromArray([$weatherTool]))
     ->withToolChoice(ToolChoice::auto())
     ->response();
-// @doctest id="2286"
+// @doctest id="e4f4"
 ```
 
 ## Provider Support

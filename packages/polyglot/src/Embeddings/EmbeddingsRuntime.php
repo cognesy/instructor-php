@@ -5,6 +5,7 @@ namespace Cognesy\Polyglot\Embeddings;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Logging\EventLog;
 use Cognesy\Http\Creation\HttpClientBuilder;
+use Cognesy\Http\Creation\HttpClientDefaults;
 use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanCreateEmbeddings;
@@ -134,7 +135,9 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
         if ($httpClient !== null) {
             return $httpClient;
         }
-        return (new HttpClientBuilder(events: $events))->create();
+        // Implicit-build path: consult the ambient middleware registry (default
+        // empty). Explicit clients returned above never reach this hook.
+        return HttpClientDefaults::applyTo(new HttpClientBuilder(events: $events))->create();
     }
 
     private static function resolveEvents(?CanHandleEvents $events): CanHandleEvents {

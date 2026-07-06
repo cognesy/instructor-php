@@ -44,7 +44,7 @@ $requests->all();      // Array of all requests
 // Immutable mutation
 $requests = $requests->withAppended($newRequest);
 $requests = $requests->filter(fn($r) => $r->method() === 'POST');
-// @doctest id="209c"
+// @doctest id="c3b6"
 ```
 
 ### HttpResponseList
@@ -61,7 +61,7 @@ $responses->failed();         // Array of error values
 $responses->hasFailures();    // true if any request failed
 $responses->successCount();   // Number of successful responses
 $responses->failureCount();   // Number of failed responses
-// @doctest id="b6cc"
+// @doctest id="007e"
 ```
 
 This design lets you handle partial failures gracefully -- some requests in a batch may succeed while others fail, and you can inspect each result independently.

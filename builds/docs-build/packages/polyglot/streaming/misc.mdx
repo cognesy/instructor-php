@@ -1,3 +1,8 @@
+---
+title: 'Stream Processing Helpers'
+description: 'Transform, filter, and aggregate streaming deltas with built-in helpers.'
+---
+
 Beyond simple iteration, `InferenceStream` provides a set of functional helpers for processing deltas. These methods build on top of the `deltas()` generator, so each one consumes the stream -- you should use only one of them per stream instance.
 
 
@@ -20,7 +25,7 @@ $text = Inference::using('openai')
     );
 
 echo $text;
-// @doctest id="6aa5"
+// @doctest id="fab4"
 ```
 
 Because `reduce()` drains the entire stream before returning, it blocks until the response is complete.
@@ -43,7 +48,7 @@ $stream = Inference::using('openai')
 foreach ($stream->map(fn($delta) => strtoupper($delta->contentDelta)) as $chunk) {
     echo $chunk;
 }
-// @doctest id="75b6"
+// @doctest id="5ddf"
 ```
 
 
@@ -65,7 +70,7 @@ $stream = Inference::using('openai')
 foreach ($stream->filter(fn($delta) => preg_match('/\d/', $delta->contentDelta)) as $delta) {
     echo $delta->contentDelta;
 }
-// @doctest id="e898"
+// @doctest id="9cd1"
 ```
 
 
@@ -85,7 +90,7 @@ $deltas = Inference::using('openai')
     ->all();
 
 echo "Received " . count($deltas) . " deltas.\n";
-// @doctest id="0165"
+// @doctest id="feb7"
 ```
 
 
@@ -104,7 +109,7 @@ foreach ($stream->deltas() as $delta) {
 
 $last = $stream->lastDelta();
 echo $last->finishReason; // e.g. "stop"
-// @doctest id="71cb"
+// @doctest id="d455"
 ```
 
 This is particularly useful for inspecting the finish reason or final usage data without keeping track of it manually during iteration.
@@ -125,7 +130,7 @@ foreach ($stream->deltas() as $delta) {
 
 $usage = $stream->usage();
 echo "\nTokens used: input={$usage->inputTokens}, output={$usage->outputTokens}\n";
-// @doctest id="1c82"
+// @doctest id="f837"
 ```
 
 
@@ -143,7 +148,7 @@ $stream->final(); // ensure stream is consumed
 $execution = $stream->execution();
 echo "Execution ID: " . $execution->id->toString() . "\n";
 echo "Model used: " . $execution->request()->model() . "\n";
-// @doctest id="9a22"
+// @doctest id="38a8"
 ```
 
 

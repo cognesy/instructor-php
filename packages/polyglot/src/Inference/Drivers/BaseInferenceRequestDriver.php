@@ -11,6 +11,7 @@ use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Http\Stream\StreamCacheManager;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
+use Cognesy\Polyglot\Inference\Core\SensitiveDataRedactor;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceRequest;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
@@ -75,7 +76,7 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest
     // INTERNAL //////////////////////////////////////////////
 
     protected function toHttpRequest(InferenceRequest $request): HttpRequest {
-        $this->events->dispatch(new InferenceRequested(['request' => $request->toArray()]));
+        $this->events->dispatch(new InferenceRequested($this->requestEventData($request)));
         return $this->requestTranslator->toHttpRequest($request);
     }
 
@@ -226,6 +227,34 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest
         return $payload;
     }
 
+    /**
+     * @return array<string,mixed>
+     */
+    private function requestEventData(InferenceRequest $request): array {
+        $cachedContext = $request->cachedContext();
+
+        return [
+            'requestId' => $request->id()->toString(),
+            'model' => $request->model(),
+            'isStreamed' => $request->isStreamed(),
+            'messageCount' => count($request->messages()),
+            'toolCount' => $request->tools()->count(),
+            'hasTools' => $request->hasTools(),
+            'hasToolChoice' => $request->hasToolChoice(),
+            'hasResponseFormat' => $request->hasResponseFormat(),
+            'hasOptions' => $request->hasOptions(),
+            'optionKeys' => array_keys($request->options()),
+            'responseCachePolicy' => $request->responseCachePolicy()->value,
+            'hasRetryPolicy' => $request->retryPolicy() !== null,
+            'hasTelemetryCorrelation' => $request->telemetryCorrelation() !== null,
+            'hasCachedContext' => $cachedContext !== null && !$cachedContext->isEmpty(),
+            'cachedMessageCount' => $cachedContext?->messages()->count() ?? 0,
+            'cachedToolCount' => $cachedContext?->tools()->count() ?? 0,
+            'hasCachedToolChoice' => $cachedContext !== null && !$cachedContext->toolChoice()->isEmpty(),
+            'hasCachedResponseFormat' => $cachedContext !== null && !$cachedContext->responseFormat()->isEmpty(),
+        ];
+    }
+
     private function responseEventData(InferenceResponse $response, InferenceRequest $request): array
     {
         $payload = [
@@ -269,22 +298,7 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest
      * @return array<string,mixed>
      */
     private function redactedValues(array $data): array {
-        $redacted = [];
-        foreach ($data as $key => $value) {
-            if ($this->isSensitiveKey((string) $key)) {
-                $redacted[$key] = '[REDACTED]';
-                continue;
-            }
-
-            if (!is_array($value)) {
-                $redacted[$key] = $value;
-                continue;
-            }
-
-            $redacted[$key] = $this->redactedValues($value);
-        }
-
-        return $redacted;
+        return SensitiveDataRedactor::redactValues($data);
     }
 
     private function redactedUrl(string $url): string {
@@ -342,26 +356,6 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest
     }
 
     private function isSensitiveKey(string $key): bool {
-        $normalized = strtolower(str_replace(['-', '_'], '', $key));
-
-        if (in_array($normalized, ['apikey', 'authorization', 'proxyauthorization', 'token', 'accesstoken', 'refreshtoken', 'secret', 'password', 'cookie', 'setcookie'], true)) {
-            return true;
-        }
-
-        if (str_contains($normalized, 'apikey')) {
-            return true;
-        }
-
-        if (str_contains($normalized, 'authorization')) {
-            return true;
-        }
-
-        if (str_contains($normalized, 'cookie')) {
-            return true;
-        }
-
-        return str_contains($normalized, 'token')
-            || str_contains($normalized, 'secret')
-            || str_contains($normalized, 'password');
+        return SensitiveDataRedactor::isSensitiveKey($key);
     }
 }

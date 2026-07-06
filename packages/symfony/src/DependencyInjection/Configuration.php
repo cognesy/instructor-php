@@ -285,6 +285,14 @@ final class Configuration implements ConfigurationInterface
             ->scalarNode('streamHeaderTimeout')->defaultNull()->end()
             ->scalarNode('fail_on_error')->defaultNull()->end()
             ->scalarNode('failOnError')->defaultNull()->end()
+            ->scalarNode('verify_tls')->defaultNull()->end()
+            ->scalarNode('verifyTls')->defaultNull()->end()
+            ->scalarNode('follow_redirects')->defaultNull()->end()
+            ->scalarNode('followRedirects')->defaultNull()->end()
+            ->scalarNode('max_redirects')->defaultNull()->end()
+            ->scalarNode('maxRedirects')->defaultNull()->end()
+            ->scalarNode('http_version')->defaultNull()->end()
+            ->scalarNode('httpVersion')->defaultNull()->end()
             ->end();
     }
 

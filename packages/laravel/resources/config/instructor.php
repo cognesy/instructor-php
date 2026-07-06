@@ -43,7 +43,7 @@ return [
             'driver' => 'anthropic',
             'api_url' => env('ANTHROPIC_API_URL', 'https://api.anthropic.com/v1'),
             'api_key' => env('ANTHROPIC_API_KEY'),
-            'model' => env('ANTHROPIC_MODEL', 'claude-sonnet-4-20250514'),
+            'model' => env('ANTHROPIC_MODEL', 'claude-haiku-4-5'),
             'max_tokens' => env('ANTHROPIC_MAX_TOKENS', 4096),
         ],
 
@@ -165,6 +165,27 @@ return [
         | Connection timeout in seconds.
         */
         'connect_timeout' => env('INSTRUCTOR_HTTP_CONNECT_TIMEOUT', 30),
+
+        /*
+        | Whether TLS certificates and host names should be verified.
+        */
+        'verify_tls' => env('INSTRUCTOR_HTTP_VERIFY_TLS', true),
+
+        /*
+        | Whether HTTP redirects should be followed.
+        */
+        'follow_redirects' => env('INSTRUCTOR_HTTP_FOLLOW_REDIRECTS', true),
+
+        /*
+        | Maximum redirects to follow when redirects are enabled. Leave null
+        | for driver defaults.
+        */
+        'max_redirects' => env('INSTRUCTOR_HTTP_MAX_REDIRECTS', null),
+
+        /*
+        | HTTP protocol version to request. Leave null for driver defaults.
+        */
+        'http_version' => env('INSTRUCTOR_HTTP_VERSION', null),
 
     ],
 

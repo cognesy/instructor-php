@@ -1,3 +1,8 @@
+---
+title: 'JSON Schema Responses'
+description: 'Request native schema-constrained JSON when the provider supports it.'
+---
+
 JSON Schema mode takes structured output a step further by validating the response against a predefined schema. When the provider supports it natively, the schema is enforced at the API level, guaranteeing that the response matches the exact structure you defined.
 
 ## Basic Usage
@@ -31,7 +36,7 @@ $data = Inference::using('openai')
 
 // $data is guaranteed to have 'name' and 'country' keys
 echo "{$data['name']}, {$data['country']}\n";
-// @doctest id="69e9"
+// @doctest id="9c7d"
 ```
 
 ## Using the Fluent API
@@ -63,7 +68,7 @@ $data = Inference::using('openai')
         strict: true,
     ))
     ->asJsonData();
-// @doctest id="042e"
+// @doctest id="efd5"
 ```
 
 ## Complex Nested Schemas
@@ -124,7 +129,7 @@ echo "Weather in {$data['location']}: {$data['conditions']}, {$data['current_tem
 foreach ($data['forecast'] as $day) {
     echo "  {$day['day']}: {$day['low']}C - {$day['high']}C, {$day['conditions']}\n";
 }
-// @doctest id="3fe5"
+// @doctest id="c5a5"
 ```
 
 ## How Schema Validation Works
@@ -152,7 +157,7 @@ You can query support programmatically:
 
 ```php
 // DriverCapabilities::supportsResponseFormatJsonSchema()
-// @doctest id="c8d6"
+// @doctest id="d9df"
 ```
 
 For providers without native JSON Schema support, consider using [JSON object mode](/modes/json) with detailed prompts, or use the Instructor layer above Polyglot for automatic fallback strategies.

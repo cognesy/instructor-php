@@ -26,7 +26,6 @@ use SplQueue;
 final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
 {
     private ?array $headers = null;
-    private string $bufferedBody = '';
     private bool $completed = false;
     private bool $cleanedUp = false;
 
@@ -70,33 +69,25 @@ final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
         return $this->headers;
     }
 
-    public function body(): string {
-        if ($this->completed) {
-            return $this->bufferedBody;
-        }
-
-        // Consume entire stream
-        foreach ($this->stream() as $chunk) {
-            // Accumulation happens in stream()
-        }
-        return $this->bufferedBody;
-    }
-
     public function stream(): Generator {
         $active = 1;
         $outcome = 'abandoned';
+        $bytes = 0;
+        $chunkCount = 0;
         $error = null;
         try {
             while (true) {
                 // Yield buffered chunks
                 while (!$this->queue->isEmpty()) {
-                    $chunk = $this->queue->dequeue();
-                    $this->bufferedBody .= $chunk;
-                    $this->events->dispatch(new HttpResponseChunkReceived([
-                        'requestId' => $this->requestId,
-                        'chunk' => $chunk,
-                    ]));
-                    yield $chunk;
+                    foreach ($this->splitChunk($this->queue->dequeue()) as $chunk) {
+                        $bytes += strlen($chunk);
+                        $chunkCount++;
+                        $this->events->dispatch(new HttpResponseChunkReceived([
+                            'requestId' => $this->requestId,
+                            'chunk' => $chunk,
+                        ]));
+                        yield $chunk;
+                    }
                 }
 
                 if ($active === 0) {
@@ -118,10 +109,14 @@ final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
         } finally {
             $this->completed = true;
             $this->cleanup();
-            $payload = ['requestId' => $this->requestId, 'outcome' => $outcome];
+            $payload = [
+                'requestId' => $this->requestId,
+                'outcome' => $outcome,
+                'bytes' => $bytes,
+                'chunks' => $chunkCount,
+            ];
             $payload = match (true) {
                 $error !== null => [...$payload, 'error' => $error->getMessage()],
-                $outcome === 'completed' => [...$payload, 'body' => $this->bufferedBody],
                 default => $payload,
             };
 
@@ -133,8 +128,14 @@ final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
         return true;
     }
 
-    public function chunkSize(): int {
-        return $this->chunkSize;
+    /** @return Generator<string> */
+    private function splitChunk(string $chunk): Generator {
+        $chunkSize = max(1, $this->chunkSize);
+        $length = strlen($chunk);
+
+        for ($offset = 0; $offset < $length; $offset += $chunkSize) {
+            yield substr($chunk, $offset, $chunkSize);
+        }
     }
 
     private function primeHandles(): void {

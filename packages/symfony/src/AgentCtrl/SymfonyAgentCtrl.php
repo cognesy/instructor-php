@@ -50,7 +50,7 @@ final readonly class SymfonyAgentCtrl
             'codex' => AgentCtrl::codex()->withConfig($config),
             'opencode' => AgentCtrl::openCode()->withConfig($config),
             'pi' => AgentCtrl::pi()->withConfig($config),
-            'gemini' => AgentCtrl::gemini()->withConfig($config),
+            'gemini' => AgentCtrl::gemini()->withConfig($config), // deprecated backend, kept for compatibility
         };
     }
 
@@ -112,6 +112,9 @@ final readonly class SymfonyAgentCtrl
         return $builder;
     }
 
+    /**
+     * @deprecated Gemini CLI bridge is deprecated because the upstream Google CLI flow is obsolete for this package.
+     */
     public function gemini(): GeminiBridgeBuilder
     {
         /** @var GeminiBridgeBuilder $builder */

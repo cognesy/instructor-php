@@ -1,3 +1,8 @@
+---
+title: Debugging
+description: 'Use runtime events, wiretapping, and HTTP middleware to inspect requests and responses.'
+---
+
 Debugging LLM interactions is essential for troubleshooting and optimizing your applications. Polyglot provides several layers of observability, from high-level event listeners to raw HTTP request inspection.
 
 ## Wiretapping the Runtime
@@ -25,7 +30,7 @@ $runtime = InferenceRuntime::fromConfig(new LLMConfig(
 $text = Inference::fromRuntime($runtime)
     ->withMessages(Messages::fromString('Say hello.'))
     ->get();
-// @doctest id="3028"
+// @doctest id="4c6d"
 ```
 
 This prints every event class name as it fires, giving you an immediate view of the request flow without modifying your application code.
@@ -66,7 +71,7 @@ $runtime->onEvent(
 $text = Inference::fromRuntime($runtime)
     ->withMessages(Messages::fromString('What is the capital of France?'))
     ->get();
-// @doctest id="97e6"
+// @doctest id="4817"
 ```
 
 ### Available Events
@@ -132,7 +137,7 @@ $runtime->onEvent(
 $text = Inference::fromRuntime($runtime)
     ->withMessages(Messages::fromString('What is artificial intelligence?'))
     ->get();
-// @doctest id="d661"
+// @doctest id="1fbb"
 ```
 
 ## HTTP-Level Inspection
@@ -162,7 +167,7 @@ $runtime = InferenceRuntime::fromConfig(
 $text = Inference::fromRuntime($runtime)
     ->withMessages(Messages::fromString('Test message'))
     ->get();
-// @doctest id="b07b"
+// @doctest id="bdc7"
 ```
 
 You can add custom middleware to the HTTP client using `withMiddleware()` to log, transform, or inspect requests and responses at the transport layer. This is especially helpful when working behind proxies, or when provider error messages are only visible in the raw HTTP body.

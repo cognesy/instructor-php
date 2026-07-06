@@ -11,5 +11,6 @@ enum AgentType: string
     case Codex = 'codex';
     case OpenCode = 'opencode';
     case Pi = 'pi';
+    /** @deprecated Gemini CLI bridge is deprecated because the upstream Google CLI flow is obsolete for this package. */
     case Gemini = 'gemini';
 }

@@ -26,7 +26,7 @@ $pending = Inference::using('openai')
 // Get the response as plain text
 $text = $pending->get();
 echo $text; // "The capital of France is Paris."
-// @doctest id="6263"
+// @doctest id="757c"
 ```
 
 ## Retrieving JSON Data
@@ -52,7 +52,7 @@ echo $data['status'];
 
 // Or get the raw JSON string
 $json = $pending->asJson();
-// @doctest id="61ef"
+// @doctest id="ffad"
 ```
 
 ## Working with `InferenceResponse`
@@ -88,7 +88,7 @@ echo "Cache tokens: " . $usage->cache() . "\n";
 
 // Raw HTTP response data
 $httpResponse = $response->responseData();
-// @doctest id="9ee5"
+// @doctest id="e282"
 ```
 
 ### Available `InferenceResponse` Methods
@@ -132,8 +132,8 @@ $usage = $response->usage();
 
 $usage->inputTokens;       // Input / prompt tokens
 $usage->outputTokens;      // Output / completion tokens
-$usage->cacheWriteTokens;  // Tokens written to cache
-$usage->cacheReadTokens;   // Tokens read from cache
+$usage->cacheWriteTokens;  // Tokens written to cache when reported by provider
+$usage->cacheReadTokens;   // Tokens read from cache when reported by provider
 $usage->reasoningTokens;   // Reasoning / thinking tokens
 
 // Convenience accessors
@@ -141,7 +141,7 @@ $usage->input();   // Same as inputTokens
 $usage->output();  // outputTokens + reasoningTokens
 $usage->cache();   // cacheWriteTokens + cacheReadTokens
 $usage->total();   // Sum of all token counts
-// @doctest id="38d8"
+// @doctest id="f413"
 ```
 
 ## Handling Tool Calls
@@ -202,7 +202,7 @@ if ($response->hasToolCalls()) {
         $unit = $call->value('unit', 'celsius');
     }
 }
-// @doctest id="ef02"
+// @doctest id="4d32"
 ```
 
 ### Quick JSON Extraction from Tool Calls
@@ -218,7 +218,7 @@ $args = $pending->asToolCallJsonData();
 
 // Or as a JSON string
 $json = $pending->asToolCallJson();
-// @doctest id="690d"
+// @doctest id="90e8"
 ```
 
 > **Note:** When a single tool call is present, `asToolCallJsonData()` returns that
@@ -247,7 +247,7 @@ foreach ($stream->deltas() as $delta) {
 // After iteration, get the finalized response
 $finalResponse = $stream->final();
 echo "\n\nTokens used: " . $finalResponse->usage()->total();
-// @doctest id="d181"
+// @doctest id="ae72"
 ```
 
 ### The `PartialInferenceDelta` Object
@@ -298,7 +298,7 @@ $allDeltas = $stream->all();
 
 // Get the finalized response (drains the stream if needed)
 $response = $stream->final();
-// @doctest id="5293"
+// @doctest id="62ff"
 ```
 
 ### Using the `onDelta` Callback
@@ -328,7 +328,7 @@ $stream->onDelta(function ($delta) {
 
 // Drain the stream to trigger all callbacks
 $response = $stream->final();
-// @doctest id="5651"
+// @doctest id="175b"
 ```
 
 ### Stream Lifecycle
@@ -360,5 +360,5 @@ if ($pending->isStreamed()) {
 } else {
     echo $pending->get();
 }
-// @doctest id="d432"
+// @doctest id="4d98"
 ```

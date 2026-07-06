@@ -1,3 +1,8 @@
+---
+title: 'Request Pooling'
+description: 'Send multiple requests concurrently using the dedicated http-pool package.'
+---
+
 Concurrent request execution has been moved to its own dedicated package at `packages/http-pool`. This separation keeps the core HTTP client focused on single-request transport while giving the pooling layer its own lifecycle and dependencies.
 
 ## Where to Find Pooling
@@ -39,7 +44,7 @@ $requests->all();      // Array of all requests
 // Immutable mutation
 $requests = $requests->withAppended($newRequest);
 $requests = $requests->filter(fn($r) => $r->method() === 'POST');
-// @doctest id="992b"
+// @doctest id="0748"
 ```
 
 ### HttpResponseList
@@ -56,7 +61,7 @@ $responses->failed();         // Array of error values
 $responses->hasFailures();    // true if any request failed
 $responses->successCount();   // Number of successful responses
 $responses->failureCount();   // Number of failed responses
-// @doctest id="1d00"
+// @doctest id="df12"
 ```
 
 This design lets you handle partial failures gracefully -- some requests in a batch may succeed while others fail, and you can inspect each result independently.

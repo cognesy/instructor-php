@@ -1,3 +1,8 @@
+---
+title: 'Settings Class'
+description: 'There is no single global settings object in this package.'
+---
+
 ## Overview
 
 The structured-output package deliberately avoids a single global settings object.
@@ -32,7 +37,7 @@ $config = LLMConfig::fromArray($data);
 
 // From a DSN string
 $config = LLMConfig::fromDsn('driver=openai,model=gpt-4o,apiKey=sk-...');
-// @doctest id="a927"
+// @doctest id="3790"
 ```
 
 ### `StructuredOutputConfig`
@@ -50,7 +55,7 @@ $config = new StructuredOutputConfig(
     toolName: 'extract_data',
     toolDescription: 'Extract structured data from the input.',
 );
-// @doctest id="f054"
+// @doctest id="2d1f"
 ```
 
 Key settings:
@@ -85,7 +90,7 @@ $runtime = new StructuredOutputRuntime(
     validators: [MyValidator::class],
     transformers: [MyTransformer::class],
 );
-// @doctest id="80f0"
+// @doctest id="7708"
 ```
 
 

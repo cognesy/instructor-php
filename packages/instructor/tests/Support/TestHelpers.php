@@ -2,6 +2,50 @@
 
 // Shared test helpers for Instructor package
 
+if (!function_exists('eventCount')) {
+    function eventCount(array $events, string $class): int {
+        return count(array_filter(
+            $events,
+            static fn(object $event): bool => $event instanceof $class,
+        ));
+    }
+}
+
+if (!function_exists('stateSnapshot')) {
+    /**
+     * @param list<\Cognesy\Polyglot\Inference\Data\PartialInferenceDelta> $prior
+     */
+    function stateSnapshot(
+        mixed $value = null,
+        string $finishReason = '',
+        string $toolId = '',
+        string $toolName = '',
+        string $toolArgs = '',
+        array $prior = [],
+    ): \Cognesy\Instructor\Streaming\StructuredOutputStreamState {
+        $state = \Cognesy\Instructor\Streaming\StructuredOutputStreamState::empty();
+
+        foreach ($prior as $delta) {
+            $state->applyDelta($delta);
+        }
+
+        if ($toolId !== '' || $toolName !== '' || $toolArgs !== '' || $finishReason !== '') {
+            $state->applyDelta(new \Cognesy\Polyglot\Inference\Data\PartialInferenceDelta(
+                toolId: $toolId,
+                toolName: $toolName,
+                toolArgs: $toolArgs,
+                finishReason: $finishReason,
+            ));
+        }
+
+        if ($value !== null) {
+            $state->setValue($value);
+        }
+
+        return $state;
+    }
+}
+
 if (!function_exists('makeAnyResponseModel')) {
     function makeAnyResponseModel(mixed $any): \Cognesy\Instructor\Data\ResponseModel {
         $config = new \Cognesy\Instructor\Config\StructuredOutputConfig();

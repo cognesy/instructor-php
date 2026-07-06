@@ -1,3 +1,8 @@
+---
+title: Overview
+description: 'Agent-Ctrl provides a unified, fluent PHP API for orchestrating CLI-based code agents such as Claude Code, OpenAI Codex, OpenCode, and Pi.'
+---
+
 ## Introduction
 
 Agent-Ctrl is a PHP package that gives your application a single entry point for running CLI-based code agents. Instead of writing separate integration code for each agent's command-line interface, JSON output format, and streaming protocol, you configure one fluent builder and receive one normalized response -- regardless of which agent performed the work.
@@ -6,7 +11,7 @@ The package ships as part of the Instructor-PHP monorepo and can be installed st
 
 ```bash
 composer require cognesy/agent-ctrl
-# @doctest id="d72f"
+# @doctest id="6987"
 ```
 
 ## Entry Point
@@ -26,7 +31,7 @@ AgentCtrl::gemini();       // Returns GeminiBridgeBuilder
 
 // Runtime selection via enum
 AgentCtrl::make(AgentType::from('codex'));
-// @doctest id="ff8b"
+// @doctest id="c4a0"
 ```
 
 Each factory method returns a bridge builder -- a fluent configuration object that lets you set the model, timeout, working directory, streaming callbacks, and agent-specific options before calling `execute()` or `executeStreaming()`.
@@ -53,7 +58,7 @@ $response = AgentCtrl::claudeCode()
 if ($response->isSuccess()) {
     echo $response->text();
 }
-// @doctest id="91fa"
+// @doctest id="3c1c"
 ```
 
 ## Core Capabilities

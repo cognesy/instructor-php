@@ -1,3 +1,8 @@
+---
+title: 'Controlling the Loop'
+description: 'Run agents to completion with execute() or step through with iterate() for fine-grained control'
+---
+
 # Controlling the Loop
 
 The `AgentLoop` exposes two methods for running an agent: `execute()` for
@@ -27,7 +32,7 @@ $state = AgentState::empty()
 $finalState = $loop->execute($state);
 
 echo $finalState->finalResponse()->toString();
-// @doctest id="b571"
+// @doctest id="85c8"
 ```
 
 Internally, `execute()` is a thin wrapper around `iterate()` -- it simply
@@ -51,7 +56,7 @@ foreach ($loop->iterate($state) as $stepState) {
         $step?->usage()->total() ?? 0,
     );
 }
-// @doctest id="973b"
+// @doctest id="2837"
 ```
 
 Each yielded `$stepState` is a complete `AgentState` snapshot. You can
@@ -77,7 +82,7 @@ $state->stepCount();          // Number of completed steps
 $state->executionDuration();  // Total wall-clock time (seconds)
 $state->usage();              // Accumulated token usage across all steps
 $state->executionCount();     // How many times this agent has been executed
-// @doctest id="0974"
+// @doctest id="7760"
 ```
 
 ### Step History
@@ -97,7 +102,7 @@ foreach ($state->stepExecutions()->all() as $stepExecution) {
         $stepExecution->duration(),
     );
 }
-// @doctest id="db04"
+// @doctest id="dbcb"
 ```
 
 For quick access to the most recent step:
@@ -108,7 +113,7 @@ $state->lastStepType();          // AgentStepType enum value
 $state->lastStepUsage();         // Token usage for the last step
 $state->lastStepDuration();      // Duration of the last step (seconds)
 $state->lastStepErrors();        // ErrorList from the last step
-// @doctest id="d4cc"
+// @doctest id="370d"
 ```
 
 ### Tool Execution Details
@@ -124,7 +129,7 @@ if ($toolExec !== null) {
     echo $toolExec->hasError();   // Whether the tool call failed
     echo $toolExec->value();      // The return value on success
 }
-// @doctest id="9682"
+// @doctest id="b9c8"
 ```
 
 To see all tool executions from the last step:
@@ -138,7 +143,7 @@ foreach ($state->lastStepToolExecutions()->all() as $toolExec) {
         $toolExec->hasError() ? 'ERROR: ' . $toolExec->errorMessage() : 'OK',
     );
 }
-// @doctest id="f7a0"
+// @doctest id="6ec3"
 ```
 
 ### Stop Reason
@@ -164,7 +169,7 @@ match ($reason) {
     StopReason::UserRequested       => 'The user requested a stop',
     default                         => 'Unknown reason',
 };
-// @doctest id="3c1d"
+// @doctest id="d2a3"
 ```
 
 You can also retrieve the full stop signal for additional context:
@@ -176,7 +181,7 @@ $signal->reason;   // StopReason enum
 $signal->message;  // Human-readable explanation
 $signal->context;  // Array of contextual data
 $signal->source;   // The class that emitted the signal
-// @doctest id="b92a"
+// @doctest id="da13"
 ```
 
 
@@ -196,7 +201,7 @@ the execution ended mid-tool-use or with an error, this returns an empty
 if ($state->hasFinalResponse()) {
     echo $state->finalResponse()->toString();
 }
-// @doctest id="fda1"
+// @doctest id="8ef7"
 ```
 
 ### currentResponse()
@@ -208,7 +213,7 @@ you want to show the latest output even if the agent has not finished:
 
 ```php
 echo $state->currentResponse()->toString();
-// @doctest id="7d52"
+// @doctest id="9c50"
 ```
 
 A typical pattern after execution combines both:
@@ -217,7 +222,7 @@ A typical pattern after execution combines both:
 $text = $state->hasFinalResponse()
     ? $state->finalResponse()->toString()
     : $state->currentResponse()->toString();
-// @doctest id="3771"
+// @doctest id="aec5"
 ```
 
 
@@ -244,7 +249,7 @@ $loop->onEvent(AgentStepCompleted::class, function (AgentStepCompleted $event) {
         $event->durationMs,
     );
 });
-// @doctest id="8f1b"
+// @doctest id="8f80"
 ```
 
 ### Wiretap (All Events)
@@ -256,7 +261,7 @@ invaluable for debugging and logging:
 $loop->wiretap(function (object $event) {
     echo get_class($event) . "\n";
 });
-// @doctest id="6902"
+// @doctest id="5af6"
 ```
 
 ### Available Events
@@ -304,7 +309,7 @@ $info = $state->debug();
 //     'errors'         => ErrorList(...),
 //     'usage'          => ['input' => 150, 'output' => 42],
 // ]
-// @doctest id="7ffe"
+// @doctest id="1fe8"
 ```
 
 This is particularly useful when logging or when you need a quick overview

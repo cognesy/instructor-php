@@ -1,3 +1,8 @@
+---
+title: 'Testing Doubles'
+description: 'Deterministic testing seams for inference and embeddings.'
+---
+
 ## Overview
 
 Polyglot supports deterministic tests at two main seams.
@@ -49,7 +54,7 @@ use Cognesy\Polyglot\Tests\Support\FakeEmbeddingsDriver;
 $driver = new FakeEmbeddingsDriver([
     new EmbeddingsResponse([new Vector(values: [0.1, 0.2], id: 0)]),
 ]);
-// @doctest id="d636"
+// @doctest id="ba51"
 ```
 
 ## `MockHttpDriver`

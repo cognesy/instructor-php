@@ -4,7 +4,7 @@ use Cognesy\HttpPool\Config\HttpPoolConfig;
 
 it('coerces typed http pool config values from dsn', function () {
     $config = HttpPoolConfig::fromDsn(
-        'driver=guzzle,connectTimeout=1,requestTimeout=20,idleTimeout=-1,streamChunkSize=512,maxConcurrent=7,poolTimeout=60,failOnError=true'
+        'driver=guzzle,connectTimeout=1,requestTimeout=20,idleTimeout=-1,streamChunkSize=512,maxConcurrent=7,poolTimeout=60,failOnError=true,verifyTls=false,followRedirects=false,maxRedirects=2,httpVersion=1.1'
     );
 
     expect($config->driver)->toBe('guzzle')
@@ -14,7 +14,11 @@ it('coerces typed http pool config values from dsn', function () {
         ->and($config->streamChunkSize)->toBe(512)
         ->and($config->maxConcurrent)->toBe(7)
         ->and($config->poolTimeout)->toBe(60)
-        ->and($config->failOnError)->toBeTrue();
+        ->and($config->failOnError)->toBeTrue()
+        ->and($config->verifyTls)->toBeFalse()
+        ->and($config->followRedirects)->toBeFalse()
+        ->and($config->maxRedirects)->toBe(2)
+        ->and($config->httpVersion)->toBe('1.1');
 });
 
 it('throws configuration exception for invalid integer dsn values', function () {

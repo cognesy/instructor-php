@@ -1,3 +1,8 @@
+---
+title: Middleware
+description: 'Intercept, modify, and extend HTTP request/response behavior with middleware.'
+---
+
 Middleware is the primary extension mechanism for the HTTP client. It lets you add behaviors -- logging, retries, circuit breaking, authentication, response transformation -- without modifying drivers or request code. Each middleware sits in a pipeline: requests pass through in order on the way out, and responses pass through in reverse order on the way back.
 
 ## How Middleware Works
@@ -7,7 +12,7 @@ The middleware pipeline follows a simple pattern:
 ```text
 Request  -> Middleware A -> Middleware B -> Middleware C -> Driver -> Server
 Response <- Middleware A <- Middleware B <- Middleware C <- Driver <- Server
-// @doctest id="4ce5"
+// @doctest id="c16f"
 ```
 
 Each middleware receives the request and a reference to the next handler in the chain. It can modify the request, call the next handler, inspect or modify the response, or short-circuit the chain entirely by returning a response without calling next.
@@ -23,7 +28,7 @@ interface HttpMiddleware
 {
     public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse;
 }
-// @doctest id="0119"
+// @doctest id="a078"
 ```
 
 Here is a complete example that adds a header to every request:
@@ -47,7 +52,7 @@ final class AddHeaderMiddleware implements HttpMiddleware
         return $next->handle($request);
     }
 }
-// @doctest id="39e6"
+// @doctest id="a071"
 ```
 
 ## The BaseMiddleware Abstract Class
@@ -76,7 +81,7 @@ final class TimingMiddleware extends BaseMiddleware
         return $response;
     }
 }
-// @doctest id="db64"
+// @doctest id="422a"
 ```
 
 The available hooks are:
@@ -97,14 +102,14 @@ The `HttpClient` is immutable. `withMiddleware()` returns a new client with the 
 
 ```php
 $client = $client->withMiddleware(new AddHeaderMiddleware('X-Request-ID', 'req-123'), 'request-id');
-// @doctest id="0e87"
+// @doctest id="4f6c"
 ```
 
 The second argument is an optional name, which lets you remove the middleware later:
 
 ```php
 $client = $client->withoutMiddleware('request-id');
-// @doctest id="8263"
+// @doctest id="5502"
 ```
 
 ### Via the Builder
@@ -118,7 +123,7 @@ $client = (new HttpClientBuilder())
     ->withMiddleware(new AddHeaderMiddleware('X-Api-Version', '2'))
     ->withMiddleware(new TimingMiddleware())
     ->create();
-// @doctest id="07d8"
+// @doctest id="2e08"
 ```
 
 ## Built-in Middleware
@@ -143,7 +148,7 @@ $client = (new HttpClientBuilder())
         respectRetryAfter: true,
     ))
     ->create();
-// @doctest id="faeb"
+// @doctest id="6957"
 ```
 
 The retry middleware only operates on synchronous (non-streamed) requests. It respects the `Retry-After` header when present. The jitter options are:
@@ -169,7 +174,7 @@ $client = (new HttpClientBuilder())
         failureStatusCodes: [429, 500, 502, 503, 504],
     ))
     ->create();
-// @doctest id="8fda"
+// @doctest id="5eb1"
 ```
 
 The circuit breaker follows the standard state machine:
@@ -194,7 +199,7 @@ $client = (new HttpClientBuilder())
         hostAllowList: ['api.stripe.com'],
     ))
     ->create();
-// @doctest id="2622"
+// @doctest id="7351"
 ```
 
 The middleware only attaches keys to the specified HTTP methods and hosts. If the request already has an idempotency key header, it is left unchanged.
@@ -226,7 +231,7 @@ $replayer = new RecordReplayMiddleware(
 $client = (new HttpClientBuilder())
     ->withMiddleware($replayer)
     ->create();
-// @doctest id="1c6b"
+// @doctest id="ae2d"
 ```
 
 When `fallbackToRealRequests` is `true`, unrecorded requests are sent to the real server. When `false`, a `RecordingNotFoundException` is thrown.
@@ -246,7 +251,7 @@ $decorated = BaseResponseDecorator::decorate(
     $response,
     fn(string $chunk): string => strtoupper($chunk),
 );
-// @doctest id="dd95"
+// @doctest id="d354"
 ```
 
 This creates a new `HttpResponse` with a `TransformStream` that applies your function to each chunk. The original response is not modified.
@@ -270,7 +275,7 @@ final class BearerAuthMiddleware extends BaseMiddleware
         return $request->withHeader('Authorization', 'Bearer ' . $this->token);
     }
 }
-// @doctest id="4344"
+// @doctest id="f6ac"
 ```
 
 And a logging middleware that records request duration:
@@ -307,7 +312,7 @@ final class LoggingMiddleware implements HttpMiddleware
         return $response;
     }
 }
-// @doctest id="4d8a"
+// @doctest id="c0e6"
 ```
 
 ## Middleware Order
@@ -320,7 +325,7 @@ $client = (new HttpClientBuilder())
     ->withMiddleware(new RetryMiddleware($retryPolicy))   // 2nd: retries include auth
     ->withMiddleware(new BearerAuthMiddleware($token))    // 3rd: adds auth header
     ->create();
-// @doctest id="91e4"
+// @doctest id="a189"
 ```
 
 In this setup:
@@ -342,14 +347,14 @@ $stack->has('name');                    // Check existence
 $stack->get('name');                    // Get by name
 $stack->clear();                       // Remove all
 $stack->all();                         // Get all middleware
-// @doctest id="81f1"
+// @doctest id="6c39"
 ```
 
 You can replace the entire stack on a client:
 
 ```php
 $client = $client->withMiddlewareStack($newStack);
-// @doctest id="822b"
+// @doctest id="f9ed"
 ```
 
 ## See Also

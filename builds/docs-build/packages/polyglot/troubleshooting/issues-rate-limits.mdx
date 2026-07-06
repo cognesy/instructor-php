@@ -1,3 +1,8 @@
+---
+title: 'Rate Limits'
+description: 'Diagnose and handle provider rate limiting and quota issues.'
+---
+
 Provider rate limits restrict the number of requests or tokens you can consume within a time window. When you exceed these limits, the provider returns an HTTP 429 response and your request fails. Polyglot provides built-in retry policies to handle these transient failures, but sustained rate limiting requires application-level strategies.
 
 ## Symptoms
@@ -26,7 +31,7 @@ $text = Inference::using('openai')
     ))
     ->withMessages(Messages::fromString('What is the capital of France?'))
     ->get();
-// @doctest id="ac64"
+// @doctest id="b99a"
 ```
 
 ### Retry Policy Parameters
@@ -67,7 +72,7 @@ $text = Inference::using('openai')
     ))
     ->withMessages(Messages::fromString('Write a detailed essay about climate change.'))
     ->get();
-// @doctest id="864b"
+// @doctest id="e266"
 ```
 
 ## Retry Policy for Embeddings
@@ -85,7 +90,7 @@ $retryPolicy = new EmbeddingsRetryPolicy(
     maxDelayMs: 10000,
     jitter: 'full',
 );
-// @doctest id="20c8"
+// @doctest id="e320"
 ```
 
 ## Application-Level Throttling
@@ -129,7 +134,7 @@ for ($i = 0; $i < 10; $i++) {
 
     echo "Response $i: $text\n";
 }
-// @doctest id="4ea5"
+// @doctest id="886f"
 ```
 
 ## Batch Requests to Reduce Volume
@@ -158,7 +163,7 @@ foreach ($questions as $i => $q) {
 $text = Inference::using('openai')
     ->withMessages(Messages::fromString($batchPrompt))
     ->get();
-// @doctest id="ee26"
+// @doctest id="0839"
 ```
 
 This reduces the number of API calls from N to 1, dramatically lowering rate limit pressure.

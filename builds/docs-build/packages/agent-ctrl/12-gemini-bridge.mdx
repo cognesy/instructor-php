@@ -1,4 +1,11 @@
+---
+title: 'Gemini Bridge'
+description: "Use the Gemini bridge for Google's CLI coding agent with model aliases, approval modes, sandbox, extensions, MCP servers, and granular stream-json event streaming."
+---
+
 ## Overview
+
+> Deprecated: the Gemini CLI bridge is kept for compatibility only. The upstream Google CLI flow is obsolete for this package, so new integrations should use another AgentCtrl backend.
 
 The Gemini bridge wraps the `gemini` CLI (from [@google/gemini-cli](https://github.com/google-gemini/gemini-cli)), Google's terminal-based coding agent. Gemini CLI supports model aliases, approval modes (default, auto_edit, yolo, plan), sandbox isolation, extensions, MCP servers, policy files, session management, and stream-json event streaming. It provides token usage data including cached token counts.
 
@@ -13,7 +20,7 @@ $builder = AgentCtrl::gemini();
 
 // Or via the generic factory
 $builder = AgentCtrl::make(AgentType::Gemini);
-// @doctest id="a26c"
+// @doctest id="c878"
 ```
 
 ### Prerequisites
@@ -29,7 +36,7 @@ brew install gemini-cli
 
 # npx (no install)
 npx @google/gemini-cli
-# @doctest id="8c2b"
+# @doctest id="c83b"
 ```
 
 Configure authentication (one of):
@@ -43,7 +50,7 @@ export GOOGLE_API_KEY=...
 
 # Or authenticate via Google account (free tier)
 gemini
-# @doctest id="a1e2"
+# @doctest id="7e26"
 ```
 
 ## Basic Usage
@@ -55,7 +62,7 @@ $response = AgentCtrl::gemini()
     ->execute('Explain the architecture of this project.');
 
 echo $response->text();
-// @doctest id="e41d"
+// @doctest id="5b03"
 ```
 
 With model selection:
@@ -66,7 +73,7 @@ $response = AgentCtrl::gemini()
     ->execute('Review the test suite.');
 
 echo $response->text();
-// @doctest id="0f6c"
+// @doctest id="2f1e"
 ```
 
 ## Model Selection
@@ -82,7 +89,7 @@ AgentCtrl::gemini()->withModel('flash-lite');  // gemini-2.5-flash-lite
 
 // Full model name
 AgentCtrl::gemini()->withModel('gemini-2.5-pro');
-// @doctest id="fcf1"
+// @doctest id="2755"
 ```
 
 ## Approval Modes
@@ -103,7 +110,7 @@ AgentCtrl::gemini()->yolo();
 
 // Plan — read-only analysis mode
 AgentCtrl::gemini()->planMode();
-// @doctest id="d4e3"
+// @doctest id="b297"
 ```
 
 ## Sandbox Mode
@@ -114,7 +121,7 @@ Enable sandboxed execution for process isolation:
 AgentCtrl::gemini()
     ->withSandbox()
     ->execute('Analyze the codebase.');
-// @doctest id="2a32"
+// @doctest id="5c1b"
 ```
 
 On macOS, this uses Seatbelt (`sandbox-exec`). Docker, Podman, and gVisor are also supported.
@@ -131,7 +138,7 @@ Add additional workspace directories for the agent to access:
 AgentCtrl::gemini()
     ->withIncludeDirectories(['/projects/shared-lib', '/projects/config'])
     ->execute('Check for shared dependencies.');
-// @doctest id="d108"
+// @doctest id="8f37"
 ```
 
 ## Extensions
@@ -142,7 +149,7 @@ Use specific extensions:
 AgentCtrl::gemini()
     ->withExtensions(['my-extension'])
     ->execute('...');
-// @doctest id="f464"
+// @doctest id="bbd4"
 ```
 
 ## MCP Servers
@@ -153,7 +160,7 @@ Restrict which MCP servers are available:
 AgentCtrl::gemini()
     ->withAllowedMcpServers(['filesystem', 'github'])
     ->execute('...');
-// @doctest id="5f74"
+// @doctest id="9e5b"
 ```
 
 ## Policy Files
@@ -164,7 +171,7 @@ Load additional policy files for fine-grained tool approval rules:
 AgentCtrl::gemini()
     ->withPolicy(['/path/to/policy.yaml'])
     ->execute('...');
-// @doctest id="0af4"
+// @doctest id="dde8"
 ```
 
 ## Allowed Tools
@@ -175,7 +182,7 @@ Restrict which tools the agent can use:
 AgentCtrl::gemini()
     ->withAllowedTools(['read_file', 'search_files', 'list_directory'])
     ->execute('Analyze the codebase structure.');
-// @doctest id="818d"
+// @doctest id="d678"
 ```
 
 ## Debug Mode
@@ -186,7 +193,7 @@ Enable debug output for troubleshooting CLI behavior:
 AgentCtrl::gemini()
     ->debug()
     ->execute('Analyze the codebase.');
-// @doctest id="cbc0"
+// @doctest id="eace"
 ```
 
 ## Streaming with Gemini
@@ -203,7 +210,7 @@ $response = AgentCtrl::gemini()
     ->onError(fn(string $message, ?string $code) => print("\nError: {$message}\n"))
     ->onComplete(fn(AgentResponse $r) => print("\n--- Done ---\n"))
     ->executeStreaming('Analyze the error handling in this codebase.');
-// @doctest id="db18"
+// @doctest id="4d6e"
 ```
 
 ### Event Normalization
@@ -235,7 +242,7 @@ if ($sessionId !== null) {
         ->resumeSession((string) $sessionId)
         ->execute('Continue with the next step.');
 }
-// @doctest id="72e7"
+// @doctest id="36ec"
 ```
 
 ## Usage Data
@@ -257,7 +264,7 @@ if ($usage !== null) {
         echo "Cached tokens:   {$usage->cacheRead}\n";
     }
 }
-// @doctest id="b638"
+// @doctest id="a756"
 ```
 
 ## Data Availability
@@ -300,7 +307,7 @@ if ($response->isSuccess()) {
 } else {
     echo "\nFailed with exit code: {$response->exitCode}\n";
 }
-// @doctest id="f223"
+// @doctest id="c213"
 ```
 
 ## Comparison with Other Bridges

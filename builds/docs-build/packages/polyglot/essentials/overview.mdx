@@ -1,3 +1,8 @@
+---
+title: 'Overview of Inference'
+description: 'How to use the Inference facade for LLM API access, text generation, streaming, and provider switching.'
+---
+
 The `Inference` class is the main facade for interacting with LLM APIs. It provides
 a clean, immutable interface for chat completions, tool calling, JSON output generation,
 and streaming -- all through a consistent API regardless of the underlying provider.
@@ -14,7 +19,7 @@ use Cognesy\Messages\Messages;
 $answer = Inference::using('openai')
     ->withMessages(Messages::fromString('What is the capital of France?'))
     ->get();
-// @doctest id="ce0a"
+// @doctest id="550e"
 ```
 
 The `using()` static method resolves a named preset from your configuration, while
@@ -38,7 +43,7 @@ $inference = new Inference();
 $answer = $inference
     ->withMessages(Messages::fromArray([['role' => 'user', 'content' => 'Explain event sourcing briefly.']]))
     ->get();
-// @doctest id="8016"
+// @doctest id="b74a"
 ```
 
 You may also use the `with()` method, which accepts all request parameters at once:
@@ -51,7 +56,7 @@ use Cognesy\Messages\Messages;
 $answer = (new Inference)->with(
     messages: Messages::fromString('What is the capital of France?'),
 )->get();
-// @doctest id="4a10"
+// @doctest id="4f54"
 ```
 
 
@@ -104,7 +109,7 @@ $messages = Messages::fromArray([
 $answer = Inference::using('openai')
     ->withMessages($messages)
     ->get();
-// @doctest id="69fb"
+// @doctest id="df3e"
 ```
 
 
@@ -124,7 +129,7 @@ $answer = Inference::using('openai')
     ->withModel('gpt-4o')
     ->withOptions(['temperature' => 0.7, 'max_tokens' => 200])
     ->get();
-// @doctest id="cae8"
+// @doctest id="f4d3"
 ```
 
 You can also set all parameters at once via the `with()` convenience method:
@@ -139,7 +144,7 @@ $answer = Inference::using('openai')->with(
     model: 'gpt-4o',
     options: ['temperature' => 0.9, 'max_tokens' => 100],
 )->get();
-// @doctest id="be86"
+// @doctest id="8fbf"
 ```
 
 
@@ -162,7 +167,7 @@ $stream = Inference::using('openai')
 foreach ($stream->deltas() as $delta) {
     echo $delta->contentDelta;
 }
-// @doctest id="25fd"
+// @doctest id="860e"
 ```
 
 Each `PartialInferenceDelta` exposes the `contentDelta` string for the incremental
@@ -184,7 +189,7 @@ $stream->onDelta(fn($delta) => print($delta->contentDelta));
 
 // Drain the stream to trigger callbacks
 $stream->all();
-// @doctest id="cffc"
+// @doctest id="9b26"
 ```
 
 After the stream completes, call `final()` to retrieve the assembled
@@ -208,7 +213,7 @@ $response = Inference::using('openai')
 $text = $response->content();
 $usage = $response->usage();
 $finishReason = $response->finishReason();
-// @doctest id="3645"
+// @doctest id="9a7c"
 ```
 
 The response object provides access to content, reasoning content (for models that
@@ -231,7 +236,7 @@ $question = Messages::fromString('What is the capital of France?');
 $openai = Inference::using('openai')->withMessages($question)->get();
 $anthropic = Inference::using('anthropic')->withMessages($question)->get();
 $gemini = Inference::using('gemini')->withMessages($question)->get();
-// @doctest id="b44a"
+// @doctest id="cd3c"
 ```
 
 Available presets include `openai`, `anthropic`, `gemini`, `mistral`, `groq`,
@@ -254,7 +259,7 @@ model: gpt-4.1-nano
 maxTokens: 1024
 contextLength: 1000000
 maxOutputLength: 16384
-# @doctest id="1a8c"
+# @doctest id="1cff"
 ```
 
 Polyglot resolves presets from several locations, searched in order:
@@ -282,7 +287,7 @@ $answer = Inference::using('openai')
     ->withMessages(Messages::fromString('Explain machine learning in one sentence.'))
     ->withModel('gpt-4o')
     ->get();
-// @doctest id="9256"
+// @doctest id="5d90"
 ```
 
 
@@ -300,7 +305,7 @@ $base = Inference::using('openai')->withOptions(['temperature' => 0.3]);
 
 $precise = $base->withModel('gpt-4o');
 $fast = $base->withModel('gpt-4.1-mini');
-// @doctest id="9bb9"
+// @doctest id="56bf"
 ```
 
 Both `$precise` and `$fast` inherit the temperature setting without affecting

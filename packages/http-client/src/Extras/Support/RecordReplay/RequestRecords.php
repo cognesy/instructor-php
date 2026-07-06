@@ -4,6 +4,10 @@ namespace Cognesy\Http\Extras\Support\RecordReplay;
 
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
+use Cognesy\Http\Extras\Support\RecordReplay\Matching\ExactHashMatcher;
+use Cognesy\Http\Extras\Support\RecordReplay\Matching\RequestMatcher;
+use Cognesy\Http\Extras\Support\RecordReplay\Redaction\DefaultRequestRedactor;
+use Cognesy\Http\Extras\Support\RecordReplay\Redaction\RequestRedactor;
 use RuntimeException;
 
 /**
@@ -12,15 +16,25 @@ use RuntimeException;
 class RequestRecords
 {
     private string $storageDir;
+    private RequestMatcher $matcher;
+    private RequestRedactor $redactor;
 
-    public function __construct(string $storageDir) {
+    public function __construct(
+        string $storageDir,
+        ?RequestMatcher $matcher = null,
+        ?RequestRedactor $redactor = null,
+    ) {
         $this->storageDir = $storageDir;
+        $this->matcher = $matcher ?? new ExactHashMatcher();
+        $this->redactor = $redactor ?? new DefaultRequestRedactor();
         $this->ensureStorageDirExists();
     }
 
     public function save(HttpRequest $request, HttpResponse $response): string {
-        // Use the appropriate record type based on whether the request is streamed
-        $record = RequestRecord::createAppropriate($request, $response);
+        // Redact sensitive request material (API keys / auth headers) BEFORE it is
+        // ever written to disk — this is the persistence boundary and the last line
+        // of defense against a live credential reaching a committed fixture.
+        $record = RequestRecord::createAppropriate($request, $response, $this->redactor);
         $filename = $this->getFilenameForRequest($request);
 
         $errorMessage = null;
@@ -122,30 +136,18 @@ class RequestRecords
     }
 
     private function getFilenameForRequest(HttpRequest $request): string {
-        // Generate a hash based on the request details
-        $hash = md5(implode('|', [
-            $request->method(),
-            $request->url(),
-            $request->body()->toString(),
-        ]));
-
-        // Create a filename with useful info for debugging
-        $urlParts = parse_url($request->url());
-        $path = $urlParts['path'] ?? '';
-        $pathSlug = preg_replace('/[^a-z0-9]+/i', '-', trim($path, '/'));
-
-        if (empty($pathSlug)) {
-            $pathSlug = 'root';
-        }
-
-        // Include streaming info in the filename
+        // The record is identified solely by (is-streamed, matcher fingerprint).
+        // Nothing else about the request participates in the lookup, so changing
+        // the matching strategy (e.g. canonical-JSON or URL-normalizing matchers)
+        // is fully honored without touching storage layout. Human-readable request
+        // details live inside the JSON body; per-example namespacing (R4) restores
+        // navigability far better than an in-filename slug could.
         $streamPrefix = $request->isStreamed() ? 'stream_' : '';
 
         return $this->storageDir . '/' .
             $streamPrefix .
-            strtolower($request->method()) . '_' .
-            $pathSlug . '_' .
-            $hash . '.json';
+            $this->matcher->fingerprint($request) .
+            '.json';
     }
 
     private function ensureStorageDirExists(): void {

@@ -78,6 +78,33 @@ class EnhancedRunAllExamples extends Command
         return $this->executeExamples($examples, $stopOnError);
     }
 
+    private function excludeNonReplayable(array $examples): array
+    {
+        if (getenv('INSTRUCTOR_EXAMPLES_HTTP') !== 'replay') {
+            return $examples;
+        }
+
+        $kept = [];
+        $skipped = [];
+        foreach ($examples as $example) {
+            $tags = array_map('strtolower', $example->tags);
+            if (in_array('no-replay', $tags, true)) {
+                $skipped[] = $example->docName;
+            } else {
+                $kept[] = $example;
+            }
+        }
+
+        if ($skipped !== []) {
+            Cli::outln(
+                sprintf('Replay: skipping %d no-replay example(s): %s', count($skipped), implode(', ', $skipped)),
+                [Color::DARK_GRAY],
+            );
+        }
+
+        return $kept;
+    }
+
     private function getFilteredExamples(ExecutionFilter $filter, bool $force, int $startIndex): array
     {
         $allExamples = [];
@@ -90,6 +117,11 @@ class EnhancedRunAllExamples extends Command
             $index++;
             return true;
         });
+
+        // In replay mode, drop examples tagged `no-replay` (they run live only:
+        // explicit-client, external-telemetry, sandbox, interactive). Logged, never
+        // silent — the skipped set is a change-impact signal, not hidden coverage loss.
+        $allExamples = $this->excludeNonReplayable($allExamples);
 
         // If force is specified, return all examples (no filtering)
         if ($force) {

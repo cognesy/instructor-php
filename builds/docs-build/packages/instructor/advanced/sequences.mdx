@@ -1,3 +1,8 @@
+---
+title: Sequences
+description: 'Extract collections of typed objects.'
+---
+
 When the LLM response contains a list of items rather than a single object, use the `Sequence` wrapper. It saves you from creating a dedicated class with a single array property just to hold a list.
 
 ## Basic Usage
@@ -22,7 +27,7 @@ $list = (new StructuredOutput)->with(
     messages: $text,
     responseModel: Sequence::of(Person::class),
 )->get();
-// @doctest id="88eb"
+// @doctest id="cf97"
 ```
 
 The returned `$list` is a `Sequence` instance containing fully validated `Person` objects.
@@ -46,7 +51,7 @@ foreach ($list as $person) {
 
 // Array access
 $person = $list[0];
-// @doctest id="8064"
+// @doctest id="8490"
 ```
 
 ## Streaming Sequences
@@ -68,7 +73,7 @@ foreach ($stream->sequence() as $person) {
 
 // Get the final, fully validated sequence
 $people = $stream->finalValue();
-// @doctest id="068f"
+// @doctest id="bec6"
 ```
 
 This is ideal for progressive UI updates -- you can render each person in a list as soon as the LLM finishes generating their data, without waiting for the entire response.
@@ -88,7 +93,7 @@ $list = (new StructuredOutput)->with(
         description: 'Action items extracted from a meeting transcript',
     ),
 )->get();
-// @doctest id="ab85"
+// @doctest id="834c"
 ```
 
 ## Combining with Output Formats
@@ -103,5 +108,5 @@ $data = (new StructuredOutput)
     ->get();
 
 // Result: ['list' => [['name' => 'Jason', 'age' => 25], ...]]
-// @doctest id="b19c"
+// @doctest id="d22e"
 ```

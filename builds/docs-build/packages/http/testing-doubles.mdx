@@ -1,3 +1,8 @@
+---
+title: 'Testing Doubles'
+description: 'Deterministic transport testing with the built-in HTTP mock driver.'
+---
+
 ## Overview
 
 `http-client` uses a real mock, not a fake.
@@ -45,7 +50,7 @@ $client = (new HttpClientBuilder())
             ->replyJson(['ok' => true]);
     })
     ->create();
-// @doctest id="dccd"
+// @doctest id="f323"
 ```
 
 Use this for most package and downstream tests.

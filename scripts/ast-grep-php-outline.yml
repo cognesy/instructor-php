@@ -1,0 +1,70 @@
+id: php-class
+language: Php
+role: item
+symbolType: class
+rule:
+  kind: class_declaration
+  has:
+    field: name
+    pattern: $NAME
+name: $NAME
+signature: class $NAME
+isExported: true
+---
+id: php-interface
+language: Php
+role: item
+symbolType: interface
+rule:
+  kind: interface_declaration
+  has:
+    field: name
+    pattern: $NAME
+name: $NAME
+signature: interface $NAME
+isExported: true
+---
+id: php-enum
+language: Php
+role: item
+symbolType: enum
+rule:
+  kind: enum_declaration
+  has:
+    field: name
+    pattern: $NAME
+name: $NAME
+signature: enum $NAME
+isExported: true
+---
+id: php-method
+language: Php
+role: member
+parentRuleIds: [php-class, php-interface, php-enum]
+symbolType: method
+rule:
+  kind: method_declaration
+  has:
+    field: name
+    pattern: $NAME
+name: $NAME
+signature: function $NAME
+isPublic:
+  not:
+    has:
+      kind: visibility_modifier
+      regex: '^private$'
+---
+id: php-enum-case
+language: Php
+role: member
+parentRuleIds: [php-enum]
+symbolType: field
+rule:
+  kind: enum_case
+  has:
+    field: name
+    pattern: $NAME
+name: $NAME
+signature: case $NAME
+isPublic: true

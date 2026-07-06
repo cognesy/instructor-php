@@ -1,3 +1,10 @@
+---
+title: 'Creating Requests'
+description: 'Build inference requests with messages, models, and options using the fluent API.'
+meta:
+    - { name: has_code, content: true }
+---
+
 Polyglot provides a clean, fluent API for building inference requests. You can configure
 messages, models, tools, response formats, and provider-specific options -- all through
 a consistent interface that works across every supported LLM provider.
@@ -16,7 +23,7 @@ $response = Inference::using('openai')
     ->get();
 
 echo $response; // "Paris."
-// @doctest id="9fab"
+// @doctest id="2e36"
 ```
 
 `Messages::fromString()` wraps a plain string as a user message. You can also use
@@ -42,7 +49,7 @@ $text = Inference::using('openai')
         options: ['temperature' => 0.2],
     )
     ->get();
-// @doctest id="204b"
+// @doctest id="a4f7"
 ```
 
 All parameters on `with()` are optional -- pass only what you need:
@@ -76,7 +83,7 @@ $response = Inference::using('anthropic')
     ]))
     ->withOptions(['temperature' => 0.5])
     ->get();
-// @doctest id="757f"
+// @doctest id="dd68"
 ```
 
 Each helper returns a new immutable instance, so you can safely branch from a shared base:
@@ -86,7 +93,7 @@ $base = Inference::using('openai')->withModel('gpt-4.1-nano');
 
 $creative = $base->withOptions(['temperature' => 0.9]);
 $precise  = $base->withOptions(['temperature' => 0.0]);
-// @doctest id="a81a"
+// @doctest id="24eb"
 ```
 
 The full list of fluent helpers:
@@ -125,7 +132,7 @@ $response = Inference::using('openai')
     ->withModel('gpt-4.1-nano')
     ->withMessages($messages)
     ->get();
-// @doctest id="513b"
+// @doctest id="f7f9"
 ```
 
 > The `asDeveloper()` method maps to OpenAI's developer role and is automatically
@@ -172,7 +179,7 @@ $response = Inference::using('openai')
     ->withModel('gpt-4o')
     ->withMessages($messages)
     ->get();
-// @doctest id="f048"
+// @doctest id="40b2"
 ```
 
 ## Using `InferenceRequest` Directly
@@ -195,7 +202,7 @@ $request = new InferenceRequest(
 $text = Inference::using('openai')
     ->withRequest($request)
     ->get();
-// @doctest id="eed4"
+// @doctest id="a106"
 ```
 
 `InferenceRequest` objects are immutable value objects. Use `with()` or the dedicated
@@ -208,5 +215,5 @@ $updated = $request->with(
     model: 'gpt-4.1',
     options: ['temperature' => 0.7],
 );
-// @doctest id="eb7b"
+// @doctest id="f7f5"
 ```

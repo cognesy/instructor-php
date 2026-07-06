@@ -162,7 +162,7 @@ If a provider reports cache usage, you can inspect it through `response()->usage
 | Field | Description |
 |---|---|
 | `cacheReadTokens` | Tokens served from the cache (cache hit) |
-| `cacheWriteTokens` | Tokens written to the cache (cache miss / first request) |
+| `cacheWriteTokens` | Tokens written to the cache when the provider reports cache creation |
 
 ```php
 <?php
@@ -185,7 +185,7 @@ Different providers handle context caching differently:
 | Provider | Caching Behavior | Cache Metrics |
 |---|---|---|
 | **Anthropic** | Explicit cache markers with native support | Full reporting (`cacheReadTokens`, `cacheWriteTokens`) |
-| **OpenAI** | Automatic server-side prompt caching | Limited reporting; no opt-in required |
+| **OpenAI** | Automatic server-side prompt caching | Cache reads reported as cached prompt tokens; cache writes are not reported |
 | **Other providers** | No native caching | Polyglot manages conversation state correctly; no cache metrics |
 
 Polyglot sends the appropriate cache control markers to providers that support them. For

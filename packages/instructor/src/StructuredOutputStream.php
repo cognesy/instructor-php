@@ -237,10 +237,13 @@ class StructuredOutputStream
             if ($this->shouldCache()) {
                 foreach ($this->cachedResponses as $response) {
                     $this->rememberResponse($response);
-                    $this->events->dispatch(new StructuredOutputResponseUpdated($this->responsePayload(
+                    $this->events->dispatch(new StructuredOutputResponseUpdated(
+                        data: $this->responseUpdatePayload(
+                            response: $response,
+                            phase: 'response.updated',
+                        ),
                         response: $response,
-                        phase: 'response.updated',
-                    )));
+                    ));
                     yield $response;
                 }
                 return;
@@ -261,10 +264,13 @@ class StructuredOutputStream
             }
             $this->rememberResponse($response);
             $this->syncExecutionState($response);
-            $this->events->dispatch(new StructuredOutputResponseUpdated($this->responsePayload(
+            $this->events->dispatch(new StructuredOutputResponseUpdated(
+                data: $this->responseUpdatePayload(
+                    response: $response,
+                    phase: 'response.updated',
+                ),
                 response: $response,
-                phase: 'response.updated',
-            )));
+            ));
             yield $response;
         }
 
@@ -344,12 +350,31 @@ class StructuredOutputStream
 
     private function responsePayload(StructuredOutputResponse $response, string $phase) : array
     {
+        return array_filter([
+            ...$this->responseMetadata($response, $phase),
+            'value' => EventValueNormalizer::normalize($response->value()),
+            'content' => $response->content(),
+            'reasoningContent' => $response->reasoningContent(),
+            'toolArgsSnapshot' => $response->toolArgsSnapshot(),
+            'toolCalls' => $response->toolCalls()->toArray(),
+            ...StructuredOutputTelemetry::responseGenerated($this->executionForEvent($response), $response),
+        ], fn(mixed $value): bool => $value !== null);
+    }
+
+    private function responseUpdatePayload(StructuredOutputResponse $response, string $phase) : array
+    {
+        return $this->responseMetadata($response, $phase);
+    }
+
+    private function responseMetadata(StructuredOutputResponse $response, string $phase) : array
+    {
         $execution = $this->executionForEvent($response);
         $request = $execution->request();
         $executionId = $execution->id()->toString();
         $attemptId = $execution->activeAttempt()?->id()->toString()
             ?? $execution->lastFinalizedAttempt()?->id()->toString();
         $usage = $response->usage();
+        $toolCalls = $response->toolCalls();
 
         return array_filter([
             'requestId' => $request->id()->toString(),
@@ -360,23 +385,17 @@ class StructuredOutputStream
             'isPartial' => $response->isPartial(),
             'hasValue' => $response->hasValue(),
             'valueType' => $this->valueType($response->value()),
-            'value' => EventValueNormalizer::normalize($response->value()),
             'finishReason' => $response->finishReason()->value,
-            'content' => $response->content(),
             'contentLength' => strlen($response->content()),
-            'reasoningContent' => $response->reasoningContent(),
             'reasoningContentLength' => strlen($response->reasoningContent()),
-            'toolArgsSnapshot' => $response->toolArgsSnapshot(),
-            'hasToolCalls' => !$response->toolCalls()->isEmpty(),
-            'toolCallCount' => $response->toolCalls()->count(),
-            'toolCalls' => $response->toolCalls()->toArray(),
+            'hasToolCalls' => !$toolCalls->isEmpty(),
+            'toolCallCount' => $toolCalls->count(),
             'inputTokens' => $usage->input(),
             'outputTokens' => $usage->output(),
             'cacheWriteTokens' => $usage->cacheWriteTokens,
             'cacheReadTokens' => $usage->cacheReadTokens,
             'reasoningTokens' => $usage->reasoningTokens,
             'totalTokens' => $usage->total(),
-            ...StructuredOutputTelemetry::responseGenerated($execution, $response),
         ], fn(mixed $value): bool => $value !== null);
     }
 

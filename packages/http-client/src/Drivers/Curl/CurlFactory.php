@@ -58,16 +58,28 @@ final class CurlFactory
     }
 
     private function configureSsl(CurlHandle $handle): void {
-        $handle->setOption(CURLOPT_SSL_VERIFYPEER, true);
-        $handle->setOption(CURLOPT_SSL_VERIFYHOST, 2);
+        $handle->setOption(CURLOPT_SSL_VERIFYPEER, $this->config->verifyTls);
+        $handle->setOption(CURLOPT_SSL_VERIFYHOST, $this->config->verifyTls ? 2 : 0);
     }
 
     private function configureRedirects(CurlHandle $handle): void {
-        $handle->setOption(CURLOPT_FOLLOWLOCATION, true);
-        $handle->setOption(CURLOPT_MAXREDIRS, 5);
+        $handle->setOption(CURLOPT_FOLLOWLOCATION, $this->config->followRedirects);
+        $handle->setOption(CURLOPT_MAXREDIRS, $this->config->maxRedirects ?? 5);
     }
 
     private function configureHttpVersion(CurlHandle $handle): void {
-        $handle->setOption(CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
+        $handle->setOption(CURLOPT_HTTP_VERSION, $this->curlHttpVersion($this->config->httpVersion ?? '2.0'));
+    }
+
+    private function curlHttpVersion(string $version): int {
+        return match ($version) {
+            '1.0' => CURL_HTTP_VERSION_1_0,
+            '1.1' => CURL_HTTP_VERSION_1_1,
+            '2', '2.0' => CURL_HTTP_VERSION_2_0,
+            '3', '3.0' => defined('CURL_HTTP_VERSION_3')
+                ? constant('CURL_HTTP_VERSION_3')
+                : CURL_HTTP_VERSION_2_0,
+            default => CURL_HTTP_VERSION_2_0,
+        };
     }
 }

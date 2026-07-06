@@ -1,3 +1,8 @@
+---
+title: 'Function Calls'
+description: 'Extract function and method arguments from natural language using LLMs.'
+---
+
 Instructor uses tool-calling internally when the runtime operates in `OutputMode::Tools`, which is the default mode. For most applications, this is an implementation detail -- you define a response model and read the result.
 
 However, the `FunctionCall` addon takes this concept further by letting you extract arguments for real PHP functions, methods, or closures directly from natural language. This is particularly useful when building tool-use capabilities for AI chatbots or agents.
@@ -24,7 +29,7 @@ $args = (new StructuredOutput)->with(
 
 // Call the function with extracted arguments
 saveUser(...$args);
-// @doctest id="ff65"
+// @doctest id="4a75"
 ```
 
 The docblock comment on the function is included in the schema sent to the LLM, giving it additional context about what the function does.
@@ -52,7 +57,7 @@ $args = (new StructuredOutput)->with(
 )->get();
 
 (new DataStore)->saveUser(...$args);
-// @doctest id="5e5d"
+// @doctest id="ec5e"
 ```
 
 ## Extracting Arguments for a Callable
@@ -76,7 +81,7 @@ $args = (new StructuredOutput)->with(
 )->get();
 
 $callable(...$args);
-// @doctest id="3204"
+// @doctest id="494a"
 ```
 
 ## How It Works

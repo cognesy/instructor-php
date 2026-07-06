@@ -119,6 +119,13 @@
             <directory suffix="Test.php">./packages/templates/tests/Regression</directory>
             <directory suffix="Test.php">./packages/utils/tests/Regression</directory>
         </testsuite>
+        <testsuite name="Serial">
+            <!-- Parallel-unsafe tests that must run in a dedicated single-process
+                 pass (not under paratest) — e.g. curl namespaced-function overrides
+                 with static hook state. Included in `composer test` for full CI
+                 coverage; excluded from the parallel fast lane (see scripts/test/fast.sh). -->
+            <directory suffix="Test.php">./packages/http-client/tests/Serial</directory>
+        </testsuite>
     </testsuites>
     <source>
         <include>

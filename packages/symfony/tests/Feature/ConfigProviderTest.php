@@ -53,6 +53,10 @@ it('provides normalized framework config views and typed runtime objects', funct
             'connect_timeout' => '5',
             'fail_on_error' => 'true',
             'stream_chunk_size' => '1024',
+            'verify_tls' => 'false',
+            'follow_redirects' => 'false',
+            'max_redirects' => '2',
+            'http_version' => '1.1',
         ],
     ]);
 
@@ -96,7 +100,11 @@ it('provides normalized framework config views and typed runtime objects', funct
         ->and($http->requestTimeout)->toBe(20)
         ->and($http->connectTimeout)->toBe(5)
         ->and($http->streamChunkSize)->toBe(1024)
-        ->and($http->failOnError)->toBeTrue();
+        ->and($http->failOnError)->toBeTrue()
+        ->and($http->verifyTls)->toBeFalse()
+        ->and($http->followRedirects)->toBeFalse()
+        ->and($http->maxRedirects)->toBe(2)
+        ->and($http->httpVersion)->toBe('1.1');
 });
 
 it('supports flat connection maps and legacy preset aliases', function (): void {

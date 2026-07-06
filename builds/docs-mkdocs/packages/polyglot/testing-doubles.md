@@ -54,7 +54,7 @@ use Cognesy\Polyglot\Tests\Support\FakeEmbeddingsDriver;
 $driver = new FakeEmbeddingsDriver([
     new EmbeddingsResponse([new Vector(values: [0.1, 0.2], id: 0)]),
 ]);
-// @doctest id="af88"
+// @doctest id="e238"
 ```
 
 ## `MockHttpDriver`

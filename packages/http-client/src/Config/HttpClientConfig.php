@@ -16,7 +16,7 @@ final class HttpClientConfig
 {
     public const CONFIG_GROUP = 'http';
     /** @var list<string> */
-    private const STRING_FIELDS = ['driver'];
+    private const STRING_FIELDS = ['driver', 'httpVersion'];
     /** @var list<string> */
     private const INT_FIELDS = [
         'connectTimeout',
@@ -24,9 +24,14 @@ final class HttpClientConfig
         'idleTimeout',
         'streamChunkSize',
         'streamHeaderTimeout',
+        'maxRedirects',
     ];
     /** @var list<string> */
-    private const BOOL_FIELDS = ['failOnError'];
+    private const BOOL_FIELDS = [
+        'failOnError',
+        'verifyTls',
+        'followRedirects',
+    ];
 
     public static function group() : string {
         return self::CONFIG_GROUP;
@@ -47,6 +52,10 @@ final class HttpClientConfig
         public readonly int    $streamChunkSize = 256,
         public readonly int    $streamHeaderTimeout = 5,
         public readonly bool   $failOnError = false,
+        public readonly bool   $verifyTls = true,
+        public readonly bool   $followRedirects = true,
+        public readonly ?int   $maxRedirects = null,
+        public readonly ?string $httpVersion = null,
     ) {}
 
     public static function fromPreset(string $preset, ?string $basePath = null): self {
@@ -99,6 +108,10 @@ final class HttpClientConfig
             'streamChunkSize' => $this->streamChunkSize,
             'streamHeaderTimeout' => $this->streamHeaderTimeout,
             'failOnError' => $this->failOnError,
+            'verifyTls' => $this->verifyTls,
+            'followRedirects' => $this->followRedirects,
+            'maxRedirects' => $this->maxRedirects,
+            'httpVersion' => $this->httpVersion,
         ];
     }
 

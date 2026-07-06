@@ -5,6 +5,7 @@ namespace Cognesy\Http\Extras\Support\RecordReplay;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Drivers\Mock\MockHttpResponseFactory;
+use Cognesy\Http\Extras\Support\RecordReplay\Redaction\RequestRedactor;
 
 class RequestRecord
 {
@@ -16,9 +17,9 @@ class RequestRecord
         $this->responseData = $responseData;
     }
 
-    public static function fromInteraction(HttpRequest $request, HttpResponse $response): self {
+    public static function fromInteraction(HttpRequest $request, HttpResponse $response, ?RequestRedactor $redactor = null): self {
         if ($response->isStreamed()) {
-            return StreamedRequestRecord::fromStreamedInteraction($request, $response);
+            return StreamedRequestRecord::fromStreamedInteraction($request, $response, $redactor);
         }
 
         $requestData = [
@@ -28,6 +29,9 @@ class RequestRecord
             'body' => $request->body()->toString(),
             'options' => $request->options(),
         ];
+        if ($redactor !== null) {
+            $requestData = $redactor->redact($requestData);
+        }
 
         $responseData = [
             'statusCode' => $response->statusCode(),
@@ -61,23 +65,6 @@ class RequestRecord
         return json_encode($data, $prettyPrint ? JSON_PRETTY_PRINT : 0) ?: '';
     }
 
-    public function matches(HttpRequest $request): bool {
-        if ($this->requestData['url'] !== $request->url()) {
-            return false;
-        }
-
-        if ($this->requestData['method'] !== $request->method()) {
-            return false;
-        }
-
-        $requestBody = $request->body()->toString();
-        if (!empty($requestBody) && !empty($this->requestData['body']) && $this->requestData['body'] !== $requestBody) {
-            return false;
-        }
-
-        return true;
-    }
-
     public function toResponse(bool $isStreaming = false): HttpResponse {
         if ($isStreaming) {
             $body = $this->responseData['body'] ?? '';
@@ -100,12 +87,12 @@ class RequestRecord
         return $this instanceof StreamedRequestRecord;
     }
 
-    public static function createAppropriate(HttpRequest $request, HttpResponse $response): RequestRecord {
+    public static function createAppropriate(HttpRequest $request, HttpResponse $response, ?RequestRedactor $redactor = null): RequestRecord {
         if ($response->isStreamed()) {
-            return StreamedRequestRecord::fromStreamedInteraction($request, $response);
+            return StreamedRequestRecord::fromStreamedInteraction($request, $response, $redactor);
         }
 
-        return self::fromInteraction($request, $response);
+        return self::fromInteraction($request, $response, $redactor);
     }
 
     public function getUrl(): string {

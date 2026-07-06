@@ -28,32 +28,46 @@ class DeepseekResponseAdapter extends OpenAIResponseAdapter
         return new PartialInferenceDelta(
             contentDelta: $this->makeContentDelta($data),
             reasoningContentDelta: $this->makeReasoningContentDelta($data),
-            toolId: $this->makeToolId($data),
-            toolName: $this->makeToolNameDelta($data),
-            toolArgs: $this->makeToolArgsDelta($data),
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
             usage: $this->usageFormat->fromData($data),
+            usageIsCumulative: true,
             responseData: $responseData,
         );
     }
 
     private function makeReasoningContent(array $data): string {
         $message = $data['choices'][0]['message'] ?? [];
-        return match (true) {
-            array_key_exists('reasoning_content', $message) => (string) $message['reasoning_content'],
-            array_key_exists('reasoning', $message) => (string) $message['reasoning'],
-            array_key_exists('analysis', $message) => (string) $message['analysis'],
-            default => '',
-        };
+        if (!is_array($message)) {
+            return '';
+        }
+
+        return $this->extractReasoning($message);
     }
 
     private function makeReasoningContentDelta(array $data): string {
         $delta = $data['choices'][0]['delta'] ?? [];
-        return match (true) {
-            array_key_exists('reasoning_content', $delta) => (string) $delta['reasoning_content'],
-            array_key_exists('reasoning', $delta) => (string) $delta['reasoning'],
-            array_key_exists('analysis', $delta) => (string) $delta['analysis'],
-            default => '',
-        };
+        if (!is_array($delta)) {
+            return '';
+        }
+
+        return $this->extractReasoning($delta);
+    }
+
+    /**
+     * @param array<string,mixed> $data
+     */
+    private function extractReasoning(array $data): string {
+        foreach (['reasoning_content', 'reasoning', 'thinking', 'analysis'] as $key) {
+            if (!array_key_exists($key, $data)) {
+                continue;
+            }
+            $value = $data[$key];
+            if (!is_scalar($value)) {
+                return '';
+            }
+            return (string) $value;
+        }
+
+        return '';
     }
 }

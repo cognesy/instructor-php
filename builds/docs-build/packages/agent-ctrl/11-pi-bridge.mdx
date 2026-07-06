@@ -1,3 +1,8 @@
+---
+title: 'Pi Bridge'
+description: 'Use the Pi bridge for a minimal, extensible coding agent with thinking levels, multi-provider models, TypeScript extensions, skills, and granular JSONL event streaming.'
+---
+
 ## Overview
 
 The Pi bridge wraps the `pi` CLI (from the [pi-mono](https://github.com/badlogic/pi-mono) project), a minimal terminal coding harness that is aggressively extensible. Pi supports multi-provider model selection, thinking levels, TypeScript extensions, skills, prompt templates, and fine-grained JSONL event streaming. It provides both token usage and cost data.
@@ -13,7 +18,7 @@ $builder = AgentCtrl::pi();
 
 // Or via the generic factory
 $builder = AgentCtrl::make(AgentType::Pi);
-// @doctest id="40f7"
+// @doctest id="15e0"
 ```
 
 ### Prerequisites
@@ -24,7 +29,7 @@ Install Pi globally via npm or bun:
 npm install -g @mariozechner/pi-coding-agent
 # or
 bun install -g @mariozechner/pi-coding-agent
-# @doctest id="3e04"
+# @doctest id="f6c7"
 ```
 
 Configure an API key:
@@ -33,7 +38,7 @@ Configure an API key:
 export ANTHROPIC_API_KEY=sk-ant-...
 # or
 export OPENAI_API_KEY=sk-...
-# @doctest id="b947"
+# @doctest id="455a"
 ```
 
 ## Basic Usage
@@ -45,7 +50,7 @@ $response = AgentCtrl::pi()
     ->execute('Explain the architecture of this project.');
 
 echo $response->text();
-// @doctest id="5099"
+// @doctest id="059c"
 ```
 
 With model selection:
@@ -56,7 +61,7 @@ $response = AgentCtrl::pi()
     ->execute('Review the test suite.');
 
 echo $response->text();
-// @doctest id="7469"
+// @doctest id="d96e"
 ```
 
 ## Model Selection
@@ -74,7 +79,7 @@ AgentCtrl::pi()->withModel('google/gemini-2.5-pro');
 
 // Model with thinking level shorthand
 AgentCtrl::pi()->withModel('sonnet:high');
-// @doctest id="0afe"
+// @doctest id="d694"
 ```
 
 Use `withProvider()` to explicitly set the provider when the model name alone is ambiguous:
@@ -84,7 +89,7 @@ AgentCtrl::pi()
     ->withProvider('anthropic')
     ->withModel('sonnet')
     ->execute('...');
-// @doctest id="8539"
+// @doctest id="97fb"
 ```
 
 ## Thinking Levels
@@ -100,7 +105,7 @@ AgentCtrl::pi()->withThinking(ThinkingLevel::Low);       // Light reasoning
 AgentCtrl::pi()->withThinking(ThinkingLevel::Medium);    // Moderate reasoning
 AgentCtrl::pi()->withThinking(ThinkingLevel::High);      // Deep reasoning
 AgentCtrl::pi()->withThinking(ThinkingLevel::ExtraHigh); // Maximum reasoning
-// @doctest id="616f"
+// @doctest id="197e"
 ```
 
 Alternatively, use the model shorthand: `->withModel('sonnet:high')`.
@@ -119,7 +124,7 @@ AgentCtrl::pi()
 AgentCtrl::pi()
     ->appendSystemPrompt('Focus on security issues.')
     ->execute('Review the authentication module.');
-// @doctest id="ce56"
+// @doctest id="18e3"
 ```
 
 ## Tool Control
@@ -136,7 +141,7 @@ AgentCtrl::pi()
 AgentCtrl::pi()
     ->noTools()
     ->execute('Explain dependency injection.');
-// @doctest id="4570"
+// @doctest id="85d9"
 ```
 
 ## File Arguments
@@ -150,7 +155,7 @@ $response = AgentCtrl::pi()
         '/projects/app/tests/PaymentServiceTest.php',
     ])
     ->execute('Review these files for potential issues.');
-// @doctest id="fdeb"
+// @doctest id="76d4"
 ```
 
 ## Extensions and Skills
@@ -178,7 +183,7 @@ AgentCtrl::pi()
 AgentCtrl::pi()
     ->noSkills()
     ->execute('...');
-// @doctest id="8c88"
+// @doctest id="ad18"
 ```
 
 ## Streaming with Pi
@@ -195,7 +200,7 @@ $response = AgentCtrl::pi()
     ->onError(fn(string $message, ?string $code) => print("\nError: {$message}\n"))
     ->onComplete(fn(AgentResponse $r) => print("\n--- Done ---\n"))
     ->executeStreaming('Analyze the error handling in this codebase.');
-// @doctest id="7558"
+// @doctest id="9c89"
 ```
 
 ### Event Normalization
@@ -237,7 +242,7 @@ AgentCtrl::pi()
 AgentCtrl::pi()
     ->withSessionDir('/tmp/pi-sessions')
     ->execute('...');
-// @doctest id="21ad"
+// @doctest id="d2e8"
 ```
 
 ## API Key Override
@@ -249,7 +254,7 @@ AgentCtrl::pi()
     ->withApiKey('sk-ant-...')
     ->withProvider('anthropic')
     ->execute('...');
-// @doctest id="0ff9"
+// @doctest id="7056"
 ```
 
 ## Usage and Cost Data
@@ -279,7 +284,7 @@ $cost = $response->cost();
 if ($cost !== null) {
     echo sprintf("Cost: $%.6f\n", $cost);
 }
-// @doctest id="8f74"
+// @doctest id="9871"
 ```
 
 ## Data Availability
@@ -329,7 +334,7 @@ if ($response->isSuccess()) {
 } else {
     echo "\nFailed with exit code: {$response->exitCode}\n";
 }
-// @doctest id="35bc"
+// @doctest id="2d4f"
 ```
 
 ## Comparison with Other Bridges

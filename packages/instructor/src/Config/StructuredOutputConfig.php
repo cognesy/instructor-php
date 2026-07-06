@@ -248,7 +248,13 @@ final readonly class StructuredOutputConfig
      * How many streaming deltas to accumulate before materializing
      * (parsing JSON, deserializing, emitting partial). Higher values
      * reduce CPU cost at the expense of partial-update granularity.
-     * Default: 1 (materialize on every delta).
+     *
+     * Default: 1 — adaptive throttling: materialization requires the
+     * accumulated buffer to grow by ~1/32 of its current size (min 16
+     * bytes) since the last materialization. Early partials stay
+     * token-frequent while total parse+deserialize work remains O(n)
+     * on long outputs. Explicit values > 1 switch to fixed delta-count
+     * throttling (materialize every N deltas).
      */
     public function streamMaterializationInterval(): int {
         return $this->streamMaterializationInterval;

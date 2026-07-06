@@ -38,7 +38,12 @@ class SymfonyDriver implements CanHandleHttpRequest
         if ($clientInstance !== null && !($clientInstance instanceof HttpClientInterface)) {
             throw new \InvalidArgumentException('Client instance of SymfonyDriver must be of type Symfony\Contracts\HttpClient\HttpClientInterface');
         }
-        $this->client = $clientInstance ?? SymfonyHttpClient::create(['http_version' => '2.0']);
+        $this->client = $clientInstance ?? SymfonyHttpClient::create([
+            'http_version' => $this->configuredHttpVersion(),
+            'verify_peer' => $this->config->verifyTls,
+            'verify_host' => $this->config->verifyTls,
+            'max_redirects' => $this->configuredMaxRedirects(),
+        ]);
     }
 
     #[\Override]
@@ -80,8 +85,23 @@ class SymfonyDriver implements CanHandleHttpRequest
                 'timeout' => $this->config->idleTimeout,
                 'max_duration' => $this->config->requestTimeout,
                 'buffer' => !$request->isStreamed(),
+                'verify_peer' => $this->config->verifyTls,
+                'verify_host' => $this->config->verifyTls,
+                'max_redirects' => $this->configuredMaxRedirects(),
+                'http_version' => $this->configuredHttpVersion(),
             ]
         );
+    }
+
+    private function configuredMaxRedirects(): int {
+        return match ($this->config->followRedirects) {
+            true => $this->config->maxRedirects ?? 20,
+            false => 0,
+        };
+    }
+
+    private function configuredHttpVersion(): string {
+        return $this->config->httpVersion ?? '2.0';
     }
 
     private function buildHttpResponse(ResponseInterface $response, HttpRequest $request): HttpResponse {

@@ -72,13 +72,25 @@ class GuzzleDriver implements CanHandleHttpRequest
             'timeout' => $this->config->requestTimeout ?? 30,
             'stream' => $request->isStreamed(),
             'http_errors' => false, // Disable Guzzle's automatic HTTP error handling
+            'verify' => $this->config->verifyTls,
+            'allow_redirects' => $this->redirectOptions(),
         ];
+        if ($this->config->httpVersion !== null) {
+            $options['version'] = $this->config->httpVersion;
+        }
 
         if ($body !== '') {
             $options['body'] = $body;
         }
 
         return $this->client->request($request->method(), $request->url(), $options);
+    }
+
+    private function redirectOptions(): bool|array {
+        return match ($this->config->followRedirects) {
+            true => $this->config->maxRedirects === null ? true : ['max' => $this->config->maxRedirects],
+            false => false,
+        };
     }
 
     private function buildHttpResponse(ResponseInterface $response, HttpRequest $request): HttpResponse {

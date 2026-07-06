@@ -5,6 +5,7 @@ namespace Cognesy\Polyglot\Inference;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Logging\EventLog;
 use Cognesy\Http\Creation\HttpClientBuilder;
+use Cognesy\Http\Creation\HttpClientDefaults;
 use Cognesy\Http\Contracts\CanManageStreamCache;
 use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
@@ -13,6 +14,7 @@ use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Contracts\CanProvideInferenceDrivers;
 use Cognesy\Polyglot\Inference\Contracts\CanResolveLLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\HasExplicitInferenceDriver;
+use Cognesy\Polyglot\Inference\Core\SensitiveDataRedactor;
 use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
@@ -121,7 +123,9 @@ final class InferenceRuntime implements CanCreateInference
         if ($httpClient !== null) {
             return $httpClient;
         }
-        return (new HttpClientBuilder(events: $events))->create();
+        // Implicit-build path: consult the ambient middleware registry (default
+        // empty). Explicit clients returned above never reach this hook.
+        return HttpClientDefaults::applyTo(new HttpClientBuilder(events: $events))->create();
     }
 
     private static function resolveEvents(?CanHandleEvents $events): CanHandleEvents {
@@ -177,38 +181,6 @@ final class InferenceRuntime implements CanCreateInference
      * @return array<string,mixed>
      */
     private static function redactedConfig(LLMConfig $config): array {
-        return self::redactSensitiveValues($config->toArray());
-    }
-
-    /**
-     * @param array<string,mixed> $data
-     * @return array<string,mixed>
-     */
-    private static function redactSensitiveValues(array $data): array {
-        $redacted = [];
-
-        foreach ($data as $key => $value) {
-            $redacted[$key] = match (true) {
-                self::isSensitiveKey((string) $key) => '[REDACTED]',
-                is_array($value) => self::redactSensitiveValues($value),
-                default => $value,
-            };
-        }
-
-        return $redacted;
-    }
-
-    private static function isSensitiveKey(string $key): bool {
-        $normalized = strtolower(str_replace(['-', '_'], '', $key));
-
-        return match (true) {
-            in_array($normalized, ['apikey', 'authorization', 'proxyauthorization', 'token', 'accesstoken', 'refreshtoken', 'secret', 'password', 'cookie', 'setcookie'], true) => true,
-            str_contains($normalized, 'apikey') => true,
-            str_contains($normalized, 'authorization') => true,
-            str_contains($normalized, 'cookie') => true,
-            default => str_contains($normalized, 'token')
-                || str_contains($normalized, 'secret')
-                || str_contains($normalized, 'password'),
-        };
+        return SensitiveDataRedactor::redactValues($config->toArray());
     }
 }

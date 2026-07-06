@@ -121,7 +121,7 @@ function printProfileTable(string $title, array $results): void {
     echo "  └────────┴───────┴──────────┴─────────────┴─────────────┴───────────┘\n";
 }
 
-// ── Baseline: materializationInterval=1 (every delta) ───────────────
+// ── Baseline: materializationInterval=1 (adaptive throttling) ───────
 
 it('profiles structured output streaming at 1K, 2K, 5K, 10K chunks', function () {
     $scales = [1_000, 2_000, 5_000, 10_000];
@@ -131,7 +131,7 @@ it('profiles structured output streaming at 1K, 2K, 5K, 10K chunks', function ()
         $results[$count] = runStructuredOutputProfile($count);
     }
 
-    printProfileTable('StructuredOutput Stream Scale Profile (N=1, every delta)', $results);
+    printProfileTable('StructuredOutput Stream Scale Profile (N=1, adaptive)', $results);
 
     if ($results[10_000]['received'] > 0) {
         echo sprintf(
@@ -192,14 +192,16 @@ it('profiles structured output streaming with materializationInterval=4', functi
     // Time at 10K should be well under 60s
     expect($results[10_000]['time_ms'])->toBeLessThan(60_000);
 
-    // Throttled should be meaningfully faster than baseline (at least 1.5x at 10K)
+    // Fixed-count throttling (N=4) still materializes every 4th delta — O(n²/4)
+    // total parse work. The adaptive default (N=1) bounds total work to O(n),
+    // so on long streams it must not be slower than fixed-count throttling.
     $baseline = runStructuredOutputProfile(10_000, 1);
-    $speedup = $baseline['time_ms'] / $results[10_000]['time_ms'];
-    echo sprintf("\n  Speedup vs N=1 at 10K: %.1fx\n", $speedup);
+    $ratio = $results[10_000]['time_ms'] / max($baseline['time_ms'], 0.001);
+    echo sprintf("\n  N=%d fixed-count vs adaptive N=1 at 10K: %.1fx\n", $interval, $ratio);
 
-    expect($speedup)->toBeGreaterThan(1.5, sprintf(
-        'N=%d speedup = %.1fx — expected > 1.5x',
+    expect($ratio)->toBeGreaterThan(1.0, sprintf(
+        'adaptive N=1 should be at least as fast as fixed N=%d at 10K chunks; got %.1fx',
         $interval,
-        $speedup,
+        $ratio,
     ));
 });

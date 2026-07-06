@@ -4,7 +4,6 @@ namespace Cognesy\Instructor\Events\PartialsGenerator;
 
 use Cognesy\Instructor\Events\Support\EventValueNormalizer;
 use Cognesy\Instructor\Events\StructuredOutputEvent;
-use Cognesy\Utils\Json\Json;
 
 final class PartialResponseGenerated extends StructuredOutputEvent
 {
@@ -13,12 +12,12 @@ final class PartialResponseGenerated extends StructuredOutputEvent
     ) {
         parent::__construct([
             'valueType' => is_object($partialResponse) ? $partialResponse::class : get_debug_type($partialResponse),
-            'value' => EventValueNormalizer::normalize($partialResponse),
+            'hasValue' => $partialResponse !== null,
         ]);
     }
 
-    public function __toString(): string
+    public function serializedValue(): mixed
     {
-        return Json::encode($this->partialResponse);
+        return EventValueNormalizer::normalize($this->partialResponse);
     }
 }

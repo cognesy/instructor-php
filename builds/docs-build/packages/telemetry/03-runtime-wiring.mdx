@@ -1,3 +1,8 @@
+---
+title: 'Runtime Wiring'
+description: 'Attach telemetry to a shared event bus with projectors and RuntimeEventBridge'
+---
+
 # Runtime Wiring
 
 In normal application code, telemetry is usually driven by runtime events rather
@@ -28,7 +33,7 @@ $events = new EventDispatcher('app');
     new PolyglotTelemetryProjector($telemetry),
     new HttpClientTelemetryProjector($telemetry),
 ])))->attachTo($events);
-// @doctest id="3ddd"
+// @doctest id="a03a"
 ```
 
 Pass `$events` into the runtime objects that should emit telemetry.
