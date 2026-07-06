@@ -3,6 +3,7 @@ title: 'Sandbox API: Podman'
 docname: 'sandbox_api_podman_echo'
 id: 'd212'
 tags:
+  - 'no-replay'
   - 'sandbox-apis'
   - 'podman'
   - 'drivers'

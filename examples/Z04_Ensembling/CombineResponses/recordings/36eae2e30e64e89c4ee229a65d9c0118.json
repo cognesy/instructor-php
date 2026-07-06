@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## Tool Use\\n\\nUse the provided tool `extracted_data` to extract correct and accurate structured data from the input.\\n\\nTool purpose: Function call based on user instructions.\\n\\nCall the tool with the best supported arguments for the requested extraction.\"},{\"role\":\"user\",\"content\":\"<user query>\\nThe three-digit number 'ab5' is divisible by 3. How many different three-digit numbers can 'ab5' represent?\\n<\\\/user query>\\n\\nResponse 0: A three-digit number ab5 is divisible by 3 when the sum of its digits a+b+5 is divisible by 3. Since 5 \\u2261 2 mod 3, we need a+b \\u2261 1 mod 3. Count digit pairs (a,b) with a from 1 to 9 and b from 0 to 9 satisfying this congruence.. 30\\nResponse 1: We need answer a simple counting\\\/divisibility question: determine digits a,b such that ab5 divisible by 3. A number is divisible by 3 if sum of digits divisible by 3. So a+b+5 must be divisible by 3. We count ordered pairs (a,b) where a is 1-9 for a three-digit number and b is 0-9. There are 9 choices for a and 10 for b, total 90 pairs. Since digits mod 3 are roughly evenly distributed among 0,1,2, the count satisfying a+b \\u2261 1 mod 3 (because 5 \\u2261 2, need total \\u22610, so a+b \\u22611) is 30. We can also verify by cases on a mod 3 or b mod 3. Therefore 30.. 30\\nResponse 2: Need answer a simple divisibility-by-3 counting problem. For number ab5 to be divisible by 3, sum of digits a+b+5 must be divisible by 3. Count digit pairs (a,b) with a from 1-9 and b from 0-9 satisfying a+b \\u2261 1 mod 3. There are 9 choices for a and 10 for b, evenly distributed mod 3 except slight imbalance. Counts of digits mod 3: a (1-9) gives residues 0,1,2 each 3 times. b (0-9) gives residues 0,1,2 counts 4,3,3 respectively. Need pairs where residues sum to 1 mod 3: (0,1),(1,0),(2,2). Count = 3*3 + 3*4 + 3*3 = 30.. 30\\n\\nEvaluate these responses. Select the most consistent response based on majority consensus.\"}],\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\",\"description\":\"Function call based on user instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"most_consistent_response_id\":{\"type\":\"integer\"}},\"required\":[\"most_consistent_response_id\"],\"additionalProperties\":false}}}],\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\"}}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:41:59 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1070"
+            ],
+            "cf-ray": [
+                "a16eafce3fc56368-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "611"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999537"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "6ms"
+            ],
+            "x-request-id": [
+                "req_c2ac8e69237342659ce27a54de4168bc"
+            ],
+            "set-cookie": [
+                "__cf_bm=arCOEu_iCmqr80uR45gPVrkuaOx0tVK28vGeSvXweNs-1783341718.7562451-1.0.1.1-blsnOAqD3nVglkgy22Qux0CX.pZxqbCHGh0AxBhzy7NqMGetvCvrF0iduhSIBxnD_3dMECU1x9XH8k3tb6TTes73EfcwwysiN3HWGgU8GpCzGaEFd767pc2CdmToAB0f; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:11:59 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-Dycw2nS718Hg9cSzqFrYC2k3eZWWK\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341718,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_PMCSWG7V7YzE7f3MNAdRkR2p\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"most_consistent_response_id\\\":1}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 687,\n    \"completion_tokens\": 22,\n    \"total_tokens\": 709,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"You review code files and identify issues. Read the file and provide a concise assessment focusing on code quality, potential bugs, and improvements.\"},{\"role\":\"user\",\"content\":\"Review the PHP capability file packages\\\/agents\\\/src\\\/Capability\\\/SelfCritique\\\/UseSelfCritique.php. Identify its purpose, structure, notable implementation details, and any issues or risks. Focus on code quality, correctness, design, and maintainability. Return concise findings suitable for a summary.\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_l8WV3CqU4LUalV4OeVoYVNjR\",\"type\":\"function\",\"function\":{\"name\":\"read_file\",\"arguments\":\"{\\\"path\\\":\\\"packages\\\\\\\/agents\\\\\\\/src\\\\\\\/Capability\\\\\\\/SelfCritique\\\\\\\/UseSelfCritique.php\\\",\\\"offset\\\":0,\\\"limit\\\":400}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_l8WV3CqU4LUalV4OeVoYVNjR\",\"content\":\"     1\\t<?php declare(strict_types=1);\\n     2\\t\\n     3\\tnamespace Cognesy\\\\Agents\\\\Capability\\\\SelfCritique;\\n     4\\t\\n     5\\tuse Cognesy\\\\Agents\\\\Builder\\\\Contracts\\\\CanProvideAgentCapability;\\n     6\\tuse Cognesy\\\\Agents\\\\Builder\\\\Contracts\\\\CanConfigureAgent;\\n     7\\tuse Cognesy\\\\Agents\\\\Hook\\\\Collections\\\\HookTriggers;\\n     8\\tuse Cognesy\\\\Instructor\\\\Contracts\\\\CanCreateStructuredOutput;\\n     9\\t\\n    10\\tclass UseSelfCritique implements CanProvideAgentCapability\\n    11\\t{\\n    12\\t    public function __construct(\\n    13\\t        private CanCreateStructuredOutput $structuredOutput,\\n    14\\t        private int $maxIterations = 2,\\n    15\\t    ) {}\\n    16\\t\\n    17\\t    #[\\\\Override]\\n    18\\t    public static function capabilityName(): string {\\n    19\\t        return 'use_self_critique';\\n    20\\t    }\\n    21\\t\\n    22\\t    #[\\\\Override]\\n    23\\t    public function configure(CanConfigureAgent $agent): CanConfigureAgent {\\n    24\\t        $hooks = $agent->hooks()->with(\\n    25\\t            hook: new SelfCriticHook(\\n    26\\t                maxCriticIterations: $this->maxIterations,\\n    27\\t                structuredOutput: $this->structuredOutput,\\n    28\\t            ),\\n    29\\t            triggerTypes: HookTriggers::afterStep(),\\n    30\\t        );\\n    31\\t        return $agent->withHooks($hooks);\\n    32\\t    }\\n    33\\t}\\n    34\\t\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"read_file\",\"description\":\"Read the contents of a file with line numbers. Use to examine file content after finding it with search_files.\\n\\nExamples:\\n- \\\"composer.json\\\" \\u2192 read composer.json from project root\\n- \\\"src\\\/Config.php\\\" \\u2192 read specific file by path\\n- {\\\"path\\\": \\\"large.log\\\", \\\"offset\\\": 100, \\\"limit\\\": 50} \\u2192 read lines 101-150\\n\\nReturns numbered lines. For large files, use offset\\\/limit to read specific sections.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"File path (relative to project root or absolute). Example: \\\"composer.json\\\" or \\\"src\\\/Config.php\\\"\"},\"offset\":{\"type\":\"integer\",\"description\":\"Line number to start reading from (0-indexed)\"},\"limit\":{\"type\":\"integer\",\"description\":\"Maximum number of lines to read (default: 2000)\"}},\"required\":[\"path\"],\"additionalProperties\":false}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:41:02 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "2950"
+            ],
+            "cf-ray": [
+                "a16eae50995783eb-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "4692"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999559"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "6ms"
+            ],
+            "x-request-id": [
+                "req_4b1142bc1d964c039081132c782f694d"
+            ],
+            "set-cookie": [
+                "__cf_bm=xYJ7RfO46JjiSqLsZrgexE9eXo1fpeTwehDwNvpBR38-1783341657.6978066-1.0.1.1-TY.Sfr8yTPNugxVazJt3XAL56Y0mV4rHB6RyQzH1A8KQISr7u8uycmwdj9M1JG4tOoOsN1qhOy8V3EC7YtWl9SgDGvy8STvXgO7jce_LriWOwG4ZwpVEDCBxzy2vtlgZ; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:11:02 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-Dycv3bK4OvbWjZSFFztyc7a7RP3Zl\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341657,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"### Purpose\\n`UseSelfCritique` is an agent capability that wires a `SelfCriticHook` into an agent so the agent can perform self-critique after each step. It exposes a capability name (`use_self_critique`) and configures hooks on the agent.\\n\\n### Structure\\n- Namespace: `Cognesy\\\\Agents\\\\Capability\\\\SelfCritique`\\n- Implements `CanProvideAgentCapability`\\n- Constructor injects:\\n  - `CanCreateStructuredOutput $structuredOutput`\\n  - `int $maxIterations = 2`\\n- `capabilityName()` returns the capability identifier.\\n- `configure()`:\\n  - adds a `SelfCriticHook` to the agent hooks\\n  - binds it to `HookTriggers::afterStep()`\\n  - returns the agent with updated hooks\\n\\n### Notable implementation details\\n- Uses PHP 8.1+ features:\\n  - constructor property promotion\\n  - `#[\\\\Override]` attributes\\n- The capability is intentionally thin: all behavior is delegated to `SelfCriticHook`.\\n- The default critique loop limit is small (`2`), which may be a safe default for cost\/control.\\n\\n### Issues \/ risks\\n- **No validation of `$maxIterations`**: negative or zero values are accepted, which could break hook behavior or silently disable critique.\\n- **Potential over-reliance on external hook behavior**: the class does not document or guard against what happens if `SelfCriticHook` fails or if structured output cannot be produced.\\n- **Mutable agent configuration coupling**: `configure()` depends on `hooks()->with(...)` and `withHooks(...)` semantics; if these are not immutable or return unexpected types, behavior could be error-prone.\\n- **Limited discoverability**: the class name and `capabilityName()` are generic, but there\u2019s no docblock explaining when\/why to use self-critique or how iterations impact performance\/cost.\\n- **No explicit typing for hook outcome**: the capability assumes `afterStep()` is the correct trigger and that adding this hook is always safe; no feature flag or conditional enablement.\\n\\n### Summary\\nClean, small capability wrapper with good separation of concerns, but it lacks input validation and documentation, and it delegates critical behavior entirely to downstream hook\/structured-output components without safeguards.\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 754,\n    \"completion_tokens\": 475,\n    \"total_tokens\": 1229,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

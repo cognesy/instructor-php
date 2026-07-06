@@ -1,0 +1,111 @@
+{
+    "request": {
+        "url": "https:\/\/router.huggingface.co\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"openai\\\/gpt-oss-20b:fireworks-ai\",\"messages\":[{\"role\":\"system\",\"content\":\"## Task\\n\\nParse the user data to JSON, respond using following JSON Schema: <|json_schema|>\\n\\n## Examples\\n\\nEXAMPLE INPUT:\\n    I've got email Frank - their developer, who's 30. He asked to come back to him frank@hk.ch. Btw, he plays on drums!\\n    \\n    EXAMPLE OUTPUT:\\n    ```json\\n    {\\\"firstName\\\":\\\"Frank\\\",\\\"age\\\":30,\\\"username\\\":\\\"frank@hk.ch\\\",\\\"role\\\":\\\"user\\\",\\\"hobbies\\\":[\\\"playing drums\\\"]}\\n    ```\\n\\nEXAMPLE INPUT:\\n    We have a meeting with John, our new admin who likes surfing. He is 19 years old - check his profile: @jx90.\\n    \\n    EXAMPLE OUTPUT:\\n    ```json\\n    {\\\"firstName\\\":\\\"John\\\",\\\"role\\\":\\\"admin\\\",\\\"hobbies\\\":[\\\"surfing\\\"],\\\"username\\\":\\\"jx90\\\",\\\"age\\\":19}\\n    ```\\n\\n## Output Requirements\\n\\nRespond with a strict JSON object that matches this JSON Schema:\\n\\n{\\n    \\\"type\\\": \\\"object\\\",\\n    \\\"x-title\\\": \\\"User\\\",\\n    \\\"properties\\\": {\\n        \\\"firstName\\\": {\\n            \\\"type\\\": \\\"string\\\"\\n        },\\n        \\\"role\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"enum\\\": [\\n                \\\"guest\\\",\\n                \\\"user\\\",\\n                \\\"admin\\\"\\n            ],\\n            \\\"x-php-class\\\": \\\"UserType\\\"\\n        },\\n        \\\"hobbies\\\": {\\n            \\\"type\\\": \\\"array\\\",\\n            \\\"items\\\": {\\n                \\\"type\\\": \\\"string\\\",\\n                \\\"description\\\": \\\"Correctly extract items of type: string\\\"\\n            }\\n        },\\n        \\\"username\\\": {\\n            \\\"type\\\": \\\"string\\\"\\n        },\\n        \\\"age\\\": {\\n            \\\"type\\\": \\\"integer\\\",\\n            \\\"nullable\\\": true\\n        }\\n    },\\n    \\\"required\\\": [\\n        \\\"firstName\\\",\\n        \\\"role\\\",\\n        \\\"hobbies\\\",\\n        \\\"username\\\"\\n    ],\\n    \\\"x-php-class\\\": \\\"User\\\",\\n    \\\"additionalProperties\\\": false\\n}\"},{\"role\":\"user\",\"content\":\"Jason (@jxnlco) is 25 years old. He is the admin of this project. He likes playing football and reading books.\"}],\"temperature\":0.5,\"max_completion_tokens\":1024,\"response_format\":{\"type\":\"json_object\"}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "2602"
+            ],
+            "date": [
+                "Mon, 06 Jul 2026 12:39:49 GMT"
+            ],
+            "x-inference-provider": [
+                "fireworks-ai"
+            ],
+            "x-powered-by": [
+                "huggingface-moon"
+            ],
+            "x-request-id": [
+                "Root=1-6a4ba20d-25c9b5dd34cd80e71f7ae028-chatcmpl-f67b4c3"
+            ],
+            "cross-origin-opener-policy": [
+                "same-origin"
+            ],
+            "referrer-policy": [
+                "strict-origin-when-cross-origin"
+            ],
+            "vary": [
+                "Origin"
+            ],
+            "access-control-allow-origin": [
+                "*"
+            ],
+            "access-control-expose-headers": [
+                "X-Repo-Commit,X-Request-Id,X-Error-Code,X-Error-Message,X-Total-Count,ETag,Link,Accept-Ranges,Content-Range,X-Linked-Size,X-Linked-ETag,X-Xet-Hash"
+            ],
+            "x-robots-tag": [
+                "none"
+            ],
+            "fireworks-cached-prompt-tokens": [
+                "0"
+            ],
+            "fireworks-prompt-tokens": [
+                "495"
+            ],
+            "fireworks-sampling-options": [
+                "{\"max_tokens\": 1024, \"temperature\": 0.5, \"top_k\": 0, \"top_p\": 1.0, \"min_p\": 0.0, \"typical_p\": 1.0, \"frequency_penalty\": 0.0, \"presence_penalty\": 0.0, \"repetition_penalty\": 1.0, \"mirostat_target\": null, \"mirostat_lr\": 0.1, \"cycle_multiplier\": 0.0, \"cycle_base\": 0.0, \"cycle_allowed_length\": 0, \"cycle_sequence_breakers\": []}"
+            ],
+            "fireworks-server-processing-time": [
+                "7.813"
+            ],
+            "fireworks-server-time-to-first-token": [
+                "0.390"
+            ],
+            "fireworks-speculation-prompt-matched-tokens": [
+                "0"
+            ],
+            "server": [
+                "istio-envoy"
+            ],
+            "x-ratelimit-limit-requests": [
+                "60"
+            ],
+            "x-ratelimit-limit-tokens-generated": [
+                "12000"
+            ],
+            "x-ratelimit-limit-tokens-prompt": [
+                "60000"
+            ],
+            "x-ratelimit-over-limit": [
+                "no"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "59"
+            ],
+            "x-ratelimit-remaining-tokens-generated": [
+                "12000"
+            ],
+            "x-ratelimit-remaining-tokens-prompt": [
+                "59505"
+            ],
+            "x-cache": [
+                "Miss from cloudfront"
+            ],
+            "via": [
+                "1.1 d46dd2193f1a6fb006e1c1831b3d97a2.cloudfront.net (CloudFront)"
+            ],
+            "x-amz-cf-pop": [
+                "WAW51-P4"
+            ],
+            "x-amz-cf-id": [
+                "vwIWAOezuwLa0gNB58wD586TwPKsE_VS1Q_2ylw5XEZDOlP2RoAObw=="
+            ]
+        },
+        "body": "{\"id\":\"Root=1-6a4ba20d-25c9b5dd34cd80e71f7ae028-chatcmpl-f67b4c3\",\"object\":\"chat.completion\",\"created\":1783341582,\"model\":\"accounts\/fireworks\/models\/gpt-oss-20b\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"{\\\"firstName\\\":\\\"Jason\\\",\\\"role\\\":\\\"admin\\\",\\\"hobbies\\\":[\\\"playing football\\\",\\\"reading books\\\"],\\\"username\\\":\\\"jxnlco\\\",\\\"age\\\":25}\",\"reasoning_content\":\"We need to parse user data to JSON, following the schema. The user says: \\\"Jason (@jxnlco) is 25 years old. He is the admin of this project. He likes playing football and reading books.\\\"\\n\\nSo firstName: Jason. role: admin. hobbies: [\\\"playing football\\\", \\\"reading books\\\"] or maybe \\\"football\\\" and \\\"reading books\\\"? The example shows hobbies items as strings like \\\"playing drums\\\" or \\\"surfing\\\". In example 1, they used \\\"playing drums\\\". In example 2, they used \\\"surfing\\\". So it seems they include the activity phrase? For \\\"playing football and reading books\\\", we might produce [\\\"playing football\\\", \\\"reading books\\\"]. username: jxnlco. age: 25. All required fields present. Provide output as JSON object. The user wants \\\"json_object\\\" response format: {\\\"type\\\":\\\"object\\\"}. Wait the developer instruction says: Response Formats: json_object {\\\"type\\\":\\\"object\\\"}. That seems to be a template for the assistant to respond? Let's read: The developer says:\\n\\n# Instructions\\n\\n# Response Formats\\n\\n## json_object\\n\\n{\\\"type\\\":\\\"object\\\"}\\n\\nIt looks like the assistant should output a JSON object with that structure? But the problem statement earlier says: \\\"Parse the user data to JSON, respond using following JSON Schema: <|json_schema|>\\\" And examples show output as JSON objects that match the schema. So the assistant should produce a JSON object that matches the schema. The developer instruction may be a generic format? It says \\\"## json_object {\\\"type\\\":\\\"object\\\"}\\\". That might be a placeholder for the assistant to output a JSON object? But we need to produce a JSON object that matches the schema. So we output the user data as JSON.\\n\\nThus final answer: JSON object.\\n\\nWe must not include any additional text. So final output:\\n\\n{\\n  \\\"firstName\\\":\\\"Jason\\\",\\n  \\\"role\\\":\\\"admin\\\",\\n  \\\"hobbies\\\":[\\\"playing football\\\",\\\"reading books\\\"],\\n  \\\"username\\\":\\\"jxnlco\\\",\\n  \\\"age\\\":25\\n}\\n\\nWe should ensure no trailing commas. Also abide by required fields: firstName, role, hobbies, username. age is optional. We can include age.\\n\\nThus final.\"},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":495,\"total_tokens\":988,\"completion_tokens\":493,\"prompt_tokens_details\":{\"cached_tokens\":0}}}"
+    }
+}

@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"user\",\"content\":\"Read the composer.json file and tell me the project name and its PHP version requirement.\"},{\"role\":\"assistant\",\"content\":\"The project name is **`cognesy\\\/instructor-php`**.\\n\\nIts PHP version requirement is **`^8.3|^8.4|^8.5`**, meaning PHP **8.3, 8.4, or 8.5** compatible versions.\"},{\"role\":\"user\",\"content\":\"Based on what you read, does the project use PSR-4 autoloading? What are the namespace prefixes?\"},{\"role\":\"assistant\",\"content\":\"Yes \\u2014 the project uses **PSR-4 autoloading**.\\n\\n### Namespace prefixes in `autoload`\\n- `Cognesy\\\\\\\\Addons\\\\\\\\`\\n- `Cognesy\\\\\\\\Agents\\\\\\\\`\\n- `Cognesy\\\\\\\\AgentCtrl\\\\\\\\`\\n- `Cognesy\\\\\\\\Auxiliary\\\\\\\\`\\n- `Cognesy\\\\\\\\Config\\\\\\\\`\\n- `Cognesy\\\\\\\\Doctools\\\\\\\\`\\n- `Cognesy\\\\\\\\Dynamic\\\\\\\\`\\n- `Cognesy\\\\\\\\Events\\\\\\\\`\\n- `Cognesy\\\\\\\\Http\\\\\\\\`\\n- `Cognesy\\\\\\\\HttpPool\\\\\\\\`\\n- `Cognesy\\\\\\\\InstructorHub\\\\\\\\`\\n- `Cognesy\\\\\\\\Instructor\\\\\\\\`\\n- `Cognesy\\\\\\\\Instructor\\\\\\\\Laravel\\\\\\\\`\\n- `Cognesy\\\\\\\\Logging\\\\\\\\`\\n- `Cognesy\\\\\\\\Messages\\\\\\\\`\\n- `Cognesy\\\\\\\\Metrics\\\\\\\\`\\n- `Cognesy\\\\\\\\Pipeline\\\\\\\\`\\n- `Cognesy\\\\\\\\Polyglot\\\\\\\\`\\n- `Cognesy\\\\\\\\Sandbox\\\\\\\\`\\n- `Cognesy\\\\\\\\Schema\\\\\\\\`\\n- `Cognesy\\\\\\\\Setup\\\\\\\\`\\n- `Cognesy\\\\\\\\Stream\\\\\\\\`\\n- `Cognesy\\\\\\\\Instructor\\\\\\\\Symfony\\\\\\\\`\\n- `Cognesy\\\\\\\\Template\\\\\\\\`\\n- `Cognesy\\\\\\\\Telemetry\\\\\\\\`\\n- `Cognesy\\\\\\\\Utils\\\\\\\\`\\n- `Cognesy\\\\\\\\Xprompt\\\\\\\\`\\n\\n### Namespace prefixes in `autoload-dev`\\n- `Cognesy\\\\\\\\Config\\\\\\\\`\\n- `Cognesy\\\\\\\\Qa\\\\\\\\PHPStan\\\\\\\\`\\n- `Cognesy\\\\\\\\Auxiliary\\\\\\\\`\\n- `Cognesy\\\\\\\\Evals\\\\\\\\`\\n- `Cognesy\\\\\\\\Tell\\\\\\\\`\\n- `Cognesy\\\\\\\\Experimental\\\\\\\\`\\n- `Cognesy\\\\\\\\Addons\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\Agents\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\AgentCtrl\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\Config\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\Dynamic\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\Events\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\Http\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\HttpPool\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\Instructor\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\Instructor\\\\\\\\Contracts\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\Logging\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\Messages\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\Pipeline\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\Polyglot\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\Sandbox\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\Schema\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\Setup\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\Stream\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\Instructor\\\\\\\\Symfony\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\Telemetry\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\Templates\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\Utils\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\Xprompt\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\Auxiliary\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\Doctools\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\Evals\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\Experimental\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\InstructorHub\\\\\\\\Tests\\\\\\\\`\\n- `Cognesy\\\\\\\\Tell\\\\\\\\Tests\\\\\\\\`\\n- `Tests\\\\\\\\`\\n- `Tests\\\\\\\\Addons\\\\\\\\`\\n- `Evals\\\\\\\\`\\n- `Examples\\\\\\\\`\\n- `Tests\\\\\\\\Addons\\\\\\\\Support\\\\\\\\`\\n\\nIf you want, I can also group these by package or point out the ones that map to multiple directories.\"},{\"role\":\"user\",\"content\":\"Given what you know about this project, what type of project is it \\u2014 a library, framework, or application? Explain briefly.\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"read_file\",\"description\":\"Read the contents of a file with line numbers. Use to examine file content after finding it with search_files.\\n\\nExamples:\\n- \\\"composer.json\\\" \\u2192 read composer.json from project root\\n- \\\"src\\\/Config.php\\\" \\u2192 read specific file by path\\n- {\\\"path\\\": \\\"large.log\\\", \\\"offset\\\": 100, \\\"limit\\\": 50} \\u2192 read lines 101-150\\n\\nReturns numbered lines. For large files, use offset\\\/limit to read specific sections.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"File path (relative to project root or absolute). Example: \\\"composer.json\\\" or \\\"src\\\/Config.php\\\"\"},\"offset\":{\"type\":\"integer\",\"description\":\"Line number to start reading from (0-indexed)\"},\"limit\":{\"type\":\"integer\",\"description\":\"Maximum number of lines to read (default: 2000)\"}},\"required\":[\"path\"],\"additionalProperties\":false}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:38 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1348"
+            ],
+            "cf-ray": [
+                "a16eadcf186a5033-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1411"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999372"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "9ms"
+            ],
+            "x-request-id": [
+                "req_95c7a79d5ddd4fa68ca6bf0b57d25e4a"
+            ],
+            "set-cookie": [
+                "__cf_bm=9KH6xKw.PPX0r6NAy9qHmCsUXcMIG3TOyuJdF9gLQFI-1783341636.9770334-1.0.1.1-LCGkz9Gzwy0H2Omzm.dM43.eVgM6ToCoH0EnRdnWSUqtveK0rzO4R5IKB.zPIAjlybDJDe52FosYvV60SPOY9lxEXlFLRY8StWkOTVykwfEdXXqdwHFqyIEXqikXblrS; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:38 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-Dycujw97QkQcFBtTVkrO6PWPqtuj7\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341637,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"It looks like a **library**.\\n\\n### Why\\n- The project name, `cognesy\/instructor-php`, and its PSR-4 package-style namespace structure suggest a reusable Composer package rather than a standalone app.\\n- The many modular namespaces (`Instructor`, `Agents`, `Schema`, `Http`, `Telemetry`, etc.) are typical of a library exposing features for other projects to consume.\\n- The presence of `autoload` and `autoload-dev` mappings, rather than app-specific entry points or runtime config, also points to a library.\\n\\nSo overall, this is best classified as a **PHP library**.\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 1157,\n    \"completion_tokens\": 129,\n    \"total_tokens\": 1286,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

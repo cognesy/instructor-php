@@ -3,6 +3,7 @@ title: 'MoonshotAI'
 docname: 'moonshotai'
 id: '167c'
 tags:
+  - 'broken'
   - 'api-support'
   - 'moonshot'
   - 'provider'

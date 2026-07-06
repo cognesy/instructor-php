@@ -3,6 +3,7 @@ title: 'Multi-Participant AI Chat Panel Discussion'
 docname: 'chat_with_many_participants'
 id: '505c'
 tags:
+  - 'flaky'
   - 'llm-extras'
   - 'multi-participant'
   - 'chat'

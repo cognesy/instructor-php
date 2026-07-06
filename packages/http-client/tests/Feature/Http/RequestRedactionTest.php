@@ -84,6 +84,20 @@ test('redaction is applied on save so secrets never reach disk (guard scan)', fu
     }
 });
 
+test('API key carried as a URL query param is masked (Gemini ?key=)', function () {
+    // Regression pin: Gemini embeddings put the key in the URL, not a header.
+    $records = new RequestRecords($this->dir);
+    $request = new HttpRequest(
+        'https://generativelanguage.googleapis.com/v1beta/models/x:batchEmbedContents?key=AIzaSyCjJ4KVQTcMDYeYumdZ7VcZVAbdemsFzu4',
+        'POST', [], '{}', [],
+    );
+    $file = $records->save($request, MockHttpResponseFactory::success(body: 'ok'));
+
+    expect(file_get_contents($file))
+        ->not->toContain('AIzaSyCjJ4KVQTcMDYeYumdZ7VcZVAbdemsFzu4')
+        ->toContain('key=');
+});
+
 test('the exact R0 leak (x-goog-api-key AIza...) is masked on save', function () {
     // Regression pin for the R0 spike finding.
     $records = new RequestRecords($this->dir);

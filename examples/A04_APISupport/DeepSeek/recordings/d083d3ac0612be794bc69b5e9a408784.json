@@ -1,0 +1,57 @@
+{
+    "request": {
+        "url": "https:\/\/api.deepseek.com\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"deepseek-chat\",\"max_tokens\":1024,\"messages\":[{\"role\":\"system\",\"content\":\"## Examples\\n\\nEXAMPLE INPUT:\\n    Ive got email Frank - their developer, who's 30. His Twitter handle is @frankch. Btw, he plays on drums!\\n    \\n    EXAMPLE OUTPUT:\\n    ```json\\n    {\\\"age\\\":30,\\\"name\\\":\\\"Frank\\\",\\\"username\\\":\\\"@frankch\\\",\\\"role\\\":\\\"developer\\\",\\\"hobbies\\\":[\\\"playing drums\\\"]}\\n    ```\\n\\n## Output Requirements\\n\\nRespond with a strict JSON object that follows the provided JSON Schema.\\n\\nSchema name: `User`\\n\\n{\\n    \\\"type\\\": \\\"object\\\",\\n    \\\"x-title\\\": \\\"User\\\",\\n    \\\"properties\\\": {\\n        \\\"age\\\": {\\n            \\\"type\\\": \\\"integer\\\"\\n        },\\n        \\\"name\\\": {\\n            \\\"type\\\": \\\"string\\\"\\n        },\\n        \\\"username\\\": {\\n            \\\"type\\\": \\\"string\\\"\\n        },\\n        \\\"role\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"enum\\\": [\\n                \\\"guest\\\",\\n                \\\"user\\\",\\n                \\\"admin\\\"\\n            ],\\n            \\\"x-php-class\\\": \\\"UserType\\\"\\n        },\\n        \\\"hobbies\\\": {\\n            \\\"type\\\": \\\"array\\\",\\n            \\\"items\\\": {\\n                \\\"type\\\": \\\"string\\\",\\n                \\\"description\\\": \\\"Correctly extract items of type: string\\\"\\n            }\\n        }\\n    },\\n    \\\"required\\\": [\\n        \\\"age\\\",\\n        \\\"name\\\",\\n        \\\"username\\\",\\n        \\\"role\\\",\\n        \\\"hobbies\\\"\\n    ],\\n    \\\"x-php-class\\\": \\\"User\\\",\\n    \\\"additionalProperties\\\": false\\n}\"},{\"role\":\"user\",\"content\":\"Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.\"}],\"response_format\":{\"type\":\"json_object\"}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "content-type": [
+                "application\/json"
+            ],
+            "date": [
+                "Mon, 06 Jul 2026 12:39:40 GMT"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "server": [
+                "elb"
+            ],
+            "vary": [
+                "origin, access-control-request-method, access-control-request-headers"
+            ],
+            "access-control-allow-credentials": [
+                "true"
+            ],
+            "x-ds-trace-id": [
+                "0b977cd2622cc0891ff97aeb28a5137c"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-cache": [
+                "Miss from cloudfront"
+            ],
+            "via": [
+                "1.1 30855daaacda12eec13c5586adf67f2e.cloudfront.net (CloudFront)"
+            ],
+            "x-amz-cf-pop": [
+                "WAW51-P6"
+            ],
+            "x-amz-cf-id": [
+                "gxEOXy6Yf2hIsiDZGivWQQxWb8rXPAsbv6lmwhGSXTOmArL_v_904w=="
+            ]
+        },
+        "body": "{\"id\":\"71a97772-bbaa-44f0-9055-c9dca446bfa2\",\"object\":\"chat.completion\",\"created\":1783341580,\"model\":\"deepseek-v4-flash\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"{\\\"age\\\":25,\\\"name\\\":\\\"Jason\\\",\\\"username\\\":\\\"@jxnlco\\\",\\\"role\\\":\\\"admin\\\",\\\"hobbies\\\":[\\\"playing football\\\",\\\"reading books\\\"]}\"},\"logprobs\":null,\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":351,\"completion_tokens\":32,\"total_tokens\":383,\"prompt_tokens_details\":{\"cached_tokens\":256},\"prompt_cache_hit_tokens\":256,\"prompt_cache_miss_tokens\":95},\"system_fingerprint\":\"fp_8b330d02d0_prod0820_fp8_kvcache_20260402\"}"
+    }
+}

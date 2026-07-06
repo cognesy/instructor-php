@@ -1,0 +1,89 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-4o-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## System Instructions\\n\\nThink step by step. Read and analyze the Premises, then use FOL to judge whether the Hypothesis is True, False, or Unknown using the verified Propositions.\\n\\n## Tool Use\\n\\nUse the provided tool `extracted_data` to extract correct and accurate structured data from the input.\\n\\nTool purpose: Function call based on user instructions.\\n\\nCall the tool with the best supported arguments for the requested extraction.\"},{\"role\":\"user\",\"content\":\"Premises:\\n- The only types of mammals that lay eggs are platypuses and echidnas\\n- Platypuses are not hyrax\\n- Echidnas are not hyrax\\n- No mammals are invertebrates\\n- All animals are either vertebrates or invertebrates\\n- Mammals are animals\\n- Hyraxes are mammals\\n- Grebes lay eggs\\n- Grebes are not platypuses and also not echidnas\\n\\nHypothesis: Hyraxes lay eggs\"},{\"role\":\"assistant\",\"content\":\"Let's think step by step. From the premises, we can deduce the following propositions:\\n- Hyraxes do not lay eggs\\n\\nRecall the Hypothesis: Hyraxes lay eggs\"}],\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\",\"description\":\"Function call based on user instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"reasoning\":{\"type\":\"string\",\"default\":\"\"},\"is_valid_hypothesis\":{\"type\":\"boolean\",\"default\":false}},\"additionalProperties\":false}}}],\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\"}}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:42:11 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "cf-ray": [
+                "a16eb01238ab512f-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1456"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999760"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "3ms"
+            ],
+            "x-request-id": [
+                "req_1e515cb53f1d42f0ae369f9eb0aa6aff"
+            ],
+            "set-cookie": [
+                "__cf_bm=bdGdgbuiM.FSq5a_SQWBUh.jO_2XEhOBj5l_JP1DhtA-1783341729.63823-1.0.1.1-z2dtQmmfu_ZA7arw31PGKO7uKSD16CR4RaWbfmT3.1Ieyg7smbVnraAzKPJni2glcUrhshRKwLCAnlmBZDrw3XASqNhbLRjZYtl_9HIk5nV48Yk4jMOKut1qYKhZAt05; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:12:11 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycwDrtS8lhy0aVNbv2HJos79Be4t\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341729,\n  \"model\": \"gpt-4o-mini-2024-07-18\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_BtMh0TimBJpULstyhpiMZH1k\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"reasoning\\\":\\\"According to the premises, the only mammals that lay eggs are platypuses and echidnas. Since hyraxes are mammals, and none of the stated egg-laying mammals (platypuses and echidnas) include hyraxes, we can deduce that hyraxes do not lay eggs.\\\",\\\"is_valid_hypothesis\\\":false}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"logprobs\": null,\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 301,\n    \"completion_tokens\": 75,\n    \"total_tokens\": 376,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": \"fp_520fb14a9c\"\n}\n"
+    }
+}

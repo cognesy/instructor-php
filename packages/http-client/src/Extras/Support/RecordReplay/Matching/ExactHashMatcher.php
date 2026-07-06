@@ -15,12 +15,26 @@ use Cognesy\Http\Data\HttpRequest;
  */
 final class ExactHashMatcher implements RequestMatcher
 {
+    /** Auth query-param names whose *value* must not affect matching (see below). */
+    private const VOLATILE_QUERY_PARAMS = ['key', 'api_key', 'apikey', 'access_token', 'token'];
+
     #[\Override]
     public function fingerprint(HttpRequest $request): string {
         return md5(implode('|', [
             $request->method(),
-            $request->url(),
+            self::normalizeUrl($request->url()),
             $request->body()->toString(),
         ]));
+    }
+
+    /**
+     * Drop the *values* of credential query params before hashing. Some providers
+     * (e.g. Gemini) carry the API key as `?key=…`; without this, a recording made
+     * with a real key would never match a keyless replay (dummy key → different
+     * URL → different fingerprint). Non-matching URLs are unaffected.
+     */
+    private static function normalizeUrl(string $url): string {
+        $names = implode('|', array_map('preg_quote', self::VOLATILE_QUERY_PARAMS));
+        return preg_replace('/([?&](?:' . $names . ')=)[^&#]*/i', '$1', $url) ?? $url;
     }
 }

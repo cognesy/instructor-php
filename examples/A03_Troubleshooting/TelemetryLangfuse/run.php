@@ -3,6 +3,7 @@ title: 'Send StructuredOutput telemetry to Langfuse'
 docname: 'structured_telemetry_langfuse'
 id: '34e2'
 tags:
+  - 'no-replay'
   - 'troubleshooting'
   - 'telemetry'
   - 'langfuse'

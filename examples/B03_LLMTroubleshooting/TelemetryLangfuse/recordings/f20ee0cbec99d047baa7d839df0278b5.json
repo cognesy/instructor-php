@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"user\",\"content\":\"Summarize why observability matters for LLM applications in exactly 3 bullet points.\"}],\"max_completion_tokens\":180}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:08 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1428"
+            ],
+            "cf-ray": [
+                "a16ead157f3d2761-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1506"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999977"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "0s"
+            ],
+            "x-request-id": [
+                "req_13dd133b47fd4c85b94e4f1ed3cd762e"
+            ],
+            "set-cookie": [
+                "__cf_bm=TwlWboxmk9TY295taX3KbWLsf0kK29KFBYCMTpS5RDM-1783341607.2794082-1.0.1.1-WH4TDGNgc70EDs7VlahvLUtllCx2EzGS3bbKX9rk.HUYg7WvlgsjmBAkaES2UrxqQ7fifg6606qZMNLGEp9h2BafnGKkQ5eJfec26WFc8l9cSTPgh7h4ivBmRxNIVEv1; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:08 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycuFmEzJ6vpHn69VlHexCysBWREU\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341607,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"- **Debugging and reliability:** Observability helps you trace prompts, outputs, latency, failures, and tool calls so you can quickly diagnose why an LLM app misbehaved and improve uptime and quality.\\n\\n- **Quality and safety:** It lets you monitor hallucinations, harmful responses, policy violations, and regressions over time, making it easier to evaluate model behavior and keep the system trustworthy.\\n\\n- **Cost and product optimization:** By tracking usage patterns, token consumption, and user outcomes, observability helps you identify expensive workflows, optimize prompts and routing, and measure what actually improves the user experience.\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 24,\n    \"completion_tokens\": 124,\n    \"total_tokens\": 148,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

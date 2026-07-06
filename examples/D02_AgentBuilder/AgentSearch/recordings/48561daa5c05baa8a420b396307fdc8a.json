@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"user\",\"content\":\"Find all tool classes (files matching *Tool.php) under packages\\\/agents\\\/src\\\/Capability\\\/File\\\/ and briefly describe what each tool does based on its code.\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_WiyljNWuhpPH8mOVqf3uk7i1\",\"type\":\"function\",\"function\":{\"name\":\"search_files\",\"arguments\":\"{\\\"pattern\\\":\\\"packages\\\\\\\/agents\\\\\\\/src\\\\\\\/Capability\\\\\\\/File\\\\\\\/*Tool.php\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_WiyljNWuhpPH8mOVqf3uk7i1\",\"content\":\"Found 5 files:\\n\\n[packages\\\/agents\\\/src\\\/Capability\\\/File\\\/*Tool.php]\\npackages\\\/agents\\\/src\\\/Capability\\\/File\\\/EditFileTool.php\\npackages\\\/agents\\\/src\\\/Capability\\\/File\\\/ListDirTool.php\\npackages\\\/agents\\\/src\\\/Capability\\\/File\\\/ReadFileTool.php\\npackages\\\/agents\\\/src\\\/Capability\\\/File\\\/SearchFilesTool.php\\npackages\\\/agents\\\/src\\\/Capability\\\/File\\\/WriteFileTool.php\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_SdbsJ0yd2whM6XLZCEUyJwKj\",\"type\":\"function\",\"function\":{\"name\":\"read_file\",\"arguments\":\"{\\\"path\\\":\\\"packages\\\\\\\/agents\\\\\\\/src\\\\\\\/Capability\\\\\\\/File\\\\\\\/EditFileTool.php\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_SdbsJ0yd2whM6XLZCEUyJwKj\",\"content\":\"     1\\t<?php declare(strict_types=1);\\n     2\\t\\n     3\\tnamespace Cognesy\\\\Agents\\\\Capability\\\\File;\\n     4\\t\\n     5\\tuse Cognesy\\\\Agents\\\\Tool\\\\Tools\\\\SimpleTool;\\n     6\\tuse Cognesy\\\\Sandbox\\\\Config\\\\ExecutionPolicy;\\n     7\\tuse Cognesy\\\\Sandbox\\\\Contracts\\\\CanExecuteCommand;\\n     8\\tuse Cognesy\\\\Sandbox\\\\Sandbox;\\n     9\\tuse Cognesy\\\\Utils\\\\JsonSchema\\\\JsonSchema;\\n    10\\tuse Cognesy\\\\Utils\\\\JsonSchema\\\\ToolSchema;\\n    11\\t\\n    12\\tclass EditFileTool extends SimpleTool\\n    13\\t{\\n    14\\t    private CanExecuteCommand $sandbox;\\n    15\\t\\n    16\\t    public function __construct(\\n    17\\t        ?ExecutionPolicy $policy = null,\\n    18\\t        string $baseDir = '',\\n    19\\t    ) {\\n    20\\t        parent::__construct(new EditFileToolDescriptor());\\n    21\\t\\n    22\\t        $policy = $policy ?? ExecutionPolicy::in($baseDir)\\n    23\\t            ->withTimeout(30)\\n    24\\t            ->withReadablePaths($baseDir)\\n    25\\t            ->withWritablePaths($baseDir)\\n    26\\t            ->inheritEnvironment();\\n    27\\t\\n    28\\t        $this->sandbox = Sandbox::host($policy);\\n    29\\t    }\\n    30\\t\\n    31\\t    public static function inDirectory(string $baseDir): self {\\n    32\\t        return new self(baseDir: $baseDir);\\n    33\\t    }\\n    34\\t\\n    35\\t    public static function fromPolicy(ExecutionPolicy $policy): self {\\n    36\\t        return new self(policy: $policy);\\n    37\\t    }\\n    38\\t\\n    39\\t    #[\\\\Override]\\n    40\\t    public function __invoke(mixed ...$args): string {\\n    41\\t        $path = (string) $this->arg($args, 'path', 0, '');\\n    42\\t        $old_string = (string) $this->arg($args, 'old_string', 1, '');\\n    43\\t        $new_string = (string) $this->arg($args, 'new_string', 2, '');\\n    44\\t        $replace_all = (bool) $this->arg($args, 'replace_all', 3, false);\\n    45\\t\\n    46\\t        if (!$this->isValidPath($path)) {\\n    47\\t            return \\\"Error: Invalid file path\\\";\\n    48\\t        }\\n    49\\t\\n    50\\t        if ($old_string === $new_string) {\\n    51\\t            return \\\"Error: old_string and new_string are identical\\\";\\n    52\\t        }\\n    53\\t\\n    54\\t        if ($old_string === '') {\\n    55\\t            return \\\"Error: old_string cannot be empty\\\";\\n    56\\t        }\\n    57\\t\\n    58\\t        $readResult = $this->sandbox->execute(\\n    59\\t            argv: ['cat', $path],\\n    60\\t        );\\n    61\\t\\n    62\\t        if (!$readResult->success()) {\\n    63\\t            return \\\"Error: Cannot read file - \\\" . ($readResult->stderr() ?: \\\"file not found\\\");\\n    64\\t        }\\n    65\\t\\n    66\\t        $content = $readResult->stdout();\\n    67\\t        $occurrences = substr_count($content, $old_string);\\n    68\\t\\n    69\\t        if ($occurrences === 0) {\\n    70\\t            return \\\"Error: old_string not found in file\\\";\\n    71\\t        }\\n    72\\t\\n    73\\t        if ($occurrences > 1 && !$replace_all) {\\n    74\\t            return \\\"Error: old_string found {$occurrences} times. Use replace_all=true to replace all, or provide more context to make the match unique.\\\";\\n    75\\t        }\\n    76\\t\\n    77\\t        if ($replace_all) {\\n    78\\t            $newContent = str_replace($old_string, $new_string, $content);\\n    79\\t        } else {\\n    80\\t            $pos = strpos($content, $old_string);\\n    81\\t            if ($pos === false) {\\n    82\\t                return \\\"Error: old_string not found in file (this should not happen after validation)\\\";\\n    83\\t            }\\n    84\\t            $newContent = substr($content, 0, $pos) . $new_string . substr($content, $pos + strlen($old_string));\\n    85\\t        }\\n    86\\t\\n    87\\t        $writeResult = $this->sandbox->execute(\\n    88\\t            argv: ['tee', $path],\\n    89\\t            stdin: $newContent,\\n    90\\t        );\\n    91\\t\\n    92\\t        if (!$writeResult->success()) {\\n    93\\t            return \\\"Error: Failed to write file - \\\" . $writeResult->stderr();\\n    94\\t        }\\n    95\\t\\n    96\\t        $replacementCount = $replace_all ? $occurrences : 1;\\n    97\\t        return \\\"Successfully replaced {$replacementCount} occurrence(s) in {$path}\\\";\\n    98\\t    }\\n    99\\t\\n   100\\t    private function isValidPath(string $path): bool {\\n   101\\t        return !str_contains($path, \\\"\\\\0\\\");\\n   102\\t    }\\n   103\\t\\n   104\\t    #[\\\\Override]\\n   105\\t    public function toToolSchema(): \\\\Cognesy\\\\Polyglot\\\\Inference\\\\Data\\\\ToolDefinition {\\n   106\\t        return \\\\Cognesy\\\\Polyglot\\\\Inference\\\\Data\\\\ToolDefinition::fromArray(ToolSchema::make(\\n   107\\t            name: $this->name(),\\n   108\\t            description: $this->description(),\\n   109\\t            parameters: JsonSchema::object('parameters')\\n   110\\t                ->withProperties([\\n   111\\t                    JsonSchema::string('path', 'The path to the file to edit'),\\n   112\\t                    JsonSchema::string('old_string', 'Exact string to find (include whitespace). Must be unique unless using replace_all'),\\n   113\\t                    JsonSchema::string('new_string', 'Replacement string. Can be empty to delete old_string'),\\n   114\\t                    JsonSchema::boolean('replace_all', 'If true, replace all occurrences. If false (default), old_string must be unique.'),\\n   115\\t                ])\\n   116\\t                ->withRequiredProperties(['path', 'old_string', 'new_string'])\\n   117\\t        )->toArray());\\n   118\\t    }\\n   119\\t}\\n   120\\t\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"read_file\",\"description\":\"Read the contents of a file with line numbers. Use to examine file content after finding it with search_files.\\n\\nExamples:\\n- \\\"composer.json\\\" \\u2192 read composer.json from project root\\n- \\\"src\\\/Config.php\\\" \\u2192 read specific file by path\\n- {\\\"path\\\": \\\"large.log\\\", \\\"offset\\\": 100, \\\"limit\\\": 50} \\u2192 read lines 101-150\\n\\nReturns numbered lines. For large files, use offset\\\/limit to read specific sections.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"File path (relative to project root or absolute). Example: \\\"composer.json\\\" or \\\"src\\\/Config.php\\\"\"},\"offset\":{\"type\":\"integer\",\"description\":\"Line number to start reading from (0-indexed)\"},\"limit\":{\"type\":\"integer\",\"description\":\"Maximum number of lines to read (default: 2000)\"}},\"required\":[\"path\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"write_file\",\"description\":\"Write content to a file. Creates file and parent directories if needed. Overwrites existing files.\\n\\nExamples:\\n- path=\\\"config.json\\\", content='{\\\"debug\\\": true}'\\n- path=\\\"src\\\/NewClass.php\\\", content=\\\"<?php\\\\n\\\\nclass NewClass {}\\\\n\\\"\\n\\nUse edit_file for partial changes. write_file replaces entire file content.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"The path to the file to write\"},\"content\":{\"type\":\"string\",\"description\":\"The content to write to the file\"}},\"required\":[\"path\",\"content\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"edit_file\",\"description\":\"Edit a file by replacing exact string matches. old_string must match exactly including whitespace.\\n\\nExamples:\\n- Fix typo: old_string=\\\"teh\\\", new_string=\\\"the\\\"\\n- Change function: old_string=\\\"function old()\\\", new_string=\\\"function new()\\\"\\n- Update config: old_string='\\\"debug\\\": false', new_string='\\\"debug\\\": true'\\n- Rename all: old_string=\\\"OldClass\\\", new_string=\\\"NewClass\\\", replace_all=true\\n\\nIMPORTANT: Include enough context in old_string to make it unique. If multiple matches exist, use replace_all=true or provide more surrounding code.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"The path to the file to edit\"},\"old_string\":{\"type\":\"string\",\"description\":\"Exact string to find (include whitespace). Must be unique unless using replace_all\"},\"new_string\":{\"type\":\"string\",\"description\":\"Replacement string. Can be empty to delete old_string\"},\"replace_all\":{\"type\":\"boolean\",\"description\":\"If true, replace all occurrences. If false (default), old_string must be unique.\"}},\"required\":[\"path\",\"old_string\",\"new_string\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"list_dir\",\"description\":\"List directory contents. Shows files and subdirectories with [file] or [dir] markers.\\n\\nExamples:\\n- \\\".\\\" or \\\"\\\" \\u2192 list project root\\n- \\\"src\\\" \\u2192 list src directory\\n- \\\"packages\\\/addons\\\/src\\\" \\u2192 list nested directory\\n\\nUse to explore project structure before searching for specific files.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"Directory path. Examples: \\\".\\\" (root), \\\"src\\\", \\\"packages\\\/addons\\\"\"}},\"required\":[\"path\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"search_files\",\"description\":\"Search for files by name\\\/path pattern (not content). Returns matching file paths.\\n\\nExamples:\\n- \\\"composer.json\\\" \\u2192 finds composer.json recursively in all directories\\n- \\\"*.php\\\" \\u2192 finds PHP files in root directory only\\n- \\\"**\\\/*.php\\\" \\u2192 finds PHP files recursively in all directories\\n- \\\"src\\\/**\\\/*.php\\\" \\u2192 finds PHP files recursively under src\\\/\\n- \\\".\\\/composer.json\\\" \\u2192 finds composer.json in root directory only\\n- \\\"Config\\\" \\u2192 finds files with \\\"Config\\\" in their name, recursively\\n\\nNote: Use read_file to examine file contents after finding them.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"pattern\":{\"type\":\"string\",\"description\":\"Search pattern. Examples: \\\"composer.json\\\" (recursive), \\\"**\\\/*.php\\\" (recursive glob), \\\"*.json\\\" (root only), \\\".\\\/README.md\\\" (exact path)\"},\"patterns\":{\"type\":\"array\",\"description\":\"Multiple patterns to search at once. Example: [\\\"composer.json\\\", \\\"package.json\\\", \\\"*.xml\\\"]\",\"items\":{\"type\":\"string\"}}},\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"spawn_subagent\",\"description\":\"Spawn a specialized subagent for a focused task. Returns only the final response.\\n\\nEach subagent has specific expertise, tools, and capabilities optimized for its domain.\\nChoose the most appropriate subagent based on the task requirements.\\n\\nAvailable subagents:\\n- reader: Reads files and extracts relevant information (tools: read_file)\\n- searcher: Searches for files by filename\\\/path patterns (tools: search_files)\",\"parameters\":{\"type\":\"object\",\"properties\":{\"subagent\":{\"type\":\"string\",\"description\":\"Which subagent to spawn\",\"enum\":[\"reader\",\"searcher\"]},\"prompt\":{\"type\":\"string\",\"description\":\"The task or question for the subagent\"}},\"required\":[\"subagent\",\"prompt\"],\"additionalProperties\":false}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:41 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1098"
+            ],
+            "cf-ray": [
+                "a16eade45ae64a11-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "633"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3998580"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "21ms"
+            ],
+            "x-request-id": [
+                "req_109a25e399ed4b968e4b8bd10b071bdc"
+            ],
+            "set-cookie": [
+                "__cf_bm=aPI.J7fVpwvwYMUeFjSAYGLxXEOIuUHStACXKWLgZCA-1783341640.3773499-1.0.1.1-fu_6cAfkNub_rjWzwtxG4X6Oj8JdlHUG8a.CeDNjxRxPXadGRpL9XY7BCy7R0brf2mRUV.uXVs1VOplaQWxQ9Iq5v.bbeDEkISBwQjRqr99Gb_ER6PhPgsZVZqwNqTUJ; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:41 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycumwJM4G8oKI0Pc0JxjnmNlqBgC\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341640,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_Gc01uTLtKaUoDPpE5pazTJ03\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"read_file\",\n              \"arguments\": \"{\\\"path\\\":\\\"packages\/agents\/src\/Capability\/File\/ListDirTool.php\\\"}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 2570,\n    \"completion_tokens\": 27,\n    \"total_tokens\": 2597,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

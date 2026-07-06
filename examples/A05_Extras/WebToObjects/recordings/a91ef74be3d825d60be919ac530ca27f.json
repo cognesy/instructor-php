@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## Output Requirements\\n\\nRespond with a strict JSON object that matches this JSON Schema:\\n\\n{\\n    \\\"type\\\": \\\"object\\\",\\n    \\\"x-title\\\": \\\"Company\\\",\\n    \\\"properties\\\": {\\n        \\\"name\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"default\\\": \\\"\\\"\\n        },\\n        \\\"location\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"default\\\": \\\"\\\"\\n        },\\n        \\\"description\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"default\\\": \\\"\\\"\\n        },\\n        \\\"minProjectBudget\\\": {\\n            \\\"type\\\": \\\"integer\\\",\\n            \\\"default\\\": 0\\n        },\\n        \\\"companySize\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"default\\\": \\\"\\\"\\n        },\\n        \\\"websiteUrl\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"description\\\": \\\"Remove any tracking parameters from the URL\\\",\\n            \\\"default\\\": \\\"\\\"\\n        },\\n        \\\"clients\\\": {\\n            \\\"type\\\": \\\"array\\\",\\n            \\\"items\\\": {\\n                \\\"type\\\": \\\"string\\\",\\n                \\\"description\\\": \\\"Correctly extract items of type: string\\\"\\n            },\\n            \\\"default\\\": []\\n        }\\n    },\\n    \\\"x-php-class\\\": \\\"Company\\\",\\n    \\\"additionalProperties\\\": false\\n}\"},{\"role\":\"user\",\"content\":\"### Blue River Software\\n\\n<div class=\\\"location\\\">Austin, TX<\\\/div><div class=\\\"description\\\">API integrations and SaaS product development in Laravel.<\\\/div><div class=\\\"budget\\\">Minimum project size $25,000+<\\\/div><div class=\\\"company-size\\\">50 - 249<\\\/div> [Website](https:\\\/\\\/blueriver.dev?utm_campaign=sample)- Umbrella Corp\\n- Hooli\\n \"}],\"max_completion_tokens\":1024,\"response_format\":{\"type\":\"json_object\"}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:00 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1054"
+            ],
+            "cf-ray": [
+                "a16eace80a0ca585-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "765"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999645"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "5ms"
+            ],
+            "x-request-id": [
+                "req_1d37b18663f74a0888f8fe75336059e6"
+            ],
+            "set-cookie": [
+                "__cf_bm=hDe98VtJOJGJE9ZrHZfaQ79GHxwlgXU264CBOyYpsfM-1783341600.0045488-1.0.1.1-89iHQz_49luo6o0oMUqSfUJIZ8hazXrPRxiJEHJIuK45ud6Cw0pjBqZvAOT0lpEC5hXjOiAj5791jsKHiypHXGwO5jzAZhUemzWUvJRKACK3oGaezne7Pb.fMZIkMEGA; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:00 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-Dycu8eTZpLHLVBXR8FaxQRtpnHKzi\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341600,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"{\\\"name\\\":\\\"Blue River Software\\\",\\\"location\\\":\\\"Austin, TX\\\",\\\"description\\\":\\\"API integrations and SaaS product development in Laravel.\\\",\\\"minProjectBudget\\\":25000,\\\"companySize\\\":\\\"50 - 249\\\",\\\"websiteUrl\\\":\\\"https:\/\/blueriver.dev\\\",\\\"clients\\\":[\\\"Umbrella Corp\\\",\\\"Hooli\\\"]}\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 332,\n    \"completion_tokens\": 66,\n    \"total_tokens\": 398,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

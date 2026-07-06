@@ -1,0 +1,55 @@
+{
+    "request": {
+        "url": "https:\/\/generativelanguage.googleapis.com\/v1beta\/models\/gemini-2.5-flash-lite:generateContent",
+        "method": "POST",
+        "headers": {
+            "Content-Type": "application\/json; charset=utf-8",
+            "x-goog-api-key": "[REDACTED]"
+        },
+        "body": "{\"systemInstruction\":{\"parts\":[{\"text\":\"## Examples\\n\\nEXAMPLE INPUT:\\n    Ive got email Frank - their developer, who's 30. He asked to come back to him frank@hk.ch. Btw, he plays on drums!\\n    \\n    EXAMPLE OUTPUT:\\n    ```json\\n    {\\\"age\\\":30,\\\"name\\\":\\\"Frank\\\",\\\"username\\\":\\\"frank@hk.ch\\\",\\\"role\\\":\\\"developer\\\",\\\"hobbies\\\":[\\\"playing drums\\\"]}\\n    ```\\n\\n## Output Requirements\\n\\nRespond with a strict JSON object that matches this JSON Schema:\\n\\n{\\n    \\\"type\\\": \\\"object\\\",\\n    \\\"x-title\\\": \\\"User\\\",\\n    \\\"properties\\\": {\\n        \\\"age\\\": {\\n            \\\"type\\\": \\\"integer\\\",\\n            \\\"nullable\\\": true\\n        },\\n        \\\"name\\\": {\\n            \\\"type\\\": \\\"string\\\"\\n        },\\n        \\\"username\\\": {\\n            \\\"type\\\": \\\"string\\\"\\n        },\\n        \\\"role\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"enum\\\": [\\n                \\\"guest\\\",\\n                \\\"user\\\",\\n                \\\"admin\\\"\\n            ],\\n            \\\"x-php-class\\\": \\\"UserType\\\"\\n        },\\n        \\\"hobbies\\\": {\\n            \\\"type\\\": \\\"array\\\",\\n            \\\"items\\\": {\\n                \\\"type\\\": \\\"string\\\",\\n                \\\"description\\\": \\\"Correctly extract items of type: string\\\"\\n            }\\n        }\\n    },\\n    \\\"required\\\": [\\n        \\\"name\\\",\\n        \\\"username\\\",\\n        \\\"role\\\",\\n        \\\"hobbies\\\"\\n    ],\\n    \\\"x-php-class\\\": \\\"User\\\",\\n    \\\"additionalProperties\\\": false\\n}\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.\"}]}],\"generationConfig\":{\"responseMimeType\":\"application\\\/json\",\"maxOutputTokens\":1024,\"temperature\":1}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "x-gemini-service-tier": [
+                "standard"
+            ],
+            "content-type": [
+                "application\/json; charset=UTF-8"
+            ],
+            "vary": [
+                "X-Origin",
+                "Referer",
+                "Origin,Accept-Encoding"
+            ],
+            "date": [
+                "Mon, 06 Jul 2026 12:39:41 GMT"
+            ],
+            "server": [
+                "scaffolding on HTTPServer2"
+            ],
+            "x-xss-protection": [
+                "0"
+            ],
+            "x-frame-options": [
+                "SAMEORIGIN"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "server-timing": [
+                "gfet4t7; dur=1011"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+            ],
+            "accept-ranges": [
+                "none"
+            ]
+        },
+        "body": "{\n  \"candidates\": [\n    {\n      \"content\": {\n        \"parts\": [\n          {\n            \"text\": \"{\\\"age\\\":25,\\\"name\\\":\\\"Jason\\\",\\\"username\\\":\\\"jxnlco\\\",\\\"role\\\":\\\"admin\\\",\\\"hobbies\\\":[\\\"playing football\\\",\\\"reading books\\\"]}\"\n          }\n        ],\n        \"role\": \"model\"\n      },\n      \"finishReason\": \"STOP\",\n      \"index\": 0\n    }\n  ],\n  \"usageMetadata\": {\n    \"promptTokenCount\": 375,\n    \"candidatesTokenCount\": 29,\n    \"totalTokenCount\": 404,\n    \"promptTokensDetails\": [\n      {\n        \"modality\": \"TEXT\",\n        \"tokenCount\": 375\n      }\n    ],\n    \"serviceTier\": \"standard\"\n  },\n  \"modelVersion\": \"gemini-2.5-flash-lite\",\n  \"responseId\": \"DaJLata8Fe6vkdUP7Ju5mAE\"\n}\n"
+    }
+}

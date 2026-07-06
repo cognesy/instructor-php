@@ -3,6 +3,7 @@ title: 'Cerebras'
 docname: 'cerebras'
 id: '48c7'
 tags:
+  - 'broken'
   - 'api-support'
   - 'cerebras'
   - 'provider'

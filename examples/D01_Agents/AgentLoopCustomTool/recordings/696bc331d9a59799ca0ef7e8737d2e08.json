@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"user\",\"content\":\"Check the current memory usage and PHP version. Report back concisely.\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_PHXKzLX4TEYYlJDknt63UDyg\",\"type\":\"function\",\"function\":{\"name\":\"system_info\",\"arguments\":\"{\\\"category\\\":\\\"all\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_PHXKzLX4TEYYlJDknt63UDyg\",\"content\":\"Memory: 8.00 MB (peak: 8.00 MB)\\nPHP Version: 8.5.1\\nOS: Darwin\\nSAPI: cli\\nPID: 92306\\nUptime: 1s\\nAgent step: 0\\nAgent tokens: 0\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"system_info\",\"description\":\"Returns current system resource usage and PHP runtime information.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"category\":{\"type\":\"string\",\"description\":\"What to check: \\\"memory\\\", \\\"php\\\", or \\\"all\\\"\"}},\"additionalProperties\":false}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:28 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "833"
+            ],
+            "cf-ray": [
+                "a16ead96bae6eeb9-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "868"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999947"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "0s"
+            ],
+            "x-request-id": [
+                "req_8d096a49853c4473a496be776a005bfc"
+            ],
+            "set-cookie": [
+                "__cf_bm=3isec5ywv_JBLND.yY9JvRp_qHosSfFxtzyoormOwtE-1783341627.9596908-1.0.1.1-CaZGFksJFKhwNr0QzaxdBvfaCDfeEPmP68yZsa.0JduKeuvL3hxDIeWq3CB04MJ04BKHqA31NHsAcFo_Bhb0JLJ1nf2cwtJk5XDxN8ndT.gdV2TSC3oyHtZhxRUyyoYV; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:28 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-Dycuar0x0P6wrIbTpygPgUgnU2slP\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341628,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"Memory usage: 8.00 MB (peak 8.00 MB)  \\nPHP version: 8.5.1\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 245,\n    \"completion_tokens\": 29,\n    \"total_tokens\": 274,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

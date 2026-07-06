@@ -3,6 +3,7 @@ title: 'Sandbox API: Docker'
 docname: 'sandbox_api_docker_echo'
 id: 'd211'
 tags:
+  - 'no-replay'
   - 'sandbox-apis'
   - 'docker'
   - 'drivers'

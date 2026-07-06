@@ -1,0 +1,84 @@
+{
+    "request": {
+        "url": "https:\/\/api.x.ai\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"grok-3\",\"messages\":[{\"role\":\"system\",\"content\":\"## Examples\\n\\nEXAMPLE INPUT:\\n    Ive got email Frank - their developer, who's 30. His Twitter handle is @frankch. Btw, he plays on drums!\\n    \\n    EXAMPLE OUTPUT:\\n    ```json\\n    {\\\"age\\\":30,\\\"name\\\":\\\"Frank\\\",\\\"username\\\":\\\"@frankch\\\",\\\"role\\\":\\\"developer\\\",\\\"hobbies\\\":[\\\"playing drums\\\"]}\\n    ```\\n\\n## Tool Use\\n\\nUse the provided tool `extracted_data` to extract correct and accurate structured data from the input.\\n\\nTool purpose: Function call based on user instructions.\\n\\nCall the tool with the best supported arguments for the requested extraction.\"},{\"role\":\"user\",\"content\":\"Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.\"}],\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\",\"description\":\"Function call based on user instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"age\":{\"type\":\"integer\"},\"name\":{\"type\":\"string\"},\"username\":{\"type\":\"string\"},\"role\":{\"type\":\"string\",\"enum\":[\"guest\",\"user\",\"admin\"]},\"hobbies\":{\"type\":\"array\",\"items\":{\"type\":\"string\",\"description\":\"Correctly extract items of type: string\"}}},\"required\":[\"age\",\"name\",\"username\",\"role\",\"hobbies\"],\"additionalProperties\":false}}}],\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\"}}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:39:47 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1023"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000"
+            ],
+            "set-cookie": [
+                "__cf_bm=2yoBcY076cU0lkUGXo48uQPhwvRZEGIwxgzFtlNTlTs-1783341584.251806-1.0.1.1-9uVmS.hmwq6uuZkFm..5fuydy4nzMdGEHHG93k0tCWbIgkVzqGRcOpFY0XvUboO5xo77ttCgZR0oCgN4qB.LO4hZe4zxFYcb8V6Vgd1o6LehfjKQ1yVeacQW4KJaIlZg; HttpOnly; Secure; Path=\/; Domain=x.ai; Expires=Mon, 06 Jul 2026 13:09:47 GMT"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "10000000"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "10000000"
+            ],
+            "x-zero-data-retention": [
+                "false"
+            ],
+            "x-ratelimit-limit-requests": [
+                "1800"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "1800"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "x-request-id": [
+                "eb916a5c-d3ca-957a-921a-06da1fe4be65"
+            ],
+            "x-metrics-ttft-ms": [
+                "1191.8"
+            ],
+            "x-metrics-mean-itl-ms": [
+                "5.9"
+            ],
+            "x-metrics-e2e-ms": [
+                "2951.2"
+            ],
+            "traceparent": [
+                "00-3ecd9fddb1d2e8efbcd94429af37c895-3d13e89b0001d6cd-01"
+            ],
+            "vary": [
+                "origin, access-control-request-method, access-control-request-headers"
+            ],
+            "access-control-allow-origin": [
+                "*"
+            ],
+            "access-control-expose-headers": [
+                "*"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "cf-ray": [
+                "a16eac859a658b93-WAW"
+            ]
+        },
+        "body": "{\"id\":\"eb916a5c-d3ca-957a-921a-06da1fe4be65\",\"object\":\"chat.completion\",\"created\":1783341585,\"model\":\"grok-4.3\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"\",\"reasoning_content\":\"The task is to extract structured data from the input using the tool \\\"extracted_data\\\".\\n\",\"tool_calls\":[{\"id\":\"call-3047891c-9b87-4f2a-9ae6-f3683ea25adc-0\",\"function\":{\"name\":\"extracted_data\",\"arguments\":\"{\\\"age\\\":25,\\\"name\\\":\\\"Jason\\\",\\\"username\\\":\\\"@jxnlco\\\",\\\"role\\\":\\\"admin\\\",\\\"hobbies\\\":[\\\"playing football\\\",\\\"reading books\\\"]}\"},\"type\":\"function\"}],\"refusal\":null},\"finish_reason\":\"tool_calls\"}],\"usage\":{\"prompt_tokens\":462,\"completion_tokens\":44,\"total_tokens\":759,\"prompt_tokens_details\":{\"text_tokens\":462,\"audio_tokens\":0,\"image_tokens\":0,\"cached_tokens\":128},\"completion_tokens_details\":{\"reasoning_tokens\":253,\"audio_tokens\":0,\"accepted_prediction_tokens\":0,\"rejected_prediction_tokens\":0},\"num_sources_used\":0,\"cost_in_usd_ticks\":11856000},\"system_fingerprint\":\"fp_eb3c003fc66c14ed\",\"service_tier\":\"default\"}"
+    }
+}

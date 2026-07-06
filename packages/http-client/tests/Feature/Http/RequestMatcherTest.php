@@ -62,6 +62,17 @@ test('RequestRecords honors an injected matcher without changing save/find calle
         ->and($record?->getResponseBody())->toBe('{"hit":true}');
 });
 
+test('ExactHashMatcher ignores credential query-param values (keyless replay)', function () {
+    // A recording made with a real ?key= must match a keyless replay (dummy key).
+    $matcher = new ExactHashMatcher();
+    $withRealKey = new HttpRequest('https://gen.example/x:embed?key=AIzaREALKEY123456', 'POST', [], '{}', []);
+    $withDummy = new HttpRequest('https://gen.example/x:embed?key=dummy-replay-key', 'POST', [], '{}', []);
+    $differentPath = new HttpRequest('https://gen.example/y:embed?key=AIzaREALKEY123456', 'POST', [], '{}', []);
+
+    expect($matcher->fingerprint($withRealKey))->toBe($matcher->fingerprint($withDummy));
+    expect($matcher->fingerprint($withRealKey))->not->toBe($matcher->fingerprint($differentPath));
+});
+
 test('default matcher (no arg) preserves exact-match semantics', function () {
     $records = new RequestRecords($this->dir); // no matcher -> ExactHashMatcher
 

@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"user\",\"content\":\"Review these three capability files and provide a summary:\\n1. packages\\\/agents\\\/src\\\/Capability\\\/Core\\\/UseTools.php\\n2. packages\\\/agents\\\/src\\\/Capability\\\/File\\\/UseFileTools.php\\n3. packages\\\/agents\\\/src\\\/Capability\\\/SelfCritique\\\/UseSelfCritique.php\\n\\nFor each file, spawn a reviewer subagent. Then summarize the findings.\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"read_file\",\"description\":\"Read the contents of a file with line numbers. Use to examine file content after finding it with search_files.\\n\\nExamples:\\n- \\\"composer.json\\\" \\u2192 read composer.json from project root\\n- \\\"src\\\/Config.php\\\" \\u2192 read specific file by path\\n- {\\\"path\\\": \\\"large.log\\\", \\\"offset\\\": 100, \\\"limit\\\": 50} \\u2192 read lines 101-150\\n\\nReturns numbered lines. For large files, use offset\\\/limit to read specific sections.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"File path (relative to project root or absolute). Example: \\\"composer.json\\\" or \\\"src\\\/Config.php\\\"\"},\"offset\":{\"type\":\"integer\",\"description\":\"Line number to start reading from (0-indexed)\"},\"limit\":{\"type\":\"integer\",\"description\":\"Maximum number of lines to read (default: 2000)\"}},\"required\":[\"path\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"write_file\",\"description\":\"Write content to a file. Creates file and parent directories if needed. Overwrites existing files.\\n\\nExamples:\\n- path=\\\"config.json\\\", content='{\\\"debug\\\": true}'\\n- path=\\\"src\\\/NewClass.php\\\", content=\\\"<?php\\\\n\\\\nclass NewClass {}\\\\n\\\"\\n\\nUse edit_file for partial changes. write_file replaces entire file content.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"The path to the file to write\"},\"content\":{\"type\":\"string\",\"description\":\"The content to write to the file\"}},\"required\":[\"path\",\"content\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"edit_file\",\"description\":\"Edit a file by replacing exact string matches. old_string must match exactly including whitespace.\\n\\nExamples:\\n- Fix typo: old_string=\\\"teh\\\", new_string=\\\"the\\\"\\n- Change function: old_string=\\\"function old()\\\", new_string=\\\"function new()\\\"\\n- Update config: old_string='\\\"debug\\\": false', new_string='\\\"debug\\\": true'\\n- Rename all: old_string=\\\"OldClass\\\", new_string=\\\"NewClass\\\", replace_all=true\\n\\nIMPORTANT: Include enough context in old_string to make it unique. If multiple matches exist, use replace_all=true or provide more surrounding code.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"The path to the file to edit\"},\"old_string\":{\"type\":\"string\",\"description\":\"Exact string to find (include whitespace). Must be unique unless using replace_all\"},\"new_string\":{\"type\":\"string\",\"description\":\"Replacement string. Can be empty to delete old_string\"},\"replace_all\":{\"type\":\"boolean\",\"description\":\"If true, replace all occurrences. If false (default), old_string must be unique.\"}},\"required\":[\"path\",\"old_string\",\"new_string\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"spawn_subagent\",\"description\":\"Spawn a specialized subagent for a focused task. Returns only the final response.\\n\\nEach subagent has specific expertise, tools, and capabilities optimized for its domain.\\nChoose the most appropriate subagent based on the task requirements.\\n\\nAvailable subagents:\\n- reviewer: Reviews code files and identifies issues (tools: read_file)\\n- documenter: Generates documentation for code (tools: read_file)\",\"parameters\":{\"type\":\"object\",\"properties\":{\"subagent\":{\"type\":\"string\",\"description\":\"Which subagent to spawn\",\"enum\":[\"reviewer\",\"documenter\"]},\"prompt\":{\"type\":\"string\",\"description\":\"The task or question for the subagent\"}},\"required\":[\"subagent\",\"prompt\"],\"additionalProperties\":false}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:45 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1361"
+            ],
+            "cf-ray": [
+                "a16eadfc8a01352e-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1086"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999921"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "1ms"
+            ],
+            "x-request-id": [
+                "req_e8b2ec23fece463e826a87d2a1ff25b0"
+            ],
+            "set-cookie": [
+                "__cf_bm=haXfpkY5oprw9k5Cvz245MRhM1FrPDwbRMSrNTx_vLs-1783341644.243069-1.0.1.1-VxuIqp3YMI7jNNe1pmlqcNFR5ds_7tbohgFAblooOTfzqSZ0xN_1HdG3LcgdMBlOJoB2Vl4702IF.GUaKbrVzguWcaCehyeHKvIvQDz1LB5ZWGJI.bdr3EkScZ6sAUAU; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:45 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-Dycuq4IgrBTpI22J9C525FIlxQS1Y\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341644,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_YTeMELaxgJPgEKHZsN8LiQTb\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"spawn_subagent\",\n              \"arguments\": \"{\\\"subagent\\\":\\\"reviewer\\\",\\\"prompt\\\":\\\"Review the PHP capability file packages\/agents\/src\/Capability\/Core\/UseTools.php. Identify its purpose, structure, notable implementation details, and any issues or risks. Focus on code quality, correctness, design, and maintainability. Return concise findings suitable for a summary.\\\"}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 771,\n    \"completion_tokens\": 77,\n    \"total_tokens\": 848,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a helpful assistant explaining Challenger Sale. Be very brief (one sentence), pragmatic and focused on practical bizdev problems.\"},{\"role\":\"user\",\"content\":\"Here\\u2019s a concise summary of the provided content for future reference:\\n\\n**Instructor for PHP** is a framework-agnostic PHP library that simplifies integrating LLMs into PHP apps by extracting **structured, validated data** from model outputs.\\n\\n### Core points\\n- Converts LLM responses into **type-safe PHP classes**.\\n- Supports **text, chat messages, and images** as inputs.\\n- Lets developers define output structures **statically** (classes) or **dynamically** (JSON Schema \\\/ structures).\\n- Includes **validation and automatic retries** with feedback to improve failed outputs.\\n- Provides a **unified API** for multiple LLM providers, making it easy to switch between them.\\n- Works with any PHP framework, including **Laravel** and **Symfony**.\\n- Offers **observability**, **streaming**, **embeddings**, and **context caching**.\\n\\n### Supported providers\\n- OpenAI, Anthropic, Google, Cohere, Groq, Mistral, Ollama, and others.\\n\\n### Typical workflow\\n1. Install via Composer.\\n2. Define a PHP data model.\\n3. Call Instructor to run inference and return structured results.\\n\\n### Example\\nThe example shows using `StructuredOutput` with an `LLMConfig` set to OpenAI to extract a `City` object from the prompt \\u201cWhat is the capital of France?\\u201d, producing structured data like Paris.\\n\\n### Use cases\\n- E-commerce\\n- Healthcare\\n- Education\\n- Financial services\\n- Real estate\\n- Recruitment \\\/ HR\\n\\n### Overall\\nInstructor for PHP is positioned as a lightweight, developer-friendly tool for automating structured data extraction and LLM workflow integration in PHP applications.\"},{\"role\":\"user\",\"content\":\"Help me get better sales results.\",\"name\":\"student\"},{\"role\":\"assistant\",\"content\":\"Use Challenger Sale: diagnose the customer\\u2019s hidden cost of doing nothing, teach them a new way to solve it, and tailor the message to the buyer\\u2019s specific business pain so you create urgency instead of just pitching features.\",\"name\":\"expert\"},{\"role\":\"user\",\"content\":\"What should I do next?\",\"name\":\"student\"}],\"max_completion_tokens\":1024}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:19 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "936"
+            ],
+            "cf-ray": [
+                "a16ead5b7fb214f3-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "769"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999497"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "7ms"
+            ],
+            "x-request-id": [
+                "req_9144557360ac4ee3ab83173dfec03a6b"
+            ],
+            "set-cookie": [
+                "__cf_bm=ISugGUpIZQKf46dFc9rMsY.f12FdtqZ1E2d9er2.uKg-1783341618.480688-1.0.1.1-DsDraf75gx2xucsPPTgy2f8F84VPQIHfszGQow.fuz76FYC8QompzjQXsYk9qAimGVsnAgY_21Dvu69CWbUiz7mLdns2N3c3OGxu3ihuAp4QAaJrhhx1ioS7GnFWUFnK; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:19 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycuQN3cCFTEMibPI44ppGBc2KSov\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341618,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"Pick one target account, identify a measurable pain it has today, and run a 3-question discovery call to expose impact, decision process, and current workaround.\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 450,\n    \"completion_tokens\": 35,\n    \"total_tokens\": 485,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## Tool Use\\n\\nUse the provided tool `extracted_data` to extract correct and accurate structured data from the input.\\n\\nTool purpose: Function call based on user instructions.\\n\\nCall the tool with the best supported arguments for the requested extraction.\"},{\"role\":\"user\",\"content\":\"<user_query>\\nIn a dance class of 20 students, 20% enrolled in contemporary dance, 25% of the remaining enrolled in jazz dance and the rest enrolled in hip-hop dance. What percentage of the entire students enrolled in hip-hop dance?\\n<\\\/user_query>\\n\\nLet's first understand the problem, extract relevant variables and their corresponding numerals, and make a complete plan. Then, let's carry out the plan, calculate intermediate variables (pay attention to correct numerical calculation and commonsense), solve the problem step by step, and show the answer.\\n\\n<reasoning>\\nWe need solve a percentage word problem. Relevant variables: total students = 20, contemporary = 20% of total, remaining after contemporary = 80% of total, jazz = 25% of remaining, hip-hop = rest of remaining. Need compute hip-hop as percentage of total. Plan: compute contemporary percentage and count, find remaining percentage and count, compute jazz as 25% of remaining, then hip-hop as remaining after jazz, convert to total percentage.\\n<\\\/reasoning>\\n\\nTherefore the answer (arabic numerals) is\"}],\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\",\"description\":\"Function call based on user instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"correct_answer\":{\"type\":\"string\"}},\"required\":[\"correct_answer\"],\"additionalProperties\":false}}}],\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\"}}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:42:23 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1376"
+            ],
+            "cf-ray": [
+                "a16eb0619fe3d7f7-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1011"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999668"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "4ms"
+            ],
+            "x-request-id": [
+                "req_91b489f818654f399068d75353a694d3"
+            ],
+            "set-cookie": [
+                "__cf_bm=hGdt7uAORMd9EAmumAUf6SXRCF0SW_lIoOuCy3193Lk-1783341742.3373048-1.0.1.1-XvKKB3AaNOdGzq.07LZyDpmwvmgGRZw5m6BZbENyr4VohKHmPK.jE2feIqZm_qSQOly5ZfhHAwtqAGKB64POObtc_c0sPTbPGyJQcCTjnavk.E.vtVEBRZmN.VBmk2.O; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:12:23 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycwQvJtFGA9Aylfd09He6Ne1pKLo\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341742,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_EKIIwIp0eAX7W4OBIwp9aJuj\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"correct_answer\\\":\\\"20% enrolled in contemporary dance; 25% of the remaining enrolled in jazz dance; the rest enrolled in hip-hop dance. Total students = 20. Contemporary = 20% of total = 4 students. Remaining = 16 students. Jazz = 25% of 16 = 4 students. Hip-hop = 16 - 4 = 12 students. Hip-hop as a percentage of total = 12\/20 = 60%.\\\"}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 400,\n    \"completion_tokens\": 111,\n    \"total_tokens\": 511,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

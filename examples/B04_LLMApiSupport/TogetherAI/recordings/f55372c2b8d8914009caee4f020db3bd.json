@@ -1,0 +1,66 @@
+{
+    "request": {
+        "url": "https:\/\/api.together.xyz\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"meta-llama\\\/Llama-4-Maverick-17B-128E-Instruct-FP8\",\"messages\":[{\"role\":\"user\",\"content\":\"What is the capital of France\"}],\"max_completion_tokens\":64}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 429,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:44:04 GMT"
+            ],
+            "content-type": [
+                "application\/json; charset=utf-8"
+            ],
+            "content-length": [
+                "498"
+            ],
+            "cf-ray": [
+                "a16eb2defa426cdc-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "access-control-allow-origin": [
+                "*"
+            ],
+            "etag": [
+                "W\/\"1f2-F5IaQWE5tmOkHqXpptEK23cYayo\""
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=15552000; includeSubDomains"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "x-api-received": [
+                "2026-07-06T12:44:04.469Z"
+            ],
+            "x-ratelimit-reset": [
+                "1"
+            ],
+            "x-request-id": [
+                "or2p6fW-2kFHot-a16eb2defa426cdc"
+            ],
+            "vary": [
+                "accept-encoding"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"or2p6fW-2kFHot-a16eb2defa426cdc\",\n  \"error\": {\n    \"message\": \"Too many requests in a short window. Our rate limits are dynamic - they shift with live model capacity and your traffic shape, so steady traffic and exponential back-off help. Retry starting from ~1s (X-RateLimit-Reset header). If you hit rate limits often, consider a dedicated endpoint or batch inference. See https:\/\/docs.together.ai\/docs\/rate-limits.\",\n    \"type\": \"rate_limit\",\n    \"param\": null,\n    \"code\": null\n  }\n}"
+    }
+}

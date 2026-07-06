@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## Task\\n\\nExtract lead information from the text. Look for names, emails, phone numbers, company names, job titles, and addresses.\\n\\n## Tool Use\\n\\nUse the provided tool `extracted_data` to extract correct and accurate structured data from the input.\\n\\nTool purpose: Function call based on user instructions.\\n\\nCall the tool with the best supported arguments for the requested extraction.\"},{\"role\":\"user\",\"content\":\"Hey, I just got off the phone with a potential client. Here are the details:\\n\\nHis name is John Smith and he works as VP of Engineering at TechCorp Industries.\\nThey're based in San Francisco, California, USA. You can reach him at\\njohn.smith@techcorp.io or call him at +1-555-0123.\\n\\nHe's interested in our enterprise plan and wants a demo next week.\"}],\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\",\"description\":\"Function call based on user instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"hasValue\":{\"type\":\"boolean\",\"description\":\"True if value extracted, false if data not available\"},\"value\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\",\"default\":\"\"},\"email\":{\"type\":\"string\",\"default\":\"\"},\"company\":{\"type\":\"string\",\"nullable\":true,\"default\":null},\"phone\":{\"type\":\"string\",\"nullable\":true,\"default\":null},\"role\":{\"type\":\"string\",\"nullable\":true,\"default\":null},\"address\":{\"type\":\"string\",\"nullable\":true,\"default\":null},\"city\":{\"type\":\"string\",\"nullable\":true,\"default\":null},\"country\":{\"type\":\"string\",\"nullable\":true,\"default\":null}},\"additionalProperties\":false,\"description\":\"Correctly extracted values of Lead\"},\"error\":{\"type\":\"string\",\"description\":\"Obligatory if no value extracted - provide reason\"}},\"required\":[\"hasValue\"]}}}],\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\"}}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:45 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1284"
+            ],
+            "cf-ray": [
+                "a16eadffd969540c-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "782"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999814"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "2ms"
+            ],
+            "x-request-id": [
+                "req_329c9e26df06487ebead008b29a6e1fe"
+            ],
+            "set-cookie": [
+                "__cf_bm=0QcBXYb6td_tTStIXVbrd65jJsGAAHoSng9R6oKW4jk-1783341644.7722666-1.0.1.1-DYo9qaz4LhDr_OGbXGKvOfSSHDk7T8SQMbSw_ffQR8tPZ6yElSErzhbe9pkJcGrJtq8hXhO2Ka59hWw1DhETFz6sjVVkiEmiYpqXxf.8x1bnmjULZ56qQlY5ZxrLAnI4; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:45 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycurzKaMsbnhQLNEBXiH1F64VQbF\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341645,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_p4VJXc4oEgzU8k7yYL0moLhK\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"hasValue\\\":true,\\\"value\\\":{\\\"name\\\":\\\"John Smith\\\",\\\"email\\\":\\\"john.smith@techcorp.io\\\",\\\"company\\\":\\\"TechCorp Industries\\\",\\\"phone\\\":\\\"+1-555-0123\\\",\\\"role\\\":\\\"VP of Engineering\\\",\\\"address\\\":null,\\\"city\\\":\\\"San Francisco\\\",\\\"country\\\":\\\"USA\\\"}}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 407,\n    \"completion_tokens\": 70,\n    \"total_tokens\": 477,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

@@ -1,0 +1,87 @@
+{
+    "request": {
+        "url": "https:\/\/api.mistral.ai\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"mistral-small-latest\",\"max_tokens\":256,\"messages\":[{\"role\":\"user\",\"content\":\"What is the capital of France\"}]}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:11 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "377"
+            ],
+            "mistral-correlation-id": [
+                "019f3771-7a0e-7be6-b289-69cea44a514e"
+            ],
+            "x-kong-request-id": [
+                "019f3771-7a0e-7be6-b289-69cea44a514e"
+            ],
+            "x-max-retry-attempts-reached": [
+                "false"
+            ],
+            "x-ratelimit-limit-tokens-minute": [
+                "100000"
+            ],
+            "x-ratelimit-remaining-tokens-minute": [
+                "99970"
+            ],
+            "x-ratelimit-tokens-query-cost": [
+                "30"
+            ],
+            "x-ratelimit-limit-req-minute": [
+                "100"
+            ],
+            "x-ratelimit-remaining-req-minute": [
+                "99"
+            ],
+            "x-envoy-upstream-service-time": [
+                "405"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "access-control-allow-origin": [
+                "*"
+            ],
+            "x-kong-upstream-latency": [
+                "406"
+            ],
+            "x-kong-proxy-latency": [
+                "15"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "strict-transport-security": [
+                "max-age=15552000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "set-cookie": [
+                "__cf_bm=2UdqexQqnD7zg0LYr1O2vLlskjNx_BFlShYiPjNFdlk-1783341611.5201755-1.0.1.1-XEBIkwv8olrPlsHevMH1Enarws5K42HBidF9xwe5UjVgEBlda3qXghqYPb6dyuzYqasDsHbGzc9OOaKqjZRD42R2LyF52rpbuXSskTt1eIJtobpreP7GZVyjnrFB4_FN; HttpOnly; Secure; Path=\/; Domain=mistral.ai; Expires=Mon, 06 Jul 2026 13:10:11 GMT"
+            ],
+            "cf-ray": [
+                "a16ead2ffe0c722f-WAW"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\"id\":\"b86a5c884fd2449384f27f0eefa986d1\",\"created\":1783341611,\"model\":\"mistral-small-latest\",\"usage\":{\"prompt_tokens\":21,\"total_tokens\":30,\"completion_tokens\":9,\"prompt_tokens_details\":{\"cached_tokens\":0}},\"object\":\"chat.completion\",\"choices\":[{\"index\":0,\"finish_reason\":\"stop\",\"message\":{\"role\":\"assistant\",\"tool_calls\":null,\"content\":\"The capital of France is **Paris**.\"}}]}"
+    }
+}

@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"You inspect repositories with the bash tool.\\nEvery factual claim must come from a bash command.\\nUse bash at least 3 separate times.\\nNever combine commands with && or ;.\"},{\"role\":\"user\",\"content\":\"Inspect this repository with the bash tool.\\n\\nRequirements:\\n- Use the bash tool at least 3 separate times.\\n- Do not combine commands with && or ;.\\n- Run these as separate bash calls:\\n  1. pwd\\n  2. ls examples\\\/D05_AgentTroubleshooting\\n  3. rg -n \\\"UseBash|BashTool\\\" packages\\\/agents\\\/src\\\/Capability\\\/Bash\\\/*.php\\n\\nThen answer in 3 short bullets:\\n1. What kind of repository this is\\n2. Where the agent telemetry examples live\\n3. How bash tooling is enabled for agents\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_CUJ27zAnQ315f54qVtTrpVx1\",\"type\":\"function\",\"function\":{\"name\":\"bash\",\"arguments\":\"{\\\"command\\\":\\\"pwd\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_CUJ27zAnQ315f54qVtTrpVx1\",\"content\":\"\\\/Users\\\/ddebowczyk\\\/projects\\\/instructor-php\\n\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_lSapGExrURIUiWHaVmqYfpGx\",\"type\":\"function\",\"function\":{\"name\":\"bash\",\"arguments\":\"{\\\"command\\\":\\\"ls examples\\\\\\\/D05_AgentTroubleshooting\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_lSapGExrURIUiWHaVmqYfpGx\",\"content\":\"EventLogReadbackAgent\\nSubagentTelemetryLangfuse\\nSubagentTelemetryLogfire\\nTelemetryLangfuse\\nTelemetryLogfire\\n\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"bash\",\"description\":\"Execute a bash command and return stdout\\\/stderr. Use for shell operations, not file reading.\\n\\nExamples:\\n- \\\"git status\\\" \\u2192 check git state\\n- \\\"composer install\\\" \\u2192 install dependencies\\n- \\\"php artisan migrate\\\" \\u2192 run migrations\\n- \\\"grep -r 'TODO' src\\\/\\\" \\u2192 search file contents\\n- \\\"npm run build\\\" \\u2192 run build scripts\\n\\nPrefer dedicated tools when available: read_file over cat, search_files over find.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"command\":{\"type\":\"string\",\"description\":\"The bash command to execute\"}},\"required\":[\"command\"],\"additionalProperties\":false}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:55 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1115"
+            ],
+            "cf-ray": [
+                "a16eae3e6d6c7229-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "740"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999799"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "3ms"
+            ],
+            "x-request-id": [
+                "req_7c1b538f03cc4194831874e0b82d3d3a"
+            ],
+            "set-cookie": [
+                "__cf_bm=GlVbz9UhjXjF7QC3baPkTrI_Gpq2j9qSaGl4IgHH2uU-1783341654.7910647-1.0.1.1-kyiRQ7yABLdikVC_aKfDFuqNAHvwepahx8_JaL6wTfqEuwycIx2v7V1oppNCAZDQps3K4an6f6KqgEyg0htYJXDAKyMgCq8xGeQU8dJe0rS6n0eJLK6OvPx38hZPdDRQ; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:55 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-Dycv1dFTqRXKDR1zuU2a9l3FKux5r\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341655,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_GZvZcQreZCLkj9rb8wr0Yk2I\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"bash\",\n              \"arguments\": \"{\\\"command\\\":\\\"rg -n \\\\\\\"UseBash|BashTool\\\\\\\" packages\/agents\/src\/Capability\/Bash\/*.php\\\"}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 484,\n    \"completion_tokens\": 38,\n    \"total_tokens\": 522,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

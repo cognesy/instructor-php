@@ -1,0 +1,89 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-4o-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## Output Requirements\\n\\nRespond with a strict JSON object that matches this JSON Schema:\\n\\n{\\n    \\\"type\\\": \\\"object\\\",\\n    \\\"x-php-class\\\": \\\"Cognesy\\\\\\\\Instructor\\\\\\\\Extras\\\\\\\\Maybe\\\\\\\\Maybe\\\",\\n    \\\"properties\\\": {\\n        \\\"hasValue\\\": {\\n            \\\"type\\\": \\\"boolean\\\",\\n            \\\"description\\\": \\\"True if value extracted, false if data not available\\\"\\n        },\\n        \\\"value\\\": {\\n            \\\"type\\\": \\\"object\\\",\\n            \\\"x-title\\\": \\\"User\\\",\\n            \\\"properties\\\": {\\n                \\\"name\\\": {\\n                    \\\"type\\\": \\\"string\\\"\\n                },\\n                \\\"age\\\": {\\n                    \\\"type\\\": \\\"integer\\\"\\n                }\\n            },\\n            \\\"required\\\": [\\n                \\\"name\\\",\\n                \\\"age\\\"\\n            ],\\n            \\\"x-php-class\\\": \\\"User\\\",\\n            \\\"additionalProperties\\\": false,\\n            \\\"description\\\": \\\"Correctly extracted values of User\\\"\\n        },\\n        \\\"error\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"description\\\": \\\"Obligatory if no value extracted - provide reason\\\"\\n        }\\n    },\\n    \\\"required\\\": [\\n        \\\"hasValue\\\"\\n    ]\\n}\\n\\nReturn the result inside a fenced `json` code block.\"},{\"role\":\"user\",\"content\":\"We have no information about our new developer.\"}],\"max_completion_tokens\":1024}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:39:22 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "cf-ray": [
+                "a16eabf88a8b6d0e-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "819"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999707"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "4ms"
+            ],
+            "x-request-id": [
+                "req_21a2fced24b446b2bf930fa6e956793b"
+            ],
+            "set-cookie": [
+                "__cf_bm=1_4KnH7gmYas8UvV5B1x0lSsachwvqXxTy1r_t.5sWk-1783341561.6820714-1.0.1.1-sbWhOEyIKaHMUdHHB43E7iK09mhPBm1XK0JwkQsHw5CaXn34y7_V8Q76bGBmrCbj8ww4dzgp80iqoYXqYduF7jKXKchC.tn1gvs.aNnEOYLOJQD2DBaQZnv0jf3lghGt; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:09:22 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DyctV9AbBGDI3D3NAiIw5ovl6NWWy\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341561,\n  \"model\": \"gpt-4o-mini-2024-07-18\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"```json\\n{\\n    \\\"hasValue\\\": false,\\n    \\\"error\\\": \\\"No information available for the new developer.\\\"\\n}\\n```\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"logprobs\": null,\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 258,\n    \"completion_tokens\": 26,\n    \"total_tokens\": 284,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": \"fp_86eb24cbce\"\n}\n"
+    }
+}

@@ -28,20 +28,36 @@ final class DefaultRequestRedactor implements RequestRedactor
         'set-cookie',
     ];
 
+    /** Query-parameter names whose values are credentials (e.g. Gemini's `?key=`). */
+    public const SENSITIVE_QUERY_PARAMS = ['key', 'api_key', 'apikey', 'access_token', 'token'];
+
     #[\Override]
     public function redact(array $requestData): array {
         $headers = $requestData['headers'] ?? null;
-        if (!is_array($headers)) {
-            return $requestData;
+        if (is_array($headers)) {
+            foreach ($headers as $name => $value) {
+                if (in_array(strtolower((string) $name), self::SENSITIVE_HEADERS, true)) {
+                    $headers[$name] = self::MASK;
+                }
+            }
+            $requestData['headers'] = $headers;
         }
 
-        foreach ($headers as $name => $value) {
-            if (in_array(strtolower((string) $name), self::SENSITIVE_HEADERS, true)) {
-                $headers[$name] = self::MASK;
-            }
+        // Some providers (e.g. Gemini) pass the API key as a URL query parameter,
+        // not a header — mask those values too so no key reaches disk.
+        if (isset($requestData['url']) && is_string($requestData['url'])) {
+            $requestData['url'] = self::redactUrl($requestData['url']);
         }
-        $requestData['headers'] = $headers;
 
         return $requestData;
+    }
+
+    private static function redactUrl(string $url): string {
+        $names = implode('|', array_map('preg_quote', self::SENSITIVE_QUERY_PARAMS));
+        return preg_replace_callback(
+            '/([?&](?:' . $names . ')=)([^&#]*)/i',
+            static fn(array $m): string => $m[1] . rawurlencode(self::MASK),
+            $url,
+        ) ?? $url;
     }
 }

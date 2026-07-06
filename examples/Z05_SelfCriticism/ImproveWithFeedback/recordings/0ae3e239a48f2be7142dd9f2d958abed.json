@@ -1,0 +1,89 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-4o-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## Tool Use\\n\\nUse the provided tool `extracted_data` to extract correct and accurate structured data from the input.\\n\\nTool purpose: Function call based on user instructions.\\n\\nCall the tool with the best supported arguments for the requested extraction.\"},{\"role\":\"user\",\"content\":\"You are an expert Python coder.\\n\\n<response>\\ndef generate_fibonacci_sequence(n: int) -> Generator[int, None, None]:\\n    a, b = 0, 1\\n    for _ in range(n):\\n        yield a\\n        a, b = b, a + b\\n\\n# Example usage:\\nprint(list(generate_fibonacci_sequence(10)))\\n<\\\/response>\\n\\n<feedback>\\nTo make the code faster, you could consider using memoization for larger Fibonacci numbers, although for small `n`, the generator approach is already efficient.\\nFor better readability, you could add a docstring to explain the function's purpose and parameters.\\n<\\\/feedback>\\n\\nRefine your response.\"}],\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\",\"description\":\"Function call based on user instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"string\"}},\"required\":[\"code\"],\"additionalProperties\":false}}}],\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\"}}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:42:25 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "cf-ray": [
+                "a16eb03c1dd4bfad-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1960"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999790"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "3ms"
+            ],
+            "x-request-id": [
+                "req_99e584810bd640adb6916a9675712c56"
+            ],
+            "set-cookie": [
+                "__cf_bm=2oXFEnTIN6kp.HIqNsI4qKDNUvOlCQOrKH9LZb36xC8-1783341736.3381193-1.0.1.1-1FSPUr7ZxO0nYbrKkog7I4agyvlOvvW2wGBrxy5XQJk5XWu9EPZ4UJ1unZNcC5T1pJsAawsGX4GT5mlrPO2BqADh6dCmtG5F4xzSfnIbIV6.XZgw44tvOkyn.aglnNWS; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:12:25 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycwRZDEY25OJ8WsOgNsh8CGNQ7NA\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341743,\n  \"model\": \"gpt-4o-mini-2024-07-18\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_nWcmStia32DByMw19VobvZ3z\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"code\\\":\\\"def generate_fibonacci_sequence(n: int) -> Generator[int, None, None]:\\\\n    \\\\\\\"\\\\\\\"\\\\\\\"\\\\n    Generate a Fibonacci sequence up to the n-th number.\\\\n    \\\\n    Parameters:\\\\n    n (int): The count of Fibonacci numbers to generate.\\\\n    \\\\n    Yields:\\\\n    int: The next Fibonacci number in the sequence.\\\\n    \\\\\\\"\\\\\\\"\\\\\\\"\\\\n    a, b = 0, 1\\\\n    for _ in range(n):\\\\n        yield a\\\\n        a, b = b, a + b\\\\n\\\\n# Example usage:\\\\nprint(list(generate_fibonacci_sequence(10)))\\\"}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"logprobs\": null,\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 237,\n    \"completion_tokens\": 137,\n    \"total_tokens\": 374,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": \"fp_88876bec1e\"\n}\n"
+    }
+}

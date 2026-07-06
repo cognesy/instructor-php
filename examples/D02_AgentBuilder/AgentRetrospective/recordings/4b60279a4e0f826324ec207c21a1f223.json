@@ -1,0 +1,59 @@
+{
+    "request": {
+        "url": "https:\/\/api.anthropic.com\/v1\/messages",
+        "method": "POST",
+        "headers": {
+            "x-api-key": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "accept": "application\/json",
+            "anthropic-version": "2023-06-01",
+            "anthropic-beta": "prompt-caching-2024-07-31"
+        },
+        "body": "{\"model\":\"claude-sonnet-4-5-20250929\",\"max_tokens\":8192,\"system\":[{\"type\":\"text\",\"text\":\"You are a CLI automation agent. You accomplish tasks using bash commands.\\nAlways limit command output \\u2014 use --limit, | head -20, etc.\\n\\nMANDATORY TWO-PASS WORKFLOW \\u2014 you MUST follow this exactly:\\n\\nPass 1 (EXPLORE): Discover the right command via --help, trial runs, etc.\\n        Once you know the correct command that produces the answer, STOP.\\n        Do NOT answer the user's question yet.\\n        You MUST call execution_retrospective to rewind to checkpoint 1\\n        with the exact working command as guidance.\\n        This is REQUIRED even if you already have the answer \\u2014 the purpose\\n        is to clean the context of exploration noise.\\n\\nPass 2 (EXECUTE): After rewind, you will see guidance from your future self.\\n        Trust it completely. Run the command from guidance. Answer. Done.\\n        Do NOT explore again. Do NOT call execution_retrospective again.\\n\\nIMPORTANT: You must ALWAYS rewind after exploration. Never skip the rewind.\\nAnswering directly after exploration without rewinding is a workflow violation.\",\"cache_control\":{\"type\":\"ephemeral\"}}],\"messages\":[{\"role\":\"user\",\"content\":\"List the 5 most recent open issues tracked in this project.\\nI believe the command is `bd issues --open --limit 5`.\"},{\"role\":\"user\",\"content\":\"[CHECKPOINT 0]\"},{\"role\":\"assistant\",\"content\":[{\"type\":\"tool_use\",\"id\":\"toolu_01PzMjrgGRXVMtafAT6j2wA3\",\"name\":\"bash\",\"input\":{\"command\":\"bd issues --open --limit 5\"}}]},{\"role\":\"user\",\"content\":[{\"type\":\"tool_result\",\"tool_use_id\":\"toolu_01PzMjrgGRXVMtafAT6j2wA3\",\"content\":\"Exit code: 1\\n\\nSTDERR:\\nError: unknown command \\\"issues\\\" for \\\"bd\\\"\\nRun 'bd --help' for usage.\\n\"}]},{\"role\":\"assistant\",\"content\":\"I'll help you list the 5 most recent open issues. Let me try the command you suggested.\"},{\"role\":\"user\",\"content\":\"[EXECUTION RETROSPECTIVE]\\n\\nYour future self has determined that the approach taken after checkpoint 1 was suboptimal. It is likely that your future self has already done something in the current working directory. Please read the guidance and decide what to do next.\\n\\nThe command `bd issues --open --limit 5` doesn't work. The correct command is `bd list --status open --limit 5`. This will show the 5 most recent open issues in the project. Run this command and present the results to the user.\"},{\"role\":\"user\",\"content\":\"[CHECKPOINT 1]\"}],\"tools\":[{\"name\":\"bash\",\"description\":\"Execute a bash command and return stdout\\\/stderr. Use for shell operations, not file reading.\\n\\nExamples:\\n- \\\"git status\\\" \\u2192 check git state\\n- \\\"composer install\\\" \\u2192 install dependencies\\n- \\\"php artisan migrate\\\" \\u2192 run migrations\\n- \\\"grep -r 'TODO' src\\\/\\\" \\u2192 search file contents\\n- \\\"npm run build\\\" \\u2192 run build scripts\\n\\nPrefer dedicated tools when available: read_file over cat, search_files over find.\",\"input_schema\":{\"type\":\"object\",\"properties\":{\"command\":{\"type\":\"string\",\"description\":\"The bash command to execute\"}},\"required\":[\"command\"],\"additionalProperties\":false}},{\"name\":\"execution_retrospective\",\"description\":\"Send a message to your past self, rewinding the conversation to an earlier checkpoint.\\n\\nYou can see `CHECKPOINT {checkpoint_id}` messages in the conversation. When you realize\\nyou have been making avoidable mistakes or going in circles, select one of those checkpoint\\nIDs as the destination.\\n\\nAfter sending, the conversation will be rewound to the state BEFORE the selected checkpoint.\\nYou will no longer see any messages after that checkpoint. Your guidance message will be\\nappended so your past self can take a better approach.\\n\\nIMPORTANT: Side effects from previous actions (file changes, API calls) are NOT undone.\\nYour guidance should account for any environmental changes already made.\\n\\nTypical scenarios:\\n- You read a file, found it very large and most content is irrelevant\\n- You searched with wrong parameters and wasted several steps\\n- You tried an approach that failed and now know the correct one\\n- You made repeated tool calls with wrong arguments before figuring out the right ones\",\"input_schema\":{\"type\":\"object\",\"properties\":{\"checkpoint_id\":{\"type\":\"integer\",\"description\":\"The checkpoint ID to rewind to (visible as CHECKPOINT N in conversation).\"},\"guidance\":{\"type\":\"string\",\"description\":\"Message to your past self explaining what you learned, what was tried, what works, and how to proceed. Account for any side effects already made.\"}},\"required\":[\"checkpoint_id\",\"guidance\"],\"additionalProperties\":false},\"cache_control\":{\"type\":\"ephemeral\"}}]}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:55 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "request-id": [
+                "req_011CckpXpiLBgdkUr5Aimd7A"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "anthropic-organization-id": [
+                "03d89e5a-78a9-42ee-95c6-d9b595403b39"
+            ],
+            "traceresponse": [
+                "00-0fab20f7e678db2f4e4d9688b551db7b-1c0d3c5811dd981a-01"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "vary": [
+                "Accept-Encoding"
+            ],
+            "x-robots-tag": [
+                "none"
+            ],
+            "content-security-policy": [
+                "default-src 'none'; frame-ancestors 'none'"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "cf-ray": [
+                "a16eae39b97834cc-WAW"
+            ]
+        },
+        "body": "{\"model\":\"claude-sonnet-4-5-20250929\",\"id\":\"msg_01XKTG8RsqiJoMxSRajmDvTw\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[{\"type\":\"tool_use\",\"id\":\"toolu_01Y9totpTzZwojEB3Hrd5kTm\",\"name\":\"bash\",\"input\":{\"command\":\"bd list --status open --limit 5\"},\"caller\":{\"type\":\"direct\"}}],\"stop_reason\":\"tool_use\",\"stop_sequence\":null,\"stop_details\":null,\"usage\":{\"input_tokens\":1590,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":0},\"output_tokens\":59,\"service_tier\":\"standard\",\"inference_geo\":\"not_available\"}}"
+    }
+}

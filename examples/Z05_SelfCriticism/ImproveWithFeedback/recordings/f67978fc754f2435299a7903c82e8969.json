@@ -1,0 +1,89 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-4o-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## Tool Use\\n\\nUse the provided tool `extracted_data` to extract correct and accurate structured data from the input.\\n\\nTool purpose: Function call based on user instructions.\\n\\nCall the tool with the best supported arguments for the requested extraction.\"},{\"role\":\"user\",\"content\":\"You are an expert Python coder.\\nProvide feedback on this code. How can we make it (1) faster and (2) more readable?\\n\\n<code>\\ndef generate_fibonacci_sequence(n: int) -> Generator[int, None, None]:\\n    \\\"\\\"\\\"\\n    Generate a Fibonacci sequence up to the n-th number.\\n    \\n    Parameters:\\n    n (int): The count of Fibonacci numbers to generate.\\n    \\n    Yields:\\n    int: The next Fibonacci number in the sequence.\\n    \\\"\\\"\\\"\\n    a, b = 0, 1\\n    for _ in range(n):\\n        yield a\\n        a, b = b, a + b\\n\\n# Example usage:\\nprint(list(generate_fibonacci_sequence(10)))\\n<\\\/code>\\n\\nIf the code does not need improvement, set done = True.\"}],\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\",\"description\":\"Function call based on user instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"feedback\":{\"type\":\"array\",\"items\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"integer\"},{\"type\":\"number\"},{\"type\":\"boolean\"},{\"type\":\"object\"}]},\"description\":\"Actions to improve the code\"},\"done\":{\"type\":\"boolean\"}},\"required\":[\"feedback\",\"done\"],\"additionalProperties\":false}}}],\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":\"extracted_data\"}}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:42:30 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "cf-ray": [
+                "a16eb0751991bf2c-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1932"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999779"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "3ms"
+            ],
+            "x-request-id": [
+                "req_55e771fbf3fb4033bb203ed60015e23f"
+            ],
+            "set-cookie": [
+                "__cf_bm=qmKR7QddONmOL08jOdRa7YCJLGhnhwRTucqxB71vZZQ-1783341745.4517374-1.0.1.1-Mo3Q6dRyfO3j7.Fm0Jz51CLcSRL4.SFYzV8ak_dAHX3Sg0YNXGRjDwHZS3BNyUQ26vvM_os3WW2Dhvm1XOKekdpYiBKNud5HG5jyt5F50uvj4gGf.Vkcd0o3bwFQSqVR; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:12:30 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycwXSiAxo2istz6DZ2pR9JqpuhBQ\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341749,\n  \"model\": \"gpt-4o-mini-2024-07-18\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_tApt7fGYZXd8M3CeywQKyPoF\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"extracted_data\",\n              \"arguments\": \"{\\\"feedback\\\":[\\\"The code can be made faster by avoiding the use of `yield` and instead returning a list directly. This can improve performance for large sequences because it avoids the overhead associated with generator functions.\\\",\\\"To enhance readability, consider adding type hints for the return value of the function (e.g., `List[int]` instead of `Generator[int, None, None]`). Also, providing more context in the function's docstring regarding how the sequence is calculated can help future users of the code.\\\"],\\\"done\\\":false}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"logprobs\": null,\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 281,\n    \"completion_tokens\": 106,\n    \"total_tokens\": 387,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": \"fp_dd933fdd28\"\n}\n"
+    }
+}

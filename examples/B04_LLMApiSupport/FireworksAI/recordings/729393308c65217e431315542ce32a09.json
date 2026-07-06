@@ -1,0 +1,57 @@
+{
+    "request": {
+        "url": "https:\/\/api.fireworks.ai\/inference\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"accounts\\\/fireworks\\\/models\\\/deepseek-v3p1\",\"messages\":[{\"role\":\"user\",\"content\":\"What is the capital of France\"}],\"max_completion_tokens\":64}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 404,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:44:00 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "181"
+            ],
+            "cf-ray": [
+                "a16eb2c36869bd18-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "access-control-allow-origin": [
+                "*"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "vary": [
+                "Origin"
+            ],
+            "via": [
+                "1.1 google"
+            ],
+            "server-timing": [
+                "total;dur=250.0;desc=\"Total Response Time\""
+            ],
+            "x-request-id": [
+                "chatcmpl-850192b9a6364c0fbedf1434582cd87a"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\"error\":{\"message\":\"Model not found, inaccessible, and\/or not deployed\",\"param\":\"model\",\"code\":\"NOT_FOUND\",\"type\":\"error\"},\"request_id\":\"chatcmpl-850192b9a6364c0fbedf1434582cd87a\"}"
+    }
+}

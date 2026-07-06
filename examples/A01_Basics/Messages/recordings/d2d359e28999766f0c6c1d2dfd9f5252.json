@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## System Instructions\\n\\nYou are a senior PHP8 backend developer.\\n\\n## Developer Instructions\\n\\nBe concise and use modern PHP8.2+ features.\\n\\n## Output Requirements\\n\\nRespond with a strict JSON object that matches this JSON Schema:\\n\\n{\\n    \\\"type\\\": \\\"object\\\",\\n    \\\"x-title\\\": \\\"Code\\\",\\n    \\\"properties\\\": {\\n        \\\"code\\\": {\\n            \\\"type\\\": \\\"string\\\"\\n        },\\n        \\\"programmingLanguage\\\": {\\n            \\\"type\\\": \\\"string\\\"\\n        },\\n        \\\"codeDescription\\\": {\\n            \\\"type\\\": \\\"string\\\"\\n        }\\n    },\\n    \\\"required\\\": [\\n        \\\"code\\\",\\n        \\\"programmingLanguage\\\",\\n        \\\"codeDescription\\\"\\n    ],\\n    \\\"x-php-class\\\": \\\"Code\\\",\\n    \\\"additionalProperties\\\": false\\n}\\n\\nReturn the result inside a fenced `json` code block.\"},{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"What is the best way to handle errors in PHP8?\"},{\"type\":\"text\",\"text\":\"Provide a code example.\"},{\"type\":\"text\",\"text\":\"Use modern PHP8.2+ features.\"}]},{\"role\":\"assistant\",\"content\":\"I will provide a code example that demonstrates how to handle errors using try-catch. Any specific domain?\"}],\"max_completion_tokens\":1024}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:39:28 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "2458"
+            ],
+            "cf-ray": [
+                "a16eabfa0fae7dcb-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "6391"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999766"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "3ms"
+            ],
+            "x-request-id": [
+                "req_afa7cc38ba544167899a4e698865925a"
+            ],
+            "set-cookie": [
+                "__cf_bm=3YJ8QCsuVznueKWCN40nDxyLDiaWKNG9W04Umg50W6Y-1783341561.9240894-1.0.1.1-o4CZFZgKyRFbL00wuxEUAIQLy9YNBOui1IWRI.YKvaewp_TtXGZgfNFKbz_njSjlSY6Cu0bDp369C3__PZyBmUTR1GIOTOyhaTh.LjYczjNs_LEjwUG2Ff0F5Br2ID3m; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:09:28 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DyctWDwjuqN7pwsbJICuZFvlLhRXh\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341562,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"```json\\n{\\n  \\\"code\\\": \\\"<?php\\\\ndeclare(strict_types=1);\\\\n\\\\nfinal class AppException extends RuntimeException {}\\\\nfinal class ValidationException extends DomainException {}\\\\n\\\\nfunction processOrder(array $input): array\\\\n{\\\\n    try {\\\\n        if (!isset($input['email']) || !filter_var($input['email'], FILTER_VALIDATE_EMAIL)) {\\\\n            throw new ValidationException('Invalid email address.');\\\\n        }\\\\n\\\\n        if (!isset($input['items']) || !is_array($input['items']) || $input['items'] === []) {\\\\n            throw new ValidationException('At least one item is required.');\\\\n        }\\\\n\\\\n        return [\\\\n            'success' => true,\\\\n            'message' => 'Order processed successfully.',\\\\n        ];\\\\n    } catch (ValidationException $e) {\\\\n        return [\\\\n            'success' => false,\\\\n            'error' => $e->getMessage(),\\\\n            'type' => 'validation',\\\\n        ];\\\\n    } catch (Throwable $e) {\\\\n        error_log($e::class . ': ' . $e->getMessage());\\\\n\\\\n        return [\\\\n            'success' => false,\\\\n            'error' => 'An unexpected error occurred.',\\\\n            'type' => 'server',\\\\n        ];\\\\n    }\\\\n}\\\\n\\\\n$result = processOrder([\\\\n    'email' => 'john@example.com',\\\\n    'items' => ['book', 'pen'],\\\\n]);\\\\n\\\\nprint_r($result);\\\\n\\\",\\n  \\\"programmingLanguage\\\": \\\"PHP 8.2+\\\",\\n  \\\"codeDescription\\\": \\\"Best practice in PHP 8 is to use exceptions for expected failures, catch specific exception types first, and have a final catch for Throwable as a safety net. The example uses strict types, final exception classes, typed return values, and error logging for unexpected failures.\\\"\\n}\\n```\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 227,\n    \"completion_tokens\": 419,\n    \"total_tokens\": 646,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

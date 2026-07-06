@@ -3,6 +3,7 @@ title: 'OpenRouter'
 docname: 'openrouter'
 id: '0b8d'
 tags:
+  - 'broken'
   - 'api-support'
   - 'openrouter'
   - 'provider'

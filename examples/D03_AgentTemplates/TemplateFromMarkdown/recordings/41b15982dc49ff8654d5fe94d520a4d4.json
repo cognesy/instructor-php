@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a precise math assistant. Always use the calculator tool for arithmetic \\u2014 never compute mentally.\\n\\nState the result clearly in one sentence.\"},{\"role\":\"user\",\"content\":\"What is 1337 multiplied by 42?\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_IbEUItLg98ETMV3ea7A2kUpW\",\"type\":\"function\",\"function\":{\"name\":\"calculator\",\"arguments\":\"{\\\"a\\\":1337,\\\"b\\\":42,\\\"operation\\\":\\\"multiply\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_IbEUItLg98ETMV3ea7A2kUpW\",\"content\":\"56154\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"calculator\",\"description\":\"Performs basic arithmetic on two numbers.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"a\":{\"type\":\"number\",\"description\":\"First operand\"},\"b\":{\"type\":\"number\",\"description\":\"Second operand\"},\"operation\":{\"type\":\"string\",\"description\":\"Operation: add, subtract, multiply, or divide\"}},\"required\":[\"a\",\"b\",\"operation\"],\"additionalProperties\":false}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:47 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "807"
+            ],
+            "cf-ray": [
+                "a16eae097cb43494-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1133"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999948"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "0s"
+            ],
+            "x-request-id": [
+                "req_5bdec4c5974741a198e2f70959f254b0"
+            ],
+            "set-cookie": [
+                "__cf_bm=4v9puF0gEme_0Knxur6dTH4mQ2a4JOWh1viJwXwwnw8-1783341646.3171642-1.0.1.1-09uxypXQke8ZuWpqrJWm3DwhxODIc40sweuySp7qcn2v0r9IwAzvBLlhEs_N23nkIl_9.v6yhSDqC.KH65k53qPcCfh7hPQZbdtCwjxLUtvl9X5KqQFTWN8iF5Fh6P5u; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:47 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycusRAKoiV7dlFImtLkOSGbrTcVY\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341646,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"1337 multiplied by 42 is 56,154.\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 228,\n    \"completion_tokens\": 15,\n    \"total_tokens\": 243,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

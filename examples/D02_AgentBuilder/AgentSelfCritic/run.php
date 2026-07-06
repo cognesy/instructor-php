@@ -4,6 +4,7 @@ docname: 'agent_self_critique'
 order: 5
 id: 'bfb1'
 tags:
+  - 'flaky'
   - 'agent-builder'
   - 'self-critique'
   - 'workflow'

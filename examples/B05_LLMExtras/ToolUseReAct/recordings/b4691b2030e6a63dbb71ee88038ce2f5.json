@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"Return only the final answer as plain text.\"},{\"role\":\"user\",\"content\":\"Add 2455 and 3558 then subtract 4344 from the result.\"},{\"role\":\"assistant\",\"content\":\"Thought: Need compute sum then subtract in sequence.\\nAction: add_numbers\\nAction Input: {\\\"a\\\":2455,\\\"b\\\":3558}\"},{\"role\":\"user\",\"content\":\"Observation: 6013\"},{\"role\":\"assistant\",\"content\":\"Thought: Continue the arithmetic by subtracting 4344 from the prior result.\\nAction: subtract_numbers\\nAction Input: {\\\"a\\\":6013,\\\"b\\\":4344}\"},{\"role\":\"user\",\"content\":\"Observation: 1669\"}],\"max_completion_tokens\":1024}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:37 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "778"
+            ],
+            "cf-ray": [
+                "a16eadcf6b52e5d6-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "416"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999900"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "1ms"
+            ],
+            "x-request-id": [
+                "req_1eb86d6942724d089852a35c1132a297"
+            ],
+            "set-cookie": [
+                "__cf_bm=RQbJxmY_0Sh3R1vuv4TMhbmHyCi2lRf2RKAgjEEFXE4-1783341637.025778-1.0.1.1-9l_gb9OVS7wJN.7YFXynCovgyVGmlw0u.a8pK96hZHLzLO5KhyXdpj.Q3aiIVPFfbvNy.e.9nrVGEYIDBIEqidO61KAf9kpG2GBC9iGo5eiIDbS3wakvXMer_YN3iQeZ; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:37 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycujDvzDEipwXfhN8v5Snvq5O75d\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341637,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"1669\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 130,\n    \"completion_tokens\": 5,\n    \"total_tokens\": 135,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

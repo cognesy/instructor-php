@@ -196,9 +196,22 @@ Env vars: `INSTRUCTOR_EXAMPLES_HTTP=pass|record|replay`,
 - **Replay is hermetic and keyless.** No network; provider keys are stubbed. A missing
   recording throws `RecordingNotFoundException` — that is the built-in change-impact
   signal (it names exactly which examples a change affected), not a failure to fix blindly.
-- **Exclusions.** Examples that cannot replay (explicit-client, external telemetry,
-  sandbox, interactive) are tagged `no-replay` in their front-matter; `--replay` skips
-  them and logs which ones.
+- **Status tags (treat `./examples/` with caution, not blind faith).** Not every
+  example is a clean pass signal — some are broken, some can't replay, some fail
+  occasionally from LLM non-determinism. Four front-matter markers make the state
+  explicit so a failure is never ambiguous:
+
+  | marker | meaning | `hub all` (live) | `hub all --replay` |
+  |--------|---------|------------------|--------------------|
+  | `skip: true` | excluded for any reason (e.g. no-key provider) | not run | not run |
+  | `broken` (tag) | known-failing (e.g. broken API integration) | **not run** (logged, with reason) | not run |
+  | `no-replay` (tag) | works live but can't be recorded (explicit-client, telemetry, sandbox, interactive) | run normally | **skipped** (logged) |
+  | `flaky` (tag) | fails occasionally from LLM non-determinism | run; failure **tolerated** (`FLAKY`, doesn't fail the gate) | run — replay makes it deterministic, so a failure here is **real** |
+
+  The run-all gate fails on real errors only; `flaky` failures are bucketed separately
+  (`Flaky: N (tolerated)`) so agents and CI don't panic on non-deterministic noise.
+  Recording a `flaky` example is the *fix* — under replay it becomes deterministic.
+  Tags are lowercase; add several as needed (e.g. `broken` + `gemini`).
 
 ### Storage & CI
 

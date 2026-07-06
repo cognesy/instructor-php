@@ -41,11 +41,25 @@ final class HttpRecordingBoot
 
     public static function bootFromEnv(): void {
         $mode = self::env(self::ENV_MODE) ?? RecordReplayMiddleware::MODE_PASS;
-        $root = self::env(self::ENV_DIR) ?? (getcwd() . '/tmp/examples-recordings');
-        // Per-example namespace: each example's recordings live under their own
-        // subdir, so a refresh is scoped to one folder and cross-example collisions
-        // are impossible even for identical requests.
-        self::configure($mode, self::withExampleNamespace($root));
+        $root = self::env(self::ENV_DIR);
+        // Standard location (default): recordings co-located with each example at
+        // <example>/recordings/ — committed under examples/ (already export-ignored).
+        // An explicit INSTRUCTOR_EXAMPLES_RECORDINGS_DIR redirects to a namespaced
+        // scratch tree (<root>/<Group>/<Example>/) for CI-isolated or throwaway runs.
+        $dir = $root !== null
+            ? self::withExampleNamespace($root)
+            : self::coLocatedDir();
+        self::configure($mode, $dir);
+    }
+
+    /** The standard co-located recordings dir: <example-dir>/recordings. */
+    public static function coLocatedDir(?string $scriptPath = null): string {
+        $scriptPath = $scriptPath ?? ($_SERVER['SCRIPT_FILENAME'] ?? '');
+        $resolved = $scriptPath !== '' ? (realpath($scriptPath) ?: $scriptPath) : '';
+        if ($resolved === '') {
+            return getcwd() . '/tmp/examples-recordings'; // fallback when script unknown
+        }
+        return dirname(str_replace('\\', '/', $resolved)) . '/recordings';
     }
 
     /**

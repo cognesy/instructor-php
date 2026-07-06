@@ -3,6 +3,7 @@ title: 'Send AgentCtrl telemetry to Langfuse'
 docname: 'agent_ctrl_telemetry_langfuse'
 id: 'a6d1'
 tags:
+  - 'no-replay'
   - 'agent-ctrl'
   - 'langfuse'
   - 'telemetry'

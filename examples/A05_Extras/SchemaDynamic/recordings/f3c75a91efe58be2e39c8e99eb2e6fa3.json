@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"system\",\"content\":\"## Output Requirements\\n\\nRespond with a strict JSON object that follows the provided JSON Schema.\\n\\nSchema name: `city`\\n\\n{\\n    \\\"type\\\": \\\"object\\\",\\n    \\\"x-title\\\": \\\"city\\\",\\n    \\\"properties\\\": {\\n        \\\"name\\\": {\\n            \\\"type\\\": \\\"string\\\",\\n            \\\"description\\\": \\\"City name\\\"\\n        },\\n        \\\"population\\\": {\\n            \\\"type\\\": \\\"integer\\\",\\n            \\\"description\\\": \\\"City population\\\"\\n        },\\n        \\\"founded\\\": {\\n            \\\"type\\\": \\\"integer\\\",\\n            \\\"description\\\": \\\"Founding year\\\"\\n        }\\n    },\\n    \\\"required\\\": [\\n        \\\"name\\\",\\n        \\\"population\\\",\\n        \\\"founded\\\"\\n    ],\\n    \\\"x-php-class\\\": \\\"stdClass\\\",\\n    \\\"additionalProperties\\\": false\\n}\"},{\"role\":\"user\",\"content\":\"What is capital of France? \\\\\\n        Respond with JSON data.\"}],\"max_completion_tokens\":64,\"response_format\":{\"type\":\"json_schema\",\"json_schema\":{\"name\":\"city\",\"schema\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\",\"description\":\"City name\"},\"population\":{\"type\":\"integer\",\"description\":\"City population\"},\"founded\":{\"type\":\"integer\",\"description\":\"Founding year\"}},\"required\":[\"name\",\"population\",\"founded\"],\"additionalProperties\":false},\"strict\":true}}}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:39:58 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "834"
+            ],
+            "cf-ray": [
+                "a16eacdabd31bbd2-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "691"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999818"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "2ms"
+            ],
+            "x-request-id": [
+                "req_76703d8727b74fc38bbf9407b60b779e"
+            ],
+            "set-cookie": [
+                "__cf_bm=XC1VknDXe6FdJJK3Bfhi2z2inj56Y5OBNXhHDRJ6ncA-1783341597.878728-1.0.1.1-p2yN6nOV2K4HP8f3d63dTdwazJ_Rnz5rWlOTSejqr4PYbMH7WxJEJhBYm9HV82BleI60M7oIeChfLyxTusBEBwE0_3mIKYGE54cfgmErSN0g1xcU2hDVlJu4qKVtY_Jz; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:09:58 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-Dycu6HIq0st3K8hU4M1NCvZaVbeQD\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341598,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"{\\\"name\\\":\\\"Paris\\\",\\\"population\\\":2148000,\\\"founded\\\":-52}\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 231,\n    \"completion_tokens\": 23,\n    \"total_tokens\": 254,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

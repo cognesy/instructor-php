@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"user\",\"content\":\"Call the counter tool repeatedly until it stops you.\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_GELC45KxuVdmo9R7b6fVfPYl\",\"type\":\"function\",\"function\":{\"name\":\"counter\",\"arguments\":\"[]\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_GELC45KxuVdmo9R7b6fVfPYl\",\"content\":\"Counter is at 1. Keep going \\u2014 call counter again.\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_Pwe5pkeQa5Uhfa5SHA0W8B5b\",\"type\":\"function\",\"function\":{\"name\":\"counter\",\"arguments\":\"[]\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_Pwe5pkeQa5Uhfa5SHA0W8B5b\",\"content\":\"Counter is at 2. Keep going \\u2014 call counter again.\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"counter\",\"description\":\"Increments a counter and returns the current value. Call this tool repeatedly.\",\"parameters\":{\"type\":\"object\",\"properties\":{},\"additionalProperties\":false}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:33 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1030"
+            ],
+            "cf-ray": [
+                "a16eadb1aeb057b7-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "675"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999955"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "0s"
+            ],
+            "x-request-id": [
+                "req_858e126502f04bd788ea778379296749"
+            ],
+            "set-cookie": [
+                "__cf_bm=JKyupIfqmAs.prjU784wQxelNL96.0Y6BCY6MXlL.Dc-1783341632.269927-1.0.1.1-6AprUu9QZL6wPbZbm9eq_rBXviRfh_1Zjo3RSFcWvnUpIRXHNsNOVKMLnBnEqjJIrJC9qYvII2N.qLcJERWnToqmMjRpv1b3OwsaRVRqJqn3C65cQcNRp0Kj5iz8CMlP; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:33 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycueopFt2OzzNfZ6bqPxSyCuEOjI\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341632,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": null,\n        \"tool_calls\": [\n          {\n            \"id\": \"call_DQlsSvUBh0a2rDJ27XEG7s6m\",\n            \"type\": \"function\",\n            \"function\": {\n              \"name\": \"counter\",\n              \"arguments\": \"{}\"\n            }\n          }\n        ],\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"tool_calls\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 206,\n    \"completion_tokens\": 12,\n    \"total_tokens\": 218,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"user\",\"content\":\"Add 2455 and 3558 then subtract 4344 from the result.\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_PNutzGm7wwgQKJI8M6iwKbMD\",\"type\":\"function\",\"function\":{\"name\":\"add_numbers\",\"arguments\":\"{\\\"a\\\":2455,\\\"b\\\":3558}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_PNutzGm7wwgQKJI8M6iwKbMD\",\"content\":\"6013\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_66ECdUdWRFjzISCl8VWwokye\",\"type\":\"function\",\"function\":{\"name\":\"subtract_numbers\",\"arguments\":\"{\\\"a\\\":6013,\\\"b\\\":4344}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_66ECdUdWRFjzISCl8VWwokye\",\"content\":\"1669\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"add_numbers\",\"parameters\":{\"type\":\"object\",\"properties\":{\"a\":{\"type\":\"integer\"},\"b\":{\"type\":\"integer\"}},\"required\":[\"a\",\"b\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"subtract_numbers\",\"parameters\":{\"type\":\"object\",\"properties\":{\"a\":{\"type\":\"integer\"},\"b\":{\"type\":\"integer\"}},\"required\":[\"a\",\"b\"],\"additionalProperties\":false}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:21 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "822"
+            ],
+            "cf-ray": [
+                "a16ead66a8b648d3-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1116"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3999978"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "0s"
+            ],
+            "x-request-id": [
+                "req_aff624e302604ecda0c25e3a9d5727fd"
+            ],
+            "set-cookie": [
+                "__cf_bm=EJd71hCsq787tKi7aN13U2vDM_38Qga0phdHtn4bZQE-1783341620.270557-1.0.1.1-kZk_6u1EjSf8YkZfpyRQ.6OeLF72d38x2X1fcjZCwT8zoOEV234V6B4ZU1mxH5jZI1b.qaRypZ2mvRBlPMZP2XV64Cykpo5Ba2DibpnGzY58qaVhvra_Q5SMYkSr27F8; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:21 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycuS5XCrFQ4tQQKqZafcuRMADwCd\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341620,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"2455 + 3558 = 6013, and 6013 - 4344 = **1669**.\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 228,\n    \"completion_tokens\": 28,\n    \"total_tokens\": 256,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}

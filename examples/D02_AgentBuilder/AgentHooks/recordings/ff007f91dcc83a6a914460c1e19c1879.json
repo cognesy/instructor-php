@@ -1,0 +1,92 @@
+{
+    "request": {
+        "url": "https:\/\/api.openai.com\/v1\/chat\/completions",
+        "method": "POST",
+        "headers": {
+            "Authorization": "[REDACTED]",
+            "Content-Type": "application\/json; charset=utf-8",
+            "Accept": "application\/json"
+        },
+        "body": "{\"model\":\"gpt-5.4-mini\",\"messages\":[{\"role\":\"user\",\"content\":\"List the files in the current directory and show the date\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_3yZ593ae4nKHgYWk4seognIj\",\"type\":\"function\",\"function\":{\"name\":\"bash\",\"arguments\":\"{\\\"command\\\":\\\"pwd && ls -la --time-style=long-iso\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_3yZ593ae4nKHgYWk4seognIj\",\"content\":\"Exit code: 1\\n\\n\\\/Users\\\/ddebowczyk\\\/projects\\\/instructor-php\\n\\n\\nSTDERR:\\nls: unrecognized option `--time-style=long-iso'\\nusage: ls [-@ABCFGHILOPRSTUWXabcdefghiklmnopqrstuvwxy1%,] [--color=when] [-D format] [file ...]\\n\"},{\"role\":\"assistant\",\"tool_calls\":[{\"id\":\"call_qzv51w2GHtW64jfP0Pq4F11o\",\"type\":\"function\",\"function\":{\"name\":\"bash\",\"arguments\":\"{\\\"command\\\":\\\"pwd; echo 'Date:'; date; echo; echo 'Files:'; ls -la\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_qzv51w2GHtW64jfP0Pq4F11o\",\"content\":\"\\\/Users\\\/ddebowczyk\\\/projects\\\/instructor-php\\nDate:\\nMon Jul  6 14:40:35 CEST 2026\\n\\nFiles:\\ntotal 8128\\ndrwxr-xr-x@  66 ddebowczyk  staff     2112 Jul  6 14:31 .\\ndrwxr-xr-x@  37 ddebowczyk  staff     1184 Jul  4 17:57 ..\\n-rw-r--r--@   1 ddebowczyk  staff       68 Mar 29 08:56 .actrc\\ndrwxr-xr-x@   5 ddebowczyk  staff      160 Jun 29 09:50 .archlet\\ndrwx------@  21 ddebowczyk  staff      672 Jul  6 12:49 .beads\\ndrwxr-xr-x@   5 ddebowczyk  staff      160 Mar 14 12:05 .claude\\ndrwxr-xr-x@   6 ddebowczyk  staff      192 Jun 29 09:50 .codegraph\\ndrwxr-xr-x@   3 ddebowczyk  staff       96 Mar 29 09:17 .codex\\n-rw-r--r--@   1 ddebowczyk  staff     4352 Jul  4 16:37 .env\\n-rw-r--r--@   1 ddebowczyk  staff     1306 Mar 19 09:36 .env-dist\\ndrwxr-xr-x@  18 ddebowczyk  staff      576 Jul  6 14:30 .git\\n-rw-r--r--@   1 ddebowczyk  staff     2524 Mar 12 07:56 .gitattributes\\ndrwxr-xr-x@   3 ddebowczyk  staff       96 Jan 10 15:49 .github\\n-rw-r--r--@   1 ddebowczyk  staff     2401 Jul  6 12:49 .gitignore\\ndrwxr-xr-x@  17 ddebowczyk  staff      544 May  8 21:42 .idea\\ndrwxr-xr-x@   3 ddebowczyk  staff       96 Jul  6 08:44 .instructor-hub\\ndrwxr-xr-x@   4 ddebowczyk  staff      128 Mar 17 19:37 .logfire\\n-rw-r--r--@   1 ddebowczyk  staff    13202 Mar  6 11:36 .phpunit.result.cache\\ndrwxr-xr-x@   5 ddebowczyk  staff      160 Mar  2 23:38 .qa\\n-rw-r--r--@   1 ddebowczyk  staff      320 Mar 13 12:42 .semgrepignore\\ndrwxr-xr-x@   6 ddebowczyk  staff      192 Mar  2 11:08 .venv-semgrep\\ndrwxr-xr-x@   4 ddebowczyk  staff      128 Apr 11 14:53 .xqa\\n-rw-r--r--@   1 ddebowczyk  staff     4588 Mar 19 15:32 ADDING-PACKAGE.md\\n-rw-r--r--@   1 ddebowczyk  staff    14807 Mar 22 13:21 AGENTS.md\\ndrwxr-xr-x@   6 ddebowczyk  staff      192 Jul  6 13:22 bin\\ndrwxr-xr-x@  15 ddebowczyk  staff      480 Mar 30 13:39 builds\\n-rw-r--r--@   1 ddebowczyk  staff    12030 Jul  6 09:53 composer.json\\n-rw-r--r--@   1 ddebowczyk  staff   476950 Mar 30 06:50 composer.lock\\n-rwxr-xr-x    1 ddebowczyk  staff  3283968 Jan 18 09:46 composer.phar\\n-rw-r--r--@   1 ddebowczyk  staff     4649 Mar 30 07:53 CONTENTS.md\\n-rw-r--r--@   1 ddebowczyk  staff    10458 Jul  6 09:58 CONTRIBUTING.md\\ndrwxr-xr-x@   3 ddebowczyk  staff       96 Jan 10 15:49 data\\ndrwxr-xr-x@  18 ddebowczyk  staff      576 Apr  9 15:46 docs\\n-rw-r--r--@   1 ddebowczyk  staff    60220 Jan 10 15:49 Doxyfile\\ndrwxr-xr-x@   7 ddebowczyk  staff      224 Jan 10 15:49 evals\\ndrwxr-xr-x@  31 ddebowczyk  staff      992 Jul  6 13:13 examples\\ndrwxr-xr-x@  11 ddebowczyk  staff      352 Jul  6 14:10 just\\n-rw-r--r--@   1 ddebowczyk  staff     1383 Jul  6 14:10 justfile\\n-rw-r--r--@   1 ddebowczyk  staff     1074 Jan 10 15:49 LICENSE\\n-rw-r--r--@   1 ddebowczyk  staff     1383 Jan 10 15:49 mago.toml\\n-rw-r--r--@   1 ddebowczyk  staff    16517 Jul  6 09:33 mkdocs.yml\\n-rw-r--r--@   1 ddebowczyk  staff     8987 Jan 10 15:49 mkdocs.yml.bak\\n-rw-r--r--@   1 ddebowczyk  staff      507 Jan 10 15:49 package-config-enhanced.example.json\\n-rw-r--r--@   1 ddebowczyk  staff      214 Jan 10 15:49 package-config.example.json\\ndrwxr-xr-x@  34 ddebowczyk  staff     1088 Jun 29 09:50 packages\\n-rw-r--r--@   1 ddebowczyk  staff     7443 Jun 29 09:50 packages.json\\n-rw-r--r--@   1 ddebowczyk  staff    16741 Mar 13 09:53 PACKAGES.md\\n-rw-r--r--@   1 ddebowczyk  staff      378 Mar 12 14:41 phpbench.json\\n-rw-r--r--@   1 ddebowczyk  staff     1293 Jan 10 15:49 phpstan-baseline.neon\\n-rw-r--r--@   1 ddebowczyk  staff     1332 Mar  2 23:38 phpstan-unused.neon\\n-rw-r--r--@   1 ddebowczyk  staff    11362 Mar 12 13:25 phpstan.neon\\n-rw-r--r--@   1 ddebowczyk  staff      248 Jan 10 15:49 phpstan.neon.dist\\n-rw-r--r--@   1 ddebowczyk  staff    11710 Jul  6 09:55 phpunit.xml\\n-rw-r--r--@   1 ddebowczyk  staff     2145 Mar 12 07:03 psalm.xml\\n-rw-r--r--@   1 ddebowczyk  staff      234 Mar  9 19:13 pyproject.toml\\n-rw-r--r--@   1 ddebowczyk  staff      325 Jan 10 15:49 pyrightconfig.json\\n-rw-r--r--@   1 ddebowczyk  staff    16253 Jul  6 14:31 QUALITY.md\\n-rw-r--r--@   1 ddebowczyk  staff    18934 Mar 30 07:53 README.md\\n-rw-r--r--@   1 ddebowczyk  staff     2083 Jan 10 15:49 requirements-doc.txt\\ndrwxr-xr-x@ 120 ddebowczyk  staff     3840 Jul  6 14:31 research\\ndrwxr-xr-x@   9 ddebowczyk  staff      288 Jul  6 09:26 scripts\\ndrwxr-xr-x@   3 ddebowczyk  staff       96 Jan 10 15:49 src\\ndrwxr-xr-x@   5 ddebowczyk  staff      160 Jan 10 16:05 tests\\ndrwxr-xr-x@  12 ddebowczyk  staff      384 Jul  6 14:38 tmp\\n-rw-r--r--@   1 ddebowczyk  staff    54080 Mar  9 19:09 uv.lock\\ndrwxr-xr-x@  68 ddebowczyk  staff     2176 Mar 30 06:50 vendor\\n\"}],\"parallel_tool_calls\":false,\"max_completion_tokens\":1024,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"bash\",\"description\":\"Execute a bash command and return stdout\\\/stderr. Use for shell operations, not file reading.\\n\\nExamples:\\n- \\\"git status\\\" \\u2192 check git state\\n- \\\"composer install\\\" \\u2192 install dependencies\\n- \\\"php artisan migrate\\\" \\u2192 run migrations\\n- \\\"grep -r 'TODO' src\\\/\\\" \\u2192 search file contents\\n- \\\"npm run build\\\" \\u2192 run build scripts\\n\\nPrefer dedicated tools when available: read_file over cat, search_files over find.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"command\":{\"type\":\"string\",\"description\":\"The bash command to execute\"}},\"required\":[\"command\"],\"additionalProperties\":false}}}],\"tool_choice\":\"auto\"}",
+        "options": {
+            "stream": false
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "headers": {
+            "date": [
+                "Mon, 06 Jul 2026 12:40:37 GMT"
+            ],
+            "content-type": [
+                "application\/json"
+            ],
+            "content-length": [
+                "1826"
+            ],
+            "cf-ray": [
+                "a16eadc46b6d95aa-WAW"
+            ],
+            "cf-cache-status": [
+                "DYNAMIC"
+            ],
+            "server": [
+                "cloudflare"
+            ],
+            "strict-transport-security": [
+                "max-age=31536000; includeSubDomains; preload"
+            ],
+            "x-content-type-options": [
+                "nosniff"
+            ],
+            "access-control-expose-headers": [
+                "X-Request-ID",
+                "CF-Ray",
+                "CF-Ray"
+            ],
+            "openai-organization": [
+                "cognesy"
+            ],
+            "openai-processing-ms": [
+                "1882"
+            ],
+            "openai-project": [
+                "proj_iphboLfDqANcHJl7rS8cw8NT"
+            ],
+            "openai-version": [
+                "2020-10-01"
+            ],
+            "x-openai-proxy-wasm": [
+                "v0.1"
+            ],
+            "x-ratelimit-limit-requests": [
+                "5000"
+            ],
+            "x-ratelimit-limit-tokens": [
+                "4000000"
+            ],
+            "x-ratelimit-remaining-requests": [
+                "4999"
+            ],
+            "x-ratelimit-remaining-tokens": [
+                "3998796"
+            ],
+            "x-ratelimit-reset-requests": [
+                "12ms"
+            ],
+            "x-ratelimit-reset-tokens": [
+                "18ms"
+            ],
+            "x-request-id": [
+                "req_cf0621ff8fd84e6182357d149075c82b"
+            ],
+            "set-cookie": [
+                "__cf_bm=CAZ9DH.rWCH9qbh.EP82Nzvd_UN5EfbIPn2KlwDN6mQ-1783341635.2615943-1.0.1.1-aoYrbBJtMfo.AwBLIShw4bYDcJr6W0pnAYlB.VLSUUQ9A0UG5EUfuetPtTCZ7l8_kdWGzmEmTzzIe9OBvLjQpNr5XSoH4W0agKM9E.hEBkZk.upN4CFqiAGrDgO99Qs.; HttpOnly; Secure; Path=\/; Domain=api.openai.com; Expires=Mon, 06 Jul 2026 13:10:37 GMT"
+            ],
+            "alt-svc": [
+                "h3=\":443\"; ma=86400"
+            ]
+        },
+        "body": "{\n  \"id\": \"chatcmpl-DycuhnYCUVagzuwVuGIW8gQJcxJPI\",\n  \"object\": \"chat.completion\",\n  \"created\": 1783341635,\n  \"model\": \"gpt-5.4-mini-2026-03-17\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"Current directory: `\/Users\/ddebowczyk\/projects\/instructor-php`\\n\\nDate: `Mon Jul  6 14:40:35 CEST 2026`\\n\\nFiles in the directory:\\n- .actrc\\n- .archlet\\n- .beads\\n- .claude\\n- .codegraph\\n- .codex\\n- .env\\n- .env-dist\\n- .git\\n- .gitattributes\\n- .github\\n- .gitignore\\n- .idea\\n- .instructor-hub\\n- .logfire\\n- .phpunit.result.cache\\n- .qa\\n- .semgrepignore\\n- .venv-semgrep\\n- .xqa\\n- ADDING-PACKAGE.md\\n- AGENTS.md\\n- bin\\n- builds\\n- composer.json\\n- composer.lock\\n- composer.phar\\n- CONTENTS.md\\n- CONTRIBUTING.md\\n- data\\n- docs\\n- Doxyfile\\n- evals\\n- examples\\n- just\\n- justfile\\n- LICENSE\\n- mago.toml\\n- mkdocs.yml\\n- mkdocs.yml.bak\\n- package-config-enhanced.example.json\\n- package-config.example.json\\n- packages\\n- packages.json\\n- PACKAGES.md\\n- phpbench.json\\n- phpstan-baseline.neon\\n- phpstan-unused.neon\\n- phpstan.neon\\n- phpstan.neon.dist\\n- phpunit.xml\\n- psalm.xml\\n- pyproject.toml\\n- pyrightconfig.json\\n- QUALITY.md\\n- README.md\\n- requirements-doc.txt\\n- research\\n- scripts\\n- src\\n- tests\\n- tmp\\n- uv.lock\\n- vendor\",\n        \"refusal\": null,\n        \"annotations\": []\n      },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 2443,\n    \"completion_tokens\": 350,\n    \"total_tokens\": 2793,\n    \"prompt_tokens_details\": {\n      \"cached_tokens\": 0,\n      \"audio_tokens\": 0\n    },\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0,\n      \"audio_tokens\": 0,\n      \"accepted_prediction_tokens\": 0,\n      \"rejected_prediction_tokens\": 0\n    }\n  },\n  \"service_tier\": \"default\",\n  \"system_fingerprint\": null\n}\n"
+    }
+}
