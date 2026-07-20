@@ -4,6 +4,7 @@ namespace Cognesy\Agents\Capability\Skills;
 
 use Cognesy\Agents\Hook\Contracts\HookInterface;
 use Cognesy\Agents\Hook\Data\HookContext;
+use Override;
 
 /**
  * Enforces allowed-tools restrictions when a skill with allowed-tools is active.
@@ -17,9 +18,8 @@ final readonly class SkillToolFilterHook implements HookInterface
 {
     public const META_KEY = 'active_skill_allowed_tools';
 
-    #[\Override]
-    public function handle(HookContext $context): HookContext
-    {
+    #[Override]
+    public function handle(HookContext $context): HookContext {
         $allowedTools = $context->state()->metadata()->get(self::META_KEY);
         if (!is_array($allowedTools) || $allowedTools === []) {
             return $context;

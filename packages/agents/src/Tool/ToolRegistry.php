@@ -5,6 +5,7 @@ namespace Cognesy\Agents\Tool;
 use Cognesy\Agents\Exceptions\InvalidToolException;
 use Cognesy\Agents\Tool\Contracts\CanManageTools;
 use Cognesy\Agents\Tool\Contracts\ToolInterface;
+use Override;
 
 final class ToolRegistry implements CanManageTools
 {
@@ -14,26 +15,24 @@ final class ToolRegistry implements CanManageTools
     /** @var array<string, ToolInterface> */
     private array $instances = [];
 
-    #[\Override]
+    #[Override]
     public function register(ToolInterface $tool): void {
         $name = $tool->descriptor()->name();
         $this->instances[$name] = $tool;
     }
 
-    #[\Override]
+    #[Override]
     public function registerFactory(string $name, callable $factory): void {
         $this->factories[$name] = $factory;
     }
 
-    #[\Override]
-    public function has(string $name): bool
-    {
+    #[Override]
+    public function has(string $name): bool {
         return isset($this->instances[$name]) || isset($this->factories[$name]);
     }
 
-    #[\Override]
-    public function get(string $name): ToolInterface
-    {
+    #[Override]
+    public function get(string $name): ToolInterface {
         if (isset($this->instances[$name])) {
             return $this->instances[$name];
         }
@@ -57,15 +56,13 @@ final class ToolRegistry implements CanManageTools
         return $all;
     }
 
-    #[\Override]
-    public function names(): array
-    {
+    #[Override]
+    public function names(): array {
         return array_keys($this->factories + $this->instances);
     }
 
-    #[\Override]
-    public function count(): int
-    {
+    #[Override]
+    public function count(): int {
         return count($this->names());
     }
 }

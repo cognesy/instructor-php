@@ -121,6 +121,45 @@ describe('EditFileTool', function () {
         expect(file_get_contents($path))->toBe("line1\nNEW_LINE\nline3");
     });
 
+    it('streams edits without truncating a file larger than the sandbox output cap', function () {
+        $path = $this->tempDir . '/large.txt';
+        $prefix = str_repeat('a', 2 * 1024 * 1024);
+        $suffix = str_repeat('z', 2 * 1024 * 1024);
+        file_put_contents($path, $prefix . 'UNIQUE_MARKER' . $suffix);
+
+        $tool = new EditFileTool(baseDir: $this->tempDir);
+        $result = $tool($path, 'UNIQUE_MARKER', 'REPLACED');
+
+        expect($result)->toContain('streamed atomically');
+        expect(filesize($path))->toBe(strlen($prefix . 'REPLACED' . $suffix));
+        expect(file_get_contents($path))->toBe($prefix . 'REPLACED' . $suffix);
+    });
+
+    it('matches text that crosses an internal stream boundary', function () {
+        $path = $this->tempDir . '/boundary.txt';
+        $prefix = str_repeat('a', (64 * 1024) - 3);
+        file_put_contents($path, $prefix . 'BOUNDARY' . 'suffix');
+
+        $tool = new EditFileTool(baseDir: $this->tempDir);
+        $result = $tool($path, 'BOUNDARY', 'REPLACED');
+
+        expect($result)->toContain('Successfully replaced 1 occurrence');
+        expect(file_get_contents($path))->toBe($prefix . 'REPLACEDsuffix');
+    });
+
+    it('leaves a large source unchanged when uniqueness validation fails', function () {
+        $path = $this->tempDir . '/multiple-large.txt';
+        $content = 'MARKER' . str_repeat('x', 2 * 1024 * 1024) . 'MARKER';
+        file_put_contents($path, $content);
+
+        $tool = new EditFileTool(baseDir: $this->tempDir);
+        $result = $tool($path, 'MARKER', 'REPLACED');
+
+        expect($result)->toContain('found 2 times');
+        expect($result)->toContain('The file was not changed');
+        expect(file_get_contents($path))->toBe($content);
+    });
+
     it('creates tool from directory', function () {
         $tool = EditFileTool::inDirectory($this->tempDir);
 

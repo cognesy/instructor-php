@@ -42,7 +42,7 @@ rules:
     pattern-regex: "\\b(withLLMPreset|withPreset|withConnection|withProfile)\\s*\\("
 
   - id: global-config-no-static-using-selector-in-core-runtime
-    message: "Core runtime static constructors must use typed config (`fromXxxConfig(...)`), not `using(string ...)` selectors."
+    message: "Core runtime static constructors must use typed config (`fromXxxConfig(...)`), not `using(string ...)` selectors. Public facade shortcuts are explicitly allowlisted below."
     severity: ERROR
     languages: [php]
     paths:
@@ -53,10 +53,20 @@ rules:
         - "/packages/templates/src/**/*.php"
         - "/packages/agents/src/**/*.php"
         - "/packages/auxiliary/src/**/*.php"
+      # These are public facade shortcuts. Each delegates immediately to a
+      # typed config constructor and is intentionally retained for DX and
+      # compatibility; this rule targets hidden selector resolution in core
+      # runtime classes, not named-preset convenience APIs.
+      exclude:
+        - "/packages/http-client/src/HttpClient.php"
+        - "/packages/instructor/src/StructuredOutput.php"
+        - "/packages/polyglot/src/Embeddings/Embeddings.php"
+        - "/packages/polyglot/src/Inference/Inference.php"
+        - "/packages/polyglot/src/Inference/LLMProvider.php"
     pattern-regex: "public\\s+static\\s+function\\s+using\\s*\\(\\s*\\??string\\s+\\$[A-Za-z_][A-Za-z0-9_]*"
 
   - id: global-config-no-with-config-mutators-in-core-runtime
-    message: "Core runtime services should not expose `with*Config(...)` mutators; keep these on edge builders only."
+    message: "Core runtime services should not expose `with*Config(...)` mutators; immutable state/runtime contracts and compatibility adapters are explicitly allowlisted below."
     severity: ERROR
     languages: [php]
     paths:
@@ -69,4 +79,19 @@ rules:
         - "/packages/auxiliary/src/**/*.php"
       exclude:
         - "/packages/**/src/**/*Builder.php"
+        # Immutable state/runtime transitions and required capability
+        # contracts. These APIs do not read global config; they carry typed
+        # config through the runtime graph or return a new configured value.
+        - "/packages/agents/src/Data/AgentState.php"
+        - "/packages/agents/src/Drivers/ReAct/ReActDriver.php"
+        - "/packages/agents/src/Drivers/Testing/FakeAgentDriver.php"
+        - "/packages/agents/src/Drivers/ToolCalling/ToolCallingDriver.php"
+        - "/packages/instructor/src/StructuredOutputRuntime.php"
+        - "/packages/polyglot/src/Embeddings/EmbeddingsProvider.php"
+        - "/packages/polyglot/src/Inference/Contracts/CanAcceptLLMConfig.php"
+        - "/packages/polyglot/src/Inference/LLMProvider.php"
+        # Template engine selection is an existing public compatibility seam;
+        # its mutability is a separate design concern from global config reads.
+        - "/packages/templates/src/Template.php"
+        - "/packages/templates/src/TemplateProvider.php"
     pattern-regex: "public\\s+function\\s+with[A-Za-z0-9_]*Config\\s*\\("

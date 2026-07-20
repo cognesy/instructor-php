@@ -28,7 +28,7 @@ function throttleCountingDeserializer(int &$calls): CanDeserializeResponse {
 
         public function deserialize(array $data, ResponseModel $responseModel): Result {
             $this->calls++;
-            return Result::success($data);
+            return Result::success(new ThrottledDoc(t: (string) ($data['t'] ?? '')));
         }
     };
 }
@@ -36,7 +36,7 @@ function throttleCountingDeserializer(int &$calls): CanDeserializeResponse {
 function throttleTransformer(): CanTransformResponse {
     return new class implements CanTransformResponse {
         public function transform(mixed $data, ResponseModel $responseModel): Result {
-            return Result::success(new ThrottledDoc(t: (string) ($data['t'] ?? '')));
+            return Result::success($data);
         }
     };
 }
@@ -46,7 +46,7 @@ function runThrottled(array $deltas, int &$calls, int $interval = 1): array {
     $states = TransformationStream::from($deltas)->using(Transformation::define(
         new AccumulatePartialResponses(
             mode: OutputMode::Json,
-            hydrator: makeTestHydrator(throttleCountingDeserializer($calls), throttleTransformer()),
+            materializer: makeTestMaterializer(throttleCountingDeserializer($calls), throttleTransformer()),
             responseModel: makeAnyResponseModel(ThrottledDoc::class),
             materializationInterval: $interval,
         ),

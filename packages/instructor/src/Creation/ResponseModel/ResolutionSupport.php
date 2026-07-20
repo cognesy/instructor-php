@@ -8,10 +8,11 @@ use Cognesy\Instructor\Creation\StructuredOutputSchemaRenderer;
 use Cognesy\Instructor\Data\OutputFormat;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\SchemaRendering;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Schema\Data\Schema;
-use Cognesy\Utils\Str;
+use Cognesy\Schema\TypeInfo;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -49,10 +50,7 @@ final class ResolutionSupport
             default => 'default_schema',
         };
         $name = $name ?: $this->config->schemaName() ?: 'default_schema';
-        if (Str::startsWith($name, '\\')) {
-            $name = substr($name, 1);
-        }
-        return str_replace('\\', '_', $name);
+        return str_replace('\\', '_', ltrim($name, '\\'));
     }
 
     public function schemaDescription(string|array|object $requestedSchema): string {
@@ -63,18 +61,6 @@ final class ResolutionSupport
             default => '',
         };
         return $resolved ?: $this->config->schemaDescription() ?: '';
-    }
-
-    public function makeInstance(string $class): object {
-        if (!class_exists($class)) {
-            throw new InvalidArgumentException("Class $class does not exist.");
-        }
-        $reflection = new \ReflectionClass($class);
-        $instance = $reflection->newInstanceWithoutConstructor();
-        if (!is_object($instance)) {
-            throw new InvalidArgumentException("Class $class does not instantiate an object.");
-        }
-        return $instance;
     }
 
     /**
@@ -96,8 +82,7 @@ final class ResolutionSupport
      * shared rendering payload (tool definitions + response format).
      */
     public function assemble(
-        string $class,
-        object $instance,
+        ?object $instance,
         Schema $schema,
         array $jsonSchema,
         string $schemaName,
@@ -106,8 +91,6 @@ final class ResolutionSupport
         ?SchemaRendering $rendering = null,
     ): ResponseModel {
         return new ResponseModel(
-            class: $class,
-            instance: $instance,
             schema: $schema,
             jsonSchema: $jsonSchema,
             schemaName: $schemaName,
@@ -116,10 +99,35 @@ final class ResolutionSupport
             toolDescription: $this->config->toolDescription(),
             toolDefinitions: $this->toolDefinitionsForInstance($instance, $jsonSchema, $rendering),
             responseFormat: $this->renderResponseFormat($jsonSchema, $schemaName),
-            useObjectReferences: $this->config->useObjectReferences(),
             config: $this->config,
-            outputFormat: $outputFormat,
+            outputFormat: $this->resolveOutputFormat(
+                $outputFormat,
+                TypeInfo::className($schema->type) ?? '',
+                $instance,
+            ),
         );
+    }
+
+    private function resolveOutputFormat(
+        ?OutputFormat $requested,
+        string $schemaClass,
+        ?object $instance,
+    ): OutputFormat {
+        return match (true) {
+            $requested !== null => $requested,
+            $instance instanceof CanDeserializeSelf => OutputFormat::selfDeserializing($instance),
+            $schemaClass !== '' => $this->classOutputFormat($schemaClass),
+            $this->config->defaultToStdClass() => OutputFormat::stdClass(),
+            default => OutputFormat::array(),
+        };
+    }
+
+    private function classOutputFormat(string $class): OutputFormat {
+        $class = ltrim($class, '\\');
+        if (!class_exists($class)) {
+            throw new InvalidArgumentException("Output class does not exist: {$class}");
+        }
+        return OutputFormat::instanceOf($class);
     }
 
     private function makeProviderInstance(string $class): object {
@@ -155,7 +163,7 @@ final class ResolutionSupport
     }
 
     private function toolDefinitionsForInstance(
-        object $instance,
+        ?object $instance,
         array $jsonSchema,
         ?SchemaRendering $rendering,
     ): ToolDefinitions {

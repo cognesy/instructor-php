@@ -30,8 +30,9 @@ qa-pint-fix:
 qa-semgrep:
     composer qa:semgrep
 
-# Dead-code detection via PHPStan.
-[group('qa'), doc('Dead-code detection (PHPStan)')]
+# Opt-in dead-code detection via PHPStan. This is not part of standard QA while
+# the examples and Experimental parser inputs remain incompatible with the lane.
+[group('maintenance'), doc('Opt-in dead-code detection (PHPStan; currently incomplete)')]
 qa-dead-code:
     composer dead-code
 

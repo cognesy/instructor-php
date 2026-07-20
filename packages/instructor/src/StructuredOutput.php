@@ -160,10 +160,21 @@ final class StructuredOutput implements CanCreateStructuredOutput
         return $copy;
     }
 
-    public function intoObject(CanDeserializeSelf $object): StructuredOutput {
+    public function intoStdClass(): StructuredOutput {
+        $copy = clone $this;
+        $copy->request = $copy->request->withOutputFormat(OutputFormat::stdClass());
+        return $copy;
+    }
+
+    public function intoSelfDeserializing(CanDeserializeSelf $object): StructuredOutput {
         $copy = clone $this;
         $copy->request = $copy->request->withOutputFormat(OutputFormat::selfDeserializing($object));
         return $copy;
+    }
+
+    /** @deprecated 2.5 Use intoSelfDeserializing(); remove in 3.0. */
+    public function intoObject(CanDeserializeSelf $object): StructuredOutput {
+        return $this->intoSelfDeserializing($object);
     }
 
     public function withRequest(StructuredOutputRequest $request): StructuredOutput {

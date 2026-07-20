@@ -18,4 +18,3 @@ final class SessionSaved extends Event
         ]);
     }
 }
-

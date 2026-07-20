@@ -55,22 +55,31 @@ Namespace: `Cognesy\Instructor\Events\Response`
 | `ResponseDeserializationFailed` | Response deserialization failed |
 | `ResponseTransformed` | Response was transformed |
 | `ResponseTransformationFailed` | Response transformation failed |
-| `ResponseGenerationFailed` | Response generation failed |
+| `ResponseMaterialized` | Final materialization succeeded |
+| `ResponseMaterializationFailed` | Final materialization failed at a typed stage |
 
-### Request Events
+### Response-model Events
 
-Namespace: `Cognesy\Instructor\Events\Request`
+Namespace: `Cognesy\Instructor\Events\ResponseModel`
 
 | Event | Description |
 |-------|-------------|
-| `NewValidationRecoveryAttempt` | A validation recovery retry attempt is being made |
-| `StructuredOutputRecoveryLimitReached` | Maximum retries exhausted |
 | `ResponseModelRequested` | Response model was requested |
+| `ResponseModelBuildModeSelected` | Response model build mode was selected |
 | `ResponseModelBuilt` | Response model schema was built |
+
+### Attempt Events
+
+Namespace: `Cognesy\Instructor\Events\Attempt`
+
+| Event | Description |
+|-------|-------------|
+| `ResponseRetryScheduled` | A structured-output retry has been scheduled |
+| `ResponseRecoveryExhausted` | Maximum structured-output retries exhausted |
 
 ### Streaming Events
 
-Namespace: `Cognesy\Instructor\Events\PartialsGenerator`
+Namespace: `Cognesy\Instructor\Events\Streaming`
 
 | Event | Description |
 |-------|-------------|
@@ -81,6 +90,7 @@ Namespace: `Cognesy\Instructor\Events\PartialsGenerator`
 | `StreamedToolCallStarted` | A streamed tool call started |
 | `StreamedToolCallUpdated` | A streamed tool call was updated |
 | `StreamedToolCallCompleted` | A streamed tool call completed |
+| `SequenceUpdated` | A sequence item was completed |
 
 ## Listening to Events
 

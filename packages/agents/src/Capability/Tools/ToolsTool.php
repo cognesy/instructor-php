@@ -6,6 +6,7 @@ use Cognesy\Agents\Tool\Contracts\CanManageTools;
 use Cognesy\Agents\Tool\Tools\SimpleTool;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
+use Override;
 
 final class ToolsTool extends SimpleTool
 {
@@ -15,9 +16,8 @@ final class ToolsTool extends SimpleTool
         parent::__construct(new ToolsToolDescriptor());
     }
 
-    #[\Override]
-    public function __invoke(mixed ...$args): array
-    {
+    #[Override]
+    public function __invoke(mixed ...$args): array {
         $action = $this->arg($args, 'action', 0, 'list');
 
         return match ($action) {
@@ -31,9 +31,8 @@ final class ToolsTool extends SimpleTool
         };
     }
 
-    #[\Override]
-    public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition
-    {
+    #[Override]
+    public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition {
         return \Cognesy\Polyglot\Inference\Data\ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
@@ -43,12 +42,11 @@ final class ToolsTool extends SimpleTool
                     JsonSchema::string('tool', 'Tool name to get full spec for (when action=help).'),
                     JsonSchema::string('query', 'Search query (when action=search).'),
                     JsonSchema::integer('limit', 'Maximum number of results to return.', meta: ['minimum' => 1, 'maximum' => 100]),
-                ])
+                ]),
         )->toArray());
     }
 
-    private function handleList(array $args): array
-    {
+    private function handleList(array $args): array {
         $limit = $this->resolveLimit($args);
         $tools = [];
         foreach ($this->registry->names() as $name) {
@@ -62,8 +60,7 @@ final class ToolsTool extends SimpleTool
         ];
     }
 
-    private function handleHelp(array $args): array
-    {
+    private function handleHelp(array $args): array {
         $toolName = $args['tool'] ?? $args['name'] ?? null;
         if (!is_string($toolName) || $toolName === '') {
             return [
@@ -85,8 +82,7 @@ final class ToolsTool extends SimpleTool
         ];
     }
 
-    private function handleSearch(array $args): array
-    {
+    private function handleSearch(array $args): array {
         $query = $args['query'] ?? null;
         if (!is_string($query) || trim($query) === '') {
             return [
@@ -136,8 +132,7 @@ final class ToolsTool extends SimpleTool
         ];
     }
 
-    private function resolveLimit(array $args): ?int
-    {
+    private function resolveLimit(array $args): ?int {
         $limit = $args['limit'] ?? null;
         if (!is_int($limit)) {
             return null;

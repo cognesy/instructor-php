@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Hook\Enums;
 
-enum HookTrigger : string
+enum HookTrigger: string
 {
     case BeforeExecution = 'before_execution';
     case BeforeStep = 'before_step';
@@ -14,7 +14,7 @@ enum HookTrigger : string
     case AfterExecution = 'after_execution';
     case OnError = 'on_error';
 
-    public function equals(HookTrigger $type) : bool {
+    public function equals(HookTrigger $type): bool {
         return $this === $type;
     }
 }

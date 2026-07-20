@@ -71,8 +71,12 @@ echo "Step 2: Skipping release notes distribution (now centralized in builds/doc
 
 # 3. Check for uncommitted changes
 if [ -n "$(git status --porcelain)" ]; then
-    echo "Step 3: Adding all modified files..."
-    git add .
+    echo "Step 3: Adding source and documentation changes (excluding generated build output)..."
+    git add -A -- \
+        ':!builds/**' \
+        ':!.beads/**' \
+        ':!QUALITY.md' \
+        ':!**/vendor/**'
 else
     echo "Step 3: No uncommitted changes detected."
 fi

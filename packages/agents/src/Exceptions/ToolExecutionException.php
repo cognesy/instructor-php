@@ -12,7 +12,7 @@ class ToolExecutionException extends AgentException
         ToolCall $toolCall,
         ?Throwable $previous = null,
     ) {
-        $info = "Error executing tool '{$toolCall->name()}'(" . $toolCall->argsAsJson() . "): " . $message;
+        $info = "Error executing tool '{$toolCall->name()}'(" . $toolCall->argsAsJson() . '): ' . $message;
         parent::__construct(
             message: $info,
             previous: $previous,

@@ -6,6 +6,7 @@ use Cognesy\Agents\Tool\Tools\StateAwareTool;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
+use Override;
 
 /**
  * Tool for listing all keys in agent metadata.
@@ -21,7 +22,7 @@ class MetadataListTool extends StateAwareTool
         parent::__construct(new MetadataListToolDescriptor());
     }
 
-    #[\Override]
+    #[Override]
     public function __invoke(mixed ...$args): string {
         if ($this->agentState === null) {
             return 'Error: Agent state not available';
@@ -62,12 +63,12 @@ class MetadataListTool extends StateAwareTool
         };
     }
 
-    #[\Override]
+    #[Override]
     public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition {
         return \Cognesy\Polyglot\Inference\Data\ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
-            parameters: JsonSchema::object('parameters')
+            parameters: JsonSchema::object('parameters'),
         )->toArray());
     }
 }

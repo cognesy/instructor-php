@@ -95,7 +95,7 @@ final class StructuredPromptPlanBuilder
             ),
             'task' => $task,
             'examples_markdown' => $this->examplesToMarkdown($examples),
-            'json_schema' => $this->encodeJson($responseModel->jsonSchema() ?? []),
+            'json_schema' => $this->encodeJson($responseModel->toJsonSchema()),
             'schema_name' => $responseModel->schemaName(),
             'schema_description' => $responseModel->schemaDescription(),
             'tool_name' => $responseModel->toolName(),

@@ -6,10 +6,11 @@ use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Template\Contracts\CanInstantiateAgentState;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Override;
 
 final readonly class DefinitionStateFactory implements CanInstantiateAgentState
 {
-    #[\Override]
+    #[Override]
     public function instantiateAgentState(
         AgentDefinition $definition,
         ?AgentState $seed = null,

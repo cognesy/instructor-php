@@ -28,7 +28,7 @@ final readonly class StopSignal
         );
     }
 
-    public static function fromStopException(AgentStopException $stop) : self {
+    public static function fromStopException(AgentStopException $stop): self {
         return new self(
             reason: StopReason::StopRequested,
             message: $stop->getMessage(),

@@ -62,12 +62,12 @@ Key settings:
 |---|---|---|
 | `outputMode` | `Tools` | How the schema is delivered to the LLM (`Tools`, `Json`, `JsonSchema`, `MdJson`, `Text`, `Unrestricted`) |
 | `maxRetries` | `0` | Maximum retry attempts after the first call |
-| `retryPrompt` | `"JSON generated incorrectly..."` | Template for retry feedback messages |
+| `retryPromptClass` | Bundled Twig prompt class | Prompt class for retry feedback messages |
 | `toolName` | `"extracted_data"` | Function name used in tool-call mode |
 | `toolDescription` | `"Function call based on..."` | Description sent with the tool definition |
 | `schemaName` | `"default_schema"` | Name used in JSON Schema mode |
 | `useObjectReferences` | `false` | Enable `$ref` usage in generated schemas |
-| `defaultToStdClass` | `false` | Return `stdClass` instead of arrays for untyped schemas |
+| `defaultToStdClass` | `false` | Deprecated 2.5 compatibility fallback; use per-request `intoStdClass()` |
 | `responseCachePolicy` | `None` | Whether to cache streaming response snapshots for replay |
 
 ### `StructuredOutputRuntime`

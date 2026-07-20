@@ -20,6 +20,10 @@ use Cognesy\Template\Template;
 use Cognesy\Utils\Arrays;
 use Exception;
 
+/**
+ * @deprecated 2.5 Legacy inline/Arrowpipe request assembly. Remove in 2.6
+ *             with instructor-cxxt; inject explicitly only for compatibility.
+ */
 class RequestMaterializer implements CanMaterializeRequest
 {
     #[\Override]

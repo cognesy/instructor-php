@@ -63,7 +63,6 @@ class EventDispatcher implements CanHandleEvents, CanCheckListeners
      */
     #[\Override]
     public function addListener(string $name, callable $listener, int $priority = 0): void {
-        $name = self::canonicalEventName($name);
         $this->listeners[$name] ??= [];
         $this->listeners[$name][] = [
             'listener' => $listener,
@@ -74,18 +73,6 @@ class EventDispatcher implements CanHandleEvents, CanCheckListeners
         if ($name === '*') {
             $this->sortedTaps = null; // invalidate tap cache
         }
-    }
-
-    /**
-     * Resolves class aliases (deprecated event FQCNs kept via class_alias)
-     * to their canonical class name, so listeners registered under an old
-     * name still match events dispatched under the new one.
-     */
-    private static function canonicalEventName(string $name): string {
-        if ($name === '*' || !class_exists($name)) {
-            return $name;
-        }
-        return (new \ReflectionClass($name))->getName();
     }
 
     /**
@@ -155,7 +142,6 @@ class EventDispatcher implements CanHandleEvents, CanCheckListeners
      */
     #[\Override]
     public function hasListenersFor(string $eventClass): bool {
-        $eventClass = self::canonicalEventName($eventClass);
         if ($this->listeners !== []) {
             if (($this->listeners['*'] ?? []) !== []) {
                 return true;

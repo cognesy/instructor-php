@@ -29,7 +29,7 @@ it('hydrates recoverable json partials and refines them as snapshots grow', func
         TransformationStream::from($responses)->using(Transformation::define(
             new AccumulatePartialResponses(
                 mode: OutputMode::Json,
-                hydrator: makeTestHydrator(accumulatingDeserializer(), accumulatingTransformer()),
+                materializer: makeTestMaterializer(accumulatingDeserializer(), accumulatingTransformer()),
                 responseModel: makeAnyResponseModel(AccumulatedUser::class),
             ),
         )),
@@ -52,7 +52,10 @@ it('preserves the last-good parsed value for unchanged snapshots', function () {
 
         public function deserialize(array $data, ResponseModel $responseModel): Result {
             $this->calls++;
-            return Result::success($data);
+            return Result::success(new AccumulatedUser(
+                name: (string) ($data['name'] ?? ''),
+                age: (int) ($data['age'] ?? 0),
+            ));
         }
     };
 
@@ -65,7 +68,7 @@ it('preserves the last-good parsed value for unchanged snapshots', function () {
         TransformationStream::from($responses)->using(Transformation::define(
             new AccumulatePartialResponses(
                 mode: OutputMode::Json,
-                hydrator: makeTestHydrator($deserializer, accumulatingTransformer()),
+                materializer: makeTestMaterializer($deserializer, accumulatingTransformer()),
                 responseModel: makeAnyResponseModel(AccumulatedUser::class),
             ),
         )),
@@ -87,7 +90,10 @@ it('preserves the last-good parsed value when only usage changes', function () {
 
         public function deserialize(array $data, ResponseModel $responseModel): Result {
             $this->calls++;
-            return Result::success($data);
+            return Result::success(new AccumulatedUser(
+                name: (string) ($data['name'] ?? ''),
+                age: (int) ($data['age'] ?? 0),
+            ));
         }
     };
 
@@ -107,7 +113,7 @@ it('preserves the last-good parsed value when only usage changes', function () {
         TransformationStream::from($responses)->using(Transformation::define(
             new AccumulatePartialResponses(
                 mode: OutputMode::Json,
-                hydrator: makeTestHydrator($deserializer, accumulatingTransformer()),
+                materializer: makeTestMaterializer($deserializer, accumulatingTransformer()),
                 responseModel: makeAnyResponseModel(AccumulatedUser::class),
             ),
         )),
@@ -132,7 +138,7 @@ it('hydrates recoverable tool argument partials and refines them as snapshots gr
         TransformationStream::from($responses)->using(Transformation::define(
             new AccumulatePartialResponses(
                 mode: OutputMode::Tools,
-                hydrator: makeTestHydrator(accumulatingDeserializer(), accumulatingTransformer()),
+                materializer: makeTestMaterializer(accumulatingDeserializer(), accumulatingTransformer()),
                 responseModel: makeAnyResponseModel(AccumulatedUser::class),
             ),
         )),
@@ -149,7 +155,10 @@ it('hydrates recoverable tool argument partials and refines them as snapshots gr
 function accumulatingDeserializer(): CanDeserializeResponse {
     return new class implements CanDeserializeResponse {
         public function deserialize(array $data, ResponseModel $responseModel): Result {
-            return Result::success($data);
+            return Result::success(new AccumulatedUser(
+                name: (string) ($data['name'] ?? ''),
+                age: (int) ($data['age'] ?? 0),
+            ));
         }
     };
 }
@@ -157,10 +166,7 @@ function accumulatingDeserializer(): CanDeserializeResponse {
 function accumulatingTransformer(): CanTransformResponse {
     return new class implements CanTransformResponse {
         public function transform(mixed $data, ResponseModel $responseModel): Result {
-            return Result::success(new AccumulatedUser(
-                name: (string) ($data['name'] ?? ''),
-                age: (int) ($data['age'] ?? 0),
-            ));
+            return Result::success($data);
         }
     };
 }

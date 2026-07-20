@@ -3,6 +3,7 @@
 namespace Cognesy\Agents\Events;
 
 use DateTimeImmutable;
+use Override;
 use Psr\Log\LogLevel;
 
 /**
@@ -38,7 +39,7 @@ final class DecisionExtractionFailed extends AgentEvent
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public function __toString(): string {
         $parentInfo = $this->parentAgentId ? sprintf(' [parent=%s]', substr($this->parentAgentId, 0, 8)) : '';
         $attemptInfo = $this->maxAttempts > 1 ? " (attempt {$this->attemptNumber}/{$this->maxAttempts})" : '';
@@ -48,7 +49,7 @@ final class DecisionExtractionFailed extends AgentEvent
             substr($this->agentId, 0, 8),
             $parentInfo,
             $attemptInfo,
-            $this->errorMessage
+            $this->errorMessage,
         );
     }
 }

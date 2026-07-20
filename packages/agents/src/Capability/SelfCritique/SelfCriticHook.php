@@ -11,13 +11,14 @@ use Cognesy\Agents\Hook\Data\HookContext;
 use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Messages\Messages;
+use Override;
+use Throwable;
 
 final class SelfCriticHook implements HookInterface
 {
     public const string METADATA_KEY = 'self_critic_result';
     public const string ITERATION_KEY = 'self_critic_iteration';
     private const string ORIGINAL_TASK_KEY = 'self_critic_original_task';
-
     private const string CRITIC_PROMPT = <<<'PROMPT'
 You are a critical evaluator checking for factual errors and evidence contradictions.
 
@@ -65,9 +66,8 @@ PROMPT;
         private int $maxCriticIterations = 2,
     ) {}
 
-    #[\Override]
-    public function handle(HookContext $context): HookContext
-    {
+    #[Override]
+    public function handle(HookContext $context): HookContext {
         $state = $context->state();
         $currentStep = $state->currentStep();
 
@@ -81,7 +81,7 @@ PROMPT;
 
         if ($response === '') {
             return $context->withState(
-                $this->applyContinuationEvaluation($state, null, $iteration)
+                $this->applyContinuationEvaluation($state, null, $iteration),
             );
         }
 
@@ -91,7 +91,7 @@ PROMPT;
                 ->withMetadata(self::METADATA_KEY, $result)
                 ->withMetadata(self::ITERATION_KEY, $iteration);
             return $context->withState(
-                $this->applyContinuationEvaluation($state, $result, $iteration)
+                $this->applyContinuationEvaluation($state, $result, $iteration),
             );
         }
 
@@ -117,14 +117,13 @@ PROMPT;
 
         $state = $this->applyContinuationEvaluation($state, $result, $newIteration);
 
-        return match(true) {
+        return match (true) {
             $result->approved => $context->withState($state),
             default => $context->withState($this->injectFeedback($state, $result, $newIteration)),
         };
     }
 
-    private function ensureOriginalTaskCaptured(AgentState $state): AgentState
-    {
+    private function ensureOriginalTaskCaptured(AgentState $state): AgentState {
         if ($state->metadata()->get(self::ORIGINAL_TASK_KEY) !== null) {
             return $state;
         }
@@ -133,10 +132,9 @@ PROMPT;
         return $state->withMetadata(self::ORIGINAL_TASK_KEY, $task);
     }
 
-    private function injectFeedback(AgentState $state, SelfCriticResult $result, int $iteration): AgentState
-    {
+    private function injectFeedback(AgentState $state, SelfCriticResult $result, int $iteration): AgentState {
         $feedback = $result->toFeedback();
-        $directive = match(true) {
+        $directive = match (true) {
             $result->suggestions !== [] => 'Execute these tool calls to gather correct information, then provide a revised answer.',
             default => 'Please investigate further and revise your response.',
         };
@@ -152,7 +150,7 @@ PROMPT;
         return $state->withMessages(
             $state->messages()
                 ->appendMessages($currentStep->outputMessages())
-                ->appendMessages($feedbackMessage)
+                ->appendMessages($feedbackMessage),
         );
     }
 
@@ -161,7 +159,7 @@ PROMPT;
         ?SelfCriticResult $result,
         int $iteration,
     ): AgentState {
-        return match(true) {
+        return match (true) {
             $result === null => $state,
             $result->approved => $state,
             $iteration >= $this->maxCriticIterations => $state->withStopSignal(new StopSignal(
@@ -174,8 +172,7 @@ PROMPT;
         };
     }
 
-    private function extractEvidence(AgentState $state): string
-    {
+    private function extractEvidence(AgentState $state): string {
         $evidence = [];
 
         foreach ($state->steps() as $step) {
@@ -184,7 +181,7 @@ PROMPT;
                     $evidence[] = "Tool: {$toolCall->name()}";
                     $args = $toolCall->args();
                     if ($args !== []) {
-                        $evidence[] = "Args: " . json_encode($args, JSON_UNESCAPED_SLASHES);
+                        $evidence[] = 'Args: ' . json_encode($args, JSON_UNESCAPED_SLASHES);
                     }
                 }
             }
@@ -203,13 +200,12 @@ PROMPT;
         return $evidence === [] ? '(No tool calls made)' : implode("\n\n", $evidence);
     }
 
-    private function truncateContent(string $content, int $maxLength = 6000): string
-    {
+    private function truncateContent(string $content, int $maxLength = 6000): string {
         if (strlen($content) <= $maxLength) {
             return $content;
         }
 
-        $halfLength = (int)($maxLength / 2);
+        $halfLength = (int) ($maxLength / 2);
         $omitted = strlen($content) - $maxLength;
 
         return substr($content, 0, $halfLength)
@@ -217,8 +213,7 @@ PROMPT;
             . substr($content, -$halfLength);
     }
 
-    private function evaluateResponse(string $task, string $evidence, string $response): SelfCriticResult
-    {
+    private function evaluateResponse(string $task, string $evidence, string $response): SelfCriticResult {
         $prompt = sprintf(self::CRITIC_PROMPT, $task, $evidence, $response);
         $request = new StructuredOutputRequest(
             messages: Messages::fromString($prompt),
@@ -228,7 +223,7 @@ PROMPT;
         try {
             /** @var SelfCriticResult */
             return $this->structuredOutput->create($request)->get();
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return new SelfCriticResult(
                 approved: true,
                 summary: 'Critic evaluation failed, approving by default.',

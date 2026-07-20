@@ -10,19 +10,19 @@ use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Utils\Exceptions\ErrorList;
+use RuntimeException;
 
 final readonly class ScenarioStep
 {
     public function __construct(
-        public string        $response,
-        public InferenceUsage         $usage,
+        public string $response,
+        public InferenceUsage $usage,
         public AgentStepType $stepType,
-        public ?ToolCalls    $toolCalls = null,
-        public bool          $executeTools = true,
+        public ?ToolCalls $toolCalls = null,
+        public bool $executeTools = true,
     ) {}
 
-    public static function final(string $response, ?InferenceUsage $usage = null): self
-    {
+    public static function final(string $response, ?InferenceUsage $usage = null): self {
         return new self(
             response: $response,
             usage: $usage ?? new InferenceUsage(0, 0),
@@ -30,8 +30,7 @@ final readonly class ScenarioStep
         );
     }
 
-    public static function tool(string $response, ?InferenceUsage $usage = null): self
-    {
+    public static function tool(string $response, ?InferenceUsage $usage = null): self {
         return new self(
             response: $response,
             usage: $usage ?? new InferenceUsage(0, 0),
@@ -39,8 +38,7 @@ final readonly class ScenarioStep
         );
     }
 
-    public static function error(string $response, ?InferenceUsage $usage = null): self
-    {
+    public static function error(string $response, ?InferenceUsage $usage = null): self {
         return new self(
             response: $response,
             usage: $usage ?? new InferenceUsage(0, 0),
@@ -50,12 +48,11 @@ final readonly class ScenarioStep
 
     public static function toolCall(
         string $toolName,
-        array  $args = [],
+        array $args = [],
         string $response = '',
         ?InferenceUsage $usage = null,
-        bool   $executeTools = true,
-    ): self
-    {
+        bool $executeTools = true,
+    ): self {
         $toolCalls = ToolCalls::empty()->withAddedToolCall($toolName, $args);
         return new self(
             response: $response,
@@ -66,10 +63,9 @@ final readonly class ScenarioStep
         );
     }
 
-    public function toAgentStep(AgentState $state, ?Messages $inputMessages = null): AgentStep
-    {
+    public function toAgentStep(AgentState $state, ?Messages $inputMessages = null): AgentStep {
         $errors = match ($this->stepType) {
-            AgentStepType::Error => new ErrorList(new \RuntimeException('Scenario step marked as error')),
+            AgentStepType::Error => new ErrorList(new RuntimeException('Scenario step marked as error')),
             default => ErrorList::empty(),
         };
 

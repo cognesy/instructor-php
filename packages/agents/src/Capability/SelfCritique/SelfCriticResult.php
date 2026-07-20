@@ -21,7 +21,7 @@ final readonly class SelfCriticResult
         $feedback = [];
 
         if ($this->weaknesses !== []) {
-            $feedback[] = "**Issues to address:**";
+            $feedback[] = '**Issues to address:**';
             foreach ($this->weaknesses as $weakness) {
                 $feedback[] = "- {$weakness}";
             }

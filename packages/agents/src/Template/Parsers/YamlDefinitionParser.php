@@ -4,11 +4,13 @@ namespace Cognesy\Agents\Template\Parsers;
 
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use InvalidArgumentException;
+use Override;
 use Symfony\Component\Yaml\Yaml;
+use Throwable;
 
 final readonly class YamlDefinitionParser implements CanParseAgentDefinition
 {
-    #[\Override]
+    #[Override]
     public function parse(mixed $data): AgentDefinition {
         $array = match (true) {
             is_array($data) => $data,
@@ -23,15 +25,14 @@ final readonly class YamlDefinitionParser implements CanParseAgentDefinition
     private function parseYaml(string $yaml): array {
         try {
             $parsed = Yaml::parse(trim($yaml), Yaml::PARSE_EXCEPTION_ON_INVALID_TYPE);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             throw new InvalidArgumentException("Invalid YAML: {$e->getMessage()}", previous: $e);
         }
 
         if (!is_array($parsed)) {
-            throw new InvalidArgumentException("Invalid YAML: agent definition must be a map");
+            throw new InvalidArgumentException('Invalid YAML: agent definition must be a map');
         }
 
         return $parsed;
     }
 }
-

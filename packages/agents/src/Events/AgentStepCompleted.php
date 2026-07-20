@@ -5,6 +5,7 @@ namespace Cognesy\Agents\Events;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use DateTimeImmutable;
+use Override;
 
 /**
  * Dispatched when an agent step completes execution.
@@ -51,7 +52,7 @@ final class AgentStepCompleted extends AgentEvent
         return ($interval->s * 1000) + ($interval->f * 1000);
     }
 
-    #[\Override]
+    #[Override]
     public function __toString(): string {
         $parentInfo = $this->parentAgentId ? sprintf(' [parent=%s]', substr($this->parentAgentId, 0, 8)) : '';
 
@@ -64,7 +65,7 @@ final class AgentStepCompleted extends AgentEvent
             $this->errorCount,
             $this->usage->total(),
             $this->finishReason?->value ?? 'unknown',
-            $this->durationMs
+            $this->durationMs,
         );
     }
 }

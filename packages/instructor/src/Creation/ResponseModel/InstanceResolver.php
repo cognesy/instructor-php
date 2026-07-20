@@ -19,7 +19,6 @@ final readonly class InstanceResolver
         $rendering = $this->support->renderSchema($schema);
 
         return $this->support->assemble(
-            class: $class,
             instance: $instance,
             schema: $schema,
             jsonSchema: $rendering->jsonSchema(),

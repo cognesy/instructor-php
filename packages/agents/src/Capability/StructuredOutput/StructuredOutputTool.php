@@ -2,7 +2,6 @@
 
 namespace Cognesy\Agents\Capability\StructuredOutput;
 
-use Cognesy\Agents\Capability\StructuredOutput\CanManageSchemas;
 use Cognesy\Agents\Tool\Tools\SimpleTool;
 use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
@@ -10,6 +9,8 @@ use Cognesy\Instructor\Extras\Maybe\Maybe;
 use Cognesy\Messages\Messages;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
+use Override;
+use RuntimeException;
 use Throwable;
 
 /**
@@ -37,7 +38,7 @@ final class StructuredOutputTool extends SimpleTool
         parent::__construct(new StructuredOutputToolDescriptor($schemas));
     }
 
-    #[\Override]
+    #[Override]
     public function __invoke(mixed ...$args): StructuredOutputResult {
         $input = $this->arg($args, 'input', 0, '');
         $schemaName = $this->arg($args, 'schema', 1, '');
@@ -56,7 +57,7 @@ final class StructuredOutputTool extends SimpleTool
             $available = implode(', ', $this->schemas->names());
             return StructuredOutputResult::failure(
                 $schemaName,
-                "Schema '{$schemaName}' not found. Available: {$available}"
+                "Schema '{$schemaName}' not found. Available: {$available}",
             );
         }
 
@@ -71,7 +72,7 @@ final class StructuredOutputTool extends SimpleTool
         } catch (Throwable $e) {
             return StructuredOutputResult::failure(
                 $schemaName,
-                $e->getMessage()
+                $e->getMessage(),
             );
         }
     }
@@ -94,15 +95,15 @@ final class StructuredOutputTool extends SimpleTool
         }
 
         if (!$result->hasValue()) {
-            throw new \RuntimeException(
-                "Could not extract {$schemaName}: " . ($result->error() ?: 'Unknown error')
+            throw new RuntimeException(
+                "Could not extract {$schemaName}: " . ($result->error() ?: 'Unknown error'),
             );
         }
 
         return $result->get();
     }
 
-    #[\Override]
+    #[Override]
     public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition {
         return \Cognesy\Polyglot\Inference\Data\ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
@@ -113,7 +114,7 @@ final class StructuredOutputTool extends SimpleTool
                     JsonSchema::enum('schema', $this->schemas->names(), 'Name of the schema to extract into'),
                     JsonSchema::string('store_as', 'Optional: metadata key to store the extracted data for use by other tools'),
                 ])
-                ->withRequiredProperties(['input', 'schema'])
+                ->withRequiredProperties(['input', 'schema']),
         )->toArray());
     }
 }

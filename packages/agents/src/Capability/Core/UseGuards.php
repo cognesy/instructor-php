@@ -5,12 +5,13 @@ namespace Cognesy\Agents\Capability\Core;
 use Cognesy\Agents\Builder\Contracts\CanConfigureAgent;
 use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
 use Cognesy\Agents\Hook\Collections\HookTriggers;
+use Cognesy\Agents\Hook\Enums\HookTrigger;
 use Cognesy\Agents\Hook\Hooks\ExecutionTimeLimitHook;
 use Cognesy\Agents\Hook\Hooks\FinishReasonHook;
 use Cognesy\Agents\Hook\Hooks\StepsLimitHook;
 use Cognesy\Agents\Hook\Hooks\TokenUsageLimitHook;
-use Cognesy\Agents\Hook\Enums\HookTrigger;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
+use Override;
 
 final readonly class UseGuards implements CanProvideAgentCapability
 {
@@ -22,12 +23,12 @@ final readonly class UseGuards implements CanProvideAgentCapability
         private array $finishReasons = [],
     ) {}
 
-    #[\Override]
+    #[Override]
     public static function capabilityName(): string {
         return 'use_guards';
     }
 
-    #[\Override]
+    #[Override]
     public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         $hooks = $agent->hooks();
 
@@ -35,7 +36,7 @@ final readonly class UseGuards implements CanProvideAgentCapability
             $hooks = $hooks->with(
                 hook: new StepsLimitHook(
                     maxSteps: $this->maxSteps,
-                    stepCounter: static fn($state) => $state->stepCount(),
+                    stepCounter: static fn ($state) => $state->stepCount(),
                 ),
                 triggerTypes: HookTriggers::beforeStep(),
                 priority: 200,
@@ -68,7 +69,7 @@ final readonly class UseGuards implements CanProvideAgentCapability
         $hooks = $hooks->with(
             hook: new FinishReasonHook(
                 stopReasons: $this->finishReasons,
-                finishReasonResolver: static fn($state) => $state->currentStep()?->finishReason(),
+                finishReasonResolver: static fn ($state) => $state->currentStep()?->finishReason(),
             ),
             triggerTypes: HookTriggers::afterStep(),
             priority: -200,

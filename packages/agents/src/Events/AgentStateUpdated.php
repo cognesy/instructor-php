@@ -4,6 +4,7 @@ namespace Cognesy\Agents\Events;
 
 use Cognesy\Agents\Enums\ExecutionStatus;
 use DateTimeImmutable;
+use Override;
 
 /**
  * Dispatched when agent state is updated after applying a step.
@@ -14,12 +15,12 @@ final class AgentStateUpdated extends AgentEvent
     public readonly DateTimeImmutable $updatedAt;
 
     public function __construct(
-        public readonly string          $agentId,
-        public readonly ?string         $parentAgentId,
+        public readonly string $agentId,
+        public readonly ?string $parentAgentId,
         public readonly ExecutionStatus $status,
-        public readonly int             $stepCount,
-        public readonly array           $stateSnapshot,
-        public readonly array           $currentStepSnapshot,
+        public readonly int $stepCount,
+        public readonly array $stateSnapshot,
+        public readonly array $currentStepSnapshot,
     ) {
         $this->updatedAt = new DateTimeImmutable();
 
@@ -33,7 +34,7 @@ final class AgentStateUpdated extends AgentEvent
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public function __toString(): string {
         $parentInfo = $this->parentAgentId ? sprintf(' [parent=%s]', substr($this->parentAgentId, 0, 8)) : '';
 
@@ -42,7 +43,7 @@ final class AgentStateUpdated extends AgentEvent
             substr($this->agentId, 0, 8),
             $parentInfo,
             $this->stepCount,
-            $this->status->value
+            $this->status->value,
         );
     }
 }

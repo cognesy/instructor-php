@@ -6,6 +6,7 @@ use Cognesy\Agents\Builder\Contracts\CanConfigureAgent;
 use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
 use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Hook\Collections\HookTriggers;
+use Override;
 
 /**
  * Adds metadata read/write/list tools to the agent.
@@ -24,12 +25,12 @@ final class UseMetadataTools implements CanProvideAgentCapability
         private ?MetadataPolicy $policy = null,
     ) {}
 
-    #[\Override]
+    #[Override]
     public static function capabilityName(): string {
         return 'use_metadata_tools';
     }
 
-    #[\Override]
+    #[Override]
     public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         $policy = $this->policy ?? new MetadataPolicy();
 

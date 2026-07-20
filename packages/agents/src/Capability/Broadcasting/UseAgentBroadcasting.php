@@ -17,6 +17,7 @@ use Cognesy\Agents\Events\InferenceRequestStarted;
 use Cognesy\Agents\Events\ToolCallCompleted;
 use Cognesy\Agents\Events\ToolCallStarted;
 use Cognesy\Polyglot\Inference\Events\PartialInferenceDeltaCreated;
+use Override;
 
 /**
  * Capability that exposes agent execution as UI-facing broadcast envelopes.
@@ -29,15 +30,13 @@ final readonly class UseAgentBroadcasting implements CanProvideAgentCapability
         private BroadcastConfig $config = new BroadcastConfig(),
     ) {}
 
-    #[\Override]
-    public static function capabilityName(): string
-    {
+    #[Override]
+    public static function capabilityName(): string {
         return 'use_agent_broadcasting';
     }
 
-    #[\Override]
-    public function configure(CanConfigureAgent $agent): CanConfigureAgent
-    {
+    #[Override]
+    public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         $observer = new AgentBroadcastObserver(
             transport: $this->broadcaster,
             sessionId: $this->sessionId,

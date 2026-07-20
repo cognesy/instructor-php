@@ -3,6 +3,7 @@
 namespace Cognesy\Agents\Tool;
 
 use Cognesy\Agents\Tool\Contracts\CanDescribeTool;
+use Override;
 
 readonly class ToolDescriptor implements CanDescribeTool
 {
@@ -13,17 +14,17 @@ readonly class ToolDescriptor implements CanDescribeTool
         private array $instructions = [],
     ) {}
 
-    #[\Override]
+    #[Override]
     public function name(): string {
         return $this->name;
     }
 
-    #[\Override]
+    #[Override]
     public function description(): string {
         return $this->description;
     }
 
-    #[\Override]
+    #[Override]
     public function metadata(): array {
         return array_merge([
             'name' => $this->name,
@@ -31,7 +32,7 @@ readonly class ToolDescriptor implements CanDescribeTool
         ], $this->metadata);
     }
 
-    #[\Override]
+    #[Override]
     public function instructions(): array {
         return array_merge([
             'name' => $this->name,

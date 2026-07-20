@@ -71,9 +71,8 @@ $result = (new StructuredOutput())
     ->get();
 ```
 
-> **Important:** The `x-php-class` field is required so Instructor knows which class
-> to deserialize the response into. Without it, a dynamic `Structure` object is
-> used instead.
+> **Important:** `x-php-class` is optional. Include it only when the schema should
+> hydrate a PHP class. Without it, a plain JSON Schema returns an associative array.
 
 ### Helper Wrappers
 
@@ -101,8 +100,9 @@ $users = (new StructuredOutput())
 
 ## Output Formats
 
-By default, Instructor returns a typed PHP object. You can change the output format
-using fluent methods on `StructuredOutput`:
+Instructor derives the default from the schema: class-backed schemas return their
+class, while plain JSON Schemas return associative arrays. You can override that
+target using fluent methods on `StructuredOutput`:
 
 ```php
 // Return an associative array instead of an object
@@ -120,12 +120,13 @@ $dto = (new StructuredOutput())
 // Use a self-deserializing object
 $result = (new StructuredOutput())
     ->with(responseModel: Rating::class, messages: '...')
-    ->intoObject(Scalar::integer('rating'))
+    ->intoSelfDeserializing(Scalar::integer('rating'))
     ->get();
 ```
 
-> **Note:** Instructor always returns objects (or arrays when `intoArray()` is used).
-> It never returns raw arrays unless explicitly requested.
+> **Note:** A plain JSON Schema returns an associative array. A class or class-backed
+> schema returns that class. Use `intoArray()`, `intoInstanceOf()`, or
+> `intoSelfDeserializing()` to override the resolved target explicitly.
 
 
 ## Custom Response Handling

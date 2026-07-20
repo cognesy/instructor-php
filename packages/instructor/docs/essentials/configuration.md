@@ -61,7 +61,7 @@ $runtime = StructuredOutputRuntime::fromConfig(
 | `withDeserializer($deserializer)` | Override the deserializer (implements `CanDeserializeClass`) |
 | `withExtractor($extractor)` | Override the response extractor (implements `CanExtractResponse`) |
 | `withConfig($config)` | Pass a full `StructuredOutputConfig` object |
-| `withDefaultToStdClass($bool)` | Fall back to `stdClass` for unknown types |
+| `withDefaultToStdClass($bool)` | Deprecated 2.5 compatibility fallback; use per-request `intoStdClass()` |
 
 ### Advanced Configuration With `StructuredOutputConfig`
 
@@ -74,7 +74,7 @@ use Cognesy\Instructor\Enums\OutputMode;
 $config = new StructuredOutputConfig(
     outputMode: OutputMode::JsonSchema,
     maxRetries: 5,
-    retryPrompt: 'Fix the validation errors and try again.',
+    retryPromptClass: App\Prompts\RetryFeedbackPrompt::class,
     toolName: 'extract_data',
     toolDescription: 'Extract structured data from the input.',
 );
@@ -88,11 +88,10 @@ $runtime = StructuredOutputRuntime::fromConfig(
 `StructuredOutputConfig` includes settings for:
 
 - **Output mode** -- which structured output strategy to use
-- **Retry behavior** -- max retries and the prompt sent on validation failure
+- **Retry behavior** -- max retries and the prompt class used after failure
 - **Tool metadata** -- tool name and description for `OutputMode::Tools`
 - **Schema metadata** -- schema name and description
-- **Mode prompts** -- per-mode prompt templates (e.g., how JSON Schema is embedded)
-- **Chat structure** -- the ordering of prompt sections
+- **Prompt classes** -- per-mode, retry, and deserialization-repair prompts
 - **Deserialization** -- error prompt template, `stdClass` fallback, object references
 
 

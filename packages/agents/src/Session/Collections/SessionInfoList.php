@@ -7,6 +7,7 @@ use Cognesy\Agents\Session\Data\AgentSessionInfo;
 use Cognesy\Agents\Session\Enums\SessionStatus;
 use Countable;
 use IteratorAggregate;
+use Override;
 use Traversable;
 
 /**
@@ -29,7 +30,7 @@ final readonly class SessionInfoList implements Countable, IteratorAggregate
 
     public static function fromArray(array $data): self {
         $items = array_map(
-            static fn(array $item): AgentSessionInfo => AgentSessionInfo::fromArray($item),
+            static fn (array $item): AgentSessionInfo => AgentSessionInfo::fromArray($item),
             $data,
         );
         return new self(...$items);
@@ -42,7 +43,7 @@ final readonly class SessionInfoList implements Countable, IteratorAggregate
         return $this->items;
     }
 
-    #[\Override]
+    #[Override]
     public function count(): int {
         return count($this->items);
     }
@@ -58,7 +59,7 @@ final readonly class SessionInfoList implements Countable, IteratorAggregate
     // ITERATORS ///////////////////////////////////////////////////
 
     /** @return Traversable<int, AgentSessionInfo> */
-    #[\Override]
+    #[Override]
     public function getIterator(): Traversable {
         return new ArrayIterator($this->items);
     }
@@ -68,7 +69,7 @@ final readonly class SessionInfoList implements Countable, IteratorAggregate
     public function filterByStatus(SessionStatus $status): self {
         $filtered = array_filter(
             $this->items,
-            static fn(AgentSessionInfo $info): bool => $info->status() === $status,
+            static fn (AgentSessionInfo $info): bool => $info->status() === $status,
         );
         return new self(...array_values($filtered));
     }
@@ -76,7 +77,7 @@ final readonly class SessionInfoList implements Countable, IteratorAggregate
     public function filterByAgentName(string $agentName): self {
         $filtered = array_filter(
             $this->items,
-            static fn(AgentSessionInfo $info): bool => $info->agentName() === $agentName,
+            static fn (AgentSessionInfo $info): bool => $info->agentName() === $agentName,
         );
         return new self(...array_values($filtered));
     }
@@ -85,7 +86,7 @@ final readonly class SessionInfoList implements Countable, IteratorAggregate
 
     public function toArray(): array {
         return array_map(
-            static fn(AgentSessionInfo $info): array => $info->toArray(),
+            static fn (AgentSessionInfo $info): array => $info->toArray(),
             $this->items,
         );
     }

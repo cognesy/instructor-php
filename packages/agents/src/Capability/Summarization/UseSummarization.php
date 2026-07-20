@@ -2,13 +2,14 @@
 
 namespace Cognesy\Agents\Capability\Summarization;
 
-use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
 use Cognesy\Agents\Builder\Contracts\CanConfigureAgent;
+use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
 use Cognesy\Agents\Capability\Summarization\Contracts\CanSummarizeMessages;
 use Cognesy\Agents\Capability\Summarization\Utils\SummarizeMessages;
 use Cognesy\Agents\Hook\Collections\HookTriggers;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
+use Override;
 
 class UseSummarization implements CanProvideAgentCapability
 {
@@ -17,12 +18,12 @@ class UseSummarization implements CanProvideAgentCapability
         private ?CanSummarizeMessages $summarizer = null,
     ) {}
 
-    #[\Override]
+    #[Override]
     public static function capabilityName(): string {
         return 'use_summarization';
     }
 
-    #[\Override]
+    #[Override]
     public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         $policy = $this->policy ?? new SummarizationPolicy();
         $summarizer = $this->summarizer ?? new SummarizeMessages(

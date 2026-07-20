@@ -82,8 +82,8 @@ final readonly class AgentDefinition
 
     // PRIVATE HELPERS //////////////////////////////////////////////
 
-    private static function deserializeLLMConfig(mixed $param) : LLMConfig|string|null {
-        return match(true) {
+    private static function deserializeLLMConfig(mixed $param): LLMConfig|string|null {
+        return match (true) {
             is_string($param) => $param,
             is_array($param) => LLMConfig::fromArray($param),
             default => null,
@@ -111,7 +111,7 @@ final readonly class AgentDefinition
     }
 
     private function serializeLLMConfig(): array|string|null {
-        return match(true) {
+        return match (true) {
             is_string($this->llmConfig) => $this->llmConfig,
             $this->llmConfig instanceof LLMConfig => $this->llmConfig->toArray(),
             default => null,

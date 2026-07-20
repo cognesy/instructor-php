@@ -20,8 +20,7 @@ final readonly class Task
         }
     }
 
-    public static function fromArray(array $data): self
-    {
+    public static function fromArray(array $data): self {
         $content = trim((string) ($data['content'] ?? ''));
         $status = (string) ($data['status'] ?? TaskStatus::Pending->value);
         $activeForm = trim((string) ($data['activeForm'] ?? $content));
@@ -33,8 +32,7 @@ final readonly class Task
         );
     }
 
-    public function toArray(): array
-    {
+    public function toArray(): array {
         return [
             'content' => $this->content,
             'status' => $this->status->value,
@@ -42,8 +40,7 @@ final readonly class Task
         ];
     }
 
-    public function withStatus(TaskStatus $status): self
-    {
+    public function withStatus(TaskStatus $status): self {
         return new self(
             content: $this->content,
             status: $status,
@@ -51,8 +48,7 @@ final readonly class Task
         );
     }
 
-    public function render(): string
-    {
+    public function render(): string {
         $label = match ($this->status) {
             TaskStatus::Pending => '○',
             TaskStatus::InProgress => '◐',

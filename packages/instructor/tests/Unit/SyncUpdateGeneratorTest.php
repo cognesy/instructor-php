@@ -66,11 +66,11 @@ function makeSyncDriver(
                 config: new StructuredOutputConfig(),
             ),
             responseValidator: new ResponseValidator($events, new SymfonyValidator(), new StructuredOutputConfig()),
-            responseTransformer: new ResponseTransformer($events, null, new StructuredOutputConfig()),
-            events: $events,
+            responseTransformer: new ResponseTransformer($events, null),
             extractor: new ResponseExtractor(events: $events),
         ),
         retryPolicy: new DefaultRetryPolicy($events),
+        events: $events,
     );
 }
 

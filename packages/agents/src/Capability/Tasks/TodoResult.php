@@ -3,6 +3,7 @@
 namespace Cognesy\Agents\Capability\Tasks;
 
 use JsonSerializable;
+use Override;
 
 final readonly class TodoResult implements JsonSerializable
 {
@@ -16,7 +17,7 @@ final readonly class TodoResult implements JsonSerializable
         public string $rendered,
     ) {}
 
-    #[\Override]
+    #[Override]
     public function jsonSerialize(): array {
         return $this->toArray();
     }

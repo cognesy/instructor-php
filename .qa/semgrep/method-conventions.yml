@@ -7,6 +7,12 @@ rules:
       include:
         - "/packages/**/src/**/*.php"
       exclude:
+        # These are deserializer contracts/adapters whose instance methods
+        # intentionally map external data; they are not named constructors.
+        - "/packages/contracts/src/Deserialization/Contracts/CanDeserializeClass.php"
+        - "/packages/contracts/src/Deserialization/Contracts/CanDeserializeSelf.php"
+        - "/packages/dynamic/src/Internal/SymfonyStructureDeserializer.php"
+        - "/packages/polyglot/src/Inference/Drivers/OpenAICompatible/OpenAICompatibleReasoningAdapter.php"
         - "/packages/instructor/src/Creation/ResponseModelFactory.php"
         - "/packages/dynamic/src/StructureFactory.php"
         - "/packages/dynamic/src/Structure.php"
@@ -38,6 +44,11 @@ rules:
       include:
         - "/packages/**/src/**/*.php"
       exclude:
+        # Intentional static edge/helper APIs: global HTTP middleware setup,
+        # pure request telemetry enrichment, and prompt context factories.
+        - "/packages/http-client/src/Creation/HttpClientDefaults.php"
+        - "/packages/http-client/src/Telemetry/HttpRequestTelemetry.php"
+        - "/packages/xprompt/src/Prompt.php"
         - "/packages/pipeline/src/Operators/Tap.php"
         - "/packages/pipeline/src/Operators/ConditionalCall.php"
         - "/packages/pipeline/src/Operators/Call.php"

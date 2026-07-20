@@ -38,8 +38,7 @@ final class AgentEventConsoleObserver
         );
     }
 
-    public function wiretap(): callable
-    {
+    public function wiretap(): callable {
         return $this->printer->wiretap($this->formatter);
     }
 }

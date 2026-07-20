@@ -3,8 +3,8 @@
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
-use Cognesy\Instructor\Events\Attempt\NewValidationRecoveryAttempt;
-use Cognesy\Instructor\Events\Attempt\StructuredOutputRecoveryLimitReached;
+use Cognesy\Instructor\Events\Attempt\ResponseRecoveryExhausted;
+use Cognesy\Instructor\Events\Attempt\ResponseRetryScheduled;
 use Cognesy\Instructor\Exceptions\StructuredOutputRecoveryException;
 use Cognesy\Instructor\RetryPolicy\DefaultRetryPolicy;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -85,7 +85,7 @@ it('records failure and dispatches event', function () {
     $events = new EventDispatcher();
     $eventFired = false;
     $payload = null;
-    $events->addListener(NewValidationRecoveryAttempt::class, function($event) use (&$eventFired, &$payload) {
+    $events->addListener(ResponseRetryScheduled::class, function($event) use (&$eventFired, &$payload) {
         $eventFired = true;
         $payload = $event->data;
     });
@@ -110,7 +110,7 @@ it('records failure and dispatches event', function () {
     expect($updated->activeAttempt())->toBeNull();
     expect($payload)->toBeArray();
     expect($payload)->toHaveKeys(['requestId', 'executionId', 'attemptId', 'phase', 'phaseId', 'retries', 'errors']);
-    expect($payload['phase'])->toBe('validation.recovery');
+    expect($payload['phase'])->toBe('response.retry_scheduled');
 });
 
 it('prepareRetry returns execution unchanged by default', function () {
@@ -153,7 +153,7 @@ it('finalizeOrThrow throws exception on failure and dispatches event', function 
     $events = new EventDispatcher();
     $eventFired = false;
     $payload = null;
-    $events->addListener(StructuredOutputRecoveryLimitReached::class, function($event) use (&$eventFired, &$payload) {
+    $events->addListener(ResponseRecoveryExhausted::class, function($event) use (&$eventFired, &$payload) {
         $eventFired = true;
         $payload = $event->data;
     });
@@ -180,5 +180,5 @@ it('finalizeOrThrow throws exception on failure and dispatches event', function 
     expect($eventFired)->toBeTrue();
     expect($payload)->toBeArray();
     expect($payload)->toHaveKeys(['requestId', 'executionId', 'attemptId', 'phase', 'phaseId', 'retries', 'errors']);
-    expect($payload['phase'])->toBe('validation.recovery_limit_reached');
+    expect($payload['phase'])->toBe('response.recovery_exhausted');
 });

@@ -12,8 +12,8 @@ use Cognesy\Agents\Drivers\CanAcceptToolRuntime;
 use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Agents\Enums\AgentStepType;
 use Cognesy\Agents\Interception\PassThroughInterceptor;
-use Cognesy\Agents\Tool\ToolExecutor;
 use Cognesy\Agents\Tool\Contracts\CanExecuteToolCalls;
+use Cognesy\Agents\Tool\ToolExecutor;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\ToolCalls;
@@ -24,6 +24,8 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Exceptions\ErrorList;
+use Override;
+use RuntimeException;
 
 final class FakeAgentDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptLLMProvider, CanAcceptLLMConfig, CanAcceptMessageCompiler
 {
@@ -31,11 +33,14 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptToolRuntime, CanAcc
 
     /** @var list<ScenarioStep> */
     private array $steps;
+
     private string $defaultResponse;
     private InferenceUsage $defaultUsage;
     private AgentStepType $defaultStepType;
+
     /** @var list<ScenarioStep>|null */
     private ?array $childSteps;
+
     private CanCompileMessages $messageCompiler;
     private Tools $tools;
     private CanExecuteToolCalls $executor;
@@ -77,7 +82,7 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptToolRuntime, CanAcc
             return new self();
         }
         $steps = array_map(
-            static fn(string $response): ScenarioStep => ScenarioStep::final($response),
+            static fn (string $response): ScenarioStep => ScenarioStep::final($response),
             $responses,
         );
         $default = $responses[array_key_last($responses)];
@@ -113,17 +118,17 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptToolRuntime, CanAcc
         );
     }
 
-    #[\Override]
+    #[Override]
     public function llmProvider(): LLMProvider {
         return LLMProvider::new();
     }
 
-    #[\Override]
+    #[Override]
     public function withLLMProvider(LLMProvider $llm): static {
         return $this->forSubagent();
     }
 
-    #[\Override]
+    #[Override]
     public function withLLMConfig(LLMConfig $config): static {
         return $this->forSubagent();
     }
@@ -141,12 +146,12 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptToolRuntime, CanAcc
         );
     }
 
-    #[\Override]
+    #[Override]
     public function messageCompiler(): CanCompileMessages {
         return $this->messageCompiler;
     }
 
-    #[\Override]
+    #[Override]
     public function withMessageCompiler(CanCompileMessages $compiler): static {
         return new self(
             steps: $this->steps,
@@ -160,7 +165,7 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptToolRuntime, CanAcc
         );
     }
 
-    #[\Override]
+    #[Override]
     public function withToolRuntime(Tools $tools, CanExecuteToolCalls $executor): static {
         return new self(
             steps: $this->steps,
@@ -174,7 +179,7 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptToolRuntime, CanAcc
         );
     }
 
-    #[\Override]
+    #[Override]
     public function useTools(AgentState $state): AgentState {
         [$step, $nextCursor] = $this->resolveStep($state);
         $step = match (true) {
@@ -211,7 +216,7 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptToolRuntime, CanAcc
             toolCalls: $toolCalls,
             usage: $step->usage,
         );
-        $executions = match($step->executeTools) {
+        $executions = match ($step->executeTools) {
             true => $executor->executeTools($toolCalls, $state),
             false => null,
         };
@@ -242,7 +247,7 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptToolRuntime, CanAcc
 
     private function errorsForType(AgentStepType $type): ErrorList {
         return match ($type) {
-            AgentStepType::Error => new ErrorList(new \RuntimeException('Deterministic step marked as error')),
+            AgentStepType::Error => new ErrorList(new RuntimeException('Deterministic step marked as error')),
             default => ErrorList::empty(),
         };
     }

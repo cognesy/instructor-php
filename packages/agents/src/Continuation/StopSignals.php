@@ -10,7 +10,7 @@ class StopSignals
         $this->signals = $signals;
     }
 
-    public static function empty() : self {
+    public static function empty(): self {
         return new self();
     }
 
@@ -20,37 +20,37 @@ class StopSignals
 
     // ACCESSORS /////////////////////////////////////////////////////////
 
-    public function first() : ?StopSignal {
+    public function first(): ?StopSignal {
         return $this->signals[0] ?? null;
     }
 
-    public function highest() : ?StopSignal {
+    public function highest(): ?StopSignal {
         if ($this->signals === []) {
             return null;
         }
         return array_reduce(
             $this->signals,
-            static fn(?StopSignal $carry, StopSignal $signal) => $carry === null || $signal->compare($carry) < 0
+            static fn (?StopSignal $carry, StopSignal $signal) => $carry === null || $signal->compare($carry) < 0
                 ? $signal
                 : $carry,
         );
     }
 
-    public function hasAny() : bool {
+    public function hasAny(): bool {
         return $this->signals !== [];
     }
 
-    public function toString() : string {
+    public function toString(): string {
         $parts = [];
         foreach ($this->signals as $signal) {
             $parts[] = $signal->toString();
         }
-        return implode(" | ", $parts);
+        return implode(' | ', $parts);
     }
 
     // SERIALIZATION /////////////////////////////////////////////////////
 
-    public function toArray() : array {
+    public function toArray(): array {
         $serialized = [];
         foreach ($this->signals as $signal) {
             $serialized[] = $signal->toArray();
@@ -58,7 +58,7 @@ class StopSignals
         return $serialized;
     }
 
-    public static function fromArray(array $signals) : self {
+    public static function fromArray(array $signals): self {
         $instances = [];
         foreach ($signals as $signalData) {
             $instances[] = StopSignal::fromArray($signalData);

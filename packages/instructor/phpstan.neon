@@ -4,4 +4,6 @@ parameters:
     - src
     - tests
   reportUnmatchedIgnoredErrors: false
+  universalObjectCratesClasses:
+    - PHPUnit\Framework\TestCase
   tmpDir: /tmp

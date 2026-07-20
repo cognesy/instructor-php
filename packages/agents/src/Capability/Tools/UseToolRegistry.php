@@ -6,6 +6,7 @@ use Cognesy\Agents\Builder\Contracts\CanConfigureAgent;
 use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
 use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Tool\Contracts\CanManageTools;
+use Override;
 
 class UseToolRegistry implements CanProvideAgentCapability
 {
@@ -13,14 +14,13 @@ class UseToolRegistry implements CanProvideAgentCapability
         private readonly CanManageTools $registry,
     ) {}
 
-    #[\Override]
+    #[Override]
     public static function capabilityName(): string {
         return 'use_tool_registry';
     }
 
-    #[\Override]
-    public function configure(CanConfigureAgent $agent): CanConfigureAgent
-    {
+    #[Override]
+    public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         return $agent->withTools($agent->tools()->merge(new Tools(
             new ToolsTool($this->registry),
         )));

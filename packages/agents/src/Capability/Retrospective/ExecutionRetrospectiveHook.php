@@ -2,6 +2,7 @@
 
 namespace Cognesy\Agents\Capability\Retrospective;
 
+use Closure;
 use Cognesy\Agents\Context\ContextSections;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Hook\Contracts\HookInterface;
@@ -9,6 +10,7 @@ use Cognesy\Agents\Hook\Data\HookContext;
 use Cognesy\Agents\Hook\Enums\HookTrigger;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Override;
 
 /**
  * Handles execution retrospective (rewind) by managing checkpoint markers
@@ -28,12 +30,11 @@ final class ExecutionRetrospectiveHook implements HookInterface
 
     public function __construct(
         private readonly RetrospectivePolicy $policy = new RetrospectivePolicy(),
-        private readonly ?\Closure $onRewind = null,
+        private readonly ?Closure $onRewind = null,
     ) {}
 
-    #[\Override]
-    public function handle(HookContext $context): HookContext
-    {
+    #[Override]
+    public function handle(HookContext $context): HookContext {
         return match ($context->triggerType()) {
             HookTrigger::BeforeExecution => $this->handleBeforeExecution($context),
             HookTrigger::BeforeStep => $this->handleBeforeStep($context),
@@ -44,8 +45,7 @@ final class ExecutionRetrospectiveHook implements HookInterface
 
     // BEFORE EXECUTION: append retrospective instructions to system prompt //
 
-    private function handleBeforeExecution(HookContext $context): HookContext
-    {
+    private function handleBeforeExecution(HookContext $context): HookContext {
         $state = $context->state();
 
         // Only append retrospective instructions on the first execution
@@ -55,7 +55,7 @@ final class ExecutionRetrospectiveHook implements HookInterface
 
         $agentContext = $state->context();
         $agentContext = $agentContext->withSystemPrompt(
-            $agentContext->systemPrompt() . "\n\n" . $this->policy->systemPromptInstructions
+            $agentContext->systemPrompt() . "\n\n" . $this->policy->systemPromptInstructions,
         );
 
         return $context->withState($state->with(context: $agentContext));
@@ -63,8 +63,7 @@ final class ExecutionRetrospectiveHook implements HookInterface
 
     // BEFORE STEP: inject checkpoint marker ////////////////////////////////
 
-    private function handleBeforeStep(HookContext $context): HookContext
-    {
+    private function handleBeforeStep(HookContext $context): HookContext {
         $state = $context->state();
         $checkpointId = $state->metadata()->get(self::CHECKPOINT_COUNT_KEY, 0);
 
@@ -73,7 +72,7 @@ final class ExecutionRetrospectiveHook implements HookInterface
             ->withMetadata('checkpoint_id', $checkpointId);
 
         $state = $state->withMessages(
-            $state->messages()->appendMessage($checkpointMessage)
+            $state->messages()->appendMessage($checkpointMessage),
         );
         $state = $state->withMetadata(self::CHECKPOINT_COUNT_KEY, $checkpointId + 1);
 
@@ -82,8 +81,7 @@ final class ExecutionRetrospectiveHook implements HookInterface
 
     // AFTER STEP: detect retrospective result and rewind messages //////////
 
-    private function handleAfterStep(HookContext $context): HookContext
-    {
+    private function handleAfterStep(HookContext $context): HookContext {
         $state = $context->state();
         $currentStep = $state->currentStep();
 
@@ -112,8 +110,7 @@ final class ExecutionRetrospectiveHook implements HookInterface
 
     // INTERNAL /////////////////////////////////////////////////////////////
 
-    private function findRetrospectiveResult(AgentState $state): ?ExecutionRetrospectiveResult
-    {
+    private function findRetrospectiveResult(AgentState $state): ?ExecutionRetrospectiveResult {
         $step = $state->currentStep();
         if ($step === null) {
             return null;
@@ -137,8 +134,7 @@ final class ExecutionRetrospectiveHook implements HookInterface
         return null;
     }
 
-    private function rewindMessages(AgentState $state, int $checkpointId, string $guidance, int $rewindCount): AgentState
-    {
+    private function rewindMessages(AgentState $state, int $checkpointId, string $guidance, int $rewindCount): AgentState {
         // 1. Truncate messages to before the target checkpoint
         $truncatedMessages = $this->truncateAtCheckpoint($state->messages(), $checkpointId);
 
@@ -146,9 +142,9 @@ final class ExecutionRetrospectiveHook implements HookInterface
         $guidanceMessage = Message::asUser(
             "[EXECUTION RETROSPECTIVE]\n\n"
             . "Your future self has determined that the approach taken after checkpoint {$checkpointId} was suboptimal. "
-            . "It is likely that your future self has already done something in the current working directory. "
+            . 'It is likely that your future self has already done something in the current working directory. '
             . "Please read the guidance and decide what to do next.\n\n"
-            . $guidance
+            . $guidance,
         );
         $truncatedMessages = $truncatedMessages->appendMessage($guidanceMessage);
 
@@ -169,8 +165,7 @@ final class ExecutionRetrospectiveHook implements HookInterface
         return $state;
     }
 
-    private function truncateAtCheckpoint(Messages $messages, int $checkpointId): Messages
-    {
+    private function truncateAtCheckpoint(Messages $messages, int $checkpointId): Messages {
         $kept = Messages::empty();
         foreach ($messages->each() as $msg) {
             $msgCheckpointId = $msg->metadata()->get('checkpoint_id');

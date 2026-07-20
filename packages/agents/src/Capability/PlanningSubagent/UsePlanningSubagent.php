@@ -10,6 +10,7 @@ use Cognesy\Agents\Collections\NameList;
 use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Data\ExecutionBudget;
 use Cognesy\Agents\Hook\Collections\HookTriggers;
+use Override;
 
 final class UsePlanningSubagent implements CanProvideAgentCapability
 {
@@ -24,7 +25,6 @@ When calling `plan_with_subagent`, provide a text task specification with these 
 
 Add constraints and non-goals if relevant. After receiving the plan, continue execution using the plan as guidance.
 PROMPT;
-
     private const string DEFAULT_PLANNER_SYSTEM_PROMPT = <<<'PROMPT'
 You are a planning specialist.
 
@@ -43,12 +43,12 @@ PROMPT;
         private ?ExecutionBudget $plannerBudget = null,
     ) {}
 
-    #[\Override]
+    #[Override]
     public static function capabilityName(): string {
         return 'use_planning_subagent';
     }
 
-    #[\Override]
+    #[Override]
     public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         $agent = $this->configurePromptInstructions($agent);
         return $this->configurePlanningTool($agent);
@@ -75,12 +75,7 @@ PROMPT;
         $plannerAdditionalTools = $this->plannerAdditionalTools;
         $plannerBudget = $this->plannerBudget ?? ExecutionBudget::unlimited();
 
-        $deferred = new class(
-            $plannerSystemPrompt,
-            $plannerTools,
-            $plannerAdditionalTools,
-            $plannerBudget,
-        ) implements CanProvideDeferredTools {
+        $deferred = new class($plannerSystemPrompt, $plannerTools, $plannerAdditionalTools, $plannerBudget) implements CanProvideDeferredTools {
             public function __construct(
                 private string $plannerSystemPrompt,
                 private ?NameList $plannerTools,
@@ -88,7 +83,7 @@ PROMPT;
                 private ExecutionBudget $plannerBudget,
             ) {}
 
-            #[\Override]
+            #[Override]
             public function provideTools(DeferredToolContext $context): Tools {
                 return new Tools(new PlanningSubagentTool(
                     parentTools: $context->tools(),
@@ -103,7 +98,7 @@ PROMPT;
         };
 
         return $agent->withDeferredTools(
-            $agent->deferredTools()->withProvider($deferred)
+            $agent->deferredTools()->withProvider($deferred),
         );
     }
 }

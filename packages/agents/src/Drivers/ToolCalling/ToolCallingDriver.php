@@ -11,11 +11,11 @@ use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Data\AgentStep;
 use Cognesy\Agents\Drivers\CanAcceptToolRuntime;
 use Cognesy\Agents\Drivers\CanUseTools;
-use Cognesy\Agents\Interception\PassThroughInterceptor;
-use Cognesy\Agents\Tool\ToolExecutor;
 use Cognesy\Agents\Events\InferenceRequestStarted;
 use Cognesy\Agents\Events\InferenceResponseReceived;
+use Cognesy\Agents\Interception\PassThroughInterceptor;
 use Cognesy\Agents\Tool\Contracts\CanExecuteToolCalls;
+use Cognesy\Agents\Tool\ToolExecutor;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Contracts\CanSendHttpRequests;
@@ -68,9 +68,9 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         ?LLMProvider $llm = null,
         ?CanSendHttpRequests $httpClient = null,
         ?ToolChoice $toolChoice = null,
-        ResponseFormat|null $responseFormat = null,
-        string       $model = '',
-        array        $options = [],
+        ?ResponseFormat $responseFormat = null,
+        string $model = '',
+        array $options = [],
         ?CanCompileMessages $messageCompiler = null,
         ?InferenceRetryPolicy $retryPolicy = null,
         ?CanHandleEvents $events = null,
@@ -96,7 +96,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         );
     }
 
-    #[\Override]
+    #[Override]
     public function withLLMConfig(LLMConfig $config): static {
         $llm = $this->llm->withLLMConfig($config);
         return $this->with(
@@ -109,23 +109,23 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         );
     }
 
-    #[\Override]
+    #[Override]
     public function messageCompiler(): CanCompileMessages {
         return $this->messageCompiler;
     }
 
-    #[\Override]
+    #[Override]
     public function withMessageCompiler(CanCompileMessages $compiler): static {
         return $this->with(messageCompiler: $compiler);
     }
 
-    #[\Override]
+    #[Override]
     public function withToolRuntime(Tools $tools, CanExecuteToolCalls $executor): static {
         return $this->with(tools: $tools, executor: $executor);
     }
 
     #[Override]
-    public function useTools(AgentState $state) : AgentState {
+    public function useTools(AgentState $state): AgentState {
         $state = $this->ensureStateLLMConfig($state);
         $context = $this->messageCompiler->compile($state);
         $response = $this->getToolCallResponse($state, $this->tools, $context);
@@ -172,7 +172,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         );
     }
 
-    private function getToolCallResponse(AgentState $state, Tools $tools, Messages $messages) : InferenceResponse {
+    private function getToolCallResponse(AgentState $state, Tools $tools, Messages $messages): InferenceResponse {
         $cache = $state->context()->toCachedContext($tools->toToolSchema());
         $cache = $cache->isEmpty() ? null : $cache;
         $requestStartedAt = new DateTimeImmutable();
@@ -188,7 +188,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         Messages $messages,
         Tools $tools,
         ?CachedInferenceContext $cache = null,
-    ) : PendingInference {
+    ): PendingInference {
         $hasTools = !$tools->isEmpty();
         $hasCachedTools = !($cache?->tools()->isEmpty() ?? true);
         $toolDefinitions = ($hasTools && !$hasCachedTools) ? $tools->toToolSchema() : ToolDefinitions::empty();
@@ -213,8 +213,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         return $this->inference->create($request);
     }
 
-    private function telemetryCorrelationFor(AgentState $state): ?OperationCorrelation
-    {
+    private function telemetryCorrelationFor(AgentState $state): ?OperationCorrelation {
         $executionId = $state->execution()?->executionId()->toString() ?? '';
         if ($executionId === '') {
             return null;
@@ -231,7 +230,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         ToolExecutions $executions,
         Messages $followUps,
         Messages $context,
-    ) : AgentStep {
+    ): AgentStep {
         $outputMessages = $this->appendResponseContent($followUps, $response);
         return new AgentStep(
             inputMessages: $context,
@@ -241,7 +240,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         );
     }
 
-    private function appendResponseContent(Messages $messages, InferenceResponse $response) : Messages {
+    private function appendResponseContent(Messages $messages, InferenceResponse $response): Messages {
         $content = $response->content();
         if ($content === '') {
             return $messages;
@@ -252,7 +251,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         return $messages->appendMessage(Message::asAssistant($content));
     }
 
-    private function isToolArgsLeak(string $content, ToolCalls $toolCalls) : bool {
+    private function isToolArgsLeak(string $content, ToolCalls $toolCalls): bool {
         if ($toolCalls->hasNone()) {
             return false;
         }
@@ -268,7 +267,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         return false;
     }
 
-    private function parseContentArgs(string $content) : ?array {
+    private function parseContentArgs(string $content): ?array {
         return JsonExtractor::first($content);
     }
 

@@ -464,6 +464,26 @@ it('registers runtime creator contracts as singletons and supports create(reques
     expect($pendingEmbeddings)->toBeInstanceOf(PendingEmbeddings::class);
 });
 
+it('maps the Laravel retry prompt class to the default structured prompt path', function () {
+    $promptClass = 'App\\Prompts\\RetryFeedbackPrompt';
+    $app = makeLaravelContainer([
+        'instructor' => [
+            'extraction' => [
+                'retry_prompt_class' => $promptClass,
+                'retry_prompt' => 'Legacy inline retry text',
+            ],
+        ],
+    ]);
+
+    (new InstructorServiceProvider($app))->register();
+
+    $runtime = $app->make(CanCreateStructuredOutput::class);
+
+    expect($runtime)->toBeInstanceOf(\Cognesy\Instructor\StructuredOutputRuntime::class)
+        ->and($runtime->config()->retryPromptClass())->toBe($promptClass)
+        ->and($runtime->config()->retryPrompt())->toBe('Legacy inline retry text');
+});
+
 it('registers native agent runtime bindings as singletons and shares the Laravel event dispatcher', function () {
     $app = makeLaravelContainer();
     (new InstructorServiceProvider($app))->register();

@@ -140,11 +140,17 @@ return [
         'output_mode' => env('INSTRUCTOR_OUTPUT_MODE', 'json_schema'),
         // Maximum retry attempts when validation fails
         'max_retries' => env('INSTRUCTOR_MAX_RETRIES', 2),
-        // Prompt template for retry attempts
-        'retry_prompt' => 'The response did not pass validation. Please fix the following errors and try again: {errors}',
+        // Prompt class rendered for retry feedback
+        'retry_prompt_class' => App\Prompts\RetryFeedbackPrompt::class,
+        // Deprecated: only an explicitly injected legacy RequestMaterializer reads this
+        'retry_prompt' => null,
     ],
 ];
 ```
+
+The default structured-output path renders `retry_prompt_class`. The inline
+`retry_prompt` key is retained for 2.5 compatibility only and is scheduled for removal
+in 2.6 together with the legacy request materializer.
 
 ### Output Modes
 

@@ -4,9 +4,10 @@ namespace Cognesy\Instructor\RetryPolicy;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Instructor\Contracts\CanDetermineRetry;
+use Cognesy\Instructor\Data\ResponseFailure;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
-use Cognesy\Instructor\Events\Attempt\NewValidationRecoveryAttempt;
-use Cognesy\Instructor\Events\Attempt\StructuredOutputRecoveryLimitReached;
+use Cognesy\Instructor\Events\Attempt\ResponseRecoveryExhausted;
+use Cognesy\Instructor\Events\Attempt\ResponseRetryScheduled;
 use Cognesy\Instructor\Exceptions\StructuredOutputRecoveryException;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Utils\Result\Result;
@@ -26,7 +27,7 @@ final readonly class DefaultRetryPolicy implements CanDetermineRetry
     #[\Override]
     public function shouldRetry(
         StructuredOutputExecution $execution,
-        Result $validationResult,
+        Result $result,
     ): bool {
         // Retry if not exceeded max attempts
         return !$execution->maxRetriesReached();
@@ -35,10 +36,10 @@ final readonly class DefaultRetryPolicy implements CanDetermineRetry
     #[\Override]
     public function recordFailure(
         StructuredOutputExecution $execution,
-        Result $validationResult,
+        Result $result,
         InferenceResponse $inference,
     ): StructuredOutputExecution {
-        $error = $validationResult->error();
+        $error = $result->error();
         $errors = is_array($error) ? $error : [$error];
 
         // Record failed attempt in execution
@@ -49,11 +50,11 @@ final readonly class DefaultRetryPolicy implements CanDetermineRetry
         // Emit retry event only if another retry is still allowed
         $maxRetries = $updated->config()->maxRetries();
         if ($updated->attemptCount() <= $maxRetries) {
-            $this->events->dispatch(new NewValidationRecoveryAttempt($this->recoveryPayload(
+            $this->events->dispatch(new ResponseRetryScheduled($this->canonicalRecoveryPayload(
                 execution: $updated,
-                phase: 'validation.recovery',
+                phase: 'response.retry_scheduled',
                 retries: $updated->attemptCount(),
-                errors: $updated->currentErrors(),
+                result: $result,
             )));
         }
 
@@ -71,22 +72,21 @@ final readonly class DefaultRetryPolicy implements CanDetermineRetry
     #[\Override]
     public function finalizeOrThrow(
         StructuredOutputExecution $execution,
-        Result $validationResult,
+        Result $result,
     ): mixed {
-        if ($validationResult->isSuccess()) {
-            return $validationResult->unwrap();
+        if ($result->isSuccess()) {
+            return $result->unwrap();
         }
 
         // Failure - dispatch event and throw
         $errors = $execution->errors();
 
-        $this->events->dispatch(new StructuredOutputRecoveryLimitReached($this->recoveryPayload(
+        $this->events->dispatch(new ResponseRecoveryExhausted($this->canonicalRecoveryPayload(
             execution: $execution,
-            phase: 'validation.recovery_limit_reached',
+            phase: 'response.recovery_exhausted',
             retries: $execution->attemptCount(),
-            errors: $errors,
+            result: $result,
         )));
-
         $message = "Structured output recovery attempts limit reached after {$execution->attemptCount()} attempt(s) due to: "
             . implode(", ", array_map(fn($e) => is_string($e) ? $e : (string)$e, $errors));
 
@@ -100,7 +100,7 @@ final readonly class DefaultRetryPolicy implements CanDetermineRetry
         StructuredOutputExecution $execution,
         string $phase,
         int $retries,
-        array $errors,
+        array $errors = [],
     ) : array {
         $requestId = $execution->request()->id()->toString();
         $executionId = $execution->id()->toString();
@@ -116,6 +116,32 @@ final readonly class DefaultRetryPolicy implements CanDetermineRetry
             'retries' => $retries,
             'errors' => $errors,
         ], fn(mixed $value): bool => $value !== null);
+    }
+
+    private function canonicalRecoveryPayload(
+        StructuredOutputExecution $execution,
+        string $phase,
+        int $retries,
+        Result $result,
+    ): array {
+        $failure = $result->error();
+        $failureData = match (true) {
+            $failure instanceof ResponseFailure => $failure->eventData(),
+            default => [
+                'errorMessage' => 'Structured output recovery failed.',
+                'errorType' => get_debug_type($failure),
+            ],
+        };
+
+        return [
+            ...$this->recoveryPayload(
+                execution: $execution,
+                phase: $phase,
+                retries: $retries,
+                errors: [],
+            ),
+            ...$failureData,
+        ];
     }
 
     private function phaseId(string $executionId, string $phase, ?string $attemptId = null) : string

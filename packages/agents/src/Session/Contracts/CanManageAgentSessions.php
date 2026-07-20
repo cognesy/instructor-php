@@ -12,8 +12,12 @@ use Cognesy\Agents\Template\Data\AgentDefinition;
 interface CanManageAgentSessions
 {
     public function create(AgentDefinition $definition, ?AgentState $seed = null): AgentSession;
+
     public function listSessions(): SessionInfoList;
+
     public function getSessionInfo(SessionId $sessionId): AgentSessionInfo;
+
     public function getSession(SessionId $sessionId): AgentSession;
+
     public function execute(SessionId $sessionId, CanExecuteSessionAction $action): AgentSession;
 }

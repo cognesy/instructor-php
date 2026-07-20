@@ -1,13 +1,15 @@
 <?php declare(strict_types=1);
 namespace Cognesy\Instructor\Data;
 
-use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Enums\OutputFormatType;
 use Cognesy\Instructor\Extras\Example\Example;
 use Cognesy\Messages\Messages;
 use DateTimeImmutable;
-use ReflectionClass;
+use InvalidArgumentException;
 
+/**
+ * @phpstan-consistent-constructor
+ */
 class StructuredOutputRequest
 {
     public readonly StructuredOutputRequestId $id;
@@ -185,6 +187,13 @@ class StructuredOutputRequest
     // SERIALIZATION ////////////////////////////////////////////
 
     public function toArray() : array {
+        if ($this->outputFormat?->isObject() ?? false) {
+            throw new InvalidArgumentException(
+                'A self-deserializing output target contains live instance state and cannot be serialized. '
+                . 'Recreate the request and supply the target instance at runtime.',
+            );
+        }
+
         return [
             'id' => $this->id->toString(),
             'createdAt' => $this->createdAt->format(DATE_ATOM),
@@ -252,20 +261,10 @@ class StructuredOutputRequest
         return match (true) {
             $type === OutputFormatType::AsArray => OutputFormat::array(),
             $type === OutputFormatType::AsClass && isset($data['class']) => OutputFormat::instanceOf($data['class']),
-            $type === OutputFormatType::AsObject => self::selfDeserializingFromClass($data['class'] ?? null),
+            $type === OutputFormatType::AsObject => throw new InvalidArgumentException(
+                'A self-deserializing output target contains live instance state and cannot be restored from an array.',
+            ),
             default => null,
         };
-    }
-
-    private static function selfDeserializingFromClass(?string $class) : ?OutputFormat {
-        if ($class === null || !class_exists($class)) {
-            return null;
-        }
-        if (!is_subclass_of($class, CanDeserializeSelf::class)) {
-            return null;
-        }
-        $reflection = new ReflectionClass($class);
-        $instance = $reflection->newInstanceWithoutConstructor();
-        return OutputFormat::selfDeserializing($instance);
     }
 }

@@ -125,7 +125,6 @@ it('can provide JSON schema of function call', function () {
             ],
         ],
         'required' => ['intParam', 'stringParam', 'boolParam', 'objectParam'],
-        'x-php-class' => 'Cognesy\Dynamic\Structure',
         'additionalProperties' => false,
     ]);
 });
@@ -158,7 +157,6 @@ it('can provide OpenAI tool call format for function', function () {
                     ],
                 ],
                 'required' => ['intParam', 'stringParam', 'boolParam', 'objectParam'],
-                'x-php-class' => 'Cognesy\Dynamic\Structure',
                 'additionalProperties' => false,
             ],
         ],

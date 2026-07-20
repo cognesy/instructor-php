@@ -5,13 +5,13 @@ use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\ResponseGenerator;
 use Cognesy\Instructor\Creation\ResponseModelFactory;
 use Cognesy\Instructor\Creation\StructuredOutputSchemaRenderer;
+use Cognesy\Instructor\Data\ResponseFailure;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\Events\ResponseModel\ResponseModelBuilt;
 use Cognesy\Instructor\Events\ResponseModel\ResponseModelRequested;
 use Cognesy\Instructor\Events\Response\CustomResponseValidationAttempt;
-use Cognesy\Instructor\Events\Response\ResponseGenerationFailed;
 use Cognesy\Instructor\Events\Response\ResponseTransformed;
 use Cognesy\Instructor\Events\Response\ResponseTransformationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseTransformationFailed;
@@ -118,7 +118,7 @@ it('emits normalized response model payload summaries', function () {
     $factory->fromAny(NormalizedPayloadUser::class);
 
     expect($captured['requested'])->toHaveKeys(['requestedType', 'requestedClass']);
-    expect($captured['built'])->toHaveKeys(['responseClass', 'schemaName', 'propertyCount', 'returnTarget']);
+    expect($captured['built'])->toHaveKeys(['schemaClass', 'outputClass', 'schemaName', 'propertyCount', 'outputFormatType']);
     assertNormalizedEventPayload($captured['requested']);
     assertNormalizedEventPayload($captured['built']);
 });
@@ -169,14 +169,12 @@ it('emits normalized transformation payloads', function () {
     $selfTransformer = new ResponseTransformer(
         events: $events,
         transformer: null,
-        config: new StructuredOutputConfig(),
     );
     $selfTransformer->transform(new SelfTransformingNormalizedPayload(), makeAnyResponseModel(SelfTransformingNormalizedPayload::class));
 
     $failingTransformer = new ResponseTransformer(
         events: $events,
         transformer: new FailingTransformer(),
-        config: new StructuredOutputConfig(),
     );
     $failingTransformer->transform(['name' => 'Ava'], makeAnyResponseModel(\stdClass::class));
 
@@ -188,19 +186,14 @@ it('emits normalized transformation payloads', function () {
     assertNormalizedEventPayload($captured['failed']);
 });
 
-it('emits normalized response generation failures', function () {
+it('creates a content-safe extraction failure summary', function () {
     $events = new EventDispatcher();
-    $captured = [];
-    $events->addListener(ResponseGenerationFailed::class, function ($event) use (&$captured): void {
-        $captured = $event->data;
-    });
 
     $config = new StructuredOutputConfig();
     $generator = new ResponseGenerator(
         responseDeserializer: new ResponseDeserializer($events, new SymfonyDeserializer(), $config),
         responseValidator: new ResponseValidator($events, new PassingObjectValidator(), $config),
-        responseTransformer: new ResponseTransformer($events, null, $config),
-        events: $events,
+        responseTransformer: new ResponseTransformer($events, null),
         extractor: new ThrowingExtractor(),
     );
 
@@ -211,6 +204,10 @@ it('emits normalized response generation failures', function () {
     );
 
     expect($result->isFailure())->toBeTrue();
-    expect($captured)->toHaveKeys(['errorMessage', 'errorType']);
-    assertNormalizedEventPayload($captured);
+    $failure = $result->error();
+    expect($failure)->toBeInstanceOf(ResponseFailure::class);
+    $summary = $failure->eventData();
+    expect($summary)->toHaveKeys(['stage', 'errorMessage', 'errorType', 'context'])
+        ->and(json_encode($summary))->not->toContain('{"name":"Ava"}');
+    assertNormalizedEventPayload($summary);
 });

@@ -3,6 +3,7 @@
 namespace Cognesy\Agents\Events;
 
 use DateTimeImmutable;
+use Override;
 use Psr\Log\LogLevel;
 
 /**
@@ -38,7 +39,7 @@ final class ToolCallBlocked extends AgentEvent
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public function __toString(): string {
         $hookInfo = $this->hookName ? " by hook '{$this->hookName}'" : '';
 
@@ -46,7 +47,7 @@ final class ToolCallBlocked extends AgentEvent
             'Tool call blocked: %s%s - %s',
             $this->tool,
             $hookInfo,
-            $this->reason
+            $this->reason,
         );
     }
 }

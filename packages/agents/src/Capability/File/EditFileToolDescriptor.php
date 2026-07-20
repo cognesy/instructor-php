@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Agents\Capability\File;
 
@@ -6,9 +8,9 @@ use Cognesy\Agents\Tool\ToolDescriptor;
 
 final readonly class EditFileToolDescriptor extends ToolDescriptor
 {
-    public function __construct() {
+    public function __construct(string $name = 'edit_file') {
         parent::__construct(
-            name: 'edit_file',
+            name: $name,
             description: <<<'DESC'
 Edit a file by replacing exact string matches. old_string must match exactly including whitespace.
 
@@ -19,9 +21,10 @@ Examples:
 - Rename all: old_string="OldClass", new_string="NewClass", replace_all=true
 
 IMPORTANT: Include enough context in old_string to make it unique. If multiple matches exist, use replace_all=true or provide more surrounding code.
+The file is processed as a bounded stream and replaced atomically only after match validation succeeds.
 DESC,
             metadata: [
-                'name' => 'edit_file',
+                'name' => $name,
                 'summary' => 'Replace exact text in a file with optional replace-all mode.',
                 'namespace' => 'file',
                 'tags' => ['file', 'edit', 'replace'],
@@ -33,7 +36,7 @@ DESC,
                     'new_string' => 'Replacement string.',
                     'replace_all' => 'Set true to replace all matches.',
                 ],
-                'returns' => 'Success message with replacement count or explicit error.',
+                'returns' => 'Success with replacement count and source size, or an explicit no-change error.',
             ],
         );
     }

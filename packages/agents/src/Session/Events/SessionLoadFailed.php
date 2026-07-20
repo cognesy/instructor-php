@@ -18,4 +18,3 @@ final class SessionLoadFailed extends Event
         ]);
     }
 }
-

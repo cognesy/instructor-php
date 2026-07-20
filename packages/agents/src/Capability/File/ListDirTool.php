@@ -5,6 +5,7 @@ namespace Cognesy\Agents\Capability\File;
 use Cognesy\Agents\Tool\Tools\SimpleTool;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
+use Override;
 
 class ListDirTool extends SimpleTool
 {
@@ -24,7 +25,7 @@ class ListDirTool extends SimpleTool
         return new self($baseDir, $maxEntries);
     }
 
-    #[\Override]
+    #[Override]
     public function __invoke(mixed ...$args): string {
         $path = $this->arg($args, 'path', 0, '.');
 
@@ -45,7 +46,7 @@ class ListDirTool extends SimpleTool
         }
 
         // Filter out . and ..
-        $entries = array_filter($entries, fn($e) => $e !== '.' && $e !== '..');
+        $entries = array_filter($entries, fn ($e) => $e !== '.' && $e !== '..');
         $entries = array_values($entries);
 
         if ($entries === []) {
@@ -53,11 +54,15 @@ class ListDirTool extends SimpleTool
         }
 
         // Sort: directories first, then files
-        usort($entries, function($a, $b) use ($path) {
+        usort($entries, function ($a, $b) use ($path) {
             $aIsDir = is_dir($path . '/' . $a);
             $bIsDir = is_dir($path . '/' . $b);
-            if ($aIsDir && !$bIsDir) return -1;
-            if (!$aIsDir && $bIsDir) return 1;
+            if ($aIsDir && !$bIsDir) {
+                return -1;
+            }
+            if (!$aIsDir && $bIsDir) {
+                return 1;
+            }
             return strcasecmp($a, $b);
         });
 
@@ -76,13 +81,13 @@ class ListDirTool extends SimpleTool
         $output = implode("\n", $lines);
 
         if ($total > $this->maxEntries) {
-            $output .= "\n... and " . ($total - $this->maxEntries) . " more entries";
+            $output .= "\n... and " . ($total - $this->maxEntries) . ' more entries';
         }
 
         return $output;
     }
 
-    #[\Override]
+    #[Override]
     public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition {
         return \Cognesy\Polyglot\Inference\Data\ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
@@ -91,7 +96,7 @@ class ListDirTool extends SimpleTool
                 ->withProperties([
                     JsonSchema::string('path', 'Directory path. Examples: "." (root), "src", "packages/addons"'),
                 ])
-                ->withRequiredProperties(['path'])
+                ->withRequiredProperties(['path']),
         )->toArray());
     }
 }

@@ -1,0 +1,338 @@
+---
+title: 'Structured output validation loop'
+docname: 'structured_output_validation_loop'
+id: 'b7f2'
+tags:
+  - 'extras'
+  - 'validation'
+  - 'retry'
+  - 'observability'
+---
+## Overview
+
+This example validates the structured-output validation-loop workflow described
+in the InstructorPHP article. It uses InstructorPHP only.
+
+It runs a deterministic invalid-then-corrected response through the real
+StructuredOutput pipeline, captures validation and retry events, and then runs
+the same response model against OpenAI when an API key is available.
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Instructor\Enums\OutputMode;
+use Cognesy\Instructor\Events\Attempt\ResponseRetryScheduled;
+use Cognesy\Instructor\Events\Response\ResponseValidated;
+use Cognesy\Instructor\Events\Response\ResponseValidationFailed;
+use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
+use Cognesy\Polyglot\Inference\LLMProvider;
+use Symfony\Component\Validator\Constraints as Assert;
+
+enum ArticleIncidentSeverity: string {
+    case Low = 'low';
+    case Medium = 'medium';
+    case High = 'high';
+    case Critical = 'critical';
+}
+
+final class ArticleValidatedIncident
+{
+    public function __construct(
+        #[Assert\NotBlank]
+        public string $service,
+
+        #[Assert\Choice(choices: ['low', 'medium', 'high', 'critical'])]
+        public string $severity,
+
+        #[Assert\NotBlank]
+        public string $owner,
+
+        #[Assert\Choice(choices: ['open', 'triaged', 'closed'])]
+        public string $status,
+
+        #[Assert\DateTime(format: DateTimeInterface::ATOM)]
+        public string $reportedAt,
+    ) {}
+}
+
+final class ArticleEnumIncident
+{
+    public function __construct(
+        public string $service,
+        public ArticleIncidentSeverity $severity,
+        public string $owner,
+        public string $status,
+        public string $reportedAt,
+    ) {}
+}
+
+final class ArticleRecordingDriver implements CanProcessInferenceRequest
+{
+    /** @var list<InferenceResponse> */
+    private array $responses;
+
+    /** @var list<array<int, array<string, mixed>>> */
+    public array $requests = [];
+
+    /** @param list<array<string, mixed>> $responses */
+    public function __construct(array $responses)
+    {
+        $this->responses = array_map(
+            static fn(array $response): InferenceResponse => new InferenceResponse(
+                content: json_encode($response, JSON_THROW_ON_ERROR),
+                finishReason: 'stop',
+            ),
+            $responses,
+        );
+    }
+
+    public function makeResponseFor(InferenceRequest $request): InferenceResponse
+    {
+        $this->requests[] = $request->messages()->toArray();
+
+        if ($this->responses === []) {
+            return new InferenceResponse(content: '{}', finishReason: 'stop');
+        }
+
+        return array_shift($this->responses);
+    }
+
+    /** @return iterable<PartialInferenceDelta> */
+    public function makeStreamDeltasFor(InferenceRequest $request): iterable
+    {
+        return [];
+    }
+}
+
+function articleIncidentInput(): string
+{
+    return <<<TEXT
+Subject: Payment failed again / maybe already handled?
+
+Notes copied from Slack and Zendesk:
+- "around breakfast UTC" Priya said Billing API was throwing 502s.
+- Three checkout attempts failed before somebody wrote "finance ops owns this unless web owns it".
+- Alex later marked the support ticket "looked at", not closed.
+- Customer phrasing: "urgent, live orders blocked, please do not call it critical unless that is the only valid high-severity value".
+- The ops note says use status "needs attention" in the ticketing tool, but our incident workflow only accepts open, triaged, or closed.
+- Reference time for the report: 2026-07-11 09:10 UTC.
+TEXT;
+}
+
+/** @return array{driver: ArticleRecordingDriver, events: list<object>, incident: ArticleValidatedIncident} */
+function runDeterministicValidationLoop(): array
+{
+    $driver = new ArticleRecordingDriver([
+        [
+            'service' => 'Billing API',
+            'severity' => 'urgent',
+            'owner' => 'finance ops',
+            'status' => 'needs attention',
+            'reportedAt' => 'this morning',
+        ],
+        [
+            'service' => 'Billing API',
+            'severity' => 'critical',
+            'owner' => 'finance ops',
+            'status' => 'open',
+            'reportedAt' => '2026-07-11T09:10:00+00:00',
+        ],
+    ]);
+
+    $events = [];
+    $dispatcher = new EventDispatcher('article-validation-loop');
+    $dispatcher->wiretap(static function(object $event) use (&$events): void {
+        $events[] = $event;
+    });
+
+    $runtime = StructuredOutputRuntime::fromProvider(
+        provider: LLMProvider::new()->withDriver($driver),
+        events: $dispatcher,
+    )
+        ->withOutputMode(OutputMode::Json)
+        ->withMaxRetries(2);
+
+    $incident = (new StructuredOutput($runtime))
+        ->with(
+            messages: articleIncidentInput(),
+            responseModel: ArticleValidatedIncident::class,
+            model: 'gpt-4o-mini',
+        )
+        ->get();
+
+    if (!$incident instanceof ArticleValidatedIncident) {
+        throw new RuntimeException('Expected ArticleValidatedIncident from deterministic validation loop.');
+    }
+
+    return ['driver' => $driver, 'events' => $events, 'incident' => $incident];
+}
+
+/** @return array{events: list<object>, incident: ArticleValidatedIncident, model: string}|null */
+function runLiveOpenAiValidationLoop(): ?array
+{
+    if (getenv('OPENAI_API_KEY') === false || getenv('INSTRUCTOR_EXAMPLES_SKIP_LIVE') === '1') {
+        return null;
+    }
+
+    $events = [];
+    $dispatcher = new EventDispatcher('article-validation-loop-live');
+    $dispatcher->wiretap(static function(object $event) use (&$events): void {
+        $events[] = $event;
+    });
+
+    $model = getenv('INSTRUCTOR_EXAMPLES_LIVE_MODEL') ?: 'gpt-4.1-nano';
+
+    $runtime = StructuredOutputRuntime::fromProvider(
+        provider: LLMProvider::using('openai')->withModel($model),
+        events: $dispatcher,
+    )
+        ->withOutputMode(OutputMode::Json)
+        ->withMaxRetries(2);
+
+    $incident = (new StructuredOutput($runtime))
+        ->with(
+            messages: articleIncidentInput(),
+            responseModel: ArticleValidatedIncident::class,
+            prompt: 'Extract one incident from the messy notes. Preserve the source wording where it appears operationally meaningful.',
+        )
+        ->get();
+
+    if (!$incident instanceof ArticleValidatedIncident) {
+        throw new RuntimeException('Expected ArticleValidatedIncident from live validation loop.');
+    }
+
+    return ['events' => $events, 'incident' => $incident, 'model' => $model];
+}
+
+function eventCount(array $events, string $class): int
+{
+    return count(array_filter(
+        $events,
+        static fn(object $event): bool => $event instanceof $class,
+    ));
+}
+
+function containsInMessages(array $requests, string $needle): bool
+{
+    foreach ($requests as $messages) {
+        $encoded = json_encode($messages, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        if (is_string($encoded) && str_contains($encoded, $needle)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function printEventSummary(string $label, array $events): void
+{
+    echo "{$label} events:\n";
+    echo '  ResponseValidationFailed: ' . eventCount($events, ResponseValidationFailed::class) . "\n";
+    echo '  ResponseRetryScheduled: ' . eventCount($events, ResponseRetryScheduled::class) . "\n";
+    echo '  ResponseValidated: ' . eventCount($events, ResponseValidated::class) . "\n";
+    echo '  StructuredOutputResponseGenerated: ' . eventCount($events, StructuredOutputResponseGenerated::class) . "\n";
+}
+
+$deterministic = runDeterministicValidationLoop();
+$incident = $deterministic['incident'];
+$events = $deterministic['events'];
+$driver = $deterministic['driver'];
+
+echo "=== Deterministic validation loop ===\n";
+echo "Accepted incident:\n";
+echo json_encode(get_object_vars($incident), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n\n";
+printEventSummary('Deterministic', $events);
+echo '  Requests sent to driver: ' . count($driver->requests) . "\n";
+echo '  Retry prompt included invalid severity: ' . (containsInMessages($driver->requests, 'urgent') ? 'yes' : 'no') . "\n";
+echo '  Retry prompt included validation error: ' . (containsInMessages($driver->requests, 'The value you selected is not a valid choice') ? 'yes' : 'no') . "\n\n";
+
+if ($incident->severity !== 'critical') {
+    throw new RuntimeException('Expected repaired severity to be critical.');
+}
+if ($incident->status !== 'open') {
+    throw new RuntimeException('Expected repaired status to be open.');
+}
+if (eventCount($events, ResponseValidationFailed::class) < 1) {
+    throw new RuntimeException('Expected validation failure event.');
+}
+if (eventCount($events, ResponseRetryScheduled::class) < 1) {
+    throw new RuntimeException('Expected validation recovery event.');
+}
+if (count($driver->requests) !== 2) {
+    throw new RuntimeException('Expected exactly two deterministic LLM requests.');
+}
+
+echo "=== Enum edge probe ===\n";
+echo "The article uses a PHP enum for severity. This probe checks whether an invalid enum value is reported as validation feedback or as deserialization repair/failure.\n";
+
+$enumDriver = new ArticleRecordingDriver([
+    [
+        'service' => 'Billing API',
+        'severity' => 'urgent',
+        'owner' => 'finance ops',
+        'status' => 'open',
+        'reportedAt' => '2026-07-11T09:10:00+00:00',
+    ],
+    [
+        'service' => 'Billing API',
+        'severity' => 'critical',
+        'owner' => 'finance ops',
+        'status' => 'open',
+        'reportedAt' => '2026-07-11T09:10:00+00:00',
+    ],
+]);
+$enumEvents = [];
+$enumDispatcher = new EventDispatcher('article-validation-loop-enum');
+$enumDispatcher->wiretap(static function(object $event) use (&$enumEvents): void {
+    $enumEvents[] = $event;
+});
+$enumRuntime = StructuredOutputRuntime::fromProvider(
+    provider: LLMProvider::new()->withDriver($enumDriver),
+    events: $enumDispatcher,
+)
+    ->withOutputMode(OutputMode::Json)
+    ->withMaxRetries(1);
+
+$enumIncident = (new StructuredOutput($enumRuntime))
+    ->with(
+        messages: articleIncidentInput(),
+        responseModel: ArticleEnumIncident::class,
+        model: 'gpt-4o-mini',
+    )
+    ->get();
+
+if (!$enumIncident instanceof ArticleEnumIncident) {
+    throw new RuntimeException('Expected ArticleEnumIncident after enum repair.');
+}
+
+echo "Enum probe repaired severity: {$enumIncident->severity->value}\n";
+printEventSummary('Enum probe', $enumEvents);
+echo '  Requests sent to driver: ' . count($enumDriver->requests) . "\n\n";
+
+$live = runLiveOpenAiValidationLoop();
+if ($live === null) {
+    echo "=== Live OpenAI validation loop ===\n";
+    echo "Skipped. Set OPENAI_API_KEY and leave INSTRUCTOR_EXAMPLES_SKIP_LIVE unset to run it.\n";
+    return;
+}
+
+echo "=== Live OpenAI validation loop ===\n";
+echo "Model: {$live['model']}\n";
+echo "Accepted incident:\n";
+echo json_encode(get_object_vars($live['incident']), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n\n";
+printEventSummary('Live OpenAI', $live['events']);
+
+if ($live['incident']->service === '' || $live['incident']->owner === '') {
+    throw new RuntimeException('Expected live incident to contain service and owner.');
+}
+?>
+```

@@ -3,8 +3,8 @@
 namespace Cognesy\Agents\Collections;
 
 use Cognesy\Agents\Data\ToolExecution;
-use Cognesy\Messages\ToolCalls;
 use Cognesy\Messages\ToolCall;
+use Cognesy\Messages\ToolCalls;
 use Cognesy\Utils\Exceptions\ErrorList;
 
 final readonly class ToolExecutions
@@ -20,11 +20,11 @@ final readonly class ToolExecutions
 
     public static function fromArray(array $data): self {
         return new self(
-            ...array_map(fn($executionData) => ToolExecution::fromArray($executionData), $data)
+            ...array_map(fn ($executionData) => ToolExecution::fromArray($executionData), $data),
         );
     }
 
-    public static function none() : self {
+    public static function none(): self {
         return new self();
     }
 
@@ -35,13 +35,13 @@ final readonly class ToolExecutions
         return new self(...$newExecutions);
     }
 
-    public function hasExecutions() : bool {
+    public function hasExecutions(): bool {
         return count($this->toolExecutions) > 0;
     }
 
     public function toolCalls(): ToolCalls {
         $calls = array_map(
-            static fn(ToolExecution $execution): ToolCall => $execution->toolCall(),
+            static fn (ToolExecution $execution): ToolCall => $execution->toolCall(),
             $this->toolExecutions,
         );
 
@@ -63,10 +63,10 @@ final readonly class ToolExecutions
 
     /** @return ToolExecution[] */
     public function havingErrors(): array {
-        return array_filter($this->toolExecutions, fn(ToolExecution $toolExecution) => $toolExecution->hasError());
+        return array_filter($this->toolExecutions, fn (ToolExecution $toolExecution) => $toolExecution->hasError());
     }
 
-    public function errors() : ErrorList {
+    public function errors(): ErrorList {
         $errors = ErrorList::empty();
         foreach ($this->toolExecutions as $toolExecution) {
             if (!$toolExecution->hasError()) {
@@ -85,8 +85,8 @@ final readonly class ToolExecutions
 
     public function toArray(): array {
         return array_map(
-            fn(ToolExecution $toolExecution) => $toolExecution->toArray(),
-            $this->toolExecutions
+            fn (ToolExecution $toolExecution) => $toolExecution->toArray(),
+            $this->toolExecutions,
         );
     }
 }

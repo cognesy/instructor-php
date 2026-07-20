@@ -15,9 +15,7 @@ class HookContext
 {
     private readonly HookTrigger $triggerType;
     private readonly DateTimeImmutable $createdAt;
-
     private readonly DateTimeImmutable $updatedAt;
-
     private readonly AgentState $state;
     private readonly ?ToolCall $toolCall;
     private bool $isToolExecutionBlocked;
@@ -26,13 +24,13 @@ class HookContext
     private readonly array $metadata;
 
     public function __construct(
-        HookTrigger        $triggerType,
-        AgentState         $state,
-        array              $metadata = [],
-        ?ToolCall          $toolCall = null,
-        ?bool              $isToolExecutionBlocked = null,
-        ?ToolExecution     $toolExecution = null,
-        ?ErrorList         $errorList = null,
+        HookTrigger $triggerType,
+        AgentState $state,
+        array $metadata = [],
+        ?ToolCall $toolCall = null,
+        ?bool $isToolExecutionBlocked = null,
+        ?ToolExecution $toolExecution = null,
+        ?ErrorList $errorList = null,
         ?DateTimeImmutable $createdAt = null,
         ?DateTimeImmutable $updatedAt = null,
     ) {
@@ -112,7 +110,7 @@ class HookContext
     public static function onStop(
         AgentState $state,
         array $metadata = [],
-    ) : self {
+    ): self {
         return new self(
             triggerType: HookTrigger::OnStop,
             state: $state,
@@ -147,12 +145,12 @@ class HookContext
     // MUTATORS /////////////////////////////////////////////
 
     public function with(
-        ?AgentState     $state = null,
-        ?array          $metadata = null,
-        ?ToolCall       $toolCall = null,
-        ?bool           $isToolExecutionBlocked = null,
-        ?ToolExecution  $toolExecution = null,
-        ?ErrorList      $errorList = null,
+        ?AgentState $state = null,
+        ?array $metadata = null,
+        ?ToolCall $toolCall = null,
+        ?bool $isToolExecutionBlocked = null,
+        ?ToolExecution $toolExecution = null,
+        ?ErrorList $errorList = null,
     ): self {
         return new self(
             triggerType: $this->triggerType,
@@ -187,7 +185,7 @@ class HookContext
         return $this->with(errorList: $errorList);
     }
 
-    public function withToolExecutionBlocked(?string $message = null) : self {
+    public function withToolExecutionBlocked(?string $message = null): self {
         $message = $message ?? 'Execution blocked by hook: ' . $this->hookToString();
         $toolCall = $this->toolCall ?? ToolCall::none();
         $exception = new ToolExecutionBlockedException($toolCall, $message);
@@ -236,7 +234,7 @@ class HookContext
     }
 
     public function metadata(?string $key = null, mixed $default = null): mixed {
-        return match(true) {
+        return match (true) {
             ($key === null) => $this->metadata,
             array_key_exists($key, $this->metadata) => $this->metadata[$key],
             default => $default,
@@ -248,7 +246,7 @@ class HookContext
     }
 
     public function isToolExecutionBlocked(): bool {
-        return match(true) {
+        return match (true) {
             $this->isToolExecutionBlocked => true,
             !is_null($this->toolExecution) && $this->toolExecution->wasBlocked() => true,
             !$this->hasErrors() => false,
@@ -259,11 +257,11 @@ class HookContext
 
     private function hookToString(): string {
         return sprintf(
-            "HookContext(triggerType=%s, toolCall=%s, toolExecution=%s, errors=%d)",
+            'HookContext(triggerType=%s, toolCall=%s, toolExecution=%s, errors=%d)',
             $this->triggerType->name,
-            $this->toolCall ? $this->toolCall->name() . "(" . $this->toolCall->argsAsJson() . ")" : 'null',
+            $this->toolCall ? $this->toolCall->name() . '(' . $this->toolCall->argsAsJson() . ')' : 'null',
             $this->toolExecution ? $this->toolExecution->name() : 'null',
-            $this->errorList->count()
+            $this->errorList->count(),
         );
     }
 }

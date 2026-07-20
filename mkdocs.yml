@@ -137,6 +137,7 @@ nav:
       -
         'Release Notes':
           - { Overview: release-notes/versions.md }
+          - { v2.5.0: release-notes/v2.5.0.md }
           - { v2.4.1: release-notes/v2.4.1.md }
           - { v2.4.0: release-notes/v2.4.0.md }
           - { v2.3.1: release-notes/v2.3.1.md }
@@ -428,6 +429,7 @@ nav:
           - { 'Monolog Logging with Functional Pipeline': cookbook/examples/A03_Troubleshooting/logging_monolog.md }
           - { 'PSR-3 Logging with Functional Pipeline': cookbook/examples/A03_Troubleshooting/logging_psr.md }
           - { 'Symfony Logging Integration': cookbook/examples/A03_Troubleshooting/logging_symfony.md }
+          - { 'Observe StructuredOutput events, logs, and telemetry': cookbook/examples/A03_Troubleshooting/observability_telemetry_mechanisms.md }
           - { 'Receive specific internal event with onEvent()': cookbook/examples/A03_Troubleshooting/on_event.md }
           - { 'Load Config From Custom Path': cookbook/examples/A03_Troubleshooting/settings.md }
           - { 'Send StructuredOutput telemetry to Langfuse': cookbook/examples/A03_Troubleshooting/structured_telemetry_langfuse.md }
@@ -481,6 +483,7 @@ nav:
           - { 'Pure Array Processing (No Classes)': cookbook/examples/A05_Extras/pure_array_processing.md }
           - { 'Generating JSON Schema from PHP classes': cookbook/examples/A05_Extras/schema.md }
           - { 'Generating JSON Schema dynamically': cookbook/examples/A05_Extras/schema_dynamic.md }
+          - { 'Structured output validation loop': cookbook/examples/A05_Extras/structured_output_validation_loop.md }
           - { 'Create tasks from meeting transcription': cookbook/examples/A05_Extras/transcription_to_tasks.md }
           - { 'Translating UI text fields': cookbook/examples/A05_Extras/translate_ui_fields.md }
           - { 'Web page to PHP objects': cookbook/examples/A05_Extras/web_to_objects.md }
@@ -594,6 +597,7 @@ nav:
           - { 'Template from YAML': cookbook/examples/D03_AgentTemplates/template_from_yaml.md }
           - { 'Template with Tools and Capabilities': cookbook/examples/D03_AgentTemplates/template_with_tools_and_capabilities.md }
           - { 'Template Overrides Seed State': cookbook/examples/D03_AgentTemplates/template_override_seed_state.md }
+          - { 'Coding Agent Creates and Repairs an Example': cookbook/examples/D03_AgentTemplates/coding_agent_creates_example.md }
       -
         D04_AgentSessions:
           - { 'Session Create and Persist': cookbook/examples/D04_AgentSessions/session_create_and_persist.md }

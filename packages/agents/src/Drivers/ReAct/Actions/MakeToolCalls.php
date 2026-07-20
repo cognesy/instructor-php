@@ -5,8 +5,8 @@ namespace Cognesy\Agents\Drivers\ReAct\Actions;
 use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Drivers\ReAct\Contracts\Decision;
 use Cognesy\Agents\Drivers\ReAct\Utils\ReActValidator;
-use Cognesy\Messages\ToolCalls;
 use Cognesy\Messages\ToolCall;
+use Cognesy\Messages\ToolCalls;
 use Cognesy\Schema\Data\ArrayShapeSchema;
 use Cognesy\Schema\Data\CollectionSchema;
 use Cognesy\Schema\Data\ObjectSchema;
@@ -26,7 +26,7 @@ final class MakeToolCalls
         $this->schemaFactory = $schemaFactory ?? SchemaFactory::default();
     }
 
-    public function __invoke(Decision $decision) : ToolCalls {
+    public function __invoke(Decision $decision): ToolCalls {
         if (!$decision->isCall()) {
             return ToolCalls::empty();
         }
@@ -69,7 +69,7 @@ final class MakeToolCalls
 
         $stringKeyArgs = array_filter(
             $args,
-            static fn(mixed $key) : bool => is_string($key),
+            static fn (mixed $key): bool => is_string($key),
             ARRAY_FILTER_USE_KEY,
         );
 
@@ -80,11 +80,11 @@ final class MakeToolCalls
 
         return array_filter(
             $normalized,
-            static fn($value) => $value !== null,
+            static fn ($value) => $value !== null,
         );
     }
 
-    private function normalizeBySchema(Schema $schema, mixed $value) : mixed {
+    private function normalizeBySchema(Schema $schema, mixed $value): mixed {
         if ($schema instanceof CollectionSchema) {
             if (!is_array($value)) {
                 return $value;

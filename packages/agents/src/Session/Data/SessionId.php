@@ -3,6 +3,7 @@
 namespace Cognesy\Agents\Session\Data;
 
 use Cognesy\Utils\Uuid;
+use InvalidArgumentException;
 use Stringable;
 
 final readonly class SessionId implements Stringable
@@ -13,7 +14,7 @@ final readonly class SessionId implements Stringable
 
     public function __construct(string $value) {
         if (!preg_match(self::PATTERN, $value)) {
-            throw new \InvalidArgumentException("Invalid session ID: {$value}");
+            throw new InvalidArgumentException("Invalid session ID: {$value}");
         }
         $this->value = $value;
     }

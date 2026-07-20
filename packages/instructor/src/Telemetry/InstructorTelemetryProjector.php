@@ -5,7 +5,10 @@ namespace Cognesy\Instructor\Telemetry;
 use Cognesy\Instructor\Events\Extraction\ExtractionCompleted;
 use Cognesy\Instructor\Events\Extraction\ExtractionFailed;
 use Cognesy\Instructor\Events\Extraction\ExtractionStarted;
-use Cognesy\Instructor\Events\Response\ResponseGenerationFailed;
+use Cognesy\Instructor\Events\Attempt\ResponseRecoveryExhausted;
+use Cognesy\Instructor\Events\Attempt\ResponseRetryScheduled;
+use Cognesy\Instructor\Events\Response\ResponseMaterializationFailed;
+use Cognesy\Instructor\Events\Response\ResponseMaterialized;
 use Cognesy\Instructor\Events\Response\ResponseValidationFailed;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputRequestReceived;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
@@ -35,7 +38,10 @@ final readonly class InstructorTelemetryProjector implements CanProjectTelemetry
             $event instanceof ExtractionStarted => $this->onExtractionStarted($event),
             $event instanceof ExtractionCompleted => $this->onExtractionCompleted($event),
             $event instanceof ExtractionFailed => $this->onExtractionFailed($event),
-            $event instanceof ResponseGenerationFailed => $this->onErrorLog($event, 'structured_output.response_generation_failed'),
+            $event instanceof ResponseMaterialized => $this->onEventLog($event, 'structured_output.response_materialized'),
+            $event instanceof ResponseRetryScheduled => $this->onEventLog($event, 'structured_output.response_retry_scheduled'),
+            $event instanceof ResponseMaterializationFailed => $this->onErrorLog($event, 'structured_output.response_materialization_failed'),
+            $event instanceof ResponseRecoveryExhausted => $this->onErrorLog($event, 'structured_output.response_recovery_exhausted'),
             $event instanceof ResponseValidationFailed => $this->onErrorLog($event, 'structured_output.response_validation_failed'),
             default => null,
         };
@@ -158,16 +164,40 @@ final readonly class InstructorTelemetryProjector implements CanProjectTelemetry
     {
         $data = EventData::of($event);
         $executionId = EventData::string($data, 'executionId') ?? $name;
+        $errorMessage = EventData::string($data, 'errorMessage')
+            ?? EventData::string($data, 'error');
 
         $this->telemetry->log(
             key: $executionId,
             name: $name,
             attributes: $this->attributes([
-                'error.message' => EventData::string($data, 'error'),
+                'error.message' => $errorMessage,
+                'error.type' => EventData::string($data, 'errorType'),
+                'structured_output.failure_stage' => EventData::string($data, 'stage'),
                 'structured_output.phase' => EventData::string($data, 'phase'),
                 'structured_output.phase_id' => EventData::string($data, 'phaseId'),
             ]),
             status: ObservationStatus::Error,
+        );
+    }
+
+    private function onEventLog(object $event, string $name): void
+    {
+        $data = EventData::of($event);
+        $executionId = EventData::string($data, 'executionId');
+        if ($executionId === null) {
+            return;
+        }
+
+        $this->telemetry->log(
+            key: $executionId,
+            name: $name,
+            attributes: $this->attributes([
+                'structured_output.phase' => EventData::string($data, 'phase'),
+                'structured_output.phase_id' => EventData::string($data, 'phaseId'),
+                'structured_output.failure_stage' => EventData::string($data, 'stage'),
+                'structured_output.result_type' => EventData::string($data, 'resultType'),
+            ]),
         );
     }
 

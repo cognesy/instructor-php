@@ -2,8 +2,8 @@
 
 namespace Cognesy\Agents\Capability\ExecutionHistory;
 
-use Cognesy\Agents\Data\ExecutionId;
 use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Data\ExecutionId;
 use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use DateTimeImmutable;
@@ -33,8 +33,7 @@ final readonly class ExecutionSummary
      * NOTE: AfterExecution hooks fire before withExecutionCompleted() sets the
      * final status, so we derive it from stop signals and error state.
      */
-    public static function fromState(AgentState $state): self
-    {
+    public static function fromState(AgentState $state): self {
         $execution = $state->execution();
         $signal = $state->stopSignal();
 
@@ -60,8 +59,7 @@ final readonly class ExecutionSummary
         );
     }
 
-    public function toArray(): array
-    {
+    public function toArray(): array {
         return [
             'executionId' => $this->executionId->toString(),
             'executionNumber' => $this->executionNumber,

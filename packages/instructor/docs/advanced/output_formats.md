@@ -78,7 +78,7 @@ $user = (new StructuredOutput)
 
 The LLM still sees all five fields from `UserProfile`, ensuring thorough extraction. The output is then hydrated into the simpler `UserDTO`. This is valuable when you want to separate API contracts from internal models, simplify complex extraction results, or decouple domain models from presentation layers.
 
-### intoObject()
+### intoSelfDeserializing()
 
 Provides a custom object that controls its own deserialization from the extracted array. The object must implement the `CanDeserializeSelf` interface.
 
@@ -102,7 +102,7 @@ class Money implements CanDeserializeSelf
 
 $price = (new StructuredOutput)
     ->withResponseClass(Product::class)
-    ->intoObject(new Money())
+    ->intoSelfDeserializing(new Money())
     ->with(messages: 'Extract price: $19.99 USD')
     ->get();
 ```
@@ -127,7 +127,9 @@ $rating = (new StructuredOutput)
 
 ## Streaming with Output Formats
 
-Output formats work seamlessly with streaming. During streaming, partial updates are always returned as objects (for validation and deduplication). The final result respects the output format you specified.
+Output formats work with streaming as well. Partial updates are best-effort values in the
+selected output format; the completed value runs the same validation and transformation
+pipeline as synchronous extraction.
 
 ```php
 $stream = (new StructuredOutput)
@@ -137,7 +139,7 @@ $stream = (new StructuredOutput)
     ->stream();
 
 foreach ($stream->partials() as $partial) {
-    // $partial is an Article object during streaming
+    // $partial is a best-effort associative array
 }
 
 $finalArticle = $stream->finalValue();
@@ -146,12 +148,14 @@ $finalArticle = $stream->finalValue();
 
 ## Comparison
 
-| Feature | Default (Object) | intoArray() | intoInstanceOf() | intoObject() |
+| Feature | Class schema default | Plain schema default / intoArray() | intoInstanceOf() | intoSelfDeserializing() |
 |---------|------------------|-------------|------------------|--------------|
 | **Output type** | Schema class | Array | Target class | Custom object |
-| **Validation** | Yes | Skipped | Yes | Custom |
-| **Streaming partials** | Object | Object | Object | Object |
+| **Validation** | Yes | Yes | Yes | Schema plus object validation |
+| **Streaming partials** | Best-effort class | Best-effort array | Best-effort target class | Best-effort custom object |
 | **Streaming final** | Object | Array | Target class | Custom object |
+
+`intoObject()` is a deprecated compatibility alias for `intoSelfDeserializing()`.
 
 ## Common Patterns
 

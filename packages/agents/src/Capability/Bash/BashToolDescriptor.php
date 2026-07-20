@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Agents\Capability\Bash;
 
@@ -10,7 +12,7 @@ final readonly class BashToolDescriptor extends ToolDescriptor
         parent::__construct(
             name: 'bash',
             description: <<<'DESC'
-Execute a bash command and return stdout/stderr. Use for shell operations, not file reading.
+Execute a bash command and return bounded stdout/stderr. Use for shell operations, not file reading.
 
 Examples:
 - "git status" → check git state
@@ -19,7 +21,8 @@ Examples:
 - "grep -r 'TODO' src/" → search file contents
 - "npm run build" → run build scripts
 
-Prefer dedicated tools when available: read_file over cat, search_files over find.
+Prefer dedicated file tools over cat, sed-based rewrites, and shell redirection.
+If output is truncated, narrow the command or redirect it to a file and inspect it with the dedicated read tool.
 DESC,
             metadata: [
                 'name' => 'bash',
@@ -31,9 +34,9 @@ DESC,
                 'parameters' => [
                     'command' => 'Bash command string to execute.',
                 ],
-                'returns' => 'Command stdout/stderr text with error or truncation markers when applicable.',
+                'returns' => 'Bounded stdout/stderr with explicit exit, timeout, and recoverable truncation details.',
                 'usage' => [
-                    'Prefer dedicated tools when available (read_file, search_files, edit_file, write_file).',
+                    'Prefer dedicated file tools when reading, editing, or creating files.',
                     'Use short, deterministic commands and avoid interactive shells.',
                 ],
                 'errors' => [

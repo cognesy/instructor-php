@@ -46,7 +46,7 @@ final readonly class StepExecutions
         return $this->items;
     }
 
-    public function last() : ?StepExecution {
+    public function last(): ?StepExecution {
         if ($this->items === []) {
             return null;
         }
@@ -55,7 +55,7 @@ final readonly class StepExecutions
 
     public function totalDuration(): float {
         return array_sum(array_map(
-            static fn(StepExecution $stepExecution): float => $stepExecution->duration(),
+            static fn (StepExecution $stepExecution): float => $stepExecution->duration(),
             $this->items,
         ));
     }
@@ -70,7 +70,7 @@ final readonly class StepExecutions
 
     public function steps(): AgentSteps {
         $steps = array_map(
-            static fn(StepExecution $stepExecution): AgentStep => $stepExecution->step(),
+            static fn (StepExecution $stepExecution): AgentStep => $stepExecution->step(),
             $this->items,
         );
         return new AgentSteps(...$steps);
@@ -88,14 +88,14 @@ final readonly class StepExecutions
 
     public function toArray(): array {
         return array_map(
-            static fn(StepExecution $result): array => $result->toArray(),
+            static fn (StepExecution $result): array => $result->toArray(),
             $this->items,
         );
     }
 
     public static function fromArray(array $data): self {
         $items = array_map(
-            static fn(array $resultData): StepExecution => StepExecution::fromArray($resultData),
+            static fn (array $resultData): StepExecution => StepExecution::fromArray($resultData),
             $data,
         );
         return new self($items);

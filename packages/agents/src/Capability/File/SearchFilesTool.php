@@ -6,8 +6,10 @@ use Cognesy\Agents\Tool\Tools\SimpleTool;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
 use FilesystemIterator;
+use Override;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use SplFileInfo;
 
 class SearchFilesTool extends SimpleTool
 {
@@ -27,7 +29,7 @@ class SearchFilesTool extends SimpleTool
         return new self($baseDir, $maxResults);
     }
 
-    #[\Override]
+    #[Override]
     public function __invoke(mixed ...$args): string {
         $patterns = $this->extractPatterns($args);
 
@@ -48,8 +50,8 @@ class SearchFilesTool extends SimpleTool
 
             // Convert to relative paths
             $relativePaths = array_map(
-                fn($f) => str_replace($this->baseDir . '/', '', $f),
-                $files
+                fn ($f) => str_replace($this->baseDir . '/', '', $f),
+                $files,
             );
 
             if ($relativePaths !== []) {
@@ -68,13 +70,13 @@ class SearchFilesTool extends SimpleTool
         }
 
         // Format output showing which pattern matched what
-        $output = "Found " . count($allFiles) . " files:\n";
+        $output = 'Found ' . count($allFiles) . " files:\n";
         foreach ($patternResults as $pattern => $files) {
             /** @var array<int, string> $limited */
             $limited = array_slice($files, 0, 5);
             $output .= "\n[{$pattern}]\n" . implode("\n", $limited);
             if (count($files) > 5) {
-                $output .= "\n... and " . (count($files) - 5) . " more";
+                $output .= "\n... and " . (count($files) - 5) . ' more';
             }
         }
 
@@ -156,11 +158,11 @@ class SearchFilesTool extends SimpleTool
 
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($searchRoot, FilesystemIterator::SKIP_DOTS),
-            RecursiveIteratorIterator::LEAVES_ONLY
+            RecursiveIteratorIterator::LEAVES_ONLY,
         );
 
         $files = [];
-        /** @var \SplFileInfo $file */
+        /** @var SplFileInfo $file */
         foreach ($iterator as $file) {
             if (fnmatch($filePattern, $file->getFilename())) {
                 $files[] = $file->getPathname();
@@ -170,7 +172,7 @@ class SearchFilesTool extends SimpleTool
         return $files;
     }
 
-    #[\Override]
+    #[Override]
     public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition {
         return \Cognesy\Polyglot\Inference\Data\ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
@@ -179,7 +181,7 @@ class SearchFilesTool extends SimpleTool
                 ->withProperties([
                     JsonSchema::string('pattern', 'Search pattern. Examples: "composer.json" (recursive), "**/*.php" (recursive glob), "*.json" (root only), "./README.md" (exact path)'),
                     JsonSchema::array('patterns', JsonSchema::string(), 'Multiple patterns to search at once. Example: ["composer.json", "package.json", "*.xml"]'),
-                ])
+                ]),
         )->toArray());
     }
 }

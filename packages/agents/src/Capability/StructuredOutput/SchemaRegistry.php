@@ -2,8 +2,8 @@
 
 namespace Cognesy\Agents\Capability\StructuredOutput;
 
-use Cognesy\Agents\Capability\StructuredOutput\SchemaDefinition;
 use InvalidArgumentException;
+use Override;
 
 /**
  * Registry of available schemas for structured output extraction.
@@ -43,7 +43,7 @@ final class SchemaRegistry implements CanManageSchemas
      * @param string $name Unique identifier for this schema
      * @param class-string|SchemaDefinition $schema Class name or full definition
      */
-    #[\Override]
+    #[Override]
     public function register(string $name, string|SchemaDefinition $schema): void {
         $this->schemas[$name] = match (true) {
             is_string($schema) => SchemaDefinition::fromClass($schema),
@@ -56,12 +56,12 @@ final class SchemaRegistry implements CanManageSchemas
      *
      * @throws InvalidArgumentException if schema not found
      */
-    #[\Override]
+    #[Override]
     public function get(string $name): SchemaDefinition {
         if (!$this->has($name)) {
             $available = implode(', ', array_keys($this->schemas));
             throw new InvalidArgumentException(
-                "Schema '{$name}' not found. Available schemas: {$available}"
+                "Schema '{$name}' not found. Available schemas: {$available}",
             );
         }
         return $this->schemas[$name];
@@ -70,13 +70,13 @@ final class SchemaRegistry implements CanManageSchemas
     /**
      * Check if a schema is registered.
      */
-    #[\Override]
+    #[Override]
     public function has(string $name): bool {
         return isset($this->schemas[$name]);
     }
 
     /** @return array<string, SchemaDefinition> */
-    #[\Override]
+    #[Override]
     public function all(): array {
         return $this->schemas;
     }
@@ -86,7 +86,7 @@ final class SchemaRegistry implements CanManageSchemas
      *
      * @return string[]
      */
-    #[\Override]
+    #[Override]
     public function names(): array {
         return array_keys($this->schemas);
     }
@@ -94,7 +94,7 @@ final class SchemaRegistry implements CanManageSchemas
     /**
      * Get count of registered schemas.
      */
-    #[\Override]
+    #[Override]
     public function count(): int {
         return count($this->schemas);
     }

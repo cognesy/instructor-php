@@ -13,7 +13,7 @@ final class MakeReActPrompt
         $this->tools = $tools;
     }
 
-    public function __invoke() : string {
+    public function __invoke(): string {
         $rules = $this->makeRules();
         $catalog = $this->makeCatalog($this->tools);
         return $this->makePrompt($rules, $catalog);
@@ -21,7 +21,7 @@ final class MakeReActPrompt
 
     // INTERNAL /////////////////////////////////////////////////////////
 
-    private function makePrompt(array $rules, array $catalog) : string {
+    private function makePrompt(array $rules, array $catalog): string {
         return implode("\n", [
             'INSTRUCTIONS:',
             ...$rules,
@@ -34,13 +34,13 @@ final class MakeReActPrompt
         ]);
     }
 
-    private function makeCatalog(Tools $tools) : array {
+    private function makeCatalog(Tools $tools): array {
         $toolSchemas = $tools->toToolSchema();
         $toolList = $tools->descriptions();
         return [
             'tools' => $toolList,
             'schemas' => array_map(
-                fn($item) => [
+                fn ($item) => [
                     'name' => $item->name(),
                     'parameters' => $item->parameters(),
                 ],
@@ -49,8 +49,8 @@ final class MakeReActPrompt
         ];
     }
 
-    private function makeRules() : array {
-         return [
+    private function makeRules(): array {
+        return [
             'You are a ReAct-style agent using Thought/Action/Observation steps.',
             'At each step, output strictly valid JSON that matches the provided schema.',
             'When you act, set type=call_tool and provide tool + args.',

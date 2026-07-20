@@ -6,6 +6,7 @@ use Cognesy\Agents\Capability\Tasks\TaskList;
 use Cognesy\Agents\Capability\Tasks\TodoWriteTool;
 use Cognesy\Agents\Session\Contracts\CanExecuteSessionAction;
 use Cognesy\Agents\Session\Data\AgentSession;
+use Override;
 
 final readonly class UpdateTask implements CanExecuteSessionAction
 {
@@ -17,10 +18,10 @@ final readonly class UpdateTask implements CanExecuteSessionAction
         return new self(TaskList::fromArray($tasks));
     }
 
-    #[\Override]
+    #[Override]
     public function executeOn(AgentSession $session): AgentSession {
         return $session->withState(
-            $session->state()->withMetadata(TodoWriteTool::metadataKey(), $this->taskList->toArray())
+            $session->state()->withMetadata(TodoWriteTool::metadataKey(), $this->taskList->toArray()),
         );
     }
 }

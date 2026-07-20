@@ -261,6 +261,7 @@ Domain capabilities bundle tools, hooks, and configuration for specific workflow
 |---|---|---|
 | `UseBash` | `Capability\Bash` | Adds a bash command execution tool |
 | `UseFileTools` | `Capability\File` | Adds file read/write/edit tools scoped to a directory |
+| `UseCodingTools` | `Capability\Coding` | Adds bounded `read`, `bash`, `edit`, and `write` tools for coding agents |
 | `UseSubagents` | `Capability\Subagent` | Enables spawning child agents from definitions |
 | `UsePlanningSubagent` | `Capability\PlanningSubagent` | Adds a planning subagent that creates execution plans |
 | `UseStructuredOutputs` | `Capability\StructuredOutput` | Configures structured (typed) output extraction |

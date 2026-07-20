@@ -6,5 +6,5 @@ use Cognesy\Messages\Messages;
 
 interface CanSummarizeMessages
 {
-    public function summarize(Messages $messages, int $tokenLimit) : string;
+    public function summarize(Messages $messages, int $tokenLimit): string;
 }

@@ -5,12 +5,13 @@ namespace Cognesy\Agents\Tool\Traits;
 use Cognesy\Polyglot\Inference\Data\ToolDefinition;
 use Cognesy\Schema\CallableSchemaFactory;
 use Cognesy\Schema\SchemaFactory;
+use Override;
 
 trait HasReflectiveSchema
 {
     protected ?array $cachedParamsJsonSchema = null;
 
-    #[\Override]
+    #[Override]
     public function toToolSchema(): ToolDefinition {
         return new ToolDefinition(
             name: $this->name(),

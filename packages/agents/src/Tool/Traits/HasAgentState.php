@@ -3,12 +3,13 @@
 namespace Cognesy\Agents\Tool\Traits;
 
 use Cognesy\Agents\Data\AgentState;
+use Override;
 
 trait HasAgentState
 {
     protected ?AgentState $agentState = null;
 
-    #[\Override]
+    #[Override]
     public function withAgentState(AgentState $state): static {
         $clone = clone $this;
         $clone->agentState = $state;

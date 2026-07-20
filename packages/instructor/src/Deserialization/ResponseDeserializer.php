@@ -2,13 +2,11 @@
 
 namespace Cognesy\Instructor\Deserialization;
 
-use Cognesy\Dynamic\Structure as DynamicStructure;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
-use Cognesy\Instructor\Enums\ReturnTarget;
 use Cognesy\Instructor\Events\Response\CustomResponseDeserializationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseDeserializationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseDeserializationFailed;
@@ -17,6 +15,8 @@ use Cognesy\Utils\Result\Result;
 use Cognesy\Xprompt\Prompt;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use RuntimeException;
+use Throwable;
 
 class ResponseDeserializer implements CanDeserializeResponse
 {
@@ -28,51 +28,36 @@ class ResponseDeserializer implements CanDeserializeResponse
 
     #[\Override]
     public function deserialize(array $data, ResponseModel $responseModel) : Result {
-        $returnTarget = $responseModel->returnTarget();
-        if ($returnTarget === ReturnTarget::Array) {
-            $this->events->dispatch(new ResponseDeserialized($this->dataSummary($data)));
-            return Result::success($data);
-        }
-        if ($returnTarget === ReturnTarget::UntypedObject) {
-            $response = $this->toAnonymousObject($data);
-            $this->events->dispatch(new ResponseDeserialized($this->objectSummary($response)));
-            return Result::success($response);
-        }
-
         $outputFormat = $responseModel->outputFormat();
-        $targetClass = $outputFormat?->targetClass() ?? $responseModel->returnedClass();
-        $instance = $responseModel->instance();
+        $this->events->dispatch(new ResponseDeserializationAttempt([
+            'outputFormat' => $outputFormat->type->value,
+            'targetType' => $outputFormat->targetClass() ?? 'array',
+            ...$this->dataSummary($data),
+        ]));
 
-        if ($instance instanceof DynamicStructure) {
-            return Result::try(fn() => $instance->fromArray($data));
+        try {
+            $result = match (true) {
+                $outputFormat->isArray() => Result::success($data),
+                $outputFormat->isObject() => $this->deserializeSelfTarget($data, $responseModel),
+                $outputFormat->targetClass() === \stdClass::class => Result::success($this->toAnonymousObject($data)),
+                $outputFormat->targetClass() === null => Result::failure('Class output target is missing its class name.'),
+                default => $this->deserializeAny($data, $outputFormat->targetClass(), $responseModel),
+            };
+        } catch (Throwable $error) {
+            $this->reportFailure($error);
+            throw $error;
         }
 
-        if ($returnTarget === ReturnTarget::SelfDeserializingObject) {
-            $instance = $outputFormat->targetInstance();
-            if ($instance !== null && method_exists($instance, 'fromArray')) {
-                $this->events->dispatch(new CustomResponseDeserializationAttempt([
-                    'class' => $instance::class,
-                    'dataKeys' => array_keys($data),
-                    'dataKeyCount' => count($data),
-                ]));
-                /** @var Result<mixed, string> */
-                return Result::try(fn() => $instance->fromArray($data));
-            }
+        if ($result->isSuccess()) {
+            $this->events->dispatch(new ResponseDeserialized($this->valueSummary($result->unwrap())));
+            return $result;
         }
 
-        if ($this->canDeserializeSelf($responseModel)) {
-            return $this->deserializeSelf($data, $responseModel->instance());
-        }
-
-        /** @var class-string $targetClass */
-        return $this->deserializeAny($data, $targetClass, $responseModel, $returnTarget);
+        $this->reportFailure($result->error());
+        return $result;
     }
 
     // INTERNAL ////////////////////////////////////////////////////////
-
-    protected function canDeserializeSelf(ResponseModel $responseModel) : bool {
-        return $responseModel->instance() instanceof CanDeserializeSelf;
-    }
 
     protected function deserializeSelf(array $data, CanDeserializeSelf $response) : Result {
         $this->events->dispatch(new CustomResponseDeserializationAttempt([
@@ -83,6 +68,15 @@ class ResponseDeserializer implements CanDeserializeResponse
         return Result::try(fn() => $response->fromArray($data));
     }
 
+    private function deserializeSelfTarget(array $data, ResponseModel $responseModel): Result
+    {
+        $instance = $responseModel->outputFormat()->targetInstance();
+        return match (true) {
+            $instance instanceof CanDeserializeSelf => $this->deserializeSelf($data, $instance),
+            default => Result::failure('Self-deserializing output target is missing its instance.'),
+        };
+    }
+
     /**
      * @param array<string, mixed> $data
      * @param class-string $targetClass
@@ -91,26 +85,16 @@ class ResponseDeserializer implements CanDeserializeResponse
         array $data,
         string $targetClass,
         ResponseModel $responseModel,
-        ReturnTarget $returnTarget,
     ): Result {
-        $this->events->dispatch(new ResponseDeserializationAttempt([
-            'targetClass' => $targetClass,
-            'returnTarget' => $returnTarget->name,
-            'dataKeys' => array_keys($data),
-            'dataKeyCount' => count($data),
-        ]));
-
         $result = Result::try(fn() => $this->deserializer->fromArray($data, $targetClass));
         if ($result->isSuccess()) {
-            $this->events->dispatch(new ResponseDeserialized($this->objectSummary($result->unwrap())));
             return $result;
         }
 
-        $this->events->dispatch(new ResponseDeserializationFailed(['error' => $result->errorMessage()]));
-        return match (true) {
-            $returnTarget === ReturnTarget::UntypedObject => Result::success($this->toAnonymousObject($data)),
-            default => Result::failure($this->makeFailureMessage($data, $result->errorMessage(), $responseModel)),
-        };
+        return Result::failure(new RuntimeException(
+            message: $this->makeFailureMessage($data, $result->errorMessage(), $responseModel),
+            previous: $result->exception(),
+        ));
     }
 
     private function toAnonymousObject(array $data) : object {
@@ -125,18 +109,24 @@ class ResponseDeserializer implements CanDeserializeResponse
         ];
     }
 
-    private function objectSummary(mixed $value): array {
-        if (is_object($value)) {
-            $vars = get_object_vars($value);
-            return [
+    private function valueSummary(mixed $value): array {
+        return match (true) {
+            is_object($value) => [
                 'type' => $value::class,
-                'fieldCount' => count($vars),
-                'fields' => array_slice(array_keys($vars), 0, 20),
-            ];
-        }
-        return [
-            'type' => gettype($value),
-        ];
+                'fieldCount' => count(get_object_vars($value)),
+                'fields' => array_slice(array_keys(get_object_vars($value)), 0, 20),
+            ],
+            is_array($value) => $this->dataSummary($value),
+            default => ['type' => get_debug_type($value)],
+        };
+    }
+
+    private function reportFailure(mixed $error): void
+    {
+        $this->events->dispatch(new ResponseDeserializationFailed([
+            'errorMessage' => 'Response deserialization failed.',
+            'errorType' => $error instanceof Throwable ? $error::class : get_debug_type($error),
+        ]));
     }
 
     private function makeFailureMessage(array $data, string $error, ResponseModel $responseModel) : string {

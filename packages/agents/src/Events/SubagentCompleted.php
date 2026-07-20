@@ -5,6 +5,7 @@ namespace Cognesy\Agents\Events;
 use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use DateTimeImmutable;
+use Override;
 
 /**
  * Dispatched when a subagent completes execution.
@@ -15,16 +16,16 @@ final class SubagentCompleted extends AgentEvent
     public readonly DateTimeImmutable $completedAt;
 
     public function __construct(
-        public readonly string            $parentAgentId,
-        public readonly string            $subagentId,
-        public readonly string            $subagentName,
-        public readonly ExecutionStatus   $status,
-        public readonly int               $steps,
-        public readonly ?InferenceUsage            $usage,
+        public readonly string $parentAgentId,
+        public readonly string $subagentId,
+        public readonly string $subagentName,
+        public readonly ExecutionStatus $status,
+        public readonly int $steps,
+        public readonly ?InferenceUsage $usage,
         public readonly DateTimeImmutable $startedAt,
-        public readonly ?string           $parentExecutionId = null,
-        public readonly ?int              $parentStepNumber = null,
-        public readonly ?string           $toolCallId = null,
+        public readonly ?string $parentExecutionId = null,
+        public readonly ?int $parentStepNumber = null,
+        public readonly ?string $toolCallId = null,
     ) {
         $this->completedAt = new DateTimeImmutable();
 
@@ -42,7 +43,7 @@ final class SubagentCompleted extends AgentEvent
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public function __toString(): string {
         $tokens = $this->usage?->total() ?? 0;
 
@@ -53,7 +54,7 @@ final class SubagentCompleted extends AgentEvent
             $this->status->value,
             $this->steps,
             $tokens,
-            $this->getDurationMs()
+            $this->getDurationMs(),
         );
     }
 

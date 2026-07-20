@@ -27,7 +27,7 @@ class FakeValidator extends ResponseValidator {
     public function __construct($events, $config) { parent::__construct($events, new SymfonyValidator(), $config); }
 }
 class FakeTransformer extends ResponseTransformer {
-    public function __construct($events, $config) { parent::__construct($events, null, $config); }
+    public function __construct($events) { parent::__construct($events, null); }
 }
 
 describe('ResponseGenerator', function () {
@@ -48,8 +48,7 @@ describe('ResponseGenerator', function () {
         $gen = new ResponseGenerator(
             responseDeserializer: new FakeDeserializer($events, $config),
             responseValidator: new FakeValidator($events, $config),
-            responseTransformer: new FakeTransformer($events, $config),
-            events: $events,
+            responseTransformer: new FakeTransformer($events),
             extractor: new ResponseExtractor(events: $events),
         );
 
@@ -68,8 +67,7 @@ describe('ResponseGenerator', function () {
         $gen = new ResponseGenerator(
             responseDeserializer: new FakeDeserializer($events, $config),
             responseValidator: new FakeValidator($events, $config),
-            responseTransformer: new FakeTransformer($events, $config),
-            events: $events,
+            responseTransformer: new FakeTransformer($events),
             extractor: new ResponseExtractor(events: $events),
         );
 
@@ -86,8 +84,7 @@ describe('ResponseGenerator', function () {
         $gen = new ResponseGenerator(
             responseDeserializer: new FakeDeserializer($events, $config),
             responseValidator: new FakeValidator($events, $config),
-            responseTransformer: new FakeTransformer($events, $config),
-            events: $events,
+            responseTransformer: new FakeTransformer($events),
             extractor: new ResponseExtractor(events: $events),
         );
 
@@ -105,8 +102,7 @@ describe('ResponseGenerator', function () {
         $gen = new ResponseGenerator(
             responseDeserializer: new FakeDeserializer($events, $config),
             responseValidator: new FakeValidator($events, $config),
-            responseTransformer: new FakeTransformer($events, $config),
-            events: $events,
+            responseTransformer: new FakeTransformer($events),
             extractor: new ResponseExtractor(events: $events),
         );
 

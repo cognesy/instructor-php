@@ -21,8 +21,7 @@ final readonly class AgentStateTelemetry
         );
     }
 
-    public static function loadContinuation(AgentState $state): ?TelemetryContinuation
-    {
+    public static function loadContinuation(AgentState $state): ?TelemetryContinuation {
         $seed = self::loadSeed($state);
         if ($seed?->trace() !== null) {
             return new TelemetryContinuation(
@@ -34,7 +33,7 @@ final readonly class AgentStateTelemetry
                     'user_id' => $seed->userId(),
                     'conversation_id' => $seed->conversationId(),
                     'request_id' => $seed->requestId(),
-                ], static fn(mixed $value): bool => $value !== null),
+                ], static fn (mixed $value): bool => $value !== null),
             );
         }
 
@@ -46,13 +45,11 @@ final readonly class AgentStateTelemetry
         };
     }
 
-    public static function storeSeed(AgentState $state, AgentTelemetrySeed $seed): AgentState
-    {
+    public static function storeSeed(AgentState $state, AgentTelemetrySeed $seed): AgentState {
         return $state->withMetadata(self::SEED_METADATA_KEY, $seed->toArray());
     }
 
-    public static function loadSeed(AgentState $state): ?AgentTelemetrySeed
-    {
+    public static function loadSeed(AgentState $state): ?AgentTelemetrySeed {
         $payload = $state->metadata()->get(self::SEED_METADATA_KEY);
         if (is_array($payload)) {
             return AgentTelemetrySeed::fromArray($payload);
@@ -62,7 +59,7 @@ final readonly class AgentStateTelemetry
 
         return match (true) {
             is_array($continuationPayload) && isset($continuationPayload['traceparent']) => AgentTelemetrySeed::fromContinuation(
-                TelemetryContinuation::fromArray($continuationPayload)
+                TelemetryContinuation::fromArray($continuationPayload),
             ),
             default => null,
         };
@@ -75,8 +72,7 @@ final readonly class AgentStateTelemetry
         return $session->withState(self::storeContinuation($session->state(), $continuation));
     }
 
-    public static function loadSessionContinuation(AgentSession $session): ?TelemetryContinuation
-    {
+    public static function loadSessionContinuation(AgentSession $session): ?TelemetryContinuation {
         return self::loadContinuation($session->state());
     }
 }

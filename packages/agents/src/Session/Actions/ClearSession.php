@@ -5,10 +5,11 @@ namespace Cognesy\Agents\Session\Actions;
 use Cognesy\Agents\Session\Contracts\CanExecuteSessionAction;
 use Cognesy\Agents\Session\Data\AgentSession;
 use Cognesy\Messages\MessageStore\MessageStore;
+use Override;
 
 final readonly class ClearSession implements CanExecuteSessionAction
 {
-    #[\Override]
+    #[Override]
     public function executeOn(AgentSession $session): AgentSession {
         $clearedState = $session->state()
             ->withMessageStore(new MessageStore())

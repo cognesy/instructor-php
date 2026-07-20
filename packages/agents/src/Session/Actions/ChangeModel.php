@@ -5,6 +5,7 @@ namespace Cognesy\Agents\Session\Actions;
 use Cognesy\Agents\Session\Contracts\CanExecuteSessionAction;
 use Cognesy\Agents\Session\Data\AgentSession;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Override;
 
 final readonly class ChangeModel implements CanExecuteSessionAction
 {
@@ -12,7 +13,7 @@ final readonly class ChangeModel implements CanExecuteSessionAction
         private ?LLMConfig $llmConfig,
     ) {}
 
-    #[\Override]
+    #[Override]
     public function executeOn(AgentSession $session): AgentSession {
         return $session->withState($session->state()->withLLMConfig($this->llmConfig));
     }

@@ -52,7 +52,6 @@ it('keeps provider-instance flow working for providers with constructor args', f
 
     $model = $factory->fromAny(new ConstructorRequiredSchemaProviderForRegression('user_schema'));
 
-    expect($model->instanceClass())->toBe(ConstructorRequiredSchemaProviderForRegression::class);
-    expect($model->returnedClass())->toBe(User::class);
-    expect($model->toJsonSchema()['type'])->toBe('object');
+    expect($model->outputFormat()->targetClass())->toBe(User::class)
+        ->and($model->toJsonSchema()['type'])->toBe('object');
 });

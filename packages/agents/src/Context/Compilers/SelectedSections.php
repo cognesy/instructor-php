@@ -7,6 +7,7 @@ use Cognesy\Agents\Context\ContextSections;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\Collections\Sections;
+use Override;
 
 final class SelectedSections implements CanCompileMessages
 {
@@ -21,9 +22,8 @@ final class SelectedSections implements CanCompileMessages
         return new self(ContextSections::inferenceOrder());
     }
 
-    #[\Override]
-    public function compile(AgentState $state): Messages
-    {
+    #[Override]
+    public function compile(AgentState $state): Messages {
         if ($this->sections === []) {
             return $state->messages();
         }

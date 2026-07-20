@@ -7,6 +7,25 @@ use Cognesy\Instructor\Prompts\StructuredOutput\MdJsonSystemPrompt;
 use Cognesy\Instructor\Prompts\StructuredOutput\RetryFeedbackPrompt;
 use Cognesy\Instructor\Prompts\StructuredOutput\ToolsSystemPrompt;
 
+it('ships every bundled structured-output prompt as a Twig template', function () {
+    $promptClasses = [
+        MdJsonSystemPrompt::class,
+        JsonSystemPrompt::class,
+        JsonSchemaSystemPrompt::class,
+        ToolsSystemPrompt::class,
+        RetryFeedbackPrompt::class,
+        DeserializationRepairPrompt::class,
+    ];
+
+    foreach ($promptClasses as $promptClass) {
+        $prompt = new $promptClass();
+        $path = rtrim((string) $prompt->templateDir, '/') . '/' . $prompt->templateFile;
+
+        expect($prompt->templateFile)->toEndWith('.md.twig')
+            ->and($path)->toBeFile();
+    }
+});
+
 it('renders json system prompt with task and examples markdown', function () {
     $text = JsonSystemPrompt::with(
         system: 'You are a precise extraction assistant.',

@@ -23,8 +23,7 @@ use Cognesy\Telemetry\Domain\Envelope\TelemetryEnvelope;
 
 final readonly class AgentTelemetry
 {
-    public static function attach(AgentEvent $event, ?AgentTelemetrySeed $seed = null): AgentEvent
-    {
+    public static function attach(AgentEvent $event, ?AgentTelemetrySeed $seed = null): AgentEvent {
         $envelope = self::envelopeFor($event, $seed);
 
         if ($envelope === null) {
@@ -83,8 +82,7 @@ final readonly class AgentTelemetry
         ));
     }
 
-    private static function stepStarted(AgentStepStarted $event, ?AgentTelemetrySeed $seed): TelemetryEnvelope
-    {
+    private static function stepStarted(AgentStepStarted $event, ?AgentTelemetrySeed $seed): TelemetryEnvelope {
         return (new TelemetryEnvelope(
             operation: new OperationDescriptor(
                 id: self::stepId($event->executionId, $event->stepNumber),
@@ -102,8 +100,7 @@ final readonly class AgentTelemetry
         ));
     }
 
-    private static function stepCompleted(AgentStepCompleted $event, ?AgentTelemetrySeed $seed): TelemetryEnvelope
-    {
+    private static function stepCompleted(AgentStepCompleted $event, ?AgentTelemetrySeed $seed): TelemetryEnvelope {
         return (new TelemetryEnvelope(
             operation: new OperationDescriptor(
                 id: self::stepId($event->executionId, $event->stepNumber),
@@ -123,40 +120,36 @@ final readonly class AgentTelemetry
                 'error_count' => $event->errorCount > 0 ? $event->errorCount : null,
                 'errors' => $event->errorMessages !== '' ? $event->errorMessages : null,
                 'usage' => $event->usage->toArray(),
-            ], static fn(mixed $v): bool => $v !== null),
+            ], static fn (mixed $v): bool => $v !== null),
         ));
     }
 
-    private static function executionCompleted(AgentExecutionCompleted $event, ?AgentTelemetrySeed $seed): TelemetryEnvelope
-    {
+    private static function executionCompleted(AgentExecutionCompleted $event, ?AgentTelemetrySeed $seed): TelemetryEnvelope {
         return self::executionSpanEnvelope($event->executionId, $seed)->withIO(new OperationIO(
             output: $event->outputMessages !== [] ? $event->outputMessages : array_filter([
                 'status' => $event->status->value,
                 'total_steps' => $event->totalSteps,
                 'usage' => $event->totalUsage->toArray(),
                 'errors' => $event->errors,
-            ], static fn(mixed $v): bool => $v !== null),
+            ], static fn (mixed $v): bool => $v !== null),
         ));
     }
 
-    private static function executionStopped(AgentExecutionStopped $event, ?AgentTelemetrySeed $seed): TelemetryEnvelope
-    {
+    private static function executionStopped(AgentExecutionStopped $event, ?AgentTelemetrySeed $seed): TelemetryEnvelope {
         return self::executionSpanEnvelope($event->executionId, $seed);
     }
 
-    private static function executionFailed(AgentExecutionFailed $event, ?AgentTelemetrySeed $seed): TelemetryEnvelope
-    {
+    private static function executionFailed(AgentExecutionFailed $event, ?AgentTelemetrySeed $seed): TelemetryEnvelope {
         return self::executionSpanEnvelope($event->executionId, $seed)->withIO(new OperationIO(
             output: array_filter([
                 'error' => $event->exception->getMessage(),
                 'error_type' => get_class($event->exception),
                 'steps_completed' => $event->stepsCompleted,
-            ], static fn(mixed $v): bool => $v !== null),
+            ], static fn (mixed $v): bool => $v !== null),
         ));
     }
 
-    private static function executionSpanEnvelope(string $executionId, ?AgentTelemetrySeed $seed): TelemetryEnvelope
-    {
+    private static function executionSpanEnvelope(string $executionId, ?AgentTelemetrySeed $seed): TelemetryEnvelope {
         return new TelemetryEnvelope(
             operation: new OperationDescriptor(
                 id: $executionId,
@@ -168,8 +161,7 @@ final readonly class AgentTelemetry
         );
     }
 
-    private static function toolCallStarted(ToolCallStarted $event, ?AgentTelemetrySeed $seed): TelemetryEnvelope
-    {
+    private static function toolCallStarted(ToolCallStarted $event, ?AgentTelemetrySeed $seed): TelemetryEnvelope {
         $spanId = $event->toolCallId !== '' ? $event->toolCallId : $event->id;
 
         return self::toolSpanEnvelope(
@@ -183,8 +175,7 @@ final readonly class AgentTelemetry
         ));
     }
 
-    private static function toolCallCompleted(ToolCallCompleted $event, ?AgentTelemetrySeed $seed): TelemetryEnvelope
-    {
+    private static function toolCallCompleted(ToolCallCompleted $event, ?AgentTelemetrySeed $seed): TelemetryEnvelope {
         $spanId = $event->toolCallId !== '' ? $event->toolCallId : $event->id;
 
         return self::toolSpanEnvelope(
@@ -199,8 +190,7 @@ final readonly class AgentTelemetry
         ));
     }
 
-    private static function toolCallBlocked(ToolCallBlocked $event, ?AgentTelemetrySeed $seed): TelemetryEnvelope
-    {
+    private static function toolCallBlocked(ToolCallBlocked $event, ?AgentTelemetrySeed $seed): TelemetryEnvelope {
         return self::toolEventEnvelope(
             eventId: $event->id,
             executionId: $event->executionId,
@@ -212,8 +202,7 @@ final readonly class AgentTelemetry
         ));
     }
 
-    private static function tokenUsage(TokenUsageReported $event, ?AgentTelemetrySeed $seed): TelemetryEnvelope
-    {
+    private static function tokenUsage(TokenUsageReported $event, ?AgentTelemetrySeed $seed): TelemetryEnvelope {
         $stepNumber = is_int($event->context['step'] ?? null) ? $event->context['step'] : null;
         $parentOperationId = match ($stepNumber) {
             null => $event->executionId,
@@ -235,8 +224,7 @@ final readonly class AgentTelemetry
         );
     }
 
-    private static function subagentSpawning(SubagentSpawning $event, ?AgentTelemetrySeed $seed): ?TelemetryEnvelope
-    {
+    private static function subagentSpawning(SubagentSpawning $event, ?AgentTelemetrySeed $seed): ?TelemetryEnvelope {
         $correlation = self::subagentEventCorrelation(
             parentExecutionId: $event->parentExecutionId,
             parentStepNumber: $event->parentStepNumber,
@@ -265,8 +253,7 @@ final readonly class AgentTelemetry
         ));
     }
 
-    private static function subagentCompleted(SubagentCompleted $event, ?AgentTelemetrySeed $seed): ?TelemetryEnvelope
-    {
+    private static function subagentCompleted(SubagentCompleted $event, ?AgentTelemetrySeed $seed): ?TelemetryEnvelope {
         $correlation = self::subagentEventCorrelation(
             parentExecutionId: $event->parentExecutionId,
             parentStepNumber: $event->parentStepNumber,
@@ -293,7 +280,7 @@ final readonly class AgentTelemetry
                 'steps' => $event->steps,
                 'tokens' => $event->usage?->total(),
                 'duration_ms' => $event->data['duration_ms'] ?? null,
-            ], static fn(mixed $value): bool => $value !== null),
+            ], static fn (mixed $value): bool => $value !== null),
         ));
     }
 
@@ -341,8 +328,7 @@ final readonly class AgentTelemetry
         );
     }
 
-    private static function executionCorrelation(string $executionId, ?AgentTelemetrySeed $seed): OperationCorrelation
-    {
+    private static function executionCorrelation(string $executionId, ?AgentTelemetrySeed $seed): OperationCorrelation {
         return match ($seed?->parentOperationId()) {
             null => OperationCorrelation::root(
                 operationId: $executionId,
@@ -401,8 +387,7 @@ final readonly class AgentTelemetry
         );
     }
 
-    private static function stepId(string $executionId, int $stepNumber): string
-    {
+    private static function stepId(string $executionId, int $stepNumber): string {
         return "{$executionId}:step:{$stepNumber}";
     }
 }

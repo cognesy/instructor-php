@@ -26,7 +26,7 @@ $data = (new StructuredOutput)
     ->getArray();
 ```
 
-When a schema array is provided instead of a class name, the result is returned as an associative array. You can also call `->get()` which will return a `Structure` object with dynamic property access.
+When a schema array is provided instead of a class name, both `get()` and `getArray()` return an associative array. `getArray()` additionally checks the final result type. To receive a Dynamic `Structure`, construct and pass a `Structure` explicitly.
 
 ## Using the JsonSchema Builder
 

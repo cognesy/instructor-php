@@ -72,7 +72,7 @@ final readonly class FunctionCall implements CanDeserializeSelf, CanTransformSel
 
     public function toJsonSchema(): array {
         $jsonSchema = $this->arguments->toJsonSchema();
-        unset($jsonSchema['x-title'], $jsonSchema['description']);
+        unset($jsonSchema['x-title'], $jsonSchema['description'], $jsonSchema['x-php-class']);
         return $jsonSchema;
     }
 

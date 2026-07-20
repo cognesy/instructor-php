@@ -10,6 +10,7 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Messages;
 use Cognesy\Utils\Tokenizer;
+use Override;
 
 /**
  * Hook that summarizes the message buffer when it exceeds the token limit.
@@ -29,9 +30,8 @@ final readonly class SummarizeBufferHook implements HookInterface
         $this->events = $events ?? new EventDispatcher(name: 'agents.hook.summarize-buffer');
     }
 
-    #[\Override]
-    public function handle(HookContext $context): HookContext
-    {
+    #[Override]
+    public function handle(HookContext $context): HookContext {
         $state = $context->state();
         // Check if buffer token limit is exceeded
         $buffer = $state->store()

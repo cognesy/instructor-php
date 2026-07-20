@@ -5,6 +5,7 @@ namespace Cognesy\Agents\Hook\Hooks;
 use Cognesy\Agents\Hook\Contracts\HookInterface;
 use Cognesy\Agents\Hook\Data\HookContext;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
+use Override;
 
 final readonly class ApplyContextConfigHook implements HookInterface
 {
@@ -13,9 +14,8 @@ final readonly class ApplyContextConfigHook implements HookInterface
         private ?ResponseFormat $responseFormat = null,
     ) {}
 
-    #[\Override]
-    public function handle(HookContext $context): HookContext
-    {
+    #[Override]
+    public function handle(HookContext $context): HookContext {
         $agentContext = $context->state()->context();
 
         if ($this->systemPrompt !== '') {
@@ -27,7 +27,7 @@ final readonly class ApplyContextConfigHook implements HookInterface
         }
 
         return $context->withState(
-            $context->state()->with(context: $agentContext)
+            $context->state()->with(context: $agentContext),
         );
     }
 }

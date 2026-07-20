@@ -6,6 +6,7 @@ use Closure;
 use Cognesy\Agents\Tool\ToolDescriptor;
 use Cognesy\Schema\CallableSchemaFactory;
 use Cognesy\Schema\SchemaFactory;
+use Override;
 
 class FunctionTool extends ReflectiveSchemaTool
 {
@@ -40,7 +41,7 @@ class FunctionTool extends ReflectiveSchemaTool
             jsonSchema: SchemaFactory::default()->toJsonSchema($schema),
             callback: $function instanceof Closure
                 ? $function
-                : Closure::fromCallable($function)
+                : Closure::fromCallable($function),
         );
     }
 
@@ -51,14 +52,14 @@ class FunctionTool extends ReflectiveSchemaTool
         return $this->callback;
     }
 
-    #[\Override]
+    #[Override]
     public function __invoke(mixed ...$args): mixed {
         return ($this->callback)(...$args);
     }
 
     // override to provide the cached JSON schema
 
-    #[\Override]
+    #[Override]
     protected function paramsJsonSchema(): array {
         return $this->cachedParamsJsonSchema ?? [];
     }

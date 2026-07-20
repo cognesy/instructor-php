@@ -28,11 +28,11 @@ final readonly class StepExecution
     private DateTimeImmutable $completedAt;
 
     public function __construct(
-        AgentStep             $step,
+        AgentStep $step,
         ExecutionContinuation $continuation,
-        DateTimeImmutable     $startedAt,
-        DateTimeImmutable     $completedAt,
-        ?AgentStepId          $id = null,
+        DateTimeImmutable $startedAt,
+        DateTimeImmutable $completedAt,
+        ?AgentStepId $id = null,
     ) {
         $this->id = $id ?? $step->stepId();
         $this->step = $step;
@@ -42,9 +42,9 @@ final readonly class StepExecution
     }
 
     public static function create(
-        AgentStep             $step,
+        AgentStep $step,
         ExecutionContinuation $continuation,
-        DateTimeImmutable     $startedAt,
+        DateTimeImmutable $startedAt,
     ): self {
         return new self(
             step: $step,
@@ -82,7 +82,7 @@ final readonly class StepExecution
         return $end - $start;
     }
 
-    public function usage() : InferenceUsage {
+    public function usage(): InferenceUsage {
         return $this->step->usage();
     }
 

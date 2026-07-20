@@ -3,6 +3,7 @@
 namespace Cognesy\Agents\Events;
 
 use DateTimeImmutable;
+use Override;
 use Psr\Log\LogLevel;
 
 /**
@@ -36,7 +37,7 @@ final class AgentStepStarted extends AgentEvent
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public function __toString(): string {
         $parentInfo = $this->parentAgentId ? sprintf(' [parent=%s]', substr($this->parentAgentId, 0, 8)) : '';
 
@@ -46,7 +47,7 @@ final class AgentStepStarted extends AgentEvent
             $parentInfo,
             $this->stepNumber,
             $this->messageCount,
-            $this->availableTools
+            $this->availableTools,
         );
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cognesy\Instructor\Tests\Unit\Data;
 
 use Cognesy\Instructor\Data\OutputFormat;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Enums\OutputFormatType;
 
 /**
@@ -96,7 +97,14 @@ class TestUserDTO
     ) {}
 }
 
-class TestSelfDeserializing
+class TestSelfDeserializing implements CanDeserializeSelf
 {
     public mixed $value = null;
+
+    public function fromArray(array $data): static
+    {
+        $copy = clone $this;
+        $copy->value = $data;
+        return $copy;
+    }
 }

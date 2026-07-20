@@ -163,13 +163,18 @@ The LLM repeatedly produced output that did not pass your validation constraints
 3. The max retries count is sufficient
 
 ```php
-$result = StructuredOutput::with(
-    messages: $text,
-    responseModel: MyModel::class,
-    maxRetries: 5,
-    retryPrompt: 'Previous response failed: {errors}. Please fix these specific issues.',
-)->get();
+// config/instructor.php
+return [
+    'extraction' => [
+        'max_retries' => 5,
+        'retry_prompt_class' => App\Prompts\RetryFeedbackPrompt::class,
+    ],
+];
 ```
+
+The prompt class receives the validation failure context through the structured prompt
+renderer. Do not configure inline `retry_prompt` text for the default path; that key is
+retained only for the deprecated legacy request materializer.
 
 Review your application logs to see the exact validation errors from each retry attempt.
 

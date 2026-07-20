@@ -5,6 +5,7 @@ namespace Cognesy\Agents\Session;
 use Cognesy\Agents\Session\Contracts\CanControlAgentSession;
 use Cognesy\Agents\Session\Data\AgentSession;
 use Cognesy\Agents\Session\Enums\AgentSessionStage;
+use Override;
 
 final readonly class RegisteredSessionHook implements CanControlAgentSession
 {
@@ -22,7 +23,7 @@ final readonly class RegisteredSessionHook implements CanControlAgentSession
         return $this->name ?? $this->hook::class;
     }
 
-    #[\Override]
+    #[Override]
     public function onStage(AgentSessionStage $stage, AgentSession $session): AgentSession {
         return $this->hook->onStage($stage, $session);
     }

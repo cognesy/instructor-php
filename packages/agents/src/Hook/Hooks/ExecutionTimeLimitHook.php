@@ -8,6 +8,7 @@ use Cognesy\Agents\Hook\Contracts\HookInterface;
 use Cognesy\Agents\Hook\Data\HookContext;
 use Cognesy\Agents\Hook\Enums\HookTrigger;
 use DateTimeImmutable;
+use Override;
 
 final class ExecutionTimeLimitHook implements HookInterface
 {
@@ -17,9 +18,8 @@ final class ExecutionTimeLimitHook implements HookInterface
         private readonly float $maxSeconds,
     ) {}
 
-    #[\Override]
-    public function handle(HookContext $context): HookContext
-    {
+    #[Override]
+    public function handle(HookContext $context): HookContext {
         return match ($context->triggerType()) {
             HookTrigger::BeforeExecution => $this->handleStart($context),
             HookTrigger::BeforeStep => $this->handleBeforeStep($context),
@@ -27,14 +27,12 @@ final class ExecutionTimeLimitHook implements HookInterface
         };
     }
 
-    private function handleStart(HookContext $context): HookContext
-    {
+    private function handleStart(HookContext $context): HookContext {
         $this->executionStartedAt = $context->createdAt();
         return $context;
     }
 
-    private function handleBeforeStep(HookContext $context): HookContext
-    {
+    private function handleBeforeStep(HookContext $context): HookContext {
         if ($this->executionStartedAt === null) {
             return $context;
         }
@@ -49,8 +47,7 @@ final class ExecutionTimeLimitHook implements HookInterface
         return $context->withState($state);
     }
 
-    private function createSignal(float $elapsedSeconds): StopSignal
-    {
+    private function createSignal(float $elapsedSeconds): StopSignal {
         $reason = sprintf('Execution time limit reached: %.2fs/%.2fs', $elapsedSeconds, $this->maxSeconds);
 
         return new StopSignal(

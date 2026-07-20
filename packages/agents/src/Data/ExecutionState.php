@@ -17,16 +17,16 @@ use Throwable;
 final readonly class ExecutionState
 {
     public function __construct(
-        private ExecutionId           $executionId,
-        private ExecutionStatus       $status,
-        private ?DateTimeImmutable    $startedAt,
-        private ?DateTimeImmutable    $completedAt,
+        private ExecutionId $executionId,
+        private ExecutionStatus $status,
+        private ?DateTimeImmutable $startedAt,
+        private ?DateTimeImmutable $completedAt,
         // list of completed steps
-        private ?StepExecutions       $stepExecutions,
+        private ?StepExecutions $stepExecutions,
         // transient state for the current step
         private ExecutionContinuation $continuation,
-        private ?DateTimeImmutable    $currentStepStartedAt,
-        private ?AgentStep            $currentStep,
+        private ?DateTimeImmutable $currentStepStartedAt,
+        private ?AgentStep $currentStep,
     ) {}
 
     // STATE TRANSITIONS /////////////////////////////////
@@ -44,7 +44,7 @@ final readonly class ExecutionState
         );
     }
 
-    public function withCurrentStepCompleted(?ExecutionStatus $status = null) : self {
+    public function withCurrentStepCompleted(?ExecutionStatus $status = null): self {
         $stepExecutions = $this->recordedStepExecutions();
         return new self(
             executionId: $this->executionId,
@@ -58,11 +58,11 @@ final readonly class ExecutionState
         );
     }
 
-    public function withCurrentStepFailed() : self {
+    public function withCurrentStepFailed(): self {
         return $this->withCurrentStepCompleted(ExecutionStatus::Failed);
     }
 
-    public function withContinuationRequested() : self {
+    public function withContinuationRequested(): self {
         return $this->with(continuation: $this->continuation->withContinuationRequested(true));
     }
 
@@ -96,7 +96,7 @@ final readonly class ExecutionState
 
     // ACCESSORS ////////////////////////////////////////////
 
-    public function executionId() : ExecutionId {
+    public function executionId(): ExecutionId {
         return $this->executionId;
     }
 
@@ -108,15 +108,15 @@ final readonly class ExecutionState
         return $this->completedAt;
     }
 
-    public function status() : ExecutionStatus {
+    public function status(): ExecutionStatus {
         return $this->status;
     }
 
-    public function isFailed() : bool {
+    public function isFailed(): bool {
         return $this->status === ExecutionStatus::Failed;
     }
 
-    public function stepExecutions() : ?StepExecutions {
+    public function stepExecutions(): ?StepExecutions {
         return $this->stepExecutions;
     }
 
@@ -124,12 +124,12 @@ final readonly class ExecutionState
         return $this->currentStep;
     }
 
-    public function continuation() : ExecutionContinuation {
+    public function continuation(): ExecutionContinuation {
         return $this->continuation;
     }
 
-    public function shouldStop() : bool {
-        return match(true) {
+    public function shouldStop(): bool {
+        return match (true) {
             $this->continuation->shouldStop() => true,
             $this->continuation->isContinuationRequested() => false,
             $this->hasToolCalls() => false,
@@ -137,7 +137,7 @@ final readonly class ExecutionState
         };
     }
 
-    private function hasToolCalls() : bool {
+    private function hasToolCalls(): bool {
         return $this->currentStep?->hasToolCalls() ?? false;
     }
 
@@ -145,7 +145,7 @@ final readonly class ExecutionState
         // Keep step count bound to execution state/history (not message context):
         // retrospective rewinds can truncate messages, but step limits must still
         // advance monotonically to prevent infinite rewind/redo loops.
-        return match(true) {
+        return match (true) {
             $this->currentStep !== null => $this->stepExecutions->count() + 1,
             default => $this->stepExecutions->count(),
         };
@@ -167,21 +167,21 @@ final readonly class ExecutionState
         return (float) $endTime->format('U.u') - (float) $startTime->format('U.u');
     }
 
-    public function currentStepDuration() : float {
+    public function currentStepDuration(): float {
         $endTime = new DateTimeImmutable();
         $startTime = $this->currentStepStartedAt ?? $endTime;
         return (float) $endTime->format('U.u') - (float) $startTime->format('U.u');
     }
 
-    public function hasErrors() : bool {
-        return match(true) {
+    public function hasErrors(): bool {
+        return match (true) {
             $this->currentStep?->errors()->hasAny() => true,
             $this->stepExecutions?->errors()->hasAny() => true,
             default => false,
         };
     }
 
-    public function errors() : ErrorList {
+    public function errors(): ErrorList {
         $errors = ErrorList::empty();
         if ($this->currentStep !== null) {
             $errors = $errors->withMergedErrorList($this->currentStep->errors());
@@ -195,14 +195,14 @@ final readonly class ExecutionState
     // IMMUTABLE MUTATORS ///////////////////////////////////
 
     public function with(
-        ?ExecutionId           $executionId = null,
-        ?ExecutionStatus       $status = null,
-        ?DateTimeImmutable     $startedAt = null,
-        ?DateTimeImmutable     $completedAt = null,
-        ?StepExecutions        $stepExecutions = null,
+        ?ExecutionId $executionId = null,
+        ?ExecutionStatus $status = null,
+        ?DateTimeImmutable $startedAt = null,
+        ?DateTimeImmutable $completedAt = null,
+        ?StepExecutions $stepExecutions = null,
         ?ExecutionContinuation $continuation = null,
-        ?DateTimeImmutable     $currentStepStartedAt = null,
-        ?AgentStep             $currentStep = null,
+        ?DateTimeImmutable $currentStepStartedAt = null,
+        ?AgentStep $currentStep = null,
     ): self {
         return new self(
             executionId: $executionId ?? $this->executionId,
@@ -302,7 +302,7 @@ final readonly class ExecutionState
 
         try {
             return new DateTimeImmutable($value);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return $default;
         }
     }

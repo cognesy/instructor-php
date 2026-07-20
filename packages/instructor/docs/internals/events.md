@@ -75,16 +75,20 @@ Events are organized into namespaces that correspond to the processing stage:
 | `StructuredOutputResponseGenerated` | The final `StructuredOutputResponse` has been produced |
 | `StructuredOutputResponseUpdated` | A streaming partial response is emitted |
 
-### Request Events (`Events\Request`)
+### Response-model Events (`Events\ResponseModel`)
 
 | Event | When |
 |---|---|
 | `ResponseModelRequested` | A response model has been submitted for processing |
 | `ResponseModelBuildModeSelected` | The factory has chosen a build strategy |
 | `ResponseModelBuilt` | The response model and schema are ready |
-| `NewValidationRecoveryAttempt` | A retry attempt is about to begin |
-| `StructuredOutputRecoveryLimitReached` | All retries have been exhausted |
-| `SequenceUpdated` | A sequence item has been completed during streaming |
+
+### Attempt Events (`Events\Attempt`)
+
+| Event | When |
+|---|---|
+| `ResponseRetryScheduled` | A retry attempt has been scheduled |
+| `ResponseRecoveryExhausted` | All retries have been exhausted |
 
 ### Response Events (`Events\Response`)
 
@@ -101,8 +105,8 @@ Events are organized into namespaces that correspond to the processing stage:
 | `ResponseTransformationAttempt` | Transformation is about to start |
 | `ResponseTransformed` | Transformation succeeded |
 | `ResponseTransformationFailed` | Transformation failed |
-| `ResponseConvertedToObject` | The final object has been produced |
-| `ResponseGenerationFailed` | The entire response generation pipeline failed |
+| `ResponseMaterialized` | Final materialization succeeded, with the actual result type |
+| `ResponseMaterializationFailed` | Final materialization failed at a typed stage |
 
 ### Extraction Events (`Events\Extraction`)
 
@@ -115,7 +119,7 @@ Events are organized into namespaces that correspond to the processing stage:
 | `ExtractionStrategySucceeded` | The strategy produced a result |
 | `ExtractionStrategyFailed` | The strategy did not produce a result |
 
-### Streaming Events (`Events\PartialsGenerator`)
+### Streaming Events (`Events\Streaming`)
 
 | Event | When |
 |---|---|
@@ -128,6 +132,7 @@ Events are organized into namespaces that correspond to the processing stage:
 | `StreamedToolCallStarted` | A tool call began in the stream |
 | `StreamedToolCallUpdated` | A tool call received more data |
 | `StreamedToolCallCompleted` | A tool call finished |
+| `SequenceUpdated` | A sequence item has been completed |
 
 
 ## Event Methods

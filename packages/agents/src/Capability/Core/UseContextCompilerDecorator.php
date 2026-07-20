@@ -6,6 +6,7 @@ use Closure;
 use Cognesy\Agents\Builder\Contracts\CanConfigureAgent;
 use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
 use Cognesy\Agents\Context\CanCompileMessages;
+use Override;
 
 final readonly class UseContextCompilerDecorator implements CanProvideAgentCapability
 {
@@ -19,15 +20,15 @@ final readonly class UseContextCompilerDecorator implements CanProvideAgentCapab
         $this->decorator = Closure::fromCallable($decorator);
     }
 
-    #[\Override]
+    #[Override]
     public static function capabilityName(): string {
         return 'use_context_compiler_decorator';
     }
 
-    #[\Override]
+    #[Override]
     public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         return $agent->withContextCompiler(
-            ($this->decorator)($agent->contextCompiler())
+            ($this->decorator)($agent->contextCompiler()),
         );
     }
 }

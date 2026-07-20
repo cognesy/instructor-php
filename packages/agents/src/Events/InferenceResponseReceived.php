@@ -4,6 +4,7 @@ namespace Cognesy\Agents\Events;
 
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use DateTimeImmutable;
+use Override;
 
 /**
  * Dispatched when an inference response is received from the LLM.
@@ -38,7 +39,7 @@ final class InferenceResponseReceived extends AgentEvent
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public function __toString(): string {
         $parentInfo = $this->parentAgentId ? sprintf(' [parent=%s]', substr($this->parentAgentId, 0, 8)) : '';
         $tokens = $this->usage?->total() ?? 0;
@@ -48,7 +49,7 @@ final class InferenceResponseReceived extends AgentEvent
             substr($this->agentId, 0, 8),
             $parentInfo,
             $tokens,
-            $this->getDurationMs()
+            $this->getDurationMs(),
         );
     }
 

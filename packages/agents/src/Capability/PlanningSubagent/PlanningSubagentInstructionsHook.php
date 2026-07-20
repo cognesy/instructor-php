@@ -4,6 +4,7 @@ namespace Cognesy\Agents\Capability\PlanningSubagent;
 
 use Cognesy\Agents\Hook\Contracts\HookInterface;
 use Cognesy\Agents\Hook\Data\HookContext;
+use Override;
 
 final readonly class PlanningSubagentInstructionsHook implements HookInterface
 {
@@ -11,9 +12,8 @@ final readonly class PlanningSubagentInstructionsHook implements HookInterface
         private string $instructions,
     ) {}
 
-    #[\Override]
-    public function handle(HookContext $context): HookContext
-    {
+    #[Override]
+    public function handle(HookContext $context): HookContext {
         $state = $context->state();
 
         $fragment = trim($this->instructions);

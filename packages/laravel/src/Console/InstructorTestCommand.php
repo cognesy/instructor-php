@@ -207,6 +207,8 @@ class InstructorTestCommand extends Command
     private function resolveStructuredOutputConfig(CanProvideConfig $configProvider): StructuredOutputConfig {
         $maxRetries = $configProvider->get('instructor.extraction.max_retries');
         $outputMode = $configProvider->get('instructor.extraction.output_mode');
+        $retryPromptClass = $configProvider->get('instructor.extraction.retry_prompt_class');
+        // @deprecated 2.5 Legacy RequestMaterializer setting; remove in 2.6.
         $retryPrompt = $configProvider->get('instructor.extraction.retry_prompt');
 
         $data = [];
@@ -215,6 +217,9 @@ class InstructorTestCommand extends Command
         }
         if (is_string($outputMode) && $outputMode !== '') {
             $data['outputMode'] = $outputMode;
+        }
+        if (is_string($retryPromptClass) && $retryPromptClass !== '') {
+            $data['retryPromptClass'] = $retryPromptClass;
         }
         if (is_string($retryPrompt) && $retryPrompt !== '') {
             $data['retryPrompt'] = $retryPrompt;

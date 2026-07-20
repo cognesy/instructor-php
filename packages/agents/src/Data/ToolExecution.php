@@ -36,7 +36,7 @@ final readonly class ToolExecution
 
     // CONSTRUCTORS ////////////////////////////////////////////
 
-    public static function blocked(ToolCall $toolCall, string $message) : ToolExecution {
+    public static function blocked(ToolCall $toolCall, string $message): ToolExecution {
         $now = new DateTimeImmutable();
         return new ToolExecution(
             toolCall: $toolCall,
@@ -146,17 +146,17 @@ final readonly class ToolExecution
     // INTERNAL ////////////////////////////////////////////////
 
     private static function makeResult(array $data): Result {
-        return match(true) {
+        return match (true) {
             self::hasNonEmptyErrorKey($data) => self::makeFailure(
                 error: $data['error'],
-                toolCall: ToolCall::fromArray($data['tool_call'] ?? [])
+                toolCall: ToolCall::fromArray($data['tool_call'] ?? []),
             ),
             array_key_exists('result', $data) => Result::from($data['result']),
             default => Result::success(null),
         };
     }
 
-    private static function hasNonEmptyErrorKey(array $data) : bool {
+    private static function hasNonEmptyErrorKey(array $data): bool {
         return array_key_exists('error', $data)
             && $data['error'] !== null
             && $data['error'] !== '';

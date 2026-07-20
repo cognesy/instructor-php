@@ -11,6 +11,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Json\JsonExtractor;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 final class SyncExecutionDriver implements CanEmitStreamingUpdates
 {
@@ -22,11 +23,13 @@ final class SyncExecutionDriver implements CanEmitStreamingUpdates
         private readonly InferenceProvider $inferenceProvider,
         CanGenerateResponse $responseGenerator,
         CanDetermineRetry $retryPolicy,
+        EventDispatcherInterface $events,
     ) {
         $this->loop = new ExecutionLoop($execution);
         $this->attemptProcessor = new AttemptProcessor(
             responseGenerator: $responseGenerator,
             retryPolicy: $retryPolicy,
+            events: $events,
         );
     }
 

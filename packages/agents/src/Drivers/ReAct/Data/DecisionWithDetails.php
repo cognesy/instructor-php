@@ -11,7 +11,11 @@ final readonly class DecisionWithDetails
         private InferenceResponse $response,
     ) {}
 
-    public function decision(): ReActDecision { return $this->decision; }
-    public function response(): InferenceResponse { return $this->response; }
-}
+    public function decision(): ReActDecision {
+        return $this->decision;
+    }
 
+    public function response(): InferenceResponse {
+        return $this->response;
+    }
+}

@@ -24,21 +24,22 @@ use Cognesy\Agents\Events\InferenceResponseReceived;
 use Cognesy\Agents\Events\ValidationFailed;
 use Cognesy\Agents\Exceptions\AgentException;
 use Cognesy\Agents\Interception\PassThroughInterceptor;
-use Cognesy\Agents\Tool\ToolExecutor;
 use Cognesy\Agents\Tool\Contracts\CanExecuteToolCalls;
+use Cognesy\Agents\Tool\ToolExecutor;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Contracts\CanSendHttpRequests;
+use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
 use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\Data\CachedContext as StructuredCachedContext;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Enums\OutputMode;
-use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
 use Cognesy\Instructor\PendingStructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Validation\ValidationResult;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Cognesy\Messages\ToolCall;
 use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
@@ -46,13 +47,15 @@ use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Messages\ToolCall;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Polyglot\Inference\PendingInference;
 use Cognesy\Utils\Result\Result;
 use DateTimeImmutable;
+use Override;
+use RuntimeException;
+use Throwable;
 
 final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptLLMConfig, CanAcceptMessageCompiler
 {
@@ -110,7 +113,7 @@ final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         );
     }
 
-    #[\Override]
+    #[Override]
     public function useTools(AgentState $state): AgentState {
         $state = $this->ensureStateLLMConfig($state);
         $messages = $this->messageCompiler->compile($state);
@@ -120,7 +123,7 @@ final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         $requestStartedAt = new DateTimeImmutable();
         $this->emitInferenceRequestStarted($state, $messages->count(), $this->resolveModel($state));
 
-        $extraction = Result::try(fn() => $this->extractDecision($messages, $system, $cachedContext));
+        $extraction = Result::try(fn () => $this->extractDecision($messages, $system, $cachedContext));
 
         if ($extraction->isFailure()) {
             $error = $extraction->error();
@@ -189,7 +192,7 @@ final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
 
     // MUTATORS ////////////////////////////////////////////////////////////////
 
-    #[\Override]
+    #[Override]
     public function withLLMConfig(LLMConfig $config): static {
         $llm = $this->llm->withLLMConfig($config);
         $inference = InferenceRuntime::fromProvider(
@@ -212,17 +215,17 @@ final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         );
     }
 
-    #[\Override]
+    #[Override]
     public function messageCompiler(): CanCompileMessages {
         return $this->messageCompiler;
     }
 
-    #[\Override]
+    #[Override]
     public function withMessageCompiler(CanCompileMessages $compiler): static {
         return $this->with(messageCompiler: $compiler);
     }
 
-    #[\Override]
+    #[Override]
     public function withToolRuntime(Tools $tools, CanExecuteToolCalls $executor): static {
         return $this->with(tools: $tools, executor: $executor);
     }
@@ -314,13 +317,13 @@ final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
 
     private function buildValidationFailureStep(ValidationResult $validation, Messages $context): AgentStep {
         $formatter = new ReActFormatter();
-        $error = new \RuntimeException($validation->getErrorMessage());
+        $error = new RuntimeException($validation->getErrorMessage());
         $messagesErr = $formatter->decisionExtractionErrorMessages($error);
         $exec = new ToolExecution(
             new ToolCall('decision_validation', []),
             Result::failure($error),
-            new \DateTimeImmutable(),
-            new \DateTimeImmutable(),
+            new DateTimeImmutable(),
+            new DateTimeImmutable(),
         );
         $executions = (new ToolExecutions())->withAddedExecution($exec);
         return new AgentStep(
@@ -330,14 +333,14 @@ final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         );
     }
 
-    private function buildExtractionFailureStep(\Throwable $e, Messages $context): AgentStep {
+    private function buildExtractionFailureStep(Throwable $e, Messages $context): AgentStep {
         $formatter = new ReActFormatter();
         $messagesErr = $formatter->decisionExtractionErrorMessages($e);
         $exec = new ToolExecution(
             new ToolCall('decision_extraction', []),
             Result::failure($e),
-            new \DateTimeImmutable(),
-            new \DateTimeImmutable(),
+            new DateTimeImmutable(),
+            new DateTimeImmutable(),
         );
         $executions = (new ToolExecutions())->withAddedExecution($exec);
         return new AgentStep(
@@ -348,10 +351,10 @@ final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
     }
 
     private function buildFinalAnswerStep(
-        ReActDecision          $decision,
-        ?InferenceUsage                 $usage,
-        ?InferenceResponse     $inferenceResponse,
-        Messages               $messages,
+        ReActDecision $decision,
+        ?InferenceUsage $usage,
+        ?InferenceResponse $inferenceResponse,
+        Messages $messages,
         CachedInferenceContext $cachedContext,
     ): AgentStep {
         $finalText = $decision->answer();

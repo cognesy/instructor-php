@@ -2,8 +2,6 @@
 
 namespace Cognesy\Agents\Capability\StructuredOutput;
 
-use Cognesy\Agents\Capability\StructuredOutput\SchemaDefinition;
-
 interface CanManageSchemas
 {
     /**

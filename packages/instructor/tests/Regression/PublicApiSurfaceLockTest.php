@@ -24,15 +24,15 @@ const INSTRUCTOR_TIER1_CLASSES = [
     \Cognesy\Instructor\Extras\Scalar\Scalar::class,
 ];
 
-// Event FQCNs that examples bind listeners to (Tier 2: movable only with a
-// minor version bump + class_alias shim — but the NAME must keep resolving).
+// Event FQCNs that examples bind listeners to. Namespace changes are explicit
+// compatibility decisions and require updating this lock plus release notes.
 const INSTRUCTOR_TIER1_EVENT_FQCNS = [
     \Cognesy\Instructor\Events\Response\ResponseValidated::class,
     \Cognesy\Instructor\Events\Response\ResponseValidationAttempt::class,
     \Cognesy\Instructor\Events\Response\ResponseValidationFailed::class,
     \Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseUpdated::class,
-    \Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated::class,
-    \Cognesy\Instructor\Events\Request\SequenceUpdated::class,
+    \Cognesy\Instructor\Events\Streaming\PartialResponseGenerated::class,
+    \Cognesy\Instructor\Events\Streaming\SequenceUpdated::class,
 ];
 
 function instructorApiSurface(): array {

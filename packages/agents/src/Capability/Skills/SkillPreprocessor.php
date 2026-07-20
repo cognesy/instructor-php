@@ -61,16 +61,24 @@ final class SkillPreprocessor
         while (true) {
             $out = stream_get_contents($pipes[1]);
             $err = stream_get_contents($pipes[2]);
-            if ($out !== false) $stdout .= $out;
-            if ($err !== false) $stderr .= $err;
+            if ($out !== false) {
+                $stdout .= $out;
+            }
+            if ($err !== false) {
+                $stderr .= $err;
+            }
 
             $status = proc_get_status($process);
             if (!$status['running']) {
                 // Read any remaining output
                 $out = stream_get_contents($pipes[1]);
                 $err = stream_get_contents($pipes[2]);
-                if ($out !== false) $stdout .= $out;
-                if ($err !== false) $stderr .= $err;
+                if ($out !== false) {
+                    $stdout .= $out;
+                }
+                if ($err !== false) {
+                    $stderr .= $err;
+                }
                 break;
             }
 

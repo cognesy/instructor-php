@@ -3,6 +3,7 @@
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Contracts\CanMaterializeRequest;
+use Cognesy\Instructor\Core\StructuredPromptRequestMaterializer;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\StructuredOutput;
@@ -19,6 +20,22 @@ final class RuntimeRequestMaterializerUser
 {
     public string $name = '';
 }
+
+it('uses the structured prompt materializer by default', function () {
+    $inference = new class implements CanCreateInference {
+        public function create(InferenceRequest $request): PendingInference
+        {
+            throw new LogicException('Inference is not needed for this default assertion.');
+        }
+    };
+    $runtime = new StructuredOutputRuntime(
+        inference: $inference,
+        events: new EventDispatcher(),
+        config: new StructuredOutputConfig(),
+    );
+
+    expect($runtime->requestMaterializer())->toBeInstanceOf(StructuredPromptRequestMaterializer::class);
+});
 
 it('uses custom request materializer when provided on runtime', function () {
     $materializer = new class implements CanMaterializeRequest {

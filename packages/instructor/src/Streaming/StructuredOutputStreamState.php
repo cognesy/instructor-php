@@ -25,6 +25,7 @@ final class StructuredOutputStreamState
 
     private int $snapshotRevision = 0;
     private mixed $value = null;
+    private bool $hasPrebuiltValue = false;
     private ?ToolCalls $memoizedToolCalls = null;
     private ?EmissionSnapshot $memoizedSnapshot = null;
 
@@ -43,6 +44,7 @@ final class StructuredOutputStreamState
         $this->inner = new InferenceStreamState();
         $this->snapshotRevision = 0;
         $this->value = null;
+        $this->hasPrebuiltValue = false;
         $this->memoizedToolCalls = null;
         $this->memoizedSnapshot = null;
     }
@@ -61,12 +63,21 @@ final class StructuredOutputStreamState
     {
         $this->memoizedSnapshot = null;
         $this->value = $value;
+        $this->hasPrebuiltValue = true;
+    }
+
+    public function setPreview(mixed $value): void
+    {
+        $this->memoizedSnapshot = null;
+        $this->value = $value;
+        $this->hasPrebuiltValue = false;
     }
 
     public function clearValue(): void
     {
         $this->memoizedSnapshot = null;
         $this->value = null;
+        $this->hasPrebuiltValue = false;
     }
 
     public function value(): mixed
@@ -77,6 +88,14 @@ final class StructuredOutputStreamState
     public function hasValue(): bool
     {
         return $this->value !== null;
+    }
+
+    public function materializationInput(): mixed
+    {
+        return match ($this->hasPrebuiltValue) {
+            true => $this->value,
+            false => null,
+        };
     }
 
     public function content(): string

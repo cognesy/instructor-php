@@ -18,7 +18,7 @@ final class SubagentExecutionException extends AgentException
         string $errorMessage,
     ) {
         parent::__construct(
-            "Subagent '{$this->subagentName}' failed: {$errorMessage}"
+            "Subagent '{$this->subagentName}' failed: {$errorMessage}",
         );
     }
 

@@ -51,23 +51,24 @@ The extraction strategy depends on the output mode -- for `Tools` mode it reads
 tool-call arguments; for `Json`/`JsonSchema` it parses the content directly; for
 `MdJson` it extracts from a fenced code block.
 
-### 6. Deserialize into the Target Shape
+### 6. Materialize the Target Shape
 
-The extracted array data is deserialized into the target PHP class (or returned as
-an array if `intoArray()` was specified). Classes implementing `CanDeserializeSelf`
-can override this step entirely.
+The extracted data is materialized according to the resolved output format. Plain JSON
+Schemas and `intoArray()` return an associative array; class-backed schemas hydrate the
+target PHP class; `intoStdClass()` returns `stdClass`. Classes implementing
+`CanDeserializeSelf` can control their own materialization.
 
 ### 7. Validate the Result
 
-The deserialized object is validated. Built-in validation uses Symfony Validator
-constraints declared on the response model class. Classes implementing
-`CanValidateSelf` can provide their own validation logic.
+The extracted data is checked against its schema. Materialized objects are then
+validated with Symfony Validator constraints declared on the response model class.
+Classes implementing `CanValidateSelf` can provide their own validation logic.
 
 ### 8. Transform (Optional)
 
-If the response model implements `CanTransformSelf`, the validated object is
-transformed into a different value before being returned to the caller. This is
-how helpers like `Scalar` unwrap a wrapper class into a plain PHP scalar.
+Configured transformations and `CanTransformSelf` run once after validation. A
+transformation failure fails the attempt and can enter the retry policy. This is how
+helpers like `Scalar` unwrap a wrapper class into a plain PHP scalar.
 
 ### 9. Return the Result
 

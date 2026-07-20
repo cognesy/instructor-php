@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Agents\Capability\Bash;
 
@@ -8,6 +10,7 @@ use Cognesy\Sandbox\Contracts\CanExecuteCommand;
 use Cognesy\Sandbox\Sandbox;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
+use Override;
 
 final class BashTool extends SimpleTool
 {
@@ -61,7 +64,7 @@ final class BashTool extends SimpleTool
         );
     }
 
-    #[\Override]
+    #[Override]
     public function __invoke(mixed ...$args): string {
         $command = (string) $this->arg($args, 'command', 0, '');
 
@@ -107,39 +110,46 @@ final class BashTool extends SimpleTool
         }
 
         if ($stdout !== '') {
-            $output = $this->truncateOutput($stdout, $truncatedStdout);
+            $output = $this->truncateOutput($stdout, $truncatedStdout, 'stdout');
             $parts[] = $output;
         }
 
         if ($stderr !== '') {
-            $error = $this->truncateOutput($stderr, $truncatedStderr);
+            $error = $this->truncateOutput($stderr, $truncatedStderr, 'stderr');
             $parts[] = "STDERR:\n{$error}";
         }
 
         if ($parts === []) {
-            return "(no output)";
+            return '(no output)';
         }
 
         return implode("\n\n", $parts);
     }
 
-    private function truncateOutput(string $output, bool $wasTruncated): string {
+    private function truncateOutput(string $output, bool $wasTruncated, string $stream): string {
         $maxChars = $this->outputPolicy->maxOutputChars;
-        if ($maxChars <= 0) {
+        $captureLimit = match ($stream) {
+            'stderr' => $this->outputPolicy->stderrLimitBytes,
+            default => $this->outputPolicy->stdoutLimitBytes,
+        };
+
+        if ($wasTruncated) {
+            $preview = $maxChars > 0 ? substr($output, -$maxChars) : $output;
+
+            return "...(truncated)...\n{$preview}\n"
+                . "[{$stream} exceeded the {$captureLimit}-byte capture limit; showing the retained tail. "
+                . 'Re-run with narrower output or redirect to a file and inspect it with the dedicated read tool.]';
+        }
+
+        if ($maxChars <= 0 || strlen($output) <= $maxChars) {
             return $output;
         }
 
-        $truncated = $wasTruncated || (strlen($output) > $maxChars);
+        $capturedBytes = strlen($output);
 
-        if (strlen($output) > $maxChars) {
-            $output = $this->headTailOutput($output, $maxChars);
-        }
-
-        if ($truncated) {
-            return "...(truncated)...\n" . $output;
-        }
-
-        return $output;
+        return "...(truncated)...\n" . $this->headTailOutput($output, $maxChars)
+            . "\n[{$stream} contained {$capturedBytes} captured bytes; showing a {$maxChars}-byte head/tail window. "
+            . 'Re-run with narrower output or redirect to a file and inspect it with the dedicated read tool.]';
     }
 
     private function headTailOutput(string $output, int $maxChars): string {
@@ -167,23 +177,30 @@ final class BashTool extends SimpleTool
                 return true;
             }
         }
+
         return false;
     }
 
-    #[\Override]
+    #[Override]
     public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition {
         return \Cognesy\Polyglot\Inference\Data\ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
             parameters: JsonSchema::object('parameters')
                 ->withProperties([
-                    JsonSchema::string('command','The bash command to execute')
+                    JsonSchema::string('command', 'The bash command to execute'),
                 ])
-                ->withRequiredProperties(['command'])
+                ->withRequiredProperties(['command']),
         )->toArray());
     }
 
-    private function resolveDir(string $baseDir) : string {
-        return $baseDir !== '' ? $baseDir : getcwd();
+    private function resolveDir(string $baseDir): string {
+        $currentDir = getcwd();
+
+        return match (true) {
+            $baseDir !== '' => $baseDir,
+            $currentDir !== false => $currentDir,
+            default => '.',
+        };
     }
 }

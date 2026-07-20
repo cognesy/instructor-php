@@ -7,6 +7,7 @@ use Cognesy\Agents\Hook\Contracts\HookInterface;
 use Cognesy\Agents\Hook\Data\HookContext;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Override;
 
 /**
  * Hook that renders task list periodically.
@@ -17,9 +18,8 @@ final readonly class TodoRenderHook implements HookInterface
 
     public function __construct(private TodoPolicy $policy) {}
 
-    #[\Override]
-    public function handle(HookContext $context): HookContext
-    {
+    #[Override]
+    public function handle(HookContext $context): HookContext {
         $state = $context->state();
         if ($this->policy->renderEverySteps <= 0) {
             return $context;

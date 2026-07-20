@@ -110,7 +110,29 @@ describe('BashTool', function () {
 
         expect($result)->toContain('...(truncated)...');
         expect($result)->toContain("0123\n...\nEFGHIJ");
+        expect($result)->toContain('contained 20 captured bytes');
+        expect($result)->toContain('inspect it with the dedicated read tool');
         expect($result)->not->toContain('4567');
+    });
+
+    it('labels subprocess capture overflow as a retained tail', function () {
+        $sandbox = new FakeSandbox(
+            policy: ExecutionPolicy::in($this->tempDir),
+            responses: [
+                'bash -c noisy-command' => [[
+                    'stdout' => 'retained tail',
+                    'exit_code' => 0,
+                    'truncated_stdout' => true,
+                ]],
+            ],
+        );
+
+        $tool = BashTool::withSandbox($sandbox, new BashPolicy(stdoutLimitBytes: 4096));
+        $result = $tool('noisy-command');
+
+        expect($result)->toContain('retained tail');
+        expect($result)->toContain('exceeded the 4096-byte capture limit');
+        expect($result)->toContain('Re-run with narrower output');
     });
 
     it('generates valid tool schema', function () {

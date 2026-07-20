@@ -14,13 +14,13 @@ use Cognesy\Agents\Events\TokenUsageReported;
 use Cognesy\Agents\Events\ToolCallBlocked;
 use Cognesy\Agents\Events\ToolCallCompleted;
 use Cognesy\Agents\Events\ToolCallStarted;
+use Cognesy\Metrics\Data\Histogram;
 use Cognesy\Telemetry\Application\Projector\CanProjectTelemetry;
 use Cognesy\Telemetry\Application\Projector\Support\EventData;
 use Cognesy\Telemetry\Application\Telemetry;
 use Cognesy\Telemetry\Domain\Envelope\OperationKind;
 use Cognesy\Telemetry\Domain\Envelope\TelemetryEnvelope;
 use Cognesy\Telemetry\Domain\Envelope\TelemetryEnvelopeAttributes;
-use Cognesy\Metrics\Data\Histogram;
 use Cognesy\Telemetry\Domain\Observation\ObservationStatus;
 use Cognesy\Telemetry\Domain\Value\AttributeBag;
 use Override;
@@ -342,8 +342,7 @@ final readonly class AgentsTelemetryProjector implements CanProjectTelemetry
         return "{$executionId}:step:{$stepNumber}";
     }
 
-    private function subagentParentKey(?string $executionId, ?int $stepNumber, ?string $toolCallId): ?string
-    {
+    private function subagentParentKey(?string $executionId, ?int $stepNumber, ?string $toolCallId): ?string {
         return match (true) {
             is_string($toolCallId) && $toolCallId !== '' => $toolCallId,
             is_string($executionId) && $executionId !== '' && is_int($stepNumber) => $this->stepKey($executionId, $stepNumber),

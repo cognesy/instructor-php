@@ -5,50 +5,51 @@ namespace Cognesy\Agents\Capability\Subagent;
 use Cognesy\Agents\Exceptions\AgentNotFoundException;
 use Cognesy\Agents\Template\Contracts\CanManageAgentDefinitions;
 use Cognesy\Agents\Template\Data\AgentDefinition;
+use Override;
 
 final class EmptySubagentProvider implements CanManageAgentDefinitions
 {
-    #[\Override]
+    #[Override]
     public function has(string $name): bool {
         return false;
     }
 
-    #[\Override]
+    #[Override]
     public function get(string $name): AgentDefinition {
         $available = implode(', ', $this->names());
         throw new AgentNotFoundException(
-            "Agent '{$name}' not found. Available: {$available}"
+            "Agent '{$name}' not found. Available: {$available}",
         );
     }
 
-    #[\Override]
+    #[Override]
     public function all(): array {
         return [];
     }
 
-    #[\Override]
+    #[Override]
     public function names(): array {
         return [];
     }
 
-    #[\Override]
+    #[Override]
     public function count(): int {
         return 0;
     }
 
-    #[\Override]
+    #[Override]
     public function register(AgentDefinition $definition): void {}
 
-    #[\Override]
+    #[Override]
     public function registerMany(AgentDefinition ...$definitions): void {}
 
-    #[\Override]
+    #[Override]
     public function loadFromFile(string $path): void {}
 
-    #[\Override]
+    #[Override]
     public function loadFromDirectory(string $path, bool $recursive = false): void {}
 
-    #[\Override]
+    #[Override]
     public function autoDiscover(
         string $projectPath,
         ?string $packagePath = null,
@@ -56,7 +57,7 @@ final class EmptySubagentProvider implements CanManageAgentDefinitions
     ): void {}
 
     /** @return array<string, string> */
-    #[\Override]
+    #[Override]
     public function errors(): array {
         return [];
     }

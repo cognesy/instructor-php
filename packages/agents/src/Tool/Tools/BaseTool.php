@@ -4,6 +4,7 @@ namespace Cognesy\Agents\Tool\Tools;
 
 use Cognesy\Agents\Tool\ToolDescriptor;
 use Cognesy\Agents\Tool\Traits\HasReflectiveSchema;
+use Override;
 
 abstract class BaseTool extends StateAwareTool
 {
@@ -23,7 +24,7 @@ abstract class BaseTool extends StateAwareTool
      * Level 1: Metadata - minimal information for browsing/discovery
      * Override in subclasses to provide tags, capabilities, etc.
      */
-    #[\Override]
+    #[Override]
     public function metadata(): array {
         $namespace = $this->extractNamespace($this->name());
         $summary = $this->extractSummary($this->description());
@@ -44,7 +45,7 @@ abstract class BaseTool extends StateAwareTool
      * Level 2: Full specification - complete tool documentation
      * Override in subclasses to provide examples, errors, notes, etc.
      */
-    #[\Override]
+    #[Override]
     public function instructions(): array {
         return [
             'name' => $this->name(),

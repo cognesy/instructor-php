@@ -24,8 +24,7 @@ final readonly class BroadcastConfig
      * Minimal configuration: status tracking only, no streaming.
      * Useful for status indicators without real-time text updates.
      */
-    public static function minimal(): self
-    {
+    public static function minimal(): self {
         return new self(
             includeStreamChunks: false,
             includeContinuationTrace: false,
@@ -38,8 +37,7 @@ final readonly class BroadcastConfig
      * Standard configuration: streaming + status tracking.
      * Default for chat applications requiring real-time text display.
      */
-    public static function standard(): self
-    {
+    public static function standard(): self {
         return new self(
             includeStreamChunks: true,
             includeContinuationTrace: false,
@@ -52,8 +50,7 @@ final readonly class BroadcastConfig
      * Debug configuration: all events with full detail.
      * Useful for development, debugging, and observability dashboards.
      */
-    public static function debug(): self
-    {
+    public static function debug(): self {
         return new self(
             includeStreamChunks: true,
             includeContinuationTrace: true,

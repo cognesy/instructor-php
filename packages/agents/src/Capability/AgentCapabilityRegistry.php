@@ -37,7 +37,7 @@ final class AgentCapabilityRegistry implements CanManageAgentCapabilities
             $capability = ($this->factories[$name])();
             if (!$capability instanceof CanProvideAgentCapability) {
                 throw new InvalidArgumentException(
-                    "Capability factory for '{$name}' must return CanProvideAgentCapability."
+                    "Capability factory for '{$name}' must return CanProvideAgentCapability.",
                 );
             }
             $this->instances[$name] = $capability;

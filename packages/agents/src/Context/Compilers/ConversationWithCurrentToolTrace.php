@@ -6,12 +6,12 @@ use Cognesy\Agents\Context\CanCompileMessages;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Override;
 
 final class ConversationWithCurrentToolTrace implements CanCompileMessages
 {
-    #[\Override]
-    public function compile(AgentState $state): Messages
-    {
+    #[Override]
+    public function compile(AgentState $state): Messages {
         $allMessages = $state->store()->toMessages();
         $currentExecutionId = $state->execution()?->executionId()->toString();
 

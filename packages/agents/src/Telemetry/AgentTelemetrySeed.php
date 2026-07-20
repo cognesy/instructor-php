@@ -17,13 +17,11 @@ final readonly class AgentTelemetrySeed
         private ?string $requestId = null,
     ) {}
 
-    public static function empty(): self
-    {
+    public static function empty(): self {
         return new self();
     }
 
-    public static function fromContinuation(TelemetryContinuation $continuation): self
-    {
+    public static function fromContinuation(TelemetryContinuation $continuation): self {
         $correlation = $continuation->correlation();
 
         return new self(
@@ -66,8 +64,7 @@ final readonly class AgentTelemetrySeed
     }
 
     /** @return array{trace?: array{traceparent: string, tracestate?: string}, root_operation_id?: string, parent_operation_id?: string, session_id?: string, user_id?: string, conversation_id?: string, request_id?: string} */
-    public function toArray(): array
-    {
+    public function toArray(): array {
         $data = [];
 
         $data = match ($this->trace) {
@@ -112,8 +109,7 @@ final readonly class AgentTelemetrySeed
      *   request_id?: string
      * } $data
      */
-    public static function fromArray(array $data): self
-    {
+    public static function fromArray(array $data): self {
         return new self(
             trace: isset($data['trace']) ? TraceContext::fromArray($data['trace']) : null,
             rootOperationId: $data['root_operation_id'] ?? null,
@@ -126,8 +122,7 @@ final readonly class AgentTelemetrySeed
     }
 
     /** @param array<string, scalar> $correlation */
-    private static function stringValue(array $correlation, string $key): ?string
-    {
+    private static function stringValue(array $correlation, string $key): ?string {
         return match (true) {
             is_string($correlation[$key] ?? null) && $correlation[$key] !== '' => $correlation[$key],
             is_int($correlation[$key] ?? null), is_float($correlation[$key] ?? null) => (string) $correlation[$key],

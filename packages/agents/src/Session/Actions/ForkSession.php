@@ -6,6 +6,7 @@ use Cognesy\Agents\Session\Contracts\CanExecuteSessionAction;
 use Cognesy\Agents\Session\Data\AgentSession;
 use Cognesy\Agents\Session\Data\AgentSessionInfo;
 use Cognesy\Agents\Session\Data\SessionId;
+use Override;
 
 final readonly class ForkSession implements CanExecuteSessionAction
 {
@@ -13,7 +14,7 @@ final readonly class ForkSession implements CanExecuteSessionAction
         private ?SessionId $forkedSessionId = null,
     ) {}
 
-    #[\Override]
+    #[Override]
     public function executeOn(AgentSession $session): AgentSession {
         $parentId = $session->sessionId();
         $forkedId = $this->forkedSessionId ?? SessionId::generate();

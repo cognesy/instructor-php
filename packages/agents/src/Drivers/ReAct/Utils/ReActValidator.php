@@ -3,10 +3,10 @@
 namespace Cognesy\Agents\Drivers\ReAct\Utils;
 
 use Cognesy\Agents\Drivers\ReAct\Contracts\Decision;
+use Cognesy\Instructor\Validation\ValidationResult;
 use Cognesy\Schema\Data\ArrayShapeSchema;
 use Cognesy\Schema\Data\ObjectSchema;
 use Cognesy\Schema\Data\Schema;
-use Cognesy\Instructor\Validation\ValidationResult;
 
 final class ReActValidator
 {

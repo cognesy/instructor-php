@@ -3,12 +3,13 @@
 namespace Cognesy\Agents\Tool\Traits;
 
 use Cognesy\Messages\ToolCall;
+use Override;
 
 trait HasToolCall
 {
     protected ?ToolCall $toolCall = null;
 
-    #[\Override]
+    #[Override]
     public function withToolCall(ToolCall $toolCall): static {
         $clone = clone $this;
         $clone->toolCall = $toolCall;

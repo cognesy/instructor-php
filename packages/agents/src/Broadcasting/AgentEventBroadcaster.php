@@ -53,8 +53,7 @@ final class AgentEventBroadcaster
      *
      * @return callable(Event): void
      */
-    public function wiretap(): callable
-    {
+    public function wiretap(): callable {
         return function (Event $event): void {
             match (true) {
                 $event instanceof PartialInferenceDeltaCreated => $this->onPartialInferenceDelta($event),
@@ -74,8 +73,7 @@ final class AgentEventBroadcaster
     /**
      * Handle streaming text chunks for real-time chat display.
      */
-    public function onStreamChunk(StreamEventParsed $event): void
-    {
+    public function onStreamChunk(StreamEventParsed $event): void {
         if (!$this->config->includeStreamChunks) {
             return;
         }
@@ -83,8 +81,7 @@ final class AgentEventBroadcaster
         $this->emitStreamChunk($event->content);
     }
 
-    public function onPartialInferenceDelta(PartialInferenceDeltaCreated $event): void
-    {
+    public function onPartialInferenceDelta(PartialInferenceDeltaCreated $event): void {
         if (!$this->config->includeStreamChunks) {
             return;
         }
@@ -97,8 +94,7 @@ final class AgentEventBroadcaster
         $this->emitStreamChunk($contentDelta);
     }
 
-    public function onAgentStepStarted(AgentStepStarted $event): void
-    {
+    public function onAgentStepStarted(AgentStepStarted $event): void {
         if ($this->config->autoStatusTracking) {
             $this->transitionStatus('processing');
         }
@@ -110,8 +106,7 @@ final class AgentEventBroadcaster
         ]);
     }
 
-    public function onAgentStepCompleted(AgentStepCompleted $event): void
-    {
+    public function onAgentStepCompleted(AgentStepCompleted $event): void {
         $payload = [
             'step_number' => $event->stepNumber,
             'has_tool_calls' => $event->hasToolCalls,
@@ -124,8 +119,7 @@ final class AgentEventBroadcaster
         $this->emit('agent.step.completed', $payload);
     }
 
-    public function onToolCallStarted(ToolCallStarted $event): void
-    {
+    public function onToolCallStarted(ToolCallStarted $event): void {
         $args = is_array($event->args) ? $event->args : [];
 
         $payload = [
@@ -142,8 +136,7 @@ final class AgentEventBroadcaster
         $this->emit('agent.tool.started', $payload);
     }
 
-    public function onToolCallCompleted(ToolCallCompleted $event): void
-    {
+    public function onToolCallCompleted(ToolCallCompleted $event): void {
         $this->emit('agent.tool.completed', [
             'tool_name' => $event->tool,
             'tool_call_id' => null,
@@ -154,8 +147,7 @@ final class AgentEventBroadcaster
         ]);
     }
 
-    public function onContinuationEvaluated(ContinuationEvaluated $event): void
-    {
+    public function onContinuationEvaluated(ContinuationEvaluated $event): void {
         $stopSignal = $event->stopSignal();
         $shouldStop = $event->shouldStop();
 
@@ -189,8 +181,7 @@ final class AgentEventBroadcaster
         ]);
     }
 
-    public function onAgentExecutionFailed(AgentExecutionFailed $event): void
-    {
+    public function onAgentExecutionFailed(AgentExecutionFailed $event): void {
         if ($this->currentStatus === 'failed') {
             $this->chunkCounter = 0;
             return;
@@ -203,8 +194,7 @@ final class AgentEventBroadcaster
         $this->chunkCounter = 0;
     }
 
-    public function onAgentExecutionStopped(AgentExecutionStopped $event): void
-    {
+    public function onAgentExecutionStopped(AgentExecutionStopped $event): void {
         $status = match ($event->stopReason) {
             StopReason::UserRequested => 'cancelled',
             default => 'stopped',
@@ -225,8 +215,7 @@ final class AgentEventBroadcaster
      * Manually emit a status change. Use this for custom status transitions
      * when auto-tracking is disabled or for additional status events.
      */
-    public function onAgentStatusChanged(string $status, ?string $error = null, ?string $lastResponse = null): void
-    {
+    public function onAgentStatusChanged(string $status, ?string $error = null, ?string $lastResponse = null): void {
         $this->emit('agent.status', [
             'status' => $status,
             'previous_status' => $this->currentStatus,
@@ -239,14 +228,12 @@ final class AgentEventBroadcaster
     /**
      * Reset broadcaster state for a new execution within the same session.
      */
-    public function reset(): void
-    {
+    public function reset(): void {
         $this->chunkCounter = 0;
         $this->currentStatus = 'idle';
     }
 
-    private function transitionStatus(string $newStatus): void
-    {
+    private function transitionStatus(string $newStatus): void {
         if ($this->currentStatus === $newStatus) {
             return;
         }
@@ -260,8 +247,7 @@ final class AgentEventBroadcaster
         ]);
     }
 
-    private function emitStreamChunk(string $content): void
-    {
+    private function emitStreamChunk(string $content): void {
         if ($content === '') {
             return;
         }
@@ -273,8 +259,7 @@ final class AgentEventBroadcaster
         ]);
     }
 
-    private function emit(string $type, array $payload): void
-    {
+    private function emit(string $type, array $payload): void {
         $this->broadcaster->broadcast(
             channel: "agent.{$this->sessionId}",
             envelope: [
@@ -287,8 +272,7 @@ final class AgentEventBroadcaster
         );
     }
 
-    private function summarizeArgs(array $args): string
-    {
+    private function summarizeArgs(array $args): string {
         $parts = [];
         foreach (array_slice($args, 0, 3, true) as $key => $value) {
             $valueStr = is_string($value) ? "'{$value}'" : json_encode($value);
@@ -303,8 +287,7 @@ final class AgentEventBroadcaster
         return implode(', ', $parts);
     }
 
-    private function truncateArgs(array $args, int $maxLength): array
-    {
+    private function truncateArgs(array $args, int $maxLength): array {
         $result = [];
         foreach ($args as $key => $value) {
             if (is_string($value) && strlen($value) > $maxLength) {
@@ -316,8 +299,7 @@ final class AgentEventBroadcaster
         return $result;
     }
 
-    private function durationMs(DateTimeImmutable $startedAt, DateTimeImmutable $completedAt): int
-    {
+    private function durationMs(DateTimeImmutable $startedAt, DateTimeImmutable $completedAt): int {
         $diff = $completedAt->getTimestamp() - $startedAt->getTimestamp();
         $microDiff = (int) ($completedAt->format('u')) - (int) ($startedAt->format('u'));
         return ($diff * 1000) + (int) ($microDiff / 1000);

@@ -40,7 +40,7 @@ final readonly class AgentCtrlTelemetryProjector implements CanProjectTelemetry
             $event instanceof AgentErrorOccurred && $envelope !== null => $this->failEnvelope($envelope, $attributes),
             $event instanceof AgentErrorOccurred => $this->telemetry->fail($executionKey, $attributes),
             $envelope !== null => $this->logEnvelope($envelope, $attributes),
-            default => null,
+            default => $this->logEvent($executionKey, $event->name(), $attributes),
         };
     }
 
@@ -186,6 +186,11 @@ final readonly class AgentCtrlTelemetryProjector implements CanProjectTelemetry
             $envelope->operation()->name(),
             $this->envelopeAttributes($envelope)->merge($attributes),
         );
+    }
+
+    private function logEvent(string $executionKey, string $eventName, AttributeBag $attributes): void
+    {
+        $this->telemetry->log($executionKey, 'agent_ctrl.' . $eventName, $attributes);
     }
 
     private function envelopeAttributes(TelemetryEnvelope $envelope): AttributeBag

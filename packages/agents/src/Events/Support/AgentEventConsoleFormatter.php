@@ -61,8 +61,7 @@ final class AgentEventConsoleFormatter implements CanFormatConsoleEvent
         };
     }
 
-    private function onExecutionStarted(AgentExecutionStarted $event): ConsoleEventLine
-    {
+    private function onExecutionStarted(AgentExecutionStarted $event): ConsoleEventLine {
         $this->currentAgentId = $event->agentId;
         $this->currentParentId = $event->parentAgentId;
 
@@ -75,8 +74,7 @@ final class AgentEventConsoleFormatter implements CanFormatConsoleEvent
         );
     }
 
-    private function onExecutionCompleted(AgentExecutionCompleted $event): ConsoleEventLine
-    {
+    private function onExecutionCompleted(AgentExecutionCompleted $event): ConsoleEventLine {
         return $this->lineWithAgent(
             'DONE',
             ConsoleColor::Green,
@@ -86,8 +84,7 @@ final class AgentEventConsoleFormatter implements CanFormatConsoleEvent
         );
     }
 
-    private function onExecutionFailed(AgentExecutionFailed $event): ConsoleEventLine
-    {
+    private function onExecutionFailed(AgentExecutionFailed $event): ConsoleEventLine {
         return $this->lineWithAgent(
             'FAIL',
             ConsoleColor::Red,
@@ -97,8 +94,7 @@ final class AgentEventConsoleFormatter implements CanFormatConsoleEvent
         );
     }
 
-    private function onStepStarted(AgentStepStarted $event): ConsoleEventLine
-    {
+    private function onStepStarted(AgentStepStarted $event): ConsoleEventLine {
         $this->currentAgentId = $event->agentId;
         $this->currentParentId = $event->parentAgentId;
 
@@ -111,8 +107,7 @@ final class AgentEventConsoleFormatter implements CanFormatConsoleEvent
         );
     }
 
-    private function onStepCompleted(AgentStepCompleted $event): ConsoleEventLine
-    {
+    private function onStepCompleted(AgentStepCompleted $event): ConsoleEventLine {
         $details = [];
 
         if ($event->hasToolCalls) {
@@ -135,7 +130,7 @@ final class AgentEventConsoleFormatter implements CanFormatConsoleEvent
             $details[] = sprintf('duration=%dms', (int) $event->durationMs);
         }
 
-        $suffix = $details !== [] ? ' ['.implode(', ', $details).']' : '';
+        $suffix = $details !== [] ? ' [' . implode(', ', $details) . ']' : '';
 
         return $this->lineWithAgent(
             'STEP',
@@ -146,11 +141,10 @@ final class AgentEventConsoleFormatter implements CanFormatConsoleEvent
         );
     }
 
-    private function onToolStarted(ToolCallStarted $event): ConsoleEventLine
-    {
+    private function onToolStarted(ToolCallStarted $event): ConsoleEventLine {
         $args = '';
         if ($this->showToolArgs && is_array($event->args) && $event->args !== []) {
-            $args = ' '.$this->formatArgs($event->args);
+            $args = ' ' . $this->formatArgs($event->args);
         }
 
         return $this->lineWithAgent(
@@ -162,8 +156,7 @@ final class AgentEventConsoleFormatter implements CanFormatConsoleEvent
         );
     }
 
-    private function onToolCompleted(ToolCallCompleted $event): ConsoleEventLine
-    {
+    private function onToolCompleted(ToolCallCompleted $event): ConsoleEventLine {
         $duration = $this->durationMs($event->startedAt, $event->completedAt);
 
         if ($event->success) {
@@ -185,8 +178,7 @@ final class AgentEventConsoleFormatter implements CanFormatConsoleEvent
         );
     }
 
-    private function onContinuationEvaluated(ContinuationEvaluated $event): ?ConsoleEventLine
-    {
+    private function onContinuationEvaluated(ContinuationEvaluated $event): ?ConsoleEventLine {
         if (!$this->showContinuation) {
             return null;
         }
@@ -210,8 +202,7 @@ final class AgentEventConsoleFormatter implements CanFormatConsoleEvent
         );
     }
 
-    private function onToolBlocked(ToolCallBlocked $event): ConsoleEventLine
-    {
+    private function onToolBlocked(ToolCallBlocked $event): ConsoleEventLine {
         $hook = $event->hookName ? " by '{$event->hookName}'" : '';
         return $this->lineWithAgent(
             'BLCK',
@@ -222,8 +213,7 @@ final class AgentEventConsoleFormatter implements CanFormatConsoleEvent
         );
     }
 
-    private function onInferenceRequestStarted(InferenceRequestStarted $event): ?ConsoleEventLine
-    {
+    private function onInferenceRequestStarted(InferenceRequestStarted $event): ?ConsoleEventLine {
         if (!$this->showInference) {
             return null;
         }
@@ -239,8 +229,7 @@ final class AgentEventConsoleFormatter implements CanFormatConsoleEvent
         );
     }
 
-    private function onInferenceResponseReceived(InferenceResponseReceived $event): ?ConsoleEventLine
-    {
+    private function onInferenceResponseReceived(InferenceResponseReceived $event): ?ConsoleEventLine {
         if (!$this->showInference) {
             return null;
         }
@@ -257,8 +246,7 @@ final class AgentEventConsoleFormatter implements CanFormatConsoleEvent
         );
     }
 
-    private function onSubagentSpawning(SubagentSpawning $event): ?ConsoleEventLine
-    {
+    private function onSubagentSpawning(SubagentSpawning $event): ?ConsoleEventLine {
         if (!$this->showSubagents) {
             return null;
         }
@@ -278,8 +266,7 @@ final class AgentEventConsoleFormatter implements CanFormatConsoleEvent
         );
     }
 
-    private function onSubagentCompleted(SubagentCompleted $event): ?ConsoleEventLine
-    {
+    private function onSubagentCompleted(SubagentCompleted $event): ?ConsoleEventLine {
         if (!$this->showSubagents) {
             return null;
         }
@@ -301,8 +288,7 @@ final class AgentEventConsoleFormatter implements CanFormatConsoleEvent
         );
     }
 
-    private function onHookExecuted(HookExecuted $event): ?ConsoleEventLine
-    {
+    private function onHookExecuted(HookExecuted $event): ?ConsoleEventLine {
         if (!$this->showHooks) {
             return null;
         }
@@ -314,8 +300,7 @@ final class AgentEventConsoleFormatter implements CanFormatConsoleEvent
         );
     }
 
-    private function onDecisionExtractionFailed(DecisionExtractionFailed $event): ?ConsoleEventLine
-    {
+    private function onDecisionExtractionFailed(DecisionExtractionFailed $event): ?ConsoleEventLine {
         if (!$this->showFailures) {
             return null;
         }
@@ -333,8 +318,7 @@ final class AgentEventConsoleFormatter implements CanFormatConsoleEvent
         );
     }
 
-    private function onValidationFailed(ValidationFailed $event): ?ConsoleEventLine
-    {
+    private function onValidationFailed(ValidationFailed $event): ?ConsoleEventLine {
         if (!$this->showFailures) {
             return null;
         }
@@ -351,8 +335,7 @@ final class AgentEventConsoleFormatter implements CanFormatConsoleEvent
         );
     }
 
-    private function line(string $label, ConsoleColor $color, string $message): ConsoleEventLine
-    {
+    private function line(string $label, ConsoleColor $color, string $message): ConsoleEventLine {
         return $this->lineWithAgent($label, $color, $message, $this->currentAgentId, $this->currentParentId);
     }
 
@@ -371,8 +354,7 @@ final class AgentEventConsoleFormatter implements CanFormatConsoleEvent
         );
     }
 
-    private function agentContext(?string $agentId, ?string $parentAgentId): ?string
-    {
+    private function agentContext(?string $agentId, ?string $parentAgentId): ?string {
         if (!$this->showAgentIds || $agentId === null) {
             return null;
         }
@@ -383,30 +365,26 @@ final class AgentEventConsoleFormatter implements CanFormatConsoleEvent
         return sprintf('[%s:%s]', $parent, $agent);
     }
 
-    private function shortId(string $id, int $length = 8): string
-    {
+    private function shortId(string $id, int $length = 8): string {
         return substr($id, -$length);
     }
 
-    private function truncate(string $text, int $maxLength): string
-    {
+    private function truncate(string $text, int $maxLength): string {
         if (strlen($text) <= $maxLength) {
             return $text;
         }
 
-        return substr($text, 0, $maxLength - 3).'...';
+        return substr($text, 0, $maxLength - 3) . '...';
     }
 
-    private function durationMs(DateTimeImmutable $startedAt, DateTimeImmutable $completedAt): int
-    {
+    private function durationMs(DateTimeImmutable $startedAt, DateTimeImmutable $completedAt): int {
         $diff = $completedAt->getTimestamp() - $startedAt->getTimestamp();
         $microDiff = (int) $completedAt->format('u') - (int) $startedAt->format('u');
 
         return ($diff * 1000) + (int) ($microDiff / 1000);
     }
 
-    private function formatArgs(array $args): string
-    {
+    private function formatArgs(array $args): string {
         $parts = [];
 
         foreach (array_slice($args, 0, 5, true) as $key => $value) {
@@ -415,11 +393,10 @@ final class AgentEventConsoleFormatter implements CanFormatConsoleEvent
 
         $more = count($args) > 5 ? sprintf(' (+%d more)', count($args) - 5) : '';
 
-        return '{'.implode(', ', $parts).$more.'}';
+        return '{' . implode(', ', $parts) . $more . '}';
     }
 
-    private function stringifyArgValue(mixed $value): string
-    {
+    private function stringifyArgValue(mixed $value): string {
         return match (true) {
             is_string($value) => $this->truncate($value, $this->maxArgLength),
             is_bool($value) => $value ? 'true' : 'false',

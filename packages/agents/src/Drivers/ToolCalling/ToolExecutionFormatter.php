@@ -14,10 +14,11 @@ use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Result;
 use Cognesy\Utils\Result\Success;
+use Stringable;
 
 class ToolExecutionFormatter
 {
-    public function makeExecutionMessages(ToolExecutions $toolExecutions) : Messages {
+    public function makeExecutionMessages(ToolExecutions $toolExecutions): Messages {
         $messages = Messages::empty();
         foreach ($toolExecutions->all() as $toolExecution) {
             $messages = $messages->appendMessages($this->toolExecutionMessages($toolExecution));
@@ -25,20 +26,20 @@ class ToolExecutionFormatter
         return $messages;
     }
 
-    protected function toolExecutionMessages(ToolExecution $toolExecution) : Messages {
+    protected function toolExecutionMessages(ToolExecution $toolExecution): Messages {
         $messages = Messages::empty();
         $messages = $messages->appendMessage(
             $this->toolInvocationMessage($toolExecution->toolCall())
-                ->withMetadata('tool_execution_id', $toolExecution->id()->toString())
+                ->withMetadata('tool_execution_id', $toolExecution->id()->toString()),
         );
         $messages = $messages->appendMessage(
             $this->toolExecutionResultMessage($toolExecution->toolCall(), $toolExecution->result())
-                ->withMetadata('tool_execution_id', $toolExecution->id()->toString())
+                ->withMetadata('tool_execution_id', $toolExecution->id()->toString()),
         );
         return $messages;
     }
 
-    protected function toolInvocationMessage(ToolCall $toolCall) : Message {
+    protected function toolInvocationMessage(ToolCall $toolCall): Message {
         return new Message(
             role: 'assistant',
             content: '',
@@ -46,14 +47,14 @@ class ToolExecutionFormatter
         );
     }
 
-    protected function toolExecutionResultMessage(ToolCall $toolCall, Result $result) : Message {
-        return match(true) {
+    protected function toolExecutionResultMessage(ToolCall $toolCall, Result $result): Message {
+        return match (true) {
             $result instanceof Success => $this->toolExecutionSuccessMessage($toolCall, $result),
             $result instanceof Failure => $this->toolExecutionErrorMessage($toolCall, $result),
         };
     }
 
-    protected function toolExecutionSuccessMessage(ToolCall $toolCall, Success $result) : Message {
+    protected function toolExecutionSuccessMessage(ToolCall $toolCall, Success $result): Message {
         $content = $this->formatResultContent($result->unwrap());
         return new Message(
             role: 'tool',
@@ -67,9 +68,9 @@ class ToolExecutionFormatter
     }
 
     private function formatResultContent(mixed $value): string {
-        return match(true) {
+        return match (true) {
             is_string($value) => $value,
-            $value instanceof \Stringable => $value->__toString(),
+            $value instanceof Stringable => $value->__toString(),
             is_array($value) => Json::encode($value),
             $value instanceof AgentState => $value->finalResponse()->toString(),
             is_object($value) => Json::encode($value),
@@ -80,8 +81,8 @@ class ToolExecutionFormatter
         };
     }
 
-    protected function toolExecutionErrorMessage(ToolCall $toolCall, Failure $result) : Message {
-        $content = "Error in tool call: " . $result->errorMessage();
+    protected function toolExecutionErrorMessage(ToolCall $toolCall, Failure $result): Message {
+        $content = 'Error in tool call: ' . $result->errorMessage();
         return new Message(
             role: 'tool',
             content: $content,

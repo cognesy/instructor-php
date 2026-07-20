@@ -17,11 +17,12 @@ use Cognesy\Agents\Tool\Tools\ContextAwareTool;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
 use Cognesy\Messages\ToolCall;
+use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
+use Override;
 use RuntimeException;
 
 final class PlanningSubagentTool extends ContextAwareTool
@@ -56,19 +57,18 @@ final class PlanningSubagentTool extends ContextAwareTool
         $this->events = $events ?? new EventDispatcher(name: 'agents.capability.planning-subagent');
     }
 
-    #[\Override]
+    #[Override]
     public function withAgentState(AgentState $state): static {
         return $this->with(agentState: $state);
     }
 
-    #[\Override]
+    #[Override]
     public function withToolCall(ToolCall $toolCall): static {
         return $this->with(toolCall: $toolCall);
     }
 
-    #[\Override]
-    public function __invoke(mixed ...$args): string
-    {
+    #[Override]
+    public function __invoke(mixed ...$args): string {
         $specification = trim((string) $this->arg($args, 'specification', 0, ''));
         if ($specification === '') {
             return 'Error: specification is required';
@@ -85,9 +85,8 @@ final class PlanningSubagentTool extends ContextAwareTool
         return $this->extractPlan($finalState);
     }
 
-    #[\Override]
-    public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition
-    {
+    #[Override]
+    public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition {
         return \Cognesy\Polyglot\Inference\Data\ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
@@ -98,7 +97,7 @@ final class PlanningSubagentTool extends ContextAwareTool
                         description: 'Task specification text with goal, context, expected outcomes, and acceptance criteria.',
                     ),
                 ])
-                ->withRequiredProperties(['specification'])
+                ->withRequiredProperties(['specification']),
         )->toArray());
     }
 

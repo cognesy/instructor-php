@@ -13,6 +13,6 @@ interface CanGenerateResponse
         InferenceResponse $response,
         ResponseModel $responseModel,
         OutputMode $mode,
-        mixed $prebuiltValue = null,
+        mixed $materializationInput = null,
     ) : Result;
 }

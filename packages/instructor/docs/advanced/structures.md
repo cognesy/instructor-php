@@ -3,7 +3,7 @@ title: Structures
 description: 'Define dynamic data shapes at runtime without PHP classes.'
 ---
 
-When you need to define the shape of extracted data at runtime -- based on user input, configuration, or processing context -- PHP classes are not flexible enough. The `Structure` class from the `cognesy/dynamic` package solves this by letting you define arbitrary data shapes dynamically.
+When you need to define the shape of extracted data at runtime -- based on user input, configuration, or processing context -- PHP classes are not flexible enough. The `Structure` class from the `cognesy/instructor-dynamic` package solves this by letting you define arbitrary data shapes dynamically.
 
 ## When to Use Structures
 

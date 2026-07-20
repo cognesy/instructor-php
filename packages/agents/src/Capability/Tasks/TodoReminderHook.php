@@ -8,6 +8,7 @@ use Cognesy\Agents\Hook\Contracts\HookInterface;
 use Cognesy\Agents\Hook\Data\HookContext;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Override;
 
 /**
  * Hook that injects gentle TodoWrite reminders to keep planning visible.
@@ -16,18 +17,15 @@ final readonly class TodoReminderHook implements HookInterface
 {
     private const INITIAL_MARKER = '<todo-reminder-initial>';
     private const NAG_MARKER = '<todo-reminder-nag>';
-
     private const INITIAL_REMINDER = self::INITIAL_MARKER
         . "\n<reminder>Use todo_write for multi-step tasks.</reminder>";
-
     private const NAG_REMINDER = self::NAG_MARKER
         . "\n<reminder>%d+ steps without todo_write. Please update your task list.</reminder>";
 
     public function __construct(private TodoPolicy $policy) {}
 
-    #[\Override]
-    public function handle(HookContext $context): HookContext
-    {
+    #[Override]
+    public function handle(HookContext $context): HookContext {
         $state = $context->state();
         $messages = $state->messages();
 

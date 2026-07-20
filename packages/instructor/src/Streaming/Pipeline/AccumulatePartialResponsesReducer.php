@@ -2,24 +2,31 @@
 
 namespace Cognesy\Instructor\Streaming\Pipeline;
 
-use Cognesy\Instructor\Core\ObjectHydrator;
+use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Instructor\Core\ResponseMaterializer;
+use Cognesy\Instructor\Data\ResponseFailure;
 use Cognesy\Instructor\Data\ResponseModel;
+use Cognesy\Instructor\Enums\ResponseFailureStage;
+use Cognesy\Instructor\Events\Streaming\PartialResponseGenerationFailed;
 use Cognesy\Instructor\Streaming\StructuredOutputStreamState;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Stream\Contracts\Reducer;
 use Cognesy\Utils\Json\IncrementalJsonParser;
-use Throwable;
 
 final class AccumulatePartialResponsesReducer implements Reducer
 {
     private const MIN_GROWTH_BYTES = 8;
     private const GROWTH_DIVISOR = 32;
+    private const MAX_FAILURE_EVENTS = 3;
 
     private int $lastSnapshotRevision = -1;
     private StructuredOutputStreamState $state;
     private bool $hasProducedValue = false;
-    private ?Throwable $lastCreationError = null;
+    private ?ResponseFailure $lastCreationFailure = null;
+    private int $failureEventCount = 0;
+    /** @var array<string, true> */
+    private array $failureEventSignatures = [];
     private IncrementalJsonParser $jsonParser;
     private string $activeToolKey = '';
     private int $deltaSinceLastMaterialization = 0;
@@ -28,9 +35,10 @@ final class AccumulatePartialResponsesReducer implements Reducer
     public function __construct(
         private readonly Reducer $inner,
         private readonly OutputMode $mode,
-        private readonly ObjectHydrator $hydrator,
+        private readonly ResponseMaterializer $materializer,
         private readonly ResponseModel $responseModel,
         private readonly int $materializationInterval = 1,
+        private readonly ?CanHandleEvents $events = null,
     ) {
         $this->state = StructuredOutputStreamState::empty();
         $this->jsonParser = new IncrementalJsonParser();
@@ -41,7 +49,9 @@ final class AccumulatePartialResponsesReducer implements Reducer
         $this->lastSnapshotRevision = -1;
         $this->state->reset();
         $this->hasProducedValue = false;
-        $this->lastCreationError = null;
+        $this->lastCreationFailure = null;
+        $this->failureEventCount = 0;
+        $this->failureEventSignatures = [];
         $this->jsonParser->reset();
         $this->activeToolKey = '';
         $this->deltaSinceLastMaterialization = 0;
@@ -63,12 +73,10 @@ final class AccumulatePartialResponsesReducer implements Reducer
 
     #[\Override]
     public function complete(mixed $accumulator): mixed {
-        if (!$this->hasProducedValue && $this->lastCreationError !== null) {
+        if (!$this->hasProducedValue && $this->lastCreationFailure !== null) {
             trigger_error(
                 'Streaming object creation never succeeded. Last error: '
-                . $this->lastCreationError->getMessage()
-                . ' in ' . $this->lastCreationError->getFile()
-                . ':' . $this->lastCreationError->getLine(),
+                . $this->lastCreationFailure,
                 E_USER_WARNING,
             );
         }
@@ -107,7 +115,7 @@ final class AccumulatePartialResponsesReducer implements Reducer
         }
 
         $this->lastSnapshotRevision = $state->snapshotRevision();
-        $this->state->setValue($object);
+        $this->state->setPreview($object);
         return $this->state;
     }
 
@@ -166,30 +174,44 @@ final class AccumulatePartialResponsesReducer implements Reducer
     }
 
     private function createObject(array $data): mixed {
-        $hydrated = $this->hydrator->hydratePartial($data, $this->responseModel);
-        if ($hydrated->isFailure()) {
-            $error = $hydrated->error();
-            if ($error instanceof Throwable) {
-                $this->lastCreationError = $error;
-            }
+        $preview = $this->materializer->preview($data, $this->responseModel);
+        if ($preview->isFailure()) {
+            $error = $preview->error();
+            $failure = ResponseFailure::fromError(ResponseFailureStage::Deserialization, $error);
+            $this->lastCreationFailure = $failure;
+            $this->reportPartialFailure($failure);
             return null;
         }
 
         $this->hasProducedValue = true;
-        return $hydrated->unwrap();
+        return $preview->unwrap();
     }
 
-    /**
-     * Returns the last unexpected error from object creation, if any.
-     * Useful for diagnosing silent streaming failures where JSON parsed
-     * successfully but deserialization/transformation threw an exception.
-     */
-    public function lastCreationError(): ?Throwable {
-        return $this->lastCreationError;
+    public function lastCreationFailure(): ?ResponseFailure {
+        return $this->lastCreationFailure;
     }
 
     public function hasProducedValue(): bool {
         return $this->hasProducedValue;
+    }
+
+    private function reportPartialFailure(ResponseFailure $failure): void
+    {
+        if ($this->events === null || $this->failureEventCount >= self::MAX_FAILURE_EVENTS) {
+            return;
+        }
+
+        $signature = "{$failure->stage->value}:{$failure->errorType}";
+        if (isset($this->failureEventSignatures[$signature])) {
+            return;
+        }
+
+        $this->failureEventSignatures[$signature] = true;
+        $this->failureEventCount++;
+        $this->events->dispatch(new PartialResponseGenerationFailed([
+            ...$failure->eventData(),
+            'eventIndex' => $this->failureEventCount,
+        ]));
     }
 
     private function accumulateDelta(PartialInferenceDelta $delta): StructuredOutputStreamState

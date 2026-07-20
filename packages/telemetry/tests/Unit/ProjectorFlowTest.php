@@ -31,6 +31,10 @@ use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted;
+use Cognesy\Instructor\Events\Attempt\ResponseRecoveryExhausted;
+use Cognesy\Instructor\Events\Attempt\ResponseRetryScheduled;
+use Cognesy\Instructor\Events\Response\ResponseMaterializationFailed;
+use Cognesy\Instructor\Events\Response\ResponseMaterialized;
 use Cognesy\Instructor\Telemetry\InstructorTelemetryProjector;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 
@@ -134,4 +138,69 @@ it('projects representative runtime flows into canonical telemetry', function ()
     expect($otel->observations())->toHaveCount(8);
     expect(array_map(fn($observation) => $observation->name(), $otel->observations()))
         ->toContain('http.client.request', 'llm.inference', 'agent.execute', 'agent_ctrl.RequestBuilt', 'agent_ctrl.execute');
+});
+
+it('projects stage-aware structured-output materialization and retry telemetry', function () {
+    $otel = new OtelExporter();
+    $hub = new Telemetry(new TraceRegistry(), new CompositeTelemetryExporter([$otel]));
+    $events = new EventDispatcher('instructor.telemetry.test');
+    (new RuntimeEventBridge(new InstructorTelemetryProjector($hub)))->attachTo($events);
+
+    $events->dispatch(new StructuredOutputStarted([
+        'executionId' => 'so-stage-1',
+        'requestId' => 'so-request-1',
+        'model' => 'gpt-test',
+        'messageCount' => 1,
+        'isStreamed' => false,
+    ]));
+    $events->dispatch(new ResponseRetryScheduled([
+        'executionId' => 'so-stage-1',
+        'phase' => 'response.retry_scheduled',
+        'phaseId' => 'so-stage-1:response.retry_scheduled:attempt-1',
+        'stage' => 'transformation',
+    ]));
+    $events->dispatch(new ResponseMaterializationFailed([
+        'executionId' => 'so-stage-1',
+        'phase' => 'response.materialization',
+        'phaseId' => 'so-stage-1:response.materialization:attempt-1',
+        'stage' => 'transformation',
+        'errorMessage' => 'Structured output transformation failed.',
+        'errorType' => RuntimeException::class,
+    ]));
+    $events->dispatch(new ResponseRecoveryExhausted([
+        'executionId' => 'so-stage-1',
+        'phase' => 'response.recovery_exhausted',
+        'phaseId' => 'so-stage-1:response.recovery_exhausted:attempt-1',
+        'stage' => 'transformation',
+        'errorMessage' => 'Structured output transformation failed.',
+        'errorType' => RuntimeException::class,
+    ]));
+    $events->dispatch(new ResponseMaterialized([
+        'executionId' => 'so-stage-1',
+        'phase' => 'response.materialization',
+        'phaseId' => 'so-stage-1:response.materialization:attempt-2',
+        'resultType' => 'array',
+    ]));
+    $events->dispatch(new StructuredOutputResponseGenerated([
+        'executionId' => 'so-stage-1',
+        'phase' => 'response.generated',
+        'valueType' => 'array',
+        'hasValue' => true,
+    ]));
+
+    $observations = $otel->observations();
+    expect(array_map(fn($observation) => $observation->name(), $observations))->toContain(
+        'structured_output.response_retry_scheduled',
+        'structured_output.response_materialization_failed',
+        'structured_output.response_recovery_exhausted',
+        'structured_output.response_materialized',
+    );
+    $failure = array_values(array_filter(
+        $observations,
+        fn($observation) => $observation->name() === 'structured_output.response_materialization_failed',
+    ))[0];
+    expect($failure->attributes()->toArray()['structured_output.failure_stage'] ?? null)
+        ->toBe('transformation')
+        ->and($failure->attributes()->toArray()['error.type'] ?? null)
+        ->toBe(RuntimeException::class);
 });

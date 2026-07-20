@@ -142,16 +142,32 @@ $order = StructuredOutput::withRuntime($runtime)->with(
 
 ### Custom Retry Prompt
 
-Customize the message sent to the LLM when validation fails. The `{errors}` placeholder is replaced with the actual error messages.
+Customize retry feedback with a prompt class. Set the class in the published Instructor
+configuration; the Laravel service provider passes it to the default structured prompt
+materializer.
+
+```php
+// config/instructor.php
+return [
+    'extraction' => [
+        'max_retries' => 3,
+        'retry_prompt_class' => App\Prompts\RetryFeedbackPrompt::class,
+    ],
+];
+```
+
+Then use the normal facade API:
 
 ```php
 $result = StructuredOutput::with(
     messages: 'Extract data...',
     responseModel: MyModel::class,
-    maxRetries: 3,
-    retryPrompt: 'The extraction failed validation. Errors: {errors}. Please correct and try again.',
 )->get();
 ```
+
+Inline `retry_prompt` text is a deprecated 2.5 compatibility setting read only by an
+explicitly injected legacy request materializer. Provide a custom prompt class that
+follows the structured prompt rendering contract.
 
 ---
 

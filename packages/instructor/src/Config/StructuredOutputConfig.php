@@ -27,7 +27,6 @@ final readonly class StructuredOutputConfig
     private string $schemaDescription;
     private string $toolName;
     private string $toolDescription;
-    private string $outputClass;
     private bool $defaultToStdClass;
     private string $deserializationErrorPromptClass;
     private bool $throwOnTransformationFailure;
@@ -37,7 +36,6 @@ final readonly class StructuredOutputConfig
 
     public function __construct(
         ?OutputMode $outputMode = null,
-        ?string $outputClass = null,
         ?bool $useObjectReferences = null,
         ?int $maxRetries = null,
         ?string $schemaName = null,
@@ -94,7 +92,6 @@ final readonly class StructuredOutputConfig
             'pre-messages', 'messages', 'post-messages',
             'pre-retries', 'retries', 'post-retries',
         ];
-        $this->outputClass = $outputClass ?? 'Cognesy\Dynamic\Structure';
         $this->defaultToStdClass = $defaultToStdClass ?? false;
         $this->deserializationErrorPromptClass = $deserializationErrorPromptClass
             ?? 'Cognesy\\Instructor\\Prompts\\StructuredOutput\\DeserializationRepairPrompt';
@@ -117,7 +114,6 @@ final readonly class StructuredOutputConfig
             'chatStructure' => $this->chatStructure,
             'schemaName' => $this->schemaName,
             'schemaDescription' => $this->schemaDescription,
-            'outputClass' => $this->outputClass,
             'defaultToStdClass' => $this->defaultToStdClass,
             'deserializationErrorPromptClass' => $this->deserializationErrorPromptClass,
             'throwOnTransformationFailure' => $this->throwOnTransformationFailure,
@@ -168,10 +164,12 @@ final readonly class StructuredOutputConfig
         return $this->outputMode;
     }
 
+    /** @deprecated 2.5 Legacy RequestMaterializer setting; remove with instructor-cxxt in 2.6. */
     public function prompt(OutputMode $mode): string {
         return $this->modePrompts[$mode->value] ?? '';
     }
 
+    /** @deprecated 2.5 Legacy RequestMaterializer setting; remove with instructor-cxxt in 2.6. */
     public function modePrompts(): array {
         return $this->modePrompts;
     }
@@ -184,6 +182,7 @@ final readonly class StructuredOutputConfig
         return $this->modePromptClasses;
     }
 
+    /** @deprecated 2.5 Legacy RequestMaterializer setting; remove with instructor-cxxt in 2.6. */
     public function retryPrompt(): string {
         return $this->retryPrompt;
     }
@@ -192,6 +191,7 @@ final readonly class StructuredOutputConfig
         return $this->retryPromptClass;
     }
 
+    /** @deprecated 2.5 Legacy RequestMaterializer setting; remove with instructor-cxxt in 2.6. */
     public function chatStructure(): array {
         return $this->chatStructure;
     }
@@ -224,18 +224,19 @@ final readonly class StructuredOutputConfig
         return $this->maxRetries;
     }
 
-    public function outputClass(): string {
-        return $this->outputClass;
-    }
-
     public function deserializationErrorPromptClass(): string {
         return $this->deserializationErrorPromptClass;
     }
 
+    /** @deprecated 2.5 Use per-request intoStdClass(); remove in 3.0. */
     public function defaultToStdClass(): bool {
         return $this->defaultToStdClass;
     }
 
+    /**
+     * @deprecated 2.5 Transformation failures always fail the attempt. This
+     *             compatibility value is retained for config round-trips only.
+     */
     public function throwOnTransformationFailure(): bool {
         return $this->throwOnTransformationFailure;
     }
@@ -290,16 +291,19 @@ final readonly class StructuredOutputConfig
         return $this->with(useObjectReferences: $useObjectReferences);
     }
 
+    /** @deprecated 2.5 Legacy RequestMaterializer setting; remove with instructor-cxxt in 2.6. */
     public function withRetryPrompt(string $retryPrompt): static {
         return $this->with(retryPrompt: $retryPrompt);
     }
 
+    /** @deprecated 2.5 Legacy RequestMaterializer setting; remove with instructor-cxxt in 2.6. */
     public function withModePrompt(OutputMode $mode, string $prompt): static {
         return $this->withModePrompts(array_merge($this->modePrompts, [
             $mode->value => $prompt,
         ]));
     }
 
+    /** @deprecated 2.5 Legacy RequestMaterializer setting; remove with instructor-cxxt in 2.6. */
     public function withModePrompts(array $modePrompts): static {
         return $this->with(modePrompts: $modePrompts);
     }
@@ -318,12 +322,9 @@ final readonly class StructuredOutputConfig
         return $this->with(retryPromptClass: $retryPromptClass);
     }
 
+    /** @deprecated 2.5 Legacy RequestMaterializer setting; remove with instructor-cxxt in 2.6. */
     public function withChatStructure(array $chatStructure): static {
         return $this->with(chatStructure: $chatStructure);
-    }
-
-    public function withDefaultOutputClass(string $defaultOutputClass): static {
-        return $this->with(outputClass: $defaultOutputClass);
     }
 
     public function withDeserializationErrorPromptClass(string $deserializationErrorPromptClass): static {
@@ -334,7 +335,6 @@ final readonly class StructuredOutputConfig
 
     public function with(
         ?OutputMode $outputMode = null,
-        ?string $outputClass = null,
         ?bool $useObjectReferences = null,
         ?int $maxRetries = null,
         ?string $schemaName = null,
@@ -354,7 +354,6 @@ final readonly class StructuredOutputConfig
     ): StructuredOutputConfig {
         return new self(
             outputMode: $outputMode ?? $this->outputMode,
-            outputClass: $outputClass ?? $this->outputClass,
             useObjectReferences: $useObjectReferences ?? $this->useObjectReferences,
             maxRetries: $maxRetries ?? $this->maxRetries,
             schemaName: $schemaName ?? $this->schemaName,

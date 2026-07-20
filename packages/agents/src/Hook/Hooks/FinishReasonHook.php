@@ -8,11 +8,13 @@ use Cognesy\Agents\Continuation\StopSignal;
 use Cognesy\Agents\Hook\Contracts\HookInterface;
 use Cognesy\Agents\Hook\Data\HookContext;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
+use Override;
 
 final readonly class FinishReasonHook implements HookInterface
 {
     /** @var Closure(mixed): ?InferenceFinishReason */
     private Closure $finishReasonResolver;
+
     /** @var list<InferenceFinishReason> */
     private array $stopReasons;
 
@@ -20,15 +22,13 @@ final readonly class FinishReasonHook implements HookInterface
      * @param list<InferenceFinishReason> $stopReasons
      * @param callable(mixed): ?InferenceFinishReason $finishReasonResolver
      */
-    public function __construct(array $stopReasons, callable $finishReasonResolver)
-    {
+    public function __construct(array $stopReasons, callable $finishReasonResolver) {
         $this->stopReasons = array_values($stopReasons);
         $this->finishReasonResolver = Closure::fromCallable($finishReasonResolver);
     }
 
-    #[\Override]
-    public function handle(HookContext $context): HookContext
-    {
+    #[Override]
+    public function handle(HookContext $context): HookContext {
         if ($this->stopReasons === []) {
             return $context;
         }
@@ -59,10 +59,9 @@ final readonly class FinishReasonHook implements HookInterface
     /**
      * @return list<string>
      */
-    private function stopReasonsAsStrings(): array
-    {
+    private function stopReasonsAsStrings(): array {
         return array_map(
-            static fn(InferenceFinishReason $reason): string => $reason->value,
+            static fn (InferenceFinishReason $reason): string => $reason->value,
             $this->stopReasons,
         );
     }

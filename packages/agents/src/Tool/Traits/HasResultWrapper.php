@@ -4,11 +4,12 @@ namespace Cognesy\Agents\Tool\Traits;
 
 use Cognesy\Agents\Continuation\AgentStopException;
 use Cognesy\Utils\Result\Result;
+use Override;
 use Throwable;
 
 trait HasResultWrapper
 {
-    #[\Override]
+    #[Override]
     public function use(mixed ...$args): Result {
         try {
             $value = $this->__invoke(...$args);

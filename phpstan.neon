@@ -28,7 +28,6 @@ parameters:
     - packages/xprompt/src
     - packages/sandbox/src
     - packages/http-pool/src
-    - config
   excludePaths:
     - packages/*/tests/Fixtures/*
     - packages/*/tests/Support/*

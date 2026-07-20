@@ -57,12 +57,13 @@ Mutate (immutable):
 - `clone(): Structure`
 - `fromArray(array $data): static`
 
-Validation / transform:
+Validation:
 
 - `validate(): ValidationResult`
 - `normalizeRecord(array $values): array`
-- `transform(): mixed`
-- `withValidation(callable $validator): Structure` — compatibility no-op, returns a clone
+
+`validate()` uses the shared `Cognesy\Schema\Validation\SchemaDataValidator`. A
+`Structure` remains a `Structure`; convert it explicitly with `toArray()` when needed.
 
 ## StructureFactory API
 

@@ -9,6 +9,7 @@ use Cognesy\Agents\Tool\Tools\SimpleTool;
 use Cognesy\Messages\Messages;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
+use Override;
 
 class SelfCriticSubagentTool extends SimpleTool
 {
@@ -49,16 +50,16 @@ PROMPT;
         parent::__construct(new SelfCriticSubagentToolDescriptor());
     }
 
-    #[\Override]
+    #[Override]
     public function __invoke(mixed ...$args): string {
         $originalTask = (string) $this->arg($args, 'original_task', 0, '');
         $proposedResponse = (string) $this->arg($args, 'proposed_response', 1, '');
 
         if ($originalTask === '') {
-            return "Error: original_task is required";
+            return 'Error: original_task is required';
         }
         if ($proposedResponse === '') {
-            return "Error: proposed_response is required";
+            return 'Error: proposed_response is required';
         }
 
         $prompt = sprintf(self::CRITIC_PROMPT, $originalTask, $proposedResponse);
@@ -67,7 +68,7 @@ PROMPT;
         $subagent = AgentBuilder::base()->build();
 
         $subState = AgentState::empty()->withMessages(
-            Messages::fromString($prompt)
+            Messages::fromString($prompt),
         );
 
         // Run critic subagent
@@ -92,7 +93,7 @@ PROMPT;
         return "[Self-Critic Evaluation]\nStatus: {$status}\n\n{$evaluation}";
     }
 
-    #[\Override]
+    #[Override]
     public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition {
         return \Cognesy\Polyglot\Inference\Data\ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
@@ -102,7 +103,7 @@ PROMPT;
                     JsonSchema::string('original_task', 'The original task or question that needs to be addressed'),
                     JsonSchema::string('proposed_response', 'Your proposed response to evaluate before finalizing'),
                 ])
-                ->withRequiredProperties(['original_task', 'proposed_response'])
+                ->withRequiredProperties(['original_task', 'proposed_response']),
         )->toArray());
     }
 }

@@ -26,26 +26,26 @@ final readonly class TaskInput
     public static function fromArray(array $data, int $position = 1): self {
         if (!isset($data['content']) || !is_string($data['content']) || trim($data['content']) === '') {
             throw new InvalidArgumentException(
-                "Task #{$position}: 'content' is required and cannot be empty"
+                "Task #{$position}: 'content' is required and cannot be empty",
             );
         }
 
         if (!isset($data['status']) || !is_string($data['status'])) {
             throw new InvalidArgumentException(
-                "Task #{$position}: 'status' is required (pending/in_progress/completed)"
+                "Task #{$position}: 'status' is required (pending/in_progress/completed)",
             );
         }
 
         $validStatuses = ['pending', 'in_progress', 'completed'];
         if (!in_array($data['status'], $validStatuses, true)) {
             throw new InvalidArgumentException(
-                "Task #{$position}: 'status' must be one of: " . implode(', ', $validStatuses)
+                "Task #{$position}: 'status' must be one of: " . implode(', ', $validStatuses),
             );
         }
 
         if (!isset($data['activeForm']) || !is_string($data['activeForm']) || trim($data['activeForm']) === '') {
             throw new InvalidArgumentException(
-                "Task #{$position}: 'activeForm' is required (present tense action, e.g., 'Running tests')"
+                "Task #{$position}: 'activeForm' is required (present tense action, e.g., 'Running tests')",
             );
         }
 
@@ -72,7 +72,7 @@ final readonly class TaskInput
         foreach ($data as $index => $item) {
             if (!is_array($item)) {
                 throw new InvalidArgumentException(
-                    "Task #" . ($index + 1) . ": expected object, got " . gettype($item)
+                    'Task #' . ($index + 1) . ': expected object, got ' . gettype($item),
                 );
             }
             $inputs[] = self::fromArray($item, $index + 1);

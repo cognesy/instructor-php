@@ -4,10 +4,10 @@ namespace Cognesy\Agents\Capability\StructuredOutput;
 
 use Cognesy\Agents\Builder\Contracts\CanConfigureAgent;
 use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
-use Cognesy\Agents\Capability\StructuredOutput\CanManageSchemas;
 use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Hook\Collections\HookTriggers;
 use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
+use Override;
 
 /**
  * Adds structured output extraction capability to the agent.
@@ -46,12 +46,12 @@ class UseStructuredOutputs implements CanProvideAgentCapability
         private ?StructuredOutputPolicy $policy = null,
     ) {}
 
-    #[\Override]
+    #[Override]
     public static function capabilityName(): string {
         return 'use_structured_outputs';
     }
 
-    #[\Override]
+    #[Override]
     public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         $policy = $this->policy ?? new StructuredOutputPolicy();
 

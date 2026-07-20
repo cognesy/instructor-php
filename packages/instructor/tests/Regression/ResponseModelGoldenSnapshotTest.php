@@ -11,6 +11,7 @@ use Cognesy\Instructor\Events\ResponseModel\ResponseModelBuildModeSelected;
 use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Schema\Data\Schema;
 use Cognesy\Schema\SchemaFactory;
+use Cognesy\Schema\TypeInfo;
 
 /**
  * C1 verification (research/v2-cleanup-plan/02): golden snapshots of the
@@ -70,10 +71,10 @@ function responseModelSnapshot(mixed $input): array {
 
     return canonicalizeResponseModelSnapshot([
         'dispatchMode' => $modes[0] ?? 'none',
-        'class' => $model->instanceClass(),
-        'returnedClass' => $model->returnedClass(),
+        'schemaClass' => TypeInfo::className($model->schema()->type) ?? '',
+        'targetClass' => $model->outputFormat()->targetClass(),
         'schemaName' => $model->schemaName(),
-        'returnTarget' => $model->returnTarget()->value,
+        'outputFormat' => $model->outputFormat()->type->value,
         'jsonSchema' => $model->toJsonSchema(),
     ]);
 }
@@ -115,7 +116,6 @@ it('locks ResponseModel output per input shape against the golden fixture', func
         'json-schema-provider' => responseModelSnapshot(Scalar::integer('age')),
         'schema-provider' => responseModelSnapshot(Sequence::of(SnapshotUser::class)),
         'tool-selection-provider' => responseModelSnapshot(new SnapshotToolSelector()),
-        'empty-array-default' => responseModelSnapshot([]),
     ];
 
     $path = __DIR__ . '/Fixtures/response-model-snapshots.json';

@@ -5,14 +5,15 @@ namespace Cognesy\Agents\Events;
 use Cognesy\Agents\Continuation\StopReason;
 use Cognesy\Agents\Continuation\StopSignal;
 use Cognesy\Agents\Data\ExecutionState;
+use Override;
 
 final class ContinuationEvaluated extends AgentEvent
 {
     public function __construct(
-        public readonly string          $agentId,
-        public readonly string          $executionId,
-        public readonly ?string         $parentAgentId,
-        public readonly int             $stepNumber,
+        public readonly string $agentId,
+        public readonly string $executionId,
+        public readonly ?string $parentAgentId,
+        public readonly int $stepNumber,
         public readonly ?ExecutionState $executionState = null,
     ) {
         parent::__construct([
@@ -25,7 +26,7 @@ final class ContinuationEvaluated extends AgentEvent
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public function __toString(): string {
         $action = $this->shouldStop() ? 'STOP' : 'CONTINUE';
         $reason = $this->explain();
@@ -35,7 +36,7 @@ final class ContinuationEvaluated extends AgentEvent
             substr($this->agentId, 0, 8),
             $this->stepNumber,
             $action,
-            $reason
+            $reason,
         );
     }
 

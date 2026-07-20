@@ -9,6 +9,7 @@ use Cognesy\Agents\Builder\Data\DeferredToolContext;
 use Cognesy\Agents\Capability\Skills\SkillLibrary;
 use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Template\Contracts\CanManageAgentDefinitions;
+use Override;
 
 final class UseSubagents implements CanProvideAgentCapability
 {
@@ -34,12 +35,12 @@ final class UseSubagents implements CanProvideAgentCapability
         );
     }
 
-    #[\Override]
+    #[Override]
     public static function capabilityName(): string {
         return 'use_subagents';
     }
 
-    #[\Override]
+    #[Override]
     public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         $provider = $this->resolveProvider();
         $skillLibrary = $this->skillLibrary;
@@ -52,7 +53,7 @@ final class UseSubagents implements CanProvideAgentCapability
                 private SubagentPolicy $policy,
             ) {}
 
-            #[\Override]
+            #[Override]
             public function provideTools(DeferredToolContext $context): Tools {
                 return new Tools(new SpawnSubagentTool(
                     parentTools: $context->tools(),
@@ -67,7 +68,7 @@ final class UseSubagents implements CanProvideAgentCapability
         };
 
         return $agent->withDeferredTools(
-            $agent->deferredTools()->withProvider($deferred)
+            $agent->deferredTools()->withProvider($deferred),
         );
     }
 

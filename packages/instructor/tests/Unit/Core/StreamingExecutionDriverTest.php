@@ -62,7 +62,7 @@ it('emits live partials and one final response from the streaming driver', funct
             },
             requestMaterializer: new RequestMaterializer(),
         ),
-        hydrator: makeTestHydrator(new class implements CanDeserializeResponse {
+        materializer: makeTestMaterializer(new class implements CanDeserializeResponse {
             public function deserialize(array $data, ResponseModel $responseModel): Result {
                 return Result::success($data);
             }
@@ -79,7 +79,7 @@ it('emits live partials and one final response from the streaming driver', funct
                 InferenceResponse $response,
                 ResponseModel $responseModel,
                 OutputMode $mode,
-                mixed $prebuiltValue = null,
+                mixed $materializationInput = null,
             ): Result {
                 return Result::success(new StreamingDriverUser(name: 'Ann', age: 30));
             }

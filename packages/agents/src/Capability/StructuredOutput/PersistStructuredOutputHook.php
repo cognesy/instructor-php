@@ -4,6 +4,7 @@ namespace Cognesy\Agents\Capability\StructuredOutput;
 
 use Cognesy\Agents\Hook\Contracts\HookInterface;
 use Cognesy\Agents\Hook\Data\HookContext;
+use Override;
 
 /**
  * Hook that persists successful structured output extractions to agent state.
@@ -13,9 +14,8 @@ use Cognesy\Agents\Hook\Data\HookContext;
  */
 final readonly class PersistStructuredOutputHook implements HookInterface
 {
-    #[\Override]
-    public function handle(HookContext $context): HookContext
-    {
+    #[Override]
+    public function handle(HookContext $context): HookContext {
         $state = $context->state();
         $currentStep = $state->currentStep();
 

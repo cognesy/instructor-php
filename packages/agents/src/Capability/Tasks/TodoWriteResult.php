@@ -12,8 +12,7 @@ final readonly class TodoWriteResult
         public string $summary,
     ) {}
 
-    public function toArray(): array
-    {
+    public function toArray(): array {
         return [
             'success' => $this->success,
             'tasks' => $this->tasks,

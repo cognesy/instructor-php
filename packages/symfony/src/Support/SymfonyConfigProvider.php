@@ -277,7 +277,6 @@ final class SymfonyConfigProvider implements CanProvideConfig
         $this->assignString($data, 'schemaDescription', $config, 'schemaDescription', 'schema_description');
         $this->assignString($data, 'toolName', $config, 'toolName', 'tool_name');
         $this->assignString($data, 'toolDescription', $config, 'toolDescription', 'tool_description');
-        $this->assignString($data, 'outputClass', $config, 'outputClass', 'output_class');
         $this->assignBool($data, 'defaultToStdClass', $config, 'defaultToStdClass', 'default_to_std_class');
         $this->assignString($data, 'deserializationErrorPromptClass', $config, 'deserializationErrorPromptClass', 'deserialization_error_prompt_class');
         $this->assignBool($data, 'throwOnTransformationFailure', $config, 'throwOnTransformationFailure', 'throw_on_transformation_failure');

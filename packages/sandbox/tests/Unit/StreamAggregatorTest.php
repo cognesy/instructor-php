@@ -34,13 +34,13 @@ describe('StreamAggregator', function () {
         expect($agg->stderr())->toBe('45678');
     });
 
-    it('stops accumulating after truncation', function () {
+    it('continues after truncation to retain the actual final tail', function () {
         $agg = new StreamAggregator(5, 1024);
         $agg->appendOut('abcdef'); // triggers truncation
         expect($agg->truncatedStdout())->toBeTrue();
 
-        $agg->appendOut('more'); // should be ignored
-        expect($agg->stdout())->toBe('bcdef');
+        $agg->appendOut('ghij');
+        expect($agg->stdout())->toBe('fghij');
     });
 
     it('routes via consume using Symfony process type constants', function () {

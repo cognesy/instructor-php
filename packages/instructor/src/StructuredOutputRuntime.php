@@ -168,6 +168,7 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
         return $this->with(config: $config);
     }
 
+    /** @deprecated 2.5 Use per-request intoStdClass(); remove in 3.0. */
     public function withDefaultToStdClass(bool $defaultToStdClass = true): StructuredOutputRuntime {
         return $this->withConfig($this->config->with(defaultToStdClass: $defaultToStdClass));
     }

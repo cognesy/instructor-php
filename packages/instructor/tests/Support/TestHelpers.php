@@ -138,14 +138,14 @@ if (!function_exists('makeLLMConfigForDriver')) {
     }
 }
 
-if (!function_exists('makeTestHydrator')) {
-    /** Builds an ObjectHydrator from test doubles; validator defaults to pass-through. */
-    function makeTestHydrator(
+if (!function_exists('makeTestMaterializer')) {
+    /** Builds a ResponseMaterializer from test doubles; validator defaults to pass-through. */
+    function makeTestMaterializer(
         \Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse $deserializer,
         \Cognesy\Instructor\Transformation\Contracts\CanTransformResponse $transformer,
         ?\Cognesy\Instructor\Validation\Contracts\CanValidateResponse $validator = null,
-    ): \Cognesy\Instructor\Core\ObjectHydrator {
-        return new \Cognesy\Instructor\Core\ObjectHydrator(
+    ): \Cognesy\Instructor\Core\ResponseMaterializer {
+        return new \Cognesy\Instructor\Core\ResponseMaterializer(
             deserializer: $deserializer,
             validator: $validator ?? new class implements \Cognesy\Instructor\Validation\Contracts\CanValidateResponse {
                 public function validate(object $response, \Cognesy\Instructor\Data\ResponseModel $responseModel): \Cognesy\Utils\Result\Result {

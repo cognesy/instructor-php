@@ -5,10 +5,10 @@ namespace Cognesy\Agents\Template\Factory;
 use Cognesy\Agents\Builder\AgentBuilder;
 use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
 use Cognesy\Agents\CanControlAgentLoop;
+use Cognesy\Agents\Capability\CanManageAgentCapabilities;
 use Cognesy\Agents\Capability\Core\UseDriver;
 use Cognesy\Agents\Capability\Core\UseGuards;
 use Cognesy\Agents\Capability\Core\UseTools;
-use Cognesy\Agents\Capability\CanManageAgentCapabilities;
 use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Agents\Template\Contracts\CanInstantiateAgentLoop;
@@ -19,6 +19,7 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use InvalidArgumentException;
+use Override;
 
 final readonly class DefinitionLoopFactory implements CanInstantiateAgentLoop
 {
@@ -28,7 +29,7 @@ final readonly class DefinitionLoopFactory implements CanInstantiateAgentLoop
         private ?CanHandleEvents $events = null,
     ) {}
 
-    #[\Override]
+    #[Override]
     public function instantiateAgentLoop(AgentDefinition $definition): CanControlAgentLoop {
         $builder = AgentBuilder::base($this->events);
         $builder = $this->withLLMConfig($builder, $definition);
@@ -57,7 +58,7 @@ final readonly class DefinitionLoopFactory implements CanInstantiateAgentLoop
                 llm: $llm,
                 events: $this->events,
                 inference: InferenceRuntime::fromProvider($llm, events: $this->events),
-            ))
+            )),
         );
     }
 
@@ -91,7 +92,7 @@ final readonly class DefinitionLoopFactory implements CanInstantiateAgentLoop
             }
 
             throw new InvalidArgumentException(
-                "Definition '{$definition->name}' declares tools, but no CanManageTools was provided."
+                "Definition '{$definition->name}' declares tools, but no CanManageTools was provided.",
             );
         }
 
@@ -100,7 +101,7 @@ final readonly class DefinitionLoopFactory implements CanInstantiateAgentLoop
         if ($unknown !== []) {
             $unknownNames = implode(', ', $unknown);
             throw new InvalidArgumentException(
-                "Definition '{$definition->name}' references unknown tools: {$unknownNames}"
+                "Definition '{$definition->name}' references unknown tools: {$unknownNames}",
             );
         }
 
@@ -119,7 +120,7 @@ final readonly class DefinitionLoopFactory implements CanInstantiateAgentLoop
 
         $available = implode(', ', $this->capabilities->names());
         throw new InvalidArgumentException(
-            "Capability '{$name}' is not registered. Available: {$available}"
+            "Capability '{$name}' is not registered. Available: {$available}",
         );
     }
 

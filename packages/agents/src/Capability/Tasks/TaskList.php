@@ -10,18 +10,15 @@ final readonly class TaskList
     private array $tasks;
 
     /** @param list<Task> $tasks */
-    private function __construct(array $tasks)
-    {
+    private function __construct(array $tasks) {
         $this->tasks = $tasks;
     }
 
-    public static function empty(): self
-    {
+    public static function empty(): self {
         return new self([]);
     }
 
-    public static function fromArray(array $data): self
-    {
+    public static function fromArray(array $data): self {
         $tasks = [];
         foreach ($data as $item) {
             $tasks[] = Task::fromArray($item);
@@ -31,8 +28,7 @@ final readonly class TaskList
     }
 
     /** @param list<Task> $tasks */
-    public function withTasks(array $tasks): self
-    {
+    public function withTasks(array $tasks): self {
         $this->assertValidCount($tasks);
         $this->assertSingleInProgress($tasks);
 
@@ -40,23 +36,19 @@ final readonly class TaskList
     }
 
     /** @return list<Task> */
-    public function all(): array
-    {
+    public function all(): array {
         return $this->tasks;
     }
 
-    public function isEmpty(): bool
-    {
+    public function isEmpty(): bool {
         return $this->tasks === [];
     }
 
-    public function count(): int
-    {
+    public function count(): int {
         return count($this->tasks);
     }
 
-    public function countByStatus(TaskStatus $status): int
-    {
+    public function countByStatus(TaskStatus $status): int {
         $count = 0;
         foreach ($this->tasks as $task) {
             if ($task->status === $status) {
@@ -67,8 +59,7 @@ final readonly class TaskList
         return $count;
     }
 
-    public function currentInProgress(): ?Task
-    {
+    public function currentInProgress(): ?Task {
         foreach ($this->tasks as $task) {
             if ($task->status === TaskStatus::InProgress) {
                 return $task;
@@ -78,8 +69,7 @@ final readonly class TaskList
         return null;
     }
 
-    public function render(): string
-    {
+    public function render(): string {
         if ($this->tasks === []) {
             return '(no tasks)';
         }
@@ -92,8 +82,7 @@ final readonly class TaskList
         return implode("\n", $lines);
     }
 
-    public function renderSummary(): string
-    {
+    public function renderSummary(): string {
         $total = $this->count();
         $completed = $this->countByStatus(TaskStatus::Completed);
         $inProgress = $this->countByStatus(TaskStatus::InProgress);
@@ -108,8 +97,7 @@ final readonly class TaskList
         );
     }
 
-    public function toArray(): array
-    {
+    public function toArray(): array {
         $items = [];
         foreach ($this->tasks as $task) {
             $items[] = $task->toArray();
@@ -119,16 +107,14 @@ final readonly class TaskList
     }
 
     /** @param list<Task> $tasks */
-    private function assertValidCount(array $tasks): void
-    {
+    private function assertValidCount(array $tasks): void {
         if (count($tasks) > 20) {
             throw new InvalidArgumentException('Maximum 20 tasks allowed');
         }
     }
 
     /** @param list<Task> $tasks */
-    private function assertSingleInProgress(array $tasks): void
-    {
+    private function assertSingleInProgress(array $tasks): void {
         $inProgress = 0;
         foreach ($tasks as $task) {
             if ($task->status === TaskStatus::InProgress) {

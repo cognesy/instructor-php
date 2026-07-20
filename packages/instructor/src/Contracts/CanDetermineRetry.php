@@ -7,7 +7,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Utils\Result\Result;
 
 /**
- * Domain policy for determining retry behavior after validation failures.
+ * Domain policy for determining retry behavior after response failures.
  *
  * DDD: This is a POLICY object that encapsulates business rules for retries.
  * Implementations can vary: simple max retries, exponential backoff, prompt modification, etc.
@@ -17,15 +17,15 @@ use Cognesy\Utils\Result\Result;
 interface CanDetermineRetry
 {
     /**
-     * Determine if execution should retry after validation failure.
+     * Determine if execution should retry after a response failure.
      *
      * @param StructuredOutputExecution $execution Current execution state
-     * @param Result $validationResult Failed validation result
+     * @param Result $result Failed materialization result
      * @return bool True if should retry, false if should fail
      */
     public function shouldRetry(
         StructuredOutputExecution $execution,
-        Result $validationResult,
+        Result $result,
     ): bool;
 
     /**
@@ -33,13 +33,13 @@ interface CanDetermineRetry
      * Updates execution with error details and increments attempt count.
      *
      * @param StructuredOutputExecution $execution Current execution
-     * @param Result $validationResult Failed validation
+     * @param Result $result Failed materialization result
      * @param InferenceResponse $inference Final inference from failed attempt
      * @return StructuredOutputExecution Updated execution with failed attempt recorded
      */
     public function recordFailure(
         StructuredOutputExecution $execution,
-        Result $validationResult,
+        Result $result,
         InferenceResponse $inference,
     ): StructuredOutputExecution;
 
@@ -55,16 +55,16 @@ interface CanDetermineRetry
     ): StructuredOutputExecution;
 
     /**
-     * Finalize execution or throw exception based on validation result.
+     * Finalize execution or throw based on the materialization result.
      * Called when no more retries are possible.
      *
      * @param StructuredOutputExecution $execution Final execution state
-     * @param Result $validationResult Last validation result
+     * @param Result $result Last materialization result
      * @return mixed Unwrapped value if success
-     * @throws \Exception If validation failed and max retries exceeded
+     * @throws \Exception If materialization failed and max retries exceeded
      */
     public function finalizeOrThrow(
         StructuredOutputExecution $execution,
-        Result $validationResult,
+        Result $result,
     ): mixed;
 }

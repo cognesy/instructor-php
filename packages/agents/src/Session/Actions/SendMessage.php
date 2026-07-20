@@ -6,19 +6,21 @@ use Cognesy\Agents\Session\Contracts\CanExecuteSessionAction;
 use Cognesy\Agents\Session\Data\AgentSession;
 use Cognesy\Agents\Template\Contracts\CanInstantiateAgentLoop;
 use Cognesy\Messages\Message;
+use Override;
+use Stringable;
 
 final readonly class SendMessage implements CanExecuteSessionAction
 {
     private string|Message $message;
 
     public function __construct(
-        string|\Stringable|Message $message,
+        string|Stringable|Message $message,
         private CanInstantiateAgentLoop $loopFactory,
     ) {
         $this->message = $message instanceof Message ? $message : (string) $message;
     }
 
-    #[\Override]
+    #[Override]
     public function executeOn(AgentSession $session): AgentSession {
         $loop = $this->loopFactory->instantiateAgentLoop($session->definition());
         $state = $session->state()->withUserMessage($this->message);

@@ -5,6 +5,7 @@ namespace Cognesy\Agents\Hook\Hooks;
 use Closure;
 use Cognesy\Agents\Hook\Contracts\HookInterface;
 use Cognesy\Agents\Hook\Data\HookContext;
+use Override;
 
 final readonly class CallableHook implements HookInterface
 {
@@ -14,14 +15,12 @@ final readonly class CallableHook implements HookInterface
     /**
      * @param callable(HookContext): HookContext $callback
      */
-    public function __construct(callable $callback)
-    {
+    public function __construct(callable $callback) {
         $this->callback = Closure::fromCallable($callback);
     }
 
-    #[\Override]
-    public function handle(HookContext $context): HookContext
-    {
+    #[Override]
+    public function handle(HookContext $context): HookContext {
         return ($this->callback)($context);
     }
 }

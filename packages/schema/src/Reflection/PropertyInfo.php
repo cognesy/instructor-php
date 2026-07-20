@@ -9,7 +9,6 @@ use ReflectionClass;
 use ReflectionMethod;
 use ReflectionParameter;
 use ReflectionProperty;
-use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
@@ -172,12 +171,12 @@ class PropertyInfo
             return self::$extractor;
         }
 
-        $phpDocExtractor = new PhpDocExtractor();
+        $phpStanExtractor = new PhpStanExtractor();
         $reflectionExtractor = new ReflectionExtractor();
         self::$extractor = new PropertyInfoExtractor(
             [$reflectionExtractor],
-            [new PhpStanExtractor(), $phpDocExtractor, $reflectionExtractor],
-            [$phpDocExtractor],
+            [$phpStanExtractor, $reflectionExtractor],
+            [$phpStanExtractor],
             [$reflectionExtractor],
             [$reflectionExtractor],
         );

@@ -9,4 +9,3 @@ interface CanProvideDeferredTools
 {
     public function provideTools(DeferredToolContext $context): Tools;
 }
-

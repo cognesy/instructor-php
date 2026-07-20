@@ -10,6 +10,7 @@ use Cognesy\Agents\Hook\Data\HookContext;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Utils\Tokenizer;
+use Override;
 
 /**
  * Hook that moves overflow messages to a buffer section when token limit is exceeded.
@@ -26,9 +27,8 @@ final readonly class MoveMessagesToBufferHook implements HookInterface
         $this->events = $events ?? new EventDispatcher(name: 'agents.hook.move-messages-to-buffer');
     }
 
-    #[\Override]
-    public function handle(HookContext $context): HookContext
-    {
+    #[Override]
+    public function handle(HookContext $context): HookContext {
         $state = $context->state();
         // Check if token limit is exceeded
         $tokens = Tokenizer::tokenCount($state->messages()->toString());
@@ -36,7 +36,7 @@ final readonly class MoveMessagesToBufferHook implements HookInterface
             return $context;
         }
 
-        [$keep, $overflow] = (new SplitMessages)->split(
+        [$keep, $overflow] = (new SplitMessages())->split(
             messages: $state->messages(),
             tokenLimit: $this->maxTokens,
         );

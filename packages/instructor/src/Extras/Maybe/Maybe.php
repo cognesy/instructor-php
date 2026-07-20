@@ -53,6 +53,7 @@ final class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
         $schemaData['x-title'] = $this->name ?: (new ReflectionClass($this->class))->getShortName();
         $schemaData['description'] = $this->description ?: ('Correctly extracted values of ' . $schemaData['x-title']);
         $schemaData['x-php-class'] = $this->class;
+        $schemaData['type'] = [$schemaData['type'] ?? 'object', 'null'];
 
         return [
             'type' => 'object',

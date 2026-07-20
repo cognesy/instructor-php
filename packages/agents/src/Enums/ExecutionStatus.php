@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Enums;
 
-enum ExecutionStatus : string
+enum ExecutionStatus: string
 {
     case Pending = 'pending';         // Between executions, ready for fresh start
     case InProgress = 'in_progress';  // Execution in progress

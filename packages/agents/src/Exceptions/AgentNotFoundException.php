@@ -4,6 +4,4 @@ namespace Cognesy\Agents\Exceptions;
 
 use Exception;
 
-class AgentNotFoundException extends Exception
-{
-}
+class AgentNotFoundException extends Exception {}

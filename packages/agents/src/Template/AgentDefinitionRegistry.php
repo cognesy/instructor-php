@@ -5,20 +5,25 @@ namespace Cognesy\Agents\Template;
 use Cognesy\Agents\Exceptions\AgentNotFoundException;
 use Cognesy\Agents\Template\Contracts\CanManageAgentDefinitions;
 use Cognesy\Agents\Template\Data\AgentDefinition;
+use FilesystemIterator;
+use Override;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use SplFileInfo;
+use Throwable;
 
 /** Stores agent definitions (data) keyed by name. Loads from .md/.yaml/.yml/.json files. */
 final class AgentDefinitionRegistry implements CanManageAgentDefinitions
 {
     /** @var array<string, AgentDefinition> */
     private array $definitions = [];
+
     /** @var array<string, string> */
     private array $errors = [];
+
     private AgentDefinitionLoader $loader;
 
-    public function __construct(?AgentDefinitionLoader $loader = null)
-    {
+    public function __construct(?AgentDefinitionLoader $loader = null) {
         $this->loader = $loader ?? new AgentDefinitionLoader();
     }
 
@@ -36,12 +41,12 @@ final class AgentDefinitionRegistry implements CanManageAgentDefinitions
 
     // AGENT DEFINITION PROVIDER ////////////////////////////////////
 
-    #[\Override]
+    #[Override]
     public function get(string $name): AgentDefinition {
         if (!$this->has($name)) {
             $available = implode(', ', $this->names());
             throw new AgentNotFoundException(
-                "Agent '{$name}' not found. Available: {$available}"
+                "Agent '{$name}' not found. Available: {$available}",
             );
         }
 
@@ -53,18 +58,18 @@ final class AgentDefinitionRegistry implements CanManageAgentDefinitions
     }
 
     /** @return array<string, AgentDefinition> */
-    #[\Override]
+    #[Override]
     public function all(): array {
         return $this->definitions;
     }
 
     /** @return array<int, string> */
-    #[\Override]
+    #[Override]
     public function names(): array {
         return array_keys($this->definitions);
     }
 
-    #[\Override]
+    #[Override]
     public function count(): int {
         return count($this->definitions);
     }
@@ -84,7 +89,7 @@ final class AgentDefinitionRegistry implements CanManageAgentDefinitions
         foreach ($this->listAgentFiles($path, $recursive) as $file) {
             try {
                 $this->loadFromFile($file);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $this->errors[$file] = $e->getMessage();
             }
         }
@@ -124,10 +129,10 @@ final class AgentDefinitionRegistry implements CanManageAgentDefinitions
 
         if ($recursive) {
             $iterator = new RecursiveIteratorIterator(
-                new RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS)
+                new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS),
             );
 
-            /** @var \SplFileInfo $file */
+            /** @var SplFileInfo $file */
             foreach ($iterator as $file) {
                 if (!$file->isFile()) {
                     continue;

@@ -5,10 +5,11 @@ namespace Cognesy\Agents\Template\Parsers;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use InvalidArgumentException;
 use JsonException;
+use Override;
 
 final readonly class JsonDefinitionParser implements CanParseAgentDefinition
 {
-    #[\Override]
+    #[Override]
     public function parse(mixed $data): AgentDefinition {
         $array = match (true) {
             is_array($data) => $data,
@@ -28,10 +29,9 @@ final readonly class JsonDefinitionParser implements CanParseAgentDefinition
         }
 
         if (!is_array($parsed)) {
-            throw new InvalidArgumentException("Invalid JSON: agent definition must be an object");
+            throw new InvalidArgumentException('Invalid JSON: agent definition must be an object');
         }
 
         return $parsed;
     }
 }
-

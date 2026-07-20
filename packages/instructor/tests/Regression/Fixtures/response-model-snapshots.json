@@ -1,10 +1,10 @@
 {
     "class-string": {
         "dispatchMode": "fromClassString",
-        "class": "SnapshotUser",
-        "returnedClass": "SnapshotUser",
+        "schemaClass": "SnapshotUser",
+        "targetClass": "SnapshotUser",
         "schemaName": "SnapshotUser",
-        "returnTarget": "typed_object",
+        "outputFormat": "class",
         "jsonSchema": {
             "type": "object",
             "x-title": "SnapshotUser",
@@ -25,10 +25,10 @@
     },
     "instance": {
         "dispatchMode": "fromInstance",
-        "class": "SnapshotUser",
-        "returnedClass": "SnapshotUser",
+        "schemaClass": "SnapshotUser",
+        "targetClass": "SnapshotUser",
         "schemaName": "default_schema",
-        "returnTarget": "typed_object",
+        "outputFormat": "class",
         "jsonSchema": {
             "type": "object",
             "x-title": "SnapshotUser",
@@ -49,10 +49,10 @@
     },
     "json-schema-array": {
         "dispatchMode": "fromJsonSchema",
-        "class": "Cognesy\\Dynamic\\Structure",
-        "returnedClass": "",
+        "schemaClass": "",
+        "targetClass": null,
         "schemaName": "custom_thing",
-        "returnTarget": "array",
+        "outputFormat": "array",
         "jsonSchema": {
             "type": "object",
             "name": "custom_thing",
@@ -72,10 +72,10 @@
     },
     "schema-object": {
         "dispatchMode": "fromSchema",
-        "class": "SnapshotUser",
-        "returnedClass": "SnapshotUser",
+        "schemaClass": "SnapshotUser",
+        "targetClass": "SnapshotUser",
         "schemaName": "SnapshotUser",
-        "returnTarget": "typed_object",
+        "outputFormat": "class",
         "jsonSchema": {
             "type": "object",
             "x-title": "SnapshotUser",
@@ -96,10 +96,10 @@
     },
     "json-schema-provider": {
         "dispatchMode": "fromJsonSchemaProvider",
-        "class": "Cognesy\\Instructor\\Extras\\Scalar\\Scalar",
-        "returnedClass": "Cognesy\\Instructor\\Extras\\Scalar\\Scalar",
+        "schemaClass": "Cognesy\\Instructor\\Extras\\Scalar\\Scalar",
+        "targetClass": "Cognesy\\Instructor\\Extras\\Scalar\\Scalar",
         "schemaName": "default_schema",
-        "returnTarget": "typed_object",
+        "outputFormat": "object",
         "jsonSchema": {
             "type": "object",
             "properties": {
@@ -117,10 +117,10 @@
     },
     "schema-provider": {
         "dispatchMode": "fromSchemaProvider",
-        "class": "Cognesy\\Instructor\\Extras\\Sequence\\Sequence",
-        "returnedClass": "Cognesy\\Instructor\\Extras\\Sequence\\Sequence",
+        "schemaClass": "Cognesy\\Instructor\\Extras\\Sequence\\Sequence",
+        "targetClass": "Cognesy\\Instructor\\Extras\\Sequence\\Sequence",
         "schemaName": "collectionOfSnapshotUser",
-        "returnTarget": "typed_object",
+        "outputFormat": "object",
         "jsonSchema": {
             "type": "object",
             "x-title": "collectionOfSnapshotUser",
@@ -156,10 +156,10 @@
     },
     "tool-selection-provider": {
         "dispatchMode": "fromJsonSchemaProvider",
-        "class": "SnapshotToolSelector",
-        "returnedClass": "",
+        "schemaClass": "",
+        "targetClass": null,
         "schemaName": "SnapshotUser",
-        "returnTarget": "array",
+        "outputFormat": "array",
         "jsonSchema": {
             "type": "object",
             "properties": {
@@ -170,110 +170,6 @@
             "required": [
                 "choice"
             ]
-        }
-    },
-    "empty-array-default": {
-        "dispatchMode": "fromClassString",
-        "class": "Cognesy\\Dynamic\\Structure",
-        "returnedClass": "Cognesy\\Dynamic\\Structure",
-        "schemaName": "Cognesy_Dynamic_Structure",
-        "returnTarget": "typed_object",
-        "jsonSchema": {
-            "type": "object",
-            "x-title": "Structure",
-            "properties": {
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "anyOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "integer"
-                            },
-                            {
-                                "type": "number"
-                            },
-                            {
-                                "type": "boolean"
-                            },
-                            {
-                                "type": "object"
-                            }
-                        ]
-                    },
-                    "description": "",
-                    "default": []
-                },
-                "schema": {
-                    "type": "object",
-                    "x-title": "schema",
-                    "properties": {
-                        "type": {
-                            "type": "object",
-                            "x-title": "type",
-                            "x-php-class": "Symfony\\Component\\TypeInfo\\Type",
-                            "additionalProperties": false
-                        },
-                        "name": {
-                            "type": "string",
-                            "default": ""
-                        },
-                        "description": {
-                            "type": "string",
-                            "default": ""
-                        },
-                        "enumValues": {
-                            "type": "array",
-                            "items": {
-                                "anyOf": [
-                                    {
-                                        "type": "string"
-                                    },
-                                    {
-                                        "type": "integer"
-                                    },
-                                    {
-                                        "type": "number"
-                                    },
-                                    {
-                                        "type": "boolean"
-                                    },
-                                    {
-                                        "type": "object"
-                                    }
-                                ]
-                            },
-                            "description": "",
-                            "nullable": true,
-                            "default": null
-                        },
-                        "nullable": {
-                            "type": "boolean",
-                            "default": false
-                        },
-                        "hasDefaultValue": {
-                            "type": "boolean",
-                            "default": false
-                        },
-                        "defaultValue": {
-                            "nullable": true,
-                            "default": null
-                        }
-                    },
-                    "required": [
-                        "type"
-                    ],
-                    "x-php-class": "Cognesy\\Schema\\Data\\Schema",
-                    "additionalProperties": false
-                }
-            },
-            "required": [
-                "schema"
-            ],
-            "x-php-class": "Cognesy\\Dynamic\\Structure",
-            "additionalProperties": false
         }
     }
 }

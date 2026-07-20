@@ -6,17 +6,14 @@ use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Builder\AgentBuilder;
 use Cognesy\Agents\Capability\Core\UseDriver;
 use Cognesy\Agents\Capability\Core\UseGuards;
-use Cognesy\Agents\Capability\Core\UseLLMConfig;
 use Cognesy\Agents\Capability\Core\UseTools;
 use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Agents\Enums\ExecutionStatus;
-use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
-use Cognesy\Polyglot\Inference\LLMProvider;
 
 /**
  * Executes a skill in an isolated subagent context (context: fork).
@@ -67,7 +64,7 @@ final readonly class SkillForkExecutor
             foreach ($finalState->errors() as $error) {
                 $errors[] = $error->getMessage();
             }
-            return "Skill fork execution failed: " . implode('; ', $errors);
+            return 'Skill fork execution failed: ' . implode('; ', $errors);
         }
 
         $response = trim($finalState->finalResponse()->toString());

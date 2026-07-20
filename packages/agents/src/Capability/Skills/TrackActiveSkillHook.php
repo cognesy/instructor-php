@@ -4,6 +4,7 @@ namespace Cognesy\Agents\Capability\Skills;
 
 use Cognesy\Agents\Hook\Contracts\HookInterface;
 use Cognesy\Agents\Hook\Data\HookContext;
+use Override;
 
 /**
  * Tracks the active skill's metadata in AgentState after load_skill completes.
@@ -16,9 +17,8 @@ final readonly class TrackActiveSkillHook implements HookInterface
 {
     public function __construct(private SkillLibrary $library) {}
 
-    #[\Override]
-    public function handle(HookContext $context): HookContext
-    {
+    #[Override]
+    public function handle(HookContext $context): HookContext {
         $toolExecution = $context->toolExecution();
         if ($toolExecution === null) {
             return $context;

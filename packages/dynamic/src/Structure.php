@@ -2,20 +2,20 @@
 
 namespace Cognesy\Dynamic;
 
-use Cognesy\Dynamic\Internal\StructureSchemaValidator;
 use Cognesy\Dynamic\Internal\StructureValueNormalizer;
-use Cognesy\Instructor\Transformation\Contracts\CanTransformSelf;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
 use Cognesy\Instructor\Validation\ValidationResult;
 use Cognesy\Schema\Contracts\CanProvideSchema;
 use Cognesy\Schema\Data\Schema;
 use Cognesy\Schema\SchemaFactory;
+use Cognesy\Schema\Validation\SchemaDataValidator;
 
-final class Structure implements CanProvideSchema, CanValidateSelf, CanTransformSelf
+final class Structure implements CanProvideSchema, CanDeserializeSelf, CanValidateSelf
 {
     /** @var array<string,mixed> */
     private array $data;
-    private readonly StructureSchemaValidator $validator;
+    private readonly SchemaDataValidator $validator;
     private readonly StructureValueNormalizer $normalizer;
 
     /** @param array<string,mixed> $data */
@@ -24,7 +24,7 @@ final class Structure implements CanProvideSchema, CanValidateSelf, CanTransform
         array $data = [],
     ) {
         $this->normalizer = new StructureValueNormalizer($schema);
-        $this->validator = new StructureSchemaValidator($schema);
+        $this->validator = new SchemaDataValidator($schema);
         $this->data = $this->normalizer->normalizeRecord($data);
     }
 
@@ -71,15 +71,6 @@ final class Structure implements CanProvideSchema, CanValidateSelf, CanTransform
     }
 
     /**
-     * Compatibility no-op. Runtime validation is schema-only.
-     *
-     * @param callable(self): (bool|ValidationResult) $validator
-     */
-    public function withValidation(callable $validator) : self {
-        return clone $this;
-    }
-
-    /**
      * @param array<string,mixed> $values
      * @return array<string,mixed>
      */
@@ -121,15 +112,6 @@ final class Structure implements CanProvideSchema, CanValidateSelf, CanTransform
 
     public function fromArray(array $data) : static {
         return $this->withData($data);
-    }
-
-    #[\Override]
-    public function transform() : mixed {
-        if (count($this->data) === 1) {
-            return array_values($this->data)[0];
-        }
-
-        return $this->toArray();
     }
 
     public function clone() : self {

@@ -5,6 +5,7 @@ namespace Cognesy\Agents\Capability\File;
 use Cognesy\Agents\Builder\Contracts\CanConfigureAgent;
 use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
 use Cognesy\Agents\Collections\Tools;
+use Override;
 
 final class UseFileTools implements CanProvideAgentCapability
 {
@@ -12,12 +13,12 @@ final class UseFileTools implements CanProvideAgentCapability
         private string $baseDir,
     ) {}
 
-    #[\Override]
+    #[Override]
     public static function capabilityName(): string {
         return 'use_file_tools';
     }
 
-    #[\Override]
+    #[Override]
     public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         $baseDir = $this->baseDir;
 

@@ -6,6 +6,7 @@ use Cognesy\Agents\Tool\Tools\SimpleTool;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
+use Override;
 
 /**
  * Tool for storing data in agent metadata.
@@ -25,7 +26,7 @@ final class MetadataWriteTool extends SimpleTool
         parent::__construct(new MetadataWriteToolDescriptor());
     }
 
-    #[\Override]
+    #[Override]
     public function __invoke(mixed ...$args): MetadataWriteResult {
         $key = (string) $this->arg($args, 'key', 0, '');
         $value = $this->arg($args, 'value', 1);
@@ -65,7 +66,7 @@ final class MetadataWriteTool extends SimpleTool
         );
     }
 
-    #[\Override]
+    #[Override]
     public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition {
         return \Cognesy\Polyglot\Inference\Data\ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
@@ -75,7 +76,7 @@ final class MetadataWriteTool extends SimpleTool
                     JsonSchema::string('key', 'Unique identifier for this data (e.g., "current_lead", "scraped_content")'),
                     JsonSchema::any('value', 'The data to store. Can be any JSON-serializable value: string, number, object, array.'),
                 ])
-                ->withRequiredProperties(['key', 'value'])
+                ->withRequiredProperties(['key', 'value']),
         )->toArray());
     }
 }

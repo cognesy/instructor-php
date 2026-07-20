@@ -55,16 +55,16 @@ it('throws exception for non-nullable values', function () {
     $deserializer = new SymfonyDeserializer();
     $invalidData = ['name' => 'Jason', 'age' => null];
     $class = Person::class;
-    $this->expectException(DeserializationException::class);
-    $deserializer->fromArray($invalidData, $class);
+    expect(fn() => $deserializer->fromArray($invalidData, $class))
+        ->toThrow(DeserializationException::class);
 });
 
 it('throws exception on wrong data type', function () {
     $deserializer = new SymfonyDeserializer();
     $invalidData = ['name' => 'Jason', 'age' => 'twenty-eight']; // age should be an integer
     $class = Person::class;
-    $this->expectException(DeserializationException::class);
-    $deserializer->fromArray($invalidData, $class);
+    expect(fn() => $deserializer->fromArray($invalidData, $class))
+        ->toThrow(DeserializationException::class);
 });
 
 ////////////////////////////////////////////////////////////////////////////////////////

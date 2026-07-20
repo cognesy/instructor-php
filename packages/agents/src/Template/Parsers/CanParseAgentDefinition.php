@@ -8,4 +8,3 @@ interface CanParseAgentDefinition
 {
     public function parse(mixed $data): AgentDefinition;
 }
-

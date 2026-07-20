@@ -6,24 +6,22 @@ use Cognesy\Agents\Tool\Tools\SimpleTool;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
 use InvalidArgumentException;
+use Override;
 
 final class TodoWriteTool extends SimpleTool
 {
     public const TOOL_NAME = 'todo_write';
 
-    public function __construct()
-    {
+    public function __construct() {
         parent::__construct(new TodoWriteToolDescriptor());
     }
 
-    public static function metadataKey(): string
-    {
+    public static function metadataKey(): string {
         return 'tasks';
     }
 
-    #[\Override]
-    public function __invoke(mixed ...$args): TodoWriteResult
-    {
+    #[Override]
+    public function __invoke(mixed ...$args): TodoWriteResult {
         $todos = $this->extractTodos($args);
         $taskList = $this->buildTaskList($todos);
 
@@ -35,9 +33,8 @@ final class TodoWriteTool extends SimpleTool
         );
     }
 
-    #[\Override]
-    public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition
-    {
+    #[Override]
+    public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition {
         return \Cognesy\Polyglot\Inference\Data\ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),
@@ -54,13 +51,12 @@ final class TodoWriteTool extends SimpleTool
                             ->withRequiredProperties(['content', 'status', 'activeForm']),
                     ),
                 ])
-                ->withRequiredProperties(['todos'])
+                ->withRequiredProperties(['todos']),
         )->toArray());
     }
 
     /** @return array<int, array<string, mixed>> */
-    private function extractTodos(array $args): array
-    {
+    private function extractTodos(array $args): array {
         $todos = $this->arg($args, 'todos', 0, []);
 
         if ($todos === null) {
@@ -75,8 +71,7 @@ final class TodoWriteTool extends SimpleTool
     }
 
     /** @param array<int, array<string, mixed>> $todos */
-    private function buildTaskList(array $todos): TaskList
-    {
+    private function buildTaskList(array $todos): TaskList {
         if ($todos === []) {
             return TaskList::empty();
         }
@@ -94,8 +89,7 @@ final class TodoWriteTool extends SimpleTool
     }
 
     /** @param array<string, mixed> $data */
-    private function taskFromArray(array $data): Task
-    {
+    private function taskFromArray(array $data): Task {
         return Task::fromArray($data);
     }
 }

@@ -3,6 +3,7 @@
 namespace Cognesy\Agents\Events;
 
 use DateTimeImmutable;
+use Override;
 use Psr\Log\LogLevel;
 
 /**
@@ -35,7 +36,7 @@ final class ValidationFailed extends AgentEvent
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public function __toString(): string {
         $parentInfo = $this->parentAgentId ? sprintf(' [parent=%s]', substr($this->parentAgentId, 0, 8)) : '';
         $errorCount = count($this->errors);
@@ -49,7 +50,7 @@ final class ValidationFailed extends AgentEvent
             substr($this->agentId, 0, 8),
             $parentInfo,
             $this->validationType,
-            $errorSummary
+            $errorSummary,
         );
     }
 }

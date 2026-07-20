@@ -9,6 +9,7 @@ use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\LLMProvider;
+use Override;
 
 final readonly class UseReActConfig implements CanProvideAgentCapability
 {
@@ -25,12 +26,12 @@ final readonly class UseReActConfig implements CanProvideAgentCapability
         private OutputMode $mode = OutputMode::Json,
     ) {}
 
-    #[\Override]
+    #[Override]
     public static function capabilityName(): string {
         return 'use_react_config';
     }
 
-    #[\Override]
+    #[Override]
     public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         $llm = $this->llm ?? LLMProvider::new();
 

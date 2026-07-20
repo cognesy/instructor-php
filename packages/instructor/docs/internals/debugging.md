@@ -99,12 +99,12 @@ For targeted debugging, listen to specific event types:
 ```php
 use Cognesy\Instructor\Events\Response\ResponseValidationFailed;
 use Cognesy\Instructor\Events\Response\ResponseDeserializationFailed;
-use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
+use Cognesy\Instructor\Events\Attempt\ResponseRetryScheduled;
 
 $runtime = StructuredOutputRuntime::fromDefaults()
     ->onEvent(ResponseValidationFailed::class, fn($e) => dump('Validation failed:', $e->data))
     ->onEvent(ResponseDeserializationFailed::class, fn($e) => dump('Deserialization failed:', $e->data))
-    ->onEvent(NewValidationRecoveryAttempt::class, fn($e) => dump('Retrying...', $e->data));
+    ->onEvent(ResponseRetryScheduled::class, fn($e) => dump('Retrying...', $e->data));
 ```
 
 See the [Events](events.md) page for the full list of available event classes.

@@ -1135,6 +1135,12 @@ class InstructorServiceProvider extends ServiceProvider
             $data['maxRetries'] = (int) $maxRetries;
         }
 
+        $retryPromptClass = $this->configGet($app, 'instructor.extraction.retry_prompt_class');
+        if (is_string($retryPromptClass) && $retryPromptClass !== '') {
+            $data['retryPromptClass'] = $retryPromptClass;
+        }
+
+        // @deprecated 2.5 Legacy RequestMaterializer setting; remove in 2.6.
         $retryPrompt = $this->configGet($app, 'instructor.extraction.retry_prompt');
         if (is_string($retryPrompt) && $retryPrompt !== '') {
             $data['retryPrompt'] = $retryPrompt;

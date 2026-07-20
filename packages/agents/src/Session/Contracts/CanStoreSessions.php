@@ -9,9 +9,14 @@ use Cognesy\Agents\Session\Data\SessionId;
 interface CanStoreSessions
 {
     public function create(AgentSession $session): AgentSession;
+
     public function save(AgentSession $session): AgentSession;
+
     public function load(SessionId $sessionId): ?AgentSession;
+
     public function exists(SessionId $sessionId): bool;
+
     public function delete(SessionId $sessionId): void;
+
     public function listHeaders(): SessionInfoList;
 }

@@ -22,6 +22,7 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Logging\EventLog;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
+use Override;
 
 /** @internal */
 final readonly class AgentConfigurator implements CanConfigureAgent
@@ -89,67 +90,67 @@ final readonly class AgentConfigurator implements CanConfigureAgent
 
     // TOOLS ////////////////////////////////////////////////////////
 
-    #[\Override]
+    #[Override]
     public function tools(): Tools {
         return $this->tools;
     }
 
-    #[\Override]
+    #[Override]
     public function withTools(Tools $tools): self {
         return $this->with(tools: $tools);
     }
 
     // CONTEXT COMPILER ////////////////////////////////////////////////////////
 
-    #[\Override]
+    #[Override]
     public function contextCompiler(): CanCompileMessages {
         return $this->contextCompiler;
     }
 
-    #[\Override]
+    #[Override]
     public function withContextCompiler(CanCompileMessages $compiler): self {
         return $this->with(contextCompiler: $compiler);
     }
 
     // TOOL USE DRIVER ////////////////////////////////////////////////////////
 
-    #[\Override]
+    #[Override]
     public function toolUseDriver(): CanUseTools {
         return $this->toolUseDriver;
     }
 
-    #[\Override]
+    #[Override]
     public function withToolUseDriver(CanUseTools $driver): self {
         return $this->with(toolUseDriver: $driver);
     }
 
     // HOOKS ////////////////////////////////////////////////////////
 
-    #[\Override]
+    #[Override]
     public function hooks(): HookStack {
         return $this->hooks;
     }
 
-    #[\Override]
+    #[Override]
     public function withHooks(HookStack $hooks): self {
         return $this->with(hooks: $hooks);
     }
 
     // DEFERRED TOOLS ////////////////////////////////////////////////////////
 
-    #[\Override]
+    #[Override]
     public function deferredTools(): DeferredToolProviders {
         return $this->deferredTools;
     }
 
-    #[\Override]
+    #[Override]
     public function withDeferredTools(DeferredToolProviders $deferredTools): self {
         return $this->with(deferredTools: $deferredTools);
     }
 
     // EVENTS ////////////////////////////////////////////////////////
 
-    #[\Override]
+    #[Override]
     public function events(): CanHandleEvents {
         return $this->events;
     }
@@ -163,7 +164,7 @@ final readonly class AgentConfigurator implements CanConfigureAgent
         ?HookStack $hooks = null,
         ?DeferredToolProviders $deferredTools = null,
         ?CanHandleEvents $events = null,
-    ) : self {
+    ): self {
         return new self(
             tools: $tools ?? $this->tools,
             contextCompiler: $contextCompiler ?? $this->contextCompiler,
@@ -185,7 +186,7 @@ final readonly class AgentConfigurator implements CanConfigureAgent
         CanUseTools $driver,
         Tools $tools,
         ToolExecutor $executor,
-    ) : CanUseTools {
+    ): CanUseTools {
         return match (true) {
             $driver instanceof CanAcceptToolRuntime => $driver->withToolRuntime($tools, $executor),
             default => $driver,

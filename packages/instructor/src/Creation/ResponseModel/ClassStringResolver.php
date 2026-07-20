@@ -14,13 +14,11 @@ final readonly class ClassStringResolver
     public function resolve(string $class, ?OutputFormat $outputFormat): ResponseModel {
         $this->support->events()->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromClassString']));
 
-        $instance = $this->support->makeInstance($class);
         $schema = $this->support->schemaRenderer()->schemaFactory()->schema($class);
         $rendering = $this->support->renderSchema($schema);
 
         return $this->support->assemble(
-            class: $class,
-            instance: $instance,
+            instance: null,
             schema: $schema,
             jsonSchema: $rendering->jsonSchema(),
             schemaName: $this->support->schemaName($class),

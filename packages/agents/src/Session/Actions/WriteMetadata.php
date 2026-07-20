@@ -4,6 +4,7 @@ namespace Cognesy\Agents\Session\Actions;
 
 use Cognesy\Agents\Session\Contracts\CanExecuteSessionAction;
 use Cognesy\Agents\Session\Data\AgentSession;
+use Override;
 
 final readonly class WriteMetadata implements CanExecuteSessionAction
 {
@@ -12,7 +13,7 @@ final readonly class WriteMetadata implements CanExecuteSessionAction
         private mixed $value,
     ) {}
 
-    #[\Override]
+    #[Override]
     public function executeOn(AgentSession $session): AgentSession {
         return $session->withState($session->state()->withMetadata($this->key, $this->value));
     }

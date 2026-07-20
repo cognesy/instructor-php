@@ -7,7 +7,7 @@ use Cognesy\Utils\Result\Result;
 
 interface ToolInterface
 {
-    public function use(mixed ...$args) : Result;
+    public function use(mixed ...$args): Result;
 
     public function toToolSchema(): ToolDefinition;
 

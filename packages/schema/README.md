@@ -10,6 +10,7 @@
 - `Cognesy\Schema\TypeInfo` - type normalization and helpers based on Symfony TypeInfo.
 - `Cognesy\Schema\JsonSchemaRenderer` - render `Schema` to JSON Schema.
 - `Cognesy\Schema\JsonSchemaParser` - parse JSON Schema into `ObjectSchema`.
+- `Cognesy\Schema\Validation\SchemaDataValidator` - validate runtime data against a `Schema`.
 
 ### Quick start
 
@@ -71,6 +72,30 @@ use Cognesy\Schema\JsonSchemaParser;
 $parser = new JsonSchemaParser();
 $objectSchema = $parser->fromJsonSchema($jsonSchemaArray);
 ```
+
+### Validate runtime data
+
+```php
+<?php
+use Cognesy\Schema\SchemaBuilder;
+use Cognesy\Schema\Validation\SchemaDataValidator;
+
+$schema = SchemaBuilder::define('issue')
+    ->option('status', ['open', 'closed'])
+    ->int('priority')
+    ->schema();
+
+$result = (new SchemaDataValidator($schema))->validate([
+    'status' => 'open',
+    'priority' => 2,
+]);
+
+assert($result->isValid());
+```
+
+The validator covers required and nullable fields, primitive type mismatches, nested
+objects and collections, and scalar or backed-enum values. It reports nested field and
+index paths. It intentionally does not claim full JSON Schema keyword validation.
 
 ### Tests
 

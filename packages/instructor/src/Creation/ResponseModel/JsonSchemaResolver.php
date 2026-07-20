@@ -2,7 +2,6 @@
 
 namespace Cognesy\Instructor\Creation\ResponseModel;
 
-use Cognesy\Dynamic\Structure;
 use Cognesy\Instructor\Data\OutputFormat;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\ResponseModel\ResponseModelBuildModeSelected;
@@ -10,7 +9,7 @@ use Cognesy\Schema\SchemaFactory;
 
 /**
  * Resolves an array treated as a JSON Schema document. `x-php-class` selects
- * the target class; anything Structure-like materializes a dynamic Structure.
+ * the default target class; a class-less schema defaults to an array.
  */
 final readonly class JsonSchemaResolver
 {
@@ -19,13 +18,18 @@ final readonly class JsonSchemaResolver
     public function resolve(array $jsonSchema, ?OutputFormat $outputFormat): ResponseModel {
         $this->support->events()->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromJsonSchema']));
 
-        $rawClass = $jsonSchema['x-php-class'] ?? Structure::class;
+        $rawClass = $jsonSchema['x-php-class'] ?? '';
         $class = match (true) {
             is_string($rawClass) && $rawClass !== '' => ltrim($rawClass, '\\'),
-            default => Structure::class,
+            default => '',
         };
 
         $schemaName = $this->support->schemaName($jsonSchema);
+        if ($outputFormat === null && $class !== '' && !class_exists($class)) {
+            throw new \InvalidArgumentException(
+                "Output class does not exist for schema {$schemaName}: {$class}",
+            );
+        }
         $schemaDescription = $this->support->schemaDescription($jsonSchema);
         $schema = SchemaFactory::withMetadata(
             $this->support->schemaRenderer()->schemaFromJsonSchema($jsonSchema),
@@ -33,16 +37,8 @@ final readonly class JsonSchemaResolver
             description: $schemaDescription,
         );
 
-        $isStructureSchema = match (true) {
-            $class === \stdClass::class => true,
-            $class === Structure::class => true,
-            is_subclass_of($class, Structure::class) => true,
-            default => false,
-        };
-
         return $this->support->assemble(
-            class: $isStructureSchema ? Structure::class : $class,
-            instance: $isStructureSchema ? Structure::fromSchema($schema) : $this->support->makeInstance($class),
+            instance: null,
             schema: $schema,
             jsonSchema: $jsonSchema,
             schemaName: $schemaName,

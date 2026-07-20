@@ -24,4 +24,3 @@ final class SessionActionExecuted extends Event
         ]);
     }
 }
-

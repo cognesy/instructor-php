@@ -3,6 +3,7 @@
 namespace Cognesy\Agents\Events;
 
 use DateTimeImmutable;
+use Override;
 
 /**
  * Dispatched when a parent agent is about to spawn a subagent.
@@ -36,14 +37,14 @@ final class SubagentSpawning extends AgentEvent
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public function __toString(): string {
         return sprintf(
             'Agent [%s] spawning subagent "%s" [depth=%d/%d]',
             substr($this->parentAgentId, 0, 8),
             $this->subagentName,
             $this->depth + 1,
-            $this->maxDepth
+            $this->maxDepth,
         );
     }
 }

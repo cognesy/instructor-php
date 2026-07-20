@@ -14,7 +14,7 @@ extension-architecture stage.
 ## Context
 
 InstructorPHP already has a sophisticated quality system documented in
-[QUALITY.md](/Users/ddebowczyk/projects/instructor-php/QUALITY.md).
+[QUALITY.md](../../../QUALITY.md).
 
 That system includes both:
 

@@ -32,7 +32,7 @@ final class StructureValueNormalizer
         $normalized = [];
         foreach ($this->schema->getPropertySchemas() as $name => $propertySchema) {
             if (array_key_exists($name, $values)) {
-                $normalized[$name] = $this->normalizeValue($propertySchema, $values[$name]);
+                $normalized[$name] = $this->normalizeValue($propertySchema, $values[$name], $name);
                 continue;
             }
 
@@ -45,10 +45,10 @@ final class StructureValueNormalizer
     }
 
     public function normalizeFieldValue(string $field, mixed $value) : mixed {
-        return $this->normalizeValue($this->schema->getPropertySchema($field), $value);
+        return $this->normalizeValue($this->schema->getPropertySchema($field), $value, $field);
     }
 
-    private function normalizeValue(Schema $schema, mixed $value) : mixed {
+    private function normalizeValue(Schema $schema, mixed $value, string $path) : mixed {
         if ($value === null) {
             return null;
         }
@@ -63,8 +63,8 @@ final class StructureValueNormalizer
             }
 
             $normalized = [];
-            foreach ($value as $item) {
-                $normalized[] = $this->normalizeValue($schema->nestedItemSchema, $item);
+            foreach ($value as $index => $item) {
+                $normalized[] = $this->normalizeValue($schema->nestedItemSchema, $item, $path . '.' . $index);
             }
             return $normalized;
         }
@@ -85,7 +85,7 @@ final class StructureValueNormalizer
             $normalized = [];
             foreach ($schema->getPropertySchemas() as $name => $propertySchema) {
                 if (array_key_exists($name, $value)) {
-                    $normalized[$name] = $this->normalizeValue($propertySchema, $value[$name]);
+                    $normalized[$name] = $this->normalizeValue($propertySchema, $value[$name], $path . '.' . $name);
                     continue;
                 }
 
@@ -99,8 +99,11 @@ final class StructureValueNormalizer
                 if ($className !== null && $className !== Structure::class && $className !== \stdClass::class && class_exists($className)) {
                     try {
                         return $this->deserializer->fromArray($normalized, $className);
-                    } catch (\Throwable) {
-                        return $normalized;
+                    } catch (\Throwable $error) {
+                        throw new \UnexpectedValueException(
+                            "Failed to hydrate {$path} as {$className}: {$error->getMessage()}",
+                            previous: $error,
+                        );
                     }
                 }
             }

@@ -6,6 +6,7 @@ use ArrayIterator;
 use Cognesy\Agents\Data\AgentStep;
 use Countable;
 use IteratorAggregate;
+use Override;
 use Traversable;
 
 /**
@@ -25,7 +26,7 @@ final readonly class AgentSteps implements Countable, IteratorAggregate
     // FACTORY METHODS /////////////////////////////////////////////
 
     public static function fromArray(array $data): self {
-        $steps = array_map(fn($stepData) => AgentStep::fromArray($stepData), $data);
+        $steps = array_map(fn ($stepData) => AgentStep::fromArray($stepData), $data);
         return new self(...$steps);
     }
 
@@ -54,12 +55,12 @@ final readonly class AgentSteps implements Countable, IteratorAggregate
     // ITERATORS ///////////////////////////////////////////////////
 
     /** @return Traversable<int, AgentStep> */
-    #[\Override]
+    #[Override]
     public function getIterator(): Traversable {
         return new ArrayIterator($this->steps);
     }
 
-    #[\Override]
+    #[Override]
     public function count(): int {
         return count($this->steps);
     }
@@ -84,6 +85,6 @@ final readonly class AgentSteps implements Countable, IteratorAggregate
     }
 
     public function toArray(): array {
-        return array_map(fn(AgentStep $step) => $step->toArray(), $this->all());
+        return array_map(fn (AgentStep $step) => $step->toArray(), $this->all());
     }
 }

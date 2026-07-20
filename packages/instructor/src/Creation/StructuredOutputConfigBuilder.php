@@ -19,12 +19,12 @@ class StructuredOutputConfigBuilder
     private ?string $schemaDescription;
     private ?string $toolName;
     private ?string $toolDescription;
-    private ?string $defaultOutputClass;
     private ?array $chatStructure;
     private ?bool $defaultToStdClass = null;
     private ?string $deserializationErrorPromptClass = null;
     private ?bool $throwOnTransformationFailure = null;
     private ?ResponseCachePolicy $responseCachePolicy = null;
+    private ?int $streamMaterializationInterval = null;
 
     private ?StructuredOutputConfig $explicitConfig = null;
 
@@ -41,8 +41,8 @@ class StructuredOutputConfigBuilder
         ?string           $toolName = null,
         ?string           $toolDescription = null,
         ?array            $chatStructure = null,
-        ?string           $defaultOutputClass = null,
         ?string           $deserializationErrorPromptClass = null,
+        ?int              $streamMaterializationInterval = null,
     ) {
         $this->outputMode = $outputMode;
         $this->useObjectReferences = $useObjectReferences;
@@ -55,9 +55,9 @@ class StructuredOutputConfigBuilder
         $this->schemaDescription = $schemaDescription;
         $this->toolName = $toolName;
         $this->toolDescription = $toolDescription;
-        $this->chatStructure = $chatStructure ?? [];
-        $this->defaultOutputClass = $defaultOutputClass;
+        $this->chatStructure = $chatStructure;
         $this->deserializationErrorPromptClass = $deserializationErrorPromptClass;
+        $this->streamMaterializationInterval = $streamMaterializationInterval;
     }
 
     public function withOutputMode(?OutputMode $outputMode) : static {
@@ -95,16 +95,19 @@ class StructuredOutputConfigBuilder
         return $this;
     }
 
+    /** @deprecated 2.5 Legacy RequestMaterializer setting; remove with instructor-cxxt in 2.6. */
     public function withRetryPrompt(string $retryPrompt) : static {
         $this->retryPrompt = $retryPrompt;
         return $this;
     }
 
+    /** @deprecated 2.5 Legacy RequestMaterializer setting; remove with instructor-cxxt in 2.6. */
     public function withModePrompt(OutputMode $mode, string $prompt) : static {
         $this->modePrompts[$mode->value] = $prompt;
         return $this;
     }
 
+    /** @deprecated 2.5 Legacy RequestMaterializer setting; remove with instructor-cxxt in 2.6. */
     public function withModePrompts(array $modePrompts) : static {
         $this->modePrompts = $modePrompts;
         return $this;
@@ -125,16 +128,13 @@ class StructuredOutputConfigBuilder
         return $this;
     }
 
+    /** @deprecated 2.5 Legacy RequestMaterializer setting; remove with instructor-cxxt in 2.6. */
     public function withChatStructure(array $chatStructure) : static {
         $this->chatStructure = $chatStructure;
         return $this;
     }
 
-    public function withDefaultOutputClass(string $defaultOutputClass) : static {
-        $this->defaultOutputClass = $defaultOutputClass;
-        return $this;
-    }
-
+    /** @deprecated 2.5 Use per-request intoStdClass(); remove in 3.0. */
     public function withDefaultToStdClass(bool $defaultToStdClass) : self {
         $this->defaultToStdClass = $defaultToStdClass;
         return $this;
@@ -145,6 +145,10 @@ class StructuredOutputConfigBuilder
         return $this;
     }
 
+    /**
+     * @deprecated 2.5 Transformation failures always fail the attempt. This
+     *             setter is retained for configuration compatibility only.
+     */
     public function withThrowOnTransformationFailure(bool $throwOnTransformationFailure) : self {
         $this->throwOnTransformationFailure = $throwOnTransformationFailure;
         return $this;
@@ -152,6 +156,11 @@ class StructuredOutputConfigBuilder
 
     public function withResponseCachePolicy(ResponseCachePolicy $responseCachePolicy): self {
         $this->responseCachePolicy = $responseCachePolicy;
+        return $this;
+    }
+
+    public function withStreamMaterializationInterval(int $streamMaterializationInterval): self {
+        $this->streamMaterializationInterval = $streamMaterializationInterval;
         return $this;
     }
 
@@ -167,9 +176,9 @@ class StructuredOutputConfigBuilder
         ?string $toolName = null,
         ?string $toolDescription = null,
         ?array $chatStructure = null,
-        ?string $defaultOutputClass = null,
         ?ResponseCachePolicy $responseCachePolicy = null,
         ?string $deserializationErrorPromptClass = null,
+        ?int $streamMaterializationInterval = null,
     ) : self {
         $this->outputMode = $outputMode ?? $this->outputMode;
         $this->useObjectReferences = $useObjectReferences ?? $this->useObjectReferences;
@@ -182,9 +191,9 @@ class StructuredOutputConfigBuilder
         $this->toolName = $toolName ?? $this->toolName;
         $this->toolDescription = $toolDescription ?? $this->toolDescription;
         $this->chatStructure = $chatStructure ?? $this->chatStructure;
-        $this->defaultOutputClass = $defaultOutputClass ?? $this->defaultOutputClass;
         $this->responseCachePolicy = $responseCachePolicy ?? $this->responseCachePolicy;
         $this->deserializationErrorPromptClass = $deserializationErrorPromptClass ?? $this->deserializationErrorPromptClass;
+        $this->streamMaterializationInterval = $streamMaterializationInterval ?? $this->streamMaterializationInterval;
         return $this;
     }
 
@@ -198,7 +207,6 @@ class StructuredOutputConfigBuilder
 
         $config = new StructuredOutputConfig(
             outputMode: $this->outputMode ?? $defaults->outputMode(),
-            outputClass: $this->defaultOutputClass ?? $defaults->outputClass(),
             useObjectReferences: $this->useObjectReferences ?? $defaults->useObjectReferences(),
             maxRetries: $this->maxRetries ?? $defaults->maxRetries(),
             schemaName: $this->schemaName ?? $defaults->schemaName(),
@@ -209,11 +217,12 @@ class StructuredOutputConfigBuilder
             modePromptClasses: array_merge($defaults->modePromptClasses(), $this->modePromptClasses ?? []),
             retryPrompt: $this->retryPrompt ?? $defaults->retryPrompt(),
             retryPromptClass: $this->retryPromptClass ?? $defaults->retryPromptClass(),
-            chatStructure: array_merge($defaults->chatStructure(), $this->chatStructure ?? []),
+            chatStructure: $this->chatStructure ?? $defaults->chatStructure(),
             defaultToStdClass: $this->defaultToStdClass ?? $defaults->defaultToStdClass(),
             deserializationErrorPromptClass: $this->deserializationErrorPromptClass ?? $defaults->deserializationErrorPromptClass(),
             throwOnTransformationFailure: $this->throwOnTransformationFailure ?? $defaults->throwOnTransformationFailure(),
             responseCachePolicy: $this->responseCachePolicy ?? $defaults->responseCachePolicy(),
+            streamMaterializationInterval: $this->streamMaterializationInterval ?? $defaults->streamMaterializationInterval(),
         );
         return $config;
     }

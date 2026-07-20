@@ -8,10 +8,10 @@ use Cognesy\Instructor\Core\StructuredOutputExecutionSession;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputResponse;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
+use Cognesy\Instructor\Exceptions\UnexpectedStructuredOutputTypeException;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Utils\Json\Json;
-use Exception;
 
 /**
  * Public lazy handle for one structured-output operation.
@@ -114,12 +114,12 @@ class PendingStructuredOutput
      * Returns the result as a boolean.
      *
      * @return bool
-     * @throws Exception
+     * @throws UnexpectedStructuredOutputTypeException
      */
     public function getBoolean() : bool {
         $result = $this->get();
         if (!is_bool($result)) {
-            throw new Exception('Result is not a boolean: ' . gettype($result));
+            throw new UnexpectedStructuredOutputTypeException('to be bool', $result);
         }
         return $result;
     }
@@ -128,12 +128,12 @@ class PendingStructuredOutput
      * Returns the result as an integer.
      *
      * @return int
-     * @throws Exception
+     * @throws UnexpectedStructuredOutputTypeException
      */
     public function getInt() : int {
         $result = $this->get();
         if (!is_int($result)) {
-            throw new Exception('Result is not an integer: ' . gettype($result));
+            throw new UnexpectedStructuredOutputTypeException('to be int', $result);
         }
         return $result;
     }
@@ -142,12 +142,12 @@ class PendingStructuredOutput
      * Returns the result as a float.
      *
      * @return float
-     * @throws Exception
+     * @throws UnexpectedStructuredOutputTypeException
      */
     public function getFloat() : float {
         $result = $this->get();
         if (!is_float($result)) {
-            throw new Exception('Result is not a float: ' . gettype($result));
+            throw new UnexpectedStructuredOutputTypeException('to be float', $result);
         }
         return $result;
     }
@@ -156,12 +156,12 @@ class PendingStructuredOutput
      * Returns the result as a string.
      *
      * @return string
-     * @throws Exception
+     * @throws UnexpectedStructuredOutputTypeException
      */
     public function getString() : string {
         $result = $this->get();
         if (!is_string($result)) {
-            throw new Exception('Result is not a string: ' . gettype($result));
+            throw new UnexpectedStructuredOutputTypeException('to be string', $result);
         }
         return $result;
     }
@@ -170,12 +170,12 @@ class PendingStructuredOutput
      * Returns the result as an array.
      *
      * @return array
-     * @throws Exception
+     * @throws UnexpectedStructuredOutputTypeException
      */
     public function getArray() : array {
         $result = $this->get();
         if (!is_array($result)) {
-            throw new Exception('Result is not an array: ' . gettype($result));
+            throw new UnexpectedStructuredOutputTypeException('to be array', $result);
         }
         return $result;
     }
@@ -184,12 +184,12 @@ class PendingStructuredOutput
      * Returns the result as an object.
      *
      * @return object
-     * @throws Exception
+     * @throws UnexpectedStructuredOutputTypeException
      */
     public function getObject() : object {
         $result = $this->get();
         if (!is_object($result)) {
-            throw new Exception('Result is not an object: ' . gettype($result));
+            throw new UnexpectedStructuredOutputTypeException('to be object', $result);
         }
         return $result;
     }
@@ -201,15 +201,15 @@ class PendingStructuredOutput
      * @param class-string<T> $class The class name of the returned object
      * @return T
      * @psalm-return T
-     * @throws Exception
+     * @throws UnexpectedStructuredOutputTypeException
      */
     public function getInstanceOf(string $class) : object {
         $result = $this->get();
         if (!is_object($result)) {
-            throw new Exception('Result is not an object: ' . gettype($result));
+            throw new UnexpectedStructuredOutputTypeException('to be an instance of ' . $class, $result);
         }
         if (!is_a($result, $class)) {
-            throw new Exception('Cannot return type `' . gettype($result) . '` as an instance of: ' . $class);
+            throw new UnexpectedStructuredOutputTypeException('to be an instance of ' . $class, $result);
         }
         return $result;
     }

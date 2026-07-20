@@ -11,6 +11,9 @@ use Cognesy\Agents\Session\Exceptions\InvalidSessionFileException;
 use Cognesy\Agents\Session\Exceptions\SessionConflictException;
 use Cognesy\Agents\Session\Exceptions\SessionNotFoundException;
 use DateTimeImmutable;
+use Override;
+use RuntimeException;
+use Throwable;
 
 final class FileSessionStore implements CanStoreSessions
 {
@@ -18,13 +21,12 @@ final class FileSessionStore implements CanStoreSessions
         private readonly string $directory,
     ) {
         if (!is_dir($this->directory) && !mkdir($this->directory, 0755, true) && !is_dir($this->directory)) {
-            throw new \RuntimeException("Failed to create session store directory: {$this->directory}");
+            throw new RuntimeException("Failed to create session store directory: {$this->directory}");
         }
     }
 
-    #[\Override]
-    public function create(AgentSession $session): AgentSession
-    {
+    #[Override]
+    public function create(AgentSession $session): AgentSession {
         $sessionId = $session->sessionId();
         $id = $sessionId->value;
         $filePath = $this->filePath($sessionId);
@@ -45,9 +47,8 @@ final class FileSessionStore implements CanStoreSessions
         });
     }
 
-    #[\Override]
-    public function save(AgentSession $session): AgentSession
-    {
+    #[Override]
+    public function save(AgentSession $session): AgentSession {
         $sessionId = $session->sessionId();
         $id = $sessionId->value;
         $filePath = $this->filePath($sessionId);
@@ -70,9 +71,8 @@ final class FileSessionStore implements CanStoreSessions
         });
     }
 
-    #[\Override]
-    public function load(SessionId $sessionId): ?AgentSession
-    {
+    #[Override]
+    public function load(SessionId $sessionId): ?AgentSession {
         $id = $sessionId->value;
         $filePath = $this->filePath($sessionId);
         if (!file_exists($filePath)) {
@@ -82,15 +82,13 @@ final class FileSessionStore implements CanStoreSessions
         return $this->deserializeSession($filePath, $data);
     }
 
-    #[\Override]
-    public function exists(SessionId $sessionId): bool
-    {
+    #[Override]
+    public function exists(SessionId $sessionId): bool {
         return file_exists($this->filePath($sessionId));
     }
 
-    #[\Override]
-    public function delete(SessionId $sessionId): void
-    {
+    #[Override]
+    public function delete(SessionId $sessionId): void {
         $id = $sessionId->value;
         $filePath = $this->filePath($sessionId);
         if (file_exists($filePath)) {
@@ -102,9 +100,8 @@ final class FileSessionStore implements CanStoreSessions
         }
     }
 
-    #[\Override]
-    public function listHeaders(): SessionInfoList
-    {
+    #[Override]
+    public function listHeaders(): SessionInfoList {
         $headers = [];
         $pattern = $this->directory . '/*.json';
         $files = glob($pattern) ?: [];
@@ -158,7 +155,7 @@ final class FileSessionStore implements CanStoreSessions
         $this->validateSessionData($filePath, $data);
         try {
             return AgentSession::fromArray($data);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             throw new InvalidSessionFileException($filePath, 'Deserialization failed: ' . $e->getMessage(), $e);
         }
     }

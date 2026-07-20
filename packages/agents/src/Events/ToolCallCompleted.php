@@ -3,6 +3,7 @@
 namespace Cognesy\Agents\Events;
 
 use DateTimeImmutable;
+use Override;
 use Psr\Log\LogLevel;
 
 /**
@@ -42,7 +43,7 @@ final class ToolCallCompleted extends AgentEvent
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public function __toString(): string {
         $status = $this->success ? 'succeeded' : 'failed';
         $error = $this->error ? " ({$this->error})" : '';
@@ -52,7 +53,7 @@ final class ToolCallCompleted extends AgentEvent
             $status,
             $this->tool,
             $this->getDurationMs(),
-            $error
+            $error,
         );
     }
 

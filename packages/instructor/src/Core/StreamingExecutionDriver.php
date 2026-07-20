@@ -27,14 +27,14 @@ final class StreamingExecutionDriver implements CanEmitStreamingUpdates
     private ExecutionLoop $loop;
     private ?Iterator $stream = null;
     private ?InferenceResponse $finalInference = null;
-    private mixed $finalValue = null;
+    private mixed $finalMaterializationInput = null;
     private readonly AttemptProcessor $attemptProcessor;
     private EmissionFingerprint $fingerprint;
 
     public function __construct(
         StructuredOutputExecution $execution,
         private readonly InferenceProvider $inferenceProvider,
-        private readonly ObjectHydrator $hydrator,
+        private readonly ResponseMaterializer $materializer,
         CanGenerateResponse $responseGenerator,
         CanDetermineRetry $retryPolicy,
         private readonly CanHandleEvents $events,
@@ -44,6 +44,7 @@ final class StreamingExecutionDriver implements CanEmitStreamingUpdates
         $this->attemptProcessor = new AttemptProcessor(
             responseGenerator: $responseGenerator,
             retryPolicy: $retryPolicy,
+            events: $events,
         );
     }
 
@@ -81,7 +82,7 @@ final class StreamingExecutionDriver implements CanEmitStreamingUpdates
         $response = $currentState->partialResponse();
         // Capture finalization data before next() mutates the shared state object
         $this->finalInference = $currentState->finalInferenceResponse();
-        $this->finalValue = $currentState->value();
+        $this->finalMaterializationInput = $currentState->materializationInput();
         $this->stream->next();
 
         if (!$this->stream->valid()) {
@@ -124,7 +125,7 @@ final class StreamingExecutionDriver implements CanEmitStreamingUpdates
             ? $aggregateStream->getIterator()
             : $aggregateStream;
         $this->finalInference = null;
-        $this->finalValue = null;
+        $this->finalMaterializationInput = null;
         $this->fingerprint = EmissionFingerprint::fresh();
     }
 
@@ -132,7 +133,7 @@ final class StreamingExecutionDriver implements CanEmitStreamingUpdates
         $result = $this->attemptProcessor->process(
             execution: $loop->execution(),
             inferenceResponse: $this->finalInference ?? new InferenceResponse(),
-            prebuiltValue: $this->finalValue,
+            materializationInput: $this->finalMaterializationInput,
         );
         $loop->applyAttemptResult($result);
         $this->stream = null;
@@ -145,7 +146,7 @@ final class StreamingExecutionDriver implements CanEmitStreamingUpdates
     private function resetAttemptRuntime(): void {
         $this->stream = null;
         $this->finalInference = null;
-        $this->finalValue = null;
+        $this->finalMaterializationInput = null;
         $this->fingerprint = EmissionFingerprint::fresh();
     }
 
@@ -161,9 +162,10 @@ final class StreamingExecutionDriver implements CanEmitStreamingUpdates
         $stages = [
             new AccumulatePartialResponses(
                 mode: $mode,
-                hydrator: $this->hydrator,
+                materializer: $this->materializer,
                 responseModel: $responseModel,
                 materializationInterval: $responseModel->config()->streamMaterializationInterval(),
+                events: $this->events,
             ),
             new DispatchStreamingEvents(
                 events: $this->events,

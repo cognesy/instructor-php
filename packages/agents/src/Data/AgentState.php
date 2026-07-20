@@ -19,6 +19,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Utils\Exceptions\ErrorList;
 use Cognesy\Utils\Metadata;
 use DateTimeImmutable;
+use Stringable;
 use Throwable;
 
 /**
@@ -55,14 +56,14 @@ final readonly class AgentState
     private ?ExecutionState $execution;
 
     public function __construct(
-        ?AgentId           $agentId = null,
-        ?AgentId           $parentAgentId = null,
+        ?AgentId $agentId = null,
+        ?AgentId $parentAgentId = null,
         ?DateTimeImmutable $createdAt = null,
         ?DateTimeImmutable $updatedAt = null,
-        ?AgentContext      $context = null,
-        ?LLMConfig         $llmConfig = null,
-        int                $executionCount = 0,
-        ?ExecutionState    $execution = null,
+        ?AgentContext $context = null,
+        ?LLMConfig $llmConfig = null,
+        int $executionCount = 0,
+        ?ExecutionState $execution = null,
     ) {
         $now = new DateTimeImmutable();
 
@@ -87,7 +88,7 @@ final readonly class AgentState
 
     // STATE TRANSITIONS ////////////////////////////////////////
 
-    public function withCurrentStepCompleted(?ExecutionStatus $status = null) : self {
+    public function withCurrentStepCompleted(?ExecutionStatus $status = null): self {
         if ($this->execution?->currentStep() === null) {
             return $this;
         }
@@ -102,7 +103,7 @@ final readonly class AgentState
     }
 
     public function withExecutionCompleted(): self {
-        return match(true) {
+        return match (true) {
             $this->execution === null => $this->with(execution: ExecutionState::fresh()->completed()),
             $this->execution->isFailed() => $this->with(execution: $this->execution->completed(ExecutionStatus::Failed)),
             $this->execution->hasErrors() => $this->with(execution: $this->execution->completed(ExecutionStatus::Failed)),
@@ -111,7 +112,7 @@ final readonly class AgentState
         };
     }
 
-    public function withExecutionContinued() : self {
+    public function withExecutionContinued(): self {
         return $this->with(execution: $this->ensureExecution()->withContinuationRequested());
     }
 
@@ -131,14 +132,14 @@ final readonly class AgentState
     // MUTATORS ////////////////////////////////////////////////
 
     public function with(
-        ?AgentId           $agentId = null,
-        ?AgentId           $parentAgentId = null,
+        ?AgentId $agentId = null,
+        ?AgentId $parentAgentId = null,
         ?DateTimeImmutable $createdAt = null,
         ?DateTimeImmutable $updatedAt = null,
-        ?AgentContext      $context = null,
-        ?LLMConfig         $llmConfig = null,
-        ?int               $executionCount = null,
-        ?ExecutionState    $execution = null,
+        ?AgentContext $context = null,
+        ?LLMConfig $llmConfig = null,
+        ?int $executionCount = null,
+        ?ExecutionState $execution = null,
     ): self {
         return new self(
             agentId: $agentId ?? $this->agentId,
@@ -162,10 +163,10 @@ final readonly class AgentState
 
     public function withCurrentStep(AgentStep $step): self {
         $execution = $this->ensureExecution();
-        $context = match(true) {
+        $context = match (true) {
             $step->outputMessages()->isEmpty() => $this->context,
             default => $this->context->withAppendedMessages(
-                $this->tagMessages($step->outputMessages(), $step, $execution)
+                $this->tagMessages($step->outputMessages(), $step, $execution),
             ),
         };
         return $this->with(
@@ -186,12 +187,12 @@ final readonly class AgentState
         return $this->with(context: $this->context->withMetadataKey($name, $value));
     }
 
-    public function withUserMessage(string|\Stringable|Message $message): self {
-        $userMessage = Messages::fromAny(Message::asUser($message instanceof \Stringable && !$message instanceof Message ? (string) $message : $message));
+    public function withUserMessage(string|Stringable|Message $message): self {
+        $userMessage = Messages::fromAny(Message::asUser($message instanceof Stringable && !$message instanceof Message ? (string) $message : $message));
         return $this->with(context: $this->context->withAppendedMessages($userMessage));
     }
 
-    public function withSystemPrompt(string|\Stringable $systemPrompt): self {
+    public function withSystemPrompt(string|Stringable $systemPrompt): self {
         return $this->with(context: $this->context->withSystemPrompt((string) $systemPrompt));
     }
 
@@ -262,7 +263,7 @@ final readonly class AgentState
         return $this->execution?->status();
     }
 
-    private function isFailed() : bool {
+    private function isFailed(): bool {
         return match (true) {
             $this->execution === null => false,
             $this->execution->isFailed() => true,
@@ -396,7 +397,7 @@ final readonly class AgentState
         return $this->execution?->currentStep() !== null;
     }
 
-    public function shouldStop() : bool {
+    public function shouldStop(): bool {
         return $this->execution?->shouldStop() ?? true;
     }
 
@@ -416,11 +417,11 @@ final readonly class AgentState
         return $this->execution?->usage() ?? InferenceUsage::none();
     }
 
-    public function hasErrors() : ?bool {
+    public function hasErrors(): ?bool {
         return $this->execution?->hasErrors();
     }
 
-    public function errors() : ErrorList {
+    public function errors(): ErrorList {
         return $this->execution?->errors() ?? ErrorList::empty();
     }
 
@@ -430,8 +431,7 @@ final readonly class AgentState
      * Get a summary of the agent state for debugging.
      * This is the primary way to understand what happened during execution.
      */
-    public function debug(): array
-    {
+    public function debug(): array {
         return [
             'status' => $this->status(),
             'executionCount' => $this->executionCount,
@@ -531,5 +531,4 @@ final readonly class AgentState
         }
         return $tagged;
     }
-
 }

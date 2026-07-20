@@ -24,7 +24,7 @@ class RegisteredHooks
     }
 
     private function sort(array $hooks): array {
-        usort($hooks, fn(RegisteredHook $a, RegisteredHook $b) => $a->compare($b));
+        usort($hooks, fn (RegisteredHook $a, RegisteredHook $b) => $a->compare($b));
         return $hooks;
     }
 }

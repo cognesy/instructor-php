@@ -19,6 +19,7 @@ use Cognesy\Agents\Session\Events\SessionSaveFailed;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
 use Cognesy\Events\Contracts\CanHandleEvents;
+use Override;
 use Throwable;
 
 final readonly class SessionRuntime implements CanManageAgentSessions
@@ -36,7 +37,7 @@ final readonly class SessionRuntime implements CanManageAgentSessions
         $this->sessionFactory = $sessionFactory ?? new SessionFactory(new DefinitionStateFactory());
     }
 
-    #[\Override]
+    #[Override]
     public function create(AgentDefinition $definition, ?AgentState $seed = null): AgentSession {
         $session = $this->sessionFactory->create($definition, $seed);
         $session = $this->onStage(AgentSessionStage::BeforeCreate, $session);
@@ -54,7 +55,7 @@ final readonly class SessionRuntime implements CanManageAgentSessions
         }
     }
 
-    #[\Override]
+    #[Override]
     public function execute(SessionId $sessionId, CanExecuteSessionAction $action): AgentSession {
         try {
             $loaded = $this->sessions->load($sessionId);
@@ -81,7 +82,7 @@ final readonly class SessionRuntime implements CanManageAgentSessions
         }
     }
 
-    #[\Override]
+    #[Override]
     public function getSession(SessionId $sessionId): AgentSession {
         try {
             $session = $this->sessions->load($sessionId);
@@ -94,12 +95,12 @@ final readonly class SessionRuntime implements CanManageAgentSessions
         }
     }
 
-    #[\Override]
+    #[Override]
     public function getSessionInfo(SessionId $sessionId): AgentSessionInfo {
         return $this->getSession($sessionId)->info();
     }
 
-    #[\Override]
+    #[Override]
     public function listSessions(): SessionInfoList {
         return $this->sessions->listHeaders();
     }

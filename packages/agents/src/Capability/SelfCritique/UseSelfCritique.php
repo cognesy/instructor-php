@@ -2,10 +2,11 @@
 
 namespace Cognesy\Agents\Capability\SelfCritique;
 
-use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
 use Cognesy\Agents\Builder\Contracts\CanConfigureAgent;
+use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
 use Cognesy\Agents\Hook\Collections\HookTriggers;
 use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
+use Override;
 
 class UseSelfCritique implements CanProvideAgentCapability
 {
@@ -14,12 +15,12 @@ class UseSelfCritique implements CanProvideAgentCapability
         private int $maxIterations = 2,
     ) {}
 
-    #[\Override]
+    #[Override]
     public static function capabilityName(): string {
         return 'use_self_critique';
     }
 
-    #[\Override]
+    #[Override]
     public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         $hooks = $agent->hooks()->with(
             hook: new SelfCriticHook(

@@ -3,14 +3,15 @@
 namespace Cognesy\Agents\Interception;
 
 use Cognesy\Agents\Hook\Data\HookContext;
+use Override;
 
 class PassThroughInterceptor implements CanInterceptAgentLifecycle
 {
-    public static function default() : self {
+    public static function default(): self {
         return new self();
     }
 
-    #[\Override]
+    #[Override]
     public function intercept(HookContext $context): HookContext {
         return $context;
     }

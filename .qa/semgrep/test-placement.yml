@@ -11,6 +11,24 @@ rules:
       exclude:
         # sys_get_temp_dir() used only as a path string, no actual I/O
         - "/packages/sandbox/tests/Unit/SandboxDriverSelectionTest.php"
+        # These fast regression/feature tests exercise filesystem-backed
+        # preset discovery, snapshots, temporary request fixtures, or test
+        # capability setup intentionally. Keep new filesystem tests out of
+        # fast lanes unless they receive an explicit exception here.
+        - "/packages/agents/tests/Feature/Capabilities/CodingCapabilityTest.php"
+        - "/packages/http-client/tests/Feature/Http/RequestMatcherTest.php"
+        - "/packages/http-client/tests/Feature/Http/RequestRedactionTest.php"
+        - "/packages/http-client/tests/Regression/BundledPresetDiscoveryRegressionTest.php"
+        - "/packages/hub/tests/Unit/ExampleTagsTest.php"
+        - "/packages/instructor/tests/Regression/PublicApiSurfaceLockTest.php"
+        - "/packages/instructor/tests/Regression/ResponseModelGoldenSnapshotTest.php"
+        - "/packages/logging/tests/Unit/Config/EventLogConfigTest.php"
+        - "/packages/logging/tests/Unit/EventLogTest.php"
+        - "/packages/polyglot/tests/Regression/BundledPresetDiscoveryRegressionTest.php"
+        - "/packages/polyglot/tests/Regression/MistralBodyFormatGoldenTest.php"
+        - "/packages/polyglot/tests/Regression/PublicApiSurfaceLockTest.php"
+        - "/packages/symfony/tests/Feature/SessionPersistenceBindingsTest.php"
+        - "/packages/templates/tests/Regression/BundledPresetDiscoveryRegressionTest.php"
     pattern-regex: '\b(mkdir|file_put_contents|touch|tempnam|sys_get_temp_dir|rmdir|unlink)\s*\('
 
   - id: test-placement.no-sleep-in-fast-tests

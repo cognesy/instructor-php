@@ -15,6 +15,7 @@ use Cognesy\Instructor\Data\OutputFormat;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\ResponseModel\ResponseModelBuilt;
 use Cognesy\Instructor\Events\ResponseModel\ResponseModelRequested;
+use Cognesy\Schema\TypeInfo;
 use Cognesy\Schema\Contracts\CanProvideSchema;
 use Cognesy\Schema\Data\ObjectSchema;
 use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
@@ -68,9 +69,6 @@ class ResponseModelFactory
             // is string - used as class-string
             is_string($requestedModel)
                 => (new ClassStringResolver($support))->resolve($requestedModel, $outputFormat),
-            // is empty array - default dynamic structure from config
-            is_array($requestedModel) && empty($requestedModel)
-                => (new ClassStringResolver($support))->resolve($this->config->outputClass(), $outputFormat),
             // is array - used as JSON Schema
             is_array($requestedModel)
                 => (new JsonSchemaResolver($support))->resolve($requestedModel, $outputFormat),
@@ -103,16 +101,14 @@ class ResponseModelFactory
 
     private function builtModelPayload(ResponseModel $responseModel) : array
     {
-        $returnedClass = $responseModel->returnedClass();
+        $schemaClass = TypeInfo::className($responseModel->schema()->type) ?? '';
 
         return array_filter([
-            'responseClass' => $responseModel->instanceClass(),
-            'returnedClass' => $returnedClass !== '' ? $returnedClass : null,
+            'schemaClass' => $schemaClass !== '' ? $schemaClass : null,
             'schemaName' => $responseModel->schemaName(),
-            'propertyCount' => count($responseModel->getPropertyNames()),
-            'returnTarget' => $responseModel->returnTarget()->value,
-            'outputFormatType' => $responseModel->outputFormat()?->type->value,
-            'outputClass' => $responseModel->outputFormat()?->targetClass(),
+            'propertyCount' => count($responseModel->schema()->getPropertyNames()),
+            'outputFormatType' => $responseModel->outputFormat()->type->value,
+            'outputClass' => $responseModel->outputFormat()->targetClass(),
         ], fn(mixed $value): bool => $value !== null);
     }
 

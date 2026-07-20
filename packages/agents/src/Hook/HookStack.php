@@ -11,6 +11,7 @@ use Cognesy\Agents\Hook\Data\RegisteredHook;
 use Cognesy\Agents\Interception\CanInterceptAgentLifecycle;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use DateTimeImmutable;
+use Override;
 
 class HookStack implements CanInterceptAgentLifecycle
 {
@@ -36,7 +37,7 @@ class HookStack implements CanInterceptAgentLifecycle
         return $this->hooks->hooks();
     }
 
-    #[\Override]
+    #[Override]
     public function intercept(HookContext $context): HookContext {
         $registeredHooks = $this->hooks->hooks();
         foreach ($registeredHooks as $hookRegistration) {

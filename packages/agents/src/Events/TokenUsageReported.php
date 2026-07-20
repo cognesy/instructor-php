@@ -4,6 +4,7 @@ namespace Cognesy\Agents\Events;
 
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use DateTimeImmutable;
+use Override;
 
 /**
  * Dispatched after any token-consuming operation (LLM call, tool call).
@@ -33,7 +34,7 @@ final class TokenUsageReported extends AgentEvent
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public function __toString(): string {
         $parentInfo = $this->parentAgentId ? " (parent={$this->parentAgentId})" : '';
         $contextInfo = $this->context !== [] ? ' ' . json_encode($this->context) : '';
@@ -44,7 +45,7 @@ final class TokenUsageReported extends AgentEvent
             $this->operation,
             $this->usage->total(),
             $parentInfo,
-            $contextInfo
+            $contextInfo,
         );
     }
 }

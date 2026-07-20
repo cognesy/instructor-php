@@ -304,7 +304,7 @@ Or subscribe to streaming events:
 
 ```php
 <?php
-use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated;
+use Cognesy\Instructor\Events\Streaming\PartialResponseGenerated;
 
 $runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
     ->onEvent(PartialResponseGenerated::class, fn(PartialResponseGenerated $event) => updateUI($event->partialResponse));
@@ -441,21 +441,26 @@ class Analysis {
 
 ```php
 <?php
-use Cognesy\Dynamic\StructureBuilder;
+use Cognesy\Dynamic\Structure;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Schema\SchemaBuilder;
 
-$schema = StructureBuilder::define('user')
+$schema = SchemaBuilder::define('user')
     ->string('name')
     ->int('age', required: false)
     ->collection('tags', 'string', required: false)
-    ->build();
+    ->schema();
+
+$structure = Structure::fromSchema($schema);
 
 $result = (new StructuredOutput)
     ->with(
         messages: 'Extract user profile from this text...',
-        responseModel: $schema,
+        responseModel: $structure,
     )
     ->get();
+
+// $result is a Structure; call $result->toArray() for an array.
 ```
 
 ---
@@ -481,12 +486,25 @@ Override default extraction prompts:
 ```php
 <?php
 use Cognesy\Instructor\Config\StructuredOutputConfig;
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 
-->withPrompt("Extract the following fields precisely: ...")
-->withConfig(new StructuredOutputConfig(
-    retryPrompt: "The previous attempt had errors: {errors}. Please correct."
-))
+$runtime = StructuredOutputRuntime::fromDefaults(
+    structuredConfig: new StructuredOutputConfig(
+        retryPromptClass: App\Prompts\RetryFeedbackPrompt::class,
+    ),
+);
+
+$result = (new StructuredOutput)
+    ->withRuntime($runtime)
+    ->withPrompt('Extract the following fields precisely: ...')
+    ->with(messages: $text, responseModel: ResultData::class)
+    ->get();
 ```
+
+The bundled prompts use Twig. Custom prompt classes are the supported extension seam;
+inline `retryPrompt` text applies only to the explicitly injected legacy request
+materializer and is scheduled for removal in 2.6.
 
 ### Event System
 

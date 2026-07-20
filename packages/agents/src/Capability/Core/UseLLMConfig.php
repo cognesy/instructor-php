@@ -2,12 +2,13 @@
 
 namespace Cognesy\Agents\Capability\Core;
 
-use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
 use Cognesy\Agents\Builder\Contracts\CanConfigureAgent;
+use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
+use Override;
 
 final readonly class UseLLMConfig implements CanProvideAgentCapability
 {
@@ -16,12 +17,12 @@ final readonly class UseLLMConfig implements CanProvideAgentCapability
         private int $maxRetries = 1,
     ) {}
 
-    #[\Override]
+    #[Override]
     public static function capabilityName(): string {
         return 'use_llm_config';
     }
 
-    #[\Override]
+    #[Override]
     public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         $llm = $this->llm ?? LLMProvider::new();
 
@@ -36,7 +37,7 @@ final readonly class UseLLMConfig implements CanProvideAgentCapability
                 retryPolicy: $retryPolicy,
                 events: $agent->events(),
                 inference: InferenceRuntime::fromProvider($llm, events: $agent->events()),
-            )
+            ),
         );
     }
 }

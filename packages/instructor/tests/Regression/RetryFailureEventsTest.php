@@ -2,8 +2,8 @@
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
-use Cognesy\Instructor\Events\Attempt\NewValidationRecoveryAttempt;
-use Cognesy\Instructor\Events\Attempt\StructuredOutputRecoveryLimitReached;
+use Cognesy\Instructor\Events\Attempt\ResponseRecoveryExhausted;
+use Cognesy\Instructor\Events\Attempt\ResponseRetryScheduled;
 use Cognesy\Instructor\Exceptions\StructuredOutputRecoveryException;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -27,8 +27,8 @@ it('emits retry events and throws after max retries (sync)', function () {
     $events = new EventDispatcher();
     $attempts = 0;
     $limitReached = 0;
-    $events->addListener(NewValidationRecoveryAttempt::class, function () use (&$attempts) { $attempts++; });
-    $events->addListener(StructuredOutputRecoveryLimitReached::class, function () use (&$limitReached) { $limitReached++; });
+    $events->addListener(ResponseRetryScheduled::class, function () use (&$attempts) { $attempts++; });
+    $events->addListener(ResponseRecoveryExhausted::class, function () use (&$limitReached) { $limitReached++; });
 
     $config = (new StructuredOutputConfigBuilder())
         ->withOutputMode(OutputMode::Json)
@@ -64,8 +64,8 @@ it('emits retry events and throws after max retries (streaming)', function () {
     $events = new EventDispatcher();
     $attempts = 0;
     $limitReached = 0;
-    $events->addListener(NewValidationRecoveryAttempt::class, function () use (&$attempts) { $attempts++; });
-    $events->addListener(StructuredOutputRecoveryLimitReached::class, function () use (&$limitReached) { $limitReached++; });
+    $events->addListener(ResponseRetryScheduled::class, function () use (&$attempts) { $attempts++; });
+    $events->addListener(ResponseRecoveryExhausted::class, function () use (&$limitReached) { $limitReached++; });
 
     $config = (new StructuredOutputConfigBuilder())
         ->withOutputMode(OutputMode::Json)

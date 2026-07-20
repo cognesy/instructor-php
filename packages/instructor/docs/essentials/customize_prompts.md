@@ -7,12 +7,12 @@ Instructor builds a structured prompt from several components: system text, user
 a mode-specific instruction prompt, examples, and retry context. You can customize most
 of these to tune extraction behavior without changing the underlying extraction flow.
 
-There are currently two prompt materializers in the package:
+The default `StructuredPromptRequestMaterializer` uses prompt classes backed by bundled
+Twig templates. Customize the default path by supplying your own prompt classes.
 
-- `RequestMaterializer` is the legacy/default path
-- `StructuredPromptRequestMaterializer` is the new path using prompt classes and markdown templates
-
-Both can be selected through `StructuredOutputRuntime::withRequestMaterializer()`.
+`RequestMaterializer` and its inline prompt/chat-structure settings are deprecated 2.5
+compatibility APIs. They have no effect on the default path and work only when that
+legacy materializer is injected explicitly.
 
 
 ## System And Prompt Text
@@ -32,7 +32,7 @@ $result = (new StructuredOutput)
 - **System text** sets the model's persona and overall behavior. Use it for stable
   instructions that apply across many requests.
 - **Prompt text** provides task-specific instructions for this particular extraction.
-  On the new structured prompt path it is rendered inside the single system prompt body
+  On the default structured prompt path it is rendered inside the single system prompt body
   alongside the mode-specific extraction instructions.
 
 You can also pass both through the `with()` method:
@@ -51,7 +51,7 @@ $result = (new StructuredOutput)
 
 ## Examples
 
-Few-shot examples are another prompt component. On the new structured prompt path they
+Few-shot examples are another prompt component. On the default structured prompt path they
 are rendered as markdown inside the system prompt to demonstrate the expected extraction style:
 
 ```php
@@ -95,9 +95,9 @@ provider supports them.
 
 ## Mode-Specific Prompts
 
-Instructor uses a default prompt for each output mode that tells the model how to format
-its response. On the legacy path these prompts are inline strings. On the new path they
-are prompt classes backed by markdown templates and configured in `StructuredOutputConfig`.
+Instructor uses a default prompt class for each output mode that tells the model how to
+format its response. The bundled classes use `.md.twig` templates and are configured in
+`StructuredOutputConfig`.
 
 | Mode | Default prompt behavior |
 |---|---|
@@ -108,21 +108,7 @@ are prompt classes backed by markdown templates and configured in `StructuredOut
 
 ### Overriding Mode Prompts
 
-Legacy inline prompt override:
-
-```php
-use Cognesy\Instructor\Config\StructuredOutputConfig;
-use Cognesy\Instructor\Enums\OutputMode;
-
-$config = new StructuredOutputConfig(
-    modePrompts: [
-        OutputMode::Tools->value => 'Use the provided tool to extract data accurately.',
-        OutputMode::Json->value => "Respond with a JSON object matching this schema:\n<|json_schema|>\n",
-    ],
-);
-```
-
-New prompt-class override:
+Use prompt classes as the supported customization seam:
 
 ```php
 $config = new StructuredOutputConfig(
@@ -150,22 +136,6 @@ retryPromptClass: 'App\\Prompts\\RetryFeedbackPrompt'
 deserializationErrorPromptClass: 'App\\Prompts\\DeserializationRepairPrompt'
 ```
 
-### Template Placeholders
-
-Mode prompts support the `<|json_schema|>` placeholder, which Instructor replaces with
-the JSON Schema generated from your response model. This is particularly important for
-`Json` and `MdJson` modes, where the schema must be embedded in the prompt:
-
-```php
-$config = new StructuredOutputConfig(
-    modePrompts: [
-        OutputMode::Json->value => "Your task is to respond with a JSON object. "
-            . "Response must follow this JSON Schema:\n<|json_schema|>\n",
-    ],
-);
-```
-
-
 ## Tool Name And Description
 
 In `OutputMode::Tools`, the tool definition sent to the model includes a name and
@@ -190,22 +160,8 @@ what the tool represents.
 
 ## Retry Prompt
 
-When validation fails and retries are enabled, Instructor appends a retry prompt to the
-conversation. The default is:
-
-```
-JSON generated incorrectly, fix following errors:
-```
-
-Legacy inline retry prompt override:
-
-```php
-$config = new StructuredOutputConfig(
-    retryPrompt: 'The previous response had validation errors. Please correct them:',
-);
-```
-
-New prompt-class override:
+When validation fails and retries are enabled, Instructor renders the configured retry
+prompt class:
 
 ```php
 $config = new StructuredOutputConfig(
@@ -216,24 +172,9 @@ $config = new StructuredOutputConfig(
 The same pattern applies to deserialization repair via `deserializationErrorPromptClass`.
 
 
-## Chat Structure
+## Legacy Compatibility
 
-Instructor assembles the final prompt from named sections in a specific order. The default
-structure includes sections for system messages, cached context, prompt, examples,
-messages, and retries. You can reorder or extend this through `StructuredOutputConfig`:
-
-```php
-$config = new StructuredOutputConfig(
-    chatStructure: [
-        'system',
-        'pre-cached', 'cached-prompt', 'cached-examples', 'cached-messages', 'post-cached',
-        'pre-prompt', 'prompt', 'post-prompt',
-        'pre-examples', 'examples', 'post-examples',
-        'pre-messages', 'messages', 'post-messages',
-        'pre-retries', 'retries', 'post-retries',
-    ],
-);
-```
-
-Most applications will never need to modify the chat structure. It is exposed for
-advanced use cases where you need precise control over prompt ordering.
+The inline `modePrompts`, `retryPrompt`, and `chatStructure` settings are retained only
+for applications that explicitly inject the deprecated `RequestMaterializer`. They are
+scheduled for removal in 2.6. New code should use prompt classes or provide a custom
+`CanMaterializeRequest` implementation when prompt-class customization is insufficient.

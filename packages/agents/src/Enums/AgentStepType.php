@@ -2,13 +2,13 @@
 
 namespace Cognesy\Agents\Enums;
 
-enum AgentStepType : string
+enum AgentStepType: string
 {
     case ToolExecution = 'tool_execution';
     case FinalResponse = 'final_response';
     case Error = 'error';
 
-    public function is(?AgentStepType $type) : bool {
+    public function is(?AgentStepType $type): bool {
         return $this === $type;
     }
 }

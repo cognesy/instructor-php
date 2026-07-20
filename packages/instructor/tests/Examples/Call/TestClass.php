@@ -7,8 +7,8 @@ class TestClass {
     public string $stringField;
     public bool $boolField;
 
-    static public function make(int $intField, string $stringField, bool $boolField): static {
-        $instance = new static();
+    static public function make(int $intField, string $stringField, bool $boolField): self {
+        $instance = new self();
         $instance->intField = $intField;
         $instance->stringField = $stringField;
         $instance->boolField = $boolField;

@@ -1,12 +1,21 @@
 #!/usr/bin/env bash
-set -e  # stops script on first error
+# Run each package's fast test lanes through the root dependency graph.
+#
+# Package manifests intentionally do not resolve the other unpublished
+# monorepo packages from Packagist. Using the existing modular runner keeps
+# verification deterministic and avoids creating package-local vendor trees.
+set -uo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
+cd "$ROOT_DIR"
+
+rc=0
 for dir in packages/*; do
-  if [ -f "$dir/composer.json" ]; then
-    echo "🔍 Running tests in $dir"
-    composer --working-dir="$dir" clear-cache
-    composer --working-dir="$dir" dump-autoload
-    composer --working-dir="$dir" install --no-scripts --no-progress
-    composer --working-dir="$dir" test
-  fi
+  [ -f "$dir/composer.json" ] || continue
+  package="${dir#packages/}"
+  echo "🔍 Running fast lanes in packages/$package"
+  bash "$ROOT_DIR/scripts/test/test-package.sh" "$package" || rc=1
 done
+
+exit "$rc"

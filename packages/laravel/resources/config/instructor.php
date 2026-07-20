@@ -133,9 +133,15 @@ return [
         'max_retries' => env('INSTRUCTOR_MAX_RETRIES', 2),
 
         /*
-        | Prompt template for retry attempts.
+        | Prompt class rendered for retry feedback on the default structured path.
         */
-        'retry_prompt' => 'The response did not pass validation. Please fix the following errors and try again: {errors}',
+        'retry_prompt_class' => Cognesy\Instructor\Prompts\StructuredOutput\RetryFeedbackPrompt::class,
+
+        /*
+        | @deprecated 2.5 Used only by an explicitly injected legacy
+        | RequestMaterializer. Remove this setting when upgrading to 2.6.
+        */
+        'retry_prompt' => null,
 
     ],
 

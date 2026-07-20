@@ -14,12 +14,11 @@ final readonly class SchemaProviderResolver
     public function resolve(object|string $requestedModel, ?OutputFormat $outputFormat): ResponseModel {
         $this->support->events()->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromSchemaProvider']));
 
-        [$class, $instance] = $this->support->resolveClassAndInstance($requestedModel);
+        [, $instance] = $this->support->resolveClassAndInstance($requestedModel);
         $schema = $instance->toSchema();
         $rendering = $this->support->renderSchema($schema);
 
         return $this->support->assemble(
-            class: $class,
             instance: $instance,
             schema: $schema,
             jsonSchema: $rendering->jsonSchema(),

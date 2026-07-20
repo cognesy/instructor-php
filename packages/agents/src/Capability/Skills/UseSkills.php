@@ -1,10 +1,12 @@
 <?php declare(strict_types=1);
+
 namespace Cognesy\Agents\Capability\Skills;
 
 use Cognesy\Agents\Builder\Contracts\CanConfigureAgent;
 use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
 use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Hook\Collections\HookTriggers;
+use Override;
 
 final class UseSkills implements CanProvideAgentCapability
 {
@@ -13,17 +15,17 @@ final class UseSkills implements CanProvideAgentCapability
         private ?SkillPreprocessor $preprocessor = null,
     ) {}
 
-    #[\Override]
+    #[Override]
     public static function capabilityName(): string {
         return 'use_skills';
     }
 
-    #[\Override]
+    #[Override]
     public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         $library = $this->library;
 
         $agent = $agent->withTools(
-            $agent->tools()->merge(new Tools(LoadSkillTool::fromLibrary($library, preprocessor: $this->preprocessor)))
+            $agent->tools()->merge(new Tools(LoadSkillTool::fromLibrary($library, preprocessor: $this->preprocessor))),
         );
         $hooks = $agent->hooks()
             ->with(

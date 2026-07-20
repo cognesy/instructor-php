@@ -25,19 +25,7 @@ final class SymfonyEventDispatcher implements CanHandleEvents, CanCheckListeners
             $this->taps->insert($listener, $priority);
             return;
         }
-        $this->dispatcher->addListener(self::canonicalEventName($name), $listener, $priority);
-    }
-
-    /**
-     * Resolves class aliases (deprecated event FQCNs kept via class_alias)
-     * to their canonical class name, so listeners registered under an old
-     * name still match events dispatched under the new one.
-     */
-    private static function canonicalEventName(string $name): string {
-        if (!class_exists($name)) {
-            return $name;
-        }
-        return (new \ReflectionClass($name))->getName();
+        $this->dispatcher->addListener($name, $listener, $priority);
     }
 
     /**
@@ -100,7 +88,6 @@ final class SymfonyEventDispatcher implements CanHandleEvents, CanCheckListeners
             return true;
         }
 
-        $eventClass = self::canonicalEventName($eventClass);
         $types = array_values(array_unique(array_merge(
             [$eventClass],
             class_parents($eventClass) ?: [],

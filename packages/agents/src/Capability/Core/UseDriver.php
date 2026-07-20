@@ -5,6 +5,7 @@ namespace Cognesy\Agents\Capability\Core;
 use Cognesy\Agents\Builder\Contracts\CanConfigureAgent;
 use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
 use Cognesy\Agents\Drivers\CanUseTools;
+use Override;
 
 final readonly class UseDriver implements CanProvideAgentCapability
 {
@@ -12,12 +13,12 @@ final readonly class UseDriver implements CanProvideAgentCapability
         private CanUseTools $driver,
     ) {}
 
-    #[\Override]
+    #[Override]
     public static function capabilityName(): string {
         return 'use_driver';
     }
 
-    #[\Override]
+    #[Override]
     public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         return $agent->withToolUseDriver($this->driver);
     }

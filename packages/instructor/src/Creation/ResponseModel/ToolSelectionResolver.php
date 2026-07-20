@@ -28,7 +28,6 @@ final readonly class ToolSelectionResolver
         $schema = $requestedModel->toSchema();
 
         return $this->support->assemble(
-            class: get_class($requestedModel),
             instance: $requestedModel,
             schema: $schema,
             jsonSchema: $requestedModel->toJsonSchema(),

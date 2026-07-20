@@ -5,10 +5,11 @@ namespace Cognesy\Agents\Template\Parsers;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Utils\Markdown\FrontMatter;
 use InvalidArgumentException;
+use Override;
 
 final readonly class MarkdownDefinitionParser implements CanParseAgentDefinition
 {
-    #[\Override]
+    #[Override]
     public function parse(mixed $data): AgentDefinition {
         if (!is_string($data)) {
             throw new InvalidArgumentException('Markdown agent definition must be a string.');
@@ -17,7 +18,7 @@ final readonly class MarkdownDefinitionParser implements CanParseAgentDefinition
         $frontmatter = FrontMatter::parse($data);
         if (!$frontmatter->hasFrontMatter()) {
             throw new InvalidArgumentException(
-                "Invalid markdown format: missing YAML frontmatter (expected ---\\n...\\n---)"
+                'Invalid markdown format: missing YAML frontmatter (expected ---\\n...\\n---)',
             );
         }
         if ($frontmatter->error() !== null) {
@@ -27,7 +28,7 @@ final readonly class MarkdownDefinitionParser implements CanParseAgentDefinition
         $systemPrompt = trim($frontmatter->document());
         if ($systemPrompt === '') {
             throw new InvalidArgumentException(
-                "Invalid markdown format: system prompt (content after frontmatter) cannot be empty"
+                'Invalid markdown format: system prompt (content after frontmatter) cannot be empty',
             );
         }
 

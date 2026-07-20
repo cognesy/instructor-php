@@ -8,8 +8,8 @@ use Cognesy\Instructor\Contracts\CanEmitStreamingUpdates;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanMaterializeRequest;
 use Cognesy\Instructor\Core\InferenceProvider;
-use Cognesy\Instructor\Core\ObjectHydrator;
 use Cognesy\Instructor\Core\ResponseGenerator;
+use Cognesy\Instructor\Core\ResponseMaterializer;
 use Cognesy\Instructor\Core\StreamingExecutionDriver;
 use Cognesy\Instructor\Core\SyncExecutionDriver;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
@@ -59,7 +59,7 @@ final class ExecutionDriverFactory
         return new StreamingExecutionDriver(
             execution: $execution,
             inferenceProvider: $this->makeInferenceProvider(),
-            hydrator: $this->makeHydrator(),
+            materializer: $this->makeMaterializer(),
             responseGenerator: $this->makeResponseGenerator(),
             retryPolicy: $this->makeRetryPolicy(),
             events: $this->events,
@@ -72,6 +72,7 @@ final class ExecutionDriverFactory
             inferenceProvider: $this->makeInferenceProvider(),
             responseGenerator: $this->makeResponseGenerator(),
             retryPolicy: $this->makeRetryPolicy(),
+            events: $this->events,
         );
     }
 
@@ -88,8 +89,8 @@ final class ExecutionDriverFactory
         );
     }
 
-    private function makeHydrator(): ObjectHydrator {
-        return new ObjectHydrator(
+    private function makeMaterializer(): ResponseMaterializer {
+        return new ResponseMaterializer(
             deserializer: $this->responseDeserializer,
             validator: $this->responseValidator,
             transformer: $this->responseTransformer,
@@ -101,7 +102,6 @@ final class ExecutionDriverFactory
             $this->responseDeserializer,
             $this->responseValidator,
             $this->responseTransformer,
-            $this->events,
             $this->extractor,
         );
     }

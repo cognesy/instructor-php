@@ -5,6 +5,7 @@ namespace Cognesy\Agents\Session;
 use Cognesy\Agents\Session\Contracts\CanControlAgentSession;
 use Cognesy\Agents\Session\Data\AgentSession;
 use Cognesy\Agents\Session\Enums\AgentSessionStage;
+use Override;
 
 final class PassThroughSessionController implements CanControlAgentSession
 {
@@ -12,7 +13,7 @@ final class PassThroughSessionController implements CanControlAgentSession
         return new self();
     }
 
-    #[\Override]
+    #[Override]
     public function onStage(AgentSessionStage $stage, AgentSession $session): AgentSession {
         return $session;
     }

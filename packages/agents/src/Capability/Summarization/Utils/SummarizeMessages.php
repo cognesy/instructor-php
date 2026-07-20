@@ -7,6 +7,7 @@ use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Override;
 
 class SummarizeMessages implements CanSummarizeMessages
 {
@@ -24,7 +25,7 @@ class SummarizeMessages implements CanSummarizeMessages
         $this->inference = $inference;
     }
 
-    #[\Override]
+    #[Override]
     public function summarize(Messages $messages, int $tokenLimit): string {
         $request = new InferenceRequest(
             messages: $messages->prependMessages(new Message(content: $this->prompt)),

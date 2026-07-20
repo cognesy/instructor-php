@@ -88,13 +88,13 @@ test('API key carried as a URL query param is masked (Gemini ?key=)', function (
     // Regression pin: Gemini embeddings put the key in the URL, not a header.
     $records = new RequestRecords($this->dir);
     $request = new HttpRequest(
-        'https://generativelanguage.googleapis.com/v1beta/models/x:batchEmbedContents?key=AIzaSyCjJ4KVQTcMDYeYumdZ7VcZVAbdemsFzu4',
+        'https://generativelanguage.googleapis.com/v1beta/models/x:batchEmbedContents?key=AIzaSyD-EXAMPLE_KEY_urlparam1234567890ab',
         'POST', [], '{}', [],
     );
     $file = $records->save($request, MockHttpResponseFactory::success(body: 'ok'));
 
     expect(file_get_contents($file))
-        ->not->toContain('AIzaSyCjJ4KVQTcMDYeYumdZ7VcZVAbdemsFzu4')
+        ->not->toContain('AIzaSyD-EXAMPLE_KEY_urlparam1234567890ab')
         ->toContain('key=');
 });
 

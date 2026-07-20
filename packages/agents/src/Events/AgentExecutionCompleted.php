@@ -5,6 +5,7 @@ namespace Cognesy\Agents\Events;
 use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use DateTimeImmutable;
+use Override;
 use Psr\Log\LogLevel;
 
 /**
@@ -17,14 +18,14 @@ final class AgentExecutionCompleted extends AgentEvent
     public readonly DateTimeImmutable $completedAt;
 
     public function __construct(
-        public readonly string          $agentId,
-        public readonly string          $executionId,
-        public readonly ?string         $parentAgentId,
+        public readonly string $agentId,
+        public readonly string $executionId,
+        public readonly ?string $parentAgentId,
         public readonly ExecutionStatus $status,
-        public readonly int             $totalSteps,
-        public readonly InferenceUsage           $totalUsage,
-        public readonly ?string         $errors,
-        public readonly array           $outputMessages = [],
+        public readonly int $totalSteps,
+        public readonly InferenceUsage $totalUsage,
+        public readonly ?string $errors,
+        public readonly array $outputMessages = [],
     ) {
         $this->completedAt = new DateTimeImmutable();
 
@@ -39,7 +40,7 @@ final class AgentExecutionCompleted extends AgentEvent
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public function __toString(): string {
         $parentInfo = $this->parentAgentId ? sprintf(' [parent=%s]', substr($this->parentAgentId, 0, 8)) : '';
 
@@ -49,7 +50,7 @@ final class AgentExecutionCompleted extends AgentEvent
             $parentInfo,
             $this->totalSteps,
             $this->totalUsage->total(),
-            $this->errors ? " (with errors: {$this->errors})" : ''
+            $this->errors ? " (with errors: {$this->errors})" : '',
         );
     }
 }

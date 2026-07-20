@@ -6,6 +6,7 @@ use Cognesy\Agents\Tool\Tools\StateAwareTool;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
+use Override;
 
 /**
  * Tool for reading data from agent metadata.
@@ -21,7 +22,7 @@ class MetadataReadTool extends StateAwareTool
         parent::__construct(new MetadataReadToolDescriptor());
     }
 
-    #[\Override]
+    #[Override]
     public function __invoke(mixed ...$args): string {
         $key = $this->arg($args, 'key', 0, '');
 
@@ -54,7 +55,7 @@ class MetadataReadTool extends StateAwareTool
         };
     }
 
-    #[\Override]
+    #[Override]
     public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition {
         return \Cognesy\Polyglot\Inference\Data\ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
@@ -63,7 +64,7 @@ class MetadataReadTool extends StateAwareTool
                 ->withProperties([
                     JsonSchema::string('key', 'The key to read from metadata'),
                 ])
-                ->withRequiredProperties(['key'])
+                ->withRequiredProperties(['key']),
         )->toArray());
     }
 }

@@ -6,6 +6,7 @@ use Cognesy\Agents\Builder\Contracts\CanConfigureAgent;
 use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
 use Cognesy\Agents\Collections\Tools;
 use Cognesy\Sandbox\Config\ExecutionPolicy;
+use Override;
 
 final class UseBash implements CanProvideAgentCapability
 {
@@ -15,20 +16,20 @@ final class UseBash implements CanProvideAgentCapability
         private ?BashPolicy $outputPolicy = null,
     ) {}
 
-    #[\Override]
+    #[Override]
     public static function capabilityName(): string {
         return 'use_bash';
     }
 
-    #[\Override]
+    #[Override]
     public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         $bashTool = new BashTool(
             policy: $this->policy,
             baseDir: $this->baseDir,
-            outputPolicy: $this->outputPolicy
+            outputPolicy: $this->outputPolicy,
         );
         return $agent->withTools(
-            $agent->tools()->merge(new Tools($bashTool))
+            $agent->tools()->merge(new Tools($bashTool)),
         );
     }
 }

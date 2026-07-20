@@ -41,7 +41,7 @@ final class AgentDefinitionLoader
         $parser = $this->parsers[$extension] ?? null;
         if ($parser === null) {
             throw new InvalidArgumentException(
-                "Unsupported file extension '.{$extension}' for agent definition: {$path}"
+                "Unsupported file extension '.{$extension}' for agent definition: {$path}",
             );
         }
 

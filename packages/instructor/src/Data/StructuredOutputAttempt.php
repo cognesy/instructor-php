@@ -138,7 +138,7 @@ readonly final class StructuredOutputAttempt
             'inferenceResponse' => $this->inferenceResponse?->toArray(),
             'usage' => $this->usage?->toArray(),
             'isFinalized' => $this->isFinalized,
-            'errors' => $this->errors,
+            'errors' => array_map(self::serializeError(...), $this->errors),
             'output' => $this->output,
             'id' => $this->id->toString(),
             'createdAt' => $this->createdAt->format(DATE_ATOM),
@@ -155,7 +155,7 @@ readonly final class StructuredOutputAttempt
                 ? InferenceUsage::fromArray($data['usage'])
                 : null,
             isFinalized: $data['isFinalized'] ?? false,
-            errors: $data['errors'] ?? [],
+            errors: array_map(self::deserializeError(...), $data['errors'] ?? []),
             output: $data['output'] ?? null,
             id: isset($data['id']) ? new StructuredOutputAttemptId($data['id']) : null,
             createdAt: isset($data['createdAt']) ? new DateTimeImmutable($data['createdAt']) : null,
@@ -183,5 +183,26 @@ readonly final class StructuredOutputAttempt
             createdAt: $createdAt,
             updatedAt: $updatedAt,
         );
+    }
+
+    private static function serializeError(mixed $error): mixed
+    {
+        return match (true) {
+            $error instanceof ResponseFailure => [
+                'type' => 'response_failure',
+                'data' => $error->toArray(),
+            ],
+            default => $error,
+        };
+    }
+
+    private static function deserializeError(mixed $error): mixed
+    {
+        return match (true) {
+            is_array($error)
+                && ($error['type'] ?? null) === 'response_failure'
+                && is_array($error['data'] ?? null) => ResponseFailure::fromArray($error['data']),
+            default => $error,
+        };
     }
 }

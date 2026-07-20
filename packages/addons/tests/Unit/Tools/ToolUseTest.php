@@ -120,11 +120,12 @@ it('separates context and transcript messages between input and output collectio
 
     expect($step)->not->toBeNull();
     expect($step?->inputMessages()->toArray())->toBe($initialMessages->toArray());
-    expect($step?->outputMessages()->count())->toBe(3);
+    // Tool-call responses must not add an empty assistant message: providers
+    // reject that message when it is sent back with the tool result.
+    expect($step?->outputMessages()->count())->toBe(2);
     expect($step?->outputMessages()->first()->role()->value)->toBe('assistant');
+    expect($step?->outputMessages()->first()->hasToolCalls())->toBeTrue();
     expect($step?->outputMessages()->all()[1]->role()->value)->toBe('tool');
-    expect($step?->outputMessages()->last()->role()->value)->toBe('assistant');
-    expect($step?->outputMessages()->last()->toString())->toBe('');
 
     $finalState = $toolUse->finalStep($intermediateState);
     $finalStep = $finalState->currentStep();

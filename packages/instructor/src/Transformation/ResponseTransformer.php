@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 namespace Cognesy\Instructor\Transformation;
 
-use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\Response\ResponseTransformationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseTransformationFailed;
@@ -9,17 +8,15 @@ use Cognesy\Instructor\Events\Response\ResponseTransformed;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformData;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformSelf;
-use Cognesy\Instructor\Transformation\Exceptions\ResponseTransformationException;
 use Cognesy\Utils\Result\Result;
-use Exception;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Throwable;
 
 class ResponseTransformer implements CanTransformResponse
 {
     public function __construct(
         private EventDispatcherInterface $events,
         private ?CanTransformData $transformer,
-        private StructuredOutputConfig $config,
     ) {}
 
     #[\Override]
@@ -37,13 +34,13 @@ class ResponseTransformer implements CanTransformResponse
         $this->events->dispatch(new ResponseTransformationAttempt($summary));
         try {
             $transformed = $object->transform();
-        } catch (Exception $e) {
+        } catch (Throwable $error) {
             $this->events->dispatch(new ResponseTransformationFailed([
                 ...$summary,
-                'errorMessage' => $e->getMessage(),
-                'errorType' => $e::class,
+                'errorMessage' => $error->getMessage(),
+                'errorType' => $error::class,
             ]));
-            return Result::failure($e->getMessage());
+            return Result::failure($error);
         }
         $this->events->dispatch(new ResponseTransformed($this->valueSummary($transformed)));
         return Result::success($transformed);
@@ -64,6 +61,7 @@ class ResponseTransformer implements CanTransformResponse
         $this->events->dispatch(new ResponseTransformationAttempt($summary));
         $result = Result::try(fn() => $this->transformer->transform($data));
         if ($result->isSuccessAndNull()) {
+            $this->events->dispatch(new ResponseTransformed($this->valueSummary($input)));
             return Result::success($input);
         }
         if ($result->isFailure()) {
@@ -73,13 +71,12 @@ class ResponseTransformer implements CanTransformResponse
                 'errorMessage' => $errorMessage,
                 'errorType' => $result->exception()::class,
             ]));
-            if ($this->config->throwOnTransformationFailure()) {
-                throw new ResponseTransformationException($errorMessage);
-            }
-            return Result::success($input);
+            return Result::failure($result->exception());
         }
 
-        return Result::success($result->unwrap());
+        $transformed = $result->unwrap();
+        $this->events->dispatch(new ResponseTransformed($this->valueSummary($transformed)));
+        return Result::success($transformed);
     }
 
     private function valueSummary(mixed $value) : array

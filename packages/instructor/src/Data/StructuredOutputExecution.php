@@ -292,7 +292,6 @@ final readonly class StructuredOutputExecution
             'attempts' => $this->attemptHistory->toArray(),
             'activeAttempt' => $this->activeAttempt?->toArray(),
             'response' => $this->inferenceResponse()?->toArray(),
-            'responseModel' => $this->responseModel?->toArray(),
             'config' => $this->config->toArray(),
         ];
     }

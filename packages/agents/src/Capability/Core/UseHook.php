@@ -2,10 +2,11 @@
 
 namespace Cognesy\Agents\Capability\Core;
 
-use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
 use Cognesy\Agents\Builder\Contracts\CanConfigureAgent;
+use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
 use Cognesy\Agents\Hook\Collections\HookTriggers;
 use Cognesy\Agents\Hook\Contracts\HookInterface;
+use Override;
 
 final readonly class UseHook implements CanProvideAgentCapability
 {
@@ -16,12 +17,12 @@ final readonly class UseHook implements CanProvideAgentCapability
         private ?string $name = null,
     ) {}
 
-    #[\Override]
+    #[Override]
     public static function capabilityName(): string {
         return 'use_hook';
     }
 
-    #[\Override]
+    #[Override]
     public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         $hooks = $agent->hooks()->with(
             hook: $this->hook,

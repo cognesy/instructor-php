@@ -33,7 +33,11 @@ describe('RequestMaterializer', function () {
                 is_string($messages) && $messages !== '' => Messages::fromString($messages),
                 default => Messages::empty(),
             },
-            requestedSchema: [],
+            requestedSchema: [
+                'type' => 'object',
+                'properties' => ['value' => ['type' => 'string']],
+                'required' => ['value'],
+            ],
             system: $system,
             prompt: $prompt,
             examples: $examples,

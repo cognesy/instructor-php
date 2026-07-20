@@ -6,6 +6,7 @@ use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Builder\Contracts\CanComposeAgentLoop;
 use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
 use Cognesy\Events\Contracts\CanHandleEvents;
+use Override;
 
 /**
  * Composition layer for assembling AgentLoop instances via capabilities.
@@ -26,7 +27,7 @@ final readonly class AgentBuilder implements CanComposeAgentLoop
         return new self(parentEvents: $parentEvents);
     }
 
-    #[\Override]
+    #[Override]
     public function withCapability(CanProvideAgentCapability $capability): self {
         return new self(
             parentEvents: $this->parentEvents,
@@ -34,7 +35,7 @@ final readonly class AgentBuilder implements CanComposeAgentLoop
         );
     }
 
-    #[\Override]
+    #[Override]
     public function build(): AgentLoop {
         $installer = AgentConfigurator::base(parentEvents: $this->parentEvents);
         foreach ($this->capabilities as $capability) {

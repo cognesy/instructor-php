@@ -3,6 +3,7 @@
 namespace Cognesy\Agents\Tool\Traits;
 
 use Cognesy\Agents\Tool\Contracts\CanDescribeTool;
+use Override;
 
 trait HasDescriptor
 {
@@ -12,27 +13,27 @@ trait HasDescriptor
         $this->descriptor = $descriptor;
     }
 
-    #[\Override]
+    #[Override]
     public function descriptor(): CanDescribeTool {
         return $this->descriptor;
     }
 
-    #[\Override]
+    #[Override]
     public function name(): string {
         return $this->descriptor->name();
     }
 
-    #[\Override]
+    #[Override]
     public function description(): string {
         return $this->descriptor->description();
     }
 
-    #[\Override]
+    #[Override]
     public function metadata(): array {
         return $this->descriptor->metadata();
     }
 
-    #[\Override]
+    #[Override]
     public function instructions(): array {
         return $this->descriptor->instructions();
     }

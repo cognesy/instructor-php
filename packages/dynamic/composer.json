@@ -25,12 +25,12 @@
   },
   "require": {
     "php": "^8.3",
-    "cognesy/instructor-contracts": "^2.4",
+    "cognesy/instructor-contracts": "^2.5",
     "symfony/serializer": "^7.3 || ^8.0",
     "symfony/property-access": "^7.3 || ^8.0",
     "symfony/property-info": "^7.3 || ^8.0",
-    "cognesy/instructor-utils": "^2.4",
-    "cognesy/instructor-schema": "^2.4",
+    "cognesy/instructor-utils": "^2.5",
+    "cognesy/instructor-schema": "^2.5",
     "symfony/type-info": "^7.3 || ^8.0"
   },
   "require-dev": {

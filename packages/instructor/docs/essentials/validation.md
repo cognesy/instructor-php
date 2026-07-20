@@ -3,9 +3,30 @@ title: Validation
 description: 'Validate extracted data before you use it.'
 ---
 
-Validation runs after deserialization and before the result is returned. If the extracted
-data does not meet your rules, Instructor can automatically retry the request, feeding
-the validation errors back to the model so it can self-correct.
+Validation has two ordered layers. Instructor first validates extracted wire data against
+the supported schema subset, before deserialization. For object targets, it then runs
+Symfony or self-validation after deserialization and before transformation. If either
+layer fails, Instructor can retry the request and feed safe validation errors back to the
+model so it can self-correct.
+
+
+## Local Schema Validation
+
+Local schema validation applies to every final target, including arrays, `stdClass`, PHP
+classes, self-deserializing objects, and explicit `Structure` values. It enforces:
+
+- required properties and nullable values;
+- string, integer, number, boolean, array, and object wire types;
+- nested object/array-shape properties and collection item schemas, with dotted paths;
+- string/integer enum options and backed PHP enum values;
+- date/time values represented by strings or `DateTimeInterface` instances.
+
+This is intentionally a supported subset, not a complete JSON Schema interpreter.
+Keywords such as `pattern`, numeric ranges, string-length constraints, schema combinators,
+conditionals, and `additionalProperties` are not enforced by the local schema-data
+validator. A provider's native JSON Schema mode may enforce more. For PHP class targets,
+use Symfony constraints or custom validation when those rules must also be checked
+locally.
 
 
 ## Symfony Validation Attributes
@@ -179,14 +200,14 @@ When a response fails validation, Instructor:
 4. Sends the updated conversation back to the model for another attempt.
 
 This self-correction loop continues until validation passes or the retry limit is reached.
-The default retry prompt is `"JSON generated incorrectly, fix following errors:\n"`,
-followed by the list of violations. You can customize it through `StructuredOutputConfig`:
+The bundled retry prompt lists the validation failures. Customize it through a prompt
+class in `StructuredOutputConfig`:
 
 ```php
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 
 $config = new StructuredOutputConfig(
     maxRetries: 3,
-    retryPrompt: 'The previous response had errors. Please correct them:',
+    retryPromptClass: App\Prompts\RetryFeedbackPrompt::class,
 );
 ```

@@ -3,6 +3,7 @@
 namespace Cognesy\Agents\Events;
 
 use DateTimeImmutable;
+use Override;
 
 /**
  * Dispatched when an inference request is about to be sent to the LLM.
@@ -34,7 +35,7 @@ final class InferenceRequestStarted extends AgentEvent
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public function __toString(): string {
         $parentInfo = $this->parentAgentId ? sprintf(' [parent=%s]', substr($this->parentAgentId, 0, 8)) : '';
         $modelInfo = $this->model ? " model={$this->model}" : '';
@@ -44,7 +45,7 @@ final class InferenceRequestStarted extends AgentEvent
             substr($this->agentId, 0, 8),
             $parentInfo,
             $this->messageCount,
-            $modelInfo
+            $modelInfo,
         );
     }
 }

@@ -17,10 +17,8 @@ test('it throws exception when normalizing non-BackedEnum object', function () {
     $normalizer = new BackedEnumNormalizer();
     $nonEnumObject = new stdClass();
 
-    $this->expectException(InvalidArgumentException::class);
-    $this->expectExceptionMessage('The data must belong to a backed enumeration.');
-
-    $normalizer->normalize($nonEnumObject);
+    expect(fn() => $normalizer->normalize($nonEnumObject))
+        ->toThrow(InvalidArgumentException::class, 'The data must belong to a backed enumeration.');
 });
 
 test('it denormalizes valid value to BackedEnum instance', function () {
@@ -35,10 +33,8 @@ test('it denormalizes valid value to BackedEnum instance', function () {
 test('it throws exception when denormalizing invalid value', function () {
     $normalizer = new BackedEnumNormalizer();
 
-    $this->expectException(InvalidArgumentException::class);
-    $this->expectExceptionMessage('The value must one of: case_1, case_2');
-
-    $normalizer->denormalize('invalid_value', MockBackedEnum::class);
+    expect(fn() => $normalizer->denormalize('invalid_value', MockBackedEnum::class))
+        ->toThrow(InvalidArgumentException::class, 'The value must one of: case_1, case_2');
 });
 
 test('it denormalizes null and invalid types to null when ALLOW_INVALID_VALUES is true', function () {
@@ -55,8 +51,6 @@ test('it denormalizes null and invalid types to null when ALLOW_INVALID_VALUES i
 test('it throws exception when denormalizing non-BackedEnum type', function () {
     $normalizer = new BackedEnumNormalizer();
 
-    $this->expectException(InvalidArgumentException::class);
-    $this->expectExceptionMessage('The data must belong to a backed enumeration.');
-
-    $normalizer->denormalize('value', stdClass::class);
+    expect(fn() => $normalizer->denormalize('value', stdClass::class))
+        ->toThrow(InvalidArgumentException::class, 'The data must belong to a backed enumeration.');
 });

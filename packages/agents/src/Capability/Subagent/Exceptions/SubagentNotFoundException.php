@@ -13,7 +13,7 @@ final class SubagentNotFoundException extends AgentException
     ) {
         parent::__construct(
             "Subagent '{$this->subagentName}' not found.",
-            $previous
+            $previous,
         );
     }
 }

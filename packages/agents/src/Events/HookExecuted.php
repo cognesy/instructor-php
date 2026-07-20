@@ -3,6 +3,7 @@
 namespace Cognesy\Agents\Events;
 
 use DateTimeImmutable;
+use Override;
 
 /**
  * Dispatched when a hook finishes execution.
@@ -26,7 +27,7 @@ final class HookExecuted extends AgentEvent
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public function __toString(): string {
         $name = $this->hookName ?? 'anonymous';
 
@@ -34,7 +35,7 @@ final class HookExecuted extends AgentEvent
             'Hook "%s" executed on %s [%dms]',
             $name,
             $this->triggerType,
-            $this->getDurationMs()
+            $this->getDurationMs(),
         );
     }
 

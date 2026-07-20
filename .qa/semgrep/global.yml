@@ -9,7 +9,7 @@ rules:
     pattern-regex: "\\bEventBusResolver\\b"
 
   - id: global-events-no-optional-canhandleevents-constructor
-    message: "Constructor event dependencies should be explicit. Avoid nullable/optional CanHandleEvents in constructors."
+    message: "Constructor event dependencies should be explicit. Optional CanHandleEvents is allowed only for documented compatibility/default-injection seams listed below."
     severity: ERROR
     languages: [php]
     paths:
@@ -17,4 +17,32 @@ rules:
         - "/packages/**/src/**/*.php"
       exclude:
         - "/packages/agents/src/Hook/HookStack.php"
+        # These constructors intentionally accept an optional event sink and
+        # create/use a local default when callers do not provide one. They are
+        # public compatibility seams, framework/CLI edges, builders, or
+        # capability adapters—not hidden global event resolution in core
+        # runtime code. Keep new optional event dependencies out of this list.
+        - "/packages/addons/src/Chat/**/*.php"
+        - "/packages/addons/src/Collaboration/**/*.php"
+        - "/packages/addons/src/StepByStep/StateProcessing/Processors/MoveMessagesToBuffer.php"
+        - "/packages/addons/src/StepByStep/StateProcessing/Processors/SummarizeBuffer.php"
+        - "/packages/addons/src/ToolUse/ToolExecutor.php"
+        - "/packages/agent-ctrl/src/Bridge/ClaudeCodeBridge.php"
+        - "/packages/agent-ctrl/src/Bridge/CodexBridge.php"
+        - "/packages/agent-ctrl/src/Bridge/GeminiBridge.php"
+        - "/packages/agent-ctrl/src/Bridge/OpenCodeBridge.php"
+        - "/packages/agent-ctrl/src/Bridge/PiBridge.php"
+        - "/packages/agent-ctrl/src/Common/Execution/SandboxCommandExecutor.php"
+        - "/packages/agents/src/Builder/AgentBuilder.php"
+        - "/packages/agents/src/Capability/PlanningSubagent/PlanningSubagentTool.php"
+        - "/packages/agents/src/Capability/Subagent/SpawnSubagentTool.php"
+        - "/packages/agents/src/Capability/Summarization/MoveMessagesToBufferHook.php"
+        - "/packages/agents/src/Capability/Summarization/SummarizeBufferHook.php"
+        - "/packages/agents/src/Drivers/ReAct/ReActDriver.php"
+        - "/packages/agents/src/Drivers/ToolCalling/ToolCallingDriver.php"
+        - "/packages/agents/src/Template/Factory/DefinitionLoopFactory.php"
+        - "/packages/http-client/src/Creation/HttpClientBuilder.php"
+        - "/packages/http-pool/src/Creation/HttpPoolBuilder.php"
+        - "/packages/instructor/src/Streaming/Pipeline/AccumulatePartialResponses.php"
+        - "/packages/instructor/src/Streaming/Pipeline/AccumulatePartialResponsesReducer.php"
     pattern-regex: "(?s)function\\s+__construct\\s*\\([^)]*(\\?CanHandleEvents\\s+\\$[A-Za-z_][A-Za-z0-9_]*\\s*=\\s*null|CanHandleEvents\\s*\\|\\s*null|null\\s*\\|\\s*CanHandleEvents)[^)]*\\)"

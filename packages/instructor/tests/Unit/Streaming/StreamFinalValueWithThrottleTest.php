@@ -10,7 +10,7 @@ use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
  * Regression guard: the adaptive materialization throttle may skip
  * materializing the trailing deltas of a stream. The final value must
  * still be complete — either via the forced finish materialization or
- * via the full-content re-parse fallback (prebuiltValue === null).
+ * via the full-content re-parse fallback (materialization input is null).
  */
 
 class ThrottledFinalItem

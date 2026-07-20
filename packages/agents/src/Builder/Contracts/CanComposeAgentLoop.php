@@ -10,4 +10,3 @@ interface CanComposeAgentLoop
 
     public function build(): CanControlAgentLoop;
 }
-

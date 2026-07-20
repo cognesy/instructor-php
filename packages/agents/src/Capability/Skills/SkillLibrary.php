@@ -76,10 +76,10 @@ final class SkillLibrary
     ): string {
         $skills = $this->listSkills(modelInvocable: $modelInvocable, userInvocable: $userInvocable);
         if ($skills === []) {
-            return "(no skills available)";
+            return '(no skills available)';
         }
 
-        $lines = ["Available skills:"];
+        $lines = ['Available skills:'];
         foreach ($skills as $skill) {
             $hint = !empty($skill['argument-hint']) ? " {$skill['argument-hint']}" : '';
             $lines[] = "- [{$skill['name']}{$hint}]: {$skill['description']}";
@@ -199,7 +199,7 @@ final class SkillLibrary
         foreach ($resourceFolders as $folder) {
             $resources = array_merge(
                 $resources,
-                $this->listResourceFiles($skillDir . '/' . $folder, $folder . '/')
+                $this->listResourceFiles($skillDir . '/' . $folder, $folder . '/'),
             );
         }
 

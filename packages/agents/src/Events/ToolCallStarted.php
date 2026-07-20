@@ -3,6 +3,7 @@
 namespace Cognesy\Agents\Events;
 
 use DateTimeImmutable;
+use Override;
 
 /**
  * Dispatched when a tool call begins execution.
@@ -32,7 +33,7 @@ final class ToolCallStarted extends AgentEvent
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public function __toString(): string {
         $argsPreview = is_array($this->args)
             ? implode(', ', array_keys($this->args))
@@ -41,7 +42,7 @@ final class ToolCallStarted extends AgentEvent
         return sprintf(
             'Tool call started: %s(%s)',
             $this->tool,
-            $argsPreview
+            $argsPreview,
         );
     }
 }

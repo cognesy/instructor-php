@@ -5,6 +5,7 @@ namespace Cognesy\Agents\Capability\Skills;
 use Cognesy\Agents\Tool\Tools\StateAwareTool;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
+use Override;
 
 class LoadSkillTool extends StateAwareTool
 {
@@ -32,7 +33,7 @@ class LoadSkillTool extends StateAwareTool
         return new self($library, $forkExecutor, $preprocessor);
     }
 
-    #[\Override]
+    #[Override]
     public function __invoke(mixed ...$args): string {
         $skill_name = $this->arg($args, 'skill_name', 0);
         $list_skills = $this->arg($args, 'list_skills', 1, false);
@@ -85,7 +86,7 @@ class LoadSkillTool extends StateAwareTool
         return $skill->render($arguments);
     }
 
-    #[\Override]
+    #[Override]
     public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition {
         return \Cognesy\Polyglot\Inference\Data\ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
@@ -95,7 +96,7 @@ class LoadSkillTool extends StateAwareTool
                     JsonSchema::string('skill_name', 'Name of the skill to load'),
                     JsonSchema::boolean('list_skills', 'If true, list all available skills instead of loading one'),
                     JsonSchema::string('arguments', 'Arguments to pass to the skill'),
-                ])
+                ]),
         )->toArray());
     }
 }

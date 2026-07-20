@@ -95,16 +95,15 @@ $runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new());
 $runtime = $runtime->withConfig(StructuredOutputConfig::fromArray([...]));
 $runtime = $runtime->withConfig(StructuredOutputConfig::fromDsn('outputMode=json,maxRetries=2'));
 $runtime = $runtime->withRequestMaterializer($customMaterializer);
-$runtime = $runtime->withRequestMaterializer(new RequestMaterializer()); // legacy/default path
-$runtime = $runtime->withRequestMaterializer(new StructuredPromptRequestMaterializer()); // new structured prompt path
+$runtime = $runtime->withRequestMaterializer(new RequestMaterializer()); // deprecated compatibility path
 
 $so = (new StructuredOutput)->withRuntime($runtime);
 ```
 
-`RequestMaterializer` remains the legacy/default implementation during rollout.
-`StructuredPromptRequestMaterializer` is the new path: it renders one system prompt text,
+`StructuredPromptRequestMaterializer` is the default: it renders one system prompt text,
 keeps examples inside that system prompt, and sends cached prompt content through
-`InferenceRequest::cachedContext()` when used with the current runtime.
+`InferenceRequest::cachedContext()`. `RequestMaterializer` is deprecated and must be
+injected explicitly when migrating legacy inline prompt configuration.
 
 ## Prompt Config References
 
@@ -313,7 +312,7 @@ $so = (new StructuredOutput)->withRuntime($runtime);
 
 $asArray = (new StructuredOutput)->intoArray();
 $asClass = (new StructuredOutput)->intoInstanceOf(User::class);
-$asObject = (new StructuredOutput)->intoObject(Scalar::integer('rating'));
+$asObject = (new StructuredOutput)->intoSelfDeserializing(Scalar::integer('rating'));
 ```
 
 ## Cached Context

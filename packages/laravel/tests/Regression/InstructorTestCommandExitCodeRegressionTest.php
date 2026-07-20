@@ -29,6 +29,7 @@ namespace {
     use Cognesy\Events\Contracts\CanHandleEvents;
     use Cognesy\Http\Contracts\CanSendHttpRequests;
     use Cognesy\Http\HttpClient;
+    use Cognesy\Instructor\Config\StructuredOutputConfig;
     use Cognesy\Instructor\Laravel\Console\InstructorTestCommand;
 
     final class TestConsoleComponents
@@ -73,11 +74,22 @@ namespace {
         }
     }
 
-    function commandConfigProvider(): CanProvideConfig
+    /** @param array<string, mixed> $values */
+    function commandConfigProvider(array $values = []): CanProvideConfig
     {
-        return new class implements CanProvideConfig {
-            public function get(string $path, mixed $default = null): mixed { return $default; }
-            public function has(string $path): bool { return false; }
+        return new class($values) implements CanProvideConfig {
+            /** @param array<string, mixed> $values */
+            public function __construct(private array $values) {}
+
+            public function get(string $path, mixed $default = null): mixed
+            {
+                return $this->values[$path] ?? $default;
+            }
+
+            public function has(string $path): bool
+            {
+                return array_key_exists($path, $this->values);
+            }
         };
     }
 
@@ -137,5 +149,22 @@ namespace {
             );
 
         expect($code)->toBe(\Illuminate\Console\Command::FAILURE);
+    });
+
+    it('maps retry prompt class into the structured output command config', function () {
+        $promptClass = 'App\\Prompts\\RetryFeedbackPrompt';
+        $method = new ReflectionMethod(InstructorTestCommand::class, 'resolveStructuredOutputConfig');
+
+        /** @var StructuredOutputConfig $config */
+        $config = $method->invoke(
+            new TestableInstructorTestCommand(),
+            commandConfigProvider([
+                'instructor.extraction.retry_prompt_class' => $promptClass,
+                'instructor.extraction.retry_prompt' => 'Legacy inline retry text',
+            ]),
+        );
+
+        expect($config->retryPromptClass())->toBe($promptClass)
+            ->and($config->retryPrompt())->toBe('Legacy inline retry text');
     });
 }

@@ -11,6 +11,7 @@ use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Agents\Tool\Contracts\ToolInterface;
 use Cognesy\Events\Contracts\CanHandleEvents;
+use Override;
 
 final readonly class UseToolFactory implements CanProvideAgentCapability
 {
@@ -24,12 +25,12 @@ final readonly class UseToolFactory implements CanProvideAgentCapability
         $this->factory = Closure::fromCallable($factory);
     }
 
-    #[\Override]
+    #[Override]
     public static function capabilityName(): string {
         return 'use_tool_factory';
     }
 
-    #[\Override]
+    #[Override]
     public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         $provider = new class($this->factory) implements CanProvideDeferredTools {
             /** @var Closure(Tools, CanUseTools, CanHandleEvents): ToolInterface */
@@ -40,7 +41,7 @@ final readonly class UseToolFactory implements CanProvideAgentCapability
                 $this->factory = $factory;
             }
 
-            #[\Override]
+            #[Override]
             public function provideTools(DeferredToolContext $context): Tools {
                 $tool = ($this->factory)(
                     $context->tools(),
@@ -52,7 +53,7 @@ final readonly class UseToolFactory implements CanProvideAgentCapability
         };
 
         return $agent->withDeferredTools(
-            $agent->deferredTools()->withProvider($provider)
+            $agent->deferredTools()->withProvider($provider),
         );
     }
 }

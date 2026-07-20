@@ -14,10 +14,10 @@ final class AgentStopException extends RuntimeException
     public function __construct(
         public readonly StopSignal $signal,
         public readonly ?AgentStep $step = null,
-        public array               $context = [],
-        public ?string             $source = null,
-        string                     $message = '',
-        ?Throwable                 $previous = null,
+        public array $context = [],
+        public ?string $source = null,
+        string $message = '',
+        ?Throwable $previous = null,
     ) {
         parent::__construct(self::resolveMessage($signal, $message), 0, $previous);
     }

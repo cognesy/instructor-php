@@ -98,7 +98,7 @@ it('hydrates to schema class when OutputFormat is null (default)', function () {
     $responseModel = createTestResponseModel(TestUser::class);
     $deserializer = createTestDeserializer();
 
-    // When OutputFormat is null, should use returnedClass from ResponseModel (default behavior)
+    // The factory resolves the schema class into OutputFormat before deserialization.
     $result = $deserializer->deserialize($data, $responseModel);
 
     expect($result->isSuccess())->toBeTrue();

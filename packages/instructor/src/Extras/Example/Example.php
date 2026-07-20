@@ -152,7 +152,7 @@ class Example implements CanProvideMessages, JsonSerializable
     }
 
     public function clone() : self {
-        return new static(
+        return new self(
             input: clone $this->input,
             output: clone $this->output,
             isStructured: $this->isStructured,

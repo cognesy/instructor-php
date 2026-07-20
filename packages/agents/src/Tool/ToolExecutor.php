@@ -21,11 +21,12 @@ use Cognesy\Agents\Tool\Contracts\CanAccessToolCall;
 use Cognesy\Agents\Tool\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Tool\Contracts\ToolInterface;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Messages\ToolCalls;
 use Cognesy\Messages\ToolCall;
+use Cognesy\Messages\ToolCalls;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Result;
 use DateTimeImmutable;
+use Override;
 use Throwable;
 
 /**
@@ -58,11 +59,11 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
 
     // MAIN API /////////////////////////////////////////////
 
-    #[\Override]
+    #[Override]
     public function executeTools(
         ToolCalls $toolCalls,
         AgentState $state,
-    ) : ToolExecutions {
+    ): ToolExecutions {
         /** @var ToolExecution[] $results */
         $results = [];
 
@@ -188,7 +189,7 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
 
     // ERROR HANDLING ////////////////////////////////////////////
 
-    private function handleFailure(ToolExecution $execution, ToolCall $toolCall) : void {
+    private function handleFailure(ToolExecution $execution, ToolCall $toolCall): void {
         $failure = $execution->result();
         if (!$failure instanceof Failure) {
             return;
@@ -196,7 +197,7 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
         if (!$this->throwOnToolFailure) {
             return;
         }
-        throw match(true) {
+        throw match (true) {
             $failure->exception() instanceof ToolExecutionException => $failure->exception(),
             default => new ToolExecutionException(
                 message: 'Error during tool execution: ' . $failure->exception()->getMessage(),

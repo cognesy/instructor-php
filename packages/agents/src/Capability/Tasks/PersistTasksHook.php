@@ -4,12 +4,12 @@ namespace Cognesy\Agents\Capability\Tasks;
 
 use Cognesy\Agents\Hook\Contracts\HookInterface;
 use Cognesy\Agents\Hook\Data\HookContext;
+use Override;
 
 final readonly class PersistTasksHook implements HookInterface
 {
-    #[\Override]
-    public function handle(HookContext $context): HookContext
-    {
+    #[Override]
+    public function handle(HookContext $context): HookContext {
         $state = $context->state();
         $step = $state->currentStep();
 
@@ -43,8 +43,7 @@ final readonly class PersistTasksHook implements HookInterface
         return $context->withState($nextState);
     }
 
-    private function extractTasks(mixed $result): ?array
-    {
+    private function extractTasks(mixed $result): ?array {
         if ($result instanceof TodoWriteResult) {
             return $result->tasks;
         }

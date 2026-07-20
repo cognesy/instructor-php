@@ -46,7 +46,6 @@ final readonly class StructuredOutputPipelineFactory
         $responseTransformer = new ResponseTransformer(
             events: $this->events,
             transformer: $this->transformer,
-            config: $this->config,
         );
 
         $extractor = $this->resolveExtractor();

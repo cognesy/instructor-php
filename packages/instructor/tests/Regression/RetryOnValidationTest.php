@@ -2,8 +2,8 @@
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
-use Cognesy\Instructor\Events\Attempt\NewValidationRecoveryAttempt;
-use Cognesy\Instructor\Events\Attempt\StructuredOutputRecoveryLimitReached;
+use Cognesy\Instructor\Events\Attempt\ResponseRecoveryExhausted;
+use Cognesy\Instructor\Events\Attempt\ResponseRetryScheduled;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Validation\Traits\ValidationMixin;
 use Cognesy\Instructor\Validation\ValidationResult;
@@ -47,8 +47,8 @@ it('retries sync request after validation failure and succeeds on second attempt
 
     $events = new EventDispatcher();
     $attempts = 0; $limits = 0;
-    $events->addListener(NewValidationRecoveryAttempt::class, function() use (&$attempts){ $attempts++; });
-    $events->addListener(StructuredOutputRecoveryLimitReached::class, function() use (&$limits){ $limits++; });
+    $events->addListener(ResponseRetryScheduled::class, function() use (&$attempts){ $attempts++; });
+    $events->addListener(ResponseRecoveryExhausted::class, function() use (&$limits){ $limits++; });
 
     $config = (new StructuredOutputConfigBuilder())
         ->withOutputMode(OutputMode::Json)
@@ -95,8 +95,8 @@ it('retries streaming (transducer) request after validation failure and succeeds
 
     $events = new EventDispatcher();
     $attempts = 0; $limits = 0;
-    $events->addListener(NewValidationRecoveryAttempt::class, function() use (&$attempts){ $attempts++; });
-    $events->addListener(StructuredOutputRecoveryLimitReached::class, function() use (&$limits){ $limits++; });
+    $events->addListener(ResponseRetryScheduled::class, function() use (&$attempts){ $attempts++; });
+    $events->addListener(ResponseRecoveryExhausted::class, function() use (&$limits){ $limits++; });
 
     $config = (new StructuredOutputConfigBuilder())
         ->withOutputMode(OutputMode::Json)
@@ -141,10 +141,10 @@ it('retries streaming when driver emits pre-valued object that fails validation'
     $events = new EventDispatcher();
     $attempts = 0;
     $limits = 0;
-    $events->addListener(NewValidationRecoveryAttempt::class, function () use (&$attempts) {
+    $events->addListener(ResponseRetryScheduled::class, function () use (&$attempts) {
         $attempts++;
     });
-    $events->addListener(StructuredOutputRecoveryLimitReached::class, function () use (&$limits) {
+    $events->addListener(ResponseRecoveryExhausted::class, function () use (&$limits) {
         $limits++;
     });
 

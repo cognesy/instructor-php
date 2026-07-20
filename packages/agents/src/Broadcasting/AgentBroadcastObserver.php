@@ -20,6 +20,7 @@ final class AgentBroadcastObserver
 {
     /** @var array<string, AgentEventBroadcaster> */
     private array $broadcasters = [];
+
     /** @var array<string, string> */
     private array $agentExecutionIdByInferenceExecutionId = [];
 
@@ -29,8 +30,7 @@ final class AgentBroadcastObserver
         private readonly BroadcastConfig $config = new BroadcastConfig(),
     ) {}
 
-    public function onAgentExecutionStarted(AgentExecutionStarted $event): void
-    {
+    public function onAgentExecutionStarted(AgentExecutionStarted $event): void {
         $this->broadcasters[$event->executionId] = new AgentEventBroadcaster(
             broadcaster: $this->transport,
             sessionId: $this->sessionId ?? $event->agentId,
@@ -39,8 +39,7 @@ final class AgentBroadcastObserver
         );
     }
 
-    public function onInferenceRequestStarted(InferenceRequestStarted $event): void
-    {
+    public function onInferenceRequestStarted(InferenceRequestStarted $event): void {
         if ($event->inferenceExecutionId === null) {
             return;
         }
@@ -48,8 +47,7 @@ final class AgentBroadcastObserver
         $this->agentExecutionIdByInferenceExecutionId[$event->inferenceExecutionId] = $event->executionId;
     }
 
-    public function onPartialInferenceDelta(PartialInferenceDeltaCreated $event): void
-    {
+    public function onPartialInferenceDelta(PartialInferenceDeltaCreated $event): void {
         $inferenceExecutionId = $event->data['executionId'] ?? null;
         if (!is_string($inferenceExecutionId) || $inferenceExecutionId === '') {
             return;
@@ -68,49 +66,40 @@ final class AgentBroadcastObserver
         $broadcaster->onPartialInferenceDelta($event);
     }
 
-    public function onAgentStepStarted(AgentStepStarted $event): void
-    {
+    public function onAgentStepStarted(AgentStepStarted $event): void {
         $this->broadcasterFor($event->executionId)?->onAgentStepStarted($event);
     }
 
-    public function onAgentStepCompleted(AgentStepCompleted $event): void
-    {
+    public function onAgentStepCompleted(AgentStepCompleted $event): void {
         $this->broadcasterFor($event->executionId)?->onAgentStepCompleted($event);
     }
 
-    public function onToolCallStarted(ToolCallStarted $event): void
-    {
+    public function onToolCallStarted(ToolCallStarted $event): void {
         $this->broadcasterFor($event->executionId)?->onToolCallStarted($event);
     }
 
-    public function onToolCallCompleted(ToolCallCompleted $event): void
-    {
+    public function onToolCallCompleted(ToolCallCompleted $event): void {
         $this->broadcasterFor($event->executionId)?->onToolCallCompleted($event);
     }
 
-    public function onContinuationEvaluated(ContinuationEvaluated $event): void
-    {
+    public function onContinuationEvaluated(ContinuationEvaluated $event): void {
         $this->broadcasterFor($event->executionId)?->onContinuationEvaluated($event);
     }
 
-    public function onAgentExecutionFailed(AgentExecutionFailed $event): void
-    {
+    public function onAgentExecutionFailed(AgentExecutionFailed $event): void {
         $this->broadcasterFor($event->executionId)?->onAgentExecutionFailed($event);
     }
 
-    public function onAgentExecutionCompleted(AgentExecutionCompleted $event): void
-    {
+    public function onAgentExecutionCompleted(AgentExecutionCompleted $event): void {
         unset($this->broadcasters[$event->executionId]);
         $this->removeInferenceMappingsFor($event->executionId);
     }
 
-    private function broadcasterFor(string $executionId): ?AgentEventBroadcaster
-    {
+    private function broadcasterFor(string $executionId): ?AgentEventBroadcaster {
         return $this->broadcasters[$executionId] ?? null;
     }
 
-    private function removeInferenceMappingsFor(string $executionId): void
-    {
+    private function removeInferenceMappingsFor(string $executionId): void {
         foreach ($this->agentExecutionIdByInferenceExecutionId as $inferenceExecutionId => $agentExecutionId) {
             if ($agentExecutionId !== $executionId) {
                 continue;

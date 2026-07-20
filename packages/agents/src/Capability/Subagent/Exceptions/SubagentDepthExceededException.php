@@ -12,7 +12,7 @@ final class SubagentDepthExceededException extends AgentException
         public readonly int $maxDepth,
     ) {
         parent::__construct(
-            "Maximum nesting depth ({$this->maxDepth}) reached for subagent '{$this->subagentName}'."
+            "Maximum nesting depth ({$this->maxDepth}) reached for subagent '{$this->subagentName}'.",
         );
     }
 }

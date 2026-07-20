@@ -237,8 +237,6 @@ final class Configuration implements ConfigurationInterface
             ->scalarNode('toolName')->defaultNull()->end()
             ->scalarNode('tool_description')->defaultNull()->end()
             ->scalarNode('toolDescription')->defaultNull()->end()
-            ->scalarNode('output_class')->defaultNull()->end()
-            ->scalarNode('outputClass')->defaultNull()->end()
             ->scalarNode('default_to_std_class')->defaultNull()->end()
             ->scalarNode('defaultToStdClass')->defaultNull()->end()
             ->scalarNode('deserialization_error_prompt_class')->defaultNull()->end()

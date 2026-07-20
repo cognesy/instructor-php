@@ -2,7 +2,9 @@
 
 namespace Cognesy\Instructor\Data;
 
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Enums\OutputFormatType;
+use InvalidArgumentException;
 
 /**
  * Value object representing the desired output format for deserialization.
@@ -38,15 +40,23 @@ final readonly class OutputFormat
      */
     public static function instanceOf(string $class): self
     {
+        if (!class_exists($class)) {
+            throw new InvalidArgumentException("Output class does not exist: {$class}");
+        }
         return new self(OutputFormatType::AsClass, $class);
+    }
+
+    public static function stdClass(): self
+    {
+        return self::instanceOf(\stdClass::class);
     }
 
     /**
      * Use a self-deserializing object instance.
      *
-     * @param object $instance Object implementing CanDeserializeSelf
+     * @param CanDeserializeSelf $instance Self-deserializing target instance
      */
-    public static function selfDeserializing(object $instance): self
+    public static function selfDeserializing(CanDeserializeSelf $instance): self
     {
         return new self(OutputFormatType::AsObject, get_class($instance), $instance);
     }

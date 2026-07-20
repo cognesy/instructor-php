@@ -7,9 +7,8 @@ use Cognesy\Events\Event;
 
 class StopSignalReceived extends Event
 {
-
     /**
-     * @param \Cognesy\Agents\Continuation\StopReason $reason
+     * @param StopReason $reason
      * @param string $message
      * @param mixed[] $context
      * @param class-string|string|null $source
@@ -27,7 +26,7 @@ class StopSignalReceived extends Event
                 'message' => $this->message,
                 'context' => $this->context,
                 'source' => $this->source,
-            ]
+            ],
         );
     }
 }

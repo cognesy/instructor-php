@@ -7,6 +7,7 @@ use Cognesy\Agents\Continuation\StopReason;
 use Cognesy\Agents\Continuation\StopSignal;
 use Cognesy\Agents\Hook\Contracts\HookInterface;
 use Cognesy\Agents\Hook\Data\HookContext;
+use Override;
 
 final readonly class StepsLimitHook implements HookInterface
 {
@@ -24,9 +25,8 @@ final readonly class StepsLimitHook implements HookInterface
         $this->stepCounter = Closure::fromCallable($stepCounter);
     }
 
-    #[\Override]
-    public function handle(HookContext $context): HookContext
-    {
+    #[Override]
+    public function handle(HookContext $context): HookContext {
         $state = $context->state();
         $currentSteps = ($this->stepCounter)($state);
         if ($currentSteps < $this->maxSteps) {
@@ -36,8 +36,7 @@ final readonly class StepsLimitHook implements HookInterface
         return $context->withState($state->withStopSignal($this->createSignal($currentSteps)));
     }
 
-    private function createSignal(int $currentSteps): StopSignal
-    {
+    private function createSignal(int $currentSteps): StopSignal {
         $reason = sprintf('Step limit reached: %d/%d', $currentSteps, $this->maxSteps);
 
         return new StopSignal(

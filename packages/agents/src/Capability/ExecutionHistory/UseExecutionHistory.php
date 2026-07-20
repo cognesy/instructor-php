@@ -6,6 +6,7 @@ use Cognesy\Agents\Builder\Contracts\CanConfigureAgent;
 use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
 use Cognesy\Agents\Hook\Collections\HookTriggers;
 use Cognesy\Agents\Hook\Enums\HookTrigger;
+use Override;
 
 /**
  * Capability that records execution summaries after each execute() call.
@@ -28,15 +29,13 @@ final class UseExecutionHistory implements CanProvideAgentCapability
         $this->store = $store ?? new ArrayExecutionStore();
     }
 
-    #[\Override]
-    public static function capabilityName(): string
-    {
+    #[Override]
+    public static function capabilityName(): string {
         return 'use_execution_history';
     }
 
-    #[\Override]
-    public function configure(CanConfigureAgent $agent): CanConfigureAgent
-    {
+    #[Override]
+    public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         $hooks = $agent->hooks()->with(
             hook: new ExecutionHistoryHook(store: $this->store),
             triggerTypes: HookTriggers::of(HookTrigger::AfterExecution),
@@ -47,8 +46,7 @@ final class UseExecutionHistory implements CanProvideAgentCapability
         return $agent->withHooks($hooks);
     }
 
-    public function store(): ExecutionStore
-    {
+    public function store(): ExecutionStore {
         return $this->store;
     }
 }

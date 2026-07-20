@@ -2,31 +2,33 @@
 
 namespace Cognesy\Agents\Capability\Retrospective;
 
+use Closure;
 use Cognesy\Agents\Builder\Contracts\CanConfigureAgent;
 use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
 use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Hook\Collections\HookTriggers;
 use Cognesy\Agents\Hook\Enums\HookTrigger;
+use Override;
 
 final class UseExecutionRetrospective implements CanProvideAgentCapability
 {
     public function __construct(
         private ?RetrospectivePolicy $policy = null,
-        private ?\Closure $onRewind = null,
+        private ?Closure $onRewind = null,
     ) {}
 
-    #[\Override]
+    #[Override]
     public static function capabilityName(): string {
         return 'use_execution_retrospective';
     }
 
-    #[\Override]
+    #[Override]
     public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         $policy = $this->policy ?? new RetrospectivePolicy();
 
         // Register the tool
         $tools = $agent->tools()->merge(
-            new Tools(new ExecutionRetrospectiveTool())
+            new Tools(new ExecutionRetrospectiveTool()),
         );
 
         // Register the hook for BeforeExecution (system prompt), BeforeStep (checkpoints), AfterStep (rewind)

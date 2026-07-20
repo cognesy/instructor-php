@@ -4,6 +4,7 @@ namespace Cognesy\Agents\Events;
 
 use Cognesy\Agents\Continuation\StopReason;
 use DateTimeImmutable;
+use Override;
 
 /**
  * Dispatched when an agent loop is stopped due to stop signals before normal completion.
@@ -13,14 +14,14 @@ final class AgentExecutionStopped extends AgentEvent
     public readonly DateTimeImmutable $stoppedAt;
 
     public function __construct(
-        public readonly string      $agentId,
-        public readonly string      $executionId,
-        public readonly ?string     $parentAgentId,
-        public readonly StopReason  $stopReason,
-        public readonly string      $stopMessage,
-        public readonly ?string     $source,
-        public readonly int         $totalSteps,
-        public readonly array       $stopContext = [],
+        public readonly string $agentId,
+        public readonly string $executionId,
+        public readonly ?string $parentAgentId,
+        public readonly StopReason $stopReason,
+        public readonly string $stopMessage,
+        public readonly ?string $source,
+        public readonly int $totalSteps,
+        public readonly array $stopContext = [],
     ) {
         $this->stoppedAt = new DateTimeImmutable();
 
@@ -36,7 +37,7 @@ final class AgentExecutionStopped extends AgentEvent
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public function __toString(): string {
         $parentInfo = $this->parentAgentId ? sprintf(' [parent=%s]', substr($this->parentAgentId, 0, 8)) : '';
         $sourceInfo = $this->source ? " by {$this->source}" : '';

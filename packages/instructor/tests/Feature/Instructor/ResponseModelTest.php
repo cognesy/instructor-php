@@ -1,13 +1,11 @@
 <?php
 
-use Cognesy\Dynamic\Structure;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Creation\ResponseModelFactory;
 use Cognesy\Instructor\Creation\StructuredOutputSchemaRenderer;
 use Cognesy\Instructor\Tests\Examples\ResponseModel\User;
 use Cognesy\Instructor\Tests\Examples\ResponseModel\UserWithProvider;
-use Cognesy\Schema\SchemaBuilder;
 
 dataset('user_response_model', [[[
     'x-php-class' => 'Cognesy\Instructor\Tests\Examples\ResponseModel\User',
@@ -35,8 +33,7 @@ it('can handle string class name', function() {
         $events,
     );
     $responseModel = $responseModelFactory->fromAny(User::class);
-    expect($responseModel->instanceClass())->toBe(User::class);
-    expect($responseModel->instance())->toBeInstanceOf(User::class);
+    expect($responseModel->outputFormat()->targetClass())->toBe(User::class);
     expect($responseModel->toJsonSchema())->toBeArray();
     //expect($responseModel->jsonSchema['type'])->toBe('function');
     //expect($responseModel->jsonSchema['function']['name'])->toBe('extract_data');
@@ -60,8 +57,7 @@ it('can handle array schema', function($user) {
         $events,
     );
     $responseModel = $responseModelFactory->fromAny($user);
-    expect($responseModel->instanceClass())->toBe(User::class);
-    expect($responseModel->instance())->toBeInstanceOf(User::class);
+    expect($responseModel->outputFormat()->targetClass())->toBe(User::class);
     expect($responseModel->toJsonSchema())->toBeArray();
     //expect($responseModel->jsonSchema['type'])->toBe('function');
     //expect($responseModel->jsonSchema['function']['name'])->toBe('extract_data');
@@ -85,9 +81,7 @@ it('can handle schema provider - via instance', function() {
         $events,
     );
     $responseModel = $responseModelFactory->fromAny(new UserWithProvider());
-    expect($responseModel->instanceClass())->toBe(UserWithProvider::class);
-    expect($responseModel->returnedClass())->toBe(User::class);
-    expect($responseModel->instance())->toBeInstanceOf(UserWithProvider::class);
+    expect($responseModel->outputFormat()->targetClass())->toBe(User::class);
     expect($responseModel->toJsonSchema())->toBeArray();
     //expect($responseModel->jsonSchema['type'])->toBe('function');
     //expect($responseModel->jsonSchema['function']['name'])->toBe('extract_data');
@@ -111,9 +105,7 @@ it('can handle schema provider - via class name', function() {
         $events,
     );
     $responseModel = $responseModelFactory->fromAny(UserWithProvider::class);
-    expect($responseModel->instanceClass())->toBe(UserWithProvider::class);
-    expect($responseModel->returnedClass())->toBe(User::class);
-    expect($responseModel->instance())->toBeInstanceOf(UserWithProvider::class);
+    expect($responseModel->outputFormat()->targetClass())->toBe(User::class);
     expect($responseModel->toJsonSchema())->toBeArray();
     //expect($responseModel->jsonSchema['type'])->toBe('function');
     //expect($responseModel->jsonSchema['function']['name'])->toBe('extract_data');
@@ -140,8 +132,7 @@ it('can handle ObjectSchema instance', function() {
         ->schemaFactory()
         ->schema(User::class);
     $responseModel = $responseModelFactory->fromAny($schema);
-    expect($responseModel->instanceClass())->toBe(User::class);
-    expect($responseModel->instance())->toBeInstanceOf(User::class);
+    expect($responseModel->outputFormat()->targetClass())->toBe(User::class);
     expect($responseModel->toJsonSchema())->toBeArray();
     //expect($responseModel->jsonSchema['type'])->toBe('function');
     //expect($responseModel->jsonSchema['function']['name'])->toBe('extract_data');
@@ -165,8 +156,7 @@ it('can handle raw object', function() {
         $events,
     );
     $responseModel = $responseModelFactory->fromAny(new User());
-    expect($responseModel->instanceClass())->toBe(User::class);
-    expect($responseModel->instance())->toBeInstanceOf(User::class);
+    expect($responseModel->outputFormat()->targetClass())->toBe(User::class);
     expect($responseModel->toJsonSchema())->toBeArray();
     //expect($responseModel->jsonSchema['type'])->toBe('function');
     //expect($responseModel->jsonSchema['function']['name'])->toBe('extract_data');
@@ -181,7 +171,7 @@ it('can handle raw object', function() {
     expect($responseModel->toJsonSchema()['required'][1])->toBe('email');
 });
 
-it('hydrates dynamic structure from json schema', function() {
+it('keeps a class-less json schema on the array target', function() {
     $events = new EventDispatcher('test');
     $config = new StructuredOutputConfig();
     $responseModelFactory = new ResponseModelFactory(
@@ -189,21 +179,16 @@ it('hydrates dynamic structure from json schema', function() {
         $config,
         $events,
     );
-    $city = Structure::fromSchema(
-        SchemaBuilder::define('city')
-            ->string('name')
-            ->int('population')
-            ->schema(),
-    );
-    $responseModel = $responseModelFactory->fromAny($city->toJsonSchema());
-    $structure = $responseModel->instance();
-    expect($structure)->toBeInstanceOf(Structure::class);
-    expect($structure->name())->toBe('city');
-    expect($structure->schema()->required)->toContain('name');
-    $structure = $structure->fromArray([
-        'name' => 'Paris',
-        'population' => 2140526,
+    $responseModel = $responseModelFactory->fromAny([
+        'type' => 'object',
+        'name' => 'city',
+        'properties' => [
+            'name' => ['type' => 'string'],
+            'population' => ['type' => 'integer'],
+        ],
+        'required' => ['name', 'population'],
     ]);
-    expect($structure->get('name'))->toBe('Paris');
-    expect($structure->get('population'))->toBe(2140526);
+
+    expect($responseModel->outputFormat()->isArray())->toBeTrue();
+    expect($responseModel->schema()->required)->toContain('name');
 });

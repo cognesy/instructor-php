@@ -6,6 +6,7 @@ use Closure;
 use Cognesy\Agents\Builder\Contracts\CanConfigureAgent;
 use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
 use Cognesy\Agents\Drivers\CanUseTools;
+use Override;
 
 final readonly class UseDriverDecorator implements CanProvideAgentCapability
 {
@@ -19,15 +20,15 @@ final readonly class UseDriverDecorator implements CanProvideAgentCapability
         $this->decorator = Closure::fromCallable($decorator);
     }
 
-    #[\Override]
+    #[Override]
     public static function capabilityName(): string {
         return 'use_driver_decorator';
     }
 
-    #[\Override]
+    #[Override]
     public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         return $agent->withToolUseDriver(
-            ($this->decorator)($agent->toolUseDriver())
+            ($this->decorator)($agent->toolUseDriver()),
         );
     }
 }

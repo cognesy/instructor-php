@@ -164,9 +164,9 @@ a few utility helpers:
 | `response()` | `StructuredOutputResponse` |
 | `inferenceResponse()` | `InferenceResponse` |
 | `stream()` | `StructuredOutputStream` |
-| `toJson()` | JSON string of the extracted data |
-| `toArray()` | Associative array of the extracted data |
-| `toJsonObject()` | `Json` object |
+| `toJson()` | Raw inference JSON as a string |
+| `toArray()` | Raw inference JSON decoded as an array |
+| `toJsonObject()` | Raw inference JSON as a `Json` object |
 
 
 ## Typed Convenience Methods
@@ -256,7 +256,9 @@ Three output format methods are available:
 |---|---|
 | `intoArray()` | Skip deserialization, return a raw associative array |
 | `intoInstanceOf($class)` | Use the schema from the response model but hydrate into a different class |
-| `intoObject($obj)` | Pass a self-deserializing object that implements `CanDeserializeSelf` |
+| `intoSelfDeserializing($obj)` | Pass a self-deserializing object that implements `CanDeserializeSelf` |
+
+`intoObject()` remains as a deprecated compatibility alias.
 
 
 ## Using A Runtime

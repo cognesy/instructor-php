@@ -45,7 +45,7 @@ final readonly class AgentStep
         $this->errors = $toolErrors->withAppendedExceptions(...$providedErrors->all());
     }
 
-    public static function empty() : self {
+    public static function empty(): self {
         return new self();
     }
 
@@ -60,7 +60,7 @@ final readonly class AgentStep
         );
     }
 
-    public function withError(Throwable $error) : self {
+    public function withError(Throwable $error): self {
         $newErrors = $this->errors->withAppendedExceptions($error);
         return new self(
             inputMessages: $this->inputMessages,
@@ -166,7 +166,7 @@ final readonly class AgentStep
             'outputMessages' => $this->outputMessages->toArray(),
             'toolExecutions' => $this->toolExecutions->toArray(),
             'errors' => array_map(
-                static fn(Throwable $error): array => [
+                static fn (Throwable $error): array => [
                     'message' => $error->getMessage(),
                     'class' => get_class($error),
                 ],

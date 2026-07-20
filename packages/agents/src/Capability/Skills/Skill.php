@@ -48,7 +48,7 @@ final readonly class Skill
             'context' => $this->context,
             'agent' => $this->agent,
             'resources' => $this->resources ?: null,
-        ], fn($v) => $v !== null);
+        ], fn ($v) => $v !== null);
     }
 
     public function render(?string $arguments = null): string {
@@ -61,14 +61,14 @@ final readonly class Skill
         $parts[] = $body;
 
         if ($this->resources !== []) {
-            $parts[] = "";
-            $parts[] = "## Available resources";
+            $parts[] = '';
+            $parts[] = '## Available resources';
             foreach ($this->resources as $resource) {
                 $parts[] = "- {$resource}";
             }
         }
 
-        $parts[] = "</skill>";
+        $parts[] = '</skill>';
 
         return implode("\n", $parts);
     }

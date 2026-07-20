@@ -6,5 +6,5 @@ use Cognesy\Agents\Hook\Data\HookContext;
 
 interface HookInterface
 {
-    public function handle(HookContext $context) : HookContext;
+    public function handle(HookContext $context): HookContext;
 }

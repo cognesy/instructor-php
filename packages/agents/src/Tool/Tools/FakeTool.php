@@ -2,16 +2,19 @@
 
 namespace Cognesy\Agents\Tool\Tools;
 
+use Closure;
 use Cognesy\Agents\Tool\Contracts\CanDescribeTool;
 use Cognesy\Agents\Tool\Contracts\ToolInterface;
 use Cognesy\Polyglot\Inference\Data\ToolDefinition;
 use Cognesy\Utils\Json\EmptyObject;
 use Cognesy\Utils\Result\Result;
+use Override;
 
 final readonly class FakeTool implements ToolInterface, CanDescribeTool
 {
-    /** @var \Closure(mixed ...): mixed */
-    private \Closure $handler;
+    /** @var Closure(mixed ...): mixed */
+    private Closure $handler;
+
     private array $schema;
     private array $metadata;
     private array $fullSpec;
@@ -27,7 +30,7 @@ final readonly class FakeTool implements ToolInterface, CanDescribeTool
         array $metadata = [],
         array $fullSpec = [],
     ) {
-        $this->handler = \Closure::fromCallable($handler);
+        $this->handler = Closure::fromCallable($handler);
         $this->schema = $schema;
         $this->metadata = $metadata;
         $this->fullSpec = $fullSpec;
@@ -37,31 +40,31 @@ final readonly class FakeTool implements ToolInterface, CanDescribeTool
         return new self(
             name: $name,
             description: $description,
-            handler: static fn(mixed ...$args): mixed => $value,
+            handler: static fn (mixed ...$args): mixed => $value,
         );
     }
 
-    #[\Override]
+    #[Override]
     public function name(): string {
         return $this->name;
     }
 
-    #[\Override]
+    #[Override]
     public function description(): string {
         return $this->description;
     }
 
-    #[\Override]
+    #[Override]
     public function descriptor(): CanDescribeTool {
         return $this;
     }
 
-    #[\Override]
+    #[Override]
     public function use(mixed ...$args): Result {
         return Result::from(($this->handler)(...$args));
     }
 
-    #[\Override]
+    #[Override]
     public function toToolSchema(): ToolDefinition {
         if ($this->schema !== []) {
             return ToolDefinition::fromArray($this->schema);
@@ -76,7 +79,7 @@ final readonly class FakeTool implements ToolInterface, CanDescribeTool
         );
     }
 
-    #[\Override]
+    #[Override]
     public function metadata(): array {
         return array_merge([
             'name' => $this->name,
@@ -84,7 +87,7 @@ final readonly class FakeTool implements ToolInterface, CanDescribeTool
         ], $this->metadata);
     }
 
-    #[\Override]
+    #[Override]
     public function instructions(): array {
         return array_merge([
             'name' => $this->name,

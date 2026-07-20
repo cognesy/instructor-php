@@ -11,6 +11,7 @@ use Cognesy\Agents\Tool\Tools\SimpleTool;
 use Cognesy\Messages\Messages;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
+use Override;
 
 class ResearchSubagentTool extends SimpleTool
 {
@@ -25,13 +26,13 @@ class ResearchSubagentTool extends SimpleTool
         return new self($baseDir);
     }
 
-    #[\Override]
+    #[Override]
     public function __invoke(mixed ...$args): string {
         $task = $this->arg($args, 'task', 0, '');
         $files = $this->arg($args, 'files', 1, []);
 
         if ($task === '') {
-            return "Error: task is required";
+            return 'Error: task is required';
         }
 
         // Create subagent with read-only file access
@@ -49,10 +50,10 @@ class ResearchSubagentTool extends SimpleTool
         if ($fileList !== '') {
             $prompt .= "Relevant files to examine: {$fileList}\n";
         }
-        $prompt .= "Provide a concise summary of your findings.";
+        $prompt .= 'Provide a concise summary of your findings.';
 
         $subState = AgentState::empty()->withMessages(
-            Messages::fromString($prompt)
+            Messages::fromString($prompt),
         );
 
         // Run subagent to completion
@@ -61,7 +62,7 @@ class ResearchSubagentTool extends SimpleTool
         return $finalState->currentStep()?->outputMessages()->toString() ?? 'No findings';
     }
 
-    #[\Override]
+    #[Override]
     public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition {
         return \Cognesy\Polyglot\Inference\Data\ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
@@ -71,7 +72,7 @@ class ResearchSubagentTool extends SimpleTool
                     JsonSchema::string('task', 'The research task to perform'),
                     JsonSchema::array('files', JsonSchema::string(), 'List of file paths to examine'),
                 ])
-                ->withRequiredProperties(['task'])
+                ->withRequiredProperties(['task']),
         )->toArray());
     }
 }

@@ -5,6 +5,7 @@ namespace Cognesy\Agents\Capability\Skills;
 use Cognesy\Agents\Hook\Contracts\HookInterface;
 use Cognesy\Agents\Hook\Data\HookContext;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Override;
 
 /**
  * Overrides the LLMConfig when a skill with a model field is active.
@@ -16,9 +17,8 @@ final readonly class SkillModelOverrideHook implements HookInterface
 {
     public const META_KEY = 'active_skill_model';
 
-    #[\Override]
-    public function handle(HookContext $context): HookContext
-    {
+    #[Override]
+    public function handle(HookContext $context): HookContext {
         $model = $context->state()->metadata()->get(self::META_KEY);
         if (!is_string($model) || $model === '') {
             return $context;

@@ -8,6 +8,7 @@ use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Utils\Metadata;
+use Stringable;
 
 final readonly class AgentContext
 {
@@ -56,7 +57,7 @@ final readonly class AgentContext
     }
 
     public function toCachedContext(ToolDefinitions $toolDefinitions = new ToolDefinitions()): CachedInferenceContext {
-        $messages = match(true) {
+        $messages = match (true) {
             $this->systemPrompt === '' => Messages::empty(),
             default => Messages::fromString($this->systemPrompt, 'system'),
         };
@@ -106,7 +107,7 @@ final readonly class AgentContext
         return $this->with(metadata: $metadata);
     }
 
-    public function withSystemPrompt(string|\Stringable $systemPrompt): self {
+    public function withSystemPrompt(string|Stringable $systemPrompt): self {
         return $this->with(systemPrompt: (string) $systemPrompt);
     }
 
@@ -133,5 +134,4 @@ final readonly class AgentContext
             responseFormat: ResponseFormat::fromArray($data['responseFormat'] ?? []),
         );
     }
-
 }

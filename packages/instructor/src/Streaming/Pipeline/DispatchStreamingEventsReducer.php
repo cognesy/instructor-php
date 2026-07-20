@@ -80,6 +80,7 @@ final class DispatchStreamingEventsReducer implements Reducer
             || $this->emitSequenceEvents;
     }
 
+    /** @param class-string $eventClass */
     private function hasListenersFor(string $eventClass): bool {
         return !($this->events instanceof CanCheckListeners)
             || $this->events->hasListenersFor($eventClass);

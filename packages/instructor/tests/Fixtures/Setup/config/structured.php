@@ -27,9 +27,6 @@ return [
             'defaultToolName' => 'extracted_data',
             'defaultToolDescription' => 'Function call based on user instructions.',
 
-            // default output class
-            'defaultOutputClass' => 'Cognesy\Dynamic\Structure',
-
             // default prompts
             'defaultRetryPrompt' => "JSON generated incorrectly, fix following errors:\n",
             'defaultJsonPrompt' => "Response must follow JSON Schema:\n<|json_schema|>\n. Respond correctly with strict JSON object.\n",

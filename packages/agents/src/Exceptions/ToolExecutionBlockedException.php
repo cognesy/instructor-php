@@ -11,7 +11,7 @@ class ToolExecutionBlockedException extends AgentException
         string $message,
         public string $hookName = '',
     ) {
-        $info = "Tool call to '{$toolCall->name()}' (" . $toolCall->argsAsJson() . ") was blocked: " . $message;
+        $info = "Tool call to '{$toolCall->name()}' (" . $toolCall->argsAsJson() . ') was blocked: ' . $message;
         parent::__construct(message: $info);
     }
 }

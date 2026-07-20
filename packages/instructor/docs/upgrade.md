@@ -1,9 +1,78 @@
 ---
 title: Upgrade
-description: 'What to expect in the 2.0-era API.'
+description: 'Migrate structured-output applications to the current API.'
 ---
 
-The current docs are written for the 2.0 structured-output API.
+## Upgrading to 2.5
+
+### Output targets are explicit
+
+A plain JSON Schema now returns an associative array. It no longer creates an internal
+Dynamic `Structure` on the way to the result.
+
+```php
+$result = (new StructuredOutput)
+    ->with(messages: $text, responseModel: $jsonSchema)
+    ->get();
+
+// array<string, mixed>
+```
+
+Use `x-php-class` in the schema or `intoInstanceOf()` to request class hydration. Use
+`intoStdClass()` for `stdClass`. `intoArray()` remains useful when overriding a
+class-backed schema.
+
+Passing a Dynamic `Structure` explicitly preserves its identity:
+
+```php
+$result = (new StructuredOutput)
+    ->with(messages: $text, responseModel: $structure)
+    ->get();
+
+$data = $result->toArray();
+```
+
+Remove workarounds that expected plain schemas to return `Structure`, including
+unnecessary `instanceof Structure` checks and `toArray()` calls.
+
+### Validation and failures
+
+Plain arrays now pass through schema validation before being returned. Synchronous and
+completed streaming responses share the same materialization path, and transformation
+failures fail the attempt instead of silently returning untransformed data.
+
+An unknown root `x-php-class` now fails response-model preparation. Correct or remove
+the metadata, or explicitly select another output target.
+
+### Prompt customization
+
+`StructuredPromptRequestMaterializer` is the default. Customize bundled structured
+output behavior with `modePromptClasses`, `retryPromptClass`, and
+`deserializationErrorPromptClass`.
+
+The inline `modePrompts`, `retryPrompt`, and `chatStructure` settings are read only when
+an application explicitly injects the deprecated legacy `RequestMaterializer`. They are
+scheduled for removal in 2.6.
+
+### Deprecated compatibility APIs
+
+- Replace `intoObject()` with `intoSelfDeserializing()`.
+- Replace global `defaultToStdClass` configuration with per-request `intoStdClass()`.
+- Keep `PendingStructuredOutput::toJsonObject()`, `toJson()`, and `toArray()` unchanged;
+  these methods still inspect the raw inference response.
+
+### Dynamic is now optional
+
+`cognesy/instructor-struct` no longer requires the Dynamic package. Applications that
+import `Cognesy\Dynamic` classes directly must declare their own dependency:
+
+```bash
+composer require cognesy/instructor-dynamic:^2.5
+```
+
+## 2.0-era API overview
+
+The current docs use the runtime-first 2.x structured-output API.
 
 ## What Changed
 
@@ -47,6 +116,32 @@ Runtime configuration belongs on `StructuredOutputRuntime`, not on a global Inst
 - `stream()` returns a dedicated stream object
 - `StructuredOutput::fromConfig(...)` and `StructuredOutput::using(...)` remain valid entry points
 - published config files are optional
+
+## Event Namespaces in 2.5
+
+Structured-output events now live in namespaces that match their lifecycle
+stage. Update listener imports as follows:
+
+| Previous namespace | Current namespace |
+|---|---|
+| `Events\PartialsGenerator\*` | `Events\Streaming\*` |
+| `Events\Request\ResponseModel*` | `Events\ResponseModel\ResponseModel*` |
+| `Events\Request\SequenceUpdated` | `Events\Streaming\SequenceUpdated` |
+
+The old aliases were removed after the source, documentation, and public-usage
+audit found no consumers. Listener registration must use the current event
+class name.
+
+The old validation-only recovery events and the result-specific
+`ResponseConvertedToObject` and `ResponseGenerationFailed` events were also removed.
+Use these result-neutral lifecycle events instead:
+
+| Removed event | Current event |
+|---|---|
+| `NewValidationRecoveryAttempt` | `Events\Attempt\ResponseRetryScheduled` |
+| `StructuredOutputRecoveryLimitReached` | `Events\Attempt\ResponseRecoveryExhausted` |
+| `Events\Response\ResponseConvertedToObject` | `Events\Response\ResponseMaterialized` |
+| `Events\Response\ResponseGenerationFailed` | `Events\Response\ResponseMaterializationFailed` |
 
 ## Migration Rule
 

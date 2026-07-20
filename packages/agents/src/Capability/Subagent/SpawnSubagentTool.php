@@ -28,14 +28,16 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Cognesy\Messages\ToolCall;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
-use Cognesy\Messages\ToolCall;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Telemetry\Domain\Trace\TraceContext;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
 use DateTimeImmutable;
+use Override;
+use Throwable;
 
 final class SpawnSubagentTool extends ContextAwareTool
 {
@@ -67,12 +69,12 @@ final class SpawnSubagentTool extends ContextAwareTool
         $this->events = $events ?? new EventDispatcher(name: 'agents.capability.spawn-subagent');
     }
 
-    #[\Override]
+    #[Override]
     public function withAgentState(AgentState $state): static {
         return $this->with(agentState: $state);
     }
 
-    #[\Override]
+    #[Override]
     public function withToolCall(ToolCall $toolCall): static {
         return $this->with(toolCall: $toolCall);
     }
@@ -102,7 +104,7 @@ final class SpawnSubagentTool extends ContextAwareTool
         return $new;
     }
 
-    #[\Override]
+    #[Override]
     public function __invoke(mixed ...$args): mixed {
         $subagentName = $this->arg($args, 'subagent', 0, '');
         $prompt = $this->arg($args, 'prompt', 1, '');
@@ -117,7 +119,7 @@ final class SpawnSubagentTool extends ContextAwareTool
 
         try {
             $spec = $this->provider->get($subagentName);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             throw new SubagentNotFoundException($subagentName, $e);
         }
 
@@ -253,13 +255,13 @@ final class SpawnSubagentTool extends ContextAwareTool
         }
 
         return $messages->appendMessage(
-            new Message(role: 'system', content: implode("\n\n", $skillContent))
+            new Message(role: 'system', content: implode("\n\n", $skillContent)),
         );
     }
 
     // TOOL SCHEMA //////////////////////////////////////////////////
 
-    #[\Override]
+    #[Override]
     public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition {
         $subagentNames = $this->provider->names();
         $descriptions = [];
@@ -286,14 +288,14 @@ final class SpawnSubagentTool extends ContextAwareTool
                     JsonSchema::enum('subagent', $subagentNames, 'Which subagent to spawn'),
                     JsonSchema::string('prompt', 'The task or question for the subagent'),
                 ])
-                ->withRequiredProperties(['subagent', 'prompt'])
+                ->withRequiredProperties(['subagent', 'prompt']),
         )->toArray());
     }
 
     // SUBAGENT ASSEMBLY ////////////////////////////////////////////
 
     private function filterTools(AgentDefinition $spec, Tools $parentTools): Tools {
-        $tools = match($spec->inheritsAllTools()) {
+        $tools = match ($spec->inheritsAllTools()) {
             true => $parentTools,
             false => $this->filterByAllowList($parentTools, $spec),
         };
@@ -393,16 +395,14 @@ final class SpawnSubagentTool extends ContextAwareTool
         $this->events->dispatch(AgentTelemetry::attach($event, $this->telemetrySeedForCurrentState()));
     }
 
-    private function telemetrySeedForCurrentState(): ?AgentTelemetrySeed
-    {
+    private function telemetrySeedForCurrentState(): ?AgentTelemetrySeed {
         return match ($this->agentState) {
             null => null,
             default => AgentStateTelemetry::loadSeed($this->agentState),
         };
     }
 
-    private function telemetrySeedForSubagent(): ?AgentTelemetrySeed
-    {
+    private function telemetrySeedForSubagent(): ?AgentTelemetrySeed {
         $parentExecutionId = $this->agentState?->execution()?->executionId()->toString();
         if ($parentExecutionId === null || $parentExecutionId === '') {
             return null;

@@ -115,7 +115,6 @@
         "spatie/browsershot": "Used by Cognesy\\Auxiliary\\Web for Browsershot web crawler support",
         "symfony/http-client": "For Symfony HTTP client support",
         "symfony/http-client-contracts": "For Symfony HTTP client support",
-        "twig/twig": "For Twig template engine support",
         "guzzlehttp/guzzle": "For Guzzle HTTP client support",
         "guzzlehttp/psr7": "For Guzzle PSR-7 support"
     },

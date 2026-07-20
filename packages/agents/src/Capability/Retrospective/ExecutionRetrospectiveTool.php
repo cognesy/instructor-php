@@ -5,6 +5,7 @@ namespace Cognesy\Agents\Capability\Retrospective;
 use Cognesy\Agents\Tool\Tools\StateAwareTool;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
+use Override;
 
 final class ExecutionRetrospectiveTool extends StateAwareTool
 {
@@ -14,7 +15,7 @@ final class ExecutionRetrospectiveTool extends StateAwareTool
         parent::__construct(new ExecutionRetrospectiveToolDescriptor());
     }
 
-    #[\Override]
+    #[Override]
     public function __invoke(mixed ...$args): mixed {
         $checkpointId = (int) $this->arg($args, 'checkpoint_id', 0, -1);
         $guidance = (string) $this->arg($args, 'guidance', 1, '');
@@ -24,7 +25,8 @@ final class ExecutionRetrospectiveTool extends StateAwareTool
         }
 
         $availableCheckpoints = $this->agentState?->metadata()->get(
-            ExecutionRetrospectiveHook::CHECKPOINT_COUNT_KEY, 0
+            ExecutionRetrospectiveHook::CHECKPOINT_COUNT_KEY,
+            0,
         ) ?? 0;
 
         if ($checkpointId < 0) {
@@ -45,7 +47,7 @@ final class ExecutionRetrospectiveTool extends StateAwareTool
         );
     }
 
-    #[\Override]
+    #[Override]
     public function toToolSchema(): \Cognesy\Polyglot\Inference\Data\ToolDefinition {
         return \Cognesy\Polyglot\Inference\Data\ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
@@ -62,7 +64,7 @@ final class ExecutionRetrospectiveTool extends StateAwareTool
                         . 'what works, and how to proceed. Account for any side effects already made.',
                     ),
                 ])
-                ->withRequiredProperties(['checkpoint_id', 'guidance'])
+                ->withRequiredProperties(['checkpoint_id', 'guidance']),
         )->toArray());
     }
 }

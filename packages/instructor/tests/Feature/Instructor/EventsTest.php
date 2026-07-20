@@ -1,13 +1,13 @@
 <?php
 
 //use Cognesy\Instructor\Events\Instructor\ErrorRaised;
-use Cognesy\Instructor\Events\Attempt\NewValidationRecoveryAttempt;
+use Cognesy\Instructor\Events\Attempt\ResponseRetryScheduled;
 use Cognesy\Instructor\Events\ResponseModel\ResponseModelBuilt;
-use Cognesy\Instructor\Events\Attempt\StructuredOutputRecoveryLimitReached;
+use Cognesy\Instructor\Events\Attempt\ResponseRecoveryExhausted;
 use Cognesy\Instructor\Events\Response\CustomResponseDeserializationAttempt;
 use Cognesy\Instructor\Events\Response\CustomResponseValidationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseDeserializationAttempt;
-use Cognesy\Instructor\Events\Response\ResponseGenerationFailed;
+use Cognesy\Instructor\Events\Response\ResponseMaterializationFailed;
 use Cognesy\Instructor\Events\Response\ResponseTransformed;
 use Cognesy\Instructor\Events\Response\ResponseValidated;
 use Cognesy\Instructor\Events\Response\ResponseValidationAttempt;
@@ -49,8 +49,8 @@ it('handles events for simple case w/reattempt on validation - success', functio
     [StructuredOutputRequestReceived::class],
     [StructuredOutputResponseGenerated::class],
     // RequestHandler
-    [NewValidationRecoveryAttempt::class],
-    //[ResponseGenerationFailed::class],
+    [ResponseRetryScheduled::class],
+    //[ResponseMaterializationFailed::class],
     [ResponseModelBuilt::class],
     //[ValidationRecoveryLimitReached::class],
     // LLM
@@ -82,17 +82,13 @@ it('handles events for simple case - validation failure', function ($event) use 
     ]);
     $events = new EventSink();
 
-    // expect exception
-    $this->expectException(\Exception::class);
     $runtime = makeStructuredRuntime(httpClient: $mockHttp, maxRetries: 1)
         ->onEvent($event, fn($e) => $events->onEvent($e));
-    $person = (new StructuredOutput)->withRuntime($runtime)
-        ->with(
+    expect(fn() => (new StructuredOutput)->withRuntime($runtime)->with(
             messages: [['role' => 'user', 'content' => $text]],
             responseModel: Person::class,
-        )->get();
+        )->get())->toThrow(\Exception::class);
 
-    expect($person)->toBeNull();
     expect($events->count())->toBeGreaterThan(0);
     expect($events->first())->toBeInstanceOf($event);
     expect((string) $events->first())->toBeString()->not()->toBeEmpty();
@@ -103,10 +99,10 @@ it('handles events for simple case - validation failure', function ($event) use 
     [StructuredOutputRequestReceived::class],
     //[ResponseReturned::class],
     // RequestHandler
-    //[NewValidationRecoveryAttempt::class],
-    [ResponseGenerationFailed::class],
+    //[ResponseRetryScheduled::class],
+    [ResponseMaterializationFailed::class],
     [ResponseModelBuilt::class],
-    [StructuredOutputRecoveryLimitReached::class],
+    [ResponseRecoveryExhausted::class],
     // LLM
     //[ChunkReceived::class],
     //[PartialJsonReceived::class],
@@ -152,8 +148,8 @@ it('handles events for custom case', function ($event) use ($text) {
     [StructuredOutputRequestReceived::class],
     [StructuredOutputResponseGenerated::class],
     // ==== RequestHandler
-    //[NewValidationRecoveryAttempt::class],
-    //[ResponseGenerationFailed::class],
+    //[ResponseRetryScheduled::class],
+    //[ResponseMaterializationFailed::class],
     [ResponseModelBuilt::class],
     // [ValidationRecoveryLimitReached::class],
     // ==== LLM

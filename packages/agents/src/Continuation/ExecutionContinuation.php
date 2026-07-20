@@ -76,14 +76,14 @@ class ExecutionContinuation
         );
     }
 
-    public function explain() : string {
+    public function explain(): string {
         $parts = [];
         if ($this->stopSignals->hasAny()) {
-            $parts[] = "Stop Signals: " . $this->stopSignals->toString();
+            $parts[] = 'Stop Signals: ' . $this->stopSignals->toString();
         } else {
-            $parts[] = "No Stop Signals";
+            $parts[] = 'No Stop Signals';
         }
-        $parts[] = "Continuation Requested: " . ($this->isContinuationRequested ? 'Yes' : 'No');
-        return implode("; ", $parts);
+        $parts[] = 'Continuation Requested: ' . ($this->isContinuationRequested ? 'Yes' : 'No');
+        return implode('; ', $parts);
     }
 }

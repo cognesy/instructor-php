@@ -5,6 +5,7 @@ namespace Cognesy\Agents\Capability\Core;
 use Cognesy\Agents\Builder\Contracts\CanConfigureAgent;
 use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
 use Cognesy\Agents\Context\CanCompileMessages;
+use Override;
 
 final readonly class UseContextCompiler implements CanProvideAgentCapability
 {
@@ -12,12 +13,12 @@ final readonly class UseContextCompiler implements CanProvideAgentCapability
         private CanCompileMessages $compiler,
     ) {}
 
-    #[\Override]
+    #[Override]
     public static function capabilityName(): string {
         return 'use_context_compiler';
     }
 
-    #[\Override]
+    #[Override]
     public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         return $agent->withContextCompiler($this->compiler);
     }

@@ -6,19 +6,19 @@ use Cognesy\Agents\Builder\Contracts\CanConfigureAgent;
 use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
 use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Hook\Collections\HookTriggers;
+use Override;
 
 final readonly class UseTaskPlanning implements CanProvideAgentCapability
 {
-    #[\Override]
+    #[Override]
     public static function capabilityName(): string {
         return 'use_task_planning';
     }
 
-    #[\Override]
-    public function configure(CanConfigureAgent $agent): CanConfigureAgent
-    {
+    #[Override]
+    public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         $agent = $agent->withTools(
-            $agent->tools()->merge(new Tools(new TodoWriteTool()))
+            $agent->tools()->merge(new Tools(new TodoWriteTool())),
         );
         $hooks = $agent->hooks()->with(
             hook: new PersistTasksHook(),

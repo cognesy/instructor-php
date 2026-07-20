@@ -5,6 +5,7 @@ namespace Cognesy\Agents\Session;
 use Cognesy\Agents\Session\Contracts\CanControlAgentSession;
 use Cognesy\Agents\Session\Data\AgentSession;
 use Cognesy\Agents\Session\Enums\AgentSessionStage;
+use Override;
 
 final readonly class SessionHookStack implements CanControlAgentSession
 {
@@ -21,7 +22,7 @@ final readonly class SessionHookStack implements CanControlAgentSession
 
     public function with(CanControlAgentSession $hook, int $priority = 0, ?string $name = null): self {
         $hooks = [...$this->hooks, new RegisteredSessionHook($hook, $priority, $name)];
-        usort($hooks, static fn(RegisteredSessionHook $a, RegisteredSessionHook $b): int => $b->priority() <=> $a->priority());
+        usort($hooks, static fn (RegisteredSessionHook $a, RegisteredSessionHook $b): int => $b->priority() <=> $a->priority());
         return new self(...$hooks);
     }
 
@@ -30,7 +31,7 @@ final readonly class SessionHookStack implements CanControlAgentSession
         return $this->hooks;
     }
 
-    #[\Override]
+    #[Override]
     public function onStage(AgentSessionStage $stage, AgentSession $session): AgentSession {
         $nextSession = $session;
         foreach ($this->hooks as $hook) {

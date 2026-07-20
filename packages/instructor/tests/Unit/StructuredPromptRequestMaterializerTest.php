@@ -11,6 +11,23 @@ use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\Extras\Example\Example;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Xprompt\Prompt;
+
+final class StructuredPromptMaterializerCustomPrompt extends Prompt
+{
+    public function body(mixed ...$ctx): string
+    {
+        return 'CUSTOM PROMPT CLASS: ' . ($ctx['json_schema'] ?? '');
+    }
+}
+
+final class StructuredPromptMaterializerCustomRetryPrompt extends Prompt
+{
+    public function body(mixed ...$ctx): string
+    {
+        return 'CUSTOM RETRY: ' . ($ctx['errors'] ?? '');
+    }
+}
 
 describe('StructuredPromptRequestMaterializer', function () {
     function makeStructuredPromptMaterializerExecution(
@@ -100,5 +117,36 @@ describe('StructuredPromptRequestMaterializer', function () {
             ->and($userMessages)->toHaveCount(2)
             ->and($userMessages[1]['content'] ?? '')->toContain('Validation Errors')
             ->and($userMessages[1]['content'] ?? '')->toContain('Field `name` must be a string.');
+    });
+
+    it('uses the configured retry prompt class', function () {
+        $config = (new StructuredOutputConfig(outputMode: OutputMode::Json))
+            ->withRetryPromptClass(StructuredPromptMaterializerCustomRetryPrompt::class);
+        $execution = makeStructuredPromptMaterializerExecution(config: $config)->withFailedAttempt(
+            inferenceResponse: new InferenceResponse(content: '{"name": 1}'),
+            errors: ['Field `name` must be a string.'],
+        );
+
+        $out = (new StructuredPromptRequestMaterializer())->toMessages($execution)->toArray();
+        $userMessages = array_values(array_filter(
+            $out,
+            static fn(array $message): bool => ($message['role'] ?? '') === 'user',
+        ));
+
+        expect($userMessages)->toHaveCount(2)
+            ->and($userMessages[1]['content'] ?? '')->toContain('CUSTOM RETRY:')
+            ->and($userMessages[1]['content'] ?? '')->toContain('Field `name` must be a string.');
+    });
+
+    it('uses a configured prompt class as the supported customization seam', function () {
+        $config = (new StructuredOutputConfig(outputMode: OutputMode::Json))
+            ->withModePromptClass(OutputMode::Json, StructuredPromptMaterializerCustomPrompt::class);
+
+        $out = (new StructuredPromptRequestMaterializer())
+            ->toMessages(makeStructuredPromptMaterializerExecution(config: $config))
+            ->toArray();
+
+        expect($out[0]['content'] ?? '')->toContain('CUSTOM PROMPT CLASS:')
+            ->and($out[0]['content'] ?? '')->toContain('"type": "object"');
     });
 });

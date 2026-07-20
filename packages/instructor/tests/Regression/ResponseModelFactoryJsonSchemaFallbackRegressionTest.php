@@ -1,8 +1,13 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Dynamic\Structure;
+use Cognesy\Instructor\Data\OutputFormat;
 
-it('uses Structure fallback when json schema has no x-php-class', function () {
+final class JsonSchemaFallbackDto
+{
+    public string $name;
+}
+
+it('defaults a json schema without x-php-class to an array target', function () {
     $model = makeAnyResponseModel([
         'type' => 'object',
         'name' => 'city',
@@ -13,41 +18,27 @@ it('uses Structure fallback when json schema has no x-php-class', function () {
         'required' => ['name'],
     ]);
 
-    $instance = $model->instance();
-
-    expect($model->instanceClass())->toBe(Structure::class)
-        ->and($instance)->toBeInstanceOf(Structure::class)
-        ->and($instance->name())->toBe('city');
+    expect($model->outputFormat())->toEqual(OutputFormat::array());
 });
 
 it('normalizes leading backslash in x-php-class for json schema', function () {
     $model = makeAnyResponseModel([
-        'x-php-class' => '\\' . Structure::class,
+        'x-php-class' => '\\' . JsonSchemaFallbackDto::class,
         'type' => 'object',
-        'name' => 'city',
-        'properties' => [
-            'name' => ['type' => 'string'],
-        ],
+        'properties' => ['name' => ['type' => 'string']],
         'required' => ['name'],
     ]);
 
-    expect($model->instanceClass())->toBe(Structure::class)
-        ->and($model->instance())->toBeInstanceOf(Structure::class);
+    expect($model->outputFormat())->toEqual(OutputFormat::instanceOf(JsonSchemaFallbackDto::class));
 });
 
-it('hydrates Structure when json schema x-php-class is stdClass', function () {
+it('resolves json schema x-php-class stdClass directly', function () {
     $model = makeAnyResponseModel([
-        'x-php-class' => \stdClass::class,
+        'x-php-class' => stdClass::class,
         'type' => 'object',
-        'name' => 'city',
-        'properties' => [
-            'name' => ['type' => 'string'],
-            'population' => ['type' => 'integer'],
-        ],
+        'properties' => ['name' => ['type' => 'string']],
         'required' => ['name'],
     ]);
 
-    expect($model->instanceClass())->toBe(Structure::class)
-        ->and($model->instance())->toBeInstanceOf(Structure::class)
-        ->and($model->instance()->name())->toBe('city');
+    expect($model->outputFormat())->toEqual(OutputFormat::stdClass());
 });

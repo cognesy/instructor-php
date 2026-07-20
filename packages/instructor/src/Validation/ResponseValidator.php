@@ -13,6 +13,7 @@ use Cognesy\Instructor\Validation\Contracts\CanValidateResponse;
 use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
 use Cognesy\Utils\Result\Result;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Throwable;
 
 class ResponseValidator implements CanValidateResponse
 {
@@ -28,10 +29,18 @@ class ResponseValidator implements CanValidateResponse
      */
     #[\Override]
     public function validate(object $response, ResponseModel $responseModel) : Result {
-        $validation = match(true) {
-            $response instanceof CanValidateSelf => $this->validateSelf($response),
-            default => $this->validateObject($response)
-        };
+        try {
+            $validation = match(true) {
+                $response instanceof CanValidateSelf => $this->validateSelf($response),
+                default => $this->validateObject($response)
+            };
+        } catch (Throwable $error) {
+            $this->events->dispatch(new ResponseValidationFailed([
+                'errorMessage' => 'Response object validation failed.',
+                'errorType' => $error::class,
+            ]));
+            return Result::failure($error);
+        }
         $this->events->dispatch(match(true) {
             $validation->isInvalid() => new ResponseValidationFailed(['validation' => $this->validationPayload($validation)]),
             default => new ResponseValidated(['validation' => $this->validationPayload($validation)])
@@ -51,14 +60,7 @@ class ResponseValidator implements CanValidateResponse
 
     protected function validateObject(object $response) : ValidationResult {
         $this->events->dispatch(new ResponseValidationAttempt($this->objectSummary($response)));
-        try {
-            return $this->validator->validate($response);
-        } catch (\Throwable $error) {
-            return ValidationResult::invalid(
-                new ValidationError(field: 'exception', value: null, message: $error->getMessage()),
-                'Validator threw an exception',
-            );
-        }
+        return $this->validator->validate($response);
     }
 
     private function objectSummary(object $response) : array
