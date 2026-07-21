@@ -108,9 +108,15 @@ final class CurlDriver implements CanHandleHttpRequest
             requestId: $request->id,
             chunkSize: $this->config->streamChunkSize ?? 256,
             headerTimeoutSeconds: (float) $this->config->streamHeaderTimeout,
+            request: $request,
         );
 
-        $httpResponse = $response->toHttpResponse();
+        try {
+            $httpResponse = $response->toHttpResponse();
+        } catch (HttpRequestException $exception) {
+            $this->dispatchRequestFailed($exception, $request);
+            throw $exception;
+        }
         $this->validateStatusCodeOrFail($httpResponse, $request);
         $this->dispatchResponseReceived($request, $httpResponse->statusCode(), true, null);
 
@@ -164,7 +170,7 @@ final class CurlDriver implements CanHandleHttpRequest
             null
         );
 
-        $this->dispatchRequestFailed($exception, $request);
+        $this->dispatchStatusCodeFailed($response->statusCode(), $request);
         throw $exception;
     }
 

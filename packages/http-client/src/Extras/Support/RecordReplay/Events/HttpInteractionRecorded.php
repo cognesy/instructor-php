@@ -2,17 +2,12 @@
 
 namespace Cognesy\Http\Extras\Support\RecordReplay\Events;
 
-use Cognesy\Http\Data\HttpRequest;
-use Cognesy\Http\Data\HttpResponse;
+use Cognesy\Events\Event;
 
-/**
- * Event fired when an HTTP interaction is recorded
- */
-final class HttpInteractionRecorded extends \Cognesy\Events\Event
+final class HttpInteractionRecorded extends Event
 {
     public function __construct(
-        public readonly HttpRequest  $request,
-        public readonly HttpResponse $response
+        public readonly HttpInteractionSummary $interaction,
     ) {
         parent::__construct();
     }
@@ -21,9 +16,9 @@ final class HttpInteractionRecorded extends \Cognesy\Events\Event
     {
         return sprintf(
             "[RECORDED] %s %s => HTTP %d",
-            $this->request->method(),
-            $this->request->url(),
-            $this->response->statusCode()
+            $this->interaction->method,
+            $this->interaction->url,
+            $this->interaction->statusCode ?? 0,
         );
     }
 }

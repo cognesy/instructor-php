@@ -157,6 +157,7 @@ $client = (new HttpClientBuilder())
         httpResponseBody: true,
         httpResponseStream: true,
         httpResponseStreamByLine: true,
+        httpBodyMaxBytes: 65536,
     ))
     ->create();
 ```
@@ -172,8 +173,9 @@ $client = (new HttpClientBuilder())
 | `httpResponseBody` | `true` | Log the response body |
 | `httpResponseStream` | `true` | Log streaming response data |
 | `httpResponseStreamByLine` | `true` | Log stream as complete lines vs. raw chunks |
+| `httpBodyMaxBytes` | `65536` | Maximum redacted request/response body bytes emitted by debug listeners per request |
 
-When debug is enabled, the builder automatically prepends an `EventSourceMiddleware` with console and event listeners. You can also load presets from YAML files using `DebugConfig::fromPreset('on')`.
+When debug is enabled, the builder automatically prepends an `EventSourceMiddleware` with console and event listeners. Debug bodies and headers are redacted, and body/stream output is bounded by `httpBodyMaxBytes`. You can also load presets from YAML files using `DebugConfig::fromPreset('on')`.
 
 ## Configuration Patterns
 

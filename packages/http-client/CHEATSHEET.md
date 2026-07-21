@@ -203,19 +203,20 @@ Notes:
 - `EventSourceMiddleware(bool $enabled)`
   - `withListeners(CanListenToHttpEvents ...$listeners): self`
   - `withParser(callable $parser): self`
-- `RecordReplayMiddleware(string $mode, ?string $storageDir, bool $fallbackToRealRequests, ?EventDispatcherInterface $events)`
-  - modes: `MODE_PASS`, `MODE_RECORD`, `MODE_REPLAY`
-  - `setMode(string $mode): self`
-  - `getMode(): string`
-  - `setStorageDir(string $dir): self`
-  - `setFallbackToRealRequests(bool $fallback): self`
-  - `getRecords(): ?RequestRecords`
+- `RecordReplayMiddleware::recordTo(string $directory, ?RecordReplayPolicy $policy = null, ?EventDispatcherInterface $events = null): self`
+- `RecordReplayMiddleware::replayFrom(string $directory, ?RecordReplayPolicy $policy = null, ?EventDispatcherInterface $events = null): self`
+- `RecordReplayMiddleware::recordWith(CassetteStore $store, ?RecordReplayPolicy $policy = null, ?EventDispatcherInterface $events = null): self`
+- `RecordReplayMiddleware::replayWith(CassetteStore $store, ?RecordReplayPolicy $policy = null, ?EventDispatcherInterface $events = null): self`
+- `RecordReplayPolicy(RequestMatcher $matcher, FixtureSanitizer $sanitizer, ReplayMissPolicy $onMissing)`
+- replay is hermetic by default; use `ReplayMissPolicy::Passthrough` explicitly for live misses
 - `StreamSSEsMiddleware` (deprecated, use `EventSourceMiddleware::withParser()` instead)
 
 Record/replay notes:
-- request identity is `method + url + body`
-- headers and request options are not part of record/replay matching
-- recording streamed responses buffers the full upstream stream before returning a replayable stream
+- the default fingerprint includes method, credential-normalized URL, stream mode, body, and `Accept`/`Content-Type`
+- explicit JSON request bodies are canonicalized; non-JSON and binary bodies remain byte-exact
+- one cassette session replays interactions in strict recorded order
+- streamed frames are binary-safe and replayed lazily one-shot; no PHP list contains all chunks
+- common credentials are sanitized, but prompts/model outputs/PII still require fixture review
 
 ## Drivers
 

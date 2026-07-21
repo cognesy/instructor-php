@@ -5,12 +5,16 @@ namespace Cognesy\Http\Extras\Support\EventSource\Listeners;
 use Cognesy\Http\Config\DebugConfig;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
+use Cognesy\Http\Extras\Support\RecordReplay\Redaction\DefaultRequestRedactor;
 use Cognesy\Utils\Cli\Color;
 use Cognesy\Utils\Cli\Console;
 use DateTimeImmutable;
 
 class PrintToConsole implements CanListenToHttpEvents
 {
+    /** @var array<string, int> */
+    private array $printedStreamBytes = [];
+
     public function __construct(
         protected readonly DebugConfig $config,
     ) {}
@@ -18,6 +22,10 @@ class PrintToConsole implements CanListenToHttpEvents
     // INTERNAL /////////////////////////////////////////////////////////
 
     protected function printBody(string $body) : void {
+        $body = DefaultRequestRedactor::redactBody(
+            $body,
+        );
+        $body = substr($body, 0, max(0, $this->config->httpBodyMaxBytes));
         $decoded = json_decode($body, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
             Console::println($body, [Color::GRAY]);
@@ -34,6 +42,7 @@ class PrintToConsole implements CanListenToHttpEvents
     }
 
     protected function printHeaders(array $headers) : void {
+        $headers = DefaultRequestRedactor::redactHeaders($headers);
         foreach ($headers as $name => $values) {
             if (is_array($values)) {
                 $valuesStr = implode(', ', $values);
@@ -52,7 +61,7 @@ class PrintToConsole implements CanListenToHttpEvents
         if ($this->config->httpRequestUrl) {
             Console::println("");
             Console::println("[REQUEST URL]", $highlight);
-            Console::println($request->url(), [Color::GRAY]);
+            Console::println(DefaultRequestRedactor::redactUrl($request->url()), [Color::GRAY]);
             Console::println("[REQUEST /URL]", $highlight);
             Console::println("");
         }
@@ -83,7 +92,11 @@ class PrintToConsole implements CanListenToHttpEvents
         Console::print("\n[STREAM DATA]", [Color::DARK_YELLOW]);
         Console::print(" at ", [Color::DARK_GRAY]);
         Console::println("$now", [Color::GRAY]);
-        Console::println($chunk, [Color::DARK_GRAY]);
+        $safeChunk = $this->safeStreamPayload($request, $chunk);
+        if ($safeChunk === null) {
+            return;
+        }
+        Console::println($safeChunk, [Color::DARK_GRAY]);
     }
 
     #[\Override]
@@ -95,7 +108,11 @@ class PrintToConsole implements CanListenToHttpEvents
         Console::print("\n[STREAM DATA (full line)]", [Color::DARK_YELLOW]);
         Console::print(" at ", [Color::DARK_GRAY]);
         Console::println("$now", [Color::GRAY]);
-        Console::println($line, [Color::DARK_GRAY]);
+        $safeLine = $this->safeStreamPayload($request, $line);
+        if ($safeLine === null) {
+            return;
+        }
+        Console::println($safeLine, [Color::DARK_GRAY]);
     }
 
     #[\Override]
@@ -117,5 +134,22 @@ class PrintToConsole implements CanListenToHttpEvents
             Console::println("[/RESPONSE BODY]", $highlight);
             Console::println("");
         }
+    }
+
+    private function safeStreamPayload(HttpRequest $request, string $payload): ?string {
+        $limit = max(0, $this->config->httpBodyMaxBytes);
+        $printed = $this->printedStreamBytes[$request->id] ?? 0;
+        if ($printed >= $limit) {
+            return null;
+        }
+
+        $payload = DefaultRequestRedactor::redactBody($payload);
+        $payload = substr($payload, 0, $limit - $printed);
+        if ($payload === '') {
+            return null;
+        }
+
+        $this->printedStreamBytes[$request->id] = $printed + strlen($payload);
+        return $payload;
     }
 }

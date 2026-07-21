@@ -293,7 +293,10 @@ $store = new MessageStore($sections, new Metadata($data));
 ### Driver Capabilities Interface
 Drivers must implement new `capabilities()` method:
 ```php
-public function capabilities(?string $model = null): DriverCapabilities;
+interface DriverContract
+{
+    public function capabilities(?string $model = null): DriverCapabilities;
+}
 ```
 
 ### Provider Exceptions

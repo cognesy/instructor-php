@@ -18,6 +18,7 @@ use Cognesy\Http\Telemetry\HttpRequestTelemetry;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
 use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TimeoutExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
@@ -122,7 +123,7 @@ class SymfonyDriver implements CanHandleHttpRequest
     private function handleTransportException(TransportExceptionInterface $e, HttpRequest $request): never {
         $message = $e->getMessage();
         $httpException = match (true) {
-            str_contains($message, 'timeout') || str_contains($message, 'timed out')
+            $e instanceof TimeoutExceptionInterface
                 => new TimeoutException($message, $request, null, $e),
             str_contains($message, 'Failed to connect') || str_contains($message, 'Could not resolve host')
                 => new ConnectionException($message, $request, null, $e),

@@ -41,8 +41,9 @@ it('dispatches request-sent with the unified payload keys', function () {
     driverEventsHarness($recorded)->sent(driverEventsRequest());
 
     expect($recorded[0])->toBeInstanceOf(HttpRequestSent::class);
-    expect(array_intersect(['requestId', 'url', 'method', 'headers', 'body'], array_keys($recorded[0]->data)))
-        ->toBe(['requestId', 'url', 'method', 'headers', 'body']);
+    expect(array_intersect(['requestId', 'url', 'method', 'headers', 'requestBodyBytes'], array_keys($recorded[0]->data)))
+        ->toBe(['requestId', 'url', 'method', 'headers', 'requestBodyBytes']);
+    expect($recorded[0]->data)->not->toHaveKey('body');
 });
 
 it('dispatches status-code failure with statusCode key', function () {
@@ -53,14 +54,15 @@ it('dispatches status-code failure with statusCode key', function () {
     expect($recorded[0]->data['statusCode'])->toBe(500);
 });
 
-it('dispatches request failure with errors plus full request context', function () {
+it('dispatches request failure with errors plus safe request context', function () {
     $recorded = [];
     $request = driverEventsRequest();
     driverEventsHarness($recorded)->failed(new HttpRequestException('boom', $request), $request);
 
     expect($recorded[0])->toBeInstanceOf(HttpRequestFailed::class);
     expect($recorded[0]->data['errors'])->toContain('boom');
-    expect($recorded[0]->data)->toHaveKeys(['url', 'method', 'headers', 'body']);
+    expect($recorded[0]->data)->toHaveKeys(['url', 'method', 'headers', 'requestBodyBytes']);
+    expect($recorded[0]->data)->not->toHaveKey('body');
 });
 
 it('includes body for buffered responses and omits it for streamed ones', function () {
@@ -72,7 +74,32 @@ it('includes body for buffered responses and omits it for streamed ones', functi
     $harness->received($request, 200, true, null);
 
     expect($recorded[0])->toBeInstanceOf(HttpResponseReceived::class);
-    expect($recorded[0]->data['body'])->toBe('{"ok":true}');
+    expect($recorded[0]->data['responseBodyBytes'])->toBe(11);
+    expect($recorded[0]->data)->not->toHaveKey('body');
     expect($recorded[1]->data)->not->toHaveKey('body');
     expect($recorded[1]->data['isStreamed'])->toBeTrue();
+});
+
+it('redacts sensitive request headers and URL credentials in dispatched events', function () {
+    $recorded = [];
+    $request = new HttpRequest(
+        'https://api.example.com?key=url-secret',
+        'POST',
+        [
+            'Authorization' => 'Bearer header-secret',
+            'x-GoOg-aPi-kEy' => 'google-secret',
+            'X-Custom' => 'safe',
+        ],
+        '{"password":"body-secret"}',
+        [],
+    );
+
+    driverEventsHarness($recorded)->sent($request);
+
+    expect($recorded[0]->data['url'])->not->toContain('url-secret')
+        ->and($recorded[0]->data['headers']['Authorization'])->toBe('[REDACTED]')
+        ->and($recorded[0]->data['headers']['x-GoOg-aPi-kEy'])->toBe('[REDACTED]')
+        ->and($recorded[0]->data['headers']['X-Custom'])->toBe('safe')
+        ->and($recorded[0]->data)->not->toHaveKey('body')
+        ->and($recorded[0]->data['requestBodyBytes'])->toBe(26);
 });

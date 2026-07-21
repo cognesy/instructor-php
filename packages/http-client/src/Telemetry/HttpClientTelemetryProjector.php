@@ -7,6 +7,7 @@ use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseChunkReceived;
 use Cognesy\Http\Events\HttpResponseReceived;
 use Cognesy\Http\Events\HttpStreamCompleted;
+use Cognesy\Http\Extras\Support\RecordReplay\Redaction\DefaultRequestRedactor;
 use Cognesy\Telemetry\Application\Projector\CanProjectTelemetry;
 use Cognesy\Telemetry\Application\Projector\Support\EventData;
 use Cognesy\Telemetry\Application\Telemetry;
@@ -17,11 +18,15 @@ use Cognesy\Telemetry\Domain\Observation\ObservationStatus;
 use Cognesy\Telemetry\Domain\Trace\TraceContext;
 use Cognesy\Telemetry\Domain\Value\AttributeBag;
 
-final readonly class HttpClientTelemetryProjector implements CanProjectTelemetry
+final class HttpClientTelemetryProjector implements CanProjectTelemetry
 {
+    /** @var array<string, int> */
+    private array $capturedStreamingBytes = [];
+
     public function __construct(
         private Telemetry $telemetry,
         private bool $captureStreamingChunks = false,
+        private int $maxCapturedStreamingBytes = 65536,
     ) {}
 
     #[\Override]
@@ -124,10 +129,28 @@ final readonly class HttpClientTelemetryProjector implements CanProjectTelemetry
             return;
         }
 
+        $limit = max(0, $this->maxCapturedStreamingBytes);
+        $captured = $this->capturedStreamingBytes[$requestId] ?? 0;
+        if ($captured >= $limit) {
+            return;
+        }
+
+        $originalLength = strlen($chunk);
+        $wasTruncated = $originalLength > ($limit - $captured);
+        $chunk = DefaultRequestRedactor::redactBody($chunk);
+        $chunk = substr($chunk, 0, $limit - $captured);
+        if ($chunk === '') {
+            return;
+        }
+        $this->capturedStreamingBytes[$requestId] = $captured + strlen($chunk);
+
         $this->telemetry->log(
             $requestId,
             'http.response.chunk',
-            $this->attributes(['http.response.body' => $chunk]),
+            $this->attributes([
+                'http.response.body' => $chunk,
+                'http.response.body.truncated' => $wasTruncated,
+            ]),
         );
     }
 
@@ -142,6 +165,7 @@ final readonly class HttpClientTelemetryProjector implements CanProjectTelemetry
 
         $outcome = EventData::string($data, 'outcome') ?? 'completed';
         $attributes = $this->streamAttributes($data, $outcome);
+        unset($this->capturedStreamingBytes[$requestId]);
 
         match ($outcome) {
             'failed' => $this->telemetry->fail($requestId, $attributes),
@@ -191,30 +215,36 @@ final readonly class HttpClientTelemetryProjector implements CanProjectTelemetry
         $attributes = AttributeBag::empty();
         $method = EventData::string($data, 'method');
         $url = EventData::string($data, 'url');
+        $bodyBytes = EventData::int($data, 'requestBodyBytes');
 
         $attributes = match ($method) {
             null => $attributes,
             default => $attributes->with('http.request.method', $method),
         };
 
-        return match ($url) {
+        $attributes = match ($url) {
             null => $attributes,
             default => $attributes->with('url.full', $url),
+        };
+
+        return match ($bodyBytes) {
+            null => $attributes,
+            default => $attributes->with('http.request.body.size', $bodyBytes),
         };
     }
 
     private function responseAttributes(array $data): AttributeBag
     {
         $statusCode = EventData::int($data, 'statusCode');
-        $body = EventData::string($data, 'body');
+        $bodyBytes = EventData::int($data, 'responseBodyBytes');
 
         $attributes = AttributeBag::empty();
 
         if ($statusCode !== null) {
             $attributes = $attributes->with('http.response.status_code', $statusCode);
         }
-        if ($body !== null) {
-            $attributes = $attributes->with('http.response.body', $body);
+        if ($bodyBytes !== null) {
+            $attributes = $attributes->with('http.response.body.size', $bodyBytes);
         }
 
         return $attributes;
@@ -224,11 +254,23 @@ final readonly class HttpClientTelemetryProjector implements CanProjectTelemetry
     {
         $attributes = $this->requestAttributes($data);
         $statusCode = EventData::int($data, 'statusCode');
+        $bodyBytes = EventData::int($data, 'responseBodyBytes');
+        $requestBodyBytes = EventData::int($data, 'requestBodyBytes');
         $error = EventData::string($data, 'errors') ?? EventData::string($data, 'error');
 
         $attributes = match ($statusCode) {
             null => $attributes,
             default => $attributes->with('http.response.status_code', $statusCode),
+        };
+
+        $attributes = match ($bodyBytes) {
+            null => $attributes,
+            default => $attributes->with('http.response.body.size', $bodyBytes),
+        };
+
+        $attributes = match ($requestBodyBytes) {
+            null => $attributes,
+            default => $attributes->with('http.request.body.size', $requestBodyBytes),
         };
 
         return match ($error) {

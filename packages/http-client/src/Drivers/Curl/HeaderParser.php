@@ -26,6 +26,7 @@ final class HeaderParser
             if (count($parts) >= 2) {
                 $code = (int) $parts[1];
                 if ($code > 0) {
+                    $this->headers = [];
                     $this->statusCode = $code;
                 }
             }

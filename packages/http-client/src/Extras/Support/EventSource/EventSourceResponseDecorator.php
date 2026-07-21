@@ -20,6 +20,7 @@ final class EventSourceResponseDecorator
         HttpResponse $response,
         array $listeners,
         ?callable $parser = null,
+        int $maxBufferBytes = 1_048_576,
     ): HttpResponse {
         $eventSourceStream = new EventSourceStream(
             source: $response->rawStream(),
@@ -27,6 +28,7 @@ final class EventSourceResponseDecorator
             response: $response,
             listeners: $listeners,
             parser: $parser,
+            maxBufferBytes: $maxBufferBytes,
         );
 
         return $response->withStream($eventSourceStream);

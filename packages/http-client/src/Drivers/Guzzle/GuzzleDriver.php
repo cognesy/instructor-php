@@ -15,10 +15,11 @@ use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Http\Exceptions\NetworkException;
 use Cognesy\Http\Exceptions\TimeoutException;
 use Cognesy\Http\Telemetry\HttpRequestTelemetry;
-use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ConnectException as GuzzleConnectException;
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Exception\RequestException as GuzzleRequestException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -48,13 +49,11 @@ class GuzzleDriver implements CanHandleHttpRequest
         $this->dispatchRequestSent($request);
         try {
             $rawResponse = $this->performHttpCall($request);
-        } catch (GuzzleConnectException $e) {
-            $this->handleConnectionException($e, $request);
-        } catch (Exception $e) {
-            $this->handleNetworkException($e, $request);
+            $httpResponse = $this->buildHttpResponse($rawResponse, $request);
+        } catch (GuzzleException $e) {
+            $this->handleGuzzleException($e, $request);
         }
 
-        $httpResponse = $this->buildHttpResponse($rawResponse, $request);
         if ($this->config->failOnError && $httpResponse->statusCode() >= 400) {
             $httpException = HttpExceptionFactory::fromStatusCode($httpResponse->statusCode(), $request, $httpResponse);
             $this->dispatchStatusCodeFailed($httpResponse->statusCode(), $request);
@@ -108,21 +107,42 @@ class GuzzleDriver implements CanHandleHttpRequest
 
     // exception handling
 
-    private function handleConnectionException(GuzzleConnectException $e, HttpRequest $request): never {
-        $message = $e->getMessage();
+    private function handleGuzzleException(GuzzleException $e, HttpRequest $request): never {
+        if ($e instanceof GuzzleRequestException && $e->getResponse() !== null) {
+            $statusCode = $e->getResponse()->getStatusCode();
+            $httpException = HttpExceptionFactory::fromStatusCode(
+                statusCode: $statusCode,
+                request: $request,
+                previous: $e,
+            );
+            $this->dispatchStatusCodeFailed($statusCode, $request);
+            throw $httpException;
+        }
 
-        $httpException = str_contains($message, 'timeout') || str_contains($message, 'timed out')
-            ? new TimeoutException($message, $request, null, $e)
-            : new ConnectionException($message, $request, null, $e);
+        $message = $e->getMessage();
+        $httpException = match (true) {
+            $e instanceof GuzzleConnectException && $this->isTimeout($e)
+                => new TimeoutException($message, $request, null, $e),
+            $e instanceof GuzzleConnectException
+                => new ConnectionException($message, $request, null, $e),
+            default
+                => new NetworkException($message, $request, null, null, $e),
+        };
 
         $this->dispatchRequestFailed($httpException, $request);
         throw $httpException;
     }
 
-    private function handleNetworkException(Exception $e, HttpRequest $request): never {
-        $httpException = new NetworkException($e->getMessage(), $request, null, null, $e);
-        $this->dispatchRequestFailed($httpException, $request);
-        throw $httpException;
+    private function isTimeout(GuzzleConnectException $exception): bool {
+        $context = $exception->getHandlerContext();
+        $errno = (int) ($context['errno'] ?? 0);
+
+        return in_array($errno, [
+            defined('CURLE_OPERATION_TIMEDOUT') ? CURLE_OPERATION_TIMEDOUT : 28,
+            defined('CURLE_OPERATION_TIMEOUTED') ? CURLE_OPERATION_TIMEOUTED : 28,
+        ], true)
+            || ($context['timed_out'] ?? false) === true
+            || str_contains(strtolower($exception->getMessage()), 'timed out');
     }
 
     // event dispatching

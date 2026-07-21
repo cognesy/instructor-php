@@ -6,7 +6,9 @@ use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Drivers\Mock\MockHttpResponseFactory;
 use Cognesy\Http\Extras\Support\RecordReplay\Redaction\RequestRedactor;
+use Cognesy\Http\Extras\Support\RecordReplay\Redaction\ResponseRedactor;
 
+/** @deprecated Use cassette interactions through RecordReplayMiddleware. */
 class RequestRecord
 {
     private array $requestData;
@@ -38,6 +40,9 @@ class RequestRecord
             'headers' => $response->headers(),
             'body' => $response->body(),
         ];
+        if ($redactor instanceof ResponseRedactor) {
+            $responseData = $redactor->redactResponse($responseData);
+        }
 
         return new self($requestData, $responseData);
     }

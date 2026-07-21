@@ -59,11 +59,14 @@ Instructor events are automatically dispatched to Laravel's event system:
 
 ```php
 // In EventServiceProvider
-protected $listen = [
-    \Cognesy\Events\Event::class => [
-        MyInstructorEventListener::class,
-    ],
-];
+class EventServiceProvider
+{
+    protected $listen = [
+        \Cognesy\Events\Event::class => [
+            MyInstructorEventListener::class,
+        ],
+    ];
+}
 ```
 
 ### Artisan Commands
@@ -132,7 +135,9 @@ if ($response->isSuccess()) {
 
 ```php
 $response = AgentCtrl::claudeCode()
-    ->onText(fn($text) => echo $text)
+    ->onText(function ($text) {
+        echo $text;
+    })
     ->onToolUse(fn($tool, $input, $output) => logger("Tool: $tool"))
     ->executeStreaming('Refactor the User model');
 ```

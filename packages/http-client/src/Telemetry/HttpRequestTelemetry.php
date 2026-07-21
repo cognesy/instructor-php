@@ -41,8 +41,6 @@ final readonly class HttpRequestTelemetry
             ),
             correlation: $correlation,
             trace: $trace,
-        ))->withIO(new OperationIO(
-            input: $request->body()->toArray(),
         ));
     }
 

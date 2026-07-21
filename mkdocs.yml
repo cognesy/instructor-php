@@ -137,6 +137,7 @@ nav:
       -
         'Release Notes':
           - { Overview: release-notes/versions.md }
+          - { v2.5.2: release-notes/v2.5.2.md }
           - { v2.5.1: release-notes/v2.5.1.md }
           - { v2.5.0: release-notes/v2.5.0.md }
           - { v2.4.1: release-notes/v2.4.1.md }
@@ -568,6 +569,7 @@ nav:
           - { 'HTTP Middleware (Stream)': cookbook/examples/C01_Http/http_middleware_stream.md }
           - { 'HTTP Middleware (Sync)': cookbook/examples/C01_Http/http_middleware_sync.md }
           - { 'HTTP Client – Pool Basics': cookbook/examples/C01_Http/http_client_pool_basics.md }
+          - { 'HTTP Client – Opt-in Stream Capture': cookbook/examples/C01_Http/http_client_stream_capture.md }
       -
         D01_Agents:
           - { 'AgentLoop::execute()': cookbook/examples/D01_Agents/agent_loop_execute.md }

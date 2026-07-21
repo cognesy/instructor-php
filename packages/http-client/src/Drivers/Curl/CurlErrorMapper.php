@@ -28,7 +28,7 @@ final class CurlErrorMapper
     public function mapError(
         int $errorCode,
         string $errorMessage,
-        HttpRequest $request,
+        ?HttpRequest $request,
     ): HttpRequestException {
         return match (true) {
             $this->isTimeout($errorCode)

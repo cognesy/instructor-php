@@ -4,6 +4,7 @@ namespace Cognesy\Http\Drivers\Curl;
 
 use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Http\Data\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Events\HttpResponseChunkReceived;
 use Cognesy\Http\Events\HttpStreamCompleted;
 use Cognesy\Http\Exceptions\NetworkException;
@@ -28,6 +29,7 @@ final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
     private ?array $headers = null;
     private bool $completed = false;
     private bool $cleanedUp = false;
+    private readonly CurlErrorMapper $errorMapper;
 
     public function __construct(
         private readonly CurlHandle $handle,
@@ -38,7 +40,10 @@ final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
         private readonly string $requestId = '',
         private readonly int $chunkSize = 256,
         private readonly float $headerTimeoutSeconds = 5.0,
-    ) {}
+        private readonly ?HttpRequest $request = null,
+    ) {
+        $this->errorMapper = new CurlErrorMapper();
+    }
 
     #[\Override]
     public function toHttpResponse() : HttpResponse {
@@ -97,6 +102,7 @@ final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
                 // Drive multi handle
                 $status = curl_multi_exec($this->multi, $active);
                 $this->assertMultiExecSucceeded($status);
+                $this->throwIfTransferFailed();
 
                 if ($active > 0) {
                     curl_multi_select($this->multi, 0.1);
@@ -146,6 +152,7 @@ final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
         while ($active > 0 && $this->headerParser->statusCode() === 0 && (microtime(true) - $start) < $timeout) {
             $status = curl_multi_exec($this->multi, $active);
             $this->assertMultiExecSucceeded($status);
+            $this->throwIfTransferFailed();
             if ($active > 0) {
                 curl_multi_select($this->multi, 0.05);
             }
@@ -164,6 +171,27 @@ final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
         }
 
         throw new NetworkException('Failed to read response headers before starting stream.');
+    }
+
+    private function throwIfTransferFailed(): void {
+        while (($info = curl_multi_info_read($this->multi)) !== false) {
+            if (($info['msg'] ?? null) !== CURLMSG_DONE) {
+                continue;
+            }
+
+            $result = (int) ($info['result'] ?? CURLE_OK);
+            if ($result === CURLE_OK) {
+                continue;
+            }
+
+            $handle = $info['handle'] ?? null;
+            $message = is_object($handle) && $handle instanceof \CurlHandle
+                ? curl_error($handle)
+                : '';
+            $message = $message !== '' ? $message : "cURL transfer failed ({$result})";
+
+            throw $this->errorMapper->mapError($result, $message, $this->request);
+        }
     }
 
     private function assertMultiExecSucceeded(int $status): void {

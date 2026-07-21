@@ -14,10 +14,12 @@ final class StreamCacheManager implements CanManageStreamCache
             return $response;
         }
         $stream = match ($policy) {
-            StreamCachePolicy::None => new IterableStream($response->rawStream()),
+            StreamCachePolicy::None => match (true) {
+                $response->rawStream() instanceof IterableStream => $response->rawStream(),
+                default => new IterableStream($response->rawStream()),
+            },
             StreamCachePolicy::Memory => BufferedStream::fromStream($response->rawStream()),
         };
         return $response->withStream($stream);
     }
 }
-

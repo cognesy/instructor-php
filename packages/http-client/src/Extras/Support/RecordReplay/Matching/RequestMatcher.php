@@ -21,4 +21,5 @@ interface RequestMatcher
      * Deterministic for a given request; equal fingerprints ⇒ a match.
      */
     public function fingerprint(HttpRequest $request): string;
+
 }

@@ -2,6 +2,7 @@
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Events\HttpRequestSent;
+use Cognesy\Http\Events\HttpResponseChunkReceived;
 use Cognesy\Http\Events\HttpResponseReceived;
 use Cognesy\Http\Events\HttpStreamCompleted;
 use Cognesy\Http\Telemetry\HttpClientTelemetryProjector;
@@ -49,6 +50,123 @@ it('projects completed streamed requests with terminal stats and without respons
     expect($attributes['http.stream.bytes'] ?? null)->toBe(512);
     expect($attributes['http.stream.chunks'] ?? null)->toBe(4);
     expect(array_key_exists('http.response.body', $attributes))->toBeFalse();
+});
+
+it('projects synchronous response size without attaching the response body', function () {
+    $otel = new OtelExporter();
+    $telemetry = new Telemetry(new TraceRegistry(), new CompositeTelemetryExporter([$otel]));
+    $events = new EventDispatcher('http.telemetry.projector.test');
+    (new RuntimeEventBridge(new HttpClientTelemetryProjector($telemetry)))->attachTo($events);
+
+    $context = TraceContext::fresh();
+    $events->dispatch(new HttpRequestSent([
+        'requestId' => 'http-sync-body',
+        'url' => 'https://example.test',
+        'method' => 'POST',
+        'requestBodyBytes' => 12,
+        'headers' => ['traceparent' => $context->traceparent()],
+    ]));
+    $events->dispatch(new HttpResponseReceived([
+        'requestId' => 'http-sync-body',
+        'statusCode' => 200,
+        'isStreamed' => false,
+        'responseBodyBytes' => 14,
+        'body' => 'secret-response-body',
+    ]));
+
+    $attributes = httpRequestObservation($otel->observations())->attributes()->toArray();
+
+    expect($attributes['http.request.body.size'] ?? null)->toBe(12)
+        ->and($attributes['http.response.body.size'] ?? null)->toBe(14)
+        ->and(array_key_exists('http.response.body', $attributes))->toBeFalse();
+});
+
+it('bounds opt-in streamed chunk capture', function () {
+    $otel = new OtelExporter();
+    $telemetry = new Telemetry(new TraceRegistry(), new CompositeTelemetryExporter([$otel]));
+    $events = new EventDispatcher('http.telemetry.projector.test');
+    (new RuntimeEventBridge(new HttpClientTelemetryProjector(
+        telemetry: $telemetry,
+        captureStreamingChunks: true,
+        maxCapturedStreamingBytes: 10,
+    )))->attachTo($events);
+
+    $context = TraceContext::fresh();
+    $events->dispatch(new HttpRequestSent([
+        'requestId' => 'http-capped-chunks',
+        'url' => 'https://example.test/stream',
+        'method' => 'GET',
+        'headers' => ['traceparent' => $context->traceparent()],
+    ]));
+    $events->dispatch(new HttpResponseReceived([
+        'requestId' => 'http-capped-chunks',
+        'statusCode' => 200,
+        'isStreamed' => true,
+    ]));
+    $events->dispatch(new HttpResponseChunkReceived([
+        'requestId' => 'http-capped-chunks',
+        'chunk' => '12345678',
+    ]));
+    $events->dispatch(new HttpResponseChunkReceived([
+        'requestId' => 'http-capped-chunks',
+        'chunk' => 'abcdefgh',
+    ]));
+    $events->dispatch(new HttpStreamCompleted([
+        'requestId' => 'http-capped-chunks',
+        'outcome' => 'completed',
+        'bytes' => 16,
+        'chunks' => 2,
+    ]));
+
+    $logs = array_values(array_filter(
+        $otel->observations(),
+        static fn($observation): bool => $observation->name() === 'http.response.chunk',
+    ));
+    $captured = array_map(
+        static fn($observation): string => (string) ($observation->attributes()->toArray()['http.response.body'] ?? ''),
+        $logs,
+    );
+
+    expect($captured)->toBe(['12345678', 'ab'])
+        ->and(array_sum(array_map(strlen(...), $captured)))->toBe(10)
+        ->and($logs[1]->attributes()->toArray()['http.response.body.truncated'] ?? null)->toBeTrue();
+});
+
+it('redacts opt-in streamed chunk capture', function () {
+    $otel = new OtelExporter();
+    $telemetry = new Telemetry(new TraceRegistry(), new CompositeTelemetryExporter([$otel]));
+    $events = new EventDispatcher('http.telemetry.projector.test');
+    (new RuntimeEventBridge(new HttpClientTelemetryProjector(
+        telemetry: $telemetry,
+        captureStreamingChunks: true,
+        maxCapturedStreamingBytes: 128,
+    )))->attachTo($events);
+
+    $context = TraceContext::fresh();
+    $events->dispatch(new HttpRequestSent([
+        'requestId' => 'http-redacted-chunks',
+        'url' => 'https://example.test/stream',
+        'method' => 'GET',
+        'headers' => ['traceparent' => $context->traceparent()],
+    ]));
+    $events->dispatch(new HttpResponseReceived([
+        'requestId' => 'http-redacted-chunks',
+        'statusCode' => 200,
+        'isStreamed' => true,
+    ]));
+    $events->dispatch(new HttpResponseChunkReceived([
+        'requestId' => 'http-redacted-chunks',
+        'chunk' => '{"token":"response-secret"}',
+    ]));
+
+    $logs = array_values(array_filter(
+        $otel->observations(),
+        static fn($observation): bool => $observation->name() === 'http.response.chunk',
+    ));
+    $body = (string) ($logs[0]->attributes()->toArray()['http.response.body'] ?? '');
+
+    expect($body)->toContain('[REDACTED]')
+        ->and($body)->not->toContain('response-secret');
 });
 
 it('projects abandoned streamed requests without attaching a response body', function () {

@@ -8,7 +8,7 @@ use Cognesy\Http\Events\HttpResponseChunkReceived;
 use Cognesy\Http\Events\HttpStreamCompleted;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Cognesy\Http\Stream\IterableStream;
-use RuntimeException;
+use Symfony\Component\HttpClient\Exception\TimeoutException;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
@@ -62,7 +62,7 @@ class SymfonyHttpResponseAdapter implements CanAdaptHttpResponse
         foreach ($this->client->stream($this->response, $this->connectTimeout) as $chunk) {
             if ($chunk->isTimeout() && !$this->response->getInfo('connect_time')) {
                 $this->response->cancel();
-                throw new RuntimeException('Connect timeout');
+                throw new TimeoutException('Connect timeout');
             }
             break;
         }

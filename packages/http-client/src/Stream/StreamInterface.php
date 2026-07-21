@@ -6,7 +6,11 @@ use IteratorAggregate;
 use Traversable;
 
 /**
- * Stream interface
+ * Stream interface.
+ *
+ * `isCompleted()` becomes true only after an iterator reaches its natural end.
+ * Closing or breaking an iterator early leaves the stream incomplete, even when
+ * the underlying source cannot be replayed.
  *
  * @extends IteratorAggregate<int, string>
  */
@@ -17,7 +21,7 @@ interface StreamInterface extends IteratorAggregate
     public function getIterator(): Traversable;
 
     /**
-     * Check if source stream is fully consumed.
+     * Check if the source stream was fully consumed.
      */
     public function isCompleted(): bool;
 }

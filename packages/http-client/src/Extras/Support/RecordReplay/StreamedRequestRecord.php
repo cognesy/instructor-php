@@ -6,9 +6,12 @@ use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Drivers\Mock\MockHttpResponseFactory;
 use Cognesy\Http\Extras\Support\RecordReplay\Redaction\RequestRedactor;
+use Cognesy\Http\Extras\Support\RecordReplay\Redaction\ResponseRedactor;
 
 /**
  * A specialized value object for handling streamed HTTP interactions.
+ *
+ * @deprecated Use cassette interactions through RecordReplayMiddleware.
  */
 class StreamedRequestRecord extends RequestRecord
 {
@@ -48,6 +51,18 @@ class StreamedRequestRecord extends RequestRecord
             if ($body !== '') {
                 $chunks[] = $body;
             }
+        }
+
+        if ($redactor instanceof ResponseRedactor) {
+            $redacted = $redactor->redactResponse([
+                ...$responseData,
+                'chunks' => $chunks,
+            ]);
+            $responseData = array_diff_key($redacted, ['chunks' => true]);
+            $chunks = is_array($redacted['chunks'] ?? null) ? array_values(array_filter(
+                $redacted['chunks'],
+                static fn(mixed $chunk): bool => is_string($chunk),
+            )) : $chunks;
         }
 
         return new self($requestData, $responseData, $chunks);

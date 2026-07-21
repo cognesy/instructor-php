@@ -221,7 +221,7 @@ test('throws when recording cannot be written to storage', function() {
     }
 });
 
-test('matches recordings by method url and body only, ignoring headers and options', function() {
+test('matches recordings while ignoring credentials and transport-only options', function() {
     $recorded = new HttpRequest(
         'https://api.example.com/users',
         'POST',
@@ -233,7 +233,7 @@ test('matches recordings by method url and body only, ignoring headers and optio
     $lookup = new HttpRequest(
         'https://api.example.com/users',
         'POST',
-        ['Authorization' => 'Bearer token-b', 'Accept' => 'text/plain'],
+        ['Authorization' => 'Bearer token-b', 'Accept' => 'application/json'],
         '{"id":1}',
         ['timeout' => 30, 'trace' => 'b', 'stream' => false],
     );

@@ -89,7 +89,7 @@ test('replay middleware restores streamed record with status headers and chunk b
     $chunks = ["part-1", "part-2", "part-3"];
 
     $recording = new RecordingMiddleware($this->storageDir);
-    $recording->handle($request, new class($headers, $chunks) implements CanHandleHttpRequest {
+    $recordedResponse = $recording->handle($request, new class($headers, $chunks) implements CanHandleHttpRequest {
         public function __construct(
             private array $headers,
             private array $chunks,
@@ -103,6 +103,7 @@ test('replay middleware restores streamed record with status headers and chunk b
             );
         }
     });
+    expect(iterator_to_array($recordedResponse->stream()))->toBe($chunks);
 
     $replay = new ReplayMiddleware($this->storageDir, false);
     $response = $replay->handle($request, new class implements CanHandleHttpRequest {
@@ -117,7 +118,7 @@ test('replay middleware restores streamed record with status headers and chunk b
     expect(iterator_to_array($response->stream()))->toBe($chunks);
 });
 
-test('recording middleware eagerly drains the upstream stream before returning', function() {
+test('recording middleware returns before draining the upstream stream', function() {
     $request = new HttpRequest(
         'https://api.example.com/stream',
         'GET',
@@ -150,7 +151,62 @@ test('recording middleware eagerly drains the upstream stream before returning',
     $recording = new RecordingMiddleware($this->storageDir);
     $response = $recording->handle($request, $driver);
 
-    expect($driver::$yielded)->toBe(3)
+    expect($driver::$yielded)->toBe(0)
         ->and($response->isStreamed())->toBeTrue()
         ->and(iterator_to_array($response->stream()))->toBe(['a', 'b', 'c']);
+    expect($driver::$yielded)->toBe(3);
+});
+
+test('partial consumption does not create a complete recording', function() {
+    $request = new HttpRequest(
+        'https://api.example.com/partial',
+        'GET',
+        [],
+        '',
+        ['stream' => true],
+    );
+    $driver = new class implements CanHandleHttpRequest {
+        public function handle(HttpRequest $request): HttpResponse {
+            return HttpResponse::streaming(
+                statusCode: 200,
+                headers: [],
+                stream: new IterableStream(['first', 'second']),
+            );
+        }
+    };
+
+    $response = (new RecordingMiddleware($this->storageDir))->handle($request, $driver);
+    foreach ($response->stream() as $_chunk) {
+        break;
+    }
+
+    expect(glob($this->storageDir . '/*.json'))->toBeArray()->toHaveCount(0);
+});
+
+test('failed upstream streams are not persisted as complete recordings', function() {
+    $request = new HttpRequest(
+        'https://api.example.com/failure',
+        'GET',
+        [],
+        '',
+        ['stream' => true],
+    );
+    $driver = new class implements CanHandleHttpRequest {
+        public function handle(HttpRequest $request): HttpResponse {
+            return HttpResponse::streaming(
+                statusCode: 200,
+                headers: [],
+                stream: new IterableStream((function (): Generator {
+                    yield 'first';
+                    throw new RuntimeException('upstream failed');
+                })()),
+            );
+        }
+    };
+
+    $response = (new RecordingMiddleware($this->storageDir))->handle($request, $driver);
+
+    expect(fn() => iterator_to_array($response->stream()))
+        ->toThrow(RuntimeException::class, 'upstream failed')
+        ->and(glob($this->storageDir . '/*.json'))->toBeArray()->toHaveCount(0);
 });

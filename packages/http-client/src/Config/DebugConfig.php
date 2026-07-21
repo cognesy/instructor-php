@@ -25,6 +25,7 @@ final class DebugConfig
         public readonly bool $httpResponseBody = true,
         public readonly bool $httpResponseStream = true,
         public readonly bool $httpResponseStreamByLine = true,
+        public readonly int $httpBodyMaxBytes = 65536,
     ) {}
 
     private const PRESET_PATHS = [
@@ -76,6 +77,7 @@ final class DebugConfig
             'httpResponseBody' => $this->httpResponseBody,
             'httpResponseStream' => $this->httpResponseStream,
             'httpResponseStreamByLine' => $this->httpResponseStreamByLine,
+            'httpBodyMaxBytes' => $this->httpBodyMaxBytes,
         ];
     }
 }

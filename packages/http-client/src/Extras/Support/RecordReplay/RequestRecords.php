@@ -12,6 +12,8 @@ use RuntimeException;
 
 /**
  * A repository for HTTP request/response recordings.
+ *
+ * @deprecated Use CassetteStore through RecordReplayMiddleware.
  */
 class RequestRecords
 {
@@ -50,6 +52,84 @@ class RequestRecords
 
         if ($written === false) {
             throw new RuntimeException("Failed to save HTTP interaction recording to {$filename}: " . ($errorMessage ?? 'Unknown write error'));
+        }
+        @chmod($filename, 0600);
+
+        return $filename;
+    }
+
+    /** @param iterable<string> $chunks */
+    public function saveStreamed(HttpRequest $request, HttpResponse $response, iterable $chunks): string {
+        $requestData = [
+            'url' => $request->url(),
+            'method' => $request->method(),
+            'headers' => $request->headers(),
+            'body' => $request->body()->toString(),
+            'options' => $request->options(),
+        ];
+        $requestData = $this->redactor->redact($requestData);
+
+        $responseData = [
+            'statusCode' => $response->statusCode(),
+            'headers' => $response->headers(),
+        ];
+        if ($this->redactor instanceof \Cognesy\Http\Extras\Support\RecordReplay\Redaction\ResponseRedactor) {
+            $responseData = $this->redactor->redactResponse($responseData);
+        }
+
+        $filename = $this->getFilenameForRequest($request);
+        $temporaryFilename = $filename . '.tmp.' . bin2hex(random_bytes(8));
+        $handle = fopen($temporaryFilename, 'wb');
+        if ($handle === false) {
+            throw new RuntimeException("Failed to create HTTP interaction recording at {$temporaryFilename}");
+        }
+
+        try {
+            $prefix = json_encode(
+                ['request' => $requestData, 'response' => $responseData],
+                JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES,
+            );
+            if ($prefix === false) {
+                throw new RuntimeException('Failed to encode HTTP recording metadata.');
+            }
+            $prefix = rtrim($prefix);
+            $this->writeToHandle($handle, substr($prefix, 0, -1) . ',"chunks":[');
+
+            $first = true;
+            $chunksToWrite = $this->redactor instanceof FixtureSanitizer
+                ? $this->redactor->redactStream($chunks)
+                : $chunks;
+
+            foreach ($chunksToWrite as $chunk) {
+                $chunkData = ['chunks' => [$chunk]];
+                if ($this->redactor instanceof \Cognesy\Http\Extras\Support\RecordReplay\Redaction\ResponseRedactor
+                    && !$this->redactor instanceof FixtureSanitizer) {
+                    $chunkData = $this->redactor->redactResponse($chunkData);
+                }
+                $safeChunk = $chunkData['chunks'][0] ?? $chunk;
+                $encodedChunk = json_encode((string) $safeChunk, JSON_UNESCAPED_SLASHES);
+                if ($encodedChunk === false) {
+                    throw new RuntimeException('Failed to encode HTTP recording chunk.');
+                }
+                $this->writeToHandle($handle, $first ? $encodedChunk : ',' . $encodedChunk);
+                $first = false;
+            }
+
+            $this->writeToHandle($handle, ']}');
+            fclose($handle);
+            $handle = null;
+
+            if (!rename($temporaryFilename, $filename)) {
+                throw new RuntimeException("Failed to finalize HTTP interaction recording at {$filename}");
+            }
+            @chmod($filename, 0600);
+        } finally {
+            if (is_resource($handle)) {
+                fclose($handle);
+            }
+            if (file_exists($temporaryFilename)) {
+                unlink($temporaryFilename);
+            }
         }
 
         return $filename;
@@ -152,12 +232,20 @@ class RequestRecords
 
     private function ensureStorageDirExists(): void {
         if (!is_dir($this->storageDir)) {
-            if (!mkdir($concurrentDirectory = $this->storageDir, 0777, true) && !is_dir($concurrentDirectory)) {
+            if (!mkdir($concurrentDirectory = $this->storageDir, 0700, true) && !is_dir($concurrentDirectory)) {
                 throw new RuntimeException("Failed to create storage directory: {$this->storageDir}");
             }
         }
     }
 
+    /** @param resource $handle */
+    private function writeToHandle(mixed $handle, string $data): void {
+        if ($data !== '' && fwrite($handle, $data) !== strlen($data)) {
+            throw new RuntimeException('Failed to write HTTP interaction recording.');
+        }
+    }
+
+    /** @deprecated Filesystem configuration belongs to a CassetteStore. */
     public function setStorageDir(string $dir): self {
         $this->storageDir = $dir;
         $this->ensureStorageDirExists();

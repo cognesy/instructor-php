@@ -7,6 +7,7 @@ use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
 use Cognesy\Http\Exceptions\HttpRequestException;
+use Cognesy\Http\Extras\Support\RecordReplay\Redaction\DefaultRequestRedactor;
 use Cognesy\Http\Telemetry\HttpRequestTelemetry;
 
 /**
@@ -17,34 +18,42 @@ use Cognesy\Http\Telemetry\HttpRequestTelemetry;
 trait DispatchesHttpDriverEvents
 {
     private function dispatchRequestSent(HttpRequest $request): void {
+        $requestData = $this->safeRequestData($request);
         $this->events->dispatch(new HttpRequestSent([
             'requestId' => $request->id,
-            'url' => $request->url(),
+            'url' => $requestData['url'],
             'method' => $request->method(),
-            'headers' => $request->headers(),
-            'body' => $request->body()->toArray(),
+            'headers' => $requestData['headers'],
+            'requestBodyBytes' => strlen($request->body()->toString()),
             ...HttpRequestTelemetry::metadataForRequest($request),
         ]));
     }
 
     private function dispatchStatusCodeFailed(int $statusCode, HttpRequest $request): void {
+        $requestData = $this->safeRequestData($request);
         $this->events->dispatch(new HttpRequestFailed([
             'requestId' => $request->id,
-            'url' => $request->url(),
+            'url' => $requestData['url'],
             'method' => $request->method(),
+            'headers' => $requestData['headers'],
+            'requestBodyBytes' => strlen($request->body()->toString()),
             'statusCode' => $statusCode,
             ...HttpRequestTelemetry::metadataForRequest($request),
         ]));
     }
 
     private function dispatchRequestFailed(HttpRequestException $exception, HttpRequest $request): void {
+        $requestData = $this->safeRequestData($request);
         $this->events->dispatch(new HttpRequestFailed([
             'requestId' => $request->id,
-            'url' => $request->url(),
+            'url' => $requestData['url'],
             'method' => $request->method(),
-            'headers' => $request->headers(),
-            'body' => $request->body()->toArray(),
-            'errors' => $exception->getMessage(),
+            'headers' => $requestData['headers'],
+            'requestBodyBytes' => strlen($request->body()->toString()),
+            'statusCode' => $exception->getStatusCode(),
+            'errors' => DefaultRequestRedactor::redactBody(
+                DefaultRequestRedactor::redactUrl($exception->getMessage()),
+            ),
             ...HttpRequestTelemetry::metadataForRequest($request),
         ]));
     }
@@ -59,8 +68,16 @@ trait DispatchesHttpDriverEvents
             'requestId' => $request->id,
             'statusCode' => $statusCode,
             'isStreamed' => $isStreamed,
-            'body' => $isStreamed ? null : $body,
+            'responseBodyBytes' => $isStreamed || $body === null ? null : strlen($body),
             ...HttpRequestTelemetry::metadataForRequest($request),
         ], static fn(mixed $v): bool => $v !== null)));
+    }
+
+    /** @return array{url: string, headers: array<string, mixed>} */
+    private function safeRequestData(HttpRequest $request): array {
+        return [
+            'url' => DefaultRequestRedactor::redactUrl($request->url()),
+            'headers' => DefaultRequestRedactor::redactHeaders($request->headers()),
+        ];
     }
 }

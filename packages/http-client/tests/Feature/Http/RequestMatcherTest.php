@@ -88,3 +88,57 @@ test('default matcher (no arg) preserves exact-match semantics', function () {
     $different = new HttpRequest('https://api.example.com/a', 'POST', [], '{"x":1}', []);
     expect($records->find($different))->toBeNull();
 });
+
+test('canonical JSON matching ignores object key order and insignificant whitespace', function () {
+    $matcher = new ExactHashMatcher();
+    $headers = ['Content-Type' => 'application/json'];
+    $first = new HttpRequest('https://api.example.com/items', 'POST', $headers, '{"b":2, "a": {"d":4,"c":3}}', []);
+    $second = new HttpRequest('https://api.example.com/items', 'POST', $headers, '{ "a": { "c": 3, "d": 4 }, "b": 2 }', []);
+    $arrayOrder = new HttpRequest('https://api.example.com/items', 'POST', $headers, '{"b":2,"a":[3,4]}', []);
+
+    expect($matcher->fingerprint($first))->toBe($matcher->fingerprint($second))
+        ->and($matcher->fingerprint($first))->not->toBe($matcher->fingerprint($arrayOrder));
+});
+
+test('matching includes stream mode and response-shaping headers but excludes credentials', function () {
+    $matcher = new ExactHashMatcher();
+    $base = new HttpRequest(
+        'https://api.example.com/items?token=real-secret',
+        'POST',
+        ['Content-Type' => 'application/json', 'Accept' => 'application/json', 'Authorization' => 'Bearer a'],
+        '{}',
+        [],
+    );
+    $keyless = new HttpRequest(
+        'https://api.example.com/items?ToKeN=dummy-key',
+        'POST',
+        ['Content-Type' => 'application/json', 'Accept' => 'application/json', 'Authorization' => 'Bearer b'],
+        '{}',
+        [],
+    );
+    $differentAccept = $keyless->withHeader('Accept', 'text/event-stream');
+    $streamed = $keyless->withStreaming(true);
+
+    expect($matcher->fingerprint($base))->toBe($matcher->fingerprint($keyless))
+        ->and($matcher->fingerprint($keyless))->not->toBe($matcher->fingerprint($differentAccept))
+        ->and($matcher->fingerprint($keyless))->not->toBe($matcher->fingerprint($streamed));
+});
+
+test('binary and non-JSON bodies remain byte-exact', function () {
+    $matcher = new ExactHashMatcher();
+    $headers = ['Content-Type' => 'application/octet-stream'];
+    $first = new HttpRequest('https://api.example.com/upload', 'PUT', $headers, "\xFF\x00a", []);
+    $same = new HttpRequest('https://api.example.com/upload', 'PUT', $headers, "\xFF\x00a", []);
+    $different = new HttpRequest('https://api.example.com/upload', 'PUT', $headers, "\xFF\x00b", []);
+
+    expect($matcher->fingerprint($first))->toBe($matcher->fingerprint($same))
+        ->and($matcher->fingerprint($first))->not->toBe($matcher->fingerprint($different));
+});
+
+test('length-delimited fingerprinting prevents delimiter collisions', function () {
+    $matcher = new ExactHashMatcher();
+    $first = new HttpRequest('https://api.example.com/a', 'POST', [], 'b|c', []);
+    $second = new HttpRequest('https://api.example.com/a|b', 'POST', [], 'c', []);
+
+    expect($matcher->fingerprint($first))->not->toBe($matcher->fingerprint($second));
+});

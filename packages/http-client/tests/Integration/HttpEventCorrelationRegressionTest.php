@@ -159,6 +159,9 @@ it('includes a stable requestId across http failure events', function (string $d
 
     expect($requestSent->data)->toBeArray()->toHaveKey('requestId', $request->id);
     expect($requestFailed->data)->toBeArray()->toHaveKey('requestId', $request->id);
+    expect($requestFailed->data)->toHaveKeys(['url', 'method', 'headers', 'requestBodyBytes', 'statusCode'])
+        ->and($requestFailed->data)->not->toHaveKey('errors')
+        ->and($requestFailed->data)->not->toHaveKey('body');
 })->with(['guzzle', 'symfony', 'curl']);
 
 it('mock driver emits normalized response payload with requestId', function () {
@@ -185,7 +188,7 @@ it('mock driver emits normalized response payload with requestId', function () {
         'requestId' => $request->id,
         'statusCode' => 200,
         'isStreamed' => false,
-        'body' => '{"ok":true}',
+        'responseBodyBytes' => 11,
     ]);
 
     foreach ($responseReceived->data as $value) {

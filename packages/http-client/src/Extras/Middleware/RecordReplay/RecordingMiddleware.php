@@ -8,12 +8,15 @@ use Cognesy\Http\Contracts\HttpMiddleware;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Extras\Support\RecordReplay\Events\HttpInteractionRecorded;
+use Cognesy\Http\Extras\Support\RecordReplay\Events\HttpInteractionSummary;
 use Cognesy\Http\Extras\Support\RecordReplay\RequestRecords;
-use Cognesy\Http\Stream\ArrayStream;
+use Cognesy\Http\Extras\Support\RecordReplay\RecordingStream;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Records HTTP interactions for later replay.
+ *
+ * @deprecated Use RecordReplayMiddleware::recordTo() or recordWith().
  */
 class RecordingMiddleware implements HttpMiddleware
 {
@@ -35,33 +38,36 @@ class RecordingMiddleware implements HttpMiddleware
         if (!$response->isStreamed()) {
             $this->records->save($request, $response);
             if ($this->events !== null) {
-                $this->events->dispatch(new HttpInteractionRecorded($request, $response));
+                $this->events->dispatch(new HttpInteractionRecorded(
+                    HttpInteractionSummary::fromRequest($request, 'recorded', $response->statusCode()),
+                ));
             }
             return $response;
         }
 
-        $chunks = [];
-        foreach ($response->stream() as $chunk) {
-            $chunks[] = $chunk;
-        }
-
-        $replayableResponse = HttpResponse::streaming(
+        $recordingResponse = HttpResponse::streaming(
             statusCode: $response->statusCode(),
             headers: $response->headers(),
-            stream: ArrayStream::from($chunks),
+            stream: new RecordingStream(
+                source: $response->rawStream(),
+                onCompleted: function (iterable $chunks) use ($request, $response): void {
+                    $this->records->saveStreamed($request, $response, $chunks);
+                    $this->events?->dispatch(new HttpInteractionRecorded(
+                        HttpInteractionSummary::fromRequest($request, 'recorded', $response->statusCode()),
+                    ));
+                },
+            ),
         );
 
-        $this->records->save($request, $replayableResponse);
-        if ($this->events !== null) {
-            $this->events->dispatch(new HttpInteractionRecorded($request, $replayableResponse));
-        }
-        return $replayableResponse;
+        return $recordingResponse;
     }
 
+    /** @deprecated Use the cassette store API; record fixtures are implementation details. */
     public function getRecords(): RequestRecords {
         return $this->records;
     }
 
+    /** @deprecated Configure the directory through RecordReplayMiddleware::recordTo(). */
     public function setStorageDir(string $dir): self {
         $this->records->setStorageDir($dir);
         return $this;

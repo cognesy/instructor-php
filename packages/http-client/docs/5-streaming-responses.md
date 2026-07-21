@@ -5,6 +5,8 @@ description: 'Enable streaming, consume chunks as they arrive, and process serve
 
 Streaming responses let you process data as it arrives from the server rather than waiting for the entire response to buffer in memory. This is particularly valuable when working with LLM APIs that generate tokens incrementally, downloading large files, or consuming real-time event streams.
 
+Streams are considered complete only after their iterator reaches the natural end. Breaking early leaves a stream incomplete; one-shot streams cannot then be replayed. When constructing a response from an iterable, use `HttpResponse::streamingFromIterable()` for non-buffering consumption or `HttpResponse::bufferedFromIterable()` when replay is explicitly required. Passing a raw iterable to `HttpResponse` is rejected so it cannot silently retain every chunk.
+
 ## Enabling Streaming
 
 To receive a streaming response, set the `stream` option on the request:
@@ -74,7 +76,7 @@ The raw chunks from the transport layer will contain server-sent event framing (
 
 ## Server-Sent Events with EventSourceMiddleware
 
-The `EventSourceMiddleware` handles the SSE protocol for you. It strips the `data:` prefixes, buffers partial lines, and yields complete event payloads:
+The `EventSourceMiddleware` handles the SSE protocol for you. It strips the `data:` prefixes, buffers partial lines, and yields complete event payloads. A final event is emitted when the source ends even if it has no trailing blank line. The parser buffer is limited to 1 MiB by default; configure `maxBufferBytes` on `EventSourceMiddleware` for a smaller or larger protocol-specific limit:
 
 ```php
 use Cognesy\Http\Extras\Middleware\EventSource\EventSourceMiddleware;
@@ -169,7 +171,15 @@ Policies bound memory explicitly:
 
 Capture is per-response and off by default; it never changes what the consumer
 of `stream()` sees. The `truncated` flag in `stats()` tells you when the byte
-budget cut the capture short.
+
+The default is intentionally disabled because capture adds per-chunk work and
+retention to a path designed to stay one-shot. With 50,000–100,000 small chunks,
+`chunks()`/`full()` can retain 50,000–100,000 PHP string and array entries before
+their byte cap is reached; the object overhead can be several times larger than
+the payload itself. `preview()` retains only one bounded prefix, while
+`disabled()` avoids capture storage entirely. Choose a small preview for
+diagnostics on long-lived streams and enable full/chunk capture only when the
+retained data is explicitly needed.
 
 ## Considerations
 

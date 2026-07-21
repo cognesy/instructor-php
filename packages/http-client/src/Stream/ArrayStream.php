@@ -29,12 +29,14 @@ final class ArrayStream implements StreamInterface
     /** @return \Traversable<string> */
     #[\Override]
     public function getIterator(): \Traversable {
+        $consumedFully = false;
         try {
             foreach ($this->chunks as $chunk) {
                 yield $chunk;
             }
+            $consumedFully = true;
         } finally {
-            $this->completed = true;
+            $this->completed = $consumedFully;
         }
     }
 
@@ -43,4 +45,3 @@ final class ArrayStream implements StreamInterface
         return $this->completed;
     }
 }
-

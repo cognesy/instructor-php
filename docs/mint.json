@@ -1,7 +1,9 @@
 {
     "name": "Test Docs",
-    "favicon": "",
-    "colors": [],
+    "favicon": "/favicon.svg",
+    "colors": {
+        "primary": "#0D9373"
+    },
     "navigation": [
         {
             "group": "Main",
@@ -17,6 +19,7 @@
             "group": "Release Notes",
             "pages": [
                 "release-notes/versions",
+                "release-notes/v2.5.2",
                 "release-notes/v2.5.1",
                 "release-notes/v2.5.0",
                 "release-notes/v2.4.1",
@@ -634,7 +637,8 @@
                 "cookbook/examples/C01_Http/http_middleware_hooks",
                 "cookbook/examples/C01_Http/http_middleware_stream",
                 "cookbook/examples/C01_Http/http_middleware_sync",
-                "cookbook/examples/C01_Http/http_client_pool_basics"
+                "cookbook/examples/C01_Http/http_client_pool_basics",
+                "cookbook/examples/C01_Http/http_client_stream_capture"
             ]
         },
         {

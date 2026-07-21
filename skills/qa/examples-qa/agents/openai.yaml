@@ -1,0 +1,4 @@
+interface:
+  display_name: "Instructor Examples QA"
+  short_description: "Run and interpret Instructor example QA"
+  default_prompt: "Use $examples-qa to verify selected or full Instructor examples with live, recorded, or hermetic replay traffic."

@@ -5,6 +5,7 @@ namespace Cognesy\Http\Drivers\Curl {
     {
         public static bool $forceExecFailure = false;
         public static bool $forceComplete = false;
+        public static bool $forceTransferFailure = false;
     }
 
     function curl_multi_exec(\CurlMultiHandle $multiHandle, int &$stillRunning): int {
@@ -19,6 +20,19 @@ namespace Cognesy\Http\Drivers\Curl {
 
         return \curl_multi_exec($multiHandle, $stillRunning);
     }
+
+    function curl_multi_info_read(\CurlMultiHandle $multiHandle): array|false {
+        if (StreamingCurlExecFailureHook::$forceTransferFailure) {
+            StreamingCurlExecFailureHook::$forceTransferFailure = false;
+            return [
+                'msg' => CURLMSG_DONE,
+                'result' => CURLE_OPERATION_TIMEDOUT,
+                'handle' => null,
+            ];
+        }
+
+        return \curl_multi_info_read($multiHandle);
+    }
 }
 
 namespace {
@@ -27,6 +41,7 @@ namespace {
     use Cognesy\Http\Drivers\Curl\HeaderParser;
     use Cognesy\Http\Drivers\Curl\StreamingCurlExecFailureHook;
     use Cognesy\Http\Drivers\Curl\StreamingCurlResponseAdapter;
+    use Cognesy\Http\Data\HttpRequest;
     use Cognesy\Http\Events\HttpResponseChunkReceived;
     use Cognesy\Http\Events\HttpStreamCompleted;
     use Cognesy\Http\Exceptions\NetworkException;
@@ -120,5 +135,52 @@ namespace {
             ->and($completed)->toHaveCount(1)
             ->and($completed[0]->data['bytes'])->toBe(7)
             ->and($completed[0]->data['chunks'])->toBe(3);
+    });
+
+    it('throws mapped transfer errors and reports failed stream completion', function () {
+        if (!extension_loaded('curl')) {
+            Assert::markTestSkipped('cURL extension not available');
+        }
+
+        $events = new EventDispatcher();
+        $captured = [];
+        $events->wiretap(static function (object $event) use (&$captured): void {
+            $captured[] = $event;
+        });
+
+        $handle = CurlHandle::create('http://127.0.0.1:65535', 'GET');
+        $multi = curl_multi_init();
+        curl_multi_add_handle($multi, $handle->native());
+
+        $headerParser = new HeaderParser();
+        $headerParser->parse("HTTP/1.1 200 OK\r\n");
+
+        $adapter = new StreamingCurlResponseAdapter(
+            handle: $handle,
+            multi: $multi,
+            queue: new \SplQueue(),
+            headerParser: $headerParser,
+            events: $events,
+            request: new HttpRequest('http://127.0.0.1:65535', 'GET', [], '', ['stream' => true]),
+        );
+
+        StreamingCurlExecFailureHook::$forceComplete = true;
+        StreamingCurlExecFailureHook::$forceTransferFailure = true;
+        try {
+            expect(fn() => iterator_to_array($adapter->toHttpResponse()->stream()))
+                ->toThrow(\Cognesy\Http\Exceptions\TimeoutException::class);
+        } finally {
+            StreamingCurlExecFailureHook::$forceComplete = false;
+            StreamingCurlExecFailureHook::$forceTransferFailure = false;
+        }
+
+        $completed = array_values(array_filter(
+            $captured,
+            static fn(object $event): bool => $event instanceof HttpStreamCompleted,
+        ));
+
+        expect($completed)->toHaveCount(1)
+            ->and($completed[0]->data['outcome'])->toBe('failed')
+            ->and($completed[0]->data['error'])->toContain('cURL transfer failed');
     });
 }

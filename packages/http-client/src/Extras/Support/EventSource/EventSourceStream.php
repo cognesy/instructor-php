@@ -6,6 +6,8 @@ use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Stream\StreamInterface;
 use Closure;
+use Generator;
+use LengthException;
 
 /**
  * Stream wrapper that notifies listeners on chunks and assembled events
@@ -27,12 +29,14 @@ final class EventSourceStream implements StreamInterface
         private ?HttpResponse $response,
         private array $listeners,
         ?callable $parser = null,
+        private readonly int $maxBufferBytes = 1_048_576,
     ) {
         $this->parser = $parser !== null ? Closure::fromCallable($parser) : null;
     }
 
     #[\Override]
     public function getIterator(): \Traversable {
+        $consumedFully = false;
         try {
             foreach ($this->source as $chunk) {
                 $normalized = str_replace(["\r\n", "\r"], "\n", $chunk);
@@ -47,36 +51,54 @@ final class EventSourceStream implements StreamInterface
                 while (($pos = strpos($this->buffer, "\n\n")) !== false) {
                     $eventBlock = substr($this->buffer, 0, $pos);
                     $this->buffer = substr($this->buffer, $pos + 2);
-                    $payload = $this->parseSseEventBlock($eventBlock);
-                    if ($payload === '') {
-                        continue;
-                    }
+                    yield from $this->emitEventBlock($eventBlock);
+                }
 
-                    if ($this->request !== null && $this->response !== null) {
-                        foreach ($this->listeners as $listener) {
-                            $listener->onStreamEventAssembled($this->request, $this->response, $payload);
-                        }
-                    }
-
-                    if ($this->parser === null) {
-                        continue;
-                    }
-
-                    $mapped = ($this->parser)($payload);
-                    if (is_string($mapped) && $mapped !== '') {
-                        yield $mapped;
-                    }
-                    if ($mapped === true) {
-                        yield $payload;
-                    }
+                if (strlen($this->buffer) > max(0, $this->maxBufferBytes)) {
+                    throw new LengthException(sprintf(
+                        'SSE parser buffer exceeded the configured limit of %d bytes.',
+                        max(0, $this->maxBufferBytes),
+                    ));
                 }
 
                 if ($this->parser === null) {
                     yield $chunk;
                 }
             }
+            if ($this->buffer !== '') {
+                $eventBlock = $this->buffer;
+                $this->buffer = '';
+                yield from $this->emitEventBlock($eventBlock);
+            }
+            $consumedFully = true;
         } finally {
-            $this->completed = true;
+            $this->completed = $consumedFully;
+        }
+    }
+
+    /** @return Generator<string> */
+    private function emitEventBlock(string $eventBlock): Generator {
+        $payload = $this->parseSseEventBlock($eventBlock);
+        if ($payload === '') {
+            return;
+        }
+
+        if ($this->request !== null && $this->response !== null) {
+            foreach ($this->listeners as $listener) {
+                $listener->onStreamEventAssembled($this->request, $this->response, $payload);
+            }
+        }
+
+        if ($this->parser === null) {
+            return;
+        }
+
+        $mapped = ($this->parser)($payload);
+        if (is_string($mapped) && $mapped !== '') {
+            yield $mapped;
+        }
+        if ($mapped === true) {
+            yield $payload;
         }
     }
 

@@ -109,3 +109,103 @@ test('the exact R0 leak (x-goog-api-key AIza...) is masked on save', function ()
         ->not->toContain('AIzaSyD-EXAMPLE_KEY_1234567890abcdefXYZ')
         ->toContain(DefaultRequestRedactor::MASK);
 });
+
+test('response headers, body fields, and streamed chunks are redacted before persistence', function () {
+    $records = new RequestRecords($this->dir);
+    $response = MockHttpResponseFactory::success(
+        headers: [
+            'Content-Type' => 'application/json',
+            'Set-Cookie' => 'session=response-cookie-secret',
+            'Authorization' => 'Bearer response-header-secret',
+        ],
+        body: '{"access_token":"response-body-secret","ok":true}',
+    );
+    $request = new HttpRequest('https://api.example.com/token', 'GET', [], '', []);
+    $file = $records->save($request, $response);
+
+    $contents = file_get_contents($file) ?: '';
+    expect($contents)->not->toContain('response-cookie-secret')
+        ->and($contents)->not->toContain('response-header-secret')
+        ->and($contents)->not->toContain('response-body-secret')
+        ->and($contents)->toContain(DefaultRequestRedactor::MASK);
+
+    $streamedRequest = new HttpRequest('https://api.example.com/stream', 'GET', [], '', ['stream' => true]);
+    $streamed = MockHttpResponseFactory::streaming(
+        headers: ['Set-Cookie' => 'stream-cookie-secret'],
+        chunks: ['{"token":"stream-', 'body-secret"}'],
+    );
+    $streamedFile = $records->save($streamedRequest, $streamed);
+    $streamedContents = file_get_contents($streamedFile) ?: '';
+
+    expect($streamedContents)->not->toContain('stream-cookie-secret')
+        ->and($streamedContents)->not->toContain('body-secret')
+        ->and($streamedContents)->toContain(DefaultRequestRedactor::MASK);
+});
+
+test('stream redaction masks secrets split across chunks without truncating the body', function () {
+    $redactor = new DefaultRequestRedactor();
+    $body = '{"token":"split-secret","safe":true}';
+
+    $redactedChunks = iterator_to_array($redactor->redactStream(str_split($body, 1)), false);
+
+    expect(implode('', $redactedChunks))
+        ->toBe('{"token":"' . DefaultRequestRedactor::MASK . '","safe":true}')
+        ->not->toContain('split-secret');
+
+    $authorization = iterator_to_array(
+        $redactor->redactStream(str_split("Authorization: Bearer split-token\n", 1)),
+        false,
+    );
+
+    expect(implode('', $authorization))
+        ->toBe('Authorization: ' . DefaultRequestRedactor::MASK . "\n")
+        ->not->toContain('split-token');
+});
+
+test('stream redaction keeps memory bounded while processing 100K chunks', function () {
+    $redactor = new DefaultRequestRedactor();
+    $hash = hash_init('sha256');
+    $chunkCount = 0;
+    $memoryBefore = memory_get_usage(true);
+
+    $chunks = static function (): Generator {
+        for ($index = 0; $index < 100_000; $index++) {
+            yield 'x';
+        }
+    };
+
+    foreach ($redactor->redactStream($chunks()) as $chunk) {
+        hash_update($hash, $chunk);
+        $chunkCount++;
+    }
+
+    $memoryGrowth = memory_get_usage(true) - $memoryBefore;
+
+    expect($chunkCount)->toBe(100_000)
+        ->and(hash_final($hash))->toBe(hash('sha256', str_repeat('x', 100_000)))
+        ->and($memoryGrowth)->toBeLessThan(8 * 1024 * 1024);
+});
+
+test('streamed persistence sanitizes the complete logical body', function () {
+    $records = new RequestRecords($this->dir);
+    $request = new HttpRequest('https://api.example.com/stream', 'POST', [], '', ['stream' => true]);
+    $response = MockHttpResponseFactory::streaming(headers: [], chunks: []);
+    $body = '{"token":"stream-secret","message":"complete"}';
+
+    $file = $records->saveStreamed($request, $response, str_split($body, 1));
+    $data = json_decode((string) file_get_contents($file), true);
+    $capturedBody = implode('', $data['chunks'] ?? []);
+
+    expect($capturedBody)
+        ->toBe('{"token":"' . DefaultRequestRedactor::MASK . '","message":"complete"}')
+        ->not->toContain('stream-secret');
+});
+
+test('recording directories are created owner-only on POSIX systems', function () {
+    if (DIRECTORY_SEPARATOR === '\\') {
+        return;
+    }
+
+    $records = new RequestRecords($this->dir);
+    expect(fileperms($records->getStorageDir()) & 0777)->toBe(0700);
+});

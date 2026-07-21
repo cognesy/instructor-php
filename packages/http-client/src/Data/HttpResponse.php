@@ -34,7 +34,9 @@ class HttpResponse
             ($stream === null) => BufferedStream::empty(),
             ($stream instanceof StreamInterface) => $stream,
             (is_array($stream) === true) => BufferedStream::fromArray($stream),
-            default => BufferedStream::fromStream($stream),
+            default => throw new LogicException(
+                'Raw iterables are not accepted as response streams. Use streamingFromIterable() for non-buffering consumption or bufferedFromIterable() explicitly.',
+            ),
         };
     }
 
@@ -69,6 +71,26 @@ class HttpResponse
             headers: $headers,
             isStreamed: true,
             stream: $stream,
+        );
+    }
+
+    /** @param iterable<string> $stream */
+    public static function streamingFromIterable(int $statusCode, array $headers, iterable $stream): self {
+        return self::streaming(
+            statusCode: $statusCode,
+            headers: $headers,
+            stream: new \Cognesy\Http\Stream\IterableStream($stream),
+        );
+    }
+
+    /** @param iterable<string> $stream */
+    public static function bufferedFromIterable(int $statusCode, array $headers, iterable $stream): self {
+        return new self(
+            statusCode: $statusCode,
+            body: '',
+            headers: $headers,
+            isStreamed: true,
+            stream: BufferedStream::fromStream($stream),
         );
     }
 

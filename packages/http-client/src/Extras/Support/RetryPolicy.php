@@ -3,6 +3,7 @@
 namespace Cognesy\Http\Extras\Support;
 
 use Cognesy\Http\Data\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Http\Exceptions\NetworkException;
 use Cognesy\Http\Exceptions\TimeoutException;
@@ -23,7 +24,23 @@ final readonly class RetryPolicy
             NetworkException::class,
         ],
         public bool $respectRetryAfter = true,
+        public bool $retryNonIdempotentMethods = false,
     ) {}
+
+    public function canRetryRequest(HttpRequest $request): bool {
+        if ($this->retryNonIdempotentMethods) {
+            return true;
+        }
+
+        return in_array(strtoupper($request->method()), [
+            'GET',
+            'HEAD',
+            'PUT',
+            'DELETE',
+            'OPTIONS',
+            'TRACE',
+        ], true);
+    }
 
     public function shouldRetryException(\Throwable $error, int $attemptNumber): bool {
         if ($attemptNumber > max(0, $this->maxRetries)) {
@@ -61,7 +78,8 @@ final readonly class RetryPolicy
     public function delayMsForAttempt(int $attemptNumber, ?HttpResponse $response = null): int {
         $attempt = max(1, $attemptNumber);
         $base = $this->baseDelayMs * (2 ** ($attempt - 1));
-        $capped = (int) min($base, $this->maxDelayMs);
+        $maxDelayMs = max(0, $this->maxDelayMs);
+        $capped = (int) min($base, $maxDelayMs);
 
         $delay = match ($this->jitter) {
             'none' => $capped,
@@ -72,26 +90,46 @@ final readonly class RetryPolicy
         if ($this->respectRetryAfter && $response !== null) {
             $retryAfter = $this->retryAfterSeconds($response);
             if ($retryAfter !== null) {
-                $delay = max($delay, $retryAfter * 1000);
+                $delay = max($delay, $this->retryAfterDelayMs($retryAfter, $maxDelayMs));
             }
         }
 
-        return $delay;
+        return min($delay, $maxDelayMs);
     }
 
     private function retryAfterSeconds(HttpResponse $response): ?int {
-        $headers = $response->headers();
-        $value = $headers['Retry-After'] ?? $headers['retry-after'] ?? null;
+        $value = null;
+        foreach ($response->headers() as $name => $headerValue) {
+            if (strcasecmp((string) $name, 'Retry-After') === 0) {
+                $value = $headerValue;
+                break;
+            }
+        }
         if (is_array($value)) {
             $value = $value[0] ?? null;
         }
         if ($value === null) {
             return null;
         }
-        if (is_numeric($value)) {
-            return (int) $value;
+
+        $numericValue = trim((string) $value);
+        if ($numericValue !== '' && ctype_digit($numericValue)) {
+            $normalizedValue = ltrim($numericValue, '0');
+            if ($normalizedValue === '') {
+                return 0;
+            }
+
+            $maxInteger = (string) PHP_INT_MAX;
+            if (strlen($normalizedValue) > strlen($maxInteger)
+                || (strlen($normalizedValue) === strlen($maxInteger) && strcmp($normalizedValue, $maxInteger) > 0)
+            ) {
+                return PHP_INT_MAX;
+            }
+
+            return (int) $normalizedValue;
         }
-        $httpDate = trim((string) $value);
+
+        $httpDate = $numericValue;
         $date = DateTimeImmutable::createFromFormat('D, d M Y H:i:s T', $httpDate);
         if ($date === false) {
             return null;
@@ -105,5 +143,18 @@ final readonly class RetryPolicy
         }
         $delta = $date->getTimestamp() - time();
         return $delta > 0 ? $delta : null;
+    }
+
+    private function retryAfterDelayMs(int $retryAfterSeconds, int $maxDelayMs): int {
+        if ($retryAfterSeconds <= 0 || $maxDelayMs <= 0) {
+            return 0;
+        }
+
+        $maxWholeSeconds = intdiv($maxDelayMs, 1000);
+        if ($retryAfterSeconds > $maxWholeSeconds) {
+            return $maxDelayMs;
+        }
+
+        return min($maxDelayMs, $retryAfterSeconds * 1000);
     }
 }

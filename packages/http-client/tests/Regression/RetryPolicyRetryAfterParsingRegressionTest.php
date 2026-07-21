@@ -39,3 +39,26 @@ it('ignores invalid retry-after date strings', function() {
 
     expect($policy->delayMsForAttempt(1, $response))->toBe(250);
 });
+
+it('caps very large numeric retry-after values at max delay', function() {
+    $policy = new RetryPolicy(
+        baseDelayMs: 250,
+        maxDelayMs: 8000,
+        jitter: 'none',
+        respectRetryAfter: true,
+    );
+    $response = HttpResponse::sync(429, ['Retry-After' => '999999999999999999999999'], '');
+
+    expect($policy->delayMsForAttempt(1, $response))->toBe(8000);
+});
+
+it('ignores negative and fractional numeric retry-after values', function() {
+    $policy = new RetryPolicy(
+        baseDelayMs: 250,
+        jitter: 'none',
+        respectRetryAfter: true,
+    );
+
+    expect($policy->delayMsForAttempt(1, HttpResponse::sync(429, ['Retry-After' => '-1'], '')))->toBe(250)
+        ->and($policy->delayMsForAttempt(1, HttpResponse::sync(429, ['Retry-After' => '1.5'], '')))->toBe(250);
+});

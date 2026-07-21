@@ -112,11 +112,11 @@ final class HttpRecordingBoot
             self::provisionDummyKeys();
         }
 
-        HttpClientDefaults::withMiddleware(new RecordReplayMiddleware(
-            mode: $mode,
-            storageDir: $dir,
-            fallbackToRealRequests: !$isReplay, // replay is hermetic
-        ));
+        HttpClientDefaults::withMiddleware(
+            $isReplay
+                ? RecordReplayMiddleware::replayFrom($dir)
+                : RecordReplayMiddleware::recordTo($dir),
+        );
 
         return true;
     }

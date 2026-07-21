@@ -28,13 +28,15 @@ final class IterableStream implements StreamInterface
             throw new LogicException('Stream is exhausted and cannot be replayed. Enable response stream caching to iterate again.');
         }
         $this->started = true;
+        $consumedFully = false;
 
         try {
             foreach ($this->source as $chunk) {
                 yield $chunk;
             }
+            $consumedFully = true;
         } finally {
-            $this->completed = true;
+            $this->completed = $consumedFully;
         }
     }
 

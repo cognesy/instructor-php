@@ -23,6 +23,7 @@ class EventSourceMiddleware extends BaseMiddleware
 
     public function __construct(
         protected bool $enabled = true,
+        protected int $maxBufferBytes = 1_048_576,
     ) {}
 
     public function withListeners(CanListenToHttpEvents ...$listeners): self {
@@ -76,6 +77,7 @@ class EventSourceMiddleware extends BaseMiddleware
             response: $response,
             listeners: $this->listeners,
             parser: $this->parser,
+            maxBufferBytes: $this->maxBufferBytes,
         );
     }
 }

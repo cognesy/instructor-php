@@ -10,6 +10,9 @@ use Cognesy\Utils\Uuid;
 
 final class IdempotencyMiddleware implements HttpMiddleware
 {
+    /** @var array<string, string> */
+    private array $keysByRequestId = [];
+
     /** @var (\Closure(HttpRequest): string)|null */
     private readonly ?\Closure $keyProvider;
 
@@ -49,18 +52,27 @@ final class IdempotencyMiddleware implements HttpMiddleware
             }
         }
 
-        $existing = $request->headers($this->headerName);
-        if (!empty($existing)) {
-            return false;
+        foreach ($request->headers() as $name => $value) {
+            if (strcasecmp((string) $name, $this->headerName) === 0) {
+                return false;
+            }
         }
 
         return true;
     }
 
     private function makeKey(HttpRequest $request): string {
-        if ($this->keyProvider !== null) {
-            return (string) call_user_func($this->keyProvider, $request);
+        if (isset($this->keysByRequestId[$request->id])) {
+            return $this->keysByRequestId[$request->id];
         }
-        return Uuid::uuid4();
+
+        if ($this->keyProvider !== null) {
+            $key = (string) call_user_func($this->keyProvider, $request);
+        } else {
+            $key = Uuid::uuid4();
+        }
+
+        $this->keysByRequestId[$request->id] = $key;
+        return $key;
     }
 }
