@@ -283,14 +283,7 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest,
      * @return array<string,mixed>
      */
     private function redactedHeaders(array $headers): array {
-        $redacted = [];
-        foreach ($headers as $name => $value) {
-            $redacted[$name] = $this->isSensitiveKey((string) $name)
-                ? '[REDACTED]'
-                : $value;
-        }
-
-        return $redacted;
+        return SensitiveDataRedactor::redactHeaders($headers);
     }
 
     /**
@@ -302,60 +295,10 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest,
     }
 
     private function redactedUrl(string $url): string {
-        $parts = parse_url($url);
-        if ($parts === false || !isset($parts['query'])) {
-            return $url;
-        }
-
-        $parts['query'] = $this->redactedQuery($parts['query']);
-        return $this->buildUrl($parts);
-    }
-
-    private function redactedQuery(string $query): string {
-        $segments = explode('&', $query);
-        $redacted = [];
-
-        foreach ($segments as $segment) {
-            if ($segment === '') {
-                $redacted[] = $segment;
-                continue;
-            }
-
-            [$rawKey, $rawValue] = array_pad(explode('=', $segment, 2), 2, null);
-            $decodedKey = urldecode((string) $rawKey);
-            if (!$this->isSensitiveKey($decodedKey)) {
-                $redacted[] = $segment;
-                continue;
-            }
-
-            $redacted[] = $rawKey . '=' . rawurlencode('[REDACTED]');
-        }
-
-        return implode('&', $redacted);
-    }
-
-    /**
-     * @param array<string,mixed> $parts
-     */
-    private function buildUrl(array $parts): string {
-        $scheme = isset($parts['scheme']) ? $parts['scheme'] . '://' : '';
-        $user = $parts['user'] ?? '';
-        $pass = isset($parts['pass']) ? ':' . $parts['pass'] : '';
-        $auth = $user !== '' ? $user . $pass . '@' : '';
-        $host = $parts['host'] ?? '';
-        $port = isset($parts['port']) ? ':' . $parts['port'] : '';
-        $path = $parts['path'] ?? '';
-        $query = isset($parts['query']) ? '?' . $parts['query'] : '';
-        $fragment = isset($parts['fragment']) ? '#' . $parts['fragment'] : '';
-
-        return $scheme . $auth . $host . $port . $path . $query . $fragment;
+        return SensitiveDataRedactor::redactUrl($url);
     }
 
     private function redactedExceptionMessage(Throwable $source, HttpRequest $request): string {
-        return str_replace($request->url(), $this->redactedUrl($request->url()), $source->getMessage());
-    }
-
-    private function isSensitiveKey(string $key): bool {
-        return SensitiveDataRedactor::isSensitiveKey($key);
+        return SensitiveDataRedactor::redactUrlInText($source->getMessage(), $request->url());
     }
 }

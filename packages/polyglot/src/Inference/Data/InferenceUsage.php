@@ -35,6 +35,25 @@ class InferenceUsage
     }
 
     // ACCESSORS /////////////////////////////////////////////////////////
+
+    /**
+     * Token counts keyed for lifecycle event payloads (inputTokens, outputTokens,
+     * cacheWriteTokens, cacheReadTokens, reasoningTokens, totalTokens). Shared by
+     * the success/usage/completed events so the schema has one owner.
+     *
+     * @return array<string,int>
+     */
+    public function toTokenCounts() : array {
+        return [
+            'inputTokens' => $this->inputTokens,
+            'outputTokens' => $this->outputTokens,
+            'cacheWriteTokens' => $this->cacheWriteTokens,
+            'cacheReadTokens' => $this->cacheReadTokens,
+            'reasoningTokens' => $this->reasoningTokens,
+            'totalTokens' => $this->total(),
+        ];
+    }
+
     public function total() : int {
         return $this->inputTokens
             + $this->outputTokens

@@ -5,6 +5,7 @@ namespace Cognesy\Polyglot\Embeddings\Config;
 use Cognesy\Config\BasePath;
 use Cognesy\Config\Config;
 use Cognesy\Config\Dsn;
+use Cognesy\Polyglot\Inference\Core\SensitiveDataRedactor;
 use InvalidArgumentException;
 use Throwable;
 
@@ -19,12 +20,15 @@ final class EmbeddingsConfig
     }
 
     public function __construct(
+        #[\SensitiveParameter]
         public string $apiUrl = '',
+        #[\SensitiveParameter]
         public string $apiKey = '',
         public string $endpoint = '',
         public string $model = '',
         public int    $dimensions = 0,
         public int    $maxInputs = 0,
+        #[\SensitiveParameter]
         public array  $metadata = [],
         public string $driver = 'openai',
     ) {}
@@ -49,26 +53,26 @@ final class EmbeddingsConfig
         return self::fromArray($data);
     }
 
-    public static function fromArray(array $config) : EmbeddingsConfig {
+    public static function fromArray(#[\SensitiveParameter] array $config) : EmbeddingsConfig {
         $normalized = self::coerceScalarTypes(self::normalizeConfigArray($config));
 
         try {
             $instance = new self(...$normalized);
         } catch (Throwable $e) {
-            $data = json_encode($normalized, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+            $fields = SensitiveDataRedactor::summarizeFieldTypes($normalized);
             throw new InvalidArgumentException(
-                message: "Invalid configuration for EmbeddingsConfig: {$e->getMessage()}\nData: {$data}",
+                message: "Invalid configuration for EmbeddingsConfig: {$e->getMessage()}\nFields: {$fields}",
                 previous: $e,
             );
         }
         return $instance;
     }
 
-    public static function fromDsn(string $dsn): self {
+    public static function fromDsn(#[\SensitiveParameter] string $dsn): self {
         return self::fromArray(Dsn::fromString($dsn)->toArray());
     }
 
-    public function withOverrides(array $values) : self {
+    public function withOverrides(#[\SensitiveParameter] array $values) : self {
         $config = array_merge($this->toArray(), $values);
         return self::fromArray($config);
     }
@@ -86,7 +90,7 @@ final class EmbeddingsConfig
         ];
     }
 
-    private static function normalizeConfigArray(array $config): array {
+    private static function normalizeConfigArray(#[\SensitiveParameter] array $config): array {
         if (array_key_exists('dimensions', $config)) {
             return $config;
         }
@@ -101,7 +105,7 @@ final class EmbeddingsConfig
         return $config;
     }
 
-    private static function coerceScalarTypes(array $config): array {
+    private static function coerceScalarTypes(#[\SensitiveParameter] array $config): array {
         $typed = $config;
         foreach (self::INT_FIELDS as $field) {
             if (!array_key_exists($field, $typed)) {
@@ -112,7 +116,7 @@ final class EmbeddingsConfig
         return $typed;
     }
 
-    private static function toInt(string $field, mixed $value): int {
+    private static function toInt(string $field, #[\SensitiveParameter] mixed $value): int {
         return match (true) {
             is_int($value) => $value,
             is_string($value) && preg_match('/^-?\d+$/', $value) === 1 => (int) $value,

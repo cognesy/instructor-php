@@ -10,6 +10,7 @@ use Cognesy\Polyglot\Inference\Exceptions\ProviderQuotaExceededException;
 use Cognesy\Polyglot\Inference\Exceptions\ProviderRateLimitException;
 use Cognesy\Polyglot\Inference\Exceptions\ProviderTransientException;
 use Cognesy\Polyglot\Inference\Exceptions\ProviderException;
+use Cognesy\Polyglot\Inference\Core\SensitiveDataRedactor;
 
 final class ProviderErrorClassifier
 {
@@ -54,8 +55,7 @@ final class ProviderErrorClassifier
             return $error->getMessage();
         }
 
-        $url = $request->url();
-        return str_replace($url, self::redactedUrl($url), $error->getMessage());
+        return SensitiveDataRedactor::redactUrlInText($error->getMessage(), $request->url());
     }
 
     private static function classify(
@@ -188,91 +188,5 @@ final class ProviderErrorClassifier
         }
         $detailsText = implode(', ', $details);
         return "{$message} ({$detailsText})";
-    }
-
-    private static function redactedUrl(string $url): string {
-        $parts = parse_url($url);
-        if ($parts === false) {
-            return $url;
-        }
-
-        if (isset($parts['user']) && $parts['user'] !== '') {
-            $parts['user'] = '[REDACTED]';
-        }
-
-        if (isset($parts['pass']) && $parts['pass'] !== '') {
-            $parts['pass'] = '[REDACTED]';
-        }
-
-        if (!isset($parts['query'])) {
-            return self::buildUrl($parts);
-        }
-
-        $parts['query'] = self::redactedQuery($parts['query']);
-        return self::buildUrl($parts);
-    }
-
-    private static function redactedQuery(string $query): string {
-        $segments = explode('&', $query);
-        $redacted = [];
-
-        foreach ($segments as $segment) {
-            if ($segment === '') {
-                $redacted[] = $segment;
-                continue;
-            }
-
-            [$rawKey, $rawValue] = array_pad(explode('=', $segment, 2), 2, null);
-            $decodedKey = urldecode((string) $rawKey);
-            if (!self::isSensitiveKey($decodedKey)) {
-                $redacted[] = $segment;
-                continue;
-            }
-
-            $redacted[] = $rawKey . '=' . rawurlencode('[REDACTED]');
-        }
-
-        return implode('&', $redacted);
-    }
-
-    /**
-     * @param array<string,mixed> $parts
-     */
-    private static function buildUrl(array $parts): string {
-        $scheme = isset($parts['scheme']) ? $parts['scheme'] . '://' : '';
-        $user = $parts['user'] ?? '';
-        $pass = isset($parts['pass']) ? ':' . $parts['pass'] : '';
-        $auth = $user !== '' ? $user . $pass . '@' : '';
-        $host = $parts['host'] ?? '';
-        $port = isset($parts['port']) ? ':' . $parts['port'] : '';
-        $path = $parts['path'] ?? '';
-        $query = isset($parts['query']) ? '?' . $parts['query'] : '';
-        $fragment = isset($parts['fragment']) ? '#' . $parts['fragment'] : '';
-
-        return $scheme . $auth . $host . $port . $path . $query . $fragment;
-    }
-
-    private static function isSensitiveKey(string $key): bool {
-        $normalized = strtolower(str_replace(['-', '_'], '', $key));
-
-        if (in_array($normalized, ['apikey', 'authorization', 'proxyauthorization', 'token', 'accesstoken', 'refreshtoken', 'secret', 'password', 'cookie', 'setcookie'], true)) {
-            return true;
-        }
-
-        if (str_contains($normalized, 'apikey')) {
-            return true;
-        }
-
-        if (str_contains($normalized, 'authorization')) {
-            return true;
-        }
-
-        if (str_contains($normalized, 'cookie')) {
-            return true;
-        }
-
-        return str_contains($normalized, 'token')
-            || str_contains($normalized, 'secret')
-            || str_contains($normalized, 'password');
     }
 }

@@ -6,9 +6,23 @@ use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Http\Exceptions\NetworkException;
 use Cognesy\Http\Exceptions\TimeoutException;
 use Cognesy\Polyglot\Inference\Exceptions\ProviderException;
+use InvalidArgumentException;
 
 final readonly class InferenceRetryPolicy
 {
+    /** @var list<int> */
+    private const array DEFAULT_RETRY_ON_STATUS = [408, 429, 500, 502, 503, 504];
+    /** @var list<class-string<\Throwable>> */
+    private const array DEFAULT_RETRY_ON_EXCEPTIONS = [
+        TimeoutException::class,
+        NetworkException::class,
+    ];
+
+    /** Validated jitter strategy resolved from the string $jitter value. */
+    public RetryJitter $jitterMode;
+    /** Validated length recovery strategy resolved from the string $lengthRecovery value. */
+    public LengthRecovery $lengthRecoveryMode;
+
     public function __construct(
         public int $maxAttempts = 1,
         public int $baseDelayMs = 250,
@@ -22,10 +36,19 @@ final readonly class InferenceRetryPolicy
             NetworkException::class,
         ],
         public string $lengthRecovery = 'none', // none|continue|increase_max_tokens
-    public int $lengthMaxAttempts = 1,
-    public string $lengthContinuePrompt = 'Continue.',
-    public int $maxTokensIncrement = 512,
-) {}
+        public int $lengthMaxAttempts = 1,
+        public string $lengthContinuePrompt = 'Continue.',
+        public int $maxTokensIncrement = 512,
+    ) {
+        RetryPolicyInvariants::assertMaxAttempts($maxAttempts);
+        RetryPolicyInvariants::assertDelays($baseDelayMs, $maxDelayMs);
+        RetryPolicyInvariants::assertStatusList($retryOnStatus);
+        RetryPolicyInvariants::assertExceptionList($retryOnExceptions);
+        RetryPolicyInvariants::assertNonNegative($lengthMaxAttempts, 'lengthMaxAttempts');
+        RetryPolicyInvariants::assertNonNegative($maxTokensIncrement, 'maxTokensIncrement');
+        $this->jitterMode = RetryJitter::fromString($jitter);
+        $this->lengthRecoveryMode = LengthRecovery::fromString($lengthRecovery);
+    }
 
     public function toArray(): array {
         return [
@@ -43,22 +66,26 @@ final readonly class InferenceRetryPolicy
     }
 
     public static function fromArray(array $data): self {
-        $retryOnStatus = $data['retryOnStatus'] ?? $data['retry_on_status'] ?? [408, 429, 500, 502, 503, 504];
-        $retryOnExceptions = $data['retryOnExceptions'] ?? $data['retry_on_exceptions'] ?? [
-            TimeoutException::class,
-            NetworkException::class,
-        ];
+        $retryOnStatus = self::listValue(
+            data: $data,
+            camelCaseKey: 'retryOnStatus',
+            snakeCaseKey: 'retry_on_status',
+            default: self::DEFAULT_RETRY_ON_STATUS,
+        );
+        $retryOnExceptions = self::listValue(
+            data: $data,
+            camelCaseKey: 'retryOnExceptions',
+            snakeCaseKey: 'retry_on_exceptions',
+            default: self::DEFAULT_RETRY_ON_EXCEPTIONS,
+        );
 
         return new self(
             maxAttempts: (int) ($data['maxAttempts'] ?? $data['max_attempts'] ?? 1),
             baseDelayMs: (int) ($data['baseDelayMs'] ?? $data['base_delay_ms'] ?? 250),
             maxDelayMs: (int) ($data['maxDelayMs'] ?? $data['max_delay_ms'] ?? 8000),
             jitter: (string) ($data['jitter'] ?? 'full'),
-            retryOnStatus: is_array($retryOnStatus) ? array_values($retryOnStatus) : [408, 429, 500, 502, 503, 504],
-            retryOnExceptions: is_array($retryOnExceptions) ? array_values($retryOnExceptions) : [
-                TimeoutException::class,
-                NetworkException::class,
-            ],
+            retryOnStatus: $retryOnStatus,
+            retryOnExceptions: $retryOnExceptions,
             lengthRecovery: (string) ($data['lengthRecovery'] ?? $data['length_recovery'] ?? 'none'),
             lengthMaxAttempts: (int) ($data['lengthMaxAttempts'] ?? $data['length_max_attempts'] ?? 1),
             lengthContinuePrompt: (string) ($data['lengthContinuePrompt'] ?? $data['length_continue_prompt'] ?? 'Continue.'),
@@ -92,21 +119,48 @@ final readonly class InferenceRetryPolicy
     }
 
     public function delayMsForAttempt(int $attemptNumber): int {
-        $attempt = max(1, $attemptNumber);
-        $base = $this->baseDelayMs * (2 ** ($attempt - 1));
-        $capped = (int) min($base, $this->maxDelayMs);
-
-        return match ($this->jitter) {
-            'none' => $capped,
-            'equal' => (int) ($capped / 2 + random_int(0, (int) ($capped / 2))),
-            default => random_int(0, $capped),
-        };
+        return RetryBackoff::delayMs($attemptNumber, $this->baseDelayMs, $this->maxDelayMs, $this->jitterMode);
     }
 
     public function shouldRecoverFromLength(int $lengthAttempts): bool {
-        if ($this->lengthRecovery === 'none') {
+        if ($this->lengthRecoveryMode === LengthRecovery::None) {
             return false;
         }
-        return $lengthAttempts < max(0, $this->lengthMaxAttempts);
+        return $lengthAttempts < $this->lengthMaxAttempts;
+    }
+
+    /**
+     * Camel-case serialized fields take precedence when both aliases are present.
+     * Associative arrays remain accepted and are deliberately normalized to lists.
+     *
+     * @param array<array-key,mixed> $data
+     * @param list<mixed> $default
+     * @return list<mixed>
+     */
+    private static function listValue(
+        array $data,
+        string $camelCaseKey,
+        string $snakeCaseKey,
+        array $default,
+    ): array {
+        $key = match (true) {
+            array_key_exists($camelCaseKey, $data) => $camelCaseKey,
+            array_key_exists($snakeCaseKey, $data) => $snakeCaseKey,
+            default => null,
+        };
+        if ($key === null) {
+            return $default;
+        }
+
+        $value = $data[$key];
+        if (!is_array($value)) {
+            throw new InvalidArgumentException(sprintf(
+                'Invalid retry %s: expected array, got %s.',
+                $key,
+                get_debug_type($value),
+            ));
+        }
+
+        return array_values($value);
     }
 }

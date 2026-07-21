@@ -137,6 +137,7 @@ nav:
       -
         'Release Notes':
           - { Overview: release-notes/versions.md }
+          - { v2.5.1: release-notes/v2.5.1.md }
           - { v2.5.0: release-notes/v2.5.0.md }
           - { v2.4.1: release-notes/v2.4.1.md }
           - { v2.4.0: release-notes/v2.4.0.md }

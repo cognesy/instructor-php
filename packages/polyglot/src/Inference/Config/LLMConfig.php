@@ -5,6 +5,7 @@ namespace Cognesy\Polyglot\Inference\Config;
 use Cognesy\Config\BasePath;
 use Cognesy\Config\Config;
 use Cognesy\Config\Dsn;
+use Cognesy\Polyglot\Inference\Core\SensitiveDataRedactor;
 use Cognesy\Polyglot\Inference\Data\InferencePricing;
 use InvalidArgumentException;
 use Throwable;
@@ -20,17 +21,21 @@ final class LLMConfig
     }
 
     public function __construct(
+        #[\SensitiveParameter]
         public string $apiUrl = '',
         #[\SensitiveParameter]
         public string $apiKey = '',
         public string $endpoint = '',
+        #[\SensitiveParameter]
         public array  $queryParams = [],
+        #[\SensitiveParameter]
         public array  $metadata = [],
         public string $model = '',
         public int    $maxTokens = 1024,
         public int    $contextLength = 8000,
         public int    $maxOutputLength = 4096,
         public string $driver = 'openai-compatible',
+        #[\SensitiveParameter]
         public array  $options = [],
         public array  $pricing = [],
     ) {
@@ -57,25 +62,25 @@ final class LLMConfig
         return self::fromArray($data);
     }
 
-    public static function fromArray(array $config) : LLMConfig {
+    public static function fromArray(#[\SensitiveParameter] array $config) : LLMConfig {
         $typed = self::coerceScalarTypes($config);
         try {
             $instance = new self(...$typed);
         } catch (Throwable $e) {
-            $data = json_encode($typed, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+            $fields = SensitiveDataRedactor::summarizeFieldTypes($typed);
             throw new InvalidArgumentException(
-                message: "Invalid configuration for LLMConfig: {$e->getMessage()}\nData: {$data}",
+                message: "Invalid configuration for LLMConfig: {$e->getMessage()}\nFields: {$fields}",
                 previous: $e,
             );
         }
         return $instance;
     }
 
-    public static function fromDsn(string $dsn): self {
+    public static function fromDsn(#[\SensitiveParameter] string $dsn): self {
         return self::fromArray(Dsn::fromString($dsn)->toArray());
     }
 
-    public function withOverrides(array $overrides) : self {
+    public function withOverrides(#[\SensitiveParameter] array $overrides) : self {
         $config = array_merge($this->toArray(), $overrides);
         return self::fromArray($config);
     }
@@ -102,7 +107,7 @@ final class LLMConfig
         return InferencePricing::fromArray($this->pricing);
     }
 
-    private function assertNoRetryPolicyInOptions(array $options) : void {
+    private function assertNoRetryPolicyInOptions(#[\SensitiveParameter] array $options) : void {
         if (!array_key_exists('retryPolicy', $options) && !array_key_exists('retry_policy', $options)) {
             return;
         }
@@ -110,7 +115,7 @@ final class LLMConfig
         throw new InvalidArgumentException('retryPolicy must be configured via an explicit retry policy, not LLM options.');
     }
 
-    private static function coerceScalarTypes(array $config): array {
+    private static function coerceScalarTypes(#[\SensitiveParameter] array $config): array {
         $typed = $config;
         foreach (self::INT_FIELDS as $field) {
             if (!array_key_exists($field, $typed)) {
@@ -121,7 +126,7 @@ final class LLMConfig
         return $typed;
     }
 
-    private static function toInt(string $field, mixed $value): int {
+    private static function toInt(string $field, #[\SensitiveParameter] mixed $value): int {
         return match (true) {
             is_int($value) => $value,
             is_string($value) && preg_match('/^-?\d+$/', $value) === 1 => (int) $value,

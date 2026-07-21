@@ -64,36 +64,36 @@ it('projects representative runtime flows into canonical telemetry', function ()
         'statusCode' => 200,
     ]));
 
-    $events->dispatch(new InferenceStarted([
-        'executionId' => 'inf-1',
-        'requestId' => 'req-1',
-        'model' => 'gpt-test',
-        'isStreamed' => false,
-        'messageCount' => 2,
-    ]));
+    $events->dispatch(InferenceStarted::fromLifecycle(
+        executionId: 'inf-1',
+        requestId: 'req-1',
+        isStreamed: false,
+        model: 'gpt-test',
+        messageCount: 2,
+    ));
     $events->dispatch(new InferenceAttemptStarted('inf-1', 'att-1', 1, 'gpt-test'));
-    $events->dispatch(new InferenceAttemptSucceeded([
-        'executionId' => 'inf-1',
-        'attemptId' => 'att-1',
-        'finishReason' => 'stop',
-        'durationMs' => 12.5,
-        'totalTokens' => 42,
-    ]));
-    $events->dispatch(new InferenceUsageReported([
-        'executionId' => 'inf-1',
-        'model' => 'gpt-test',
-        'isFinal' => true,
-        'inputTokens' => 10,
-        'outputTokens' => 32,
-        'totalTokens' => 42,
-    ]));
-    $events->dispatch(new InferenceCompleted([
-        'executionId' => 'inf-1',
-        'finishReason' => 'stop',
-        'attemptCount' => 1,
-        'durationMs' => 23.0,
-        'totalTokens' => 42,
-    ]));
+    $events->dispatch(InferenceAttemptSucceeded::fromLifecycle(
+        executionId: 'inf-1',
+        attemptId: 'att-1',
+        attemptNumber: 1,
+        finishReason: 'stop',
+        durationMs: 12.5,
+        usage: new InferenceUsage(inputTokens: 10, outputTokens: 32),
+    ));
+    $events->dispatch(InferenceUsageReported::fromLifecycle(
+        executionId: 'inf-1',
+        model: 'gpt-test',
+        isFinal: true,
+        usage: new InferenceUsage(inputTokens: 10, outputTokens: 32),
+    ));
+    $events->dispatch(InferenceCompleted::fromLifecycle(
+        executionId: 'inf-1',
+        isSuccess: true,
+        finishReason: 'stop',
+        durationMs: 23.0,
+        attemptCount: 1,
+        usage: new InferenceUsage(inputTokens: 10, outputTokens: 32),
+    ));
 
     $events->dispatch(new StructuredOutputStarted([
         'executionId' => 'so-1',

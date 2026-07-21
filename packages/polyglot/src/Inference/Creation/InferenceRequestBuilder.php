@@ -76,7 +76,7 @@ class InferenceRequestBuilder
      * @param  ToolDefinitions|null  $tools  The tools to be used for the inference.
      * @param  ToolChoice|null  $toolChoice  The choice of tools for the inference.
      * @param  ResponseFormat|null  $responseFormat  The format of the response.
-     * @param  array  $options  Additional options for the inference.
+     * @param  array  $options  Additional options merged into existing options (later keys win).
      */
     public function with(
         ?Messages $messages = null,
@@ -91,7 +91,11 @@ class InferenceRequestBuilder
         $this->tools = $tools ?? $this->tools;
         $this->toolChoice = $toolChoice ?? $this->toolChoice;
         $this->responseFormat = $responseFormat ?? $this->responseFormat;
-        $this->options = $options ?? $this->options;
+        // Option updates always merge (see withOptions) so grouped with() and
+        // individual withOptions() share one predictable semantic.
+        $this->options = $options === null
+            ? $this->options
+            : array_merge($this->options ?? [], $options);
 
         return $this;
     }
@@ -131,6 +135,10 @@ class InferenceRequestBuilder
         return $this;
     }
 
+    /**
+     * Merges the given options into the existing options (later keys win).
+     * This is the single option-update semantic shared with with().
+     */
     public function withOptions(array $options): static
     {
         $this->options = array_merge($this->options ?? [], $options);

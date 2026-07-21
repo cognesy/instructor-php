@@ -22,12 +22,12 @@ final class InferenceAttemptStarted extends InferenceEvent
         array $data = [],
     ) {
         parent::__construct([
+            ...$data,
             'executionId' => $this->executionId,
             'attemptId' => $this->attemptId,
             'attemptNumber' => $this->attemptNumber,
             'model' => $this->model,
             'isRetry' => $this->attemptNumber > 1,
-            ...$data,
         ]);
         $this->startedAt = new DateTimeImmutable();
     }

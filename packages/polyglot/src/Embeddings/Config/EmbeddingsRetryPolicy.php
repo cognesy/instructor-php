@@ -5,9 +5,15 @@ namespace Cognesy\Polyglot\Embeddings\Config;
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Http\Exceptions\NetworkException;
 use Cognesy\Http\Exceptions\TimeoutException;
+use Cognesy\Polyglot\Inference\Config\RetryBackoff;
+use Cognesy\Polyglot\Inference\Config\RetryJitter;
+use Cognesy\Polyglot\Inference\Config\RetryPolicyInvariants;
 
 final readonly class EmbeddingsRetryPolicy
 {
+    /** Validated jitter strategy resolved from the string $jitter value. */
+    public RetryJitter $jitterMode;
+
     public function __construct(
         public int $maxAttempts = 1,
         public int $baseDelayMs = 250,
@@ -20,7 +26,13 @@ final readonly class EmbeddingsRetryPolicy
             TimeoutException::class,
             NetworkException::class,
         ],
-    ) {}
+    ) {
+        RetryPolicyInvariants::assertMaxAttempts($maxAttempts);
+        RetryPolicyInvariants::assertDelays($baseDelayMs, $maxDelayMs);
+        RetryPolicyInvariants::assertStatusList($retryOnStatus);
+        RetryPolicyInvariants::assertExceptionList($retryOnExceptions);
+        $this->jitterMode = RetryJitter::fromString($jitter);
+    }
 
     public function shouldRetryException(\Throwable $error, int $attemptNumber): bool {
         if ($attemptNumber > max(1, $this->maxAttempts)) {
@@ -48,14 +60,6 @@ final readonly class EmbeddingsRetryPolicy
     }
 
     public function delayMsForAttempt(int $attemptNumber): int {
-        $attempt = max(1, $attemptNumber);
-        $base = $this->baseDelayMs * (2 ** ($attempt - 1));
-        $capped = (int) min($base, $this->maxDelayMs);
-
-        return match ($this->jitter) {
-            'none' => $capped,
-            'equal' => (int) ($capped / 2 + random_int(0, (int) ($capped / 2))),
-            default => random_int(0, $capped),
-        };
+        return RetryBackoff::delayMs($attemptNumber, $this->baseDelayMs, $this->maxDelayMs, $this->jitterMode);
     }
 }

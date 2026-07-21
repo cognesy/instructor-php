@@ -53,16 +53,16 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
 
         if ($envelope !== null) {
             $this->openEnvelope($envelope, $this->attributes([
-                'inference.request.id' => EventData::string($data, 'requestId'),
-                'inference.response.model' => EventData::string($data, 'model'),
-                'inference.request.is_streamed' => EventData::bool($data, 'isStreamed'),
-                'inference.request.message_count' => EventData::int($data, 'messageCount'),
+                'inference.request.id' => $event->requestId(),
+                'inference.response.model' => $event->model(),
+                'inference.request.is_streamed' => $event->isStreamed(),
+                'inference.request.message_count' => $event->messageCount(),
             ]));
 
             return;
         }
 
-        $executionId = EventData::string($data, 'executionId');
+        $executionId = $event->executionId();
         if ($executionId === null || $this->telemetry->spanReference($executionId) !== null) {
             return;
         }
@@ -72,10 +72,10 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
             name: 'llm.inference',
             attributes: $this->attributes([
                 'inference.execution.id' => $executionId,
-                'inference.request.id' => EventData::string($data, 'requestId'),
-                'inference.response.model' => EventData::string($data, 'model'),
-                'inference.request.is_streamed' => EventData::bool($data, 'isStreamed'),
-                'inference.request.message_count' => EventData::int($data, 'messageCount'),
+                'inference.request.id' => $event->requestId(),
+                'inference.response.model' => $event->model(),
+                'inference.request.is_streamed' => $event->isStreamed(),
+                'inference.request.message_count' => $event->messageCount(),
             ]),
         );
     }
@@ -87,25 +87,25 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
 
         if ($envelope !== null) {
             $this->completeEnvelope($envelope, $this->attributes([
-                'inference.finish_reason' => EventData::string($data, 'finishReason'),
-                'inference.attempt_count' => EventData::int($data, 'attemptCount'),
-                'inference.duration_ms' => EventData::float($data, 'durationMs'),
-                'inference.tokens.total' => EventData::int($data, 'totalTokens'),
+                'inference.finish_reason' => $event->finishReason(),
+                'inference.attempt_count' => $event->attemptCount(),
+                'inference.duration_ms' => $event->durationMs(),
+                'inference.tokens.total' => $event->totalTokens(),
             ]));
 
             return;
         }
 
-        $executionId = EventData::string($data, 'executionId');
+        $executionId = $event->executionId();
         if ($executionId === null) {
             return;
         }
 
         $attributes = $this->attributes([
-            'inference.finish_reason' => EventData::string($data, 'finishReason'),
-            'inference.attempt_count' => EventData::int($data, 'attemptCount'),
-            'inference.duration_ms' => EventData::float($data, 'durationMs'),
-            'inference.tokens.total' => EventData::int($data, 'totalTokens'),
+            'inference.finish_reason' => $event->finishReason(),
+            'inference.attempt_count' => $event->attemptCount(),
+            'inference.duration_ms' => $event->durationMs(),
+            'inference.tokens.total' => $event->totalTokens(),
         ]);
 
         $this->telemetry->complete($executionId, $attributes);
@@ -145,30 +145,23 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
 
         if ($envelope !== null) {
             $this->openEnvelope($envelope, $this->attributes([
-                'inference.attempt_number' => EventData::int($data, 'attemptNumber'),
-                'inference.response.model' => EventData::string($data, 'model'),
-                'inference.retry' => EventData::bool($data, 'isRetry'),
+                'inference.attempt_number' => $event->attemptNumber,
+                'inference.response.model' => $event->model,
+                'inference.retry' => $event->isRetry(),
             ]));
 
             return;
         }
 
-        $executionId = EventData::string($data, 'executionId');
-        $attemptId = EventData::string($data, 'attemptId');
-
-        if ($executionId === null || $attemptId === null) {
-            return;
-        }
-
         $this->telemetry->openChild(
-            key: $attemptId,
-            parentKey: $executionId,
+            key: $event->attemptId,
+            parentKey: $event->executionId,
             name: 'llm.inference.attempt',
             attributes: $this->attributes([
-                'inference.execution.id' => $executionId,
-                'inference.attempt_number' => EventData::int($data, 'attemptNumber'),
-                'inference.response.model' => EventData::string($data, 'model'),
-                'inference.retry' => EventData::bool($data, 'isRetry'),
+                'inference.execution.id' => $event->executionId,
+                'inference.attempt_number' => $event->attemptNumber,
+                'inference.response.model' => $event->model,
+                'inference.retry' => $event->isRetry(),
             ]),
         );
     }
@@ -180,23 +173,23 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
 
         if ($envelope !== null) {
             $this->completeEnvelope($envelope, $this->attributes([
-                'inference.finish_reason' => EventData::string($data, 'finishReason'),
-                'inference.duration_ms' => EventData::float($data, 'durationMs'),
-                'inference.tokens.total' => EventData::int($data, 'totalTokens'),
+                'inference.finish_reason' => $event->finishReason(),
+                'inference.duration_ms' => $event->durationMs(),
+                'inference.tokens.total' => $event->totalTokens(),
             ]));
 
             return;
         }
 
-        $attemptId = EventData::string($data, 'attemptId');
+        $attemptId = $event->attemptId();
         if ($attemptId === null) {
             return;
         }
 
         $this->telemetry->complete($attemptId, $this->attributes([
-            'inference.finish_reason' => EventData::string($data, 'finishReason'),
-            'inference.duration_ms' => EventData::float($data, 'durationMs'),
-            'inference.tokens.total' => EventData::int($data, 'totalTokens'),
+            'inference.finish_reason' => $event->finishReason(),
+            'inference.duration_ms' => $event->durationMs(),
+            'inference.tokens.total' => $event->totalTokens(),
         ]));
     }
 
@@ -207,38 +200,37 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
 
         if ($envelope !== null) {
             $this->failEnvelope($envelope, $this->attributes([
-                'error.message' => EventData::string($data, 'exception'),
-                'http.response.status_code' => EventData::int($data, 'httpStatusCode'),
-                'inference.retry' => EventData::bool($data, 'willRetry'),
+                'error.message' => $event->errorMessage(),
+                'http.response.status_code' => $event->httpStatusCode(),
+                'inference.retry' => $event->willRetry(),
             ]));
 
             return;
         }
 
-        $attemptId = EventData::string($data, 'attemptId');
+        $attemptId = $event->attemptId();
         if ($attemptId === null) {
             return;
         }
 
         $this->telemetry->fail($attemptId, $this->attributes([
-            'error.message' => EventData::string($data, 'exception'),
-            'http.response.status_code' => EventData::int($data, 'httpStatusCode'),
-            'inference.retry' => EventData::bool($data, 'willRetry'),
+            'error.message' => $event->errorMessage(),
+            'http.response.status_code' => $event->httpStatusCode(),
+            'inference.retry' => $event->willRetry(),
         ]));
     }
 
     private function onInferenceUsageReported(InferenceUsageReported $event): void
     {
-        $data = EventData::of($event);
         $attributes = $this->attributes([
-            'inference.execution.id' => EventData::string($data, 'executionId'),
-            'inference.response.model' => EventData::string($data, 'model'),
-            'inference.usage.final' => EventData::bool($data, 'isFinal'),
+            'inference.execution.id' => $event->executionId(),
+            'inference.response.model' => $event->model(),
+            'inference.usage.final' => $event->isFinal(),
         ]);
 
-        $this->emitMetric('inference.client.token.usage.input', EventData::int($data, 'inputTokens'), $attributes);
-        $this->emitMetric('inference.client.token.usage.output', EventData::int($data, 'outputTokens'), $attributes);
-        $this->emitMetric('inference.client.token.usage.total', EventData::int($data, 'totalTokens'), $attributes);
+        $this->emitMetric('inference.client.token.usage.input', $event->inputTokens(), $attributes);
+        $this->emitMetric('inference.client.token.usage.output', $event->outputTokens(), $attributes);
+        $this->emitMetric('inference.client.token.usage.total', $event->totalTokens(), $attributes);
     }
 
     private function onEmbeddingsRequested(EmbeddingsRequested $event): void

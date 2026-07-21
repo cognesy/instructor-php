@@ -240,6 +240,11 @@ class InferenceRequest
 
     // MUTATORS //////////////////////////////////////
 
+    /**
+     * Returns a copy with the provided fields applied. Scalar/object fields
+     * replace when provided; $options always MERGE into existing options
+     * (later keys win) so grouped with() and withOptions() share one semantic.
+     */
     public function with(
         ?Messages $messages = null,
         ?string $model = null,
@@ -258,7 +263,7 @@ class InferenceRequest
             tools: $tools ?? $this->tools,
             toolChoice: $toolChoice ?? $this->toolChoice,
             responseFormat: $responseFormat ?? $this->responseFormat,
-            options: $options ?? $this->options,
+            options: $options === null ? $this->options : array_merge($this->options, $options),
             cachedContext: $cachedContext ?? $this->cachedContext,
             responseCachePolicy: $responseCachePolicy ?? $this->responseCachePolicy,
             retryPolicy: $retryPolicy ?? $this->retryPolicy,
@@ -302,6 +307,10 @@ class InferenceRequest
         return $this->with(responseFormat: $responseFormat);
     }
 
+    /**
+     * Returns a copy with the given options merged into existing options
+     * (later keys win) — the single option-update semantic shared with with().
+     */
     public function withOptions(array $options): self
     {
         return $this->with(options: $options);

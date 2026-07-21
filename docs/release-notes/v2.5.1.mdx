@@ -1,0 +1,70 @@
+---
+title: 'v2.5.1'
+---
+
+## What's Fixed
+
+v2.5.1 is a corrective patch release for Polyglot runtime boundaries. It improves
+credential safety, telemetry accuracy, retry validation, lifecycle timing, and request
+option consistency without removing or renaming the locked public API.
+
+## Credential-Safe Configuration Errors
+
+Malformed LLM and embeddings configuration no longer includes API keys, tokens, signed
+URLs, or nested credentials in exception messages or captured stack-frame arguments.
+Safe diagnostics still report the affected field names and received value types.
+
+Inference and embeddings now share one redaction policy for configuration data, headers,
+URLs, query parameters, provider errors, and lifecycle failure messages.
+
+## Reliable Lifecycle Telemetry
+
+- Failed inference attempts retain their sanitized error message, HTTP status code, and
+  retry decision when projected to telemetry.
+- Canonical lifecycle fields and usage token counts can no longer be replaced by
+  supplemental event data.
+- Existing array-based lifecycle event construction and payload keys remain supported.
+  Typed lifecycle factories and accessors are additive.
+- Inference and attempt durations now use a monotonic clock, so executions longer than
+  60 seconds no longer wrap and elapsed durations remain non-negative.
+
+## Predictable Retry Behavior
+
+Inference and embeddings retry policies now validate configuration when the policy is
+created or restored:
+
+- attempt counts and delays must be within their supported ranges;
+- jitter and length-recovery modes must be recognized values;
+- retry status entries must be integer HTTP status codes from 100 through 599;
+- retry exception entries must name `Throwable` classes;
+- explicitly malformed serialized lists are rejected instead of silently enabling the
+  default retry set.
+
+Valid string serialization remains compatible. Inference and embeddings also share the
+same bounded backoff implementation.
+
+## Consistent Request Options
+
+`with(options: [...])` now follows the same documented rule as `withOptions([...])`:
+options are merged into the existing request, and later keys win. The builder, immutable
+request, and facade paths now behave consistently.
+
+## Runtime Maintenance
+
+`InferenceExecutionSession` is focused on lifecycle orchestration. Redaction, timing,
+retry validation and backoff, status extraction, and lifecycle payload schemas now live
+in their dedicated components. Provider request and response formats are unchanged.
+
+## Upgrade Notes
+
+No general code migration is required. Upgrade all Instructor packages together to
+v2.5.1.
+
+- Correct retry configuration that previously relied on unknown modes, negative values,
+  invalid HTTP codes, non-`Throwable` classes, or malformed serialized lists; these now
+  fail fast with `InvalidArgumentException`.
+- Review code that intentionally depended on `with(options: [...])` discarding existing
+  options. It now merges options, matching `withOptions([...])`, with later keys taking
+  precedence.
+- Existing lifecycle event listeners can continue reading the same payload keys and
+  constructing events with array payloads.
