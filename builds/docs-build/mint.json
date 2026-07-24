@@ -1,7 +1,9 @@
 {
     "name": "Test Docs",
-    "favicon": "",
-    "colors": [],
+    "favicon": "/favicon.svg",
+    "colors": {
+        "primary": "#0D9373"
+    },
     "navigation": [
         {
             "group": "Main",
@@ -17,6 +19,9 @@
             "group": "Release Notes",
             "pages": [
                 "release-notes/versions",
+                "release-notes/v2.5.2",
+                "release-notes/v2.5.1",
+                "release-notes/v2.5.0",
                 "release-notes/v2.4.1",
                 "release-notes/v2.4.0",
                 "release-notes/v2.3.1",
@@ -471,6 +476,7 @@
                 "cookbook/examples/A03_Troubleshooting/logging_monolog",
                 "cookbook/examples/A03_Troubleshooting/logging_psr",
                 "cookbook/examples/A03_Troubleshooting/logging_symfony",
+                "cookbook/examples/A03_Troubleshooting/observability_telemetry_mechanisms",
                 "cookbook/examples/A03_Troubleshooting/on_event",
                 "cookbook/examples/A03_Troubleshooting/settings",
                 "cookbook/examples/A03_Troubleshooting/structured_telemetry_langfuse",
@@ -530,6 +536,7 @@
                 "cookbook/examples/A05_Extras/pure_array_processing",
                 "cookbook/examples/A05_Extras/schema",
                 "cookbook/examples/A05_Extras/schema_dynamic",
+                "cookbook/examples/A05_Extras/structured_output_validation_loop",
                 "cookbook/examples/A05_Extras/transcription_to_tasks",
                 "cookbook/examples/A05_Extras/translate_ui_fields",
                 "cookbook/examples/A05_Extras/web_to_objects"
@@ -630,7 +637,8 @@
                 "cookbook/examples/C01_Http/http_middleware_hooks",
                 "cookbook/examples/C01_Http/http_middleware_stream",
                 "cookbook/examples/C01_Http/http_middleware_sync",
-                "cookbook/examples/C01_Http/http_client_pool_basics"
+                "cookbook/examples/C01_Http/http_client_pool_basics",
+                "cookbook/examples/C01_Http/http_client_stream_capture"
             ]
         },
         {
@@ -669,7 +677,8 @@
                 "cookbook/examples/D03_AgentTemplates/template_from_markdown",
                 "cookbook/examples/D03_AgentTemplates/template_from_yaml",
                 "cookbook/examples/D03_AgentTemplates/template_with_tools_and_capabilities",
-                "cookbook/examples/D03_AgentTemplates/template_override_seed_state"
+                "cookbook/examples/D03_AgentTemplates/template_override_seed_state",
+                "cookbook/examples/D03_AgentTemplates/coding_agent_creates_example"
             ]
         },
         {

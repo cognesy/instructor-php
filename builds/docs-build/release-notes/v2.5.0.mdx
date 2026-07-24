@@ -1,0 +1,145 @@
+## Cleaner Structured-Output Contract
+
+v2.5 makes the requested output target authoritative and removes the implicit Dynamic
+`Structure` fallback from Instructor's core pipeline.
+
+```php
+$schema = [
+    'type' => 'object',
+    'properties' => [
+        'status' => [
+            'type' => 'string',
+            'enum' => ['open', 'closed'],
+        ],
+    ],
+    'required' => ['status'],
+];
+
+$result = $structuredOutput
+    ->with(messages: 'The issue is open.', responseModel: $schema)
+    ->get();
+
+// ['status' => 'open']
+```
+
+A plain JSON Schema returns an associative array. `x-php-class` or
+`intoInstanceOf()` opts into class hydration. `intoArray()` explicitly overrides a
+class-backed schema. `intoStdClass()` explicitly requests `stdClass`.
+
+An unknown root `x-php-class` now fails during response-model preparation instead of
+silently falling back to another target.
+
+Passing a Dynamic `Structure` explicitly now returns that `Structure`; call its
+`toArray()` method when an array conversion is wanted.
+
+## Validation and Materialization
+
+- Array, class, `stdClass`, and self-deserializing targets share schema validation.
+- Completed streaming and synchronous extraction use the same final materialization path.
+- Configured and self transformations run exactly once.
+- Transformation failures fail the attempt and may retry instead of returning unchanged data.
+- Nested Dynamic hydration failures report their field or index path.
+
+Failures now retain one of five stages: extraction, schema validation, deserialization,
+object validation, or transformation.
+
+## Public API
+
+- Added `intoStdClass()`.
+- Added `intoSelfDeserializing()`; `intoObject()` remains as a deprecated compatibility alias.
+- Removed the unused `outputClass` / `withDefaultOutputClass()` configuration surface.
+- Deprecated global `defaultToStdClass`; use per-request `intoStdClass()` instead.
+- Existing `PendingStructuredOutput::toJsonObject()`, `toJson()`, and `toArray()` remain
+  concise raw-response inspection methods. `get()` and typed `get*()` methods return the
+  final structured result.
+- Typed result mismatches now throw `UnexpectedStructuredOutputTypeException` and include
+  the concrete actual type.
+- Requests containing a live self-deserializing target fail explicitly when serialized or
+  restored; Instructor no longer fabricates uninitialized target instances with reflection.
+
+## Events
+
+Use the result-neutral materialization and retry events:
+
+- `Cognesy\Instructor\Events\Response\ResponseMaterialized`
+- `Cognesy\Instructor\Events\Response\ResponseMaterializationFailed`
+- `Cognesy\Instructor\Events\Attempt\ResponseRetryScheduled`
+- `Cognesy\Instructor\Events\Attempt\ResponseRecoveryExhausted`
+
+The validation-only recovery events, `ResponseConvertedToObject`, and
+`ResponseGenerationFailed` were removed. Event payloads include correlation identifiers,
+failure stage, and safe type information without adding raw prompt or response content.
+
+Event namespace aliases were removed. Update imports from
+`Events\PartialsGenerator\*` to `Events\Streaming\*`, from
+`Events\Request\ResponseModel*` to `Events\ResponseModel\ResponseModel*`, and from
+`Events\Request\SequenceUpdated` to `Events\Streaming\SequenceUpdated`.
+
+## Prompts and Dependencies
+
+`StructuredPromptRequestMaterializer` is the default. Bundled structured-output prompt
+classes use the bundled Twig templates. Custom prompt classes remain the supported
+extension seam.
+
+The legacy `RequestMaterializer` and inline `modePrompts`, `retryPrompt`, and
+`chatStructure` settings remain available only through explicit legacy injection in 2.5
+and are scheduled for removal in 2.6.
+
+The generic templates package continues to support Twig, Blade, and Arrowpipe.
+`cognesy/instructor-struct` no longer requires the Dynamic package unless the
+application uses Dynamic structures directly.
+
+Twig remains a required dependency of `cognesy/instructor-struct` because every bundled
+structured-output prompt uses a Twig template. The root meta-package no longer also
+lists Twig as an optional suggestion.
+
+## Package Highlights
+
+- **Schema:** added the shared `SchemaDataValidator` for required and nullable fields,
+  primitive types, nested objects and collections, and scalar or backed-enum values.
+- **Dynamic:** `Structure` now delegates validation to the shared validator and no
+  longer exposes the removed `transform()` or no-op `withValidation()` methods.
+- **Laravel:** published extraction configuration now uses `retry_prompt_class`; the
+  inline `retry_prompt` key remains only as deprecated legacy compatibility until 2.6.
+- **Symfony:** removed the unused `output_class` / `outputClass` configuration keys.
+- **Events:** removed class-alias canonicalization after the deprecated event namespace
+  aliases were deleted.
+- **Addons:** function-call argument schemas no longer leak root `x-php-class` hydration
+  metadata into tool definitions.
+- **Agents:** added `UseCodingTools` with bounded `read`, `bash`, `edit`, and `write`
+  tools; file operations now stream bounded data and edits commit through a temporary
+  file instead of loading and rewriting unbounded content.
+- **Sandbox:** host execution now uses the bounded `ProcRunner`, retains stream tails
+  after capture limits, and reports command-start failures with a stable exit code.
+
+## Upgrade Notes
+
+1. Remove `Structure` checks and `toArray()` calls around plain JSON Schema results;
+   `get()` now returns the associative array directly.
+2. If you pass a Dynamic `Structure` intentionally, expect `get()` to return that
+   `Structure`; call `toArray()` explicitly when conversion is wanted.
+3. Use `x-php-class` or `intoInstanceOf()` for class hydration, `intoStdClass()` for
+   `stdClass`, and `intoArray()` to override a class-backed schema.
+4. Correct or remove unknown root `x-php-class` metadata before execution.
+5. Replace `intoObject()` with `intoSelfDeserializing()`. Replace global
+   `defaultToStdClass` with per-request `intoStdClass()`.
+6. Remove `outputClass`, `output_class`, and `withDefaultOutputClass()` configuration.
+   Remove `throwOnTransformationFailure`; transformation failures now always fail the
+   attempt.
+7. Update event listener imports to the canonical namespaces listed above and migrate
+   removed recovery/materialization events to the new result-neutral events.
+8. Replace inline `modePrompts`, `retryPrompt`, and `chatStructure` customization with
+   prompt classes. The legacy values work only with an explicitly injected deprecated
+   `RequestMaterializer` in 2.5 and are scheduled for removal in 2.6.
+9. If your application imports `Cognesy\Dynamic` directly, add the dependency explicitly:
+
+   ```bash
+   composer require cognesy/instructor-dynamic:^2.5
+   ```
+
+10. Expect schema, deserialization, object-validation, and transformation failures to
+    fail the attempt and enter the configured retry policy rather than returning a
+    partially materialized or unchanged value.
+11. Remove calls to Dynamic `Structure::transform()` and the no-op
+    `Structure::withValidation()` compatibility method; call `toArray()` only when an
+    explicit Structure-to-array conversion is required.
