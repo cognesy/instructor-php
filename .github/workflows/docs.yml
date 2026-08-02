@@ -42,7 +42,7 @@ jobs:
         run: composer install --no-interaction --prefer-dist
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@v9
+        uses: astral-sh/setup-uv@v9.0.0
         with:
           enable-cache: true
           prune-cache: true
