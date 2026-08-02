@@ -1,7 +1,7 @@
 # Project CLI entrypoints (thin passthroughs to the bin/ tools).
 
-# Instructor Hub CLI. e.g. `just hub gendocs`
-[group('cli'), doc('Instructor Hub CLI — e.g. just hub gendocs')]
+# Instructor Hub CLI. e.g. `just hub list`
+[group('cli'), doc('Instructor Hub CLI — e.g. just hub list')]
 hub *args:
     composer hub {{args}}
 
