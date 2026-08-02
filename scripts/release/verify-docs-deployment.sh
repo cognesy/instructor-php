@@ -10,8 +10,6 @@ source_sha="$1"
 version="${2#v}"
 repository="${DOCS_GITHUB_REPOSITORY:-cognesy/instructor-php}"
 workflow="${DOCS_WORKFLOW:-docs.yml}"
-mintlify_base="${MINTLIFY_BASE_URL:-https://docs.instructorphp.com}"
-mkdocs_base="${MKDOCS_BASE_URL:-https://cognesy.github.io/instructor-php}"
 attempts="${DOCS_VERIFY_ATTEMPTS:-60}"
 interval="${DOCS_VERIFY_INTERVAL:-10}"
 
@@ -36,12 +34,6 @@ fi
 
 gh run watch "$run_id" --repo "$repository" --exit-status
 
-provenance_matches() {
-  local base_url="$1"
-  curl -fsSL "${base_url}/deployment.json?source=${source_sha}" \
-    | php -r '$data = json_decode(stream_get_contents(STDIN), true); exit(($data["sourceSha"] ?? "") === $argv[1] ? 0 : 1);' "$source_sha"
-}
-
 release_is_live() {
   local base_url="$1"
   local release_url="$2"
@@ -51,10 +43,15 @@ release_is_live() {
     && curl -fsSL "${base_url}${index_url}?source=${source_sha}" | grep -Fq "v${version}"
 }
 
+DOCS_VERIFY_ATTEMPTS="$attempts" \
+DOCS_VERIFY_INTERVAL="$interval" \
+  ./scripts/docs/verify-live-provenance.sh "$source_sha"
+
+mintlify_base="${MINTLIFY_BASE_URL:-https://docs.instructorphp.com}"
+mkdocs_base="${MKDOCS_BASE_URL:-https://cognesy.github.io/instructor-php}"
+
 for ((attempt = 1; attempt <= attempts; attempt++)); do
-  if provenance_matches "$mintlify_base" \
-    && provenance_matches "$mkdocs_base" \
-    && release_is_live "$mintlify_base" "/release-notes/v${version}" "/release-notes/versions" \
+  if release_is_live "$mintlify_base" "/release-notes/v${version}" "/release-notes/versions" \
     && release_is_live "$mkdocs_base" "/release-notes/v${version}/" "/release-notes/versions/"; then
     echo "Both documentation sites expose v${version} from $source_sha."
     exit 0

@@ -120,6 +120,7 @@ packages/*/coverage/
 /temp/
 
 # Documentation build artifacts (generated in CI)
+/builds/
 /docs-site/
 /docs-mkdocs/
 /release-artifacts/
