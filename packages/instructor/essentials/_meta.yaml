@@ -1,0 +1,10 @@
+# Navigation order for Essentials section
+order:
+  - usage
+  - data_model
+  - validation
+  - modes
+  - scalars
+  - demonstrations
+  - customize_prompts
+  - configuration

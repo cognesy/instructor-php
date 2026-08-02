@@ -1,0 +1,10 @@
+order:
+  - instructor
+  - lifecycle
+  - configuration_path
+  - config_files
+  - settings_class
+  - environment
+  - events
+  - response_models
+  - debugging

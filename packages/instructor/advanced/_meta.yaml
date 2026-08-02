@@ -1,0 +1,11 @@
+order:
+  - partials
+  - sequences
+  - structures
+  - function_calls
+  - manual_schemas
+  - json_extraction
+  - output_formats
+  - prompts
+  - model_options
+  - structure-to-structure

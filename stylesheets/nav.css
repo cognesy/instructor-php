@@ -1,0 +1,75 @@
+/* Navigation section titles styling */
+
+/*
+ * Top-level package headers (Instructor, Polyglot, etc.) use <label> tags
+ * with the [for] attribute. Sub-sections (Concepts, Essentials, etc.) use <a> tags.
+ * MkDocs Material sets all section labels to gray via:
+ *   .md-nav__item--section>.md-nav__link[for] { color: --light }
+ * We override top-level ones to be black/bold.
+ */
+
+/* Top-level package headers - override gray to black */
+.md-nav__item--section.md-nav__item--nested > label.md-nav__link[for] {
+  color: var(--md-default-fg-color) !important;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+/* Active lifted section title (e.g. "Laravel" when viewing Laravel pages) */
+.md-nav--lifted > .md-nav__list > .md-nav__item--active > .md-nav__link {
+  color: var(--md-default-fg-color) !important;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+/* Sub-section headers (Concepts, Essentials, etc.) - gray, normal case */
+.md-nav__item--pruned.md-nav__item--nested > a.md-nav__link {
+  font-weight: 600;
+  color: var(--md-default-fg-color--light);
+  font-size: 0.85rem;
+}
+
+/* Add subtle left border to section headers */
+.md-nav__item--nested > .md-nav__link::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: var(--md-primary-fg-color);
+  border-radius: 2px;
+  opacity: 0.7;
+}
+
+/* Ensure relative positioning for the border */
+.md-nav__item--nested > .md-nav__link {
+  position: relative;
+  padding-left: 0.8rem;
+}
+
+/* Indent child items more */
+.md-nav__item--nested .md-nav__item > .md-nav__link {
+  padding-left: 1.2rem;
+  font-size: 0.75rem;
+}
+
+/* Add vertical space before top-level package sections */
+.md-nav__item--section.md-nav__item--nested + .md-nav__item--section.md-nav__item--nested {
+  margin-top: 2rem;
+}
+
+/* Hover effect for section headers */
+.md-nav__item--nested > .md-nav__link:hover {
+  color: var(--md-accent-fg-color);
+}
+
+.md-nav__item--nested > .md-nav__link:hover::before {
+  opacity: 1;
+  background: var(--md-accent-fg-color);
+}
