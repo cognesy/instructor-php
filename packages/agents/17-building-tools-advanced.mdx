@@ -25,7 +25,7 @@ SimpleTool (abstract)
         |
         +-- ContextAwareTool (abstract)
               Adds withToolCall() / $this->toolCall
-// @doctest id="0a89"
+// @doctest id="fccd"
 ```
 
 | Class | What it adds | When to use |
@@ -99,7 +99,7 @@ final class AuditingTool extends ContextAwareTool
         )->toArray());
     }
 }
-// @doctest id="2c4f"
+// @doctest id="68c8"
 ```
 
 ### Key Differences from BaseTool
@@ -162,7 +162,7 @@ final class EchoTool extends SimpleTool
         )->toArray());
     }
 }
-// @doctest id="009a"
+// @doctest id="11fc"
 ```
 
 ### The Result Wrapper
@@ -184,7 +184,7 @@ public function __invoke(mixed ...$args): string
     }
     return file_get_contents($path);
 }
-// @doctest id="13ca"
+// @doctest id="225e"
 ```
 
 The LLM receives the error message and can decide whether to retry with different arguments or take a different approach entirely.
@@ -211,7 +211,7 @@ public function __invoke(mixed ...$args): string
     }
     return "Processed: {$input}";
 }
-// @doctest id="f68b"
+// @doctest id="19ff"
 ```
 
 <a name="state-aware-tool"></a>
@@ -251,7 +251,7 @@ final class StepCounterTool extends StateAwareTool
         )->toArray());
     }
 }
-// @doctest id="e78b"
+// @doctest id="1001"
 ```
 
 <a name="reflective-schema-tool"></a>
@@ -293,7 +293,7 @@ $descriptor = new ToolDescriptor(
         ],
     ],
 );
-// @doctest id="263e"
+// @doctest id="ebcc"
 ```
 
 The `metadata` and `instructions` arrays are merged with default values at read time:
@@ -340,7 +340,7 @@ final readonly class SearchToolDescriptor extends ToolDescriptor
         );
     }
 }
-// @doctest id="bee0"
+// @doctest id="4394"
 ```
 
 Then pass the descriptor to your tool's constructor:
@@ -355,7 +355,7 @@ final class SearchTool extends SimpleTool
 
     // ... __invoke() and toToolSchema()
 }
-// @doctest id="f2ae"
+// @doctest id="d5af"
 ```
 
 This pattern keeps tool runtime logic clean and makes documentation reusable across tools that share the same descriptor structure.
@@ -389,7 +389,7 @@ $registry->register($searchTool);
 $registry->registerFactory('heavy_tool', function () {
     return new HeavyTool(); // Only created when first needed
 });
-// @doctest id="cb9b"
+// @doctest id="9843"
 ```
 
 ### Querying the Registry
@@ -400,7 +400,7 @@ $registry->get('search');         // ToolInterface (resolves factory on first ca
 $registry->names();               // ['search', 'heavy_tool']
 $registry->count();               // 2
 $registry->all();                 // Resolves all factories, returns keyed array
-// @doctest id="7769"
+// @doctest id="ccf3"
 ```
 
 When you call `get()` on a factory-registered tool, the factory is invoked once and the resulting instance is cached for subsequent calls. This makes `ToolRegistry` suitable for tools that are expensive to construct or that depend on runtime context.
@@ -429,7 +429,7 @@ $registry->register($fileTool);
 
 $toolsTool = new ToolsTool($registry);
 // Now add $toolsTool to the agent's Tools collection
-// @doctest id="a50b"
+// @doctest id="4bc3"
 ```
 
 <a name="deferred-tools"></a>
@@ -460,7 +460,7 @@ final class SubagentToolProvider implements CanProvideDeferredTools
         );
     }
 }
-// @doctest id="bcd1"
+// @doctest id="3dc4"
 ```
 
 The `DeferredToolContext` gives providers access to three things:
@@ -489,7 +489,7 @@ $loop = AgentBuilder::base()
         }
     ))
     ->build();
-// @doctest id="bc56"
+// @doctest id="06d3"
 ```
 
 The factory callable receives the same three arguments that `DeferredToolContext` provides. The returned `ToolInterface` is wrapped in a `Tools` collection and merged into the agent's tool set.
@@ -541,7 +541,7 @@ class SearchTool extends BaseTool
         )->toArray());
     }
 }
-// @doctest id="8b95"
+// @doctest id="b9f5"
 ```
 
 The resulting array follows the OpenAI function-calling format:
@@ -559,7 +559,7 @@ The resulting array follows the OpenAI function-calling format:
         ],
     ],
 ]
-// @doctest id="35e5"
+// @doctest id="822f"
 ```
 
 <a name="parameter-extraction"></a>
@@ -569,7 +569,7 @@ The `arg()` method (from the `HasArgs` trait) resolves a parameter from the argu
 
 ```php
 $value = $this->arg($args, $name, $position, $default);
-// @doctest id="cb95"
+// @doctest id="1dbe"
 ```
 
 1. **Named key** -- checks `$args[$name]` (the typical case when the LLM passes an associative array)
@@ -585,7 +585,7 @@ $limit = (int) $this->arg($args, 'limit', 1, 10);
 
 // Extract 'verbose' by name, or position 2, or default to false
 $verbose = (bool) $this->arg($args, 'verbose', 2, false);
-// @doctest id="f0c9"
+// @doctest id="d663"
 ```
 
 Always cast the return value to the expected type, since the LLM may pass values as strings even for numeric parameters.
@@ -651,7 +651,7 @@ final class CustomTool implements ToolInterface
         return 'Result: ' . ($args['input'] ?? '');
     }
 }
-// @doctest id="ce23"
+// @doctest id="fd71"
 ```
 
 If your custom tool needs state or tool call injection, also implement `CanAccessAgentState` and/or `CanAccessToolCall`. The framework checks for these interfaces during tool preparation and calls the appropriate `with*()` methods.
@@ -712,7 +712,7 @@ final class BashTool extends SimpleTool
         )->toArray());
     }
 }
-// @doctest id="875d"
+// @doctest id="879f"
 ```
 
 This structure separates concerns cleanly: the descriptor owns documentation, the tool class owns behavior, and the schema is explicit.

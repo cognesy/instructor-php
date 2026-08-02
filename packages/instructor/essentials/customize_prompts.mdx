@@ -22,7 +22,7 @@ $result = (new StructuredOutput)
     ->withPrompt('Extract the contact details from the text below.')
     ->with(messages: $text, responseModel: Contact::class)
     ->get();
-// @doctest id="95f0"
+// @doctest id="b87a"
 ```
 
 - **System text** sets the model's persona and overall behavior. Use it for stable
@@ -42,7 +42,7 @@ $result = (new StructuredOutput)
         prompt: 'Extract the contact details.',
     )
     ->get();
-// @doctest id="c8f6"
+// @doctest id="652e"
 ```
 
 
@@ -60,7 +60,7 @@ $result = (new StructuredOutput)
     ])
     ->with(messages: $text, responseModel: Person::class)
     ->get();
-// @doctest id="6ec7"
+// @doctest id="310d"
 ```
 
 See the [Demonstrations](demonstrations) page for details on the `Example` class.
@@ -82,7 +82,7 @@ $result = (new StructuredOutput)
     )
     ->with(messages: 'Now extract from this specific paragraph...', responseModel: Entity::class)
     ->get();
-// @doctest id="9d4b"
+// @doctest id="8005"
 ```
 
 The cached context is placed before the per-request content in the prompt. On the new
@@ -120,7 +120,7 @@ $config = new StructuredOutputConfig(
     retryPromptClass: App\Prompts\RetryFeedbackPrompt::class,
     deserializationErrorPromptClass: App\Prompts\DeserializationRepairPrompt::class,
 );
-// @doctest id="a6d4"
+// @doctest id="5cea"
 ```
 
 If you store these in YAML, use FQN strings:
@@ -134,7 +134,7 @@ modePromptClasses:
 
 retryPromptClass: 'App\\Prompts\\RetryFeedbackPrompt'
 deserializationErrorPromptClass: 'App\\Prompts\\DeserializationRepairPrompt'
-# @doctest id="24af"
+# @doctest id="76fa"
 ```
 
 ## Tool Name And Description
@@ -149,7 +149,7 @@ $config = new StructuredOutputConfig(
     toolName: 'extract_person',
     toolDescription: 'Extract personal information from the provided text.',
 );
-// @doctest id="fad2"
+// @doctest id="a0bd"
 ```
 
 The defaults are `extracted_data` and `Function call based on user instructions.`
@@ -169,7 +169,7 @@ prompt class:
 $config = new StructuredOutputConfig(
     retryPromptClass: App\Prompts\RetryFeedbackPrompt::class,
 );
-// @doctest id="41df"
+// @doctest id="1802"
 ```
 
 The same pattern applies to deserialization repair via `deserializationErrorPromptClass`.
