@@ -1,20 +1,7 @@
 name: Documentation
 
 on:
-  pull_request:
-    paths:
-      - '.github/workflows/docs.yml'
-      - 'composer.json'
-      - 'composer.lock'
-      - 'docs/**'
-      - 'examples/**'
-      - 'just/docs.just'
-      - 'packages/*/CHEATSHEET.md'
-      - 'packages/*/docs/**'
-      - 'packages/doctools/**'
-      - 'pyproject.toml'
-      - 'scripts/docs/**'
-      - 'uv.lock'
+  pull_request: {}
   push:
     branches: [main]
   workflow_dispatch:
@@ -28,6 +15,7 @@ permissions:
 
 jobs:
   build:
+    name: Documentation build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
