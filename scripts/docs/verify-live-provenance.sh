@@ -19,11 +19,12 @@ fi
 
 read_provenance() {
   local base_url="$1"
+  local attempt="$2"
   local deployment_url="${base_url%/}/deployment.json"
   local payload=""
 
   if [[ "$deployment_url" == http://* || "$deployment_url" == https://* ]]; then
-    deployment_url="${deployment_url}?source=${source_sha}"
+    deployment_url="${deployment_url}?verify=${source_sha}-${GITHUB_RUN_ID:-$$}-${attempt}"
   fi
 
   if ! payload="$(curl -fsSL "$deployment_url" 2>/dev/null)"; then
@@ -35,8 +36,8 @@ read_provenance() {
 }
 
 for ((attempt = 1; attempt <= attempts; attempt++)); do
-  mintlify_sha="$(read_provenance "$mintlify_base")"
-  mkdocs_sha="$(read_provenance "$mkdocs_base")"
+  mintlify_sha="$(read_provenance "$mintlify_base" "$attempt")"
+  mkdocs_sha="$(read_provenance "$mkdocs_base" "$attempt")"
 
   if [[ "$mintlify_sha" == "$source_sha" && "$mkdocs_sha" == "$source_sha" ]]; then
     echo "Both documentation sites expose $source_sha."
