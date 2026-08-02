@@ -19,7 +19,7 @@ $result = (new StructuredOutput)
     ->withSystem('You are a data extraction assistant. Be precise and thorough.')
     ->with(messages: $text, responseModel: Person::class)
     ->get();
-// @doctest id="f36b"
+// @doctest id="deac"
 ```
 
 ### User Prompt
@@ -31,7 +31,7 @@ $result = (new StructuredOutput)
     ->withPrompt('Extract all person information. If age is not stated, estimate based on context.')
     ->with(messages: $text, responseModel: Person::class)
     ->get();
-// @doctest id="0059"
+// @doctest id="3df7"
 ```
 
 ### Examples
@@ -50,7 +50,7 @@ $result = (new StructuredOutput)
     ])
     ->with(messages: $text, responseModel: Person::class)
     ->get();
-// @doctest id="9660"
+// @doctest id="2fc3"
 ```
 
 ### Combined Usage
@@ -74,7 +74,7 @@ $result = (new StructuredOutput)->with(
     messages: $text,
     responseModel: Person::class,
 )->get();
-// @doctest id="1fed"
+// @doctest id="2687"
 ```
 
 ## Using Stringable Objects as Prompts
@@ -90,7 +90,7 @@ $result = (new StructuredOutput)
     ->withPrompt('Extract person details from the text below.')
     ->with(messages: $text, responseModel: Person::class)
     ->get();
-// @doctest id="c6f6"
+// @doctest id="ba6e"
 ```
 
 ## Cached Context
@@ -107,7 +107,7 @@ $result = (new StructuredOutput)
     )
     ->with(messages: 'Focus on section 3.', responseModel: ContractDetails::class)
     ->get();
-// @doctest id="57d1"
+// @doctest id="a873"
 ```
 
 Cached context messages are placed before the regular messages in the chat structure. The exact caching behavior depends on the LLM provider -- Anthropic and OpenAI both support prompt caching with different mechanisms.
@@ -128,7 +128,7 @@ $legacyRuntime = $runtime->withRequestMaterializer(new RequestMaterializer());
 $so = (new StructuredOutput)
     ->withRuntime($runtime)
     ->with(messages: $text, responseModel: Person::class);
-// @doctest id="8e6e"
+// @doctest id="a38d"
 ```
 
 Use the legacy runtime only as a migration bridge. `RequestMaterializer` and its inline
@@ -149,7 +149,7 @@ $rendered = Template::twig()
 $result = (new StructuredOutput)
     ->with(messages: $rendered, responseModel: Person::class)
     ->get();
-// @doctest id="2d86"
+// @doctest id="cbb8"
 ```
 
 The generic `Template` package supports Twig, Blade, and Arrowpipe. That does not make

@@ -20,7 +20,7 @@ instructor:
     store: file # memory | file
     file:
       directory: '%kernel.cache_dir%/instructor/agent-sessions'
-# @doctest id="51a6"
+# @doctest id="5501"
 ```
 
 Supported drivers:
@@ -61,7 +61,7 @@ The default directory is:
 
 ```text
 %kernel.cache_dir%/instructor/agent-sessions
-// @doctest id="9d83"
+// @doctest id="5aaa"
 ```
 
 Override it when you need durable storage outside the cache dir or shared storage across multiple worker boots.
@@ -91,7 +91,7 @@ final readonly class ResumeAgentController
         ));
     }
 }
-// @doctest id="0fb9"
+// @doctest id="d981"
 ```
 
 If the selected store is persistent, the handler can load the prior session state and continue it in the worker.
