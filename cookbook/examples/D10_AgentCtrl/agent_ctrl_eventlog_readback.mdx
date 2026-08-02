@@ -1,0 +1,86 @@
+## Overview
+
+This example shows how to activate `EventLog` for an `AgentCtrl` execution,
+run one Codex request through the builder path, then read the generated JSONL
+file and print the captured entries on screen.
+
+Key concepts:
+- `EventLog::enable()`: activates the default JSONL sink for the current process
+- `AgentCtrl::codex()`: uses the builder path, which currently honors `EventLog`
+- JSONL readback: inspect execution, pipeline, and process events after the run
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+require_once 'examples/_support/eventlog_readback.php';
+
+use Cognesy\AgentCtrl\AgentCtrl;
+use Cognesy\Logging\EventLog;
+use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\SandboxMode;
+
+$logPath = ExampleEventLog::path('examples-d10-agentctrl-eventlog');
+
+EventLog::enable($logPath);
+
+try {
+    $response = AgentCtrl::codex()
+        ->withSandbox(SandboxMode::ReadOnly)
+        ->execute('What is the capital of France? Answer briefly.');
+
+    $entries = ExampleEventLog::read($logPath);
+} finally {
+    EventLog::disable();
+}
+
+echo "=== AgentCtrl Result ===\n";
+if (!$response->isSuccess()) {
+    echo "Error: Command failed with exit code {$response->exitCode}\n";
+    exit(1);
+}
+
+echo "Answer: " . $response->text() . "\n";
+if ($response->sessionId()) {
+    echo "Thread ID: {$response->sessionId()}\n";
+}
+if ($response->usage()) {
+    echo "Tokens: {$response->usage()->input} in / {$response->usage()->output} out\n";
+}
+
+echo "\n=== EventLog Entries ===\n";
+echo "Log file: {$logPath}\n";
+echo 'Entries captured: ' . count($entries) . "\n\n";
+
+ExampleEventLog::print($entries, 10);
+
+assert($response->isSuccess());
+assert($response->text() !== '');
+assert($entries !== []);
+?>
+```
+
+## Expected Output
+
+```
+=== AgentCtrl Result ===
+Answer: The capital of France is Paris.
+Thread ID: thread-abc123
+Tokens: 38 in / 24 out
+
+=== EventLog Entries ===
+Log file: /tmp/examples-d10-agentctrl-eventlog-xxxx.jsonl
+Entries captured: 8
+
+1. [2026-03-18T13:00:00+00:00] INFO agent-ctrl.bridge-builder AgentExecutionStarted
+2. [2026-03-18T13:00:00+00:00] INFO agent-ctrl.bridge-builder RequestBuilt
+3. [2026-03-18T13:00:00+00:00] INFO agent-ctrl.bridge-builder CommandSpecCreated
+...
+```
+
+## Key Points
+
+- **Builder path**: `AgentCtrl::codex()` flows through the bridge builder, which is currently wired to `EventLog`
+- **Opt-in activation**: the JSONL sink is off until `EventLog::enable()` is called
+- **Post-run inspection**: reading the JSONL file is a simple troubleshooting workflow for CLI-based agent runs
+- **Current limitation**: direct bridge constructors still need separate wiring work to match this behavior

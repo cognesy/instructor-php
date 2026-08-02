@@ -1,0 +1,118 @@
+# Release Notes - v1.12.0
+
+
+## Executive Summary
+
+The release includes substantial refactoring across core packages to improve separation of concerns, eliminate technical debt, and achieve better performance characteristics.
+
+
+## Breaking Changes
+
+### instructor Package
+
+- **Removed `CanExecuteStructuredOutput` interface** - Replaced with dual-interface architecture: `CanStreamStructuredOutputUpdates` (stream-level iteration) and `CanHandleStructuredOutputAttempts` (attempt-level orchestration)
+- **Removed `IterativeToGeneratorAdapter`** - All execution now flows through unified `AttemptIterator` with specialized stream iterators
+- **Request handler hierarchy replaced** - `RequestHandler`, `SyncRequestHandler`, `PartialStreamingRequestHandler` removed in favor of stream iterator pattern
+
+### addons Package
+
+- **Namespace reorganization** - Shared components moved from `StepByStep` to domain-specific namespaces:
+  - Chat traits moved to `Chat/State` and `Chat/Step` namespaces
+  - Selector implementations moved to dedicated subdirectories
+
+### polyglot Package
+
+- **Default HTTP client changed** - Changed from `guzzle` to `curl` preset to make it easy to use Instructor out of the box
+
+### utils Package
+
+- **`ProgrammingLanguage` is now an enum** - Changed from class to `enum ProgrammingLanguage : string`; direct instantiation patterns will break
+
+
+## New Features
+
+### Native cURL HTTP Driver (http-client)
+
+Zero-dependency HTTP functionality using PHP's built-in cURL:
+- **CurlDriver**: Full HTTP method support with custom headers, timeouts, SSL verification
+- **Concurrent requests**: `CurlPool` using `curl_multi` for parallel execution
+- **Streaming support**: `CurlStreamingHttpResponse` with real-time chunked delivery
+- **Event integration**: Full support for `HttpRequestSent`, `HttpResponseReceived`, `HttpRequestFailed`
+- **Comprehensive tests**: Integration tests covering GET/POST, headers, errors, timeouts, streaming
+
+
+## Major Improvements
+
+### Unified Streaming Architecture (instructor)
+
+Code refactoring achieving O(1) memory usage and consistent execution model:
+- **Stream iterator pattern**: Three specialized implementations (`SyncUpdateGenerator`, `PartialStreamingUpdateGenerator`, `StreamingUpdatesGenerator`) with unified contract
+- **AttemptIterator orchestration**: Single code path for sync and streaming with validation, retries, failure recovery
+- **Transducer-based pipeline**: Pure transformation stages (delta extraction, JSON assembly, deserialization, deduplication, sequence tracking) using immutable state
+- **Rolling aggregation**: Eliminated accumulation of all partial responses
+- **Robust retry handling**: `DefaultRetryPolicy` with flexible logic for validation failures, connection errors, rate limits
+- **Enhanced state management**: `StructuredOutputAttemptState` and `AttemptPhase` enum for explicit progress tracking
+
+### ToolUse Refactoring (addons)
+
+Significant architectural improvements with better separation of concerns:
+- **ReAct driver decomposition**: Extracted into action classes (`MakeReActPrompt`, `MakeToolCalls`) and validation layer (`ReActValidator`)
+- **Improved data structures**: `DecisionWithDetails`, `ReActDecision` implementing `Decision` contract
+- **Better error handling**: Structured validation results with comprehensive decision validation
+- **Formatter extraction**: `ReActFormatter` utility for output formatting
+- **Reorganized continuation**: Moved to `ContinuationCriteria` subdirectory
+- **Executor abstraction**: `CanExecuteToolCalls` contract
+
+### Chat Improvements (addons)
+
+Enhanced code organization and reusability:
+- **Extracted traits**: `HandlesChatSteps`, `HandlesChatCompletion`, `HasChatCompletion` for state and step management
+- **Reorganized selectors**: Moved to dedicated namespaces (`RoundRobin`, `LLMSelector`)
+- **Enhanced state management**: Dedicated step handling
+
+
+## New LLM Provider Support
+
+### Inception Inference Provider (polyglot)
+
+- **InceptionDriver**: Complete inference driver supporting Inception API
+
+
+## Bug Fixes & Quality Improvements
+
+### Stream Completion Handling (stream)
+
+- **Fixed completion phase**: Added `transduction->completed()` call to flush remaining values
+- **Stateful transformations**: Properly finalize and emit accumulated data at stream end
+- **Data loss prevention**: Ensures buffered data is not lost on stream termination
+
+### Type Safety Improvements (utils)
+
+- **PartialJsonParser**: Enhanced type safety ensuring `parse()` always returns `array|object` as declared
+- **Metadata**: Added `withMergedData(array $data)` method for batch updates
+
+### Static Analysis (addons)
+
+- **Fixed Psalm/PHPStan issues**: Resolved static analysis warnings throughout
+- **Improved transducer stability**: Enhanced streaming driver reliability
+- **Better error handling**: Comprehensive error handling in ReActDriver
+
+
+## Migration Guide
+
+### For `instructor` Users
+
+- No action required for public API users - changes are internal
+- Custom implementations of `CanExecuteStructuredOutput` must migrate to new dual-interface architecture
+- Streaming behavior is now more consistent with better memory efficiency
+
+### For `polyglot` Users
+
+- Verify HTTP behavior if relying on Guzzle-specific features
+- Update configuration to explicitly specify `guzzle` preset if needed: `'preset' => 'guzzle'`
+
+### For `utils` Users
+
+- Update `ProgrammingLanguage` usage from class to enum syntax
+- Example: `ProgrammingLanguage::PHP` instead of `new ProgrammingLanguage('PHP')`
+- Consider SafeSandbox for any untrusted code execution needs

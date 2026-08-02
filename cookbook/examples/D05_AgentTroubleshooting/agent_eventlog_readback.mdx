@@ -1,0 +1,58 @@
+## Overview
+
+This example enables `EventLog` file logging for the default agent runtime,
+executes one simple agent run, then reads the generated JSONL file and prints
+the captured agent lifecycle entries on screen.
+
+Key concepts:
+- `EventLog::enable()`: activates the default JSONL sink
+- `AgentLoop::default()`: uses the default agent runtime event bus
+- JSONL readback: inspect execution lifecycle after the run completes
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+require_once 'examples/_support/eventlog_readback.php';
+
+use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Enums\ExecutionStatus;
+use Cognesy\Logging\EventLog;
+use Cognesy\Messages\Messages;
+
+$logPath = ExampleEventLog::path('examples-d05-agent-eventlog');
+
+EventLog::enable($logPath);
+
+try {
+    $loop = AgentLoop::default();
+    $state = AgentState::empty()->withMessages(
+        Messages::fromString('What are the three primary colors? Answer in one sentence.')
+    );
+
+    $finalState = $loop->execute($state);
+    $entries = ExampleEventLog::read($logPath);
+} finally {
+    EventLog::disable();
+}
+
+$response = $finalState->finalResponse()->toString() ?: 'No response';
+
+echo "=== Agent Result ===\n";
+echo "Answer: {$response}\n";
+echo "Steps: {$finalState->stepCount()}\n";
+echo "Status: {$finalState->status()->value}\n";
+
+echo "\n=== EventLog Entries ===\n";
+echo "Log file: {$logPath}\n";
+echo 'Entries captured: ' . count($entries) . "\n\n";
+
+ExampleEventLog::print($entries, 8);
+
+assert($finalState->status() === ExecutionStatus::Completed);
+assert($response !== '');
+assert($entries !== []);
+?>
+```

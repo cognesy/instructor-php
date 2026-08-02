@@ -1,0 +1,11 @@
+# Navigation order for Sandbox documentation
+order:
+  # Essentials
+  - 1-overview
+  - 2-getting-started
+  - 3-execution-policy
+  - 4-drivers
+  - 5-streaming-and-results
+  # Extras
+  - 6-testing
+  - 7-troubleshooting

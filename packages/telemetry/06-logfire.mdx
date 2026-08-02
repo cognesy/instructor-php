@@ -1,0 +1,64 @@
+# Logfire Setup
+
+The simplest Logfire setup uses:
+
+- `LogfireConfig`
+- `LogfireExporter`
+- `Telemetry`
+
+## Minimal Example
+
+```php
+use Cognesy\Telemetry\Adapters\Logfire\LogfireConfig;
+use Cognesy\Telemetry\Adapters\Logfire\LogfireExporter;
+use Cognesy\Telemetry\Application\Registry\TraceRegistry;
+use Cognesy\Telemetry\Application\Telemetry;
+
+$telemetry = new Telemetry(
+    registry: new TraceRegistry(),
+    exporter: new LogfireExporter(new LogfireConfig(
+        endpoint: 'https://logfire-eu.pydantic.dev',
+        serviceName: 'my-service',
+        headers: ['Authorization' => $_ENV['LOGFIRE_TOKEN']],
+    )),
+);
+// @doctest id="dde0"
+```
+
+## Environment Variables
+
+The telemetry examples use:
+
+- `LOGFIRE_TOKEN`
+- `LOGFIRE_OTLP_ENDPOINT`
+
+Use `LOGFIRE_TOKEN` as the Logfire write token for OTLP telemetry export.
+
+## Endpoint Rule
+
+`LogfireConfig` expects the OTLP base endpoint. Do not pass a full `/v1/traces`
+or `/v1/metrics` path.
+
+## Reference Example
+
+The inline reference example is:
+
+- `examples/A03_Troubleshooting/TelemetryLogfire/run.php`
+
+## Agent Runtime Example
+
+The working agent example is:
+
+- `examples/D05_AgentTroubleshooting/TelemetryLogfire/run.php`
+
+## Subagent Example
+
+For nested parent and child traces, see:
+
+- `examples/D05_AgentTroubleshooting/SubagentTelemetryLogfire/run.php`
+
+## Notes
+
+- `LogfireExporter` requires either `LogfireConfig` or a custom transport
+- service name comes from `LogfireConfig::serviceName()`
+- if export fails with a 4xx response, check the token and endpoint first

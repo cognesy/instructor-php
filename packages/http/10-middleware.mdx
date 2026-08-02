@@ -1,0 +1,411 @@
+Middleware is the primary extension mechanism for the HTTP client. It lets you add behaviors -- logging, retries, circuit breaking, authentication, response transformation -- without modifying drivers or request code. Each middleware sits in a pipeline: requests pass through in order on the way out, and responses pass through in reverse order on the way back.
+
+## How Middleware Works
+
+The middleware pipeline follows a simple pattern:
+
+```text
+Request  -> Middleware A -> Middleware B -> Middleware C -> Driver -> Server
+Response <- Middleware A <- Middleware B <- Middleware C <- Driver <- Server
+// @doctest id="e5fa"
+```
+
+Each middleware receives the request and a reference to the next handler in the chain. It can modify the request, call the next handler, inspect or modify the response, or short-circuit the chain entirely by returning a response without calling next.
+
+## The HttpMiddleware Interface
+
+All middleware implements a single interface:
+
+```php
+namespace Cognesy\Http\Contracts;
+
+interface HttpMiddleware
+{
+    public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse;
+}
+// @doctest id="9d18"
+```
+
+Here is a complete example that adds a header to every request:
+
+```php
+use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Contracts\HttpMiddleware;
+use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
+
+final class AddHeaderMiddleware implements HttpMiddleware
+{
+    public function __construct(
+        private string $name,
+        private string $value,
+    ) {}
+
+    public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse
+    {
+        $request = $request->withHeader($this->name, $this->value);
+        return $next->handle($request);
+    }
+}
+// @doctest id="2b68"
+```
+
+## The BaseMiddleware Abstract Class
+
+For most middleware, you do not need to implement the full `handle()` method. The `BaseMiddleware` class provides a template with overridable hooks:
+
+```php
+use Cognesy\Http\Extras\Support\BaseMiddleware;
+use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
+
+final class TimingMiddleware extends BaseMiddleware
+{
+    private float $start;
+
+    protected function beforeRequest(HttpRequest $request): HttpRequest
+    {
+        $this->start = microtime(true);
+        return $request;
+    }
+
+    protected function afterRequest(HttpRequest $request, HttpResponse $response): HttpResponse
+    {
+        $duration = round((microtime(true) - $this->start) * 1000, 2);
+        error_log("Request to {$request->url()} took {$duration}ms");
+        return $response;
+    }
+}
+// @doctest id="150d"
+```
+
+The available hooks are:
+
+| Method | Purpose |
+|--------|---------|
+| `beforeRequest($request)` | Modify the request before sending. Return the (possibly modified) request. |
+| `afterRequest($request, $response)` | Inspect or modify the response after receiving it. Return the response. |
+| `shouldDecorateResponse($request, $response)` | Return `true` to wrap the response through `toResponse()`. Defaults to `true`. |
+| `toResponse($request, $response)` | Return a decorated response (e.g., with a transformed stream). |
+| `shouldExecute($request)` | Return `false` to skip this middleware entirely for a given request. |
+
+## Registering Middleware
+
+### On an Existing Client
+
+The `HttpClient` is immutable. `withMiddleware()` returns a new client with the middleware appended:
+
+```php
+$client = $client->withMiddleware(new AddHeaderMiddleware('X-Request-ID', 'req-123'), 'request-id');
+// @doctest id="b018"
+```
+
+The second argument is an optional name, which lets you remove the middleware later:
+
+```php
+$client = $client->withoutMiddleware('request-id');
+// @doctest id="00c6"
+```
+
+### Via the Builder
+
+The builder collects middleware before creating the client:
+
+```php
+use Cognesy\Http\Creation\HttpClientBuilder;
+
+$client = (new HttpClientBuilder())
+    ->withMiddleware(new AddHeaderMiddleware('X-Api-Version', '2'))
+    ->withMiddleware(new TimingMiddleware())
+    ->create();
+// @doctest id="faac"
+```
+
+## Built-in Middleware
+
+The package ships with several production-ready middleware components.
+
+### RetryMiddleware
+
+Automatically retries failed requests with exponential backoff and jitter:
+
+```php
+use Cognesy\Http\Extras\Middleware\RetryMiddleware;
+use Cognesy\Http\Extras\Support\RetryPolicy;
+
+$client = (new HttpClientBuilder())
+    ->withRetryPolicy(new RetryPolicy(
+        maxRetries: 3,
+        baseDelayMs: 250,
+        maxDelayMs: 8000,
+        jitter: 'full',                    // none, full, or equal
+        retryOnStatus: [408, 429, 500, 502, 503, 504],
+        respectRetryAfter: true,
+    ))
+    ->create();
+// @doctest id="6a30"
+```
+
+The retry middleware only operates on synchronous (non-streamed) requests. It respects the `Retry-After` header when present.
+
+By default, retries are limited to idempotent methods (`GET`, `HEAD`, `PUT`, `DELETE`, `OPTIONS`, and `TRACE`). This prevents automatic replay of side effects from `POST` and `PATCH`. If the endpoint provides its own idempotency guarantee, explicitly opt in and pair the policy with `IdempotencyMiddleware`:
+
+```php
+$policy = new RetryPolicy(
+    retryNonIdempotentMethods: true,
+);
+// @doctest id="abe7"
+```
+
+`Retry-After` is advisory and is bounded by `maxDelayMs`, so a server cannot make a worker sleep for an arbitrary number of hours. An idempotency key generated by `IdempotencyMiddleware` is reused for every attempt of the same request regardless of whether it is placed before or after `RetryMiddleware`.
+
+The jitter options are:
+
+- `none` -- exact exponential backoff
+- `full` -- random delay between 0 and the calculated backoff
+- `equal` -- half the backoff plus a random portion of the other half
+
+### CircuitBreakerMiddleware
+
+Prevents repeated calls to a failing service by tracking failures per host:
+
+```php
+use Cognesy\Http\Extras\Middleware\CircuitBreakerMiddleware;
+use Cognesy\Http\Extras\Support\CircuitBreakerPolicy;
+
+$client = (new HttpClientBuilder())
+    ->withCircuitBreakerPolicy(new CircuitBreakerPolicy(
+        failureThreshold: 5,
+        openForSec: 30,
+        halfOpenMaxRequests: 2,
+        successThreshold: 2,
+        failureStatusCodes: [429, 500, 502, 503, 504],
+    ))
+    ->create();
+// @doctest id="e26a"
+```
+
+The circuit breaker follows the standard state machine:
+
+- **Closed** -- requests flow normally; failures are counted.
+- **Open** -- after `failureThreshold` failures, the circuit opens and all requests throw `CircuitBreakerOpenException` for `openForSec` seconds.
+- **Half-open** -- after the timeout, a limited number of probe requests are allowed. If `successThreshold` probes succeed, the circuit closes. If any fail, it reopens.
+
+State is stored in APCu when available, with an in-memory fallback for environments without it.
+
+### IdempotencyMiddleware
+
+Attaches a unique idempotency key to requests, which prevents duplicate processing when retries occur:
+
+```php
+use Cognesy\Http\Extras\Middleware\IdempotencyMiddleware;
+
+$client = (new HttpClientBuilder())
+    ->withIdempotencyMiddleware(new IdempotencyMiddleware(
+        headerName: 'Idempotency-Key',
+        methods: ['POST'],
+        hostAllowList: ['api.stripe.com'],
+    ))
+    ->create();
+// @doctest id="fe88"
+```
+
+The middleware only attaches keys to the specified HTTP methods and hosts. If the request already has an idempotency key header, it is left unchanged.
+
+### EventSourceMiddleware
+
+Parses server-sent event streams into clean payloads. See [Streaming Responses](5-streaming-responses) for usage details.
+
+### RecordReplayMiddleware
+
+Use the immutable named constructors to record HTTP interactions and replay them
+without contacting the network:
+
+```php
+use Cognesy\Http\Extras\Middleware\RecordReplay\RecordReplayMiddleware;
+
+$recorder = RecordReplayMiddleware::recordTo('/tmp/http-cassette');
+$replayer = RecordReplayMiddleware::replayFrom('/tmp/http-cassette');
+
+$client = (new HttpClientBuilder())
+    ->withMiddleware($replayer)
+    ->create();
+// @doctest id="135f"
+```
+
+Replay is hermetic by default. A missing cassette interaction throws
+`RecordingNotFoundException`; a mismatch, exhausted session, corrupt payload, or
+unsupported cassette version throws its own typed cassette exception. None of
+these paths calls the next handler. If a live miss is genuinely intended, make
+that choice visible at the call site:
+
+```php
+use Cognesy\Http\Extras\Support\RecordReplay\RecordReplayPolicy;
+use Cognesy\Http\Extras\Support\RecordReplay\ReplayMissPolicy;
+
+$replayer = RecordReplayMiddleware::replayFrom(
+    '/tmp/http-cassette',
+    new RecordReplayPolicy(onMissing: ReplayMissPolicy::Passthrough),
+);
+// @doctest id="ac79"
+```
+
+The default matcher uses a length-delimited SHA-256 fingerprint of the method,
+credential-normalized URL, streaming mode, request body, and `Accept`/
+`Content-Type` headers. JSON bodies with an explicit JSON content type are
+canonicalized recursively: object key order and whitespace do not matter, while
+array order and scalar types do. Other bodies, including binary bodies, are
+matched byte-for-byte. Authorization and transport-only options are excluded.
+
+One middleware instance is one ordered cassette session. Repeated identical
+requests replay their recorded responses in order; a request mismatch does not
+advance the cursor. For non-filesystem stores, inject `CassetteStore` through
+`recordWith()` or `replayWith()`, and customize matching or sanitization through
+`RecordReplayPolicy`.
+
+For streamed responses, recording returns the first upstream chunk immediately
+and publishes only after natural completion. Chunks are stored as binary-safe
+base64 frames and replayed one at a time through a one-shot stream; empty chunks,
+embedded newlines, NUL bytes, invalid UTF-8, interrupted streams, and upstream
+failures are handled explicitly. Sanitization may change chunk boundaries when a
+credential spans chunks, but it must preserve the concatenated logical body.
+
+The default cassette layout keeps UTF-8 metadata in JSON and payload bytes in
+separate files. Existing pre-v1 single-file recordings are read only through the
+isolated compatibility adapter used by the examples boot path; new cassettes use
+the versioned layout. Prefer refreshing/migrating old fixtures before sharing
+them.
+
+Privacy still requires review: automatic sanitization targets common credentials
+in headers, URLs, response metadata, and known body fields. Prompts, model
+outputs, PII, and provider-specific secrets may remain in payload files. Treat
+cassettes and diagnostic events as sensitive application data before committing
+or publishing them.
+
+Recordings are application data, not automatically safe test data. Built-in
+sanitization masks common credentials in request/response metadata and streamed
+payload fields, but prompts, model outputs, PII, and provider-specific secrets
+may still be present. Review fixtures before committing or sharing them; replay
+and record/replay events should be treated as sensitive diagnostic material.
+
+## Response Decoration
+
+For middleware that needs to transform streamed responses, use `BaseResponseDecorator` to wrap the stream with a transformation function:
+
+```php
+use Cognesy\Http\Extras\Support\BaseResponseDecorator;
+
+$decorated = BaseResponseDecorator::decorate(
+    $response,
+    fn(string $chunk): string => strtoupper($chunk),
+);
+// @doctest id="1dae"
+```
+
+This creates a new `HttpResponse` with a `TransformStream` that applies your function to each chunk. The original response is not modified.
+
+## Writing Custom Middleware
+
+Here is a practical example of authentication middleware:
+
+```php
+use Cognesy\Http\Extras\Support\BaseMiddleware;
+use Cognesy\Http\Data\HttpRequest;
+
+final class BearerAuthMiddleware extends BaseMiddleware
+{
+    public function __construct(
+        private string $token,
+    ) {}
+
+    protected function beforeRequest(HttpRequest $request): HttpRequest
+    {
+        return $request->withHeader('Authorization', 'Bearer ' . $this->token);
+    }
+}
+// @doctest id="2fab"
+```
+
+And a logging middleware that records request duration:
+
+```php
+use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Contracts\HttpMiddleware;
+use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
+use Psr\Log\LoggerInterface;
+
+final class LoggingMiddleware implements HttpMiddleware
+{
+    public function __construct(
+        private LoggerInterface $logger,
+    ) {}
+
+    public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse
+    {
+        $this->logger->info('HTTP request', [
+            'method' => $request->method(),
+            'url' => $request->url(),
+        ]);
+
+        $start = microtime(true);
+        $response = $next->handle($request);
+        $duration = microtime(true) - $start;
+
+        $this->logger->info('HTTP response', [
+            'status' => $response->statusCode(),
+            'duration_ms' => round($duration * 1000, 2),
+        ]);
+
+        return $response;
+    }
+}
+// @doctest id="29d4"
+```
+
+## Middleware Order
+
+The order you register middleware determines the execution flow. Middleware registered first is the outermost layer:
+
+```php
+$client = (new HttpClientBuilder())
+    ->withMiddleware(new LoggingMiddleware($logger))      // 1st: logs everything
+    ->withMiddleware(new RetryMiddleware($retryPolicy))   // 2nd: retries include auth
+    ->withMiddleware(new BearerAuthMiddleware($token))    // 3rd: adds auth header
+    ->create();
+// @doctest id="6a71"
+```
+
+In this setup:
+- **Request flow:** Logging -> Retry -> Auth -> Driver
+- **Response flow:** Driver -> Auth -> Retry -> Logging
+
+The retry middleware wraps the auth middleware, so retried requests get fresh auth headers. The logging middleware sees all attempts, including retries.
+
+## Middleware Stack API
+
+The `MiddlewareStack` class provides fine-grained control over the middleware collection:
+
+```php
+$stack->append($middleware, 'name');     // Add to end
+$stack->prepend($middleware, 'name');    // Add to beginning
+$stack->remove('name');                 // Remove by name
+$stack->replace('name', $newMiddleware); // Replace by name
+$stack->has('name');                    // Check existence
+$stack->get('name');                    // Get by name
+$stack->clear();                       // Remove all
+$stack->all();                         // Get all middleware
+// @doctest id="c8d6"
+```
+
+You can replace the entire stack on a client:
+
+```php
+$client = $client->withMiddlewareStack($newStack);
+// @doctest id="9267"
+```
+
+## See Also
+
+- [Streaming Responses](5-streaming-responses) -- EventSourceMiddleware for SSE parsing.
+- [Custom Clients](9-1-custom-clients) -- create drivers that middleware wraps around.

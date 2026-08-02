@@ -1,0 +1,26 @@
+# Release Notes v1.15.0
+
+## New Package: agent-ctrl
+
+**Agent Control Package** (`packages/agent-ctrl/`)
+
+Extracted standalone package for agent control and orchestration, previously part of `packages/auxiliary`.
+
+### Key Features
+
+- Agent request/response handling with unified interface
+- Event-driven architecture for logging and monitoring
+- Independent versioning and distribution
+- Sandbox driver support (Docker, Podman, Firejail, Bubblewrap)
+
+## Breaking Changes
+
+If you were using agent control features from the `auxiliary` package, update your imports to use the new `agent-ctrl` package:
+
+```php
+// Before
+use Cognesy\Auxiliary\Agents\...;
+
+// After
+use Cognesy\AgentCtrl\...;
+```
