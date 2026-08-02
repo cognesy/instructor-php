@@ -190,14 +190,13 @@ This script:
    ```
 
 The release process:
-- **Step 0**: Rebuilds documentation (`./bin/instructor-hub gendocs`)
-- **Step 0.1**: Prepares docs bundles for release artifacts
-- **Step 1**: Updates all package versions (`just pkg-sync-ver` — runs `./scripts/packages/sync-ver.sh`)
-- **Step 2**: Distributes release notes to all packages
-- **Step 3-4**: Commits changes if any exist
-- **Step 5**: Creates Git tag (`v1.2.0`)
-- **Step 6**: Pushes changes and tag to origin
-- **Step 7**: Creates GitHub release
+- requires a clean checkout exactly matching `origin/main`
+- verifies that the release note exists and is indexed before changing versions
+- synchronizes package constraints, then runs `composer qa:docs-sites -- --release X.Y.Z`
+- commits only package Composer manifests and pushes the final source commit to `main`
+- waits until Mintlify and GitHub Pages expose the release page, index entry, and final source SHA
+- creates and pushes the tag only after both documentation sites are current
+- creates the GitHub release from the authored release note
 
 ### Package Splitting
 
@@ -223,13 +222,25 @@ After the main release is created, GitHub Actions automatically:
 
 ## Working with Documentation
 
-### Hub CLI Tool
-The project includes an Instructor Hub CLI for documentation management:
+### Source and generated documentation
+
+Edit documentation only in `docs/`, `packages/*/docs/`, package cheatsheets, and documented examples. The `builds/` directory is an ignored, ephemeral workspace and must never be edited or committed.
+
+Generate individual targets while authoring:
 
 ```bash
-./bin/instructor-hub gendocs    # Generate documentation
-composer hub gendocs            # Alternative syntax
+composer docs gen:mintlify
+composer docs gen:mkdocs
 ```
+
+Before merging docs or release-note changes, run the production-equivalent gate:
+
+```bash
+composer qa:docs-sites
+composer qa:docs-sites -- --release X.Y.Z
+```
+
+The combined gate regenerates both targets from a clean output directory, verifies release-note file and navigation parity, validates Mintlify, and builds MkDocs in strict mode. CI publishes the same validated artifacts to the `docs-mintlify` branch and GitHub Pages.
 
 ### Tell CLI Tool
 For interactive assistance:

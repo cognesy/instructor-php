@@ -13,6 +13,7 @@ describe('DocsConfig', function () {
 
             expect($config->mainTitle)->toBe('Instructor for PHP');
             expect($config->mkdocsTarget)->toBe('./builds/docs-mkdocs');
+            expect($config->mkdocsConfigFile)->toBe('');
         });
 
         it('includes llms defaults', function () {
@@ -46,6 +47,7 @@ describe('DocsConfig', function () {
             expect($config->llmsExcludeSections)->toContain('release-notes/');
             expect($config->llmsDeployTarget)->toBe('../instructor-www/public');
             expect($config->llmsDeployDocsFolder)->toBe('llms');
+            expect($config->mkdocsConfigFile)->toBe('./builds/mkdocs.yml');
         });
 
         it('falls back to defaults for missing llms config', function () {

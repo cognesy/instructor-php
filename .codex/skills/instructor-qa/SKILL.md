@@ -36,7 +36,7 @@ Start by classifying the request into one or more QA lanes:
 - integration and live-backend validation: telemetry interop and other opt-in suites
 - static analysis: PHPStan, Psalm, dead-code, unused dependency checks
 - structural and policy checks: Pint, Semgrep
-- docs quality: `composer qa:docs`, docs drift
+- docs quality: `composer qa:docs`, docs drift, and `composer qa:docs-sites` for deployable-site changes
 - dependency and compatibility validation: Composer resolution plus workflow matrix cells
 - CI and workflow reproduction: `act` against `.github/workflows/php.yml`
 - performance: PHPBench
@@ -92,6 +92,7 @@ Do not hide unrelated repo debt inside the current change. Track it separately.
 - Treat `.github/workflows/php.yml` as the only matrix source of truth.
 - When dependency constraints or workflow matrix behavior changes, run the targeted local `act` cell when feasible.
 - If `composer qa` or `composer qa:docs` fails because of unrelated existing debt, say so explicitly and file a `bd` follow-up.
+- Treat `composer qa:docs-sites` as mandatory for public docs, release-note, generator, or docs workflow changes; generated `builds/` content is evidence, never source.
 - For review-style requests, present findings first, ordered by severity, with concrete file references.
 
 ## Reporting Standard

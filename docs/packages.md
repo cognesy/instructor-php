@@ -20,7 +20,7 @@ Instructor is built on a modular architecture. If you need to work at a lower le
 
 ### The Stack
 
-![Instructor Stack](images/instructor-diagram.png)
+![Instructor Stack](/images/instructor-diagram.png)
 
 ---
 

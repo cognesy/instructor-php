@@ -104,6 +104,12 @@ packages/*/coverage/
 
 # Non-distributed files (temporary, experimental, to be archived / removed)
 /research/
+!/research/
+/research/*
+!/research/plans/
+/research/plans/*
+!/research/plans/docs-publishing-cutover/
+!/research/plans/docs-publishing-cutover/*.md
 /archived/
 /experimental/
 /prompts/misc/

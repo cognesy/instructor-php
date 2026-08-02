@@ -18,7 +18,7 @@ This provides full control over the JSON Schema structure and is useful for:
 - Legacy JSON Schema integration
 - Performance-sensitive scenarios
 
-See more: [Manual Schema Building](../../../packages/instructor/docs/advanced/manual_schemas.md)
+See more: [Manual Schema Building](../../../packages/instructor/advanced/manual_schemas.md)
 
 ## Example
 

@@ -5,6 +5,11 @@
 docs-qa *packages:
     bash ./scripts/docs/docs-qa-all.sh {{packages}}
 
+# Generate and validate both public documentation sites.
+[group('docs'), doc('Generate and validate Mintlify + MkDocs release content')]
+docs-sites-check *args:
+    composer qa:docs-sites -- {{args}}
+
 # Detect docs drift — packages where src/ moved ahead of docs.
 [group('docs'), doc('Detect docs drift (src newer than docs)')]
 docs-drift *args:

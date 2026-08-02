@@ -3,8 +3,12 @@ name = "instructor-php-docs"
 version = "1.0.0"
 description = "Documentation build tools for Instructor PHP"
 dependencies = [
-    "mkdocs-material",
+    "mkdocs==1.6.1",
+    "mkdocs-material==9.7.7",
 ]
+
+[tool.uv]
+package = false
 
 [build-system]
 requires = ["hatchling"]

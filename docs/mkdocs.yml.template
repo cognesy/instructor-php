@@ -4,12 +4,12 @@ site_description: A lightweight library for structured outputs with LLMs.
 repo_name: instructor-php
 repo_url: https://github.com/cognesy/instructor-php
 site_url: https://cognesy.github.io/instructor-php/
-edit_uri: edit/main/builds/docs-mkdocs/
+edit_uri: ''
 copyright: Copyright &copy; 2024 Dariusz Debowczyk
 
 # Custom directories
-docs_dir: 'builds/docs-mkdocs'    # Use builds/docs-mkdocs as source directory
-site_dir: 'builds/docs-site'      # Output built HTML to builds/docs-site/
+docs_dir: 'docs-mkdocs'    # Relative to generated builds/mkdocs.yml
+site_dir: 'docs-site'      # Relative to generated builds/mkdocs.yml
 
 theme:
   name: material
@@ -19,8 +19,6 @@ theme:
     view: material/eye
   features:
     - announce.dismiss
-    - content.action.edit
-    - content.action.view
     - content.code.annotate
     - content.code.copy
     - content.code.select

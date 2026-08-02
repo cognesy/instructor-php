@@ -68,7 +68,7 @@ output:
   mkdocs:
     target: './builds/docs-mkdocs'
     template: './docs/mkdocs.yml.template'
-    config_file: './mkdocs.yml'
+    config_file: './builds/mkdocs.yml'
 
 # LLM-friendly documentation (llms.txt standard)
 llms:

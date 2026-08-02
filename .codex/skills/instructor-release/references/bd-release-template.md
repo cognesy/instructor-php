@@ -22,7 +22,7 @@ Create these child tasks under the epic:
 6. Audit docs/API drift and resolve release blockers
 7. Write `docs/release-notes/vX.Y.Z.mdx`
 8. Final publish gate and approval check
-9. Execute `scripts/publish-ver.sh vX.Y.Z`
+9. Execute `scripts/release/publish-ver.sh vX.Y.Z` and wait for both documentation deployments before tagging
 10. Draft release announcement and optional X posting handoff
 
 ## Suggested Dependency Chain

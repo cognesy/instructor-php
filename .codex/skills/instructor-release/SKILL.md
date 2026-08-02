@@ -1,6 +1,6 @@
 ---
 name: instructor-release
-description: Prepare and execute a new InstructorPHP version release. Use when asked to cut a release, prepare release notes, run release QA, create a release epic and tasks in bd, verify changed packages since the last tag, run curated live examples, publish via scripts/publish-ver.sh, or prepare the launch announcement.
+description: Prepare and execute a new InstructorPHP version release. Use when asked to cut a release, prepare release notes, run release QA, create a release epic and tasks in bd, verify changed packages since the last tag, run curated live examples, publish via scripts/release/publish-ver.sh, or prepare the launch announcement.
 ---
 
 # Instructor Release
@@ -12,8 +12,9 @@ Treat these files as source of truth:
 - `AGENTS.md` for repo rules, `bd`, and git ownership constraints
 - `CONTRIBUTING.md` for release and package-management workflow
 - `QUALITY.md` for verification lanes
-- `scripts/publish-ver.sh` for the actual publish path
-- `scripts/sync-ver.sh` for version synchronization
+- `scripts/release/publish-ver.sh` for the actual publish path
+- `scripts/packages/sync-ver.sh` for version synchronization
+- `.github/workflows/docs.yml` for validated Mintlify and GitHub Pages deployment
 - `.github/workflows/php.yml` for compatibility matrix coverage
 - `.github/workflows/split.yml` for post-tag split package publishing
 - `docs/release-notes/*.mdx` for public release-note shape
@@ -34,7 +35,7 @@ Use this skill when the user asks to:
 - prepare release notes or package-change summaries
 - run release-candidate QA or production-readiness checks
 - decide which tests, examples, docs checks, and CI reproductions are required before publish
-- publish with `scripts/publish-ver.sh`
+- publish with `scripts/release/publish-ver.sh`
 - prepare or post the release announcement
 
 ## Release Rules
@@ -56,9 +57,9 @@ Use this skill when the user asks to:
 6. Produce per-package change summaries from diffs.
 7. Consolidate those summaries into a release draft.
 8. Write `docs/release-notes/vX.Y.Z.mdx` using `references/release-notes-template.mdx`.
-9. Re-run final release gates if the release-note or versioning work changed generated outputs.
-10. Ask for explicit approval before `scripts/publish-ver.sh`.
-11. After publish, verify the GitHub release and split workflow kickoff.
+9. Run `composer qa:docs-sites -- --release X.Y.Z`; never stage generated `builds/` output.
+10. Ask for explicit approval before `scripts/release/publish-ver.sh`.
+11. After publish, verify both docs provenance endpoints, the GitHub release, and split workflow kickoff.
 12. Hand off announcement creation to `$tweet-package` and optional posting to `$xurl`.
 
 ## Deterministic `bd` Execution
@@ -90,6 +91,7 @@ Default release gates:
 - `composer qa`
 - `./scripts/run-all-tests.sh`
 - `composer qa:docs`
+- `composer qa:docs-sites -- --release X.Y.Z`
 - `composer docs drift --tier=public`
 - `act pull_request -W .github/workflows/php.yml -j build --dryrun`
 
@@ -140,11 +142,12 @@ Before publish:
 
 - summarize the exact green gates
 - summarize any waived or unresolved risk
-- ask for explicit approval to run `scripts/publish-ver.sh <version>`
+- ask for explicit approval to run `scripts/release/publish-ver.sh <version>`
 
 After publish:
 
 - verify the main GitHub release exists
+- verify both public documentation sites expose the release and final source SHA
 - verify the split workflow started
 - prepare announcement material
 

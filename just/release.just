@@ -2,10 +2,10 @@
 # The split workflow (.github/workflows/split.yml) auto-splits packages to their
 # individual repos after a vX.Y.Z tag is pushed by `just release`.
 
-# Full release for version X.Y.Z: build docs, sync versions, commit, tag, push,
-# create the GitHub release, and trigger package splitting.
-# Requires docs/release-notes/vX.Y.Z.mdx to exist first. Pushes to origin.
-[group('release'), doc('Cut a release: docs, versions, tag, push, GH release')]
+# Full release for version X.Y.Z: sync versions, validate and publish both docs
+# sites, then tag, create the GitHub release, and trigger package splitting.
+# Requires a clean checkout and an indexed docs/release-notes/vX.Y.Z.mdx.
+[group('release'), doc('Cut a release after both docs sites verify the final SHA')]
 release version:
     bash ./scripts/release/publish-ver.sh {{version}}
 

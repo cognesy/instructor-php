@@ -107,7 +107,7 @@ The boundary between `\Core` and `\Hook` is **whether the behavior is optional**
 
 # Build Artifacts
 
-The `./builds/` directory is **ephemeral** — it is auto-generated and should never be manually edited. Any changes made there will be overwritten on the next build. Always edit source files in `packages/` or `docs/` instead.
+The `./builds/` directory is **ephemeral and ignored** — it is auto-generated and should never be manually edited, staged, or committed. Any changes made there will be overwritten on the next build. Always edit source files in `packages/`, `docs/`, package cheatsheets, or documented examples instead. Run `composer qa:docs-sites` to regenerate and validate both public targets.
 
 # Development Tools
 

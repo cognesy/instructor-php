@@ -1,13 +1,14 @@
 # Post-Release Workflow
 
-## After `scripts/publish-ver.sh`
+## After `scripts/release/publish-ver.sh`
 
 Verify:
 
 1. the main GitHub release exists
 2. the tag exists remotely
 3. `.github/workflows/split.yml` has started for the tag
-4. docs bundles were attached to the GitHub release
+4. Mintlify and GitHub Pages provenance identify the released source SHA
+5. both release-note indexes link the new version
 
 ## Announcement Drafting
 

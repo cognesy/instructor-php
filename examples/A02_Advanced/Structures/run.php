@@ -17,7 +17,7 @@ as response model.
 If `Structure` is used as response model, Instructor returns a dynamic value
 that can be converted with `->toArray()`.
 
-See more: [Structures](../../structures.md)
+See more: [Structures](../../../packages/instructor/advanced/structures.md)
 
 ## Example
 

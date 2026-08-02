@@ -1,113 +1,90 @@
 #!/usr/bin/env bash
-# publish.sh - Main script for releasing a new version
-set -e  # Exit immediately if a command exits with non-zero status
+set -euo pipefail
 
-# Resolve project root (scripts/release/ -> two levels up) and run from there
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
-cd "$PROJECT_ROOT"
+script_directory="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+project_root="$(dirname "$(dirname "$script_directory")")"
+cd "$project_root"
 
-VERSION=$1
-REPO="cognesy/instructor-php"
+version="${1:-}"
+version="${version#v}"
+repository='cognesy/instructor-php'
+notes_file="docs/release-notes/v${version}.mdx"
 
-if [ -z "$VERSION" ]; then
-    echo "Please provide version number"
-    exit 1
+if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+  echo "Provide a semantic version such as 2.6.0." >&2
+  exit 2
 fi
 
-# Remove 'v' prefix if present
-VERSION=${VERSION#v}
-
-# Check if release notes exist
-NOTES_FILE="docs/release-notes/v$VERSION.mdx"
-if [ ! -f "$NOTES_FILE" ]; then
-    echo "Error: Release notes file not found at $NOTES_FILE"
-    echo "Please create release notes file before proceeding"
-    exit 1
+if [[ -n "$(git status --porcelain=v1 --untracked-files=all)" ]]; then
+  echo "Release requires a clean index and worktree. Commit or remove all pending files first." >&2
+  exit 1
 fi
 
-echo "Creating release for version $VERSION..."
-echo "Using release notes from: $NOTES_FILE"
-
-# Load centralized package configuration
-source "$PROJECT_ROOT/scripts/packages/load-packages.sh" "$PROJECT_ROOT"
-
-# 0. Build docs
-echo "Step 0: Rebuilding documentation..."
-composer docs gen:mintlify
-composer docs gen:mkdocs
-
-# 0.1. Prepare docs bundles for GitHub release artifacts
-echo "Step 0.2: Preparing docs bundles..."
-MINTLIFY_BUNDLE="builds/docs-mintlify-v$VERSION.tar.gz"
-MKDOCS_BUNDLE="builds/docs-mkdocs-v$VERSION.tar.gz"
-
-tar -czf "$MINTLIFY_BUNDLE" builds/docs-build
-tar -czf "$MKDOCS_BUNDLE" builds/docs-mkdocs
-
-echo "✅ Prepared docs bundles:"
-ls -lh "$MINTLIFY_BUNDLE" "$MKDOCS_BUNDLE"
-
-# 1. Update all package versions using sync-ver.sh
-echo "Step 1: Updating package versions..."
-./scripts/packages/sync-ver.sh "$VERSION"
-
-# 2. Distribute release notes to all packages
-# echo "Step 2: Distributing release notes to all packages..."
-# for dir in "${!PACKAGES[@]}"; do
-#     if [ -d "$dir" ]; then
-#         # Create release_notes directory if it doesn't exist
-#         mkdir -p "$dir/release_notes"
-# 
-#         # Copy the release notes file to the package (convert from .mdx to .md)
-#         cp "$NOTES_FILE" "$dir/release_notes/v$VERSION.md"
-# 
-#         echo "✅ Copied release notes to $dir/release_notes/"
-#     else
-#         echo "⚠️ Warning: Directory $dir does not exist, skipping..."
-#     fi
-# done
-echo "Step 2: Skipping release notes distribution (now centralized in builds/docs-build)"
-
-# 3. Check for uncommitted changes
-if [ -n "$(git status --porcelain)" ]; then
-    echo "Step 3: Adding source and documentation changes (excluding generated build output)..."
-    git add -A -- \
-        ':!builds/**' \
-        ':!.beads/**' \
-        ':!QUALITY.md' \
-        ':!**/vendor/**'
-else
-    echo "Step 3: No uncommitted changes detected."
+if [[ ! -f "$notes_file" ]]; then
+  echo "Release notes file is missing: $notes_file" >&2
+  exit 1
 fi
 
-# 4. Check if there are changes to commit
-if [ -n "$(git status --porcelain)" ]; then
-    echo "Step 4: Committing changes..."
-    git commit -m "Release version $VERSION"
-    echo "✅ Changes committed."
-else
-    echo "Step 4: No changes to commit."
+if ! jq -e --arg page "release-notes/v${version}" '.. | strings | select(. == $page)' docs/mint.json >/dev/null; then
+  echo "Release notes are not indexed in docs/mint.json: release-notes/v${version}" >&2
+  exit 1
 fi
 
-# 5. Create git tag
-echo "Step 5: Creating git tag..."
-git tag -a "v$VERSION" -m "Release version $VERSION"
-echo "✅ Created tag v$VERSION"
+if git rev-parse "refs/tags/v${version}" >/dev/null 2>&1; then
+  echo "Tag v${version} already exists locally." >&2
+  exit 1
+fi
 
-# 6. Push changes and tag
-echo "Step 6: Pushing changes and tag..."
-git push origin main && git push origin "v$VERSION"
-echo "✅ Pushed changes and tag to origin"
+if git ls-remote --exit-code --tags origin "refs/tags/v${version}" >/dev/null 2>&1; then
+  echo "Tag v${version} already exists on origin." >&2
+  exit 1
+fi
 
-# 7. Create GitHub release for main repo
-echo "Step 7: Creating GitHub release..."
-gh release create "v$VERSION" \
-    --title "v$VERSION" \
-    --notes-file "$NOTES_FILE" \
-    "$MINTLIFY_BUNDLE" \
-    "$MKDOCS_BUNDLE" \
-    --repo "$REPO"
+git fetch origin main
+if [[ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]]; then
+  echo "Release checkout must exactly match origin/main before version synchronization." >&2
+  exit 1
+fi
 
-echo "🎉 Release v$VERSION completed!"
-echo "The split.yml workflow will now trigger automatically to split packages and create releases for each subpackage."
+echo "Synchronizing package constraints for v${version}..."
+./scripts/packages/sync-ver.sh "$version"
+
+echo "Validating final release documentation sources and artifacts..."
+composer qa:docs-sites -- --release "$version"
+
+unexpected_changes="$(git status --porcelain=v1 --untracked-files=all | awk '
+  {
+    path = substr($0, 4)
+    if (path ~ /^builds\//) next
+    if (path ~ /^packages\/[^\/]+\/composer\.json$/) next
+    print
+  }
+')"
+if [[ -n "$unexpected_changes" ]]; then
+  echo "Release preparation changed files outside package composer manifests:" >&2
+  echo "$unexpected_changes" >&2
+  exit 1
+fi
+
+git add -- packages/*/composer.json
+if ! git diff --cached --quiet; then
+  git commit -m "chore(release): prepare v${version}" -- packages/*/composer.json
+fi
+
+final_sha="$(git rev-parse HEAD)"
+echo "Pushing release candidate $final_sha to main..."
+git push origin "HEAD:refs/heads/main"
+
+echo "Waiting for both documentation sites to publish $final_sha..."
+./scripts/release/verify-docs-deployment.sh "$final_sha" "$version"
+
+git tag -a "v${version}" -m "Release version ${version}" "$final_sha"
+git push origin "refs/tags/v${version}"
+
+gh release create "v${version}" \
+  --title "v${version}" \
+  --notes-file "$notes_file" \
+  --repo "$repository" \
+  --verify-tag
+
+echo "Release v${version} completed after both documentation sites verified $final_sha."

@@ -40,6 +40,7 @@ whole thing serially and remain the authoritative green gate.
 | `composer test:telemetry-interop` | telemetry live-backend validation | opt-in telemetry integration suite |
 | `composer qa` | normal code QA | PHPStan + Psalm + Pint + Semgrep |
 | `composer qa:docs` | docs/API example changes | docs QA across package docs |
+| `composer qa:docs-sites` | public docs or release notes | generate and validate both deployable sites |
 | `composer docs drift` | docs freshness review | detects package docs drift |
 | `composer dead-code` | cleanup and refactors | dead code detection via PHPStan |
 | `composer unused-deps` | dependency cleanup | unused Composer dependency detection |
@@ -302,7 +303,10 @@ composer unused-deps
 composer psalm-unused
 ```
 
-Use these when refactoring, splitting packages, or tightening package boundaries.
+These are opt-in maintenance checks, not part of `composer qa` or `just qa`.
+Use them when refactoring, splitting packages, or tightening package boundaries;
+`composer dead-code` is currently incomplete because its example and Experimental
+inputs prevent it from reaching reliable dead-code findings.
 
 ## Docs QA
 
@@ -322,6 +326,15 @@ Docs QA checks:
 4. broken relative links
 5. `php -l` on fenced PHP blocks
 6. incomplete snippet detection and safe skipping
+
+Public-site validation is a separate production-equivalent gate:
+
+```bash
+composer qa:docs-sites
+composer qa:docs-sites -- --release 2.5.2
+```
+
+It clears known generated outputs, generates both targets, verifies every release-note file and navigation entry, stamps source-SHA provenance, runs the pinned Mintlify validator, and builds the pinned MkDocs toolchain with `--strict --clean`.
 
 Profiles live in:
 
@@ -495,6 +508,7 @@ For release-sensitive work:
 composer test-all
 composer qa
 composer qa:docs
+composer qa:docs-sites
 act pull_request -W .github/workflows/php.yml -j build
 ```
 
@@ -512,7 +526,7 @@ act pull_request -W .github/workflows/php.yml -j build
 
 ## Notes
 
-- `composer qa` does **not** include docs QA; run `composer qa:docs` separately when docs changed.
+- `composer qa` does **not** include docs QA. Run `composer qa:docs` for package docs and `composer qa:docs-sites` for public-site or release-note changes.
 - `composer test` is the fast default, not the exhaustive one.
 - package-level verification is useful for focused work, but monorepo-root verification is authoritative for shared dependency and integration changes.
 - prefer `act` for matrix reproduction because the workflow file is the single source of truth.

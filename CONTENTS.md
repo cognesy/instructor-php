@@ -23,8 +23,8 @@ Comprehensive collection of working examples demonstrating various features, com
 
 ### `scripts/`
 Development and maintenance automation scripts:
-- `publish-ver.sh` - Release management and version publishing
-- `sync-ver.sh` - Synchronize versions across all packages
+- `release/publish-ver.sh` - Release state machine and version publishing
+- `packages/sync-ver.sh` - Synchronize versions across all packages
 - `load-packages.sh` - Load centralized package configuration
 - `generate-split-matrix.sh` - Generate GitHub Actions matrix from package config
 - `update-split-yml.sh` - Update split.yml with centralized package configuration
@@ -33,7 +33,7 @@ Development and maintenance automation scripts:
 - `make-package` / `make-package-enhanced` - Generate new package structure
 
 ### `docs/`
-Documentation website skeleton and root-level files. These are merged with documentation files from `./packages/*/docs/` to build the complete documentation distribution in `./builds/docs-build/`. Framework packages such as `packages/laravel` and `packages/symfony` also surface through `docs/packages.md`, `docs/mint.json`, and `docs/mkdocs.yml.template`.
+Authored documentation website skeleton and root-level files. These are merged with `packages/*/docs/`, cheatsheets, and documented examples to generate both public documentation targets. Framework packages such as `packages/laravel` and `packages/symfony` surface through `docs/packages.md`, `docs/mint.json`, and `docs/mkdocs.yml.template`.
 
 ### `bin/`
 Executable CLI tools:
@@ -43,10 +43,11 @@ Executable CLI tools:
 - `instructor-docs` - Documentation generation tool
 
 ### `builds/`
-Generated build artifacts:
+Ignored, ephemeral generated artifacts. Everything here is reproducible and must not be manually edited or committed:
 - `docs-build/` - Generated Mintlify documentation (built from `./docs/` + `./packages/*/docs/`)
 - `docs-mkdocs/` - Generated MkDocs documentation
 - `docs-site/` - Final documentation site output
+- `mkdocs.yml` - Generated MkDocs configuration
 
 ### `evals/`
 Evaluation and testing frameworks for model performance assessment with different complexity levels and extraction scenarios.
@@ -70,7 +71,7 @@ Root-level PHP source files (e.g., polyfills shared across packages).
 - `phpbench.json` - Benchmark configuration
 - `mago.toml` - Mago tool configuration
 - `pyproject.toml` / `pyrightconfig.json` / `uv.lock` - Python tooling (doc generation scripts)
-- `requirements-doc.txt` - Python dependencies for documentation tools
+- `pyproject.toml` / `uv.lock` - Pinned MkDocs documentation toolchain
 
 ### Documentation
 - `README.md` - Main project documentation and getting started guide
@@ -82,7 +83,7 @@ Root-level PHP source files (e.g., polyfills shared across packages).
 ### Configuration
 - `packages.json` - Centralized package configuration for monorepo management
 - `package-config.example.json` / `package-config-enhanced.example.json` - Templates for creating new packages
-- `mkdocs.yml` - Documentation site configuration
+- `docs/mint.json` / `docs/mkdocs.yml.template` - Authored documentation configuration sources
 
 ## Supporting Directories
 - `vendor/` - Composer dependencies
