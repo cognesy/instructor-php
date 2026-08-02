@@ -10,7 +10,7 @@
 
 ```bash
 composer require cognesy/instructor-symfony
-# @doctest id="4c7a"
+# @doctest id="c0da"
 ```
 
 ## 2. Register The Bundle
@@ -24,7 +24,7 @@ return [
     // ...
     Cognesy\Instructor\Symfony\InstructorSymfonyBundle::class => ['all' => true],
 ];
-// @doctest id="cbf9"
+// @doctest id="19bd"
 ```
 
 ## 3. Add Minimal Core Config
@@ -58,7 +58,7 @@ instructor:
 
   events:
     dispatch_to_symfony: true
-# @doctest id="6fc6"
+# @doctest id="71f4"
 ```
 
 This baseline is enough to resolve the current core services from the container:
@@ -90,7 +90,7 @@ final readonly class AiRuntime
         private StructuredOutput $structuredOutput,
     ) {}
 }
-// @doctest id="2c1a"
+// @doctest id="8425"
 ```
 
 ## 5. Optionally Enable AgentCtrl
@@ -123,7 +123,7 @@ instructor:
     backends:
       codex:
         model: codex
-# @doctest id="3171"
+# @doctest id="0912"
 ```
 
 The AgentCtrl container entry points are:
@@ -176,7 +176,7 @@ final readonly class RefactorController
         ]);
     }
 }
-// @doctest id="7f86"
+// @doctest id="b5a4"
 ```
 
 ## 6. Optionally Enable Persisted Native-Agent Sessions
@@ -189,7 +189,7 @@ instructor:
     store: file
     file:
       directory: '%kernel.cache_dir%/instructor/agent-sessions'
-# @doctest id="cd56"
+# @doctest id="8b32"
 ```
 
 This keeps the persistence seam package-owned while still letting applications override `Cognesy\Agents\Session\Contracts\CanStoreSessions` if they need a custom backend later.

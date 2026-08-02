@@ -4,7 +4,7 @@ The public config root for `packages/symfony` is reserved as:
 
 ```yaml
 instructor:
-# @doctest id="5b96"
+# @doctest id="cf96"
 ```
 
 The initial subtree map is:
@@ -60,7 +60,7 @@ instructor:
     driver: symfony
     timeout: 20
     connect_timeout: 5
-# @doctest id="963c"
+# @doctest id="afc6"
 ```
 
 For migration safety, the translator also tolerates flatter connection maps such as `instructor.connections.openai` and legacy `llm.presets.*` lookups.
@@ -104,7 +104,7 @@ instructor:
 
     file:
       directory: '%kernel.cache_dir%/instructor/agent-sessions'
-# @doctest id="d0b0"
+# @doctest id="e26e"
 ```
 
 Rules:
@@ -160,7 +160,7 @@ instructor:
         endpoint: '%env(default::INSTRUCTOR_TELEMETRY_LOGFIRE_ENDPOINT)%'
         write_token: '%env(default::INSTRUCTOR_TELEMETRY_LOGFIRE_WRITE_TOKEN)%'
         headers: { }
-# @doctest id="5c65"
+# @doctest id="40ef"
 ```
 
 Rules:
@@ -215,7 +215,7 @@ instructor:
         enabled: false
       gemini:
         enabled: false
-# @doctest id="0bbe"
+# @doctest id="248b"
 ```
 
 Notes:
@@ -262,7 +262,7 @@ instructor:
       observe_events:
         - App\Runtime\Event\ProjectCompleted
         - Cognesy\Agents\Session\Events\SessionSaved
-# @doctest id="95bc"
+# @doctest id="1258"
 ```
 
 Rules:
@@ -332,7 +332,7 @@ services:
     autowire: true
     tags:
       - { name: instructor.agent.capability, alias: review }
-# @doctest id="f4a8"
+# @doctest id="14b6"
 ```
 
 ## Ownership Boundaries
