@@ -33,11 +33,11 @@ rm -f -- builds/mkdocs.yml
 composer docs gen:mintlify
 composer docs gen:mkdocs
 
-parity_args=()
 if [[ -n "$release" ]]; then
-  parity_args+=(--release "$release")
+  php scripts/docs/verify-release-parity.php --release "$release"
+else
+  php scripts/docs/verify-release-parity.php
 fi
-php scripts/docs/verify-release-parity.php "${parity_args[@]}"
 php scripts/docs/write-provenance.php "$source_sha" builds/docs-build builds/docs-mkdocs
 
 if command -v mintlify >/dev/null 2>&1 && [[ "$(mintlify --version | tr -d '[:space:]')" == "$MINTLIFY_VERSION" ]]; then

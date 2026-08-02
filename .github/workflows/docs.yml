@@ -92,7 +92,7 @@ jobs:
         run: scripts/docs/publish-mintlify-branch.sh .artifacts/mintlify "${GITHUB_SHA}"
 
   deploy-pages:
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && vars.DOCS_PAGES_ACTIONS_ENABLED == 'true'
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     needs: build
     runs-on: ubuntu-latest
     environment:
@@ -129,3 +129,13 @@ jobs:
       - name: Deploy GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
+
+  verify-production:
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    needs: [publish-mintlify, deploy-pages]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Verify both public sites expose this source commit
+        run: scripts/docs/verify-live-provenance.sh "${GITHUB_SHA}"
