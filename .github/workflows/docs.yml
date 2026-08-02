@@ -30,7 +30,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -42,12 +42,13 @@ jobs:
         run: composer install --no-interaction --prefer-dist
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v9
         with:
           enable-cache: true
+          prune-cache: true
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
 
@@ -57,7 +58,7 @@ jobs:
           DOCS_SOURCE_SHA: ${{ github.sha }}
 
       - name: Upload Mintlify artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: docs-mintlify-${{ github.sha }}
           path: builds/docs-build
@@ -65,7 +66,7 @@ jobs:
           retention-days: 7
 
       - name: Upload GitHub Pages artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: docs-pages-${{ github.sha }}
           path: builds/docs-site
@@ -73,16 +74,16 @@ jobs:
           retention-days: 7
 
   publish-mintlify:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Download validated Mintlify artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: docs-mintlify-${{ github.sha }}
           path: .artifacts/mintlify
@@ -91,7 +92,7 @@ jobs:
         run: scripts/docs/publish-mintlify-branch.sh .artifacts/mintlify "${GITHUB_SHA}"
 
   deploy-pages:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DOCS_PAGES_ACTIONS_ENABLED == 'true'
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && vars.DOCS_PAGES_ACTIONS_ENABLED == 'true'
     needs: build
     runs-on: ubuntu-latest
     environment:
@@ -102,7 +103,7 @@ jobs:
       pages: write
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 1
 
@@ -112,19 +113,19 @@ jobs:
           test "$(git rev-parse origin/main)" = "${GITHUB_SHA}"
 
       - name: Download validated Pages artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: docs-pages-${{ github.sha }}
           path: .artifacts/pages
 
       - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Upload GitHub Pages deployment artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: .artifacts/pages
 
       - name: Deploy GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
