@@ -29,11 +29,20 @@ if [[ "$provenance_sha" != "$source_sha" ]]; then
 fi
 
 remote_url="$(git remote get-url "$remote" 2>/dev/null || printf '%s' "$remote")"
+github_auth_header="$(git config --get http.https://github.com/.extraheader || true)"
 workspace="$(mktemp -d "${TMPDIR:-/tmp}/docs-mintlify-publish.XXXXXX")"
 trap 'rm -rf -- "$workspace"' EXIT
 
-git clone --no-checkout "$remote_url" "$workspace/repository"
+if [[ -n "$github_auth_header" && "$remote_url" == https://github.com/* ]]; then
+  git -c "http.https://github.com/.extraheader=$github_auth_header" clone --no-checkout "$remote_url" "$workspace/repository"
+else
+  git clone --no-checkout "$remote_url" "$workspace/repository"
+fi
 cd "$workspace/repository"
+
+if [[ -n "$github_auth_header" && "$remote_url" == https://github.com/* ]]; then
+  git config --local http.https://github.com/.extraheader "$github_auth_header"
+fi
 
 latest_main="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
 if [[ "$latest_main" != "$source_sha" ]]; then
