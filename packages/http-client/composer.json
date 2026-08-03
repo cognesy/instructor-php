@@ -14,12 +14,12 @@
   },
   "require": {
     "php": "^8.3",
-    "cognesy/instructor-config": "^2.5",
-    "cognesy/instructor-events": "^2.5",
+    "cognesy/instructor-config": "^2.6",
+    "cognesy/instructor-events": "^2.6",
     "cognesy/logging": "^2.3",
-    "cognesy/instructor-setup": "^2.5",
-    "cognesy/instructor-telemetry": "^2.5",
-    "cognesy/instructor-utils": "^2.5"
+    "cognesy/instructor-setup": "^2.6",
+    "cognesy/instructor-telemetry": "^2.6",
+    "cognesy/instructor-utils": "^2.6"
   },
   "require-dev": {
     "guzzlehttp/guzzle": "^7.4",
