@@ -2,15 +2,17 @@
 
 namespace Cognesy\Agents\Template\Factory;
 
+use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Builder\AgentBuilder;
 use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
-use Cognesy\Agents\CanControlAgentLoop;
 use Cognesy\Agents\Capability\CanManageAgentCapabilities;
 use Cognesy\Agents\Capability\Core\UseDriver;
 use Cognesy\Agents\Capability\Core\UseGuards;
 use Cognesy\Agents\Capability\Core\UseTools;
 use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
+use Cognesy\Agents\Profile\AgentIdentity;
+use Cognesy\Agents\Template\AgentDefinitionReferenceRules;
 use Cognesy\Agents\Template\Contracts\CanInstantiateAgentLoop;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Tool\Contracts\CanManageTools;
@@ -23,15 +25,22 @@ use Override;
 
 final readonly class DefinitionLoopFactory implements CanInstantiateAgentLoop
 {
+    private AgentDefinitionReferenceRules $references;
+
     public function __construct(
         private CanManageAgentCapabilities $capabilities,
         private ?CanManageTools $tools = null,
         private ?CanHandleEvents $events = null,
-    ) {}
+    ) {
+        $this->references = new AgentDefinitionReferenceRules($capabilities, $tools);
+    }
 
     #[Override]
-    public function instantiateAgentLoop(AgentDefinition $definition): CanControlAgentLoop {
-        $builder = AgentBuilder::base($this->events);
+    public function instantiateAgentLoop(AgentDefinition $definition): AgentLoop {
+        $builder = AgentBuilder::base($this->events)->withIdentity(new AgentIdentity(
+            name: $definition->name,
+            description: $definition->description,
+        ));
         $builder = $this->withLLMConfig($builder, $definition);
         $builder = $this->withGuards($builder, $definition);
         $builder = $this->withCapabilities($builder, $definition);
@@ -87,7 +96,7 @@ final readonly class DefinitionLoopFactory implements CanInstantiateAgentLoop
 
     private function withTools(AgentBuilder $builder, AgentDefinition $definition): AgentBuilder {
         if ($this->tools === null) {
-            if (!$this->requiresToolRegistry($definition)) {
+            if (!$this->references->requiresToolRegistry($definition)) {
                 return $builder;
             }
 
@@ -96,8 +105,8 @@ final readonly class DefinitionLoopFactory implements CanInstantiateAgentLoop
             );
         }
 
-        $selectedNames = $this->selectToolNames($definition, $this->tools->names());
-        $unknown = $this->unknownToolNames($selectedNames);
+        $selectedNames = $this->references->selectedToolNames($definition)->all();
+        $unknown = $this->references->unknownTools($definition)->all();
         if ($unknown !== []) {
             $unknownNames = implode(', ', $unknown);
             throw new InvalidArgumentException(
@@ -114,68 +123,16 @@ final readonly class DefinitionLoopFactory implements CanInstantiateAgentLoop
     }
 
     private function resolveCapability(string $name): CanProvideAgentCapability {
-        if ($this->capabilities->has($name)) {
+        if ($this->references->hasCapability($name)) {
             return $this->capabilities->get($name);
         }
 
         $available = implode(', ', $this->capabilities->names());
         throw new InvalidArgumentException(
-            "Capability '{$name}' is not registered. Available: {$available}",
+            "Capability '{$name}' is not registered. Available: {$available}. "
+            . 'Capabilities declared by installed packages are not loaded automatically; '
+            . 'call CapabilityDiscovery::discover() during bootstrap.',
         );
-    }
-
-    private function requiresToolRegistry(AgentDefinition $definition): bool {
-        if ($definition->tools !== null && !$definition->tools->isEmpty()) {
-            return true;
-        }
-
-        if ($definition->toolsDeny !== null && !$definition->toolsDeny->isEmpty()) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * @param array<int, string> $available
-     * @return array<int, string>
-     */
-    private function selectToolNames(AgentDefinition $definition, array $available): array {
-        $selected = match (true) {
-            $definition->inheritsAllTools() => $available,
-            default => $definition->tools?->all() ?? [],
-        };
-
-        if ($definition->toolsDeny === null || $definition->toolsDeny->isEmpty()) {
-            return $selected;
-        }
-
-        $denied = array_flip($definition->toolsDeny->all());
-        $filtered = [];
-        foreach ($selected as $name) {
-            if (!isset($denied[$name])) {
-                $filtered[] = $name;
-            }
-        }
-        return $filtered;
-    }
-
-    /**
-     * @param array<int, string> $selectedNames
-     * @return array<int, string>
-     */
-    private function unknownToolNames(array $selectedNames): array {
-        if ($this->tools === null) {
-            return [];
-        }
-
-        $unknown = [];
-        foreach ($selectedNames as $name) {
-            if (!$this->tools->has($name)) {
-                $unknown[] = $name;
-            }
-        }
-        return $unknown;
     }
 
     /**

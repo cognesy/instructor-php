@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Cognesy\Agents\Capability\File;
 
+use Cognesy\Agents\Tool\Contracts\CanContributeToPrompt;
 use Cognesy\Agents\Tool\ToolDescriptor;
+use Override;
 
-final readonly class ReadFileToolDescriptor extends ToolDescriptor
+final readonly class ReadFileToolDescriptor extends ToolDescriptor implements CanContributeToPrompt
 {
     public function __construct(string $name = 'read_file') {
         parent::__construct(
@@ -48,5 +50,18 @@ DESC,
                 ],
             ],
         );
+    }
+
+    #[Override]
+    public function promptSnippet(): ?string {
+        return 'Read file contents in line-numbered windows';
+    }
+
+    #[Override]
+    public function promptGuidelines(): array {
+        return [
+            'Use read to examine files before editing',
+            'Request a larger read window when the complete file is justified',
+        ];
     }
 }

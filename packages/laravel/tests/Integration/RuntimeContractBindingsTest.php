@@ -348,7 +348,7 @@ final class ConfigSchemaData
     public function __construct(public readonly string $value) {}
 }
 
-final class TaggedSchemaData
+final class LaravelTaggedSchemaData
 {
     public function __construct(public readonly string $value) {}
 }
@@ -592,7 +592,7 @@ it('hydrates native agent registries from Laravel config and container tags', fu
 
         $app->bind('tagged-schema-registration', fn () => new SchemaRegistration(
             name: 'tagged_schema',
-            schema: TaggedSchemaData::class,
+            schema: LaravelTaggedSchemaData::class,
         ));
         $app->tag('tagged-schema-registration', AgentRegistryTags::SCHEMAS);
 
@@ -617,7 +617,7 @@ it('hydrates native agent registries from Laravel config and container tags', fu
             ->and($schemas->has('config_schema'))->toBeTrue()
             ->and($schemas->has('tagged_schema'))->toBeTrue()
             ->and($schemas->get('config_schema')->class)->toBe(ConfigSchemaData::class)
-            ->and($schemas->get('tagged_schema')->class)->toBe(TaggedSchemaData::class);
+            ->and($schemas->get('tagged_schema')->class)->toBe(LaravelTaggedSchemaData::class);
     } finally {
         @unlink($definitionPath);
     }

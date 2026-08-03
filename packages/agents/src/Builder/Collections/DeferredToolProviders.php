@@ -4,6 +4,8 @@ namespace Cognesy\Agents\Builder\Collections;
 
 use Cognesy\Agents\Builder\Contracts\CanProvideDeferredTools;
 use Cognesy\Agents\Builder\Data\DeferredToolContext;
+use Cognesy\Agents\Builder\Data\ResolvedTools;
+use Cognesy\Agents\Collections\NameList;
 use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Events\Contracts\CanHandleEvents;
@@ -31,11 +33,18 @@ final readonly class DeferredToolProviders
     }
 
     public function resolve(Tools $tools, CanUseTools $driver, CanHandleEvents $events): Tools {
+        return $this->resolveWithProvenance($tools, $driver, $events)->tools();
+    }
+
+    public function resolveWithProvenance(Tools $tools, CanUseTools $driver, CanHandleEvents $events): ResolvedTools {
         $resolvedTools = $tools;
+        $deferredNames = new NameList();
         foreach ($this->providers as $provider) {
             $context = new DeferredToolContext($resolvedTools, $driver, $events);
-            $resolvedTools = $resolvedTools->merge($provider->provideTools($context));
+            $provided = $provider->provideTools($context);
+            $deferredNames = $deferredNames->merge(new NameList(...$provided->names()));
+            $resolvedTools = $resolvedTools->merge($provided);
         }
-        return $resolvedTools;
+        return new ResolvedTools($resolvedTools, $deferredNames);
     }
 }

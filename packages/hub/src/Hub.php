@@ -2,6 +2,7 @@
 
 namespace Cognesy\InstructorHub;
 
+use Composer\InstalledVersions;
 use Cognesy\InstructorHub\Config\ExampleSourcesConfig;
 use Cognesy\InstructorHub\Config\ExampleGroupingConfig;
 use Cognesy\InstructorHub\Commands\CleanCommand;
@@ -30,6 +31,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class Hub extends Application
 {
+    private const string PACKAGE_NAME = 'cognesy/instructor-hub';
+
     private ExampleRepository $exampleRepo;
     private StatusRepository $statusRepo;
     private ExecutionTracker $tracker;
@@ -37,7 +40,7 @@ class Hub extends Application
 
     public function __construct()
     {
-        parent::__construct('Hub - Example Execution & Tracking', '2.0.0');
+        parent::__construct('Hub - Example Execution & Tracking', self::packageVersion());
 
         $this->registerServices();
         $this->registerCommands();
@@ -49,8 +52,10 @@ class Hub extends Application
     #[\Override]
     public function getLongVersion(): string
     {
-        return <<<'HELP'
-<info>Hub - Example Execution & Tracking</info> version <comment>2.0.0</comment>
+        $version = $this->getVersion();
+
+        return <<<HELP
+<info>Hub - Example Execution & Tracking</info> version <comment>{$version}</comment>
 
 Hub provides example execution with comprehensive status tracking, selective re-execution, and performance analytics.
 
@@ -85,6 +90,15 @@ Hub provides example execution with comprehensive status tracking, selective re-
 For detailed help on any command: <info>composer hub help <command></info>
 For full documentation: see <info>packages/hub/README.md</info>
 HELP;
+    }
+
+    private static function packageVersion(): string
+    {
+        if (InstalledVersions::isInstalled(self::PACKAGE_NAME)) {
+            return InstalledVersions::getPrettyVersion(self::PACKAGE_NAME) ?? 'unknown';
+        }
+
+        return InstalledVersions::getRootPackage()['pretty_version'] ?? 'unknown';
     }
 
     private function registerServices(): void

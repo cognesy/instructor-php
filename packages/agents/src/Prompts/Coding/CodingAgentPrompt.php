@@ -7,6 +7,7 @@ namespace Cognesy\Agents\Prompts\Coding;
 use Cognesy\Xprompt\Prompt;
 use Override;
 
+/** @deprecated Use Cognesy\Agents\Capability\Prompt\UseSystemPrompt instead. */
 final class CodingAgentPrompt extends Prompt
 {
     public string $templateFile = 'coding-agent.md.twig';

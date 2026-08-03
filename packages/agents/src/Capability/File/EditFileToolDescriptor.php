@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Cognesy\Agents\Capability\File;
 
+use Cognesy\Agents\Tool\Contracts\CanContributeToPrompt;
 use Cognesy\Agents\Tool\ToolDescriptor;
+use Override;
 
-final readonly class EditFileToolDescriptor extends ToolDescriptor
+final readonly class EditFileToolDescriptor extends ToolDescriptor implements CanContributeToPrompt
 {
     public function __construct(string $name = 'edit_file') {
         parent::__construct(
@@ -39,5 +41,15 @@ DESC,
                 'returns' => 'Success with replacement count and source size, or an explicit no-change error.',
             ],
         );
+    }
+
+    #[Override]
+    public function promptSnippet(): ?string {
+        return 'Make precise edits to existing files';
+    }
+
+    #[Override]
+    public function promptGuidelines(): array {
+        return ['Use edit for precise changes; old text must match exactly'];
     }
 }

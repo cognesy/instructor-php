@@ -20,6 +20,8 @@ class HookTriggers
         return new self(
             HookTrigger::BeforeExecution,
             HookTrigger::BeforeStep,
+            HookTrigger::BeforeInferenceRequest,
+            HookTrigger::AfterInferenceResponse,
             HookTrigger::BeforeToolUse,
             HookTrigger::AfterToolUse,
             HookTrigger::AfterStep,
@@ -39,6 +41,14 @@ class HookTriggers
 
     public static function beforeToolUse(): self {
         return new self(HookTrigger::BeforeToolUse);
+    }
+
+    public static function beforeInferenceRequest(): self {
+        return new self(HookTrigger::BeforeInferenceRequest);
+    }
+
+    public static function afterInferenceResponse(): self {
+        return new self(HookTrigger::AfterInferenceResponse);
     }
 
     public static function afterToolUse(): self {
@@ -72,5 +82,10 @@ class HookTriggers
             }
         }
         return false;
+    }
+
+    /** @return list<HookTrigger> */
+    public function triggers(): array {
+        return $this->triggers;
     }
 }

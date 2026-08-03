@@ -1,0 +1,370 @@
+---
+title: 'v2.6.0'
+---
+
+## Agents Describe Themselves
+
+v2.6 gives built agents one immutable, inspectable self-model. `AgentProfile` records
+the resolved identity, driver, capabilities, tools, hooks, self-knowledge, and public
+metadata after the builder has finished composition.
+
+Host applications can inspect that model without reconstructing it from runtime
+internals:
+
+```php
+$description = $agent->describe();
+
+$data = $description->toArray();
+$text = $description->toText();
+$markdown = $description->toMarkdown();
+```
+
+The machine-readable shape is deterministic within the 2.x major line and may gain
+additive fields. Its LLM section is deliberately credential-safe: it exposes the
+driver, model, and token limits, but not API keys, authorization headers,
+credential-bearing URLs, provider options, or arbitrary connection metadata.
+
+`UseSelfDescription` installs the opt-in `describe_self` tool. It returns the
+same resolved description as the host API, including itself, and can narrow the
+result to `tools`, `capabilities`, or `hooks`. The tool list describes what is
+installed on the loop; execution-time policy hooks may still block individual
+calls.
+
+## Derived System Prompts and Opt-In Self-Knowledge
+
+`UseSystemPrompt` now derives tool names, tool guidance, capability order, and agent
+identity from the final `AgentProfile`. Hidden tools remain callable but are
+omitted from the generated prompt. The generated block is owned, idempotent
+across steps, and rebound when a copied loop changes its tools, driver, or
+lifecycle interceptor.
+
+```php
+$agent = AgentBuilder::base()
+    ->withIdentity(new AgentIdentity('coding', 'Works safely in a repository.'))
+    ->withCapability(new UseCodingTools($workDir))
+    ->withCapability(new UseSystemPrompt(
+        preamble: 'You are an expert coding assistant.',
+    ))
+    ->build();
+```
+
+Self-knowledge is separate and remains opt-in. `UseSelfKnowledge` publishes the
+curated Agents documentation paths and topic routes only when the packaged resources
+are readable and, by default, the resolved agent has `read`, `read_file`, or a
+tool tagged with both `file` and `read`. Generic read-only introspection tools do
+not satisfy the gate. It does not install a tool or search outside the installed
+package. The
+source-to-resource manifest, sync verifier, and archive check keep the shipped
+21-document mirror aligned with the authored documentation.
+
+## Composer Manifest Discovery
+
+Trusted packages can declare lazily resolved capabilities and tools in Composer
+metadata:
+
+```json
+{
+  "extra": {
+    "cognesy-agents": {
+      "capabilities": {
+        "my-capability": "Vendor\\Package\\UseMyCapability"
+      },
+      "tools": {
+        "my-tool": "Vendor\\Package\\MyTool"
+      }
+    }
+  }
+}
+```
+
+`CapabilityDiscovery::discover()` is an explicit application bootstrap step. It
+reads Composer 2 runtime metadata, validates declarations, and registers lazy
+factories without instantiating contributed classes. Root-package mappings
+override vendor mappings. Resolution errors identify the package, registered
+name, class, wrong interface, missing class, or unsupported constructor.
+
+Discovery executes classes supplied by installed dependencies. Enable it only
+for a trusted dependency set; configured entries should continue to use
+application-owned registry factories.
+
+## Agent Definition Round-Trip
+
+`AgentDefinitionSerializer` writes one canonical definition as Markdown, YAML, or
+JSON, preserving meaningful fields across parse-serialize-parse round trips.
+`AgentDefinitionValidator` and `DefinitionLoopFactory` share capability and tool
+reference rules, so persisted definitions are checked against the same
+registries used to build a loop.
+
+`FileAgentDefinitionStore` accepts a dedicated writable root, derives filenames
+from validated agent names, writes atomically, rejects traversal, and refuses
+overwrite unless replacement is explicit. `UseAgentDefinitions` installs read-only
+`list_agents` and `read_agent` tools by default. Supplying a store explicitly adds
+`write_agent`; successful writes refresh the registry but do not mutate an already
+running loop.
+
+## Inference Hooks and Mutation Contracts
+
+`ToolCallingDriver` now exposes the concrete provider boundary through two lifecycle
+phases:
+
+- `BeforeInferenceRequest` runs after request construction and can replace the request
+  that the provider receives.
+- `AfterInferenceResponse` runs after provider execution and can replace the response
+  before events, tool handling, and step archival consume it.
+
+Request and response events observe the post-hook values and retain the same inference
+execution ID for correlation. `ReActDriver`, capability-owned inference, and
+custom drivers continue unchanged unless they implement
+`CanAcceptLifecycleInterceptor` and emit these phases themselves.
+
+Each `HookTrigger` now declares its intended mutable `HookContext` fields.
+Default execution remains permissive for compatibility.
+`withContractDiagnostics()` emits a
+`HookContractViolated` event while preserving the returned context; `strict()`
+emits the event and throws `HookContractViolationException` on the first
+disallowed field.
+Use strict mode in tests or controlled deployments before enabling it broadly.
+
+`blockToolExecution()` is the clearer tool-blocking method.
+`withToolExecutionBlocked()` remains as a compatibility alias.
+
+## Tell Reference CLI
+
+The `cognesy/instructor-tell` package is now a small, non-interactive reference
+frontend for the public Agents APIs rather than a direct bare inference
+streamer. Agent definitions are resolved into loops through
+`DefinitionLoopFactory` and `AgentBuilder`; named conversations execute through
+`SessionRuntime`.
+
+Tell adopts the [Agent eXperience Interface](https://axi.md/) at the process
+boundary. Running `tell` without a prompt returns live workspace content,
+counts, and next actions. Default structured output uses TOON, list commands
+offer compact schemas through `--fields`, empty results are explicit, and long
+session content requires `--full`.
+
+The prompt command is the default entry point, alongside six inspection and
+management subcommands:
+
+```bash
+tell
+tell "summarize this repository"
+tell agents
+tell auth status openai --json
+tell describe --json
+tell planes --full
+tell sessions show review-1 --full
+tell tools --fields=name,description,deferred
+```
+
+The explicit `tell tell "..."` form remains available. Put a prompt that matches
+a subcommand name after `--`, for example `tell -- agents`. The prompt command
+accepts `--agent`, `--connection`, `--model`, `--dsn`, `--session`, `--dir`,
+`--tools`, `--max-steps`, and `--output=toon|text|json|events`. `--connection`
+resolves a Polyglot LLM preset; `--model` overrides only its model, while `--dsn`
+supplies the complete inline configuration.
+
+TOON mode is the default and writes terminal status, answer, step count, usage,
+and errors. Text mode writes only the final response. JSON emits the same
+terminal data, while events mode writes event-complete NDJSON. Progress stays on
+stderr; `-v` adds step and tool progress. Errors are structured stdout data,
+unknown flags include valid flags and contextual help, and stderr never carries
+the machine result. Exit codes are `0` for success, `1` when execution does not
+produce a successful response, and `2` for invalid usage. Symfony supplies the
+global quiet, verbosity, interaction, and ANSI options.
+
+Named sessions persist and continue prior messages. Without `--session`, Tell performs
+no session-storage I/O.
+
+Tell now uses one explicit local home, configurable with `TELL_HOME` and
+defaulting to `~/.tell`. Authored configuration and user agent definitions live
+under `config/`, mutable session state under `runtime/sessions/`, and append-only
+JSONL traces under `logs/`. Stateless turns write one dated file per execution;
+named conversations use separate, stable session files so parallel sessions do
+not share a target. Appends use an exclusive file lock.
+
+Tell can optionally manage provider credentials in
+`~/.tell/config/credentials.env`; raw keys do not belong in `tell.json`.
+Resolution is deterministic: process environment, then the selected workspace's
+`.env`, then the Tell credential store. `tell auth status` reports only safe
+source provenance, `tell auth set <provider> --stdin` writes atomically with
+private permissions, and `tell auth remove <provider>` mutates only Tell-owned
+state. Ambient values are never copied automatically. Missing remote credentials
+fail before inference, while local Ollama-style connections need no key.
+
+User connection overlays live under `~/.tell/config/connections/`; project
+presets override user files, and user files override bundled presets. All
+`${VARIABLE}` interpolation uses an application-injected Config secret resolver,
+which avoids global environment mutation and admits a future OS-keychain source
+without changing preset files.
+
+Execution tracing is enabled by default without changing stdout. Trace records
+contain event identity, timestamps, agent/session/workspace context, and
+sanitized event data. Prompt, tool argument/result, state, and context payloads
+are omitted unless `observability.includePayloads` is enabled in
+`config/tell.json`; credential-shaped fields remain redacted and strings remain
+bounded. Configuration typos fail before inference, while an unavailable trace
+sink degrades without failing the requested turn. Running bare `tell` reports
+the effective observability settings and non-secret operational storage paths;
+it deliberately omits the credential-store path.
+
+`tell describe` and `tell tools` render the same resolved public profile returned
+by the built loop, preventing the CLI from drifting from runtime behavior.
+`tell describe --prompt --json` runs the same prompt-composition lifecycle used
+for execution, so its `systemPrompt` includes both the definition persona and
+derived tool guidance.
+
+Tell does not install ambient editor/session hooks or inject a Tell-usage skill
+into agents. AXI is intentionally limited to its shell contract: Tell has no
+separate workspace state to inject, and self-integration would create a
+recursive Tell-teaches-Tell layer.
+
+`tell planes` makes the operational boundary explicit without creating three
+services or parallel code trees. Relative to the local Tell runtime, agent turns
+are data-plane work; resolved profile and tool policy are control-plane work;
+agent-definition inventory, credential management, and session lifecycle are
+management-plane work.
+The compact view lists the command responsibilities. `--full` adds state
+ownership, typed cross-plane inputs/outputs, authority, and degraded behavior,
+including the honest limitation that Tell resolves a fresh immutable profile per
+invocation rather than reusing a persisted last-known-good control snapshot.
+The data-plane description also names its append-only trace authority and its
+fail-open behavior when external observability storage is unavailable.
+
+## Capability-Focused Examples
+
+The example catalogue now verifies the new seams at their owning abstraction level:
+
+- `D01_Agents/AgentDescribe` inspects a directly assembled `AgentLoop` without using
+  builder capabilities.
+- `D02_AgentBuilder/AgentDerivedPrompt`, `AgentDescribe`, and `AgentSelfKnowledge`
+  demonstrate profile-derived prompts and opt-in self-inspection through
+  `AgentBuilder` capabilities.
+- `D03_AgentTemplates/AgentDefinitionRoundTrip`, `AgentDefinitionTools`, and
+  `ComposerCapabilityDiscovery` demonstrate definition persistence, definition tools,
+  and trusted Composer manifest discovery.
+
+## Faster, Swappable Tokenizer
+
+Token counting now goes through a contract instead of a hardcoded implementation.
+`Cognesy\Utils\Tokenization\Contracts\CanCountTokens` covers counting; the wider
+`CanTokenizeText` adds `encode()` and `encoding()` for drivers that can produce
+token IDs.
+
+Two drivers ship under `Cognesy\Utils\Tokenization\Drivers`:
+
+- `TiktokenDriver` wraps `yethee/tiktoken` and is the new default. It reaches
+  modern encodings via `TiktokenDriver::forEncoding('cl100k_base')` or
+  `TiktokenDriver::forModel('gpt-4o')`, and on a 20 KB text it counts in about
+  0.7 ms against roughly 17 ms for the previous implementation, in a third of the
+  memory.
+- `Gpt3TokenizerDriver` wraps the bundled `gioni06/gpt3-tokenizer` (`r50k_base`)
+  and is now the fallback. It needs no network.
+
+`Tokenizer` keeps its `tokenCount()` signature and gains `default()`,
+`setDefault()`, and `reset()`. It also memoizes the default instance - it
+previously rebuilt a ~25 MB vocabulary on every single call.
+
+`Cognesy\Utils\Tokenization\TokenizerResolver` decides which driver
+`Tokenizer::default()` uses. It prefers tiktoken with `o200k_base` and falls back
+to the bundled tokenizer when that vocabulary cannot be obtained, so every
+component that counts tokens - `SplitMessages`, `MoveMessagesToBuffer`,
+`SummarizeBuffer`, the agents summarization hooks, and `UseSummarization` - gets
+the faster path without any code change. Each of them still accepts an explicit
+`CanCountTokens` when a specific encoding is required.
+
+Those components now resolve the fallback on their first count rather than in
+their constructors. Wiring one into a pipeline previously loaded a vocabulary
+whether or not it ever counted anything - about 73 ms and 22 MB per process with
+the new default. The trade-off is that a component built without an explicit
+tokenizer follows later `Tokenizer::setDefault()` calls instead of pinning
+whatever was current when it was constructed.
+
+`INSTRUCTOR_TOKENIZER` overrides the choice without touching code: `auto`
+(default), `gpt3`, `tiktoken`, or `tiktoken:<encoding>`. The explicit forms do
+not fall back - silently receiving a different tokenizer would mean silently
+receiving different counts.
+
+## Package and Dependency Changes
+
+- `cognesy/agents` directly requires `composer-runtime-api` for installed-package
+  discovery and `symfony/yaml` for definition serialization.
+- `cognesy/agents` ships its curated documentation mirror under package resources;
+  authored `docs/` remain excluded from distribution archives.
+- `cognesy/tell` now directly requires `cognesy/agents` and `symfony/console`.
+  Its old direct messages dependency and unrelated demo/config prompt resources
+  were removed.
+- `cognesy/instructor-utils` now requires `yethee/tiktoken` (about 100 KB, with
+  `symfony/service-contracts` as its only dependency) so the faster tokenizer is
+  the default for every package that counts tokens. The bundled
+  `gioni06/gpt3-tokenizer` is still required as the offline fallback.
+- `CodingAgentPrompt` is deprecated but preserves its 2.5 static prompt for this
+  minor release. Use `UseSystemPrompt` for tool and guideline sections derived
+  from the built agent.
+
+## Compatibility and Breaking Changes
+
+Most Agents additions are opt-in: existing builders do not gain system prompts,
+self-knowledge, self-description tools, manifest discovery, writable definition
+tools, or strict hook enforcement unless the application enables them.
+
+Review these concrete compatibility points:
+
+1. `HookTrigger` has two new enum cases. Update exhaustive `match` expressions.
+   Hooks registered with `HookTriggers::all()` now also receive
+   `BeforeInferenceRequest` and `AfterInferenceResponse` when used with
+   `ToolCallingDriver`; hooks that assume one of the older context shapes should
+   register only the triggers they handle.
+2. `CodingAgentPrompt` remains callable with its 2.5 static tool list,
+   guidelines, and optional `documentation_path` section, but is deprecated.
+   New code should use
+   `UseSystemPrompt` and add `UseSelfKnowledge` separately when installed package
+   documentation should be discoverable.
+3. Token counts change. `Tokenizer::tokenCount()` now answers with `o200k_base`
+   instead of `r50k_base`, generally producing fewer tokens for the same text, so
+   summarization and buffer thresholds trigger later than they did in 2.5. The
+   first count in a process also resolves a vocabulary over the network unless
+   one is already cached. Set `INSTRUCTOR_TOKENIZER=gpt3` to keep the 2.5 numbers
+   and stay offline, or `tiktoken:r50k_base` to keep the numbers and gain the
+   speed.
+4. Tell still accepts its original prompt/connection/model/DSN invocation, but
+   it now executes an agent loop and uses agent-oriented output and exit
+   semantics. Code that
+   subclassed the former non-final `TellCommand` or imported removed internal demo
+   resources must migrate to the public command/factory and packaged definition
+   surfaces.
+
+Default hook execution does not discard formerly accepted mutations and does not
+throw new contract exceptions. Diagnostics and strict enforcement require
+explicit opt-in.
+
+## Upgrade Notes
+
+1. Replace `CodingAgentPrompt` tool guidance with `UseCodingTools` plus
+   `UseSystemPrompt`. Add `UseSelfKnowledge` separately when the agent should
+   know how to route into the installed Agents documentation.
+2. Audit exhaustive `HookTrigger` matches and hooks registered with
+   `HookTriggers::all()`. Prefer the smallest `HookTriggers` collection each hook
+   actually supports.
+3. For provider-boundary interception, use `BeforeInferenceRequest` and
+   `AfterInferenceResponse` with `ToolCallingDriver`. Do not assume custom or ReAct
+   drivers emit those phases.
+4. Introduce hook mutation enforcement progressively: observe
+   `HookContractViolated` events with
+   `AgentBuilder::withHookContractDiagnostics()` before enabling
+   `AgentBuilder::withStrictHookContracts()`. Directly assembled `HookStack`
+   instances can still use `withContractDiagnostics()` and `strict()`.
+5. Treat Composer capability discovery as a supply-chain decision. Call
+   `CapabilityDiscovery::discover()` only after deciding which installed
+   packages are trusted to contribute executable classes.
+6. Supply `FileAgentDefinitionStore` only when an agent should receive definition
+   write authority. Keep the default read-only capability otherwise.
+7. Tell now defaults to TOON. Scripts that require JSON should choose
+   `--output=json`; event consumers should choose `--output=events`. Treat exits
+   `1` and `2` as structured execution and usage failures respectively. The old
+   stopped-without-answer exit `3` is now exit `1`.
+8. Revisit persisted token budgets and summarization thresholds against the new
+   default encoding. Air-gapped deployments should either set
+   `INSTRUCTOR_TOKENIZER=gpt3` or pre-populate `TIKTOKEN_CACHE_DIR`. Leaving both
+   unset still works - the fallback catches it - but every process pays one
+   failed download attempt first, which on a blackholed network waits out PHP's
+   `default_socket_timeout` rather than failing immediately.

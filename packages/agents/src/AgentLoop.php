@@ -25,8 +25,12 @@ use Cognesy\Agents\Events\ToolCallBlocked;
 use Cognesy\Agents\Exceptions\AgentException;
 use Cognesy\Agents\Exceptions\ToolExecutionBlockedException;
 use Cognesy\Agents\Hook\Data\HookContext;
+use Cognesy\Agents\Interception\CanAcceptLifecycleInterceptor;
 use Cognesy\Agents\Interception\CanInterceptAgentLifecycle;
 use Cognesy\Agents\Interception\PassThroughInterceptor;
+use Cognesy\Agents\Profile\AgentDescription;
+use Cognesy\Agents\Profile\AgentProfile;
+use Cognesy\Agents\Profile\AgentProfileBinder;
 use Cognesy\Agents\Telemetry\AgentStateTelemetry;
 use Cognesy\Agents\Telemetry\AgentTelemetry;
 use Cognesy\Agents\Tool\Contracts\CanExecuteToolCalls;
@@ -58,6 +62,12 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
         private CanUseTools $driver,
         private CanHandleEvents $events,
         private CanInterceptAgentLifecycle $interceptor,
+        private AgentProfile $profile = new AgentProfile(
+            identity: new Profile\AgentIdentity('anonymous', ''),
+            tools: new Profile\ToolProfileList(),
+            capabilities: new Profile\CapabilityProfileList(),
+            hooks: new Profile\HookProfileList(),
+        ),
     ) {}
 
     public static function default(): self {
@@ -97,6 +107,7 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
     #[Override]
     public function iterate(AgentState $state): iterable {
         $driver = $this->bindToolRuntime($this->driver);
+        $driver = $this->bindInterceptor($driver);
         $state = $this->onBeforeExecution($state);
         if ($this->shouldStopAtCheckpoint($state)) {
             $state = $this->onStop($state);
@@ -250,6 +261,13 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
         };
     }
 
+    private function bindInterceptor(CanUseTools $driver): CanUseTools {
+        return match (true) {
+            $driver instanceof CanAcceptLifecycleInterceptor => $driver->withInterceptor($this->interceptor),
+            default => $driver,
+        };
+    }
+
     // EVENT DELEGATION ///////////////////////////////////
 
     /** @param callable(object): void $listener */
@@ -286,6 +304,14 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
         return $this->interceptor;
     }
 
+    public function profile(): AgentProfile {
+        return $this->profile;
+    }
+
+    public function describe(): AgentDescription {
+        return new AgentDescription($this->profile);
+    }
+
     // MUTATORS /////////////////////////////////////////////
 
     public function with(
@@ -298,10 +324,19 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
         $resolvedTools = $tools ?? $this->tools;
         $resolvedEvents = $events ?? $this->events;
         $resolvedInterceptor = $interceptor ?? $this->interceptor;
+        $resolvedDriver = $driver ?? $this->driver;
+        $resolvedProfile = $this->profile->withRuntime(
+            tools: $resolvedTools,
+            driver: $resolvedDriver,
+            interceptor: $resolvedInterceptor,
+        );
+        $resolvedTools = AgentProfileBinder::tools($resolvedTools, $resolvedProfile);
+        $resolvedDriver = AgentProfileBinder::driver($resolvedDriver, $resolvedProfile);
+        $resolvedInterceptor = AgentProfileBinder::interceptor($resolvedInterceptor, $resolvedProfile);
 
         $resolvedExecutor = match (true) {
             $toolExecutor !== null => $toolExecutor,
-            $tools !== null || $events !== null || $interceptor !== null
+            $tools !== null || $driver !== null || $events !== null || $interceptor !== null
                 => new ToolExecutor($resolvedTools, $resolvedEvents, $resolvedInterceptor),
             default => $this->toolExecutor,
         };
@@ -309,9 +344,10 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
         return new static(
             tools: $resolvedTools,
             toolExecutor: $resolvedExecutor,
-            driver: $driver ?? $this->driver,
+            driver: $resolvedDriver,
             events: $resolvedEvents,
             interceptor: $resolvedInterceptor,
+            profile: $resolvedProfile,
         );
     }
 
@@ -335,6 +371,7 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
         return $this->with(interceptor: $interceptor);
     }
 
+    #[Override]
     public function withEventHandler(CanHandleEvents $events): static {
         return $this->with(events: $events);
     }

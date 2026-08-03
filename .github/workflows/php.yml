@@ -10,6 +10,27 @@ permissions:
   contents: read
 
 jobs:
+  agents-self-knowledge:
+    name: Agents self-knowledge distribution
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        coverage: none
+
+    - name: Verify curated docs mirror without writes
+      run: php packages/agents/scripts/sync-self-knowledge-docs.php --check
+
+    - name: Verify package archive contents
+      run: |
+        archive_root="$(mktemp -d)"
+        git archive HEAD:packages/agents | tar -x -C "$archive_root"
+        php packages/agents/scripts/verify-self-knowledge-archive.php "$archive_root"
+
   build:
     name: 'PHP ${{ matrix.php }} (Symfony ${{ matrix.symfony }}, DocBlock ${{ matrix.reflection_docblock }}, Composer Flags: ${{ matrix.composer }})'
 

@@ -25,6 +25,7 @@
   },
   "require": {
     "php": "^8.3",
+    "composer-runtime-api": "^2.0",
     "cognesy/instructor-contracts": "^2.5",
     "cognesy/instructor-metrics": "^2.5",
     "ext-fileinfo": "*",
@@ -41,6 +42,7 @@
     "cognesy/instructor-telemetry": "^2.5",
     "cognesy/instructor-utils": "^2.5",
     "cognesy/xprompt-php": "^2.5",
+    "symfony/yaml": "^7.0 || ^8.0",
     "twig/twig": "^3.0"
   },
   "require-dev": {
@@ -54,6 +56,8 @@
     "vimeo/psalm": "^6.0"
   },
   "scripts": {
+    "docs:self-knowledge:check": "@php scripts/sync-self-knowledge-docs.php --check",
+    "docs:self-knowledge:write": "@php scripts/sync-self-knowledge-docs.php --write",
     "tests": "@php vendor/bin/pest",
     "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
     "psalm": "@php vendor/bin/psalm"

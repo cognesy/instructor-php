@@ -9,6 +9,7 @@ use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Messages;
+use Cognesy\Utils\Tokenization\Contracts\CanCountTokens;
 use Cognesy\Utils\Tokenizer;
 
 /**
@@ -25,6 +26,7 @@ final readonly class SummarizeBuffer implements CanProcessAnyState
         private string $summarySection,
         private CanSummarizeMessages $summarizer,
         ?CanHandleEvents $events = null,
+        private ?CanCountTokens $tokenizer = null,
     ) {
         $this->events = $events ?? new EventDispatcher(name: 'addons.processor.summarize-buffer');
     }
@@ -72,7 +74,17 @@ final readonly class SummarizeBuffer implements CanProcessAnyState
     }
 
     private function shouldProcess(string $buffer): bool {
-        $tokens = Tokenizer::tokenCount($buffer);
+        $tokens = $this->tokenizer()->tokenCount($buffer);
         return $tokens > $this->maxBufferTokens;
+    }
+
+    /**
+     * Resolved on use rather than in the constructor: the default tokenizer loads
+     * a multi-megabyte vocabulary, and a processor that is wired into a pipeline
+     * may never see a state it can process. Tokenizer::default() memoizes, so
+     * repeating the call is free.
+     */
+    private function tokenizer(): CanCountTokens {
+        return $this->tokenizer ?? Tokenizer::default();
     }
 }

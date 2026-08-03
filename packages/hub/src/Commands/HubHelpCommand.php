@@ -5,35 +5,51 @@ namespace Cognesy\InstructorHub\Commands;
 use Cognesy\InstructorHub\Core\Cli;
 use Cognesy\Utils\Cli\Color;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Command\HelpCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class HubHelpCommand extends Command
+/**
+ * Hub replaces the built-in `help` command to show its own overview. Symfony
+ * calls `setCommand()` on whatever is registered under that name whenever
+ * `--help` follows a command name, so this must extend `HelpCommand` rather
+ * than `Command`: a plain command fatals on `hub run --help`.
+ */
+class HubHelpCommand extends HelpCommand
 {
+    /**
+     * Mirrors the parent's private target so `execute()` can tell an injected
+     * command (`hub run --help`) from a bare `hub help`.
+     */
+    private ?Command $target = null;
+
     #[\Override]
     protected function configure(): void
     {
-        $this
-            ->setName('help')
-            ->setDescription('Display information about Hub and available commands')
-            ->addArgument('command_name', InputArgument::OPTIONAL, 'Show help for specific command');
+        parent::configure();
+        $this->setDescription('Display information about Hub and available commands');
+    }
+
+    #[\Override]
+    public function setCommand(Command $command): void
+    {
+        parent::setCommand($command);
+        $this->target = $command;
     }
 
     #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $specificCommand = $input->getArgument('command_name');
+        $target = $this->target;
+        $this->target = null;
+        $requested = $input->getArgument('command_name');
 
-        if (is_string($specificCommand) && $specificCommand !== 'help') {
-            // Show help for specific command using parent application
-            $command = $this->getApplication()->find($specificCommand);
-            $command->run(new \Symfony\Component\Console\Input\ArrayInput(['--help' => true]), $output);
-            return Command::SUCCESS;
+        // Per-command help stays Symfony's, so options and synopses never drift
+        // from the command definitions.
+        if ($target !== null || (is_string($requested) && $requested !== '' && $requested !== 'help')) {
+            return parent::execute($input, $output);
         }
 
-        // Show Hub application help
         $this->showHubHelp();
 
         return Command::SUCCESS;

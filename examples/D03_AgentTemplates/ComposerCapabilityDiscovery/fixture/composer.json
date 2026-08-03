@@ -1,0 +1,10 @@
+{
+  "name": "example/agent-extension",
+  "extra": {
+    "cognesy-agents": {
+      "capabilities": {
+        "system-prompt": "Cognesy\\Agents\\Capability\\Prompt\\UseSystemPrompt"
+      }
+    }
+  }
+}

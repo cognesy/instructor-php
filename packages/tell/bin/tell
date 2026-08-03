@@ -1,29 +1,25 @@
 #!/usr/bin/env php
-<?php
-function findAutoload()
-{
-    $dir = __DIR__;
-    $previousDir = '';
+<?php declare(strict_types=1);
 
-    while ($dir !== $previousDir) {
-        $autoload = $dir . '/vendor/autoload.php';
-        if (file_exists($autoload)) {
+use Cognesy\Tell\TellApplication;
+
+$findAutoload = static function (): string {
+    $directory = __DIR__;
+    do {
+        $autoload = $directory . '/vendor/autoload.php';
+        if (is_file($autoload)) {
             return $autoload;
         }
-        $previousDir = $dir;
-        $dir = dirname($dir);
-    }
+        $parent = dirname($directory);
+        if ($parent === $directory) {
+            break;
+        }
+        $directory = $parent;
+    } while (true);
 
-    throw new RuntimeException('Unable to locate vendor/autoload.php. Please ensure you have run "composer install".');
-}
+    throw new RuntimeException('Unable to locate vendor/autoload.php. Run composer install first.');
+};
 
-require findAutoload();
+require $findAutoload();
 
-use Symfony\Component\Console\Application;
-
-$application = new Application('Instructor Tell', '1.0.0');
-$application->add(new Cognesy\Tell\TellCommand());
-$application->setDefaultCommand('tell', true);
-$application->run();
-
-exit(0);
+exit((new TellApplication())->runArgv());

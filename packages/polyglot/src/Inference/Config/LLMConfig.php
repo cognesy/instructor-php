@@ -1,10 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Inference\Config;
 
 use Cognesy\Config\BasePath;
 use Cognesy\Config\Config;
 use Cognesy\Config\Dsn;
+use Cognesy\Config\EnvTemplate;
 use Cognesy\Polyglot\Inference\Core\SensitiveDataRedactor;
 use Cognesy\Polyglot\Inference\Data\InferencePricing;
 use InvalidArgumentException;
@@ -13,10 +16,12 @@ use Throwable;
 final class LLMConfig
 {
     public const CONFIG_GROUP = 'llm';
+
     /** @var list<string> */
     private const INT_FIELDS = ['maxTokens', 'contextLength', 'maxOutputLength'];
 
-    public static function group() : string {
+    public static function group(): string
+    {
         return self::CONFIG_GROUP;
     }
 
@@ -27,17 +32,17 @@ final class LLMConfig
         public string $apiKey = '',
         public string $endpoint = '',
         #[\SensitiveParameter]
-        public array  $queryParams = [],
+        public array $queryParams = [],
         #[\SensitiveParameter]
-        public array  $metadata = [],
+        public array $metadata = [],
         public string $model = '',
-        public int    $maxTokens = 1024,
-        public int    $contextLength = 8000,
-        public int    $maxOutputLength = 4096,
+        public int $maxTokens = 1024,
+        public int $contextLength = 8000,
+        public int $maxOutputLength = 4096,
         public string $driver = 'openai-compatible',
         #[\SensitiveParameter]
-        public array  $options = [],
-        public array  $pricing = [],
+        public array $options = [],
+        public array $pricing = [],
     ) {
         $this->assertNoRetryPolicyInOptions($this->options);
     }
@@ -47,22 +52,32 @@ final class LLMConfig
         'packages/polyglot/resources/config/llm/presets',
         'vendor/cognesy/instructor-php/packages/polyglot/resources/config/llm/presets',
         'vendor/cognesy/instructor-polyglot/resources/config/llm/presets',
-        __DIR__ . '/../../../resources/config/llm/presets',
+        __DIR__.'/../../../resources/config/llm/presets',
     ];
 
-    public static function fromPreset(string $preset, ?string $basePath = null): self {
+    public static function fromPreset(
+        string $preset,
+        ?string $basePath = null,
+        ?EnvTemplate $template = null,
+    ): self {
         $basePaths = $basePath !== null ? [$basePath] : self::PRESET_PATHS;
         $resolvedPaths = BasePath::resolveExisting(...$basePaths);
         if ($resolvedPaths === []) {
-            throw new InvalidArgumentException("No preset directory found for '{$preset}'. Searched: " . implode(', ', $basePaths));
+            throw new InvalidArgumentException("No preset directory found for '{$preset}'. Searched: ".implode(', ', $basePaths));
         }
-        $data = Config::fromPaths(...$resolvedPaths)
+        $config = Config::fromPaths(...$resolvedPaths);
+        if ($template !== null) {
+            $config = $config->withTemplate($template);
+        }
+        $data = $config
             ->load("{$preset}.yaml")
             ->toArray();
+
         return self::fromArray($data);
     }
 
-    public static function fromArray(#[\SensitiveParameter] array $config) : LLMConfig {
+    public static function fromArray(#[\SensitiveParameter] array $config): LLMConfig
+    {
         $typed = self::coerceScalarTypes($config);
         try {
             $instance = new self(...$typed);
@@ -73,20 +88,24 @@ final class LLMConfig
                 previous: $e,
             );
         }
+
         return $instance;
     }
 
-    public static function fromDsn(#[\SensitiveParameter] string $dsn): self {
+    public static function fromDsn(#[\SensitiveParameter] string $dsn): self
+    {
         return self::fromArray(Dsn::fromString($dsn)->toArray());
     }
 
-    public function withOverrides(#[\SensitiveParameter] array $overrides) : self {
+    public function withOverrides(#[\SensitiveParameter] array $overrides): self
+    {
         $config = array_merge($this->toArray(), $overrides);
+
         return self::fromArray($config);
     }
 
-
-    public function toArray() : array {
+    public function toArray(): array
+    {
         return [
             'apiUrl' => $this->apiUrl,
             'apiKey' => $this->apiKey,
@@ -103,30 +122,35 @@ final class LLMConfig
         ];
     }
 
-    public function getPricing(): InferencePricing {
+    public function getPricing(): InferencePricing
+    {
         return InferencePricing::fromArray($this->pricing);
     }
 
-    private function assertNoRetryPolicyInOptions(#[\SensitiveParameter] array $options) : void {
-        if (!array_key_exists('retryPolicy', $options) && !array_key_exists('retry_policy', $options)) {
+    private function assertNoRetryPolicyInOptions(#[\SensitiveParameter] array $options): void
+    {
+        if (! array_key_exists('retryPolicy', $options) && ! array_key_exists('retry_policy', $options)) {
             return;
         }
 
         throw new InvalidArgumentException('retryPolicy must be configured via an explicit retry policy, not LLM options.');
     }
 
-    private static function coerceScalarTypes(#[\SensitiveParameter] array $config): array {
+    private static function coerceScalarTypes(#[\SensitiveParameter] array $config): array
+    {
         $typed = $config;
         foreach (self::INT_FIELDS as $field) {
-            if (!array_key_exists($field, $typed)) {
+            if (! array_key_exists($field, $typed)) {
                 continue;
             }
             $typed[$field] = self::toInt($field, $typed[$field]);
         }
+
         return $typed;
     }
 
-    private static function toInt(string $field, #[\SensitiveParameter] mixed $value): int {
+    private static function toInt(string $field, #[\SensitiveParameter] mixed $value): int
+    {
         return match (true) {
             is_int($value) => $value,
             is_string($value) && preg_match('/^-?\d+$/', $value) === 1 => (int) $value,

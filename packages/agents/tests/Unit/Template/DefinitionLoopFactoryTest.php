@@ -2,6 +2,7 @@
 
 namespace Cognesy\Agents\Tests\Unit\Template;
 
+use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Capability\Core\UseDriver;
 use Cognesy\Agents\Capability\AgentCapabilityRegistry;
 use Cognesy\Agents\Collections\NameList;
@@ -26,9 +27,12 @@ describe('DefinitionLoopFactory', function () {
         );
 
         $loop = (new DefinitionLoopFactory($capabilities))->instantiateAgentLoop($definition);
+        assert($loop instanceof AgentLoop);
         $result = $loop->execute(AgentState::empty()->withUserMessage('hello'));
 
-        expect(trim($result->finalResponse()->toString()))->toBe('ok');
+        expect(trim($result->finalResponse()->toString()))->toBe('ok')
+            ->and($loop->profile()->name())->toBe('basic-agent')
+            ->and($loop->profile()->description())->toBe('Basic test agent');
     });
 
     it('resolves tools from tool registry and executes them', function () {

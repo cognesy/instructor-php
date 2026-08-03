@@ -1,0 +1,58 @@
+---
+title: 'Agent Self-Knowledge'
+docname: 'agent_self_knowledge'
+order: 12
+id: 'agent-self-knowledge'
+tags:
+  - 'agents'
+  - 'agent-builder'
+  - 'self-knowledge'
+---
+## Overview
+
+`UseSelfKnowledge` adds installed Instructor Agents documentation paths and topic
+routing to the resolved agent profile. By default it contributes only when the
+agent has a readable tool, so the prompt never advertises documentation that the
+agent cannot inspect.
+
+This example runs the real prompt hook with a fake driver, so it needs no API
+credentials.
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseTools;
+use Cognesy\Agents\Capability\Core\UseDriver;
+use Cognesy\Agents\Capability\Core\UseGuards;
+use Cognesy\Agents\Capability\File\ReadFileTool;
+use Cognesy\Agents\Capability\Prompt\UseSystemPrompt;
+use Cognesy\Agents\Capability\SelfKnowledge\UseSelfKnowledge;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
+
+$projectRoot = dirname(__DIR__, 3);
+$agent = AgentBuilder::base()
+    ->withCapability(new UseDriver(FakeAgentDriver::fromResponses('done')))
+    ->withCapability(new UseTools(ReadFileTool::inDirectory($projectRoot)))
+    ->withCapability(new UseSelfKnowledge())
+    ->withCapability(new UseSystemPrompt())
+    ->withCapability(new UseGuards(maxSteps: 1, maxTokens: null, maxExecutionTime: null))
+    ->build();
+
+$knowledge = $agent->profile()->metadata->get('selfKnowledge');
+$result = $agent->execute(AgentState::empty()->withUserMessage('Where are your agent docs?'));
+$systemPrompt = $result->context()->systemPrompt();
+
+echo json_encode($knowledge, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR), "\n\n";
+echo $systemPrompt, "\n";
+
+assert(is_array($knowledge));
+assert(is_dir($knowledge['docsPath']));
+assert($knowledge['topics'] !== []);
+assert(str_contains($systemPrompt, 'Instructor Agents documentation'));
+?>
+```

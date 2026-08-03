@@ -5,14 +5,14 @@ declare(strict_types=1);
 use Cognesy\Agents\Prompts\Coding\CodingAgentPrompt;
 
 it('ships the coding agent prompt as a Twig template', function () {
-    $prompt = new CodingAgentPrompt;
-    $path = rtrim((string) $prompt->templateDir, '/').'/'.$prompt->templateFile;
+    $prompt = new CodingAgentPrompt();
+    $path = rtrim((string) $prompt->templateDir, '/') . '/' . $prompt->templateFile;
 
     expect($prompt->templateFile)->toEndWith('.md.twig')
         ->and($path)->toBeFile();
 });
 
-it('renders the approved coding agent prompt without invented documentation', function () {
+it('preserves the deprecated coding prompt for backwards compatibility', function () {
     $text = trim(CodingAgentPrompt::make()->render());
 
     expect($text)->toBe(<<<'PROMPT'
@@ -23,7 +23,6 @@ Available tools:
 - bash: Execute bash commands
 - edit: Make precise edits to existing files
 - write: Create new files
-
 Guidelines:
 - Use bash for navigation, search, and verification commands such as ls, rg, and find
 - Do not use cat or bash to display file contents
@@ -37,7 +36,7 @@ Guidelines:
 PROMPT);
 });
 
-it('renders an explicitly supplied documentation path', function () {
+it('preserves the deprecated documentation path section', function () {
     $text = trim(CodingAgentPrompt::with(
         documentation_path: '/project/AGENTS.md',
     )->render());

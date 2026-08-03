@@ -2,6 +2,7 @@
 
 namespace Cognesy\Doctools;
 
+use Composer\InstalledVersions;
 use Cognesy\Config\BasePath;
 use Cognesy\InstructorHub\Config\ExampleGroupingConfig;
 use Cognesy\InstructorHub\Config\ExampleSourcesConfig;
@@ -31,6 +32,8 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 
 class Docs extends Application
 {
+    private const string PACKAGE_NAME = 'cognesy/instructor-doctools';
+
     private MintlifyDocumentation $docGen;
     private MkDocsDocumentation $mkDocsGen;
     private Filesystem $filesystem;
@@ -53,7 +56,7 @@ class Docs extends Application
         // Initialize all properties in registerServices() before use in registerCommands()
         $this->registerServices();
 
-        parent::__construct('Instructor Docs // Documentation Automation', '1.0.0');
+        parent::__construct('Instructor Docs // Documentation Automation', self::packageVersion());
 
         $this->registerCommands();
     }
@@ -128,6 +131,15 @@ class Docs extends Application
         $this->filesystem = new Filesystem();
         $this->docRepository = new DocRepository($this->filesystem);
         $this->eventDispatcher = new EventDispatcher();
+    }
+
+    private static function packageVersion(): string
+    {
+        if (InstalledVersions::isInstalled(self::PACKAGE_NAME)) {
+            return InstalledVersions::getPrettyVersion(self::PACKAGE_NAME) ?? 'unknown';
+        }
+
+        return InstalledVersions::getRootPackage()['pretty_version'] ?? 'unknown';
     }
 
     private function registerCommands(): void

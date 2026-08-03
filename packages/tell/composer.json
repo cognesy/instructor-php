@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-tell",
-  "description": "Minimal tool to run queries to LLM inference providers via CLI",
+  "description": "AXI-oriented CLI for running and inspecting Instructor agents",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
   "support": {
@@ -25,9 +25,13 @@
   },
   "require": {
     "php": "^8.3",
-    "cognesy/instructor-messages": "^2.5",
+    "cognesy/agents": "^2.5",
     "cognesy/instructor-config": "^2.5",
-    "cognesy/instructor-polyglot": "^2.5"
+    "cognesy/instructor-polyglot": "^2.5",
+    "composer-runtime-api": "^2.0",
+    "helgesverre/toon": "^3.2",
+    "symfony/console": "^7.3 || ^8.0",
+    "vlucas/phpdotenv": "^5.6"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",
@@ -42,7 +46,7 @@
     "tests": "@php vendor/bin/pest",
     "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
     "psalm": "@php vendor/bin/psalm",
-    "tell": "bin/tell"
+    "tell": "@php bin/tell"
   },
   "bin": [
     "bin/tell"

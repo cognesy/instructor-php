@@ -1,0 +1,12 @@
+[
+  {
+    "name": "fixture/legacy",
+    "extra": {
+      "cognesy-agents": {
+        "capabilities": {
+          "legacy-lazy": "Cognesy\\Agents\\Tests\\Support\\Discovery\\LazyCapability"
+        }
+      }
+    }
+  }
+]

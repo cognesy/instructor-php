@@ -225,7 +225,7 @@ require published config files, service providers, or framework-specific binding
 For Laravel-specific installation, configuration, facades, events, and testing,
 use the dedicated Laravel package docs:
 
-- [Instructor for Laravel installation guide](../laravel/installation.md)
+- [Instructor for Laravel installation guide](/packages/laravel/installation)
 
 
 ## Next Steps

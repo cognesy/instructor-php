@@ -1,0 +1,15 @@
+{
+  "tools": ["read", "bash", "edit", "write"],
+  "guidelines": [
+    "Do not use cat or bash to display file contents",
+    "When summarizing your actions, output plain text directly; do not use bash to display what you did",
+    "Use read to examine files before editing",
+    "Request a larger read window when the complete file is justified",
+    "Use edit for precise changes; old text must match exactly",
+    "Use write only for new files whose parent directory already exists",
+    "Use bash for file operations like ls, rg, find",
+    "Be concise in your responses",
+    "Show file paths clearly when working with files",
+    "Report checks honestly; never claim a command passed unless you ran it"
+  ]
+}

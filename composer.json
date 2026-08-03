@@ -59,7 +59,8 @@
         "symfony/var-dumper": "^7.3 || ^8.0",
         "symfony/yaml": "^7.3 || ^8.0",
         "twig/twig": "^3.0",
-        "vlucas/phpdotenv": "^5.6"
+        "vlucas/phpdotenv": "^5.6",
+        "yethee/tiktoken": "^1.1"
     },
     "scripts": {
         "bench": "@php ./vendor/bin/phpbench run",
@@ -74,11 +75,13 @@
             "bash ./scripts/docs/tests/verify-release-parity-test.sh",
             "bash ./scripts/docs/tests/verify-live-provenance-test.sh"
         ],
+        "qa:self-knowledge-docs": "@php packages/agents/scripts/sync-self-knowledge-docs.php --check",
         "qa:semgrep": "bash -lc 'set -euo pipefail; export HOME=\"$PWD/.qa\"; export SSL_CERT_FILE=\"${SSL_CERT_FILE:-/opt/homebrew/etc/openssl@3/cert.pem}\"; for cfg in .qa/semgrep/*.yml; do [ -f \"$cfg\" ] || continue; semgrep scan --disable-version-check --metrics=off --config \"$cfg\" --error; done; for cfg in packages/*/.qa/semgrep.yml; do [ -f \"$cfg\" ] || continue; pkg_dir=$(dirname \"$(dirname \"$cfg\")\"); semgrep scan --disable-version-check --metrics=off --config \"$cfg\" --error \"$pkg_dir\"; done'",
         "qa": [
             "@qa:phpstan",
             "@qa:psalm",
             "@qa:pint",
+            "@qa:self-knowledge-docs",
             "@qa:semgrep"
         ],
         "hub": "php ./bin/instructor-hub",
@@ -221,6 +224,7 @@
         "eftec/bladeone": "^4.16",
         "guzzlehttp/guzzle": "^7.0",
         "guzzlehttp/psr7": "^2.0",
+        "helgesverre/toon": "^3.2",
         "icanhazstring/composer-unused": "^0.9.5",
         "illuminate/database": "^11.47",
         "illuminate/http": "^11.0",

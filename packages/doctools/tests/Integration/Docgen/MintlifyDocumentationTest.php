@@ -1,6 +1,7 @@
 <?php
 
 use Cognesy\Doctools\Docgen\Data\DocumentationConfig;
+use Cognesy\Doctools\Docgen\Data\DocsConfig;
 use Cognesy\Doctools\Docgen\Data\GenerationResult;
 use Cognesy\Doctools\Docgen\MintlifyDocumentation;
 use Cognesy\InstructorHub\Data\Example;
@@ -27,6 +28,8 @@ beforeEach(function () {
     // Create minimal Mintlify index
     $mintlifyConfig = [
         'name' => 'Test Docs',
+        'favicon' => '/favicon.svg',
+        'colors' => ['primary' => '#0D9373'],
         'navigation' => []
     ];
     file_put_contents($this->mintlifySourceIndex, json_encode($mintlifyConfig));
@@ -40,6 +43,7 @@ beforeEach(function () {
         codeblocksDir: '',
         dynamicGroups: ['Examples']
     );
+    $this->docsConfig = DocsConfig::defaults();
 
     $this->examples = $this->createMock(ExampleRepository::class);
 });
@@ -52,7 +56,7 @@ afterEach(function () {
 
 describe('MintlifyDocumentation', function () {
     test('can be instantiated', function () {
-        $mintlify = new MintlifyDocumentation($this->examples, $this->config);
+        $mintlify = new MintlifyDocumentation($this->examples, $this->config, $this->docsConfig);
         expect($mintlify)->toBeInstanceOf(MintlifyDocumentation::class);
     });
 
@@ -61,7 +65,7 @@ describe('MintlifyDocumentation', function () {
         mkdir($this->docsTargetDir, 0755, true);
         file_put_contents($this->docsTargetDir . '/test.mdx', 'test content');
 
-        $mintlify = new MintlifyDocumentation($this->examples, $this->config);
+        $mintlify = new MintlifyDocumentation($this->examples, $this->config, $this->docsConfig);
         $result = $mintlify->clearDocumentation();
 
         expect($result)->toBeInstanceOf(GenerationResult::class);
@@ -71,7 +75,7 @@ describe('MintlifyDocumentation', function () {
     });
 
     test('initializeBaseFiles copies and renames files', function () {
-        $mintlify = new MintlifyDocumentation($this->examples, $this->config);
+        $mintlify = new MintlifyDocumentation($this->examples, $this->config, $this->docsConfig);
         $mintlify->initializeBaseFiles();
 
         expect(is_dir($this->docsTargetDir))->toBeTrue();
@@ -80,6 +84,8 @@ describe('MintlifyDocumentation', function () {
     });
 
     test('generateExampleDocs processes examples successfully', function () {
+        $sourceIndex = file_get_contents($this->mintlifySourceIndex);
+
         // Create mock example
         $example = createMintlifyTestExample($this->tempDir);
         $exampleGroup = new ExampleGroup('Test Group', 'Test Group', [$example]);
@@ -91,13 +97,16 @@ describe('MintlifyDocumentation', function () {
         mkdir($exampleSourceDir, 0755, true);
         file_put_contents($example->runPath, '<?php echo "test";');
 
-        $mintlify = new MintlifyDocumentation($this->examples, $this->config);
+        $mintlify = new MintlifyDocumentation($this->examples, $this->config, $this->docsConfig);
         $result = $mintlify->generateExampleDocs();
+        $targetIndex = json_decode((string) file_get_contents($this->mintlifyTargetIndex), true);
 
         expect($result)->toBeInstanceOf(GenerationResult::class);
-        // May fail due to index processing but should return valid result
-        expect($result->message)->toBeString();
+        expect($result->isSuccess())->toBeTrue();
         expect($result->filesProcessed)->toBeGreaterThanOrEqual(0);
+        expect(file_get_contents($this->mintlifySourceIndex))->toBe($sourceIndex);
+        expect($targetIndex['favicon'])->toBe('/favicon.svg');
+        expect($targetIndex['colors'])->toBe(['primary' => '#0D9373']);
     });
 
     test('handles missing example tab gracefully', function () {
@@ -112,7 +121,7 @@ describe('MintlifyDocumentation', function () {
         $exampleGroup = new ExampleGroup('Test Group', 'Test Group', [$example]);
         $this->examples->method('getExampleGroups')->willReturn([$exampleGroup]);
 
-        $mintlify = new MintlifyDocumentation($this->examples, $this->config);
+        $mintlify = new MintlifyDocumentation($this->examples, $this->config, $this->docsConfig);
         $result = $mintlify->generateExampleDocs();
 
         // The result may fail due to index file issues, but we test the structure
@@ -138,7 +147,7 @@ describe('MintlifyDocumentation', function () {
         // Make source file newer
         touch($example->runPath, time() + 1);
 
-        $mintlify = new MintlifyDocumentation($this->examples, $this->config);
+        $mintlify = new MintlifyDocumentation($this->examples, $this->config, $this->docsConfig);
         $result = $mintlify->generateExampleDocs();
 
         // Test may fail due to index processing but should return valid result
@@ -163,7 +172,7 @@ describe('MintlifyDocumentation', function () {
         file_put_contents($targetFile, 'content');
         touch($targetFile, time() + 1);
 
-        $mintlify = new MintlifyDocumentation($this->examples, $this->config);
+        $mintlify = new MintlifyDocumentation($this->examples, $this->config, $this->docsConfig);
         $result = $mintlify->generateExampleDocs();
 
         // Test may fail due to index processing but should return valid result
@@ -179,7 +188,7 @@ describe('MintlifyDocumentation', function () {
         $exampleGroup = new ExampleGroup('Test Group', 'Test Group', [$example]);
         $this->examples->method('getExampleGroups')->willReturn([$exampleGroup]);
 
-        $mintlify = new MintlifyDocumentation($this->examples, $this->config);
+        $mintlify = new MintlifyDocumentation($this->examples, $this->config, $this->docsConfig);
         $result = $mintlify->generateExampleDocs();
 
         expect($result->isSuccess())->toBeFalse();

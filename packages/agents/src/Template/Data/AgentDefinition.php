@@ -44,6 +44,23 @@ final readonly class AgentDefinition
     // SERIALIZATION ////////////////////////////////////////////////
 
     /** @return array<string, mixed> */
+    public function canonicalArray(): array {
+        return [
+            'name' => $this->name,
+            'label' => $this->canonicalLabel(),
+            'description' => $this->description,
+            'systemPrompt' => trim($this->systemPrompt),
+            'llmConfig' => $this->serializeLLMConfig(),
+            'tools' => $this->canonicalNameList($this->tools),
+            'toolsDeny' => $this->canonicalNameList($this->toolsDeny),
+            'skills' => $this->canonicalNameList($this->skills),
+            'budget' => $this->canonicalBudget(),
+            'capabilities' => $this->capabilities->toArray(),
+            'metadata' => $this->canonicalMetadata(),
+        ];
+    }
+
+    /** @return array<string, mixed> */
     public function toArray(): array {
         return [
             'name' => $this->name,
@@ -107,6 +124,42 @@ final readonly class AgentDefinition
             $data[$key] instanceof NameList => $data[$key],
             is_array($data[$key]) => NameList::fromArray($data[$key]),
             default => NameList::fromArray([]),
+        };
+    }
+
+    private function canonicalLabel(): ?string {
+        return match (true) {
+            $this->label === null => null,
+            trim($this->label) === '' => null,
+            $this->label === $this->name => null,
+            default => $this->label,
+        };
+    }
+
+    /** @return list<string>|null */
+    private function canonicalNameList(?NameList $names): ?array {
+        return match (true) {
+            $names === null => null,
+            $names->isEmpty() => null,
+            default => $names->toArray(),
+        };
+    }
+
+    /** @return array<string, mixed>|null */
+    private function canonicalBudget(): ?array {
+        return match (true) {
+            $this->budget === null => null,
+            $this->budget->isEmpty() => null,
+            default => $this->budget->toArray(),
+        };
+    }
+
+    /** @return array<string, mixed>|null */
+    private function canonicalMetadata(): ?array {
+        return match (true) {
+            $this->metadata === null => null,
+            $this->metadata->isEmpty() => null,
+            default => $this->metadata->toArray(),
         };
     }
 

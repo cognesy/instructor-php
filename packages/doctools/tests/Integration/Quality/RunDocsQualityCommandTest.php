@@ -122,6 +122,28 @@ MD);
     expect($display)->toContain('1 snippet(s) checked, 1 skipped');
 });
 
+it('resolves public package routes against package source docs', function () {
+    $docsDir = $this->tempDir . '/packages/source/docs';
+    writeDocsQualityFile(
+        $this->tempDir . '/packages/target/docs/installation.md',
+        '# Installation',
+    );
+    writeDocsQualityFile(
+        $docsDir . '/index.md',
+        'See [installation](/packages/target/installation).',
+    );
+
+    $tester = new CommandTester(new RunDocsQualityCommand());
+    $exitCode = $tester->execute([
+        '--source-dir' => $docsDir,
+        '--repo-root' => $this->tempDir,
+        '--profile' => 'none',
+    ], ['decorated' => false]);
+
+    expect($exitCode)->toBe(0);
+    expect($tester->getDisplay())->toContain('docs-qa: passed');
+});
+
 it('supports explicit YAML rules and json output', function () {
     $docsDir = $this->tempDir . '/docs';
     writeDocsQualityFile($docsDir . '/index.md', <<<'MD'

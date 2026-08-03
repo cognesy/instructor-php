@@ -1,0 +1,25 @@
+{
+  "documents": [
+    {"source": "docs/01-introduction.md", "destination": "resources/docs/01-introduction.md"},
+    {"source": "docs/02-basic-agent.md", "destination": "resources/docs/02-basic-agent.md"},
+    {"source": "docs/03-basic-concepts.md", "destination": "resources/docs/03-basic-concepts.md"},
+    {"source": "docs/04-controlling-the-loop.md", "destination": "resources/docs/04-controlling-the-loop.md"},
+    {"source": "docs/05-tools.md", "destination": "resources/docs/05-tools.md"},
+    {"source": "docs/06-building-tools.md", "destination": "resources/docs/06-building-tools.md"},
+    {"source": "docs/07-context-and-compilers.md", "destination": "resources/docs/07-context-and-compilers.md"},
+    {"source": "docs/08-hooks.md", "destination": "resources/docs/08-hooks.md"},
+    {"source": "docs/09-stop-conditions.md", "destination": "resources/docs/09-stop-conditions.md"},
+    {"source": "docs/10-testing.md", "destination": "resources/docs/10-testing.md"},
+    {"source": "docs/11-state-internals.md", "destination": "resources/docs/11-state-internals.md"},
+    {"source": "docs/12-tool-calling-internals.md", "destination": "resources/docs/12-tool-calling-internals.md"},
+    {"source": "docs/13-agent-builder.md", "destination": "resources/docs/13-agent-builder.md"},
+    {"source": "docs/14-agent-templates.md", "destination": "resources/docs/14-agent-templates.md"},
+    {"source": "docs/15-subagents.md", "destination": "resources/docs/15-subagents.md"},
+    {"source": "docs/16-session-runtime.md", "destination": "resources/docs/16-session-runtime.md"},
+    {"source": "docs/17-building-tools-advanced.md", "destination": "resources/docs/17-building-tools-advanced.md"},
+    {"source": "docs/18-observing-agent-execution.md", "destination": "resources/docs/18-observing-agent-execution.md"},
+    {"source": "docs/19-skills.md", "destination": "resources/docs/19-skills.md"},
+    {"source": "docs/20-self-knowledge.md", "destination": "resources/docs/20-self-knowledge.md"},
+    {"source": "docs/testing-doubles.md", "destination": "resources/docs/testing-doubles.md"}
+  ]
+}

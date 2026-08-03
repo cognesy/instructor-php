@@ -1,56 +1,84 @@
 <?php
 
-/*
-|--------------------------------------------------------------------------
-| Test Case
-|--------------------------------------------------------------------------
-|
-| The closure you provide to your test functions is always bound to a specific PHPUnit test
-| case class. By default, that class is "PHPUnit\Framework\TestCase". Of course, you may
-| need to change it using the "uses()" function to bind a different classes or traits.
-|
-*/
+declare(strict_types=1);
 
-// uses(Tests\TestCase::class)->in('Feature');
+use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Runtime\TellCredentialStore;
+use Cognesy\Tell\Runtime\TellPaths;
 
-/*
-|--------------------------------------------------------------------------
-| Expectations
-|--------------------------------------------------------------------------
-|
-| When you're writing tests, you often need to check that values meet certain conditions. The
-| "expect()" function gives you access to a set of "expectations" methods that you can use
-| to assert different things. Of course, you may extend the Expectation API at any time.
-|
-*/
+/** @var list<string> $tellTemporaryRoots */
+$tellTemporaryRoots = [];
 
-expect()->extend('toBeOne', fn() => expect(func_get_args()[0] ?? null)->toBe(1));
+/**
+ * @param  callable(Cognesy\Agents\AgentLoop): Cognesy\Agents\AgentLoop|null  $decorate
+ * @param  array<string, string>  $userAgents
+ * @param  array<string, string>  $credentials
+ */
+function tellTestFactory(
+    ?callable $decorate = null,
+    array $userAgents = [],
+    array $credentials = ['OPENAI_API_KEY' => 'tell-test-key'],
+): TellAgentFactory {
+    global $tellTemporaryRoots;
 
-expect()->extend('toBeCloseTo', function (float $expected, int $precision = 8) {
-    $epsilon = 1 / (10 ** $precision);
-    $actual = func_get_args()[0] ?? null;
-    $diff = abs($expected - (float) $actual);
-    $message = "Failed asserting that %.{$precision}f matches expected %.{$precision}f within epsilon %.{$precision}f.";
-    PHPUnit\Framework\Assert::assertLessThanOrEqual(
-        expected: $epsilon,
-        actual: $diff,
-        message: sprintf($message, (float) $actual, $expected, $epsilon)
-    );
-    return expect($actual);
-});
+    $root = sys_get_temp_dir().'/instructor-tell-'.bin2hex(random_bytes(8));
+    $package = $root.'/package-agents';
+    $paths = new TellPaths($package, $root.'/tell-home');
+    mkdir($package, 0755, true);
+    mkdir($paths->userAgents, 0755, true);
+    file_put_contents($package.'/default.md', <<<'MD'
+---
+name: default
+label: Tell Test
+description: Deterministic test agent
+capabilities:
+  - tell.coding
+  - tell.system_prompt
+  - tell.self_knowledge
+  - tell.self_description
+  - tell.agent_definitions
+---
 
-/*
-|--------------------------------------------------------------------------
-| Functions
-|--------------------------------------------------------------------------
-|
-| While Pest is very powerful out-of-the-box, you may have some testing code specific to your
-| project that you don't want to repeat in every file. Here you can also expose helpers as
-| global functions to help you to reduce the number of lines of code in your test files.
-|
-*/
+You are a deterministic test agent.
+MD);
+    foreach ($userAgents as $filename => $content) {
+        file_put_contents($paths->userAgents.'/'.$filename, $content);
+    }
+    $credentialStore = new TellCredentialStore($paths);
+    foreach ($credentials as $variable => $value) {
+        $credentialStore->set($variable, $value);
+    }
+    $tellTemporaryRoots[] = $root;
 
-function something()
-{
-    // ..
+    return new TellAgentFactory($paths, $decorate);
 }
+
+function tellLastTemporaryRoot(): string
+{
+    global $tellTemporaryRoots;
+
+    return $tellTemporaryRoots[array_key_last($tellTemporaryRoots)];
+}
+
+function tellRemoveDirectory(string $directory): void
+{
+    if (! str_starts_with($directory, sys_get_temp_dir().'/instructor-tell-') || ! is_dir($directory)) {
+        return;
+    }
+    $iterator = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS),
+        RecursiveIteratorIterator::CHILD_FIRST,
+    );
+    foreach ($iterator as $item) {
+        $item->isDir() ? rmdir($item->getPathname()) : unlink($item->getPathname());
+    }
+    rmdir($directory);
+}
+
+afterEach(function (): void {
+    global $tellTemporaryRoots;
+    foreach ($tellTemporaryRoots as $root) {
+        tellRemoveDirectory($root);
+    }
+    $tellTemporaryRoots = [];
+});

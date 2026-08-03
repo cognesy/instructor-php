@@ -9,6 +9,7 @@ use Cognesy\Agents\Hook\Data\HookContext;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Messages;
+use Cognesy\Utils\Tokenization\Contracts\CanCountTokens;
 use Cognesy\Utils\Tokenizer;
 use Override;
 
@@ -26,6 +27,7 @@ final readonly class SummarizeBufferHook implements HookInterface
         private string $summarySection,
         private CanSummarizeMessages $summarizer,
         ?CanHandleEvents $events = null,
+        private ?CanCountTokens $tokenizer = null,
     ) {
         $this->events = $events ?? new EventDispatcher(name: 'agents.hook.summarize-buffer');
     }
@@ -40,7 +42,7 @@ final readonly class SummarizeBufferHook implements HookInterface
             ->messages()
             ->toString();
 
-        $tokens = Tokenizer::tokenCount($buffer);
+        $tokens = $this->tokenizer()->tokenCount($buffer);
         if ($tokens <= $this->maxBufferTokens) {
             return $context;
         }
@@ -73,5 +75,14 @@ final readonly class SummarizeBufferHook implements HookInterface
             ->section($this->summarySection)->setMessages(Messages::fromString($summary));
 
         return $context->withState($state->withMessageStore($newStore));
+    }
+
+    /**
+     * Resolved on use rather than in the constructor: the default tokenizer loads
+     * a multi-megabyte vocabulary, and a registered hook only counts once its
+     * trigger fires. Tokenizer::default() memoizes, so repeating the call is free.
+     */
+    private function tokenizer(): CanCountTokens {
+        return $this->tokenizer ?? Tokenizer::default();
     }
 }

@@ -11,10 +11,12 @@
         </testsuite>
         <testsuite name="Unit">
 
+            <directory suffix="Test.php">./packages/addons/tests/Unit</directory>
             <directory suffix="Test.php">./packages/agent-ctrl/tests/Unit</directory>
             <directory suffix="Test.php">./packages/agents/tests/Unit</directory>
             <directory suffix="Test.php">./packages/auxiliary/tests/Unit</directory>
             <directory suffix="Test.php">./packages/config/tests/Unit</directory>
+            <directory suffix="Test.php">./packages/contracts/tests/Unit</directory>
             <directory suffix="Test.php">./packages/doctools/tests/Unit</directory>
             <directory suffix="Test.php">./packages/dynamic/tests/Unit</directory>
             <directory suffix="Test.php">./packages/evals/tests/Unit</directory>
@@ -23,6 +25,7 @@
             <directory suffix="Test.php">./packages/http-client/tests/Unit</directory>
             <directory suffix="Test.php">./packages/hub/tests/Unit</directory>
             <directory suffix="Test.php">./packages/instructor/tests/Unit</directory>
+            <directory suffix="Test.php">./packages/laravel/tests/Unit</directory>
             <directory suffix="Test.php">./packages/logging/tests/Unit</directory>
             <directory suffix="Test.php">./packages/messages/tests/Unit</directory>
             <directory suffix="Test.php">./packages/metrics/tests/Unit</directory>
@@ -31,6 +34,7 @@
             <directory suffix="Test.php">./packages/schema/tests/Unit</directory>
             <directory suffix="Test.php">./packages/setup/tests/Unit</directory>
             <directory suffix="Test.php">./packages/stream/tests/Unit</directory>
+            <directory suffix="Test.php">./packages/telemetry/tests/Unit</directory>
             <directory suffix="Test.php">./packages/tell/tests/Unit</directory>
             <directory suffix="Test.php">./packages/templates/tests/Unit</directory>
             <directory suffix="Test.php">./packages/utils/tests/Unit</directory>
@@ -40,6 +44,7 @@
         </testsuite>
         <testsuite name="Feature">
 
+            <directory suffix="Test.php">./packages/addons/tests/Feature</directory>
             <directory suffix="Test.php">./packages/agent-ctrl/tests/Feature</directory>
             <directory suffix="Test.php">./packages/agents/tests/Feature</directory>
             <directory suffix="Test.php">./packages/auxiliary/tests/Feature</directory>
@@ -70,6 +75,7 @@
         </testsuite>
         <testsuite name="Integration">
 
+            <directory suffix="Test.php">./packages/addons/tests/Integration</directory>
             <directory suffix="Test.php">./packages/agent-ctrl/tests/Integration</directory>
             <directory suffix="Test.php">./packages/agents/tests/Integration</directory>
             <directory suffix="Test.php">./packages/auxiliary/tests/Integration</directory>
@@ -81,6 +87,7 @@
             <directory suffix="Test.php">./packages/http-client/tests/Integration</directory>
             <directory suffix="Test.php">./packages/hub/tests/Integration</directory>
             <directory suffix="Test.php">./packages/instructor/tests/Integration</directory>
+            <directory suffix="Test.php">./packages/laravel/tests/Integration</directory>
             <directory suffix="Test.php">./packages/logging/tests/Integration</directory>
             <directory suffix="Test.php">./packages/messages/tests/Integration</directory>
             <directory suffix="Test.php">./packages/metrics/tests/Integration</directory>
@@ -93,9 +100,12 @@
             <directory suffix="Test.php">./packages/utils/tests/Integration</directory>
             <directory suffix="Test.php">./packages/sandbox/tests/Integration</directory>
             <directory suffix="Test.php">./packages/http-pool/tests/Integration</directory>
+            <!-- packages/telemetry/tests/Integration is deliberately absent: it is the
+                 opt-in live-backend interop suite, run via `just test-telemetry`. -->
         </testsuite>
         <testsuite name="Regression">
 
+            <directory suffix="Test.php">./packages/addons/tests/Regression</directory>
             <directory suffix="Test.php">./packages/agent-ctrl/tests/Regression</directory>
             <directory suffix="Test.php">./packages/agents/tests/Regression</directory>
             <directory suffix="Test.php">./packages/auxiliary/tests/Regression</directory>
@@ -108,6 +118,8 @@
             <directory suffix="Test.php">./packages/http-client/tests/Regression</directory>
             <directory suffix="Test.php">./packages/hub/tests/Regression</directory>
             <directory suffix="Test.php">./packages/instructor/tests/Regression</directory>
+            <directory suffix="Test.php">./packages/laravel/tests/Regression</directory>
+            <directory suffix="Test.php">./packages/logging/tests/Regression</directory>
             <directory suffix="Test.php">./packages/messages/tests/Regression</directory>
             <directory suffix="Test.php">./packages/metrics/tests/Regression</directory>
             <directory suffix="Test.php">./packages/pipeline/tests/Regression</directory>
@@ -130,10 +142,12 @@
     <source>
         <include>
 
+            <directory suffix=".php">./packages/addons/src</directory>
             <directory suffix=".php">./packages/agent-ctrl/src</directory>
             <directory suffix=".php">./packages/agents/src</directory>
             <directory suffix=".php">./packages/auxiliary/src</directory>
             <directory suffix=".php">./packages/config/src</directory>
+            <directory suffix=".php">./packages/contracts/src</directory>
             <directory suffix=".php">./packages/doctools/src</directory>
             <directory suffix=".php">./packages/dynamic/src</directory>
             <directory suffix=".php">./packages/evals/src</directory>
@@ -143,6 +157,7 @@
             <directory suffix=".php">./packages/hub/src</directory>
             <directory suffix=".php">./packages/instructor/src</directory>
             <directory suffix=".php">./packages/symfony/src</directory>
+            <directory suffix=".php">./packages/laravel/src</directory>
             <directory suffix=".php">./packages/logging/src</directory>
             <directory suffix=".php">./packages/messages/src</directory>
             <directory suffix=".php">./packages/metrics/src</directory>
@@ -151,6 +166,7 @@
             <directory suffix=".php">./packages/schema/src</directory>
             <directory suffix=".php">./packages/setup/src</directory>
             <directory suffix=".php">./packages/stream/src</directory>
+            <directory suffix=".php">./packages/telemetry/src</directory>
             <directory suffix=".php">./packages/tell/src</directory>
             <directory suffix=".php">./packages/templates/src</directory>
             <directory suffix=".php">./packages/utils/src</directory>
@@ -159,4 +175,10 @@
             <directory suffix=".php">./packages/http-pool/src</directory>
         </include>
     </source>
+    <php>
+        <!-- The default tokenizer downloads its vocabulary on first use. Pinning the
+             bundled one keeps the suite offline and its token counts stable; tests
+             that exercise resolution pass the preference explicitly instead. -->
+        <env name="INSTRUCTOR_TOKENIZER" value="gpt3"/>
+    </php>
 </phpunit>

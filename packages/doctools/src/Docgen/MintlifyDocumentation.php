@@ -29,8 +29,9 @@ class MintlifyDocumentation
     public function __construct(
         private ExampleRepository $examples,
         private DocumentationConfig $config,
+        ?DocsConfig $docsConfig = null,
     ) {
-        $this->docsConfig = DocsConfig::fromFile();
+        $this->docsConfig = $docsConfig ?? DocsConfig::fromFile();
         $this->packageDiscovery = new PackageDiscovery(
             packagesDir: 'packages',
             descriptions: $this->docsConfig->packageDescriptions,
@@ -38,7 +39,7 @@ class MintlifyDocumentation
             internal: $this->docsConfig->packageInternal,
         );
         $this->packageBuilder = new PackageDocsBuilder(
-            targetBaseDir: $this->docsConfig->mintlifyTarget,
+            targetBaseDir: $this->config->docsTargetDir,
             format: 'mintlify',
         );
         $this->cheatsheetDiscovery = new CheatsheetDiscovery(
@@ -312,7 +313,7 @@ class MintlifyDocumentation
 
             // 1. Main section (autodiscovered from docs root)
             $mainGroup = new NavigationGroup('Main');
-            $targetDir = BasePath::get($this->docsConfig->mintlifyTarget);
+            $targetDir = $this->config->docsTargetDir;
 
             // Scan for mdx files in docs root
             $files = glob($targetDir . '/*.mdx') ?: [];
@@ -395,7 +396,7 @@ class MintlifyDocumentation
      */
     private function buildPackageNavigationGroup(DiscoveredPackage $package): NavigationGroup {
         $group = new NavigationGroup($package->getTitle());
-        $targetDir = BasePath::get($this->docsConfig->mintlifyTarget) . '/' . $package->targetDir;
+        $targetDir = $this->config->docsTargetDir . '/' . $package->targetDir;
 
         if (!is_dir($targetDir)) {
             return $group;
@@ -527,7 +528,7 @@ class MintlifyDocumentation
     }
 
     private function getReleaseNotesGroup(): NavigationGroup {
-        $releaseNotesDir = BasePath::get($this->docsConfig->mintlifyTarget) . '/release-notes';
+        $releaseNotesDir = $this->config->docsTargetDir . '/release-notes';
         $releaseNotesFiles = glob($releaseNotesDir . '/*.mdx') ?: [];
         $pages = [];
 

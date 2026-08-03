@@ -50,6 +50,21 @@ it('accumulates hooks when chaining withHook()', function () {
     expect($calls)->toBe(['a', 'b']);
 });
 
+it('preserves subclasses across immutable withers', function () {
+    $stack = new class(new RegisteredHooks()) extends HookStack {};
+
+    $changed = $stack->with(
+        new class implements HookInterface {
+            public function handle(HookContext $context): HookContext {
+                return $context;
+            }
+        },
+        HookTriggers::beforeExecution(),
+    );
+
+    expect($changed)->toBeInstanceOf($stack::class);
+});
+
 it('orders hooks by descending priority', function () {
     $stack = new HookStack(new RegisteredHooks());
 

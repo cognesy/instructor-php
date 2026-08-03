@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Cognesy\Agents\Capability\Bash;
 
+use Cognesy\Agents\Tool\Contracts\CanContributeToPrompt;
 use Cognesy\Agents\Tool\ToolDescriptor;
+use Override;
 
-final readonly class BashToolDescriptor extends ToolDescriptor
+final readonly class BashToolDescriptor extends ToolDescriptor implements CanContributeToPrompt
 {
     public function __construct() {
         parent::__construct(
@@ -46,5 +48,18 @@ DESC,
                 ],
             ],
         );
+    }
+
+    #[Override]
+    public function promptSnippet(): ?string {
+        return 'Execute bash commands';
+    }
+
+    #[Override]
+    public function promptGuidelines(): array {
+        return [
+            'Do not use cat or bash to display file contents',
+            'When summarizing your actions, output plain text directly; do not use bash to display what you did',
+        ];
     }
 }

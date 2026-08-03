@@ -19,6 +19,10 @@ class RegisteredHook
         return $this->hook;
     }
 
+    public function triggers(): HookTriggers {
+        return $this->triggers;
+    }
+
     public function triggersOn(HookTrigger $trigger): bool {
         return $this->triggers->triggersOn($trigger);
     }
@@ -33,6 +37,15 @@ class RegisteredHook
 
     public function name(): ?string {
         return $this->name;
+    }
+
+    public function withHook(HookInterface $hook): self {
+        return new self(
+            hook: $hook,
+            triggers: $this->triggers,
+            priority: $this->priority,
+            name: $this->name,
+        );
     }
 
     public function compare(RegisteredHook $other): int {

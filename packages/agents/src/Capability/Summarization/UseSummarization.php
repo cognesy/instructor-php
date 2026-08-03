@@ -9,6 +9,7 @@ use Cognesy\Agents\Capability\Summarization\Utils\SummarizeMessages;
 use Cognesy\Agents\Hook\Collections\HookTriggers;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Utils\Tokenization\Contracts\CanCountTokens;
 use Override;
 
 class UseSummarization implements CanProvideAgentCapability
@@ -16,6 +17,7 @@ class UseSummarization implements CanProvideAgentCapability
     public function __construct(
         private ?SummarizationPolicy $policy = null,
         private ?CanSummarizeMessages $summarizer = null,
+        private ?CanCountTokens $tokenizer = null,
     ) {}
 
     #[Override]
@@ -43,6 +45,7 @@ class UseSummarization implements CanProvideAgentCapability
             hook: new MoveMessagesToBufferHook(
                 maxTokens: $policy->maxMessageTokens,
                 bufferSection: $policy->bufferSection,
+                tokenizer: $this->tokenizer,
             ),
             triggerTypes: HookTriggers::afterStep(),
             priority: -200,
@@ -56,6 +59,7 @@ class UseSummarization implements CanProvideAgentCapability
                 bufferSection: $policy->bufferSection,
                 summarySection: $policy->summarySection,
                 summarizer: $summarizer,
+                tokenizer: $this->tokenizer,
             ),
             triggerTypes: HookTriggers::afterStep(),
             priority: -210,

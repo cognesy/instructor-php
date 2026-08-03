@@ -34,31 +34,32 @@ echo $result->finalResponse()->toString();
 ## Coding Agent
 
 `UseCodingTools` installs the provider-familiar `read`, `bash`, `edit`, and
-`write` tool names. `CodingAgentPrompt` renders matching operating guidance
-from the prompt shipped in `resources/prompts/coding/coding-agent.md.twig`.
+`write` tool names. `UseSystemPrompt` derives matching operating guidance from
+the tools resolved into the built agent.
 
 ```php
 use Cognesy\Agents\Builder\AgentBuilder;
 use Cognesy\Agents\Capability\Coding\UseCodingTools;
+use Cognesy\Agents\Capability\Prompt\UseSystemPrompt;
 use Cognesy\Agents\Data\AgentState;
-use Cognesy\Agents\Prompts\Coding\CodingAgentPrompt;
 
 $workDir = '/path/to/project';
 $agent = AgentBuilder::base()
     ->withCapability(new UseCodingTools($workDir))
+    ->withCapability(new UseSystemPrompt(
+        preamble: 'You are an expert coding assistant.',
+    ))
     ->build();
 
 $state = AgentState::empty()
-    ->withSystemPrompt(CodingAgentPrompt::with(
-        documentation_path: $workDir . '/AGENTS.md',
-    ))
     ->withUserMessage('Inspect the project and make the requested change.');
 
 $result = $agent->execute($state);
 ```
 
-`documentation_path` is optional. When it is omitted, the rendered prompt does
-not invent a package-relative documentation location.
+The deprecated `CodingAgentPrompt` preserves its static 2.5 coding prompt for
+compatibility. New agents should use `UseSystemPrompt`, which derives tool and
+guideline sections from the tools installed on the built agent.
 
 The file contracts are deliberately bounded and conservative:
 

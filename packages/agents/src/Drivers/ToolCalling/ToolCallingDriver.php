@@ -11,8 +11,12 @@ use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Data\AgentStep;
 use Cognesy\Agents\Drivers\CanAcceptToolRuntime;
 use Cognesy\Agents\Drivers\CanUseTools;
+use Cognesy\Agents\Drivers\ToolCalling\Data\ToolCallingInference;
 use Cognesy\Agents\Events\InferenceRequestStarted;
 use Cognesy\Agents\Events\InferenceResponseReceived;
+use Cognesy\Agents\Hook\Data\HookContext;
+use Cognesy\Agents\Interception\CanAcceptLifecycleInterceptor;
+use Cognesy\Agents\Interception\CanInterceptAgentLifecycle;
 use Cognesy\Agents\Interception\PassThroughInterceptor;
 use Cognesy\Agents\Tool\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Tool\ToolExecutor;
@@ -26,6 +30,7 @@ use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
+use Cognesy\Polyglot\Inference\Contracts\CanResolveLLMConfig;
 use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -34,7 +39,6 @@ use Cognesy\Polyglot\Inference\Data\ToolChoice;
 use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Cognesy\Polyglot\Inference\PendingInference;
 use Cognesy\Telemetry\Domain\Envelope\OperationCorrelation;
 use Cognesy\Utils\Json\JsonExtractor;
 use DateTimeImmutable;
@@ -46,7 +50,7 @@ use Override;
  * generating a response based on input messages, selecting and invoking tools,
  * handling tool execution results, and crafting follow-up messages.
  */
-class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptLLMConfig, CanAcceptMessageCompiler
+class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptLLMConfig, CanAcceptMessageCompiler, CanAcceptLifecycleInterceptor, CanResolveLLMConfig
 {
     private LLMProvider $llm;
     private ?CanSendHttpRequests $httpClient = null;
@@ -62,6 +66,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
     private CanCreateInference $inference;
     private Tools $tools;
     private CanExecuteToolCalls $executor;
+    private CanInterceptAgentLifecycle $interceptor;
 
     public function __construct(
         CanCreateInference $inference,
@@ -76,6 +81,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         ?CanHandleEvents $events = null,
         ?Tools $tools = null,
         ?CanExecuteToolCalls $executor = null,
+        ?CanInterceptAgentLifecycle $interceptor = null,
     ) {
         $this->inference = $inference;
         $this->llm = $llm ?? LLMProvider::new();
@@ -94,6 +100,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
             events: $this->events,
             interceptor: new PassThroughInterceptor(),
         );
+        $this->interceptor = $interceptor ?? new PassThroughInterceptor();
     }
 
     #[Override]
@@ -107,6 +114,11 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
                 httpClient: $this->httpClient,
             ),
         );
+    }
+
+    #[Override]
+    public function resolveConfig(): LLMConfig {
+        return $this->llm->resolveConfig();
     }
 
     #[Override]
@@ -125,10 +137,17 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
     }
 
     #[Override]
+    public function withInterceptor(CanInterceptAgentLifecycle $interceptor): static {
+        return $this->with(interceptor: $interceptor);
+    }
+
+    #[Override]
     public function useTools(AgentState $state): AgentState {
         $state = $this->ensureStateLLMConfig($state);
-        $context = $this->messageCompiler->compile($state);
-        $response = $this->getToolCallResponse($state, $this->tools, $context);
+        $messages = $this->messageCompiler->compile($state);
+        $inference = $this->performInference($state, $this->tools, $messages);
+        $state = $inference->state();
+        $response = $inference->response();
         $toolCalls = $response->toolCalls();
         $executions = $this->executor->executeTools($toolCalls, $state);
         $messages = $this->formatter->makeExecutionMessages($executions);
@@ -136,7 +155,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
             response: $response,
             executions: $executions,
             followUps: $messages,
-            context: $context,
+            context: $inference->request()->messages(),
         );
         return $state->withCurrentStep($step);
     }
@@ -155,6 +174,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         ?CanCreateInference $inference = null,
         ?Tools $tools = null,
         ?CanExecuteToolCalls $executor = null,
+        ?CanInterceptAgentLifecycle $interceptor = null,
     ): static {
         return new static(
             inference: $inference ?? $this->inference,
@@ -169,26 +189,34 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
             events: $this->events,
             tools: $tools ?? $this->tools,
             executor: $executor ?? $this->executor,
+            interceptor: $interceptor ?? $this->interceptor,
         );
     }
 
-    private function getToolCallResponse(AgentState $state, Tools $tools, Messages $messages): InferenceResponse {
+    private function performInference(AgentState $state, Tools $tools, Messages $messages): ToolCallingInference {
         $cache = $state->context()->toCachedContext($tools->toToolSchema());
         $cache = $cache->isEmpty() ? null : $cache;
+        $request = $this->buildInferenceRequest($state, $messages, $tools, $cache);
+        $hookContext = $this->interceptor->intercept(HookContext::beforeInferenceRequest($state, $request));
+        $state = $hookContext->state();
+        $request = $hookContext->inferenceRequest() ?? $request;
         $requestStartedAt = new DateTimeImmutable();
-        $pending = $this->buildPendingInference($state, $messages, $tools, $cache);
-        $this->emitInferenceRequestStarted($state, $messages->count(), $this->resolveModel($state), $pending->executionId());
+        $pending = $this->inference->create($request);
+        $this->emitInferenceRequestStarted($state, $request, $pending->executionId());
         $response = $pending->response();
+        $hookContext = $this->interceptor->intercept(HookContext::afterInferenceResponse($state, $request, $response));
+        $state = $hookContext->state();
+        $response = $hookContext->inferenceResponse() ?? $response;
         $this->emitInferenceResponseReceived($state, $response, $requestStartedAt, $pending->executionId());
-        return $response;
+        return new ToolCallingInference($state, $request, $response);
     }
 
-    private function buildPendingInference(
+    private function buildInferenceRequest(
         AgentState $state,
         Messages $messages,
         Tools $tools,
         ?CachedInferenceContext $cache = null,
-    ): PendingInference {
+    ): InferenceRequest {
         $hasTools = !$tools->isEmpty();
         $hasCachedTools = !($cache?->tools()->isEmpty() ?? true);
         $toolDefinitions = ($hasTools && !$hasCachedTools) ? $tools->toToolSchema() : ToolDefinitions::empty();
@@ -198,7 +226,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
             $options = array_merge($options, ['parallel_tool_calls' => $this->parallelToolCalls]);
         }
 
-        $request = new InferenceRequest(
+        return new InferenceRequest(
             messages: $messages,
             model: $this->model,
             tools: $toolDefinitions,
@@ -210,7 +238,6 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
             telemetryCorrelation: $this->telemetryCorrelationFor($state),
         );
 
-        return $this->inference->create($request);
     }
 
     private function telemetryCorrelationFor(AgentState $state): ?OperationCorrelation {
@@ -290,13 +317,14 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
 
     // EVENT EMISSION ////////////////////////////////////////////
 
-    private function emitInferenceRequestStarted(AgentState $state, int $messageCount, ?string $model, ?string $inferenceExecutionId = null): void {
+    private function emitInferenceRequestStarted(AgentState $state, InferenceRequest $request, ?string $inferenceExecutionId = null): void {
+        $model = $request->model() !== '' ? $request->model() : $this->resolveModel($state);
         $this->events->dispatch(new InferenceRequestStarted(
             agentId: $state->agentId()->toString(),
             executionId: $state->execution()?->executionId()->toString() ?? '',
             parentAgentId: $state->parentAgentId() !== null ? (string) $state->parentAgentId() : null,
             stepNumber: $state->stepCount() + 1,
-            messageCount: $messageCount,
+            messageCount: $request->messages()->count(),
             model: $model,
             inferenceExecutionId: $inferenceExecutionId,
         ));

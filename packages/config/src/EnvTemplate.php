@@ -1,7 +1,10 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Config;
 
+use Cognesy\Config\Contracts\CanResolveSecrets;
 use InvalidArgumentException;
 use RuntimeException;
 
@@ -9,11 +12,14 @@ final class EnvTemplate
 {
     private const PLACEHOLDER_PATTERN = '/\$\{([A-Za-z_][A-Za-z0-9_]*)(?:(:-|:\?|[?])([^}]*)?)?}/';
 
+    public function __construct(private readonly ?CanResolveSecrets $secrets = null) {}
+
     /**
-     * @param array<array-key, mixed> $data
+     * @param  array<array-key, mixed>  $data
      * @return array<array-key, mixed>
      */
-    public function resolveData(array $data): array {
+    public function resolveData(array $data): array
+    {
         $resolved = [];
         foreach ($data as $key => $value) {
             $resolved[$key] = $this->resolveValue($value);
@@ -22,7 +28,8 @@ final class EnvTemplate
         return $resolved;
     }
 
-    public function resolveValue(mixed $value): mixed {
+    public function resolveValue(mixed $value): mixed
+    {
         return match (true) {
             is_array($value) => $this->resolveData($value),
             is_string($value) => $this->resolveString($value),
@@ -30,8 +37,9 @@ final class EnvTemplate
         };
     }
 
-    public function resolveString(string $value): string {
-        if (!str_contains($value, '${')) {
+    public function resolveString(string $value): string
+    {
+        if (! str_contains($value, '${')) {
             return $value;
         }
 
@@ -61,14 +69,15 @@ final class EnvTemplate
             $value,
         );
 
-        if (!is_string($resolved)) {
+        if (! is_string($resolved)) {
             throw new RuntimeException('Template interpolation failed for non-string value');
         }
 
         return $resolved;
     }
 
-    private function requiredValue(string $name, ?string $env, ?string $customMessage): string {
+    private function requiredValue(string $name, ?string $env, ?string $customMessage): string
+    {
         if ($env !== null && $env !== '') {
             return $env;
         }
@@ -81,8 +90,13 @@ final class EnvTemplate
         throw new InvalidArgumentException($message);
     }
 
-    private function readEnv(string $name): ?string {
+    private function readEnv(string $name): ?string
+    {
+        if ($this->secrets !== null) {
+            return $this->secrets->resolve($name)?->value();
+        }
         $value = Env::get($name, null);
+
         return is_string($value) ? $value : null;
     }
 }

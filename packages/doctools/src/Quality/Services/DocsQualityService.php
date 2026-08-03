@@ -468,7 +468,26 @@ final readonly class DocsQualityService
             ...$this->linkCandidates(Path::join($docsRoot, $relative)),
             ...$this->linkCandidates(Path::join($repoRoot, 'docs', $relative)),
             ...$this->linkCandidates(Path::join($repoRoot, 'builds/docs-build', $relative)),
+            ...$this->packageSourceLinkCandidates($relative, $repoRoot),
         ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function packageSourceLinkCandidates(string $relative, string $repoRoot): array
+    {
+        if (!preg_match('#^packages/([^/]+)/(.*)$#', $relative, $matches)) {
+            return [];
+        }
+
+        return $this->linkCandidates(Path::join(
+            $repoRoot,
+            'packages',
+            $matches[1],
+            'docs',
+            $matches[2],
+        ));
     }
 
     private function stripFencedCodePreservingLines(string $markdown): string

@@ -8,6 +8,7 @@ use Cognesy\Addons\StepByStep\State\Contracts\HasMessageStore;
 use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Utils\Tokenization\Contracts\CanCountTokens;
 use Cognesy\Utils\Tokenizer;
 
 /**
@@ -21,6 +22,7 @@ final readonly class MoveMessagesToBuffer implements CanProcessAnyState
         private int $maxTokens,
         private string $bufferSection,
         ?CanHandleEvents $events = null,
+        private ?CanCountTokens $tokenizer = null,
     ) {
         $this->events = $events ?? new EventDispatcher(name: 'addons.processor.move-messages-to-buffer');
     }
@@ -37,7 +39,7 @@ final readonly class MoveMessagesToBuffer implements CanProcessAnyState
 
         assert($newState instanceof HasMessageStore);
 
-        [$keep, $overflow] = (new SplitMessages)->split(
+        [$keep, $overflow] = (new SplitMessages($this->tokenizer()))->split(
             messages: $newState->messages(),
             tokenLimit: $this->maxTokens,
         );
@@ -57,7 +59,17 @@ final readonly class MoveMessagesToBuffer implements CanProcessAnyState
     }
 
     private function shouldProcess(string $text): bool {
-        $tokens = Tokenizer::tokenCount($text);
+        $tokens = $this->tokenizer()->tokenCount($text);
         return $tokens > $this->maxTokens;
+    }
+
+    /**
+     * Resolved on use rather than in the constructor: the default tokenizer loads
+     * a multi-megabyte vocabulary, and a processor that is wired into a pipeline
+     * may never see a state it can process. Tokenizer::default() memoizes, so
+     * repeating the call is free.
+     */
+    private function tokenizer(): CanCountTokens {
+        return $this->tokenizer ?? Tokenizer::default();
     }
 }

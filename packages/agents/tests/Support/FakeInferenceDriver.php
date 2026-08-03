@@ -12,20 +12,24 @@ class FakeInferenceDriver implements CanProcessInferenceRequest
 {
     /** @var InferenceResponse[] */
     private array $responses;
+
     /** @var array<int, PartialInferenceDelta[]> */
     private array $streamBatches;
+
     public int $responseCalls = 0;
     public int $streamCalls = 0;
 
-    public function __construct(array $responses = [], array $streamBatches = [])
-    {
+    /** @var list<InferenceRequest> */
+    public array $requests = [];
+
+    public function __construct(array $responses = [], array $streamBatches = []) {
         $this->responses = $responses;
         $this->streamBatches = $streamBatches;
     }
 
-    public function makeResponseFor(InferenceRequest $request): InferenceResponse
-    {
+    public function makeResponseFor(InferenceRequest $request): InferenceResponse {
         $this->responseCalls++;
+        $this->requests[] = $request;
         if (!empty($this->responses)) {
             return array_shift($this->responses);
         }
@@ -33,21 +37,18 @@ class FakeInferenceDriver implements CanProcessInferenceRequest
     }
 
     /** @return iterable<PartialInferenceDelta> */
-    public function makeStreamDeltasFor(InferenceRequest $request): iterable
-    {
+    public function makeStreamDeltasFor(InferenceRequest $request): iterable {
         $this->streamCalls++;
         $batch = !empty($this->streamBatches) ? array_shift($this->streamBatches) : [];
         yield from $this->emitDeltas($batch);
     }
 
-    public function capabilities(?string $model = null): DriverCapabilities
-    {
+    public function capabilities(?string $model = null): DriverCapabilities {
         return new DriverCapabilities();
     }
 
     /** @param PartialInferenceDelta[] $batch */
-    private function emitDeltas(array $batch): iterable
-    {
+    private function emitDeltas(array $batch): iterable {
         foreach ($batch as $item) {
             assert($item instanceof PartialInferenceDelta);
             yield $item;

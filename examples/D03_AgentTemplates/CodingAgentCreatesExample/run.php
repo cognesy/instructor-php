@@ -10,9 +10,10 @@ tags:
 ---
 ## Overview
 
-Run a template-defined coding agent with the bundled `CodingAgentPrompt` and
-provider-familiar `read`, `bash`, `edit`, and `write` tools. The task lives in
-`goal.md`, so it can be revised independently from the PHP wiring.
+Run a template-defined coding agent whose `UseSystemPrompt` capability derives
+guidance for the provider-familiar `read`, `bash`, `edit`, and `write` tools.
+The task lives in `goal.md`, so it can be revised independently from the PHP
+wiring.
 
 The agent reads `examples/A01_Basics/Basic/run.php`, creates a different
 InstructorPHP example under a timestamped `/tmp/instructor-php/agent-test/`
@@ -29,10 +30,10 @@ use Cognesy\Agents\Capability\AgentCapabilityRegistry;
 use Cognesy\Agents\Capability\Bash\BashTool;
 use Cognesy\Agents\Capability\Coding\UseCodingTools;
 use Cognesy\Agents\Capability\Core\UseGuards;
+use Cognesy\Agents\Capability\Prompt\UseSystemPrompt;
 use Cognesy\Agents\Collections\NameList;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
-use Cognesy\Agents\Prompts\Coding\CodingAgentPrompt;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Template\Factory\DefinitionLoopFactory;
 use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
@@ -65,17 +66,16 @@ final readonly class CodingAgentExample
         ?CanHandleEvents $events = null,
     ): self {
         $workspace = '/tmp/instructor-php/agent-test/'
-            .date('Ymd-His').'-'.bin2hex(random_bytes(3));
+            . date('Ymd-His') . '-' . bin2hex(random_bytes(3));
 
-        if (! mkdir($workspace, 0755, true) && ! is_dir($workspace)) {
+        if (!mkdir($workspace, 0755, true) && !is_dir($workspace)) {
             throw new RuntimeException("Cannot create workspace: {$workspace}");
         }
 
         return new self($projectRoot, $workspace, $events);
     }
 
-    public function __invoke(): CodingAgentRunResult
-    {
+    public function __invoke(): CodingAgentRunResult {
         // 1. Resolve the declarative definition into a runnable loop.
         $definition = $this->definition();
         $loop = (new DefinitionLoopFactory(
@@ -84,26 +84,26 @@ final readonly class CodingAgentExample
         ))->instantiateAgentLoop($definition);
 
         // 2. Seed the initial conversation and let the loop own tool execution.
-        $state = (new DefinitionStateFactory)->instantiateAgentState(
+        $state = (new DefinitionStateFactory())->instantiateAgentState(
             $definition,
             AgentState::empty()->withUserMessage($this->task()),
         );
         $final = $loop->execute($state);
 
         // 3. Require a completed run and artifact before trying to execute it.
-        $generatedExample = $this->workspace.'/run.php';
+        $generatedExample = $this->workspace . '/run.php';
         if ($final->status()->value !== 'completed') {
             throw new RuntimeException(
                 "Agent stopped with status: {$final->status()->value}",
             );
         }
 
-        if (! is_file($generatedExample)) {
+        if (!is_file($generatedExample)) {
             throw new RuntimeException("Agent did not create: {$generatedExample}");
         }
 
         // 4. Verify the artifact independently of the agent's own report.
-        $verificationCommand = 'php '.escapeshellarg($generatedExample);
+        $verificationCommand = 'php ' . escapeshellarg($generatedExample);
         $verificationOutput = BashTool::inDirectory($this->projectRoot)(
             $verificationCommand,
         );
@@ -112,7 +112,7 @@ final readonly class CodingAgentExample
             throw new RuntimeException("Generated example failed:\n{$verificationOutput}");
         }
 
-        if (! str_contains($verificationOutput, 'Example status: verified')) {
+        if (!str_contains($verificationOutput, 'Example status: verified')) {
             throw new RuntimeException(
                 "Generated example is not verified:\n{$verificationOutput}",
             );
@@ -127,29 +127,27 @@ final readonly class CodingAgentExample
         );
     }
 
-    public function workspace(): string
-    {
+    public function workspace(): string {
         return $this->workspace;
     }
 
-    private function task(): string
-    {
-        $goalTemplate = file_get_contents(__DIR__.'/goal.md');
+    private function task(): string {
+        $goalTemplate = file_get_contents(__DIR__ . '/goal.md');
         if ($goalTemplate === false) {
             throw new RuntimeException('Cannot read the coding-agent goal.');
         }
 
         return strtr($goalTemplate, [
-            '{{SOURCE_EXAMPLE}}' => $this->projectRoot.'/examples/A01_Basics/Basic/run.php',
+            '{{SOURCE_EXAMPLE}}' => $this->projectRoot . '/examples/A01_Basics/Basic/run.php',
             '{{PROJECT_ROOT}}' => $this->projectRoot,
             '{{WORKSPACE}}' => $this->workspace,
         ]);
     }
 
-    private function capabilities(): AgentCapabilityRegistry
-    {
-        $capabilities = new AgentCapabilityRegistry;
+    private function capabilities(): AgentCapabilityRegistry {
+        $capabilities = new AgentCapabilityRegistry();
         $capabilities->register('coding.tools', new UseCodingTools($this->projectRoot));
+        $capabilities->register('coding.prompt', new UseSystemPrompt());
         $capabilities->register(
             'coding.guards',
             new UseGuards(maxSteps: 20, maxTokens: 32768, maxExecutionTime: 240),
@@ -158,16 +156,13 @@ final readonly class CodingAgentExample
         return $capabilities;
     }
 
-    private function definition(): AgentDefinition
-    {
+    private function definition(): AgentDefinition {
         return new AgentDefinition(
             name: 'coding-example-agent',
             description: 'Creates and repairs an isolated InstructorPHP example.',
-            systemPrompt: CodingAgentPrompt::with(
-                documentation_path: $this->projectRoot.'/packages/agents/README.md',
-            )->render(),
+            systemPrompt: 'You are an expert coding assistant.',
             llmConfig: 'openai',
-            capabilities: new NameList('coding.tools', 'coding.guards'),
+            capabilities: new NameList('coding.tools', 'coding.prompt', 'coding.guards'),
         );
     }
 }
@@ -204,8 +199,8 @@ echo "\n=== Result ===\n";
 echo "Generated example: {$result->generatedExample}\n";
 echo "Verification: {$result->verificationCommand}\n";
 echo 'Agent response: '
-    .($result->state->finalResponse()->toString() ?: 'No response')
-    ."\n";
+    . ($result->state->finalResponse()->toString() ?: 'No response')
+    . "\n";
 echo "\n{$result->verificationOutput}\n";
 
 assert($result->state->status()->value === 'completed');

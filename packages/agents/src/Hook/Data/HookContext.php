@@ -7,6 +7,8 @@ use Cognesy\Agents\Data\ToolExecution;
 use Cognesy\Agents\Exceptions\ToolExecutionBlockedException;
 use Cognesy\Agents\Hook\Enums\HookTrigger;
 use Cognesy\Messages\ToolCall;
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Utils\Exceptions\ErrorList;
 use DateTimeImmutable;
 use Throwable;
@@ -18,10 +20,12 @@ class HookContext
     private readonly DateTimeImmutable $updatedAt;
     private readonly AgentState $state;
     private readonly ?ToolCall $toolCall;
-    private bool $isToolExecutionBlocked;
+    private readonly bool $isToolExecutionBlocked;
     private readonly ?ToolExecution $toolExecution;
     private readonly ErrorList $errorList;
     private readonly array $metadata;
+    private readonly ?InferenceRequest $inferenceRequest;
+    private readonly ?InferenceResponse $inferenceResponse;
 
     public function __construct(
         HookTrigger $triggerType,
@@ -31,6 +35,8 @@ class HookContext
         ?bool $isToolExecutionBlocked = null,
         ?ToolExecution $toolExecution = null,
         ?ErrorList $errorList = null,
+        ?InferenceRequest $inferenceRequest = null,
+        ?InferenceResponse $inferenceResponse = null,
         ?DateTimeImmutable $createdAt = null,
         ?DateTimeImmutable $updatedAt = null,
     ) {
@@ -43,6 +49,8 @@ class HookContext
         $this->isToolExecutionBlocked = $isToolExecutionBlocked ?? false;
         $this->toolExecution = $toolExecution;
         $this->errorList = $errorList ?? ErrorList::empty();
+        $this->inferenceRequest = $inferenceRequest;
+        $this->inferenceResponse = $inferenceResponse;
 
         $this->createdAt = $createdAt ?? $now;
         $this->updatedAt = $updatedAt ?? $now;
@@ -80,6 +88,34 @@ class HookContext
             state: $state,
             metadata: $metadata,
             toolCall: $toolCall,
+        );
+    }
+
+    public static function beforeInferenceRequest(
+        AgentState $state,
+        InferenceRequest $inferenceRequest,
+        array $metadata = [],
+    ): self {
+        return new self(
+            triggerType: HookTrigger::BeforeInferenceRequest,
+            state: $state,
+            metadata: $metadata,
+            inferenceRequest: $inferenceRequest,
+        );
+    }
+
+    public static function afterInferenceResponse(
+        AgentState $state,
+        InferenceRequest $inferenceRequest,
+        InferenceResponse $inferenceResponse,
+        array $metadata = [],
+    ): self {
+        return new self(
+            triggerType: HookTrigger::AfterInferenceResponse,
+            state: $state,
+            metadata: $metadata,
+            inferenceRequest: $inferenceRequest,
+            inferenceResponse: $inferenceResponse,
         );
     }
 
@@ -151,6 +187,8 @@ class HookContext
         ?bool $isToolExecutionBlocked = null,
         ?ToolExecution $toolExecution = null,
         ?ErrorList $errorList = null,
+        ?InferenceRequest $inferenceRequest = null,
+        ?InferenceResponse $inferenceResponse = null,
     ): self {
         return new self(
             triggerType: $this->triggerType,
@@ -160,6 +198,8 @@ class HookContext
             isToolExecutionBlocked: $isToolExecutionBlocked ?? $this->isToolExecutionBlocked,
             toolExecution: $toolExecution ?? $this->toolExecution,
             errorList: $errorList ?? $this->errorList,
+            inferenceRequest: $inferenceRequest ?? $this->inferenceRequest,
+            inferenceResponse: $inferenceResponse ?? $this->inferenceResponse,
             createdAt: $this->createdAt,
             updatedAt: new DateTimeImmutable(),
         );
@@ -171,6 +211,12 @@ class HookContext
 
     public function withMetadata(array $metadata): self {
         return $this->with(metadata: $metadata);
+    }
+
+    public function withMetadataEntry(string $key, mixed $value): self {
+        $metadata = $this->metadata;
+        $metadata[$key] = $value;
+        return $this->withMetadata($metadata);
     }
 
     public function withToolCall(ToolCall $toolCall): self {
@@ -185,7 +231,15 @@ class HookContext
         return $this->with(errorList: $errorList);
     }
 
-    public function withToolExecutionBlocked(?string $message = null): self {
+    public function withInferenceRequest(InferenceRequest $inferenceRequest): self {
+        return $this->with(inferenceRequest: $inferenceRequest);
+    }
+
+    public function withInferenceResponse(InferenceResponse $inferenceResponse): self {
+        return $this->with(inferenceResponse: $inferenceResponse);
+    }
+
+    public function blockToolExecution(?string $message = null): self {
         $message = $message ?? 'Execution blocked by hook: ' . $this->hookToString();
         $toolCall = $this->toolCall ?? ToolCall::none();
         $exception = new ToolExecutionBlockedException($toolCall, $message);
@@ -197,6 +251,10 @@ class HookContext
             ),
             errorList: ErrorList::fromErrors($exception),
         );
+    }
+
+    public function withToolExecutionBlocked(?string $message = null): self {
+        return $this->blockToolExecution($message);
     }
 
     public function withError(Throwable $error): self {
@@ -229,6 +287,14 @@ class HookContext
         return $this->toolExecution;
     }
 
+    public function inferenceRequest(): ?InferenceRequest {
+        return $this->inferenceRequest;
+    }
+
+    public function inferenceResponse(): ?InferenceResponse {
+        return $this->inferenceResponse;
+    }
+
     public function errorList(): ErrorList {
         return $this->errorList;
     }
@@ -253,6 +319,34 @@ class HookContext
             $this->errorList->hasError(ToolExecutionBlockedException::class) => true,
             default => false,
         };
+    }
+
+    /** @return list<string> */
+    public function disallowedChangesIn(self $next): array {
+        $changes = [];
+        foreach ($this->fieldChangesIn($next) as $field) {
+            if (!in_array($field, $this->triggerType->mutableFields(), true)) {
+                $changes[] = $field;
+            }
+        }
+        return $changes;
+    }
+
+    /** @return list<string> */
+    private function fieldChangesIn(self $next): array {
+        $fields = [
+            'triggerType' => $this->triggerType !== $next->triggerType,
+            'createdAt' => $this->createdAt !== $next->createdAt,
+            'state' => $this->state !== $next->state,
+            'metadata' => $this->metadata !== $next->metadata,
+            'toolCall' => $this->toolCall !== $next->toolCall,
+            'isToolExecutionBlocked' => $this->isToolExecutionBlocked !== $next->isToolExecutionBlocked,
+            'toolExecution' => $this->toolExecution !== $next->toolExecution,
+            'errorList' => $this->errorList !== $next->errorList,
+            'inferenceRequest' => $this->inferenceRequest !== $next->inferenceRequest,
+            'inferenceResponse' => $this->inferenceResponse !== $next->inferenceResponse,
+        ];
+        return array_keys(array_filter($fields));
     }
 
     private function hookToString(): string {

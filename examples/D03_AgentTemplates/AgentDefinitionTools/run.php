@@ -1,0 +1,61 @@
+---
+title: 'Agent Definition Tools'
+docname: 'agent_definition_tools'
+order: 7
+id: 'agent-definition-tools'
+tags:
+  - 'agents'
+  - 'agent-builder'
+  - 'agent-templates'
+  - 'definitions'
+---
+## Overview
+
+`UseAgentDefinitions` lets an AgentBuilder-based agent inspect a shared
+`AgentDefinitionRegistry`. Its safe default is read-only: the capability adds
+`list_agents` and `read_agent`, but not `write_agent`. Supplying an explicit
+`FileAgentDefinitionStore` is what grants definition-writing authority.
+
+This example invokes the installed tools directly, so it performs no inference
+and needs no API credentials.
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\AgentCapabilityRegistry;
+use Cognesy\Agents\Capability\Definitions\UseAgentDefinitions;
+use Cognesy\Agents\Template\AgentDefinitionRegistry;
+use Cognesy\Agents\Template\AgentDefinitionValidator;
+use Cognesy\Agents\Template\Data\AgentDefinition;
+use Cognesy\Agents\Tool\ToolRegistry;
+
+$definitions = new AgentDefinitionRegistry();
+$definitions->register(new AgentDefinition(
+    name: 'release-reviewer',
+    description: 'Reviews a release before publication.',
+    systemPrompt: 'Check release notes, tests, and package versions.',
+));
+
+$validator = new AgentDefinitionValidator(
+    new AgentCapabilityRegistry(),
+    new ToolRegistry(),
+);
+$agent = AgentBuilder::base()
+    ->withCapability(new UseAgentDefinitions($definitions, $validator))
+    ->build();
+
+$listed = $agent->tools()->get('list_agents')();
+$read = $agent->tools()->get('read_agent')(name: 'release-reviewer');
+
+echo json_encode($listed, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR), "\n\n";
+echo $read['source'], "\n";
+
+assert($agent->tools()->names() === ['list_agents', 'read_agent']);
+assert($listed['agents'][0]['name'] === 'release-reviewer');
+assert(str_contains($read['source'], 'Check release notes'));
+?>
+```

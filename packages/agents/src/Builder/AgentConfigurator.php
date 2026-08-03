@@ -6,6 +6,7 @@ use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Builder\Collections\DeferredToolProviders;
 use Cognesy\Agents\Builder\Contracts\CanConfigureAgent;
 use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
+use Cognesy\Agents\Builder\Data\ResolvedTools;
 use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Context\CanAcceptMessageCompiler;
 use Cognesy\Agents\Context\CanCompileMessages;
@@ -15,13 +16,23 @@ use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Agents\Hook\Collections\RegisteredHooks;
 use Cognesy\Agents\Hook\HookStack;
+use Cognesy\Agents\Interception\CanAcceptLifecycleInterceptor;
+use Cognesy\Agents\Interception\CanInterceptAgentLifecycle;
 use Cognesy\Agents\Interception\PassThroughInterceptor;
+use Cognesy\Agents\Profile\AgentIdentity;
+use Cognesy\Agents\Profile\AgentProfile;
+use Cognesy\Agents\Profile\AgentProfileBinder;
+use Cognesy\Agents\Profile\AgentProfileContributors;
+use Cognesy\Agents\Profile\CapabilityProfile;
+use Cognesy\Agents\Profile\CapabilityProfileList;
+use Cognesy\Agents\Profile\Contracts\CanContributeToAgentProfile;
 use Cognesy\Agents\Tool\ToolExecutor;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Logging\EventLog;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Utils\Metadata;
 use Override;
 
 /** @internal */
@@ -34,9 +45,16 @@ final readonly class AgentConfigurator implements CanConfigureAgent
         private HookStack $hooks,
         private DeferredToolProviders $deferredTools,
         private CanHandleEvents $events,
+        private AgentIdentity $identity,
+        private CapabilityProfileList $installedCapabilities,
+        private AgentProfileContributors $profileContributors,
+        private Metadata $profileMetadata,
     ) {}
 
-    public static function base(?CanHandleEvents $parentEvents = null): self {
+    public static function base(
+        ?CanHandleEvents $parentEvents = null,
+        ?AgentIdentity $identity = null,
+    ): self {
         $events = $parentEvents !== null
             ? new EventDispatcher('agent-builder', $parentEvents)
             : EventLog::root('agent-builder');
@@ -56,6 +74,10 @@ final readonly class AgentConfigurator implements CanConfigureAgent
             hooks: new HookStack(new RegisteredHooks()),
             deferredTools: DeferredToolProviders::empty(),
             events: $events,
+            identity: $identity ?? AgentIdentity::anonymous(),
+            installedCapabilities: CapabilityProfileList::empty(),
+            profileContributors: AgentProfileContributors::empty(),
+            profileMetadata: Metadata::empty(),
         );
     }
 
@@ -63,13 +85,37 @@ final readonly class AgentConfigurator implements CanConfigureAgent
     public function install(CanProvideAgentCapability $capability): self {
         /** @var self $configured */
         $configured = $capability->configure($this);
-        return $configured;
+        $contributors = match (true) {
+            $capability instanceof CanContributeToAgentProfile
+                => $configured->profileContributors->with($capability),
+            default => $configured->profileContributors,
+        };
+        return $configured->with(
+            installedCapabilities: $configured->installedCapabilities->with(
+                new CapabilityProfile($capability::capabilityName(), $capability::class),
+            ),
+            profileContributors: $contributors,
+        );
     }
 
     public function toAgentLoop(): AgentLoop {
         $driver = $this->normalizeDriver($this->toolUseDriver, $this->contextCompiler);
-        $tools = $this->resolveTools($driver);
+        $resolvedTools = $this->resolveTools($driver);
+        $tools = $resolvedTools->tools();
         $interceptor = $this->resolveInterceptor();
+        $profile = AgentProfile::fromResolved(
+            identity: $this->identity,
+            tools: $tools,
+            capabilities: $this->installedCapabilities,
+            driver: $driver,
+            interceptor: $interceptor,
+            contributors: $this->profileContributors,
+            metadata: $this->profileMetadata,
+            deferredToolNames: $resolvedTools->deferredNames(),
+        );
+        $tools = AgentProfileBinder::tools($tools, $profile);
+        $driver = AgentProfileBinder::driver($driver, $profile);
+        $interceptor = AgentProfileBinder::interceptor($interceptor, $profile);
 
         $executor = new ToolExecutor(
             tools: $tools,
@@ -78,6 +124,7 @@ final readonly class AgentConfigurator implements CanConfigureAgent
             throwOnToolFailure: false,
         );
         $driver = $this->bindToolRuntime($driver, $tools, $executor);
+        $driver = $this->bindInterceptor($driver, $interceptor);
 
         return new AgentLoop(
             tools: $tools,
@@ -85,6 +132,7 @@ final readonly class AgentConfigurator implements CanConfigureAgent
             driver: $driver,
             events: $this->events,
             interceptor: $interceptor,
+            profile: $profile,
         );
     }
 
@@ -164,6 +212,10 @@ final readonly class AgentConfigurator implements CanConfigureAgent
         ?HookStack $hooks = null,
         ?DeferredToolProviders $deferredTools = null,
         ?CanHandleEvents $events = null,
+        ?AgentIdentity $identity = null,
+        ?CapabilityProfileList $installedCapabilities = null,
+        ?AgentProfileContributors $profileContributors = null,
+        ?Metadata $profileMetadata = null,
     ): self {
         return new self(
             tools: $tools ?? $this->tools,
@@ -172,6 +224,10 @@ final readonly class AgentConfigurator implements CanConfigureAgent
             hooks: $hooks ?? $this->hooks,
             deferredTools: $deferredTools ?? $this->deferredTools,
             events: $events ?? $this->events,
+            identity: $identity ?? $this->identity,
+            installedCapabilities: $installedCapabilities ?? $this->installedCapabilities,
+            profileContributors: $profileContributors ?? $this->profileContributors,
+            profileMetadata: $profileMetadata ?? $this->profileMetadata,
         );
     }
 
@@ -193,8 +249,18 @@ final readonly class AgentConfigurator implements CanConfigureAgent
         };
     }
 
-    private function resolveTools(CanUseTools $driver): Tools {
-        return $this->deferredTools->resolve($this->tools, $driver, $this->events);
+    private function bindInterceptor(
+        CanUseTools $driver,
+        CanInterceptAgentLifecycle $interceptor,
+    ): CanUseTools {
+        return match (true) {
+            $driver instanceof CanAcceptLifecycleInterceptor => $driver->withInterceptor($interceptor),
+            default => $driver,
+        };
+    }
+
+    private function resolveTools(CanUseTools $driver): ResolvedTools {
+        return $this->deferredTools->resolveWithProvenance($this->tools, $driver, $this->events);
     }
 
     private function resolveInterceptor(): HookStack|PassThroughInterceptor {
@@ -203,10 +269,6 @@ final readonly class AgentConfigurator implements CanConfigureAgent
             return new PassThroughInterceptor();
         }
 
-        $stack = new HookStack(new RegisteredHooks(), $this->events);
-        foreach ($hooks as $hook) {
-            $stack = $stack->withHook($hook);
-        }
-        return $stack;
+        return $this->hooks->withEventHandler($this->events);
     }
 }

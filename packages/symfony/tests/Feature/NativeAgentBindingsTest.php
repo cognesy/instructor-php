@@ -97,7 +97,7 @@ it('hydrates native-agent registries from explicit Symfony service tags', functi
                 ->and($capabilities->has('named-capability'))->toBeTrue()
                 ->and($capabilities->get('named-capability'))->toBeInstanceOf(TaggedNamedSymfonyCapability::class)
                 ->and($schemas->has('tagged_schema'))->toBeTrue()
-                ->and($schemas->get('tagged_schema')->class)->toBe(TaggedSchemaData::class);
+                ->and($schemas->get('tagged_schema')->class)->toBe(SymfonyTaggedSchemaData::class);
         },
         instructorConfig: [
             'connections' => [
@@ -130,7 +130,7 @@ it('hydrates native-agent registries from explicit Symfony service tags', functi
                 $container->setDefinition('tagged-schema-registration', (new Definition(SchemaRegistration::class))
                     ->setArguments([
                         '$name' => 'tagged_schema',
-                        '$schema' => TaggedSchemaData::class,
+                        '$schema' => SymfonyTaggedSchemaData::class,
                     ])
                     ->addTag(AgentRegistryTags::SCHEMAS));
             },
@@ -324,7 +324,7 @@ final readonly class AutoconfiguredSchemaData
     ) {}
 }
 
-final readonly class TaggedSchemaData
+final readonly class SymfonyTaggedSchemaData
 {
     public function __construct(
         public string $message,

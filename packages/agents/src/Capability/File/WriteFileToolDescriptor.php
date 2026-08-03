@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Cognesy\Agents\Capability\File;
 
+use Cognesy\Agents\Tool\Contracts\CanContributeToPrompt;
 use Cognesy\Agents\Tool\ToolDescriptor;
+use Override;
 
-final readonly class WriteFileToolDescriptor extends ToolDescriptor
+final readonly class WriteFileToolDescriptor extends ToolDescriptor implements CanContributeToPrompt
 {
     public function __construct(string $name = 'write_file') {
         parent::__construct(
@@ -35,5 +37,15 @@ DESC,
                 'returns' => 'Written byte and line count, identical-content no-op, or explicit no-change error.',
             ],
         );
+    }
+
+    #[Override]
+    public function promptSnippet(): ?string {
+        return 'Create new files';
+    }
+
+    #[Override]
+    public function promptGuidelines(): array {
+        return ['Use write only for new files whose parent directory already exists'];
     }
 }

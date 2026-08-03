@@ -21,4 +21,10 @@
             <directory suffix=".php">./src</directory>
         </include>
     </source>
+    <php>
+        <!-- The default tokenizer downloads its vocabulary on first use. Pinning the
+             bundled one keeps the suite offline and its token counts stable; tests
+             that exercise resolution pass the preference explicitly instead. -->
+        <env name="INSTRUCTOR_TOKENIZER" value="gpt3"/>
+    </php>
 </phpunit>

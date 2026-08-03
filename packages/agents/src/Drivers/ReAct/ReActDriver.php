@@ -44,6 +44,7 @@ use Cognesy\Messages\ToolCalls;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
+use Cognesy\Polyglot\Inference\Contracts\CanResolveLLMConfig;
 use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -57,7 +58,7 @@ use Override;
 use RuntimeException;
 use Throwable;
 
-final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptLLMConfig, CanAcceptMessageCompiler
+final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptLLMConfig, CanAcceptMessageCompiler, CanResolveLLMConfig
 {
     private LLMProvider $llm;
     private ?CanSendHttpRequests $httpClient = null;
@@ -216,6 +217,11 @@ final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
     }
 
     #[Override]
+    public function resolveConfig(): LLMConfig {
+        return $this->llm->resolveConfig();
+    }
+
+    #[Override]
     public function messageCompiler(): CanCompileMessages {
         return $this->messageCompiler;
     }
@@ -290,7 +296,7 @@ final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         $decision = $pending->get();
         return new DecisionWithDetails(
             decision: $decision,
-            response: $pending->response(),
+            response: $pending->inferenceResponse(),
         );
     }
 

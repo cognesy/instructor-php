@@ -1,6 +1,7 @@
 <?php
 
 use Cognesy\Doctools\Docgen\Data\DocumentationConfig;
+use Cognesy\Doctools\Docgen\Data\DocsConfig;
 use Cognesy\Doctools\Docgen\MintlifyDocumentation;
 use Cognesy\Doctools\Docgen\MkDocsDocumentation;
 use Cognesy\InstructorHub\Data\Example;
@@ -10,6 +11,7 @@ use Cognesy\Utils\Files;
 
 beforeEach(function () {
     $this->tempDir = sys_get_temp_dir() . '/docgen_integration_test_' . uniqid();
+    $this->docsConfig = DocsConfig::defaults();
     setupTestEnvironment();
 });
 
@@ -129,7 +131,7 @@ describe('Documentation Generation Integration', function () {
         );
         
         // Generate with both systems
-        $mintlify = new MintlifyDocumentation($examples, $mintlifyConfig);
+        $mintlify = new MintlifyDocumentation($examples, $mintlifyConfig, $this->docsConfig);
         $mkdocs = new MkDocsDocumentation($examples, $mkdocsConfig);
         
         $mintlifyResult = $mintlify->generateAll();
@@ -181,7 +183,7 @@ describe('Documentation Generation Integration', function () {
             dynamicGroups: []
         );
         
-        $mintlify = new MintlifyDocumentation($examples, $mintlifyConfig);
+        $mintlify = new MintlifyDocumentation($examples, $mintlifyConfig, $this->docsConfig);
         $mkdocs = new MkDocsDocumentation($examples, $mkdocsConfig);
         
         $mintlify->initializeBaseFiles();
@@ -233,7 +235,7 @@ describe('Documentation Generation Integration', function () {
             dynamicGroups: ['Test']
         );
         
-        $mintlify = new MintlifyDocumentation($examples, $mintlifyConfig);
+        $mintlify = new MintlifyDocumentation($examples, $mintlifyConfig, $this->docsConfig);
         $mkdocs = new MkDocsDocumentation($examples, $mkdocsConfig);
         
         // Generate simultaneously (in sequence for test)
@@ -277,7 +279,7 @@ describe('Documentation Generation Integration', function () {
             dynamicGroups: []
         );
         
-        $mintlify = new MintlifyDocumentation($examples, $mintlifyConfig);
+        $mintlify = new MintlifyDocumentation($examples, $mintlifyConfig, $this->docsConfig);
         $mkdocs = new MkDocsDocumentation($examples, $mkdocsConfig);
         
         // Generate both
