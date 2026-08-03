@@ -1,0 +1,73 @@
+## Overview
+
+Trusted packages can publish zero-argument agent capabilities in Composer's
+`extra.cognesy-agents.capabilities` map. `CapabilityDiscovery` reads those
+manifests and registers lazy factories that definitions can reference by name.
+Discovery is explicit because resolving a contributed entry instantiates code
+from that package.
+
+The fixture used by this credential-free example declares one root-package
+capability:
+
+```json
+{
+  "name": "example/agent-extension",
+  "extra": {
+    "cognesy-agents": {
+      "capabilities": {
+        "system-prompt": "Cognesy\\Agents\\Capability\\Prompt\\UseSystemPrompt"
+      }
+    }
+  }
+}
+```
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\Agents\Capability\AgentCapabilityRegistry;
+use Cognesy\Agents\Collections\NameList;
+use Cognesy\Agents\Discovery\CapabilityDiscovery;
+use Cognesy\Agents\Discovery\PackageManifest;
+use Cognesy\Agents\Template\Data\AgentDefinition;
+use Cognesy\Agents\Template\Factory\DefinitionLoopFactory;
+use Cognesy\Agents\Tool\ToolRegistry;
+
+$fixture = __DIR__ . '/fixture';
+$capabilities = new AgentCapabilityRegistry();
+$tools = new ToolRegistry();
+
+$result = CapabilityDiscovery::discover(
+    $capabilities,
+    $tools,
+    vendorDir: $fixture . '/vendor',
+    rootComposerPath: $fixture . '/composer.json',
+);
+
+$definition = new AgentDefinition(
+    name: 'manifest-agent',
+    description: 'Uses a capability contributed through Composer metadata.',
+    systemPrompt: 'Answer concisely.',
+    capabilities: new NameList('system-prompt'),
+);
+$agent = (new DefinitionLoopFactory($capabilities, $tools))
+    ->instantiateAgentLoop($definition);
+
+echo json_encode([
+    'packages' => array_map(
+        static fn (PackageManifest $manifest): string => $manifest->packageName,
+        $result->manifests()->all(),
+    ),
+    'capabilities' => $result->capabilities()->all(),
+    'errors' => $result->errors()->all(),
+], JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR), "\n";
+
+assert($result->capabilities()->all() === ['system-prompt']);
+assert($result->errors()->isEmpty());
+assert($capabilities->has('system-prompt'));
+assert(count($agent->profile()->capabilities->all()) === 1);
+?>
+```

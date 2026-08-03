@@ -28,7 +28,7 @@ dump($response->usage());
 
 // Why the model stopped generating
 dump($response->finishReason());
-// @doctest id="2b24"
+// @doctest id="159d"
 ```
 
 ### Raw Provider Response
@@ -42,7 +42,7 @@ $raw = (new StructuredOutput())
 
 dump($raw->content());
 dump($raw->toolCalls());
-// @doctest id="91e6"
+// @doctest id="4e1d"
 ```
 
 ### Execution Metadata
@@ -58,7 +58,7 @@ $pending = (new StructuredOutput())
 $execution = $pending->execution();
 dump($execution->outputMode());
 dump($execution->request());
-// @doctest id="eb44"
+// @doctest id="5c35"
 ```
 
 ### Streaming Responses
@@ -74,7 +74,7 @@ foreach ($stream->responses() as $response) {
     echo $response->isPartial() ? 'partial' : 'final';
     dump($response->value());
 }
-// @doctest id="bcf4"
+// @doctest id="4cf9"
 ```
 
 
@@ -91,7 +91,7 @@ $runtime = StructuredOutputRuntime::fromDefaults()
 $result = (new StructuredOutput($runtime))
     ->with(messages: '...', responseModel: User::class)
     ->get();
-// @doctest id="39d1"
+// @doctest id="348e"
 ```
 
 For targeted debugging, listen to specific event types:
@@ -105,7 +105,7 @@ $runtime = StructuredOutputRuntime::fromDefaults()
     ->onEvent(ResponseValidationFailed::class, fn($e) => dump('Validation failed:', $e->data))
     ->onEvent(ResponseDeserializationFailed::class, fn($e) => dump('Deserialization failed:', $e->data))
     ->onEvent(ResponseRetryScheduled::class, fn($e) => dump('Retrying...', $e->data));
-// @doctest id="058f"
+// @doctest id="9c11"
 ```
 
 See the [Events](events) page for the full list of available event classes.
@@ -126,7 +126,7 @@ echo $pending->toJson();
 
 // Parsed array
 dump($pending->toArray());
-// @doctest id="1012"
+// @doctest id="8152"
 ```
 
 

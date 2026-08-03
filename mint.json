@@ -1,8 +1,14 @@
 {
-    "name": "Test Docs",
+    "name": "Instructor for PHP",
     "favicon": "/favicon.svg",
     "colors": {
-        "primary": "#0D9373"
+        "primary": "#0D9373",
+        "light": "#07C983",
+        "dark": "#0D9373",
+        "anchors": {
+            "from": "#0D9373",
+            "to": "#07C983"
+        }
     },
     "navigation": [
         {
@@ -19,6 +25,7 @@
             "group": "Release Notes",
             "pages": [
                 "release-notes/versions",
+                "release-notes/v2.6.0",
                 "release-notes/v2.5.2",
                 "release-notes/v2.5.1",
                 "release-notes/v2.5.0",
@@ -316,6 +323,7 @@
                 "packages/agents/17-building-tools-advanced",
                 "packages/agents/18-observing-agent-execution",
                 "packages/agents/19-skills",
+                "packages/agents/20-self-knowledge",
                 "packages/agents/testing-doubles"
             ]
         },
@@ -652,7 +660,8 @@
                 "cookbook/examples/D01_Agents/agent_loop_context_compiler",
                 "cookbook/examples/D01_Agents/agent_loop_stop_conditions",
                 "cookbook/examples/D01_Agents/agent_loop_events",
-                "cookbook/examples/D01_Agents/agent_loop_multi_execution"
+                "cookbook/examples/D01_Agents/agent_loop_multi_execution",
+                "cookbook/examples/D01_Agents/agent_describe"
             ]
         },
         {
@@ -667,7 +676,10 @@
                 "cookbook/examples/D02_AgentBuilder/agent_subagents",
                 "cookbook/examples/D02_AgentBuilder/agent_retrospective",
                 "cookbook/examples/D02_AgentBuilder/agent_planning_subagent",
-                "cookbook/examples/D02_AgentBuilder/agent_skills"
+                "cookbook/examples/D02_AgentBuilder/agent_skills",
+                "cookbook/examples/D02_AgentBuilder/agent_derived_prompt",
+                "cookbook/examples/D02_AgentBuilder/agent_self_knowledge",
+                "cookbook/examples/D02_AgentBuilder/agent_self_description"
             ]
         },
         {
@@ -678,7 +690,10 @@
                 "cookbook/examples/D03_AgentTemplates/template_from_yaml",
                 "cookbook/examples/D03_AgentTemplates/template_with_tools_and_capabilities",
                 "cookbook/examples/D03_AgentTemplates/template_override_seed_state",
-                "cookbook/examples/D03_AgentTemplates/coding_agent_creates_example"
+                "cookbook/examples/D03_AgentTemplates/coding_agent_creates_example",
+                "cookbook/examples/D03_AgentTemplates/agent_definition_tools",
+                "cookbook/examples/D03_AgentTemplates/composer_capability_discovery",
+                "cookbook/examples/D03_AgentTemplates/agent_definition_round_trip"
             ]
         },
         {
@@ -868,6 +883,20 @@
             ]
         }
     ],
+    "logo": {
+        "dark": "/images/logo/dark.svg",
+        "light": "/images/logo/light.svg"
+    },
+    "topbarLinks": [
+        {
+            "name": "Issues",
+            "url": "https://github.com/cognesy/instructor-php/issues"
+        }
+    ],
+    "topbarCtaButton": {
+        "name": "Github",
+        "url": "https://github.com/cognesy/instructor-php"
+    },
     "primaryTab": {
         "name": "Main"
     },

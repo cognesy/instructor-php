@@ -802,10 +802,64 @@ TextRepresentation::fromParameter($value, $key, $params) // Parameter-aware conv
 // Additional support: ->toSchema(), ->toOutputSchema(), ->value(), callable($key, $params)
 ```
 
-### Tokenizer - GPT-3 Token Counting
+### Tokenizer - Token Counting
 ```php
 Tokenizer::tokenCount('some text')   // → int (number of tokens)
+Tokenizer::default()                 // → CanCountTokens (built once per process)
+Tokenizer::setDefault($tokenizer)    // swap the implementation process-wide
+Tokenizer::reset()                   // back to the resolved default
 ```
+
+The default is tiktoken with `o200k_base`, resolved by `TokenizerResolver` on
+first use. Pick another one without touching code via `INSTRUCTOR_TOKENIZER`:
+
+```bash
+INSTRUCTOR_TOKENIZER=auto                    # default: tiktoken, bundled if unavailable
+INSTRUCTOR_TOKENIZER=gpt3                    # bundled r50k_base, never any network
+INSTRUCTOR_TOKENIZER=tiktoken                # tiktoken with o200k_base, fails loudly
+INSTRUCTOR_TOKENIZER=tiktoken:cl100k_base    # a specific encoding, fails loudly
+```
+
+`auto` falls back to the bundled tokenizer when the tiktoken vocabulary cannot be
+obtained; the explicit forms do not - getting a different tokenizer than the one
+you asked for would mean silently getting different counts.
+
+Counting goes through `CanCountTokens`; drivers that can also produce token IDs
+implement `CanTokenizeText` (`encode()`, `encoding()`). Prefer injecting the
+contract over calling the static facade.
+
+```php
+use Cognesy\Utils\Tokenization\Contracts\CanCountTokens;
+use Cognesy\Utils\Tokenization\Drivers\Gpt3TokenizerDriver;
+use Cognesy\Utils\Tokenization\Drivers\TiktokenDriver;
+
+new Gpt3TokenizerDriver()               // bundled r50k_base, no network
+TiktokenDriver::forEncoding('cl100k_base')  // default driver, o200k_base out of the box
+TiktokenDriver::forModel('gpt-4o')
+TiktokenDriver::using($encoder)         // pre-built Yethee\Tiktoken\Encoder
+TiktokenDriver::isAvailable()           // → bool, is yethee/tiktoken installed
+```
+
+`TiktokenDriver` is ~25x faster on long texts and uses a third of the memory,
+but it downloads its vocabulary on first use and caches it on disk (override the
+location with `TIKTOKEN_CACHE_DIR` or the `$cacheDir` argument). That download is
+why `Gpt3TokenizerDriver` is still shipped: it is the offline fallback.
+
+Token counts are only comparable within one encoding. The default `o200k_base`
+produces different numbers than the bundled `r50k_base` - generally fewer, since
+it covers modern text more tightly - so persisted token budgets are worth
+revisiting. tiktoken's own `r50k_base` is token-for-token identical to the
+bundled tokenizer, and is the way to keep the old numbers with the new speed.
+
+Components that count tokens take an optional `CanCountTokens`, falling back to
+`Tokenizer::default()`: `SplitMessages`, `MoveMessagesToBuffer`,
+`SummarizeBuffer`, and the agents `UseSummarization` capability.
+
+That fallback resolves on the first count, not in the constructor - wiring one of
+these components into a pipeline costs nothing until it actually counts. A
+consequence worth knowing: a component built without an explicit tokenizer picks
+up whatever `Tokenizer::setDefault()` installed most recently, so set the default
+before counting starts rather than assuming construction order decides it.
 
 ### ProgrammingLanguage - Language Enum & Helpers
 ```php

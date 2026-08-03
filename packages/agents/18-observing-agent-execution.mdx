@@ -68,7 +68,7 @@ $agent = AgentBuilder::base()
 $result = $agent->execute(
     AgentState::empty()->withUserMessage('Explain closures in PHP.')
 );
-// @doctest id="1ba9"
+// @doctest id="826d"
 ```
 
 Once installed, the capability listens to the relevant execution, step, tool, continuation, and streaming events and emits normalized envelopes through your transport. Your app consumes those envelopes and updates the UI.
@@ -99,7 +99,7 @@ $agent = AgentLoop::default()->withDriver(
         events: $events,
     )
 );
-// @doctest id="79b1"
+// @doctest id="8538"
 ```
 
 Without streamed inference, you still receive step, tool, and status envelopes, but not incremental text chunks.
@@ -113,7 +113,7 @@ interface CanBroadcastAgentEvents
 {
     public function broadcast(string $channel, array $envelope): void;
 }
-// @doctest id="8529"
+// @doctest id="0eb0"
 ```
 
 This keeps the integration boundary small. The broadcaster does not require a framework or network stack. Your implementation decides how envelopes leave the process.
@@ -148,7 +148,7 @@ $broadcaster = new AgentEventBroadcaster(
     executionId: 'exec-1',
     config: BroadcastConfig::standard(),
 );
-// @doctest id="baf1"
+// @doctest id="5b5b"
 ```
 
 For most user-facing apps, `standard()` is the right default.
@@ -176,3 +176,42 @@ This is usually enough to drive:
 - `AgentEventBroadcaster` is transport-agnostic. It formats envelopes but does not send HTTP responses or manage sockets.
 - The broadcaster does not replace `iterate()`. Use `iterate()` for application-side control flow, and use broadcasting for UI observation.
 - If you need additional behavior, you can attach your own listeners alongside the broadcaster with `onEvent()`.
+
+## Describing the Resolved Agent
+
+Use `describe()` when a host application, CLI, test, or operator needs a deterministic description of the agent that was actually built:
+
+```php
+$description = $agent->describe();
+
+$data = $description->toArray();
+$text = $description->toText();
+$markdown = $description->toMarkdown();
+// @doctest id="a62f"
+```
+
+The description includes the resolved identity, driver, safe LLM configuration, installed capabilities, resolved tools, registered hooks, self-knowledge summary, and public metadata. Tool entries use the same resolved names and prompt-visibility rule as prompt composition. Hook entries are ordered by lifecycle trigger, then priority, then registration order.
+
+`toArray()` is the machine-readable contract. Its field order and collection ordering are deterministic within a major release; minor releases may add fields. Consumers should read fields by name and tolerate additions.
+
+The LLM section is intentionally a safe projection. It may include the driver, model, and token limits, but never exposes API keys, authorization headers, credential-bearing URLs, provider options, or arbitrary connection metadata.
+
+The tool list describes tools installed on the resolved loop. It is not a promise that every tool call will be authorized in every state: guards and policy hooks can still block a tool at execution time.
+
+## Letting the Agent Describe Itself
+
+Self-description is opt-in. Add `UseSelfDescription` to install the `describe_self` tool:
+
+```php
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Describe\UseSelfDescription;
+
+$agent = AgentBuilder::base()
+    ->withCapability(new UseSelfDescription())
+    ->build();
+// @doctest id="c793"
+```
+
+The tool receives the final resolved profile after all capabilities, tools, hooks, and driver configuration have been applied. Its full response is therefore the same safe array returned by `$agent->describe()->toArray()`, including the `describe_self` tool itself.
+
+An agent can request the full description or narrow the result to `tools`, `capabilities`, or `hooks`. Narrowing returns one top-level field with the same ordering and values as the full description; it does not create a second discovery path.

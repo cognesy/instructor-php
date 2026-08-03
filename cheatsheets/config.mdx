@@ -138,6 +138,33 @@ $resolved = $template->resolveValue($value);
 // ${VAR:?message}  — value of VAR, throws with message if unset/empty
 ```
 
+## SecretResolver — application-owned layered interpolation
+
+```php
+use Cognesy\Config\Config;
+use Cognesy\Config\EnvTemplate;
+use Cognesy\Config\Secrets\DotenvFileSecretSource;
+use Cognesy\Config\Secrets\EnvironmentSecretSource;
+use Cognesy\Config\Secrets\SecretResolver;
+
+$secrets = new SecretResolver(
+    new EnvironmentSecretSource('process-environment'),
+    DotenvFileSecretSource::optional('/workspace/.env', 'workspace-env'),
+    DotenvFileSecretSource::optional('/app/credentials.env', 'app-credentials'),
+);
+
+$config = Config::fromPaths('/app/config')
+    ->withTemplate(new EnvTemplate($secrets));
+
+$resolved = $secrets->resolve('OPENAI_API_KEY');
+$resolved?->source;    // safe provenance, such as "workspace-env"
+$resolved?->toArray(); // name, configured, and source; never the value
+```
+
+Sources are queried in constructor order and the first non-empty value wins.
+Use `ResolvedSecret::value()` only at the configuration-consumption boundary.
+The application, not this package, owns credential persistence and permissions.
+
 ## BasePath — application root detection
 
 ```php
