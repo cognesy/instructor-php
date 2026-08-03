@@ -40,7 +40,7 @@ release_is_live() {
   local index_url="$3"
 
   curl -fsSL "${base_url}${release_url}?source=${source_sha}" >/dev/null \
-    && curl -fsSL "${base_url}${index_url}?source=${source_sha}" | grep -Fq "v${version}"
+    && curl -fsSL "${base_url}${index_url}?source=${source_sha}" | grep -F "v${version}" >/dev/null
 }
 
 DOCS_VERIFY_ATTEMPTS="$attempts" \
