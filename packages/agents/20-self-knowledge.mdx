@@ -19,7 +19,7 @@ $agent = AgentBuilder::base()
     ->withCapability(new UseSelfKnowledge())
     ->withCapability(new UseSystemPrompt())
     ->build();
-// @doctest id="392b"
+// @doctest id="10bc"
 ```
 
 `UseSelfKnowledge` contributes data to the resolved `AgentProfile`.
@@ -52,7 +52,7 @@ disable the gate explicitly:
 
 ```php
 new UseSelfKnowledge(requireReadTool: false);
-// @doctest id="adcd"
+// @doctest id="1e0f"
 ```
 
 Disabling the gate does not grant filesystem access. The host remains responsible
@@ -69,7 +69,7 @@ After changing a routed source document, synchronize and verify the mirror:
 ```bash
 composer --working-dir=packages/agents docs:self-knowledge:write
 composer --working-dir=packages/agents docs:self-knowledge:check
-# @doctest id="8d2a"
+# @doctest id="0104"
 ```
 
 The repository QA checks that every routed file exists, every mirrored document
@@ -82,7 +82,7 @@ No inference is needed to inspect the resolved metadata:
 ```php
 $description = $agent->describe()->toArray();
 $selfKnowledge = $description['selfKnowledge'];
-// @doctest id="715b"
+// @doctest id="2197"
 ```
 
 To verify the actual prompt used at runtime, execute the loop with a deterministic
