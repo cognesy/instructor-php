@@ -1,0 +1,141 @@
+---
+title: 'v2.6.1'
+---
+
+## HTTP Streaming Hot Path
+
+v2.6.1 is a performance and bugfix release. It removes work the HTTP client was doing
+once per streamed chunk — work that produced no observable result — and fixes two
+defects found while measuring it. There are no new APIs.
+
+Measured against v2.6.0 on a deterministic replay benchmark (1,131-event SSE responses,
+one process per run, PHP 8.5):
+
+| | v2.6.0 | v2.6.1 |
+|---|---:|---:|
+| median call | 2.59 ms | **2.10 ms** (−19%) |
+| `inference_stream` p50 | 13.0 ms | **8.1 ms** (−38%) |
+| `structured_stream` p50 | 5.2 ms | 4.0 ms (−23%) |
+| time to first token, p50 | 2.82 ms | 2.28 ms (−19%) |
+
+Extraction accuracy is byte-identical across the two versions — usable, silent-error and
+loud-error rates, schema validity and every per-check pass rate match exactly. The change
+is meant to alter cost, not behaviour.
+
+## Chunk Events Are Built Only When Something Listens
+
+`HttpResponseChunkReceived` was constructed for every streamed chunk regardless of
+whether anything consumed it. The event object is the argument to `dispatch()`, so it was
+built, timestamped and given a UUID even with no listeners registered — on a 205 KB SSE
+response, 822 event objects and roughly 1 MB of garbage nobody read.
+
+The curl, PSR and Laravel adapters now ask before building:
+
+```php
+$emitChunks = match (true) {
+    $this->events instanceof CanCheckListeners => $this->events->hasListenersFor(HttpResponseChunkReceived::class),
+    default => true,
+};
+```
+
+`CanCheckListeners` already existed for exactly this purpose. A dispatcher that does not
+implement it is assumed to be listening and still receives every event, so custom
+dispatchers keep working unchanged. The check is resolved once per stream, not per chunk.
+
+Attaching a wiretap counts as listening — `EventDispatcher::wiretap()` registers under
+`'*'` — so debugging and telemetry setups see exactly what they saw before.
+
+## Streamed Chunks Are No Longer Re-Fragmented
+
+**This one is observable.** The default `streamChunkSize` moves from **256 to 16384
+bytes**.
+
+curl never hands a write callback more than `CURL_MAX_WRITE_SIZE` (16 KB), so at the old
+default every ~8 KB write was sliced into 32 pieces that the SSE parser immediately
+reassembled: 822 `substr()` copies per response, for byte-identical parse output.
+
+Consumers of `HttpResponse::stream()` now receive fewer, larger chunks. Nothing is lost or
+reordered and the parsed event stream is identical, but if your code depends on the old
+granularity — a progress bar ticking per 256 bytes, a test asserting a chunk count — set
+it back explicitly:
+
+```yaml
+# config/http/presets/curl.yaml
+streamChunkSize: 256
+```
+
+**This does not delay the first token.** `streamChunkSize` is an upper bound on slicing
+bytes that have already arrived, not a threshold to fill. The curl driver yields whatever
+its write callback received — a 40-byte token delta arriving alone is yielded as 40 bytes
+— and on PSR streams `read(16384)` returns what is available rather than blocking for a
+full buffer. Measured against a server trickling 27-byte SSE events 120 ms apart, reads at
+256 and at 16384 land within 2 ms of each other on every event. Time to first token in the
+replay benchmark moved from 2.82 ms to 2.28 ms. The granularity your code sees was never
+the transport chunk anyway: `EventSourceStream` yields one parsed SSE event per `\n\n`,
+identically at every framing.
+
+A value of `0` or less now means **"do not split"**, which is what it always read like.
+It previously meant the opposite: `splitChunk()` computed `max(1, 0)` and emitted
+**one-byte** fragments. Anyone who set `streamChunkSize: 0` to disable splitting was
+getting the most expensive possible framing. The bundled `symfony` preset, which ships
+`streamChunkSize: 0`, was affected.
+
+The `http-pool` presets are aligned with the same default.
+
+## SSE Parser Reads By Offset
+
+`EventSourceStream` dropped each parsed event with `$buffer = substr($buffer, $pos + 2)`,
+reallocating everything still unparsed once per event — 1,132 reallocations for a 205 KB
+response. It now tracks a consumed offset and compacts in bulk, plus two smaller wins: CR
+normalisation is skipped when the chunk contains no CR, and a block that is a single
+`data: ` line takes a fast path instead of the general field loop.
+
+One behavioural note: `maxBufferBytes` now measures **unparsed** bytes rather than the raw
+buffer length. That is what the limit was always meant to catch — a single event block
+that never terminates — and it stops a long but perfectly-consumed stream from tripping a
+limit it should never have reached.
+
+## Event Ids Are Correlation Ids, Not Random UUIDs
+
+`Event::__construct()` drew a fresh `random_bytes(16)` for every event in the framework.
+`Event::$id` now comes from `Uuid::correlationId()`: one CSPRNG draw per process, mixed
+with the pid, plus a counter. Measured at 0.245 µs against 0.594 µs over 100k draws.
+
+The result is the same shape, passes `Uuid::isValid()`, and is unique within a process.
+
+<Warning>
+These ids are **guessable within a process** — the low 60 bits are a counter. They are
+correlation ids for logs, traces and events. Do not use them for authorization,
+addressing, or anywhere prediction helps an attacker. `Uuid::uuid4()` is unchanged and
+remains the right call when unpredictability matters.
+
+A process that forks *after* its first call passes both prefix and counter to the child,
+and the two will then collide. Forking workers should call `Uuid::resetCorrelationPrefix()`
+in the child.
+</Warning>
+
+## Fixed: Laravel Streaming Was Invisible To Telemetry
+
+`LaravelHttpResponseAdapter` dispatched `new HttpResponseChunkReceived($chunk)` with a raw
+string, while the curl and PSR adapters dispatch `['requestId' => ..., 'chunk' => ...]`.
+`HttpClientTelemetryProjector::onChunkReceived()` reads both keys and returns early when
+either is null, so under the Laravel driver **every streamed chunk was silently dropped
+from telemetry** and carried no correlation id. The payload now matches the other
+adapters, and the driver passes the request id through.
+
+## Known Trade-Off
+
+Per-call **peak** memory on streaming calls rises from 323 KB to 356 KB at p95 (+10%);
+p50 is unchanged at 83 KB, and resident memory is flat. Holding one whole curl write
+instead of 32 slices is what buys roughly half the latency win. Isolated measurement:
+with `streamChunkSize` back at 256 the peak returns to 324 KB and the median call only
+improves to 2.43 ms instead of 2.10 ms.
+
+If transient peak matters more to you than latency, `streamChunkSize: 256` restores the
+old profile without giving up the listener guard, the parser rewrite, or the fixes.
+
+## Upgrading
+
+`composer update cognesy/instructor-php`. No API changed. Review the two observable
+points above if you consume `HttpResponse::stream()` directly or depend on `Event::$id`
+being unpredictable.

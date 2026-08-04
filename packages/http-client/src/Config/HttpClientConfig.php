@@ -15,6 +15,25 @@ use InvalidArgumentException;
 final class HttpClientConfig
 {
     public const CONFIG_GROUP = 'http';
+
+    /**
+     * Transport frame size, in bytes.
+     *
+     * This is an upper bound on the size of a streamed chunk, not a target. curl never
+     * hands a write callback more than CURL_MAX_WRITE_SIZE (16 KB), so at this default
+     * the streaming curl adapter passes writes through whole instead of re-slicing
+     * them; PSR streams are read in blocks of this size.
+     *
+     * It used to be 256, which re-fragmented every 8 KB curl write into 32 pieces that
+     * EventSourceStream immediately reassembled — 822 substr copies and 822 event
+     * objects per 205 KB SSE response, for byte-identical parse output. See
+     * research/plans/20260804-070458-http-streaming-hot-path/.
+     *
+     * A value of 0 or less means "no upper bound": chunks pass through as the transport
+     * framed them. It previously meant the opposite — splitChunk() did max(1, 0) and
+     * produced ONE-BYTE fragments.
+     */
+    public const DEFAULT_STREAM_CHUNK_SIZE = 16384;
     /** @var list<string> */
     private const STRING_FIELDS = ['driver', 'httpVersion'];
     /** @var list<string> */
@@ -50,7 +69,7 @@ final class HttpClientConfig
         public readonly int    $connectTimeout = 3,
         public readonly int    $requestTimeout = 30,
         public readonly int    $idleTimeout = -1,
-        public readonly int    $streamChunkSize = 256,
+        public readonly int    $streamChunkSize = self::DEFAULT_STREAM_CHUNK_SIZE,
         public readonly int    $streamHeaderTimeout = 5,
         public readonly bool   $failOnError = false,
         public readonly bool   $verifyTls = true,

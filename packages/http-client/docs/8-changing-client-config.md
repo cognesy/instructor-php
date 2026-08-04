@@ -17,7 +17,7 @@ $config = new HttpClientConfig(
     connectTimeout: 3,
     requestTimeout: 30,
     idleTimeout: -1,
-    streamChunkSize: 256,
+    streamChunkSize: 16384,
     streamHeaderTimeout: 5,
     failOnError: false,
 );
@@ -29,7 +29,7 @@ $config = new HttpClientConfig(
 | `connectTimeout` | `int` | `3` | Maximum seconds to wait for connection establishment |
 | `requestTimeout` | `int` | `30` | Maximum seconds for the entire request-response cycle |
 | `idleTimeout` | `int` | `-1` | Maximum seconds between data packets (`-1` disables) |
-| `streamChunkSize` | `int` | `256` | Bytes per chunk when streaming responses |
+| `streamChunkSize` | `int` | `16384` | Upper bound on the size of a streamed chunk, in bytes. Not a buffer target — chunks are emitted as the transport delivers them, so a smaller value only re-slices data that already arrived. `0` or less disables splitting |
 | `streamHeaderTimeout` | `int` | `5` | Seconds to wait for the initial response headers during streaming |
 | `failOnError` | `bool` | `false` | Throw exceptions on 4xx/5xx responses |
 

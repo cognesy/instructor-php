@@ -183,4 +183,108 @@ namespace {
             ->and($completed[0]->data['outcome'])->toBe('failed')
             ->and($completed[0]->data['error'])->toContain('cURL transfer failed');
     });
+
+    /**
+     * HttpResponseChunkReceived is the argument to dispatch(), so before the guard the
+     * adapter built one event object per fragment whether or not anything consumed it
+     * — 822 objects and 994 KB per 205 KB SSE response, two thirds of it
+     * Uuid::uuid4()'s CSPRNG draw. The guard asks CanCheckListeners once per stream.
+     *
+     * It may only suppress construction on a positive "nobody listens"; the chunks
+     * yielded and the completion counters must be identical either way.
+     */
+    function guardAdapterFor(\Psr\EventDispatcher\EventDispatcherInterface $events, string $body, int $chunkSize): StreamingCurlResponseAdapter {
+        $handle = CurlHandle::create('http://127.0.0.1:65535', 'GET');
+        $multi = curl_multi_init();
+        curl_multi_add_handle($multi, $handle->native());
+
+        $queue = new \SplQueue();
+        $queue->enqueue($body);
+
+        $headerParser = new HeaderParser();
+        $headerParser->parse("HTTP/1.1 200 OK\r\n");
+        $headerParser->parse("Content-Type: text/event-stream\r\n");
+
+        return new StreamingCurlResponseAdapter(
+            handle: $handle,
+            multi: $multi,
+            queue: $queue,
+            headerParser: $headerParser,
+            events: $events,
+            requestId: 'req-guard-curl',
+            chunkSize: $chunkSize,
+        );
+    }
+
+    /** @return list<string> */
+    function drainGuarded(StreamingCurlResponseAdapter $adapter): array {
+        StreamingCurlExecFailureHook::$forceComplete = true;
+        try {
+            return iterator_to_array($adapter->toHttpResponse()->stream(), false);
+        } finally {
+            StreamingCurlExecFailureHook::$forceComplete = false;
+        }
+    }
+
+    it('skips chunk event construction when nothing listens, without changing the chunks', function () {
+        if (!extension_loaded('curl')) {
+            Assert::markTestSkipped('cURL extension not available');
+        }
+
+        // Wrapping a listener-free dispatcher is the only way to see what reached
+        // dispatch() at all: attaching a wiretap would make hasListenersFor() true and
+        // the guard would correctly stop guarding.
+        $events = new class(new EventDispatcher()) implements \Psr\EventDispatcher\EventDispatcherInterface, \Cognesy\Events\Contracts\CanCheckListeners {
+            /** @var list<object> */
+            public array $dispatched = [];
+
+            public function __construct(private readonly EventDispatcher $inner) {}
+
+            #[\Override]
+            public function dispatch(object $event): object {
+                $this->dispatched[] = $event;
+
+                return $this->inner->dispatch($event);
+            }
+
+            #[\Override]
+            public function hasListenersFor(string $eventClass): bool {
+                return $this->inner->hasListenersFor($eventClass);
+            }
+        };
+
+        expect($events->hasListenersFor(HttpResponseChunkReceived::class))->toBeFalse();
+
+        $chunks = drainGuarded(guardAdapterFor($events, 'abcdefg', 3));
+
+        expect($chunks)->toBe(['abc', 'def', 'g'])
+            ->and(array_filter($events->dispatched, static fn(object $e): bool => $e instanceof HttpResponseChunkReceived))
+            ->toBe([])
+            // Only the per-chunk event is guarded; completion still fires.
+            ->and(array_filter($events->dispatched, static fn(object $e): bool => $e instanceof HttpStreamCompleted))
+            ->toHaveCount(1);
+    });
+
+    it('reports identical completion counters whether or not chunk events fire', function () {
+        if (!extension_loaded('curl')) {
+            Assert::markTestSkipped('cURL extension not available');
+        }
+
+        // A listener for HttpStreamCompleted only: hasListenersFor() must answer false
+        // for the chunk class while completion still reaches its listener.
+        $events = new EventDispatcher();
+        $completed = null;
+        $events->addListener(HttpStreamCompleted::class, static function (object $event) use (&$completed): void {
+            $completed = $event;
+        });
+
+        expect($events->hasListenersFor(HttpResponseChunkReceived::class))->toBeFalse();
+
+        $chunks = drainGuarded(guardAdapterFor($events, 'abcdefg', 3));
+
+        expect($chunks)->toBe(['abc', 'def', 'g'])
+            ->and($completed)->not->toBeNull()
+            ->and($completed->data['chunks'])->toBe(3)
+            ->and($completed->data['bytes'])->toBe(7);
+    });
 }

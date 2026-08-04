@@ -61,6 +61,7 @@ class LaravelDriver implements CanHandleHttpRequest
             events: $this->events,
             streaming: $request->isStreamed(),
             streamChunkSize: $this->config->streamChunkSize,
+            requestId: $request->id,
         ))->toHttpResponse();
 
         if ($this->config->failOnError && $response->status() >= 400) {

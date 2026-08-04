@@ -3,6 +3,7 @@
 namespace Cognesy\HttpPool\Config;
 
 use Cognesy\Config\Dsn;
+use Cognesy\Http\Config\HttpClientConfig;
 use InvalidArgumentException;
 
 final class HttpPoolConfig
@@ -32,7 +33,7 @@ final class HttpPoolConfig
         public readonly int $connectTimeout = 3,
         public readonly int $requestTimeout = 30,
         public readonly int $idleTimeout = -1,
-        public readonly int $streamChunkSize = 256,
+        public readonly int $streamChunkSize = HttpClientConfig::DEFAULT_STREAM_CHUNK_SIZE,
         public readonly int $maxConcurrent = 5,
         public readonly int $poolTimeout = 120,
         public readonly bool $failOnError = false,

@@ -63,7 +63,7 @@ The `HttpClientConfig` class accepts these parameters:
 | `connectTimeout` | `3` | Maximum time to establish a connection (seconds) |
 | `requestTimeout` | `30` | Maximum total request execution time (seconds) |
 | `idleTimeout` | `-1` | Idle timeout for streaming connections (seconds, -1 = unlimited) |
-| `streamChunkSize` | `256` | Size of chunks when reading streaming responses (bytes) |
+| `streamChunkSize` | `16384` | Upper bound on the size of a streamed chunk (bytes); `0` or less disables splitting |
 | `streamHeaderTimeout` | `5` | Timeout for receiving stream headers (seconds) |
 | `failOnError` | `false` | Whether to throw exceptions on HTTP error status codes |
 

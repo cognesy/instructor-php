@@ -297,7 +297,7 @@ final class SymfonyConfigProvider implements CanProvideConfig
             'connectTimeout' => $this->intValue($config, 30, 'connectTimeout', 'connect_timeout'),
             'requestTimeout' => $this->intValue($config, 120, 'requestTimeout', 'request_timeout', 'timeout'),
             'idleTimeout' => $this->intValue($config, -1, 'idleTimeout', 'idle_timeout'),
-            'streamChunkSize' => $this->intValue($config, 256, 'streamChunkSize', 'stream_chunk_size'),
+            'streamChunkSize' => $this->intValue($config, HttpClientConfig::DEFAULT_STREAM_CHUNK_SIZE, 'streamChunkSize', 'stream_chunk_size'),
             'streamHeaderTimeout' => $this->intValue($config, 5, 'streamHeaderTimeout', 'stream_header_timeout'),
             'failOnError' => $this->boolValue($config, false, 'failOnError', 'fail_on_error'),
             'verifyTls' => $this->boolValue($config, true, 'verifyTls', 'verify_tls'),

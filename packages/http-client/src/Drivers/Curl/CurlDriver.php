@@ -106,7 +106,7 @@ final class CurlDriver implements CanHandleHttpRequest
             headerParser: $headerParser,
             events: $this->events,
             requestId: $request->id,
-            chunkSize: $this->config->streamChunkSize ?? 256,
+            chunkSize: $this->config->streamChunkSize ?? HttpClientConfig::DEFAULT_STREAM_CHUNK_SIZE,
             headerTimeoutSeconds: (float) $this->config->streamHeaderTimeout,
             request: $request,
         );

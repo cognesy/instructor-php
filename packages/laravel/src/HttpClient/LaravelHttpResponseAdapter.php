@@ -2,6 +2,8 @@
 
 namespace Cognesy\Instructor\Laravel\HttpClient;
 
+use Cognesy\Events\Contracts\CanCheckListeners;
+use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Events\HttpResponseChunkReceived;
@@ -15,7 +17,8 @@ class LaravelHttpResponseAdapter implements CanAdaptHttpResponse
         private Response $response,
         private EventDispatcherInterface $events,
         private bool $streaming = false,
-        private int $streamChunkSize = 256,
+        private int $streamChunkSize = HttpClientConfig::DEFAULT_STREAM_CHUNK_SIZE,
+        private string $requestId = '',
     ) {}
 
     #[\Override]
@@ -40,10 +43,28 @@ class LaravelHttpResponseAdapter implements CanAdaptHttpResponse
     private function stream(): \Generator
     {
         $stream = $this->response->toPsrResponse()->getBody();
+        // Resolved once per stream, as in StreamingCurlResponseAdapter and
+        // PsrHttpResponseAdapter: the event object is the dispatch() argument, so
+        // without asking first it is built for every chunk whether or not anyone
+        // consumes it.
+        $emitChunks = match (true) {
+            $this->events instanceof CanCheckListeners => $this->events->hasListenersFor(HttpResponseChunkReceived::class),
+            default => true,
+        };
 
         while (!$stream->eof()) {
             $chunk = $stream->read($this->streamChunkSize);
-            $this->events->dispatch(new HttpResponseChunkReceived($chunk));
+            if ($emitChunks) {
+                // The payload must carry requestId and chunk as keys. Dispatching the
+                // raw string instead — as this adapter used to — makes
+                // HttpClientTelemetryProjector::onChunkReceived() read null for both
+                // and return early, so every streamed chunk under the Laravel driver
+                // was silently invisible to telemetry.
+                $this->events->dispatch(new HttpResponseChunkReceived([
+                    'requestId' => $this->requestId,
+                    'chunk' => $chunk,
+                ]));
+            }
             yield $chunk;
         }
     }

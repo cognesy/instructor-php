@@ -15,6 +15,18 @@ use LengthException;
 final class EventSourceStream implements StreamInterface
 {
     private string $buffer = '';
+    /**
+     * Bytes of $buffer already emitted as events.
+     *
+     * The parser used to drop each consumed event with
+     * `$buffer = substr($buffer, $pos + 2)`, reallocating everything still unparsed
+     * once per event — 1,132 reallocations for a 205 KB SSE response. Tracking a
+     * consumed prefix instead leaves the buffer alone; it is compacted in bulk once
+     * the prefix gets large.
+     */
+    private int $consumed = 0;
+    /** Consumed bytes tolerated before compactBuffer() pays for a copy. */
+    private const COMPACT_THRESHOLD = 32768;
     private bool $completed = false;
     /** @var Closure(string): (string|bool)|null */
     private ?Closure $parser;
@@ -39,8 +51,11 @@ final class EventSourceStream implements StreamInterface
         $consumedFully = false;
         try {
             foreach ($this->source as $chunk) {
-                $normalized = str_replace(["\r\n", "\r"], "\n", $chunk);
-                $this->buffer .= $normalized;
+                // Only pay for normalisation when there is something to normalise.
+                // Provider streams are LF-only in practice, so this usually skips.
+                $this->buffer .= str_contains($chunk, "\r")
+                    ? str_replace(["\r\n", "\r"], "\n", $chunk)
+                    : $chunk;
 
                 if ($this->request !== null && $this->response !== null) {
                     foreach ($this->listeners as $listener) {
@@ -48,13 +63,18 @@ final class EventSourceStream implements StreamInterface
                     }
                 }
 
-                while (($pos = strpos($this->buffer, "\n\n")) !== false) {
-                    $eventBlock = substr($this->buffer, 0, $pos);
-                    $this->buffer = substr($this->buffer, $pos + 2);
+                while (($pos = strpos($this->buffer, "\n\n", $this->consumed)) !== false) {
+                    $eventBlock = substr($this->buffer, $this->consumed, $pos - $this->consumed);
+                    $this->consumed = $pos + 2;
                     yield from $this->emitEventBlock($eventBlock);
                 }
 
-                if (strlen($this->buffer) > max(0, $this->maxBufferBytes)) {
+                $this->compactBuffer();
+
+                // The limit applies to what is still UNPARSED. Measuring the raw buffer
+                // would make a long, perfectly-consumed stream trip a limit meant to
+                // catch a single event block that never terminates.
+                if (strlen($this->buffer) - $this->consumed > max(0, $this->maxBufferBytes)) {
                     throw new LengthException(sprintf(
                         'SSE parser buffer exceeded the configured limit of %d bytes.',
                         max(0, $this->maxBufferBytes),
@@ -65,15 +85,32 @@ final class EventSourceStream implements StreamInterface
                     yield $chunk;
                 }
             }
-            if ($this->buffer !== '') {
-                $eventBlock = $this->buffer;
+            if ($this->consumed < strlen($this->buffer)) {
+                $eventBlock = substr($this->buffer, $this->consumed);
                 $this->buffer = '';
+                $this->consumed = 0;
                 yield from $this->emitEventBlock($eventBlock);
             }
             $consumedFully = true;
         } finally {
             $this->completed = $consumedFully;
         }
+    }
+
+    /**
+     * Drop the consumed prefix in bulk, once it is worth a copy.
+     *
+     * Compacting every event would reintroduce the per-event reallocation this class
+     * exists to avoid; never compacting would grow the buffer to the whole response.
+     * The threshold keeps both bounded: at most one copy per COMPACT_THRESHOLD bytes,
+     * and at most that many stale bytes retained.
+     */
+    private function compactBuffer(): void {
+        if ($this->consumed < self::COMPACT_THRESHOLD) {
+            return;
+        }
+        $this->buffer = substr($this->buffer, $this->consumed);
+        $this->consumed = 0;
     }
 
     /** @return Generator<string> */
@@ -107,8 +144,16 @@ final class EventSourceStream implements StreamInterface
      * - Lines of form "field: value" (value may be empty or have leading space)
      * - Multiple data: lines are joined with "\n"
      * - Lines starting with ':' are comments and ignored
+     *
+     * A block that is exactly one "data: ..." line takes a fast path — that is what
+     * essentially every provider event looks like, and the general loop below costs an
+     * explode plus two substr per line to reach the same answer.
      */
     private function parseSseEventBlock(string $block): string {
+        if (!str_contains($block, "\n") && str_starts_with($block, 'data: ')) {
+            return substr($block, 6);
+        }
+
         $dataLines = [];
         $lines = explode("\n", $block);
         foreach ($lines as $line) {

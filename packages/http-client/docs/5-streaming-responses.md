@@ -40,7 +40,7 @@ foreach ($client->send($request)->stream() as $chunk) {
 }
 ```
 
-Each chunk is a raw string as received from the transport layer. The size of individual chunks depends on the driver and the `streamChunkSize` setting in `HttpClientConfig` (default: 256 bytes).
+Each chunk is a raw string as received from the transport layer. Its size depends on the driver and on the `streamChunkSize` setting in `HttpClientConfig` (default: 16384 bytes), which is an upper bound rather than a target: chunks are yielded as soon as the transport delivers them, so a chunk is usually far smaller than the limit and lowering the limit does not make data arrive sooner. Do not depend on chunk boundaries — parse the stream, not the framing.
 
 > **Note:** You do not need to explicitly set `stream => true` on the request when using `PendingHttpResponse::stream()`. The pending response will force streaming mode automatically. However, setting it on the request is useful when middleware needs to know the intended mode before execution.
 

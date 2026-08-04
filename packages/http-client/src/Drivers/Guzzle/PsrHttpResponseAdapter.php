@@ -2,6 +2,8 @@
 
 namespace Cognesy\Http\Drivers\Guzzle;
 
+use Cognesy\Events\Contracts\CanCheckListeners;
+use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Events\HttpResponseChunkReceived;
@@ -32,7 +34,7 @@ class PsrHttpResponseAdapter implements CanAdaptHttpResponse
         EventDispatcherInterface $events,
         bool $isStreamed,
         string $requestId,
-        int $streamChunkSize = 256,
+        int $streamChunkSize = HttpClientConfig::DEFAULT_STREAM_CHUNK_SIZE,
     ) {
         $this->response = $response;
         $this->stream = $stream;
@@ -87,15 +89,23 @@ class PsrHttpResponseAdapter implements CanAdaptHttpResponse
         $chunkCount = 0;
         $outcome = 'abandoned';
         $error = null;
+        // Resolved once per stream. See the same guard in StreamingCurlResponseAdapter
+        // for why the unguarded form is expensive.
+        $emitChunks = match (true) {
+            $this->events instanceof CanCheckListeners => $this->events->hasListenersFor(HttpResponseChunkReceived::class),
+            default => true,
+        };
         try {
             while (!$this->stream->eof()) {
                 $chunk = $this->stream->read($this->streamChunkSize);
                 $bytes += strlen($chunk);
                 $chunkCount++;
-                $this->events->dispatch(new HttpResponseChunkReceived([
-                    'requestId' => $this->requestId,
-                    'chunk' => $chunk,
-                ]));
+                if ($emitChunks) {
+                    $this->events->dispatch(new HttpResponseChunkReceived([
+                        'requestId' => $this->requestId,
+                        'chunk' => $chunk,
+                    ]));
+                }
                 yield $chunk;
             }
             $outcome = 'completed';

@@ -2,5 +2,5 @@ driver: curl
 connectTimeout: 5
 requestTimeout: 60
 idleTimeout: -1
-streamChunkSize: 256
+streamChunkSize: 16384
 failOnError: false

@@ -2,6 +2,8 @@
 
 namespace Cognesy\Http\Drivers\Curl;
 
+use Cognesy\Events\Contracts\CanCheckListeners;
+use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
@@ -21,7 +23,10 @@ use SplQueue;
  * Adapter for streaming curl requests where response data arrives progressively.
  * Owns curl handles and multi handle, driving execution as data is consumed.
  *
- * Memory: Zero copies - chunks go directly from curl → queue → consumer
+ * Memory: chunks go from curl → queue → consumer without a copy, as long as a write
+ *   fits within chunkSize. At the default chunkSize (CURL_MAX_WRITE_SIZE) curl writes
+ *   always fit, so the common path copies nothing; a smaller configured chunkSize
+ *   trades one substr() per fragment for finer-grained delivery.
  * Lifecycle: Handles stay alive until stream fully consumed or object destroyed
  */
 final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
@@ -38,7 +43,7 @@ final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
         private readonly HeaderParser $headerParser,
         private readonly EventDispatcherInterface $events,
         private readonly string $requestId = '',
-        private readonly int $chunkSize = 256,
+        private readonly int $chunkSize = HttpClientConfig::DEFAULT_STREAM_CHUNK_SIZE,
         private readonly float $headerTimeoutSeconds = 5.0,
         private readonly ?HttpRequest $request = null,
     ) {
@@ -80,6 +85,7 @@ final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
         $bytes = 0;
         $chunkCount = 0;
         $error = null;
+        $emitChunks = $this->shouldEmitChunkEvents();
         try {
             while (true) {
                 // Yield buffered chunks
@@ -87,10 +93,12 @@ final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
                     foreach ($this->splitChunk($this->queue->dequeue()) as $chunk) {
                         $bytes += strlen($chunk);
                         $chunkCount++;
-                        $this->events->dispatch(new HttpResponseChunkReceived([
-                            'requestId' => $this->requestId,
-                            'chunk' => $chunk,
-                        ]));
+                        if ($emitChunks) {
+                            $this->events->dispatch(new HttpResponseChunkReceived([
+                                'requestId' => $this->requestId,
+                                'chunk' => $chunk,
+                            ]));
+                        }
                         yield $chunk;
                     }
                 }
@@ -134,10 +142,54 @@ final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
         return true;
     }
 
-    /** @return Generator<string> */
+    /**
+     * Whether a chunk event would reach anybody, resolved once per stream.
+     *
+     * The event object is the argument to dispatch(), so it is built whether or not
+     * anything consumes it. On a 205 KB SSE response that was 822 objects and 994 KB
+     * of allocation, two thirds of it Uuid::uuid4()'s CSPRNG draw, for listeners that
+     * usually do not exist. Asking once costs an array lookup.
+     *
+     * A dispatcher that cannot answer is assumed to listen — the degradation the
+     * CanCheckListeners contract prescribes.
+     */
+    private function shouldEmitChunkEvents(): bool {
+        return match (true) {
+            $this->events instanceof CanCheckListeners => $this->events->hasListenersFor(HttpResponseChunkReceived::class),
+            default => true,
+        };
+    }
+
+    /**
+     * Cap a curl write at chunkSize, copying only when it actually exceeds it.
+     *
+     * chunkSize is an upper bound, not a target. curl already frames its writes at
+     * CURL_MAX_WRITE_SIZE, so at the default the common path yields the write itself
+     * and makes no copy at all. Re-slicing every write into 256-byte pieces cost 822
+     * substr() copies per 205 KB response for output EventSourceStream reassembled
+     * anyway — parse time is identical from either framing.
+     *
+     * A chunkSize of 0 or less means "no upper bound". It used to mean the opposite:
+     * max(1, 0) yielded one-byte fragments, so presets/symfony.yaml's `streamChunkSize: 0`
+     * would have produced 8x more fragments than the old 256 default rather than none.
+     *
+     * @return Generator<string>
+     */
     private function splitChunk(string $chunk): Generator {
-        $chunkSize = max(1, $this->chunkSize);
+        $chunkSize = $this->chunkSize;
         $length = strlen($chunk);
+
+        // The old for-loop yielded nothing for an empty chunk; keep that. CurlDriver
+        // never enqueues one, but the adapter accepts a queue directly.
+        if ($length === 0) {
+            return;
+        }
+
+        if ($chunkSize <= 0 || $length <= $chunkSize) {
+            yield $chunk;
+
+            return;
+        }
 
         for ($offset = 0; $offset < $length; $offset += $chunkSize) {
             yield substr($chunk, $offset, $chunkSize);

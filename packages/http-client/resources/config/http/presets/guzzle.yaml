@@ -2,5 +2,5 @@ driver: guzzle
 connectTimeout: 3
 requestTimeout: 30
 idleTimeout: -1
-streamChunkSize: 256
+streamChunkSize: 16384
 failOnError: false
