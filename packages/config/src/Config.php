@@ -61,8 +61,9 @@ final class Config
     }
 
     /**
-     * Parsing a preset YAML costs ~70us and callers reload the same file once per request
-     * (LLMConfig::fromPreset does), so the parsed form is held for the process. The mtime
+     * Parsing a preset YAML costs ~56us against ~1.9us for a memoized load, and callers
+     * reload the same file once per request (LLMConfig::fromPreset does), so the parsed
+     * form is held for the process. The mtime
      * is part of the key, which keeps editing a config file during development live at the
      * cost of one stat per load.
      *
