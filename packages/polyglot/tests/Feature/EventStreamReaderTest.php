@@ -5,10 +5,15 @@ use Cognesy\Polyglot\Inference\Events\StreamEventParsed;
 use Cognesy\Polyglot\Inference\Events\StreamEventReceived;
 use Cognesy\Polyglot\Inference\Streaming\EventStreamReader;
 use Mockery as Mock;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 beforeEach(function () {
     // Create a mock for the EventDispatcher
     $this->mockEventDispatcher = Mock::mock(EventDispatcher::class);
+    // The reader asks once per event type whether anything is listening before it pays to
+    // build events. These tests assert dispatch counts, so they run the listeners-present
+    // path; the skip path is covered separately below.
+    $this->mockEventDispatcher->shouldReceive('hasListenersFor')->andReturn(true);
 });
 
 it('streams synthetic OpenAI streaming data correctly without parser', function () {
@@ -117,6 +122,45 @@ it('handles incomplete lines correctly in synthetic OpenAI data', function () {
 
     $result = iterator_to_array($reader->eventsFrom($generator()));
     expect($result)->toEqual($expected);
+});
+
+it('skips event construction when nothing listens, without changing output', function () {
+    $silent = Mock::mock(EventDispatcher::class);
+    $silent->shouldReceive('hasListenersFor')->andReturn(false);
+    $silent->shouldNotReceive('dispatch');
+
+    $reader = new EventStreamReader(events: $silent);
+
+    $generator = function () {
+        yield '{"id": "cmpl-xyz", "object": "text_completion", "choices": [{';
+        yield '"text": "Hello, ", "index": 0}]}' . "\n";
+        yield '{"id": "cmpl-xyz", "object": "text_completion", "choices": [{';
+        yield '"text": "world!", "index": 1}]}' . "\n";
+    };
+
+    $result = iterator_to_array($reader->eventsFrom($generator()));
+
+    expect($result)->toEqual([
+        '{"id": "cmpl-xyz", "object": "text_completion", "choices": [{"text": "Hello, ", "index": 0}]}',
+        '{"id": "cmpl-xyz", "object": "text_completion", "choices": [{"text": "world!", "index": 1}]}',
+    ]);
+});
+
+it('still dispatches when the dispatcher cannot report its listeners', function () {
+    // A PSR-14 dispatcher that does not implement CanCheckListeners must be assumed to
+    // have listeners -- degrading the other way would silently drop events.
+    $plain = Mock::mock(EventDispatcherInterface::class);
+    $plain->shouldReceive('dispatch')->times(2)->with(Mock::type(StreamEventReceived::class));
+    $plain->shouldReceive('dispatch')->times(2)->with(Mock::type(StreamEventParsed::class));
+
+    $reader = new EventStreamReader(events: $plain);
+
+    $generator = function () {
+        yield '{"a": 1}' . "\n";
+        yield '{"a": 2}' . "\n";
+    };
+
+    iterator_to_array($reader->eventsFrom($generator()));
 });
 
 it('stops reading stream when parser signals termination', function () {

@@ -82,7 +82,10 @@ class OpenAIResponseAdapter implements CanTranslateInferenceResponse
         return new PartialInferenceDelta(
             contentDelta: $this->makeContentDelta($data),
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
-            usage: $this->usageFormat->fromData($data),
+            // Only the final chunk carries usage (1 in ~943 on a real stream), but the
+            // mapper allocated an all-zero InferenceUsage for every delta. A null usage
+            // is what StreamingUsageState::apply() already treats as "nothing to add".
+            usage: empty($data['usage']) ? null : $this->usageFormat->fromData($data),
             usageIsCumulative: true,
             responseData: $responseData,
         );

@@ -48,10 +48,9 @@ final class Config
     public function load(string $config): ConfigEntry
     {
         $sourcePath = $this->resolveSourcePath($config);
-        $rawData = match (true) {
-            $this->cachePath === null => self::readSource($sourcePath),
-            default => $this->readSourceWithCache($sourcePath),
-        };
+        $rawData = $this->readSourceMemoized($sourcePath);
+        // Resolution runs on every load, never on the memoized value, so `${VAR}`
+        // placeholders still see the current environment.
         $data = $this->template->resolveData($rawData);
 
         return new ConfigEntry(
@@ -59,6 +58,43 @@ final class Config
             sourcePath: $sourcePath,
             data: $data,
         );
+    }
+
+    /**
+     * Parsing a preset YAML costs ~70us and callers reload the same file once per request
+     * (LLMConfig::fromPreset does), so the parsed form is held for the process. The mtime
+     * is part of the key, which keeps editing a config file during development live at the
+     * cost of one stat per load.
+     *
+     * @var array<string, array{mtime: int, data: array<array-key, mixed>}>
+     */
+    private static array $sourceMemo = [];
+
+    /**
+     * Drops the in-memory parsed-config cache. Intended for long-running workers and tests
+     * that rewrite config files fast enough for mtime to be an unreliable discriminator.
+     */
+    public static function flushSourceCache(): void
+    {
+        self::$sourceMemo = [];
+    }
+
+    /** @return array<array-key, mixed> */
+    private function readSourceMemoized(string $sourcePath): array
+    {
+        $mtime = self::sourceMtime($sourcePath);
+        $memo = self::$sourceMemo[$sourcePath] ?? null;
+        if ($memo !== null && $memo['mtime'] === $mtime) {
+            return $memo['data'];
+        }
+
+        $data = match (true) {
+            $this->cachePath === null => self::readSource($sourcePath),
+            default => $this->readSourceWithCache($sourcePath),
+        };
+        self::$sourceMemo[$sourcePath] = ['mtime' => $mtime, 'data' => $data];
+
+        return $data;
     }
 
     /** @return array<array-key, mixed> */

@@ -22,16 +22,25 @@ use Symfony\Component\TypeInfo\Type;
 
 class SchemaFactory
 {
-    /** @var array<string, Schema> */
-    private array $schemaCache = [];
+    /**
+     * Reflecting a class into a Schema is ~70x more expensive than a cache hit, but the
+     * caches used to be per-instance while callers build a fresh factory per request (see
+     * StructuredOutputSchemaRenderer), so the same class was re-reflected every time. The
+     * caches are keyed by scope so factories only share entries when their schema-affecting
+     * configuration matches; see makeCacheScope().
+     *
+     * @var array<string, array<string, Schema>>
+     */
+    private static array $sharedSchemaCache = [];
 
-    /** @var array<string, Schema> */
-    private array $propertyCache = [];
+    /** @var array<string, array<string, Schema>> */
+    private static array $sharedPropertyCache = [];
 
     /** @var array<class-string, int> */
     private array $inlineObjectExpansionDepth = [];
     private CanParseJsonSchema $schemaConverter;
     private CanRenderJsonSchema $schemaRenderer;
+    private readonly string $cacheScope;
 
     public function __construct(
         private bool $useObjectReferences = false,
@@ -40,6 +49,52 @@ class SchemaFactory
     ) {
         $this->schemaConverter = $schemaConverter ?? new JsonSchemaParser();
         $this->schemaRenderer = $schemaRenderer ?? new JsonSchemaRenderer();
+        $this->cacheScope = $this->makeCacheScope();
+    }
+
+    /**
+     * Identity of everything that can change the Schema objects this factory caches.
+     *
+     * Only useObjectReferences qualifies: it selects ObjectRefSchema over an inline
+     * ObjectSchema for nested properties. Neither collaborator belongs here, and adding
+     * one would needlessly stop custom-configured factories from sharing entries:
+     * - schemaRenderer is used only by render()/toArray(), never by makeSchema().
+     * - schemaConverter is used only on the CanProvideJsonSchema branch of schema(),
+     *   which returns before the cache is consulted, so its configuration (including
+     *   JsonSchemaParser's default tool name/description) never reaches a cached value.
+     */
+    private function makeCacheScope(): string {
+        return $this->useObjectReferences ? 'refs:1' : 'refs:0';
+    }
+
+    /**
+     * makeObjectSchema() truncates an object once it has been expanded twice, so a schema
+     * built mid-recursion differs from the same schema built at the top level. With the old
+     * per-request factory that difference was re-derived every time; a process-wide cache
+     * would let whichever traversal ran first win forever. Including the live expansion
+     * state in the key keeps entries comparable. It is the empty string for every top-level
+     * lookup, which is the common case.
+     */
+    private function expansionKey(): string {
+        if ($this->inlineObjectExpansionDepth === []) {
+            return '';
+        }
+
+        $parts = [];
+        foreach ($this->inlineObjectExpansionDepth as $className => $depth) {
+            $parts[] = $className . ':' . $depth;
+        }
+
+        return '|@' . implode(',', $parts);
+    }
+
+    /**
+     * Drops the process-wide schema caches. Intended for long-running workers and test
+     * isolation, where stale reflection between runs would otherwise be observable.
+     */
+    public static function flushCache(): void {
+        self::$sharedSchemaCache = [];
+        self::$sharedPropertyCache = [];
     }
 
     public static function default() : self {
@@ -117,12 +172,12 @@ class SchemaFactory
         $nullable = $sourceType->isNullable();
         $type = TypeInfo::normalize($sourceType);
 
-        $cacheKey = TypeInfo::cacheKey($type) . '|nullable:' . ($nullable ? '1' : '0');
-        if (!isset($this->schemaCache[$cacheKey])) {
-            $this->schemaCache[$cacheKey] = $this->makeSchema($type, nullable: $nullable);
+        $cacheKey = TypeInfo::cacheKey($type) . '|nullable:' . ($nullable ? '1' : '0') . $this->expansionKey();
+        if (!isset(self::$sharedSchemaCache[$this->cacheScope][$cacheKey])) {
+            self::$sharedSchemaCache[$this->cacheScope][$cacheKey] = $this->makeSchema($type, nullable: $nullable);
         }
 
-        return $this->schemaCache[$cacheKey];
+        return self::$sharedSchemaCache[$this->cacheScope][$cacheKey];
     }
 
     /**
@@ -282,12 +337,12 @@ class SchemaFactory
                 continue;
             }
 
-            $cacheKey = $propertyInfo->getClass() . '::' . $propertyName;
-            if (!isset($this->propertyCache[$cacheKey])) {
-                $this->propertyCache[$cacheKey] = $this->fromPropertyInfo($propertyInfo);
+            $cacheKey = $propertyInfo->getClass() . '::' . $propertyName . $this->expansionKey();
+            if (!isset(self::$sharedPropertyCache[$this->cacheScope][$cacheKey])) {
+                self::$sharedPropertyCache[$this->cacheScope][$cacheKey] = $this->fromPropertyInfo($propertyInfo);
             }
 
-            $propertySchemas[$propertyName] = $this->propertyCache[$cacheKey];
+            $propertySchemas[$propertyName] = self::$sharedPropertyCache[$this->cacheScope][$cacheKey];
         }
 
         return $propertySchemas;

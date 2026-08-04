@@ -4,6 +4,7 @@ namespace Cognesy\Polyglot\Inference\Streaming;
 
 use ArrayIterator;
 use Closure;
+use Cognesy\Events\Contracts\CanCheckListeners;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
@@ -42,6 +43,15 @@ class InferenceStream
     protected InferenceExecution $execution;
     private bool $streamConsumed = false;
 
+    /**
+     * Whether anything consumes the per-delta event; see EventStreamReader for the
+     * cost rationale. Resolved once per stream, so listeners registered mid-stream
+     * are not picked up.
+     */
+    private readonly bool $emitDeltaCreated;
+    /** Memoized execution id — stringifying it per delta showed up on the hot path. */
+    private ?string $executionIdString = null;
+
     private ?DateTimeImmutable $startedAt;
     private bool $firstChunkReceived = false;
     /** @var (Closure(InferenceResponse): InferenceResponse)|null */
@@ -75,6 +85,8 @@ class InferenceStream
         $this->decorateFinalResponse = $decorateFinalResponse;
         $this->onFinalizedExecution = $onFinalizedExecution;
         $this->onStreamFailed = $onStreamFailed;
+        $this->emitDeltaCreated = !($eventDispatcher instanceof CanCheckListeners)
+            || $eventDispatcher->hasListenersFor(PartialInferenceDeltaCreated::class);
     }
 
     /**
@@ -252,10 +264,12 @@ class InferenceStream
      * Dispatches events and calls callback for the visible delta.
      */
     private function notifyOnDelta(PartialInferenceDelta $delta): void {
-        $this->events->dispatch(new PartialInferenceDeltaCreated([
-            'executionId' => $this->execution->id->toString(),
-            'contentDelta' => $delta->contentDelta,
-        ]));
+        if ($this->emitDeltaCreated) {
+            $this->events->dispatch(new PartialInferenceDeltaCreated([
+                'executionId' => $this->executionIdString ??= $this->execution->id->toString(),
+                'contentDelta' => $delta->contentDelta,
+            ]));
+        }
 
         if ($this->onDelta !== null) {
             ($this->onDelta)($delta);

@@ -3,6 +3,7 @@
 namespace Cognesy\Polyglot\Inference\Streaming;
 
 use Closure;
+use Cognesy\Events\Contracts\CanCheckListeners;
 use Cognesy\Polyglot\Inference\Events\StreamEventParsed;
 use Cognesy\Polyglot\Inference\Events\StreamEventReceived;
 use Generator;
@@ -23,6 +24,19 @@ class EventStreamReader
     protected ?Closure $parser;
 
     /**
+     * Whether anything actually consumes the per-chunk stream events.
+     *
+     * Constructing a StreamEventReceived/StreamEventParsed costs ~0.9us each (the base
+     * Event generates a UUID via random_bytes() plus a DateTimeImmutable), and the stream
+     * path builds two of them per chunk. That cost was previously paid in full even with
+     * zero listeners, because the events were constructed at the call site before being
+     * handed to dispatch(). Resolved once per reader — a reader is built per request in
+     * BaseInferenceRequestDriver, so listeners registered mid-stream are not picked up.
+     */
+    private readonly bool $emitReceived;
+    private readonly bool $emitParsed;
+
+    /**
      * @param Closure(string): (string|bool)|null $parser
      */
     public function __construct(
@@ -31,6 +45,19 @@ class EventStreamReader
     ) {
         $this->events = $events;
         $this->parser = $parser;
+        $this->emitReceived = self::wantsEvent($events, StreamEventReceived::class);
+        $this->emitParsed = self::wantsEvent($events, StreamEventParsed::class);
+    }
+
+    /**
+     * Dispatchers that cannot report their listeners are assumed to listen, per the
+     * CanCheckListeners contract.
+     *
+     * @param class-string $eventClass
+     */
+    private static function wantsEvent(EventDispatcherInterface $events, string $eventClass): bool {
+        return !($events instanceof CanCheckListeners)
+            || $events->hasListenersFor($eventClass);
     }
 
     /**
@@ -47,13 +74,17 @@ class EventStreamReader
         }
 
         foreach ($this->readLines($stream) as $line) {
-            $this->events->dispatch(new StreamEventReceived($line));
+            if ($this->emitReceived) {
+                $this->events->dispatch(new StreamEventReceived($line));
+            }
             $processedData = $this->processLine($line);
             if ($processedData === false) {
                 break;
             }
             if (is_string($processedData)) {
-                $this->events->dispatch(new StreamEventParsed($processedData));
+                if ($this->emitParsed) {
+                    $this->events->dispatch(new StreamEventParsed($processedData));
+                }
                 yield $processedData;
             }
         }
@@ -66,13 +97,17 @@ class EventStreamReader
      */
     protected function eventsFromSse(iterable $stream): Generator {
         foreach ($this->readSseEvents($stream) as $event) {
-            $this->events->dispatch(new StreamEventReceived($event));
+            if ($this->emitReceived) {
+                $this->events->dispatch(new StreamEventReceived($event));
+            }
             $processedData = $this->processSseEvent($event);
             if ($processedData === false) {
                 break;
             }
             if (is_string($processedData)) {
-                $this->events->dispatch(new StreamEventParsed($processedData));
+                if ($this->emitParsed) {
+                    $this->events->dispatch(new StreamEventParsed($processedData));
+                }
                 yield $processedData;
             }
         }
@@ -106,6 +141,16 @@ class EventStreamReader
      */
     protected function readSseEvents(iterable $stream): Generator {
         $eventLines = [];
+        // The implicit-boundary heuristic asks two questions of the lines buffered so far.
+        // Answering them by scanning the buffer on every line is quadratic when the buffer
+        // keeps growing -- a relay emitting `event:` lines with no data line and no blank
+        // separators took ~117ms for 4000 lines. Both questions are maintained here in O(1)
+        // instead; hasDataLine() and isStandaloneDataEvent() below define the same
+        // predicates and are kept as the readable reference.
+        $hasDataLine = false;
+        $allLinesStandaloneData = true;
+        $anyStandaloneDataLine = false;
+
         foreach ($this->readLines($stream) as $line) {
             $line = rtrim($line, "\r\n");
             if ($line === '') {
@@ -115,15 +160,39 @@ class EventStreamReader
 
                 yield implode("\n", $eventLines);
                 $eventLines = [];
+                $hasDataLine = false;
+                $allLinesStandaloneData = true;
+                $anyStandaloneDataLine = false;
                 continue;
             }
 
-            if ($this->shouldFlushImplicitBoundary($eventLines, $line)) {
+            $flush = $eventLines !== [] && $this->shouldFlushForLine(
+                $line,
+                hasDataLine: $hasDataLine,
+                isStandaloneDataEvent: $allLinesStandaloneData && $anyStandaloneDataLine,
+            );
+            if ($flush) {
                 yield implode("\n", $eventLines);
                 $eventLines = [];
+                $hasDataLine = false;
+                $allLinesStandaloneData = true;
+                $anyStandaloneDataLine = false;
             }
 
             $eventLines[] = $line;
+
+            if (str_starts_with($line, 'data:')) {
+                $hasDataLine = true;
+                if ($this->isStandaloneDataLine($line)) {
+                    $anyStandaloneDataLine = true;
+                } else {
+                    $allLinesStandaloneData = false;
+                }
+            } elseif (!str_starts_with($line, ':')) {
+                // Comment lines are ignored by the standalone-data test; anything else
+                // disqualifies the buffer from being a standalone-data event.
+                $allLinesStandaloneData = false;
+            }
         }
 
         if ($eventLines === []) {
@@ -131,6 +200,30 @@ class EventStreamReader
         }
 
         yield implode("\n", $eventLines);
+    }
+
+    /**
+     * shouldFlushImplicitBoundary() expressed over precomputed facts about the buffered
+     * lines rather than the buffer itself, so it costs the same regardless of buffer size.
+     */
+    private function shouldFlushForLine(
+        string $line,
+        bool $hasDataLine,
+        bool $isStandaloneDataEvent,
+    ): bool {
+        if (str_starts_with($line, 'event:') && $hasDataLine) {
+            return true;
+        }
+
+        if (!str_starts_with($line, 'data:')) {
+            return false;
+        }
+
+        if (!$this->isStandaloneDataLine($line)) {
+            return false;
+        }
+
+        return $isStandaloneDataEvent;
     }
 
     /**
