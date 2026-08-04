@@ -1,0 +1,129 @@
+## Streaming Overhead, One Layer Up
+
+v2.6.2 is a performance release. v2.6.1 removed per-chunk work from the HTTP transport;
+this release removes the same kind of work from the inference stream above it, and fixes
+two caches that were never able to hit. There are no breaking changes and no configuration
+defaults move.
+
+It also corrects the performance figures published with v2.6.1 — see below.
+
+## Correction To The v2.6.1 Performance Claims
+
+<Warning>
+The latency table in the **v2.6.1** release notes overstates that release. It was measured
+against a working checkout that also contained the optimizations shipping here, which were
+not in the v2.6.1 tag. The measurements were real, but they were not v2.6.1's alone.
+</Warning>
+
+Re-measured with each version isolated in its own build, three repetitions, one process per
+run, deterministic cassette replay, PHP 8.5 (n=81 calls per version):
+
+| p50 | v2.6.0 | v2.6.1 | v2.6.2 | v2.6.1 notes **claimed** |
+|---|---:|---:|---:|---:|
+| median call | 2.3 ms | 2.2 ms (−4%) | **1.8 ms** (−22%) | −19% |
+| `inference_stream` | 13.1 ms | 10.0 ms (−24%) | **7.7 ms** (−41%) | −38% |
+| `structured_stream` | 5.0 ms | 4.4 ms (−12%) | **4.0 ms** (−20%) | −23% |
+| `inference_sync` | 2.0 ms | 1.8 ms (−10%) | **1.5 ms** (−25%) | not claimed |
+| time to first token | 2.7 ms | 2.4 ms (−11%) | **2.1 ms** (−22%) | −19% |
+
+The median-call figure is the one that was most wrong: v2.6.1 alone delivers about −4%
+against the −19% published. `inference_stream` is the closest — v2.6.1 genuinely earns
+−24% of the −38% that was claimed.
+
+What the correction does **not** touch:
+
+- **Extraction accuracy** is byte-identical across all three versions.
+- **The v2.6.1 memory trade-off is correctly attributed to v2.6.1.** Peak p95 on streaming
+  calls: 331 KB → 356 KB at v2.6.1, and 353 KB here. This release does not give that back.
+- Every mechanism described in the v2.6.1 notes shipped in that tag as described.
+- The `Uuid::correlationId()` figure (0.245 µs against 0.594 µs) measures that function
+  directly and is unaffected.
+
+## Stream Events Are Built Only When Something Listens
+
+`EventStreamReader` constructed a `StreamEventReceived` **and** a `StreamEventParsed` for
+every chunk of every stream, whether or not anything consumed them. Each costs roughly
+0.9 µs — the base `Event` draws a UUID and builds a `DateTimeImmutable` — and because the
+event object is the argument to `dispatch()`, that cost was paid in full with zero
+listeners registered.
+
+Both are now resolved once per reader through `CanCheckListeners`, the same contract
+v2.6.1 used in the transport. A dispatcher that does not implement it is assumed to be
+listening and still receives every event.
+
+`InferenceStream` gets the same guard for `PartialInferenceDeltaCreated`, and memoizes the
+execution id, which was re-stringified once per delta.
+
+<Note>
+Listener interest is resolved when the reader is constructed — one per request, in
+`BaseInferenceRequestDriver`. Listeners registered *mid-stream* are not picked up. Register
+them before starting the stream.
+</Note>
+
+## SSE Boundary Detection Is No Longer Quadratic
+
+`readSseEvents()` applies a heuristic to decide where an event ends when a stream omits
+blank-line separators. It answered two questions — *has a data line been seen?* and *is
+every buffered line a standalone data event?* — by rescanning every buffered line each time
+a new line arrived.
+
+That is quadratic while the buffer grows. A relay emitting `event:` lines with no data line
+and no blank separators took **~117 ms for 4,000 lines**, against ~7 ms for 1,000. Both
+predicates are now maintained incrementally.
+
+Behaviour is unchanged, and `hasDataLine()` / `isStandaloneDataEvent()` remain in the class
+as the readable definition of the same predicates.
+
+## Usage Is No Longer Allocated Per Delta
+
+`OpenAIResponseAdapter` built a fully-zeroed `InferenceUsage` for every streamed delta,
+though only the final chunk carries usage — 1 in roughly 943 on a real stream. It now
+passes `null`, which `StreamingUsageState::apply()` already treats as "nothing to add".
+
+## Schema Reflection Is Cached Across Factories
+
+`SchemaFactory` cached reflected schemas **per instance**, while callers construct a fresh
+factory per request — `StructuredOutputSchemaRenderer` does. The cache therefore rarely
+survived long enough to be hit, and classes were re-reflected on nearly every request.
+Measured on a four-property class with a nested object: **263.6 µs to reflect against
+3.9 µs for a cache hit**, a factor of 68.
+
+The caches are now process-wide, keyed by a scope derived from `useObjectReferences` — the
+only setting that changes a cached `Schema`. Neither collaborator belongs in the key:
+`schemaRenderer` is used only by `render()`/`toArray()`, and `schemaConverter` only on the
+`CanProvideJsonSchema` branch, which returns before the cache is consulted.
+
+The live inline-expansion depth is part of the key, so a schema built mid-recursion — which
+`makeObjectSchema()` truncates once a class has been expanded twice — can never be served
+as a top-level one.
+
+## Config Sources Are Parsed Once Per Process
+
+`Config::load()` re-parsed its source on every call, and `LLMConfig::fromPreset()` reloads
+the same preset once per request. Measured at **56 µs to parse against 1.9 µs for a
+memoized load**.
+
+Parsed sources are now held for the process, keyed by path **and mtime**, in front of the
+existing `cachePath` disk cache — so editing a config file during development still takes
+effect, at the cost of one `stat` per load.
+
+Environment placeholder resolution still runs on every load, never on the memoized value,
+so `${VAR}` continues to see the current environment.
+
+## New APIs
+
+Two static cache flushes, for long-running workers and test isolation:
+
+```php
+Cognesy\Schema\SchemaFactory::flushCache();
+Cognesy\Config\Config::flushSourceCache();
+```
+
+Both are process-wide. Call them in a worker between jobs if config files or class
+definitions can change underneath a long-lived process.
+
+## Upgrading
+
+`composer update cognesy/instructor-php`. No existing API changed and no configuration
+default moved. If you register listeners for `StreamEventReceived`, `StreamEventParsed` or
+`PartialInferenceDeltaCreated`, register them before the stream starts.
