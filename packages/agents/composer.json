@@ -58,11 +58,17 @@
   "scripts": {
     "docs:self-knowledge:check": "@php scripts/sync-self-knowledge-docs.php --check",
     "docs:self-knowledge:write": "@php scripts/sync-self-knowledge-docs.php --write",
-    "tests": "@php vendor/bin/pest",
-    "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
-    "psalm": "@php vendor/bin/psalm"
+    "tests": "@php ../../vendor/bin/pest --configuration=phpunit.xml --bootstrap=../../vendor/autoload.php tests",
+    "phpstan": "@php ../../vendor/bin/phpstan analyse -c phpstan.neon --memory-limit=2G",
+    "psalm": "@php ../../vendor/bin/psalm --root=../.. --config=psalm.xml"
   },
-  "suggest": {},
+  "bin": [
+    "bin/agents-eval"
+  ],
+  "suggest": {
+    "pestphp/pest": "Use PestEvalReporter to make eval runs fail Pest tests",
+    "phpunit/phpunit": "Use PHPUnitEvalReporter to make eval runs fail PHPUnit tests"
+  },
   "config": {
     "allow-plugins": {
       "pestphp/pest-plugin": true

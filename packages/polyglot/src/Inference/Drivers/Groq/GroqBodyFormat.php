@@ -25,25 +25,7 @@ class GroqBodyFormat extends OpenAICompatibleBodyFormat
 
     // INTERNAL ///////////////////////////////////////////////
 
-    #[\Override]
-    protected function toResponseFormat(InferenceRequest $request) : array {
-        $type = $this->toResponseFormatType($request);
-        if ($type === null) {
-            return [];
-        }
-
-        // Groq API supports: json_object, json_schema, text
-        $responseFormat = $request->responseFormat()
-            ->withToJsonObjectHandler(fn() => ['type' => 'json_object'])
-            ->withToJsonSchemaHandler(fn() => [
-                'type' => 'json_schema',
-                'json_schema' => [
-                    'name' => $request->responseFormat()->schemaName(),
-                    'schema' => $this->removeDisallowedEntries($request->responseFormat()->schema()),
-                    'strict' => $request->responseFormat()->strict(),
-                ],
-            ]);
-
-        return $this->renderResponseFormatForType($responseFormat, $type);
-    }
+    // Groq API supports json_object, json_schema and text -- exactly the base shapes, so there
+    // is no response-format override here. There used to be one: it injected handlers that
+    // rebuilt the base payloads verbatim, which the closure indirection made hard to see.
 }

@@ -28,6 +28,11 @@ expect()->extend('toBeOne', function () {
     return $this->toBe(1);
 });
 
+expect()->extend('toHavePassedEval', function () {
+    return $this->toBeInstanceOf(Cognesy\Agents\Evals\EvalResult::class)
+        ->and($this->value->verdict())->toBe(Cognesy\Agents\Evals\EvalVerdict::Passed);
+});
+
 /*
 |--------------------------------------------------------------------------
 | Functions

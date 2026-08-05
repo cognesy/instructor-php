@@ -208,8 +208,6 @@ class InstructorTestCommand extends Command
         $maxRetries = $configProvider->get('instructor.extraction.max_retries');
         $outputMode = $configProvider->get('instructor.extraction.output_mode');
         $retryPromptClass = $configProvider->get('instructor.extraction.retry_prompt_class');
-        // @deprecated 2.5 Legacy RequestMaterializer setting; remove in 2.6.
-        $retryPrompt = $configProvider->get('instructor.extraction.retry_prompt');
 
         $data = [];
         if (is_int($maxRetries) || is_numeric($maxRetries)) {
@@ -220,9 +218,6 @@ class InstructorTestCommand extends Command
         }
         if (is_string($retryPromptClass) && $retryPromptClass !== '') {
             $data['retryPromptClass'] = $retryPromptClass;
-        }
-        if (is_string($retryPrompt) && $retryPrompt !== '') {
-            $data['retryPrompt'] = $retryPrompt;
         }
 
         return StructuredOutputConfig::fromArray($data);

@@ -7,7 +7,6 @@ use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsResponse;
 use Cognesy\Polyglot\Embeddings\Events\EmbeddingsResponseReceived;
-use Cognesy\Utils\Json\Json;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 class PendingEmbeddings
@@ -48,12 +47,7 @@ class PendingEmbeddings
             $attempt++;
 
             try {
-                $httpResponse = $this->driver->handle($this->request);
-                $data = Json::decode($httpResponse->body()) ?? [];
-                $response = $this->driver->fromData($data);
-                if ($response === null) {
-                    throw new \RuntimeException('Failed to create embeddings response from data');
-                }
+                $response = $this->driver->handle($this->request);
                 $this->events->dispatch(new EmbeddingsResponseReceived($this->responseEventData($response)));
                 return $response;
             } catch (\Throwable $e) {

@@ -173,8 +173,7 @@ return [
 ```
 
 The prompt class receives the validation failure context through the structured prompt
-renderer. Do not configure inline `retry_prompt` text for the default path; that key is
-retained only for the deprecated legacy request materializer.
+renderer. Inline `retry_prompt` text was removed in 2.6 and is ignored if present.
 
 Review your application logs to see the exact validation errors from each retry attempt.
 

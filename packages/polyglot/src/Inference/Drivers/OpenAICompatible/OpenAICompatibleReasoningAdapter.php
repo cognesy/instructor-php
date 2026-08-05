@@ -37,7 +37,9 @@ class OpenAICompatibleReasoningAdapter extends OpenAIResponseAdapter
             contentDelta: $this->makeContentDelta($data),
             reasoningContentDelta: $this->makeReasoningContentDelta($data),
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
-            usage: $this->usageFormat->fromData($data),
+            // Inherits OpenAIResponseAdapter::hasUsageData() — these providers use
+            // the OpenAI `usage` key. See the note there.
+            usage: $this->hasUsageData($data) ? $this->usageFormat->fromData($data) : null,
             usageIsCumulative: true,
             responseData: $responseData,
         );

@@ -1,0 +1,79 @@
+---
+title: 'Agent eval reporters'
+docname: 'agent_eval_reporters'
+order: 6
+id: 'ae06'
+tags:
+  - 'agents'
+  - 'evals'
+  - 'reporters'
+---
+## Overview
+
+Send one immutable result to three useful destinations: readable console feedback, JUnit for CI,
+and JSON/NDJSON artifacts for debugging failed trajectories. No credentials or network exporter
+are enabled unless the application explicitly adds one.
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseDriver;
+use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
+use Cognesy\Agents\Evals\AgentEval;
+use Cognesy\Agents\Evals\AgentEvals;
+use Cognesy\Agents\Evals\ArtifactEvalReporter;
+use Cognesy\Agents\Evals\ConsoleEvalReporter;
+use Cognesy\Agents\Evals\EvalConfig;
+use Cognesy\Agents\Evals\EvalContext;
+use Cognesy\Agents\Evals\EvalRunner;
+use Cognesy\Agents\Evals\JUnitEvalReporter;
+use Cognesy\Agents\Evals\LocalAgentTarget;
+
+// Isolate this process's generated reports from other local or parallel runs.
+$directory = sys_get_temp_dir() . '/instructor-agent-evals-' . getmypid();
+
+// JUnit XML is a portable CI report format understood by many build systems. It does not
+// require JUnit, PHPUnit, or Pest to execute the evals. Unlike the framework reporters in
+// the next example, it writes an artifact rather than failing the currently running test.
+$junit = new JUnitEvalReporter($directory . '/junit.xml');
+
+// Native artifacts retain detailed JSON results and NDJSON event trajectories for debugging.
+$artifacts = new ArtifactEvalReporter($directory . '/artifacts');
+
+// Fan every immutable eval result out to readable console, CI, and forensic destinations.
+$config = EvalConfig::default()->withReporters(
+    // Inject the output writer so console rendering is usable outside a specific CLI framework.
+    ConsoleEvalReporter::fromWriter(static fn(string $text) => print($text)),
+    $junit,
+    $artifacts,
+);
+
+// Keep the example deterministic and offline by evaluating a controlled in-process agent.
+$target = LocalAgentTarget::fromFactory(static fn() => AgentBuilder::base()
+    ->withCapability(new UseDriver(FakeAgentDriver::fromResponses('ok')))
+    ->build());
+
+// A minimal passing case is enough to exercise every reporter lifecycle callback.
+$eval = AgentEval::define('Reports a pass', static function(EvalContext $t): void {
+    $t->send('hello');
+    $t->succeeded();
+})->withId('reporters/pass');
+
+// EvalRunner executes the case, then notifies each configured reporter with the same result.
+$result = (new EvalRunner($target, $config))->run(new AgentEvals($eval));
+$junitPath = $directory . '/junit.xml';
+$summaryPath = $artifacts->runDirectory() . '/summary.json';
+
+if ($result->exitCode()->value !== 0 || !is_file($junitPath) || !is_file($summaryPath)) {
+    throw new RuntimeException('One or more eval reporters did not produce a successful result.');
+}
+
+echo "JUnit for CI: {$junitPath}\n";
+echo "Debug summary: {$summaryPath}\n";
+echo "Result: one eval run produced console, CI, and forensic outputs.\n";
+?>
+```

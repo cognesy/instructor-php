@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Instructor\Contracts\CanEmitStreamingUpdates;
+use Cognesy\Instructor\Contracts\CanDriveExecution;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputResponse;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
@@ -12,7 +12,7 @@ use Tests\Instructor\Support\TestEventDispatcher;
 
 require_once __DIR__ . '/../Support/TestEventDispatcher.php';
 
-class SingleUpdateEmitter implements CanEmitStreamingUpdates
+class SingleUpdateEmitter implements CanDriveExecution
 {
     private bool $done = false;
 

@@ -4,7 +4,7 @@ namespace Cognesy\Experimental\Modules\Search;
 use Cognesy\Experimental\Module\Core\Module;
 use Cognesy\Experimental\Module\Core\Predictor;
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
@@ -20,7 +20,7 @@ class MakeSubqueries extends Module
         $structuredOutput = new StructuredOutputRuntime(
             inference: $inference,
             events: $events,
-            config: (new StructuredOutputConfigBuilder())->create(),
+            config: new StructuredOutputConfig(),
         );
         $this->makeSubqueries = Predictor::fromSignature(
             signature: 'question, context -> list_of_subqueries:string[]',

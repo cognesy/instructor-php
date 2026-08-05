@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Polyglot\Pricing\Cost;
+use Cognesy\Polyglot\Support\Pricing\Cost;
 
 describe('Cost', function () {
     it('creates empty cost with none()', function () {

@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+set -uo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
+RESULT_ROOT="$PROJECT_ROOT/builds/qa-metrics"
+
+if ! command -v jq >/dev/null 2>&1; then
+    printf '%s\n' '{"error":{"code":"dependency_missing","message":"jq is required."}}'
+    exit 1
+fi
+
+mkdir -p "$RESULT_ROOT"
+RESULT_DIR="$(mktemp -d "$RESULT_ROOT/skipped-tests.XXXXXX")"
+
+cd "$PROJECT_ROOT"
+
+parallel_exit=0
+php -d memory_limit=1G ./vendor/bin/pest --parallel \
+    --testsuite=Unit,Feature,Regression \
+    --exclude-group=docs-qa \
+    --log-junit "$RESULT_DIR/parallel.xml" \
+    >"$RESULT_DIR/parallel.log" 2>&1 || parallel_exit=$?
+
+serial_exit=0
+php -d memory_limit=512M ./vendor/bin/pest --compact \
+    --testsuite=Serial \
+    --log-junit "$RESULT_DIR/serial.xml" \
+    >"$RESULT_DIR/serial.log" 2>&1 || serial_exit=$?
+
+measurement_exit=0
+"$SCRIPT_DIR/measure" \
+    "$RESULT_DIR/parallel.xml" \
+    "$RESULT_DIR/serial.xml" \
+    >"$RESULT_DIR/measurement.json" || measurement_exit=$?
+
+if (( measurement_exit != 0 )); then
+    cat "$RESULT_DIR/measurement.json"
+    exit "$measurement_exit"
+fi
+
+printf 'Pest parallel exit %d; serial exit %d; evidence retained at %s\n' \
+    "$parallel_exit" "$serial_exit" "$RESULT_DIR" >&2
+
+jq -c \
+    --arg lane "fast" \
+    --arg parallel_log "$RESULT_DIR/parallel.log" \
+    --arg serial_log "$RESULT_DIR/serial.log" \
+    --argjson parallel_exit_code "$parallel_exit" \
+    --argjson serial_exit_code "$serial_exit" \
+    '.context += {
+      lane: $lane,
+      native_execution: {
+        parallel_exit_code: $parallel_exit_code,
+        serial_exit_code: $serial_exit_code,
+        parallel_log: $parallel_log,
+        serial_log: $serial_log
+      }
+    }' \
+    "$RESULT_DIR/measurement.json" \
+    >"$RESULT_DIR/result.json"
+
+cat "$RESULT_DIR/result.json"

@@ -3,6 +3,7 @@
 namespace Cognesy\Polyglot\Inference\Drivers\Fireworks;
 
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
 class FireworksBodyFormat extends OpenAICompatibleBodyFormat
 {
@@ -15,21 +16,12 @@ class FireworksBodyFormat extends OpenAICompatibleBodyFormat
 
     // INTERNAL ///////////////////////////////////////////////
 
+    // Fireworks takes a schema, but hangs it off json_object rather than a json_schema type.
     #[\Override]
-    protected function toResponseFormat(InferenceRequest $request) : array {
-        $type = $this->toResponseFormatType($request);
-        if ($type === null) {
-            return [];
-        }
-
-        // Fireworks API supports: json_object with optional schema, text
-        $responseFormat = $request->responseFormat()
-            ->withToJsonObjectHandler(fn() => ['type' => 'json_object'])
-            ->withToJsonSchemaHandler(fn() => [
-                'type' => 'json_object',
-                'schema' => $this->removeDisallowedEntries($request->responseFormat()->schema()),
-            ]);
-
-        return $this->renderResponseFormatForType($responseFormat, $type);
+    protected function toJsonSchemaResponseFormat(ResponseFormat $responseFormat) : array {
+        return [
+            'type' => 'json_object',
+            'schema' => $this->removeDisallowedEntries($responseFormat->schema()),
+        ];
     }
 }

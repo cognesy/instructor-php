@@ -2,36 +2,12 @@
 
 namespace Cognesy\Polyglot\Inference\Drivers\OpenAI;
 
-use Cognesy\Http\Data\HttpRequest;
-use Cognesy\Http\Telemetry\HttpRequestTelemetry;
-use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Contracts\CanMapRequestBody;
-use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Drivers\BaseHttpRequestAdapter;
 
-class OpenAIRequestAdapter implements CanTranslateInferenceRequest
+class OpenAIRequestAdapter extends BaseHttpRequestAdapter
 {
-    public function __construct(
-        protected LLMConfig $config,
-        protected CanMapRequestBody $bodyFormat,
-    ) {}
-
     #[\Override]
-    public function toHttpRequest(InferenceRequest $request): HttpRequest {
-        $httpRequest = new HttpRequest(
-            url: $this->toUrl($request),
-            method: 'POST',
-            headers: $this->toHeaders($request),
-            body: $this->bodyFormat->toRequestBody($request),
-            options: ['stream' => $request->isStreamed()],
-        );
-
-        return match ($request->telemetryCorrelation()) {
-            null => $httpRequest,
-            default => HttpRequestTelemetry::withCorrelation($httpRequest, $request->telemetryCorrelation()),
-        };
-    }
-
     protected function toHeaders(InferenceRequest $request): array {
         $extras = array_filter([
             "OpenAI-Organization" => $this->config->metadata['organization'] ?? '',
@@ -44,6 +20,7 @@ class OpenAIRequestAdapter implements CanTranslateInferenceRequest
         ], $extras);
     }
 
+    #[\Override]
     protected function toUrl(InferenceRequest $request): string {
         return "{$this->config->apiUrl}{$this->config->endpoint}";
     }

@@ -14,18 +14,15 @@ it('returns queued embeddings responses and records requests', function () {
     $firstRequest = new EmbeddingsRequest(input: ['first']);
     $secondRequest = new EmbeddingsRequest(input: ['second']);
 
-    $driver->handle($firstRequest);
-    $first = $driver->fromData([]);
-
-    $driver->handle($secondRequest);
-    $second = $driver->fromData([]);
+    $first = $driver->handle($firstRequest);
+    $second = $driver->handle($secondRequest);
 
     expect($driver->handleCalls)->toBe(2)
         ->and($driver->requests)->toHaveCount(2)
         ->and($driver->requests[0])->toBe($firstRequest)
         ->and($driver->requests[1])->toBe($secondRequest)
-        ->and($first?->first()?->values())->toBe([0.1, 0.2])
-        ->and($second?->first()?->values())->toBe([0.3, 0.4]);
+        ->and($first->first()?->values())->toBe([0.1, 0.2])
+        ->and($second->first()?->values())->toBe([0.3, 0.4]);
 });
 
 it('supports callback-driven embeddings responses', function () {
@@ -35,8 +32,7 @@ it('supports callback-driven embeddings responses', function () {
         ]),
     );
 
-    $driver->handle(new EmbeddingsRequest(input: ['a', 'b']));
-    $response = $driver->fromData([]);
+    $response = $driver->handle(new EmbeddingsRequest(input: ['a', 'b']));
 
-    expect($response?->first()?->values())->toBe([2]);
+    expect($response->first()?->values())->toBe([2]);
 });

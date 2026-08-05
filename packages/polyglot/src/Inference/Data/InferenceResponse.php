@@ -148,7 +148,8 @@ final readonly class InferenceResponse
             isPartial: $isPartial ?? $this->isPartial,
             id: $this->id,
             createdAt: $this->createdAt,
-            updatedAt: new DateTimeImmutable(),
+            // Carried over, not recomputed -- see InferenceRequest::with().
+            updatedAt: $this->updatedAt,
         );
     }
 

@@ -6,7 +6,6 @@ namespace Cognesy\Polyglot\Inference\Drivers\Mistral;
 
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
-use Cognesy\Polyglot\Inference\Drivers\Support\RequestPayload;
 
 /**
  * Mistral request body: OpenAI-compatible with three provider deltas —
@@ -40,30 +39,10 @@ class MistralBodyFormat extends OpenAICompatibleBodyFormat
         return false;
     }
 
-    // Mistral filters the schema through ResponseFormat's own filter hook
-    // rather than filtering the rendered schema array (base behavior).
-    #[\Override]
-    protected function toResponseFormat(InferenceRequest $request): array
-    {
-        $type = $this->toResponseFormatType($request);
-        if ($type === null) {
-            return [];
-        }
-
-        // Mistral API supports: json_object, json_schema, text
-        $responseFormat = $request->responseFormat()
-            ->withToJsonObjectHandler(fn () => ['type' => 'json_object'])
-            ->withToJsonSchemaHandler(fn () => [
-                'type' => 'json_schema',
-                'json_schema' => [
-                    'name' => $request->responseFormat()->schemaName(),
-                    'schema' => $request->responseFormat()->schemaFilteredWith($this->removeDisallowedEntries(...)),
-                    'strict' => $request->responseFormat()->strict(),
-                ],
-            ]);
-
-        $result = $this->renderResponseFormatForType($responseFormat, $type);
-
-        return RequestPayload::filterEmptyValues($result);
-    }
+    // Mistral API supports json_object, json_schema and text -- exactly the base shapes, so
+    // there is no response-format override here. There used to be one, carrying a comment
+    // claiming Mistral filtered "through ResponseFormat's own filter hook rather than
+    // filtering the rendered schema array (base behavior)". Those are the same operation:
+    // schemaFilteredWith($f) is $f($this->schema()). The override reproduced the base payload
+    // byte for byte, and the closure indirection is what made that hard to see.
 }

@@ -5,7 +5,7 @@ namespace Cognesy\Agents\Tests\Unit\Agent;
 use Cognesy\Agents\Drivers\ReAct\ReActDriver;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMProvider;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
@@ -23,7 +23,7 @@ describe('Runtime-first driver contracts', function () {
         $structuredOutput = new StructuredOutputRuntime(
             inference: $inference,
             events: $events,
-            config: (new StructuredOutputConfigBuilder())->create(),
+            config: new StructuredOutputConfig(),
         );
 
         $toolCalling = new ToolCallingDriver(

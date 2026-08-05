@@ -6,6 +6,9 @@ use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Http\Exceptions\NetworkException;
 use Cognesy\Http\Exceptions\TimeoutException;
 use Cognesy\Polyglot\Inference\Exceptions\ProviderException;
+use Cognesy\Polyglot\Support\Retry\RetryBackoff;
+use Cognesy\Polyglot\Support\Retry\RetryJitter;
+use Cognesy\Polyglot\Support\Retry\RetryPolicyInvariants;
 use InvalidArgumentException;
 
 final readonly class InferenceRetryPolicy

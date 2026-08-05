@@ -83,7 +83,7 @@ When pricing data is included in the config, it can be used with a cost calculat
 
 ```php
 use Cognesy\Polyglot\Inference\Data\InferencePricing;
-use Cognesy\Polyglot\Pricing\FlatRateCostCalculator;
+use Cognesy\Polyglot\Inference\Pricing\FlatRateCostCalculator;
 
 $config = LLMConfig::fromArray([
     'driver' => 'openai',

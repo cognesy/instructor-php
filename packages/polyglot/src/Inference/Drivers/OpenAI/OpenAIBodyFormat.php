@@ -133,18 +133,7 @@ class OpenAIBodyFormat implements CanMapRequestBody
         }
 
         // OpenAI API supports: json_object, json_schema, text
-        $responseFormat = $request->responseFormat()
-            ->withToJsonObjectHandler(fn () => ['type' => 'json_object'])
-            ->withToJsonSchemaHandler(fn () => [
-                'type' => 'json_schema',
-                'json_schema' => [
-                    'name' => $request->responseFormat()->schemaName(),
-                    'schema' => $this->removeDisallowedEntries($request->responseFormat()->schema()),
-                    'strict' => $request->responseFormat()->strict(),
-                ],
-            ]);
-
-        $result = $this->renderResponseFormatForType($responseFormat, $type);
+        $result = $this->renderResponseFormatForType($request->responseFormat(), $type);
 
         return RequestPayload::filterEmptyValues($result);
     }
@@ -188,15 +177,55 @@ class OpenAIBodyFormat implements CanMapRequestBody
         ]);
     }
 
+    /**
+     * Dispatches the requested mode to the three provider-variation hooks below.
+     *
+     * These three used to be `Closure`s injected into the `ResponseFormat` value object, so
+     * every request allocated two closures and two copies of the object to reach a payload the
+     * body format already had everything to build. A provider varies its *rendering*, which is
+     * dispatch — and this class is already the per-provider one, so the dispatch belongs here.
+     */
     protected function renderResponseFormatForType(ResponseFormat $responseFormat, ?string $type): array
     {
         return match ($type) {
+            // `json` is unreachable from either caller: both take $type from
+            // toResponseFormatType(), which already folds `json` into `json_object`. Kept
+            // because toResponseFormatType() is a protected extension point a subclass may
+            // override — but do not expect a test to cover this arm, because nothing can
+            // currently reach it.
             'json',
-            'json_object' => $responseFormat->asJsonObject(),
-            'json_schema' => $responseFormat->asJsonSchema(),
-            'text' => $responseFormat->asText(),
+            'json_object' => $this->toJsonObjectResponseFormat($responseFormat),
+            'json_schema' => $this->toJsonSchemaResponseFormat($responseFormat),
+            'text' => $this->toTextResponseFormat($responseFormat),
             default => [],
         };
+    }
+
+    /**
+     * Every provider in this family agrees on text mode, so no subclass overrides this. It is
+     * a hook anyway because a provider that disagreed would otherwise have to reimplement the
+     * dispatch above to say so.
+     */
+    protected function toTextResponseFormat(ResponseFormat $responseFormat): array
+    {
+        return ['type' => 'text'];
+    }
+
+    protected function toJsonObjectResponseFormat(ResponseFormat $responseFormat): array
+    {
+        return ['type' => 'json_object'];
+    }
+
+    protected function toJsonSchemaResponseFormat(ResponseFormat $responseFormat): array
+    {
+        return [
+            'type' => 'json_schema',
+            'json_schema' => [
+                'name' => $responseFormat->schemaName(),
+                'schema' => $this->removeDisallowedEntries($responseFormat->schema()),
+                'strict' => $responseFormat->strict(),
+            ],
+        ];
     }
 
     protected function toResponseFormatType(InferenceRequest $request): ?string

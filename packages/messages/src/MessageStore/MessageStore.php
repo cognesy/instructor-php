@@ -105,9 +105,9 @@ final readonly class MessageStore
      */
     public function select(string|array $sections = []) : MessageStore {
         $names = match (true) {
-            empty($sections) => [],
             is_string($sections) => [$sections],
-            is_array($sections) => $sections,
+            $sections === [] => [],
+            default => $sections,
         };
         return new MessageStore(
             sections: $this->sections->select($names),

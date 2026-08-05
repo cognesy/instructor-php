@@ -3,8 +3,9 @@
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\InferenceProvider;
-use Cognesy\Instructor\Core\RequestMaterializer;
+use Cognesy\Instructor\Core\StructuredPromptRequestMaterializer;
 use Cognesy\Instructor\Core\ResponseGenerator;
+use Cognesy\Instructor\Core\ResponseMaterializer;
 use Cognesy\Instructor\Core\SyncExecutionDriver;
 use Cognesy\Instructor\Creation\ResponseModelFactory;
 use Cognesy\Instructor\Creation\StructuredOutputSchemaRenderer;
@@ -60,13 +61,15 @@ function makeSyncDriver(
         execution: $execution,
         inferenceProvider: $inferenceProvider,
         responseGenerator: new ResponseGenerator(
-            responseDeserializer: new ResponseDeserializer(
-                events: $events,
-                deserializer: new SymfonyDeserializer(),
-                config: new StructuredOutputConfig(),
+            materializer: new ResponseMaterializer(
+                deserializer: new ResponseDeserializer(
+                    events: $events,
+                    deserializer: new SymfonyDeserializer(),
+                    config: new StructuredOutputConfig(),
+                ),
+                validator: new ResponseValidator($events, new SymfonyValidator(), new StructuredOutputConfig()),
+                transformer: new ResponseTransformer($events, null),
             ),
-            responseValidator: new ResponseValidator($events, new SymfonyValidator(), new StructuredOutputConfig()),
-            responseTransformer: new ResponseTransformer($events, null),
             extractor: new ResponseExtractor(events: $events),
         ),
         retryPolicy: new DefaultRetryPolicy($events),
@@ -77,7 +80,7 @@ function makeSyncDriver(
 function makeInferenceProvider(FakeInferenceDriver $fakeDriver): InferenceProvider {
     return new InferenceProvider(
         inference: InferenceRuntime::fromProvider(LLMProvider::new()->withDriver($fakeDriver)),
-        requestMaterializer: new RequestMaterializer(),
+        requestMaterializer: new StructuredPromptRequestMaterializer(),
     );
 }
 

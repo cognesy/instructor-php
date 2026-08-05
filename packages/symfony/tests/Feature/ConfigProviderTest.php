@@ -43,7 +43,6 @@ it('provides normalized framework config views and typed runtime objects', funct
         'extraction' => [
             'output_mode' => 'tools',
             'max_retries' => '2',
-            'retry_prompt' => 'Fix the payload',
             'tool_name' => 'extract_contact',
             'default_to_std_class' => true,
         ],

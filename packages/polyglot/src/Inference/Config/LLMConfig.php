@@ -8,7 +8,7 @@ use Cognesy\Config\BasePath;
 use Cognesy\Config\Config;
 use Cognesy\Config\Dsn;
 use Cognesy\Config\EnvTemplate;
-use Cognesy\Polyglot\Inference\Core\SensitiveDataRedactor;
+use Cognesy\Polyglot\Support\Redaction\SensitiveDataRedactor;
 use Cognesy\Polyglot\Inference\Data\InferencePricing;
 use InvalidArgumentException;
 use Throwable;

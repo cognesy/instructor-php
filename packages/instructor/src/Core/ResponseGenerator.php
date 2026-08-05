@@ -5,11 +5,8 @@ namespace Cognesy\Instructor\Core;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Data\ResponseFailure;
 use Cognesy\Instructor\Data\ResponseModel;
-use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
 use Cognesy\Instructor\Extraction\Data\ExtractionInput;
-use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
-use Cognesy\Instructor\Validation\Contracts\CanValidateResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\Enums\ResponseFailureStage;
@@ -25,41 +22,21 @@ use Throwable;
  */
 class ResponseGenerator implements CanGenerateResponse
 {
-    private readonly ResponseMaterializer $materializer;
-
     public function __construct(
-        CanDeserializeResponse $responseDeserializer,
-        CanValidateResponse $responseValidator,
-        CanTransformResponse $responseTransformer,
+        private readonly ResponseMaterializer $materializer,
         private readonly CanExtractResponse $extractor,
-    ) {
-        $this->materializer = new ResponseMaterializer(
-            deserializer: $responseDeserializer,
-            validator: $responseValidator,
-            transformer: $responseTransformer,
-        );
+    ) {}
+
+    #[\Override]
+    public function fromMaterializedInput(
+        mixed $input,
+        ResponseModel $responseModel,
+    ) : Result {
+        return $this->materializer->materialize($input, $responseModel);
     }
 
     #[\Override]
-    public function makeResponse(
-        InferenceResponse $response,
-        ResponseModel $responseModel,
-        OutputMode $mode,
-        mixed $materializationInput = null,
-    ) : Result {
-        $result = match (true) {
-            $materializationInput !== null => $this->materializer->materialize($materializationInput, $responseModel),
-            default => $this->extractAndMaterialize($response, $responseModel, $mode),
-        };
-
-        return $result;
-    }
-
-    public function materializer(): ResponseMaterializer {
-        return $this->materializer;
-    }
-
-    private function extractAndMaterialize(
+    public function fromInferenceResponse(
         InferenceResponse $response,
         ResponseModel $responseModel,
         OutputMode $mode,

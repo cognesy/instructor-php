@@ -1,0 +1,943 @@
+{
+    "a21": {
+        "discriminating": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "tool_calls",
+            "toolCalls": [
+                {
+                    "id": "call_1",
+                    "name": "get_weather",
+                    "args": {
+                        "city": "NYC"
+                    }
+                }
+            ],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 3,
+                "reasoning": 7
+            }
+        },
+        "provider_error": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "stop",
+            "toolCalls": [],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 0,
+                "reasoning": 0
+            }
+        }
+    },
+    "anthropic": {
+        "discriminating": {
+            "threw": "RuntimeException: Malformed Anthropic response payload: missing `content` array."
+        },
+        "provider_error": {
+            "threw": "RuntimeException: Malformed Anthropic response payload: missing `content` array."
+        }
+    },
+    "azure": {
+        "discriminating": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "tool_calls",
+            "toolCalls": [
+                {
+                    "id": "call_1",
+                    "name": "get_weather",
+                    "args": {
+                        "city": "NYC"
+                    }
+                }
+            ],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 3,
+                "reasoning": 7
+            }
+        },
+        "provider_error": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "stop",
+            "toolCalls": [],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 0,
+                "reasoning": 0
+            }
+        }
+    },
+    "bedrock-openai": {
+        "discriminating": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "tool_calls",
+            "toolCalls": [
+                {
+                    "id": "call_1",
+                    "name": "get_weather",
+                    "args": {
+                        "city": "NYC"
+                    }
+                }
+            ],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 3,
+                "reasoning": 7
+            }
+        },
+        "provider_error": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "stop",
+            "toolCalls": [],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 0,
+                "reasoning": 0
+            }
+        }
+    },
+    "cerebras": {
+        "discriminating": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "tool_calls",
+            "toolCalls": [
+                {
+                    "id": "call_1",
+                    "name": "get_weather",
+                    "args": {
+                        "city": "NYC"
+                    }
+                }
+            ],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 3,
+                "reasoning": 7
+            }
+        },
+        "provider_error": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "stop",
+            "toolCalls": [],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 0,
+                "reasoning": 0
+            }
+        }
+    },
+    "cohere": {
+        "discriminating": {
+            "threw": "RuntimeException: Malformed Cohere V2 response payload: missing `message` object."
+        },
+        "provider_error": {
+            "threw": "RuntimeException: Malformed Cohere V2 response payload: missing `message` object."
+        }
+    },
+    "deepseek": {
+        "discriminating": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "Recalled the capital of France.",
+            "finishReason": "tool_calls",
+            "toolCalls": [
+                {
+                    "id": "call_1",
+                    "name": "get_weather",
+                    "args": {
+                        "city": "NYC"
+                    }
+                }
+            ],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 3,
+                "reasoning": 7
+            }
+        },
+        "provider_error": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "stop",
+            "toolCalls": [],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 0,
+                "reasoning": 0
+            }
+        }
+    },
+    "fireworks": {
+        "discriminating": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "tool_calls",
+            "toolCalls": [
+                {
+                    "id": "call_1",
+                    "name": "get_weather",
+                    "args": {
+                        "city": "NYC"
+                    }
+                }
+            ],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 3,
+                "reasoning": 7
+            }
+        },
+        "provider_error": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "stop",
+            "toolCalls": [],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 0,
+                "reasoning": 0
+            }
+        }
+    },
+    "gemini": {
+        "discriminating": {
+            "threw": "RuntimeException: Malformed Gemini response payload: missing `candidates` array."
+        },
+        "provider_error": {
+            "threw": "RuntimeException: Malformed Gemini response payload: missing `candidates` array."
+        }
+    },
+    "gemini-oai": {
+        "discriminating": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "tool_calls",
+            "toolCalls": [
+                {
+                    "id": "call_1",
+                    "name": "get_weather",
+                    "args": {
+                        "city": "NYC"
+                    }
+                }
+            ],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 0,
+                "reasoning": 0
+            }
+        },
+        "provider_error": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "stop",
+            "toolCalls": [],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 0,
+                "reasoning": 0
+            }
+        }
+    },
+    "glm": {
+        "discriminating": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "Recalled the capital of France.",
+            "finishReason": "tool_calls",
+            "toolCalls": [
+                {
+                    "id": "call_1",
+                    "name": "get_weather",
+                    "args": {
+                        "city": "NYC"
+                    }
+                }
+            ],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 3,
+                "reasoning": 7
+            }
+        },
+        "provider_error": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "stop",
+            "toolCalls": [],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 0,
+                "reasoning": 0
+            }
+        }
+    },
+    "groq": {
+        "discriminating": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "tool_calls",
+            "toolCalls": [
+                {
+                    "id": "call_1",
+                    "name": "get_weather",
+                    "args": {
+                        "city": "NYC"
+                    }
+                }
+            ],
+            "usage": {
+                "input": 111,
+                "output": 222,
+                "cacheWrite": 0,
+                "cacheRead": 0,
+                "reasoning": 0
+            }
+        },
+        "provider_error": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "stop",
+            "toolCalls": [],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 0,
+                "reasoning": 0
+            }
+        }
+    },
+    "huggingface": {
+        "discriminating": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "tool_calls",
+            "toolCalls": [
+                {
+                    "id": "call_1",
+                    "name": "get_weather",
+                    "args": {
+                        "city": "NYC"
+                    }
+                }
+            ],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 3,
+                "reasoning": 7
+            }
+        },
+        "provider_error": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "stop",
+            "toolCalls": [],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 0,
+                "reasoning": 0
+            }
+        }
+    },
+    "inception": {
+        "discriminating": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "tool_calls",
+            "toolCalls": [
+                {
+                    "id": "call_1",
+                    "name": "get_weather",
+                    "args": {
+                        "city": "NYC"
+                    }
+                }
+            ],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 3,
+                "reasoning": 7
+            }
+        },
+        "provider_error": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "stop",
+            "toolCalls": [],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 0,
+                "reasoning": 0
+            }
+        }
+    },
+    "meta": {
+        "discriminating": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "tool_calls",
+            "toolCalls": [
+                {
+                    "id": "call_1",
+                    "name": "get_weather",
+                    "args": {
+                        "city": "NYC"
+                    }
+                }
+            ],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 3,
+                "reasoning": 7
+            }
+        },
+        "provider_error": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "stop",
+            "toolCalls": [],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 0,
+                "reasoning": 0
+            }
+        }
+    },
+    "minimaxi": {
+        "discriminating": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "tool_calls",
+            "toolCalls": [
+                {
+                    "id": "call_1",
+                    "name": "get_weather",
+                    "args": {
+                        "city": "NYC"
+                    }
+                }
+            ],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 3,
+                "reasoning": 7
+            }
+        },
+        "provider_error": {
+            "threw": "RuntimeException: MiniMaxi API error 1004: invalid api key"
+        }
+    },
+    "mistral": {
+        "discriminating": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "tool_calls",
+            "toolCalls": [
+                {
+                    "id": "call_1",
+                    "name": "get_weather",
+                    "args": {
+                        "city": "NYC"
+                    }
+                }
+            ],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 3,
+                "reasoning": 7
+            }
+        },
+        "provider_error": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "stop",
+            "toolCalls": [],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 0,
+                "reasoning": 0
+            }
+        }
+    },
+    "moonshot": {
+        "discriminating": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "tool_calls",
+            "toolCalls": [
+                {
+                    "id": "call_1",
+                    "name": "get_weather",
+                    "args": {
+                        "city": "NYC"
+                    }
+                }
+            ],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 3,
+                "reasoning": 7
+            }
+        },
+        "provider_error": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "stop",
+            "toolCalls": [],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 0,
+                "reasoning": 0
+            }
+        }
+    },
+    "ollama": {
+        "discriminating": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "tool_calls",
+            "toolCalls": [
+                {
+                    "id": "call_1",
+                    "name": "get_weather",
+                    "args": {
+                        "city": "NYC"
+                    }
+                }
+            ],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 3,
+                "reasoning": 7
+            }
+        },
+        "provider_error": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "stop",
+            "toolCalls": [],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 0,
+                "reasoning": 0
+            }
+        }
+    },
+    "openai": {
+        "discriminating": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "tool_calls",
+            "toolCalls": [
+                {
+                    "id": "call_1",
+                    "name": "get_weather",
+                    "args": {
+                        "city": "NYC"
+                    }
+                }
+            ],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 3,
+                "reasoning": 7
+            }
+        },
+        "provider_error": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "stop",
+            "toolCalls": [],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 0,
+                "reasoning": 0
+            }
+        }
+    },
+    "openai-compatible": {
+        "discriminating": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "tool_calls",
+            "toolCalls": [
+                {
+                    "id": "call_1",
+                    "name": "get_weather",
+                    "args": {
+                        "city": "NYC"
+                    }
+                }
+            ],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 3,
+                "reasoning": 7
+            }
+        },
+        "provider_error": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "stop",
+            "toolCalls": [],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 0,
+                "reasoning": 0
+            }
+        }
+    },
+    "openai-responses": {
+        "discriminating": {
+            "threw": "RuntimeException: Malformed OpenResponses response payload: missing `output` array."
+        },
+        "provider_error": {
+            "threw": "RuntimeException: Malformed OpenResponses response payload: missing `output` array."
+        }
+    },
+    "openresponses": {
+        "discriminating": {
+            "threw": "RuntimeException: Malformed OpenResponses response payload: missing `output` array."
+        },
+        "provider_error": {
+            "threw": "RuntimeException: Malformed OpenResponses response payload: missing `output` array."
+        }
+    },
+    "openrouter": {
+        "discriminating": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "tool_calls",
+            "toolCalls": [
+                {
+                    "id": "call_1",
+                    "name": "get_weather",
+                    "args": {
+                        "city": "NYC"
+                    }
+                }
+            ],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 3,
+                "reasoning": 7
+            }
+        },
+        "provider_error": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "stop",
+            "toolCalls": [],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 0,
+                "reasoning": 0
+            }
+        }
+    },
+    "perplexity": {
+        "discriminating": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "tool_calls",
+            "toolCalls": [
+                {
+                    "id": "call_1",
+                    "name": "get_weather",
+                    "args": {
+                        "city": "NYC"
+                    }
+                }
+            ],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 3,
+                "reasoning": 7
+            }
+        },
+        "provider_error": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "stop",
+            "toolCalls": [],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 0,
+                "reasoning": 0
+            }
+        }
+    },
+    "qwen": {
+        "discriminating": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "Recalled the capital of France.",
+            "finishReason": "tool_calls",
+            "toolCalls": [
+                {
+                    "id": "call_1",
+                    "name": "get_weather",
+                    "args": {
+                        "city": "NYC"
+                    }
+                }
+            ],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 3,
+                "reasoning": 7
+            }
+        },
+        "provider_error": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "stop",
+            "toolCalls": [],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 0,
+                "reasoning": 0
+            }
+        }
+    },
+    "sambanova": {
+        "discriminating": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "tool_calls",
+            "toolCalls": [
+                {
+                    "id": "call_1",
+                    "name": "get_weather",
+                    "args": {
+                        "city": "NYC"
+                    }
+                }
+            ],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 3,
+                "reasoning": 7
+            }
+        },
+        "provider_error": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "stop",
+            "toolCalls": [],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 0,
+                "reasoning": 0
+            }
+        }
+    },
+    "together": {
+        "discriminating": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "tool_calls",
+            "toolCalls": [
+                {
+                    "id": "call_1",
+                    "name": "get_weather",
+                    "args": {
+                        "city": "NYC"
+                    }
+                }
+            ],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 3,
+                "reasoning": 7
+            }
+        },
+        "provider_error": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "stop",
+            "toolCalls": [],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 0,
+                "reasoning": 0
+            }
+        }
+    },
+    "xai": {
+        "discriminating": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "tool_calls",
+            "toolCalls": [
+                {
+                    "id": "call_1",
+                    "name": "get_weather",
+                    "args": {
+                        "city": "NYC"
+                    }
+                }
+            ],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 3,
+                "reasoning": 7
+            }
+        },
+        "provider_error": {
+            "threw": null,
+            "content": "Paris",
+            "reasoningContent": "",
+            "finishReason": "stop",
+            "toolCalls": [],
+            "usage": {
+                "input": 11,
+                "output": 22,
+                "cacheWrite": 0,
+                "cacheRead": 0,
+                "reasoning": 0
+            }
+        }
+    }
+}

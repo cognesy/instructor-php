@@ -9,13 +9,12 @@ use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
 use Cognesy\Instructor\Contracts\CanMaterializeRequest;
 use Cognesy\Instructor\Core\StructuredPromptRequestMaterializer;
+use Cognesy\Instructor\Creation\ExecutionDriverFactory;
 use Cognesy\Instructor\Creation\StructuredOutputExecutionBuilder;
-use Cognesy\Instructor\Creation\StructuredOutputPipelineFactory;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
-use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputRequestReceived;
 use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
-use Cognesy\Instructor\Telemetry\StructuredOutputTelemetry;
+use Cognesy\Instructor\Telemetry\StructuredOutputEventProjector;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformData;
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
@@ -104,22 +103,25 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
             config: $this->config,
         );
 
-        $this->events->dispatch(new StructuredOutputRequestReceived($this->requestReceivedPayload($execution)));
-
-        $pipelineFactory = new StructuredOutputPipelineFactory(
-            events: $this->events,
-            config: $this->config,
-            inference: $this->inference,
-            requestMaterializer: $this->requestMaterializer,
-            validator: $this->validator,
-            transformer: $this->transformer,
-            deserializer: $this->deserializer,
-            extractor: $this->extractor,
-        );
+        // Projector built here, per request, NOT in the constructor. This runtime is
+        // long-lived and `onEvent()`/`wiretap()` register against it *after* construction
+        // (see :132), so constructor-resolved gates would silently drop this event for every
+        // caller who does exactly what the API invites. One `hasListenersFor()` per request
+        // is free next to building the envelope.
+        (new StructuredOutputEventProjector($this->events))->requestReceived($execution);
 
         return new PendingStructuredOutput(
             execution: $execution,
-            executionDriverFactory: $pipelineFactory->createExecutionDriverFactory(),
+            executionDriverFactory: ExecutionDriverFactory::fromParts(
+                events: $this->events,
+                config: $this->config,
+                inference: $this->inference,
+                requestMaterializer: $this->requestMaterializer,
+                validator: $this->validator,
+                transformer: $this->transformer,
+                deserializer: $this->deserializer,
+                extractor: $this->extractor,
+            ),
             events: $this->events,
         );
     }
@@ -226,43 +228,5 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
             extractor: $extractor ?? $this->extractor,
             requestMaterializer: $requestMaterializer ?? $this->requestMaterializer,
         );
-    }
-
-    private function requestReceivedPayload(\Cognesy\Instructor\Data\StructuredOutputExecution $execution) : array
-    {
-        $request = $execution->request();
-        $requestedSchema = $request->requestedSchema();
-
-        $payload = [
-            'requestId' => $request->id()->toString(),
-            'executionId' => $execution->id()->toString(),
-            'phase' => 'request.received',
-            'phaseId' => $this->phaseId($execution->id()->toString(), 'request.received'),
-            'model' => $request->model(),
-            'messageCount' => count($request->messages()->toArray()),
-            'isStreamed' => $request->isStreamed(),
-            'requestedSchemaType' => is_array($requestedSchema) ? 'array' : (is_object($requestedSchema) ? 'object' : 'string'),
-        ];
-
-        if (is_array($requestedSchema)) {
-            $payload['requestedSchemaKeyCount'] = count($requestedSchema);
-            return [...$payload, ...StructuredOutputTelemetry::requestReceived($execution)];
-        }
-
-        if ($requestedSchema !== '') {
-            $payload['requestedSchemaClass'] = is_object($requestedSchema)
-                ? $requestedSchema::class
-                : ltrim($requestedSchema, '\\');
-        }
-
-        return [...$payload, ...StructuredOutputTelemetry::requestReceived($execution)];
-    }
-
-    private function phaseId(string $executionId, string $phase, ?string $attemptId = null) : string
-    {
-        return match ($attemptId) {
-            null => "{$executionId}:{$phase}",
-            default => "{$executionId}:{$phase}:{$attemptId}",
-        };
     }
 }

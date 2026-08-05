@@ -61,32 +61,70 @@ $text = Inference::fromConfig($config, drivers: $drivers)
     ->get();
 ```
 
-### Registering a Driver Factory
+### Registering a Driver Spec
 
-For more control over instantiation, pass a callable that receives `LLMConfig`,
-`CanSendHttpRequests`, and `CanHandleEvents`, and returns a `CanProcessInferenceRequest`:
+If your provider speaks the OpenAI wire protocol, you do not need a driver class. Register an
+`InferenceDriverSpec` naming the parts that differ; everything you leave out defaults to the
+OpenAI implementation:
 
 ```php
 <?php
 
 use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
-use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIDriver;
+use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
+use Cognesy\Polyglot\Inference\Drivers\InferenceDriverSpec;
 
 $drivers = BundledInferenceDrivers::registry()
-    ->withDriver('custom', function ($config, $httpClient, $events) {
-        // Wrap an existing driver with extra behavior
-        return new class($config, $httpClient, $events) extends OpenAIDriver {
-            public function makeResponseFor($request): \Cognesy\Polyglot\Inference\Data\InferenceResponse {
-                // Add logging, metrics, request transformation, etc.
-                return parent::makeResponseFor($request);
-            }
-        };
-    });
+    ->withDriver('acme', new InferenceDriverSpec(
+        bodyFormat: AcmeBodyFormat::class,
+        capabilities: new DriverCapabilities(responseFormatWithTools: false),
+    ));
 ```
 
-This factory approach is particularly useful when you want to extend an existing driver with
-minimal code -- for example, adding request logging or custom headers to an OpenAI-compatible
-endpoint.
+The spec's other fields -- `requestAdapter`, `responseAdapter`, `usageFormat`, `messageFormat`
+-- take the same treatment. Most bundled providers are exactly this: a row of class names.
+
+To change *behaviour* rather than composition, subclass `SpecifiedInferenceDriver` and name it
+in the spec. The spec still assembles the five collaborators for it:
+
+```php
+<?php
+
+use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIBodyFormat;
+use Cognesy\Polyglot\Inference\Drivers\SpecifiedInferenceDriver;
+
+final class LoggingDriver extends SpecifiedInferenceDriver
+{
+    #[\Override]
+    public function makeResponseFor($request): \Cognesy\Polyglot\Inference\Data\InferenceResponse {
+        // Add logging, metrics, request transformation, etc.
+        return parent::makeResponseFor($request);
+    }
+}
+
+$drivers = BundledInferenceDrivers::registry()
+    ->withDriver('custom', new InferenceDriverSpec(
+        bodyFormat: OpenAIBodyFormat::class,
+        driverClass: LoggingDriver::class,
+    ));
+```
+
+### Registering a Driver Factory
+
+`withDriver()` also accepts a class-string or any callable receiving `LLMConfig`,
+`CanSendHttpRequests` and `CanHandleEvents` and returning a `CanProcessInferenceRequest`. Use
+this when construction needs logic a spec cannot express -- reading an environment variable,
+choosing between implementations, wiring a decorator:
+
+```php
+<?php
+
+use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
+
+$drivers = BundledInferenceDrivers::registry()
+    ->withDriver('custom', fn($config, $httpClient, $events) => new AcmeDriver($config, $httpClient, $events))
+    ->withDriver('custom-by-name', AcmeDriver::class);
+```
 
 ### Using the Registry with InferenceRuntime
 
@@ -130,8 +168,37 @@ components:
 4. **Response Adapter** -- parses the provider's HTTP response into `InferenceResponse`
 5. **Usage Format** -- extracts token usage information from the response
 
-Most bundled drivers follow this modular adapter pattern. See the `OpenAIDriver` or
-`AnthropicDriver` source code for reference implementations.
+For the request adapter, extend `BaseHttpRequestAdapter` rather than implementing
+`CanTranslateInferenceRequest` directly. It owns the request-building skeleton and leaves you
+the only two methods that vary between providers:
+
+```php
+<?php
+
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Drivers\BaseHttpRequestAdapter;
+
+final class AcmeRequestAdapter extends BaseHttpRequestAdapter
+{
+    #[\Override]
+    protected function toUrl(InferenceRequest $request): string {
+        return "{$this->config->apiUrl}{$this->config->endpoint}";
+    }
+
+    #[\Override]
+    protected function toHeaders(InferenceRequest $request): array {
+        return [
+            'X-Acme-Key' => $this->config->apiKey,
+            'Content-Type' => 'application/json; charset=utf-8',
+        ];
+    }
+}
+```
+
+Most bundled providers follow this modular adapter pattern -- which is why most of them are
+declared as an `InferenceDriverSpec` rather than written as a class. See `AnthropicDriver` for
+a provider that needs a class of its own, and `BundledInferenceDrivers::registry()` for the
+table of the ones that do not.
 
 
 ## Custom Embeddings Drivers
@@ -141,10 +208,27 @@ Embeddings drivers implement the `CanHandleVectorization` interface:
 ```php
 interface CanHandleVectorization
 {
-    public function handle(EmbeddingsRequest $request): HttpResponse;
-    public function fromData(array $data): ?EmbeddingsResponse;
+    public function handle(EmbeddingsRequest $request): EmbeddingsResponse;
 }
 ```
+
+The driver owns its complete provider boundary: translating the request, sending it, decoding
+the provider payload, and adapting that payload into an `EmbeddingsResponse`. Callers never
+receive the intermediate HTTP response.
+
+### Migrating a v2.6 Embeddings Driver
+
+This signature changes in v2.7 and cannot be shimmed by PHP. Update custom implementations in
+the same deployment that upgrades Polyglot:
+
+```diff
+- public function handle(EmbeddingsRequest $request): HttpResponse;
+- public function fromData(array $data): ?EmbeddingsResponse;
++ public function handle(EmbeddingsRequest $request): EmbeddingsResponse;
+```
+
+Move the HTTP response decoding and response-adapter call into `handle()`. Drivers extending
+`BaseEmbedDriver` inherit the v2.7 implementation unless they override `handle()` themselves.
 
 Register a custom embeddings driver using the `BundledEmbeddingsDrivers` registry, the same
 pattern used for inference drivers:
@@ -218,37 +302,37 @@ $drivers = BundledInferenceDrivers::registry()
 
 For reference, Polyglot bundles the following inference drivers:
 
-| Driver Name | Class |
+| Driver Name | Built from |
 |---|---|
-| `a21` | `A21Driver` |
+| `a21` | spec: `A21BodyFormat` |
 | `anthropic` | `AnthropicDriver` |
 | `azure` | `AzureDriver` |
 | `bedrock-openai` | `BedrockOpenAIDriver` |
-| `cerebras` | `CerebrasDriver` |
+| `cerebras` | spec: `CerebrasBodyFormat` |
 | `cohere` | `CohereV2Driver` |
-| `deepseek` | `DeepseekDriver` |
-| `fireworks` | `FireworksDriver` |
+| `deepseek` | spec: `DeepseekBodyFormat` |
+| `fireworks` | spec: `FireworksBodyFormat` |
 | `gemini` | `GeminiDriver` |
 | `gemini-oai` | `GeminiOAIDriver` |
-| `glm` | `GlmDriver` |
-| `groq` | `GroqDriver` |
+| `glm` | spec: `GlmBodyFormat` |
+| `groq` | spec: `GroqBodyFormat` |
 | `huggingface` | `HuggingFaceDriver` |
-| `inception` | `InceptionDriver` |
-| `meta` | `MetaDriver` |
-| `minimaxi` | `MinimaxiDriver` |
-| `mistral` | `MistralDriver` |
-| `openai` | `OpenAIDriver` |
+| `inception` | spec: `InceptionBodyFormat` |
+| `meta` | spec: `MetaBodyFormat` |
+| `minimaxi` | spec: `MinimaxiBodyFormat` |
+| `mistral` | spec: `MistralBodyFormat` |
+| `openai` | spec: `OpenAIBodyFormat` |
 | `openai-responses` | `OpenAIResponsesDriver` |
 | `openresponses` | `OpenResponsesDriver` |
-| `openrouter` | `OpenRouterDriver` |
-| `perplexity` | `PerplexityDriver` |
-| `qwen` | `QwenDriver` |
-| `sambanova` | `SambaNovaDriver` |
-| `xai` | `XAiDriver` |
-| `moonshot` | `OpenAICompatibleDriver` |
-| `ollama` | `OpenAICompatibleDriver` |
-| `openai-compatible` | `OpenAICompatibleDriver` |
-| `together` | `OpenAICompatibleDriver` |
+| `openrouter` | spec: `OpenRouterBodyFormat` |
+| `perplexity` | spec: `PerplexityBodyFormat` |
+| `qwen` | spec: `QwenBodyFormat` |
+| `sambanova` | spec: `SambaNovaBodyFormat` |
+| `xai` | spec: `OpenAICompatibleBodyFormat` + `XAiMessageFormat` |
+| `moonshot` | spec: `OpenAICompatibleBodyFormat` |
+| `ollama` | spec: `OpenAICompatibleBodyFormat` |
+| `openai-compatible` | spec: `OpenAICompatibleBodyFormat` |
+| `together` | spec: `OpenAICompatibleBodyFormat` |
 
 The full list is defined in `BundledInferenceDrivers::registry()`.
 

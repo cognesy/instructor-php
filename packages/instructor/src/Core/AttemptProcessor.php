@@ -22,20 +22,46 @@ final readonly class AttemptProcessor
         private EventDispatcherInterface $events,
     ) {}
 
-    public function process(
+    /**
+     * Finishes the attempt by extracting the value out of the inference response.
+     */
+    public function processInferenceResponse(
         StructuredOutputExecution $execution,
         InferenceResponse $inferenceResponse,
-        mixed $materializationInput = null,
     ): AttemptProcessingResult {
         $responseModel = $execution->responseModel();
         assert($responseModel !== null, 'Response model cannot be null');
 
-        $materializationResult = $this->responseGenerator->makeResponse(
+        return $this->finish($execution, $inferenceResponse, $this->responseGenerator->fromInferenceResponse(
             $inferenceResponse,
             $responseModel,
             $execution->outputMode(),
-            $materializationInput,
-        );
+        ));
+    }
+
+    /**
+     * Finishes the attempt from a value the caller already holds. `$inferenceResponse` is
+     * still needed to record the attempt, but it is not the source of the value.
+     */
+    public function processMaterializedInput(
+        StructuredOutputExecution $execution,
+        InferenceResponse $inferenceResponse,
+        mixed $input,
+    ): AttemptProcessingResult {
+        $responseModel = $execution->responseModel();
+        assert($responseModel !== null, 'Response model cannot be null');
+
+        return $this->finish($execution, $inferenceResponse, $this->responseGenerator->fromMaterializedInput(
+            $input,
+            $responseModel,
+        ));
+    }
+
+    private function finish(
+        StructuredOutputExecution $execution,
+        InferenceResponse $inferenceResponse,
+        Result $materializationResult,
+    ): AttemptProcessingResult {
         $this->reportMaterialization($execution, $materializationResult);
 
         if ($materializationResult->isSuccess()) {

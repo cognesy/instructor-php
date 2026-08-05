@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Core;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Instructor\Contracts\CanDetermineRetry;
-use Cognesy\Instructor\Contracts\CanEmitStreamingUpdates;
+use Cognesy\Instructor\Contracts\CanDriveExecution;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
@@ -22,7 +22,7 @@ use Cognesy\Stream\TransformationStream;
 use Iterator;
 use IteratorAggregate;
 
-final class StreamingExecutionDriver implements CanEmitStreamingUpdates
+final class StreamingExecutionDriver implements CanDriveExecution
 {
     private ExecutionLoop $loop;
     private ?Iterator $stream = null;
@@ -130,11 +130,22 @@ final class StreamingExecutionDriver implements CanEmitStreamingUpdates
     }
 
     private function finalizeAttempt(ExecutionLoop $loop): void {
-        $result = $this->attemptProcessor->process(
-            execution: $loop->execution(),
-            inferenceResponse: $this->finalInference ?? new InferenceResponse(),
-            materializationInput: $this->finalMaterializationInput,
-        );
+        $execution = $loop->execution();
+        $inferenceResponse = $this->finalInference ?? new InferenceResponse();
+
+        // The one place the choice is genuinely made: the aggregator may have already built
+        // the value out of the deltas, in which case there is nothing left to extract.
+        $result = match ($this->finalMaterializationInput) {
+            null => $this->attemptProcessor->processInferenceResponse(
+                execution: $execution,
+                inferenceResponse: $inferenceResponse,
+            ),
+            default => $this->attemptProcessor->processMaterializedInput(
+                execution: $execution,
+                inferenceResponse: $inferenceResponse,
+                input: $this->finalMaterializationInput,
+            ),
+        };
         $loop->applyAttemptResult($result);
         $this->stream = null;
 

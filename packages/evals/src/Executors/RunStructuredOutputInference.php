@@ -5,7 +5,7 @@ namespace Cognesy\Evals\Executors;
 use Cognesy\Evals\Contracts\CanRunExecution;
 use Cognesy\Evals\Execution;
 use Cognesy\Evals\Executors\Data\StructuredOutputData;
-use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\PendingStructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
@@ -29,13 +29,11 @@ class RunStructuredOutputInference implements CanRunExecution
     // INTERNAL /////////////////////////////////////////////////
 
     private function makeInstructorResponse(Execution $execution) : PendingStructuredOutput {
-        $structuredConfig = (new StructuredOutputConfigBuilder())
+        $structuredConfig = (new StructuredOutputConfig())
             ->withMaxRetries($this->structuredOutputData->maxRetries)
             ->withToolName($this->structuredOutputData->toolName)
             ->withToolDescription($this->structuredOutputData->toolDescription)
-            ->withRetryPrompt($this->structuredOutputData->retryPrompt)
-            ->withOutputMode($execution->get('case.mode'))
-            ->create();
+            ->withOutputMode($execution->get('case.mode'));
 
         $request = new StructuredOutputRequest(
             messages: Messages::fromAny($this->structuredOutputData->messages),

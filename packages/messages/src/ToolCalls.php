@@ -29,7 +29,10 @@ final readonly class ToolCalls
             $toolCall = match (true) {
                 $toolCall instanceof ToolCall => $toolCall,
                 is_array($toolCall) => ToolCall::fromArray($toolCall),
-                is_string($toolCall) => new ToolCall($key, self::makeArgs($toolCall)),
+                is_string($toolCall) && is_string($key) => new ToolCall($key, self::makeArgs($toolCall)),
+                is_string($toolCall) => throw new InvalidArgumentException(
+                    "Tool call at index {$key} is a JSON string with no name; use ['toolName' => \$jsonArgs] for the map form, or a full array form ['name' => ..., 'arguments' => ...]"
+                ),
                 default => throw new InvalidArgumentException('Cannot create ToolCall from provided data: ' . print_r($toolCall, true)),
             };
             $list[] = $toolCall;

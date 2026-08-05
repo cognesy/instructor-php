@@ -45,6 +45,10 @@ describe('File', function () {
             expect(fn() => File::fromBase64('invalidbase64', 'text/plain'))
                 ->toThrow(Exception::class);
         });
+
+        // fromFile() touches the real filesystem — see
+        // tests/Integration/Utils/FileTest.php for the fileName-derivation regression
+        // (instructor-r50t.9); fast unit suites may not perform filesystem I/O.
     });
 
     describe('OpenAI content part generation', function () {
@@ -54,12 +58,12 @@ describe('File', function () {
             $contentPart = $file->toContentPart();
             
             expect($contentPart->type())->toBe('file');
+            // regression: instructor-r50t.9 - unset file_id must be omitted, not sent as ""
             expect($contentPart->toArray())->toBe([
                 'type' => 'file',
                 'file' => [
                     'file_data' => $fileData,
                     'file_name' => 'document.pdf',
-                    'file_id' => ''
                 ]
             ]);
         });
@@ -67,12 +71,12 @@ describe('File', function () {
         it('generates correct file content part structure with file_id', function () {
             $file = new File(fileId: 'file-BK7bzQj3FfUp6VNGYLssxKcE', fileName: 'report.pdf');
             $contentPart = $file->toContentPart();
-            
+
+            // regression: instructor-r50t.9 - unset file_data must be omitted, not sent as ""
             expect($contentPart->toArray())->toBe([
                 'type' => 'file',
                 'file' => [
-                    'file_data' => '',
-                    'file_name' => 'report.pdf', 
+                    'file_name' => 'report.pdf',
                     'file_id' => 'file-BK7bzQj3FfUp6VNGYLssxKcE'
                 ]
             ]);
@@ -105,10 +109,10 @@ describe('File', function () {
             expect($messageArray['content'][0])->toBeInstanceOf(\Cognesy\Messages\ContentPart::class);
             
             $contentArray = $messageArray['content'][0]->toArray();
+            // regression: instructor-r50t.9 - unset file_data must be omitted, not sent as ""
             expect($contentArray)->toBe([
                 'type' => 'file',
                 'file' => [
-                    'file_data' => '',
                     'file_name' => 'document.pdf',
                     'file_id' => 'file-abc123'
                 ]
@@ -142,12 +146,13 @@ describe('File', function () {
             $fileData = 'data:application/pdf;base64,JVBERi0xLjQ=';
             $file = new File(fileData: $fileData, fileName: 'test.pdf');
             $structure = $file->toContentPart()->toArray();
-            
+
             expect($structure)->toHaveKey('type', 'file');
             expect($structure)->toHaveKey('file');
             expect($structure['file'])->toHaveKey('file_data');
             expect($structure['file'])->toHaveKey('file_name');
-            expect($structure['file'])->toHaveKey('file_id');
+            // regression: instructor-r50t.9 - unset file_id must be omitted, not sent as ""
+            expect($structure['file'])->not->toHaveKey('file_id');
             expect($structure['file']['file_data'])->toStartWith('data:');
         });
 
@@ -208,25 +213,39 @@ describe('File', function () {
 
     describe('edge cases', function () {
         it('handles empty file data', function () {
+            // regression: instructor-r50t.9 - empty file_data is omitted, not sent as ""
             $file = new File(fileData: '', fileName: 'empty.txt');
             $contentPart = $file->toContentPart();
-            
-            expect($contentPart->toArray()['file']['file_data'])->toBe('');
+
+            expect($contentPart->toArray()['file'])->not->toHaveKey('file_data');
         });
 
         it('handles missing filename gracefully', function () {
+            // regression: instructor-r50t.9 - empty file_name is omitted, not sent as ""
             $file = new File(fileId: 'file-123');
             $contentPart = $file->toContentPart();
-            
-            expect($contentPart->toArray()['file']['file_name'])->toBe('');
+
+            expect($contentPart->toArray()['file'])->not->toHaveKey('file_name');
         });
 
         it('handles files with only file_id', function () {
+            // regression: instructor-r50t.9 - empty file_data is omitted, not sent as ""
             $file = new File(fileId: 'file-uploaded-123');
             $structure = $file->toContentPart()->toArray();
-            
+
             expect($structure['file']['file_id'])->toBe('file-uploaded-123');
-            expect($structure['file']['file_data'])->toBe('');
+            expect($structure['file'])->not->toHaveKey('file_data');
+        });
+
+        it('rejects fileData that is not a data: URI (regression: instructor-r50t.9)', function () {
+            expect(fn() => new File(fileData: 'QQ=='))
+                ->toThrow(Exception::class);
+        });
+
+        it('omits the file payload entirely when file_data, file_name and file_id are all empty (regression: instructor-r50t.9)', function () {
+            $file = new File();
+
+            expect($file->toContentPart()->toArray())->toBe(['type' => 'file']);
         });
     });
 });

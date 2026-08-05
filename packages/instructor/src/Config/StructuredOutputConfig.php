@@ -19,8 +19,6 @@ final readonly class StructuredOutputConfig
     private OutputMode $outputMode;
     private bool $useObjectReferences;
     private int $maxRetries;
-    private string $retryPrompt;
-    private array $modePrompts;
     private array $modePromptClasses;
     private string $retryPromptClass;
     private string $schemaName;
@@ -30,7 +28,6 @@ final readonly class StructuredOutputConfig
     private bool $defaultToStdClass;
     private string $deserializationErrorPromptClass;
     private bool $throwOnTransformationFailure;
-    private array $chatStructure;
     private ResponseCachePolicy $responseCachePolicy;
     private int $streamMaterializationInterval;
 
@@ -42,11 +39,8 @@ final readonly class StructuredOutputConfig
         ?string $schemaDescription = null,
         ?string $toolName = null,
         ?string $toolDescription = null,
-        ?array $modePrompts = null,
         ?array $modePromptClasses = null,
-        ?string $retryPrompt = null,
         ?string $retryPromptClass = null,
-        ?array $chatStructure = null,
         ?bool $defaultToStdClass = null,
         ?string $deserializationErrorPromptClass = null,
         ?bool $throwOnTransformationFailure = null,
@@ -59,13 +53,6 @@ final readonly class StructuredOutputConfig
         if ($this->maxRetries < 0) {
             throw new InvalidArgumentException("maxRetries cannot be negative, got: {$this->maxRetries}");
         }
-        $this->retryPrompt = $retryPrompt ?? "JSON generated incorrectly, fix following errors:\n";
-        $this->modePrompts = $modePrompts ?? [
-            OutputMode::MdJson->value => "Response must validate against this JSON Schema:\n<|json_schema|>\n. Respond correctly with strict JSON object within a ```json {} ``` codeblock.\n",
-            OutputMode::Json->value => "Response must follow JSON Schema:\n<|json_schema|>\n. Respond correctly with strict JSON object.\n",
-            OutputMode::JsonSchema->value => "Response must follow provided JSON Schema. Respond correctly with strict JSON object.\n",
-            OutputMode::Tools->value => "Extract correct and accurate data from the input using provided tools.\n",
-        ];
         $this->modePromptClasses = $modePromptClasses ?? [
             OutputMode::MdJson->value => 'Cognesy\\Instructor\\Prompts\\StructuredOutput\\MdJsonSystemPrompt',
             OutputMode::Json->value => 'Cognesy\\Instructor\\Prompts\\StructuredOutput\\JsonSystemPrompt',
@@ -78,20 +65,6 @@ final readonly class StructuredOutputConfig
         $this->schemaDescription = $schemaDescription ?? '';
         $this->toolName = $toolName ?? 'extracted_data';
         $this->toolDescription = $toolDescription ?? 'Function call based on user instructions.';
-        $this->chatStructure = $chatStructure ?? [
-            // potentially cached - predefined sections used to construct the script
-            'system',
-            'pre-cached',
-            'pre-cached-prompt', 'cached-prompt', 'post-cached-prompt',
-            'pre-cached-examples', 'cached-examples', 'post-cached-examples',
-            'cached-messages',
-            'post-cached',
-            // never cached
-            'pre-prompt', 'prompt', 'post-prompt',
-            'pre-examples', 'examples', 'post-examples',
-            'pre-messages', 'messages', 'post-messages',
-            'pre-retries', 'retries', 'post-retries',
-        ];
         $this->defaultToStdClass = $defaultToStdClass ?? false;
         $this->deserializationErrorPromptClass = $deserializationErrorPromptClass
             ?? 'Cognesy\\Instructor\\Prompts\\StructuredOutput\\DeserializationRepairPrompt';
@@ -105,13 +78,10 @@ final readonly class StructuredOutputConfig
             'outputMode' => $this->outputMode->value,
             'useObjectReferences' => $this->useObjectReferences,
             'maxRetries' => $this->maxRetries,
-            'retryPrompt' => $this->retryPrompt,
-            'modePrompts' => $this->modePrompts,
             'modePromptClasses' => $this->modePromptClasses,
             'retryPromptClass' => $this->retryPromptClass,
             'toolName' => $this->toolName,
             'toolDescription' => $this->toolDescription,
-            'chatStructure' => $this->chatStructure,
             'schemaName' => $this->schemaName,
             'schemaDescription' => $this->schemaDescription,
             'defaultToStdClass' => $this->defaultToStdClass,
@@ -122,8 +92,30 @@ final readonly class StructuredOutputConfig
         ];
     }
 
+    /**
+     * Names of __construct() parameters, memoized. `fromArray()` spreads its input as
+     * named arguments, so any key that is not a constructor parameter would be a fatal
+     * `unknown named parameter` error — including keys from configs persisted before a
+     * setting was removed (`retryPrompt`, `modePrompts`, `chatStructure`, ...).
+     *
+     * @return list<string>
+     */
+    private static function constructorKeys(): array {
+        /** @var list<string>|null $keys */
+        static $keys = null;
+        if ($keys === null) {
+            $keys = array_map(
+                static fn(\ReflectionParameter $p): string => $p->getName(),
+                (new \ReflectionMethod(self::class, '__construct'))->getParameters(),
+            );
+        }
+        return $keys;
+    }
+
     public static function fromArray(array $config): StructuredOutputConfig {
         try {
+            // Unknown/removed keys are ignored rather than fatal — see constructorKeys().
+            $config = array_intersect_key($config, array_flip(self::constructorKeys()));
             // Ensure 'outputMode' is set to a valid OutputMode enum value
             $config['outputMode'] = match (true) {
                 !isset($config['outputMode']) => OutputMode::Tools,
@@ -164,16 +156,6 @@ final readonly class StructuredOutputConfig
         return $this->outputMode;
     }
 
-    /** @deprecated 2.5 Legacy RequestMaterializer setting; remove with instructor-cxxt in 2.6. */
-    public function prompt(OutputMode $mode): string {
-        return $this->modePrompts[$mode->value] ?? '';
-    }
-
-    /** @deprecated 2.5 Legacy RequestMaterializer setting; remove with instructor-cxxt in 2.6. */
-    public function modePrompts(): array {
-        return $this->modePrompts;
-    }
-
     public function modePromptClass(OutputMode $mode): string {
         return $this->modePromptClasses[$mode->value] ?? '';
     }
@@ -182,18 +164,8 @@ final readonly class StructuredOutputConfig
         return $this->modePromptClasses;
     }
 
-    /** @deprecated 2.5 Legacy RequestMaterializer setting; remove with instructor-cxxt in 2.6. */
-    public function retryPrompt(): string {
-        return $this->retryPrompt;
-    }
-
     public function retryPromptClass(): string {
         return $this->retryPromptClass;
-    }
-
-    /** @deprecated 2.5 Legacy RequestMaterializer setting; remove with instructor-cxxt in 2.6. */
-    public function chatStructure(): array {
-        return $this->chatStructure;
     }
 
     public function schemaName(): string {
@@ -279,6 +251,14 @@ final readonly class StructuredOutputConfig
         return $this->with(schemaName: $schemaName);
     }
 
+    public function withSchemaDescription(string $schemaDescription): static {
+        return $this->with(schemaDescription: $schemaDescription);
+    }
+
+    public function withStreamMaterializationInterval(int $streamMaterializationInterval): static {
+        return $this->with(streamMaterializationInterval: $streamMaterializationInterval);
+    }
+
     public function withToolName(string $toolName): static {
         return $this->with(toolName: $toolName);
     }
@@ -289,23 +269,6 @@ final readonly class StructuredOutputConfig
 
     public function withUseObjectReferences(bool $useObjectReferences): static {
         return $this->with(useObjectReferences: $useObjectReferences);
-    }
-
-    /** @deprecated 2.5 Legacy RequestMaterializer setting; remove with instructor-cxxt in 2.6. */
-    public function withRetryPrompt(string $retryPrompt): static {
-        return $this->with(retryPrompt: $retryPrompt);
-    }
-
-    /** @deprecated 2.5 Legacy RequestMaterializer setting; remove with instructor-cxxt in 2.6. */
-    public function withModePrompt(OutputMode $mode, string $prompt): static {
-        return $this->withModePrompts(array_merge($this->modePrompts, [
-            $mode->value => $prompt,
-        ]));
-    }
-
-    /** @deprecated 2.5 Legacy RequestMaterializer setting; remove with instructor-cxxt in 2.6. */
-    public function withModePrompts(array $modePrompts): static {
-        return $this->with(modePrompts: $modePrompts);
     }
 
     public function withModePromptClass(OutputMode $mode, string $promptClass): static {
@@ -322,11 +285,6 @@ final readonly class StructuredOutputConfig
         return $this->with(retryPromptClass: $retryPromptClass);
     }
 
-    /** @deprecated 2.5 Legacy RequestMaterializer setting; remove with instructor-cxxt in 2.6. */
-    public function withChatStructure(array $chatStructure): static {
-        return $this->with(chatStructure: $chatStructure);
-    }
-
     public function withDeserializationErrorPromptClass(string $deserializationErrorPromptClass): static {
         return $this->with(deserializationErrorPromptClass: $deserializationErrorPromptClass);
     }
@@ -341,11 +299,8 @@ final readonly class StructuredOutputConfig
         ?string $schemaDescription = null,
         ?string $toolName = null,
         ?string $toolDescription = null,
-        ?array $modePrompts = null,
         ?array $modePromptClasses = null,
-        ?string $retryPrompt = null,
         ?string $retryPromptClass = null,
-        ?array $chatStructure = null,
         ?bool $defaultToStdClass = null,
         ?string $deserializationErrorPromptClass = null,
         ?bool $throwOnTransformationFailure = null,
@@ -360,11 +315,8 @@ final readonly class StructuredOutputConfig
             schemaDescription: $schemaDescription ?? $this->schemaDescription,
             toolName: $toolName ?? $this->toolName,
             toolDescription: $toolDescription ?? $this->toolDescription,
-            modePrompts: $modePrompts ?? $this->modePrompts,
             modePromptClasses: $modePromptClasses ?? $this->modePromptClasses,
-            retryPrompt: $retryPrompt ?? $this->retryPrompt,
             retryPromptClass: $retryPromptClass ?? $this->retryPromptClass,
-            chatStructure: $chatStructure ?? $this->chatStructure,
             defaultToStdClass: $defaultToStdClass ?? $this->defaultToStdClass,
             deserializationErrorPromptClass: $deserializationErrorPromptClass ?? $this->deserializationErrorPromptClass,
             throwOnTransformationFailure: $throwOnTransformationFailure ?? $this->throwOnTransformationFailure,

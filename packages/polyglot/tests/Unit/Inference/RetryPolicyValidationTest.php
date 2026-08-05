@@ -3,8 +3,8 @@
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsRetryPolicy;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Config\LengthRecovery;
-use Cognesy\Polyglot\Inference\Config\RetryBackoff;
-use Cognesy\Polyglot\Inference\Config\RetryJitter;
+use Cognesy\Polyglot\Support\Retry\RetryBackoff;
+use Cognesy\Polyglot\Support\Retry\RetryJitter;
 
 final class RetryPolicyValidationThrowable extends RuntimeException {}
 

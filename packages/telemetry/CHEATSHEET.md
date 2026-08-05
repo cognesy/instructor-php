@@ -27,7 +27,6 @@ Core concepts:
 - `TraceContext`
 - `SpanReference`
 - `Observation`
-- `MetricMeasurement`
 - `TelemetryContinuation`
 - `InstrumentationProfile`
 
@@ -42,6 +41,22 @@ Exporter setup:
 - `Telemetry` takes `new TraceRegistry()` plus an exporter
 - use `CompositeTelemetryExporter([...])` when you want to fan out to multiple backends
 - call `flush()` after the run to send buffered observations and metrics
+
+Metrics ownership:
+
+- `packages/metrics` owns the metric types — `Counter`, `Gauge`, `Histogram`, `Timer` (all `Cognesy\Metrics\Data\*`)
+- `packages/telemetry` owns traces and observations; it does not define a second metric abstraction
+- `Telemetry::metric(Metric $metric)` accepts a canonical metric and delegates into the metrics layer:
+
+```php
+use Cognesy\Metrics\Data\Counter;
+
+$telemetry->metric(Counter::create('agent.steps', 1, ['provider' => 'openai']));
+```
+
+- exporters split by contract: `CanExportObservations` for traces/logs, `CanExportMetrics` for metrics.
+  `OtelExporter` and `LangfuseExporter` implement both; the OTel mapper emits a typed payload per
+  metric type rather than a generic gauge.
 
 ## Live Interop Suite
 

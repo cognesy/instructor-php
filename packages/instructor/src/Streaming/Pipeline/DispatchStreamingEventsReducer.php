@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Streaming\Pipeline;
 
-use Cognesy\Events\Contracts\CanCheckListeners;
+use Cognesy\Events\Support\ListenerGate;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Instructor\Contracts\Sequenceable;
 use Cognesy\Instructor\Events\Streaming\ChunkReceived;
@@ -82,8 +82,7 @@ final class DispatchStreamingEventsReducer implements Reducer
 
     /** @param class-string $eventClass */
     private function hasListenersFor(string $eventClass): bool {
-        return !($this->events instanceof CanCheckListeners)
-            || $this->events->hasListenersFor($eventClass);
+        return ListenerGate::wants($this->events, $eventClass);
     }
 
     #[\Override]

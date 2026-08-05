@@ -21,7 +21,7 @@ use Cognesy\Experimental\RLM\Env\BasicReplEnvironment;
 use Cognesy\Experimental\RLM\Env\ToolUseToolset;
 use Cognesy\Experimental\RLM\State\RlmState;
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
@@ -50,9 +50,8 @@ final class RlmFactory
                 structuredOutput: new StructuredOutputRuntime(
                     inference: $inference,
                     events: $events,
-                    config: (new StructuredOutputConfigBuilder())
-                        ->withMaxRetries(2)
-                        ->create(),
+                    config: (new StructuredOutputConfig())
+                        ->withMaxRetries(2),
                 ),
             );
         }

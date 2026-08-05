@@ -2,13 +2,13 @@
 
 namespace Cognesy\Instructor;
 
-use Cognesy\Instructor\Contracts\CanEmitStreamingUpdates;
+use Cognesy\Instructor\Contracts\CanDriveExecution;
 use Cognesy\Instructor\Contracts\Sequenceable;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputResponse;
 use Cognesy\Instructor\Streaming\ResponseCache;
 use Cognesy\Instructor\Streaming\Sequence\SequenceTracker;
-use Cognesy\Instructor\Telemetry\StreamEventProjector;
+use Cognesy\Instructor\Telemetry\StructuredOutputEventProjector;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Generator;
@@ -19,15 +19,15 @@ use RuntimeException;
  * Consumption API over a streaming structured-output execution: partial
  * values, sequence items, response snapshots, and the final result.
  *
- * Event payload construction lives in StreamEventProjector; opt-in replay
+ * Event payload construction lives in StructuredOutputEventProjector; opt-in replay
  * retention lives in ResponseCache.
  *
  * @template TResponse
  */
 class StructuredOutputStream
 {
-    private CanEmitStreamingUpdates $emitter;
-    private StreamEventProjector $projector;
+    private CanDriveExecution $emitter;
+    private StructuredOutputEventProjector $projector;
     private ResponseCache $cache;
 
     private StructuredOutputExecution $execution;
@@ -38,17 +38,17 @@ class StructuredOutputStream
 
     /**
      * @param StructuredOutputExecution $execution
-     * @param CanEmitStreamingUpdates $emitter
+     * @param CanDriveExecution $emitter
      * @param EventDispatcherInterface $events
      */
     public function __construct(
         StructuredOutputExecution $execution,
-        CanEmitStreamingUpdates $emitter,
+        CanDriveExecution $emitter,
         EventDispatcherInterface $events,
     ) {
         $this->execution = $execution;
         $this->emitter = $emitter;
-        $this->projector = new StreamEventProjector($events);
+        $this->projector = new StructuredOutputEventProjector($events);
         $this->cache = new ResponseCache($execution->config()->responseCachePolicy());
         $this->projector->started($execution);
     }
@@ -228,7 +228,9 @@ class StructuredOutputStream
             }
             foreach ($this->cache->replay() as $response) {
                 $this->rememberResponse($response);
-                $this->projector->updated($response, $this->executionForEvent($response));
+                if ($this->projector->wantsUpdates()) {
+                    $this->projector->updated($response, $this->executionForEvent($response));
+                }
                 yield $response;
             }
             return;
@@ -243,7 +245,9 @@ class StructuredOutputStream
             $this->cache->remember($response);
             $this->rememberResponse($response);
             $this->syncExecutionState($response);
-            $this->projector->updated($response, $this->executionForEvent($response));
+            if ($this->projector->wantsUpdates()) {
+                $this->projector->updated($response, $this->executionForEvent($response));
+            }
             yield $response;
         }
 

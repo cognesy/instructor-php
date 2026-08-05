@@ -81,8 +81,14 @@ When retries are configured, you may see multiple `InferenceAttemptStarted`/`Inf
 | Event | When Dispatched | Key Data |
 |---|---|---|
 | `InferenceRequested` | Before sending the HTTP request | request data |
-| `InferenceResponseCreated` | After receiving and parsing the response | `data['executionId']`, `data['requestId']`, `data['responseId']`, `data['finishReason']`, content-length fields, tool-call summary, `data['usage']` |
+| `InferenceResponseCreated` | After receiving and parsing the response | `data['executionId']`, `data['requestId']`, `data['model']`, `data['responseId']`, `data['finishReason']`, `data['contentLength']`, `data['reasoningContentLength']`, `data['hasToolCalls']`, `data['toolCallCount']`, `data['usage']`, `data['isPartial']`, and `data['statusCode']` when the response carries HTTP data |
 | `InferenceFailed` | On unrecoverable failure | error details |
+
+`InferenceResponseCreated` is emitted from two places — the driver, for a non-streamed response, and `InferenceStream`, when a stream finalises. **The key set is the same either way**; both use a single payload builder (`Inference\Core\InferenceResponseEventPayload`), so the two cannot drift.
+
+One value does differ. `data['executionId']` is populated on the streamed path and is **`null` on the non-streamed path** — the driver is shared across executions by `InferenceRuntime`, so it has no execution to name. Correlate a non-streamed response by `data['requestId']`, which both paths carry and which `InferenceStarted` and `InferenceCompleted` report alongside their `executionId`.
+
+`data['statusCode']` is omitted, on both paths alike, when the response carries no HTTP status — for example a response assembled purely from stream deltas.
 
 ### Streaming Events
 
@@ -190,3 +196,63 @@ $runtime = InferenceRuntime::fromConfig($config, events: $events);
 ```
 
 The same event dispatcher instance can be shared between inference and embeddings runtimes, allowing a single wiretap listener to observe all Polyglot activity.
+
+
+## Listener Gating
+
+Some events are **not constructed at all** when nothing is listening for them. Building an event is not free — the base `Event` generates a UUID and a `DateTimeImmutable` (~0.9µs), and the payload arrays cost more on top: `InferenceRequested` walks the message list, tools and options; `InferenceResponseCreated` runs `strlen()` over the full content; the `InferenceFailed` payloads run header/body redaction. On the streaming path the per-delta events would pay that cost thousands of times per response.
+
+Gating is decided by `Cognesy\Events\Support\ListenerGate`, the single definition of the rule:
+
+```php
+ListenerGate::wants($events, PartialInferenceDeltaCreated::class);
+```
+
+Two properties matter to anyone writing a dispatcher or a listener.
+
+### Fail-open is contractual
+
+A dispatcher is only asked about its listeners if it implements `Cognesy\Events\Contracts\CanCheckListeners`. **A plain PSR-14 `EventDispatcherInterface` cannot report its listeners, so it is assumed to listen and receives every event.** No dispatcher ever loses an event to this optimisation — the worst case is that the payload is built and discarded. The built-in `EventDispatcher` does implement `CanCheckListeners`, so it gets the gating.
+
+### The gate is resolved once, at construction
+
+Emitters resolve the answer in their constructor and store it in a `readonly bool`; they do not re-check per dispatch, because that would put an `instanceof` back on the hot path. The deliberate consequence:
+
+> **A listener registered after the emitter was constructed is not observed by that emitter.**
+
+For a `wiretap()` or `onEvent()` call made on the runtime before the request is sent, this is invisible — the emitters do not exist yet. It becomes visible if you register a listener *from inside another listener* mid-request, or attach one to a shared dispatcher while a stream is already being consumed: gated events already resolved as "unwanted" stay unwanted for the rest of that stream. Register listeners before starting the operation you want to observe.
+
+### What is gated
+
+| Emitter | Events |
+|---|---|
+| `InferenceExecutionSession` | `InferenceStarted`, `InferenceAttemptStarted`, `InferenceAttemptSucceeded`, `InferenceUsageReported`, `InferenceAttemptFailed`, `InferenceCompleted` |
+| `BaseInferenceRequestDriver` | `InferenceRequested`, `InferenceResponseCreated`, `InferenceFailed` |
+| `BaseEmbedDriver` | `EmbeddingsRequested`, `EmbeddingsFailed` |
+| `InferenceStream` | `PartialInferenceDeltaCreated` |
+| `EventStreamReader` | `StreamEventReceived`, `StreamEventParsed` |
+
+Everything else is dispatched unconditionally. `packages/instructor` applies the same rule to
+its own structured-output lifecycle emitters — see the "Listener Gating" section of
+`packages/instructor/docs/internals/events.md`.
+
+The lifecycle events matter most. Each one carries a telemetry envelope under
+`data['telemetry']`, and four of the six build it by serialising the **entire conversation**
+via `Messages::toArray()`. That cost scales with conversation length, not response length:
+for a 128 KB conversation it was ~534 µs per request. With no listeners a session now costs
+a flat ~14 µs regardless of how long the conversation is.
+
+When listeners *are* attached, the conversation is serialised **once per request rather than
+four times**. `Cognesy\Polyglot\Telemetry\MessagesSerializationMemo` holds the two most recent
+results in fixed slots keyed on the `Messages` instance, so the four envelope sites share
+one serialisation — ~166 µs instead of ~534 µs under a wiretap on a 128 KB conversation. The
+key is the object, not its content: a conversation rewritten mid-session by length recovery
+is a different instance and is serialised afresh.
+
+Two slots rather than one because `packages/instructor` uses the same memo and interleaves
+two conversations per request — its own, and the materialized one handed to the nested
+inference call. Across a structured-output request that takes the count from 7 to 2. Deeper
+nesting simply misses and re-serialises: a lost optimisation, never a wrong answer.
+
+Only the payload and the dispatch are conditional. Timing, attempt numbering and execution
+state are not — `durationMs` is correct whether or not anyone was listening.

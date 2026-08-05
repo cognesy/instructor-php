@@ -4,7 +4,7 @@ namespace Cognesy\Polyglot\Inference\Contracts;
 
 use Cognesy\Polyglot\Inference\Data\InferencePricing;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
-use Cognesy\Polyglot\Pricing\Cost;
+use Cognesy\Polyglot\Support\Pricing\Cost;
 
 /**
  * Strategy for calculating cost from inference usage and pricing rates.

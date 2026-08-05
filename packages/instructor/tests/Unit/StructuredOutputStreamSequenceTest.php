@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Instructor\Contracts\CanEmitStreamingUpdates;
+use Cognesy\Instructor\Contracts\CanDriveExecution;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputResponse;
 use Cognesy\Instructor\Enums\ExecutionStatus;
@@ -13,7 +13,7 @@ use Tests\Instructor\Support\TestEventDispatcher;
 require_once __DIR__ . '/../Support/TestEventDispatcher.php';
 
 // Minimal stub to feed a predefined sequence of emissions
-class FakeEmitterForSequence implements CanEmitStreamingUpdates {
+class FakeEmitterForSequence implements CanDriveExecution {
     private \Generator $gen;
     private bool $started = false;
     private StructuredOutputExecution $execution;

@@ -1,0 +1,25 @@
+---
+title: 'v2.7.0'
+---
+
+## Breaking Changes
+
+### Custom Embeddings Drivers Return Domain Responses
+
+`CanHandleVectorization` no longer exposes Polyglot's HTTP transport boundary. Its `handle()`
+method now returns `EmbeddingsResponse`, and `fromData()` is no longer part of the interface:
+
+```diff
+- public function handle(EmbeddingsRequest $request): HttpResponse;
+- public function fromData(array $data): ?EmbeddingsResponse;
++ public function handle(EmbeddingsRequest $request): EmbeddingsResponse;
+```
+
+PHP validates interface return types when implementations are loaded, so this change cannot
+be delivered through a deprecation shim. Custom drivers must update their implementation in
+the same deployment that upgrades to v2.7. Move HTTP response decoding and response adaptation
+into `handle()`. Drivers extending `BaseEmbedDriver` inherit the new behavior unless they
+override `handle()` themselves.
+
+This makes the driver responsible for its complete provider boundary and keeps
+`PendingEmbeddings` focused on retries, memoization, and lifecycle events.

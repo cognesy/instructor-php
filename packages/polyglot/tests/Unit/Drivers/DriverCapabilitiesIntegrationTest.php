@@ -4,40 +4,30 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Drivers\A21\A21Driver;
-use Cognesy\Polyglot\Inference\Drivers\Anthropic\AnthropicDriver;
-use Cognesy\Polyglot\Inference\Drivers\Cerebras\CerebrasDriver;
-use Cognesy\Polyglot\Inference\Drivers\CohereV2\CohereV2Driver;
-use Cognesy\Polyglot\Inference\Drivers\Deepseek\DeepseekDriver;
-use Cognesy\Polyglot\Inference\Drivers\Fireworks\FireworksDriver;
-use Cognesy\Polyglot\Inference\Drivers\Gemini\GeminiDriver;
-use Cognesy\Polyglot\Inference\Drivers\GeminiOAI\GeminiOAIDriver;
-use Cognesy\Polyglot\Inference\Drivers\Glm\GlmDriver;
-use Cognesy\Polyglot\Inference\Drivers\Groq\GroqDriver;
-use Cognesy\Polyglot\Inference\Drivers\HuggingFace\HuggingFaceDriver;
-use Cognesy\Polyglot\Inference\Drivers\Mistral\MistralDriver;
-use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIDriver;
-use Cognesy\Polyglot\Inference\Drivers\OpenRouter\OpenRouterDriver;
-use Cognesy\Polyglot\Inference\Drivers\Perplexity\PerplexityDriver;
-use Cognesy\Polyglot\Inference\Drivers\Qwen\QwenDriver;
-use Cognesy\Polyglot\Inference\Drivers\SambaNova\SambaNovaDriver;
+use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
 
-beforeEach(function () {
-    $this->events = new EventDispatcher();
-    $this->httpClient = (new HttpClientBuilder())
-        ->withDriver(new MockHttpDriver())
-        ->create();
-});
+/**
+ * Drivers are built through the registry by provider name rather than with `new XxxDriver(...)`.
+ *
+ * Seventeen of those classes no longer exist -- instructor-eexl.9 replaced them with
+ * `InferenceDriverSpec` rows -- so a test that names them would be testing the packaging rather
+ * than the behaviour. The provider name is the thing callers actually use and the thing that
+ * has to keep answering the same way.
+ */
+function capabilitiesOf(string $provider, string $model, ?string $forModel = null) {
+    $driver = BundledInferenceDrivers::registry()->makeDriver(
+        $provider,
+        LLMConfig::fromArray(['driver' => $provider, 'model' => $model]),
+        (new HttpClientBuilder())->withDriver(new MockHttpDriver())->create(),
+        new EventDispatcher(),
+    );
 
-describe('OpenAIDriver capabilities', function () {
+    return $driver->capabilities($forModel);
+}
+
+describe('openai capabilities', function () {
     it('supports native response formats, tools, and streaming', function () {
-        $driver = new OpenAIDriver(
-            LLMConfig::fromArray(['driver' => 'openai', 'model' => 'gpt-4o']),
-            $this->httpClient,
-            $this->events,
-        );
-
-        $caps = $driver->capabilities();
+        $caps = capabilitiesOf('openai', 'gpt-4o');
 
         expect($caps->supportsStreaming())->toBeTrue();
         expect($caps->supportsToolCalling())->toBeTrue();
@@ -48,15 +38,9 @@ describe('OpenAIDriver capabilities', function () {
     });
 });
 
-describe('AnthropicDriver capabilities', function () {
+describe('anthropic capabilities', function () {
     it('supports tools but no native response formats', function () {
-        $driver = new AnthropicDriver(
-            LLMConfig::fromArray(['driver' => 'anthropic', 'model' => 'claude-3-opus']),
-            $this->httpClient,
-            $this->events,
-        );
-
-        $caps = $driver->capabilities();
+        $caps = capabilitiesOf('anthropic', 'claude-3-opus');
 
         expect($caps->supportsToolCalling())->toBeTrue();
         expect($caps->supportsToolChoice())->toBeTrue();
@@ -66,15 +50,11 @@ describe('AnthropicDriver capabilities', function () {
     });
 });
 
-describe('DeepseekDriver model-specific capabilities', function () {
+describe('deepseek model-specific capabilities', function () {
+    // The only provider whose capabilities are a function of the model rather than a constant,
+    // and therefore the only reason InferenceDriverSpec::$capabilities accepts a closure.
     it('supports native response formats and tools for chat models', function () {
-        $driver = new DeepseekDriver(
-            LLMConfig::fromArray(['driver' => 'deepseek', 'model' => 'deepseek-chat']),
-            $this->httpClient,
-            $this->events,
-        );
-
-        $caps = $driver->capabilities();
+        $caps = capabilitiesOf('deepseek', 'deepseek-chat');
 
         expect($caps->supportsToolCalling())->toBeTrue();
         expect($caps->supportsToolChoice())->toBeTrue();
@@ -83,13 +63,7 @@ describe('DeepseekDriver model-specific capabilities', function () {
     });
 
     it('disables tools and JSON schema for reasoner models via config', function () {
-        $driver = new DeepseekDriver(
-            LLMConfig::fromArray(['driver' => 'deepseek', 'model' => 'deepseek-reasoner']),
-            $this->httpClient,
-            $this->events,
-        );
-
-        $caps = $driver->capabilities();
+        $caps = capabilitiesOf('deepseek', 'deepseek-reasoner');
 
         expect($caps->supportsToolCalling())->toBeFalse();
         expect($caps->supportsToolChoice())->toBeFalse();
@@ -98,13 +72,7 @@ describe('DeepseekDriver model-specific capabilities', function () {
     });
 
     it('lets the model parameter override the configured model', function () {
-        $driver = new DeepseekDriver(
-            LLMConfig::fromArray(['driver' => 'deepseek', 'model' => 'deepseek-chat']),
-            $this->httpClient,
-            $this->events,
-        );
-
-        $caps = $driver->capabilities('deepseek-reasoner');
+        $caps = capabilitiesOf('deepseek', 'deepseek-chat', forModel: 'deepseek-reasoner');
 
         expect($caps->supportsToolCalling())->toBeFalse();
         expect($caps->supportsToolChoice())->toBeFalse();
@@ -112,23 +80,13 @@ describe('DeepseekDriver model-specific capabilities', function () {
     });
 
     it('does not support combining response format with tools', function () {
-        $driver = new DeepseekDriver(
-            LLMConfig::fromArray(['driver' => 'deepseek', 'model' => 'deepseek-chat']),
-            $this->httpClient,
-            $this->events,
-        );
-
-        expect($driver->capabilities()->supportsResponseFormatWithTools())->toBeFalse();
+        expect(capabilitiesOf('deepseek', 'deepseek-chat')->supportsResponseFormatWithTools())->toBeFalse();
     });
 });
 
 describe('Gemini-family and OpenAI-compatible drivers', function () {
     it('Gemini supports native response formats but not response_format with tools', function () {
-        $caps = (new GeminiDriver(
-            LLMConfig::fromArray(['driver' => 'gemini', 'model' => 'gemini-pro']),
-            $this->httpClient,
-            $this->events,
-        ))->capabilities();
+        $caps = capabilitiesOf('gemini', 'gemini-pro');
 
         expect($caps->supportsResponseFormatJsonObject())->toBeTrue();
         expect($caps->supportsResponseFormatJsonSchema())->toBeTrue();
@@ -136,11 +94,7 @@ describe('Gemini-family and OpenAI-compatible drivers', function () {
     });
 
     it('Gemini OAI supports JSON object but not JSON schema', function () {
-        $caps = (new GeminiOAIDriver(
-            LLMConfig::fromArray(['driver' => 'gemini-oai', 'model' => 'gemini-1.5-flash']),
-            $this->httpClient,
-            $this->events,
-        ))->capabilities();
+        $caps = capabilitiesOf('gemini-oai', 'gemini-1.5-flash');
 
         expect($caps->supportsToolCalling())->toBeTrue();
         expect($caps->supportsResponseFormatJsonObject())->toBeTrue();
@@ -149,11 +103,7 @@ describe('Gemini-family and OpenAI-compatible drivers', function () {
     });
 
     it('A21 supports JSON object but not JSON schema', function () {
-        $caps = (new A21Driver(
-            LLMConfig::fromArray(['driver' => 'a21', 'model' => 'jamba-1.5']),
-            $this->httpClient,
-            $this->events,
-        ))->capabilities();
+        $caps = capabilitiesOf('a21', 'jamba-1.5');
 
         expect($caps->supportsResponseFormatJsonObject())->toBeTrue();
         expect($caps->supportsResponseFormatJsonSchema())->toBeFalse();
@@ -161,11 +111,7 @@ describe('Gemini-family and OpenAI-compatible drivers', function () {
     });
 
     it('SambaNova supports JSON object but not JSON schema', function () {
-        $caps = (new SambaNovaDriver(
-            LLMConfig::fromArray(['driver' => 'sambanova', 'model' => 'llama-3']),
-            $this->httpClient,
-            $this->events,
-        ))->capabilities();
+        $caps = capabilitiesOf('sambanova', 'llama-3');
 
         expect($caps->supportsToolCalling())->toBeTrue();
         expect($caps->supportsResponseFormatJsonObject())->toBeTrue();
@@ -174,13 +120,9 @@ describe('Gemini-family and OpenAI-compatible drivers', function () {
     });
 });
 
-describe('PerplexityDriver capabilities', function () {
+describe('perplexity capabilities', function () {
     it('supports native response formats but no tools', function () {
-        $caps = (new PerplexityDriver(
-            LLMConfig::fromArray(['driver' => 'perplexity', 'model' => 'sonar']),
-            $this->httpClient,
-            $this->events,
-        ))->capabilities();
+        $caps = capabilitiesOf('perplexity', 'sonar');
 
         expect($caps->supportsToolCalling())->toBeFalse();
         expect($caps->supportsToolChoice())->toBeFalse();
@@ -191,23 +133,19 @@ describe('PerplexityDriver capabilities', function () {
 });
 
 describe('Drivers that do not combine response_format with tools', function () {
-    it('reports the expected compatibility limits', function (string $driverClass, string $driverName, string $model) {
-        $caps = (new $driverClass(
-            LLMConfig::fromArray(['driver' => $driverName, 'model' => $model]),
-            $this->httpClient,
-            $this->events,
-        ))->capabilities();
-
-        expect($caps->supportsResponseFormatWithTools())->toBeFalse();
+    it('reports the expected compatibility limits', function (string $driverName, string $model) {
+        expect(capabilitiesOf($driverName, $model)->supportsResponseFormatWithTools())->toBeFalse();
     })->with([
-        [QwenDriver::class, 'qwen', 'qwen3-max-preview'],
-        [GlmDriver::class, 'glm', 'glm-4.5'],
-        [GroqDriver::class, 'groq', 'llama-3'],
-        [MistralDriver::class, 'mistral', 'mistral-large'],
-        [CohereV2Driver::class, 'cohere2', 'command-r'],
-        [OpenRouterDriver::class, 'openrouter', 'openai/gpt-4'],
-        [FireworksDriver::class, 'fireworks', 'llama-v3'],
-        [CerebrasDriver::class, 'cerebras', 'llama3.1-8b'],
-        [HuggingFaceDriver::class, 'huggingface', 'mistralai/Mistral-7B'],
+        ['qwen', 'qwen3-max-preview'],
+        ['glm', 'glm-4.5'],
+        ['groq', 'llama-3'],
+        ['mistral', 'mistral-large'],
+        // Was passed as 'cohere2' when the class was constructed directly, where the config's
+        // driver field was decorative. Going through the registry means using the real key.
+        ['cohere', 'command-r'],
+        ['openrouter', 'openai/gpt-4'],
+        ['fireworks', 'llama-v3'],
+        ['cerebras', 'llama3.1-8b'],
+        ['huggingface', 'mistralai/Mistral-7B'],
     ]);
 });

@@ -16,7 +16,7 @@ use Cognesy\Polyglot\Embeddings\Contracts\HasExplicitEmbeddingsDriver;
 use Cognesy\Polyglot\Embeddings\Creation\BundledEmbeddingsDrivers;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
 use Cognesy\Polyglot\Embeddings\Events\EmbeddingsDriverBuilt;
-use Cognesy\Polyglot\Inference\Core\SensitiveDataRedactor;
+use Cognesy\Polyglot\Support\Redaction\SensitiveDataRedactor;
 
 final class EmbeddingsRuntime implements CanCreateEmbeddings
 {

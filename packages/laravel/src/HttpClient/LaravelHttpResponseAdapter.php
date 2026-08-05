@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Laravel\HttpClient;
 
-use Cognesy\Events\Contracts\CanCheckListeners;
+use Cognesy\Events\Support\ListenerGate;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Http\Data\HttpResponse;
@@ -47,10 +47,7 @@ class LaravelHttpResponseAdapter implements CanAdaptHttpResponse
         // PsrHttpResponseAdapter: the event object is the dispatch() argument, so
         // without asking first it is built for every chunk whether or not anyone
         // consumes it.
-        $emitChunks = match (true) {
-            $this->events instanceof CanCheckListeners => $this->events->hasListenersFor(HttpResponseChunkReceived::class),
-            default => true,
-        };
+        $emitChunks = ListenerGate::wants($this->events, HttpResponseChunkReceived::class);
 
         while (!$stream->eof()) {
             $chunk = $stream->read($this->streamChunkSize);

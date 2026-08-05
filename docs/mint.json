@@ -25,6 +25,7 @@
             "group": "Release Notes",
             "pages": [
                 "release-notes/versions",
+                "release-notes/v2.7.0",
                 "release-notes/v2.6.2",
                 "release-notes/v2.6.1",
                 "release-notes/v2.6.0",
@@ -718,6 +719,19 @@
                 "cookbook/examples/D05_AgentTroubleshooting/agent_subagent_telemetry_logfire",
                 "cookbook/examples/D05_AgentTroubleshooting/agent_telemetry_langfuse",
                 "cookbook/examples/D05_AgentTroubleshooting/agent_telemetry_logfire"
+            ]
+        },
+        {
+            "group": "D06_AgentEvals",
+            "pages": [
+                "cookbook/examples/D06_AgentEvals/agent_eval_overview",
+                "cookbook/examples/D06_AgentEvals/agent_eval_cases",
+                "cookbook/examples/D06_AgentEvals/agent_eval_assertions",
+                "cookbook/examples/D06_AgentEvals/agent_eval_judge",
+                "cookbook/examples/D06_AgentEvals/agent_eval_targets",
+                "cookbook/examples/D06_AgentEvals/agent_eval_reporters",
+                "cookbook/examples/D06_AgentEvals/running_agent_evals",
+                "cookbook/examples/D06_AgentEvals/agent_eval_test_suites"
             ]
         },
         {

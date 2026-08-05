@@ -96,4 +96,34 @@ describe('ContentParts', function () {
                 ['type' => 'text', 'text' => 'World'],
             ]);
     });
+
+    it('iterates yielding the same items in the same order as all() for an empty collection', function () {
+        $parts = ContentParts::empty();
+
+        $iterated = [];
+        foreach ($parts as $part) {
+            $iterated[] = $part;
+        }
+
+        expect($iterated)->toBe($parts->all())
+            ->and(count($parts))->toBe($parts->count())
+            ->and(count($parts))->toBe(0);
+    });
+
+    it('iterates yielding the same items in the same order as all() for a multi-part collection', function () {
+        $parts = ContentParts::fromArray([
+            ContentPart::text('Hello'),
+            ContentPart::text('World'),
+            ContentPart::imageUrl('https://example.com/image.jpg'),
+        ]);
+
+        $iterated = [];
+        foreach ($parts as $part) {
+            $iterated[] = $part;
+        }
+
+        expect($iterated)->toBe($parts->all())
+            ->and(count($parts))->toBe($parts->count())
+            ->and(count($parts))->toBe(3);
+    });
 });

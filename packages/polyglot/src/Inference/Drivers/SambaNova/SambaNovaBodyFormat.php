@@ -3,6 +3,7 @@
 namespace Cognesy\Polyglot\Inference\Drivers\SambaNova;
 
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
 class SambaNovaBodyFormat extends OpenAICompatibleBodyFormat
 {
@@ -15,18 +16,9 @@ class SambaNovaBodyFormat extends OpenAICompatibleBodyFormat
 
     // INTERNAL ///////////////////////////////////////////////
 
+    // SambaNova API supports json_object but no schema, so schema mode degrades to plain JSON.
     #[\Override]
-    protected function toResponseFormat(InferenceRequest $request) : array {
-        $type = $this->toResponseFormatType($request);
-        if ($type === null) {
-            return [];
-        }
-
-        // SambaNova API supports: json_object (no schema support)
-        $responseFormat = $request->responseFormat()
-            ->withToJsonObjectHandler(fn() => ['type' => 'json_object'])
-            ->withToJsonSchemaHandler(fn() => ['type' => 'json_object']); // Falls back to json_object
-
-        return $this->renderResponseFormatForType($responseFormat, $type);
+    protected function toJsonSchemaResponseFormat(ResponseFormat $responseFormat) : array {
+        return $this->toJsonObjectResponseFormat($responseFormat);
     }
 }

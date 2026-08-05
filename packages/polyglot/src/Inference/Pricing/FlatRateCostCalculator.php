@@ -5,7 +5,7 @@ namespace Cognesy\Polyglot\Inference\Pricing;
 use Cognesy\Polyglot\Inference\Contracts\CanCalculateInferenceCost;
 use Cognesy\Polyglot\Inference\Data\InferencePricing;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
-use Cognesy\Polyglot\Pricing\Cost;
+use Cognesy\Polyglot\Support\Pricing\Cost;
 
 /**
  * Flat-rate cost calculator: applies per-million-token rates to each usage category.

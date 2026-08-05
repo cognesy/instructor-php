@@ -21,16 +21,22 @@ final class InferenceDriverRegistry implements CanProvideInferenceDrivers
     }
 
     /**
+     * Populates the table directly rather than folding `withDriver()` over it.
+     *
+     * `withDriver()` is a public wither and clones per call, which is correct for a wither and
+     * wrong for a named constructor: building the 29-entry bundled map through it cost 29
+     * clones of a growing array to produce one registry. This is the same object either way —
+     * `toDriverFactory()` is still the only thing that turns an entry into a factory.
+     *
      * @param array<string, string|callable(LLMConfig,CanSendHttpRequests,CanHandleEvents):CanProcessInferenceRequest> $drivers
      */
     public static function fromArray(array $drivers): self {
-        $registry = self::make();
-
+        $factories = [];
         foreach ($drivers as $name => $driver) {
-            $registry = $registry->withDriver($name, $driver);
+            $factories[$name] = self::toDriverFactory($driver);
         }
 
-        return $registry;
+        return new self($factories);
     }
 
     /**

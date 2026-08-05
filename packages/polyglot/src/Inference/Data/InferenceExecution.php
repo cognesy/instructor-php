@@ -166,21 +166,6 @@ class InferenceExecution
         return $resp !== null && !$resp->hasFinishedWithFailure();
     }
 
-    /**
-     * True if the latest finalized attempt failed.
-     */
-    public function isFailedFinal(): bool {
-        $last = $this->attempts->last();
-        if ($last === null) {
-            return false;
-        }
-        if ($last->hasErrors()) {
-            return true;
-        }
-        $resp = $last->response();
-        return $resp?->hasFinishedWithFailure() ?? false;
-    }
-
     // MUTATORS //////////////////////////////////////////////////////////
 
     public function with(
@@ -197,7 +182,8 @@ class InferenceExecution
             //
             id: $this->id,
             createdAt: $this->createdAt,
-            updatedAt: new DateTimeImmutable(),
+            // Carried over, not recomputed -- see InferenceRequest::with().
+            updatedAt: $this->updatedAt,
         );
     }
 
@@ -246,20 +232,6 @@ class InferenceExecution
                 errors: $errors,
             );
         return $this->withFinalizedAttempt($newAttempt);
-    }
-
-    /**
-     * Updates the response in the current attempt (e.g., to attach pricing).
-     */
-    public function withUpdatedResponse(InferenceResponse $response): self {
-        if ($this->currentAttempt === null) {
-            return $this;
-        }
-        $updatedAttempt = $this->currentAttempt->withResponse($response);
-        return $this->with(
-            attempts: $this->attempts->withUpdatedAttempt($updatedAttempt),
-            currentAttempt: $updatedAttempt,
-        );
     }
 
     private function withFinalizedAttempt(InferenceAttempt $attempt): self {

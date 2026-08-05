@@ -135,6 +135,53 @@ Events are organized into namespaces that correspond to the processing stage:
 | `SequenceUpdated` | A sequence item has been completed |
 
 
+## Listener Gating
+
+Some events are **not constructed at all** when nothing is listening for them. Building the
+payload is not free: the structured-output lifecycle events each carry a telemetry envelope
+that serialises the entire conversation, and `StructuredOutputResponseGenerated` additionally
+normalizes the result value, runs `strlen()` over the content and reasoning content, and walks
+the tool calls. `StructuredOutputResponseUpdated` pays a smaller version of that **once per
+streamed emission**.
+
+The rule is `Cognesy\Events\Support\ListenerGate`, shared with Polyglot — see the
+"Listener Gating" section of `packages/polyglot/docs/internals/events.md` for the two
+properties that matter to anyone writing a dispatcher.
+
+### What is gated
+
+| Emitter | Events |
+|---|---|
+| `StructuredOutputEventProjector` | `StructuredOutputRequestReceived`, `StructuredOutputStarted`, `StructuredOutputResponseUpdated`, `StructuredOutputResponseGenerated` |
+| `DispatchStreamingEventsReducer` | `ChunkReceived`, `PartialResponseGenerated`, `SequenceUpdated`, `StreamedResponseReceived`, the `StreamedToolCall*` family |
+
+Everything else is dispatched unconditionally.
+
+**Fail-open is contractual.** A dispatcher that does not implement
+`Cognesy\Events\Contracts\CanCheckListeners` cannot report its listeners, so it is assumed to
+listen and receives every event. No dispatcher ever loses an event to this optimisation.
+
+### When the gate is resolved
+
+`StructuredOutputEventProjector` resolves its gates **once, at construction**, and a projector
+is built per execution — by `StructuredOutputExecutionSession` for the sync path and inside
+`StructuredOutputStream::__construct()` for the streaming path. Both are constructed after any
+`onEvent()` or `wiretap()` call on the runtime, so no listener can be registered and then
+missed.
+
+`StructuredOutputRuntime` is the exception: it builds its projector **per request**, inside
+`create()`. A runtime is long-lived and `onEvent()` mutates it, so gates resolved in its
+constructor would silently drop `StructuredOutputRequestReceived` for every caller who
+registers a listener the way the API invites. One `hasListenersFor()` per request costs
+nothing next to the envelope it guards.
+
+`DefaultRetryPolicy` also builds a projector, but the retry and recovery events it emits are
+dispatched unconditionally — only the four events in the table above are gated.
+
+Only the payload and the dispatch are conditional. Timing, attempt numbering and execution
+state are not.
+
+
 ## Event Methods
 
 Every event inherits the following convenience methods from `Cognesy\Events\Event`:

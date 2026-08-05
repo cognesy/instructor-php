@@ -82,13 +82,28 @@ class OpenAIResponseAdapter implements CanTranslateInferenceResponse
         return new PartialInferenceDelta(
             contentDelta: $this->makeContentDelta($data),
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
-            // Only the final chunk carries usage (1 in ~943 on a real stream), but the
-            // mapper allocated an all-zero InferenceUsage for every delta. A null usage
-            // is what StreamingUsageState::apply() already treats as "nothing to add".
-            usage: empty($data['usage']) ? null : $this->usageFormat->fromData($data),
+            usage: $this->hasUsageData($data) ? $this->usageFormat->fromData($data) : null,
             usageIsCumulative: true,
             responseData: $responseData,
         );
+    }
+
+    /**
+     * Whether this chunk carries a usage payload at all.
+     *
+     * Only the final chunk carries usage (1 in ~943 on a real stream), but the
+     * mapper used to allocate an all-zero InferenceUsage for every delta. A null
+     * usage is what StreamingUsageState::apply() already treats as "nothing to
+     * add", so skipping construction is behaviour-neutral and saves one object
+     * per delta on the hot path.
+     *
+     * The payload key is provider-specific — subclasses that read usage from
+     * somewhere other than `$data['usage']` must override this, not copy it.
+     *
+     * @param array<string,mixed> $data
+     */
+    protected function hasUsageData(array $data): bool {
+        return !empty($data['usage']);
     }
 
     #[\Override]

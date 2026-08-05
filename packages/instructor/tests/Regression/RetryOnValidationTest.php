@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Events\Attempt\ResponseRecoveryExhausted;
 use Cognesy\Instructor\Events\Attempt\ResponseRetryScheduled;
 use Cognesy\Instructor\StructuredOutput;
@@ -50,10 +50,9 @@ it('retries sync request after validation failure and succeeds on second attempt
     $events->addListener(ResponseRetryScheduled::class, function() use (&$attempts){ $attempts++; });
     $events->addListener(ResponseRecoveryExhausted::class, function() use (&$limits){ $limits++; });
 
-    $config = (new StructuredOutputConfigBuilder())
+    $config = (new StructuredOutputConfig())
         ->withOutputMode(OutputMode::Json)
-        ->withMaxRetries(1)
-        ->create();
+        ->withMaxRetries(1);
     $runtime = makeStructuredRuntime(
         driver: $driver,
         events: $events,
@@ -98,10 +97,9 @@ it('retries streaming (transducer) request after validation failure and succeeds
     $events->addListener(ResponseRetryScheduled::class, function() use (&$attempts){ $attempts++; });
     $events->addListener(ResponseRecoveryExhausted::class, function() use (&$limits){ $limits++; });
 
-    $config = (new StructuredOutputConfigBuilder())
+    $config = (new StructuredOutputConfig())
         ->withOutputMode(OutputMode::Json)
-        ->withMaxRetries(1)
-        ->create();
+        ->withMaxRetries(1);
     $runtime = makeStructuredRuntime(
         driver: $driver,
         events: $events,
@@ -148,10 +146,9 @@ it('retries streaming when driver emits pre-valued object that fails validation'
         $limits++;
     });
 
-    $config = (new StructuredOutputConfigBuilder())
+    $config = (new StructuredOutputConfig())
         ->withOutputMode(OutputMode::Json)
-        ->withMaxRetries(1)
-        ->create();
+        ->withMaxRetries(1);
 
     $runtime = makeStructuredRuntime(
         driver: $driver,

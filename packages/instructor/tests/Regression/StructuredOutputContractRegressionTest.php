@@ -2,9 +2,7 @@
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
-use Cognesy\Instructor\Core\RequestMaterializer;
 use Cognesy\Instructor\Core\StructuredPromptRequestMaterializer;
-use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\Creation\StructuredOutputExecutionBuilder;
 use Cognesy\Instructor\Data\OutputFormat;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
@@ -599,29 +597,33 @@ it('emits a result-neutral materialization event with the actual result type', f
         ->and($captured[0])->toHaveKeys(['requestId', 'executionId', 'attemptId', 'phaseId']);
 })->group('structured-output-contract-regression');
 
-it('replaces rather than appends chatStructure in StructuredOutputConfigBuilder', function () {
-    $defaults = new StructuredOutputConfig(chatStructure: ['system', 'prompt', 'messages']);
-    $config = (new StructuredOutputConfigBuilder())
-        ->withConfig($defaults)
-        ->withChatStructure(['messages', 'retries'])
-        ->create();
+// The removed StructuredOutputConfigBuilder merged single-mode prompt overrides into the
+// defaults rather than replacing them. withModePromptClass() must keep doing that, or every
+// former builder call site would silently lose the other modes' prompts.
+it('merges rather than replaces modePromptClasses on a single-mode override', function () {
+    $defaults = new StructuredOutputConfig(modePromptClasses: [
+        OutputMode::Json->value => 'App\\Prompts\\DefaultJsonPrompt',
+        OutputMode::Tools->value => 'App\\Prompts\\DefaultToolsPrompt',
+    ]);
+    $config = $defaults->withModePromptClass(OutputMode::Json, 'App\\Prompts\\OverriddenJsonPrompt');
 
-    expect($config->chatStructure())->toBe(['messages', 'retries']);
+    expect($config->modePromptClass(OutputMode::Json))->toBe('App\\Prompts\\OverriddenJsonPrompt')
+        ->and($config->modePromptClass(OutputMode::Tools))->toBe('App\\Prompts\\DefaultToolsPrompt');
 })->group('structured-output-contract-regression');
 
-it('retains streamMaterializationInterval through StructuredOutputConfigBuilder', function () {
-    $config = (new StructuredOutputConfigBuilder())
-        ->withStreamMaterializationInterval(7)
-        ->create();
+it('retains streamMaterializationInterval through StructuredOutputConfig', function () {
+    $config = (new StructuredOutputConfig())->withStreamMaterializationInterval(7);
     $restored = StructuredOutputConfig::fromArray($config->toArray());
 
     expect($config->streamMaterializationInterval())->toBe(7)
         ->and($restored->streamMaterializationInterval())->toBe(7);
 })->group('structured-output-contract-regression');
 
-it('keeps legacy prompt configuration behind explicit legacy materializer injection', function () {
-    $config = (new StructuredOutputConfig(outputMode: OutputMode::Json))
-        ->withModePrompt(OutputMode::Json, 'LEGACY INLINE PROMPT');
+it('ignores removed legacy inline prompt keys when building the structured prompt', function () {
+    $config = StructuredOutputConfig::fromArray([
+        'outputMode' => OutputMode::Json,
+        'modePrompts' => [OutputMode::Json->value => 'LEGACY INLINE PROMPT'],
+    ]);
     $request = new StructuredOutputRequest(
         messages: Messages::fromString('Extract the issue status.'),
         requestedSchema: contractRegressionSchema(),
@@ -630,10 +632,8 @@ it('keeps legacy prompt configuration behind explicit legacy materializer inject
         ->createWith(request: $request, config: $config);
 
     $defaultMessages = (new StructuredPromptRequestMaterializer())->toMessages($execution)->toArray();
-    $legacyMessages = (new RequestMaterializer())->toMessages($execution)->toArray();
 
-    expect(json_encode($defaultMessages))->not->toContain('LEGACY INLINE PROMPT')
-        ->and(json_encode($legacyMessages))->toContain('LEGACY INLINE PROMPT');
+    expect(json_encode($defaultMessages))->not->toContain('LEGACY INLINE PROMPT');
 })->group('structured-output-contract-regression');
 
 it('keeps raw toArray data distinct from the final structured array', function () {

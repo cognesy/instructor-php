@@ -70,10 +70,13 @@ final readonly class Message
         $this->id = $id ?? MessageId::generate();
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
 
+        // Roles are validated here, at the construction site that supplied them. Storing
+        // an unknown role and letting role() throw later surfaced the error far from its
+        // cause, and survived toArray() so it round-tripped through storage undetected.
         $this->role = match (true) {
             $role instanceof MessageRole => $role->value,
             ($role === '') || is_null($role) => self::DEFAULT_ROLE,
-            default => $role,
+            default => MessageRole::fromString($role)->value,
         };
         $this->name = $name;
         $this->content = Content::fromAny($content);
@@ -295,13 +298,10 @@ final readonly class Message
         );
     }
 
+    /** @throws \InvalidArgumentException when $role is not a known MessageRole */
     public function withRole(string|MessageRole $role): self {
-        $role = match (true) {
-            is_string($role) => $role,
-            $role instanceof MessageRole => $role->value,
-        };
         return new self(
-            role: $role,
+            role: MessageRole::fromAny($role),
             content: $this->content,
             name: $this->name,
             metadata: $this->metadata,
@@ -361,6 +361,37 @@ final readonly class Message
             $newContent = $newContent->addContentPart($part);
         }
         return $this->withContent($newContent);
+    }
+
+    /**
+     * Folds $source into this message: content parts are appended, tool calls are
+     * concatenated, and $source's metadata keys win on conflict. Identity (id, parentId,
+     * createdAt), role and name stay with this message - it is being extended, not
+     * replaced - so a merged message keeps its place in a stored parentId chain.
+     *
+     * Tool RESULTS are never merged: a tool result is bound to one tool call id, and
+     * folding two together would silently drop that binding. Callers must keep such
+     * messages separate; see Messages::toMergedPerRole().
+     *
+     * @throws \InvalidArgumentException if either message carries a tool result
+     */
+    public function withMergedFrom(Message $source): self {
+        if ($this->toolResult !== null || $source->hasToolResult()) {
+            throw new \InvalidArgumentException(
+                'Cannot merge messages carrying a tool result - a tool result is bound to a single tool call id.'
+            );
+        }
+        return new self(
+            role: $this->role,
+            content: $this->addContentFrom($source)->content(),
+            name: $this->name,
+            metadata: $this->metadata->withMergedData($source->metadata()->toArray()),
+            parentId: $this->parentId,
+            toolCalls: new ToolCalls(...[...$this->toolCalls->all(), ...$source->toolCalls()->all()]),
+            toolResult: null,
+            id: $this->id,
+            createdAt: $this->createdAt,
+        );
     }
 
     public function addContentPart(string|array|ContentPart $part): self {
@@ -439,6 +470,6 @@ final readonly class Message
     }
 
     public static function becomesComposite(array $message): bool {
-        return is_array($message['content']);
+        return is_array($message['content'] ?? null);
     }
 }

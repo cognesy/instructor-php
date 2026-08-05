@@ -3,7 +3,6 @@
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Contracts\CanMaterializeRequest;
-use Cognesy\Instructor\Core\RequestMaterializer;
 use Cognesy\Instructor\Core\StructuredPromptRequestMaterializer;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
@@ -19,7 +18,7 @@ final class SwitchingRegressionUser
     public string $name = '';
 }
 
-it('switches between legacy and structured prompt materializers without caller changes', function () {
+it('materializes cached context and live task through an injected request materializer', function () {
     $run = function (CanMaterializeRequest $materializer): array {
         $inference = new class implements CanCreateInference {
             public ?InferenceRequest $captured = null;
@@ -64,14 +63,10 @@ it('switches between legacy and structured prompt materializers without caller c
         return [$result, $inference->captured];
     };
 
-    [$legacyResult, $legacyRequest] = $run(new RequestMaterializer());
     [$structuredResult, $structuredRequest] = $run(new StructuredPromptRequestMaterializer());
 
-    expect($legacyResult)->toBe(['name' => 'Switched'])
-        ->and($structuredResult)->toBe(['name' => 'Switched'])
-        ->and($legacyRequest)->toBeInstanceOf(InferenceRequest::class)
+    expect($structuredResult)->toBe(['name' => 'Switched'])
         ->and($structuredRequest)->toBeInstanceOf(InferenceRequest::class)
-        ->and($legacyRequest?->cachedContext()?->isEmpty())->toBeTrue()
         ->and($structuredRequest?->cachedContext()?->isEmpty())->toBeFalse()
         ->and($structuredRequest?->messages()->first()?->toString())->toContain('LIVE TASK')
         ->and($structuredRequest?->cachedContext()?->messages()->first()?->toString())->toContain('CACHED TASK');

@@ -47,7 +47,20 @@ Internally, `PendingInference` delegates to `InferenceExecutionSession`, which o
 
 ### 4. The Execution Session
 
-The `InferenceExecutionSession` is the heart of the lifecycle. It performs these steps for a non-streaming request:
+The `InferenceExecutionSession` is the heart of the lifecycle. It owns the `InferenceExecution` and reconciles the two ways a caller can ask for a result -- `response()` and `stream()` -- and delegates the rest to two collaborators, each built once per execution in its constructor:
+
+| Collaborator | Owns |
+|---|---|
+| `InferenceLifecycleEmitter` | every lifecycle event, both stopwatches, the attempt counter, and the telemetry correlation stamped onto each attempt |
+| `InferenceRetryLoop` | the attempt budget, the length-recovery budget, the backoff delay, and the rewritten request a length recovery sends |
+
+They are per execution, never per attempt and never per delta -- the emitter in particular resolves its six listener gates once, in its own constructor, and constructing it on the delta path would put six `hasListenersFor()` calls behind every chunk.
+
+There is no third collaborator holding a response cache, and that is deliberate. Repeated `response()` calls return the identical instance already, because the session reads it back off the `InferenceExecution` -- which the retry loop has updated with `withSuccessfulAttempt()` before the call can return. A separate cache keyed on `ResponseCachePolicy` existed and was unreachable: the execution check ran first and always won. `ResponseCachePolicy` keeps its meaning one layer down, where `BaseInferenceRequestDriver` maps it onto `StreamCachePolicy` to decide whether the HTTP stream is replayable.
+
+Two methods on the session are worth knowing by name, because between them they are the only places an execution ends: `succeed()` and `terminate()`. `terminate()` takes an explicit `$throw` flag, which is the difference between a caller driving the execution (throws) and a stream callback invoked from inside the stream's own iteration (stores the error for the next `response()` call to rethrow).
+
+It performs these steps for a non-streaming request:
 
 1. **Dispatches `InferenceStarted`** -- signals the beginning of the operation, including the execution ID, request details, and whether streaming is enabled
 2. **Dispatches `InferenceAttemptStarted`** -- signals the beginning of an attempt with the attempt number and model
@@ -114,6 +127,10 @@ The stream dispatches events as deltas arrive:
 - **`PartialInferenceDeltaCreated`** -- for each visible delta
 - **`InferenceResponseCreated`** -- when the stream finishes and the final response is assembled from accumulated state
 
+When a stream fails, the session records the failure the same way a non-streamed attempt would -- `InferenceAttemptFailed` with the partial usage accumulated so far, then `InferenceCompleted` with `isSuccess: false` -- and the error is rethrown to the caller.
+
+This holds regardless of *when* the failure lands. A connection dropped at handshake, before a single delta arrives, reports exactly what a mid-stream failure reports; the partial usage is simply zero. Anything counting failures from lifecycle events can rely on that.
+
 ### Stream Processing
 
 The stream supports functional-style processing through `map()`, `reduce()`, and `filter()`:
@@ -156,8 +173,8 @@ The embeddings lifecycle is simpler since streaming is not involved:
 1. **`Embeddings` builds an `EmbeddingsRequest`** from the configured inputs, model, and options
 2. **`create()` returns `PendingEmbeddings`** -- a lazy handle that holds the request, driver, and event dispatcher
 3. **`get()` triggers execution**:
-   - The driver's `handle()` method sends the HTTP request
-   - The response body is decoded and passed to `driver->fromData()` to build an `EmbeddingsResponse`
+   - The driver's `handle()` method translates and sends the HTTP request
+   - The driver decodes the provider payload and returns an `EmbeddingsResponse`
    - `EmbeddingsResponseReceived` is dispatched
 4. **`EmbeddingsResponse` is returned** -- containing vectors and usage
 
@@ -176,7 +193,9 @@ Retry logic is handled internally by `PendingEmbeddings` based on the `Embedding
 
 ## Response Caching
 
-Both the inference and embeddings lifecycles support response caching. When `ResponseCachePolicy` is set on the request, the `InferenceExecutionSession` caches the response after the first successful execution. Subsequent calls to `response()` or `get()` on the same `PendingInference` return the cached result without making another HTTP call.
+A `PendingInference` executes at most once. Repeat calls to `response()` or `get()` return the result of that execution without another HTTP call, and a repeat call after a failure rethrows the original error rather than retrying.
+
+That memoization is unconditional -- it comes from the finalized attempt held on the `InferenceExecution`, not from `ResponseCachePolicy`. `withResponseCachePolicy()` is accepted and carried on the request, but the session's own cache is currently never read, because the finalized-attempt check always answers first. Do not rely on the policy to change single-session behaviour; it does not. Tracked as `instructor-eexl.23`.
 
 ```php
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;

@@ -1,0 +1,77 @@
+---
+title: 'Deterministic agent eval assertions'
+docname: 'agent_eval_assertions'
+order: 3
+id: 'ae03'
+tags:
+  - 'agents'
+  - 'evals'
+  - 'assertions'
+---
+## Overview
+
+Inspect the full trajectory, not only the final text: completion status, tool side effects,
+errors, exact content, patterns, and similarity. Gate checks catch behavioral regressions;
+soft checks let teams track quality without blocking every local run.
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseDriver;
+use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
+use Cognesy\Agents\Evals\EvalContext;
+use Cognesy\Agents\Evals\LocalAgentTarget;
+
+$target = LocalAgentTarget::fromFactory(static fn() => AgentBuilder::base()
+    ->withCapability(new UseDriver(FakeAgentDriver::fromResponses('Verification is required for A1049.')))
+    ->build());
+
+// EvalContext collects every check so the report can show all evidence, not only the first failure.
+$t = new EvalContext($target);
+
+// Execute the agent first; subsequent assertions inspect this captured run.
+$t->send('Refund A1049.');
+
+// Require the agent loop to finish successfully.
+$t->succeeded();
+
+// These intentionally overlap to demonstrate three levels of tool-use policy:
+// forbid one dangerous tool, forbid all tools, and enforce a numeric tool-call budget.
+$t->notCalledTool('refunds_issue');
+$t->usedNoTools();
+$t->maxToolCalls(0);
+
+// Require both tool executions and the overall agent run to be free of errors.
+$t->noFailedActions();
+
+// Start fluent assertions against the captured reply value.
+$t->expect($t->run()->reply())
+    // `includes` and `matches` are gating checks: either failure makes the eval fail.
+    ->includes('Verification')
+    ->matches('/A1049/')
+    // Similarity produces a 0..1 score. The following modifiers affect only this last check.
+    ->similarity('Verification is required for A1049.')
+    // Similarity is soft by default; this makes the non-gating policy explicit.
+    ->soft()
+    // Pass this scored check when normalized text similarity is at least 0.90.
+    ->atLeast(0.9);
+
+echo "Observed trajectory: status=completed tools={$t->run()->tools()->count()} errors=0\n";
+echo "Collected evidence:\n";
+$passed = 0;
+foreach ($t->assertions() as $result) {
+    $status = $result->passed() ? 'PASS' : 'FAIL';
+    echo "- {$status} [{$result->severity()->value}] {$result->name()}";
+    echo ' score=' . number_format($result->score(), 2) . "\n";
+    if (!$result->passed()) {
+        throw new RuntimeException("Assertion {$result->name()} did not pass.");
+    }
+    $passed++;
+}
+echo "Result: {$passed}/{$t->assertions()->count()} checks passed; gates and soft scores remain visible together.\n";
+?>
+```

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Http\Drivers\Guzzle;
 
-use Cognesy\Events\Contracts\CanCheckListeners;
+use Cognesy\Events\Support\ListenerGate;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Http\Data\HttpResponse;
@@ -91,10 +91,7 @@ class PsrHttpResponseAdapter implements CanAdaptHttpResponse
         $error = null;
         // Resolved once per stream. See the same guard in StreamingCurlResponseAdapter
         // for why the unguarded form is expensive.
-        $emitChunks = match (true) {
-            $this->events instanceof CanCheckListeners => $this->events->hasListenersFor(HttpResponseChunkReceived::class),
-            default => true,
-        };
+        $emitChunks = ListenerGate::wants($this->events, HttpResponseChunkReceived::class);
         try {
             while (!$this->stream->eof()) {
                 $chunk = $this->stream->read($this->streamChunkSize);

@@ -23,9 +23,13 @@ class File implements CanProvideMessages
         string $mimeType = 'application/octet-stream',
     ) {
         $this->mimeType = $mimeType;
-        if (strpos($fileData, 'data:') === 0) {
-            $this->base64bytes = $fileData;
+        // Empty string means "no inline data" (e.g. a file referenced only by fileId);
+        // anything else must be a data: URI - silently dropping a malformed value here
+        // would hide the mistake, so fail the same way fromBase64() already does.
+        if ($fileData !== '' && !str_starts_with($fileData, 'data:')) {
+            throw new Exception("File data has to start with: data:{$mimeType};base64,");
         }
+        $this->base64bytes = $fileData;
         $this->fileName = $fileName;
         $this->fileId = $fileId;
     }
@@ -38,12 +42,20 @@ class File implements CanProvideMessages
      */
     public static function fromFile(string $imagePath): static {
         $mimeType = mime_content_type($imagePath);
+        if ($mimeType === false) {
+            // mime_content_type() returns string|false; feeding false into the
+            // string $mimeType constructor param would TypeError under strict_types
+            // instead of naming the file that caused the problem.
+            throw new \RuntimeException("Failed to detect MIME type for file: {$imagePath}");
+        }
         $contents = file_get_contents($imagePath);
         if ($contents === false) {
             throw new \RuntimeException("Failed to read file: {$imagePath}");
         }
         $fileData = 'data:' . $mimeType . ';base64,' . base64_encode($contents);
-        return new static(fileData: $fileData, mimeType: $mimeType);
+        // OpenAI expects a filename alongside file_data; derive it from the path
+        // so callers don't have to pass it separately.
+        return new static(fileData: $fileData, fileName: basename($imagePath), mimeType: $mimeType);
     }
 
     /**
@@ -114,12 +126,15 @@ class File implements CanProvideMessages
     }
 
     public function toContentPart() : ContentPart {
+        // Providers reject/ignore empty keys outright (e.g. OpenAI still receives
+        // "file_id": "" verbatim), so only emit whichever of the three is actually set.
+        $file = array_filter([
+            'file_data' => $this->base64bytes,
+            'file_name' => $this->fileName,
+            'file_id' => $this->fileId,
+        ], fn(string $value) => $value !== '');
         return new ContentPart(ContentType::File->value, [
-            'file' => [
-                'file_data' => $this->base64bytes,
-                'file_name' => $this->fileName,
-                'file_id' => $this->fileId,
-            ]
+            'file' => $file,
         ]);
     }
 }

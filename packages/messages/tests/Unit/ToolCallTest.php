@@ -72,3 +72,18 @@ it('handles null id gracefully', function () {
     expect($toolCall->id())->toBeNull()
         ->and($toolCall->idString())->toBe('');
 });
+
+it('creates a sentinel tool call with none()', function () {
+    $toolCall = ToolCall::none();
+
+    expect($toolCall->name())->toBe('(no-tool)')
+        ->and($toolCall->arguments())->toBe([]);
+});
+
+it('identifies the sentinel with isNone()', function () {
+    $sentinel = ToolCall::none();
+    $normal = new ToolCall(name: 'search');
+
+    expect($sentinel->isNone())->toBeTrue()
+        ->and($normal->isNone())->toBeFalse();
+});

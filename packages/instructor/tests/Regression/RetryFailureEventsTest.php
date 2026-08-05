@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Events\Attempt\ResponseRecoveryExhausted;
 use Cognesy\Instructor\Events\Attempt\ResponseRetryScheduled;
 use Cognesy\Instructor\Exceptions\StructuredOutputRecoveryException;
@@ -30,10 +30,9 @@ it('emits retry events and throws after max retries (sync)', function () {
     $events->addListener(ResponseRetryScheduled::class, function () use (&$attempts) { $attempts++; });
     $events->addListener(ResponseRecoveryExhausted::class, function () use (&$limitReached) { $limitReached++; });
 
-    $config = (new StructuredOutputConfigBuilder())
+    $config = (new StructuredOutputConfig())
         ->withOutputMode(OutputMode::Json)
-        ->withMaxRetries(1)
-        ->create();
+        ->withMaxRetries(1);
     $runtime = makeStructuredRuntime(
         driver: $driver,
         events: $events,
@@ -67,10 +66,9 @@ it('emits retry events and throws after max retries (streaming)', function () {
     $events->addListener(ResponseRetryScheduled::class, function () use (&$attempts) { $attempts++; });
     $events->addListener(ResponseRecoveryExhausted::class, function () use (&$limitReached) { $limitReached++; });
 
-    $config = (new StructuredOutputConfigBuilder())
+    $config = (new StructuredOutputConfig())
         ->withOutputMode(OutputMode::Json)
-        ->withMaxRetries(1)
-        ->create();
+        ->withMaxRetries(1);
     $runtime = makeStructuredRuntime(
         driver: $driver,
         events: $events,

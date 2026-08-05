@@ -3,7 +3,6 @@
 namespace Cognesy\Polyglot\Tests\Support;
 
 use Closure;
-use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsResponse;
@@ -14,7 +13,6 @@ final class FakeEmbeddingsDriver implements CanHandleVectorization
     private array $responses;
     /** @var null|Closure(EmbeddingsRequest, self):EmbeddingsResponse */
     private ?Closure $onResponse;
-    private ?EmbeddingsResponse $currentResponse = null;
 
     public int $handleCalls = 0;
     /** @var EmbeddingsRequest[] */
@@ -32,20 +30,10 @@ final class FakeEmbeddingsDriver implements CanHandleVectorization
         $this->onResponse = $onResponse;
     }
 
-    public function handle(EmbeddingsRequest $request): HttpResponse {
+    public function handle(EmbeddingsRequest $request): EmbeddingsResponse {
         $this->handleCalls++;
         $this->requests[] = $request;
-        $this->currentResponse = $this->resolveResponse($request);
-
-        return HttpResponse::sync(
-            statusCode: 200,
-            headers: ['content-type' => 'application/json'],
-            body: '{}',
-        );
-    }
-
-    public function fromData(array $data): ?EmbeddingsResponse {
-        return $this->currentResponse ?? new EmbeddingsResponse();
+        return $this->resolveResponse($request);
     }
 
     private function resolveResponse(EmbeddingsRequest $request): EmbeddingsResponse

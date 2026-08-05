@@ -2,36 +2,12 @@
 
 namespace Cognesy\Polyglot\Inference\Drivers\Gemini;
 
-use Cognesy\Http\Data\HttpRequest;
-use Cognesy\Http\Telemetry\HttpRequestTelemetry;
-use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Contracts\CanMapRequestBody;
-use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Drivers\BaseHttpRequestAdapter;
 
-class GeminiRequestAdapter implements CanTranslateInferenceRequest
+class GeminiRequestAdapter extends BaseHttpRequestAdapter
 {
-    public function __construct(
-        protected LLMConfig $config,
-        protected CanMapRequestBody $bodyFormat,
-    ) {}
-
     #[\Override]
-    public function toHttpRequest(InferenceRequest $request): HttpRequest {
-        $httpRequest = new HttpRequest(
-            url: $this->toUrl($request),
-            method: 'POST',
-            headers: $this->toHeaders($request),
-            body: $this->bodyFormat->toRequestBody($request),
-            options: ['stream' => $request->isStreamed()],
-        );
-
-        return match ($request->telemetryCorrelation()) {
-            null => $httpRequest,
-            default => HttpRequestTelemetry::withCorrelation($httpRequest, $request->telemetryCorrelation()),
-        };
-    }
-
     protected function toHeaders(InferenceRequest $request): array {
         return [
             'Content-Type' => 'application/json; charset=utf-8',
@@ -39,6 +15,7 @@ class GeminiRequestAdapter implements CanTranslateInferenceRequest
         ];
     }
 
+    #[\Override]
     protected function toUrl(InferenceRequest $request): string {
         $model = $request->model() ?: $this->config->model;
         $urlParams = [];

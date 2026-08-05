@@ -18,7 +18,7 @@ Polyglot normalizes all provider interactions into a small set of data objects. 
 |---|---|---|
 | `id` | `InferenceRequestId` | Unique identifier, auto-generated |
 | `createdAt` | `DateTimeImmutable` | Timestamp of creation |
-| `updatedAt` | `DateTimeImmutable` | Timestamp of last mutation |
+| `updatedAt` | `DateTimeImmutable` | Carried over by `with()`, not advanced — see below |
 | `messages` | `Messages` | The conversation messages |
 | `model` | `string` | Model identifier |
 | `tools` | `ToolDefinitions` | Tool/function definitions |
@@ -28,6 +28,19 @@ Polyglot normalizes all provider interactions into a small set of data objects. 
 | `cachedContext` | `CachedInferenceContext` | Shared context for prompt caching |
 | `responseCachePolicy` | `ResponseCachePolicy` | Controls response caching behavior |
 | `retryPolicy` | `?InferenceRetryPolicy` | Retry configuration |
+
+#### A note on `updatedAt`
+
+`updatedAt` is **not** a "last mutation" timestamp. A copy made by `with()` inherits the
+source object's `updatedAt` instance rather than reading the clock, so for an object built
+in the normal way `updatedAt === createdAt` no matter how many withers have run. The same
+holds for `InferenceResponse`, `InferenceAttempt` and `InferenceExecution`.
+
+Withers run several times per attempt, and nothing on any execution path reads `updatedAt`
+— `InferenceRequest::toArray()` does not even emit it — so recomputing it was a clock read
+and an allocation for nobody. The one thing the field still does is survive a
+`fromArray()` → `with()` → `toArray()` round trip: a value you deserialise is preserved, not
+overwritten with the load time. If you need "when was this copy made", record it yourself.
 
 ### Reading Values
 
@@ -263,7 +276,7 @@ Cost is calculated externally using a calculator rather than through methods on 
 
 ```php
 use Cognesy\Polyglot\Inference\Data\InferencePricing;
-use Cognesy\Polyglot\Pricing\FlatRateCostCalculator;
+use Cognesy\Polyglot\Inference\Pricing\FlatRateCostCalculator;
 
 $calculator = new FlatRateCostCalculator();
 $cost = $calculator->calculate($usage, new InferencePricing(

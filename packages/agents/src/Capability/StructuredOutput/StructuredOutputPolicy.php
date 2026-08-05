@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Capability\StructuredOutput;
 
-use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -55,10 +55,10 @@ final readonly class StructuredOutputPolicy
         );
     }
 
-    public function withConfigBuilder(StructuredOutputConfigBuilder $configBuilder): StructuredOutputConfigBuilder {
+    public function withConfig(StructuredOutputConfig $config): StructuredOutputConfig {
         if ($this->outputMode === null) {
-            return $configBuilder;
+            return $config;
         }
-        return $configBuilder->withOutputMode($this->outputMode);
+        return $config->withOutputMode($this->outputMode);
     }
 }

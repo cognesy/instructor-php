@@ -5,7 +5,10 @@
   "autoload": {
     "psr-4": {
       "Cognesy\\Polyglot\\": "src/"
-    }
+    },
+    "files": [
+      "src/deprecated_aliases.php"
+    ]
   },
   "autoload-dev": {
     "psr-4": {

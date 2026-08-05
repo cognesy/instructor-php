@@ -8,11 +8,7 @@ a mode-specific instruction prompt, examples, and retry context. You can customi
 of these to tune extraction behavior without changing the underlying extraction flow.
 
 The default `StructuredPromptRequestMaterializer` uses prompt classes backed by bundled
-Twig templates. Customize the default path by supplying your own prompt classes.
-
-`RequestMaterializer` and its inline prompt/chat-structure settings are deprecated 2.5
-compatibility APIs. They have no effect on the default path and work only when that
-legacy materializer is injected explicitly.
+Twig templates. Customize it by supplying your own prompt classes.
 
 
 ## System And Prompt Text
@@ -174,7 +170,8 @@ The same pattern applies to deserialization repair via `deserializationErrorProm
 
 ## Legacy Compatibility
 
-The inline `modePrompts`, `retryPrompt`, and `chatStructure` settings are retained only
-for applications that explicitly inject the deprecated `RequestMaterializer`. They are
-scheduled for removal in 2.6. New code should use prompt classes or provide a custom
-`CanMaterializeRequest` implementation when prompt-class customization is insufficient.
+The inline `modePrompts`, `retryPrompt`, and `chatStructure` settings were removed in 2.6
+along with the legacy materializer that read them. `StructuredOutputConfig::fromArray()`
+ignores them rather than failing, so old config files keep loading. Use prompt classes, or
+provide a custom `CanMaterializeRequest` implementation when prompt-class customization is
+insufficient.

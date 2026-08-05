@@ -47,20 +47,20 @@ final class MessageInput
 
         return match (true) {
             $role === null => $withName,
-            default => $withName->withRole(self::normalizeRole($role)),
+            default => $withName->withRole(MessageRole::fromAny($role)),
         };
     }
 
     public static function fromArray(array $message): Message {
         $role = $message['role'] ?? Message::DEFAULT_ROLE;
         $content = match (true) {
+            self::isMessageShape($message) => ContentInput::fromAny($message['content'] ?? ''),
             self::isArrayOfStrings($message) => ContentInput::fromAny(array_map(
                 fn(string $text) => ContentPart::text($text),
                 $message,
             )),
-            Message::isMessage($message) => ContentInput::fromAny($message['content'] ?? ''),
             default => throw new InvalidArgumentException(
-                'Invalid message array - must be an array of strings or a valid message structure'
+                'Invalid message array - must be a list of strings or a valid message structure'
             ),
         };
 
@@ -108,18 +108,33 @@ final class MessageInput
         };
     }
 
+    /**
+     * A message array is recognised by its keys, not by its values, and is checked
+     * BEFORE isArrayOfStrings() - otherwise a message array whose values happen to all
+     * be strings has its own field values turned into content parts. That used to make
+     * ['role' => 'user', 'name' => 'bob'] yield content [text "user", text "bob"], and
+     * left the common ['role' => ..., 'content' => ...] shape working only because
+     * ContentInput::fromAny() re-detected the message one level down.
+     *
+     * @param array<array-key, mixed> $message
+     */
+    private static function isMessageShape(array $message): bool {
+        return array_key_exists('role', $message)
+            || array_key_exists('content', $message)
+            || array_key_exists('_metadata', $message);
+    }
+
+    /**
+     * Only a LIST of strings describes a sequence of text parts. A keyed array is
+     * either a message (see isMessageShape) or invalid input.
+     *
+     * @param array<array-key, mixed> $array
+     */
     private static function isArrayOfStrings(array $array): bool {
-        return count($array) > 0 && array_reduce(
+        return $array !== [] && array_is_list($array) && array_reduce(
             $array,
             fn(bool $carry, $item) => $carry && is_string($item),
             true,
         );
-    }
-
-    private static function normalizeRole(string|MessageRole $role): MessageRole {
-        return match (true) {
-            $role instanceof MessageRole => $role,
-            default => MessageRole::tryFromString($role) ?? MessageRole::User,
-        };
     }
 }

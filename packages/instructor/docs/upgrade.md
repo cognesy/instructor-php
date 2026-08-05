@@ -3,6 +3,71 @@ title: Upgrade
 description: 'Migrate structured-output applications to the current API.'
 ---
 
+## Upgrading to 2.6
+
+### `StructuredOutputConfigBuilder` removed
+
+`Cognesy\Instructor\Creation\StructuredOutputConfigBuilder` is gone. It was a mutable second
+representation of the same settings, kept in sync with `StructuredOutputConfig` by hand. Build
+configs directly instead — every `with*()` method has the same name on `StructuredOutputConfig`,
+which returns a new instance rather than mutating, so existing chains carry over by dropping the
+trailing `->create()`:
+
+```php
+// before
+$config = (new StructuredOutputConfigBuilder())
+    ->withOutputMode(OutputMode::Json)
+    ->withMaxRetries(2)
+    ->create();
+
+// after
+$config = (new StructuredOutputConfig())
+    ->withOutputMode(OutputMode::Json)
+    ->withMaxRetries(2);
+```
+
+The builder's `withConfig($defaults)` seed has no replacement: start the chain from that config
+(`$defaults->withMaxRetries(2)`). `StructuredOutputConfig` gained `withSchemaDescription()` and
+`withStreamMaterializationInterval()` so that every former builder method has an equivalent.
+
+One semantic difference to check: the builder's `create()` merged `modePromptClasses` into the
+defaults, whatever route set them. On `StructuredOutputConfig`, `withModePromptClass()` merges a
+single mode into the existing map — the common case, unchanged — but `withModePromptClasses()` and
+the constructor argument **replace** the map wholesale. If you were passing a partial map expecting
+the remaining modes to keep their defaults, merge explicitly:
+
+```php
+$config = $config->withModePromptClasses([...$config->modePromptClasses(), ...$overrides]);
+```
+
+In `cognesy/instructor-agents`, `StructuredOutputPolicy::withConfigBuilder()` is accordingly
+renamed to `withConfig()` and now takes and returns a `StructuredOutputConfig`.
+
+### `CanEmitStreamingUpdates` renamed to `CanDriveExecution`
+
+The internal execution-driver contract implemented by `SyncExecutionDriver` and
+`StreamingExecutionDriver` has been renamed from `Cognesy\Instructor\Contracts\CanEmitStreamingUpdates`
+to `Cognesy\Instructor\Contracts\CanDriveExecution`. The old name described the interface as a
+streaming contract, but it is a pull-based execution driver used by both the sync and streaming
+paths. Method signatures are unchanged; update any type hints referencing the old interface name.
+
+### Legacy `RequestMaterializer` removed
+
+The legacy `RequestMaterializer` is gone, along with the only code path that read the inline
+`modePrompts`, `retryPrompt`, and `chatStructure` settings. Those settings have been removed
+from `StructuredOutputConfig`, together with the
+accessors `prompt()`, `modePrompts()`, `retryPrompt()`, `chatStructure()` and the mutators
+`withRetryPrompt()`, `withModePrompt()`, `withModePrompts()`, `withChatStructure()`.
+
+`StructuredOutputConfig::fromArray()` now ignores unknown keys instead of failing, so config
+files, DSNs, and presets that still carry the removed keys keep loading — the values are
+dropped. The Laravel `instructor.extraction.retry_prompt` key and the Symfony
+`retry_prompt` / `mode_prompts` / `chat_structure` nodes were removed from their schemas.
+
+Port these settings to prompt classes (`modePromptClasses`, `retryPromptClass`,
+`deserializationErrorPromptClass`), or implement `CanMaterializeRequest` when prompt classes
+are insufficient.
+
 ## Upgrading to 2.5
 
 ### Output targets are explicit
@@ -48,11 +113,8 @@ the metadata, or explicitly select another output target.
 
 `StructuredPromptRequestMaterializer` is the default. Customize bundled structured
 output behavior with `modePromptClasses`, `retryPromptClass`, and
-`deserializationErrorPromptClass`.
-
-The inline `modePrompts`, `retryPrompt`, and `chatStructure` settings are read only when
-an application explicitly injects the deprecated legacy `RequestMaterializer`. They are
-scheduled for removal in 2.6.
+`deserializationErrorPromptClass`. See the 2.6 notes above for the removal of the legacy
+inline prompt settings.
 
 ### Deprecated compatibility APIs
 

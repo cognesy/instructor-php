@@ -10,7 +10,7 @@ use Cognesy\Polyglot\Inference\Exceptions\ProviderQuotaExceededException;
 use Cognesy\Polyglot\Inference\Exceptions\ProviderRateLimitException;
 use Cognesy\Polyglot\Inference\Exceptions\ProviderTransientException;
 use Cognesy\Polyglot\Inference\Exceptions\ProviderException;
-use Cognesy\Polyglot\Inference\Core\SensitiveDataRedactor;
+use Cognesy\Polyglot\Support\Redaction\SensitiveDataRedactor;
 
 final class ProviderErrorClassifier
 {

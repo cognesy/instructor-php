@@ -57,3 +57,18 @@ $storage->append($sessionId, 'messages', $message);
 - Non-text content parts are now emitted in nested form (e.g. `image_url`, `file`, `input_audio`). Flat legacy inputs are still accepted but normalized on output.
 - File payloads use `file_name` (nested under `file`) as the canonical key.
 - `Messages::filter()` with no callback now returns all non-empty messages (previously it returned an empty collection).
+
+## Migration notes (2026-08-05)
+
+- `Messages::filter($predicate)` now keeps exactly the messages the predicate accepts. It no longer also drops empty messages, so `filter(fn($m) => $m->isEmpty())` selects them instead of returning nothing. Compose with `withoutEmptyMessages()` if you want both. Calling `filter()` with no argument is deprecated - it is an alias for `withoutEmptyMessages()` and will be removed.
+- `Messages::withMessage()` was removed. Use `appendMessage()` to add one message, or `withMessages([$message])` to replace the collection with one.
+- Message roles are validated at construction. `new Message('wizard', ...)` and `withRole('wizard')` now throw `InvalidArgumentException` instead of storing an unknown role that failed later, or round-tripped through storage undetected. `''` and `null` still mean the default role.
+- Empty fields are omitted from `file` and `input_audio` payloads rather than emitted as `""`, since providers pass such keys through verbatim. A file referenced only by `file_id` no longer carries an empty `file_data`/`file_name`.
+- `File`'s constructor rejects a non-empty `$fileData` that is not a `data:` URI, matching what `File::fromBase64()` already did. `''` still means "no inline data".
+- `File::fromFile()` now also sets `fileName` from the path's basename. `File::fromFile()` and `Image::fromFile()` throw `RuntimeException` when the MIME type cannot be detected.
+- `Audio::getByte64Bytes()` (deprecated typo alias) was removed. Use `getBase64Bytes()`.
+- `ContentParts` is now `IteratorAggregate`, so `foreach ($parts as $part)` works directly and `->all()` is no longer needed to iterate.
+- A keyed (non-list) content array is now treated as ONE content part instead of being iterated as a parts collection, so `['type' => 'image_url', 'image_url' => [...]]` resolves to a single image part. A parts collection must be a list.
+- `Message::withMergedFrom()` is new: it folds another message in (content, tool calls, metadata) while keeping the receiver's identity and role. It throws if either message carries a tool result.
+- `Messages::toMergedPerRole()` preserves the first message of each run's `id`/`parentId`/`createdAt`, carries tool calls through the merge, and never merges a message carrying a `ToolResult` with a neighbour.
+- `ToolCall::isNone()` is new. Use it to detect the `ToolCall::none()` sentinel; the sentinel name is private and must not be compared directly.

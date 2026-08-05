@@ -11,7 +11,6 @@ it('reports success for latest finalized attempt', function () {
     $exec = $exec->withSuccessfulAttempt(new InferenceResponse(usage: new InferenceUsage(inputTokens: 1, outputTokens: 1)));
 
     expect($exec->isSuccessful())->toBeTrue()
-        ->and($exec->isFailedFinal())->toBeFalse()
         ->and($exec->hasErrors())->toBeFalse()
         ->and($exec->errors())->toBe([]);
 });
@@ -21,7 +20,6 @@ it('reports failure for latest finalized attempt', function () {
     $exec = $exec->withFailedAttempt(new InferenceResponse(usage: new InferenceUsage()), new InferenceUsage(), 'boom');
 
     expect($exec->isSuccessful())->toBeFalse()
-        ->and($exec->isFailedFinal())->toBeTrue()
         ->and($exec->hasErrors())->toBeTrue()
         ->and($exec->errors())->not()->toBe([]);
 });
@@ -44,8 +42,7 @@ it('aggregates current errors and exposes currentErrors()', function () {
     expect($exec->currentErrors())->toBe(['e1'])
         ->and($exec->errors())->toBe(['e1'])
         ->and($exec->hasErrors())->toBeTrue()
-        ->and($exec->isSuccessful())->toBeFalse()
-        ->and($exec->isFailedFinal())->toBeFalse();
+        ->and($exec->isSuccessful())->toBeFalse();
 });
 
 it('does not duplicate errors when current finalized attempt is already in attempts list', function () {

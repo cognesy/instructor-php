@@ -42,6 +42,12 @@ class Image implements CanProvideMessages
      */
     public static function fromFile(string $imagePath): static {
         $mimeType = mime_content_type($imagePath);
+        if ($mimeType === false) {
+            // mime_content_type() returns string|false; feeding false into the
+            // string $mimeType constructor param would TypeError under strict_types
+            // instead of naming the file that caused the problem.
+            throw new \RuntimeException("Failed to detect MIME type for image file: {$imagePath}");
+        }
         $contents = file_get_contents($imagePath);
         if ($contents === false) {
             throw new \RuntimeException("Failed to read image file: {$imagePath}");

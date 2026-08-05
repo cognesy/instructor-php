@@ -91,21 +91,35 @@ describe('Audio', function () {
 
     describe('edge cases', function () {
         it('handles empty audio data', function () {
+            // regression: instructor-r50t.19 - empty input_audio.data is omitted, not sent as ""
             $audio = new Audio('wav', '');
             $contentPart = $audio->toContentPart();
-            
-            expect($contentPart->toArray()['input_audio']['data'])->toBe('');
+
+            expect($contentPart->toArray()['input_audio'])->not->toHaveKey('data');
+            expect($contentPart->toArray()['input_audio']['format'])->toBe('wav');
         });
 
         it('handles various audio formats', function () {
             $formats = ['wav', 'mp3', 'flac', 'ogg'];
-            
+
             foreach ($formats as $format) {
                 $audio = new Audio($format, 'dGVzdA==');
                 $contentPart = $audio->toContentPart();
-                
+
                 expect($contentPart->toArray()['input_audio']['format'])->toBe($format);
             }
+        });
+
+        it('omits the input_audio payload entirely when format and data are both empty (regression: instructor-r50t.19)', function () {
+            $audio = new Audio('', '');
+
+            expect($audio->toContentPart()->toArray())->toBe(['type' => 'input_audio']);
+        });
+    });
+
+    describe('deprecated alias removal', function () {
+        it('no longer exposes getByte64Bytes() (regression: instructor-r50t.19)', function () {
+            expect(method_exists(Audio::class, 'getByte64Bytes'))->toBeFalse();
         });
     });
 });

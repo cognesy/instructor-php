@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="2" skipped="1">
+  <testsuite name="feature" tests="2" skipped="1">
+    <testcase name="passes" class="ExampleTest"/>
+    <testcase name="is-skipped" class="ExampleTest">
+      <skipped message="Requires an optional service"/>
+    </testcase>
+  </testsuite>
+</testsuites>

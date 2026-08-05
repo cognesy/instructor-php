@@ -92,6 +92,7 @@
     "test": "@php -d memory_limit=512M ./vendor/bin/pest --compact --testsuite=Unit,Feature,Regression,Serial --exclude-group=docs-qa",
     "tests": "@php -d memory_limit=512M ./vendor/bin/pest --compact --testsuite=Unit,Feature,Regression,Serial --exclude-group=docs-qa",
     "test:docs-qa": "@php -d memory_limit=512M ./vendor/bin/pest --compact --group=docs-qa",
+    "test:benchmarks": "@php -d memory_limit=512M ./vendor/bin/pest --testsuite=Benchmarks",
     "test:telemetry-interop": "@php -d memory_limit=512M ./vendor/bin/pest --compact packages/telemetry/tests/Integration",
     "test-all": "@php ./vendor/bin/pest",
         "dead-code": "@php ./vendor/bin/phpstan analyse -c phpstan-unused.neon --no-progress --error-format=table",
@@ -161,7 +162,8 @@
         },
         "files": [
             "src/polyfills.php",
-            "packages/xprompt/src/functions.php"
+            "packages/xprompt/src/functions.php",
+            "packages/polyglot/src/deprecated_aliases.php"
         ]
     },
     "autoload-dev": {

@@ -224,9 +224,19 @@ class InMemoryStorage implements CanStoreMessages
         // Walk up the parentId chain
         $path = [];
         $currentId = $targetId;
+        $visited = [];
 
         while ($currentId !== null) {
-            $message = $this->sessions[$sessionKey]['messages'][$currentId->toString()] ?? null;
+            $currentKey = $currentId->toString();
+            if (isset($visited[$currentKey])) {
+                // A parentId cycle (only reachable via a hand-built Message or a corrupted
+                // session) would otherwise spin forever. getPath() is a read path, so a
+                // partial, root-first path is more useful here than throwing.
+                break;
+            }
+            $visited[$currentKey] = true;
+
+            $message = $this->sessions[$sessionKey]['messages'][$currentKey] ?? null;
             if ($message === null) {
                 break;
             }
@@ -241,6 +251,10 @@ class InMemoryStorage implements CanStoreMessages
     public function fork(MessageSessionId $sessionId, MessageId $fromMessageId): MessageSessionId {
         $this->ensureSession($sessionId);
         $sessionKey = $sessionId->toString();
+
+        if (!isset($this->sessions[$sessionKey]['messages'][$fromMessageId->toString()])) {
+            throw new RuntimeException("Message not found: {$fromMessageId}");
+        }
 
         // Get path to the fork point
         $path = $this->getPath($sessionId, $fromMessageId);

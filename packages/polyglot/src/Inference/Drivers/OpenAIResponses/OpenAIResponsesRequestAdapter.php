@@ -2,12 +2,8 @@
 
 namespace Cognesy\Polyglot\Inference\Drivers\OpenAIResponses;
 
-use Cognesy\Http\Data\HttpRequest;
-use Cognesy\Http\Telemetry\HttpRequestTelemetry;
-use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Contracts\CanMapRequestBody;
-use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Drivers\BaseHttpRequestAdapter;
 
 /**
  * OpenAI-specific request adapter for Responses API.
@@ -17,29 +13,9 @@ use Cognesy\Polyglot\Inference\Data\InferenceRequest;
  * - OpenAI-Organization: {organization} (optional)
  * - OpenAI-Project: {project} (optional)
  */
-class OpenAIResponsesRequestAdapter implements CanTranslateInferenceRequest
+class OpenAIResponsesRequestAdapter extends BaseHttpRequestAdapter
 {
-    public function __construct(
-        protected LLMConfig $config,
-        protected CanMapRequestBody $bodyFormat,
-    ) {}
-
     #[\Override]
-    public function toHttpRequest(InferenceRequest $request): HttpRequest {
-        $httpRequest = new HttpRequest(
-            url: $this->toUrl($request),
-            method: 'POST',
-            headers: $this->toHeaders($request),
-            body: $this->bodyFormat->toRequestBody($request),
-            options: ['stream' => $request->isStreamed()],
-        );
-
-        return match ($request->telemetryCorrelation()) {
-            null => $httpRequest,
-            default => HttpRequestTelemetry::withCorrelation($httpRequest, $request->telemetryCorrelation()),
-        };
-    }
-
     protected function toHeaders(InferenceRequest $request): array {
         $accept = $request->isStreamed() ? 'text/event-stream' : 'application/json';
         $extras = array_filter([
@@ -54,6 +30,7 @@ class OpenAIResponsesRequestAdapter implements CanTranslateInferenceRequest
         ], $extras);
     }
 
+    #[\Override]
     protected function toUrl(InferenceRequest $request): string {
         $endpoint = $this->config->endpoint ?: '/v1/responses';
         return "{$this->config->apiUrl}{$endpoint}";

@@ -1,0 +1,112 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+const METRIC_ID = 'test-skipped-count';
+const MEASUREMENT_ID = 'pest.skipped-test-count';
+const MAX_ARTIFACTS = 32;
+const MAX_ARTIFACT_BYTES = 33_554_432;
+
+/** @param array<string, mixed> $payload */
+function emitJson(array $payload): void
+{
+    $json = json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
+    fwrite(STDOUT, ($json === false ? '{"error":{"code":"encoding_failed"}}' : $json) . PHP_EOL);
+}
+
+function failMeasurement(int $exit, string $code, string $message, ?string $path = null): int
+{
+    $error = ['code' => $code, 'message' => $message];
+    if ($path !== null) {
+        $error['path'] = $path;
+    }
+    emitJson(['error' => $error]);
+    return $exit;
+}
+
+/** @param array<int, string> $arguments */
+function main(array $arguments): int
+{
+    $paths = array_slice($arguments, 1);
+    if ($paths === [] || count($paths) > MAX_ARTIFACTS) {
+        return failMeasurement(
+            2,
+            'invalid_invocation',
+            sprintf('Provide between 1 and %d JUnit artifact paths.', MAX_ARTIFACTS),
+        );
+    }
+
+    if (!class_exists(DOMDocument::class)) {
+        return failMeasurement(1, 'dependency_missing', 'The PHP DOM extension is required.');
+    }
+
+    $artifacts = [];
+    $seen = [];
+    $testsObserved = [];
+    $skipped = [];
+    foreach ($paths as $path) {
+        $realPath = realpath($path);
+        if ($realPath === false || !is_file($realPath)) {
+            return failMeasurement(1, 'artifact_not_found', 'JUnit artifact was not found.', $path);
+        }
+        if (isset($seen[$realPath])) {
+            return failMeasurement(2, 'duplicate_artifact', 'Artifact was supplied twice.', $path);
+        }
+        $seen[$realPath] = true;
+
+        $size = filesize($realPath);
+        if ($size === false || $size > MAX_ARTIFACT_BYTES) {
+            return failMeasurement(1, 'artifact_too_large', 'JUnit artifact is too large.', $path);
+        }
+
+        $document = new DOMDocument();
+        $previousErrors = libxml_use_internal_errors(true);
+        $loaded = $document->load($realPath, LIBXML_NONET | LIBXML_COMPACT);
+        libxml_clear_errors();
+        libxml_use_internal_errors($previousErrors);
+        if (!$loaded) {
+            return failMeasurement(1, 'invalid_junit', 'Artifact is not valid XML.', $path);
+        }
+
+        $xpath = new DOMXPath($document);
+        $testCases = $xpath->query("//*[local-name()='testcase']");
+        $skippedCases = $xpath->query(
+            "//*[local-name()='testcase'][./*[local-name()='skipped']]",
+        );
+        if ($testCases === false || $skippedCases === false || $testCases->count() === 0) {
+            return failMeasurement(1, 'no_testcases', 'Artifact contains no test cases.', $path);
+        }
+
+        $fingerprint = hash_file('sha256', $realPath);
+        if ($fingerprint === false) {
+            return failMeasurement(1, 'artifact_unreadable', 'Artifact cannot be hashed.', $path);
+        }
+
+        $artifacts[] = [
+            'path' => $path,
+            'sha256' => $fingerprint,
+            'bytes' => $size,
+        ];
+        $testsObserved[] = $testCases->count();
+        $skipped[] = $skippedCases->count();
+    }
+
+    emitJson([
+        'schema' => 'xqa.metric-result.v1',
+        'metric' => METRIC_ID,
+        'measurement' => MEASUREMENT_ID,
+        'value' => array_sum($skipped),
+        'unit' => 'test',
+        'evidence' => [
+            'complete' => true,
+            'artifacts' => $artifacts,
+        ],
+        'details' => [
+            'tests_observed' => array_sum($testsObserved),
+        ],
+    ]);
+    return 0;
+}
+
+exit(main($argv));

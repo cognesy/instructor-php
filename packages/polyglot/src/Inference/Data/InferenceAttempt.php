@@ -115,7 +115,8 @@ class InferenceAttempt
             errors: $errors ?? $this->errors,
             id: $this->id,
             createdAt: $this->createdAt,
-            updatedAt: new DateTimeImmutable(),
+            // Carried over, not recomputed -- see InferenceRequest::with().
+            updatedAt: $this->updatedAt,
         );
     }
 

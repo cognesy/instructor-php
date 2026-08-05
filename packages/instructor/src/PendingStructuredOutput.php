@@ -7,7 +7,6 @@ use Cognesy\Instructor\Creation\ExecutionDriverFactory;
 use Cognesy\Instructor\Core\StructuredOutputExecutionSession;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputResponse;
-use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
 use Cognesy\Instructor\Exceptions\UnexpectedStructuredOutputTypeException;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Instructor\Enums\OutputMode;

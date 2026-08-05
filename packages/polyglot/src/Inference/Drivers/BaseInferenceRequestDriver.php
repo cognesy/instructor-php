@@ -11,8 +11,10 @@ use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Http\Stream\StreamCacheManager;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanDescribeCapabilities;
+use Cognesy\Events\Support\ListenerGate;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
-use Cognesy\Polyglot\Inference\Core\SensitiveDataRedactor;
+use Cognesy\Polyglot\Inference\Core\InferenceResponseEventPayload;
+use Cognesy\Polyglot\Support\Redaction\RedactsHttpPayloads;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceRequest;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
@@ -31,6 +33,19 @@ use Throwable;
 
 abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest, CanDescribeCapabilities
 {
+    use RedactsHttpPayloads;
+
+    /**
+     * Whether anything consumes each lifecycle event. Resolved once per driver —
+     * a driver is built per request — so the payload arrays below are never
+     * assembled for a dispatcher with no listeners. See ListenerGate: fail-open
+     * is contractual, and listeners registered after construction are not
+     * observed by this driver.
+     */
+    private readonly bool $emitRequested;
+    private readonly bool $emitResponseCreated;
+    private readonly bool $emitFailed;
+
     public function __construct(
         protected LLMConfig $config,
         protected CanSendHttpRequests $httpClient,
@@ -38,7 +53,11 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest,
         protected CanTranslateInferenceRequest $requestTranslator,
         protected CanTranslateInferenceResponse $responseTranslator,
         protected ?CanManageStreamCache $streamCacheManager = null,
-    ) {}
+    ) {
+        $this->emitRequested = ListenerGate::wants($events, InferenceRequested::class);
+        $this->emitResponseCreated = ListenerGate::wants($events, InferenceResponseCreated::class);
+        $this->emitFailed = ListenerGate::wants($events, InferenceFailed::class);
+    }
 
     #[\Override]
     public function makeResponseFor(InferenceRequest $request): InferenceResponse {
@@ -76,7 +95,9 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest,
     // INTERNAL //////////////////////////////////////////////
 
     protected function toHttpRequest(InferenceRequest $request): HttpRequest {
-        $this->events->dispatch(new InferenceRequested($this->requestEventData($request)));
+        if ($this->emitRequested) {
+            $this->events->dispatch(new InferenceRequested($this->requestEventData($request)));
+        }
         return $this->requestTranslator->toHttpRequest($request);
     }
 
@@ -91,7 +112,13 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest,
             throw $e;
         }
 
-        $this->events->dispatch(new InferenceResponseCreated($this->responseEventData($inferenceResponse, $request)));
+        if ($this->emitResponseCreated) {
+            // executionId is null here by design -- one driver serves many executions.
+            // See InferenceResponseEventPayload.
+            $this->events->dispatch(new InferenceResponseCreated(
+                InferenceResponseEventPayload::build($inferenceResponse, $request, null),
+            ));
+        }
         return $inferenceResponse;
     }
 
@@ -152,6 +179,9 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest,
     // EVENTS //////////////////////////////////////////////////
 
     private function dispatchInferenceResponseFailed(HttpResponse $httpResponse): void {
+        if (!$this->emitFailed) {
+            return;
+        }
         $this->events->dispatch(new InferenceFailed([
             'context' => 'HTTP response received with error status',
             'statusCode' => $httpResponse->statusCode(),
@@ -161,6 +191,9 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest,
     }
 
     private function dispatchInferenceSendingFailed(HttpRequest $request, Throwable $source): void {
+        if (!$this->emitFailed) {
+            return;
+        }
         $this->events->dispatch(new InferenceFailed([
             'context' => 'HTTP request sending failed',
             'exception' => $this->redactedExceptionMessage($source, $request),
@@ -169,6 +202,9 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest,
     }
 
     private function dispatchInferenceStreamFailed(HttpResponse $response, Throwable $e): void {
+        if (!$this->emitFailed) {
+            return;
+        }
         $this->events->dispatch(new InferenceFailed([
             'context' => 'Failed to process streamed response',
             'exception' => $e->getMessage(),
@@ -179,6 +215,9 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest,
     }
 
     private function dispatchInferenceProcessingFailed(HttpResponse $httpResponse, Throwable $e): void {
+        if (!$this->emitFailed) {
+            return;
+        }
         $this->events->dispatch(new InferenceFailed([
             'context' => 'Failed to process response',
             'exception' => $e->getMessage(),
@@ -186,45 +225,6 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest,
             'headers' => $this->redactedHeaders($httpResponse->headers()),
             'body' => $this->redactedBody($httpResponse),
         ]));
-    }
-
-    private function redactedBody(HttpResponse $response): string {
-        if (!$response->isStreamed()) {
-            return '[REDACTED]';
-        }
-        return '[streamed response body redacted]';
-    }
-
-    private function bufferStreamedErrorResponse(HttpResponse $response): HttpResponse {
-        if (!$response->isStreamed()) {
-            return $response;
-        }
-
-        $body = '';
-        foreach ($response->stream() as $chunk) {
-            $body .= $chunk;
-        }
-
-        return HttpResponse::sync(
-            statusCode: $response->statusCode(),
-            headers: $response->headers(),
-            body: $body,
-        );
-    }
-
-    /**
-     * @return array<string,mixed>
-     */
-    private function redactedRequest(HttpRequest $request): array {
-        $payload = $request->toArray();
-        $payload['url'] = $this->redactedUrl($request->url());
-        $payload['headers'] = $this->redactedHeaders($request->headers());
-        $payload['body'] = '[REDACTED]';
-        if (isset($payload['options']) && is_array($payload['options'])) {
-            $payload['options'] = $this->redactedValues($payload['options']);
-        }
-
-        return $payload;
     }
 
     /**
@@ -255,50 +255,28 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest,
         ];
     }
 
-    private function responseEventData(InferenceResponse $response, InferenceRequest $request): array
-    {
-        $payload = [
-            'requestId' => $request->id()->toString(),
-            'model' => $request->model(),
-            'responseId' => $response->id->toString(),
-            'finishReason' => $response->finishReason()->value,
-            'contentLength' => strlen($response->content()),
-            'reasoningContentLength' => strlen($response->reasoningContent()),
-            'hasToolCalls' => $response->hasToolCalls(),
-            'toolCallCount' => $response->toolCalls()->count(),
-            'usage' => $response->usage()->toArray(),
-            'isPartial' => $response->isPartial(),
-        ];
+    private function redactedBody(HttpResponse $response): string {
+        if (!$response->isStreamed()) {
+            return '[REDACTED]';
+        }
+        return '[streamed response body redacted]';
+    }
 
-        $statusCode = $response->responseData()->statusCode();
-        if ($statusCode > 0) {
-            $payload['statusCode'] = $statusCode;
+    private function bufferStreamedErrorResponse(HttpResponse $response): HttpResponse {
+        if (!$response->isStreamed()) {
+            return $response;
         }
 
-        return $payload;
+        $body = '';
+        foreach ($response->stream() as $chunk) {
+            $body .= $chunk;
+        }
+
+        return HttpResponse::sync(
+            statusCode: $response->statusCode(),
+            headers: $response->headers(),
+            body: $body,
+        );
     }
 
-    /**
-     * @param array<string,mixed> $headers
-     * @return array<string,mixed>
-     */
-    private function redactedHeaders(array $headers): array {
-        return SensitiveDataRedactor::redactHeaders($headers);
-    }
-
-    /**
-     * @param array<string,mixed> $data
-     * @return array<string,mixed>
-     */
-    private function redactedValues(array $data): array {
-        return SensitiveDataRedactor::redactValues($data);
-    }
-
-    private function redactedUrl(string $url): string {
-        return SensitiveDataRedactor::redactUrl($url);
-    }
-
-    private function redactedExceptionMessage(Throwable $source, HttpRequest $request): string {
-        return SensitiveDataRedactor::redactUrlInText($source->getMessage(), $request->url());
-    }
 }

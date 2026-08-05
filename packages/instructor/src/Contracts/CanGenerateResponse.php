@@ -7,12 +7,29 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Utils\Result\Result;
 
+/**
+ * Produces the final response value. The two methods are the two genuinely different
+ * routes to it, and callers pick one explicitly: the sync path always has an inference
+ * response to extract from, while the streaming path may already hold a value the
+ * aggregator built out of the deltas.
+ */
 interface CanGenerateResponse
 {
-    public function makeResponse(
+    /**
+     * Extracts the mode-specific payload out of the inference response, then materializes it.
+     */
+    public function fromInferenceResponse(
         InferenceResponse $response,
         ResponseModel $responseModel,
         OutputMode $mode,
-        mixed $materializationInput = null,
+    ) : Result;
+
+    /**
+     * Materializes an already-extracted value. `$input` is whatever the stream aggregator
+     * accumulated, so it is as loosely typed as the response model allows.
+     */
+    public function fromMaterializedInput(
+        mixed $input,
+        ResponseModel $responseModel,
     ) : Result;
 }

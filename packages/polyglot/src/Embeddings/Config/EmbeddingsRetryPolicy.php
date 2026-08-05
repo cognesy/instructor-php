@@ -5,9 +5,9 @@ namespace Cognesy\Polyglot\Embeddings\Config;
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Http\Exceptions\NetworkException;
 use Cognesy\Http\Exceptions\TimeoutException;
-use Cognesy\Polyglot\Inference\Config\RetryBackoff;
-use Cognesy\Polyglot\Inference\Config\RetryJitter;
-use Cognesy\Polyglot\Inference\Config\RetryPolicyInvariants;
+use Cognesy\Polyglot\Support\Retry\RetryBackoff;
+use Cognesy\Polyglot\Support\Retry\RetryJitter;
+use Cognesy\Polyglot\Support\Retry\RetryPolicyInvariants;
 
 final readonly class EmbeddingsRetryPolicy
 {

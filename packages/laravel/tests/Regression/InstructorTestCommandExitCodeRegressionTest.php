@@ -165,6 +165,6 @@ namespace {
         );
 
         expect($config->retryPromptClass())->toBe($promptClass)
-            ->and($config->retryPrompt())->toBe('Legacy inline retry text');
+            ->and($config->toArray())->not->toHaveKey('retryPrompt');
     });
 }

@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Telemetry;
 
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputResponse;
+use Cognesy\Polyglot\Telemetry\MessagesSerializationMemo;
 use Cognesy\Telemetry\Domain\Envelope\CaptureMode;
 use Cognesy\Telemetry\Domain\Envelope\CapturePolicy;
 use Cognesy\Telemetry\Domain\Envelope\OperationCorrelation;
@@ -34,7 +35,10 @@ final readonly class StructuredOutputTelemetry
                 ),
             ))
                 ->withCapture(self::summaryCapture())
-                ->withIO(new OperationIO(input: $request->messages()->toArray()))
+                // Memoized on conversation identity -- requestReceived(), executionStarted()
+                // and responseGenerated() all serialise the same conversation, and the
+                // nested inference serialises it again. See MessagesSerializationMemo.
+                ->withIO(new OperationIO(input: MessagesSerializationMemo::toArray($request->messages())))
                 ->withTags(['structured-output'])
                 ->toArray(),
         ];
@@ -68,7 +72,7 @@ final readonly class StructuredOutputTelemetry
             ))
                 ->withCapture(self::summaryCapture())
                 ->withIO(new OperationIO(
-                    input: $request->messages()->toArray(),
+                    input: MessagesSerializationMemo::toArray($request->messages()),
                     output: array_filter([
                         'value' => $response->hasValue() ? $response->value() : null,
                         'value_type' => is_object($response->value()) ? $response->value()::class : get_debug_type($response->value()),

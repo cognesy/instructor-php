@@ -242,12 +242,33 @@ test('reduce on empty collection returns initial value', function () {
     expect($result)->toBe(0);
 });
 
-test('filter removes empty messages', function () {
+test('filter with a predicate keeps exactly what the predicate accepts', function () {
     $messages = Messages::empty();
     $messages = $messages->appendMessage(new Message('user', 'Hello'));
     $messages = $messages->appendMessage(new Message); // Empty message
 
-    $filtered = $messages->filter(fn ($msg) => true); // Accept all, but empty should be filtered
+    $filtered = $messages->filter(fn ($msg) => true);
+
+    expect($filtered->messageList()->count())->toBe(2);
+});
+
+test('filter can select empty messages (regression: instructor-r50t.14)', function () {
+    $messages = Messages::empty();
+    $messages = $messages->appendMessage(new Message('user', 'Hello'));
+    $messages = $messages->appendMessage(new Message); // Empty message
+
+    $filtered = $messages->filter(fn ($msg) => $msg->isEmpty());
+
+    expect($filtered->messageList()->count())->toBe(1)
+        ->and($filtered->first()->isEmpty())->toBeTrue();
+});
+
+test('filter composes with withoutEmptyMessages for the old behaviour', function () {
+    $messages = Messages::empty();
+    $messages = $messages->appendMessage(new Message('user', 'Hello'));
+    $messages = $messages->appendMessage(new Message); // Empty message
+
+    $filtered = $messages->filter(fn ($msg) => true)->withoutEmptyMessages();
 
     expect($filtered->messageList()->count())->toBe(1)
         ->and($filtered->first()->content()->toString())->toBe('Hello');

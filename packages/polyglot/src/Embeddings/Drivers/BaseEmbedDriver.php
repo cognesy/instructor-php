@@ -2,6 +2,7 @@
 
 namespace Cognesy\Polyglot\Embeddings\Drivers;
 
+use Cognesy\Events\Support\ListenerGate;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Contracts\CanSendHttpRequests;
@@ -14,14 +15,25 @@ use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsResponse;
 use Cognesy\Polyglot\Embeddings\Events\EmbeddingsFailed;
 use Cognesy\Polyglot\Embeddings\Events\EmbeddingsRequested;
-use Cognesy\Polyglot\Inference\Core\SensitiveDataRedactor;
+use Cognesy\Polyglot\Support\Redaction\RedactsHttpPayloads;
+use Cognesy\Utils\Json\Json;
 use Exception;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use RuntimeException;
-use Throwable;
 
 class BaseEmbedDriver implements CanHandleVectorization
 {
+    use RedactsHttpPayloads;
+
+    /**
+     * Whether anything consumes each lifecycle event. Resolved once per driver,
+     * mirroring BaseInferenceRequestDriver — EmbeddingsRequested carries a full
+     * $request->toArray(), and the EmbeddingsFailed payloads do redaction work.
+     * See ListenerGate: fail-open is contractual.
+     */
+    private readonly bool $emitRequested;
+    private readonly bool $emitFailed;
+
     public function __construct(
         protected EmbeddingsConfig $config,
         protected CanSendHttpRequests $httpClient,
@@ -29,18 +41,23 @@ class BaseEmbedDriver implements CanHandleVectorization
         protected EmbedRequestAdapter $requestAdapter,
         protected EmbedResponseAdapter $responseAdapter
     ) {
+        $this->emitRequested = ListenerGate::wants($events, EmbeddingsRequested::class);
+        $this->emitFailed = ListenerGate::wants($events, EmbeddingsFailed::class);
     }
 
-    /** @psalm-suppress InvalidReturnType, InvalidReturnStatement - Return type matches interface */
     #[\Override]
-    public function handle(EmbeddingsRequest $request): HttpResponse {
+    public function handle(EmbeddingsRequest $request): EmbeddingsResponse {
         $clientRequest = $this->requestAdapter->toHttpClientRequest($request);
-        $this->events->dispatch(new EmbeddingsRequested(['request' => $request->toArray()]));
-        return $this->makeHttpResponse($clientRequest);
-    }
+        if ($this->emitRequested) {
+            $this->events->dispatch(new EmbeddingsRequested(['request' => $request->toArray()]));
+        }
 
-    #[\Override]
-    public function fromData(array $data): ?EmbeddingsResponse {
+        $httpResponse = $this->makeHttpResponse($clientRequest);
+        $data = Json::decode($httpResponse->body());
+        if (!is_array($data)) {
+            throw new RuntimeException('Failed to decode embeddings response data');
+        }
+
         return $this->responseAdapter->fromResponse($data);
     }
 
@@ -50,19 +67,23 @@ class BaseEmbedDriver implements CanHandleVectorization
         try {
             $httpResponse = $this->httpClient->send($request)->get();
         } catch (Exception $e) {
-            $this->events->dispatch(new EmbeddingsFailed([
-                'exception' => $this->redactedExceptionMessage($e, $request),
-                'request' => $this->redactedRequest($request),
-            ]));
+            if ($this->emitFailed) {
+                $this->events->dispatch(new EmbeddingsFailed([
+                    'exception' => $this->redactedExceptionMessage($e, $request),
+                    'request' => $this->redactedRequest($request),
+                ]));
+            }
             throw $e;
         }
 
         if ($httpResponse->statusCode() >= 400) {
-            $this->events->dispatch(new EmbeddingsFailed([
-                'statusCode' => $httpResponse->statusCode(),
-                'headers' => $this->redactedHeaders($httpResponse->headers()),
-                'body' => '[REDACTED]',
-            ]));
+            if ($this->emitFailed) {
+                $this->events->dispatch(new EmbeddingsFailed([
+                    'statusCode' => $httpResponse->statusCode(),
+                    'headers' => $this->redactedHeaders($httpResponse->headers()),
+                    'body' => '[REDACTED]',
+                ]));
+            }
             throw new HttpRequestException(
                 message: 'HTTP request failed with status code ' . $httpResponse->statusCode(),
                 request: $request,
@@ -72,42 +93,4 @@ class BaseEmbedDriver implements CanHandleVectorization
         return $httpResponse;
     }
 
-    /**
-     * @return array<string,mixed>
-     */
-    private function redactedRequest(HttpRequest $request): array {
-        $payload = $request->toArray();
-        $payload['url'] = $this->redactedUrl($request->url());
-        $payload['headers'] = $this->redactedHeaders($request->headers());
-        $payload['body'] = '[REDACTED]';
-        if (isset($payload['options']) && is_array($payload['options'])) {
-            $payload['options'] = $this->redactedValues($payload['options']);
-        }
-
-        return $payload;
-    }
-
-    /**
-     * @param array<string,mixed> $headers
-     * @return array<string,mixed>
-     */
-    private function redactedHeaders(array $headers): array {
-        return SensitiveDataRedactor::redactHeaders($headers);
-    }
-
-    /**
-     * @param array<string,mixed> $data
-     * @return array<string,mixed>
-     */
-    private function redactedValues(array $data): array {
-        return SensitiveDataRedactor::redactValues($data);
-    }
-
-    private function redactedUrl(string $url): string {
-        return SensitiveDataRedactor::redactUrl($url);
-    }
-
-    private function redactedExceptionMessage(Throwable $source, HttpRequest $request): string {
-        return SensitiveDataRedactor::redactUrlInText($source->getMessage(), $request->url());
-    }
 }

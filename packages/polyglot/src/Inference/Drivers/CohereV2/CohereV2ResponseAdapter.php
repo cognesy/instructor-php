@@ -49,9 +49,23 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
         return new PartialInferenceDelta(
             contentDelta: $this->makeContentDelta($data),
             finishReason: $data['delta']['finish_reason'] ?? '',
-            usage: $this->usageFormat->fromData($data),
+            usage: $this->hasUsageData($data) ? $this->usageFormat->fromData($data) : null,
             responseData: $responseData,
         );
+    }
+
+    /**
+     * Cohere v2 reports streamed usage under `delta.usage`, not the top-level
+     * `usage` its OpenAI-shaped parent reads — CohereV2UsageFormat::fromData()
+     * accepts both, so the guard must too. Note this adapter leaves
+     * usageIsCumulative false, so the incremental branch of
+     * StreamingUsageState::apply() applies.
+     *
+     * @param array<string,mixed> $data
+     */
+    #[\Override]
+    protected function hasUsageData(array $data): bool {
+        return !empty($data['usage']) || !empty($data['delta']['usage']);
     }
 
     #[\Override]

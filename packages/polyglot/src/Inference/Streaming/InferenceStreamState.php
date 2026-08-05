@@ -179,12 +179,12 @@ final class InferenceStreamState
                 'name' => $this->toolName,
                 'args' => '',
             ];
-            $this->recordToolEvent('start', $key, $this->toolId, $this->toolName, '');
+            $this->toolMutationCount += 1; // tool started, keyed by id
         }
 
         if ($this->shouldUpdateToolName($key)) {
             $this->tools[$key]['name'] = $this->toolName;
-            $this->recordToolEvent('rename', $key, '', $this->toolName, '');
+            $this->toolMutationCount += 1; // tool renamed
         }
 
         if ($this->shouldStartToolByName($key)) {
@@ -194,7 +194,7 @@ final class InferenceStreamState
                 'name' => $this->toolName,
                 'args' => '',
             ];
-            $this->recordToolEvent('start', $key, '', $this->toolName, '');
+            $this->toolMutationCount += 1; // tool started, keyed by name
         }
 
         $this->lastToolKey = $key;
@@ -216,7 +216,7 @@ final class InferenceStreamState
         }
 
         $this->tools[$key]['args'] .= $toolArgs;
-        $this->recordToolEvent('args', $key, '', '', $toolArgs);
+        $this->toolMutationCount += 1; // argument fragment appended
     }
 
     private function hasToolDelta(): bool
@@ -261,16 +261,6 @@ final class InferenceStreamState
     private function shouldStartToolByName(string $key): bool
     {
         return $this->toolId === '' && $this->toolName !== '' && !isset($this->tools[$key]);
-    }
-
-    private function recordToolEvent(
-        string $event,
-        string $key,
-        string $toolId,
-        string $toolName,
-        string $toolArgs,
-    ): void {
-        $this->toolMutationCount += 1;
     }
 
     private function applyValue(mixed $value): void

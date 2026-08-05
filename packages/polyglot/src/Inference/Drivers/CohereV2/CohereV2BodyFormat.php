@@ -3,6 +3,7 @@
 namespace Cognesy\Polyglot\Inference\Drivers\CohereV2;
 
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
 use Cognesy\Utils\Arrays;
 
@@ -35,25 +36,29 @@ class CohereV2BodyFormat extends OpenAICompatibleBodyFormat
 
     // INTERNAL //////////////////////////////////////////////
 
+    /**
+     * Cohere V2 takes a schema, but under json_object rather than a json_schema type — so
+     * schema mode and plain JSON mode emit the same payload, and a request with no schema
+     * emits a bare json_object.
+     *
+     * The old shape normalised the schema before knowing which mode was being rendered, so
+     * text-mode requests paid for a schema walk whose result was discarded. Nothing here can
+     * change on the wire: text mode never read that value.
+     */
     #[\Override]
-    protected function toResponseFormat(InferenceRequest $request) : array {
-        $type = $this->toResponseFormatType($request);
-        if ($type === null) {
-            return [];
-        }
-
-        // Cohere V2 API supports: json_object with schema, text
+    protected function toJsonObjectResponseFormat(ResponseFormat $responseFormat) : array {
         $schema = $this->normalizeSchemaForCohere(
-            $this->removeDisallowedEntries($request->responseFormat()->schema()),
+            $this->removeDisallowedEntries($responseFormat->schema()),
         );
-        $jsonObject = empty($schema)
+
+        return empty($schema)
             ? ['type' => 'json_object']
             : ['type' => 'json_object', 'schema' => $schema];
-        $responseFormat = $request->responseFormat()
-            ->withToJsonObjectHandler(fn() => $jsonObject)
-            ->withToJsonSchemaHandler(fn() => $jsonObject);
+    }
 
-        return $this->renderResponseFormatForType($responseFormat, $type);
+    #[\Override]
+    protected function toJsonSchemaResponseFormat(ResponseFormat $responseFormat) : array {
+        return $this->toJsonObjectResponseFormat($responseFormat);
     }
 
     #[\Override]

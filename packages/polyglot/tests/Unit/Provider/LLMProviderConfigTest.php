@@ -3,6 +3,7 @@
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
@@ -24,8 +25,11 @@ it('creates driver from explicit config and resolves correct class', function ()
         new EventDispatcher(),
     );
 
-    // Should be OpenAI driver resolved via bundled inference drivers
-    expect(get_class($driver))->toContain('OpenAIDriver');
+    // Resolved via the bundled inference drivers. Since instructor-eexl.9 'openai' is an
+    // InferenceDriverSpec rather than a class of its own, so the class name no longer carries
+    // the provider's identity -- the resolved config does, and that is what this test is about.
+    expect($driver)->toBeInstanceOf(CanProcessInferenceRequest::class)
+        ->and($provider->resolveConfig()->driver)->toBe('openai');
 });
 
 it('preserves model override when config overrides are applied later', function () {

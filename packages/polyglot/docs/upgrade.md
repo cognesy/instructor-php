@@ -1,7 +1,25 @@
 ---
 title: Upgrading Polyglot
-description: 'Polyglot 2.0 uses explicit request fields instead of output modes.'
+description: 'Migrate applications and custom drivers across Polyglot breaking changes.'
 ---
+
+## Custom Embeddings Drivers in v2.7
+
+`CanHandleVectorization` now returns the domain response directly. PHP cannot provide a
+compatibility shim for this interface return-type change, so custom implementations must be
+updated together with the v2.7 package upgrade.
+
+```diff
+- public function handle(EmbeddingsRequest $request): HttpResponse;
+- public function fromData(array $data): ?EmbeddingsResponse;
++ public function handle(EmbeddingsRequest $request): EmbeddingsResponse;
+```
+
+Move HTTP response decoding and adaptation into `handle()`. The separate `fromData()` method
+is no longer part of the driver contract. Drivers that extend `BaseEmbedDriver` inherit the
+new behavior unless they override `handle()`.
+
+## Migrating from v1 to v2
 
 Polyglot 2.0 is centered around explicit request fields.
 

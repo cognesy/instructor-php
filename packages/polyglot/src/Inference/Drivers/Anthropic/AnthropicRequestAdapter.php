@@ -2,38 +2,12 @@
 
 namespace Cognesy\Polyglot\Inference\Drivers\Anthropic;
 
-use Cognesy\Http\Data\HttpRequest;
-use Cognesy\Http\Telemetry\HttpRequestTelemetry;
-use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Contracts\CanMapRequestBody;
-use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Drivers\BaseHttpRequestAdapter;
 
-class AnthropicRequestAdapter implements CanTranslateInferenceRequest
+class AnthropicRequestAdapter extends BaseHttpRequestAdapter
 {
-    public function __construct(
-        protected LLMConfig $config,
-        protected CanMapRequestBody $bodyFormat,
-    ) {}
-
     #[\Override]
-    public function toHttpRequest(InferenceRequest $request): HttpRequest {
-        $httpRequest = new HttpRequest(
-            url: $this->toUrl($request),
-            method: 'POST',
-            headers: $this->toHeaders($request),
-            body: $this->bodyFormat->toRequestBody($request),
-            options: ['stream' => $request->isStreamed()],
-        );
-
-        return match ($request->telemetryCorrelation()) {
-            null => $httpRequest,
-            default => HttpRequestTelemetry::withCorrelation($httpRequest, $request->telemetryCorrelation()),
-        };
-    }
-
-    // INTERNAL /////////////////////////////////////////////
-
     protected function toHeaders(InferenceRequest $request): array {
         return array_filter([
             'x-api-key' => $this->config->apiKey,
@@ -44,6 +18,7 @@ class AnthropicRequestAdapter implements CanTranslateInferenceRequest
         ]);
     }
 
+    #[\Override]
     protected function toUrl(InferenceRequest $request): string {
         return "{$this->config->apiUrl}{$this->config->endpoint}";
     }

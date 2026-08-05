@@ -3,36 +3,28 @@
 namespace Cognesy\Polyglot\Inference\Drivers\Minimaxi;
 
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
 class MinimaxiBodyFormat extends OpenAICompatibleBodyFormat
 {
     // INTERNAL ///////////////////////////////////////////////
 
+    // Minimaxi only speaks json_schema, so plain JSON mode is sent as a schema payload too.
     #[\Override]
-    protected function toResponseFormat(InferenceRequest $request) : array {
-        $type = $this->toResponseFormatType($request);
-        if ($type === null) {
-            return [];
-        }
+    protected function toJsonObjectResponseFormat(ResponseFormat $responseFormat) : array {
+        return $this->toJsonSchemaResponseFormat($responseFormat);
+    }
 
-        // Minimaxi API supports: json_schema (with integer->number transformation)
-        $responseFormat = $request->responseFormat()
-            ->withToJsonObjectHandler(fn() => [
-                'type' => 'json_schema',
-                'json_schema' => [
-                    'name' => $request->responseFormat()->schemaName(),
-                    'schema' => $this->toNativeSchema($request->responseFormat()->schema()),
-                ],
-            ])
-            ->withToJsonSchemaHandler(fn() => [
-                'type' => 'json_schema',
-                'json_schema' => [
-                    'name' => $request->responseFormat()->schemaName(),
-                    'schema' => $this->toNativeSchema($request->responseFormat()->schema()),
-                ],
-            ]);
-
-        return $this->renderResponseFormatForType($responseFormat, $type);
+    // No `strict` flag, and integers are rewritten to numbers -- see toNativeSchema().
+    #[\Override]
+    protected function toJsonSchemaResponseFormat(ResponseFormat $responseFormat) : array {
+        return [
+            'type' => 'json_schema',
+            'json_schema' => [
+                'name' => $responseFormat->schemaName(),
+                'schema' => $this->toNativeSchema($responseFormat->schema()),
+            ],
+        ];
     }
 
     #[\Override]

@@ -1,0 +1,2993 @@
+{
+    "success": [
+        {
+            "event": "InferenceStarted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference",
+                        "name": "llm.inference",
+                        "kind": "root_span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "inference"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "requestId": "<uuid>",
+                "isStreamed": false,
+                "model": "test-model",
+                "messageCount": 1
+            }
+        },
+        {
+            "event": "InferenceAttemptStarted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 1,
+                "model": "test-model",
+                "isRetry": false
+            }
+        },
+        {
+            "event": "InferenceAttemptSucceeded",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": {
+                            "content": "hi",
+                            "finish_reason": "stop"
+                        }
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 1,
+                "finishReason": "stop",
+                "durationMs": "<ms>",
+                "inputTokens": 11,
+                "outputTokens": 7,
+                "cacheWriteTokens": 0,
+                "cacheReadTokens": 0,
+                "reasoningTokens": 0,
+                "totalTokens": 18
+            }
+        },
+        {
+            "event": "InferenceUsageReported",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>:usage",
+                        "type": "inference.usage",
+                        "name": "inference.usage",
+                        "kind": "metric"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "tags": [
+                        "llm",
+                        "usage"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "model": "test-model",
+                "isFinal": true,
+                "inputTokens": 11,
+                "outputTokens": 7,
+                "cacheWriteTokens": 0,
+                "cacheReadTokens": 0,
+                "reasoningTokens": 0,
+                "totalTokens": 18
+            }
+        },
+        {
+            "event": "InferenceCompleted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference",
+                        "name": "llm.inference",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": {
+                            "content": "hi",
+                            "finish_reason": "stop"
+                        }
+                    },
+                    "tags": [
+                        "llm",
+                        "inference"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "isSuccess": true,
+                "finishReason": "stop",
+                "durationMs": "<ms>",
+                "attemptCount": 1,
+                "inputTokens": 11,
+                "outputTokens": 7,
+                "cacheWriteTokens": 0,
+                "cacheReadTokens": 0,
+                "reasoningTokens": 0,
+                "totalTokens": 18
+            }
+        }
+    ],
+    "retry_then_success": [
+        {
+            "event": "InferenceStarted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference",
+                        "name": "llm.inference",
+                        "kind": "root_span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "inference"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "requestId": "<uuid>",
+                "isStreamed": false,
+                "model": "test-model",
+                "messageCount": 1
+            }
+        },
+        {
+            "event": "InferenceAttemptStarted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 1,
+                "model": "test-model",
+                "isRetry": false
+            }
+        },
+        {
+            "event": "InferenceAttemptFailed",
+            "data": {
+                "partialInputTokens": 0,
+                "partialOutputTokens": 0,
+                "partialCacheWriteTokens": 0,
+                "partialCacheReadTokens": 0,
+                "partialReasoningTokens": 0,
+                "partialTotalTokens": 0,
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 1,
+                "errorMessage": "upstream timeout",
+                "errorType": "Cognesy\\Http\\Exceptions\\TimeoutException",
+                "httpStatusCode": null,
+                "willRetry": true,
+                "durationMs": "<ms>"
+            }
+        },
+        {
+            "event": "InferenceAttemptStarted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 2,
+                "model": "test-model",
+                "isRetry": true
+            }
+        },
+        {
+            "event": "InferenceAttemptSucceeded",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": {
+                            "content": "hi",
+                            "finish_reason": "stop"
+                        }
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 2,
+                "finishReason": "stop",
+                "durationMs": "<ms>",
+                "inputTokens": 11,
+                "outputTokens": 7,
+                "cacheWriteTokens": 0,
+                "cacheReadTokens": 0,
+                "reasoningTokens": 0,
+                "totalTokens": 18
+            }
+        },
+        {
+            "event": "InferenceUsageReported",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>:usage",
+                        "type": "inference.usage",
+                        "name": "inference.usage",
+                        "kind": "metric"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "tags": [
+                        "llm",
+                        "usage"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "model": "test-model",
+                "isFinal": true,
+                "inputTokens": 11,
+                "outputTokens": 7,
+                "cacheWriteTokens": 0,
+                "cacheReadTokens": 0,
+                "reasoningTokens": 0,
+                "totalTokens": 18
+            }
+        },
+        {
+            "event": "InferenceCompleted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference",
+                        "name": "llm.inference",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": {
+                            "content": "hi",
+                            "finish_reason": "stop"
+                        }
+                    },
+                    "tags": [
+                        "llm",
+                        "inference"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "isSuccess": true,
+                "finishReason": "stop",
+                "durationMs": "<ms>",
+                "attemptCount": 2,
+                "inputTokens": 11,
+                "outputTokens": 7,
+                "cacheWriteTokens": 0,
+                "cacheReadTokens": 0,
+                "reasoningTokens": 0,
+                "totalTokens": 18
+            }
+        }
+    ],
+    "retry_exhausted": [
+        {
+            "event": "InferenceStarted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference",
+                        "name": "llm.inference",
+                        "kind": "root_span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "inference"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "requestId": "<uuid>",
+                "isStreamed": false,
+                "model": "test-model",
+                "messageCount": 1
+            }
+        },
+        {
+            "event": "InferenceAttemptStarted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 1,
+                "model": "test-model",
+                "isRetry": false
+            }
+        },
+        {
+            "event": "InferenceAttemptFailed",
+            "data": {
+                "partialInputTokens": 0,
+                "partialOutputTokens": 0,
+                "partialCacheWriteTokens": 0,
+                "partialCacheReadTokens": 0,
+                "partialReasoningTokens": 0,
+                "partialTotalTokens": 0,
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 1,
+                "errorMessage": "upstream timeout",
+                "errorType": "Cognesy\\Http\\Exceptions\\TimeoutException",
+                "httpStatusCode": null,
+                "willRetry": true,
+                "durationMs": "<ms>"
+            }
+        },
+        {
+            "event": "InferenceAttemptStarted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 2,
+                "model": "test-model",
+                "isRetry": true
+            }
+        },
+        {
+            "event": "InferenceAttemptFailed",
+            "data": {
+                "partialInputTokens": 0,
+                "partialOutputTokens": 0,
+                "partialCacheWriteTokens": 0,
+                "partialCacheReadTokens": 0,
+                "partialReasoningTokens": 0,
+                "partialTotalTokens": 0,
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 2,
+                "errorMessage": "upstream timeout",
+                "errorType": "Cognesy\\Http\\Exceptions\\TimeoutException",
+                "httpStatusCode": null,
+                "willRetry": false,
+                "durationMs": "<ms>"
+            }
+        },
+        {
+            "event": "InferenceCompleted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference",
+                        "name": "llm.inference",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "inference"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "isSuccess": false,
+                "finishReason": "error",
+                "durationMs": "<ms>",
+                "attemptCount": 2,
+                "inputTokens": 0,
+                "outputTokens": 0,
+                "cacheWriteTokens": 0,
+                "cacheReadTokens": 0,
+                "reasoningTokens": 0,
+                "totalTokens": 0
+            }
+        },
+        {
+            "event": "THROWN:TimeoutException",
+            "data": "upstream timeout"
+        }
+    ],
+    "length_recovery": [
+        {
+            "event": "InferenceStarted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference",
+                        "name": "llm.inference",
+                        "kind": "root_span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "inference"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "requestId": "<uuid>",
+                "isStreamed": false,
+                "model": "test-model",
+                "messageCount": 1
+            }
+        },
+        {
+            "event": "InferenceAttemptStarted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 1,
+                "model": "test-model",
+                "isRetry": false
+            }
+        },
+        {
+            "event": "InferenceAttemptFailed",
+            "data": {
+                "partialInputTokens": 11,
+                "partialOutputTokens": 7,
+                "partialCacheWriteTokens": 0,
+                "partialCacheReadTokens": 0,
+                "partialReasoningTokens": 0,
+                "partialTotalTokens": 18,
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": {
+                            "content": "trunc",
+                            "finish_reason": "length"
+                        }
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 1,
+                "errorMessage": "Inference execution hit length limit; retrying recovery",
+                "errorType": "RuntimeException",
+                "httpStatusCode": null,
+                "willRetry": true,
+                "durationMs": "<ms>"
+            }
+        },
+        {
+            "event": "InferenceAttemptStarted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            },
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "assistant",
+                                "content": "trunc"
+                            },
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Continue."
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 2,
+                "model": "test-model",
+                "isRetry": true
+            }
+        },
+        {
+            "event": "InferenceAttemptSucceeded",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            },
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "assistant",
+                                "content": "trunc"
+                            },
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Continue."
+                            }
+                        ],
+                        "output": {
+                            "content": "trunc done",
+                            "finish_reason": "stop"
+                        }
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 2,
+                "finishReason": "stop",
+                "durationMs": "<ms>",
+                "inputTokens": 11,
+                "outputTokens": 7,
+                "cacheWriteTokens": 0,
+                "cacheReadTokens": 0,
+                "reasoningTokens": 0,
+                "totalTokens": 18
+            }
+        },
+        {
+            "event": "InferenceUsageReported",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>:usage",
+                        "type": "inference.usage",
+                        "name": "inference.usage",
+                        "kind": "metric"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "tags": [
+                        "llm",
+                        "usage"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "model": "test-model",
+                "isFinal": true,
+                "inputTokens": 11,
+                "outputTokens": 7,
+                "cacheWriteTokens": 0,
+                "cacheReadTokens": 0,
+                "reasoningTokens": 0,
+                "totalTokens": 18
+            }
+        },
+        {
+            "event": "InferenceCompleted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference",
+                        "name": "llm.inference",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            },
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "assistant",
+                                "content": "trunc"
+                            },
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Continue."
+                            }
+                        ],
+                        "output": {
+                            "content": "trunc done",
+                            "finish_reason": "stop"
+                        }
+                    },
+                    "tags": [
+                        "llm",
+                        "inference"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "isSuccess": true,
+                "finishReason": "stop",
+                "durationMs": "<ms>",
+                "attemptCount": 2,
+                "inputTokens": 11,
+                "outputTokens": 7,
+                "cacheWriteTokens": 0,
+                "cacheReadTokens": 0,
+                "reasoningTokens": 0,
+                "totalTokens": 18
+            }
+        }
+    ],
+    "content_filter": [
+        {
+            "event": "InferenceStarted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference",
+                        "name": "llm.inference",
+                        "kind": "root_span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "inference"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "requestId": "<uuid>",
+                "isStreamed": false,
+                "model": "test-model",
+                "messageCount": 1
+            }
+        },
+        {
+            "event": "InferenceAttemptStarted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 1,
+                "model": "test-model",
+                "isRetry": false
+            }
+        },
+        {
+            "event": "InferenceAttemptFailed",
+            "data": {
+                "partialInputTokens": 11,
+                "partialOutputTokens": 7,
+                "partialCacheWriteTokens": 0,
+                "partialCacheReadTokens": 0,
+                "partialReasoningTokens": 0,
+                "partialTotalTokens": 18,
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": {
+                            "finish_reason": "content_filter"
+                        }
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 1,
+                "errorMessage": "Inference blocked by content filter",
+                "errorType": "RuntimeException",
+                "httpStatusCode": null,
+                "willRetry": false,
+                "durationMs": "<ms>"
+            }
+        },
+        {
+            "event": "InferenceCompleted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference",
+                        "name": "llm.inference",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": {
+                            "finish_reason": "content_filter"
+                        }
+                    },
+                    "tags": [
+                        "llm",
+                        "inference"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "isSuccess": false,
+                "finishReason": "content_filter",
+                "durationMs": "<ms>",
+                "attemptCount": 1,
+                "inputTokens": 11,
+                "outputTokens": 7,
+                "cacheWriteTokens": 0,
+                "cacheReadTokens": 0,
+                "reasoningTokens": 0,
+                "totalTokens": 18
+            }
+        },
+        {
+            "event": "THROWN:RuntimeException",
+            "data": "Inference blocked by content filter"
+        }
+    ],
+    "stream_success": [
+        {
+            "event": "InferenceStarted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference",
+                        "name": "llm.inference",
+                        "kind": "root_span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "inference"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "requestId": "<uuid>",
+                "isStreamed": true,
+                "model": "test-model",
+                "messageCount": 1
+            }
+        },
+        {
+            "event": "InferenceAttemptStarted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 1,
+                "model": "test-model",
+                "isRetry": false
+            }
+        },
+        {
+            "event": "InferenceResponseCreated",
+            "data": {
+                "executionId": "<uuid>",
+                "requestId": "<uuid>",
+                "model": "test-model",
+                "responseId": "<uuid>",
+                "finishReason": "stop",
+                "contentLength": 5,
+                "reasoningContentLength": 0,
+                "hasToolCalls": false,
+                "toolCallCount": 0,
+                "usage": {
+                    "input": 0,
+                    "output": 0,
+                    "cacheWrite": 0,
+                    "cacheRead": 0,
+                    "reasoning": 0
+                },
+                "isPartial": false
+            }
+        },
+        {
+            "event": "InferenceAttemptSucceeded",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": {
+                            "content": "hello",
+                            "finish_reason": "stop"
+                        }
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 1,
+                "finishReason": "stop",
+                "durationMs": "<ms>",
+                "inputTokens": 0,
+                "outputTokens": 0,
+                "cacheWriteTokens": 0,
+                "cacheReadTokens": 0,
+                "reasoningTokens": 0,
+                "totalTokens": 0
+            }
+        },
+        {
+            "event": "InferenceUsageReported",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>:usage",
+                        "type": "inference.usage",
+                        "name": "inference.usage",
+                        "kind": "metric"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "tags": [
+                        "llm",
+                        "usage"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "model": "test-model",
+                "isFinal": true,
+                "inputTokens": 0,
+                "outputTokens": 0,
+                "cacheWriteTokens": 0,
+                "cacheReadTokens": 0,
+                "reasoningTokens": 0,
+                "totalTokens": 0
+            }
+        },
+        {
+            "event": "InferenceCompleted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference",
+                        "name": "llm.inference",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": {
+                            "content": "hello",
+                            "finish_reason": "stop"
+                        }
+                    },
+                    "tags": [
+                        "llm",
+                        "inference"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "isSuccess": true,
+                "finishReason": "stop",
+                "durationMs": "<ms>",
+                "attemptCount": 1,
+                "inputTokens": 0,
+                "outputTokens": 0,
+                "cacheWriteTokens": 0,
+                "cacheReadTokens": 0,
+                "reasoningTokens": 0,
+                "totalTokens": 0
+            }
+        }
+    ],
+    "stream_failure_before_first_delta": [
+        {
+            "event": "InferenceStarted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference",
+                        "name": "llm.inference",
+                        "kind": "root_span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "inference"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "requestId": "<uuid>",
+                "isStreamed": true,
+                "model": "test-model",
+                "messageCount": 1
+            }
+        },
+        {
+            "event": "InferenceAttemptStarted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 1,
+                "model": "test-model",
+                "isRetry": false
+            }
+        },
+        {
+            "event": "InferenceAttemptFailed",
+            "data": {
+                "partialInputTokens": 0,
+                "partialOutputTokens": 0,
+                "partialCacheWriteTokens": 0,
+                "partialCacheReadTokens": 0,
+                "partialReasoningTokens": 0,
+                "partialTotalTokens": 0,
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 1,
+                "errorMessage": "stream died",
+                "errorType": "Cognesy\\Http\\Exceptions\\TimeoutException",
+                "httpStatusCode": null,
+                "willRetry": false,
+                "durationMs": "<ms>"
+            }
+        },
+        {
+            "event": "InferenceCompleted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference",
+                        "name": "llm.inference",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "inference"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "isSuccess": false,
+                "finishReason": "error",
+                "durationMs": "<ms>",
+                "attemptCount": 1,
+                "inputTokens": 0,
+                "outputTokens": 0,
+                "cacheWriteTokens": 0,
+                "cacheReadTokens": 0,
+                "reasoningTokens": 0,
+                "totalTokens": 0
+            }
+        },
+        {
+            "event": "THROWN:TimeoutException",
+            "data": "stream died"
+        }
+    ],
+    "stream_failure_after_first_delta": [
+        {
+            "event": "InferenceStarted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference",
+                        "name": "llm.inference",
+                        "kind": "root_span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "inference"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "requestId": "<uuid>",
+                "isStreamed": true,
+                "model": "test-model",
+                "messageCount": 1
+            }
+        },
+        {
+            "event": "InferenceAttemptStarted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 1,
+                "model": "test-model",
+                "isRetry": false
+            }
+        },
+        {
+            "event": "InferenceAttemptFailed",
+            "data": {
+                "partialInputTokens": 0,
+                "partialOutputTokens": 0,
+                "partialCacheWriteTokens": 0,
+                "partialCacheReadTokens": 0,
+                "partialReasoningTokens": 0,
+                "partialTotalTokens": 0,
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 1,
+                "errorMessage": "stream died mid-flight",
+                "errorType": "Cognesy\\Http\\Exceptions\\TimeoutException",
+                "httpStatusCode": null,
+                "willRetry": false,
+                "durationMs": "<ms>"
+            }
+        },
+        {
+            "event": "InferenceCompleted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference",
+                        "name": "llm.inference",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "inference"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "isSuccess": false,
+                "finishReason": "error",
+                "durationMs": "<ms>",
+                "attemptCount": 1,
+                "inputTokens": 0,
+                "outputTokens": 0,
+                "cacheWriteTokens": 0,
+                "cacheReadTokens": 0,
+                "reasoningTokens": 0,
+                "totalTokens": 0
+            }
+        },
+        {
+            "event": "THROWN:TimeoutException",
+            "data": "stream died mid-flight"
+        }
+    ],
+    "length_recovery_exhausted": [
+        {
+            "event": "InferenceStarted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference",
+                        "name": "llm.inference",
+                        "kind": "root_span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "inference"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "requestId": "<uuid>",
+                "isStreamed": false,
+                "model": "test-model",
+                "messageCount": 1
+            }
+        },
+        {
+            "event": "InferenceAttemptStarted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 1,
+                "model": "test-model",
+                "isRetry": false
+            }
+        },
+        {
+            "event": "InferenceAttemptFailed",
+            "data": {
+                "partialInputTokens": 11,
+                "partialOutputTokens": 7,
+                "partialCacheWriteTokens": 0,
+                "partialCacheReadTokens": 0,
+                "partialReasoningTokens": 0,
+                "partialTotalTokens": 18,
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": {
+                            "content": "trunc",
+                            "finish_reason": "length"
+                        }
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 1,
+                "errorMessage": "Inference execution hit length limit; retrying recovery",
+                "errorType": "RuntimeException",
+                "httpStatusCode": null,
+                "willRetry": true,
+                "durationMs": "<ms>"
+            }
+        },
+        {
+            "event": "InferenceAttemptStarted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            },
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "assistant",
+                                "content": "trunc"
+                            },
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Continue."
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 2,
+                "model": "test-model",
+                "isRetry": true
+            }
+        },
+        {
+            "event": "InferenceAttemptFailed",
+            "data": {
+                "partialInputTokens": 11,
+                "partialOutputTokens": 7,
+                "partialCacheWriteTokens": 0,
+                "partialCacheReadTokens": 0,
+                "partialReasoningTokens": 0,
+                "partialTotalTokens": 18,
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            },
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "assistant",
+                                "content": "trunc"
+                            },
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Continue."
+                            }
+                        ],
+                        "output": {
+                            "content": "trunc",
+                            "finish_reason": "length"
+                        }
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 2,
+                "errorMessage": "Inference execution hit length limit; retrying recovery",
+                "errorType": "RuntimeException",
+                "httpStatusCode": null,
+                "willRetry": true,
+                "durationMs": "<ms>"
+            }
+        },
+        {
+            "event": "InferenceAttemptStarted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            },
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "assistant",
+                                "content": "trunc"
+                            },
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Continue."
+                            },
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "assistant",
+                                "content": "trunc"
+                            },
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Continue."
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 3,
+                "model": "test-model",
+                "isRetry": true
+            }
+        },
+        {
+            "event": "InferenceAttemptFailed",
+            "data": {
+                "partialInputTokens": 11,
+                "partialOutputTokens": 7,
+                "partialCacheWriteTokens": 0,
+                "partialCacheReadTokens": 0,
+                "partialReasoningTokens": 0,
+                "partialTotalTokens": 18,
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            },
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "assistant",
+                                "content": "trunc"
+                            },
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Continue."
+                            },
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "assistant",
+                                "content": "trunc"
+                            },
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Continue."
+                            }
+                        ],
+                        "output": {
+                            "content": "trunc",
+                            "finish_reason": "length"
+                        }
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 3,
+                "errorMessage": "Inference execution failed: length",
+                "errorType": "RuntimeException",
+                "httpStatusCode": null,
+                "willRetry": false,
+                "durationMs": "<ms>"
+            }
+        },
+        {
+            "event": "InferenceCompleted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference",
+                        "name": "llm.inference",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            },
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "assistant",
+                                "content": "trunc"
+                            },
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Continue."
+                            },
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "assistant",
+                                "content": "trunc"
+                            },
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Continue."
+                            }
+                        ],
+                        "output": {
+                            "content": "trunc",
+                            "finish_reason": "length"
+                        }
+                    },
+                    "tags": [
+                        "llm",
+                        "inference"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "isSuccess": false,
+                "finishReason": "length",
+                "durationMs": "<ms>",
+                "attemptCount": 3,
+                "inputTokens": 11,
+                "outputTokens": 7,
+                "cacheWriteTokens": 0,
+                "cacheReadTokens": 0,
+                "reasoningTokens": 0,
+                "totalTokens": 18
+            }
+        },
+        {
+            "event": "THROWN:RuntimeException",
+            "data": "Inference execution failed: length"
+        }
+    ],
+    "stream_response_without_draining": [
+        {
+            "event": "InferenceStarted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference",
+                        "name": "llm.inference",
+                        "kind": "root_span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "inference"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "requestId": "<uuid>",
+                "isStreamed": true,
+                "model": "test-model",
+                "messageCount": 1
+            }
+        },
+        {
+            "event": "InferenceAttemptStarted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 1,
+                "model": "test-model",
+                "isRetry": false
+            }
+        },
+        {
+            "event": "InferenceResponseCreated",
+            "data": {
+                "executionId": "<uuid>",
+                "requestId": "<uuid>",
+                "model": "test-model",
+                "responseId": "<uuid>",
+                "finishReason": "stop",
+                "contentLength": 5,
+                "reasoningContentLength": 0,
+                "hasToolCalls": false,
+                "toolCallCount": 0,
+                "usage": {
+                    "input": 0,
+                    "output": 0,
+                    "cacheWrite": 0,
+                    "cacheRead": 0,
+                    "reasoning": 0
+                },
+                "isPartial": false
+            }
+        },
+        {
+            "event": "InferenceAttemptSucceeded",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": {
+                            "content": "hello",
+                            "finish_reason": "stop"
+                        }
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 1,
+                "finishReason": "stop",
+                "durationMs": "<ms>",
+                "inputTokens": 0,
+                "outputTokens": 0,
+                "cacheWriteTokens": 0,
+                "cacheReadTokens": 0,
+                "reasoningTokens": 0,
+                "totalTokens": 0
+            }
+        },
+        {
+            "event": "InferenceUsageReported",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>:usage",
+                        "type": "inference.usage",
+                        "name": "inference.usage",
+                        "kind": "metric"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "tags": [
+                        "llm",
+                        "usage"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "model": "test-model",
+                "isFinal": true,
+                "inputTokens": 0,
+                "outputTokens": 0,
+                "cacheWriteTokens": 0,
+                "cacheReadTokens": 0,
+                "reasoningTokens": 0,
+                "totalTokens": 0
+            }
+        },
+        {
+            "event": "InferenceCompleted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference",
+                        "name": "llm.inference",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": {
+                            "content": "hello",
+                            "finish_reason": "stop"
+                        }
+                    },
+                    "tags": [
+                        "llm",
+                        "inference"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "isSuccess": true,
+                "finishReason": "stop",
+                "durationMs": "<ms>",
+                "attemptCount": 1,
+                "inputTokens": 0,
+                "outputTokens": 0,
+                "cacheWriteTokens": 0,
+                "cacheReadTokens": 0,
+                "reasoningTokens": 0,
+                "totalTokens": 0
+            }
+        }
+    ],
+    "stream_response_without_draining_failure": [
+        {
+            "event": "InferenceStarted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference",
+                        "name": "llm.inference",
+                        "kind": "root_span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "inference"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "requestId": "<uuid>",
+                "isStreamed": true,
+                "model": "test-model",
+                "messageCount": 1
+            }
+        },
+        {
+            "event": "InferenceAttemptStarted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 1,
+                "model": "test-model",
+                "isRetry": false
+            }
+        },
+        {
+            "event": "InferenceAttemptFailed",
+            "data": {
+                "partialInputTokens": 0,
+                "partialOutputTokens": 0,
+                "partialCacheWriteTokens": 0,
+                "partialCacheReadTokens": 0,
+                "partialReasoningTokens": 0,
+                "partialTotalTokens": 0,
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference.attempt",
+                        "name": "llm.inference.attempt",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "attempt"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "attemptId": "<uuid>",
+                "attemptNumber": 1,
+                "errorMessage": "stream died mid-flight",
+                "errorType": "Cognesy\\Http\\Exceptions\\TimeoutException",
+                "httpStatusCode": null,
+                "willRetry": false,
+                "durationMs": "<ms>"
+            }
+        },
+        {
+            "event": "InferenceCompleted",
+            "data": {
+                "telemetry": {
+                    "operation": {
+                        "id": "<uuid>",
+                        "type": "llm.inference",
+                        "name": "llm.inference",
+                        "kind": "span"
+                    },
+                    "correlation": {
+                        "root_operation_id": "<uuid>",
+                        "parent_operation_id": "<uuid>",
+                        "session_id": "<uuid>",
+                        "request_id": "<uuid>"
+                    },
+                    "capture": {
+                        "input": "summary",
+                        "output": "summary",
+                        "metadata": "summary"
+                    },
+                    "io": {
+                        "input": [
+                            {
+                                "id": "<uuid>",
+                                "createdAt": "<timestamp>",
+                                "role": "user",
+                                "content": "Say hi"
+                            }
+                        ],
+                        "output": null
+                    },
+                    "tags": [
+                        "llm",
+                        "inference"
+                    ]
+                },
+                "executionId": "<uuid>",
+                "isSuccess": false,
+                "finishReason": "error",
+                "durationMs": "<ms>",
+                "attemptCount": 1,
+                "inputTokens": 0,
+                "outputTokens": 0,
+                "cacheWriteTokens": 0,
+                "cacheReadTokens": 0,
+                "reasoningTokens": 0,
+                "totalTokens": 0
+            }
+        },
+        {
+            "event": "THROWN:TimeoutException",
+            "data": "stream died mid-flight"
+        }
+    ]
+}

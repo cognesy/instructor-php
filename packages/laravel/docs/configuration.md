@@ -142,15 +142,13 @@ return [
         'max_retries' => env('INSTRUCTOR_MAX_RETRIES', 2),
         // Prompt class rendered for retry feedback
         'retry_prompt_class' => App\Prompts\RetryFeedbackPrompt::class,
-        // Deprecated: only an explicitly injected legacy RequestMaterializer reads this
-        'retry_prompt' => null,
     ],
 ];
 ```
 
-The default structured-output path renders `retry_prompt_class`. The inline
-`retry_prompt` key is retained for 2.5 compatibility only and is scheduled for removal
-in 2.6 together with the legacy request materializer.
+The structured-output path renders `retry_prompt_class`. The inline `retry_prompt` key
+was removed in 2.6 along with the legacy request materializer; it is now ignored if
+present in your config.
 
 ### Output Modes
 

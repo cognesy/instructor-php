@@ -43,6 +43,11 @@ expect()->extend('toBeCloseTo', function (float $expected, int $precision = 8) {
     return $this;
 });
 
+expect()->extend('toHavePassedEval', function () {
+    return $this->toBeInstanceOf(Cognesy\Agents\Evals\EvalResult::class)
+        ->and($this->value->verdict())->toBe(Cognesy\Agents\Evals\EvalVerdict::Passed);
+});
+
 /*
 |--------------------------------------------------------------------------
 | Functions

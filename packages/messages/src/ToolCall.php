@@ -8,6 +8,8 @@ use InvalidArgumentException;
 
 final readonly class ToolCall
 {
+    private const string SENTINEL_NAME = '(no-tool)';
+
     private ?ToolCallId $id;
 
     public function __construct(
@@ -27,9 +29,22 @@ final readonly class ToolCall
         );
     }
 
+    /**
+     * Returns a sentinel ToolCall indicating that a tool call is required by the type
+     * system but none exists in the current context.
+     *
+     * Used by HookContext::blockToolExecution() when a hook blocks tool execution
+     * outside the context of a concrete tool call, ensuring the exception has a
+     * ToolCall instance to carry.
+     *
+     * The name is a magic string, so test for it with isNone() rather than comparing it.
+     *
+     * @see \Cognesy\Agents\Hook\Data\HookContext::blockToolExecution() the caller in packages/agents
+     * @see self::isNone()
+     */
     public static function none(): self
     {
-        return new self(name: '(no-tool)');
+        return new self(name: self::SENTINEL_NAME);
     }
 
     // ACCESSORS ///////////////////////////////////////////////////
@@ -74,6 +89,11 @@ final readonly class ToolCall
     public function hasArgs(): bool
     {
         return !empty($this->arguments);
+    }
+
+    public function isNone(): bool
+    {
+        return $this->name === self::SENTINEL_NAME;
     }
 
     public function hasValue(string $key): bool

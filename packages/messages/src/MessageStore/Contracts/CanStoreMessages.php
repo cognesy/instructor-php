@@ -36,7 +36,12 @@ interface CanStoreMessages
     public function load(MessageSessionId $sessionId): MessageStore;
 
     /**
-     * Save entire MessageStore to storage.
+     * REPLACES the session with exactly $store. Every message not present in $store is
+     * removed from the session, branches included - implementations rewrite rather than
+     * merge. Since load() returns the whole session, load -> mutate -> save is lossless;
+     * saving a store built from a subset of a session prunes it to that subset.
+     *
+     * Use append() (with navigateTo() to choose the branch) for additive writes.
      */
     public function save(MessageSessionId $sessionId, MessageStore $store): StoreMessagesResult;
 

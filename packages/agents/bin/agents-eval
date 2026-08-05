@@ -1,0 +1,15 @@
+#!/usr/bin/env php
+<?php declare(strict_types=1);
+
+use Cognesy\Agents\Evals\EvalApplication;
+
+$directory = __DIR__;
+do {
+    $autoload = $directory . '/vendor/autoload.php';
+    if (is_file($autoload)) { require $autoload; break; }
+    $parent = dirname($directory);
+    if ($parent === $directory) { throw new RuntimeException('Unable to locate vendor/autoload.php.'); }
+    $directory = $parent;
+} while (true);
+
+exit((new EvalApplication())->run($argv));

@@ -79,10 +79,23 @@ class GeminiResponseAdapter implements CanTranslateInferenceResponse
             toolName: $this->makeToolName($data),
             toolArgs: $this->makeToolArgs($data),
             finishReason: $data['candidates'][0]['finishReason'] ?? '',
-            usage: $this->usageFormat->fromData($data),
+            usage: $this->hasUsageData($data) ? $this->usageFormat->fromData($data) : null,
             usageIsCumulative: true,
             responseData: $responseData,
         );
+    }
+
+    /**
+     * Gemini reports usage under `usageMetadata`, not `usage`.
+     *
+     * Skipping construction when the block is absent avoids one all-zero
+     * InferenceUsage per delta. A null usage is what StreamingUsageState::apply()
+     * already treats as "nothing to add", so this is behaviour-neutral.
+     *
+     * @param array<string,mixed> $data
+     */
+    protected function hasUsageData(array $data): bool {
+        return !empty($data['usageMetadata']);
     }
 
     #[\Override]

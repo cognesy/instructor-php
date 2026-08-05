@@ -19,15 +19,15 @@ class Audio {
         return $this->base64bytes;
     }
 
-    /** @deprecated Use getBase64Bytes(). */
-    public function getByte64Bytes(): string {
-        return $this->getBase64Bytes();
-    }
-
     public function toContentPart(): ContentPart {
-        return new ContentPart(ContentType::Audio->value, ['input_audio' => [
+        // Same nested-empty-field problem as File::toContentPart() (instructor-r50t.9):
+        // an empty format/data must be omitted rather than sent as "".
+        $inputAudio = array_filter([
             'format' => $this->format,
             'data' => $this->base64bytes,
-        ]]);
+        ], fn(string $value) => $value !== '');
+        return new ContentPart(ContentType::Audio->value, [
+            'input_audio' => $inputAudio,
+        ]);
     }
 }

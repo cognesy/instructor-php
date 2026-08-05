@@ -69,10 +69,27 @@ class AnthropicResponseAdapter implements CanTranslateInferenceResponse
             toolName: (string) ($data['content_block']['name'] ?? ''),
             toolArgs: $data['delta']['partial_json'] ?? '',
             finishReason: $data['delta']['stop_reason'] ?? $data['message']['stop_reason'] ?? '',
-            usage: $this->usageFormat->fromData($data),
+            usage: $this->hasUsageData($data) ? $this->usageFormat->fromData($data) : null,
             usageIsCumulative: true,
             responseData: $responseData,
         );
+    }
+
+    /**
+     * Anthropic splits usage across two events: input tokens arrive on
+     * `message_start` under `message.usage`, output tokens on `message_delta`
+     * under `usage`. Both must pass the guard — a naive `empty($data['usage'])`
+     * would drop the input-token count entirely.
+     *
+     * Everything in between (`content_block_delta`, the overwhelming majority of
+     * a stream) carries neither, and used to allocate an all-zero InferenceUsage
+     * per delta. A null usage is what StreamingUsageState::apply() already treats
+     * as "nothing to add", so this is behaviour-neutral.
+     *
+     * @param array<string,mixed> $data
+     */
+    protected function hasUsageData(array $data): bool {
+        return !empty($data['usage']) || !empty($data['message']['usage']);
     }
 
     #[\Override]

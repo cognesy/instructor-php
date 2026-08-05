@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Polyglot\Inference\Core\SensitiveDataRedactor;
+use Cognesy\Polyglot\Support\Redaction\SensitiveDataRedactor;
 
 it('flags credential-bearing keys as sensitive', function (string $key) {
     expect(SensitiveDataRedactor::isSensitiveKey($key))->toBeTrue();

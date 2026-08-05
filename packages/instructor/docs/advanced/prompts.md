@@ -5,11 +5,9 @@ description: 'Control system messages, user prompts, examples, and cached contex
 
 Instructor provides several prompt hooks that let you shape the messages sent to the LLM. These are intentionally simple -- Instructor is not a prompt management framework, but it gives you the building blocks you need for most structured output tasks.
 
-`StructuredPromptRequestMaterializer` is the default. It uses prompt classes and bundled
-Twig markdown templates. Custom prompt classes are the supported extension seam.
-
-The deprecated `RequestMaterializer` remains available through explicit
-`StructuredOutputRuntime::withRequestMaterializer()` injection for 2.5 compatibility.
+`StructuredPromptRequestMaterializer` is the default and only bundled materializer. It
+uses prompt classes and bundled Twig markdown templates. Custom prompt classes are the
+supported extension seam.
 
 ## Prompt Hooks
 
@@ -111,26 +109,25 @@ $result = (new StructuredOutput)
 
 Cached context messages are placed before the regular messages in the chat structure. The exact caching behavior depends on the LLM provider -- Anthropic and OpenAI both support prompt caching with different mechanisms.
 
-On the default path, cached prompt content is not flattened into ordinary live messages. It is projected into `InferenceRequest::cachedContext()` so provider-native caching can take effect, while the per-request prompt remains live.
+Cached prompt content is not flattened into ordinary live messages. It is projected into `InferenceRequest::cachedContext()` so provider-native caching can take effect, while the per-request prompt remains live.
 
-## Switching Materializers
+## Replacing The Materializer
+
+When prompt-class customization is not enough, implement `CanMaterializeRequest` and
+inject it into the runtime:
 
 ```php
-use Cognesy\Instructor\Core\RequestMaterializer;
+use Cognesy\Instructor\Contracts\CanMaterializeRequest;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
 
-$runtime = StructuredOutputRuntime::fromDefaults();
-
-$legacyRuntime = $runtime->withRequestMaterializer(new RequestMaterializer());
+$runtime = StructuredOutputRuntime::fromDefaults()
+    ->withRequestMaterializer($customMaterializer); // your CanMaterializeRequest
 
 $so = (new StructuredOutput)
     ->withRuntime($runtime)
     ->with(messages: $text, responseModel: Person::class);
 ```
-
-Use the legacy runtime only as a migration bridge. `RequestMaterializer` and its inline
-prompt/chat-structure configuration are scheduled for removal in 2.6.
 
 ## Template Engine Integration
 

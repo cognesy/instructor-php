@@ -13,7 +13,7 @@ use Cognesy\Agents\Drivers\ReAct\ReActDriver;
 use Cognesy\Events\Contracts\CanAcceptEventHandler;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\ToolCalls;
@@ -89,7 +89,7 @@ describe('AgentBuilder event wiring', function () {
         $structuredRuntime = new StructuredOutputRuntime(
             inference: $inferenceRuntime,
             events: $runtimeEvents,
-            config: (new StructuredOutputConfigBuilder())->create(),
+            config: new StructuredOutputConfig(),
         );
 
         $loop = AgentBuilder::base()

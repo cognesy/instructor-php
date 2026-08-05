@@ -4,7 +4,7 @@ namespace Cognesy\Polyglot\Embeddings\Contracts;
 
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsPricing;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsUsage;
-use Cognesy\Polyglot\Pricing\Cost;
+use Cognesy\Polyglot\Support\Pricing\Cost;
 
 /**
  * Strategy for calculating cost from embeddings usage and pricing rates.

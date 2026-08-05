@@ -1,0 +1,969 @@
+{
+    "a21/text": {
+        "type": "text"
+    },
+    "a21/json_object": {
+        "type": "json_object"
+    },
+    "a21/json_object_with_schema": {
+        "type": "json_object"
+    },
+    "a21/json_schema": {
+        "type": "json_object"
+    },
+    "cerebras/text": {
+        "type": "text"
+    },
+    "cerebras/json_object": {
+        "type": "json_object"
+    },
+    "cerebras/json_object_with_schema": {
+        "type": "json_object"
+    },
+    "cerebras/json_schema": {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "user",
+            "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "age": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "role": {
+                        "$ref": "#/$defs/Role"
+                    }
+                },
+                "required": [
+                    "name"
+                ],
+                "$defs": {
+                    "Role": {
+                        "type": "object",
+                        "properties": {
+                            "level": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                }
+            },
+            "strict": false
+        }
+    },
+    "cohere/text": {
+        "type": "text"
+    },
+    "cohere/json_object": {
+        "type": "json_object"
+    },
+    "cohere/json_object_with_schema": {
+        "type": "json_object",
+        "schema": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "age": {
+                    "type": "integer"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "role": {
+                    "$ref": "#/$defs/Role"
+                }
+            },
+            "required": [
+                "name",
+                "age",
+                "tags",
+                "role"
+            ],
+            "$defs": {
+                "Role": {
+                    "type": "object",
+                    "properties": {
+                        "level": {
+                            "type": "integer"
+                        }
+                    },
+                    "required": [
+                        "level"
+                    ]
+                }
+            }
+        }
+    },
+    "cohere/json_schema": {
+        "type": "json_object",
+        "schema": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "age": {
+                    "type": "integer"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "role": {
+                    "$ref": "#/$defs/Role"
+                }
+            },
+            "required": [
+                "name",
+                "age",
+                "tags",
+                "role"
+            ],
+            "$defs": {
+                "Role": {
+                    "type": "object",
+                    "properties": {
+                        "level": {
+                            "type": "integer"
+                        }
+                    },
+                    "required": [
+                        "level"
+                    ]
+                }
+            }
+        }
+    },
+    "deepseek/text": {
+        "type": "text"
+    },
+    "deepseek/json_object": {
+        "type": "json_object"
+    },
+    "deepseek/json_object_with_schema": {
+        "type": "json_object"
+    },
+    "deepseek/json_schema": {
+        "type": "json_object"
+    },
+    "fireworks/text": {
+        "type": "text"
+    },
+    "fireworks/json_object": {
+        "type": "json_object"
+    },
+    "fireworks/json_object_with_schema": {
+        "type": "json_object"
+    },
+    "fireworks/json_schema": {
+        "type": "json_object",
+        "schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "age": {
+                    "type": "integer",
+                    "nullable": true
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "role": {
+                    "$ref": "#/$defs/Role"
+                }
+            },
+            "required": [
+                "name"
+            ],
+            "$defs": {
+                "Role": {
+                    "type": "object",
+                    "properties": {
+                        "level": {
+                            "type": "integer"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "gemini-oai/text": {
+        "type": "text"
+    },
+    "gemini-oai/json_object": {
+        "type": "json_object"
+    },
+    "gemini-oai/json_object_with_schema": {
+        "type": "json_object"
+    },
+    "gemini-oai/json_schema": {
+        "type": "json_object"
+    },
+    "glm/text": {
+        "type": "text"
+    },
+    "glm/json_object": {
+        "type": "json_object"
+    },
+    "glm/json_object_with_schema": {
+        "type": "json_object"
+    },
+    "glm/json_schema": {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "user",
+            "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "age": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "role": {
+                        "$ref": "#/$defs/Role"
+                    }
+                },
+                "required": [
+                    "name"
+                ],
+                "$defs": {
+                    "Role": {
+                        "type": "object",
+                        "properties": {
+                            "level": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                }
+            },
+            "strict": false
+        }
+    },
+    "groq/text": {
+        "type": "text"
+    },
+    "groq/json_object": {
+        "type": "json_object"
+    },
+    "groq/json_object_with_schema": {
+        "type": "json_object"
+    },
+    "groq/json_schema": {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "user",
+            "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "age": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "role": {
+                        "$ref": "#/$defs/Role"
+                    }
+                },
+                "required": [
+                    "name"
+                ],
+                "$defs": {
+                    "Role": {
+                        "type": "object",
+                        "properties": {
+                            "level": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                }
+            },
+            "strict": false
+        }
+    },
+    "huggingface/text": {
+        "type": "text"
+    },
+    "huggingface/json_object": {
+        "type": "json_object"
+    },
+    "huggingface/json_object_with_schema": {
+        "type": "json_object"
+    },
+    "huggingface/json_schema": {
+        "type": "json_schema",
+        "value": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "age": {
+                    "type": "integer",
+                    "nullable": true
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "role": {
+                    "$ref": "#/$defs/Role"
+                }
+            },
+            "required": [
+                "name"
+            ],
+            "$defs": {
+                "Role": {
+                    "type": "object",
+                    "properties": {
+                        "level": {
+                            "type": "integer"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "inception/text": {
+        "type": "text"
+    },
+    "inception/json_object": {
+        "type": "json_object"
+    },
+    "inception/json_object_with_schema": {
+        "type": "json_object"
+    },
+    "inception/json_schema": {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "user",
+            "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "age": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "role": {
+                        "$ref": "#/$defs/Role"
+                    }
+                },
+                "required": [
+                    "name"
+                ],
+                "$defs": {
+                    "Role": {
+                        "type": "object",
+                        "properties": {
+                            "level": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                }
+            },
+            "strict": false
+        }
+    },
+    "meta/text": {
+        "type": "text"
+    },
+    "meta/json_object": {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "schema",
+            "schema": [],
+            "strict": true
+        }
+    },
+    "meta/json_object_with_schema": {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "user",
+            "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "age": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "role": {
+                        "$ref": "#/$defs/Role"
+                    }
+                },
+                "required": [
+                    "name"
+                ],
+                "$defs": {
+                    "Role": {
+                        "type": "object",
+                        "properties": {
+                            "level": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                }
+            },
+            "strict": true
+        }
+    },
+    "meta/json_schema": {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "user",
+            "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "age": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "role": {
+                        "$ref": "#/$defs/Role"
+                    }
+                },
+                "required": [
+                    "name"
+                ],
+                "$defs": {
+                    "Role": {
+                        "type": "object",
+                        "properties": {
+                            "level": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                }
+            },
+            "strict": false
+        }
+    },
+    "minimaxi/text": {
+        "type": "text"
+    },
+    "minimaxi/json_object": {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "schema",
+            "schema": []
+        }
+    },
+    "minimaxi/json_object_with_schema": {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "user",
+            "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "age": {
+                        "type": "number",
+                        "nullable": true
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "role": {
+                        "$ref": "#/$defs/Role"
+                    }
+                },
+                "required": [
+                    "name"
+                ],
+                "$defs": {
+                    "Role": {
+                        "type": "object",
+                        "properties": {
+                            "level": {
+                                "type": "number"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "minimaxi/json_schema": {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "user",
+            "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "age": {
+                        "type": "number",
+                        "nullable": true
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "role": {
+                        "$ref": "#/$defs/Role"
+                    }
+                },
+                "required": [
+                    "name"
+                ],
+                "$defs": {
+                    "Role": {
+                        "type": "object",
+                        "properties": {
+                            "level": {
+                                "type": "number"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "mistral/text": {
+        "type": "text"
+    },
+    "mistral/json_object": {
+        "type": "json_object"
+    },
+    "mistral/json_object_with_schema": {
+        "type": "json_object"
+    },
+    "mistral/json_schema": {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "user",
+            "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "age": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "role": {
+                        "$ref": "#/$defs/Role"
+                    }
+                },
+                "required": [
+                    "name"
+                ],
+                "$defs": {
+                    "Role": {
+                        "type": "object",
+                        "properties": {
+                            "level": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                }
+            },
+            "strict": false
+        }
+    },
+    "openai/text": {
+        "type": "text"
+    },
+    "openai/json_object": {
+        "type": "json_object"
+    },
+    "openai/json_object_with_schema": {
+        "type": "json_object"
+    },
+    "openai/json_schema": {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "user",
+            "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "age": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "role": {
+                        "$ref": "#/$defs/Role"
+                    }
+                },
+                "required": [
+                    "name"
+                ],
+                "$defs": {
+                    "Role": {
+                        "type": "object",
+                        "properties": {
+                            "level": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                }
+            },
+            "strict": false
+        }
+    },
+    "openai-compatible/text": {
+        "type": "text"
+    },
+    "openai-compatible/json_object": {
+        "type": "json_object"
+    },
+    "openai-compatible/json_object_with_schema": {
+        "type": "json_object"
+    },
+    "openai-compatible/json_schema": {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "user",
+            "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "age": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "role": {
+                        "$ref": "#/$defs/Role"
+                    }
+                },
+                "required": [
+                    "name"
+                ],
+                "$defs": {
+                    "Role": {
+                        "type": "object",
+                        "properties": {
+                            "level": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                }
+            },
+            "strict": false
+        }
+    },
+    "openrouter/text": {
+        "type": "text"
+    },
+    "openrouter/json_object": {
+        "type": "json_object"
+    },
+    "openrouter/json_object_with_schema": {
+        "type": "json_object"
+    },
+    "openrouter/json_schema": {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "user",
+            "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "age": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "role": {
+                        "$ref": "#/$defs/Role"
+                    }
+                },
+                "required": [
+                    "name"
+                ],
+                "$defs": {
+                    "Role": {
+                        "type": "object",
+                        "properties": {
+                            "level": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                }
+            },
+            "strict": false
+        }
+    },
+    "perplexity/text": {
+        "type": "text"
+    },
+    "perplexity/json_object": {
+        "type": "json_schema",
+        "json_schema": {
+            "schema": []
+        }
+    },
+    "perplexity/json_object_with_schema": {
+        "type": "json_schema",
+        "json_schema": {
+            "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "age": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "role": {
+                        "$ref": "#/$defs/Role"
+                    }
+                },
+                "required": [
+                    "name"
+                ],
+                "$defs": {
+                    "Role": {
+                        "type": "object",
+                        "properties": {
+                            "level": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "perplexity/json_schema": {
+        "type": "json_schema",
+        "json_schema": {
+            "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "age": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "role": {
+                        "$ref": "#/$defs/Role"
+                    }
+                },
+                "required": [
+                    "name"
+                ],
+                "$defs": {
+                    "Role": {
+                        "type": "object",
+                        "properties": {
+                            "level": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "qwen/text": {
+        "type": "text"
+    },
+    "qwen/json_object": {
+        "type": "json_object"
+    },
+    "qwen/json_object_with_schema": {
+        "type": "json_object"
+    },
+    "qwen/json_schema": {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "user",
+            "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "age": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "role": {
+                        "$ref": "#/$defs/Role"
+                    }
+                },
+                "required": [
+                    "name"
+                ],
+                "$defs": {
+                    "Role": {
+                        "type": "object",
+                        "properties": {
+                            "level": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                }
+            },
+            "strict": false
+        }
+    },
+    "sambanova/text": {
+        "type": "text"
+    },
+    "sambanova/json_object": {
+        "type": "json_object"
+    },
+    "sambanova/json_object_with_schema": {
+        "type": "json_object"
+    },
+    "sambanova/json_schema": {
+        "type": "json_object"
+    }
+}

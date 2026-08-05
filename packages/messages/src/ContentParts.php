@@ -2,7 +2,13 @@
 
 namespace Cognesy\Messages;
 
-final readonly class ContentParts
+use Countable;
+use IteratorAggregate;
+use ArrayIterator;
+use Traversable;
+
+/** @implements IteratorAggregate<int, ContentPart> */
+final readonly class ContentParts implements Countable, IteratorAggregate
 {
     /** @var ContentPart[] */
     private array $parts;
@@ -26,11 +32,17 @@ final readonly class ContentParts
         return new self(...$normalized);
     }
 
+    #[\Override]
+    public function getIterator(): Traversable {
+        return new ArrayIterator($this->parts);
+    }
+
     /** @return ContentPart[] */
     public function all(): array {
         return $this->parts;
     }
 
+    #[\Override]
     public function count(): int {
         return count($this->parts);
     }

@@ -93,11 +93,6 @@ final readonly class StructuredOutputExecution
         return $this->attemptHistory;
     }
 
-    public function attemptHistory(): StructuredOutputAttemptList
-    {
-        return $this->attemptHistory;
-    }
-
     public function attemptCount(): int
     {
         return $this->attemptHistory->count();
@@ -197,7 +192,7 @@ final readonly class StructuredOutputExecution
         return match (true) {
             $this->isFinalized() => throw new \LogicException('Cannot start a new attempt on a terminal execution.'),
             $this->activeAttempt !== null => $this,
-            default => $this->copy(
+            default => $this->replaceAll(
                 request: $this->request,
                 config: $this->config,
                 responseModel: $this->responseModel,
@@ -228,7 +223,7 @@ final readonly class StructuredOutputExecution
             default => ExecutionStatus::Pending,
         };
 
-        return $this->copy(
+        return $this->replaceAll(
             request: $this->request,
             config: $this->config,
             responseModel: $this->responseModel,
@@ -252,7 +247,7 @@ final readonly class StructuredOutputExecution
             output: $returnedValue,
         );
 
-        return $this->copy(
+        return $this->replaceAll(
             request: $this->request,
             config: $this->config,
             responseModel: $this->responseModel,
@@ -270,7 +265,7 @@ final readonly class StructuredOutputExecution
         ?StructuredOutputAttempt $activeAttempt = null,
         ?ExecutionStatus $status = null,
     ): self {
-        return $this->copy(
+        return $this->replaceAll(
             request: $request ?? $this->request,
             config: $config ?? $this->config,
             responseModel: $responseModel ?? $this->responseModel,
@@ -296,7 +291,11 @@ final readonly class StructuredOutputExecution
         ];
     }
 
-    private function copy(
+    /**
+     * Unlike with(), replaces every field verbatim (no `?? $this->x` fallback),
+     * which allows activeAttempt to be explicitly reset to null.
+     */
+    private function replaceAll(
         StructuredOutputRequest $request,
         StructuredOutputConfig $config,
         ?ResponseModel $responseModel,
@@ -319,11 +318,9 @@ final readonly class StructuredOutputExecution
     }
 
     private function resolveStatus(
-        ?StructuredOutputAttempt $activeAttempt = null,
-        ?StructuredOutputAttemptList $attemptHistory = null,
+        ?StructuredOutputAttempt $activeAttempt,
+        StructuredOutputAttemptList $attemptHistory,
     ): ExecutionStatus {
-        $activeAttempt = $activeAttempt ?? $this->activeAttempt;
-        $attemptHistory = $attemptHistory ?? $this->attemptHistory;
         $lastAttempt = $attemptHistory->last();
 
         return match (true) {

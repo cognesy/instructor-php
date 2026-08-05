@@ -191,8 +191,8 @@ test('can filter messages', function () {
 // Test HandlesMutation trait
 test('can set message', function () {
     $messages = Messages::empty();
-    $messages = $messages->withMessage(new Message('user', 'Hello'));
-    
+    $messages = $messages->withMessages([new Message('user', 'Hello')]);
+
     expect($messages->messageList()->count())->toBe(1)
         ->and($messages->first()->content()->toString())->toBe('Hello');
 });

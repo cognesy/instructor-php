@@ -15,7 +15,7 @@ use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -35,7 +35,7 @@ function makeReActDriverForDriverTest(FakeInferenceDriver $driver, bool $finalVi
     $structuredOutput = new StructuredOutputRuntime(
         inference: $inference,
         events: $events,
-        config: (new StructuredOutputConfigBuilder())->create(),
+        config: new StructuredOutputConfig(),
     );
 
     return new ReActDriver(

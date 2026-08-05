@@ -75,7 +75,6 @@ $so = (new StructuredOutput)->with(
 ## Runtime / Provider Setup
 
 ```php
-use Cognesy\Instructor\Core\RequestMaterializer;
 use Cognesy\Instructor\Core\StructuredPromptRequestMaterializer;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
@@ -95,15 +94,14 @@ $runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new());
 $runtime = $runtime->withConfig(StructuredOutputConfig::fromArray([...]));
 $runtime = $runtime->withConfig(StructuredOutputConfig::fromDsn('outputMode=json,maxRetries=2'));
 $runtime = $runtime->withRequestMaterializer($customMaterializer);
-$runtime = $runtime->withRequestMaterializer(new RequestMaterializer()); // deprecated compatibility path
 
 $so = (new StructuredOutput)->withRuntime($runtime);
 ```
 
-`StructuredPromptRequestMaterializer` is the default: it renders one system prompt text,
-keeps examples inside that system prompt, and sends cached prompt content through
-`InferenceRequest::cachedContext()`. `RequestMaterializer` is deprecated and must be
-injected explicitly when migrating legacy inline prompt configuration.
+`StructuredPromptRequestMaterializer` is the default and only bundled materializer: it
+renders one system prompt text, keeps examples inside that system prompt, and sends
+cached prompt content through `InferenceRequest::cachedContext()`. Supply your own
+`CanMaterializeRequest` implementation to replace it.
 
 ## Prompt Config References
 

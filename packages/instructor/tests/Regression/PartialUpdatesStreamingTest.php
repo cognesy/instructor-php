@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
@@ -25,9 +25,8 @@ it('yields each partial value via stream partials()', function () {
 
     $received = [];
 
-    $config = (new StructuredOutputConfigBuilder())
-        ->withOutputMode(OutputMode::Json)
-        ->create();
+    $config = (new StructuredOutputConfig())
+        ->withOutputMode(OutputMode::Json);
     $runtime = makeStructuredRuntime(
         driver: $driver,
         config: $config,

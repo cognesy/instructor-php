@@ -11,7 +11,7 @@ use Cognesy\Messages\Messages;
 use Cognesy\Messages\ToolCall;
 use Cognesy\Messages\Enums\MessageType;
 use Cognesy\Polyglot\Inference\Contracts\CanMapMessages;
-use Cognesy\Polyglot\Inference\Contracts\MessageMapper;
+use Cognesy\Polyglot\Inference\Drivers\MessageMapper;
 use Cognesy\Utils\Str;
 
 class AnthropicMessageFormat implements CanMapMessages

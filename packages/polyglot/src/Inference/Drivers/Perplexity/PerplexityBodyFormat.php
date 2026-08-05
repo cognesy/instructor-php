@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cognesy\Polyglot\Inference\Drivers\Perplexity;
 
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
 
 class PerplexityBodyFormat extends OpenAICompatibleBodyFormat
@@ -33,27 +34,21 @@ class PerplexityBodyFormat extends OpenAICompatibleBodyFormat
 
     // INTERNAL ///////////////////////////////////////////////
 
+    // Perplexity only speaks json_schema, so plain JSON mode is sent as a schema payload too.
     #[\Override]
-    protected function toResponseFormat(InferenceRequest $request): array
+    protected function toJsonObjectResponseFormat(ResponseFormat $responseFormat): array
     {
-        $type = $this->toResponseFormatType($request);
-        if ($type === null) {
-            return [];
-        }
+        return $this->toJsonSchemaResponseFormat($responseFormat);
+    }
 
-        // Perplexity API only supports: json_schema (with schema field only, no name/strict)
-        // Both Json and JsonSchema modes use json_schema type
-        $responseFormat = $request->responseFormat()
-            ->withToJsonObjectHandler(fn () => [
-                'type' => 'json_schema',
-                'json_schema' => ['schema' => $this->removeDisallowedEntries($request->responseFormat()->schema())],
-            ])
-            ->withToJsonSchemaHandler(fn () => [
-                'type' => 'json_schema',
-                'json_schema' => ['schema' => $this->removeDisallowedEntries($request->responseFormat()->schema())],
-            ]);
-
-        return $this->renderResponseFormatForType($responseFormat, $type);
+    // The envelope carries the schema alone -- no name, no strict flag.
+    #[\Override]
+    protected function toJsonSchemaResponseFormat(ResponseFormat $responseFormat): array
+    {
+        return [
+            'type' => 'json_schema',
+            'json_schema' => ['schema' => $this->removeDisallowedEntries($responseFormat->schema())],
+        ];
     }
 }
 

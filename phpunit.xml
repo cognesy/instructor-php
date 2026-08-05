@@ -138,6 +138,15 @@
                  coverage; excluded from the parallel fast lane (see scripts/test/fast.sh). -->
             <directory suffix="Test.php">./packages/http-client/tests/Serial</directory>
         </testsuite>
+        <testsuite name="Benchmarks">
+            <!-- Allocation and scale profiles for the streaming hot paths. Timing
+                 sensitive and slower than the unit lane, so deliberately excluded
+                 from `composer tests`; run explicitly with `composer test:benchmarks`.
+                 Their assertions are regression gates, not performance targets —
+                 see research/plans/polyglot-improvements/measurements/baseline.md. -->
+            <directory suffix="Test.php">./packages/instructor/tests/Benchmarks</directory>
+            <directory suffix="Test.php">./packages/polyglot/tests/Benchmarks</directory>
+        </testsuite>
     </testsuites>
     <source>
         <include>

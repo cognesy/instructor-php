@@ -481,7 +481,7 @@ it('maps the Laravel retry prompt class to the default structured prompt path', 
 
     expect($runtime)->toBeInstanceOf(\Cognesy\Instructor\StructuredOutputRuntime::class)
         ->and($runtime->config()->retryPromptClass())->toBe($promptClass)
-        ->and($runtime->config()->retryPrompt())->toBe('Legacy inline retry text');
+        ->and($runtime->config()->toArray())->not->toHaveKey('retryPrompt');
 });
 
 it('registers native agent runtime bindings as singletons and shares the Laravel event dispatcher', function () {

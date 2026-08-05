@@ -269,8 +269,6 @@ final class SymfonyConfigProvider implements CanProvideConfig
 
         $this->assignBool($data, 'useObjectReferences', $config, 'useObjectReferences', 'use_object_references');
         $this->assignInt($data, 'maxRetries', $config, 'maxRetries', 'max_retries');
-        $this->assignString($data, 'retryPrompt', $config, 'retryPrompt', 'retry_prompt');
-        $this->assignArray($data, 'modePrompts', $config, 'modePrompts', 'mode_prompts');
         $this->assignArray($data, 'modePromptClasses', $config, 'modePromptClasses', 'mode_prompt_classes');
         $this->assignString($data, 'retryPromptClass', $config, 'retryPromptClass', 'retry_prompt_class');
         $this->assignString($data, 'schemaName', $config, 'schemaName', 'schema_name');
@@ -280,7 +278,6 @@ final class SymfonyConfigProvider implements CanProvideConfig
         $this->assignBool($data, 'defaultToStdClass', $config, 'defaultToStdClass', 'default_to_std_class');
         $this->assignString($data, 'deserializationErrorPromptClass', $config, 'deserializationErrorPromptClass', 'deserialization_error_prompt_class');
         $this->assignBool($data, 'throwOnTransformationFailure', $config, 'throwOnTransformationFailure', 'throw_on_transformation_failure');
-        $this->assignArray($data, 'chatStructure', $config, 'chatStructure', 'chat_structure');
         $this->assignString($data, 'responseCachePolicy', $config, 'responseCachePolicy', 'response_cache_policy');
         $this->assignInt($data, 'streamMaterializationInterval', $config, 'streamMaterializationInterval', 'stream_materialization_interval');
 

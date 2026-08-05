@@ -3,6 +3,7 @@
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\ResponseGenerator;
+use Cognesy\Instructor\Core\ResponseMaterializer;
 use Cognesy\Instructor\Creation\ResponseModelFactory;
 use Cognesy\Instructor\Creation\StructuredOutputSchemaRenderer;
 use Cognesy\Instructor\Data\ResponseModel;
@@ -46,14 +47,16 @@ describe('ResponseGenerator', function () {
         $events->shouldReceive('dispatch')->byDefault()->andReturnUsing(fn($e) => $e);
         $config = new StructuredOutputConfig();
         $gen = new ResponseGenerator(
-            responseDeserializer: new FakeDeserializer($events, $config),
-            responseValidator: new FakeValidator($events, $config),
-            responseTransformer: new FakeTransformer($events),
+            materializer: new ResponseMaterializer(
+                deserializer: new FakeDeserializer($events, $config),
+                validator: new FakeValidator($events, $config),
+                transformer: new FakeTransformer($events),
+            ),
             extractor: new ResponseExtractor(events: $events),
         );
 
         $resp = new InferenceResponse(content: '{"a":1}');
-        $result = $gen->makeResponse($resp, makeResponseModelForStd(), OutputMode::Json);
+        $result = $gen->fromInferenceResponse($resp, makeResponseModelForStd(), OutputMode::Json);
 
         expect($result->isSuccess())->toBeTrue();
         $obj = $result->unwrap();
@@ -65,14 +68,16 @@ describe('ResponseGenerator', function () {
         $events->shouldReceive('dispatch')->byDefault()->andReturnUsing(fn($e) => $e);
         $config = new StructuredOutputConfig();
         $gen = new ResponseGenerator(
-            responseDeserializer: new FakeDeserializer($events, $config),
-            responseValidator: new FakeValidator($events, $config),
-            responseTransformer: new FakeTransformer($events),
+            materializer: new ResponseMaterializer(
+                deserializer: new FakeDeserializer($events, $config),
+                validator: new FakeValidator($events, $config),
+                transformer: new FakeTransformer($events),
+            ),
             extractor: new ResponseExtractor(events: $events),
         );
 
         $resp = new InferenceResponse(content: '');
-        $result = $gen->makeResponse($resp, makeResponseModelForStd(), OutputMode::Json);
+        $result = $gen->fromInferenceResponse($resp, makeResponseModelForStd(), OutputMode::Json);
         expect($result->isFailure())->toBeTrue();
         expect($result->errorMessage())->toContain('Empty response content');
     });
@@ -82,14 +87,16 @@ describe('ResponseGenerator', function () {
         $events->shouldReceive('dispatch')->byDefault()->andReturnUsing(fn($e) => $e);
         $config = new StructuredOutputConfig();
         $gen = new ResponseGenerator(
-            responseDeserializer: new FakeDeserializer($events, $config),
-            responseValidator: new FakeValidator($events, $config),
-            responseTransformer: new FakeTransformer($events),
+            materializer: new ResponseMaterializer(
+                deserializer: new FakeDeserializer($events, $config),
+                validator: new FakeValidator($events, $config),
+                transformer: new FakeTransformer($events),
+            ),
             extractor: new ResponseExtractor(events: $events),
         );
 
         $resp = new InferenceResponse(content: '{}');
-        $result = $gen->makeResponse($resp, makeResponseModelForStd(), OutputMode::Json);
+        $result = $gen->fromInferenceResponse($resp, makeResponseModelForStd(), OutputMode::Json);
 
         expect($result->isSuccess())->toBeTrue();
         expect($result->unwrap()->data)->toBe([]);
@@ -100,14 +107,16 @@ describe('ResponseGenerator', function () {
         $events->shouldReceive('dispatch')->byDefault()->andReturnUsing(fn($e) => $e);
         $config = new StructuredOutputConfig();
         $gen = new ResponseGenerator(
-            responseDeserializer: new FakeDeserializer($events, $config),
-            responseValidator: new FakeValidator($events, $config),
-            responseTransformer: new FakeTransformer($events),
+            materializer: new ResponseMaterializer(
+                deserializer: new FakeDeserializer($events, $config),
+                validator: new FakeValidator($events, $config),
+                transformer: new FakeTransformer($events),
+            ),
             extractor: new ResponseExtractor(events: $events),
         );
 
         $resp = new InferenceResponse(content: '[]');
-        $result = $gen->makeResponse($resp, makeResponseModelForStd(), OutputMode::Json);
+        $result = $gen->fromInferenceResponse($resp, makeResponseModelForStd(), OutputMode::Json);
 
         expect($result->isSuccess())->toBeTrue();
         expect($result->unwrap()->data)->toBe([]);

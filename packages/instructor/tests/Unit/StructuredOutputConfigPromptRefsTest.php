@@ -33,16 +33,31 @@ it('serializes and restores prompt class references from arrays', function () {
         ->and($config->toArray()['deserializationErrorPromptClass'])->toBe('App\\Prompts\\RepairPrompt');
 });
 
-it('keeps legacy inline prompt fields separate from prompt class references', function () {
-    $config = (new StructuredOutputConfig())
-        ->withRetryPrompt('LEGACY_RETRY')
-        ->withRetryPromptClass('App\\Prompts\\RetryPrompt')
-        ->withDeserializationErrorPromptClass('App\\Prompts\\RepairPrompt')
-        ->withModePromptClass(OutputMode::Json, 'App\\Prompts\\JsonPrompt');
+it('ignores removed legacy inline prompt keys in fromArray()', function () {
+    $legacy = StructuredOutputConfig::fromArray([
+        'retryPromptClass' => 'App\\Prompts\\RetryPrompt',
+        // removed in 2.6 — must be ignored, not fatal on the named-argument spread
+        'retryPrompt' => 'LEGACY_RETRY',
+        'modePrompts' => [OutputMode::Json->value => 'LEGACY INLINE PROMPT'],
+        'chatStructure' => ['system', 'prompt', 'messages'],
+        'someKeyThatNeverExisted' => true,
+    ]);
 
-    expect($config->retryPrompt())->toBe('LEGACY_RETRY')
-        ->and($config->retryPromptClass())->toBe('App\\Prompts\\RetryPrompt')
-        ->and($config->deserializationErrorPromptClass())->toBe('App\\Prompts\\RepairPrompt')
-        ->and($config->modePromptClass(OutputMode::Json))->toBe('App\\Prompts\\JsonPrompt')
-        ->and($config->prompt(OutputMode::Json))->toBeString();
+    $clean = StructuredOutputConfig::fromArray([
+        'retryPromptClass' => 'App\\Prompts\\RetryPrompt',
+    ]);
+
+    expect($legacy->toArray())->toBe($clean->toArray())
+        ->and($legacy->retryPromptClass())->toBe('App\\Prompts\\RetryPrompt')
+        ->and($legacy->toArray())->not->toHaveKeys(['retryPrompt', 'modePrompts', 'chatStructure']);
+});
+
+it('ignores removed legacy inline prompt keys in withOverrides()', function () {
+    $config = (new StructuredOutputConfig())->withOverrides([
+        'maxRetries' => 3,
+        'retryPrompt' => 'LEGACY_RETRY',
+        'chatStructure' => ['messages'],
+    ]);
+
+    expect($config->maxRetries())->toBe(3);
 });

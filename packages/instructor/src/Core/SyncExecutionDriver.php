@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Core;
 
 use Cognesy\Instructor\Contracts\CanDetermineRetry;
-use Cognesy\Instructor\Contracts\CanEmitStreamingUpdates;
+use Cognesy\Instructor\Contracts\CanDriveExecution;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputResponse;
@@ -13,7 +13,7 @@ use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Json\JsonExtractor;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
-final class SyncExecutionDriver implements CanEmitStreamingUpdates
+final class SyncExecutionDriver implements CanDriveExecution
 {
     private ExecutionLoop $loop;
     private readonly AttemptProcessor $attemptProcessor;
@@ -62,7 +62,7 @@ final class SyncExecutionDriver implements CanEmitStreamingUpdates
             $execution->outputMode(),
         );
 
-        $result = $this->attemptProcessor->process(
+        $result = $this->attemptProcessor->processInferenceResponse(
             execution: $execution,
             inferenceResponse: $inference,
         );

@@ -4,8 +4,9 @@ namespace Cognesy\Polyglot\Inference\Streaming;
 
 use ArrayIterator;
 use Closure;
-use Cognesy\Events\Contracts\CanCheckListeners;
+use Cognesy\Events\Support\ListenerGate;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
+use Cognesy\Polyglot\Inference\Core\InferenceResponseEventPayload;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -49,6 +50,13 @@ class InferenceStream
      * are not picked up.
      */
     private readonly bool $emitDeltaCreated;
+    /**
+     * Whether anything consumes the final response event. Once per stream, so the
+     * saving is nil — it is guarded because this was the last unguarded
+     * InferenceResponseCreated site in the package, sitting on the one class that
+     * already had a guard field. See ListenerGate.
+     */
+    private readonly bool $emitResponseCreated;
     /** Memoized execution id — stringifying it per delta showed up on the hot path. */
     private ?string $executionIdString = null;
 
@@ -85,8 +93,8 @@ class InferenceStream
         $this->decorateFinalResponse = $decorateFinalResponse;
         $this->onFinalizedExecution = $onFinalizedExecution;
         $this->onStreamFailed = $onStreamFailed;
-        $this->emitDeltaCreated = !($eventDispatcher instanceof CanCheckListeners)
-            || $eventDispatcher->hasListenersFor(PartialInferenceDeltaCreated::class);
+        $this->emitDeltaCreated = ListenerGate::wants($eventDispatcher, PartialInferenceDeltaCreated::class);
+        $this->emitResponseCreated = ListenerGate::wants($eventDispatcher, InferenceResponseCreated::class);
     }
 
     /**
@@ -101,7 +109,15 @@ class InferenceStream
             );
         }
 
-        foreach ($this->makeDeltas() as $delta) {
+        // Iterate emitVisibleDeltas() directly — a pass-through makeDeltas()
+        // generator used to sit in between, costing one frame resumption per
+        // delta for no behaviour. Keep the `foreach`/`yield` form rather than
+        // `yield from`: it pins key renumbering at this boundary regardless of
+        // what the inner generator does. (`yield from` would be equivalent today,
+        // since emitVisibleDeltas() yields with auto-keys, but it would silently
+        // start propagating explicit keys if that ever changed — and callers do
+        // iterator_to_array($stream->deltas()) with keys preserved.)
+        foreach ($this->emitVisibleDeltas() as $delta) {
             yield $delta;
         }
         $this->streamConsumed = true;
@@ -196,17 +212,16 @@ class InferenceStream
     /**
      * @return Generator<PartialInferenceDelta>
      */
-    private function makeDeltas(): Generator {
-        yield from $this->emitVisibleDeltas();
-    }
-
-    /**
-     * @return Generator<PartialInferenceDelta>
-     */
     private function emitVisibleDeltas(): Generator {
-        $this->initializeDeltaStream();
-
         try {
+            // INSIDE the try, and this is the whole point. initializeDeltaStream() calls
+            // rewind(), and rewind() is what first advances the driver's generator -- so it
+            // is where a connection dropped at handshake surfaces. It used to sit above the
+            // try, which meant the most likely streaming failure of all was the one failure
+            // onStreamFailed never saw: no InferenceAttemptFailed, no InferenceCompleted, no
+            // terminal error recorded, while a failure one delta later reported all three.
+            $this->initializeDeltaStream();
+
             while ($this->deltaStream->valid()) {
                 $delta = $this->deltaStream->current();
                 assert($delta instanceof PartialInferenceDelta);
@@ -295,7 +310,15 @@ class InferenceStream
             default => $this->execution->withSuccessfulAttempt($response),
         };
 
-        $this->events->dispatch(new InferenceResponseCreated($this->responseEventData($response)));
+        if ($this->emitResponseCreated) {
+            $this->events->dispatch(new InferenceResponseCreated(
+                InferenceResponseEventPayload::build(
+                    $response,
+                    $this->execution->request(),
+                    $this->executionIdString ??= $this->execution->id->toString(),
+                ),
+            ));
+        }
 
         if ($this->onFinalizedExecution !== null) {
             ($this->onFinalizedExecution)($this->execution);
@@ -325,30 +348,6 @@ class InferenceStream
             $deltaStream instanceof Traversable => new IteratorIterator($deltaStream),
             default => new ArrayIterator(),
         };
-    }
-
-    private function responseEventData(InferenceResponse $response): array
-    {
-        $payload = [
-            'executionId' => $this->execution->id->toString(),
-            'requestId' => $this->execution->request()->id()->toString(),
-            'model' => $this->execution->request()->model(),
-            'responseId' => $response->id->toString(),
-            'finishReason' => $response->finishReason()->value,
-            'contentLength' => strlen($response->content()),
-            'reasoningContentLength' => strlen($response->reasoningContent()),
-            'hasToolCalls' => $response->hasToolCalls(),
-            'toolCallCount' => $response->toolCalls()->count(),
-            'usage' => $response->usage()->toArray(),
-            'isPartial' => $response->isPartial(),
-        ];
-
-        $statusCode = $response->responseData()->statusCode();
-        if ($statusCode > 0) {
-            $payload['statusCode'] = $statusCode;
-        }
-
-        return $payload;
     }
 
     /**

@@ -3,7 +3,7 @@
 namespace Cognesy\Polyglot\Inference\Streaming;
 
 use Closure;
-use Cognesy\Events\Contracts\CanCheckListeners;
+use Cognesy\Events\Support\ListenerGate;
 use Cognesy\Polyglot\Inference\Events\StreamEventParsed;
 use Cognesy\Polyglot\Inference\Events\StreamEventReceived;
 use Generator;
@@ -45,19 +45,8 @@ class EventStreamReader
     ) {
         $this->events = $events;
         $this->parser = $parser;
-        $this->emitReceived = self::wantsEvent($events, StreamEventReceived::class);
-        $this->emitParsed = self::wantsEvent($events, StreamEventParsed::class);
-    }
-
-    /**
-     * Dispatchers that cannot report their listeners are assumed to listen, per the
-     * CanCheckListeners contract.
-     *
-     * @param class-string $eventClass
-     */
-    private static function wantsEvent(EventDispatcherInterface $events, string $eventClass): bool {
-        return !($events instanceof CanCheckListeners)
-            || $events->hasListenersFor($eventClass);
+        $this->emitReceived = ListenerGate::wants($events, StreamEventReceived::class);
+        $this->emitParsed = ListenerGate::wants($events, StreamEventParsed::class);
     }
 
     /**
@@ -121,15 +110,31 @@ class EventStreamReader
      */
     protected function readLines(iterable $stream): Generator {
         $buffer = '';
+        $lineStart = 0;
+
         foreach ($stream as $chunk) {
             $buffer .= $chunk;
-            while (false !== ($pos = strpos($buffer, "\n"))) {
-                yield substr($buffer, 0, $pos + 1);
-                $buffer = substr($buffer, $pos + 1);
+            $bufferLength = strlen($buffer);
+
+            while (false !== ($pos = strpos($buffer, "\n", $lineStart))) {
+                yield substr($buffer, $lineStart, $pos - $lineStart + 1);
+                $lineStart = $pos + 1;
+            }
+
+            if ($lineStart === $bufferLength) {
+                $buffer = '';
+                $lineStart = 0;
+                continue;
+            }
+
+            if ($lineStart > 0) {
+                $buffer = substr($buffer, $lineStart);
+                $lineStart = 0;
             }
         }
+
         if ($buffer !== '') {
-            yield $buffer;
+            yield substr($buffer, $lineStart);
         }
     }
 

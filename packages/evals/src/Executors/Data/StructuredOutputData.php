@@ -14,7 +14,6 @@ class StructuredOutputData
         public string $prompt = '',
         public array $examples = [],
         public string $model = '',
-        public string $retryPrompt = '',
         public int $maxRetries = 0,
         public float $temperature = 1.0,
     ) {}

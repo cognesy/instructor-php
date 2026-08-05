@@ -165,9 +165,8 @@ $result = StructuredOutput::with(
 )->get();
 ```
 
-Inline `retry_prompt` text is a deprecated 2.5 compatibility setting read only by an
-explicitly injected legacy request materializer. Provide a custom prompt class that
-follows the structured prompt rendering contract.
+Inline `retry_prompt` text was removed in 2.6 and is now ignored. Provide a custom
+prompt class that follows the structured prompt rendering contract.
 
 ---
 

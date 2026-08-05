@@ -113,17 +113,6 @@ final readonly class Messages implements Countable, IteratorAggregate
         return $this->appendWithRole(MessageRole::Tool, $message, $name);
     }
 
-    public function withMessage(string|array|Message $message): static
-    {
-        $newMessages = match (true) {
-            is_string($message) => [Message::fromString($message)],
-            is_array($message) => [Message::fromArray($message)],
-            default => [$message],
-        };
-
-        return new static(...$newMessages);
-    }
-
     public function withMessages(array|Messages|MessageList $messages): static
     {
         $list = match (true) {
@@ -143,7 +132,10 @@ final readonly class Messages implements Countable, IteratorAggregate
             default => $message,
         };
 
-        return $this->withMessages($this->messages->add($message)->all());
+        // Constructed straight from the MessageList. Routing this through withMessages()
+        // sent the whole accumulated list back through MessagesInput::fromAnyArray() on
+        // every append, so appending N messages walked the list N times.
+        return new static(...$this->messages->add($message)->all());
     }
 
     public function appendMessages(array|Messages|MessageList $messages): static
@@ -157,7 +149,7 @@ final readonly class Messages implements Countable, IteratorAggregate
             default => Messages::fromAnyArray($messages)->list(),
         };
 
-        return $this->withMessages($this->messages->addAll($appended)->all());
+        return new static(...$this->messages->addAll($appended)->all());
     }
 
     public function prependMessages(array|Messages|Message|MessageList $messages): static
@@ -170,17 +162,17 @@ final readonly class Messages implements Countable, IteratorAggregate
             default => Messages::fromAnyArray($messages)->list(),
         };
 
-        return $this->withMessages($this->messages->prependAll($list)->all());
+        return new static(...$this->messages->prependAll($list)->all());
     }
 
     public function removeHead(): static
     {
-        return $this->withMessages($this->messages->removeHead()->all());
+        return new static(...$this->messages->removeHead()->all());
     }
 
     public function removeTail(): static
     {
-        return $this->withMessages($this->messages->removeTail()->all());
+        return new static(...$this->messages->removeTail()->all());
     }
 
     public function appendContentField(string $key, mixed $value): static
@@ -195,7 +187,19 @@ final readonly class Messages implements Countable, IteratorAggregate
     // CONVERSION / TRANSFORMATION /////////////////////////////////////////
 
     /**
-     * @param  callable(array): string|null  $renderer
+     * Renders an array of message arrays to a single string.
+     *
+     * $separator applies to the DEFAULT rendering only. A custom $renderer owns its own
+     * separation and receives no separator - it is handed one message at a time and its
+     * return value is concatenated verbatim, so a renderer that wants messages on
+     * separate lines must emit the newline itself. This is deliberate: a renderer
+     * producing its own framing (JSON lines, XML tags, a chat transcript) would
+     * otherwise get an extra separator injected into markup it controls.
+     *
+     * Messages with empty content are skipped, and composite (multi-part) messages throw
+     * unless a $renderer is supplied to handle them.
+     *
+     * @param  callable(array): string|null  $renderer  owns its own separation; $separator is ignored for it
      */
     public static function asString(
         array $messages,
@@ -237,76 +241,102 @@ final readonly class Messages implements Countable, IteratorAggregate
         return self::asString($this->toArray(), $separator);
     }
 
+    /**
+     * Collapses each run of consecutive same-role messages into one message.
+     *
+     * The merged message is the FIRST message of the run, extended with the content and
+     * tool calls of the rest - it is not a fresh Message. That keeps the run's id,
+     * parentId, createdAt, name and metadata, so a merged conversation stays anchored in
+     * a stored parentId chain. Previously this built `new Message($role)` and applied
+     * only content, silently discarding tool calls, tool results, metadata, name and
+     * identity; for an assistant turn that dropped exactly the tool_calls the model needs
+     * to continue the tool loop.
+     *
+     * A message carrying a tool result is never merged - it is emitted on its own and
+     * breaks the run, because a tool result is bound to a single tool call id.
+     *
+     * @see Message::withMergedFrom()
+     */
     public function toMergedPerRole(): Messages
     {
         if ($this->isEmpty()) {
             return $this;
         }
-        $messages = Messages::empty();
-        $role = $this->firstRole();
-        $newMessage = new Message($role);
-        foreach ($this->messages->all() as $message) {
-            if ($message->role()->isNot($role)) {
-                $messages = $messages->appendMessage($newMessage);
-                $role = $message->role();
-                $newMessage = new Message($role);
-            }
-            $newMessage = $newMessage->addContentFrom($message);
-        }
-        $messages = $messages->appendMessage($newMessage);
 
-        return $messages;
+        $merged = MessageList::empty();
+        $pending = null;
+        foreach ($this->messages->all() as $message) {
+            $startsNewRun = $pending === null
+                || $message->role()->isNot($pending->role())
+                || $pending->hasToolResult()
+                || $message->hasToolResult();
+            if ($startsNewRun) {
+                $merged = match (true) {
+                    $pending === null => $merged,
+                    default => $merged->add($pending),
+                };
+                $pending = $message;
+
+                continue;
+            }
+            $pending = $pending->withMergedFrom($message);
+        }
+
+        return Messages::fromList(match (true) {
+            $pending === null => $merged,
+            default => $merged->add($pending),
+        });
     }
 
     /** @param string[]|MessageRole[] $roles */
     public function forRoles(array $roles): Messages
     {
-        $messages = Messages::empty();
         $roleEnums = MessageRole::normalizeArray($roles);
+        $selected = [];
         foreach ($this->messages->all() as $message) {
             if ($message->role()->oneOf(...$roleEnums)) {
-                $messages = $messages->appendMessage($message);
+                $selected[] = $message;
             }
         }
 
-        return $messages;
+        return new Messages(...$selected);
     }
 
     /** @param string[]|MessageRole[] $roles */
     public function exceptRoles(array $roles): Messages
     {
-        $messages = Messages::empty();
         $roleEnums = MessageRole::normalizeArray($roles);
+        $selected = [];
         foreach ($this->messages->all() as $message) {
             if (! $message->role()->oneOf(...$roleEnums)) {
-                $messages = $messages->appendMessage($message);
+                $selected[] = $message;
             }
         }
 
-        return $messages;
+        return new Messages(...$selected);
     }
 
     /** @param string[]|MessageRole[] $roles */
     public function headWithRoles(array $roles): Messages
     {
-        $messages = Messages::empty();
         $roleEnums = MessageRole::normalizeArray($roles);
+        $head = [];
         foreach ($this->messages->all() as $message) {
             if (! $message->role()->oneOf(...$roleEnums)) {
                 break;
             }
-            $messages = $messages->appendMessage($message);
+            $head[] = $message;
         }
 
-        return $messages;
+        return new Messages(...$head);
     }
 
     /** @param string[]|MessageRole[] $roles */
     public function tailAfterRoles(array $roles): Messages
     {
-        $messages = Messages::empty();
         $inHead = true;
         $roleEnums = MessageRole::normalizeArray($roles);
+        $tail = [];
         foreach ($this->messages->all() as $message) {
             if ($inHead && $message->role()->oneOf(...$roleEnums)) {
                 continue;
@@ -314,22 +344,22 @@ final readonly class Messages implements Countable, IteratorAggregate
             if ($inHead && ! $message->role()->oneOf(...$roleEnums)) {
                 $inHead = false;
             }
-            $messages = $messages->appendMessage($message);
+            $tail[] = $message;
         }
 
-        return $messages;
+        return new Messages(...$tail);
     }
 
     /** @param array<string, string|MessageRole> $mapping */
     public function remapRoles(array $mapping): Messages
     {
-        $messages = Messages::empty();
+        $remapped = [];
         foreach ($this->messages->all() as $message) {
             $role = $message->role()->value;
-            $messages = $messages->appendMessage($message->withRole($mapping[$role] ?? $role));
+            $remapped[] = $message->withRole($mapping[$role] ?? $role);
         }
 
-        return $messages;
+        return new Messages(...$remapped);
     }
 
     public function contentParts(): ContentParts
@@ -494,20 +524,24 @@ final readonly class Messages implements Countable, IteratorAggregate
     }
 
     /**
-     * @param  callable(Message): bool|null  $callback
+     * Keeps the messages the predicate accepts - nothing else. Empty messages are NOT
+     * dropped: silently discarding them made filter() unable to select them, so
+     * `filter(fn($m) => $m->isEmpty())` returned nothing at all. Use
+     * withoutEmptyMessages() when you want that removal, on its own or composed.
+     *
+     * @param  callable(Message): bool|null  $callback  null keeps every message; deprecated, see below
      */
     public function filter(?callable $callback = null): Messages
     {
+        if ($callback === null) {
+            // @deprecated Calling filter() with no predicate used to mean "drop empty
+            // messages". Call withoutEmptyMessages() for that; this alias preserves the
+            // old meaning for existing callers and will be removed.
+            return $this->withoutEmptyMessages();
+        }
+
         $filteredMessages = [];
         foreach ($this->messages->all() as $message) {
-            if ($message->isEmpty()) {
-                continue;
-            }
-            if ($callback === null) {
-                $filteredMessages[] = $message;
-
-                continue;
-            }
             if ($callback($message)) {
                 $filteredMessages[] = $message;
             }

@@ -2,23 +2,24 @@
 
 namespace Cognesy\Polyglot\Inference\Data;
 
-use Closure;
-
+/**
+ * What the caller asked the provider to return: a type, and — for schema modes — the schema
+ * and how strictly to apply it.
+ *
+ * Deliberately knows nothing about how any provider serialises that. It used to: three
+ * injectable `Closure` handlers let a body format hand this object its own rendering, which
+ * made every request allocate two closures and two copies of this object to reach a value the
+ * body format already had everything to build. Provider variation now lives on the body
+ * formats, as overridable methods — dispatch expressed as dispatch. See
+ * `OpenAIBodyFormat::renderResponseFormatForType()`.
+ */
 readonly final class ResponseFormat
 {
-    /**
-     * @param (Closure(): array)|null $toTextHandler
-     * @param (Closure(): array)|null $toJsonObjectHandler
-     * @param (Closure(): array)|null $toJsonSchemaHandler
-     */
     public function __construct(
         private ?string $type = null,
         private ?array $schema = null,
         private ?string $name = null,
         private ?bool $strict = null,
-        private ?Closure $toTextHandler = null,
-        private ?Closure $toJsonObjectHandler = null,
-        private ?Closure $toJsonSchemaHandler = null,
     ) {}
 
     public static function empty(): self {
@@ -76,72 +77,6 @@ readonly final class ResponseFormat
             && $this->strict === null;
     }
 
-    public function asText(): array {
-        return match (true) {
-            $this->toTextHandler === null => $this->defaultAsText(),
-            default => ($this->toTextHandler)(),
-        };
-    }
-
-    public function asJsonObject(): array {
-        return match (true) {
-            $this->toJsonObjectHandler === null => $this->defaultAsJsonObject(),
-            default => ($this->toJsonObjectHandler)(),
-        };
-    }
-
-    public function asJsonSchema(): array {
-        return match (true) {
-            $this->toJsonSchemaHandler === null => $this->defaultAsJsonSchema(),
-            default => ($this->toJsonSchemaHandler)(),
-        };
-    }
-
-    /**
-     * @param Closure(): array $callback
-     */
-    public function withToTextHandler(Closure $callback): self {
-        return new self(
-            type: $this->type,
-            schema: $this->schema,
-            name: $this->name,
-            strict: $this->strict,
-            toTextHandler: $callback,
-            toJsonObjectHandler: $this->toJsonObjectHandler,
-            toJsonSchemaHandler: $this->toJsonSchemaHandler,
-        );
-    }
-
-    /**
-     * @param Closure(): array $callback
-     */
-    public function withToJsonObjectHandler(Closure $callback): self {
-        return new self(
-            type: $this->type,
-            schema: $this->schema,
-            name: $this->name,
-            strict: $this->strict,
-            toTextHandler: $this->toTextHandler,
-            toJsonObjectHandler: $callback,
-            toJsonSchemaHandler: $this->toJsonSchemaHandler,
-        );
-    }
-
-    /**
-     * @param Closure(): array $callback
-     */
-    public function withToJsonSchemaHandler(Closure $callback): self {
-        return new self(
-            type: $this->type,
-            schema: $this->schema,
-            name: $this->name,
-            strict: $this->strict,
-            toTextHandler: $this->toTextHandler,
-            toJsonObjectHandler: $this->toJsonObjectHandler,
-            toJsonSchemaHandler: $callback,
-        );
-    }
-
     public function toArray(): array {
         if ($this->isEmpty()) {
             return [];
@@ -162,25 +97,6 @@ readonly final class ResponseFormat
             name: $data['name'] ?? $data['json_schema']['name'] ?? null,
             strict: $data['strict'] ?? $data['json_schema']['strict'] ?? null,
         );
-    }
-
-    private function defaultAsText(): array {
-        return ['type' => 'text'];
-    }
-
-    private function defaultAsJsonObject(): array {
-        return ['type' => 'json_object'];
-    }
-
-    private function defaultAsJsonSchema(): array {
-        return [
-            'type' => 'json_schema',
-            'json_schema' => $this->filterEmptyValues([
-                'name' => $this->schemaName(),
-                'schema' => $this->schema(),
-                'strict' => $this->strict(),
-            ]),
-        ];
     }
 
     private function filterEmptyValues(array $data) : array {

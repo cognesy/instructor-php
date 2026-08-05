@@ -2,7 +2,7 @@
 
 namespace Cognesy\Http\Drivers\Curl;
 
-use Cognesy\Events\Contracts\CanCheckListeners;
+use Cognesy\Events\Support\ListenerGate;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Http\Data\HttpResponse;
@@ -154,10 +154,7 @@ final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
      * CanCheckListeners contract prescribes.
      */
     private function shouldEmitChunkEvents(): bool {
-        return match (true) {
-            $this->events instanceof CanCheckListeners => $this->events->hasListenersFor(HttpResponseChunkReceived::class),
-            default => true,
-        };
+        return ListenerGate::wants($this->events, HttpResponseChunkReceived::class);
     }
 
     /**

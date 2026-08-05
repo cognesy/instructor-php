@@ -5,7 +5,7 @@ use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Contracts\CanDetermineRetry;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Core\InferenceProvider;
-use Cognesy\Instructor\Core\RequestMaterializer;
+use Cognesy\Instructor\Core\StructuredPromptRequestMaterializer;
 use Cognesy\Instructor\Core\StreamingExecutionDriver;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
@@ -60,7 +60,7 @@ it('emits live partials and one final response from the streaming driver', funct
                     );
                 }
             },
-            requestMaterializer: new RequestMaterializer(),
+            requestMaterializer: new StructuredPromptRequestMaterializer(),
         ),
         materializer: makeTestMaterializer(new class implements CanDeserializeResponse {
             public function deserialize(array $data, ResponseModel $responseModel): Result {
@@ -75,11 +75,17 @@ it('emits live partials and one final response from the streaming driver', funct
             }
         }),
         responseGenerator: new class implements CanGenerateResponse {
-            public function makeResponse(
+            public function fromInferenceResponse(
                 InferenceResponse $response,
                 ResponseModel $responseModel,
                 OutputMode $mode,
-                mixed $materializationInput = null,
+            ): Result {
+                return Result::success(new StreamingDriverUser(name: 'Ann', age: 30));
+            }
+
+            public function fromMaterializedInput(
+                mixed $input,
+                ResponseModel $responseModel,
             ): Result {
                 return Result::success(new StreamingDriverUser(name: 'Ann', age: 30));
             }

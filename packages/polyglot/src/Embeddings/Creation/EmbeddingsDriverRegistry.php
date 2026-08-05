@@ -21,16 +21,21 @@ final class EmbeddingsDriverRegistry implements CanProvideEmbeddingsDrivers
     }
 
     /**
+     * Populates the factory table directly rather than folding the public wither over the map
+     * (instructor-eexl.21). The wither clones the registry per entry, which is correct for a
+     * wither and wrong for building a table -- seven entries meant seven registries, six of
+     * them discarded immediately. Same defect and same fix as `InferenceDriverRegistry`
+     * (instructor-eexl.7).
+     *
      * @param array<string, string|callable(EmbeddingsConfig,CanSendHttpRequests,EventDispatcherInterface):CanHandleVectorization> $drivers
      */
     public static function fromArray(array $drivers): self {
-        $registry = self::make();
-
+        $factories = [];
         foreach ($drivers as $name => $driver) {
-            $registry = $registry->withDriver($name, $driver);
+            $factories[$name] = self::toDriverFactory($driver);
         }
 
-        return $registry;
+        return new self($factories);
     }
 
     /**

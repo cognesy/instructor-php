@@ -137,12 +137,6 @@ return [
         */
         'retry_prompt_class' => Cognesy\Instructor\Prompts\StructuredOutput\RetryFeedbackPrompt::class,
 
-        /*
-        | @deprecated 2.5 Used only by an explicitly injected legacy
-        | RequestMaterializer. Remove this setting when upgrading to 2.6.
-        */
-        'retry_prompt' => null,
-
     ],
 
     /*

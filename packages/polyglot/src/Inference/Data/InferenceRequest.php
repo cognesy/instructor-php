@@ -270,7 +270,11 @@ class InferenceRequest
             telemetryCorrelation: $telemetryCorrelation ?? $this->telemetryCorrelation,
             id: $this->id,
             createdAt: $this->createdAt,
-            updatedAt: new DateTimeImmutable,
+            // Carried over, not recomputed: with() runs per attempt via
+            // withTelemetryCorrelation(), and a fresh DateTimeImmutable per copy is
+            // an allocation nobody reads. InferenceRequest::toArray() does not even
+            // emit updatedAt. See research/plans/polyglot-improvements/06-request-builder.md.
+            updatedAt: $this->updatedAt,
         );
     }
 

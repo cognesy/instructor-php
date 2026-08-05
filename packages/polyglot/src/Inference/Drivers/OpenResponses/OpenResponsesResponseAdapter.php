@@ -72,13 +72,29 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
                 toolName: $this->extractStreamToolName($ctx, $data, $eventType),
                 toolArgs: $this->extractStreamToolArgs($ctx, $data, $eventType),
                 finishReason: $this->extractStreamFinishReason($data, $eventType),
-                usage: $this->usageFormat->fromData($data),
+                usage: $this->hasUsageData($data) ? $this->usageFormat->fromData($data) : null,
                 usageIsCumulative: true,
                 responseData: $responseData,
             );
 
             yield $delta;
         }
+    }
+
+    /**
+     * OpenResponses carries usage on the terminal `response.completed` event under
+     * `response.usage`, and accepts a top-level `usage` too — OpenResponsesUsageFormat
+     * reads both, so the guard must too.
+     *
+     * Every other event in the stream (`*.delta`, the overwhelming majority) carries
+     * neither and used to allocate an all-zero InferenceUsage per delta. A null usage
+     * is what StreamingUsageState::apply() already treats as "nothing to add", so this
+     * is behaviour-neutral.
+     *
+     * @param array<string,mixed> $data
+     */
+    protected function hasUsageData(array $data): bool {
+        return !empty($data['usage']) || !empty($data['response']['usage']);
     }
 
     #[\Override]

@@ -3,6 +3,7 @@
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\ResponseGenerator;
+use Cognesy\Instructor\Core\ResponseMaterializer;
 use Cognesy\Instructor\Creation\ResponseModelFactory;
 use Cognesy\Instructor\Creation\StructuredOutputSchemaRenderer;
 use Cognesy\Instructor\Data\ResponseFailure;
@@ -191,13 +192,15 @@ it('creates a content-safe extraction failure summary', function () {
 
     $config = new StructuredOutputConfig();
     $generator = new ResponseGenerator(
-        responseDeserializer: new ResponseDeserializer($events, new SymfonyDeserializer(), $config),
-        responseValidator: new ResponseValidator($events, new PassingObjectValidator(), $config),
-        responseTransformer: new ResponseTransformer($events, null),
+        materializer: new ResponseMaterializer(
+            deserializer: new ResponseDeserializer($events, new SymfonyDeserializer(), $config),
+            validator: new ResponseValidator($events, new PassingObjectValidator(), $config),
+            transformer: new ResponseTransformer($events, null),
+        ),
         extractor: new ThrowingExtractor(),
     );
 
-    $result = $generator->makeResponse(
+    $result = $generator->fromInferenceResponse(
         response: new InferenceResponse(content: '{"name":"Ava"}'),
         responseModel: makeAnyResponseModel(NormalizedPayloadUser::class),
         mode: OutputMode::Json,

@@ -16,6 +16,7 @@ final class ContentInput
             is_null($content) => new Content(),
             is_string($content) => new Content(ContentPart::text($content)),
             is_array($content) && Message::isMessage($content) => self::fromAny($content['content'] ?? ''),
+            is_array($content) && self::isSingleContentPart($content) => new Content(ContentPart::fromArray($content)),
             is_array($content) => Content::fromParts(
                 ContentParts::fromArray($content),
             ),
@@ -24,6 +25,17 @@ final class ContentInput
             $content instanceof ContentParts => Content::fromParts($content),
             default => throw new InvalidArgumentException('Content must be a string, array, ContentPart, or ContentParts.'),
         };
+    }
+
+    /**
+     * A content parts collection is always a LIST. A keyed array therefore describes
+     * ONE content part - e.g. ['type' => 'image_url', 'image_url' => ['url' => ...]] -
+     * and must not be iterated as if its values were separate parts.
+     *
+     * @param array<array-key, mixed> $content
+     */
+    private static function isSingleContentPart(array $content): bool {
+        return $content !== [] && !array_is_list($content);
     }
 
     /**

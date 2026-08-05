@@ -21,44 +21,57 @@ it('provides explicit constructors for text, json object, and json schema', func
     ]);
 });
 
-it('serializes provider-facing shapes explicitly', function () {
-    $responseFormat = ResponseFormat::jsonSchema(
-        schema: ['type' => 'object'],
-        name: 'payload',
-    );
+it('answers with defaults for the fields a caller left unset', function () {
+    $empty = ResponseFormat::empty();
 
-    expect($responseFormat->asText())->toBe(['type' => 'text']);
-    expect($responseFormat->asJsonObject())->toBe(['type' => 'json_object']);
-    expect($responseFormat->asJsonSchema())->toBe([
-        'type' => 'json_schema',
-        'json_schema' => [
-            'name' => 'payload',
-            'schema' => ['type' => 'object'],
-            'strict' => true,
-        ],
-    ]);
+    expect($empty->isEmpty())->toBeTrue()
+        ->and($empty->type())->toBe('text')
+        ->and($empty->schemaName())->toBe('schema')
+        ->and($empty->strict())->toBeTrue()
+        ->and($empty->schema())->toBe([])
+        ->and($empty->toArray())->toBe([]);
 });
 
-it('applies handlers immutably', function () {
+it('carries no rendering behaviour', function () {
+    // The point of instructor-eexl.8. This used to take three injectable Closure handlers so a
+    // provider could hand it its own serialisation; every request paid two closures and two
+    // copies of this object for the privilege. Provider variation now lives on the body
+    // formats -- see OpenAIBodyFormat::renderResponseFormatForType() and the golden fixture in
+    // tests/Unit/Drivers/ResponseFormatFragmentGoldenTest.php.
+    //
+    // Asserted structurally because the alternative -- asserting the absence of methods one by
+    // one -- cannot catch a FOURTH handler being added later.
+    $constructor = (new ReflectionClass(ResponseFormat::class))->getConstructor();
+
+    expect($constructor?->getNumberOfParameters())->toBe(4)
+        ->and(array_map(fn($p) => $p->getName(), $constructor?->getParameters() ?? []))
+        ->toBe(['type', 'schema', 'name', 'strict']);
+
+    foreach ((new ReflectionClass(ResponseFormat::class))->getProperties() as $property) {
+        expect((string) $property->getType())->not->toContain('Closure');
+    }
+
+    $methods = array_map(
+        fn($m) => $m->getName(),
+        (new ReflectionClass(ResponseFormat::class))->getMethods(ReflectionMethod::IS_PUBLIC),
+    );
+    expect(array_filter($methods, fn($n) => str_starts_with($n, 'withTo')))->toBe([]);
+    expect(array_filter($methods, fn($n) => str_starts_with($n, 'as')))->toBe([]);
+});
+
+it('filters the schema through a caller-supplied callback', function () {
+    // Live consumer: GeminiBodyFormat, which passes its removeDisallowedEntries().
     $responseFormat = ResponseFormat::jsonSchema(
-        schema: ['type' => 'object'],
+        schema: ['type' => 'object', 'x-title' => 'User'],
     );
 
-    $custom = $responseFormat
-        ->withToJsonObjectHandler(fn() => ['type' => 'custom_json'])
-        ->withToJsonSchemaHandler(fn() => ['type' => 'custom_schema']);
+    $filtered = $responseFormat->schemaFilteredWith(
+        fn(array $schema) => array_diff_key($schema, ['x-title' => null]),
+    );
 
-    expect($responseFormat->asJsonObject())->toBe(['type' => 'json_object']);
-    expect($responseFormat->asJsonSchema())->toBe([
-        'type' => 'json_schema',
-        'json_schema' => [
-            'name' => 'schema',
-            'schema' => ['type' => 'object'],
-            'strict' => true,
-        ],
-    ]);
-    expect($custom->asJsonObject())->toBe(['type' => 'custom_json']);
-    expect($custom->asJsonSchema())->toBe(['type' => 'custom_schema']);
+    expect($filtered)->toBe(['type' => 'object'])
+        // The value object is untouched -- the filter renders, it does not mutate.
+        ->and($responseFormat->schema())->toBe(['type' => 'object', 'x-title' => 'User']);
 });
 
 it('round-trips from plain and nested arrays', function () {

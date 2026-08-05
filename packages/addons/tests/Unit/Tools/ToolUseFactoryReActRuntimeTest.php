@@ -6,7 +6,7 @@ use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -22,7 +22,7 @@ it('injects constructor-provided runtime creators into ReAct driver', function (
     $structuredOutputRuntime = new StructuredOutputRuntime(
         inference: $inferenceRuntime,
         events: $events,
-        config: (new StructuredOutputConfigBuilder())->create(),
+        config: new StructuredOutputConfig(),
     );
 
     $toolUse = ToolUseFactory::react(

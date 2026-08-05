@@ -114,6 +114,71 @@ describe('MessageStore', function () {
         });
     });
 
+    describe('select', function () {
+        it('returns all sections when no argument given', function () {
+            $store = MessageStore::fromSections(
+                new \Cognesy\Messages\MessageStore\Section('a'),
+                new \Cognesy\Messages\MessageStore\Section('b'),
+            );
+
+            expect($store->select()->sections()->names())->toBe(['a', 'b']);
+        });
+
+        it('returns all sections when selecting with an empty array', function () {
+            $store = MessageStore::fromSections(
+                new \Cognesy\Messages\MessageStore\Section('a'),
+                new \Cognesy\Messages\MessageStore\Section('b'),
+            );
+
+            expect($store->select([])->sections()->names())->toBe(['a', 'b']);
+        });
+
+        it('returns only the named section', function () {
+            $store = MessageStore::fromSections(
+                new \Cognesy\Messages\MessageStore\Section('a'),
+                new \Cognesy\Messages\MessageStore\Section('b'),
+            );
+
+            expect($store->select('a')->sections()->names())->toBe(['a']);
+        });
+
+        it('returns named sections from an array of names', function () {
+            $store = MessageStore::fromSections(
+                new \Cognesy\Messages\MessageStore\Section('a'),
+                new \Cognesy\Messages\MessageStore\Section('b'),
+            );
+
+            expect($store->select(['a', 'b'])->sections()->names())->toBe(['a', 'b']);
+        });
+
+        it('returns no sections when selecting an empty string name', function () {
+            $store = MessageStore::fromSections(
+                new \Cognesy\Messages\MessageStore\Section('a'),
+                new \Cognesy\Messages\MessageStore\Section('b'),
+            );
+
+            expect($store->select('')->sections()->names())->toBe([]);
+        });
+
+        it('returns no sections when selecting a name that does not exist', function () {
+            $store = MessageStore::fromSections(
+                new \Cognesy\Messages\MessageStore\Section('a'),
+                new \Cognesy\Messages\MessageStore\Section('b'),
+            );
+
+            expect($store->select('zzz')->sections()->names())->toBe([]);
+        });
+
+        it('treats the string "0" as a section name, not as "no filter"', function () {
+            $store = MessageStore::fromSections(
+                new \Cognesy\Messages\MessageStore\Section('0'),
+                new \Cognesy\Messages\MessageStore\Section('b'),
+            );
+
+            expect($store->select('0')->sections()->names())->toBe(['0']);
+        });
+    });
+
     describe('serialization', function () {
         it('round-trips sections, messages, and parameters', function () {
             $store = MessageStore::fromSections(

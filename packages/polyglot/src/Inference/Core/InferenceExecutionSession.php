@@ -4,44 +4,62 @@ declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Inference\Core;
 
-use Cognesy\Http\Exceptions\HttpRequestException;
-use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
-use Cognesy\Polyglot\Inference\Config\LengthRecovery;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
-use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
-use Cognesy\Telemetry\Domain\Envelope\OperationCorrelation;
-use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
-use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
-use Cognesy\Polyglot\Inference\Events\InferenceAttemptFailed;
-use Cognesy\Polyglot\Inference\Events\InferenceAttemptStarted;
-use Cognesy\Polyglot\Inference\Events\InferenceAttemptSucceeded;
-use Cognesy\Polyglot\Inference\Events\InferenceCompleted;
-use Cognesy\Polyglot\Inference\Events\InferenceStarted;
-use Cognesy\Polyglot\Inference\Events\InferenceUsageReported;
-use Cognesy\Polyglot\Inference\Exceptions\ProviderException;
+use Cognesy\Polyglot\Inference\Enums\InferenceFailureAction;
 use Cognesy\Polyglot\Inference\Streaming\InferenceStream;
-use Cognesy\Polyglot\Telemetry\InferenceTelemetry;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
+/**
+ * Drives one inference request to one response, retrying as policy allows, and presents the
+ * result as either a stream or a single response.
+ *
+ * The lifecycle events and the retry decisions each live in their own collaborator, both built
+ * here and both per execution -- never per attempt, never per delta. What is left is this
+ * class's actual job: owning the execution, and reconciling the two ways a caller can ask for
+ * its result.
+ *
+ * THERE IS NO RESPONSE CACHE, and the reason is worth stating so it is not helpfully re-added.
+ * A per-execution one existed and could never return a value: response() checks
+ * $this->execution->response() first, and the cache was only ever written from succeed(),
+ * which runs immediately after the execution was set to withSuccessfulAttempt($response). The
+ * moment the cache held something, the execution held the same instance, and nothing later
+ * clears it. Measured over the full suite before removal: get() reached 390 times, 0 hits.
+ * The execution IS the cache, and it works for every ResponseCachePolicy rather than only
+ * ::Memory. See ResponseCachePolicyEffectTest, which pins repeated response() as identical.
+ *
+ * ResponseCachePolicy itself still matters, elsewhere: BaseInferenceRequestDriver maps it onto
+ * the HTTP layer's StreamCachePolicy, which is what makes a stream replayable.
+ */
 final class InferenceExecutionSession
 {
-    private ?OperationCorrelation $executionTelemetryCorrelation = null;
-
-    private readonly MonotonicStopwatch $executionStopwatch;
-    private readonly MonotonicStopwatch $attemptStopwatch;
-
-    private int $attemptNumber = 0;
-
-    private ?InferenceResponse $cachedResponse = null;
+    private readonly InferenceLifecycleEmitter $emitter;
+    private readonly InferenceRetryLoop $retry;
 
     private ?InferenceStream $cachedStream = null;
 
     private ?\Throwable $terminalError = null;
+
+    /**
+     * True while response() is driving the stream to completion itself.
+     *
+     * THIS COULD NOT BE REMOVED, and the reason is worth stating rather than leaving to be
+     * rediscovered. response() on a streamed request runs the retry loop, whose body calls
+     * stream()->final(); finalising the stream calls back into onStreamFinalized(), so the
+     * retry loop and the stream callback both arrive at the end of the same execution. Only
+     * one may terminate it.
+     *
+     * A one-shot latch on terminate()/succeed() would stop the double dispatch, but not
+     * equivalently: the callback runs BEFORE the loop applies withSuccessfulAttempt(), so
+     * letting the callback win would emit the same events in the same order carrying a
+     * telemetry envelope built from an execution one step behind. The flag is not
+     * deduplication -- it names which of the two owns the ending, and the retry loop does,
+     * because it is the one that knows whether another attempt is coming.
+     */
     private bool $finalizingCachedStreamViaResponse = false;
 
     /**
@@ -55,23 +73,23 @@ final class InferenceExecutionSession
         private readonly EventDispatcherInterface $events,
         ?callable $monotonicNanoReader = null,
     ) {
-        $this->executionTelemetryCorrelation = $execution->request()->telemetryCorrelation();
-        $this->executionStopwatch = new MonotonicStopwatch($monotonicNanoReader);
-        $this->attemptStopwatch = new MonotonicStopwatch($monotonicNanoReader);
+        $this->emitter = new InferenceLifecycleEmitter(
+            events: $events,
+            executionCorrelation: $execution->request()->telemetryCorrelation(),
+            monotonicNanoReader: $monotonicNanoReader,
+        );
+        $this->retry = new InferenceRetryLoop($execution->request()->retryPolicy());
     }
 
-    public function isStreamed(): bool
-    {
+    public function isStreamed(): bool {
         return $this->execution->request()->isStreamed();
     }
 
-    public function executionId(): string
-    {
+    public function executionId(): string {
         return $this->execution->id->toString();
     }
 
-    public function stream(): InferenceStream
-    {
+    public function stream(): InferenceStream {
         if (! $this->isStreamed()) {
             throw new InvalidArgumentException('Trying to read response stream for request with no streaming');
         }
@@ -80,8 +98,15 @@ final class InferenceExecutionSession
             return $this->cachedStream;
         }
 
-        $this->ensureLifecycleStartedForCurrentAttempt();
+        $this->emitter->executionStarted($this->execution);
 
+        $currentAttempt = $this->execution->currentAttempt();
+        if ($currentAttempt === null || $currentAttempt->isFinalized()) {
+            $this->execution = $this->emitter->beginAttempt($this->execution);
+        }
+
+        // I7: both callables are built exactly once per session, because the cache above
+        // short-circuits every later call. Do not move this into a per-attempt method.
         $this->cachedStream = new InferenceStream(
             execution: $this->execution,
             driver: $this->driver,
@@ -94,8 +119,7 @@ final class InferenceExecutionSession
         return $this->cachedStream;
     }
 
-    public function response(): InferenceResponse
-    {
+    public function response(): InferenceResponse {
         if ($this->terminalError !== null) {
             throw $this->terminalError;
         }
@@ -105,10 +129,6 @@ final class InferenceExecutionSession
             return $existingResponse;
         }
 
-        if ($this->shouldCache() && $this->cachedResponse !== null) {
-            return $this->cachedResponse;
-        }
-
         if ($this->cachedStream !== null) {
             return $this->responseFromExistingStream();
         }
@@ -116,32 +136,25 @@ final class InferenceExecutionSession
         return $this->executeResponseLifecycle();
     }
 
-    private function executeResponseLifecycle(): InferenceResponse
-    {
-        $policy = $this->execution->request()->retryPolicy() ?? new InferenceRetryPolicy;
-        $maxAttempts = max(1, $policy->maxAttempts);
-        $lengthRetries = 0;
-
-        $this->dispatchInferenceStarted();
+    private function executeResponseLifecycle(): InferenceResponse {
+        $this->emitter->executionStarted($this->execution);
 
         while (true) {
             $this->cachedStream = null;
-            $this->dispatchAttemptStarted();
+            $this->execution = $this->emitter->beginAttempt($this->execution);
 
             try {
                 $response = $this->makeResponse($this->execution->request());
-            } catch (\Throwable $e) {
-                $shouldRetry = $this->attemptNumber < $maxAttempts
-                    && $policy->shouldRetryException($e);
-                $this->execution = $this->execution->withFailedAttempt(null, $this->livePartialUsage(), $e);
-                $this->handleAttemptFailure($e, null, $shouldRetry);
+            } catch (\Throwable $error) {
+                $shouldRetry = $this->retry->shouldRetryAfterException($error, $this->emitter->attemptNumber());
+                $this->execution = $this->execution->withFailedAttempt(null, $this->livePartialUsage(), $error);
+
                 if (! $shouldRetry) {
-                    $this->dispatchInferenceCompleted(isSuccess: false);
-                    $this->terminalError = $e;
-                    throw $e;
+                    $this->terminate($error, response: null, throw: true);
                 }
 
-                $this->delayForRetry($policy);
+                $this->emitter->attemptFailed($this->execution, $error, $this->livePartialUsage(), willRetry: true);
+                $this->retry->awaitRetryDelay($this->emitter->attemptNumber());
 
                 continue;
             }
@@ -155,30 +168,23 @@ final class InferenceExecutionSession
             };
 
             if ($response->hasFinishedWithFailure()) {
-                $this->handleFailedResponse($response, $policy, $lengthRetries);
-                $lengthRetries++;
+                $this->handleFailedResponse($response);
 
                 continue;
             }
 
-            $this->handleAttemptSuccess($response);
-            $this->dispatchInferenceCompleted(isSuccess: true);
-
-            if ($this->shouldCache()) {
-                $this->cachedResponse = $response;
-            }
+            $this->succeed($response);
 
             return $response;
         }
     }
 
-    private function responseFromExistingStream(): InferenceResponse
-    {
+    private function responseFromExistingStream(): InferenceResponse {
         try {
             $response = $this->cachedStream?->final()
                 ?? throw new \RuntimeException('Failed to generate final response from stream');
-        } catch (\Throwable $e) {
-            throw $this->terminalError ?? $e;
+        } catch (\Throwable $error) {
+            throw $this->terminalError ?? $error;
         }
 
         if ($this->terminalError !== null) {
@@ -188,72 +194,73 @@ final class InferenceExecutionSession
         return $response;
     }
 
-    private function handleFailedResponse(
-        InferenceResponse $response,
-        InferenceRetryPolicy $policy,
-        int $lengthRetries,
-    ): void {
-        $finishReason = $response->finishReason();
+    /**
+     * Returns only when the response is recoverable and the caller should loop again.
+     * Every other outcome terminates the execution by throwing.
+     */
+    private function handleFailedResponse(InferenceResponse $response): void {
+        $action = $this->retry->actionForFailedResponse($response);
 
-        if ($finishReason === InferenceFinishReason::Length && $policy->shouldRecoverFromLength($lengthRetries)) {
+        if ($action === InferenceFailureAction::RecoverFromLength) {
             $error = new \RuntimeException('Inference execution hit length limit; retrying recovery');
-            $this->handleAttemptFailure($error, $response, true);
+            $this->emitter->attemptFailed($this->execution, $error, $response->usage(), willRetry: true);
             $this->execution = $this->execution->withRequest(
-                $this->buildLengthRecoveryRequest($this->execution->request(), $response, $policy)
+                $this->retry->lengthRecoveryRequest($this->execution->request(), $response),
             );
 
             return;
         }
 
-        if ($finishReason === InferenceFinishReason::ContentFilter) {
-            $error = new \RuntimeException('Inference blocked by content filter');
-            $this->handleAttemptFailure($error, $response, false);
-            $this->dispatchInferenceCompleted(isSuccess: false);
-            $this->terminalError = $error;
+        $this->terminate(
+            match ($action) {
+                InferenceFailureAction::ContentFilterBlocked => new \RuntimeException('Inference blocked by content filter'),
+                default => new \RuntimeException('Inference execution failed: '.$response->finishReason()->value),
+            },
+            $response,
+            throw: true,
+        );
+    }
+
+    /**
+     * The one place an execution ends well.
+     */
+    private function succeed(InferenceResponse $response): void {
+        $this->emitter->attemptSucceeded($this->execution, $response);
+        $this->emitter->executionCompleted($this->execution, isSuccess: true);
+    }
+
+    /**
+     * The one place an execution ends badly. This sequence used to be written out five
+     * times, four of them throwing and one storing the error for the next response() call
+     * to rethrow -- a real difference that was invisible without reading all five. $throw
+     * states it.
+     *
+     * @param bool $throw Callers driving the execution throw; stream callbacks, which are
+     *        invoked from inside the stream's own iteration, store instead.
+     */
+    private function terminate(\Throwable $error, ?InferenceResponse $response, bool $throw): void {
+        $this->emitter->attemptFailed(
+            $this->execution,
+            $error,
+            $response?->usage() ?? $this->livePartialUsage(),
+            willRetry: false,
+        );
+        $this->emitter->executionCompleted($this->execution, isSuccess: false);
+        $this->terminalError = $error;
+
+        if ($throw) {
             throw $error;
         }
-
-        $this->failTerminalResponse($response);
     }
 
-    private function failTerminalResponse(InferenceResponse $response): never
-    {
-        $finishReason = $response->finishReason();
-        $error = new \RuntimeException('Inference execution failed: '.$finishReason->value);
-        $this->handleAttemptFailure($error, $response, false);
-        $this->dispatchInferenceCompleted(isSuccess: false);
-        $this->terminalError = $error;
-        throw $error;
-    }
-
-    private function delayForRetry(InferenceRetryPolicy $policy): void
-    {
-        $delayMs = $policy->delayMsForAttempt($this->attemptNumber);
-        if ($delayMs > 0) {
-            usleep($delayMs * 1000);
-        }
-    }
-
-    private function cachePolicy(): ResponseCachePolicy
-    {
-        return $this->execution->request()->responseCachePolicy();
-    }
-
-    private function shouldCache(): bool
-    {
-        return $this->cachePolicy()->shouldCache();
-    }
-
-    private function makeResponse(InferenceRequest $request): InferenceResponse
-    {
+    private function makeResponse(InferenceRequest $request): InferenceResponse {
         return match ($this->isStreamed()) {
             false => $this->driver->makeResponseFor($request),
             true => $this->finalizeCachedStreamForResponse(),
         };
     }
 
-    private function finalizeCachedStreamForResponse(): InferenceResponse
-    {
+    private function finalizeCachedStreamForResponse(): InferenceResponse {
         $this->finalizingCachedStreamViaResponse = true;
 
         try {
@@ -263,94 +270,7 @@ final class InferenceExecutionSession
         }
     }
 
-    private function ensureLifecycleStartedForCurrentAttempt(): void
-    {
-        $this->dispatchInferenceStarted();
-
-        $currentAttempt = $this->execution->currentAttempt();
-        if ($currentAttempt === null || $currentAttempt->isFinalized()) {
-            $this->dispatchAttemptStarted();
-        }
-    }
-
-    private function dispatchInferenceStarted(): void
-    {
-        if ($this->executionStopwatch->isRunning()) {
-            return;
-        }
-
-        $this->executionStopwatch->start();
-        $this->events->dispatch(InferenceStarted::fromLifecycle(
-            executionId: $this->execution->id->toString(),
-            requestId: $this->execution->request()->id()->toString(),
-            isStreamed: $this->isStreamed(),
-            model: $this->execution->request()->model(),
-            messageCount: count($this->execution->request()->messages()),
-            data: InferenceTelemetry::execution($this->execution, $this->executionTelemetryCorrelation),
-        ));
-    }
-
-    private function dispatchAttemptStarted(): void
-    {
-        $this->attemptNumber++;
-        $this->attemptStopwatch->start();
-        $this->execution = $this->execution->startAttempt();
-        $this->execution = $this->execution->withRequest($this->requestForCurrentAttempt($this->execution->request()));
-
-        $this->events->dispatch(new InferenceAttemptStarted(
-            executionId: $this->execution->id->toString(),
-            attemptId: $this->currentAttemptId(),
-            attemptNumber: $this->attemptNumber,
-            model: $this->execution->request()->model(),
-            data: InferenceTelemetry::attempt($this->execution),
-        ));
-    }
-
-    private function handleAttemptSuccess(InferenceResponse $response): void
-    {
-        $usage = $response->usage();
-
-        $this->events->dispatch(InferenceAttemptSucceeded::fromLifecycle(
-            executionId: $this->execution->id->toString(),
-            attemptId: $this->currentAttemptId(),
-            attemptNumber: $this->attemptNumber,
-            finishReason: $response->finishReason()->value,
-            durationMs: $this->attemptStopwatch->elapsedMs(),
-            usage: $usage,
-            data: InferenceTelemetry::attempt($this->execution),
-        ));
-
-        $this->events->dispatch(InferenceUsageReported::fromLifecycle(
-            executionId: $this->execution->id->toString(),
-            model: $this->execution->request()->model(),
-            isFinal: true,
-            usage: $usage,
-            data: InferenceTelemetry::usage($this->execution),
-        ));
-    }
-
-    private function handleAttemptFailure(
-        \Throwable $error,
-        ?InferenceResponse $response = null,
-        bool $willRetry = false,
-    ): void {
-        $partialUsage = $response?->usage() ?? $this->livePartialUsage();
-
-        $this->events->dispatch(InferenceAttemptFailed::fromLifecycle(
-            executionId: $this->execution->id->toString(),
-            attemptId: $this->currentAttemptId(),
-            attemptNumber: $this->attemptNumber,
-            errorMessage: SensitiveDataRedactor::redactMessage($error->getMessage()),
-            errorType: get_class($error),
-            httpStatusCode: $this->extractStatusCode($error),
-            willRetry: $willRetry,
-            durationMs: $this->attemptStopwatch->elapsedMs(),
-            data: $this->attemptPartialUsageData($partialUsage) + InferenceTelemetry::attempt($this->execution),
-        ));
-    }
-
-    private function onStreamFinalized(InferenceExecution $execution): void
-    {
+    private function onStreamFinalized(InferenceExecution $execution): void {
         $this->execution = $execution;
         $response = $execution->response();
 
@@ -359,135 +279,28 @@ final class InferenceExecutionSession
         }
 
         if ($response->hasFinishedWithFailure()) {
-            $error = new \RuntimeException('Inference execution failed: '.$response->finishReason()->value);
-            $this->handleAttemptFailure($error, $response, false);
-            $this->dispatchInferenceCompleted(isSuccess: false);
-            $this->terminalError = $error;
+            $this->terminate(
+                new \RuntimeException('Inference execution failed: '.$response->finishReason()->value),
+                $response,
+                throw: false,
+            );
+
             return;
         }
 
-        $this->handleAttemptSuccess($response);
-        $this->dispatchInferenceCompleted(isSuccess: true);
-
-        if ($this->shouldCache()) {
-            $this->cachedResponse = $response;
-        }
+        $this->succeed($response);
     }
 
-    private function onStreamFailed(\Throwable $error, InferenceUsage $partialUsage): void
-    {
+    private function onStreamFailed(\Throwable $error, InferenceUsage $partialUsage): void {
         if ($this->finalizingCachedStreamViaResponse) {
             return;
         }
 
         $this->execution = $this->execution->withFailedAttempt(null, $partialUsage, $error);
-        $this->handleAttemptFailure($error, null, false);
-        $this->dispatchInferenceCompleted(isSuccess: false);
-        $this->terminalError = $error;
+        $this->terminate($error, response: null, throw: false);
     }
 
-    private function livePartialUsage(): InferenceUsage
-    {
+    private function livePartialUsage(): InferenceUsage {
         return $this->cachedStream?->usage() ?? InferenceUsage::none();
     }
-
-    private function buildLengthRecoveryRequest(
-        InferenceRequest $request,
-        InferenceResponse $response,
-        InferenceRetryPolicy $policy,
-    ): InferenceRequest {
-        $builder = (new InferenceRequestBuilder)->withRequest($request);
-
-        if ($policy->lengthRecoveryMode === LengthRecovery::IncreaseMaxTokens) {
-            $current = $request->options()['max_tokens'] ?? null;
-            $next = $current !== null
-                ? $current + max(1, $policy->maxTokensIncrement)
-                : max(1, $policy->maxTokensIncrement);
-
-            return $builder->withMaxTokens($next)->create();
-        }
-
-        $messages = $request->messages()
-            ->asAssistant($response->content())
-            ->asUser($policy->lengthContinuePrompt);
-
-        return $builder->withMessages($messages)->create();
-    }
-
-    private function dispatchInferenceCompleted(bool $isSuccess): void
-    {
-        $response = $this->execution->response();
-        $usage = $response?->usage() ?? $this->execution->usage();
-        $finishReason = $response?->finishReason() ?? InferenceFinishReason::Error;
-
-        $this->events->dispatch(InferenceCompleted::fromLifecycle(
-            executionId: $this->execution->id->toString(),
-            isSuccess: $isSuccess,
-            finishReason: $finishReason->value,
-            durationMs: $this->executionStopwatch->elapsedMs(),
-            attemptCount: $this->attemptNumber,
-            usage: $usage,
-            data: InferenceTelemetry::execution($this->execution, $this->executionTelemetryCorrelation),
-        ));
-    }
-
-    private function currentAttemptId(): string
-    {
-        $currentAttempt = $this->execution->currentAttempt();
-        if ($currentAttempt === null) {
-            throw new \LogicException('Attempt not started before event dispatch.');
-        }
-
-        return $currentAttempt->id->toString();
-    }
-
-    private function requestForCurrentAttempt(InferenceRequest $request): InferenceRequest
-    {
-        return $request->withTelemetryCorrelation($this->correlationForCurrentAttempt($request));
-    }
-
-    private function correlationForCurrentAttempt(InferenceRequest $request): OperationCorrelation
-    {
-        $correlation = $request->telemetryCorrelation();
-
-        return match ($correlation) {
-            null => OperationCorrelation::child(
-                rootOperationId: $this->executionId(),
-                parentOperationId: $this->currentAttemptId(),
-                requestId: $request->id()->toString(),
-            ),
-            default => OperationCorrelation::child(
-                rootOperationId: $correlation->rootOperationId(),
-                parentOperationId: $this->currentAttemptId(),
-                sessionId: $correlation->sessionId(),
-                userId: $correlation->userId(),
-                conversationId: $correlation->conversationId(),
-                requestId: $request->id()->toString(),
-            ),
-        };
-    }
-
-    /**
-     * @return array<string,int>
-     */
-    private function attemptPartialUsageData(InferenceUsage $partialUsage): array {
-        return [
-            'partialInputTokens' => $partialUsage->inputTokens,
-            'partialOutputTokens' => $partialUsage->outputTokens,
-            'partialCacheWriteTokens' => $partialUsage->cacheWriteTokens,
-            'partialCacheReadTokens' => $partialUsage->cacheReadTokens,
-            'partialReasoningTokens' => $partialUsage->reasoningTokens,
-            'partialTotalTokens' => $partialUsage->total(),
-        ];
-    }
-
-    private function extractStatusCode(\Throwable $error): ?int
-    {
-        return match (true) {
-            $error instanceof HttpRequestException => $error->getStatusCode(),
-            $error instanceof ProviderException => $error->statusCode,
-            default => null,
-        };
-    }
-
 }

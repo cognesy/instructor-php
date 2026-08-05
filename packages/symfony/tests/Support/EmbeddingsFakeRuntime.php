@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Cognesy\Instructor\Symfony\Tests\Support;
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Polyglot\Embeddings\Contracts\CanCreateEmbeddings;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
@@ -13,7 +12,6 @@ use Cognesy\Polyglot\Embeddings\Data\EmbeddingsResponse;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsUsage;
 use Cognesy\Polyglot\Embeddings\Data\Vector;
 use Cognesy\Polyglot\Embeddings\PendingEmbeddings;
-use JsonException;
 
 final class EmbeddingsFakeRuntime implements CanCreateEmbeddings, CanHandleVectorization
 {
@@ -55,52 +53,21 @@ final class EmbeddingsFakeRuntime implements CanCreateEmbeddings, CanHandleVecto
         );
     }
 
-    public function handle(EmbeddingsRequest $request): HttpResponse
-    {
-        return HttpResponse::sync(
-            statusCode: 200,
-            headers: [],
-            body: $this->payloadFor($request),
-        );
-    }
-
-    public function fromData(array $data): ?EmbeddingsResponse
+    public function handle(EmbeddingsRequest $request): EmbeddingsResponse
     {
         $vectors = array_map(
-            static fn (array $item): Vector => new Vector(
-                values: array_map(static fn (mixed $value): float => (float) $value, $item['values'] ?? []),
-                id: $item['id'] ?? 0,
+            fn (string $input, int $index): Vector => new Vector(
+                values: $this->vectorFor($input),
+                id: $index,
             ),
-            $data['vectors'] ?? [],
+            $request->inputs(),
+            array_keys($request->inputs()),
         );
 
         return new EmbeddingsResponse(
             vectors: $vectors,
-            usage: EmbeddingsUsage::fromArray($data['usage'] ?? []),
+            usage: EmbeddingsUsage::fromArray(['input' => count($request->inputs())]),
         );
-    }
-
-    private function payloadFor(EmbeddingsRequest $request): string
-    {
-        $payload = [
-            'vectors' => array_map(
-                fn (string $input, int $index): array => [
-                    'id' => $index,
-                    'values' => $this->vectorFor($input),
-                ],
-                $request->inputs(),
-                array_keys($request->inputs()),
-            ),
-            'usage' => [
-                'input' => count($request->inputs()),
-            ],
-        ];
-
-        try {
-            return json_encode($payload, JSON_THROW_ON_ERROR);
-        } catch (JsonException $exception) {
-            throw new \RuntimeException('Failed to encode fake embeddings response.', 0, $exception);
-        }
     }
 
     /** @return list<float> */

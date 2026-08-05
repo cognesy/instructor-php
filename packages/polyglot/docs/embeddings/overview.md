@@ -133,7 +133,8 @@ $registry = BundledEmbeddingsDrivers::registry()
     });
 ```
 
-Your custom driver must implement the `CanHandleVectorization` contract.
+Your custom driver must implement the `CanHandleVectorization` contract. Its `handle()` method
+owns provider transport and parsing and returns a normalized `EmbeddingsResponse`.
 
 ## Events
 

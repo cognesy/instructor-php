@@ -190,6 +190,31 @@ describe('ContentPart', function () {
             $part = ContentPart::imageUrl('https://example.com/image.jpg');
             expect($part->toString())->toBe('');
         });
+
+        it('returns empty string instead of throwing when text field is an array', function () {
+            $part = ContentPart::fromArray(['type' => 'text', 'text' => ['a', 'b']]);
+            expect($part->toString())->toBe('');
+        });
+
+        it('returns empty string instead of throwing when text field is an int', function () {
+            $part = new ContentPart('text', ['text' => 42]);
+            expect($part->toString())->toBe('');
+        });
+
+        it('returns empty string instead of throwing when text field is a float', function () {
+            $part = new ContentPart('text', ['text' => 4.2]);
+            expect($part->toString())->toBe('');
+        });
+
+        it('returns empty string instead of throwing when text field is null', function () {
+            $part = new ContentPart('text', ['text' => null]);
+            expect($part->toString())->toBe('');
+        });
+
+        it('returns empty string instead of throwing when text field is a bool', function () {
+            $part = new ContentPart('text', ['text' => true]);
+            expect($part->toString())->toBe('');
+        });
     });
 
     describe('normalization', function () {

@@ -29,8 +29,8 @@ use Cognesy\Agents\Tool\ToolExecutor;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Contracts\CanSendHttpRequests;
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
-use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\Data\CachedContext as StructuredCachedContext;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Enums\OutputMode;
@@ -204,10 +204,9 @@ final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         $structuredOutput = new StructuredOutputRuntime(
             inference: $inference,
             events: $this->events,
-            config: (new StructuredOutputConfigBuilder())
+            config: (new StructuredOutputConfig())
                 ->withOutputMode($this->mode)
-                ->withMaxRetries($this->maxRetries)
-                ->create(),
+                ->withMaxRetries($this->maxRetries),
         );
         return $this->with(
             llm: $llm,
