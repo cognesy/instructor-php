@@ -33,7 +33,7 @@ use Cognesy\AgentCtrl\Event\AgentEvent;
 use Cognesy\AgentCtrl\Telemetry\AgentCtrlEventTelemetry;
 use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Logging\EventLog;
 use Cognesy\Sandbox\Enums\SandboxDriver;
 use Cognesy\Utils\Json\JsonParsingException;
 use JsonException;
@@ -66,7 +66,7 @@ final class ClaudeCodeBridge implements AgentBridge
         private bool $failFast = true,
         ?AgentCtrlExecutionId $executionId = null,
     ) {
-        $this->events = $events ?? new EventDispatcher();
+        $this->events = $events ?? EventLog::root('agent-ctrl.claude-code-bridge');
         $this->executionId = $executionId ?? AgentCtrlExecutionId::fresh();
         $this->commandBuilder = new ClaudeCommandBuilder();
         $this->responseParser = new ResponseParser($this->failFast);

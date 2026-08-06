@@ -35,7 +35,7 @@ use Cognesy\AgentCtrl\Gemini\Domain\Enum\ApprovalMode;
 use Cognesy\AgentCtrl\Gemini\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Logging\EventLog;
 use Cognesy\Sandbox\Enums\SandboxDriver;
 use Cognesy\Utils\Json\JsonParsingException;
 use JsonException;
@@ -75,7 +75,7 @@ final class GeminiBridge implements AgentBridge
         private bool $failFast = true,
         ?AgentCtrlExecutionId $executionId = null,
     ) {
-        $this->events = $events ?? new EventDispatcher();
+        $this->events = $events ?? EventLog::root('agent-ctrl.gemini-bridge');
         $this->executionId = $executionId ?? AgentCtrlExecutionId::fresh();
         $this->commandBuilder = new GeminiCommandBuilder();
         $this->responseParser = new ResponseParser($this->failFast);

@@ -104,6 +104,71 @@ describe('StructuredEventFormatter', function () {
                 'nested' => ['message' => 'abcde'],
             ]);
     });
+
+    it('redacts credential-looking keys anywhere in the payload by default', function () {
+        $event = new StructuredFormatterTestEvent([
+            'url' => 'https://api.openai.com/v1/chat/completions',
+            'method' => 'POST',
+            'headers' => [
+                'Authorization' => 'Bearer sk-live-super-secret',
+                'X-Api-Key' => 'sk-another-secret',
+                'Content-Type' => 'application/json',
+            ],
+            'requestId' => 'req-1',
+        ]);
+
+        $entry = (new StructuredEventFormatter('http.client'))(
+            $event,
+            LogContext::fromEvent($event),
+        );
+
+        expect($entry->context['payload']['headers'])->toBe([
+            'Authorization' => '[redacted]',
+            'X-Api-Key' => '[redacted]',
+            'Content-Type' => 'application/json',
+        ])
+            // non-sensitive troubleshooting fields must survive
+            ->and($entry->context['payload']['url'])->toBe('https://api.openai.com/v1/chat/completions')
+            ->and($entry->context['payload']['method'])->toBe('POST')
+            ->and($entry->context['payload']['requestId'])->toBe('req-1');
+    });
+
+    it('redacts a sensitive key holding an array, rather than recursing into it', function () {
+        $event = new StructuredFormatterTestEvent([
+            'credentials' => ['user' => 'alice', 'token' => 'secret-value'],
+        ]);
+
+        $entry = (new StructuredEventFormatter('http.client'))(
+            $event,
+            LogContext::fromEvent($event),
+        );
+
+        expect($entry->context['payload']['credentials'])->toBe('[redacted]');
+    });
+
+    it('redacts before clipping, so a secret is never partially emitted', function () {
+        $event = new StructuredFormatterTestEvent([
+            'apiKey' => 'sk-live-0123456789abcdef',
+        ]);
+
+        $entry = (new StructuredEventFormatter(
+            component: 'http.client',
+            stringClipLength: 8,
+        ))($event, LogContext::fromEvent($event));
+
+        expect($entry->context['payload']['apiKey'])->toBe('[redacted]');
+    });
+
+    it('allows redaction to be disabled with an empty key list', function () {
+        $event = new StructuredFormatterTestEvent(['password' => 'hunter2']);
+
+        $entry = (new StructuredEventFormatter(component: 'http.client', redactKeys: []))(
+            $event,
+            LogContext::fromEvent($event),
+        );
+
+        expect($entry->context['payload']['password'])->toBe('hunter2');
+    });
 });
 
 class StructuredFormatterTestEvent extends Event

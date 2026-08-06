@@ -149,6 +149,7 @@ final class EventLog
             includeEventMetadata: $config->includeEventMetadata,
             includeComponentMetadata: $config->includeComponentMetadata,
             stringClipLength: $config->stringClipLength,
+            redactKeys: $config->redactKeys,
         ));
     }
 

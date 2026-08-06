@@ -8,4 +8,11 @@ includePayload: true
 includeCorrelation: true
 includeEventMetadata: true
 includeComponentMetadata: true
-stringClipLength: 0
+# Max length of any single captured string. 0 captures strings whole - not
+# recommended for the file sink, where one response body can dominate the log.
+stringClipLength: 2048
+# Values under keys matching these fragments are replaced with '[redacted]' before
+# being written. Matching ignores case and separators, so 'authorization' also
+# covers 'Proxy-Authorization'. Omit or null to use the built-in list; [] disables
+# redaction entirely (not recommended - HTTP events carry raw request headers).
+redactKeys: null

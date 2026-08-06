@@ -192,7 +192,26 @@ Available knobs:
 - `includeCorrelation`
 - `includeEventMetadata`
 - `includeComponentMetadata`
-- `stringClipLength`
+- `stringClipLength` — max length of any single captured string. Defaults to `2048`; set `0` to capture whole.
+- `redactKeys` — key fragments whose values are replaced with `[redacted]`. Omit or `null` for the built-in list; `[]` disables redaction.
+
+### Payload safety
+
+This sink writes event payloads to a file, and HTTP events carry raw request headers.
+Two defaults keep that from turning into a credential dump:
+
+- **Redaction.** Values under a credential-looking key are replaced with `[redacted]`
+  before reaching the writer. Matching ignores case and separators, so `Authorization`,
+  `X-Api-Key`, `x_api_key` and `apiKey` all match, and `authorization` also covers
+  `Proxy-Authorization`. A matching key is redacted whole — even when it holds an array —
+  so a nested structure cannot leak what it was hiding. Redaction runs before clipping,
+  so a secret is never partially emitted.
+- **Bounding.** Strings are clipped to `stringClipLength` (2048 by default), so one
+  response body cannot dominate the log.
+
+Non-sensitive troubleshooting fields — ids, URLs, methods, status codes, model names,
+durations — are untouched. The built-in redact list is
+`StructuredEventFormatter::DEFAULT_REDACT_KEYS`; set `redactKeys` to replace it wholesale.
 
 Example:
 ```yaml

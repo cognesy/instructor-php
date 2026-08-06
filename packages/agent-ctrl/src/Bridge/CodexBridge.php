@@ -43,7 +43,7 @@ use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\SandboxMode;
 use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Logging\EventLog;
 use Cognesy\Sandbox\Enums\SandboxDriver;
 use Cognesy\Utils\Json\JsonParsingException;
 use JsonException;
@@ -76,7 +76,7 @@ final class CodexBridge implements AgentBridge
         private bool $failFast = true,
         ?AgentCtrlExecutionId $executionId = null,
     ) {
-        $this->events = $events ?? new EventDispatcher();
+        $this->events = $events ?? EventLog::root('agent-ctrl.codex-bridge');
         $this->executionId = $executionId ?? AgentCtrlExecutionId::fresh();
         $this->commandBuilder = new CodexCommandBuilder();
         $this->responseParser = new ResponseParser($this->failFast);

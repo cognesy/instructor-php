@@ -11,6 +11,13 @@ use Throwable;
 final readonly class EventLogConfig
 {
     public const CONFIG_GROUP = 'event_log';
+
+    /**
+     * Default bound on any single captured string. The JSONL sink writes to disk and
+     * captures full event payloads, so an unbounded default would let one response
+     * body dominate the log. Set to 0 to capture strings whole.
+     */
+    public const DEFAULT_STRING_CLIP_LENGTH = 2048;
     /** @var list<string> */
     private const DEFAULT_CONFIG_FILES = [
         'config/event_log.yaml',
@@ -37,7 +44,9 @@ final readonly class EventLogConfig
         public bool $includeCorrelation = true,
         public bool $includeEventMetadata = true,
         public bool $includeComponentMetadata = true,
-        public int $stringClipLength = 0,
+        public int $stringClipLength = self::DEFAULT_STRING_CLIP_LENGTH,
+        /** @var list<string>|null Null uses the formatter defaults; [] disables redaction. */
+        public ?array $redactKeys = null,
     ) {}
 
     public static function default(?string $path = null): self
@@ -70,7 +79,10 @@ final readonly class EventLogConfig
                 includeCorrelation: self::toBool($config, 'includeCorrelation', true),
                 includeEventMetadata: self::toBool($config, 'includeEventMetadata', true),
                 includeComponentMetadata: self::toBool($config, 'includeComponentMetadata', true),
-                stringClipLength: self::toInt($config, 'stringClipLength', 0),
+                stringClipLength: self::toInt($config, 'stringClipLength', self::DEFAULT_STRING_CLIP_LENGTH),
+                redactKeys: array_key_exists('redactKeys', $config) && $config['redactKeys'] !== null
+                    ? self::toStringList($config, 'redactKeys')
+                    : null,
             );
         } catch (Throwable $e) {
             $data = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
@@ -102,6 +114,7 @@ final readonly class EventLogConfig
             'includeEventMetadata' => $this->includeEventMetadata,
             'includeComponentMetadata' => $this->includeComponentMetadata,
             'stringClipLength' => $this->stringClipLength,
+            'redactKeys' => $this->redactKeys,
         ];
     }
 
@@ -124,7 +137,8 @@ final readonly class EventLogConfig
             'includeCorrelation' => true,
             'includeEventMetadata' => true,
             'includeComponentMetadata' => true,
-            'stringClipLength' => 0,
+            'stringClipLength' => self::DEFAULT_STRING_CLIP_LENGTH,
+            'redactKeys' => null,
         ];
     }
 

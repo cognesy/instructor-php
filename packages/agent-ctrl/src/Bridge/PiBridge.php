@@ -34,7 +34,7 @@ use Cognesy\AgentCtrl\Pi\Domain\Enum\OutputMode;
 use Cognesy\AgentCtrl\Pi\Domain\Enum\ThinkingLevel;
 use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Logging\EventLog;
 use Cognesy\Sandbox\Enums\SandboxDriver;
 use Cognesy\Utils\Json\JsonParsingException;
 use JsonException;
@@ -79,7 +79,7 @@ final class PiBridge implements AgentBridge
         private bool $failFast = true,
         ?AgentCtrlExecutionId $executionId = null,
     ) {
-        $this->events = $events ?? new EventDispatcher();
+        $this->events = $events ?? EventLog::root('agent-ctrl.pi-bridge');
         $this->executionId = $executionId ?? AgentCtrlExecutionId::fresh();
         $this->commandBuilder = new PiCommandBuilder();
         $this->responseParser = new ResponseParser($this->failFast);
