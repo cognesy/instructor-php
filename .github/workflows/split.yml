@@ -4,6 +4,11 @@ on:
     branches: ['main']
     tags: ['v*']
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Release tag to split (for example, v2.7.0)"
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -18,24 +23,24 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup PHP
-        if: github.ref_type == 'tag'
+        if: github.ref_type == 'tag' || inputs.release_tag != ''
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
           tools: composer
 
       - name: Install PHP dependencies
-        if: github.ref_type == 'tag'
+        if: github.ref_type == 'tag' || inputs.release_tag != ''
         run: composer install --no-dev --optimize-autoloader --no-interaction
 
       - name: Generate docs build directories
-        if: github.ref_type == 'tag'
+        if: github.ref_type == 'tag' || inputs.release_tag != ''
         run: |
           php bin/instructor-docs gen:mintlify
           php bin/instructor-docs gen:mkdocs
 
       - name: Upload docs workspace artifact
-        if: github.ref_type == 'tag'
+        if: github.ref_type == 'tag' || inputs.release_tag != ''
         uses: actions/upload-artifact@v4
         with:
           name: release-docs-workspace
@@ -150,7 +155,7 @@ jobs:
           fetch-depth: 0  # Full history for proper splitting
 
       - name: Download docs workspace artifact
-        if: github.ref_type == 'tag'
+        if: github.ref_type == 'tag' || inputs.release_tag != ''
         uses: actions/download-artifact@v4
         with:
           name: release-docs-workspace
@@ -158,10 +163,10 @@ jobs:
 
       # Use centralized release notes from docs/release-notes
       - name: Prepare release notes
-        if: github.ref_type == 'tag'
+        if: github.ref_type == 'tag' || inputs.release_tag != ''
         id: prepare_notes
         run: |
-          TAG_NAME=${{ github.ref_name }}
+          TAG_NAME=${{ inputs.release_tag || github.ref_name }}
           # Release notes are centralized in docs/release-notes/
           CENTRAL_NOTES="docs/release-notes/${TAG_NAME}.mdx"
 
@@ -174,12 +179,12 @@ jobs:
           fi
 
       - name: Prepare docs bundles for release artifacts
-        if: github.ref_type == 'tag'
+        if: github.ref_type == 'tag' || inputs.release_tag != ''
         id: docs_bundle
         run: |
           set -euo pipefail
 
-          TAG_NAME="${{ github.ref_name }}"
+          TAG_NAME="${{ inputs.release_tag || github.ref_name }}"
           PKG_LOCAL="${{ matrix.package.local }}"
           PKG_NAME="${PKG_LOCAL#packages/}"
           DOC_SLUG=""
@@ -256,8 +261,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.SPLIT_TOKEN_4 }}
         with:
           #github_token: ${{ secrets.SPLIT_TOKEN_4 }}      # PAT here
-          tag: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
-          branch: ${{ github.ref_type == 'branch' && github.ref_name || '' }}
+          tag: ${{ github.ref_type == 'tag' && github.ref_name || inputs.release_tag || '' }}
+          branch: ${{ github.ref_type == 'branch' && inputs.release_tag == '' && github.ref_name || '' }}
           package_directory: ${{ matrix.package.local }}
           repository_organization: cognesy
           repository_name: ${{ matrix.package.name }}
@@ -266,12 +271,12 @@ jobs:
 
       # ► create GitHub Release with notes + docs bundles
       - uses: softprops/action-gh-release@v2
-        if: github.ref_type == 'tag' && env.NOTES_PATH != '' && steps.docs_bundle.outputs.has_files == 'true'
+        if: (github.ref_type == 'tag' || inputs.release_tag != '') && env.NOTES_PATH != '' && steps.docs_bundle.outputs.has_files == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.SPLIT_TOKEN_4 }}
         with:
           repository: ${{ matrix.package.repo }}          # target repo
-          tag_name: ${{ github.ref_name }}             # v1.2.3
+          tag_name: ${{ inputs.release_tag || github.ref_name }}             # v1.2.3
           body_path: ${{ env.NOTES_PATH }}
           files: ${{ steps.docs_bundle.outputs.files }}
           fail_on_unmatched_files: true
@@ -279,18 +284,18 @@ jobs:
 
       # ► fallback release path (notes only)
       - uses: softprops/action-gh-release@v2
-        if: github.ref_type == 'tag' && env.NOTES_PATH != '' && steps.docs_bundle.outputs.has_files != 'true'
+        if: (github.ref_type == 'tag' || inputs.release_tag != '') && env.NOTES_PATH != '' && steps.docs_bundle.outputs.has_files != 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.SPLIT_TOKEN_4 }}
         with:
           repository: ${{ matrix.package.repo }}          # target repo
-          tag_name: ${{ github.ref_name }}             # v1.2.3
+          tag_name: ${{ inputs.release_tag || github.ref_name }}             # v1.2.3
           body_path: ${{ env.NOTES_PATH }}
           token: ${{ secrets.SPLIT_TOKEN_4 }}        # PAT here
 
   wait-for-packagist:
     needs: split
-    if: github.ref_type == 'tag'
+    if: github.ref_type == 'tag' || inputs.release_tag != ''
     runs-on: ubuntu-latest
     steps:
       - name: Wait for Packagist
@@ -301,7 +306,7 @@ jobs:
 
   tests:
     needs: wait-for-packagist
-    if: github.ref_type == 'tag'
+    if: github.ref_type == 'tag' || inputs.release_tag != ''
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
