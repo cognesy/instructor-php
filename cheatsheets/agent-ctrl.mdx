@@ -179,6 +179,21 @@ Identity rules:
 - `sessionId()` is provider continuity metadata for resumed conversations
 - separate runs may share one `sessionId()` and still have different `executionId()` values
 
+### Session correlation in telemetry
+
+`AgentExecutionStarted` and `AgentExecutionCompleted` both expose `sessionId(): ?AgentSessionId`,
+and `AgentCtrlEventTelemetry` puts it on the envelope correlation. When it is populated:
+
+- **`resumeSession($id)`** — the root is born with the session; this is the earliest point the
+  runtime honestly knows one.
+- **`continueSession()`** — the root has no session. The flag selects "the most recent" without
+  naming it, and no placeholder is invented. Gemini is the sharp case: `continueSession()` writes
+  the literal `'latest'` into the same field `resumeSession()` uses, and `'latest'` is excluded.
+- **fresh run** — no session at start; the agent reports one, so it lands on the completion event.
+
+The root operation id is always the execution id, so runs sharing a session stay distinct traces
+that merely correlate.
+
 ## Response
 
 `AgentResponse` public properties:

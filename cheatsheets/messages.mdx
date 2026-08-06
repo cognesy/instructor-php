@@ -129,7 +129,7 @@ final readonly class ToolCall {
 
     // Construction
     ToolCall::fromArray($data);                // From array (OpenAI format)
-    ToolCall::none();                          // Sentinel "(no-tool)"
+    ToolCall::none();                          // Sentinel for "a ToolCall is required but none exists"
 
     // Accessors
     $tc->id();                                 // ?ToolCallId
@@ -140,6 +140,9 @@ final readonly class ToolCall {
     $tc->argumentsAsJson();                    // string (JSON-encoded)
     $tc->argsAsJson();                         // string (alias for argumentsAsJson)
     $tc->hasArgs();                            // bool
+    $tc->isNone();                             // bool - true for ToolCall::none(); the
+                                               // sentinel name is private, so test with
+                                               // this rather than comparing name()
     $tc->hasValue(string $key);                // bool (checks if argument key exists)
     $tc->value(string $key, mixed $default = null); // mixed (argument value by key)
     $tc->toArray();                            // Serialized array
@@ -241,7 +244,12 @@ final readonly class Message {
 // Basic construction
 new Message($role, $content, $name = '', $metadata = [], $parentId = null, $toolCalls = null, $toolResult = null, $id = null, $createdAt = null);
 new Message(MessageRole::User, 'Hello world');
-new Message('', 'Content');  // Defaults to 'user' role
+new Message('', 'Content');  // Defaults to 'user' role ('' and null both mean default)
+
+// Roles are validated at construction: an unrecognised role string throws
+// InvalidArgumentException here rather than at the first role() call. The same applies
+// to withRole(). Only '' and null fall back to DEFAULT_ROLE.
+new Message('wizard', 'Content');  // throws InvalidArgumentException
 
 // Factory methods
 Message::empty();                          // Empty message
@@ -300,12 +308,16 @@ final readonly class Content {
 
 ### ContentParts Collection
 ```php
-final readonly class ContentParts {
+/** @implements IteratorAggregate<int, ContentPart> */
+final readonly class ContentParts implements Countable, IteratorAggregate {
     /** @var ContentPart[] */
     private array $parts;
 
+    public function __construct(ContentPart ...$parts);
     public static function empty(): self;
     public static function fromArray(array $parts): self;
+    public function getIterator(): Traversable;   // foreach ($parts as $part)
+    public function all(): array;                 // ContentPart[]
     public function add(ContentPart $part): self;
     public function replaceLast(ContentPart $part): self;
     public function first(): ?ContentPart;
@@ -321,6 +333,9 @@ final readonly class ContentParts {
     public function withoutEmpty(): self;
 }
 ```
+
+The collection is directly iterable, so `foreach ($parts as $part)` works and
+`foreach ($parts->all() as $part)` is no longer required.
 
 ### Content Construction
 ```php
@@ -338,12 +353,23 @@ match(true) {
     is_null($content) => new self(),
     is_string($content) => new self(ContentPart::text($content)),
     is_array($content) && Message::isMessage($content) => Content::fromAny($content['content'] ?? ''),
+    // A keyed (non-list) array describes ONE content part, so it is passed to
+    // ContentPart::fromArray() instead of being iterated as a parts collection
+    is_array($content) && $content !== [] && !array_is_list($content)
+        => new self(ContentPart::fromArray($content)),
     is_array($content) => Content::fromParts(ContentParts::fromArray($content)),
     $content instanceof Content => Content::fromParts($content->partsList()),
     $content instanceof ContentPart => new self($content),
     $content instanceof ContentParts => Content::fromParts($content),
 }
 ```
+
+A parts collection is always a LIST. That is what separates the two array arms:
+`['type' => 'image_url', 'image_url' => [...]]` is a single part, while
+`[['type' => 'text', ...], ['type' => 'text', ...]]` is a collection of parts.
+`Messages`/`MessageInput` apply the same list-vs-keyed rule one level up: a keyed
+array is a message (recognised by its `role` / `content` / `_metadata` keys), and
+only a list of strings is treated as a sequence of text parts.
 
 ### Content State Management
 ```php
@@ -463,7 +489,9 @@ class Image implements CanProvideMessages {
 }
 
 // Construction patterns
-Image::fromFile($imagePath);               // Load from file system
+Image::fromFile($imagePath);               // Load from file system; throws RuntimeException
+                                           // if the file is unreadable or its MIME type
+                                           // cannot be detected
 Image::fromBase64($base64string, $mimeType); // From base64 data: string (must start with 'data:' prefix)
 Image::fromUrl($imageUrl, $mimeType);      // From HTTP URL
 
@@ -503,7 +531,9 @@ $image->toArray() produces:
 ```php
 class File implements CanProvideMessages {
     public function __construct(
-        string $fileData = '',             // Base64 data
+        string $fileData = '',             // '' means "no inline data" (e.g. fileId only);
+                                           // anything else MUST be a data: URI or the
+                                           // constructor throws, same as fromBase64()
         string $fileName = '',             // Original filename
         string $fileId = '',               // File identifier (for uploaded files)
         string $mimeType = 'application/octet-stream',
@@ -511,7 +541,9 @@ class File implements CanProvideMessages {
 }
 
 // Construction
-File::fromFile($filePath);                 // Load from file system
+File::fromFile($filePath);                 // Load from file system; also sets fileName from
+                                           // basename($filePath). Throws RuntimeException if
+                                           // unreadable or MIME type cannot be detected
 File::fromBase64($base64string, $mimeType); // From base64 data: string (must start with 'data:' prefix)
 
 // Content integration
@@ -523,18 +555,22 @@ $file->toMessages();                       // Messages collection
 $file->getBase64Bytes();                   // Base64 data
 $file->getMimeType();                      // MIME type
 
-// ContentPart output structure
+// ContentPart output structure - only the keys that are actually set are emitted
 $file->toContentPart() produces:
 new ContentPart('file', [
-    'file' => [
+    'file' => array_filter([
         'file_data' => $this->base64bytes,  // Base64 data if available
         'file_name' => $this->fileName,     // Original filename
         'file_id' => $this->fileId,         // File ID for uploaded files
-    ]
+    ], fn(string $value) => $value !== ''),
 ])
 
 // Supports both uploaded files (file_id) and inline files (file_data)
 // OpenAI API compatible structure
+//
+// Empty fields are OMITTED, not sent as "": a file referenced only by file_id emits
+// ['file' => ['file_id' => 'file-...']] with no empty file_data/file_name alongside it,
+// because providers pass such keys through verbatim rather than ignoring them.
 ```
 
 ### Audio Utility Class
@@ -552,13 +588,14 @@ class Audio {
     // ContentPart integration
     $audio->toContentPart() produces:
     new ContentPart('input_audio', [
-        'input_audio' => [
+        'input_audio' => array_filter([
             'format' => $this->format,
             'data' => $this->base64bytes,
-        ]
+        ], fn(string $value) => $value !== ''),
     ]);
 
     // OpenAI API compatible input_audio structure
+    // As with File, an empty format/data is omitted rather than sent as "".
 }
 ```
 
@@ -739,6 +776,13 @@ MessageStore::fromStorage($storage, $sessionId); // Load from CanStoreMessages
 $store->toStorage($storage, $sessionId);         // Save to CanStoreMessages
 ```
 
+`toStorage()` calls `CanStoreMessages::save()`, which REPLACES the session with exactly
+this store - it is not a merge. Messages absent from `$store` are gone from the session
+afterwards, including any sibling branch that was not on the loaded path, so a
+load-mutate-save round trip through one branch discards the others. Use `append()` (with
+`navigateTo()` to choose the branch) for additive writes. Both `InMemoryStorage` and
+`JsonlStorage` implement this same contract.
+
 ### Section Operator API
 ```php
 // Section access and queries
@@ -900,7 +944,12 @@ foreach ($messages->each() as $message) { /* */ }
 
 // Collection operations
 $messages->map($callback);                 // Transform to array
-$messages->filter($callback);              // Filter messages (immutable)
+$messages->filter($callback);              // Keep the messages the predicate accepts, and
+                                           // nothing else - empty messages are NOT also
+                                           // dropped, so filter(fn($m) => $m->isEmpty())
+                                           // selects them. Compose with
+                                           // withoutEmptyMessages() if you want both.
+$messages->filter();                       // @deprecated alias for withoutEmptyMessages()
 $messages->reduce($callback, $initial);    // Reduce to single value
 
 // Partitioning
@@ -933,8 +982,7 @@ $messages->asAssistant($content);          // Append assistant message
 $messages->asTool($content);               // Append tool message
 
 // Message management (immutable)
-$messages->withMessage($message);          // Replace with single message
-$messages->withMessages($messages);        // Replace all messages
+$messages->withMessages($messages);        // Replace all messages (pass [$message] for one)
 $messages->appendMessage($message);        // Append single message
 $messages->appendMessages($messages);      // Append multiple messages
 $messages->prependMessages($messages);     // Prepend multiple messages
@@ -956,6 +1004,7 @@ $messages->remapRoles($mapping);           // Transform roles
 // Content operations
 $messages->contentParts();                 // ContentParts collection from all messages
 $messages->toMergedPerRole();              // Merge consecutive same-role messages
+                                           // (see Role-Based Merging for the boundaries)
 
 // Collection operations
 $messages->reversed();                     // Reverse message order
@@ -970,6 +1019,11 @@ $messages->toString($separator = "\n");    // Text with separator (no composites
 
 // Static conversion utilities
 Messages::asString($messageArray, $separator, $renderer); // Custom rendering
+
+// $separator applies to the DEFAULT rendering only. A custom $renderer owns its own
+// separation and receives no separator - deliberately, so that a renderer producing its
+// own framing (JSON lines, XML tags, a chat transcript) does not get an extra separator
+// injected into markup it controls.
 
 // Composite handling
 if ($messages->hasComposites()) {
@@ -1018,14 +1072,24 @@ $message->withMetadata($key, $value);      // Add metadata (immutable)
 ### Message Mutation (Immutable)
 ```php
 $message->withContent($content);           // Replace content
-$message->withRole($role);                 // Change role
+$message->withRole($role);                 // Change role (throws on unknown role)
 $message->withName($name);                 // Change name
 $message->withToolCalls($toolCalls);       // Replace ToolCalls
 $message->withToolResult($toolResult);     // Replace ToolResult
 $message->withParentId($parentId);         // Set parent message ID
 $message->addContentFrom($sourceMessage); // Merge content from another message
 $message->addContentPart(string|array|ContentPart $part); // Add content part
+$message->withMergedFrom($source);         // Fold $source into this message
 ```
+
+`withMergedFrom()` is the full fold, where `addContentFrom()` only moves content:
+content parts are appended, tool calls concatenated, and `$source`'s metadata keys win
+on conflict, while identity (`id`, `parentId`, `createdAt`), `role` and `name` stay with
+the receiver - so a merged message keeps its place in a stored `parentId` chain.
+
+It throws `InvalidArgumentException` if either message carries a tool result: a tool
+result is bound to a single tool call id, and folding two together would silently drop
+that binding. This is what `toMergedPerRole()` uses.
 
 ### Message Serialization
 ```php
@@ -1085,6 +1149,12 @@ Messages::becomesComposite($messageArray); // Contains composite messages
 $merged = $messages->toMergedPerRole();
 $array = $merged->toArray();
 ```
+
+A run of same-role messages is folded with `Message::withMergedFrom()`, so the merged
+message keeps the FIRST message of the run's `id`, `parentId` and `createdAt`, and carries
+the tool calls and metadata of every message in the run. Runs break at a role change and
+at any tool-result message: a message carrying a `ToolResult` is never merged with a
+neighbour, in either direction, because that binding belongs to one tool call id.
 
 ### Provider Pattern Integration
 ```php

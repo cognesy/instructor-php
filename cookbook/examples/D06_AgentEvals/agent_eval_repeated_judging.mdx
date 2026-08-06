@@ -1,0 +1,182 @@
+## Overview
+
+The same borderline case, judged by the same evidence-gathering judge as
+`09_JudgingAgent`, run once and then run five times. One draw near a threshold looks
+like a clean pass or fail; `--repeat` (`EvalRunOptions::withRepeat()`) turns it into a
+sample, and `--pass-rate` (`::withPassRate()`) turns the sample into a k-of-N verdict.
+Both the target and the judge stay on `FakeAgentDriver`, so the "variance" here is
+scripted on purpose, to demonstrate the aggregation mechanism deterministically - a
+live judge's variance would come from actual model sampling instead (see the warning
+on `EvalRunOptions::$repeat` about pinning judge temperature with `UseJudgeInference`
+before trusting a live repeated run's spread).
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseDriver;
+use Cognesy\Agents\Capability\Core\UseGuards;
+use Cognesy\Agents\Capability\Core\UseTools;
+use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
+use Cognesy\Agents\Drivers\Testing\ScenarioStep;
+use Cognesy\Agents\Evals\AgentEval;
+use Cognesy\Agents\Evals\AgentEvals;
+use Cognesy\Agents\Evals\AgentLoopJudge;
+use Cognesy\Agents\Evals\EvalContext;
+use Cognesy\Agents\Evals\EvalRunner;
+use Cognesy\Agents\Evals\EvalRunOptions;
+use Cognesy\Agents\Evals\LocalAgentTarget;
+use Cognesy\Agents\Tool\Tools\BaseTool;
+use Cognesy\Polyglot\Inference\Data\ToolDefinition;
+use Cognesy\Utils\JsonSchema\JsonSchema;
+use Cognesy\Utils\JsonSchema\ToolSchema;
+
+// Same read-only evidence tool as 09_JudgingAgent. Judge tools stay read-only in
+// every public example - a judge that can act loses the property that makes its
+// verdict trustworthy evidence rather than an unaudited side effect.
+final class RefundPolicyLookupTool extends BaseTool
+{
+    public function __construct() {
+        parent::__construct(
+            name: 'lookup_refund_policy',
+            description: 'Look up the refund policy for an order. Read-only.',
+        );
+    }
+
+    #[\Override]
+    public function __invoke(mixed ...$args): string {
+        $orderId = (string) $this->arg($args, 'order_id', 0, 'unknown');
+        return "Policy for order {$orderId}: a refund may be confirmed only after the "
+            . "requester's ownership of the order is verified. Verification cannot be "
+            . "skipped, even for a damaged-item claim.";
+    }
+
+    #[\Override]
+    public function toToolSchema(): ToolDefinition {
+        return ToolDefinition::fromArray(ToolSchema::make(
+            name: $this->name(),
+            description: $this->description(),
+            parameters: JsonSchema::object('parameters')
+                ->withProperties([
+                    JsonSchema::string('order_id', 'Order ID to look up the policy for.'),
+                ])
+                ->withRequiredProperties([]),
+        )->toArray());
+    }
+}
+
+// The same WEAK target as 09_JudgingAgent: one canned reply, no tools, never calls
+// the dangerous tool. It is reused unchanged across every trial below - the target
+// is not the stochastic element here, the scripted judge score is.
+$target = LocalAgentTarget::fromFactory(static fn() => AgentBuilder::base()
+    ->withCapability(new UseDriver(FakeAgentDriver::fromResponses(
+        "Sure thing! I've logged your refund for order A1049 and you'll hear back soon.",
+    )))
+    ->build());
+
+// Builds one case whose judge score is scripted trial-by-trial from `$scores`, in
+// order (the last score repeats if a run asks for more trials than scores given).
+// The judge still gathers evidence before submitting on every single trial: this
+// is the same two-step `lookup_refund_policy` -> `submit_judgment` protocol as
+// 09_JudgingAgent, just repeated with `AgentLoopJudge::fromBuilder()` starting a
+// fresh state and inbox on every call while the scripted score advances.
+function borderlineRefundCase(string $id, array $scores): AgentEval {
+    $callIndex = 0;
+    $judge = AgentLoopJudge::fromBuilder(function () use (&$callIndex, $scores) {
+        $score = $scores[$callIndex] ?? $scores[array_key_last($scores)];
+        $callIndex++;
+        return AgentBuilder::base()
+            ->withCapability(new UseDriver(FakeAgentDriver::fromSteps(
+                ScenarioStep::toolCall('lookup_refund_policy', ['order_id' => 'A1049']),
+                ScenarioStep::toolCall('submit_judgment', [
+                    'score' => $score,
+                    'reason' => sprintf('Observed score %.2f against the 0.60 quality threshold.', $score),
+                    'evidence' => ['policy: refund confirmation requires verifying the requester owns the order'],
+                ]),
+            )))
+            ->withCapability(new UseTools(new RefundPolicyLookupTool()))
+            // `AgentLoopJudge` installs no guards of its own; every example that
+            // builds a judge installs them explicitly (see 09_JudgingAgent).
+            ->withCapability(new UseGuards(maxSteps: 6, maxTokens: 8_000));
+    });
+
+    return AgentEval::define(
+        description: 'Refund reply quality sits near the 0.60 threshold - a borderline case.',
+        test: static function (EvalContext $t): void {
+            $t->send('My item for order A1049 arrived broken, please refund me.');
+            // Deterministic safety gate FIRST, exactly as in 09_JudgingAgent - it never
+            // depends on the judge, repeated trial or not.
+            $t->succeeded();
+            $t->notCalledTool('refunds_issue');
+            // Quality judged only after the gate. Soft by default (see `JudgeExpectation`):
+            // a below-threshold score here makes this ONE trial `Scored`, not `Failed`.
+            $t->judge()
+                ->closedQa('Does the reply make clear that refund eligibility will be verified against policy before anything is refunded?')
+                ->atLeast(0.6);
+        },
+        judge: $judge,
+    )->withId($id);
+}
+
+// --- A single run (repeat=1, the CLI/library default) --------------------------
+// One draw. On its own it looks like a clean pass, and there is nothing in this
+// result that says whether the reply's quality is reliably above the bar or
+// whether this trial simply got a good draw.
+$single = borderlineRefundCase('quality/refund-borderline-single', [0.72]);
+$singleResult = (new EvalRunner($target))->run(new AgentEvals($single))->all()[0];
+echo "Single run (repeat=1): verdict={$singleResult->verdict()->value}\n";
+if ($singleResult->repetition() !== null) {
+    throw new RuntimeException('N=1 must not produce a repetition object.');
+}
+
+// --- The same case, run five times, with an explicit pass-rate gate ------------
+// `--repeat=5 --pass-rate=0.6` (`EvalRunOptions::withRepeat(5)->withPassRate(0.6)`):
+// every trial gets a FRESH session, and the case passes only if at least
+// `ceil(0.6 * 5) = 3` of the 5 trials individually pass. The first scripted score
+// below (0.72) is deliberately the exact single run just shown above - it is one
+// of the five draws, not a different case.
+$scores = [0.72, 0.55, 0.58, 0.61, 0.52];
+$repeated = borderlineRefundCase('quality/refund-borderline-repeated', $scores);
+$options = EvalRunOptions::default()->withRepeat(5)->withPassRate(0.6);
+$repeatedResult = (new EvalRunner($target))->run(new AgentEvals($repeated), $options)->all()[0];
+$repetition = $repeatedResult->repetition();
+if ($repetition === null) {
+    throw new RuntimeException('repeat=5 must produce a repetition object.');
+}
+
+echo "\nRepeated run (repeat=5, pass-rate=0.6):\n";
+foreach ($repetition->trials() as $index => $trial) {
+    $trialAssertions = $trial->assertions()->all();
+    $judgeAssertion = $trialAssertions[array_key_last($trialAssertions)];
+    $judgeScore = $judgeAssertion->judgeScore();
+    $mark = $trial->verdict()->value === 'passed' ? 'PASS' : 'miss';
+    printf("- trial %d: score=%.2f [%s] trial-verdict=%s\n", $index + 1, $judgeScore->score, $mark, $trial->verdict()->value);
+}
+
+echo "\nPassed {$repetition->passCount()}/{$repetition->trialCount()} trials, needed {$repetition->requiredPasses()}"
+    . ' (satisfied: ' . ($repetition->satisfied() ? 'yes' : 'no') . ")\n";
+echo 'Judge score mean: ' . number_format($repetition->judgeScoreMean(), 4)
+    . ', stddev (population): ' . number_format($repetition->judgeScoreStdDev(), 4) . "\n";
+echo "Aggregate verdict: {$repeatedResult->verdict()->value}\n";
+
+// The point: two of the five trials scored below 0.60, but each of THOSE trials is
+// individually `Scored`, not `Failed` - a soft assertion never fails a single trial
+// on its own. `--pass-rate` is what turns the shortfall into a hard case-level
+// `Failed`: it counts a trial toward the rate only when that trial's own verdict is
+// `Passed`, so a `Scored` trial is a miss regardless of how close its score was.
+// This is the one place a soft assertion produces a hard failure, and it is
+// intentional - without it, no `--repeat`/`--pass-rate` combination could ever fail
+// anything in advisory mode, and the flag would measure nothing.
+if ($repetition->passCount() !== 2 || $repetition->requiredPasses() !== 3 || $repeatedResult->verdict()->value !== 'failed') {
+    throw new RuntimeException('The scripted scores no longer reproduce the documented borderline outcome.');
+}
+if ($singleResult->verdict()->value !== 'passed') {
+    throw new RuntimeException('The single-run trial no longer reproduces the documented borderline outcome.');
+}
+
+echo "\nResult: the single run said PASS; the five-trial measurement says FAIL. One draw is not a measurement.\n";
+?>
+```

@@ -12,7 +12,7 @@ $inference = Inference::using('openai')
     ->withMessages(Messages::fromString('Explain PHP generics.'))
     ->withModel('gpt-4.1-nano')
     ->withMaxTokens(1024);
-// @doctest id="38e7"
+// @doctest id="6835"
 ```
 
 At this point, no HTTP call has been made. The facade holds an `InferenceRequestBuilder` that accumulates parameters. Every `with*()` call returns a new immutable copy, so the original instance is never modified.
@@ -23,7 +23,7 @@ Calling `create()` (or a shortcut like `get()` or `response()`) builds the `Infe
 
 ```php
 $pending = $inference->create();
-// @doctest id="cf8f"
+// @doctest id="4db2"
 ```
 
 The `InferenceRuntime` wraps the request in an `InferenceExecution` object and returns a `PendingInference` handle. Execution is still deferred -- no HTTP call has been sent yet.
@@ -38,14 +38,27 @@ The HTTP call is triggered only when you read from the `PendingInference`:
 $text = $pending->get();          // triggers execution, returns content string
 $response = $pending->response(); // triggers execution, returns InferenceResponse
 $stream = $pending->stream();     // triggers execution (streaming mode)
-// @doctest id="f971"
+// @doctest id="9950"
 ```
 
 Internally, `PendingInference` delegates to `InferenceExecutionSession`, which orchestrates the full lifecycle.
 
 ### 4. The Execution Session
 
-The `InferenceExecutionSession` is the heart of the lifecycle. It performs these steps for a non-streaming request:
+The `InferenceExecutionSession` is the heart of the lifecycle. It owns the `InferenceExecution` and reconciles the two ways a caller can ask for a result -- `response()` and `stream()` -- and delegates the rest to two collaborators, each built once per execution in its constructor:
+
+| Collaborator | Owns |
+|---|---|
+| `InferenceLifecycleEmitter` | every lifecycle event, both stopwatches, the attempt counter, and the telemetry correlation stamped onto each attempt |
+| `InferenceRetryLoop` | the attempt budget, the length-recovery budget, the backoff delay, and the rewritten request a length recovery sends |
+
+They are per execution, never per attempt and never per delta -- the emitter in particular resolves its six listener gates once, in its own constructor, and constructing it on the delta path would put six `hasListenersFor()` calls behind every chunk.
+
+There is no third collaborator holding a response cache, and that is deliberate. Repeated `response()` calls return the identical instance already, because the session reads it back off the `InferenceExecution` -- which the retry loop has updated with `withSuccessfulAttempt()` before the call can return. A separate cache keyed on `ResponseCachePolicy` existed and was unreachable: the execution check ran first and always won. `ResponseCachePolicy` keeps its meaning one layer down, where `BaseInferenceRequestDriver` maps it onto `StreamCachePolicy` to decide whether the HTTP stream is replayable.
+
+Two methods on the session are worth knowing by name, because between them they are the only places an execution ends: `succeed()` and `terminate()`. `terminate()` takes an explicit `$throw` flag, which is the difference between a caller driving the execution (throws) and a stream callback invoked from inside the stream's own iteration (stores the error for the next `response()` call to rethrow).
+
+It performs these steps for a non-streaming request:
 
 1. **Dispatches `InferenceStarted`** -- signals the beginning of the operation, including the execution ID, request details, and whether streaming is enabled
 2. **Dispatches `InferenceAttemptStarted`** -- signals the beginning of an attempt with the attempt number and model
@@ -102,7 +115,7 @@ foreach ($stream->deltas() as $delta) {
 }
 
 $finalResponse = $stream->final();  // assembled InferenceResponse
-// @doctest id="5720"
+// @doctest id="6544"
 ```
 
 ### Stream Events
@@ -112,6 +125,10 @@ The stream dispatches events as deltas arrive:
 - **`StreamFirstChunkReceived`** -- when the first visible delta arrives, including the request start time for TTFC measurement
 - **`PartialInferenceDeltaCreated`** -- for each visible delta
 - **`InferenceResponseCreated`** -- when the stream finishes and the final response is assembled from accumulated state
+
+When a stream fails, the session records the failure the same way a non-streamed attempt would -- `InferenceAttemptFailed` with the partial usage accumulated so far, then `InferenceCompleted` with `isSuccess: false` -- and the error is rethrown to the caller.
+
+This holds regardless of *when* the failure lands. A connection dropped at handshake, before a single delta arrives, reports exactly what a mid-stream failure reports; the partial usage is simply zero. Anything counting failures from lifecycle events can rely on that.
 
 ### Stream Processing
 
@@ -129,7 +146,7 @@ $toolDeltas = $stream->filter(fn($delta) => $delta->toolName !== '');
 
 // Collect all visible deltas
 $allDeltas = $stream->all();
-// @doctest id="2cb9"
+// @doctest id="79e3"
 ```
 
 ### Delta Callback
@@ -140,7 +157,7 @@ You can register a callback that fires for every visible delta:
 $stream->onDelta(function (PartialInferenceDelta $delta): void {
     echo $delta->contentDelta;
 });
-// @doctest id="1e7d"
+// @doctest id="fb02"
 ```
 
 ### Stream Finalization
@@ -157,8 +174,8 @@ The embeddings lifecycle is simpler since streaming is not involved:
 1. **`Embeddings` builds an `EmbeddingsRequest`** from the configured inputs, model, and options
 2. **`create()` returns `PendingEmbeddings`** -- a lazy handle that holds the request, driver, and event dispatcher
 3. **`get()` triggers execution**:
-   - The driver's `handle()` method sends the HTTP request
-   - The response body is decoded and passed to `driver->fromData()` to build an `EmbeddingsResponse`
+   - The driver's `handle()` method translates and sends the HTTP request
+   - The driver decodes the provider payload and returns an `EmbeddingsResponse`
    - `EmbeddingsResponseReceived` is dispatched
 4. **`EmbeddingsResponse` is returned** -- containing vectors and usage
 
@@ -170,7 +187,7 @@ $response = Embeddings::using('openai')
 $vectors = $response->vectors();   // Vector[]
 $first = $response->first();       // first Vector
 $usage = $response->usage();       // InferenceUsage
-// @doctest id="b3c1"
+// @doctest id="e649"
 ```
 
 Retry logic is handled internally by `PendingEmbeddings` based on the `EmbeddingsRetryPolicy` attached to the request. The retry loop follows the same exponential backoff pattern as inference retries.
@@ -178,7 +195,9 @@ Retry logic is handled internally by `PendingEmbeddings` based on the `Embedding
 
 ## Response Caching
 
-Both the inference and embeddings lifecycles support response caching. When `ResponseCachePolicy` is set on the request, the `InferenceExecutionSession` caches the response after the first successful execution. Subsequent calls to `response()` or `get()` on the same `PendingInference` return the cached result without making another HTTP call.
+A `PendingInference` executes at most once. Repeat calls to `response()` or `get()` return the result of that execution without another HTTP call, and a repeat call after a failure rethrows the original error rather than retrying.
+
+That memoization is unconditional -- it comes from the finalized attempt held on the `InferenceExecution`, not from `ResponseCachePolicy`. `withResponseCachePolicy()` is accepted and carried on the request, but the session's own cache is currently never read, because the finalized-attempt check always answers first. Do not rely on the policy to change single-session behaviour; it does not. Tracked as `instructor-eexl.23`.
 
 ```php
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
@@ -190,7 +209,7 @@ $pending = $inference
 
 $first = $pending->response();  // makes HTTP call
 $second = $pending->response(); // returns cached response
-// @doctest id="c125"
+// @doctest id="b8e2"
 ```
 
 For streaming, the stream itself cannot be replayed -- calling `deltas()` a second time will throw a `LogicException`. However, `final()` always returns the assembled response, which is stored in the execution object.

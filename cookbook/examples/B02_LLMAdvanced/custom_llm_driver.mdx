@@ -15,28 +15,42 @@ use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
-use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIDriver;
+use Cognesy\Polyglot\Inference\Drivers\InferenceDriverSpec;
+use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIBodyFormat;
+use Cognesy\Polyglot\Inference\Drivers\SpecifiedInferenceDriver;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Utils\Str;
 
-// we will use existing, bundled driver as an example, but you can provide any class that implements
-// the inference driver contract and inject it into a runtime-local registry
+// A provider that speaks the OpenAI wire protocol needs no driver class of its own -- an
+// InferenceDriverSpec names the pieces and the runtime assembles them. To change *behaviour*
+// rather than composition, subclass SpecifiedInferenceDriver and name it in the spec.
+
+final class EchoingDriver extends SpecifiedInferenceDriver
+{
+    #[\Override]
+    protected function makeHttpResponse(HttpRequest $request): HttpResponse
+    {
+        // some extra functionality to demonstrate our driver is being used
+        echo ">>> Handling request...\n";
+
+        return parent::makeHttpResponse($request);
+    }
+}
 
 $drivers = BundledInferenceDrivers::registry()->withDriver(
     name: 'custom-driver',
-    driver: fn ($config, $httpClient, $events) => new class($config, $httpClient, $events) extends OpenAIDriver
-    {
-        #[\Override]
-        protected function makeHttpResponse(HttpRequest $request): HttpResponse
-        {
-            // some extra functionality to demonstrate our driver is being used
-            echo ">>> Handling request...\n";
-
-            return parent::makeHttpResponse($request);
-        }
-    },
+    driver: new InferenceDriverSpec(
+        bodyFormat: OpenAIBodyFormat::class,
+        driverClass: EchoingDriver::class,
+    ),
 );
+
+// withDriver() still accepts a class-string or a closure, exactly as before -- a spec is a
+// third option, not a replacement:
+//
+//     driver: fn($config, $httpClient, $events) => new MyDriver($config, $httpClient, $events),
+//     driver: MyDriver::class,
 
 // Create instance of LLM client initialized with custom parameters
 $config = new LLMConfig(

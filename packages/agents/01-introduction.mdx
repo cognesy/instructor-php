@@ -74,7 +74,7 @@ $loop = AgentBuilder::base()
     ->withCapability(new UseBash())
     ->withCapability(new UseGuards(maxSteps: 10))
     ->build();
-// @doctest id="1022"
+// @doctest id="26f1"
 ```
 
 ## Package Structure
@@ -104,7 +104,7 @@ Template/                 # Agent definitions, parsers (MD/YAML/JSON), registry
 Session/                  # AgentSession, SessionRuntime, actions, stores
 
 Broadcasting/             # AgentEventBroadcaster for SSE/WebSocket streaming
-// @doctest id="e83a"
+// @doctest id="e341"
 ```
 
 ## Minimal Example
@@ -118,7 +118,7 @@ $state = AgentState::empty()->withUserMessage('Hello!');
 $result = $loop->execute($state);
 
 echo $result->finalResponse()->toString();
-// @doctest id="326c"
+// @doctest id="774e"
 ```
 
 This sends a single message to the default LLM provider, receives a text response (no tool calls), and prints it. The loop detects there are no tool calls to execute, so it stops after one step. The entire execution is captured in the returned `AgentState`, which you can inspect for usage statistics, step history, errors, and timing information.
@@ -129,3 +129,4 @@ This sends a single message to the default LLM provider, receives a text respons
 2. **[AgentBuilder & Capabilities](13-agent-builder)** -- Compose agents from reusable capability modules when configuration becomes non-trivial.
 3. **[Agent Templates](14-agent-templates)** -- Define agents as data when configuration should come from files rather than code.
 4. **[Session Runtime](16-session-runtime)** -- Persist and resume agent sessions across processes for chat interfaces and long-running workflows.
+5. **[Agent Evals](21-evals)** -- Write, run, and interpret behavioral evals that grade an agent target with deterministic assertions and semantic judges.

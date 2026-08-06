@@ -37,6 +37,15 @@ Requests and responses are normalized into package data objects that are provide
 
 These objects isolate your application from provider-specific response shapes. Both request types support immutable `with*()` mutators for building modified copies.
 
+`PendingInference` is the laziness boundary -- nothing is sent until you ask for a result. Behind it, `InferenceExecutionSession` drives one request to one response and divides that job with two per-execution collaborators, both in `Inference/Core/`:
+
+- **`InferenceLifecycleEmitter`** -- every lifecycle event, the execution and attempt stopwatches, the attempt counter, and per-attempt telemetry correlation
+- **`InferenceRetryLoop`** -- the attempt and length-recovery budgets, backoff delay, and length-recovery request rewriting
+
+There is deliberately no response cache. Calling `response()` repeatedly returns the identical instance because the session reads it back off the `InferenceExecution` it already holds -- which works for every `ResponseCachePolicy`, not only `Memory`. `ResponseCachePolicy` still matters, but at the HTTP layer: it becomes the `StreamCachePolicy` that decides whether a stream is replayable.
+
+See [`lifecycle.md`](lifecycle) for the event sequence each path emits.
+
 ### Driver Layer
 
 Drivers translate Polyglot requests into provider-native HTTP payloads and normalize the results back. Each driver implements `CanProcessInferenceRequest` (for inference) or `CanHandleVectorization` (for embeddings) and is composed of smaller adapter responsibilities:
@@ -47,7 +56,21 @@ Drivers translate Polyglot requests into provider-native HTTP payloads and norma
 - **Body formatters** (`CanMapRequestBody`) -- assemble the full request body with mode-specific adjustments
 - **Usage formatters** (`CanMapUsage`) -- extract token usage from provider responses
 
-Most inference drivers extend `BaseInferenceRequestDriver`, which provides the standard HTTP execution flow and stream handling. Provider-specific classes like `OpenAIDriver`, `AnthropicDriver`, and `GeminiDriver` compose the appropriate adapters and formatters for their API.
+All inference drivers extend `BaseInferenceRequestDriver`, which provides the standard HTTP execution flow and stream handling. Every bundled provider is declared as an `InferenceDriverSpec` -- a row naming its adapters and formatters -- and built by the single `SpecifiedInferenceDriver`. Providers that assemble their own URL or headers select bespoke request adapters in that row; the provider-specific behavior does not require a driver class.
+
+
+### Shared Support
+
+Inference and embeddings are separate subsystems with parallel class hierarchies, but a few primitives belong to neither. They live under `Cognesy\Polyglot\Support\`:
+
+- **`Support\Redaction\SensitiveDataRedactor`** -- decides *what* is sensitive: which header names, query parameters and option keys are masked before a value can reach an event payload or an exception message.
+- **`Support\Redaction\RedactsHttpPayloads`** -- decides *where* the drivers apply it. `BaseInferenceRequestDriver` and `BaseEmbedDriver` both use this trait, so a tightened rule takes effect on both sides at once. Redaction runs on error paths only; nothing here executes on a successful request.
+- **`Support\Retry\RetryBackoff`, `RetryJitter`, `RetryPolicyInvariants`** -- the delay computation, jitter strategies and constructor invariants shared by `InferenceRetryPolicy` and `EmbeddingsRetryPolicy`.
+- **`Support\Pricing\Cost`** -- the value object every cost calculator returns, on both sides. Note that the calculators themselves are *not* shared: `Inference\Pricing\FlatRateCostCalculator` prices five token categories and `Embeddings\Pricing\FlatRateCostCalculator` prices one, and `InferencePricing` and `EmbeddingsPricing` carry different rate fields. They share a name, not a signature.
+
+The retry and redaction classes previously lived under `Inference\`, which forced every embeddings file that needed them to import from the inference subsystem. `Cost` was already neutral, at a top-level `Polyglot\Pricing\`; it moved here so that `Support\` is the package's single answer to "where do things neither subsystem owns live?" rather than one of two competing conventions.
+
+The old fully-qualified names all still resolve, through a lazily-registered alias in `src/deprecated_aliases.php`, and will be removed in the next major version.
 
 
 ## How the Layers Connect
@@ -76,7 +99,7 @@ Most inference drivers extend `BaseInferenceRequestDriver`, which provides the s
 +------------------------------------------------+
 |             HTTP Client (shared)               |     Transport
 +------------------------------------------------+
-// @doctest id="d6a8"
+// @doctest id="d034"
 ```
 
 The public facade creates a request and hands it to the runtime. The runtime delegates to a driver, which translates the request into an HTTP call and normalizes the response. Events are dispatched at each stage for observability. The result flows back up as a normalized data object.

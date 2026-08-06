@@ -3,11 +3,7 @@ a mode-specific instruction prompt, examples, and retry context. You can customi
 of these to tune extraction behavior without changing the underlying extraction flow.
 
 The default `StructuredPromptRequestMaterializer` uses prompt classes backed by bundled
-Twig templates. Customize the default path by supplying your own prompt classes.
-
-`RequestMaterializer` and its inline prompt/chat-structure settings are deprecated 2.5
-compatibility APIs. They have no effect on the default path and work only when that
-legacy materializer is injected explicitly.
+Twig templates. Customize it by supplying your own prompt classes.
 
 
 ## System And Prompt Text
@@ -22,7 +18,7 @@ $result = (new StructuredOutput)
     ->withPrompt('Extract the contact details from the text below.')
     ->with(messages: $text, responseModel: Contact::class)
     ->get();
-// @doctest id="01e1"
+// @doctest id="2411"
 ```
 
 - **System text** sets the model's persona and overall behavior. Use it for stable
@@ -42,7 +38,7 @@ $result = (new StructuredOutput)
         prompt: 'Extract the contact details.',
     )
     ->get();
-// @doctest id="491a"
+// @doctest id="e9e9"
 ```
 
 
@@ -60,7 +56,7 @@ $result = (new StructuredOutput)
     ])
     ->with(messages: $text, responseModel: Person::class)
     ->get();
-// @doctest id="2a9d"
+// @doctest id="b8ae"
 ```
 
 See the [Demonstrations](demonstrations) page for details on the `Example` class.
@@ -82,7 +78,7 @@ $result = (new StructuredOutput)
     )
     ->with(messages: 'Now extract from this specific paragraph...', responseModel: Entity::class)
     ->get();
-// @doctest id="f4c2"
+// @doctest id="8672"
 ```
 
 The cached context is placed before the per-request content in the prompt. On the new
@@ -120,7 +116,7 @@ $config = new StructuredOutputConfig(
     retryPromptClass: App\Prompts\RetryFeedbackPrompt::class,
     deserializationErrorPromptClass: App\Prompts\DeserializationRepairPrompt::class,
 );
-// @doctest id="5df9"
+// @doctest id="28f8"
 ```
 
 If you store these in YAML, use FQN strings:
@@ -134,7 +130,7 @@ modePromptClasses:
 
 retryPromptClass: 'App\\Prompts\\RetryFeedbackPrompt'
 deserializationErrorPromptClass: 'App\\Prompts\\DeserializationRepairPrompt'
-# @doctest id="4ae3"
+# @doctest id="f201"
 ```
 
 ## Tool Name And Description
@@ -149,7 +145,7 @@ $config = new StructuredOutputConfig(
     toolName: 'extract_person',
     toolDescription: 'Extract personal information from the provided text.',
 );
-// @doctest id="221e"
+// @doctest id="f80a"
 ```
 
 The defaults are `extracted_data` and `Function call based on user instructions.`
@@ -169,7 +165,7 @@ prompt class:
 $config = new StructuredOutputConfig(
     retryPromptClass: App\Prompts\RetryFeedbackPrompt::class,
 );
-// @doctest id="a1ee"
+// @doctest id="0049"
 ```
 
 The same pattern applies to deserialization repair via `deserializationErrorPromptClass`.
@@ -177,7 +173,8 @@ The same pattern applies to deserialization repair via `deserializationErrorProm
 
 ## Legacy Compatibility
 
-The inline `modePrompts`, `retryPrompt`, and `chatStructure` settings are retained only
-for applications that explicitly inject the deprecated `RequestMaterializer`. They are
-scheduled for removal in 2.6. New code should use prompt classes or provide a custom
-`CanMaterializeRequest` implementation when prompt-class customization is insufficient.
+The inline `modePrompts`, `retryPrompt`, and `chatStructure` settings were removed in 2.7
+along with the legacy materializer that read them. `StructuredOutputConfig::fromArray()`
+ignores them rather than failing, so old config files keep loading. Use prompt classes, or
+provide a custom `CanMaterializeRequest` implementation when prompt-class customization is
+insufficient.

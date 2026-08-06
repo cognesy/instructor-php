@@ -1,3 +1,105 @@
+## Custom Inference Drivers in v2.7
+
+Only driver authors are affected. Preset names, `Inference`, `PendingInference`,
+`InferenceStream`, `InferenceResponse`, `Embeddings`, `PendingEmbeddings`, and `LLMConfig` are
+unchanged, and so is every interface under `Cognesy\Polyglot\Inference\Contracts`.
+
+All 26 provider driver shells under `Cognesy\Polyglot\Inference\Drivers\` were removed:
+`A21Driver`, `CerebrasDriver`, `DeepseekDriver`, `FireworksDriver`, `GlmDriver`, `GroqDriver`,
+`InceptionDriver`, `MetaDriver`, `MinimaxiDriver`, `MistralDriver`, `OpenAIDriver`,
+`OpenAICompatibleDriver`, `OpenRouterDriver`, `PerplexityDriver`, `QwenDriver`, `SambaNovaDriver`,
+`XAiDriver`, `AnthropicDriver`, `AzureDriver`, `BedrockOpenAIDriver`, `CohereV2Driver`,
+`GeminiDriver`, `GeminiOAIDriver`, `HuggingFaceDriver`, `OpenAIResponsesDriver`, and
+`OpenResponsesDriver`. Their only content was composing collaborators, so all bundled inference
+registrations — including native-protocol and bespoke-endpoint providers — are now
+`InferenceDriverSpec` rows in `BundledInferenceDrivers`, all served by one
+`SpecifiedInferenceDriver`. The embeddings driver of the same short name,
+`Embeddings\Drivers\OpenAI\OpenAIDriver`, is untouched.
+
+### Replacing a subclass of a bundled driver
+
+Extend `SpecifiedInferenceDriver` and name your subclass in the spec's `driverClass`. It still
+receives the five collaborators assembled for it:
+
+```php
+final class MyDriver extends SpecifiedInferenceDriver { /* override one method */ }
+
+$registry = BundledInferenceDrivers::registry()->withDriver(
+    'my-provider',
+    new InferenceDriverSpec(
+        bodyFormat: MyBodyFormat::class,
+        driverClass: MyDriver::class,
+    ),
+);
+// @doctest id="f59d"
+```
+
+If you only changed the wire format, no subclass is needed — pass your own `bodyFormat`,
+`requestAdapter`, `responseAdapter`, `usageFormat`, or `messageFormat` to the spec. Each
+defaults to the OpenAI implementation.
+
+### Replacing a `capabilities()` override
+
+Per-model capability logic becomes data on the spec rather than a method override — either a
+fixed `DriverCapabilities`, or a `Closure(string $model): DriverCapabilities` when the answer
+depends on the model. Omit it for "everything supported".
+
+```php
+new InferenceDriverSpec(
+    bodyFormat: MyBodyFormat::class,
+    capabilities: new DriverCapabilities(responseFormatWithTools: false),
+);
+// @doctest id="633e"
+```
+
+`InferenceDriverRegistry::withDriver()` still accepts a class-string or a callable, so drivers
+registered that way need no change.
+
+### Moved classes
+
+`Cognesy\Polyglot\Inference\Contracts\MessageMapper` is now
+`Cognesy\Polyglot\Inference\Drivers\MessageMapper` — it is a driver helper, not a contract.
+Update the import; the class is otherwise unchanged. This one has no alias.
+
+Five classes that neither subsystem owns moved under `Cognesy\Polyglot\Support\`:
+
+| Old FQCN | New FQCN |
+|---|---|
+| `Inference\Core\SensitiveDataRedactor` | `Support\Redaction\SensitiveDataRedactor` |
+| `Inference\Config\RetryBackoff` | `Support\Retry\RetryBackoff` |
+| `Inference\Config\RetryJitter` | `Support\Retry\RetryJitter` |
+| `Inference\Config\RetryPolicyInvariants` | `Support\Retry\RetryPolicyInvariants` |
+| `Polyglot\Pricing\Cost` | `Support\Pricing\Cost` |
+
+All five old names keep working. The package registers a lazy `class_alias()` autoloader, so an
+old FQCN resolves to the *same* class — `instanceof` holds in both directions and
+`RetryJitter::Full === Support\Retry\RetryJitter::Full`. Migrate at your convenience; the
+aliases are removed at the next major.
+
+### Removed dead classes
+
+`Inference\Enums\InferenceContentType`, `Inference\Collections\InferenceResponseList`, and
+`Embeddings\Traits\HasFinders` were deleted. None had a usage anywhere in the repository.
+
+## Custom Embeddings Drivers in v2.7
+
+`CanHandleVectorization` now returns the domain response directly. PHP cannot provide a
+compatibility shim for this interface return-type change, so custom implementations must be
+updated together with the v2.7 package upgrade.
+
+```diff
+- public function handle(EmbeddingsRequest $request): HttpResponse;
+- public function fromData(array $data): ?EmbeddingsResponse;
++ public function handle(EmbeddingsRequest $request): EmbeddingsResponse;
+// @doctest id="7a43"
+```
+
+Move HTTP response decoding and adaptation into `handle()`. The separate `fromData()` method
+is no longer part of the driver contract. Drivers that extend `BaseEmbedDriver` inherit the
+new behavior unless they override `handle()`.
+
+## Migrating from v1 to v2
+
 Polyglot 2.0 is centered around explicit request fields.
 
 The main migration points are:
@@ -28,7 +130,7 @@ $data = $inference
         mode: $oldMode,
     )
     ->asJsonData();
-// @doctest id="4d34"
+// @doctest id="6058"
 ```
 
 ## After
@@ -44,7 +146,7 @@ $data = Inference::using('openai')
     ->withMessages(Messages::fromString('Return JSON.'))
     ->withResponseFormat(new ResponseFormat(type: 'json_object'))
     ->asJsonData();
-// @doctest id="73e8"
+// @doctest id="0131"
 ```
 
 Markdown-JSON fallback is no longer a Polyglot concern.
