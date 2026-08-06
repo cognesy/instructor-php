@@ -28,7 +28,16 @@ $config = (new StructuredOutputConfig())
 
 The builder's `withConfig($defaults)` seed has no replacement: start the chain from that config
 (`$defaults->withMaxRetries(2)`). `StructuredOutputConfig` gained `withSchemaDescription()` and
-`withStreamMaterializationInterval()` so that every former builder method has an equivalent.
+`withStreamMaterializationInterval()`, so every former builder method has a namesake with two
+exceptions: `withThrowOnTransformationFailure()` and `withDefaultToStdClass()` have no fluent
+equivalent on `StructuredOutputConfig`. Both were `@deprecated 2.5` no-ops — transformation
+failures always fail the attempt, and `defaultToStdClass` was superseded by per-request
+`intoStdClass()` — and both are still accepted as named arguments to the constructor and to
+`with()`, so config round-trips keep working:
+
+```php
+$config = $config->with(throwOnTransformationFailure: true);
+```
 
 One semantic difference to check: the builder's `create()` merged `modePromptClasses` into the
 defaults, whatever route set them. On `StructuredOutputConfig`, `withModePromptClass()` merges a

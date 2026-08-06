@@ -3,8 +3,13 @@ title: 'v2.7.0'
 ---
 
 v2.7 makes agent behaviour testable, makes the runtime measurable, and turns observability on
-by default. It also restructures several provider and response boundaries, so read the
-breaking changes before upgrading.
+by default. It also restructures several provider and response boundaries and tightens what the
+messages layer accepts, so read the breaking changes before upgrading.
+
+Most of those breaks are loud — a missing class or method fails immediately on upgrade. Two are
+not, and are worth a deliberate look: `Messages::filter()` no longer drops empty messages
+alongside your predicate, which changes result sets silently, and `updatedAt` on Polyglot's
+inference data objects stops advancing on every copy, which changes serialized output.
 
 ## Breaking Changes
 
@@ -35,7 +40,11 @@ $config = (new StructuredOutputConfig())
 
 The builder's `withConfig($defaults)` seed has no replacement: start the chain from that config
 instead. `StructuredOutputConfig` gained `withSchemaDescription()` and
-`withStreamMaterializationInterval()` so that every former builder method has an equivalent.
+`withStreamMaterializationInterval()`, so every former builder method has a namesake with two
+exceptions: `withThrowOnTransformationFailure()` and `withDefaultToStdClass()` have no fluent
+equivalent. Both were deprecated no-ops as of 2.5 — transformation failures already always fail
+the attempt — and both values are still accepted as named arguments to the constructor and to
+`with()`, so config round-trips are unaffected.
 
 One semantic difference is worth checking. The builder's `create()` merged `modePromptClasses`
 into the defaults whatever route set them. On `StructuredOutputConfig`,
@@ -130,6 +139,12 @@ model name (`deepseek` is the one bundled provider that needs the closure).
 `Cognesy\Polyglot\Inference\Drivers\MessageMapper` — it is a driver helper, not a contract.
 Update the import; the class is otherwise unchanged. This is the one move with no alias.
 
+One observable change on the data objects: `InferenceRequest::with()`, `InferenceAttempt::with()`,
+and `InferenceResponse::with()` no longer recompute `updatedAt` on every immutable copy, carrying
+the existing value over instead. `updatedAt` is public readonly and appears in `array()` output,
+so serialized payloads change: it now reflects creation time and stays constant across the
+object's lifetime, rather than tracking the last `with()` call.
+
 Three unreferenced classes were deleted outright: `Inference\Enums\InferenceContentType`,
 `Inference\Collections\InferenceResponseList`, and `Embeddings\Traits\HasFinders`. None had a
 single usage anywhere in the repository.
@@ -180,9 +195,18 @@ extract from; the streaming path may already hold a value the aggregator built f
 + ) : Result;
 ```
 
-Callers of `validate()` need no change. Implementors of either interface do: PHP requires an
-implementation to accept at least the interface's parameters, so a custom validator or response
-generator must add the new parameter to load at all.
+Callers of `validate()` need no change, and neither do existing implementors: PHP permits an
+interface to add trailing optional parameters without forcing implementations to redeclare them.
+Add the parameter only if you want your own validator or response generator stamped into
+telemetry. The one hard break here is `makeResponse()` disappearing, which affects anyone who
+implemented `CanGenerateResponse` themselves — both implementations in this repository were test
+doubles.
+
+`ResponseGenerator`, the bundled implementation, also narrowed its constructor from
+`(CanDeserializeResponse, CanValidateResponse, CanTransformResponse, CanExtractResponse)` to
+`(ResponseMaterializer, CanExtractResponse)`, and its `materializer()` getter is gone. It is
+internal wiring rather than typical end-user surface, but it is a public class, so constructing
+it directly needs updating.
 
 Both contexts are optional at the call site. They are supplied by callers that hold a
 structured-output execution, so extraction and validation events can be stamped as children of
@@ -223,6 +247,54 @@ stated explicitly: it **replaces** the session with exactly the store passed in,
 store built from a subset of a session prunes the session to that subset. `load()` returns the
 whole session, so load → mutate → save is lossless. Use `append()` with `navigateTo()` for
 additive writes.
+
+### Messages::filter() Is Now a Pure Predicate
+
+`filter(callable $callback)` used to drop empty messages *in addition to* applying your
+predicate. It now applies only the predicate, so a filter that accepts everything returns
+everything:
+
+```php
+// two messages, one of them empty
+$messages->filter(fn() => true)->count();   // was 1, is now 2
+```
+
+This is a silent change in result sets rather than an error, so it deserves a look wherever you
+filter messages. Chain `->filter($cb)->withoutEmptyMessages()` to restore the old behaviour. The
+**no-argument** form is untouched: `filter()` remains a deprecated alias for
+`withoutEmptyMessages()`, so that call shape means exactly what it always did.
+
+### Invalid Message Roles Throw Instead of Being Coerced
+
+Role handling had two contradictory silent policies. `new Message('human')` stored the string
+raw and threw only later, at the first `role()` call — far from the cause, and after
+`toArray()` had already round-tripped the bad value through storage. Meanwhile
+`MessageInput::normalizeRole()` coerced an unrecognized role to `user`, so the same `'human'`
+became `'assistant'`-adjacent silent data corruption on the array-ingestion path: a wrong role,
+no signal.
+
+Both paths now validate at construction. `new Message($role)`, `Message::withRole()`,
+`Message::fromArray()`, and `MessageInput::fromArray()` throw
+`InvalidArgumentException("Invalid message role: {$role}")` for anything outside `system`,
+`developer`, `user`, `assistant`, and `tool`. An empty string or null still means the default
+role. If you ingest provider-specific or user-supplied role strings, map them to one of the five
+cases before constructing.
+
+### Stricter Failure at the Messages Boundary
+
+Three smaller changes in how invalid input fails:
+
+- `fork()` on an unknown message id now throws `RuntimeException("Message not found: ...")` in
+  both storage backends. It previously created a session with no messages and a `leafId`
+  pointing at nothing, so the next `append()` stamped a dangling `parentId` onto a real message.
+  `JsonlStorage` performs the check before creating the file, so a rejected fork leaves no
+  orphan behind.
+- `ToolCalls::fromArray()` throws `InvalidArgumentException` naming the offending index for a
+  bare string at a list position, where it previously surfaced a raw `TypeError` from inside
+  `ToolCall::__construct()`. Catch the new type if you were catching `TypeError` here.
+- `ContentPart::toString()` returns `''` instead of raising a `TypeError` when the `text` field
+  holds a non-string. This is the one change in the other direction, and deliberately so: it
+  runs on provider serialization paths, where an empty part beats a fatal.
 
 ## Agent Evals
 
@@ -273,13 +345,34 @@ telemetry package's runtime wiring documentation.
 
 ## Structured Output and Validation Are Visible in Traces
 
-`structured_output.validate` is now a first-class span rather than an attribute on its parent,
-so validation appears in Langfuse and OTel traces with its own timing and outcome. Extraction
-telemetry moves to envelope-first emission, and `PhaseTelemetryContext` carries the phase
-correlation that the extraction and validation paths previously rebuilt ad hoc.
+Two spans that traces were supposed to contain were never actually reaching exporters, for two
+different reasons. Both now appear.
 
-HTTP trace-context propagation is explicit rather than ambient: the trace context is passed
-through the request boundary, so spans from an HTTP call attach to the operation that made it.
+`structured_output.validate` did not exist as a span at all. The projector mapped
+`ResponseValidationFailed` straight to an error log and had no handling for the attempt or
+success events, so a passing validation left no trace whatsoever and a failing one produced a
+log line indistinguishable from any other logged error — no span, no duration, no error count.
+Validation now opens a span on the attempt and closes it OK or Error, carrying
+`structured_output.validation.error_count` on failure. The error log is kept only for
+un-enveloped legacy emitters, so nothing is double-reported.
+
+`structured_output.extract` was worse: the projector code to emit it existed, but
+`ExtractingBuffer` never wrote the `executionId` and `phaseId` keys that the projector's
+reconstruction path required, so its early return fired on every real extraction and no span
+was ever produced — silently, with no error. Extraction telemetry moves to envelope-first
+emission and the span now nests under `structured_output.execute`. `ExtractionFailed` also
+gained a flat `error` key, which the projector's `error.message` attribute had been reading
+without it ever being populated.
+
+`PhaseTelemetryContext` carries the phase correlation both paths previously rebuilt ad hoc.
+`StructuredOutputTelemetry::extractionContext()`, `::validationContext()`, and `::phaseId()` are
+the public factories for it, for anyone driving a custom attempt processor.
+
+W3C trace-context propagation over HTTP is now wired end to end and testable, though not
+automatic. `TraceContextMiddleware` existed but was registered nowhere; `HttpClientBuilder` now
+always appends it, innermost in the stack. It stays inert unless a caller stamps a request via
+the new `HttpRequestTelemetry::withTraceContext()` seam, so outgoing requests are not traced by
+default — application code has to opt in. `packages/http-client/CHEATSHEET.md` has the snippet.
 
 For `agent-ctrl`, session correlation is bound at execution start. `AgentExecutionStarted` and
 `AgentExecutionCompleted` expose `sessionId(): ?AgentSessionId`, populated only when the caller
@@ -317,17 +410,55 @@ reported through `quarantined()`, the walk past them continues so ancestors stay
 header naming an unparseable leaf falls back to "last message wins" rather than failing the
 open.
 
-`Sections::select()` is new. It resolves names in the requested order, skips names with no
-matching section, and collapses a repeated name instead of emitting that section twice — which
-also fixes duplicate emission in the `SelectedSections` message compiler.
+`Sections::select()` already existed; what changed is that it now collapses a repeated name
+instead of returning that section twice. It previously built its result positionally, so
+`select(['a', 'a'])` produced a `Sections` that emitted section `a`'s messages twice from
+`toMessages()` — which also fixes duplicate emission in the `SelectedSections` message compiler.
 
-Two smaller robustness fixes in `InMemoryStorage`: `getPath()` no longer loops forever on a
-`parentId` cycle, returning the partial root-first path instead, and `forkFrom()` throws on an
-unknown message id rather than forking from nothing.
+`MessageStore::select()` no longer treats `''` and `'0'` as "select everything". It tested
+`empty($sections)` before distinguishing a string from an array, and `empty()` is true for both
+of those strings, so `select('')` and `select('0')` returned every section — including when a
+section was literally named `0`. String and array are now checked first; `select([])` and the
+no-argument call still return all sections.
 
-`Message::withMergedFrom()` is new, folding one message's content, metadata, and tool calls into
-another of the same role. It refuses to merge messages carrying tool results, since a tool result
-is bound to a single tool call id and merging would silently drop that binding.
+`JsonlStorage::save()` is also atomic now — the whole file is buffered and written through a temp
+file plus rename, instead of truncate-then-append once per message, so a throw mid-rewrite can no
+longer leave a truncated session behind. The replace-the-session contract is unchanged and
+deliberate; only the crash window closed.
+
+## Merging and Parsing Messages No Longer Loses Data Silently
+
+Four places where `packages/messages` produced plausible-looking wrong data rather than an error.
+
+**`toMergedPerRole()` dropped tool calls.** Collapsing a run of same-role messages built a fresh
+`Message` and copied only content into it, so tool calls, tool results, name, id, and parentId
+were discarded. This reached the wire: the Perplexity golden-request fixture had to be
+rebaselined because the merged assistant message carried no `tool_calls` at all and the tool
+message had no `tool_call_id`. Merging now starts from the message itself and folds via the new
+`Message::withMergedFrom()`, which appends content, concatenates tool calls, keeps the target's
+identity, and *throws* if either side carries a tool result — a tool result is bound to one tool
+call id, so folding two would silently drop that binding. Runs are split at tool-result
+boundaries instead.
+
+**Single-part content arrays were shredded.** `Content::fromAny(['type' => 'image_url',
+'image_url' => [...]])` produced two bogus text parts instead of one image part, and reached
+providers with no error. A content-parts collection is always a list, so a keyed array must be a
+single part; it now routes to `ContentPart::fromArray()`.
+
+**Message arrays without a `content` key had their field values read as content.**
+`Message::fromArray(['role' => 'user', 'name' => 'bob'])` produced content
+`[text: "user", text: "bob"]`, because the all-values-are-strings arm was tested before the
+message-shape arm. The order is reversed; that input now yields empty content and a correctly
+handled `name`. The common `['role' => ..., 'content' => ...]` shape was already right and stays
+right.
+
+**`getPath()` hung on a parentId cycle** in both backends — an unterminated `array_unshift` loop,
+reachable from a hand-built self-parented message or a corrupt session file. Both now track
+visited ids and return the partial root-first path.
+
+`ResponseValidationFailed` also gained an `errorMessage` payload key on both the exception and
+invalid-result paths; the invalid-result dispatch previously carried no top-level readable
+message.
 
 ## Events Are Not Built When Nothing Listens
 
