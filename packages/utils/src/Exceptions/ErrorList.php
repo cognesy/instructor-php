@@ -55,7 +55,7 @@ readonly class ErrorList
      * @return list<Throwable>
      */
     public function all(): array {
-        return $this->items;
+        return array_values($this->items);
     }
 
     // MUTATORS /////////////////////////////////////////////

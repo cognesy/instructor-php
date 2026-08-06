@@ -19,10 +19,11 @@ final class CurlHandle
         private readonly string $url,
         private readonly string $method,
     ) {
-        $this->handle = curl_init($url);
-        if ($this->handle === false) {
-            throw new RuntimeException("Failed to initialize curl for URL: {$url}");
-        }
+        $handle = curl_init($url);
+        $this->handle = match (true) {
+            $handle instanceof NativeCurlHandle => $handle,
+            default => throw new RuntimeException("Failed to initialize curl for URL: {$url}"),
+        };
     }
 
     public static function create(string $url, string $method): self {

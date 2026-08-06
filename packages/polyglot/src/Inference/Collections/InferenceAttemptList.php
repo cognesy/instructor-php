@@ -105,7 +105,7 @@ class InferenceAttemptList
             fn (array $item) => InferenceAttempt::fromArray($item),
             $data
         );
-        $list = ArrayList::fromArray($attempts);
+        $list = ArrayList::fromArray(array_values($attempts));
         return new self($list);
     }
 }

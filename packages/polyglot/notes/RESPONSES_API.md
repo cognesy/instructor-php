@@ -138,7 +138,6 @@ Chat Completions ends with `data: [DONE]`. Responses API ends with `response.com
 ```
 packages/polyglot/src/Inference/Drivers/
 ├── OpenResponses/                    # Base driver (multi-provider)
-│   ├── OpenResponsesDriver.php       # Main driver class
 │   ├── OpenResponsesRequestAdapter.php
 │   ├── OpenResponsesBodyFormat.php   # instructions/input/max_output_tokens
 │   ├── OpenResponsesMessageFormat.php
@@ -146,9 +145,12 @@ packages/polyglot/src/Inference/Drivers/
 │   └── OpenResponsesUsageFormat.php
 │
 └── OpenAIResponses/                  # OpenAI-specific
-    ├── OpenAIResponsesDriver.php     # OpenAI auth headers
-    └── OpenAIResponsesRequestAdapter.php
+    └── OpenAIResponsesRequestAdapter.php # OpenAI auth headers
 ```
+
+Both entries are declared in `BundledInferenceDrivers` as `InferenceDriverSpec` rows and are
+executed by `SpecifiedInferenceDriver`; the request adapters retain the protocol-specific URL
+and header behavior.
 
 ## Key Design Principle
 

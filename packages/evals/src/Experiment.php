@@ -152,6 +152,9 @@ class Experiment {
             ->withObservers([$this->postprocessors])
             ->only([CanObserveExperiment::class, CanGenerateObservations::class]);
 
-        return array_filter(array_merge($observations, $summaries));
+        return array_filter(
+            array_merge($observations, $summaries),
+            static fn (mixed $value): bool => (bool) $value,
+        );
     }
 }

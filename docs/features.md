@@ -307,7 +307,10 @@ Or subscribe to streaming events:
 use Cognesy\Instructor\Events\Streaming\PartialResponseGenerated;
 
 $runtime = StructuredOutputRuntime::fromProvider(LLMProvider::new())
-    ->onEvent(PartialResponseGenerated::class, fn(PartialResponseGenerated $event) => updateUI($event->partialResponse));
+    ->onEvent(
+        PartialResponseGenerated::class,
+        fn(PartialResponseGenerated $event) => updateUI($event->partialResponse),
+    );
 
 $stream = (new StructuredOutput)
     ->withRuntime($runtime)
@@ -351,7 +354,7 @@ $final = $list->finalValue();
 ### Supported Providers
 
 | Provider | API Type | Streaming | Vision | Tool Calling |
-|----------|----------|:---------:|:------:|:------------:|
+| -------- | -------- | :-------: | :----: | :-----------: |
 | OpenAI | Native | ✓ | ✓ | ✓ |
 | Anthropic | Native | ✓ | ✓ | ✓ |
 | Google Gemini | Native | ✓ | ✓ | ✓ |
@@ -502,9 +505,13 @@ $result = (new StructuredOutput)
     ->get();
 ```
 
-The bundled prompts use Twig. Custom prompt classes are the supported extension seam;
-inline `retryPrompt` text applies only to the explicitly injected legacy request
-materializer and is scheduled for removal in 2.6.
+The default `StructuredPromptRequestMaterializer` uses Twig-backed prompt classes.
+Configure mode-specific prompts with `modePromptClasses`, retry feedback with
+`retryPromptClass`, and deserialization repair with
+`deserializationErrorPromptClass`. The legacy inline `modePrompts`, `retryPrompt`,
+and `chatStructure` settings and `RequestMaterializer` were removed in 2.7. When
+prompt classes are insufficient, implement `CanMaterializeRequest` and inject it
+through `StructuredOutputRuntime::withRequestMaterializer()`.
 
 ### Event System
 
@@ -536,6 +543,7 @@ $runtime->wiretap(fn($event) => logger()->debug((string) $event));
 ```
 
 Outputs:
+
 - Full request payloads
 - Raw LLM responses
 - Validation errors

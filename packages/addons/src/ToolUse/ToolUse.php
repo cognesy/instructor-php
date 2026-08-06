@@ -242,8 +242,7 @@ class ToolUse extends StepByStep
      * @param CanProcessAnyState<ToolUseState> ...$processors
      */
     public function withProcessors(CanProcessAnyState ...$processors): self {
-        /** @var CanApplyProcessors<ToolUseState> $stateProcessors */
-        $stateProcessors = new StateProcessors(...$processors);
+        $stateProcessors = StateProcessors::fromProcessors(...$processors);
         return $this->with(processors: $stateProcessors);
     }
 
@@ -288,13 +287,18 @@ class ToolUse extends StepByStep
     }
 
     private function emitToolUseStepCompleted(ToolUseState $state) : void {
+        $step = $state->currentStep();
+        $finishReason = $step?->finishReason();
         $this->events->dispatch(new ToolUseStepCompleted([
             'step' => $state->stepCount(),
-            'hasToolCalls' => $state->currentStep()?->hasToolCalls() ?? false,
-            'errors' => count($state->currentStep()?->errors() ?? []),
-            'errorMessages' => $state->currentStep()?->errorsAsString() ?? '',
-            'usage' => $state->currentStep()?->usage()->toArray() ?? [],
-            'finishReason' => $state->currentStep()?->finishReason()?->value ?? null,
+            'hasToolCalls' => $step?->hasToolCalls() ?? false,
+            'errors' => count($step?->errors() ?? []),
+            'errorMessages' => $step?->errorsAsString() ?? '',
+            'usage' => $step?->usage()->toArray() ?? [],
+            'finishReason' => match ($finishReason) {
+                null => null,
+                default => $finishReason->value,
+            },
         ]));
     }
 

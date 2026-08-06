@@ -19,7 +19,10 @@ class Changes
     {
         $since = (new DateTime())->modify(sprintf('-%d days', $days))->format('Y-m-d');
         $command = sprintf("log --since=%s --pretty=format:%%H", escapeshellarg($since));
-        $this->commits = array_filter(array_map('trim', explode("\n", $this->gitService->runCommand($command))));
+        $this->commits = array_filter(
+            array_map('trim', explode("\n", $this->gitService->runCommand($command))),
+            static fn (mixed $value): bool => (bool) $value,
+        );
         return $this;
     }
 
@@ -28,7 +31,10 @@ class Changes
         $files = [];
         foreach ($this->commits as $commit) {
             $command = sprintf('diff-tree --no-commit-id --name-only -r %s', escapeshellarg($commit));
-            $changedFiles = array_filter(array_map('trim', explode("\n", $this->gitService->runCommand($command))));
+            $changedFiles = array_filter(
+                array_map('trim', explode("\n", $this->gitService->runCommand($command))),
+                static fn (mixed $value): bool => (bool) $value,
+            );
             foreach($changedFiles as $file) {
                 $files[] = $file;
             }

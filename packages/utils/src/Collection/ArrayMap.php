@@ -73,7 +73,6 @@ final class ArrayMap implements MapInterface
     #[\Override]
     public function with(int|string $key, mixed $value): static {
         $n = $this->entries;
-        /** @var array<array-key,mixed> $n */
         $n[$key] = $value;
         return new self($n);
     }

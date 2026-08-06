@@ -48,7 +48,7 @@ class JsonSchemaRenderer implements CanRenderJsonSchema
                 'type' => 'array',
                 'items' => $this->renderArray($schema->nestedItemSchema, $onObjectRef),
                 'description' => $schema->description,
-            ]),
+            ], static fn (mixed $value): bool => (bool) $value),
             $schema instanceof ObjectSchema => $this->renderObject($schema, $onObjectRef),
             $schema instanceof ArrayShapeSchema => $this->renderArrayShape($schema, $onObjectRef),
             $schema instanceof EnumSchema => array_filter([
@@ -56,12 +56,12 @@ class JsonSchemaRenderer implements CanRenderJsonSchema
                 'description' => $schema->description,
                 'enum' => $schema->enumValues ?? TypeInfo::enumValues($schema->type),
                 'x-php-class' => TypeInfo::className($schema->type) ?? '',
-            ]),
+            ], static fn (mixed $value): bool => (bool) $value),
             $schema instanceof ScalarSchema => $this->renderScalar($schema),
             $schema instanceof ObjectRefSchema => $this->renderReference($schema, $onObjectRef),
             default => array_filter([
                 'description' => $schema->description,
-            ]),
+            ], static fn (mixed $value): bool => (bool) $value),
         };
 
         return $this->withSchemaMetadata($rendered, $schema);
@@ -79,7 +79,7 @@ class JsonSchemaRenderer implements CanRenderJsonSchema
                 'x-title' => $schema->name,
                 'description' => $schema->description,
                 'x-php-class' => $className,
-            ]);
+            ], static fn (mixed $value): bool => (bool) $value);
         }
 
         $properties = [];
@@ -94,7 +94,7 @@ class JsonSchemaRenderer implements CanRenderJsonSchema
             'properties' => $properties,
             'required' => $schema->required,
             'x-php-class' => $className,
-        ]);
+        ], static fn (mixed $value): bool => (bool) $value);
         $result['additionalProperties'] = false;
 
         return $result;
@@ -116,7 +116,7 @@ class JsonSchemaRenderer implements CanRenderJsonSchema
             'description' => $schema->description,
             'properties' => $properties,
             'required' => $schema->required,
-        ]);
+        ], static fn (mixed $value): bool => (bool) $value);
         $result['additionalProperties'] = false;
 
         return $result;
@@ -132,7 +132,7 @@ class JsonSchemaRenderer implements CanRenderJsonSchema
             $array['enum'] = $schema->enumValues;
         }
 
-        return array_filter($array);
+        return array_filter($array, static fn (mixed $value): bool => (bool) $value);
     }
 
     private function enumJsonType(EnumSchema $schema) : string {
@@ -176,6 +176,6 @@ class JsonSchemaRenderer implements CanRenderJsonSchema
             '$ref' => $id,
             'description' => $schema->description,
             'x-php-class' => $className,
-        ]);
+        ], static fn (mixed $value): bool => (bool) $value);
     }
 }

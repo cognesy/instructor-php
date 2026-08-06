@@ -59,7 +59,7 @@ it('keeps withDriver immutable and still accepts both a class-string and a calla
         ->and($viaCallable->has('by-callable'))->toBeTrue();
 })->group('driver-registry');
 
-it('resolves every bundled driver name to a real driver', function () {
+it('resolves every bundled driver name to a declarative driver', function () {
     $registry = BundledInferenceDrivers::registry();
     $names = $registry->driverNames();
 
@@ -75,7 +75,9 @@ it('resolves every bundled driver name to a real driver', function () {
             httpClient: $httpClient,
             events: $events,
         );
-        expect($driver)->toBeInstanceOf(CanProcessInferenceRequest::class);
+        expect($driver)
+            ->toBeInstanceOf(CanProcessInferenceRequest::class)
+            ->toBeInstanceOf(SpecifiedInferenceDriver::class);
     }
 })->group('driver-registry');
 

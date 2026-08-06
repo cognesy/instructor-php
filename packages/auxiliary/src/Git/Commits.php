@@ -20,7 +20,10 @@ class Commits
     public function log(int $number = 10): array
     {
         $log = $this->gitService->runCommand(sprintf('log -n %d --pretty=format:%%H', $number));
-        $hashes = array_filter(array_map('trim', explode("\n", $log)));
+        $hashes = array_filter(
+            array_map('trim', explode("\n", $log)),
+            static fn (mixed $value): bool => (bool) $value,
+        );
         return array_map(fn($hash) => new Commit($hash, $this->gitService), $hashes);
     }
 }

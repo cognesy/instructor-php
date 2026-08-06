@@ -17,12 +17,19 @@ final readonly class ExampleLocationOrder
         int $index,
         ?ExampleGroupAssignment $assignment,
     ): self {
+        $groupOrder = PHP_INT_MAX;
+        $subgroupOrder = PHP_INT_MAX;
+        if ($assignment !== null) {
+            $groupOrder = $assignment->groupOrder;
+            $subgroupOrder = $assignment->subgroupOrder;
+        }
+
         return new self(
             location: $location,
             path: $location->path,
             index: $index,
-            groupOrder: $assignment?->groupOrder ?? PHP_INT_MAX,
-            subgroupOrder: $assignment?->subgroupOrder ?? PHP_INT_MAX,
+            groupOrder: $groupOrder,
+            subgroupOrder: $subgroupOrder,
         );
     }
 

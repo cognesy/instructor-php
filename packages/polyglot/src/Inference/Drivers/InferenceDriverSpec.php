@@ -7,6 +7,10 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Http\Contracts\CanSendHttpRequests;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
+use Cognesy\Polyglot\Inference\Contracts\CanMapMessages;
+use Cognesy\Polyglot\Inference\Contracts\CanMapUsage;
+use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceRequest;
+use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIMessageFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIRequestAdapter;
@@ -14,32 +18,25 @@ use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIResponseAdapter;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIUsageFormat;
 
 /**
- * The five class names and one capability literal that are all a provider on the
- * OpenAI-compatible wire protocol actually differs by (instructor-eexl.9).
+ * Declarative construction data for an inference provider.
  *
- * Seventeen driver classes used to carry this information, one file each, with a constructor
- * body identical in all seventeen apart from the BodyFormat name. The information content was
- * always these six fields; the class was packaging.
+ * The spec names every provider-specific translator and its capabilities. The same shape works
+ * for OpenAI-compatible, native-protocol, and bespoke-HTTP providers; the request adapter is
+ * where URL and header behavior belongs, rather than in a provider driver class.
  *
- * NOT every provider belongs here. Anthropic, Gemini, CohereV2, Azure, Bedrock, HuggingFace,
- * GeminiOAI and the two Responses drivers keep their own classes, because they carry a bespoke
- * request adapter -- URL assembly and header construction that a class-name table cannot
- * express. Forcing them in would mean adding a field per provider quirk, which is how a
- * declarative table turns back into the thing it replaced.
- *
- * A spec is invokable, so `InferenceDriverRegistry` needs no new case: it already accepts any
- * `callable(LLMConfig, CanSendHttpRequests, CanHandleEvents): CanProcessInferenceRequest`, and
- * `withDriver()` therefore keeps accepting plain class-strings and closures exactly as before.
- * Both extension mechanisms stay supported; a spec is simply a third, terser one.
+ * A spec is invokable, so `InferenceDriverRegistry` needs no special case: it already accepts
+ * any `callable(LLMConfig, CanSendHttpRequests, CanHandleEvents): CanProcessInferenceRequest`,
+ * and `withDriver()` continues to accept plain class-strings and closures exactly as before.
+ * Both extension mechanisms stay supported; a spec is simply a third, declarative one.
  */
 final readonly class InferenceDriverSpec
 {
     /**
      * @param class-string $bodyFormat
-     * @param class-string $requestAdapter
-     * @param class-string $responseAdapter
-     * @param class-string $usageFormat
-     * @param class-string $messageFormat
+     * @param class-string<CanTranslateInferenceRequest> $requestAdapter
+     * @param class-string<CanTranslateInferenceResponse> $responseAdapter
+     * @param class-string<CanMapUsage> $usageFormat
+     * @param class-string<CanMapMessages> $messageFormat
      * @param DriverCapabilities|(Closure(string): DriverCapabilities)|null $capabilities
      *        A literal for the providers whose answer is fixed, which is all of them but one.
      *        Deepseek reports different capabilities for its reasoner models, so it needs a

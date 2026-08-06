@@ -28,7 +28,7 @@ class DepRemoveAction
                 continue;
             }
             $deps = array_values(array_filter(
-                $issue->dependencies ?? [],
+                $issue->dependencies,
                 fn(DependencyDTO $dep) => !($dep->dependsOnId === $dependsOnId && ($type === null || $dep->type === $type))
             ));
             $issues[$idx] = $this->withDependencies($issue, $deps);

@@ -60,7 +60,7 @@ class InferenceStream
     /** Memoized execution id — stringifying it per delta showed up on the hot path. */
     private ?string $executionIdString = null;
 
-    private ?DateTimeImmutable $startedAt;
+    private DateTimeImmutable $startedAt;
     private bool $firstChunkReceived = false;
     /** @var (Closure(InferenceResponse): InferenceResponse)|null */
     private ?Closure $decorateFinalResponse = null;
@@ -264,8 +264,7 @@ class InferenceStream
      * Dispatches the first chunk received event for TTFC measurement.
      */
     private function dispatchFirstChunkReceived(PartialInferenceDelta $delta): void {
-        $now = new DateTimeImmutable();
-        $startedAt = $this->startedAt ?? $now;
+        $startedAt = $this->startedAt;
 
         $this->events->dispatch(new StreamFirstChunkReceived(
             executionId: $this->execution->id->toString(),

@@ -12,8 +12,13 @@ final class AgentResult
     /** @return array<string, mixed> */
     public static function fromState(AgentState $state): array
     {
+        $status = $state->status();
+
         return [
-            'status' => $state->status()?->value ?? 'unknown',
+            'status' => match ($status) {
+                null => 'unknown',
+                default => $status->value,
+            },
             'answer' => trim($state->finalResponse()->toString()),
             'steps' => $state->stepCount(),
             'usage' => $state->usage()->toArray(),

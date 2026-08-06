@@ -30,7 +30,7 @@ class AzureOpenAIRequestAdapter extends OpenAIRequestAdapter
     protected function getUrlParams(LLMConfig $config): string {
         $params = array_filter([
             'api-version' => $config->metadata['apiVersion'] ?? '',
-        ]);
+        ], static fn (mixed $value): bool => (bool) $value);
         if (!empty($params)) {
             return '?' . http_build_query($params);
         }

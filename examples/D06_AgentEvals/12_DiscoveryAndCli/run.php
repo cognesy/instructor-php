@@ -1,0 +1,140 @@
+---
+title: 'Discovering and running evals from the CLI'
+docname: 'agent_eval_discovery_and_cli'
+order: 12
+id: 'ae12'
+tags:
+  - 'agents'
+  - 'evals'
+  - 'cli'
+  - 'discovery'
+---
+## Overview
+
+Keep eval cases in `*.eval.php` files and let `EvalDiscovery` derive stable IDs from their
+paths. The same `EvalApplication` powers the `agents-eval` Composer binary, so listing a lane
+and running it with JSON output exercise the same CLI contract used in CI.
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseDriver;
+use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
+use Cognesy\Agents\Evals\AgentEval;
+use Cognesy\Agents\Evals\EvalApplication;
+use Cognesy\Agents\Evals\EvalConfig;
+use Cognesy\Agents\Evals\EvalContext;
+use Cognesy\Agents\Evals\EvalTags;
+use Cognesy\Agents\Evals\LocalAgentTarget;
+
+// A real project would commit this directory. A temporary fixture keeps the example
+// self-contained while showing the exact files that `agents-eval` discovers.
+$root = sys_get_temp_dir() . '/instructor-agent-eval-cli-' . getmypid() . '-' . bin2hex(random_bytes(4));
+mkdir($root . '/smoke', 0777, true);
+mkdir($root . '/regression', 0777, true);
+
+file_put_contents($root . '/evals.config.php', <<<'PHP'
+<?php
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseDriver;
+use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
+use Cognesy\Agents\Evals\EvalConfig;
+use Cognesy\Agents\Evals\LocalAgentTarget;
+
+return EvalConfig::default()->withTarget(LocalAgentTarget::fromFactory(
+    static fn() => AgentBuilder::base()
+        ->withCapability(new UseDriver(FakeAgentDriver::fromResponses('Verification is required.')))
+        ->build(),
+));
+PHP);
+
+file_put_contents($root . '/smoke/refund.eval.php', <<<'PHP'
+<?php
+use Cognesy\Agents\Evals\AgentEval;
+use Cognesy\Agents\Evals\EvalContext;
+use Cognesy\Agents\Evals\EvalTags;
+
+return AgentEval::define(
+    description: 'Unverified refunds require verification.',
+    tags: EvalTags::of('smoke'),
+    test: static function (EvalContext $t): void {
+        $t->send('Refund order A1049.');
+        $t->succeeded();
+        $t->messageIncludes('Verification');
+    },
+);
+PHP);
+
+// This case is deliberately outside the smoke lane. If filtering stops working, the
+// failing assertion makes the example fail instead of silently demonstrating a false pass.
+file_put_contents($root . '/regression/not-selected.eval.php', <<<'PHP'
+<?php
+use Cognesy\Agents\Evals\AgentEval;
+use Cognesy\Agents\Evals\EvalContext;
+use Cognesy\Agents\Evals\EvalTags;
+
+return AgentEval::define(
+    description: 'A regression case outside the selected lane.',
+    tags: EvalTags::of('regression'),
+    test: static function (EvalContext $t): void {
+        $t->check('must-not-run', false);
+    },
+);
+PHP);
+
+$removeTree = static function (string $directory): void {
+    if (!str_starts_with($directory, sys_get_temp_dir() . '/instructor-agent-eval-cli-') || !is_dir($directory)) {
+        return;
+    }
+    $iterator = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS),
+        RecursiveIteratorIterator::CHILD_FIRST,
+    );
+    foreach ($iterator as $entry) {
+        $entry->isDir() ? rmdir($entry->getPathname()) : unlink($entry->getPathname());
+    }
+    rmdir($directory);
+};
+
+try {
+    $application = new EvalApplication();
+    $listedOutput = '';
+    $listedExit = $application->run(
+        ['agents-eval', $root, '--list', '--tag=smoke'],
+        stdout: static function (string $text) use (&$listedOutput): void {
+            $listedOutput .= $text;
+        },
+    );
+    $listedIds = array_values(array_filter(explode("\n", trim($listedOutput))));
+
+    // Equivalent shell command: vendor/bin/agents-eval <path> --filter=smoke/*
+    // --tag=smoke --json --skip-report.
+    $jsonOutput = '';
+    $runExit = $application->run(
+        ['agents-eval', $root, '--filter=smoke/*', '--tag=smoke', '--json', '--skip-report'],
+        stdout: static function (string $text) use (&$jsonOutput): void {
+            $jsonOutput .= $text;
+        },
+    );
+    $run = json_decode($jsonOutput, true, flags: JSON_THROW_ON_ERROR);
+
+    if ($listedExit !== 0
+        || $listedIds !== ['smoke/refund']
+        || $runExit !== 0
+        || $run['counts']['passed'] !== 1
+        || $run['results'][0]['id'] !== 'smoke/refund'
+    ) {
+        throw new RuntimeException('Eval discovery, filtering, or CLI execution did not match the expected contract.');
+    }
+
+    echo "Discovered smoke lane: " . implode(', ', $listedIds) . "\n";
+    echo "CLI JSON result: {$run['counts']['passed']} passed, exit {$runExit}\n";
+} finally {
+    $removeTree($root);
+}
+?>
+```

@@ -85,7 +85,7 @@ git diff --name-only "$latest_tag"..HEAD -- packages/*/src | \
 For a package-focused raw diff:
 
 ```bash
-./scripts/release-notes-diff.sh <package-name>
+./scripts/release/release-notes-diff.sh <package-name>
 ```
 
 Prefer direct diff inspection and Codex-written summaries. Do not require `scripts/release-notes-summary.sh` or `scripts/release-notes-all.sh`, because they depend on `claude` CLI.

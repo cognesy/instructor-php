@@ -36,7 +36,7 @@ final readonly class HttpResponseList implements \Countable, \IteratorAggregate
 
     /** @param array<Result> $responses */
     public static function fromArray(array $responses): self {
-        return new self(ArrayList::fromArray($responses));
+        return new self(ArrayList::fromArray(array_values($responses)));
     }
 
     // ACCESSORS ////////////////////////////////////////////////////////////////
@@ -73,18 +73,18 @@ final readonly class HttpResponseList implements \Countable, \IteratorAggregate
 
     /** @return list<HttpResponse> */
     public function successful(): array {
-        return array_map(
+        return array_values(array_map(
             fn(Result $r) => $r->unwrap(),
             array_filter($this->responses->all(), fn(Result $r) => $r->isSuccess())
-        );
+        ));
     }
 
     /** @return list<mixed> */
     public function failed(): array {
-        return array_map(
+        return array_values(array_map(
             fn(Result $r) => $r->error(),
             array_filter($this->responses->all(), fn(Result $r) => $r->isFailure())
-        );
+        ));
     }
 
     public function hasFailures(): bool {
@@ -150,6 +150,6 @@ final readonly class HttpResponseList implements \Countable, \IteratorAggregate
             },
             $data
         );
-        return new self(ArrayList::fromArray($responses));
+        return new self(ArrayList::fromArray(array_values($responses)));
     }
 }

@@ -155,6 +155,10 @@ final readonly class ContentPart
     }
 
     private static function normalizeType(string $type): string {
-        return ContentType::tryFrom($type)?->value ?? $type;
+        $contentType = ContentType::tryFrom($type);
+        return match ($contentType) {
+            null => $type,
+            default => $contentType->value,
+        };
     }
 }

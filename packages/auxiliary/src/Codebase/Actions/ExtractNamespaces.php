@@ -10,7 +10,7 @@ class ExtractNamespaces
         $anyNamespaces = [];
 
         // go through all classes and extract namespaces
-        /** @var string[] */
+        /** @var array<string, list<string>> $classNamespaces */
         $classNamespaces = [];
         foreach ($classes as $class) {
             $classNamespaces[$class->namespace][] = $class->name;
@@ -18,7 +18,7 @@ class ExtractNamespaces
         }
 
         // go through all functions and extract namespaces
-        /** @var string[] */
+        /** @var array<string, list<string>> $functionNamespaces */
         $functionNamespaces = [];
         foreach ($functions as $function) {
             $functionNamespaces[$function->namespace][] = $function->name;

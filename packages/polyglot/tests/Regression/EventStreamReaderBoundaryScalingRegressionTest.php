@@ -58,9 +58,9 @@ it('yields nothing for a stream of event lines with no data', function () {
 });
 
 it('scales linearly on event-only input with no blank separators', function () {
-    // This shape used to rescan the whole buffer per line: 4000 lines took ~117ms against
-    // ~7ms for 1000. Assert on the growth ratio rather than absolute time so the test is
-    // not a machine-speed benchmark.
+    // This shape used to rescan the whole buffer per line: the larger input grew far faster
+    // than the smaller one. Use a larger scale gap and a noise floor so this remains a
+    // complexity regression test rather than a machine-speed benchmark.
     $timeFor = function (int $n): float {
         $body = str_repeat("event: ping\n", $n);
         $start = hrtime(true);
@@ -71,9 +71,10 @@ it('scales linearly on event-only input with no blank separators', function () {
     $timeFor(500); // warm up autoloading and the JIT-free opcode path
 
     $small = $timeFor(1000);
-    $large = $timeFor(4000);
+    $large = $timeFor(8000);
 
-    // Linear would be ~4x, the previous quadratic ~16x. 8x leaves ample headroom for a
-    // noisy CI machine while still failing if the rescan comes back.
-    expect($large)->toBeLessThan(max($small, 0.5) * 8);
+    // Linear would be ~8x, while the previous quadratic implementation grew by ~64x for
+    // this input-size ratio. The 16x ceiling leaves room for CI noise but still catches the
+    // rescan when it returns.
+    expect($large)->toBeLessThan(max($small, 2.0) * 16);
 });

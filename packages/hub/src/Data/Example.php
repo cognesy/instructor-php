@@ -59,9 +59,14 @@ class Example
 
         $info = ExampleInfo::fromFile($baseDir . $path . '/run.php', $name);
 
-        $tab = $assignment?->tab ?? 'examples';
-        $groupName = $assignment?->group ?? $group;
-        $groupTitle = $assignment?->groupTitle ?? $group;
+        $tab = 'examples';
+        $groupName = $group;
+        $groupTitle = $group;
+        if ($assignment !== null) {
+            $tab = $assignment->tab;
+            $groupName = $assignment->group;
+            $groupTitle = $assignment->groupTitle;
+        }
         return new Example(
             index: $index,
             tab: $tab,

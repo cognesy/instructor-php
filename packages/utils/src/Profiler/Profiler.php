@@ -33,14 +33,14 @@ class Profiler
     public function timeSinceLast() : float {
         $checkpoints = $this->checkpoints;
         $previous = count($checkpoints) - 1;
-        $delta = ($previous == -1) ? 0 : (microtime(true) - $checkpoints[$previous]->time);
+        $delta = ($previous === -1) ? 0 : (microtime(true) - $checkpoints[$previous]->time);
         return $delta;
     }
 
     public function addMark(string $name, array $context = []) : Checkpoint {
         $time = microtime(true);
         $previous = count($this->checkpoints) - 1;
-        $delta = ($previous == -1) ? 0 : ($time - $this->checkpoints[$previous]->time);
+        $delta = ($previous === -1) ? 0 : ($time - $this->checkpoints[$previous]->time);
         $trace = debug_backtrace()[1] ?? [];
         $debugTrace = ($trace['class'] ?? 'unknown').'::'.($trace['function'] ?? 'unknown');
         return $this->store($name, $time, $delta, $debugTrace, $context);

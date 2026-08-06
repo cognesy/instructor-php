@@ -145,10 +145,10 @@ final readonly class ContinuationOutcome
     }
 
     public static function fromArray(array $data): self {
-        $evaluations = array_map(
+        $evaluations = array_values(array_map(
             static fn(array $eval): ContinuationEvaluation => ContinuationEvaluation::fromArray($eval),
             $data['evaluations'] ?? [],
-        );
+        ));
 
         return new self(
             shouldContinue: $data['shouldContinue'] ?? false,

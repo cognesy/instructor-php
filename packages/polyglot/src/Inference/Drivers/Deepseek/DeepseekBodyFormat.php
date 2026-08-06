@@ -27,7 +27,7 @@ class DeepseekBodyFormat extends OpenAICompatibleBodyFormat
             'model' => $model ?: $this->config->model,
             'max_tokens' => $this->config->maxTokens,
             'messages' => $this->messageFormat->map($messages),
-        ]), $options);
+        ], static fn (mixed $value): bool => (bool) $value), $options);
 
         if ($options['stream'] ?? false) {
             $requestBody['stream_options']['include_usage'] = true;

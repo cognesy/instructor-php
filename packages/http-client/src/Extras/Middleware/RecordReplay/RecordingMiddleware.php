@@ -22,7 +22,7 @@ class RecordingMiddleware implements HttpMiddleware
 {
     private RequestRecords $records;
 
-    private ?EventDispatcherInterface $events;
+    private EventDispatcherInterface $events;
 
     public function __construct(
         string $storageDir,
@@ -37,11 +37,9 @@ class RecordingMiddleware implements HttpMiddleware
         $response = $next->handle($request);
         if (!$response->isStreamed()) {
             $this->records->save($request, $response);
-            if ($this->events !== null) {
-                $this->events->dispatch(new HttpInteractionRecorded(
-                    HttpInteractionSummary::fromRequest($request, 'recorded', $response->statusCode()),
-                ));
-            }
+            $this->events->dispatch(new HttpInteractionRecorded(
+                HttpInteractionSummary::fromRequest($request, 'recorded', $response->statusCode()),
+            ));
             return $response;
         }
 
@@ -52,7 +50,7 @@ class RecordingMiddleware implements HttpMiddleware
                 source: $response->rawStream(),
                 onCompleted: function (iterable $chunks) use ($request, $response): void {
                     $this->records->saveStreamed($request, $response, $chunks);
-                    $this->events?->dispatch(new HttpInteractionRecorded(
+                    $this->events->dispatch(new HttpInteractionRecorded(
                         HttpInteractionSummary::fromRequest($request, 'recorded', $response->statusCode()),
                     ));
                 },

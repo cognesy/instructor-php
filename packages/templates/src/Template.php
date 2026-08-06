@@ -304,7 +304,7 @@ class Template
             'type' => 'text',
             'text' => $child->content(),
             'cache_control' => $hasCacheControl ? ['type' => 'ephemeral'] : []
-        ]);
+        ], static fn (mixed $value): bool => (bool) $value);
     }
 
     private function makeImageContent(XmlElement $child) : array {

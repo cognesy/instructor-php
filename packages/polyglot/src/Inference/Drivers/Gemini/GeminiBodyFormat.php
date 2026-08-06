@@ -117,7 +117,7 @@ class GeminiBodyFormat implements CanMapRequestBody
             'function_calling_config' => array_filter([
                 'mode' => 'ANY',
                 'allowed_function_names' => [$toolChoice->functionName()],
-            ]),
+            ], static fn (mixed $value): bool => $value !== null),
         ];
     }
 

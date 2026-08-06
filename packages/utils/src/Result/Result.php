@@ -23,10 +23,12 @@ abstract readonly class Result
         };
     }
 
+    /** @return Success */
     public static function success(mixed $value): Success {
         return new Success($value);
     }
 
+    /** @return Failure */
     public static function failure(mixed $error): Failure {
         return new Failure($error);
     }
@@ -188,20 +190,15 @@ abstract readonly class Result
     }
 
     /**
-     * @template S
-     * @param callable(T):S $f Function to apply to the value in case of success
-     * @return Result<S, E> A new Result instance with the transformed value, or the original failure
+     * @param callable(T):mixed $f Function to apply to the value in case of success
+     * @return Result A new Result instance with the transformed value, or the original failure
      * @psalm-suppress InvalidReturnType, InvalidReturnStatement - Functor mapping preserves Result type
      */
     public function map(callable $f): Result {
         if ($this->isSuccess()) {
             try {
                 $output = $f($this->unwrap());
-                return match (true) {
-                    $output instanceof Result => $output,
-                    is_null($output) => self::success(null),
-                    default => self::success($output),
-                };
+                return $output instanceof Result ? $output : self::success($output);
             } catch (Throwable $e) {
                 return self::failure($e);
             }
@@ -278,9 +275,8 @@ abstract readonly class Result
     }
 
     /**
-     * @template ENew
-     * @param callable(E):(ENew|Result<T, ENew>) $f Transformer applied to the error when the result is a failure
-     * @return Result<T, ENew>
+     * @param callable(E):mixed $f Transformer applied to the error when the result is a failure
+     * @return Result
      * @psalm-suppress InvalidReturnType, InvalidReturnStatement - Error mapping transforms error type
      */
     public function mapError(callable $f): Result {

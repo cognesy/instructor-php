@@ -178,8 +178,12 @@ class ExtractCodeBlocks extends Command
         foreach ($plan as $item) { $plannedById[$item->id] = $item; }
 
         foreach ($doctests as $doctest) {
+            $planned = $doctest->id !== null ? ($plannedById[$doctest->id] ?? null) : null;
             // Extract full code block first (prefer planned path)
-            $outputPath = $plannedById[$doctest->id]->path ?? $this->determineOutputPath($doctest, $targetDir);
+            $outputPath = $this->determineOutputPath($doctest, $targetDir);
+            if ($planned !== null) {
+                $outputPath = $planned->path;
+            }
             $this->ensureDirectoryExists(dirname($outputPath));
 
             $this->docRepository->writeFile($outputPath, $doctest->toFileContent());
@@ -197,7 +201,10 @@ class ExtractCodeBlocks extends Command
 
             // Extract individual regions if they exist
             if ($doctest->hasRegions()) {
-                $plannedRegions = $plannedById[$doctest->id]->regions ?? [];
+                $plannedRegions = [];
+                if ($planned !== null) {
+                    $plannedRegions = $planned->regions;
+                }
                 foreach ($plannedRegions as $plannedRegion) {
                     $regionName = $plannedRegion->name;
                     $regionOutputPath = $plannedRegion->path;
@@ -288,7 +295,10 @@ class ExtractCodeBlocks extends Command
                     }
 
                     foreach ($doctests as $doctest) {
-                        $outputPath = $plannedById[$doctest->id]->path ?? $this->determineOutputPath($doctest, $targetDir);
+                        $outputPath = $this->determineOutputPath($doctest, $targetDir);
+                        if ($doctest->id !== null && isset($plannedById[$doctest->id])) {
+                            $outputPath = $plannedById[$doctest->id]->path;
+                        }
                         $this->ensureDirectoryExists(dirname($outputPath));
                         $this->docRepository->writeFile($outputPath, $doctest->toFileContent());
                         $this->eventDispatcher->dispatch(new FileExtracted([

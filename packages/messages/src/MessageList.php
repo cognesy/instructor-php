@@ -28,7 +28,7 @@ final readonly class MessageList implements Countable, IteratorAggregate
 
     #[\Override]
     public function getIterator(): Traversable {
-        return new ArrayIterator($this->messages);
+        return new ArrayIterator(array_values($this->messages));
     }
 
     /** @return Message[] */

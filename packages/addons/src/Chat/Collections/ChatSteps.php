@@ -8,7 +8,14 @@ use Cognesy\Addons\StepByStep\Collections\Steps;
 /** @extends Steps<ChatStep> */
 final readonly class ChatSteps extends Steps
 {
-    public function __construct(ChatStep ...$steps) {
+    /** @param ChatStep ...$steps */
+    public function __construct(object ...$steps) {
+        foreach ($steps as $step) {
+            if (!$step instanceof ChatStep) {
+                throw new \InvalidArgumentException('ChatSteps accepts only ChatStep instances.');
+            }
+        }
+
         parent::__construct(...$steps);
     }
 

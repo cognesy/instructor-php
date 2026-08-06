@@ -165,7 +165,7 @@ $result = StructuredOutput::with(
 )->get();
 ```
 
-Inline `retry_prompt` text was removed in 2.6 and is now ignored. Provide a custom
+Inline `retry_prompt` text was removed in 2.7 and is now ignored. Provide a custom
 prompt class that follows the structured prompt rendering contract.
 
 ---

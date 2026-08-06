@@ -12,7 +12,7 @@ use Cognesy\Http\Data\HttpResponse;
 class MockHttpResponseFactory
 {
     /**
-     * Static factory to create a successful response
+     * @param list<string> $chunks
      */
     public static function success(int $statusCode = 200, array $headers = [], string $body = '', array $chunks = []): HttpResponse {
         if (!empty($chunks)) {
@@ -30,7 +30,7 @@ class MockHttpResponseFactory
     }
 
     /**
-     * Static factory to create an error response
+     * @param list<string> $chunks
      */
     public static function error(int $statusCode = 500, array $headers = [], string $body = '', array $chunks = []): HttpResponse {
         if (!empty($chunks)) {
@@ -48,7 +48,7 @@ class MockHttpResponseFactory
     }
 
     /**
-     * Static factory to create a streaming response
+     * @param list<string> $chunks
      */
     public static function streaming(int $statusCode = 200, array $headers = [], array $chunks = []): HttpResponse {
         return HttpResponse::streaming(

@@ -134,7 +134,7 @@ class AnthropicMessageFormat implements CanMapMessages
                         'id' => $tc->idString(),
                         'name' => $tc->name(),
                         'input' => $tc->arguments(),
-                    ]),
+                    ], static fn (mixed $value): bool => (bool) $value),
                 ),
             ],
         ];
@@ -148,7 +148,7 @@ class AnthropicMessageFormat implements CanMapMessages
                 'type' => 'tool_result',
                 'tool_use_id' => $message->toolResult()->callIdString(),
                 'content' => $message->content()->toString(),
-            ])],
+            ], static fn (mixed $value): bool => (bool) $value)],
         ];
     }
 }

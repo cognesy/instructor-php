@@ -33,7 +33,7 @@ class OpenAIBodyFormat implements CanMapRequestBody
             'model' => $request->model() ?: $this->config->model,
             'max_tokens' => $this->config->maxTokens,
             'messages' => $this->messageFormat->map($messages),
-        ]), $options);
+        ], static fn (mixed $value): bool => (bool) $value), $options);
 
         $requestBody = $this->normalizeTokenLimits($requestBody);
         $requestBody = $this->applyStreamOptions($requestBody, $options);

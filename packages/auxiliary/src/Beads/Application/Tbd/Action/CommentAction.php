@@ -27,7 +27,7 @@ class CommentAction
             if ($issue->id !== $issueId) {
                 continue;
             }
-            $comments = $issue->comments ?? [];
+            $comments = $issue->comments;
             $nextId = $this->nextCommentId($comments);
             $comment = new CommentDTO(
                 id: $nextId,

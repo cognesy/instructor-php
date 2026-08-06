@@ -186,6 +186,7 @@ class MockExpectation
         return $this->reply(MockHttpResponseFactory::success($status, $headers, $text));
     }
 
+    /** @param list<string> $chunks */
     public function replyStreamChunks(array $chunks, int $status = 200, array $headers = []): MockHttpDriver {
         return $this->reply(MockHttpResponseFactory::streaming($status, $headers, $chunks));
     }
@@ -214,4 +215,3 @@ class MockExpectation
         return true;
     }
 }
-

@@ -22,6 +22,15 @@ final readonly class StateProcessors implements CanApplyProcessors
         $this->processors = $processors;
     }
 
+    /**
+     * @template T of object
+     * @param CanProcessAnyState<T> ...$processors
+     * @return self<T>
+     */
+    public static function fromProcessors(CanProcessAnyState ...$processors): self {
+        return new self(...$processors);
+    }
+
     // CONSTRUCTORS /////////////////////////////////////////
 
     public static function empty(): static {

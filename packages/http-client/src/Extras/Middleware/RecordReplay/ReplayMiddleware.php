@@ -24,7 +24,7 @@ class ReplayMiddleware implements HttpMiddleware
 {
     private RequestRecords $records;
     private bool $fallbackToRealRequests;
-    private ?EventDispatcherInterface $events;
+    private EventDispatcherInterface $events;
 
     public function __construct(
         string $storageDir,
@@ -42,29 +42,23 @@ class ReplayMiddleware implements HttpMiddleware
 
         if ($record) {
             $response = $record->toResponse($request->isStreamed());
-            if ($this->events !== null) {
-                $this->events->dispatch(new HttpInteractionReplayed(
-                    HttpInteractionSummary::fromRequest($request, 'replayed', $response->statusCode()),
-                ));
-            }
+            $this->events->dispatch(new HttpInteractionReplayed(
+                HttpInteractionSummary::fromRequest($request, 'replayed', $response->statusCode()),
+            ));
             return $response;
         }
 
         if (!$this->fallbackToRealRequests) {
-            if ($this->events !== null) {
-                $this->events->dispatch(new HttpInteractionNotFound(
-                    HttpInteractionSummary::fromRequest($request, 'not_found'),
-                ));
-            }
+            $this->events->dispatch(new HttpInteractionNotFound(
+                HttpInteractionSummary::fromRequest($request, 'not_found'),
+            ));
             throw new RecordingNotFoundException(
                 "No recording found for {$request->method()} request.",
             );
         }
-        if ($this->events !== null) {
-            $this->events->dispatch(new HttpInteractionFallback(
-                HttpInteractionSummary::fromRequest($request, 'fallback'),
-            ));
-        }
+        $this->events->dispatch(new HttpInteractionFallback(
+            HttpInteractionSummary::fromRequest($request, 'fallback'),
+        ));
         return $next->handle($request);
     }
 

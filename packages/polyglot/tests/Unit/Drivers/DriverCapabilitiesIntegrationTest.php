@@ -9,10 +9,9 @@ use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
 /**
  * Drivers are built through the registry by provider name rather than with `new XxxDriver(...)`.
  *
- * Seventeen of those classes no longer exist -- instructor-eexl.9 replaced them with
- * `InferenceDriverSpec` rows -- so a test that names them would be testing the packaging rather
- * than the behaviour. The provider name is the thing callers actually use and the thing that
- * has to keep answering the same way.
+ * Bundled provider classes no longer exist -- all entries are `InferenceDriverSpec` rows -- so a
+ * test that names them would be testing the packaging rather than the behaviour. The provider
+ * name is the thing callers actually use and the thing that has to keep answering the same way.
  */
 function capabilitiesOf(string $provider, string $model, ?string $forModel = null) {
     $driver = BundledInferenceDrivers::registry()->makeDriver(

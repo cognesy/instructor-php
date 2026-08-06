@@ -21,7 +21,7 @@ class PerplexityBodyFormat extends OpenAICompatibleBodyFormat
             'model' => $request->model() ?: $this->config->model,
             'max_tokens' => $this->config->maxTokens,
             'messages' => $this->messageFormat->map($request->messages()->toMergedPerRole()),
-        ]), $options);
+        ], static fn (mixed $value): bool => (bool) $value), $options);
 
         // Perplexity does not support tools, so we unset them
         unset($requestBody['tools']);

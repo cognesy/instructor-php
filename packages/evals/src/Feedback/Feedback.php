@@ -40,7 +40,7 @@ class Feedback
     }
 
     public function empty() : bool {
-        return count($this->items) == 0;
+        return count($this->items) === 0;
     }
 
     public function notEmpty() : bool {

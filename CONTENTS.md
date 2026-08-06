@@ -28,7 +28,7 @@ Development and maintenance automation scripts:
 - `load-packages.sh` - Load centralized package configuration
 - `generate-split-matrix.sh` - Generate GitHub Actions matrix from package config
 - `update-split-yml.sh` - Update split.yml with centralized package configuration
-- `run-all-tests.sh` - Execute tests for all packages
+- `test/run-all-tests.sh` - Execute tests for all packages
 - `composer-*-all.sh` - Composer operations across packages
 - `make-package` / `make-package-enhanced` - Generate new package structure
 

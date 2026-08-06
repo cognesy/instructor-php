@@ -34,7 +34,7 @@ final readonly class ContentParts implements Countable, IteratorAggregate
 
     #[\Override]
     public function getIterator(): Traversable {
-        return new ArrayIterator($this->parts);
+        return new ArrayIterator(array_values($this->parts));
     }
 
     /** @return ContentPart[] */

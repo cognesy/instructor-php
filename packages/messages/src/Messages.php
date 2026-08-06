@@ -229,7 +229,7 @@ final readonly class Messages implements Countable, IteratorAggregate
      */
     public function toArray(): array
     {
-        return $this->messages->toArray();
+        return array_values($this->messages->toArray());
     }
 
     public function toString(string $separator = "\n"): string

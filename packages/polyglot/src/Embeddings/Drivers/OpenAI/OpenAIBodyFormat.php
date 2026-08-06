@@ -27,6 +27,6 @@ class OpenAIBodyFormat implements CanMapRequestBody
             'input' => $inputs,
             'model' => $model,
             'encoding_format' => 'float',
-        ], $options));
+        ], $options), static fn (mixed $value): bool => (bool) $value);
     }
 }

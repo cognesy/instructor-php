@@ -173,7 +173,7 @@ return [
 ```
 
 The prompt class receives the validation failure context through the structured prompt
-renderer. Inline `retry_prompt` text was removed in 2.6 and is ignored if present.
+renderer. Inline `retry_prompt` text was removed in 2.7 and is ignored if present.
 
 Review your application logs to see the exact validation errors from each retry attempt.
 

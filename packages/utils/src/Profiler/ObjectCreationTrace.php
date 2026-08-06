@@ -166,10 +166,10 @@ final class ObjectCreationTrace
         return [
             'createdByClass' => self::createdByClass(),
             'createdByCallsite' => self::createdByCallsite(),
-            'samples' => array_map(
+            'samples' => array_values(array_map(
                 static fn(ObjectCreationSnapshot $sample): array => $sample->toArray(),
                 self::$samples,
-            ),
+            )),
         ];
     }
 

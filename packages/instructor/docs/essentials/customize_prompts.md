@@ -170,7 +170,7 @@ The same pattern applies to deserialization repair via `deserializationErrorProm
 
 ## Legacy Compatibility
 
-The inline `modePrompts`, `retryPrompt`, and `chatStructure` settings were removed in 2.6
+The inline `modePrompts`, `retryPrompt`, and `chatStructure` settings were removed in 2.7
 along with the legacy materializer that read them. `StructuredOutputConfig::fromArray()`
 ignores them rather than failing, so old config files keep loading. Use prompt classes, or
 provide a custom `CanMaterializeRequest` implementation when prompt-class customization is

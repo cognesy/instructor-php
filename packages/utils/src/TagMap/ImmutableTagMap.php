@@ -120,11 +120,13 @@ final readonly class ImmutableTagMap implements TagMapInterface
     }
 
     #[\Override]
+    /**
+     * @param array<TagInterface>|array<class-string, array<TagInterface>> $tags
+     */
     public function newInstance(array $tags): TagMapInterface {
         // If already grouped by class-string, use directly
         if ($this->isGroupedArray($tags)) {
-            /** @var array<class-string, array<array-key, TagInterface>> $tags */
-            return new self($tags);
+            return new self(self::normalizeGroupedTags($tags));
         }
         // Otherwise, group the flat array
         return new self(self::addTagsTo([], $tags));
@@ -174,6 +176,23 @@ final readonly class ImmutableTagMap implements TagMapInterface
             $target[$class] = array_merge($target[$class], $tagList);
         }
         return $target;
+    }
+
+    /** @param array<array-key, mixed> $tags @return array<class-string, array<TagInterface>> */
+    private static function normalizeGroupedTags(array $tags): array {
+        $grouped = [];
+        foreach ($tags as $class => $tagList) {
+            if (!is_string($class) || !is_array($tagList)) {
+                throw new \InvalidArgumentException('Grouped tags must be indexed by class name.');
+            }
+            foreach ($tagList as $tag) {
+                if (!$tag instanceof TagInterface) {
+                    throw new \InvalidArgumentException('Grouped tags must contain TagInterface instances.');
+                }
+                $grouped[$class][] = $tag;
+            }
+        }
+        return $grouped;
     }
 
     /**

@@ -135,10 +135,10 @@ class RawHtml
 
         if ($nodes !== false) {
             foreach ($nodes as $node) {
-                $attributes = $node->attributes;
-                if ($attributes === null) {
+                if (!$node instanceof \DOMElement) {
                     continue;
                 }
+                $attributes = $node->attributes;
                 foreach ($attributes as $attribute) {
                     if (str_starts_with($attribute->nodeName, 'on')) {
                         $node->removeAttribute($attribute->nodeName);
@@ -167,6 +167,9 @@ class RawHtml
         $styleLinks = $xpath->query('//link[@rel="stylesheet"]');
         if ($styleLinks !== false) {
             foreach ($styleLinks as $link) {
+                if (!$link instanceof \DOMNode) {
+                    continue;
+                }
                 $link->parentNode?->removeChild($link);
             }
         }
@@ -210,6 +213,9 @@ class RawHtml
         $comments = $xpath->query('//comment()');
         if ($comments !== false) {
             foreach ($comments as $comment) {
+                if (!$comment instanceof \DOMNode) {
+                    continue;
+                }
                 $comment->parentNode?->removeChild($comment);
             }
         }
@@ -253,6 +259,9 @@ class RawHtml
         $divs = $xpath->query('//div[not(ancestor::header) and not(ancestor::nav)]');
         if ($divs !== false) {
             foreach ($divs as $div) {
+                if (!$div instanceof \DOMElement) {
+                    continue;
+                }
                 if ($div->hasAttribute('style')) {
                     $style = $div->getAttribute('style');
                     if (preg_match('/font-size:\s*(\d+)px/', $style, $matches)) {
@@ -271,10 +280,16 @@ class RawHtml
         $lists = $xpath->query('//div[./div[position() = 1][.//text()[normalize-space()]]]');
         if ($lists !== false) {
             foreach ($lists as $list) {
+                if (!$list instanceof \DOMNode) {
+                    continue;
+                }
                 $items = $xpath->query('./*[normalize-space()]', $list);
                 if ($items !== false && $items->length > 2) {
                     $ul = $this->dom->createElement('ul');
                     foreach ($items as $item) {
+                        if (!$item instanceof \DOMNode) {
+                            continue;
+                        }
                         $li = $this->dom->createElement('li');
                         $li->textContent = $item->textContent;
                         $ul->appendChild($li);
@@ -300,10 +315,10 @@ class RawHtml
 
         if ($nodes !== false) {
             foreach ($nodes as $node) {
-                $attributes = $node->attributes;
-                if ($attributes === null) {
+                if (!$node instanceof \DOMElement) {
                     continue;
                 }
+                $attributes = $node->attributes;
                 foreach ($attributes as $attribute) {
                     if (!in_array($attribute->nodeName, $keepAttributes, true)) {
                         $node->removeAttribute($attribute->nodeName);
@@ -332,7 +347,7 @@ class RawHtml
 
             if ($emptyNodes !== false) {
                 foreach ($emptyNodes as $node) {
-                    if ($node->parentNode) {
+                    if ($node instanceof \DOMNode && $node->parentNode !== null) {
                         $node->parentNode->removeChild($node);
                         $removed = true;
                     }
@@ -366,7 +381,7 @@ class RawHtml
                 continue;
             }
             $main = $nodeList->item(0);
-            if ($main) {
+            if ($main instanceof \DOMNode) {
                 // Create a new document with just the main content
                 $newDoc = new DOMDocument('1.0', 'UTF-8');
                 $newMain = $newDoc->importNode($main, true);
@@ -400,7 +415,7 @@ class RawHtml
                 continue;
             }
             foreach ($nodes as $node) {
-                if ($node->parentNode) {
+                if ($node instanceof \DOMNode && $node->parentNode !== null) {
                     $node->parentNode->removeChild($node);
                 }
             }

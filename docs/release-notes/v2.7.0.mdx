@@ -106,34 +106,35 @@ override `handle()` themselves.
 This makes the driver responsible for its complete provider boundary and keeps
 `PendingEmbeddings` focused on retries, memoization, and lifecycle events.
 
-### Bundled OpenAI-Compatible Drivers Are Declarative
+### Bundled Inference Drivers Are Declarative
 
-Seventeen classes under `Cognesy\Polyglot\Inference\Drivers\` are gone: `A21Driver`,
-`CerebrasDriver`, `DeepseekDriver`, `FireworksDriver`, `GlmDriver`, `GroqDriver`,
+All 26 provider driver shells under `Cognesy\Polyglot\Inference\Drivers\` are gone:
+`A21Driver`, `CerebrasDriver`, `DeepseekDriver`, `FireworksDriver`, `GlmDriver`, `GroqDriver`,
 `InceptionDriver`, `MetaDriver`, `MinimaxiDriver`, `MistralDriver`, `OpenAIDriver`,
-`OpenAICompatibleDriver`, `OpenRouterDriver`, `PerplexityDriver`, `QwenDriver`,
-`SambaNovaDriver`, and `XAiDriver`. (The embeddings driver of the same short name,
-`Embeddings\Drivers\OpenAI\OpenAIDriver`, is untouched.) Each was a class whose
-only content was naming its collaborators, so the providers that speak the OpenAI wire protocol
-are now rows of an `InferenceDriverSpec` table in `BundledInferenceDrivers`, and one
-`SpecifiedInferenceDriver` serves them all. The nine providers that genuinely differ — they
-assemble their own URLs or headers, which is behaviour a table cannot hold — keep their driver
-classes: Anthropic, Azure, Bedrock, CohereV2, Gemini, GeminiOAI, HuggingFace, OpenAIResponses,
-and OpenResponses.
+`OpenAICompatibleDriver`, `OpenRouterDriver`, `PerplexityDriver`, `QwenDriver`, `SambaNovaDriver`,
+`XAiDriver`, `AnthropicDriver`, `AzureDriver`, `BedrockOpenAIDriver`, `CohereV2Driver`,
+`GeminiDriver`, `GeminiOAIDriver`, `HuggingFaceDriver`, `OpenAIResponsesDriver`, and
+`OpenResponsesDriver`. (The embeddings driver of the same short name,
+`Embeddings\Drivers\OpenAI\OpenAIDriver`, is untouched.) Each was a class whose only content
+was composing provider-specific collaborators. All 29 bundled registry names — including aliases
+— are now rows of an `InferenceDriverSpec` table in `BundledInferenceDrivers`, and one
+`SpecifiedInferenceDriver` serves them all. OpenAI-compatible providers use the shared defaults;
+native protocols and provider-specific endpoints name their own body, request, response, usage, or
+message adapters in the same declarative row.
 
-Nothing changes for callers. Preset names are untouched, `Inference`, `PendingInference`,
-`InferenceStream`, `InferenceResponse`, `Embeddings`, `PendingEmbeddings`, and `LLMConfig` have
-byte-identical public APIs, and every `Cognesy\Polyglot\Inference\Contracts\*` interface is
-unchanged. `InferenceDriverRegistry::withDriver()` still accepts a class-string or a callable,
-so custom registrations keep working.
+Preset names and request/response behavior are unchanged. `Inference`, `PendingInference`,
+`InferenceStream`, `InferenceResponse`, `Embeddings`, `PendingEmbeddings`, and `LLMConfig` keep
+their public APIs, and every `Cognesy\Polyglot\Inference\Contracts\*` interface is unchanged.
+`InferenceDriverRegistry::withDriver()` still accepts a class-string or a callable, so custom
+registrations keep working.
 
-What breaks is naming a deleted class. Extending one — most often `OpenAIDriver` or
-`OpenAICompatibleDriver` to change one method — now means extending
-`SpecifiedInferenceDriver` and naming your subclass in the spec's `driverClass`, or supplying a
-spec with your own body format, request adapter, response adapter, usage format, or message
-format. Per-model capability logic that used to be a `capabilities(?string $model)` override
-becomes `DriverCapabilities` data on the spec, either a fixed instance or a closure over the
-model name (`deepseek` is the one bundled provider that needs the closure).
+What breaks is naming one of the deleted classes. Extending one — most often `OpenAIDriver` or
+`OpenAICompatibleDriver` to change one method — now means extending `SpecifiedInferenceDriver`
+and naming your subclass in the spec's `driverClass`, or supplying a spec with your own body
+format, request adapter, response adapter, usage format, or message format. Per-model capability
+logic that used to be a `capabilities(?string $model)` override becomes `DriverCapabilities` data
+on the spec, either a fixed instance or a closure over the model name (`deepseek` is the one
+bundled provider that needs the closure).
 
 `Cognesy\Polyglot\Inference\Contracts\MessageMapper` moved to
 `Cognesy\Polyglot\Inference\Drivers\MessageMapper` — it is a driver helper, not a contract.
@@ -317,7 +318,7 @@ provenance and cost, and provenance deliberately excludes credentials, keyed bas
 full LLM configuration dumps.
 
 Five documentation pages cover the harness end to end — evals, assertions, judges, traces and
-artifacts, and running evals from the CLI or from PHPUnit and Pest — alongside eleven runnable
+artifacts, and running evals from the CLI or from PHPUnit and Pest — alongside thirteen runnable
 `D06_AgentEvals` examples.
 
 ## A Typed Metric Catalog

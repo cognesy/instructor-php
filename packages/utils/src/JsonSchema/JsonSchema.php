@@ -130,7 +130,6 @@ class JsonSchema implements CanProvideJsonSchema
                 $isRequired = in_array($propertyName, $data['required'] ?? [], true);
                 $properties[$propertyName] = self::fromArray($propertyData, $propertyName, $isRequired);
             }
-            $properties = array_filter($properties);
         }
 
         $itemSchema = match(true) {

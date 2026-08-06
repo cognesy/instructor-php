@@ -202,7 +202,9 @@ The release process:
 
 After the main release is created, GitHub Actions automatically:
 - Splits each package into separate repositories (configured via `packages.json`)
-- Creates individual releases for each package on Packagist
+- Creates an individual GitHub release in each split package repository
+- Waits briefly for Packagist propagation, then runs the package test matrix
+  against PHP 8.2, 8.3, and 8.4
 - The split workflow supports both tagged releases and continuous main branch synchronization
 
 ## Utilities and Helper Scripts

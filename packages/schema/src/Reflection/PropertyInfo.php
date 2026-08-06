@@ -9,6 +9,7 @@ use ReflectionClass;
 use ReflectionMethod;
 use ReflectionParameter;
 use ReflectionProperty;
+use InvalidArgumentException;
 use Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
@@ -26,6 +27,9 @@ class PropertyInfo
     private ?Type $resolvedType = null;
 
     public static function fromName(string $class, string $property) : self {
+        if (!class_exists($class)) {
+            throw new InvalidArgumentException("Class does not exist: {$class}");
+        }
         return self::fromReflection(new ReflectionProperty($class, $property));
     }
 

@@ -30,7 +30,7 @@ final readonly class HttpRequestList implements \Countable, \IteratorAggregate
 
     /** @param array<HttpRequest> $requests */
     public static function fromArray(array $requests): self {
-        return new self(ArrayList::fromArray($requests));
+        return new self(ArrayList::fromArray(array_values($requests)));
     }
 
     // ACCESSORS ////////////////////////////////////////////////////////////////
@@ -89,6 +89,6 @@ final readonly class HttpRequestList implements \Countable, \IteratorAggregate
             fn(array $r) => HttpRequest::fromArray($r),
             $data
         );
-        return new self(ArrayList::fromArray($requests));
+        return new self(ArrayList::fromArray(array_values($requests)));
     }
 }

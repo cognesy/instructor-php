@@ -39,7 +39,7 @@ class AzureRequestAdapter implements EmbedRequestAdapter
     protected function getUrlParams(): string {
         $params = array_filter([
             'api-version' => $this->config->metadata['apiVersion'] ?? '',
-        ]);
+        ], static fn (mixed $value): bool => (bool) $value);
         if (!empty($params)) {
             return '?' . http_build_query($params);
         }

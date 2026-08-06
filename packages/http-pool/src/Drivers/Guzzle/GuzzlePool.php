@@ -100,8 +100,12 @@ class GuzzlePool implements CanHandleRequestPool
     }
 
     private function handleFulfilledResponse(ResponseInterface $response, ?HttpRequest $request): Result {
+        $requestId = '';
+        if ($request !== null) {
+            $requestId = $request->id;
+        }
         $this->events->dispatch(new HttpResponseReceived([
-            'requestId' => $request?->id ?? '',
+            'requestId' => $requestId,
             'statusCode' => $response->getStatusCode(),
         ]));
         $isStreamed = $this->isStreamed($response);
@@ -110,12 +114,16 @@ class GuzzlePool implements CanHandleRequestPool
             stream: $response->getBody(),
             events: $this->events,
             isStreamed: $isStreamed,
-            requestId: $request?->id ?? '',
+            requestId: $requestId,
             streamChunkSize: $this->config->streamChunkSize,
         ));
     }
 
     private function handleRejectedResponse(mixed $reason, ?HttpRequest $request): Failure {
+        $requestId = '';
+        if ($request !== null) {
+            $requestId = $request->id;
+        }
         $errorMessage = match(true) {
             is_string($reason) => $reason,
             $reason instanceof \Throwable => $reason->getMessage(),
@@ -123,7 +131,7 @@ class GuzzlePool implements CanHandleRequestPool
         };
 
         $this->events->dispatch(new HttpRequestFailed([
-            'requestId' => $request?->id ?? '',
+            'requestId' => $requestId,
             'url' => $request?->url() ?? '',
             'method' => $request?->method() ?? '',
             'errors' => $errorMessage,

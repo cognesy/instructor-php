@@ -16,6 +16,9 @@ rules:
         # capability setup intentionally. Keep new filesystem tests out of
         # fast lanes unless they receive an explicit exception here.
         - "/packages/agents/tests/Feature/Capabilities/CodingCapabilityTest.php"
+        # Agent eval repetition tests exercise CLI discovery and artifact
+        # persistence; their filesystem assertions are the behavior under test.
+        - "/packages/agents/tests/Unit/Evals/RepeatTest.php"
         - "/packages/http-client/tests/Feature/Http/RequestMatcherTest.php"
         - "/packages/http-client/tests/Feature/Http/RequestRedactionTest.php"
         - "/packages/http-client/tests/Regression/BundledPresetDiscoveryRegressionTest.php"

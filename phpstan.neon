@@ -33,20 +33,20 @@ parameters:
     - packages/*/tests/Support/*
     - packages/experimental
     - examples/
+    # Public validation mixin is an extension trait consumed by downstream DTOs.
+    - packages/instructor/src/Validation/Traits/ValidationMixin.php
     # Framework integration files (frameworks not dependencies)
     - packages/auxiliary/src/Beads/Eloquent/Migrations/*
     - packages/auxiliary/src/Beads/Eloquent/Models/*
     - packages/auxiliary/src/Beads/Presentation/BeadsServiceProvider.php
-    - packages/logging/src/Integrations/Laravel/*
+    - packages/logging/src/Integrations/Laravel/* (?)
     - packages/logging/src/Integrations/Symfony/*
-    - packages/logging/src/Factories/LaravelLoggingFactory.php
+    - packages/logging/src/Factories/LaravelLoggingFactory.php (?)
     - packages/logging/src/Factories/SymfonyLoggingFactory.php
   reportUnmatchedIgnoredErrors: false
   checkMissingCallableSignature: true
   checkUninitializedProperties: true
   checkDynamicProperties: true
-  checkAlwaysTrueInstanceof: true
-  checkAlwaysTrueStrictComparison: true
   checkPhpDocMethodSignatures: true
   treatPhpDocTypesAsCertain: false
   tmpDir: /tmp

@@ -24,7 +24,10 @@ class File
      */
     public function log(int $number = 10): array {
         $log = $this->gitService->runCommand(sprintf('log -n %d --pretty=format:%%H -- %s', $number, escapeshellarg($this->path)));
-        $hashes = array_filter(array_map('trim', explode("\n", $log)));
+        $hashes = array_filter(
+            array_map('trim', explode("\n", $log)),
+            static fn (mixed $value): bool => (bool) $value,
+        );
         return array_map(fn($hash) => new Commit($hash, $this->gitService), $hashes);
     }
 
@@ -37,7 +40,10 @@ class File
      */
     public function versions(int $number = 10): array {
         $log = $this->gitService->runCommand(sprintf('log -n %d --pretty=format:%%H -- %s', $number, escapeshellarg($this->path)));
-        $hashes = array_filter(array_map('trim', explode("\n", $log)));
+        $hashes = array_filter(
+            array_map('trim', explode("\n", $log)),
+            static fn (mixed $value): bool => (bool) $value,
+        );
         $versions = [];
 
         foreach ($hashes as $hash) {

@@ -16,7 +16,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  * It adds exactly one thing to `BaseInferenceRequestDriver`: an answer to `capabilities()`
  * that comes from data instead of from an overridden method. Everything else -- the request
  * and response translation, the event gates, the error handling -- is the base class doing
- * what it already did for the seventeen classes this replaces.
+ * what it already did for the twenty-six bundled classes this replaces.
  *
  * Deliberately does NOT touch usage. INVARIANT I2: usage must never be normalised to a
  * zero-valued object in a shared path, and this class is the most shared path in the package.

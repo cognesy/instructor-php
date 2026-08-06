@@ -8,7 +8,14 @@ use Cognesy\Addons\StepByStep\Collections\Steps;
 /** @extends Steps<CollaborationStep> */
 final readonly class CollaborationSteps extends Steps
 {
-    public function __construct(CollaborationStep ...$steps) {
+    /** @param CollaborationStep ...$steps */
+    public function __construct(object ...$steps) {
+        foreach ($steps as $step) {
+            if (!$step instanceof CollaborationStep) {
+                throw new \InvalidArgumentException('CollaborationSteps accepts only CollaborationStep instances.');
+            }
+        }
+
         parent::__construct(...$steps);
     }
 

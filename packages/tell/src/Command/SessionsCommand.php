@@ -93,7 +93,8 @@ HELP)
 
     private function list(InputInterface $input, OutputInterface $output): int
     {
-        $sessions = $this->agents->sessions()->listSessions()->toArray();
+        /** @var list<array<string, mixed>> $sessions */
+        $sessions = array_values($this->agents->sessions()->listSessions()->toArray());
         $fields = FieldSelection::from(
             (string) $input->getOption('fields'),
             ['sessionId', 'status', 'agentName'],

@@ -10,8 +10,9 @@ Run from repo root:
 composer validate --strict
 composer test-all
 composer qa
-./scripts/run-all-tests.sh
+./scripts/test/run-all-tests.sh
 composer qa:docs
+composer qa:docs-sites -- --release X.Y.Z
 composer docs drift --tier=public
 act pull_request -W .github/workflows/php.yml -j build --dryrun
 ```
@@ -20,8 +21,10 @@ Interpretation:
 
 - `composer test-all` proves the monorepo test surface is green
 - `composer qa` proves root static-analysis, style, and Semgrep gates are green
-- `./scripts/run-all-tests.sh` proves split packages still test in isolation
+- `./scripts/test/run-all-tests.sh` proves split packages still test in isolation
 - `composer qa:docs` catches public docs breakage
+- `composer qa:docs-sites -- --release X.Y.Z` proves both generated
+  documentation targets are valid for the release
 - `composer docs drift --tier=public` catches obvious docs/API drift risk
 - `act ... --dryrun` proves the workflow still resolves locally
 

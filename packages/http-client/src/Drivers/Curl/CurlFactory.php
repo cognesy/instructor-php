@@ -53,8 +53,8 @@ final class CurlFactory
     }
 
     private function configureTimeouts(CurlHandle $handle): void {
-        $handle->setOption(CURLOPT_CONNECTTIMEOUT, $this->config->connectTimeout ?? 3);
-        $handle->setOption(CURLOPT_TIMEOUT, $this->config->requestTimeout ?? 30);
+        $handle->setOption(CURLOPT_CONNECTTIMEOUT, $this->config->connectTimeout);
+        $handle->setOption(CURLOPT_TIMEOUT, $this->config->requestTimeout);
     }
 
     private function configureSsl(CurlHandle $handle): void {

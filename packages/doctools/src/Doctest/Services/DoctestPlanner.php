@@ -95,6 +95,9 @@ final class DoctestPlanner
         if (preg_match_all('/@doctest-region-start\s+name[=:]\s*["\']?([^"\'\s<>]+)["\']?/m', $code, $m)) {
             $names = $m[1];
         }
-        return array_values(array_unique(array_filter(array_map('strval', $names))));
+        return array_values(array_unique(array_filter(
+            array_map('strval', $names),
+            static fn (mixed $value): bool => (bool) $value,
+        )));
     }
 }

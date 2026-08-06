@@ -96,6 +96,10 @@ class NumberSeriesAggregator
      */
     private function min(): float
     {
+        if ($this->values === []) {
+            throw new RuntimeException('Values array cannot be empty.');
+        }
+
         return min($this->values);
     }
 
@@ -106,6 +110,10 @@ class NumberSeriesAggregator
      */
     private function max(): float
     {
+        if ($this->values === []) {
+            throw new RuntimeException('Values array cannot be empty.');
+        }
+
         return max($this->values);
     }
 

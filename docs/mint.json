@@ -739,7 +739,9 @@
                 "cookbook/examples/D06_AgentEvals/agent_eval_test_suites",
                 "cookbook/examples/D06_AgentEvals/agent_eval_judging_agent",
                 "cookbook/examples/D06_AgentEvals/agent_eval_judging_agent_live",
-                "cookbook/examples/D06_AgentEvals/agent_eval_repeated_judging"
+                "cookbook/examples/D06_AgentEvals/agent_eval_repeated_judging",
+                "cookbook/examples/D06_AgentEvals/agent_eval_discovery_and_cli",
+                "cookbook/examples/D06_AgentEvals/agent_eval_trace_policies"
             ]
         },
         {

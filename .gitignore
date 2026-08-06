@@ -154,7 +154,7 @@ tasks.json
 
 # Hub execution tracking
 .hub/
-.instructor-hub/ 
+.instructor-hub/
 
 # bv (beads viewer) local config and caches
 .bv/
@@ -173,3 +173,9 @@ tasks.json
 
 # CodeGraph local database/cache
 .codegraph/
+.qmd/
+.logfire/
+.codex/skills/
+.archlet/
+research/
+.actrc

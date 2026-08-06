@@ -14,10 +14,9 @@ Verify:
 
 Do not improvise a posting workflow inside the release skill.
 
-Use:
-
-- `$tweet-package` to draft the release announcement package
-- `$xurl` only if the user explicitly wants to post
+Use the release-note highlights and the template below to draft the
+announcement locally. Do not assume that a separate announcement or posting
+tool is installed.
 
 Recommended announcement shape:
 

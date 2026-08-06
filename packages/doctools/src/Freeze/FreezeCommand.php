@@ -182,6 +182,7 @@ class FreezeCommand
         );
     }
 
+    /** @return list<string> */
     private function buildCommandArray(): array {
         // Auto-detect language if not specified and we have a file
         if (empty($this->language) && !empty($this->filePath)) {

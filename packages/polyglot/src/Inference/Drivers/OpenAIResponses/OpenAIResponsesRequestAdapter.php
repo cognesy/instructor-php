@@ -21,7 +21,7 @@ class OpenAIResponsesRequestAdapter extends BaseHttpRequestAdapter
         $extras = array_filter([
             'OpenAI-Organization' => $this->config->metadata['organization'] ?? '',
             'OpenAI-Project' => $this->config->metadata['project'] ?? '',
-        ]);
+        ], static fn (mixed $value): bool => (bool) $value);
 
         return array_merge([
             'Authorization' => "Bearer {$this->config->apiKey}",

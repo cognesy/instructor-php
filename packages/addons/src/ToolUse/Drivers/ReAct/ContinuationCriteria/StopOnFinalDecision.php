@@ -46,14 +46,19 @@ final class StopOnFinalDecision implements CanEvaluateContinuation
         $reason = match(true) {
             $type === null => 'No step type yet, allowing bootstrap',
             ToolUseStepType::ToolExecution->is($type) => 'Tool execution step, requesting continuation',
-            default => sprintf('Final step type "%s", allowing stop', $type->value ?? 'unknown'),
+            default => sprintf('Final step type "%s", allowing stop', $type->value),
+        };
+
+        $stepType = match ($type) {
+            null => 'none',
+            default => $type->value,
         };
 
         return new ContinuationEvaluation(
             criterionClass: self::class,
             decision: $decision,
             reason: $reason,
-            context: ['stepType' => $type?->value ?? 'none'],
+            context: ['stepType' => $stepType],
         );
     }
 }

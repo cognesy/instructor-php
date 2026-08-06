@@ -68,7 +68,7 @@ final class CurlPool implements CanHandleRequestPool
             return HttpResponseList::empty();
         }
 
-        $maxConcurrent = $maxConcurrent ?? $this->config->maxConcurrent ?? 5;
+        $maxConcurrent = $maxConcurrent ?? $this->config->maxConcurrent;
 
         // Create execution state
         $state = new PoolState(

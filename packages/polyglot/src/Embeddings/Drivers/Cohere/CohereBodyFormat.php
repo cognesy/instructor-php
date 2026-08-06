@@ -29,6 +29,6 @@ class CohereBodyFormat implements CanMapRequestBody
             'model' => $model,
             'embedding_types' => ['float'],
             'truncate' => 'END',
-        ], $options));
+        ], $options), static fn (mixed $value): bool => (bool) $value);
     }
 }

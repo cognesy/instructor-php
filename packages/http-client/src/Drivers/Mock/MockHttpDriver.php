@@ -30,8 +30,7 @@ class MockHttpDriver implements CanHandleHttpRequest
     /** @var HttpRequest[] Array of received requests for inspection */
     private array $receivedRequests = [];
 
-    /** @var EventDispatcherInterface|null Event dispatcher instance */
-    private ?EventDispatcherInterface $events;
+    private EventDispatcherInterface $events;
 
     /**
      * Constructor
@@ -87,8 +86,9 @@ class MockHttpDriver implements CanHandleHttpRequest
 
             // Decrement times if limited
             if ($exp['times'] !== null) {
-                $this->expectations[$idx]['times'] -= 1;
-                if ($this->expectations[$idx]['times'] <= 0) {
+                $remaining = $exp['times'] - 1;
+                $this->expectations[$idx]['times'] = $remaining;
+                if ($remaining <= 0) {
                     array_splice($this->expectations, $idx, 1);
                 }
             }

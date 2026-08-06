@@ -32,7 +32,7 @@ class NodeSet extends Prompt
             );
         }
 
-        return $items;
+        return array_values($items);
     }
 
     /**

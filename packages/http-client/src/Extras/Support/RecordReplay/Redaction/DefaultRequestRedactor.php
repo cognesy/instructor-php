@@ -113,9 +113,17 @@ final class DefaultRequestRedactor implements FixtureSanitizer
         return preg_replace('/(Bearer\s+)[^\s,]+/i', '$1' . self::MASK, $body) ?? $body;
     }
 
-    /** @param list<string> $chunks */
+    /** @param array<array-key, mixed> $chunks */
     public static function redactChunks(array $chunks): array {
-        return iterator_to_array((new self())->redactStream($chunks), false);
+        $normalized = [];
+        foreach ($chunks as $chunk) {
+            if (!is_string($chunk)) {
+                throw new \InvalidArgumentException('Response chunks must contain only strings.');
+            }
+            $normalized[] = $chunk;
+        }
+
+        return iterator_to_array((new self())->redactStream($normalized), false);
     }
 
     /**

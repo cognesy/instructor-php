@@ -8,11 +8,15 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 
 class MiddlewareStack
 {
+    private readonly EventDispatcherInterface $events;
+
     public function __construct(
-        private readonly EventDispatcherInterface $events,
+        EventDispatcherInterface $events,
         /** @var HttpMiddleware[] */
         private readonly array $stack = [],
-    ) {}
+    ) {
+        $this->events = $events;
+    }
 
     /**
      * Adds middleware to the stack

@@ -70,10 +70,10 @@ $driver = new SpecifiedInferenceDriver(
 );
 ```
 
-A provider that assembles its own URL or headers still gets a class -- `AnthropicDriver`,
-`GeminiDriver`, `AzureDriver`, `BedrockOpenAIDriver` and the rest extend
-`BaseInferenceRequestDriver` and do that wiring in their constructor. That is behaviour, and a
-table of class names cannot hold it.
+Providers that assemble their own URL or headers still use bespoke request adapters, but they
+are selected by the `requestAdapter` field in their `InferenceDriverSpec`; they do not need a
+provider driver class. The adapter owns that provider-specific behavior while
+`SpecifiedInferenceDriver` supplies the shared execution lifecycle.
 
 The `BaseInferenceRequestDriver` handles the shared execution logic -- sending HTTP requests, reading responses, and parsing event streams. The adapters only need to handle format translation.
 

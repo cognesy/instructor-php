@@ -46,6 +46,6 @@ final class ArrayBuffer implements BufferInterface
     /** @return list<T> Oldest to newest */
     #[\Override]
     public function toArray(): array {
-        return $this->buffer;
+        return array_values($this->buffer);
     }
 }

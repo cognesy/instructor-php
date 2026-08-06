@@ -96,7 +96,10 @@ final class DoctestParser
             $this->advance();
         }
 
-        $endLine = $this->currentToken?->line ?? $startLine;
+        $endLine = $startLine;
+        if ($this->currentToken !== null) {
+            $endLine = $this->currentToken->line;
+        }
 
         return new DoctestRegionNode($regionName, trim($content), $startLine, $endLine);
     }

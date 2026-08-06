@@ -28,7 +28,7 @@ class JinaBodyFormat implements CanMapRequestBody
             'normalized' => true,
             'embedding_type' => 'float',
             'input' => $inputs,
-        ], $options));
+        ], $options), static fn (mixed $value): bool => (bool) $value);
         if ($model === 'jina-colbert-v2') {
             $body['input_type'] = $options['input_type'] ?? 'document';
             $body['dimensions'] = $options['dimensions'] ?? 128;

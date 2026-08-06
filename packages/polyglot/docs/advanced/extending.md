@@ -82,7 +82,9 @@ $drivers = BundledInferenceDrivers::registry()
 ```
 
 The spec's other fields -- `requestAdapter`, `responseAdapter`, `usageFormat`, `messageFormat`
--- take the same treatment. Most bundled providers are exactly this: a row of class names.
+-- take the same treatment. All bundled providers use this same declarative shape. Providers
+whose wire protocol or endpoint differs name those provider-specific collaborators in the row;
+they do not need a provider driver class.
 
 To change *behaviour* rather than composition, subclass `SpecifiedInferenceDriver` and name it
 in the spec. The spec still assembles the five collaborators for it:
@@ -195,10 +197,10 @@ final class AcmeRequestAdapter extends BaseHttpRequestAdapter
 }
 ```
 
-Most bundled providers follow this modular adapter pattern -- which is why most of them are
-declared as an `InferenceDriverSpec` rather than written as a class. See `AnthropicDriver` for
-a provider that needs a class of its own, and `BundledInferenceDrivers::registry()` for the
-table of the ones that do not.
+All bundled providers follow this modular adapter pattern and are declared as an
+`InferenceDriverSpec`. OpenAI-compatible providers use the default adapters where possible;
+native protocols and providers with custom URLs or headers select bespoke request or response
+adapters in their spec row. See `BundledInferenceDrivers::registry()` for the complete table.
 
 
 ## Custom Embeddings Drivers
@@ -305,25 +307,25 @@ For reference, Polyglot bundles the following inference drivers:
 | Driver Name | Built from |
 |---|---|
 | `a21` | spec: `A21BodyFormat` |
-| `anthropic` | `AnthropicDriver` |
-| `azure` | `AzureDriver` |
-| `bedrock-openai` | `BedrockOpenAIDriver` |
+| `anthropic` | spec: `AnthropicBodyFormat` + `AnthropicRequestAdapter` |
+| `azure` | spec: `OpenAIBodyFormat` + `AzureOpenAIRequestAdapter` |
+| `bedrock-openai` | spec: `OpenAICompatibleBodyFormat` + `BedrockOpenAIRequestAdapter` |
 | `cerebras` | spec: `CerebrasBodyFormat` |
-| `cohere` | `CohereV2Driver` |
+| `cohere` | spec: `CohereV2BodyFormat` + `CohereV2RequestAdapter` |
 | `deepseek` | spec: `DeepseekBodyFormat` |
 | `fireworks` | spec: `FireworksBodyFormat` |
-| `gemini` | `GeminiDriver` |
-| `gemini-oai` | `GeminiOAIDriver` |
+| `gemini` | spec: `GeminiBodyFormat` + `GeminiRequestAdapter` |
+| `gemini-oai` | spec: `GeminiOAIBodyFormat` + `GeminiOAIRequestAdapter` |
 | `glm` | spec: `GlmBodyFormat` |
 | `groq` | spec: `GroqBodyFormat` |
-| `huggingface` | `HuggingFaceDriver` |
+| `huggingface` | spec: `HuggingFaceBodyFormat` + `HuggingFaceRequestAdapter` |
 | `inception` | spec: `InceptionBodyFormat` |
 | `meta` | spec: `MetaBodyFormat` |
 | `minimaxi` | spec: `MinimaxiBodyFormat` |
 | `mistral` | spec: `MistralBodyFormat` |
 | `openai` | spec: `OpenAIBodyFormat` |
-| `openai-responses` | `OpenAIResponsesDriver` |
-| `openresponses` | `OpenResponsesDriver` |
+| `openai-responses` | spec: `OpenResponsesBodyFormat` + `OpenAIResponsesRequestAdapter` |
+| `openresponses` | spec: `OpenResponsesBodyFormat` + `OpenResponsesRequestAdapter` |
 | `openrouter` | spec: `OpenRouterBodyFormat` |
 | `perplexity` | spec: `PerplexityBodyFormat` |
 | `qwen` | spec: `QwenBodyFormat` |

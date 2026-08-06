@@ -15,7 +15,7 @@ class AnthropicRequestAdapter extends BaseHttpRequestAdapter
             'accept' => 'application/json',
             'anthropic-version' => $this->config->metadata['apiVersion'] ?? '',
             'anthropic-beta' => $this->config->metadata['beta'] ?? '',
-        ]);
+        ], static fn (mixed $value): bool => (bool) $value);
     }
 
     #[\Override]

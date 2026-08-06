@@ -33,11 +33,14 @@ class AggregateExperimentObserver implements CanObserveExperiment
             type: 'summary',
             key: $this->name,
             value: $this->calculate($experiment),
-            metadata: array_filter(array_merge([
-                'experimentId' => $experiment->id()->toString(),
-                'aggregatedKey' => $this->observationKey,
-                'aggregationMethod' => $this->method->value,
-            ], $this->params)),
+            metadata: array_filter(
+                array_merge([
+                    'experimentId' => $experiment->id()->toString(),
+                    'aggregatedKey' => $this->observationKey,
+                    'aggregationMethod' => $this->method->value,
+                ], $this->params),
+                static fn (mixed $value): bool => (bool) $value,
+            ),
         );
     }
 

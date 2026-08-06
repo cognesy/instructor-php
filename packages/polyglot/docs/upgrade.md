@@ -9,15 +9,16 @@ Only driver authors are affected. Preset names, `Inference`, `PendingInference`,
 `InferenceStream`, `InferenceResponse`, `Embeddings`, `PendingEmbeddings`, and `LLMConfig` are
 unchanged, and so is every interface under `Cognesy\Polyglot\Inference\Contracts`.
 
-Seventeen classes under `Cognesy\Polyglot\Inference\Drivers\` were removed: `A21Driver`,
-`CerebrasDriver`, `DeepseekDriver`, `FireworksDriver`, `GlmDriver`, `GroqDriver`,
+All 26 provider driver shells under `Cognesy\Polyglot\Inference\Drivers\` were removed:
+`A21Driver`, `CerebrasDriver`, `DeepseekDriver`, `FireworksDriver`, `GlmDriver`, `GroqDriver`,
 `InceptionDriver`, `MetaDriver`, `MinimaxiDriver`, `MistralDriver`, `OpenAIDriver`,
-`OpenAICompatibleDriver`, `OpenRouterDriver`, `PerplexityDriver`, `QwenDriver`,
-`SambaNovaDriver`, `XAiDriver`. Their only content was naming collaborators, so providers on
-the OpenAI wire protocol are now `InferenceDriverSpec` rows in `BundledInferenceDrivers`, all
-served by one `SpecifiedInferenceDriver`. Providers that assemble their own URLs or headers —
-Anthropic, Azure, Bedrock, CohereV2, Gemini, GeminiOAI, HuggingFace, OpenAIResponses,
-OpenResponses — keep their driver classes. The embeddings driver of the same short name,
+`OpenAICompatibleDriver`, `OpenRouterDriver`, `PerplexityDriver`, `QwenDriver`, `SambaNovaDriver`,
+`XAiDriver`, `AnthropicDriver`, `AzureDriver`, `BedrockOpenAIDriver`, `CohereV2Driver`,
+`GeminiDriver`, `GeminiOAIDriver`, `HuggingFaceDriver`, `OpenAIResponsesDriver`, and
+`OpenResponsesDriver`. Their only content was composing collaborators, so all bundled inference
+registrations — including native-protocol and bespoke-endpoint providers — are now
+`InferenceDriverSpec` rows in `BundledInferenceDrivers`, all served by one
+`SpecifiedInferenceDriver`. The embeddings driver of the same short name,
 `Embeddings\Drivers\OpenAI\OpenAIDriver`, is untouched.
 
 ### Replacing a subclass of a bundled driver

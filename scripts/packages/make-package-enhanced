@@ -426,4 +426,4 @@ echo "   • Your package is now fully integrated into the monorepo\n";
 echo "   • When you run ./scripts/release/publish-ver.sh, your package will be:\n";
 echo "     - Version synchronized with other packages\n";
 echo "     - Split to its own GitHub repository: {$config['github_repo']}\n";
-echo "     - Published to Packagist as: {$config['composer_name']}\n\n";
+echo "     - Made available to Packagist as: {$config['composer_name']} after split-repository publication\n\n";

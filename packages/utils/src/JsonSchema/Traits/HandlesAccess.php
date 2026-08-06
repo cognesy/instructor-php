@@ -122,7 +122,7 @@ trait HandlesAccess
     }
 
     public function itemType() : ?JsonSchemaType {
-        return $this->itemSchema?->type ?? null;
+        return $this->itemSchema->type ?? null;
     }
 
     public function hasItemType() : bool {

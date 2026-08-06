@@ -25,6 +25,11 @@ rules:
         - "/packages/instructor/src/Extras/Scalar/Scalar.php"
         - "/packages/instructor/src/Extras/Sequence/Sequence.php"
         - "/packages/polyglot/src/Inference/Contracts/CanTranslateInferenceResponse.php"
+        # Response generation is a two-route service contract: these instance
+        # methods convert inference/materialized inputs, rather than construct
+        # the service or a response object.
+        - "/packages/instructor/src/Contracts/CanGenerateResponse.php"
+        - "/packages/instructor/src/Core/ResponseGenerator.php"
         - "/packages/polyglot/src/Inference/Drivers/*/*ResponseAdapter.php"
         - "/packages/polyglot/src/Inference/Contracts/CanMapUsage.php"
         - "/packages/polyglot/src/Inference/Drivers/*/*UsageFormat.php"

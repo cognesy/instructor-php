@@ -56,8 +56,7 @@ class ContinuationCriteria implements CanEvaluateContinuation
      * @return CanEvaluateContinuation<T>
      */
     public static function when(callable $predicate): CanEvaluateContinuation {
-        /** @var CanEvaluateContinuation<T> */
-        return new CallableCriterion($predicate); // @phpstan-ignore argument.type
+        return new CallableCriterion($predicate);
     }
 
     public function isEmpty(): bool {

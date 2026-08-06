@@ -147,7 +147,7 @@ return [
 ```
 
 The structured-output path renders `retry_prompt_class`. The inline `retry_prompt` key
-was removed in 2.6 along with the legacy request materializer; it is now ignored if
+was removed in 2.7 along with the legacy request materializer; it is now ignored if
 present in your config.
 
 ### Output Modes

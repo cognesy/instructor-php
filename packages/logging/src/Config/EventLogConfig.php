@@ -252,7 +252,7 @@ final readonly class EventLogConfig
             };
         }
 
-        return array_values($result);
+        return $result;
     }
 
     /** @param array<string, mixed> $config */

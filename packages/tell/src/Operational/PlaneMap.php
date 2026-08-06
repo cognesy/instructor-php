@@ -25,10 +25,10 @@ final readonly class PlaneMap
     /** @return list<array<string, string>> */
     public function toArray(): array
     {
-        return array_map(
+        return array_values(array_map(
             static fn (PlaneOperation $operation): array => $operation->toArray(),
             $this->operations,
-        );
+        ));
     }
 
     /** @return array<string, int> */

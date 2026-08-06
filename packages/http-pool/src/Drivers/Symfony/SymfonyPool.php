@@ -64,8 +64,8 @@ readonly class SymfonyPool implements CanHandleRequestPool
                 options: [
                     'headers' => $request->headers(),
                     'body' => $request->body()->toString(),
-                    'timeout' => $this->config->idleTimeout ?? 0,
-                    'max_duration' => $this->config->requestTimeout ?? 30,
+                    'timeout' => $this->config->idleTimeout,
+                    'max_duration' => $this->config->requestTimeout,
                     'buffer' => true,
                 ]
             );
@@ -191,6 +191,10 @@ readonly class SymfonyPool implements CanHandleRequestPool
     private function processLastChunk($response, array $httpResponses, array $requestMap, array &$responses): void {
         $index = array_search($response, $httpResponses, true);
         $request = $requestMap[$index] ?? null;
+        $requestId = '';
+        if ($request !== null) {
+            $requestId = $request->id;
+        }
 
         try {
             $statusCode = $response->getStatusCode();
@@ -204,13 +208,13 @@ readonly class SymfonyPool implements CanHandleRequestPool
                     response: $response,
                     events: $this->events,
                     isStreamed: $this->isStreamed($response),
-                    requestId: $request?->id ?? '',
-                    connectTimeout: $this->config->connectTimeout ?? 3
+                    requestId: $requestId,
+                    connectTimeout: $this->config->connectTimeout
                 ));
             }
 
             $this->events->dispatch(new HttpResponseReceived([
-                'requestId' => $request?->id ?? '',
+                'requestId' => $requestId,
                 'statusCode' => $statusCode,
             ]));
         } catch (Exception $e) {

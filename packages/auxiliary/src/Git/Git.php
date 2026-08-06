@@ -44,7 +44,10 @@ class Git
 
     public function status(): array {
         $status = $this->gitService->runCommand('status --short');
-        return array_filter(array_map('trim', explode("\n", $status)));
+        return array_filter(
+            array_map('trim', explode("\n", $status)),
+            static fn (mixed $value): bool => (bool) $value,
+        );
     }
 
     public function branch(string $branchName): Branch {

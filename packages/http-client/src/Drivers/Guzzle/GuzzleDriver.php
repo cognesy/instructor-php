@@ -69,8 +69,8 @@ class GuzzleDriver implements CanHandleHttpRequest
         $body = $request->body()->toString();
         $options = [
             'headers' => $request->headers(),
-            'connect_timeout' => $this->config->connectTimeout ?? 3,
-            'timeout' => $this->config->requestTimeout ?? 30,
+            'connect_timeout' => $this->config->connectTimeout,
+            'timeout' => $this->config->requestTimeout,
             'stream' => $request->isStreamed(),
             'http_errors' => false, // Disable Guzzle's automatic HTTP error handling
             'verify' => $this->config->verifyTls,

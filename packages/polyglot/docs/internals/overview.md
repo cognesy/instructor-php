@@ -61,7 +61,7 @@ Drivers translate Polyglot requests into provider-native HTTP payloads and norma
 - **Body formatters** (`CanMapRequestBody`) -- assemble the full request body with mode-specific adjustments
 - **Usage formatters** (`CanMapUsage`) -- extract token usage from provider responses
 
-All inference drivers extend `BaseInferenceRequestDriver`, which provides the standard HTTP execution flow and stream handling. Most providers do not have a class of their own: they are declared as an `InferenceDriverSpec` -- a row naming their adapters and formatters -- and built by the single `SpecifiedInferenceDriver`. Providers that assemble their own URL or headers, such as `AnthropicDriver`, `GeminiDriver` and `AzureDriver`, keep a class and compose their adapters in its constructor.
+All inference drivers extend `BaseInferenceRequestDriver`, which provides the standard HTTP execution flow and stream handling. Every bundled provider is declared as an `InferenceDriverSpec` -- a row naming its adapters and formatters -- and built by the single `SpecifiedInferenceDriver`. Providers that assemble their own URL or headers select bespoke request adapters in that row; the provider-specific behavior does not require a driver class.
 
 
 ### Shared Support

@@ -109,7 +109,7 @@ final class EmbeddingsRuntime implements CanCreateEmbeddings
         CanSendHttpRequests $httpClient,
         ?CanProvideEmbeddingsDrivers $drivers,
     ): CanHandleVectorization {
-        $driverName = $config->driver ?? 'openai';
+        $driverName = $config->driver;
         if (empty($driverName)) {
             throw new \InvalidArgumentException('Provider type not specified in the configuration.');
         }

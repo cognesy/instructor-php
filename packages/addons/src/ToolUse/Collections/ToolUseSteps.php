@@ -8,7 +8,14 @@ use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 /** @extends Steps<ToolUseStep> */
 final readonly class ToolUseSteps extends Steps
 {
-    public function __construct(ToolUseStep ...$steps) {
+    /** @param ToolUseStep ...$steps */
+    public function __construct(object ...$steps) {
+        foreach ($steps as $step) {
+            if (!$step instanceof ToolUseStep) {
+                throw new \InvalidArgumentException('ToolUseSteps accepts only ToolUseStep instances.');
+            }
+        }
+
         parent::__construct(...$steps);
     }
 

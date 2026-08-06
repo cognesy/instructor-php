@@ -35,7 +35,7 @@ class AnthropicBodyFormat implements CanMapRequestBody
             'max_tokens' => $options['max_tokens'] ?? $this->config->maxTokens,
             'system' => $this->toSystemMessages($request),
             'messages' => $this->toMessages($request),
-        ]), $options);
+        ], static fn (mixed $value): bool => (bool) $value), $options);
 
         // Anthropic does not support response_format or JSON/JSON Schema mode
         unset($requestBody['response_format']);

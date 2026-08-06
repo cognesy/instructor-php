@@ -75,7 +75,7 @@ final readonly class StructuredOutputAttemptList implements \Countable, \Iterato
             fn(array $r) => StructuredOutputAttempt::fromArray($r),
             $list
         );
-        return new self(ArrayList::fromArray($responses));
+        return new self(ArrayList::fromArray(array_values($responses)));
     }
 
     public function usage(): InferenceUsage {

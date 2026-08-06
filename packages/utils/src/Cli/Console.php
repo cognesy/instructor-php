@@ -37,7 +37,7 @@ class Console
             if (is_string($row)) {
                 $message .= $row;
             } else {
-                if ($row[0] == -1) {
+                if ($row[0] === -1) {
                     $row[0] = $maxWidth - strlen($message);
                 }
                 if ($color = $row[3] ?? 0) {

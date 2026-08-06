@@ -32,7 +32,7 @@ class DepAddAction
                 continue;
             }
             $found = true;
-            $deps = $issue->dependencies ?? [];
+            $deps = $issue->dependencies;
             if ($this->depExists($deps, $dependsOnId)) {
                 return $issue;
             }

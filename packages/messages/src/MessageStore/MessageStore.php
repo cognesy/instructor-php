@@ -148,13 +148,13 @@ final readonly class MessageStore
      */
     public function toArray() : array {
         return [
-            'sections' => array_map(
+            'sections' => array_values(array_map(
                 static fn(Section $section) => [
                     'name' => $section->name(),
                     'messages' => $section->messages()->toArray(),
                 ],
                 $this->sections->all(),
-            ),
+            )),
             'parameters' => $this->parameters->toArray(),
         ];
     }

@@ -86,6 +86,9 @@ rules:
         - "/packages/agents/src/Drivers/ReAct/ReActDriver.php"
         - "/packages/agents/src/Drivers/Testing/FakeAgentDriver.php"
         - "/packages/agents/src/Drivers/ToolCalling/ToolCallingDriver.php"
+        # StructuredOutputPolicy is an immutable compatibility adapter that
+        # translates the policy into a typed StructuredOutputConfig.
+        - "/packages/agents/src/Capability/StructuredOutput/StructuredOutputPolicy.php"
         - "/packages/instructor/src/StructuredOutputRuntime.php"
         - "/packages/polyglot/src/Embeddings/EmbeddingsProvider.php"
         - "/packages/polyglot/src/Inference/Contracts/CanAcceptLLMConfig.php"

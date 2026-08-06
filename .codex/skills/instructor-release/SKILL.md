@@ -60,7 +60,8 @@ Use this skill when the user asks to:
 9. Run `composer qa:docs-sites -- --release X.Y.Z`; never stage generated `builds/` output.
 10. Ask for explicit approval before `scripts/release/publish-ver.sh`.
 11. After publish, verify both docs provenance endpoints, the GitHub release, and split workflow kickoff.
-12. Hand off announcement creation to `$tweet-package` and optional posting to `$xurl`.
+12. Draft the announcement from `references/post-release.md`; post externally only
+    after explicit approval.
 
 ## Deterministic `bd` Execution
 
@@ -89,7 +90,7 @@ Default release gates:
 - `composer validate --strict`
 - `composer test-all`
 - `composer qa`
-- `./scripts/run-all-tests.sh`
+- `./scripts/test/run-all-tests.sh`
 - `composer qa:docs`
 - `composer qa:docs-sites -- --release X.Y.Z`
 - `composer docs drift --tier=public`
@@ -153,8 +154,9 @@ After publish:
 
 For announcement work:
 
-- use `$tweet-package` to draft the short release announcement package
-- use `$xurl` only if the user explicitly asks to post
+- use `references/post-release.md` to draft the short release announcement
+- post externally only if the user explicitly asks and approves it in the
+  current conversation
 
 ## Reporting Standard
 

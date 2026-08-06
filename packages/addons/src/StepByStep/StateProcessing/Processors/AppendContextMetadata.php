@@ -25,7 +25,10 @@ final class AppendContextMetadata implements CanProcessAnyState
 
         assert($newState instanceof HasMetadata);
         // TODO: this should be done better (e.g. yaml vs json)
-        $metadata = array_filter($newState->metadata()->toArray());
+        $metadata = array_filter(
+            $newState->metadata()->toArray(),
+            static fn (mixed $value): bool => (bool) $value,
+        );
         if ($metadata === []) {
             return $newState;
         }

@@ -220,7 +220,7 @@ final readonly class Message
     // ///////////////////////////////////////
 
     public function name(): string {
-        return $this->name ?? '';
+        return $this->name;
     }
 
     public function content(): Content {

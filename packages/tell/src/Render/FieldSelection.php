@@ -21,7 +21,10 @@ final readonly class FieldSelection
     {
         $fields = match ($requested) {
             '' => $defaults,
-            default => array_values(array_unique(array_filter(array_map('trim', explode(',', $requested))))),
+            default => array_values(array_unique(array_filter(
+                array_map('trim', explode(',', $requested)),
+                static fn (mixed $value): bool => (bool) $value,
+            ))),
         };
         $unknown = array_values(array_diff($fields, $available));
         if ($unknown !== []) {

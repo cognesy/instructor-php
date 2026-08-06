@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Generate git diff for a package since last tagged release
-# Usage: ./scripts/release-notes-diff.sh <package-name>
-# Example: ./scripts/release-notes-diff.sh schema
+# Usage: ./scripts/release/release-notes-diff.sh <package-name>
+# Example: ./scripts/release/release-notes-diff.sh schema
 
 set -e
 

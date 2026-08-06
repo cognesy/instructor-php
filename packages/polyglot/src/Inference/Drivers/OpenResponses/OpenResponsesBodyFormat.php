@@ -260,8 +260,7 @@ class OpenResponsesBodyFormat implements CanMapRequestBody
         $resolved = $options['max_output_tokens']
             ?? $options['max_completion_tokens']
             ?? $options['max_tokens']
-            ?? $this->config->maxTokens
-            ?? null;
+            ?? $this->config->maxTokens;
 
         if (! is_numeric($resolved)) {
             return null;

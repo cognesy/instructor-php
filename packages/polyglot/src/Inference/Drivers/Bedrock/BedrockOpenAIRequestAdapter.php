@@ -33,7 +33,7 @@ class BedrockOpenAIRequestAdapter extends BaseHttpRequestAdapter
             $headers['X-Amzn-Bedrock-GuardrailVersion'] = $metadata['guardrailVersion'];
         }
 
-        return array_filter($headers);
+        return array_filter($headers, static fn (mixed $value): bool => (bool) $value);
     }
 
     #[\Override]

@@ -22,6 +22,7 @@ final class ArrayStream implements StreamInterface
         $this->chunks = $chunks;
     }
 
+    /** @param list<string> $chunks */
     public static function from(array $chunks): self {
         return new self($chunks);
     }

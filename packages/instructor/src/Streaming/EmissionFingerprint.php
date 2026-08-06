@@ -68,8 +68,24 @@ final class EmissionFingerprint
     private function valuesEqual(mixed $current, bool $hasPrevious, mixed $previous): bool {
         return match (true) {
             !$hasPrevious => false,
-            is_scalar($current) || $current === null => $current === $previous,
-            default => $current == $previous,
+            is_array($current) && is_array($previous) => $this->arraysEqual($current, $previous),
+            default => $current === $previous,
         };
+    }
+
+    /** @param array<array-key, mixed> $current */
+    /** @param array<array-key, mixed> $previous */
+    private function arraysEqual(array $current, array $previous): bool {
+        if (count($current) !== count($previous)) {
+            return false;
+        }
+
+        foreach ($current as $key => $value) {
+            if (!array_key_exists($key, $previous) || !$this->valuesEqual($value, true, $previous[$key])) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

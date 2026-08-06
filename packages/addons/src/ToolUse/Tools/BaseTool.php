@@ -63,7 +63,7 @@ abstract class BaseTool implements ToolInterface
     // INTERNAL ////////////////////////////////////////////////
 
     protected function paramsJsonSchema(): array {
-        if (!isset($this->cachedParamsJsonSchema)) {
+        if ($this->cachedParamsJsonSchema === []) {
             $schema = (new CallableSchemaFactory())->fromMethodName(static::class, '__invoke');
             $this->cachedParamsJsonSchema = SchemaFactory::default()->toJsonSchema($schema);
         }
