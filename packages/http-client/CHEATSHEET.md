@@ -211,6 +211,40 @@ Notes:
 - replay is hermetic by default; use `ReplayMissPolicy::Passthrough` explicitly for live misses
 - `StreamSSEsMiddleware` (deprecated, use `EventSourceMiddleware::withParser()` instead)
 
+### Always-on Middleware
+- `TraceContextMiddleware` is appended by `HttpClientBuilder` under the name `internal:trace-context`,
+  innermost in the stack so the `traceparent` it writes describes the request that actually goes
+  on the wire. Remove it with `remove('internal:trace-context')` to place your own.
+
+## Distributed Trace Propagation
+
+Three parts, and all three must be present — this is the only supported path:
+
+1. **Producer** — a `TraceContext`. Either a span you have open (`Telemetry::traceContext($key)`,
+   or `TelemetryContinuation::context()` for a trace handed to you by an upstream caller), or
+   `TraceContext::fresh()` to start one.
+2. **Stamp** — `HttpRequestTelemetry::withTraceContext(HttpRequest $request, TraceContext $context): HttpRequest`.
+   This is the canonical seam. It writes the context under `TraceContextMiddleware::METADATA_KEY`
+   (`telemetry.trace_context`) as a serializable array, mirroring how
+   `HttpRequestTelemetry::withCorrelation()` writes local operation correlation.
+3. **Transport** — `TraceContextMiddleware`, registered by default (above). It injects
+   `traceparent` and, when present, `tracestate`.
+
+Without a stamp the middleware is inert: headers are left untouched. The same metadata is what
+puts a trace on the envelope from `HttpRequestTelemetry::requestEnvelope()`, so stamping links
+the local span tree and the remote peer's in one step.
+
+```php
+$request = HttpRequestTelemetry::withTraceContext(
+    new HttpRequest($url, 'POST', [], $body, []),
+    $telemetry->traceContext('llm.call'),
+);
+$client->send($request)->get(); // traceparent is on the wire
+```
+
+Inbound side: `TraceContextPropagator::extract(HttpRequest $request): ?TraceContext` reads the
+headers back off a request, for a service continuing a caller's trace.
+
 Record/replay notes:
 - the default fingerprint includes method, credential-normalized URL, stream mode, body, and `Accept`/`Content-Type`
 - explicit JSON request bodies are canonicalized; non-JSON and binary bodies remain byte-exact

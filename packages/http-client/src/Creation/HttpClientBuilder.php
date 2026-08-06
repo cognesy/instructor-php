@@ -24,6 +24,7 @@ use Cognesy\Http\Extras\Support\RetryPolicy;
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\HttpClientRuntime;
 use Cognesy\Http\Middleware\MiddlewareStack;
+use Cognesy\Http\Telemetry\TraceContextMiddleware;
 
 final class HttpClientBuilder
 {
@@ -167,10 +168,18 @@ final class HttpClientBuilder
     {
         $debugConfig = $this->buildDebugConfig();
 
-        return match (true) {
+        $stack = match (true) {
             $debugConfig->httpEnabled => $this->makeDebugStack($debugConfig)->appendMany($this->middleware),
             default => new MiddlewareStack($this->events, $this->middleware),
         };
+
+        // Registered unconditionally, and innermost on purpose. Inert unless someone stamped
+        // trace context via HttpRequestTelemetry::withTraceContext(), so the cost of always
+        // having it is one metadata lookup; being last means the traceparent it writes
+        // describes the request that actually goes on the wire, after retry, circuit breaker
+        // and user middleware have had their say. Callers who need it elsewhere in the chain
+        // can still remove('internal:trace-context') and place their own.
+        return $stack->append(new TraceContextMiddleware(), 'internal:trace-context');
     }
 
     private function makeDebugStack(DebugConfig $debugConfig): MiddlewareStack

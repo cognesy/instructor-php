@@ -127,6 +127,7 @@ class ResponseExtractor implements CanExtractResponse, CanProvideContentBuffer
             extractors: $this->extractors,
             response: $input->response,
             events: $this->events,
+            telemetry: $input->telemetry,
         )->assemble($input->content);
 
         $parsed = $buffer->parsed();

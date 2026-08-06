@@ -25,6 +25,13 @@ final class OpenCodeBridgeBuilder extends AbstractBridgeBuilder
         return AgentType::OpenCode;
     }
 
+    #[\Override]
+    protected function resumedSessionId(): ?string
+    {
+        // continueSession is a separate flag on purpose - it names no id.
+        return $this->sessionId;
+    }
+
     /**
      * Use a named agent.
      */

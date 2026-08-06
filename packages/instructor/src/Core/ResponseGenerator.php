@@ -7,6 +7,7 @@ use Cognesy\Instructor\Data\ResponseFailure;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
 use Cognesy\Instructor\Extraction\Data\ExtractionInput;
+use Cognesy\Instructor\Telemetry\PhaseTelemetryContext;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\Enums\ResponseFailureStage;
@@ -31,8 +32,9 @@ class ResponseGenerator implements CanGenerateResponse
     public function fromMaterializedInput(
         mixed $input,
         ResponseModel $responseModel,
+        ?PhaseTelemetryContext $validationTelemetry = null,
     ) : Result {
-        return $this->materializer->materialize($input, $responseModel);
+        return $this->materializer->materialize($input, $responseModel, $validationTelemetry);
     }
 
     #[\Override]
@@ -40,9 +42,11 @@ class ResponseGenerator implements CanGenerateResponse
         InferenceResponse $response,
         ResponseModel $responseModel,
         OutputMode $mode,
+        ?PhaseTelemetryContext $extractionTelemetry = null,
+        ?PhaseTelemetryContext $validationTelemetry = null,
     ): Result {
         try {
-            $data = $this->extractor->extract(ExtractionInput::fromResponse($response, $mode));
+            $data = $this->extractor->extract(ExtractionInput::fromResponse($response, $mode, $extractionTelemetry));
         } catch (Throwable $error) {
             return Result::failure(ResponseFailure::fromError(
                 stage: ResponseFailureStage::Extraction,
@@ -51,7 +55,7 @@ class ResponseGenerator implements CanGenerateResponse
             ));
         }
 
-        return $this->materializer->materialize($data, $responseModel);
+        return $this->materializer->materialize($data, $responseModel, $validationTelemetry);
     }
 
 }

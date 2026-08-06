@@ -49,6 +49,24 @@ final readonly class HttpRequestTelemetry
         return $request->withMetadataKey(self::CORRELATION_METADATA_KEY, $correlation->toArray());
     }
 
+    /**
+     * The canonical seam for distributed trace propagation.
+     *
+     * Callers that hold a trace context — a caller-supplied `traceparent`, or a span opened
+     * by `Telemetry::traceContext()` — stamp it here. `TraceContextMiddleware` is registered
+     * by default in `HttpClientBuilder`, so stamping is all it takes for `traceparent` /
+     * `tracestate` to reach the wire; the same metadata is what puts a trace on the envelope
+     * built by `requestEnvelope()`. Without a stamp the middleware is inert and headers are
+     * left alone.
+     *
+     * Stored as an array rather than the object so the metadata stays serializable and
+     * survives request round-trips the same way correlation does.
+     */
+    public static function withTraceContext(HttpRequest $request, TraceContext $context): HttpRequest
+    {
+        return $request->withMetadataKey(TraceContextMiddleware::METADATA_KEY, $context->toArray());
+    }
+
     private static function correlation(HttpRequest $request): OperationCorrelation
     {
         $payload = $request->metadata->get(self::CORRELATION_METADATA_KEY);

@@ -11,6 +11,7 @@ use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
+use Cognesy\Instructor\Telemetry\PhaseTelemetryContext;
 use Cognesy\Messages\Messages;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
@@ -79,6 +80,8 @@ it('emits live partials and one final response from the streaming driver', funct
                 InferenceResponse $response,
                 ResponseModel $responseModel,
                 OutputMode $mode,
+                ?PhaseTelemetryContext $extractionTelemetry = null,
+                ?PhaseTelemetryContext $validationTelemetry = null,
             ): Result {
                 return Result::success(new StreamingDriverUser(name: 'Ann', age: 30));
             }
@@ -86,6 +89,7 @@ it('emits live partials and one final response from the streaming driver', funct
             public function fromMaterializedInput(
                 mixed $input,
                 ResponseModel $responseModel,
+                ?PhaseTelemetryContext $validationTelemetry = null,
             ): Result {
                 return Result::success(new StreamingDriverUser(name: 'Ann', age: 30));
             }

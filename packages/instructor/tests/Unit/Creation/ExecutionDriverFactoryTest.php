@@ -33,7 +33,7 @@ function makeIdentityProbeFactory(): ExecutionDriverFactory {
             }
         },
         responseValidator: new class implements CanValidateResponse {
-            public function validate(object $response, \Cognesy\Instructor\Data\ResponseModel $responseModel): Result {
+            public function validate(object $response, \Cognesy\Instructor\Data\ResponseModel $responseModel, ?\Cognesy\Instructor\Telemetry\PhaseTelemetryContext $telemetry = null): Result {
                 return Result::success($response);
             }
         },
@@ -69,7 +69,7 @@ it('creates a streaming driver for streamed executions', function () {
             }
         },
         responseValidator: new class implements CanValidateResponse {
-            public function validate(object $response, \Cognesy\Instructor\Data\ResponseModel $responseModel): Result {
+            public function validate(object $response, \Cognesy\Instructor\Data\ResponseModel $responseModel, ?\Cognesy\Instructor\Telemetry\PhaseTelemetryContext $telemetry = null): Result {
                 return Result::success($response);
             }
         },
@@ -112,7 +112,7 @@ it('creates a sync driver for non streamed executions', function () {
             }
         },
         responseValidator: new class implements CanValidateResponse {
-            public function validate(object $response, \Cognesy\Instructor\Data\ResponseModel $responseModel): Result {
+            public function validate(object $response, \Cognesy\Instructor\Data\ResponseModel $responseModel, ?\Cognesy\Instructor\Telemetry\PhaseTelemetryContext $telemetry = null): Result {
                 return Result::success($response);
             }
         },

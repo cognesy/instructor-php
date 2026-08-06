@@ -29,6 +29,13 @@ final class CodexBridgeBuilder extends AbstractBridgeBuilder
         return AgentType::Codex;
     }
 
+    #[\Override]
+    protected function resumedSessionId(): ?string
+    {
+        // resumeLast is a separate flag on purpose - it names no id.
+        return $this->resumeSessionId;
+    }
+
     /**
      * Set sandbox mode for file/network access control.
      */

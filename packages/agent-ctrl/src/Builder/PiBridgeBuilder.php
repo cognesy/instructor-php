@@ -40,6 +40,13 @@ final class PiBridgeBuilder extends AbstractBridgeBuilder
         return AgentType::Pi;
     }
 
+    #[\Override]
+    protected function resumedSessionId(): ?string
+    {
+        // continueSession is a separate flag on purpose - it names no id.
+        return $this->sessionId;
+    }
+
     /**
      * Set the provider explicitly (anthropic, openai, google, etc.)
      */

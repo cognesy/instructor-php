@@ -58,6 +58,19 @@ abstract class AbstractBridgeBuilder implements AgentBridgeBuilder
 
     abstract public function agentType(): AgentType;
 
+    /**
+     * The session this run resumes, if the caller named one.
+     *
+     * Overridden by builders that expose `resumeSession($id)`. Deliberately not answered from
+     * `continueSession()`: that selects "the most recent" without knowing which session that
+     * is, and reporting a guess is worse than reporting nothing. Null means "no session known
+     * yet" - the agent reports one at completion.
+     */
+    protected function resumedSessionId(): ?string
+    {
+        return null;
+    }
+
     public function dispatch(Event $event): object
     {
         $enriched = match (true) {
@@ -157,6 +170,7 @@ abstract class AbstractBridgeBuilder implements AgentBridgeBuilder
             prompt: $prompt,
             model: $this->model,
             workingDirectory: $this->workingDirectory,
+            sessionId: $this->resumedSessionId(),
         ));
 
         try {
@@ -182,6 +196,7 @@ abstract class AbstractBridgeBuilder implements AgentBridgeBuilder
             prompt: $prompt,
             model: $this->model,
             workingDirectory: $this->workingDirectory,
+            sessionId: $this->resumedSessionId(),
         ));
 
         try {

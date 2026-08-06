@@ -5,6 +5,7 @@ use Cognesy\Instructor\Data\ResponseFailure;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\Enums\ResponseFailureStage;
+use Cognesy\Instructor\Telemetry\PhaseTelemetryContext;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
 use Cognesy\Instructor\Validation\Contracts\CanValidateResponse;
 use Cognesy\Utils\Result\Result;
@@ -36,7 +37,7 @@ function materializerSpy(array &$calls): ResponseMaterializer
         validator: new class($calls) implements CanValidateResponse {
             public function __construct(private array &$calls) {}
 
-            public function validate(object $response, ResponseModel $responseModel): Result
+            public function validate(object $response, ResponseModel $responseModel, ?PhaseTelemetryContext $telemetry = null): Result
             {
                 $this->calls[] = 'validate';
                 return $response->age >= 0
@@ -157,7 +158,7 @@ it('carries stage exceptions as failure results holding the throwable', function
             }
         },
         validator: new class implements CanValidateResponse {
-            public function validate(object $response, ResponseModel $responseModel): Result
+            public function validate(object $response, ResponseModel $responseModel, ?PhaseTelemetryContext $telemetry = null): Result
             {
                 return Result::success($response);
             }

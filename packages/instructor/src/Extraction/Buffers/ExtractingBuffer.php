@@ -11,6 +11,7 @@ use Cognesy\Instructor\Events\Extraction\ExtractionStrategySucceeded;
 use Cognesy\Instructor\Extraction\Contracts\CanBufferContent;
 use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
 use Cognesy\Instructor\Extraction\Data\ExtractionInput;
+use Cognesy\Instructor\Telemetry\PhaseTelemetryContext;
 use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
 use Cognesy\Instructor\Extraction\Extractors\PartialJsonExtractor;
 use Cognesy\Instructor\Extraction\Extractors\ResilientJsonExtractor;
@@ -45,6 +46,7 @@ final readonly class ExtractingBuffer implements CanBufferContent
         private ?InferenceResponse $response,
         private ?EventDispatcherInterface $events,
         array $errors = [],
+        private ?PhaseTelemetryContext $telemetry = null,
     ) {
         $this->extractors = $extractors;
         $this->errors = $errors;
@@ -61,6 +63,7 @@ final readonly class ExtractingBuffer implements CanBufferContent
         ?array $extractors = null,
         ?InferenceResponse $response = null,
         ?EventDispatcherInterface $events = null,
+        ?PhaseTelemetryContext $telemetry = null,
     ): self {
         return new self(
             raw: '',
@@ -71,6 +74,7 @@ final readonly class ExtractingBuffer implements CanBufferContent
             response: $response,
             events: $events,
             errors: [],
+            telemetry: $telemetry,
         );
     }
 
@@ -186,6 +190,7 @@ final readonly class ExtractingBuffer implements CanBufferContent
                 response: $this->response,
                 events: $this->events,
                 errors: $errors,
+                telemetry: $this->telemetry,
             );
         }
 
@@ -198,6 +203,7 @@ final readonly class ExtractingBuffer implements CanBufferContent
             response: $this->response,
             events: $this->events,
             errors: $errors,
+            telemetry: $this->telemetry,
         );
     }
 
@@ -215,6 +221,7 @@ final readonly class ExtractingBuffer implements CanBufferContent
         }
 
         $this->dispatch(new ExtractionStarted([
+            ...$this->telemetryData(),
             'content_length' => strlen($raw),
             'extractors_count' => count($this->extractors),
         ]));
@@ -248,6 +255,7 @@ final readonly class ExtractingBuffer implements CanBufferContent
                 'content_length' => strlen($normalized),
             ]));
             $this->dispatch(new ExtractionCompleted([
+                ...$this->telemetryData(),
                 'strategy' => $extractorName,
                 'content_length' => strlen($normalized),
             ]));
@@ -260,8 +268,10 @@ final readonly class ExtractingBuffer implements CanBufferContent
         }
 
         $this->dispatch(new ExtractionFailed([
+            ...$this->telemetryData(),
             'strategies_tried' => array_keys($errors),
             'errors' => $errors,
+            'error' => self::firstError($errors),
         ]));
 
         return [
@@ -283,6 +293,28 @@ final readonly class ExtractingBuffer implements CanBufferContent
         } catch (Throwable) {
             return $this->normalized;
         }
+    }
+
+    /**
+     * Telemetry ids and envelope for the lifecycle events, when the caller supplied a context.
+     *
+     * Empty for standalone extraction: the events still fire, they simply are not projectable.
+     * Spread first so an explicit payload key always wins over the context.
+     *
+     * @return array<string, mixed>
+     */
+    private function telemetryData(): array
+    {
+        return $this->telemetry?->eventData() ?? [];
+    }
+
+    /** @param array<string, string> $errors */
+    private static function firstError(array $errors): ?string
+    {
+        foreach ($errors as $strategy => $message) {
+            return "{$strategy}: {$message}";
+        }
+        return null;
     }
 
     /**

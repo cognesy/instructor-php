@@ -148,7 +148,7 @@ if (!function_exists('makeTestMaterializer')) {
         return new \Cognesy\Instructor\Core\ResponseMaterializer(
             deserializer: $deserializer,
             validator: $validator ?? new class implements \Cognesy\Instructor\Validation\Contracts\CanValidateResponse {
-                public function validate(object $response, \Cognesy\Instructor\Data\ResponseModel $responseModel): \Cognesy\Utils\Result\Result {
+                public function validate(object $response, \Cognesy\Instructor\Data\ResponseModel $responseModel, ?\Cognesy\Instructor\Telemetry\PhaseTelemetryContext $telemetry = null): \Cognesy\Utils\Result\Result {
                     return \Cognesy\Utils\Result\Result::success($response);
                 }
             },

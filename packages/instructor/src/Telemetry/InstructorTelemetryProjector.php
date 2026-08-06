@@ -7,8 +7,11 @@ use Cognesy\Instructor\Events\Extraction\ExtractionFailed;
 use Cognesy\Instructor\Events\Extraction\ExtractionStarted;
 use Cognesy\Instructor\Events\Attempt\ResponseRecoveryExhausted;
 use Cognesy\Instructor\Events\Attempt\ResponseRetryScheduled;
+use Cognesy\Instructor\Events\Response\CustomResponseValidationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseMaterializationFailed;
 use Cognesy\Instructor\Events\Response\ResponseMaterialized;
+use Cognesy\Instructor\Events\Response\ResponseValidated;
+use Cognesy\Instructor\Events\Response\ResponseValidationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseValidationFailed;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputRequestReceived;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
@@ -42,7 +45,10 @@ final readonly class InstructorTelemetryProjector implements CanProjectTelemetry
             $event instanceof ResponseRetryScheduled => $this->onEventLog($event, 'structured_output.response_retry_scheduled'),
             $event instanceof ResponseMaterializationFailed => $this->onErrorLog($event, 'structured_output.response_materialization_failed'),
             $event instanceof ResponseRecoveryExhausted => $this->onErrorLog($event, 'structured_output.response_recovery_exhausted'),
-            $event instanceof ResponseValidationFailed => $this->onErrorLog($event, 'structured_output.response_validation_failed'),
+            $event instanceof ResponseValidationAttempt => $this->onValidationStarted($event),
+            $event instanceof CustomResponseValidationAttempt => $this->onValidationStarted($event),
+            $event instanceof ResponseValidated => $this->onValidationCompleted($event),
+            $event instanceof ResponseValidationFailed => $this->onValidationFailed($event),
             default => null,
         };
     }
@@ -111,12 +117,29 @@ final readonly class InstructorTelemetryProjector implements CanProjectTelemetry
         ]));
     }
 
+    /**
+     * Extraction events now arrive stamped by AttemptProcessor, so the span opens from the
+     * envelope. The id-only branch is kept for emitters that never gained a context - notably
+     * standalone `ResponseExtractor` use and doctools, which reuses these event classes for
+     * markdown extraction - and for events replayed from older logs.
+     */
     private function onExtractionStarted(ExtractionStarted $event): void
     {
         $data = EventData::of($event);
+        $attributes = $this->attributes([
+            'structured_output.phase' => EventData::string($data, 'phase'),
+            'structured_output.strategy' => EventData::string($data, 'strategy'),
+            'structured_output.content_length' => EventData::int($data, 'content_length'),
+        ]);
+
+        $envelope = EventData::telemetry($data);
+        if ($envelope !== null) {
+            $this->openEnvelope($envelope, $attributes);
+            return;
+        }
+
         $phaseId = EventData::string($data, 'phaseId');
         $executionId = EventData::string($data, 'executionId');
-
         if ($phaseId === null || $executionId === null) {
             return;
         }
@@ -125,23 +148,21 @@ final readonly class InstructorTelemetryProjector implements CanProjectTelemetry
             key: $phaseId,
             parentKey: $executionId,
             name: 'structured_output.extract',
-            attributes: $this->attributes([
-                'structured_output.phase' => EventData::string($data, 'phase'),
-                'structured_output.strategy' => EventData::string($data, 'strategy'),
-            ]),
+            attributes: $attributes,
         );
     }
 
     private function onExtractionCompleted(ExtractionCompleted $event): void
     {
         $data = EventData::of($event);
-        $phaseId = EventData::string($data, 'phaseId');
-        if ($phaseId === null) {
+        $key = $this->extractionKey($data);
+        if ($key === null) {
             return;
         }
 
-        $this->telemetry->complete($phaseId, $this->attributes([
+        $this->telemetry->complete($key, $this->attributes([
             'structured_output.phase' => EventData::string($data, 'phase'),
+            'structured_output.strategy' => EventData::string($data, 'strategy'),
             'structured_output.value_type' => EventData::string($data, 'valueType'),
         ]));
     }
@@ -149,15 +170,105 @@ final readonly class InstructorTelemetryProjector implements CanProjectTelemetry
     private function onExtractionFailed(ExtractionFailed $event): void
     {
         $data = EventData::of($event);
-        $phaseId = EventData::string($data, 'phaseId');
-        if ($phaseId === null) {
+        $key = $this->extractionKey($data);
+        if ($key === null) {
             return;
         }
 
-        $this->telemetry->fail($phaseId, $this->attributes([
+        $this->telemetry->fail($key, $this->attributes([
             'error.message' => EventData::string($data, 'error'),
             'structured_output.phase' => EventData::string($data, 'phase'),
         ]));
+    }
+
+    /**
+     * The span key for a completed/failed extraction: the envelope's operation id, which
+     * AttemptProcessor sets to the same phase id the started event opened under.
+     *
+     * @param array<string, mixed> $data
+     */
+    private function extractionKey(array $data): ?string
+    {
+        return EventData::telemetry($data)?->operation()->id()
+            ?? EventData::string($data, 'phaseId');
+    }
+
+    /**
+     * `ResponseValidator` already emitted a genuine open/close pair - an attempt event followed
+     * by validated-or-failed - so the span is those events rather than a second lifecycle laid
+     * over them. The attempt opens it.
+     *
+     * No id-only fallback here: unlike extraction, these events never carried ids of their own,
+     * so an unstamped attempt has nothing to be a child of. It stays invisible, exactly as it
+     * was before, rather than becoming a stray root.
+     */
+    private function onValidationStarted(object $event): void
+    {
+        $data = EventData::of($event);
+        $envelope = EventData::telemetry($data);
+        if ($envelope === null) {
+            return;
+        }
+
+        $this->openEnvelope($envelope, $this->attributes([
+            'structured_output.phase' => EventData::string($data, 'phase'),
+            'structured_output.response_class' => EventData::string($data, 'responseClass'),
+            'structured_output.field_count' => EventData::int($data, 'fieldCount'),
+            'structured_output.validator' => EventData::string($data, 'validator'),
+        ]));
+    }
+
+    private function onValidationCompleted(ResponseValidated $event): void
+    {
+        $data = EventData::of($event);
+        $envelope = EventData::telemetry($data);
+        if ($envelope === null) {
+            return;
+        }
+
+        $this->completeEnvelope($envelope, $this->attributes([
+            'structured_output.validation.is_valid' => true,
+            'structured_output.validation.error_count' => $this->validationErrorCount($data),
+        ]));
+    }
+
+    /**
+     * Failure closes the span with an error status. The pre-existing error log is kept only for
+     * unstamped emitters - logging it as well when the span exists would say the same thing
+     * twice in the same trace.
+     */
+    private function onValidationFailed(ResponseValidationFailed $event): void
+    {
+        $data = EventData::of($event);
+        $envelope = EventData::telemetry($data);
+        if ($envelope === null) {
+            $this->onErrorLog($event, 'structured_output.response_validation_failed');
+            return;
+        }
+
+        $this->telemetry->fail($envelope->operation()->id(), $this->attributes([
+            'error.message' => EventData::string($data, 'errorMessage'),
+            'error.type' => EventData::string($data, 'errorType'),
+            'structured_output.validation.is_valid' => false,
+            'structured_output.validation.error_count' => $this->validationErrorCount($data),
+        ]));
+    }
+
+    /**
+     * Counted rather than serialized: the fields and values that failed are already in the
+     * validation event for anyone listening, and copying them onto the span would put user data
+     * into telemetry that no capture policy was asked about.
+     *
+     * @param array<string, mixed> $data
+     */
+    private function validationErrorCount(array $data): ?int
+    {
+        $validation = $data['validation'] ?? null;
+        if (!is_array($validation) || !is_array($validation['errors'] ?? null)) {
+            return null;
+        }
+
+        return count($validation['errors']);
     }
 
     private function onErrorLog(object $event, string $name): void

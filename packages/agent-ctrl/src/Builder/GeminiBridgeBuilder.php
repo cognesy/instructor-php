@@ -29,10 +29,24 @@ final class GeminiBridgeBuilder extends AbstractBridgeBuilder
     private ?string $resumeSession = null;
     private bool $debug = false;
 
+    /** What continueSession() writes into $resumeSession: a selector, not a session id. */
+    private const RESUME_LATEST = 'latest';
+
     #[\Override]
     public function agentType(): AgentType
     {
         return AgentType::Gemini;
+    }
+
+    #[\Override]
+    protected function resumedSessionId(): ?string
+    {
+        // Gemini overloads one field: continueSession() writes the sentinel 'latest', which
+        // selects a session without naming it. Only a real id is reported.
+        return match ($this->resumeSession) {
+            null, self::RESUME_LATEST => null,
+            default => $this->resumeSession,
+        };
     }
 
     /**
@@ -131,7 +145,7 @@ final class GeminiBridgeBuilder extends AbstractBridgeBuilder
      */
     public function continueSession(): static
     {
-        $this->resumeSession = 'latest';
+        $this->resumeSession = self::RESUME_LATEST;
         return $this;
     }
 

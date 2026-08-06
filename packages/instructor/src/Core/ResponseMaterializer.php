@@ -7,6 +7,7 @@ use Cognesy\Instructor\Data\ResponseFailure;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\Enums\ResponseFailureStage;
+use Cognesy\Instructor\Telemetry\PhaseTelemetryContext;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
 use Cognesy\Instructor\Validation\Contracts\CanValidateResponse;
 use Cognesy\Schema\Validation\SchemaDataValidator;
@@ -30,8 +31,16 @@ final readonly class ResponseMaterializer
         private CanTransformResponse $transformer,
     ) {}
 
-    public function materialize(mixed $input, ResponseModel $responseModel): Result
-    {
+    /**
+     * `$validationTelemetry` describes the object-validation stage only. Schema validation and
+     * transformation are not separately traced: they neither retry nor emit a lifecycle pair,
+     * so their failures are already fully described by the materialization failure event.
+     */
+    public function materialize(
+        mixed $input,
+        ResponseModel $responseModel,
+        ?PhaseTelemetryContext $validationTelemetry = null,
+    ): Result {
         $schemaValidation = $this->validateSchema($input, $responseModel);
         if ($schemaValidation->isFailure()) {
             return $schemaValidation;
@@ -42,7 +51,7 @@ final readonly class ResponseMaterializer
             return $deserialized;
         }
 
-        $validated = $this->validateObjectStage($deserialized->unwrap(), $responseModel);
+        $validated = $this->validateObjectStage($deserialized->unwrap(), $responseModel, $validationTelemetry);
         if ($validated->isFailure()) {
             return $validated;
         }
@@ -90,14 +99,17 @@ final readonly class ResponseMaterializer
         }
     }
 
-    private function validateObjectStage(mixed $value, ResponseModel $responseModel): Result
-    {
+    private function validateObjectStage(
+        mixed $value,
+        ResponseModel $responseModel,
+        ?PhaseTelemetryContext $telemetry,
+    ): Result {
         if (!is_object($value)) {
             return Result::success($value);
         }
 
         try {
-            $result = $this->validator->validate($value, $responseModel);
+            $result = $this->validator->validate($value, $responseModel, $telemetry);
             return match (true) {
                 $result->isFailure() => $this->failure(
                     ResponseFailureStage::ObjectValidation,

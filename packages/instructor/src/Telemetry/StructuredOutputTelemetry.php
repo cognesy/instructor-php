@@ -84,6 +84,87 @@ final readonly class StructuredOutputTelemetry
         ];
     }
 
+    /**
+     * The extraction child of the structured-output root.
+     *
+     * Built by `AttemptProcessor`, the boundary that actually holds the execution, and carried
+     * down to `ExtractingBuffer` on `ExtractionInput` so the lifecycle events are stamped where
+     * they are dispatched. Before this the projector reconstructed the span from bare
+     * `executionId`/`phaseId` payload keys - which the buffer never wrote, so extraction spans
+     * were simply never produced.
+     */
+    public static function extractionContext(StructuredOutputExecution $execution): PhaseTelemetryContext
+    {
+        return self::phaseContext(
+            execution: $execution,
+            phase: 'response.extraction',
+            type: 'structured_output.extraction',
+            name: 'structured_output.extract',
+        );
+    }
+
+    /**
+     * The validation child of the structured-output root.
+     *
+     * Same threading as extraction, one layer deeper: `ResponseMaterializer` owns the
+     * validation stage and forwards this to `ResponseValidator`, which already emits a genuine
+     * open/close pair - an attempt event followed by validated-or-failed. Those two events are
+     * the span; no second lifecycle is introduced to describe them.
+     */
+    public static function validationContext(StructuredOutputExecution $execution): PhaseTelemetryContext
+    {
+        return self::phaseContext(
+            execution: $execution,
+            phase: 'response.validation',
+            type: 'structured_output.validation',
+            name: 'structured_output.validate',
+        );
+    }
+
+    /** Same shape AttemptProcessor uses for its own phases: "{execution}:{phase}:{attempt}". */
+    public static function phaseId(StructuredOutputExecution $execution, string $phase): string
+    {
+        $attemptId = $execution->activeAttempt()?->id()->toString() ?? 'unknown';
+
+        return $execution->id()->toString() . ':' . $phase . ':' . $attemptId;
+    }
+
+    /**
+     * Keyed on the phase id rather than the execution id: one execution retries, and each
+     * attempt extracts and validates separately.
+     */
+    private static function phaseContext(
+        StructuredOutputExecution $execution,
+        string $phase,
+        string $type,
+        string $name,
+    ): PhaseTelemetryContext {
+        $executionId = $execution->id()->toString();
+        $requestId = $execution->request()->id()->toString();
+        $phaseId = self::phaseId($execution, $phase);
+
+        return new PhaseTelemetryContext(
+            envelope: new TelemetryEnvelope(
+                operation: new OperationDescriptor(
+                    id: $phaseId,
+                    type: $type,
+                    name: $name,
+                    kind: OperationKind::Span,
+                ),
+                correlation: OperationCorrelation::child(
+                    rootOperationId: $executionId,
+                    parentOperationId: $executionId,
+                    sessionId: $requestId,
+                    requestId: $requestId,
+                ),
+            ),
+            executionId: $executionId,
+            phaseId: $phaseId,
+            phase: $phase,
+            attemptId: $execution->activeAttempt()?->id()->toString(),
+        );
+    }
+
     public static function inferenceCorrelation(StructuredOutputExecution $execution): OperationCorrelation
     {
         return OperationCorrelation::child(

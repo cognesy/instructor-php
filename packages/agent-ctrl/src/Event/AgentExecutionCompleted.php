@@ -5,14 +5,21 @@ namespace Cognesy\AgentCtrl\Event;
 use Cognesy\AgentCtrl\Dto\AgentResponse;
 use Cognesy\AgentCtrl\Enum\AgentType;
 use Cognesy\AgentCtrl\ValueObject\AgentCtrlExecutionId;
+use Cognesy\AgentCtrl\ValueObject\AgentSessionId;
 use Psr\Log\LogLevel;
 
 /**
  * Emitted when agent execution completes.
+ *
+ * By this point the agent has reported its session, so the close of the execution span carries
+ * it even for a fresh run that had none at start. See AgentExecutionStarted for the start-side
+ * rule.
  */
 final class AgentExecutionCompleted extends AgentEvent
 {
     public string $logLevel = LogLevel::INFO;
+
+    private ?AgentSessionId $sessionId;
 
     public function __construct(
         AgentType $agentType,
@@ -23,14 +30,27 @@ final class AgentExecutionCompleted extends AgentEvent
         public readonly ?int $inputTokens = null,
         public readonly ?int $outputTokens = null,
         public readonly string $text = '',
+        AgentSessionId|string|null $sessionId = null,
     ) {
+        $this->sessionId = match (true) {
+            $sessionId instanceof AgentSessionId => $sessionId,
+            is_string($sessionId) && $sessionId !== '' => AgentSessionId::fromString($sessionId),
+            default => null,
+        };
+
         parent::__construct($agentType, $executionId, [
             'exitCode' => $exitCode,
             'toolCallCount' => $toolCallCount,
             'cost' => $cost,
             'inputTokens' => $inputTokens,
             'outputTokens' => $outputTokens,
+            'sessionId' => $this->sessionId !== null ? (string) $this->sessionId : null,
         ]);
+    }
+
+    public function sessionId(): ?AgentSessionId
+    {
+        return $this->sessionId;
     }
 
     public static function fromResponse(AgentResponse $response): self
@@ -44,6 +64,7 @@ final class AgentExecutionCompleted extends AgentEvent
             inputTokens: $response->usage?->input,
             outputTokens: $response->usage?->output,
             text: $response->text,
+            sessionId: $response->sessionId(),
         );
     }
 

@@ -30,6 +30,13 @@ final class ClaudeCodeBridgeBuilder extends AbstractBridgeBuilder
         return AgentType::ClaudeCode;
     }
 
+    #[\Override]
+    protected function resumedSessionId(): ?string
+    {
+        // continueMostRecent is a separate flag on purpose - it names no id.
+        return $this->resumeSessionId;
+    }
+
     /**
      * Set the system prompt for the agent.
      */
