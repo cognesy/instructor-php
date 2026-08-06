@@ -3,6 +3,86 @@ title: Upgrading Polyglot
 description: 'Migrate applications and custom drivers across Polyglot breaking changes.'
 ---
 
+## Custom Inference Drivers in v2.7
+
+Only driver authors are affected. Preset names, `Inference`, `PendingInference`,
+`InferenceStream`, `InferenceResponse`, `Embeddings`, `PendingEmbeddings`, and `LLMConfig` are
+unchanged, and so is every interface under `Cognesy\Polyglot\Inference\Contracts`.
+
+Seventeen classes under `Cognesy\Polyglot\Inference\Drivers\` were removed: `A21Driver`,
+`CerebrasDriver`, `DeepseekDriver`, `FireworksDriver`, `GlmDriver`, `GroqDriver`,
+`InceptionDriver`, `MetaDriver`, `MinimaxiDriver`, `MistralDriver`, `OpenAIDriver`,
+`OpenAICompatibleDriver`, `OpenRouterDriver`, `PerplexityDriver`, `QwenDriver`,
+`SambaNovaDriver`, `XAiDriver`. Their only content was naming collaborators, so providers on
+the OpenAI wire protocol are now `InferenceDriverSpec` rows in `BundledInferenceDrivers`, all
+served by one `SpecifiedInferenceDriver`. Providers that assemble their own URLs or headers —
+Anthropic, Azure, Bedrock, CohereV2, Gemini, GeminiOAI, HuggingFace, OpenAIResponses,
+OpenResponses — keep their driver classes. The embeddings driver of the same short name,
+`Embeddings\Drivers\OpenAI\OpenAIDriver`, is untouched.
+
+### Replacing a subclass of a bundled driver
+
+Extend `SpecifiedInferenceDriver` and name your subclass in the spec's `driverClass`. It still
+receives the five collaborators assembled for it:
+
+```php
+final class MyDriver extends SpecifiedInferenceDriver { /* override one method */ }
+
+$registry = BundledInferenceDrivers::registry()->withDriver(
+    'my-provider',
+    new InferenceDriverSpec(
+        bodyFormat: MyBodyFormat::class,
+        driverClass: MyDriver::class,
+    ),
+);
+```
+
+If you only changed the wire format, no subclass is needed — pass your own `bodyFormat`,
+`requestAdapter`, `responseAdapter`, `usageFormat`, or `messageFormat` to the spec. Each
+defaults to the OpenAI implementation.
+
+### Replacing a `capabilities()` override
+
+Per-model capability logic becomes data on the spec rather than a method override — either a
+fixed `DriverCapabilities`, or a `Closure(string $model): DriverCapabilities` when the answer
+depends on the model. Omit it for "everything supported".
+
+```php
+new InferenceDriverSpec(
+    bodyFormat: MyBodyFormat::class,
+    capabilities: new DriverCapabilities(responseFormatWithTools: false),
+);
+```
+
+`InferenceDriverRegistry::withDriver()` still accepts a class-string or a callable, so drivers
+registered that way need no change.
+
+### Moved classes
+
+`Cognesy\Polyglot\Inference\Contracts\MessageMapper` is now
+`Cognesy\Polyglot\Inference\Drivers\MessageMapper` — it is a driver helper, not a contract.
+Update the import; the class is otherwise unchanged. This one has no alias.
+
+Five classes that neither subsystem owns moved under `Cognesy\Polyglot\Support\`:
+
+| Old FQCN | New FQCN |
+|---|---|
+| `Inference\Core\SensitiveDataRedactor` | `Support\Redaction\SensitiveDataRedactor` |
+| `Inference\Config\RetryBackoff` | `Support\Retry\RetryBackoff` |
+| `Inference\Config\RetryJitter` | `Support\Retry\RetryJitter` |
+| `Inference\Config\RetryPolicyInvariants` | `Support\Retry\RetryPolicyInvariants` |
+| `Polyglot\Pricing\Cost` | `Support\Pricing\Cost` |
+
+All five old names keep working. The package registers a lazy `class_alias()` autoloader, so an
+old FQCN resolves to the *same* class — `instanceof` holds in both directions and
+`RetryJitter::Full === Support\Retry\RetryJitter::Full`. Migrate at your convenience; the
+aliases are removed at the next major.
+
+### Removed dead classes
+
+`Inference\Enums\InferenceContentType`, `Inference\Collections\InferenceResponseList`, and
+`Embeddings\Traits\HasFinders` were deleted. None had a usage anywhere in the repository.
+
 ## Custom Embeddings Drivers in v2.7
 
 `CanHandleVectorization` now returns the domain response directly. PHP cannot provide a

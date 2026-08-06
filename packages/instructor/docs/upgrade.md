@@ -3,7 +3,7 @@ title: Upgrade
 description: 'Migrate structured-output applications to the current API.'
 ---
 
-## Upgrading to 2.6
+## Upgrading to 2.7
 
 ### `StructuredOutputConfigBuilder` removed
 
@@ -113,7 +113,7 @@ the metadata, or explicitly select another output target.
 
 `StructuredPromptRequestMaterializer` is the default. Customize bundled structured
 output behavior with `modePromptClasses`, `retryPromptClass`, and
-`deserializationErrorPromptClass`. See the 2.6 notes above for the removal of the legacy
+`deserializationErrorPromptClass`. See the 2.7 notes above for the removal of the legacy
 inline prompt settings.
 
 ### Deprecated compatibility APIs

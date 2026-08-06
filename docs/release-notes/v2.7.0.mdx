@@ -2,7 +2,80 @@
 title: 'v2.7.0'
 ---
 
+v2.7 makes agent behaviour testable, makes the runtime measurable, and turns observability on
+by default. It also restructures several provider and response boundaries, so read the
+breaking changes before upgrading.
+
 ## Breaking Changes
+
+Two upgrade guides carry the migration detail, including the edge cases:
+`packages/instructor/docs/upgrade.md` for the structured-output changes and
+`packages/polyglot/docs/upgrade.md` for the driver changes.
+
+### StructuredOutputConfigBuilder Removed
+
+`Cognesy\Instructor\Creation\StructuredOutputConfigBuilder` is gone. It was a mutable second
+representation of the same settings, kept in sync with `StructuredOutputConfig` by hand. Build
+configs directly instead — every `with*()` method has the same name on `StructuredOutputConfig`,
+which returns a new instance rather than mutating, so existing chains carry over by dropping the
+trailing `->create()`:
+
+```php
+// before
+$config = (new StructuredOutputConfigBuilder())
+    ->withOutputMode(OutputMode::Json)
+    ->withMaxRetries(2)
+    ->create();
+
+// after
+$config = (new StructuredOutputConfig())
+    ->withOutputMode(OutputMode::Json)
+    ->withMaxRetries(2);
+```
+
+The builder's `withConfig($defaults)` seed has no replacement: start the chain from that config
+instead. `StructuredOutputConfig` gained `withSchemaDescription()` and
+`withStreamMaterializationInterval()` so that every former builder method has an equivalent.
+
+One semantic difference is worth checking. The builder's `create()` merged `modePromptClasses`
+into the defaults whatever route set them. On `StructuredOutputConfig`,
+`withModePromptClass()` merges a single mode into the existing map — the common case,
+unchanged — but `withModePromptClasses()` and the constructor argument **replace** the map
+wholesale. If you passed a partial map expecting the remaining modes to keep their defaults,
+merge explicitly:
+
+```php
+$config = $config->withModePromptClasses([...$config->modePromptClasses(), ...$overrides]);
+```
+
+In `cognesy/instructor-agents`, `StructuredOutputPolicy::withConfigBuilder()` is accordingly
+renamed to `withConfig()` and now takes and returns a `StructuredOutputConfig`.
+
+### Legacy Inline Prompt Settings Removed
+
+The legacy `RequestMaterializer` is gone, along with the only code path that read the inline
+`modePrompts`, `retryPrompt`, and `chatStructure` settings. Those settings are removed from
+`StructuredOutputConfig`, together with the accessors `prompt()`, `modePrompts()`,
+`retryPrompt()`, `chatStructure()` and the mutators `withRetryPrompt()`, `withModePrompt()`,
+`withModePrompts()`, and `withChatStructure()`.
+
+`StructuredOutputConfig::fromArray()` now ignores unknown keys instead of failing, so config
+files, DSNs, and presets that still carry the removed keys keep loading — their values are
+dropped rather than causing an error. The Laravel `instructor.extraction.retry_prompt` key and
+the Symfony `retry_prompt` / `mode_prompts` / `chat_structure` nodes were removed from their
+schemas.
+
+Port these settings to prompt classes (`modePromptClasses`, `retryPromptClass`,
+`deserializationErrorPromptClass`), or implement `CanMaterializeRequest` when prompt classes are
+insufficient.
+
+### CanEmitStreamingUpdates Renamed to CanDriveExecution
+
+The execution-driver contract implemented by `SyncExecutionDriver` and `StreamingExecutionDriver`
+is renamed from `Cognesy\Instructor\Contracts\CanEmitStreamingUpdates` to
+`Cognesy\Instructor\Contracts\CanDriveExecution`. The old name described it as a streaming
+contract, but it is a pull-based execution driver used by both the sync and streaming paths.
+Method signatures are unchanged; update any type hints referencing the old name.
 
 ### Custom Embeddings Drivers Return Domain Responses
 
@@ -23,3 +96,246 @@ override `handle()` themselves.
 
 This makes the driver responsible for its complete provider boundary and keeps
 `PendingEmbeddings` focused on retries, memoization, and lifecycle events.
+
+### Bundled OpenAI-Compatible Drivers Are Declarative
+
+Seventeen classes under `Cognesy\Polyglot\Inference\Drivers\` are gone: `A21Driver`,
+`CerebrasDriver`, `DeepseekDriver`, `FireworksDriver`, `GlmDriver`, `GroqDriver`,
+`InceptionDriver`, `MetaDriver`, `MinimaxiDriver`, `MistralDriver`, `OpenAIDriver`,
+`OpenAICompatibleDriver`, `OpenRouterDriver`, `PerplexityDriver`, `QwenDriver`,
+`SambaNovaDriver`, and `XAiDriver`. (The embeddings driver of the same short name,
+`Embeddings\Drivers\OpenAI\OpenAIDriver`, is untouched.) Each was a class whose
+only content was naming its collaborators, so the providers that speak the OpenAI wire protocol
+are now rows of an `InferenceDriverSpec` table in `BundledInferenceDrivers`, and one
+`SpecifiedInferenceDriver` serves them all. The nine providers that genuinely differ — they
+assemble their own URLs or headers, which is behaviour a table cannot hold — keep their driver
+classes: Anthropic, Azure, Bedrock, CohereV2, Gemini, GeminiOAI, HuggingFace, OpenAIResponses,
+and OpenResponses.
+
+Nothing changes for callers. Preset names are untouched, `Inference`, `PendingInference`,
+`InferenceStream`, `InferenceResponse`, `Embeddings`, `PendingEmbeddings`, and `LLMConfig` have
+byte-identical public APIs, and every `Cognesy\Polyglot\Inference\Contracts\*` interface is
+unchanged. `InferenceDriverRegistry::withDriver()` still accepts a class-string or a callable,
+so custom registrations keep working.
+
+What breaks is naming a deleted class. Extending one — most often `OpenAIDriver` or
+`OpenAICompatibleDriver` to change one method — now means extending
+`SpecifiedInferenceDriver` and naming your subclass in the spec's `driverClass`, or supplying a
+spec with your own body format, request adapter, response adapter, usage format, or message
+format. Per-model capability logic that used to be a `capabilities(?string $model)` override
+becomes `DriverCapabilities` data on the spec, either a fixed instance or a closure over the
+model name (`deepseek` is the one bundled provider that needs the closure).
+
+`Cognesy\Polyglot\Inference\Contracts\MessageMapper` moved to
+`Cognesy\Polyglot\Inference\Drivers\MessageMapper` — it is a driver helper, not a contract.
+Update the import; the class is otherwise unchanged. This is the one move with no alias.
+
+Three unreferenced classes were deleted outright: `Inference\Enums\InferenceContentType`,
+`Inference\Collections\InferenceResponseList`, and `Embeddings\Traits\HasFinders`. None had a
+single usage anywhere in the repository.
+
+Four classes that were never inference concepts moved to a neutral namespace —
+`Inference\Core\SensitiveDataRedactor`, `Inference\Config\RetryBackoff`,
+`Inference\Config\RetryJitter`, `Inference\Config\RetryPolicyInvariants` — as did
+`Polyglot\Pricing\Cost`, joining them under `Polyglot\Support\`. All five old names keep
+working: the package registers a lazy `class_alias()` autoloader, so an old FQCN resolves to the
+same class, `instanceof` holds in both directions, and `RetryJitter` enum case identity is
+preserved. Migrate at your convenience; the aliases go at the next major.
+
+### Response Generation and Validation Contracts Carry Telemetry Context
+
+`CanGenerateResponse::makeResponse()` is replaced by two methods that name the two genuinely
+different routes to a response value. The sync path always has an inference response to
+extract from; the streaming path may already hold a value the aggregator built from deltas.
+
+```diff
+- public function makeResponse(
+-     InferenceResponse $response,
+-     ResponseModel $responseModel,
+-     OutputMode $mode,
+-     mixed $materializationInput = null,
+- ) : Result;
++ public function fromInferenceResponse(
++     InferenceResponse $response,
++     ResponseModel $responseModel,
++     OutputMode $mode,
++     ?PhaseTelemetryContext $extractionTelemetry = null,
++     ?PhaseTelemetryContext $validationTelemetry = null,
++ ) : Result;
++ public function fromMaterializedInput(
++     mixed $input,
++     ResponseModel $responseModel,
++     ?PhaseTelemetryContext $validationTelemetry = null,
++ ) : Result;
+```
+
+`CanValidateResponse::validate()` gains an optional trailing `?PhaseTelemetryContext`:
+
+```diff
+- public function validate(object $response, ResponseModel $responseModel) : Result;
++ public function validate(
++     object $response,
++     ResponseModel $responseModel,
++     ?PhaseTelemetryContext $telemetry = null,
++ ) : Result;
+```
+
+Callers of `validate()` need no change. Implementors of either interface do: PHP requires an
+implementation to accept at least the interface's parameters, so a custom validator or response
+generator must add the new parameter to load at all.
+
+Both contexts are optional at the call site. They are supplied by callers that hold a
+structured-output execution, so extraction and validation events can be stamped as children of
+its root; both stages work unchanged without them.
+
+### Sections Reject Duplicate Names
+
+`Sections` always assumed names were unique — every accessor (`has()`, `get()`, `set()`,
+`merge()`, `MessageStore::section()`) matches on name and stops at the first hit, so a second
+section sharing a name was unreachable by every accessor yet still contributed its messages to
+`toMessages()`. `add()` enforced uniqueness; the constructor did not.
+
+The constructor now throws `InvalidArgumentException` on a duplicate name. Code that
+constructed `Sections` with a repeated name was already producing a collection whose invariants
+did not hold, and now fails loudly instead.
+
+`Sections::fromArray()` deliberately does not throw. Deserialization must not fail on data an
+earlier version was able to write, so duplicates are merged there: the later section's messages
+are appended to the first one under that name.
+
+### Messages::withMessage() Removed
+
+`Messages::withMessage()` read as a wither that added a message, but it discarded the collection
+and returned one holding only the argument. Every other `with*()` on the class keeps the
+receiver's contents. It is removed rather than fixed, because either reading of the name is a
+reasonable one to have depended on:
+
+```php
+// if you wanted the message appended
+$messages = $messages->appendMessage($message);
+
+// if you wanted a collection of exactly that message
+$messages = $messages->withMessages([$message]);
+```
+
+`CanStoreMessages::save()` is unchanged in signature and behaviour, but its contract is now
+stated explicitly: it **replaces** the session with exactly the store passed in, so saving a
+store built from a subset of a session prunes the session to that subset. `load()` returns the
+whole session, so load → mutate → save is lossless. Use `append()` with `navigateTo()` for
+additive writes.
+
+## Agent Evals
+
+`packages/agents` gains an eval harness for grading agent behaviour, not just asserting on
+final output.
+
+Deterministic assertions cover the trajectory — which tools ran, in what order, with what
+outcomes. Semantic judging covers the rest through `AgentLoopJudge`, which grades a run using a
+terminal submission protocol: the judge returns its verdict by calling `SubmitJudgmentTool`
+rather than emitting prose to be parsed, so a malformed or missing submission raises
+`JudgeProtocolException` instead of silently mis-scoring the run. Judge tools are read-only.
+
+`EvalRepetition` runs a case N times and resolves a verdict from the observed pass rate, which
+makes flaky agent behaviour measurable rather than a coin toss.
+
+`EvalTracePolicy` governs what a trace may contain. By default (`EvalTracePolicy::safe()`) tool
+arguments and results are reduced to shape-only previews that never include payload values;
+`full()` is an explicit opt-in. `ArtifactEvalReporter` writes run artifacts to disk with
+provenance and cost, and provenance deliberately excludes credentials, keyed base URLs, and
+full LLM configuration dumps.
+
+Five documentation pages cover the harness end to end — evals, assertions, judges, traces and
+artifacts, and running evals from the CLI or from PHPUnit and Pest — alongside eleven runnable
+`D06_AgentEvals` examples.
+
+## A Typed Metric Catalog
+
+Before v2.7 the runtime emitted exactly two metrics, both histograms, while `Counter`, `Gauge`,
+and `Timer` sat unused in `packages/metrics`. The two runtime projectors now emit a full
+catalog.
+
+`PolyglotTelemetryProjector` adds `inference.client.operation.count` and `.duration`,
+`inference.client.attempt.count` and `.duration`, and `inference.embeddings.operation.count`.
+`AgentsTelemetryProjector` adds `agent.step.count` and `.duration`, `agent.execution.count` and
+`.steps`, `agent.tool_call.count` and `.duration`, `agent.subagent.count`, plus two gauges:
+`agent.context.message_count` and `agent.subagent.depth`. Blocked tool calls share
+`agent.tool_call.count` so the denominator stays whole — success plus error plus blocked is
+every call the agent attempted.
+
+Metric names keep their existing `inference.*` and `agent.*` prefixes. Tags are aggregation
+dimensions and are deliberately low-cardinality: per-run identifiers belong on spans, because
+one tag value per run means one time series per run in the metrics backend.
+`inference.client.token.usage.*` is the single documented exception, since Langfuse correlates
+it back to its span by id.
+
+The full catalog, projector by projector, with the type policy and the tag rules, is in the
+telemetry package's runtime wiring documentation.
+
+## Structured Output and Validation Are Visible in Traces
+
+`structured_output.validate` is now a first-class span rather than an attribute on its parent,
+so validation appears in Langfuse and OTel traces with its own timing and outcome. Extraction
+telemetry moves to envelope-first emission, and `PhaseTelemetryContext` carries the phase
+correlation that the extraction and validation paths previously rebuilt ad hoc.
+
+HTTP trace-context propagation is explicit rather than ambient: the trace context is passed
+through the request boundary, so spans from an HTTP call attach to the operation that made it.
+
+For `agent-ctrl`, session correlation is bound at execution start. `AgentExecutionStarted` and
+`AgentExecutionCompleted` expose `sessionId(): ?AgentSessionId`, populated only when the caller
+resumed a specific session — the earliest point the runtime honestly knows one. A fresh run has
+no session until the agent reports it, and `continueSession()` selects "the most recent"
+without naming it, so both stay null rather than carrying an invented placeholder. Execution
+roots stay keyed on execution id, so two runs sharing a session remain distinct traces that
+merely correlate.
+
+## JSONL Event Logging On By Default
+
+An `agent-ctrl` bridge constructed without an explicit event dispatcher now receives
+`EventLog::root('agent-ctrl.<bridge>')` instead of a bare `EventDispatcher`, so bridge runs
+produce a JSONL event log out of the box. Passing your own dispatcher opts out entirely.
+
+Because a file sink is now on by default, the default capture policy is bounded and redacted
+rather than verbatim:
+
+- `stringClipLength` defaults to `2048` instead of `0` (unbounded), so a single large response
+  body cannot dominate a log file.
+- `redactKeys` defaults to a built-in list. Values under matching keys are replaced with
+  `[redacted]` before being written, and matching ignores case and separators, so
+  `authorization` also covers `Proxy-Authorization`. Setting it to `[]` disables redaction,
+  which is not recommended: HTTP events carry raw request headers.
+
+`FileJsonLogWriter` degrades rather than failing: a record whose context cannot be JSON-encoded
+is written with an `encoding_error` marker instead of being dropped silently, and logging
+failures never escape into the caller.
+
+## MessageStore Survives Partially Corrupt Sessions
+
+A JSONL record written by an older version, hand-edited, or truncated mid-write used to throw
+on load and make an entire session unopenable. Unhydratable records are now quarantined and
+reported through `quarantined()`, the walk past them continues so ancestors stay readable, and a
+header naming an unparseable leaf falls back to "last message wins" rather than failing the
+open.
+
+`Sections::select()` is new. It resolves names in the requested order, skips names with no
+matching section, and collapses a repeated name instead of emitting that section twice — which
+also fixes duplicate emission in the `SelectedSections` message compiler.
+
+Two smaller robustness fixes in `InMemoryStorage`: `getPath()` no longer loops forever on a
+`parentId` cycle, returning the partial root-first path instead, and `forkFrom()` throws on an
+unknown message id rather than forking from nothing.
+
+`Message::withMergedFrom()` is new, folding one message's content, metadata, and tool calls into
+another of the same role. It refuses to merge messages carrying tool results, since a tool result
+is bound to a single tool call id and merging would silently drop that binding.
+
+## Events Are Not Built When Nothing Listens
+
+`ListenerGate` is the single definition of whether an emitter should construct an event at all.
+Constructing one costs roughly 0.9µs before any payload is assembled, since the base event
+generates a UUID and a timestamp, and payload arrays cost more on top. Emitters on hot paths
+resolve the gate once and skip both.
+
+Fail-open is contractual: a dispatcher that cannot report its listeners is assumed to be
+listening and receives every event, so a plain PSR-14 dispatcher never loses an event to this
+optimization.
