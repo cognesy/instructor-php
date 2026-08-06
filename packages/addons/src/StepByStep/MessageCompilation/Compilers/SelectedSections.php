@@ -5,7 +5,6 @@ namespace Cognesy\Addons\StepByStep\MessageCompilation\Compilers;
 use Cognesy\Addons\StepByStep\MessageCompilation\CanCompileMessages;
 use Cognesy\Addons\StepByStep\State\Contracts\HasMessageStore;
 use Cognesy\Messages\Messages;
-use Cognesy\Messages\MessageStore\Collections\Sections;
 
 /**
  * @implements CanCompileMessages<HasMessageStore>
@@ -26,20 +25,9 @@ final class SelectedSections implements CanCompileMessages
             return $state->messages();
         }
 
-        $store = $state->store();
-        $resolved = [];
-        foreach ($this->sections as $sectionName) {
-            $section = $store->sections()->get($sectionName);
-            if ($section === null) {
-                continue;
-            }
-            $resolved[] = $section;
-        }
-
-        if ($resolved === []) {
-            return Messages::empty();
-        }
-
-        return (new Sections(...$resolved))->toMessages();
+        // select() resolves in requested order, skips names with no section, and - unlike
+        // the hand-rolled loop this replaces - collapses a repeated name instead of
+        // emitting that section's messages twice.
+        return $state->store()->sections()->select($this->sections)->toMessages();
     }
 }

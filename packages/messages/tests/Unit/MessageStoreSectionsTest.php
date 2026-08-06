@@ -41,6 +41,33 @@ describe('Sections', function () {
 
             expect($sections->count())->toBe(0);
         });
+
+        // add() has always rejected a duplicate name; the constructor did not, so any other
+        // route in (fromSections, set, deserialization) could build a collection where the
+        // second section under a name is unreachable by get()/set() yet still contributes to
+        // toMessages().
+        it('rejects two sections sharing a name', function () {
+            expect(fn() => new Sections(
+                new Section('a', Messages::fromString('first')),
+                new Section('a', Messages::fromString('second')),
+            ))->toThrow(InvalidArgumentException::class, "Section with name 'a' already exists.");
+        });
+
+        // Deserialization is the one path that must not reject data a previous version was
+        // able to write, so it merges instead - the same policy merge() applies.
+        it('merges duplicate names in fromArray instead of throwing', function () {
+            $sections = Sections::fromArray([
+                ['name' => 'a', 'messages' => [['role' => 'user', 'content' => 'first']]],
+                ['name' => 'b', 'messages' => [['role' => 'user', 'content' => 'other']]],
+                ['name' => 'a', 'messages' => [['role' => 'user', 'content' => 'second']]],
+            ]);
+
+            expect($sections->count())->toBe(2);
+            expect($sections->names())->toBe(['a', 'b']);
+            expect($sections->get('a')->messages()->map(fn(Message $m) => $m->content()->toString()))
+                ->toBe(['first', 'second']);
+            expect($sections->toMessages()->count())->toBe(3);
+        });
     });
 
     describe('iteration (Countable + IteratorAggregate)', function () {
@@ -192,6 +219,20 @@ describe('Sections', function () {
             $result = $sections->select(['missing']);
 
             expect($result->count())->toBe(0);
+        });
+
+        // Callers pass a name list they did not necessarily dedupe; selecting the same
+        // section twice would emit its messages twice and now hit the constructor's guard.
+        it('collapses a repeated name to a single section', function () {
+            $sections = new Sections(
+                new Section('a', Messages::fromString('x')),
+                new Section('b', Messages::fromString('y')),
+            );
+
+            $result = $sections->select(['a', 'a', 'b']);
+
+            expect($result->names())->toBe(['a', 'b']);
+            expect($result->toMessages()->count())->toBe(2);
         });
     });
 

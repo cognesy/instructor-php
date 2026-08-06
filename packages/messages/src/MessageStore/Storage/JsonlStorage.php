@@ -41,12 +41,26 @@ use RuntimeException;
  * renamed into place, so an interrupted save leaves the previous file untouched rather
  * than truncated. It was previously a truncate-then-append-per-message sequence, where a
  * throw partway through destroyed the session and then reported failure over lost data.
+ *
+ * Reads are lenient, writes are strict. Message and MessageId validate on construction,
+ * which is right for data entering the system but wrong for data already on disk: a single
+ * record written by an older version, hand-edited, or truncated mid-write made load() throw
+ * and took the whole session with it - every other message in the file became unreachable.
+ * Every read path therefore SKIPS a record it cannot hydrate and records why in a per-session
+ * quarantine list, readable via quarantined(). Consequences worth knowing:
+ * - get() returns null for a quarantined id, indistinguishable from a missing one except by
+ *   looking at quarantined().
+ * - getPath() skips the record but keeps walking the parentId chain, so a corrupt message in
+ *   the middle of a branch costs that one message, not the ancestors above it.
+ * - save() rewrites the file from the store it is given, so saving a session that has
+ *   quarantined records DROPS them. Check quarantined() before a load -> save cycle if the
+ *   raw lines matter.
  */
 class JsonlStorage implements CanStoreMessages
 {
     private const VERSION = 1;
 
-    /** @var array<string, array{file: string, leafId: ?MessageId, index: array<string, array>, labels: array<string, string>}> */
+    /** @var array<string, array{file: string, leafId: ?MessageId, index: array<string, array>, labels: array<string, string>, quarantine: array<string, string>}> */
     private array $sessions = [];
 
     public function __construct(
@@ -80,6 +94,7 @@ class JsonlStorage implements CanStoreMessages
             'leafId' => null,
             'index' => [],
             'labels' => [],
+            'quarantine' => [],
         ];
 
         return $id;
@@ -97,8 +112,13 @@ class JsonlStorage implements CanStoreMessages
 
         // Group messages by section
         $sectionMessages = [];
-        foreach ($this->sessions[$sessionKey]['index'] as $entry) {
+        foreach ($this->sessions[$sessionKey]['index'] as $key => $entry) {
             if ($entry['type'] !== 'message') {
+                continue;
+            }
+
+            $message = $this->hydrate($sessionKey, (string) $key, $entry);
+            if ($message === null) {
                 continue;
             }
 
@@ -106,7 +126,7 @@ class JsonlStorage implements CanStoreMessages
             if (!isset($sectionMessages[$sectionName])) {
                 $sectionMessages[$sectionName] = [];
             }
-            $sectionMessages[$sectionName][] = Message::fromArray($entry['data']);
+            $sectionMessages[$sectionName][] = $message;
         }
 
         // Build sections
@@ -261,7 +281,7 @@ class JsonlStorage implements CanStoreMessages
             return null;
         }
 
-        return Message::fromArray($entry['data']);
+        return $this->hydrate($sessionKey, $messageId->toString(), $entry);
     }
 
     #[\Override]
@@ -270,14 +290,17 @@ class JsonlStorage implements CanStoreMessages
         $sessionKey = $sessionId->toString();
 
         $messages = [];
-        foreach ($this->sessions[$sessionKey]['index'] as $entry) {
+        foreach ($this->sessions[$sessionKey]['index'] as $key => $entry) {
             if ($entry['type'] !== 'message') {
                 continue;
             }
             if (($entry['section'] ?? 'messages') !== $section) {
                 continue;
             }
-            $messages[] = Message::fromArray($entry['data']);
+            $message = $this->hydrate($sessionKey, (string) $key, $entry);
+            if ($message !== null) {
+                $messages[] = $message;
+            }
         }
 
         if ($limit !== null) {
@@ -337,8 +360,15 @@ class JsonlStorage implements CanStoreMessages
             if ($entry === null || $entry['type'] !== 'message') {
                 break;
             }
-            array_unshift($path, Message::fromArray($entry['data']));
-            $currentId = isset($entry['parentId']) ? new MessageId($entry['parentId']) : null;
+            // A record that cannot be hydrated drops out of the path, but the walk continues:
+            // its ancestors are still readable and are more useful than an empty result.
+            $message = $this->hydrate($sessionKey, $currentKey, $entry);
+            if ($message !== null) {
+                array_unshift($path, $message);
+            }
+
+            $parentId = $entry['parentId'] ?? null;
+            $currentId = is_string($parentId) ? $this->toMessageId($parentId) : null;
         }
 
         return new Messages(...$path);
@@ -405,7 +435,49 @@ class JsonlStorage implements CanStoreMessages
         return $this->sessions[$sessionId->toString()]['labels'];
     }
 
+    // QUARANTINE ////////////////////////////////////////////
+
+    /**
+     * Records in this session that could not be turned back into Messages, keyed by the id
+     * the record carried, with the reason as the value. Reads skip these instead of failing,
+     * so this is the only way to see that a session file holds data this version cannot
+     * understand. Deliberately NOT on CanStoreMessages: it describes a file format, and
+     * InMemoryStorage holds live Message objects that cannot fail to hydrate.
+     *
+     * @return array<string, string> id => reason
+     */
+    public function quarantined(MessageSessionId $sessionId): array {
+        $this->ensureLoaded($sessionId);
+        return $this->sessions[$sessionId->toString()]['quarantine'];
+    }
+
     // HELPERS ///////////////////////////////////////////////
+
+    /**
+     * @param array<string, mixed> $entry
+     */
+    private function hydrate(string $sessionKey, string $messageKey, array $entry): ?Message {
+        $data = $entry['data'] ?? null;
+        if (!is_array($data)) {
+            $this->sessions[$sessionKey]['quarantine'][$messageKey] = 'Message record has no data payload';
+            return null;
+        }
+
+        try {
+            return Message::fromArray($data);
+        } catch (\Throwable $e) {
+            $this->sessions[$sessionKey]['quarantine'][$messageKey] = $e->getMessage();
+            return null;
+        }
+    }
+
+    private function toMessageId(string $value): ?MessageId {
+        try {
+            return new MessageId($value);
+        } catch (\Throwable) {
+            return null;
+        }
+    }
 
     private function sessionFile(MessageSessionId $sessionId): string {
         // Sanitize session ID for filename
@@ -496,6 +568,7 @@ class JsonlStorage implements CanStoreMessages
             'leafId' => null,
             'index' => [],
             'labels' => [],
+            'quarantine' => [],
         ];
 
         // Parse JSONL file
@@ -528,7 +601,9 @@ class JsonlStorage implements CanStoreMessages
             if ($entry['type'] === 'session') {
                 $preferredLeafValue = $entry['leafId'] ?? null;
                 if (is_string($preferredLeafValue) && $preferredLeafValue !== '') {
-                    $preferredLeafId = new MessageId($preferredLeafValue);
+                    // A header naming an unparseable leaf falls back to "last message wins"
+                    // rather than making the session unopenable.
+                    $preferredLeafId = $this->toMessageId($preferredLeafValue);
                 }
                 continue;
             }
@@ -540,8 +615,16 @@ class JsonlStorage implements CanStoreMessages
                 if (!is_string($id) || $id === '') {
                     continue;
                 }
+                // MessageId validates, and it validates here - before any message is
+                // hydrated - so an id that is not a UUID used to fail the whole session on
+                // open. Quarantine it and keep reading the rest of the file.
+                $messageId = $this->toMessageId($id);
+                if ($messageId === null) {
+                    $this->sessions[$sessionKey]['quarantine'][$id] = "Invalid message id at line {$lineNum}: {$id}";
+                    continue;
+                }
                 $this->sessions[$sessionKey]['index'][$id] = $entry;
-                $this->sessions[$sessionKey]['leafId'] = new MessageId($id);
+                $this->sessions[$sessionKey]['leafId'] = $messageId;
             }
 
             // Track labels

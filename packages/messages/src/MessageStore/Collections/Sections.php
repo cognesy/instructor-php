@@ -15,18 +15,42 @@ final readonly class Sections implements Countable, IteratorAggregate
 {
     private array $sections;
 
+    /**
+     * Section names are unique - every lookup here (has(), get(), set(), merge(),
+     * MessageStore::section()) matches on name and stops at the first hit, so a second
+     * section sharing a name is unreachable: get() never returns it, set() never replaces
+     * it, yet toMessages() still emits its messages. add() has always enforced this; the
+     * constructor did not, which let both deserialization and direct construction build a
+     * collection whose invariants silently do not hold.
+     */
     public function __construct(Section ...$sections) {
-        $this->sections = $sections;
+        $seen = [];
+        foreach ($sections as $section) {
+            if (isset($seen[$section->name])) {
+                throw new InvalidArgumentException("Section with name '{$section->name}' already exists.");
+            }
+            $seen[$section->name] = true;
+        }
+        // array_values(): filter() spreads an array_filter() result, whose keys have gaps.
+        $this->sections = array_values($sections);
     }
 
     // CONSTRUCTORS /////////////////////////////////////////////
 
+    /**
+     * Deserialization must not fail on data a previous version was able to write, so
+     * duplicate names are MERGED here rather than rejected - same policy as merge():
+     * the later section's messages are appended to the first one under that name.
+     */
     public static function fromArray(array $data): self {
         $sections = [];
         foreach ($data as $sectionData) {
-            $sections[] = Section::fromArray($sectionData);
+            $section = Section::fromArray($sectionData);
+            $sections[$section->name] = isset($sections[$section->name])
+                ? $sections[$section->name]->appendMessages($section->messages())
+                : $section;
         }
-        return new self(...$sections);
+        return new self(...array_values($sections));
     }
 
     #[\Override]
@@ -70,14 +94,16 @@ final readonly class Sections implements Countable, IteratorAggregate
         if (empty($names)) {
             return new Sections(...$this->sections);
         }
+        // Keyed by name so a repeated name in $names selects the section once rather than
+        // building a collection with a duplicate the constructor would reject.
         $selected = [];
         foreach ($names as $name) {
             $section = $this->get($name);
             if ($section !== null) {
-                $selected[] = $section;
+                $selected[$name] = $section;
             }
         }
-        return new Sections(...$selected);
+        return new Sections(...array_values($selected));
     }
 
     /**
