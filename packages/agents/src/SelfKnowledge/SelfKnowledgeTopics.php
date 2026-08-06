@@ -33,6 +33,11 @@ final readonly class SelfKnowledgeTopics
             new SelfKnowledgeTopic('events or observability', new NameList('18-observing-agent-execution.md')),
             new SelfKnowledgeTopic('skills', new NameList('19-skills.md')),
             new SelfKnowledgeTopic('self-knowledge or installed package documentation', new NameList('20-self-knowledge.md')),
+            new SelfKnowledgeTopic('evaluating agent behavior or model-graded testing', new NameList('21-evals.md')),
+            new SelfKnowledgeTopic('deterministic eval assertions or trajectory checks', new NameList('22-eval-assertions.md')),
+            new SelfKnowledgeTopic('semantic judging of agent behavior or LLM-as-judge evals', new NameList('23-eval-judges.md')),
+            new SelfKnowledgeTopic('eval trace policy, artifacts on disk, or provenance and cost reporting', new NameList('24-eval-traces-and-artifacts.md')),
+            new SelfKnowledgeTopic('running evals from the CLI, repetition and pass rates, eval exit codes, or PHPUnit and Pest integration', new NameList('25-running-evals.md')),
         );
     }
 

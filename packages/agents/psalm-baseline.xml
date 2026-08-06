@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<files psalm-version="6.15.1@28dc127af1b5aecd52314f6f645bafc10d0e11f9">
+  <file src="src/Capability/AgentCapabilityRegistry.php">
+    <MissingOverrideAttribute>
+      <code><![CDATA[public function all(): array {]]></code>
+      <code><![CDATA[public function count(): int {]]></code>
+      <code><![CDATA[public function get(string $name): CanProvideAgentCapability {]]></code>
+      <code><![CDATA[public function has(string $name): bool {]]></code>
+      <code><![CDATA[public function names(): array {]]></code>
+      <code><![CDATA[public function register(string $name, CanProvideAgentCapability $capability): void {]]></code>
+      <code><![CDATA[public function registerFactory(string $name, callable $factory): void {]]></code>
+    </MissingOverrideAttribute>
+  </file>
+  <file src="src/Capability/Bash/UseBash.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/Broadcasting/UseAgentBroadcasting.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/Cancellation/UseCooperativeCancellation.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/Coding/UseCodingTools.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/Core/UseContextCompiler.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/Core/UseContextCompilerDecorator.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/Core/UseContextConfig.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/Core/UseDriver.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/Core/UseDriverDecorator.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/Core/UseGuards.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/Core/UseHook.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/Core/UseLLMConfig.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/Core/UseReActConfig.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/Core/UseToolFactory.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/Core/UseTools.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/Definitions/UseAgentDefinitions.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/ExecutionHistory/UseExecutionHistory.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/File/UseFileTools.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/Metadata/UseMetadataTools.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/PlanningSubagent/PlanningSubagentTool.php">
+    <MethodSignatureMismatch>
+      <code><![CDATA[#[Override]]]></code>
+      <code><![CDATA[#[Override]]]></code>
+    </MethodSignatureMismatch>
+  </file>
+  <file src="src/Capability/PlanningSubagent/UsePlanningSubagent.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/Prompt/UseSystemPrompt.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/Retrospective/UseExecutionRetrospective.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/SelfCritique/UseSelfCritique.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/SelfKnowledge/UseSelfKnowledge.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/Skills/UseSkills.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/StructuredOutput/UseStructuredOutputs.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/Subagent/SpawnSubagentTool.php">
+    <MethodSignatureMismatch>
+      <code><![CDATA[#[Override]]]></code>
+      <code><![CDATA[#[Override]]]></code>
+    </MethodSignatureMismatch>
+  </file>
+  <file src="src/Capability/Subagent/UseSubagents.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/Summarization/UseSummarization.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/Tasks/UseTaskPlanning.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Capability/Tools/UseToolRegistry.php">
+    <MissingTemplateParam>
+      <code><![CDATA[CanProvideAgentCapability]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/Data/AgentId.php">
+    <MissingOverrideAttribute>
+      <code><![CDATA[public function __toString(): string {]]></code>
+    </MissingOverrideAttribute>
+  </file>
+  <file src="src/Data/AgentStepId.php">
+    <MissingOverrideAttribute>
+      <code><![CDATA[public function __toString(): string {]]></code>
+    </MissingOverrideAttribute>
+  </file>
+  <file src="src/Data/ExecutionId.php">
+    <MissingOverrideAttribute>
+      <code><![CDATA[public function __toString(): string {]]></code>
+    </MissingOverrideAttribute>
+  </file>
+  <file src="src/Data/ToolExecutionId.php">
+    <MissingOverrideAttribute>
+      <code><![CDATA[public function __toString(): string {]]></code>
+    </MissingOverrideAttribute>
+  </file>
+  <file src="src/Events/Support/AgentEventConsoleFormatter.php">
+    <MissingOverrideAttribute>
+      <code><![CDATA[public function format(object $event): ?ConsoleEventLine {]]></code>
+    </MissingOverrideAttribute>
+  </file>
+  <file src="src/Session/Data/SessionId.php">
+    <MissingOverrideAttribute>
+      <code><![CDATA[public function __toString(): string {]]></code>
+    </MissingOverrideAttribute>
+  </file>
+  <file src="src/Telemetry/AgentTelemetrySeed.php">
+    <ParadoxicalCondition>
+      <code><![CDATA[is_int($correlation[$key] ?? null), is_float($correlation[$key] ?? null) => (string) $correlation[$key]]]></code>
+    </ParadoxicalCondition>
+  </file>
+  <file src="src/Template/AgentDefinitionRegistry.php">
+    <MissingOverrideAttribute>
+      <code><![CDATA[public function autoDiscover(]]></code>
+      <code><![CDATA[public function errors(): array {]]></code>
+      <code><![CDATA[public function has(string $name): bool {]]></code>
+      <code><![CDATA[public function loadFromDirectory(string $path, bool $recursive = false): void {]]></code>
+      <code><![CDATA[public function loadFromFile(string $path): void {]]></code>
+      <code><![CDATA[public function register(AgentDefinition $definition): void {]]></code>
+      <code><![CDATA[public function registerMany(AgentDefinition ...$definitions): void {]]></code>
+    </MissingOverrideAttribute>
+  </file>
+  <file src="src/Tool/ToolRegistry.php">
+    <MissingOverrideAttribute>
+      <code><![CDATA[public function all(): array {]]></code>
+    </MissingOverrideAttribute>
+  </file>
+</files>

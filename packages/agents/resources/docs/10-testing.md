@@ -7,6 +7,8 @@ description: 'Test agents deterministically using FakeAgentDriver and FakeTool w
 
 The Agents package ships with first-class testing primitives that let you exercise agent behavior without making real LLM calls. By combining `FakeAgentDriver` with `FakeTool`, you can script deterministic scenarios, assert on individual steps, and verify that your agent's tool-calling logic, error handling, and multi-step loops behave exactly as expected.
 
+This page covers pinning exact, scripted behavior against a fake driver. When you need to grade an agent's behavior against a real driver -- including cases where "acceptable" is a matter of degree that only a model can judge -- see [Agent Evals](21-evals.md).
+
 ## FakeAgentDriver
 
 `FakeAgentDriver` replaces a real driver (such as `ToolCallingDriver` or `ReActDriver`) with a scripted sequence of steps. Each step defines what the "LLM" would return -- a final response, a tool call, an intermediate message, or an error. The driver advances through the script one step per loop iteration, giving you full control over the agent's behavior.

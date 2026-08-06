@@ -60,7 +60,18 @@
     "docs:self-knowledge:write": "@php scripts/sync-self-knowledge-docs.php --write",
     "tests": "@php ../../vendor/bin/pest --configuration=phpunit.xml --bootstrap=../../vendor/autoload.php tests",
     "phpstan": "@php ../../vendor/bin/phpstan analyse -c phpstan.neon --memory-limit=2G",
-    "psalm": "@php ../../vendor/bin/psalm --root=../.. --config=psalm.xml"
+    "psalm": "@php ../../vendor/bin/psalm --root=../.. --config=psalm.xml",
+    "pint": "@php ../../vendor/bin/pint --config pint.json src/",
+    "pint:test": "@php ../../vendor/bin/pint --config pint.json src/ --test",
+    "qa:docs": "bash ../../scripts/docs/docs-qa-all.sh agents",
+    "qa": [
+      "@tests",
+      "@phpstan",
+      "@psalm",
+      "@pint:test",
+      "@qa:docs",
+      "@docs:self-knowledge:check"
+    ]
   },
   "bin": [
     "bin/agents-eval"

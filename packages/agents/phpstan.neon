@@ -7,3 +7,10 @@ parameters:
   tmpDir: /tmp
   ignoreErrors:
     - identifier: missingType.generics
+    # Pest binds test closures to PHPUnit\Framework\TestCase and lets `beforeEach()`
+    # attach ad-hoc state (e.g. `$this->agent = ...`) that test closures then read via
+    # `$this->`. PHPStan can't see these dynamic properties on the base TestCase class,
+    # but the pattern is Pest's documented idiom, not a bug. Scoped to tests/ only so
+    # a genuine undefined-property bug in src/ still fails the gate.
+    - identifier: property.notFound
+      path: tests/*

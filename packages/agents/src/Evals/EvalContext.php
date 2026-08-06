@@ -145,6 +145,21 @@ final class EvalContext
         return $this->check('maxToolCalls', $this->run()->tools()->count() <= $maximum);
     }
 
+    public function stepCount(int $expected): AssertionHandle {
+        $actual = $this->run()->stepCount();
+        return $this->check('stepCount', $actual === $expected, "expected {$expected} steps, got {$actual}");
+    }
+
+    public function maxSteps(int $maximum): AssertionHandle {
+        $actual = $this->run()->stepCount();
+        return $this->check('maxSteps', $actual <= $maximum, "expected at most {$maximum} steps, got {$actual}");
+    }
+
+    public function totalTokensAtMost(int $maximum): AssertionHandle {
+        $actual = $this->run()->usage()->total();
+        return $this->check('totalTokensAtMost', $actual <= $maximum, "used {$actual} tokens, limit {$maximum}");
+    }
+
     public function noFailedActions(): AssertionHandle {
         foreach ($this->run()->tools() as $execution) {
             if ($execution->hasError()) {

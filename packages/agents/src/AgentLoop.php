@@ -53,6 +53,13 @@ use Throwable;
  * This class manages the process of using tools in a sequence of steps, allowing for
  * dynamic decision-making on whether to continue or stop based on stop signals
  * and continuation requests emitted by hooks.
+ *
+ * @phpstan-consistent-constructor `with()` relies on `new static()`. One subclass exists -
+ *     `Tests\Support\TestAgentLoop` - and it does declare its own constructor, but only by ADDING an
+ *     optional trailing parameter, so `new static(...)` called with this class's arguments always
+ *     succeeds. Caveat: a subclass that adds constructor state loses it across `with()`
+ *     (`TestAgentLoop::$maxIterations` falls back to its default), so subclasses must not rely on
+ *     extra constructor state surviving a `with()` call.
  */
 readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
 {

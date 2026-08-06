@@ -49,6 +49,9 @@ use Override;
  * language model (LLM) and various tools. It defines the workflow for
  * generating a response based on input messages, selecting and invoking tools,
  * handling tool execution results, and crafting follow-up messages.
+ *
+ * @phpstan-consistent-constructor the private `with()` helper relies on `new static()`;
+ *     no subclass in this repo overrides the constructor, so the promise holds.
  */
 class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptLLMConfig, CanAcceptMessageCompiler, CanAcceptLifecycleInterceptor, CanResolveLLMConfig
 {

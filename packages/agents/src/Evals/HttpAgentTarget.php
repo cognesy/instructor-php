@@ -9,12 +9,17 @@ use Override;
 
 final readonly class HttpAgentTarget implements CanRunAgentEvalTarget
 {
+    private EvalTracePolicy $policy;
+
     public function __construct(
         private HttpClient $client,
         private string $baseUrl,
         private ?string $authorization = null,
         private bool $healthCheck = true,
-    ) {}
+        ?EvalTracePolicy $policy = null,
+    ) {
+        $this->policy = $policy ?? EvalTracePolicy::safe();
+    }
 
     #[Override]
     public function open(?EvalSessionRequest $request = null): CanUseAgentEvalSession {
@@ -34,8 +39,12 @@ final readonly class HttpAgentTarget implements CanRunAgentEvalTarget
 
     public function attach(string $sessionId): CanUseAgentEvalSession {
         $payload = $this->request('GET', '/evals/sessions/' . rawurlencode($sessionId));
-        $run = self::runFromPayload($payload);
+        $run = self::runFromPayload($payload, $this->policy);
         return new HttpEvalSession($this, $sessionId, $run);
+    }
+
+    public function policy(): EvalTracePolicy {
+        return $this->policy;
     }
 
     /** @return array<string, mixed> */
@@ -47,10 +56,18 @@ final readonly class HttpAgentTarget implements CanRunAgentEvalTarget
         );
     }
 
-    /** @param array<string, mixed> $payload */
-    public static function runFromPayload(array $payload): AgentRun {
+    /**
+     * A remote agent server is a third party that knows nothing about
+     * `EvalTracePolicy` and may send tool payloads verbatim - `$policy` (default
+     * `safe()`) is applied to whatever it sends, exactly as it would be for a
+     * local run, so the HTTP path is safe by default rather than degrading to
+     * verbatim serialization just because the data already arrived pre-hydrated.
+     *
+     * @param array<string, mixed> $payload
+     */
+    public static function runFromPayload(array $payload, ?EvalTracePolicy $policy = null): AgentRun {
         $run = $payload['run'] ?? $payload;
-        return is_array($run) ? AgentRun::fromArray($run) : throw new HttpTargetException('Remote target returned an invalid run snapshot.');
+        return is_array($run) ? AgentRun::fromArray($run, $policy) : throw new HttpTargetException('Remote target returned an invalid run snapshot.');
     }
 
     private function health(): void {

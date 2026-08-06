@@ -15,11 +15,14 @@ use Cognesy\Agents\Evals\AgentRun;
 use Cognesy\Agents\Evals\EvalStep;
 use Cognesy\Agents\Evals\EvalTracePolicy;
 use Cognesy\Agents\Evals\LocalAgentTarget;
+use Cognesy\Agents\Exceptions\ToolExecutionException;
 use Cognesy\Agents\Hook\Collections\HookTriggers;
 use Cognesy\Agents\Hook\Data\HookContext;
 use Cognesy\Agents\Hook\Hooks\CallableHook;
+use Cognesy\Agents\Tests\Support\LlmAwareFakeDriver;
 use Cognesy\Agents\Tool\Tools\FakeTool;
 use Cognesy\Messages\ToolCalls;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use RuntimeException;
@@ -127,7 +130,10 @@ it('preserves tool name, call order and error flags through digesting', function
         ->and($executions[1]['name'])->toBe('explode')
         ->and($executions[0]['hasError'])->toBeFalse()
         ->and($executions[1]['hasError'])->toBeTrue()
-        ->and($executions[1]['error'])->toContain('boom')
+        // The error MESSAGE is digested, not preserved verbatim - see the
+        // dedicated secret-in-error-message test below for why.
+        ->and($executions[1]['error'])->toHaveKeys(['hash', 'bytes', 'preview'])
+        ->and($executions[1]['error']['preview'])->not->toContain('boom')
         ->and($executions[0]['result'])->toHaveKeys(['hash', 'bytes', 'preview'])
         ->and($executions[1]['result'])->toBeNull();
 });
@@ -165,6 +171,127 @@ it('digests a tool argument and a tool result so a padded secret never reaches t
         ->and($argumentDigest['preview'])->not->toContain($secret);
     expect($resultDigest)->toHaveKeys(['hash', 'bytes', 'preview'])
         ->and($resultDigest['bytes'])->toBeGreaterThan(120)
+        ->and($resultDigest['preview'])->not->toContain($secret);
+});
+
+it('digests a failing tool\'s exception message so a secret embedded in it never reaches the trace, at both the AgentRun and EvalStep projection sites', function (): void {
+    // The test above exercises a SUCCESSFUL call, where the secret lives in
+    // args/result - exactly the blind spot that let a raw exception message
+    // through undigested (exception text routinely embeds the offending
+    // input, e.g. "Invalid card number 4111...", "HTTP 401 for ...?key=sk-...").
+    $secret = 'SECRET-CREDIT-CARD-4111111111111111';
+    $messagePadding = str_repeat('C', 200);
+
+    $toolStep = ScenarioStep::toolCall('lookup', ['id' => 'A1049']);
+
+    $target = LocalAgentTarget::fromFactory(static fn () => AgentBuilder::base()
+        ->withCapability(new UseTools(new FakeTool(
+            'lookup',
+            'Lookup',
+            static function (string $id) use ($messagePadding, $secret): never {
+                throw new RuntimeException($messagePadding . $secret);
+            },
+        )))
+        ->withCapability(new UseDriver(FakeAgentDriver::fromSteps($toolStep, ScenarioStep::final('done'))))
+        ->withCapability(new UseHook(continuesOnce(), HookTriggers::afterStep(), -200))
+        ->build());
+
+    $run = $target->open()->send('go')->run();
+    $encoded = json_encode($run->toArray(), JSON_THROW_ON_ERROR);
+    expect($encoded)->not->toContain($secret);
+
+    // AgentRun.php:226's own `tools` projection.
+    $runToolExecution = $run->toArray()['tools'][0];
+    expect($runToolExecution['error'])->toHaveKeys(['hash', 'bytes', 'preview'])
+        ->and($runToolExecution['error']['hash'])->toStartWith('sha256:')
+        ->and($runToolExecution['error']['bytes'])->toBeGreaterThan(120)
+        ->and($runToolExecution['error']['preview'])->not->toContain($secret);
+
+    // EvalStep.php:244's own `toolExecutions` projection.
+    $stepToolExecution = $run->steps()->all()[0]->toArray()['toolExecutions'][0];
+    expect($stepToolExecution['error'])->toHaveKeys(['hash', 'bytes', 'preview'])
+        ->and($stepToolExecution['error']['hash'])->toStartWith('sha256:')
+        ->and($stepToolExecution['error']['bytes'])->toBeGreaterThan(120)
+        ->and($stepToolExecution['error']['preview'])->not->toContain($secret);
+
+    // Two more sites that turned out to carry the identical exception message
+    // and were not part of the originally reported pair, found only by actually
+    // reproducing a failing tool rather than reasoning from the source: the
+    // run-level joined `errors` string (AgentRun.php) and the step-level
+    // `errors[].message` list (EvalStep.php) both re-embed the same text.
+    $runErrors = $run->toArray()['errors'];
+    expect($runErrors)->toHaveKeys(['hash', 'bytes', 'preview'])
+        ->and($runErrors['preview'])->not->toContain($secret);
+
+    $stepErrors = $run->steps()->all()[0]->toArray()['errors'][0];
+    expect($stepErrors['message'])->toHaveKeys(['hash', 'bytes', 'preview'])
+        ->and($stepErrors['message']['preview'])->not->toContain($secret)
+        ->and($stepErrors['class'])->toBe(ToolExecutionException::class);
+});
+
+it('serializes a failing tool\'s error message verbatim only under an explicitly constructed full() policy, matching how arguments and results already behave', function (): void {
+    $secret = 'SECRET-CREDIT-CARD-4111111111111111';
+    $toolStep = ScenarioStep::toolCall('lookup', ['id' => 'A1049']);
+
+    $buildTarget = static fn (?EvalTracePolicy $policy) => LocalAgentTarget::fromFactory(
+        static fn () => AgentBuilder::base()
+            ->withCapability(new UseTools(new FakeTool(
+                'lookup',
+                'Lookup',
+                static function (string $id) use ($secret): never {
+                    throw new RuntimeException('Invalid id: ' . $secret);
+                },
+            )))
+            ->withCapability(new UseDriver(FakeAgentDriver::fromSteps($toolStep, ScenarioStep::final('done'))))
+            ->withCapability(new UseHook(continuesOnce(), HookTriggers::afterStep(), -200))
+            ->build(),
+        $policy,
+    );
+
+    $safeRun = $buildTarget(null)->open()->send('go')->run();
+    expect(json_encode($safeRun->toArray(), JSON_THROW_ON_ERROR))->not->toContain($secret);
+    expect($safeRun->toArray()['tools'][0]['error'])->toHaveKeys(['hash', 'bytes', 'preview']);
+    expect($safeRun->steps()->all()[0]->toArray()['toolExecutions'][0]['error'])->toHaveKeys(['hash', 'bytes', 'preview']);
+    expect($safeRun->toArray()['errors'])->toHaveKeys(['hash', 'bytes', 'preview']);
+
+    $fullRun = $buildTarget(EvalTracePolicy::full())->open()->send('go')->run();
+    expect(json_encode($fullRun->toArray(), JSON_THROW_ON_ERROR))->toContain($secret);
+    expect($fullRun->toArray()['tools'][0]['error'])->toContain($secret);
+    expect($fullRun->steps()->all()[0]->toArray()['toolExecutions'][0]['error'])->toContain($secret);
+    expect($fullRun->toArray()['errors'])->toContain($secret);
+});
+
+it('digests an unpadded short secret so it never reaches the serialized trace, with no padding required', function (): void {
+    // Unlike the padded-secret test above, this secret alone is far under the
+    // 120-byte preview window - the exact case a byte-bounded (non-shape) preview
+    // would have leaked in full. safe() must redact it regardless of size.
+    $secret = 'SECRET-4111111111111111';
+
+    $toolStep = ScenarioStep::toolCall('lookup', ['card' => $secret]);
+
+    $target = LocalAgentTarget::fromFactory(static fn () => AgentBuilder::base()
+        ->withCapability(new UseTools(new FakeTool(
+            'lookup',
+            'Lookup',
+            static fn (string $card): string => $card,
+        )))
+        ->withCapability(new UseDriver(FakeAgentDriver::fromSteps($toolStep, ScenarioStep::final('done'))))
+        ->withCapability(new UseHook(continuesOnce(), HookTriggers::afterStep(), -200))
+        ->build());
+
+    $run = $target->open()->send('go')->run();
+    $encoded = json_encode($run->toArray(), JSON_THROW_ON_ERROR);
+
+    $toolStepArray = $run->steps()->all()[0]->toArray();
+    $argumentDigest = $toolStepArray['requestedToolCalls'][0]['arguments'];
+    $resultDigest = $toolStepArray['toolExecutions'][0]['result'];
+
+    expect($encoded)->not->toContain($secret);
+    expect($argumentDigest)->toHaveKeys(['hash', 'bytes', 'preview'])
+        ->and($argumentDigest['preview'])->toBe('{"card":"<string:23>"}')
+        ->and($argumentDigest['preview'])->not->toContain($secret);
+    expect($resultDigest)->toHaveKeys(['hash', 'bytes', 'preview'])
+        ->and($resultDigest['preview'])->toBe('"<string:23>"')
         ->and($resultDigest['preview'])->not->toContain($secret);
 });
 
@@ -288,4 +415,39 @@ it('round-trips AgentRun::fromArray(AgentRun::toArray()) preserving step count, 
             ->and($roundTrippedSteps[$i]->index())->toBe($step->index())
             ->and($roundTrippedSteps[$i]->type())->toBe($step->type());
     }
+});
+
+it('leaves llmProfile null when the driver never resolves an LLMConfig', function (): void {
+    $target = LocalAgentTarget::fromFactory(static fn () => AgentBuilder::base()
+        ->withCapability(new UseDriver(FakeAgentDriver::fromResponses('ok')))
+        ->build());
+
+    $run = $target->open()->send('hi')->run();
+
+    expect($run->llmProfile())->toBeNull();
+});
+
+it('carries the resolved LLMConfig into llmProfile(), and preserves it across turns and a toArray()/fromArray() round trip', function (): void {
+    $config = new LLMConfig(model: 'gpt-5', maxTokens: 2048, contextLength: 128_000, maxOutputLength: 8192, driver: 'openai');
+    $target = LocalAgentTarget::fromFactory(static fn () => AgentBuilder::base()
+        ->withCapability(new UseDriver(new LlmAwareFakeDriver(FakeAgentDriver::fromResponses('first', 'second'), $config)))
+        ->build());
+
+    $session = $target->open();
+    $session->send('one');
+    $run = $session->send('two')->run();
+
+    expect($run->llmProfile())->not->toBeNull()
+        ->and($run->llmProfile()?->driver)->toBe('openai')
+        ->and($run->llmProfile()?->model)->toBe('gpt-5')
+        ->and($run->toArray()['llmProfile'])->toBe([
+            'driver' => 'openai',
+            'model' => 'gpt-5',
+            'maxTokens' => 2048,
+            'contextLength' => 128_000,
+            'maxOutputLength' => 8192,
+        ]);
+
+    $roundTripped = AgentRun::fromArray($run->toArray());
+    expect($roundTripped->llmProfile()?->model)->toBe('gpt-5');
 });

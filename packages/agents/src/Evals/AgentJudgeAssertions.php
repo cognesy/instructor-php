@@ -38,6 +38,7 @@ final readonly class AgentJudgeAssertions
             request: new JudgeRequest(
                 criterion: $criterion->value . ': ' . $instruction,
                 output: $this->run->reply(),
+                run: $this->run,
                 input: $input,
                 reference: $reference,
             ),

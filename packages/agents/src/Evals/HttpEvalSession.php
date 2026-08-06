@@ -18,7 +18,7 @@ final class HttpEvalSession implements CanUseAgentEvalSession
 
     #[Override]
     public function send(string $message): EvalTurn {
-        $this->run = HttpAgentTarget::runFromPayload($this->target->sendTurn($this->sessionId, $message));
+        $this->run = HttpAgentTarget::runFromPayload($this->target->sendTurn($this->sessionId, $message), $this->target->policy());
         return new EvalTurn($this->run->turns(), $message, $this->run);
     }
 

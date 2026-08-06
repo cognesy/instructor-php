@@ -14,6 +14,8 @@ final readonly class AssertionResult
         private ?float $threshold = null,
         private string $message = '',
         private ?string $label = null,
+        private ?JudgeScore $judgeScore = null,
+        private ?string $judgeClass = null,
     ) {
         self::validateScore($score, 'score');
         if ($threshold !== null) {
@@ -30,19 +32,23 @@ final readonly class AssertionResult
     }
 
     public function withSeverity(AssertionSeverity $severity): self {
-        return new self($this->name, $this->score, $severity, $this->threshold, $this->message, $this->label);
+        return new self($this->name, $this->score, $severity, $this->threshold, $this->message, $this->label, $this->judgeScore, $this->judgeClass);
     }
 
     public function withScore(float $score, string $message = ''): self {
-        return new self($this->name, $score, $this->severity, $this->threshold, $message, $this->label);
+        return new self($this->name, $score, $this->severity, $this->threshold, $message, $this->label, $this->judgeScore, $this->judgeClass);
     }
 
     public function withThreshold(float $threshold): self {
-        return new self($this->name, $this->score, $this->severity, $threshold, $this->message, $this->label);
+        return new self($this->name, $this->score, $this->severity, $threshold, $this->message, $this->label, $this->judgeScore, $this->judgeClass);
     }
 
     public function withLabel(string $label): self {
-        return new self($this->name, $this->score, $this->severity, $this->threshold, $this->message, $label);
+        return new self($this->name, $this->score, $this->severity, $this->threshold, $this->message, $label, $this->judgeScore, $this->judgeClass);
+    }
+
+    public function withJudgeScore(?JudgeScore $judgeScore): self {
+        return new self($this->name, $this->score, $this->severity, $this->threshold, $this->message, $this->label, $judgeScore, $this->judgeClass);
     }
 
     public function passed(): bool {
@@ -73,7 +79,28 @@ final readonly class AssertionResult
         return $this->label;
     }
 
-    /** @return array<string, mixed> */
+    public function judgeScore(): ?JudgeScore {
+        return $this->judgeScore;
+    }
+
+    /**
+     * The `CanJudgeAgentEval` implementation class that produced `judgeScore()`,
+     * as observed by the caller that constructed this result (e.g.
+     * `JudgeExpectation::resolve()`) - never inferred from `judgeScore()`'s
+     * shape. Null for non-judge assertions and for judges that failed before
+     * producing a score.
+     */
+    public function judgeClass(): ?string {
+        return $this->judgeClass;
+    }
+
+    /**
+     * `judge` is deliberately concise - score, reason, and an evidence count -
+     * never the judge's own `AgentRun`. Reporters that need the full judge trace
+     * read `judgeScore()->run` directly rather than through this serialization.
+     *
+     * @return array<string, mixed>
+     */
     public function toArray(): array {
         return [
             'name' => $this->name,
@@ -83,6 +110,11 @@ final readonly class AssertionResult
             'severity' => $this->severity->value,
             'passed' => $this->passed(),
             'message' => $this->message,
+            'judge' => $this->judgeScore === null ? null : [
+                'score' => $this->judgeScore->score,
+                'reason' => $this->judgeScore->reason,
+                'evidenceCount' => $this->judgeScore->evidence->count(),
+            ],
         ];
     }
 

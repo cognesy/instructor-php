@@ -327,6 +327,11 @@
                 "packages/agents/18-observing-agent-execution",
                 "packages/agents/19-skills",
                 "packages/agents/20-self-knowledge",
+                "packages/agents/21-evals",
+                "packages/agents/22-eval-assertions",
+                "packages/agents/23-eval-judges",
+                "packages/agents/24-eval-traces-and-artifacts",
+                "packages/agents/25-running-evals",
                 "packages/agents/testing-doubles"
             ]
         },
@@ -731,7 +736,10 @@
                 "cookbook/examples/D06_AgentEvals/agent_eval_targets",
                 "cookbook/examples/D06_AgentEvals/agent_eval_reporters",
                 "cookbook/examples/D06_AgentEvals/running_agent_evals",
-                "cookbook/examples/D06_AgentEvals/agent_eval_test_suites"
+                "cookbook/examples/D06_AgentEvals/agent_eval_test_suites",
+                "cookbook/examples/D06_AgentEvals/agent_eval_judging_agent",
+                "cookbook/examples/D06_AgentEvals/agent_eval_judging_agent_live",
+                "cookbook/examples/D06_AgentEvals/agent_eval_repeated_judging"
             ]
         },
         {

@@ -6,6 +6,7 @@ use Cognesy\Agents\Continuation\StopSignal;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Data\ToolExecution;
 use Cognesy\Agents\Enums\ExecutionStatus;
+use Cognesy\Agents\Profile\LLMConfigProfile;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
 use DateTimeImmutable;
 
@@ -24,6 +25,7 @@ final readonly class AgentRun
         private EvalSteps $steps = new EvalSteps(),
         private ?StopSignal $stopSignal = null,
         ?EvalTracePolicy $policy = null,
+        private ?LLMConfigProfile $llmProfile = null,
     ) {
         $this->policy = $policy ?? EvalTracePolicy::safe();
     }
@@ -35,9 +37,11 @@ final readonly class AgentRun
         ?self $previous = null,
         ?EvalTracePolicy $policy = null,
         ?int $turn = null,
+        ?LLMConfigProfile $llmProfile = null,
     ): self {
         $policy ??= EvalTracePolicy::safe();
         $turn ??= ($previous?->turns ?? 0) + 1;
+        $llmProfile ??= $previous?->llmProfile;
 
         $tools = $previous?->tools ?? EvalToolExecutions::none();
         $steps = $previous?->steps ?? EvalSteps::none();
@@ -64,6 +68,7 @@ final readonly class AgentRun
             steps: $steps->with(...$newSteps),
             stopSignal: $state->stopSignal(),
             policy: $policy,
+            llmProfile: $llmProfile,
         );
     }
 
@@ -71,8 +76,19 @@ final readonly class AgentRun
         return new self();
     }
 
-    /** @param array<string, mixed> $data */
-    public static function fromArray(array $data): self {
+    /**
+     * Hydrates a run from a previously serialized snapshot. `$policy` (default
+     * `safe()`) governs what happens to tool payloads on a subsequent `toArray()`
+     * call: values already in digest shape always pass through unchanged, while
+     * verbatim values - including ones sent by a third-party remote target that
+     * never constructed a policy of its own - are digested under `$policy` exactly
+     * as if they had come from a local run. This is what keeps the HTTP path safe
+     * by default instead of silently degrading to `full()`.
+     *
+     * @param array<string, mixed> $data
+     */
+    public static function fromArray(array $data, ?EvalTracePolicy $policy = null): self {
+        $policy ??= EvalTracePolicy::safe();
         $toolData = $data['tools'] ?? [];
         $tools = [];
         if (is_array($toolData)) {
@@ -83,8 +99,16 @@ final readonly class AgentRun
             }
         }
         $status = is_string($data['status'] ?? null) ? ExecutionStatus::tryFrom($data['status']) : null;
-        $steps = is_array($data['steps'] ?? null) ? EvalSteps::fromArray($data['steps']) : EvalSteps::none();
+        $steps = is_array($data['steps'] ?? null) ? EvalSteps::fromArray($data['steps'], $policy) : EvalSteps::none();
         $stopSignal = is_array($data['stopSignal'] ?? null) ? StopSignal::fromArray($data['stopSignal']) : null;
+        $llmData = $data['llmProfile'] ?? null;
+        $llmProfile = is_array($llmData) ? new LLMConfigProfile(
+            driver: is_string($llmData['driver'] ?? null) ? $llmData['driver'] : '',
+            model: is_string($llmData['model'] ?? null) ? $llmData['model'] : '',
+            maxTokens: is_int($llmData['maxTokens'] ?? null) ? $llmData['maxTokens'] : 0,
+            contextLength: is_int($llmData['contextLength'] ?? null) ? $llmData['contextLength'] : 0,
+            maxOutputLength: is_int($llmData['maxOutputLength'] ?? null) ? $llmData['maxOutputLength'] : 0,
+        ) : null;
         return new self(
             reply: is_string($data['reply'] ?? null) ? $data['reply'] : '',
             status: $status,
@@ -94,10 +118,8 @@ final readonly class AgentRun
             errors: is_string($data['errors'] ?? null) ? $data['errors'] : '',
             steps: $steps,
             stopSignal: $stopSignal,
-            // Hydrated data is already in its final serialized form (digested or
-            // verbatim, per whatever policy produced it) - it must not be digested a
-            // second time on a subsequent toArray() call.
-            policy: EvalTracePolicy::full(),
+            policy: $policy,
+            llmProfile: $llmProfile,
         );
     }
 
@@ -105,7 +127,17 @@ final readonly class AgentRun
      * The `tools` field is a legacy aggregate view kept for `EvalContext`'s tool-name
      * and tool-count assertions; `steps` is the source of truth for the trajectory.
      * It is digested under the same `EvalTracePolicy` as `EvalStep::toArray()` so a
-     * tool argument or result never leaks through this side channel either.
+     * tool argument, result, or failed execution's error message never leaks through
+     * this side channel either.
+     *
+     * `errors` (the run-level newline-joined message string accumulated from every
+     * step's `AgentState::errors()`) is digested the same way when non-empty, for
+     * the same reason: it re-embeds the same exception messages that
+     * `tools[].error` and `steps[].errors[].message` carry, so leaving it verbatim
+     * would reopen the exact leak those two fields are digested to close. `errors()`
+     * (the accessor) still returns the raw string - `EvalContext::noFailedActions()`
+     * reads it as an in-memory value, never the serialized form, so digesting here
+     * does not affect assertion behaviour.
      *
      * @return array<string, mixed>
      */
@@ -115,9 +147,10 @@ final readonly class AgentRun
             'status' => $this->status?->value,
             'tools' => array_map(fn (ToolExecution $tool): array => $this->toolExecutionToArray($tool), $this->tools->all()),
             'turns' => $this->turns,
-            'errors' => $this->errors,
+            'errors' => $this->errors === '' ? '' : $this->digestOrPassthrough($this->errors),
             'steps' => $this->steps->toArray(),
             'stopSignal' => $this->stopSignal?->toArray(),
+            'llmProfile' => $this->llmProfile?->toArray(),
         ];
     }
 
@@ -176,6 +209,17 @@ final readonly class AgentRun
         return $this->stopSignal;
     }
 
+    /**
+     * The target/judge LLM configuration this run executed under, when the
+     * underlying loop resolved one (`AgentLoop::profile()->llm`). Null for runs
+     * built from a driver that never resolved an `LLMConfig` (e.g. some test
+     * doubles) or for remote/HTTP runs whose payload didn't supply one - never
+     * fabricated when unavailable.
+     */
+    public function llmProfile(): ?LLMConfigProfile {
+        return $this->llmProfile;
+    }
+
     // INTERNAL ////////////////////////////////////////////////
 
     /** @return array<string, mixed> */
@@ -186,16 +230,29 @@ final readonly class AgentRun
             'tool_call' => [
                 'id' => $tool->toolCall()->idString(),
                 'name' => $tool->name(),
-                'arguments' => $this->policy->isFull() ? $tool->args() : $this->policy->digest($tool->args()),
+                'arguments' => $this->digestOrPassthrough($tool->args()),
             ],
-            'result' => match (true) {
-                $hasError => null,
-                $this->policy->isFull() => $tool->value(),
-                default => $this->policy->digest($tool->value()),
-            },
-            'error' => $hasError ? $tool->errorMessage() : null,
+            'result' => $hasError ? null : $this->digestOrPassthrough($tool->value()),
+            // Digested exactly like `arguments`/`result`: an exception message
+            // routinely embeds the offending input (e.g. "Invalid card number
+            // 4111...", "HTTP 401 for ...?key=sk-live-..."), so it is the
+            // payload channel most likely to be malformed or sensitive - it
+            // gets no exemption from `safe()` just because it's error text.
+            'error' => $hasError ? $this->digestOrPassthrough($tool->errorMessage()) : null,
             'startedAt' => $tool->startedAt()->format(DateTimeImmutable::ATOM),
             'completedAt' => $tool->completedAt()->format(DateTimeImmutable::ATOM),
         ];
+    }
+
+    /**
+     * A value already in digest shape passes through unchanged (never digested
+     * twice); otherwise it is digested or kept verbatim per `$this->policy`.
+     */
+    private function digestOrPassthrough(mixed $value): mixed {
+        return match (true) {
+            EvalTracePolicy::isDigest($value) => $value,
+            $this->policy->isFull() => $value,
+            default => $this->policy->digest($value),
+        };
     }
 }

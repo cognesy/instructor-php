@@ -32,7 +32,7 @@ final class JUnitEvalReporter implements CanReportAgentEvals
         $cases = '';
         foreach ($this->results as $eval) {
             $body = match ($eval->verdict()) {
-                EvalVerdict::Failed => '<failure message="' . self::escape($eval->error() ?? 'gate failed') . '"/>',
+                EvalVerdict::Failed => '<failure message="' . self::escape($eval->error() ?? self::failureReason($eval)) . '"/>',
                 EvalVerdict::Scored => $result->strict() ? '<failure message="scored eval failed in strict mode"/>' : '',
                 EvalVerdict::Skipped => '<skipped message="' . self::escape($eval->skipReason() ?? 'skipped') . '"/>',
                 default => '',
@@ -41,6 +41,25 @@ final class JUnitEvalReporter implements CanReportAgentEvals
         }
         $xml = '<?xml version="1.0" encoding="UTF-8"?><testsuite tests="' . count($this->results) . '">' . $cases . '</testsuite>';
         self::write($this->path, $xml);
+    }
+
+    /**
+     * A repeated case that missed its pass rate says so, since `gate failed`
+     * would send a CI reader looking for a failed assertion that no single trial
+     * necessarily has. A case that ran once keeps the original wording verbatim.
+     */
+    private static function failureReason(EvalResult $eval): string {
+        $repetition = $eval->repetition();
+        if ($repetition === null || $repetition->satisfied()) {
+            return 'gate failed';
+        }
+        return sprintf(
+            'passed %d/%d trials, needed %d/%d',
+            $repetition->passCount(),
+            $repetition->trialCount(),
+            $repetition->requiredPasses(),
+            $repetition->trialCount(),
+        );
     }
 
     private static function escape(string $value): string {

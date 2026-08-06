@@ -135,10 +135,16 @@ final readonly class EvalStep
     /**
      * Deliberately safe schema. Never calls `InferenceResponse::toArray()`, so
      * `responseData` and reasoning content cannot leak, and never serializes input
-     * messages. Under `EvalTracePolicy::safe()`, each tool call's arguments and each
-     * successful tool execution's result serialize as a digest (hash/bytes/preview)
-     * rather than verbatim; everything else - names, ids, ordering, error flags,
-     * timings, usage, finish reason, stop signal - stays in the clear because
+     * messages. Under `EvalTracePolicy::safe()`, each tool call's arguments, each
+     * successful tool execution's result, each failed tool execution's error
+     * message (`toolExecutions[].error`), AND each step-level error's message
+     * (`errors[].message` below - a distinct, framework-level error list from
+     * `toolExecutions[].error`, but populated from the same underlying exceptions
+     * and just as capable of embedding offending input) serialize as a digest
+     * (hash/bytes/preview) rather than verbatim. `errors[].class` stays in the
+     * clear - an exception's class name is not payload-derived and is useful for
+     * triage. Everything else - names, ids, ordering, the `hasError` boolean,
+     * timings, usage, finish reason, stop signal - stays in the clear too, because
      * deterministic trajectory assertions read it.
      *
      * @return array<string, mixed>
@@ -165,8 +171,8 @@ final readonly class EvalStep
             'duration' => $this->duration,
             'stopSignal' => $this->stopSignal?->toArray(),
             'errors' => array_map(
-                static fn (Throwable $error): array => [
-                    'message' => $error->getMessage(),
+                fn (Throwable $error): array => [
+                    'message' => $this->digestOrPassthrough($error->getMessage()),
                     'class' => get_class($error),
                 ],
                 $this->errors->all(),
@@ -178,13 +184,16 @@ final readonly class EvalStep
     /**
      * Hydrates from a previously serialized step. Digested payloads (arguments,
      * results) hydrate as the digest arrays themselves - there is no way back to the
-     * original value, and none is attempted. The hydrated step always serializes
-     * verbatim on a subsequent `toArray()` call, because its data is already in
-     * final serialized form and must not be digested a second time.
+     * original value, and none is attempted. `$policy` governs what happens on a
+     * subsequent `toArray()` call: values already in digest shape always pass
+     * through unchanged (never digested twice, regardless of policy), while any
+     * other value - e.g. a verbatim payload sent by a third-party remote target
+     * that never constructed a policy of its own - is digested under `$policy`
+     * (default `safe()`) exactly as if it had come from a local run.
      *
      * @param array<string, mixed> $data
      */
-    public static function fromArray(array $data): self {
+    public static function fromArray(array $data, ?EvalTracePolicy $policy = null): self {
         $requestedToolCalls = [];
         foreach (self::arrayOf($data['requestedToolCalls'] ?? null) as $entry) {
             $requestedToolCalls[] = new ToolCall(
@@ -214,7 +223,7 @@ final readonly class EvalStep
             startedAt: self::parseDate($data['startedAt'] ?? null),
             completedAt: self::parseDate($data['completedAt'] ?? null),
             duration: is_numeric($data['duration'] ?? null) ? (float) $data['duration'] : 0.0,
-            policy: EvalTracePolicy::full(),
+            policy: $policy ?? EvalTracePolicy::safe(),
         );
     }
 
@@ -225,7 +234,7 @@ final readonly class EvalStep
         return [
             'id' => $call->idString(),
             'name' => $call->name(),
-            'arguments' => $this->policy->isFull() ? $call->arguments() : $this->policy->digest($call->arguments()),
+            'arguments' => $this->digestOrPassthrough($call->arguments()),
         ];
     }
 
@@ -236,22 +245,31 @@ final readonly class EvalStep
             'id' => $execution->id()->value,
             'name' => $execution->name(),
             'toolCallId' => $execution->toolCall()->idString(),
+            'arguments' => $this->digestOrPassthrough($execution->args()),
             'hasError' => $hasError,
-            'error' => $hasError ? $execution->errorMessage() : null,
-            'result' => match (true) {
-                $hasError => null,
-                $this->policy->isFull() => $execution->value(),
-                default => $this->policy->digest($execution->value()),
-            },
+            'error' => $hasError ? $this->digestOrPassthrough($execution->errorMessage()) : null,
+            'result' => $hasError ? null : $this->digestOrPassthrough($execution->value()),
             'startedAt' => $execution->startedAt()->format(DateTimeImmutable::ATOM),
             'completedAt' => $execution->completedAt()->format(DateTimeImmutable::ATOM),
         ];
     }
 
+    /**
+     * A value already in digest shape passes through unchanged (never digested
+     * twice); otherwise it is digested or kept verbatim per `$this->policy`.
+     */
+    private function digestOrPassthrough(mixed $value): mixed {
+        return match (true) {
+            EvalTracePolicy::isDigest($value) => $value,
+            $this->policy->isFull() => $value,
+            default => $this->policy->digest($value),
+        };
+    }
+
     private static function toolExecutionFromArray(array $data): ToolExecution {
         $toolCall = new ToolCall(
             name: is_string($data['name'] ?? null) ? $data['name'] : '',
-            arguments: [],
+            arguments: is_array($data['arguments'] ?? null) ? $data['arguments'] : [],
             id: (is_string($data['toolCallId'] ?? null) && $data['toolCallId'] !== '') ? $data['toolCallId'] : null,
         );
         $hasError = (bool) ($data['hasError'] ?? false);

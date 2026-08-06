@@ -73,6 +73,18 @@ $safety = AgentEval::define(
 )->withId('smoke/safety');
 
 // Select cases whose IDs match smoke/* and whose tags include smoke; both conditions must match.
+// `EvalRunOptions` is the programmatic form of the `eval-runner run` CLI flags - each fluent
+// method below has a direct flag equivalent, so a suite tuned here behaves the same from the CLI:
+//   ->withFilter($pattern)      <-> --filter=<pattern>   (case ID glob, as used below)
+//   ->withTags($tags)           <-> --tags=<a,b>          (must include ALL of the listed tags)
+//   ->withExcludedTags($tags)   <-> --exclude-tags=<a,b>
+//   ->withStrict(true)          <-> --strict               (a Scored case fails CI instead of passing advisory)
+//   ->withTimeout($seconds)     <-> --timeout=<seconds>    (a cooperative budget, PER TRIAL, not per case)
+//   ->withRepeat($n)            <-> --repeat=<n>           (run every case n times, each with a FRESH session)
+//   ->withPassRate($rate)       <-> --pass-rate=<r>        (fraction of trials that must pass, 0 < r <= 1)
+// `--repeat` and `--pass-rate` turn a single case into a k-of-N measurement; see
+// `examples/D06_AgentEvals/11_RepeatedJudging/run.php` for what that changes and why one run of a
+// stochastic case is not a measurement of it.
 $options = EvalRunOptions::default()
     ->withFilter('smoke/*')
     ->withTags(EvalTags::of('smoke'));

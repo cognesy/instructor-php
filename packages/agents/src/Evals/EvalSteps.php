@@ -72,11 +72,11 @@ final readonly class EvalSteps implements Countable, IteratorAggregate
     }
 
     /** @param list<array<string, mixed>> $data */
-    public static function fromArray(array $data): self {
+    public static function fromArray(array $data, ?EvalTracePolicy $policy = null): self {
         $steps = [];
         foreach ($data as $entry) {
             if (is_array($entry)) {
-                $steps[] = EvalStep::fromArray($entry);
+                $steps[] = EvalStep::fromArray($entry, $policy);
             }
         }
         return new self(...$steps);

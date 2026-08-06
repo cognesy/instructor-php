@@ -131,3 +131,4 @@ This sends a single message to the default LLM provider, receives a text respons
 2. **[AgentBuilder & Capabilities](13-agent-builder.md)** -- Compose agents from reusable capability modules when configuration becomes non-trivial.
 3. **[Agent Templates](14-agent-templates.md)** -- Define agents as data when configuration should come from files rather than code.
 4. **[Session Runtime](16-session-runtime.md)** -- Persist and resume agent sessions across processes for chat interfaces and long-running workflows.
+5. **[Agent Evals](21-evals.md)** -- Write, run, and interpret behavioral evals that grade an agent target with deterministic assertions and semantic judges.

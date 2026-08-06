@@ -29,3 +29,93 @@ rules:
     scope: markdown
     pattern: '/\bUseFileTools\b(?:\s+capability)?\s+(?:includes?|installs?|provides?)\b[\s\S]{0,120}\b(?:search_files|list_dir)\b/i'
     message: 'UseFileTools installs `read_file`, `write_file`, and `edit_file` only. Add `SearchFilesTool` or `ListDirTool` separately.'
+
+  # ---------------------------------------------------------------------------
+  # The seven rules below share one negation-safety technique. Each pattern
+  # opens with a `(?(DEFINE)(?<neg>...))` block that names the negation-word
+  # alternation once; `(?&neg)` calls it as a subroutine everywhere it's
+  # needed, instead of pasting the ~15-word alternation inline at every gap
+  # (inlining it more than a couple of times blows PCRE2's compiled-pattern
+  # complexity limit and preg_match fails outright with "Internal error").
+  #
+  # Every rule applies the guard in TWO distinct places, because negation can
+  # sit on either side of the claim:
+  #   1. A one-shot lookbehind immediately after the anchor identifier:
+  #      `(?<!\b(?&neg)\b(?:(?!\n\n)[\s\S]){0,60})` before the anchor itself.
+  #      This catches negation that precedes the WHOLE clause, e.g. "instead
+  #      of relying on JSON structure to prevent injection" -- the anchor
+  #      ("JSON") has nothing but plain prose between it and the trigger verb,
+  #      so a guard placed only between anchor and verb never sees the
+  #      "instead of" that sits before the anchor.
+  #   2. A TEMPERED gap between anchor and verb (and between verb and target,
+  #      where the rule has one): `(?:(?!\n\n)(?!\b(?&neg)\b)[\s\S]){0,N}?`
+  #      forbids a negation token at ANY position inside the gap, not just
+  #      immediately before the next token. A "look back K chars from the
+  #      trigger" lookbehind is not equivalent to this and is NOT safe to use
+  #      instead: when the trigger alternation can match more than one
+  #      occurrence in the same span, a greedy/backtracking search can walk
+  #      past the nearer (correctly-blocked) occurrence and match a LATER one
+  #      that falls outside the lookbehind's fixed reach -- e.g. "Rather than
+  #      letting any call after `submit_judgment` fail the run, the runtime
+  #      only fails on a second submission" was flagged by an earlier version
+  #      of this rule because the guard reached back far enough to block the
+  #      first "fail" but not the second, unrelated "fails" 30+ chars later.
+  #      Tempering the gap itself has no such blind spot: it fails the WHOLE
+  #      match the moment the engine tries to cross a negation token while
+  #      searching for the trigger, regardless of which occurrence it's
+  #      chasing.
+  #
+  # `\n\n` (paragraph boundary) is excluded from every gap so a claim in one
+  # paragraph can't borrow trigger words from an unrelated paragraph nearby.
+  # ---------------------------------------------------------------------------
+
+  - id: agents.no_json_prevents_injection
+    engine: regex
+    scope: markdown
+    pattern: '/(?(DEFINE)(?<neg>not|never|no|nothing|nowhere|none|nor|cannot|can''t|doesn''t|don''t|won''t|isn''t|aren''t|fails?\s{1,3}to|no\s{1,3}longer|rather\s{1,3}than|instead\s{1,3}of))(?<!\b(?&neg)\b(?:(?!\n\n)[\s\S]){0,60})`?\bJSON\b(?:(?!\n\n)(?!\b(?&neg)\b)[\s\S]){0,80}?\b(?:prevents?|eliminates?|stops?|blocks?|neutrali[sz]es?|is\s+immune\s+to|can''t be used (?:for|to))\b(?:(?!\n\n)(?!\b(?&neg)\b)[\s\S]){0,40}?\binjection\b/i'
+    message: 'An LLM has no enforced boundary between data and instructions, so encoding a trace as JSON is not a security property. The mitigation is that safety invariants (notCalledTool, toolOrder, step/token bounds) stay deterministic and are never gated on the judge alone.'
+
+  - id: agents.no_automatic_judge_guards
+    engine: regex
+    scope: markdown
+    pattern: '/(?(DEFINE)(?<neg>not|never|no|nothing|nowhere|none|nor|cannot|can''t|doesn''t|don''t|won''t|isn''t|aren''t|fails?\s{1,3}to|no\s{1,3}longer|rather\s{1,3}than|instead\s{1,3}of))(?<!\b(?&neg)\b(?:(?!\n\n)[\s\S]){0,60})`?\bAgentLoopJudge\b(?:(?!\n\n)(?!\b(?&neg)\b)[\s\S]){0,60}?\b(?:adds?|installs?|injects?|applies|substitutes?|configures?)\b(?:(?!\n\n)(?!\b(?&neg)\b)[\s\S]){0,40}?\b(?:guards?|guardrails?|default\s+limits?|its\s+own\s+limits?)\b/i'
+    message: '`AgentLoopJudge` installs no guards of its own. It WARNS (dispatches `JudgeGuardsNotConfigured`) when `use_guards` is absent from the built loop''s profile and never substitutes a limit of its own; install `UseGuards` explicitly in the judge builder.'
+
+  - id: agents.no_judge_evidence_as_reasoning
+    engine: regex
+    scope: markdown
+    pattern: '/(?(DEFINE)(?<neg>not|never|no|nothing|nowhere|none|nor|cannot|can''t|doesn''t|don''t|won''t|isn''t|aren''t|fails?\s{1,3}to|no\s{1,3}longer|rather\s{1,3}than|instead\s{1,3}of))(?<!\b(?&neg)\b(?:(?!\n\n)[\s\S]){0,60})`?\bJudgeEvidence\b(?:(?!\n\n)(?!\b(?&neg)\b)[\s\S]){0,60}?\b(?:is|are|represents?|contains?|holds?|reflects?|exposes?|surfaces?|shows?|equals?)\b(?:(?!\n\n)(?!\b(?&neg)\b)[\s\S]){0,40}?\b(?:reasoning|chain[- ]of[- ]thought|thoughts?|thinking)\b/i'
+    message: '`JudgeEvidence` is developer-visible support for the score -- observed tool activity, source ids, test results, trace facts -- never a window into the judge model''s internal reasoning or chain of thought.'
+
+  - id: agents.no_batch_order_protocol_failure
+    engine: regex
+    scope: markdown
+    # `submit_judgment` is always written as inline code (`` `submit_judgment` ``) in the
+    # docs, so the optional backticks around it are load-bearing, not decorative.
+    pattern: '/(?(DEFINE)(?<neg>not|never|no|nothing|nowhere|none|nor|cannot|can''t|doesn''t|don''t|won''t|isn''t|aren''t|fails?\s{1,3}to|no\s{1,3}longer|rather\s{1,3}than|instead\s{1,3}of))(?<!\b(?&neg)\b(?:(?!\n\n)[\s\S]){0,60})\b(?:any|every|a)\s+(?:non-terminal\s+)?(?:tool\s+)?call\s+(?:ordered\s+|made\s+|that\s+(?:comes|arrives|lands)\s+)?after\s+`?(?:submit_judgment|the\s+submission)`?\b(?:(?!\n\n)(?!\b(?&neg)\b)[\s\S]){0,60}?\b(?:fails?|breaks?|invalidates?)\b/i'
+    message: 'A second `submit_judgment` call fails the judge run; a non-terminal tool call ordered after `submit_judgment` in the same batch is skipped and recorded, and the judgment stands.'
+
+  - id: agents.no_verbatim_tool_payloads_by_default
+    engine: regex
+    scope: markdown
+    # Two branches (by-default-first / subject-first) because docs write this claim both
+    # ways ("By default, traces contain..." and "Traces store ... by default"). The
+    # full|complete|verbatim|raw <-> arguments|results|payloads pairing accepts either
+    # order too, since real prose puts the adjective on either side of the noun.
+    pattern: '/(?(DEFINE)(?<neg>not|never|no|nothing|nowhere|none|nor|cannot|can''t|doesn''t|don''t|won''t|isn''t|aren''t|fails?\s{1,3}to|no\s{1,3}longer|rather\s{1,3}than|instead\s{1,3}of))(?<!\b(?&neg)\b(?:(?!\n\n)[\s\S]){0,60})(?:(?:`?\bby default\b(?:(?!\n\n)(?!\b(?&neg)\b)[\s\S]){0,40}?\b(?:traces?|artifacts?)\b(?:(?!\n\n)(?!\b(?&neg)\b)[\s\S]){0,60}?\b(?:contains?|holds?|includes?|stores?|keeps?|has|have)\b(?:(?!\n\n)(?!\b(?&neg)\b)[\s\S]){0,40}?(?:\b(?:full|complete|verbatim|raw)\b(?:(?!\n\n)(?!\b(?&neg)\b)[\s\S]){0,20}?\b(?:tool\s+(?:call\s+)?)?(?:arguments?|results?|payloads?)\b|\b(?:tool\s+(?:call\s+)?)?(?:arguments?|results?|payloads?)\b(?:(?!\n\n)(?!\b(?&neg)\b)[\s\S]){0,20}?\b(?:full|complete|verbatim|raw)\b))|(?:\b(?:traces?|artifacts?)\b(?:(?!\n\n)(?!\b(?&neg)\b)[\s\S]){0,60}?\b(?:contains?|holds?|includes?|stores?|keeps?|has|have)\b(?:(?!\n\n)(?!\b(?&neg)\b)[\s\S]){0,40}?(?:\b(?:full|complete|verbatim|raw)\b(?:(?!\n\n)(?!\b(?&neg)\b)[\s\S]){0,20}?\b(?:tool\s+(?:call\s+)?)?(?:arguments?|results?|payloads?)\b|\b(?:tool\s+(?:call\s+)?)?(?:arguments?|results?|payloads?)\b(?:(?!\n\n)(?!\b(?&neg)\b)[\s\S]){0,20}?\b(?:full|complete|verbatim|raw)\b)(?:(?!\n\n)(?!\b(?&neg)\b)[\s\S]){0,40}?\bby default\b))/i'
+    message: '`EvalTracePolicy::safe()` (the default) digests tool call arguments and results into a hash, a byte length, and a shape-only preview; verbatim payloads require the explicit opt-in `EvalTracePolicy::full()`.'
+
+  - id: agents.no_judge_reevaluates_on_on
+    engine: regex
+    scope: markdown
+    # Extended negation list (`(?<neg6>...)`, not the shared `neg`): the judges page
+    # deliberately narrates the double-judging bug that USED TO exist before `.on()` was
+    # fixed to run the judge at most once, and that historical narration must stay silent.
+    pattern: '/(?(DEFINE)(?<neg6>not|never|no|nothing|nowhere|none|nor|cannot|can''t|doesn''t|don''t|won''t|isn''t|aren''t|fails?\s{1,3}to|no\s{1,3}longer|rather\s{1,3}than|instead\s{1,3}of|previously|used\s{1,3}to|earlier\s{1,3}version|before\s{1,3}this|prior\s{1,3}to\s{1,3}this|historically))(?<!\b(?&neg6)\b(?:(?!\n\n)[\s\S]){0,60})(?:->|\.)on\s*\((?:(?!\n\n)(?!\b(?&neg6)\b)[\s\S]){0,80}?\b(?:re-?judges?|re-?runs?|runs?\s+(?:the\s+)?judge\s+again|judges?\s+(?:it\s+)?(?:again|a\s+second\s+time)|(?:triggers?|causes?|creates?|results?\s+in)\s+(?:a\s+)?second\s+(?:judge\s+)?(?:execution|inference|run))\b/i'
+    message: 'The judge runs at most once per expectation, on first read of the result. `.on(...)` only changes what output is graded; it does not re-run or re-judge.'
+
+  - id: agents.no_aggregated_stop_signal
+    engine: regex
+    scope: markdown
+    pattern: '/(?(DEFINE)(?<neg>not|never|no|nothing|nowhere|none|nor|cannot|can''t|doesn''t|don''t|won''t|isn''t|aren''t|fails?\s{1,3}to|no\s{1,3}longer|rather\s{1,3}than|instead\s{1,3}of))(?<!\b(?&neg)\b(?:(?!\n\n)[\s\S]){0,60})`?\bstopSignal\s*\(\s*\)(?:(?!\n\n)(?!\b(?&neg)\b)[\s\S]){0,80}?\b(?:aggregat\w*|combin\w*|merg\w*|accumulat\w*|across\s+all\s+turns|summarizes\s+(?:all\s+)?turns)\b/i'
+    message: '`AgentRun::stopSignal()` returns only the LAST turn''s resolved signal; it does not aggregate across turns. Per-turn signals live on `EvalStep::stopSignal()`.'

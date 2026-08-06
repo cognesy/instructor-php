@@ -34,16 +34,45 @@ final class EvalTestFailureMessage
     /** @return list<string> */
     private static function evalLines(EvalResult $result): array {
         $lines = [sprintf('- [%s] %s — %s', $result->verdict()->value, $result->id(), $result->description())];
+        $repetition = $result->repetition();
+        if ($repetition !== null) {
+            $lines[] = '  - repetition: ' . self::repetitionSummary($repetition);
+        }
         if ($result->error() !== null) {
             $lines[] = '  - error: ' . $result->error();
         }
+        $lines[] = '  - target: ' . self::targetSummary($result->run());
         foreach ($result->assertions() as $assertion) {
             if ($assertion->passed()) {
                 continue;
             }
             $lines[] = self::assertionLine($assertion);
+            $lines = [...$lines, ...self::evidenceLines($assertion)];
         }
         return $lines;
+    }
+
+    /**
+     * Why a repeated case failed, in the terms the operator asked the question
+     * in: `passed 3/5, needed 4/5`. A developer reading CI output should not have
+     * to infer a missed pass rate from a single trial's score, so the rate comes
+     * before the representative trial's assertions - and the judge mean and
+     * population deviation come with it, since a case that misses its rate with a
+     * wide spread is a different problem from one that misses it consistently.
+     */
+    private static function repetitionSummary(EvalRepetition $repetition): string {
+        $summary = sprintf(
+            'passed %d/%d, needed %d/%d',
+            $repetition->passCount(),
+            $repetition->trialCount(),
+            $repetition->requiredPasses(),
+            $repetition->trialCount(),
+        );
+        $mean = $repetition->judgeScoreMean();
+        if ($mean === null) {
+            return $summary;
+        }
+        return $summary . sprintf(' (judge mean %.2f +/- %.2f)', $mean, $repetition->judgeScoreStdDev() ?? 0.0);
     }
 
     private static function assertionLine(AssertionResult $assertion): string {
@@ -59,6 +88,33 @@ final class EvalTestFailureMessage
             $line .= ' — ' . $assertion->message();
         }
         return $line;
+    }
+
+    /** Concise target run context, so a step/stop-signal-related failure is diagnosable from the failure text alone. */
+    private static function targetSummary(AgentRun $run): string {
+        return sprintf(
+            'steps=%d stop=%s',
+            $run->stepCount(),
+            $run->stopSignal()?->reason->value ?? 'none',
+        );
+    }
+
+    /**
+     * Judge evidence for a failed judged assertion, so the reason a judge
+     * scored low is visible without opening the artifact directory.
+     *
+     * @return list<string>
+     */
+    private static function evidenceLines(AssertionResult $assertion): array {
+        $judgeScore = $assertion->judgeScore();
+        if ($judgeScore === null || $judgeScore->evidence->count() === 0) {
+            return [];
+        }
+        $lines = [];
+        foreach ($judgeScore->evidence as $item) {
+            $lines[] = '    - evidence: ' . $item;
+        }
+        return $lines;
     }
 
     private static function failsRun(EvalResult $result, bool $strict): bool {

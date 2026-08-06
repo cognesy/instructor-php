@@ -15,6 +15,11 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use DateTimeImmutable;
 use Override;
 
+/**
+ * @phpstan-consistent-constructor the private `copy()` helper relies on `new static()`;
+ *     the only subclass in this repo (an anonymous class in HookStackTest) does not
+ *     override the constructor, so the promise holds.
+ */
 class HookStack implements CanInterceptAgentLifecycle
 {
     private RegisteredHooks $hooks;

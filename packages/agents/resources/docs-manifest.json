@@ -20,6 +20,11 @@
     {"source": "docs/18-observing-agent-execution.md", "destination": "resources/docs/18-observing-agent-execution.md"},
     {"source": "docs/19-skills.md", "destination": "resources/docs/19-skills.md"},
     {"source": "docs/20-self-knowledge.md", "destination": "resources/docs/20-self-knowledge.md"},
+    {"source": "docs/21-evals.md", "destination": "resources/docs/21-evals.md"},
+    {"source": "docs/22-eval-assertions.md", "destination": "resources/docs/22-eval-assertions.md"},
+    {"source": "docs/23-eval-judges.md", "destination": "resources/docs/23-eval-judges.md"},
+    {"source": "docs/24-eval-traces-and-artifacts.md", "destination": "resources/docs/24-eval-traces-and-artifacts.md"},
+    {"source": "docs/25-running-evals.md", "destination": "resources/docs/25-running-evals.md"},
     {"source": "docs/testing-doubles.md", "destination": "resources/docs/testing-doubles.md"}
   ]
 }

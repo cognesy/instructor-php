@@ -57,6 +57,8 @@ final readonly class EvalApplication
         $json = false;
         $junit = null;
         $timeout = null;
+        $repeat = 1;
+        $passRate = 1.0;
         $help = false;
         foreach (array_slice($argv, 1) as $argument) {
             match (true) {
@@ -71,11 +73,13 @@ final readonly class EvalApplication
                 str_starts_with($argument, '--exclude-tag=') => $excluded[] = substr($argument, 14),
                 str_starts_with($argument, '--junit=') => $junit = substr($argument, 8),
                 str_starts_with($argument, '--timeout=') => $timeout = $this->parseTimeout(substr($argument, 10)),
+                str_starts_with($argument, '--repeat=') => $repeat = $this->parseRepeat(substr($argument, 9)),
+                str_starts_with($argument, '--pass-rate=') => $passRate = $this->parsePassRate(substr($argument, 12)),
                 str_starts_with($argument, '--') => throw new InvalidArgumentException("Unknown option {$argument}"),
                 default => $root = $argument,
             };
         }
-        $options = new EvalRunOptions($filter, new EvalTags(...$required), new EvalTags(...$excluded), $strict, $skip, $verbose, $timeout);
+        $options = new EvalRunOptions($filter, new EvalTags(...$required), new EvalTags(...$excluded), $strict, $skip, $verbose, $timeout, $repeat, $passRate);
         return [$root, $options, $list, $json, $junit, $help];
     }
 
@@ -88,7 +92,9 @@ Options:
   --tag=<tag>            Require a tag; repeatable
   --exclude-tag=<tag>    Exclude a tag; repeatable
   --strict               Fail the run for scored cases
-  --timeout=<seconds>    Set a cooperative per-case budget
+  --timeout=<seconds>    Set a cooperative per-trial budget
+  --repeat=<n>           Run every case n times, each with a fresh session
+  --pass-rate=<r>        Fraction of trials that must pass, 0 < r <= 1
   --junit=<path>         Write JUnit XML
   --list                 List discovered IDs only
   --verbose              Show passing checks and logs
@@ -105,5 +111,30 @@ TEXT;
             throw new InvalidArgumentException('Timeout must be a positive number of seconds.');
         }
         return $timeout;
+    }
+
+    /**
+     * Rejects anything that is not a whole number of at least one trial. A
+     * non-numeric or fractional value is refused outright rather than cast:
+     * `--repeat=abc` would cast to 0 and `--repeat=2.5` to 2, and silently
+     * running a different number of trials than asked for would corrupt the
+     * measurement the flag exists to produce.
+     */
+    private function parseRepeat(string $value): int {
+        if (preg_match('/^\d+$/', $value) !== 1 || (int) $value < 1) {
+            throw new InvalidArgumentException("Repeat must be a whole number of trials of at least 1, got '{$value}'.");
+        }
+        return (int) $value;
+    }
+
+    private function parsePassRate(string $value): float {
+        if (!is_numeric($value)) {
+            throw new InvalidArgumentException("Pass rate must be a number greater than 0 and at most 1, got '{$value}'.");
+        }
+        $passRate = (float) $value;
+        if (!is_finite($passRate) || $passRate <= 0.0 || $passRate > 1.0) {
+            throw new InvalidArgumentException("Pass rate must be greater than 0 and at most 1, got '{$value}'.");
+        }
+        return $passRate;
     }
 }
