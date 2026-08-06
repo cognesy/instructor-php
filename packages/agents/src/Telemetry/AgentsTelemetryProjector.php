@@ -14,13 +14,17 @@ use Cognesy\Agents\Events\TokenUsageReported;
 use Cognesy\Agents\Events\ToolCallBlocked;
 use Cognesy\Agents\Events\ToolCallCompleted;
 use Cognesy\Agents\Events\ToolCallStarted;
+use Cognesy\Metrics\Data\Counter;
+use Cognesy\Metrics\Data\Gauge;
 use Cognesy\Metrics\Data\Histogram;
+use Cognesy\Metrics\Data\Timer;
 use Cognesy\Telemetry\Application\Projector\CanProjectTelemetry;
 use Cognesy\Telemetry\Application\Projector\Support\EventData;
 use Cognesy\Telemetry\Application\Telemetry;
 use Cognesy\Telemetry\Domain\Envelope\OperationKind;
 use Cognesy\Telemetry\Domain\Envelope\TelemetryEnvelope;
 use Cognesy\Telemetry\Domain\Envelope\TelemetryEnvelopeAttributes;
+use Cognesy\Telemetry\Domain\Metric\MetricNames;
 use Cognesy\Telemetry\Domain\Observation\ObservationStatus;
 use Cognesy\Telemetry\Domain\Value\AttributeBag;
 use Override;
@@ -80,6 +84,13 @@ final readonly class AgentsTelemetryProjector implements CanProjectTelemetry
     }
 
     private function onStepStarted(AgentStepStarted $event): void {
+        // Point-in-time state, not a total: how large the context is right now.
+        $this->telemetry->metric(Gauge::create(
+            'agent.context.message_count',
+            $event->messageCount,
+            $this->metricTags(['agent.is_subagent' => $this->isSubagent($event->parentAgentId)]),
+        ));
+
         $data = EventData::of($event);
         $envelope = EventData::telemetry($data);
         if ($envelope !== null) {
@@ -108,6 +119,18 @@ final readonly class AgentsTelemetryProjector implements CanProjectTelemetry
     }
 
     private function onStepCompleted(AgentStepCompleted $event): void {
+        $stepTags = $this->metricTags([
+            'agent.has_tool_calls' => $event->hasToolCalls,
+            'inference.finish_reason' => $event->finishReason?->value,
+            'agent.is_subagent' => $this->isSubagent($event->parentAgentId),
+        ]);
+        $this->telemetry->metric(Counter::create('agent.step.count', 1, $stepTags));
+        // Timer rejects negative durations by throwing. A clock that went backwards must not
+        // take down the step it is only observing, so skip the Timer instead.
+        if ($event->durationMs >= 0) {
+            $this->telemetry->metric(Timer::create('agent.step.duration', $event->durationMs, $stepTags));
+        }
+
         $data = EventData::of($event);
         $attributes = $this->attributes([
             'agent.has_tool_calls' => $event->hasToolCalls,
@@ -130,6 +153,11 @@ final readonly class AgentsTelemetryProjector implements CanProjectTelemetry
     }
 
     private function onExecutionCompleted(AgentExecutionCompleted $event): void {
+        $this->emitExecutionMetrics('success', $event->totalSteps, [
+            'agent.status' => $event->status->value,
+            'agent.is_subagent' => $this->isSubagent($event->parentAgentId),
+        ]);
+
         $attributes = $this->attributes([
             'agent.status' => $event->status->value,
             'agent.total_steps' => $event->totalSteps,
@@ -166,6 +194,12 @@ final readonly class AgentsTelemetryProjector implements CanProjectTelemetry
     }
 
     private function onExecutionFailed(AgentExecutionFailed $event): void {
+        $this->emitExecutionMetrics('failure', $event->stepsCompleted, [
+            'agent.status' => $event->status->value,
+            'agent.is_subagent' => $this->isSubagent($event->parentAgentId),
+            'error.type' => $event->exception::class,
+        ]);
+
         $attributes = $this->attributes([
             'agent.status' => $event->status->value,
             'agent.total_steps' => $event->stepsCompleted,
@@ -212,6 +246,16 @@ final readonly class AgentsTelemetryProjector implements CanProjectTelemetry
     }
 
     private function onToolCallCompleted(ToolCallCompleted $event): void {
+        $toolTags = $this->metricTags([
+            'agent.tool' => $event->tool,
+            'agent.outcome' => $event->success ? 'success' : 'error',
+        ]);
+        $this->telemetry->metric(Counter::create('agent.tool_call.count', 1, $toolTags));
+        $toolDurationMs = EventData::int(EventData::of($event), 'duration_ms');
+        if ($toolDurationMs !== null && $toolDurationMs >= 0) {
+            $this->telemetry->metric(Timer::create('agent.tool_call.duration', $toolDurationMs, $toolTags));
+        }
+
         $attributes = $this->attributes([
             'agent.tool' => $event->tool,
             'agent.tool_success' => $event->success,
@@ -241,6 +285,13 @@ final readonly class AgentsTelemetryProjector implements CanProjectTelemetry
     }
 
     private function onToolCallBlocked(ToolCallBlocked $event): void {
+        // Blocked calls share agent.tool_call.count so the denominator stays whole:
+        // success + error + blocked is every call the agent attempted.
+        $this->telemetry->metric(Counter::create('agent.tool_call.count', 1, $this->metricTags([
+            'agent.tool' => $event->tool,
+            'agent.outcome' => 'blocked',
+        ])));
+
         $attributes = $this->attributes([
             'agent.tool' => $event->tool,
             'error.message' => $event->reason,
@@ -270,6 +321,13 @@ final readonly class AgentsTelemetryProjector implements CanProjectTelemetry
     }
 
     private function onSubagentSpawning(SubagentSpawning $event): void {
+        // Current nesting level — goes up and back down, so a gauge rather than a counter.
+        $this->telemetry->metric(Gauge::create(
+            'agent.subagent.depth',
+            $event->depth,
+            $this->metricTags(['agent.subagent' => $event->subagentName]),
+        ));
+
         $attributes = $this->attributes([
             'agent.parent_id' => $event->parentAgentId,
             'agent.subagent' => $event->subagentName,
@@ -291,6 +349,11 @@ final readonly class AgentsTelemetryProjector implements CanProjectTelemetry
     }
 
     private function onSubagentCompleted(SubagentCompleted $event): void {
+        $this->telemetry->metric(Counter::create('agent.subagent.count', 1, $this->metricTags([
+            'agent.subagent' => $event->subagentName,
+            'agent.subagent.status' => $event->status->value,
+        ])));
+
         $attributes = $this->attributes([
             'agent.parent_id' => $event->parentAgentId,
             'agent.subagent' => $event->subagentName,
@@ -317,7 +380,7 @@ final readonly class AgentsTelemetryProjector implements CanProjectTelemetry
     private function onTokenUsageReported(TokenUsageReported $event): void {
         $attributes = $this->attributes([
             'agent.id' => $event->agentId,
-            'inference.execution.id' => $event->executionId,
+            MetricNames::TAG_EXECUTION_ID => $event->executionId,
             'agent.operation' => $event->operation,
             'agent.parent_id' => $event->parentAgentId,
         ]);
@@ -327,10 +390,51 @@ final readonly class AgentsTelemetryProjector implements CanProjectTelemetry
         }
 
         $this->telemetry->metric(Histogram::create(
-            name: 'inference.client.token.usage.total',
+            name: MetricNames::TOKEN_USAGE_TOTAL,
             value: $event->usage->total(),
             tags: $attributes->toArray(),
         ));
+    }
+
+    /**
+     * Terminal outcome of one agent execution: how many finished, and how many steps it took.
+     *
+     * @param array<string, string|int|float|bool|null> $tags
+     */
+    private function emitExecutionMetrics(string $outcome, int $steps, array $tags): void {
+        $resolved = $this->metricTags([...$tags, 'agent.outcome' => $outcome]);
+
+        $this->telemetry->metric(Counter::create('agent.execution.count', 1, $resolved));
+        $this->telemetry->metric(Histogram::create('agent.execution.steps', $steps, $resolved));
+    }
+
+    /**
+     * Whether this execution runs under a parent agent. Stands in for `agent.parent_id` on
+     * metrics: the id itself is per-run, the boolean is a dimension worth grouping by.
+     */
+    private function isSubagent(?string $parentAgentId): bool {
+        return $parentAgentId !== null && $parentAgentId !== '';
+    }
+
+    /**
+     * Metric tags are aggregation dimensions, not span attributes: every key here must be
+     * low-cardinality. `agent.id` and `executionId` are per-run identifiers — tagging a
+     * metric with one gives the metrics backend a fresh time series per execution, which is
+     * why the metrics routed through here carry `agent.is_subagent` and tool/subagent *names*
+     * instead.
+     *
+     * `inference.client.token.usage.total` in onTokenUsageReported() does NOT go through here,
+     * and is the one deliberate exception: it is a correlation-carrying metric rather than an
+     * aggregation-friendly one. LangfusePayloadMapper matches it back to its span by
+     * `inference.execution.id`, which already makes it one series per run, so the `agent.id`
+     * it also carries costs nothing further and stays useful to consumers grouping token spend
+     * by agent. Do not "clean up" its tags on the strength of the rule above.
+     *
+     * @param array<string, string|int|float|bool|null> $items
+     * @return array<string, string|int|float|bool>
+     */
+    private function metricTags(array $items): array {
+        return array_filter($items, static fn (string|int|float|bool|null $value): bool => $value !== null);
     }
 
     /** @param array<string, scalar|array<array-key, scalar>|null> $items */

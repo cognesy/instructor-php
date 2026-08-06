@@ -105,8 +105,13 @@ class Telemetry implements CanFlushTelemetry, CanShutdownTelemetry
 
     #[\Override]
     public function flush(): void {
-        if ($this->exporter instanceof CanExportMetrics && $this->pendingMetrics !== []) {
-            $this->exporter->export($this->pendingMetrics);
+        if ($this->pendingMetrics !== []) {
+            if ($this->exporter instanceof CanExportMetrics) {
+                $this->exporter->export($this->pendingMetrics);
+            }
+            // Clear either way. An exporter that cannot take metrics (LogfireExporter
+            // implements CanExportObservations only) would otherwise let the buffer grow
+            // for the lifetime of the process, one entry per metric emitted.
             $this->pendingMetrics = [];
         }
         if ($this->exporter instanceof CanFlushTelemetry) {

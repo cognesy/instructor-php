@@ -20,6 +20,7 @@ use Cognesy\Telemetry\Domain\Envelope\OperationDescriptor;
 use Cognesy\Telemetry\Domain\Envelope\OperationIO;
 use Cognesy\Telemetry\Domain\Envelope\OperationKind;
 use Cognesy\Telemetry\Domain\Envelope\TelemetryEnvelope;
+use Cognesy\Telemetry\Domain\Metric\MetricNames;
 
 final readonly class AgentTelemetry
 {
@@ -213,7 +214,7 @@ final readonly class AgentTelemetry
             operation: new OperationDescriptor(
                 id: $event->id,
                 type: 'agent.token_usage',
-                name: 'inference.client.token.usage.total',
+                name: MetricNames::TOKEN_USAGE_TOTAL,
                 kind: OperationKind::Metric,
             ),
             correlation: self::childCorrelation(

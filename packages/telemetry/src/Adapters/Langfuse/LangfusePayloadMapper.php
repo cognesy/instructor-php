@@ -4,6 +4,7 @@ namespace Cognesy\Telemetry\Adapters\Langfuse;
 
 use Cognesy\Metrics\Data\Metric;
 use Cognesy\Telemetry\Adapters\OTel\OtelPayloadMapper;
+use Cognesy\Telemetry\Domain\Metric\MetricNames;
 use Cognesy\Telemetry\Domain\Observation\Observation;
 use Cognesy\Telemetry\Domain\Observation\ObservationKind;
 use Cognesy\Telemetry\Domain\Observation\ObservationStatus;
@@ -173,7 +174,7 @@ final readonly class LangfusePayloadMapper
         $executionId = $observationAttributes['inference.execution.id'] ?? null;
         $metricTarget = $metric->tags()->get('telemetry.parent_operation_id')
             ?? $metric->tags()->get('telemetry.root_operation_id')
-            ?? $metric->tags()->get('inference.execution.id');
+            ?? $metric->tags()->get(MetricNames::TAG_EXECUTION_ID);
 
         return match (true) {
             is_string($operationId) && $metricTarget === $operationId => true,
@@ -195,7 +196,7 @@ final readonly class LangfusePayloadMapper
 
     private function isFinalMetric(Metric $metric): bool
     {
-        return $metric->tags()->get('inference.usage.final') === true;
+        return $metric->tags()->get(MetricNames::TAG_USAGE_FINAL) === true;
     }
 
     /** @return array<string, int|float> */
@@ -207,9 +208,9 @@ final readonly class LangfusePayloadMapper
         }
 
         return match ($metric->name()) {
-            'inference.client.token.usage.input' => ['inference.tokens.input' => $value],
-            'inference.client.token.usage.output' => ['inference.tokens.output' => $value],
-            'inference.client.token.usage.total' => ['inference.tokens.total' => $value],
+            MetricNames::TOKEN_USAGE_INPUT => ['inference.tokens.input' => $value],
+            MetricNames::TOKEN_USAGE_OUTPUT => ['inference.tokens.output' => $value],
+            MetricNames::TOKEN_USAGE_TOTAL => ['inference.tokens.total' => $value],
             default => [],
         };
     }

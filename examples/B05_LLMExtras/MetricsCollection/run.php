@@ -9,8 +9,23 @@ tags:
 ---
 ## Overview
 
-Collect simple streaming metrics from Polyglot inference events: time to first chunk,
-stream duration, chunk count (streamed deltas), and average output tokens per second.
+This example pairs two ways of turning the same Polyglot streaming events into
+metrics, run against one shared `EventDispatcher`:
+
+- a hand-rolled `StreamMetricsCollector` (`Cognesy\Metrics\Collectors\MetricsCollector`)
+  that listens for streaming-specific events and builds *derived* metrics no
+  runtime package knows about: time to first chunk, chunk count, tokens/second.
+- the canonical Telemetry path — a `Cognesy\Telemetry\Application\Telemetry` hub
+  wired to `Cognesy\Polyglot\Telemetry\PolyglotTelemetryProjector` through
+  `RuntimeEventBridge` — which turns the very same `InferenceStarted` /
+  `InferenceAttemptSucceeded` / `InferenceUsageReported` / `InferenceCompleted`
+  events into spans, logs, *and* the catalog `inference.client.*` metrics
+  (token usage histograms, attempt/operation counters and timers) automatically,
+  with zero extra collector code.
+
+The output below is grouped so the two halves stay visibly distinct: metrics
+from the hand-rolled collector, and metrics + spans emitted by the Telemetry
+projector for free from the same run.
 
 ## Example
 
@@ -21,6 +36,7 @@ require 'examples/boot.php';
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Messages;
 use Cognesy\Metrics\Collectors\MetricsCollector;
+use Cognesy\Metrics\Contracts\CanExportMetrics;
 use Cognesy\Metrics\Data\Metric;
 use Cognesy\Metrics\Exporters\CallbackExporter;
 use Cognesy\Metrics\Metrics;
@@ -30,6 +46,12 @@ use Cognesy\Polyglot\Inference\Events\StreamFirstChunkReceived;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Telemetry\PolyglotTelemetryProjector;
+use Cognesy\Telemetry\Application\Projector\RuntimeEventBridge;
+use Cognesy\Telemetry\Application\Registry\TraceRegistry;
+use Cognesy\Telemetry\Application\Telemetry;
+use Cognesy\Telemetry\Domain\Contract\CanExportObservations;
+use Cognesy\Telemetry\Domain\Observation\Observation;
 
 final class StreamMetricsCollector extends MetricsCollector
 {
@@ -75,18 +97,51 @@ final class StreamMetricsCollector extends MetricsCollector
     }
 }
 
+/**
+ * In-memory sink for the Telemetry side: no network, no credentials — just
+ * keeps whatever spans/logs and metrics the projector hands it, so the
+ * example can print them. A real app would pass an OTel/Langfuse/Logfire
+ * exporter here instead; the projector wiring is identical either way.
+ */
+final class InMemoryTelemetryExporter implements CanExportObservations, CanExportMetrics
+{
+    /** @var list<Observation> */
+    private array $observations = [];
+    /** @var list<Metric> */
+    private array $metrics = [];
+
+    public function exportObservation(Observation $observation): void {
+        $this->observations[] = $observation;
+    }
+
+    /** @param iterable<Metric> $metrics */
+    public function export(iterable $metrics): void {
+        foreach ($metrics as $metric) {
+            $this->metrics[] = $metric;
+        }
+    }
+
+    /** @return list<Observation> */
+    public function observations(): array {
+        return $this->observations;
+    }
+
+    /** @return list<Metric> */
+    public function metrics(): array {
+        return $this->metrics;
+    }
+}
+
 $events = new EventDispatcher();
 $metrics = new Metrics($events);
 $metrics->collect(new StreamMetricsCollector());
 
-$metrics->exportTo(new CallbackExporter(function (iterable $metrics): void {
-    $aggregates = aggregateMetrics($metrics);
-    foreach ($aggregates as $aggregate) {
-        $tagsOutput = formatTags($aggregate['tags']);
-        $value = aggregatedValue($aggregate);
-        printf("[%s] %s%s = %.2f\n", $aggregate['type'], $aggregate['name'], $tagsOutput, $value);
-    }
-}));
+// Telemetry side: same $events dispatcher, canonical projector. This turns
+// InferenceStarted/InferenceAttemptSucceeded/InferenceUsageReported/InferenceCompleted
+// into spans, logs and inference.client.* metrics with no extra collector code.
+$telemetryExporter = new InMemoryTelemetryExporter();
+$telemetry = new Telemetry(new TraceRegistry(), $telemetryExporter);
+(new RuntimeEventBridge(new PolyglotTelemetryProjector($telemetry)))->attachTo($events);
 
 $prompt = 'In one sentence, explain why streaming responses help UX.';
 $runtime = InferenceRuntime::fromConfig(config: LLMConfig::fromPreset('openai'), events: $events);
@@ -104,6 +159,11 @@ foreach ($stream as $delta) {
 }
 echo "\n\n";
 
+// Metrics buffered by Telemetry::metric() only reach an exporter that implements
+// CanExportMetrics, and only once flush() runs — call it after the stream is
+// fully consumed, same as span/log completion depends on the terminal events.
+$telemetry->flush();
+
 $exportedMetrics = [];
 $metrics->exportTo(new CallbackExporter(function (iterable $m) use (&$exportedMetrics): void {
     foreach ($m as $metric) {
@@ -112,7 +172,32 @@ $metrics->exportTo(new CallbackExporter(function (iterable $m) use (&$exportedMe
 }));
 $metrics->export();
 
-assert(count($exportedMetrics) > 0, 'Expected non-empty metrics collection');
+echo "-- StreamMetricsCollector (hand-rolled, derived) --\n";
+foreach (aggregateMetrics($exportedMetrics) as $aggregate) {
+    printf(
+        "[%s] %s%s = %.2f\n",
+        $aggregate['type'],
+        $aggregate['name'],
+        formatTags($aggregate['tags']),
+        aggregatedValue($aggregate),
+    );
+}
+echo "\n";
+
+echo "-- PolyglotTelemetryProjector metrics (catalog inference.client.*, emitted for free) --\n";
+foreach ($telemetryExporter->metrics() as $metric) {
+    printf("[%s] %s = %.2f\n", $metric->type(), $metric->name(), $metric->value());
+}
+echo "\n";
+
+echo "-- PolyglotTelemetryProjector spans/logs --\n";
+foreach ($telemetryExporter->observations() as $observation) {
+    printf("[%s] %s (%s)\n", $observation->kind()->value, $observation->name(), $observation->status()->value);
+}
+
+assert(count($exportedMetrics) > 0, 'Expected non-empty hand-rolled metrics collection');
+assert(count($telemetryExporter->metrics()) > 0, 'Expected Telemetry to have exported inference.client.* metrics');
+assert(count($telemetryExporter->observations()) > 0, 'Expected Telemetry to have produced at least one span/log');
 
 function formatTags(array $tags): string {
     if ($tags === []) {

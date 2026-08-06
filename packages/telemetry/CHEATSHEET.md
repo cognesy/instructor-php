@@ -57,6 +57,21 @@ $telemetry->metric(Counter::create('agent.steps', 1, ['provider' => 'openai']));
 - exporters split by contract: `CanExportObservations` for traces/logs, `CanExportMetrics` for metrics.
   `OtelExporter` and `LangfuseExporter` implement both; the OTel mapper emits a typed payload per
   metric type rather than a generic gauge.
+- metric tags are aggregation dimensions, not span attributes — every tag value must be
+  low-cardinality (tool names, subagent names, statuses, outcomes, booleans). Per-run identifiers
+  (`agent.id`, execution ids) belong on spans, not tags: one tag value per run means one time
+  series per run in the metrics backend. `inference.client.token.usage.*` is the single
+  deliberate exception, exempt as a whole — it is correlation-carrying rather than
+  aggregation-friendly, and carries both `inference.execution.id` and (from the agents
+  projector) `agent.id`. See `MetricNames::TAG_EXECUTION_ID`
+- type policy: event/failure totals -> `Counter`, durations -> `Timer`, point-in-time state ->
+  `Gauge`, distributions (token counts, steps per run) -> `Histogram`
+- `Cognesy\Telemetry\Domain\Metric\MetricNames` holds the token-usage metric names and the
+  `inference.execution.id` tag key shared by `PolyglotTelemetryProjector`,
+  `AgentsTelemetryProjector` and `LangfusePayloadMapper`, so the three cannot drift apart. Metric
+  names used by a single producer (`agent.*`, `inference.embeddings.*`) stay private to that
+  producer and are not in `MetricNames`
+- full runtime metric catalog, projector by projector: `docs/03-runtime-wiring.md`
 
 ## Live Interop Suite
 

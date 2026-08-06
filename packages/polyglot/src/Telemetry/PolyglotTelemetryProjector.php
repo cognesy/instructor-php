@@ -18,7 +18,10 @@ use Cognesy\Telemetry\Application\Telemetry;
 use Cognesy\Telemetry\Domain\Envelope\OperationKind;
 use Cognesy\Telemetry\Domain\Envelope\TelemetryEnvelope;
 use Cognesy\Telemetry\Domain\Envelope\TelemetryEnvelopeAttributes;
+use Cognesy\Metrics\Data\Counter;
 use Cognesy\Metrics\Data\Histogram;
+use Cognesy\Metrics\Data\Timer;
+use Cognesy\Telemetry\Domain\Metric\MetricNames;
 use Cognesy\Telemetry\Domain\Observation\ObservationStatus;
 use Cognesy\Telemetry\Domain\Value\AttributeBag;
 
@@ -82,6 +85,10 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
 
     private function onInferenceCompleted(InferenceCompleted $event): void
     {
+        $this->emitOperationMetrics('success', $event->durationMs(), [
+            'inference.finish_reason' => $event->finishReason(),
+        ]);
+
         $data = EventData::of($event);
         $envelope = EventData::telemetry($data);
 
@@ -115,6 +122,10 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
     {
         $data = EventData::of($event);
         $executionId = EventData::string($data, 'executionId');
+
+        $this->emitOperationMetrics('failure', null, [
+            'http.response.status_code' => EventData::int($data, 'statusCode'),
+        ]);
 
         match ($executionId) {
             null => $this->telemetry->log(
@@ -168,6 +179,10 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
 
     private function onInferenceAttemptSucceeded(InferenceAttemptSucceeded $event): void
     {
+        $this->emitAttemptMetrics('success', $event->durationMs(), [
+            'inference.finish_reason' => $event->finishReason(),
+        ]);
+
         $data = EventData::of($event);
         $envelope = EventData::telemetry($data);
 
@@ -195,6 +210,12 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
 
     private function onInferenceAttemptFailed(InferenceAttemptFailed $event): void
     {
+        $this->emitAttemptMetrics('failure', $event->durationMs(), [
+            'error.type' => $event->errorType(),
+            'http.response.status_code' => $event->httpStatusCode(),
+            'inference.retry' => $event->willRetry(),
+        ]);
+
         $data = EventData::of($event);
         $envelope = EventData::telemetry($data);
 
@@ -223,14 +244,14 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
     private function onInferenceUsageReported(InferenceUsageReported $event): void
     {
         $attributes = $this->attributes([
-            'inference.execution.id' => $event->executionId(),
+            MetricNames::TAG_EXECUTION_ID => $event->executionId(),
             'inference.response.model' => $event->model(),
-            'inference.usage.final' => $event->isFinal(),
+            MetricNames::TAG_USAGE_FINAL => $event->isFinal(),
         ]);
 
-        $this->emitMetric('inference.client.token.usage.input', $event->inputTokens(), $attributes);
-        $this->emitMetric('inference.client.token.usage.output', $event->outputTokens(), $attributes);
-        $this->emitMetric('inference.client.token.usage.total', $event->totalTokens(), $attributes);
+        $this->emitMetric(MetricNames::TOKEN_USAGE_INPUT, $event->inputTokens(), $attributes);
+        $this->emitMetric(MetricNames::TOKEN_USAGE_OUTPUT, $event->outputTokens(), $attributes);
+        $this->emitMetric(MetricNames::TOKEN_USAGE_TOTAL, $event->totalTokens(), $attributes);
     }
 
     private function onEmbeddingsRequested(EmbeddingsRequested $event): void
@@ -270,13 +291,31 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
             $this->telemetry->complete($requestKey, $attributes);
         }
 
+        $this->telemetry->metric(Counter::create(
+            'inference.embeddings.operation.count',
+            1,
+            $this->metricTags([
+                'inference.outcome' => 'success',
+                'inference.response.model' => $model,
+            ]),
+        ));
+
         $usage = EventData::array($data, 'usage');
-        $this->emitMetric('inference.client.token.usage.total', EventData::int($usage, 'total'), $attributes);
+        $this->emitMetric(MetricNames::TOKEN_USAGE_TOTAL, EventData::int($usage, 'total'), $attributes);
     }
 
     private function onEmbeddingsFailed(EmbeddingsFailed $event): void
     {
         $data = EventData::of($event);
+
+        $this->telemetry->metric(Counter::create(
+            'inference.embeddings.operation.count',
+            1,
+            $this->metricTags([
+                'inference.outcome' => 'failure',
+                'http.response.status_code' => EventData::int($data, 'statusCode'),
+            ]),
+        ));
 
         $this->telemetry->log(
             key: 'inference.embeddings.failure',
@@ -302,6 +341,56 @@ final readonly class PolyglotTelemetryProjector implements CanProjectTelemetry
         }
 
         $this->telemetry->metric(Histogram::create($name, $value, $attributes->toArray()));
+    }
+
+    /**
+     * Terminal outcome of a whole inference call: how many, and how long.
+     *
+     * @param array<string, string|int|float|bool|null> $tags
+     */
+    private function emitOperationMetrics(string $outcome, ?float $durationMs, array $tags): void
+    {
+        $resolved = $this->metricTags([...$tags, 'inference.outcome' => $outcome]);
+
+        $this->telemetry->metric(Counter::create('inference.client.operation.count', 1, $resolved));
+
+        // Timer rejects negative durations by throwing. A clock that went backwards must not
+        // take down the call it is only observing, so skip the Timer instead.
+        if ($durationMs !== null && $durationMs >= 0) {
+            $this->telemetry->metric(Timer::create('inference.client.operation.duration', $durationMs, $resolved));
+        }
+    }
+
+    /**
+     * Same pair, one level down: a single attempt within a (possibly retried) call.
+     *
+     * @param array<string, string|int|float|bool|null> $tags
+     */
+    private function emitAttemptMetrics(string $outcome, ?float $durationMs, array $tags): void
+    {
+        $resolved = $this->metricTags([...$tags, 'inference.outcome' => $outcome]);
+
+        $this->telemetry->metric(Counter::create('inference.client.attempt.count', 1, $resolved));
+
+        // Timer rejects negative durations by throwing. A clock that went backwards must not
+        // take down the call it is only observing, so skip the Timer instead.
+        if ($durationMs !== null && $durationMs >= 0) {
+            $this->telemetry->metric(Timer::create('inference.client.attempt.duration', $durationMs, $resolved));
+        }
+    }
+
+    /**
+     * Metric tags are aggregation dimensions, not span attributes: every key here must be
+     * low-cardinality. Execution, request and attempt ids belong on spans — putting one in
+     * a tag gives the metrics backend a new time series per call. The token-usage metrics
+     * are the single deliberate exception (see MetricNames::TAG_EXECUTION_ID).
+     *
+     * @param array<string, string|int|float|bool|null> $items
+     * @return array<string, string|int|float|bool>
+     */
+    private function metricTags(array $items): array
+    {
+        return array_filter($items, static fn(string|int|float|bool|null $value): bool => $value !== null);
     }
 
     private function openEnvelope(TelemetryEnvelope $envelope, AttributeBag $attributes): void

@@ -50,6 +50,84 @@ Add only the projectors for the packages you actually use:
 If a package has no matching projector attached, its events will not be turned
 into telemetry.
 
+## Metric Catalog
+
+Each projector also emits metrics through `Telemetry::metric()`, using the
+canonical types from `Cognesy\Metrics\Data\*` (`Counter`, `Gauge`, `Histogram`,
+`Timer`). This is what the two runtime projectors emit today.
+
+### `PolyglotTelemetryProjector`
+
+| Metric | Type | Emitted on | Tags |
+| --- | --- | --- | --- |
+| `inference.client.token.usage.input` | Histogram | `InferenceUsageReported` (skipped when the token count is `null`) | `inference.execution.id`, `inference.response.model`, `inference.usage.final` |
+| `inference.client.token.usage.output` | Histogram | same | same |
+| `inference.client.token.usage.total` | Histogram | same, and `EmbeddingsResponseReceived` | same / embeddings attribute bag |
+| `inference.client.operation.count` | Counter | `InferenceCompleted` -> `inference.outcome=success`; `InferenceFailed` -> `inference.outcome=failure` | `inference.outcome`, `inference.finish_reason` (success), `http.response.status_code` (failure) |
+| `inference.client.operation.duration` | Timer | `InferenceCompleted`, when a non-negative duration is available | same as the success counter |
+| `inference.client.attempt.count` | Counter | `InferenceAttemptSucceeded` -> success; `InferenceAttemptFailed` -> failure | `inference.outcome`, `inference.finish_reason` (success), `error.type` + `http.response.status_code` + `inference.retry` (failure) |
+| `inference.client.attempt.duration` | Timer | either attempt event, when a non-negative duration is available | same as its counter |
+| `inference.embeddings.operation.count` | Counter | `EmbeddingsResponseReceived` -> success; `EmbeddingsFailed` -> failure | `inference.outcome`, `inference.response.model` (success), `http.response.status_code` (failure) |
+
+`PolyglotTelemetryProjector` emits no Gauge. There is no point-in-time resource
+level on the inference path — per-call sizes are distributions, not levels — and
+forcing one would misrepresent the data. Gauges belong where a loop actually
+carries state, which is the agents projector below.
+
+### `AgentsTelemetryProjector`
+
+| Metric | Type | Emitted on | Tags |
+| --- | --- | --- | --- |
+| `inference.client.token.usage.total` | Histogram | `TokenUsageReported` | `agent.id`, `inference.execution.id`, `agent.operation`, `agent.parent_id` (+ envelope attributes) |
+| `agent.context.message_count` | Gauge | `AgentStepStarted` | `agent.is_subagent` |
+| `agent.step.count` | Counter | `AgentStepCompleted` | `agent.has_tool_calls`, `inference.finish_reason`, `agent.is_subagent` |
+| `agent.step.duration` | Timer | `AgentStepCompleted`, when a non-negative duration is available | same |
+| `agent.execution.count` | Counter | `AgentExecutionCompleted` -> `agent.outcome=success`; `AgentExecutionFailed` -> `agent.outcome=failure` | `agent.status`, `agent.is_subagent`, `agent.outcome`, `error.type` (failure only) |
+| `agent.execution.steps` | Histogram | same two events | same |
+| `agent.tool_call.count` | Counter | `ToolCallCompleted` -> `agent.outcome=success\|error`; `ToolCallBlocked` -> `agent.outcome=blocked` | `agent.tool`, `agent.outcome` |
+| `agent.tool_call.duration` | Timer | `ToolCallCompleted`, when a non-negative duration is available | `agent.tool`, `agent.outcome` |
+| `agent.subagent.depth` | Gauge | `SubagentSpawning` | `agent.subagent` |
+| `agent.subagent.count` | Counter | `SubagentCompleted` | `agent.subagent`, `agent.subagent.status` |
+
+### Type Policy
+
+- event and failure totals -> `Counter`
+- durations -> `Timer`
+- point-in-time state (current context size, current subagent nesting depth) ->
+  `Gauge`
+- distributions (token counts, steps per run) -> `Histogram`
+
+`Timer::create()` throws on a negative duration, so every duration Timer above
+is guarded: a projector must not let an observability path take down the call
+it is observing just because a clock went backwards. Each Timer is skipped, not
+clamped, when the duration is missing or negative.
+
+### Tag Discipline
+
+Metric tags are aggregation dimensions, not span attributes, so every tag value
+must be low-cardinality: tool names, subagent names, statuses, outcomes,
+booleans. Per-run identifiers (`agent.id`, execution ids) belong on spans, not
+tags — one tag value per run means one time series per run in the metrics
+backend.
+
+`inference.client.token.usage.*` is the single deliberate exception, and it is
+exempt from the rule as a whole rather than for one tag: it is a
+correlation-carrying metric, not an aggregation-friendly one. It carries
+`inference.execution.id` because `LangfusePayloadMapper::matchesMetric()`
+correlates a metric back to its span by that id, which already makes it one
+series per run — so the `agent.id` the agents projector also puts on it costs
+nothing further and stays useful for grouping token spend by agent. Every other
+metric above carries no id tag at all, so it never matches an observation and
+never reaches `attributesForMetric()` — which returns `[]` for unknown names
+anyway.
+
+`Cognesy\Telemetry\Domain\Metric\MetricNames` holds the token-usage metric names
+and the `inference.execution.id` / `inference.usage.final` tag keys shared by
+`PolyglotTelemetryProjector`, `AgentsTelemetryProjector` and
+`LangfusePayloadMapper`, so the three cannot drift apart. Metric names used by a
+single producer (`agent.*`, `inference.embeddings.*`) stay private to that
+producer and are not in `MetricNames`.
+
 ## Practical Examples
 
 The examples directory has working end-to-end setups:
