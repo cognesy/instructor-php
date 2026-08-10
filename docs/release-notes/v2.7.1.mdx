@@ -1,0 +1,109 @@
+---
+title: 'v2.7.1'
+---
+
+v2.7.1 is a patch release. It corrects seven defects in `cognesy/instructor-utils` — the
+package every other package depends on — and stops a documentation-deploy race from reporting
+healthy builds as failures. There are no API changes and no upgrade steps.
+
+Most of these defects were silent: a helper returned plausible-looking wrong data instead of
+raising, so callers had no signal. Two are worth a deliberate look if you use the helpers
+directly, because your output changes: `Arrays::toBullets()` no longer double-spaces its lists,
+and `Arrays::flattenToString()` now honours its separator at every nesting level.
+
+## Utils Fixes
+
+### String Predicates Rebuilt on the Native Functions
+
+`Str::endsWith($text, '')` returned `false`. The implementation compared
+`substr($text, -strlen($needle))` against the needle, and for an empty needle that is
+`substr($text, -0)` — which PHP reads as `substr($text, 0)`, the whole string. Every other
+predicate in the class treats an empty needle as trivially contained, and `str_ends_with()`
+agrees, so this was an outlier.
+
+`contains()`, `startsWith()`, and `endsWith()` now delegate to `str_contains()`,
+`str_starts_with()`, and `str_ends_with()`, with `stripos()` for the case-insensitive path.
+Behaviour is otherwise unchanged. Four docblocks that described the wrong parameters or the
+wrong return value were corrected at the same time — `after()`, `when()`, `limit()`, and
+`spaceSeparated()`.
+
+### Arrays::flattenToString() Honours Its Separator
+
+The recursion joined nested levels with a hard-coded separator and applied the caller's
+separator only to the outermost join, so `flattenToString($nested, ' | ')` came back with
+newlines inside it. Flattening and joining are now separate steps: `flattenToStringParts()`
+returns a flat `list<string>`, and the caller's separator is applied exactly once.
+
+### Arrays::toBullets() No Longer Double-Spaces
+
+Each item was suffixed with `"\n"` and the items were then joined on `"\n"`, so every list came
+out with a blank line between entries and a stray trailing newline — contradicting the
+documented `- item1\n- item2` shape. These lists are pasted straight into prompts, where the
+blank lines are noise. Output is now one line per item with no trailing newline.
+
+### Arrays::fromAny() Terminates on Shared References
+
+A structure containing a reference back to one of its own ancestors sent `fromAny()` into
+unbounded recursion until the process ran out of memory. It now marks the active path in a
+`WeakMap` and unmarks in a `finally`, so a repeated node on the current path is not descended
+into again. A value that legitimately appears twice in *sibling* positions is still converted
+twice, which is the correct result.
+
+`Arrays::isSubset()` also gained its missing `bool` return type, and
+`Arrays::valuesMatch()` — unchanged in behaviour — now documents its actual contract: equal
+length plus mutual containment, which is set equality whenever one side is duplicate-free.
+
+### Cached Stopped Re-running Producers That Return Null
+
+`Cached` memoized resolved values in a static `WeakMap` keyed on `$this` and probed it with
+`isset()`. `WeakMap` follows `isset()` semantics for a stored `null`, so a producer that
+legitimately resolved to `null` was indistinguishable from one that had never run — and re-ran
+on every `get()`. Switching the probe to `offsetExists()` does not help: it reports `false` for
+a stored `null` too.
+
+The map bought nothing over ordinary instance state, so it is gone. `Cached` now holds its
+value and a resolved flag directly, `isResolved()` reports the flag, and `get()` on an
+unresolved instance with no producer throws `RuntimeException` rather than returning `null`
+ambiguously. `Cognesy\Utils\Cached` has no callers in this repository, so this is contained.
+
+### Files::files() and Files::directories() Validate Eagerly
+
+Both validated their argument inside a generator body. A generator body does not execute until
+the first iteration, so passing a nonexistent path handed back a `Generator` and threw nothing
+at the call site — and threw nothing at all for a caller that counted or discarded the result.
+Validation now happens before the generator is created, so `InvalidArgumentException` arrives
+where the mistake is.
+
+### The Package's Own Regression Suite Was Not Running
+
+`packages/utils/phpunit.xml` declared Unit, Feature, and Integration suites but not Regression,
+so ten existing regression tests were skipped whenever the split package was tested on its own.
+The root configuration had always run them. The suite is declared now.
+
+The fixes above ship with 75 new tests across nine files; each was checked by reverting the
+source fix and confirming the relevant assertions fail.
+
+## Documentation Deploys
+
+A push to `main` that was overtaken by a newer commit failed its Documentation run. Two guards
+fired correctly — the artifact really was stale, and publishing it would have rolled the live
+site backwards — but both reported a benign race as a red build, which made a healthy `main`
+look broken and buried real failures.
+
+The guards are unchanged in what they refuse. What changed is how they report it:
+`publish-mintlify-branch.sh` now exits `3` for "superseded, nothing published", distinct from
+`1` for "publish failed", and the workflow maps `3` to a skip with a warning annotation. The
+Pages job gates its deploy steps on a freshness check rather than failing, and the production
+verification job runs only when both jobs actually published, so it can no longer assert
+against a deploy that never happened.
+
+The superseded path had never been exercised: the test fixture stamped the provenance file with
+the wrong commit, so an earlier guard fired first and the assertion only ever checked for a
+non-zero exit. The test now pins the exit code, an untouched branch on skip, a successful retry,
+and a distinct failure for provenance mismatch — and runs as part of `qa:docs-sites:test`.
+
+## Upgrade Notes
+
+No breaking changes and no upgrade steps. If you call `Arrays::toBullets()` or
+`Arrays::flattenToString()` directly and assert on their exact output, update those
+expectations — both now produce what their documentation always described.
