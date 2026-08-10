@@ -83,10 +83,11 @@ class Str
     }
 
     /**
-     * Converts a string to Sentence case.
+     * Normalizes any casing convention into lower/upper words separated by single spaces.
+     * Shared starting point for the pascal/snake/camel/kebab/title converters.
      *
      * @param string $input The input string.
-     * @return string The Sentence case string.
+     * @return string The space-separated string.
      */
     static private function spaceSeparated(string $input) : string {
         // Apply each normalization transform in sequence. Kept dependency-free
@@ -130,10 +131,9 @@ class Str
      * @return bool True if the needle is found, false otherwise.
      */
     static public function contains(string $haystack, string $needle, bool $caseSensitive = true) : bool {
-        return match($caseSensitive) {
-            true => strpos($haystack, $needle) !== false,
-            false => stripos($haystack, $needle) !== false,
-        };
+        return $caseSensitive
+            ? str_contains($haystack, $needle)
+            : stripos($haystack, $needle) !== false;
     }
 
     /**
@@ -182,7 +182,7 @@ class Str
      * @return bool True if the string starts with the prefix, false otherwise.
      */
     public static function startsWith(string $text, string $prefix) : bool {
-        return substr($text, 0, strlen($prefix)) === $prefix;
+        return str_starts_with($text, $prefix);
     }
 
     /**
@@ -193,7 +193,10 @@ class Str
      * @return bool True if the string ends with the suffix, false otherwise.
      */
     public static function endsWith(string $text, string $suffix) : bool {
-        return substr($text, -strlen($suffix)) === $suffix;
+        // Native str_ends_with, not substr($text, -strlen($suffix)): an empty suffix
+        // makes that offset -0, which returns the whole string and wrongly reports
+        // false, while startsWith() reported true for the same empty needle.
+        return str_ends_with($text, $suffix);
     }
 
     /**
@@ -218,11 +221,11 @@ class Str
     }
 
     /**
-     * Extracts a substring from a string before a needle.
+     * Extracts the part of a string that follows the first occurrence of a needle.
      *
      * @param string $text The text to search in.
      * @param string $needle The needle.
-     * @return string The extracted substring.
+     * @return string The substring after the needle, or '' when the needle is absent.
      */
     public static function after(string $text, string $needle) : string {
         $start = strpos($text, $needle);
@@ -234,25 +237,26 @@ class Str
     }
 
     /**
-     * Extracts a substring from a string after a needle.
+     * Selects one of two strings based on a condition.
      *
-     * @param string $text The text to search in.
-     * @param string $needle The needle.
-     * @return string The extracted substring.
+     * @param bool $condition The condition to evaluate.
+     * @param string $onTrue Returned when the condition holds.
+     * @param string $onFalse Returned otherwise.
+     * @return string The selected string.
      */
     public static function when(bool $condition, string $onTrue, string $onFalse) : string {
-        return match($condition) {
-            true => $onTrue,
-            default => $onFalse,
-        };
+        return $condition ? $onTrue : $onFalse;
     }
 
     /**
-     * Extracts a substring from a string before a needle.
+     * Truncates a string to a maximum length, appending (or prepending) a cut marker.
      *
-     * @param string $text The text to search in.
-     * @param string $needle The needle.
-     * @return string The extracted substring.
+     * @param string $text The text to truncate.
+     * @param int $limit Maximum number of characters to keep from the text.
+     * @param string $cutMarker Marker denoting the removed part.
+     * @param int $align STR_PAD_RIGHT keeps the head, STR_PAD_LEFT keeps the tail.
+     * @param bool $fit When true, the marker replaces trailing characters instead of extending the result.
+     * @return string The truncated string.
      */
     public static function limit(
         string $text,

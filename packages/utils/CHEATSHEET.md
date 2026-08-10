@@ -168,12 +168,12 @@ Arrays::removeRecursively($arr, $keys, $skip) // Deep key removal
 
 // Validation
 Arrays::isSubset($subset, $full)     // → bool
-Arrays::valuesMatch($arr1, $arr2)    // Same values, any order
+Arrays::valuesMatch($arr1, $arr2)    // Same length + same values, any order (see note on duplicates)
 Arrays::hasOnlyStrings($array)       // → bool
 
 // Output
-Arrays::toBullets($array)            // → "- item1\n- item2"
-Arrays::flattenToString($arrays, ' ') // Join nested arrays
+Arrays::toBullets($array)            // → " - item1\n - item2"
+Arrays::flattenToString($arrays, ' ') // Join non-empty nested leaves with a separator
 ```
 
 ### Files - File System Operations
@@ -505,7 +505,7 @@ Cached::from(fn() => expensiveOperation()) // Lazy evaluation
 Cached::fromValue($value)           // Pre-resolved value
 
 // Usage
-$cached->get(...$args)               // Resolve once, cache result
+$cached->get(...$args)               // Resolve once, cache result (null included)
 $cached->isResolved()                // → bool
 $cached(...$args)                    // Invoke syntax
 

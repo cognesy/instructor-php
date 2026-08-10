@@ -33,12 +33,7 @@ class Arrays
             }
             $parts[] = $arr;
         }
-        $count = count($parts);
-        return match ($count) {
-            0 => [],
-            1 => $parts[0],
-            default => array_merge(...$parts),
-        };
+        return self::mergeParts($parts);
     }
 
     /**
@@ -61,12 +56,21 @@ class Arrays
             }
             $parts[] = $arr;
         }
-        $count = count($parts);
-        return match ($count) {
-            0 => [],
-            1 => $parts[0],
-            default => array_merge(...$parts),
-        };
+        return self::mergeParts($parts);
+    }
+
+    /**
+     * Single merge point for mergeMany/mergeOver.
+     *
+     * A one-element fast path must still go through array_merge: returning $parts[0]
+     * verbatim would preserve numeric keys, while the documented array_merge semantics
+     * reindex them, so mergeMany([[5 => 'a']]) disagreed with array_merge([5 => 'a']).
+     *
+     * @param list<array<int|string, mixed>> $parts
+     * @return array<int|string, mixed>
+     */
+    private static function mergeParts(array $parts): array {
+        return $parts === [] ? [] : array_merge(...$parts);
     }
 
     /**
@@ -122,8 +126,8 @@ class Arrays
      * @param array $compared
      * @return bool
      */
-    static public function isSubset(array $compareTo, array $compared) {
-        return count(array_diff($compareTo, $compared)) === 0;
+    static public function isSubset(array $compareTo, array $compared) : bool {
+        return array_diff($compareTo, $compared) === [];
     }
 
     /**
@@ -159,16 +163,24 @@ class Arrays
      * @return array
      */
     static public function fromAny(mixed $anyValue): array {
-        $visited = new WeakMap();
-        $toArray = function($x) use(&$toArray, &$visited) {
-            $markAndMap = function($x) use(&$toArray, &$visited) {
-                $visited[$x] = true; // mark as visited, so we handle circular references
-                return array_map($toArray, get_object_vars($x));
+        // $onPath tracks the objects on the current descent, not every object ever
+        // seen. Marking permanently made any object referenced twice look like a
+        // cycle, so a plain diamond ($root->a and $root->b sharing one child)
+        // reported 'ref-cycle' for the second reference even though nothing recursed.
+        $onPath = new WeakMap();
+        $toArray = function($x) use(&$toArray, $onPath) {
+            $descend = function($x) use(&$toArray, $onPath) {
+                $onPath[$x] = true;
+                try {
+                    return array_map($toArray, get_object_vars($x));
+                } finally {
+                    unset($onPath[$x]);
+                }
             };
             return match(true) {
                 is_scalar($x) || is_null($x) => [$x],
-                is_object($x) && isset($visited[$x]) => ['ref-cycle: ' . get_class($x)],
-                is_object($x) => $markAndMap($x),
+                is_object($x) && isset($onPath[$x]) => ['ref-cycle: ' . get_class($x)],
+                is_object($x) => $descend($x),
                 default => array_map($toArray, $x),
             };
         };
@@ -176,10 +188,12 @@ class Arrays
     }
 
     /**
-     * Filters an array using a callback.
-     * @param array $array
-     * @param callable $callback
-     * @return array
+     * Recursively removes the given keys from an array.
+     *
+     * @param array $array The array to prune.
+     * @param array $keys Keys to remove at every depth.
+     * @param array $skip Keys whose sub-arrays are left untouched.
+     * @return array The pruned array.
      */
     static public function removeRecursively(array $array, array $keys, array $skip = []): array {
         if (empty($array) || empty($keys)) {
@@ -201,12 +215,15 @@ class Arrays
     }
 
     /**
-     * Converts an array to a bulleted list string.
+     * Converts an array to a bulleted list string, one bullet per line.
+     *
      * @param array $array
      * @return string
      */
     static public function toBullets(array $array): string {
-        return implode("\n", array_map(fn($c) => " - {$c}\n", $array));
+        // Each item used to carry its own trailing "\n" on top of the implode glue,
+        // so every list came out double-spaced with a stray newline at the end.
+        return implode("\n", array_map(static fn($c) => " - {$c}", $array));
     }
 
     /**
@@ -216,7 +233,7 @@ class Arrays
      * @return string
      */
     static public function flattenToString(array $arrays, string $separator = ''): string {
-        return self::doFlattenToString($arrays, $separator);
+        return implode($separator, self::flattenToStringParts($arrays));
     }
 
     // turn array of arrays with key = string, value = mixed/object into a single array
@@ -237,46 +254,48 @@ class Arrays
     }
 
     /**
-     * Flattens an array of arrays into a single string.
+     * Collects every non-empty leaf of a nested array, depth-first, as trimmed strings.
+     *
+     * Joining is left to the caller via implode. The previous implementation appended
+     * the separator after each part and stripped it with rtrim($flat, $separator),
+     * but rtrim treats its second argument as a *character set*, not a suffix: any
+     * trailing character that merely appeared in the separator was eaten. With
+     * separator 'ab', ['ab','ba'] collapsed to '' - the whole result was consumed.
+     *
      * @param array $arrays
-     * @param string $separator
-     * @return string
+     * @return list<string>
      */
-    private static function doFlattenToString(array $arrays, string $separator): string {
-        $flat = '';
+    private static function flattenToStringParts(array $arrays): array {
+        $parts = [];
         foreach ($arrays as $item) {
             if (is_array($item)) {
-                $flattenedItem = self::doFlattenToString($item, $separator);
-                if ($flattenedItem !== '') {
-                    $flat .= $flattenedItem . $separator;
+                foreach (self::flattenToStringParts($item) as $nested) {
+                    $parts[] = $nested;
                 }
-            } else {
-                $trimmedItem = trim((string) $item);
-                if ($trimmedItem !== '') {
-                    $flat .= $trimmedItem . $separator;
-                }
+                continue;
+            }
+            $trimmedItem = trim((string) $item);
+            if ($trimmedItem !== '') {
+                $parts[] = $trimmedItem;
             }
         }
-        return rtrim($flat, $separator);
+        return $parts;
     }
 
+    /**
+     * Tests equal length plus mutual containment of values, compared loosely
+     * (array_intersect casts to string).
+     *
+     * This is set equality only when at least one side is duplicate-free, which is
+     * the case for every caller today. With duplicates on both sides it is neither
+     * set nor multiset equality: [1, 1, 2] and [1, 2, 2] match, while [1, 1, 2] and
+     * [1, 2] - equal as sets - do not. Use array_unique() first if you want plain
+     * set equality regardless of duplicates.
+     */
     public static function valuesMatch(array $a, array $b) : bool {
-        if (count($a) !== count($b)) {
-            return false;
-        }
-        // we want to check if all values in $a are present in $b
-        // by making sure that intersection of both arrays is equal to $a
-        $intersection = array_intersect($a, $b);
-        if (count($intersection) !== count($a)) {
-            return false;
-        }
-        // we also want to check if all values in $b are present in $a
-        $intersection = array_intersect($b, $a);
-        if (count($intersection) !== count($b)) {
-            return false;
-        }
-        // if we reach here, it means that both arrays have the same values
-        return true;
+        return count($a) === count($b)
+            && array_intersect($a, $b) === $a
+            && array_intersect($b, $a) === $b;
     }
 
     public static function hasOnlyStrings(array $content) : bool {

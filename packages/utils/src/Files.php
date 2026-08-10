@@ -243,38 +243,54 @@ class Files
     }
 
     /**
+     * Recursively yields every subdirectory of $path.
+     *
      * @param string $path
      * @return Iterator<SplFileInfo>
+     * @throws InvalidArgumentException If the path is not a directory.
      */
     public static function directories(string $path): Iterator {
+        self::assertDirectory($path);
+        return self::walk($path, static fn(SplFileInfo $info): bool => $info->isDir());
+    }
+
+    /**
+     * Recursively yields every file under $path.
+     *
+     * @param string $path
+     * @return Iterator<SplFileInfo>
+     * @throws InvalidArgumentException If the path is not a directory.
+     */
+    public static function files(string $path): Iterator {
+        self::assertDirectory($path);
+        return self::walk($path, static fn(SplFileInfo $info): bool => $info->isFile());
+    }
+
+    /**
+     * Validation lives outside the generator on purpose. A generator body does not
+     * run until the first iteration, so throwing inside one let Files::files('/bad')
+     * hand back a Generator and only surface the error once the caller looped over
+     * it - or never, if the caller just checked and discarded it.
+     *
+     * @throws InvalidArgumentException
+     */
+    private static function assertDirectory(string $path): void {
         if (!is_dir($path)) {
             throw new InvalidArgumentException("The provided path is not a directory: {$path}");
-        }
-
-        $iterator = new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS);
-        $recursiveIterator = new RecursiveIteratorIterator($iterator, RecursiveIteratorIterator::SELF_FIRST);
-
-        foreach ($recursiveIterator as $fileInfo) {
-            if ($fileInfo->isDir()) {
-                yield $fileInfo;
-            }
         }
     }
 
     /**
-     * @param string $path
+     * @param callable(SplFileInfo): bool $accept
      * @return Iterator<SplFileInfo>
      */
-    public static function files(string $path): Iterator {
-        if (!is_dir($path)) {
-            throw new InvalidArgumentException("The provided path is not a directory: {$path}");
-        }
-
+    private static function walk(string $path, callable $accept): Iterator {
         $iterator = new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS);
         $recursiveIterator = new RecursiveIteratorIterator($iterator, RecursiveIteratorIterator::SELF_FIRST);
 
         foreach ($recursiveIterator as $fileInfo) {
-            if ($fileInfo->isFile()) {
+            /** @var SplFileInfo $fileInfo */
+            if ($accept($fileInfo)) {
                 yield $fileInfo;
             }
         }

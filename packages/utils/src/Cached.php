@@ -4,7 +4,6 @@ namespace Cognesy\Utils;
 
 use Closure;
 use Stringable;
-use WeakMap;
 
 /**
  * A container for a value that is expensive to compute or can only be retrieved once.
@@ -14,20 +13,21 @@ use WeakMap;
  */
 final class Cached
 {
-    /** @var WeakMap<object, mixed> */
-    private static WeakMap $cache;
-
     /**
+     * Resolved state lives on the instance. It used to live in a static
+     * WeakMap keyed by $this, to work around the readonly properties, but
+     * WeakMap cannot represent a cached null: both isset() and offsetExists()
+     * report a stored null as absent, so a producer returning null was re-run
+     * on every get() and isResolved() never turned true. The properties are
+     * private on a final class, so dropping readonly changes no public contract.
+     *
      * @param (Closure(mixed...): mixed)|null $producer
      */
     private function __construct(
         private readonly ?Closure $producer,
-        private readonly mixed $value = null,
-        private readonly bool $isResolved = false
-    ) {
-        /** @phpstan-ignore-next-line */
-        self::$cache ??= new WeakMap();
-    }
+        private mixed $value = null,
+        private bool $isResolved = false
+    ) {}
 
     /**
      * Creates a lazy-loaded Cached instance from a producer callable.
@@ -59,7 +59,7 @@ final class Cached
      * Checks if the value has been resolved and is currently cached.
      */
     public function isResolved(): bool {
-        return $this->isResolved || isset(self::$cache[$this]);
+        return $this->isResolved;
     }
 
     /**
@@ -75,15 +75,14 @@ final class Cached
             return $this->value;
         }
 
-        if (isset(self::$cache[$this])) {
-            return self::$cache[$this];
-        }
-
         if ($this->producer === null) {
             throw new \RuntimeException('Cached value is not resolved and no producer is available.');
         }
 
-        return self::$cache[$this] = ($this->producer)(...$args);
+        $this->value = ($this->producer)(...$args);
+        $this->isResolved = true;
+
+        return $this->value;
     }
 
     /**
@@ -101,11 +100,11 @@ final class Cached
      * Provides a safe string representation for debugging.
      */
     public function __toString(): string {
-        if (!$this->isResolved()) {
+        if (!$this->isResolved) {
             return '(unresolved)';
         }
 
-        $value = $this->isResolved ? $this->value : self::$cache[$this];
+        $value = $this->value;
         return match (true) {
             $value === null => 'NULL',
             is_string($value) => $value,

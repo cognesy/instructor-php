@@ -15,6 +15,12 @@
         <testsuite name="Integration">
             <directory suffix="Test.php">./tests/Integration</directory>
         </testsuite>
+        <!-- The root phpunit.xml has always run ./tests/Regression; this file did not,
+             so the package's regression tests were silently skipped whenever the split
+             package was tested on its own. -->
+        <testsuite name="Regression">
+            <directory suffix="Test.php">./tests/Regression</directory>
+        </testsuite>
     </testsuites>
     <source>
         <include>
