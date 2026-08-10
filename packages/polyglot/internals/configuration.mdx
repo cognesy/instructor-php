@@ -46,7 +46,7 @@ $config = LLMConfig::fromArray([
 
 // From a DSN string
 $config = LLMConfig::fromDsn('openai://model=gpt-4.1-nano&maxTokens=2048');
-// @doctest id="ab9f"
+// @doctest id="818d"
 ```
 
 ### Presets
@@ -62,7 +62,7 @@ You may also pass a custom base path:
 
 ```php
 $config = LLMConfig::fromPreset('my-preset', basePath: '/path/to/presets');
-// @doctest id="3f30"
+// @doctest id="15b2"
 ```
 
 ### Overriding Values
@@ -72,7 +72,7 @@ Use `withOverrides()` to create a modified copy of an existing config:
 ```php
 $base = LLMConfig::fromPreset('openai');
 $custom = $base->withOverrides(['model' => 'gpt-4.1', 'maxTokens' => 4096]);
-// @doctest id="5b2f"
+// @doctest id="a626"
 ```
 
 ### Pricing
@@ -102,7 +102,7 @@ $config = LLMConfig::fromArray([
 $pricing = InferencePricing::fromArray($config->pricing);
 $calculator = new FlatRateCostCalculator();
 $cost = $calculator->calculate($usage, $pricing);
-// @doctest id="432e"
+// @doctest id="29db"
 ```
 
 ### Type Coercion
@@ -149,7 +149,7 @@ $config = EmbeddingsConfig::fromArray([
 
 // From a DSN string
 $config = EmbeddingsConfig::fromDsn('openai://model=text-embedding-3-small');
-// @doctest id="c24a"
+// @doctest id="6367"
 ```
 
 Presets for embeddings are resolved from similar paths, under the `embed` config group:
@@ -166,7 +166,7 @@ $modified = $config->withOverrides([
     'model' => 'text-embedding-3-large',
     'dimensions' => 1024,
 ]);
-// @doctest id="d420"
+// @doctest id="0587"
 ```
 
 For `EmbeddingsConfig`, type coercion applies to the `dimensions` and `maxInputs` fields.
@@ -198,7 +198,7 @@ $policy = new InferenceRetryPolicy(
 );
 
 $inference->withRetryPolicy($policy);
-// @doctest id="08d9"
+// @doctest id="7b48"
 ```
 
 The retry delay uses exponential backoff: `baseDelayMs * 2^(attempt-1)`, capped at `maxDelayMs`. The `jitter` strategy adds randomness to avoid thundering herd problems:
@@ -221,5 +221,5 @@ use Cognesy\Polyglot\Embeddings\Config\EmbeddingsRetryPolicy;
 $embeddings->withRetryPolicy(new EmbeddingsRetryPolicy(
     maxAttempts: 3,
 ));
-// @doctest id="2b97"
+// @doctest id="c640"
 ```
