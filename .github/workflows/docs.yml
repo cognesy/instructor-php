@@ -67,6 +67,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    outputs:
+      published: ${{ steps.publish.outputs.published }}
     steps:
       - uses: actions/checkout@v7
 
@@ -77,7 +79,24 @@ jobs:
           path: .artifacts/mintlify
 
       - name: Publish linear Mintlify deployment branch
-        run: scripts/docs/publish-mintlify-branch.sh .artifacts/mintlify "${GITHUB_SHA}"
+        id: publish
+        run: |
+          set +e
+          scripts/docs/publish-mintlify-branch.sh .artifacts/mintlify "${GITHUB_SHA}"
+          status=$?
+          set -e
+          case "$status" in
+            0)
+              echo 'published=true' >> "$GITHUB_OUTPUT"
+              ;;
+            3)
+              echo 'published=false' >> "$GITHUB_OUTPUT"
+              echo "::warning::Mintlify publish skipped - origin/main advanced past ${GITHUB_SHA}. The newer commit's run owns this publish."
+              ;;
+            *)
+              exit "$status"
+              ;;
+          esac
 
   deploy-pages:
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
@@ -90,36 +109,54 @@ jobs:
       contents: read
       pages: write
       id-token: write
+    outputs:
+      published: ${{ steps.freshness.outputs.current }}
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 1
 
-      - name: Reject superseded source commit
+      - name: Detect superseded source commit
+        id: freshness
         run: |
           git fetch origin main --depth=1
-          test "$(git rev-parse origin/main)" = "${GITHUB_SHA}"
+          if [ "$(git rev-parse origin/main)" = "${GITHUB_SHA}" ]; then
+            echo 'current=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'current=false' >> "$GITHUB_OUTPUT"
+            echo "::warning::Pages deploy skipped - origin/main advanced past ${GITHUB_SHA}. The newer commit's run owns this deploy."
+          fi
 
       - name: Download validated Pages artifact
+        if: steps.freshness.outputs.current == 'true'
         uses: actions/download-artifact@v8
         with:
           name: docs-pages-${{ github.sha }}
           path: .artifacts/pages
 
       - name: Configure GitHub Pages
+        if: steps.freshness.outputs.current == 'true'
         uses: actions/configure-pages@v6
 
       - name: Upload GitHub Pages deployment artifact
+        if: steps.freshness.outputs.current == 'true'
         uses: actions/upload-pages-artifact@v5
         with:
           path: .artifacts/pages
 
       - name: Deploy GitHub Pages
         id: deployment
+        if: steps.freshness.outputs.current == 'true'
         uses: actions/deploy-pages@v5
 
   verify-production:
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    # Only meaningful when this run actually published. A superseded run publishes
+    # nothing, so polling the live sites for its SHA would time out by design.
+    if: >-
+      github.ref == 'refs/heads/main'
+      && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+      && needs.publish-mintlify.outputs.published == 'true'
+      && needs.deploy-pages.outputs.published == 'true'
     needs: [publish-mintlify, deploy-pages]
     runs-on: ubuntu-latest
     steps:

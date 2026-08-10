@@ -46,8 +46,11 @@ fi
 
 latest_main="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
 if [[ "$latest_main" != "$source_sha" ]]; then
-  echo "Refusing stale documentation publish: origin/main is $latest_main, artifact is $source_sha." >&2
-  exit 1
+  # Exit 3 means "superseded, nothing published" — a benign outcome, distinct from
+  # exit 1 (publish failed). Callers map it to a skip so an overtaken run is not
+  # reported as a broken one.
+  echo "Skipping superseded documentation publish: origin/main is $latest_main, artifact is $source_sha." >&2
+  exit 3
 fi
 
 if git show-ref --verify --quiet "refs/remotes/origin/$branch"; then

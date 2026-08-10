@@ -73,7 +73,8 @@
         "qa:docs-sites": "bash ./scripts/docs/validate-sites.sh",
         "qa:docs-sites:test": [
             "bash ./scripts/docs/tests/verify-release-parity-test.sh",
-            "bash ./scripts/docs/tests/verify-live-provenance-test.sh"
+            "bash ./scripts/docs/tests/verify-live-provenance-test.sh",
+            "bash ./scripts/docs/tests/publish-mintlify-branch-test.sh"
         ],
         "qa:self-knowledge-docs": "@php packages/agents/scripts/sync-self-knowledge-docs.php --check",
         "qa:semgrep": "bash -lc 'set -euo pipefail; export HOME=\"$PWD/.qa\"; export SSL_CERT_FILE=\"${SSL_CERT_FILE:-/opt/homebrew/etc/openssl@3/cert.pem}\"; for cfg in .qa/semgrep/*.yml; do [ -f \"$cfg\" ] || continue; semgrep scan --disable-version-check --metrics=off --config \"$cfg\" --error; done; for cfg in packages/*/.qa/semgrep.yml; do [ -f \"$cfg\" ] || continue; pkg_dir=$(dirname \"$(dirname \"$cfg\")\"); semgrep scan --disable-version-check --metrics=off --config \"$cfg\" --error \"$pkg_dir\"; done'",
