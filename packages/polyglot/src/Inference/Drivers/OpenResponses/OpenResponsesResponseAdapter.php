@@ -10,7 +10,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Messages\ToolCall;
 use Cognesy\Messages\ToolCallId;
-use JsonException;
+use Cognesy\Polyglot\Inference\Drivers\Support\DecodesJsonPayload;
 use RuntimeException;
 
 /**
@@ -30,6 +30,8 @@ use RuntimeException;
  */
 class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
 {
+    use DecodesJsonPayload;
+
     public function __construct(
         protected CanMapUsage $usageFormat,
     ) {}
@@ -126,23 +128,6 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
         }
 
         return $data;
-    }
-
-    /**
-     * @return array<string,mixed>
-     */
-    private function decodeJsonData(string $payload, string $context): array {
-        try {
-            $decoded = json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException $e) {
-            throw new RuntimeException($context . ' is not valid JSON.', previous: $e);
-        }
-
-        if (!is_array($decoded)) {
-            throw new RuntimeException($context . ' must decode to an object or array.');
-        }
-
-        return $decoded;
     }
 
     // RESPONSE EXTRACTION ////////////////////////////////////////////
