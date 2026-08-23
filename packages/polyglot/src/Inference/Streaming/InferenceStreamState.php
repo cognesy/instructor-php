@@ -28,6 +28,10 @@ final class InferenceStreamState
     private array $tools = [];
     private int $toolsCount = 0;
     private string $lastToolKey = '';
+    /**
+     * Args fragments received before any tool could be identified. Held here rather
+     * than dropped, and flushed into the first tool that is identified afterwards.
+     */
     private string $pendingToolArgs = '';
     private int $toolMutationCount = 0;
     private int $valueRevision = 0;
@@ -224,6 +228,30 @@ final class InferenceStreamState
         return $this->toolId !== '' || $this->toolName !== '' || $this->toolArgs !== '';
     }
 
+    /**
+     * Resolves the accumulator key for a tool delta.
+     *
+     * Streamed tool calls are correlated at TWO levels, and this is the second.
+     *
+     * 1. Adapter level. Every bundled adapter that emits tool deltas already maps the
+     *    provider's wire index to a tool id using ToolCallIdByStreamIndex, and
+     *    synthesises a stable id when the wire supplies none
+     *    (OpenAI 'idx:N', Gemini ':part:N', Anthropic 'idx:N', OpenResponses item id).
+     *    For those drivers $toolId is always non-empty and the first branch wins.
+     *
+     * 2. This method. CanTranslateInferenceResponse is a public extension point, and a
+     *    third-party driver may emit tool deltas with no id at all. The remaining
+     *    branches keep such streams correct:
+     *      - a name matching the tool currently in flight continues that tool;
+     *      - a different name starts a new tool, suffixed with the tool count so that
+     *        the same name appearing twice in one stream yields two distinct calls
+     *        (see NoIdToolCallAccumulationRegressionTest);
+     *      - a bare args fragment continues whatever tool is in flight.
+     *
+     * The ladder is deliberate, not a heuristic to be optimised away: each branch has a
+     * dedicated regression test. See also StreamToolKeyFallbackTest for the '' case,
+     * where args arrive before any tool is identified and are held in $pendingToolArgs.
+     */
     private function resolveToolKey(string $toolId, string $toolName): string
     {
         if ($toolId !== '') {
