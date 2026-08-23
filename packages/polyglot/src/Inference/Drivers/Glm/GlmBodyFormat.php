@@ -70,14 +70,4 @@ class GlmBodyFormat extends OpenAICompatibleBodyFormat
 
         return $hasTools && $isStreaming;
     }
-
-    private function toBoolean(mixed $value): bool {
-        return match (true) {
-            is_bool($value) => $value,
-            is_int($value) => $value !== 0,
-            is_float($value) => $value !== 0.0,
-            is_string($value) => in_array(strtolower(trim($value)), ['1', 'true', 'yes', 'on', 'enabled'], true),
-            default => (bool) $value,
-        };
-    }
 }
