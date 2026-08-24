@@ -34,13 +34,23 @@ fi
 
 gh run watch "$run_id" --repo "$repository" --exit-status
 
+# Probe only the release page itself. Its URL is minted by this release, so no
+# CDN can hold a pre-release copy of it -- whereas /release-notes/versions is a
+# long-lived URL, and Mintlify's edge served a stale copy of it for hours after
+# v2.8.0 shipped (cf-cache-status: HIT, x-vercel-cache: STALE, age ~4h) despite
+# the origin sending "no-store, no-cache, must-revalidate". That cache is not
+# ours to purge, so gating a release on it made the gate flaky, not stricter.
+#
+# Nothing is lost by dropping the index grep: "every authored release note is
+# present in BOTH site navigations" is already asserted deterministically
+# against the build artifacts by scripts/docs/verify-release-parity.php, which
+# publish-ver.sh runs (with --release) before anything is deployed. Re-checking
+# that same property through a third party's cache added no assurance.
 release_is_live() {
   local base_url="$1"
   local release_url="$2"
-  local index_url="$3"
 
-  curl -fsSL "${base_url}${release_url}?source=${source_sha}" >/dev/null \
-    && curl -fsSL "${base_url}${index_url}?source=${source_sha}" | grep -F "v${version}" >/dev/null
+  curl -fsSL "${base_url}${release_url}?source=${source_sha}" | grep -F "v${version}" >/dev/null
 }
 
 DOCS_VERIFY_ATTEMPTS="$attempts" \
@@ -51,8 +61,8 @@ mintlify_base="${MINTLIFY_BASE_URL:-https://docs.instructorphp.com}"
 mkdocs_base="${MKDOCS_BASE_URL:-https://cognesy.github.io/instructor-php}"
 
 for ((attempt = 1; attempt <= attempts; attempt++)); do
-  if release_is_live "$mintlify_base" "/release-notes/v${version}" "/release-notes/versions" \
-    && release_is_live "$mkdocs_base" "/release-notes/v${version}/" "/release-notes/versions/"; then
+  if release_is_live "$mintlify_base" "/release-notes/v${version}" \
+    && release_is_live "$mkdocs_base" "/release-notes/v${version}/"; then
     echo "Both documentation sites expose v${version} from $source_sha."
     exit 0
   fi
