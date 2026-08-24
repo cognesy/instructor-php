@@ -1,0 +1,127 @@
+v2.8.0 is a maintenance release for `cognesy/polyglot`. It removes duplicated code from the
+inference drivers, makes Anthropic's streamed tool-call handling consistent with the other
+providers, and documents a part of the streaming pipeline that was easy to misread. There are
+no breaking changes.
+
+The release is smaller than it was meant to be, and that is the interesting part. It began as a
+planned refactoring driven by a survey of how other LLM libraries structure provider
+connectivity. Most of what that survey proposed to delete turned out to be load-bearing. Each
+finding was checked against the code before acting, and the ones that did not survive are
+listed at the end — because "we looked and there was nothing to remove" is a real result, and
+the reasoning is worth publishing.
+
+## Polyglot Improvements
+
+### One Shared JSON Decoder Instead of Four
+
+The Anthropic, OpenAI, OpenResponses and Gemini response adapters each carried a
+byte-identical private `decodeJsonData()` — the same try/catch around `json_decode()` with
+`JSON_THROW_ON_ERROR`, the same two `RuntimeException` messages.
+
+These four do not share a supertype. `OpenAIResponseAdapter` is itself the base for a dozen
+OpenAI-compatible drivers, while the other three implement `CanTranslateInferenceResponse`
+directly. Introducing a common parent to hold one method would have created an inheritance
+edge that does not otherwise exist, so the method moved into a new trait,
+`Cognesy\Polyglot\Inference\Drivers\Support\DecodesJsonPayload`, and stays `protected` for
+subclasses that relied on it.
+
+`QwenBodyFormat` and `GlmBodyFormat` had the same problem with an identical `toBoolean()`
+helper. Those two *do* share an ancestor, so it moved to `OpenAICompatibleBodyFormat` rather
+than into a trait — which also gives that class, until now an empty pass-through, its first
+real member.
+
+### Anthropic Synthesises Tool-Call Ids for Orphaned Blocks
+
+Streamed tool calls are correlated by an id that the adapter derives from the provider's wire
+format. OpenAI synthesises `idx:N` from the chunk index when the wire supplies no id, and
+Gemini synthesises `:part:N`. Anthropic returned an empty string instead, leaving the
+accumulator downstream to fall back on matching by tool name.
+
+Anthropic now synthesises `idx:N` from the content-block index too, and remembers it, so every
+fragment of an orphaned tool block agrees on one id and accumulates into a single tool call.
+
+This is deliberately scoped to events that actually carry tool payload — a `tool_use` block
+start, a block carrying a tool name, or an `partial_json` fragment. `resolveToolId()` runs on
+*every* event in the stream, and a non-empty tool id is by itself enough to make the
+accumulator treat a delta as tool data. Minting one unconditionally would have started a
+phantom tool call on every text chunk of every response.
+
+### The Tool-Correlation Model Is Documented
+
+`InferenceStreamState::resolveToolKey()` implements a fallback ladder: correlate by provider
+id, else by tool name, else by the tool currently in flight. Nothing in the code explained why
+all three branches exist, which made it look like guesswork.
+
+They exist because `CanTranslateInferenceResponse` is a public extension point. Every bundled
+adapter supplies an id, so only the first branch runs in practice — but a third-party driver
+may not, and the remaining branches keep those streams correct. In particular, the tool-count
+suffix on name-derived keys is what makes two calls to the *same* tool in one stream come out
+as two distinct calls rather than one merged one.
+
+The method and the `pendingToolArgs` buffer are now documented, and
+`CanTranslateInferenceResponse::fromStreamDeltas()` states the expectation for implementers:
+supply a stable tool id where the provider makes one derivable, and do not mint ids for
+non-tool events.
+
+### Test Coverage for Two Live-but-Unpinned Paths
+
+Two code paths were doing real work with nothing asserting on them:
+
+`StreamingUsageState::applyIncremental()` is reached only by Cohere v2, which reports streamed
+usage incrementally rather than cumulatively. There was no Cohere streaming fixture, so nothing
+distinguished summing from taking a maximum. The new fixture uses deliberately non-monotonic
+usage fragments, and was checked by swapping the branch and confirming it fails.
+
+`pendingToolArgs` — which holds argument fragments that arrive before any tool has been
+identified — was the only branch of the correlation ladder with no test. It has one now,
+alongside a case asserting that genuinely orphaned arguments are dropped rather than attached
+to an unrelated call.
+
+### Embeddings Structure Explained
+
+`packages/polyglot/src/Embeddings/` mirrors `Inference/` directory for directory, which reads
+as duplication and has been reported as such. It is not: Embeddings is roughly 18% the size
+because it does 18% as much — no streaming, no tool calls, no messages, no reasoning. Its
+`FlatRateCostCalculator` bills input tokens only, which is what embedding APIs charge; merging
+it with the inference calculator would be a bug. A `README.md` in that directory now records
+this, so the conclusion does not have to be re-derived.
+
+## What Was Investigated and Left Alone
+
+Five proposed deletions were rejected after checking them against the code. All five were
+"this symbol has no callers" findings, and all five were wrong in the same way — the search
+covered `src/` and missed construction sites, example code, and test-only consumers.
+
+- **`StreamingUsageState::applyIncremental()`** — live; Cohere v2 depends on it.
+- **`FlatRateCostCalculator`** — live; three examples and two test files use it.
+- **`DriverCapabilities`** — live; the evals package branches on its flags to skip cases a
+  provider cannot serve, and three test files assert on it.
+- **`InferenceStreamState::resolveToolKey()`** — every branch has a dedicated regression test.
+- **`Embeddings/` as a redundant copy of `Inference/`** — domain specialisation, not
+  duplication.
+
+A sixth change was implemented and then reverted: inverting the default of
+`supportsNonTextResponseForTools()`, which eleven OpenAI-compatible drivers override
+identically. `OpenAICompatibleBodyFormat` is not only a base class — six providers
+(`openai-compatible`, `ollama`, `together`, `xai`, `moonshot`, `bedrock-openai`) register it
+directly, so changing its default changed their request bodies. The golden-request test caught
+it with twelve drifted snapshots and the change was backed out. The eleven overrides are not
+redundant; no single default satisfies both the direct users and the subclasses.
+
+## Upgrade Notes
+
+No breaking changes and no upgrade steps. `composer update cognesy/instructor-php` is
+sufficient.
+
+Two notes for anyone working close to the streaming internals:
+
+- If you implement `CanTranslateInferenceResponse` yourself, read the new docblock on
+  `fromStreamDeltas()`. Nothing is required of you that was not already true, but supplying a
+  stable tool id is now stated as the preferred contract, and the reason the fallback is
+  weaker is spelled out.
+- If you rely on Anthropic streaming with tool calls, an edge case changed shape: argument
+  fragments for a tool block whose start event was missing now accumulate into one tool call
+  keyed `idx:N`, where previously they were correlated by name. Well-formed streams are
+  unaffected.
+
+Polyglot's test suite grew from 700 to 714 tests as part of this work.
