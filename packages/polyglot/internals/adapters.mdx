@@ -46,7 +46,7 @@ $table = [
         capabilities: new DriverCapabilities(responseFormatWithTools: false),
     ),
 ];
-// @doctest id="2720"
+// @doctest id="1427"
 ```
 
 Anything left out defaults to the OpenAI implementation, so a provider that differs only in its
@@ -64,7 +64,7 @@ $driver = new SpecifiedInferenceDriver(
     responseTranslator: new OpenAIResponseAdapter(new OpenAIUsageFormat()),
     capabilities: null,
 );
-// @doctest id="26ad"
+// @doctest id="091e"
 ```
 
 Providers that assemble their own URL or headers still use bespoke request adapters, but they
@@ -86,7 +86,7 @@ interface CanTranslateInferenceRequest
 {
     public function toHttpRequest(InferenceRequest $request): HttpRequest;
 }
-// @doctest id="4bec"
+// @doctest id="7d6c"
 ```
 
 Request adapters typically delegate body construction to a `CanMapRequestBody` implementation:
@@ -96,7 +96,7 @@ interface CanMapRequestBody
 {
     public function toRequestBody(InferenceRequest $request): array;
 }
-// @doctest id="c4a9"
+// @doctest id="cc81"
 ```
 
 Message formatting is handled by `CanMapMessages`, which receives typed `Messages` and returns a provider-native array. Implementations compose a `MessageMapper` utility for typed iteration instead of duplicating the loop:
@@ -106,7 +106,7 @@ interface CanMapMessages
 {
     public function map(Messages $messages): array;
 }
-// @doctest id="10ed"
+// @doctest id="1f3b"
 ```
 
 A request adapter composes these together. It receives a `CanMapRequestBody` (which itself wraps
@@ -129,7 +129,7 @@ abstract class BaseHttpRequestAdapter implements CanTranslateInferenceRequest
     abstract protected function toUrl(InferenceRequest $request): string;
     abstract protected function toHeaders(InferenceRequest $request): array;
 }
-// @doctest id="bae5"
+// @doctest id="22f2"
 ```
 
 So `OpenAIRequestAdapter` is just the two hooks:
@@ -149,7 +149,7 @@ class OpenAIRequestAdapter extends BaseHttpRequestAdapter
         ];
     }
 }
-// @doctest id="0a50"
+// @doctest id="f46e"
 ```
 
 Both hooks are abstract rather than defaulted to `{apiUrl}{endpoint}`. Only two of the bundled
@@ -177,7 +177,7 @@ interface CanTranslateInferenceResponse
 
     public function toEventBody(string $data): string|bool;
 }
-// @doctest id="b393"
+// @doctest id="18f6"
 ```
 
 The `toEventBody()` method extracts the payload from an SSE line (stripping the `data:` prefix, detecting `[DONE]` markers). The `fromStreamDeltas()` method parses a sequence of those payloads into `PartialInferenceDelta` objects carrying incremental content, tool call fragments, and usage snapshots.
@@ -189,7 +189,7 @@ interface CanMapUsage
 {
     public function fromData(array $data): InferenceUsage;
 }
-// @doctest id="6724"
+// @doctest id="7bb9"
 ```
 
 Different providers report token usage under different keys and with different granularity. Some include cache tokens or reasoning tokens, others do not. Each provider's usage formatter encapsulates these differences into the normalized `InferenceUsage` object.
@@ -203,7 +203,7 @@ $delta = new PartialInferenceDelta(
     contentDelta: $content,
     usage: $this->hasUsageData($data) ? $this->usageFormat->fromData($data) : null,
 );
-// @doctest id="d12e"
+// @doctest id="5526"
 ```
 
 `StreamingUsageState::apply()` already discards a zero-total `InferenceUsage`, so building one is pure waste -- one constructor call and one allocate/free cycle per delta, ten thousand of them on a long stream.
@@ -253,13 +253,12 @@ class MyProviderBodyFormat extends OpenAICompatibleBodyFormat
         return $this->toJsonObjectResponseFormat($responseFormat);
     }
 }
-// @doctest id="98bb"
+// @doctest id="f37a"
 ```
 
 Do not override `toResponseFormat()` to do this. That method decides *whether* a response
-format is sent at all — `DeepseekBodyFormat` overrides it because its reasoner models take no
-structured output of any kind — while the three methods above decide what the payload looks
-like once that question is settled.
+format is sent at all, while the three methods above decide what the payload looks like once
+that question is settled. DeepSeek V4 uses the latter hook to degrade JSON Schema to JSON Output.
 
 > Provider variation used to be injected into `ResponseFormat` itself through
 > `withToTextHandler()` / `withToJsonObjectHandler()` / `withToJsonSchemaHandler()`. Those

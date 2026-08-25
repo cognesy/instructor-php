@@ -1,11 +1,12 @@
 ## Overview
 
-Support for DeepSeek API which provides strong models at affordable price.
+QwenCloud provides an OpenAI-compatible API with tool calling, JSON output,
+and native JSON Schema support on its current Qwen3.8-Max model.
 
 Mode compatibility:
 - OutputMode::Tools (supported)
 - OutputMode::Json (supported)
-- OutputMode::JsonSchema (degraded to JSON Output)
+- OutputMode::JsonSchema (supported by Qwen3.8-Max)
 - OutputMode::MdJson (fallback)
 
 ## Example
@@ -14,9 +15,9 @@ Mode compatibility:
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\StructuredOutputRuntime;
-use Cognesy\Instructor\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 enum UserType : string {
@@ -35,17 +36,23 @@ class User {
 }
 
 $structuredOutput = new StructuredOutput(
-    StructuredOutputRuntime::fromProvider(LLMProvider::using('deepseek'))
+    StructuredOutputRuntime::fromProvider(LLMProvider::using('qwen'))
         ->withOutputMode(OutputMode::JsonSchema)
 );
 
 $user = $structuredOutput->with(
-    messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
+    messages: 'Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.',
     responseModel: User::class,
-    model: 'deepseek-v4-flash', // set your own value/source
+    model: 'qwen3.8-max',
     examples: [[
-        'input' => 'Ive got email Frank - their developer, who\'s 30. His Twitter handle is @frankch. Btw, he plays on drums!',
-        'output' => ['age' => 30, 'name' => 'Frank', 'username' => '@frankch', 'role' => 'developer', 'hobbies' => ['playing drums'],],
+        'input' => 'Frank is a 30-year-old developer with the Twitter handle @frankch. He plays drums.',
+        'output' => [
+            'age' => 30,
+            'name' => 'Frank',
+            'username' => '@frankch',
+            'role' => 'user',
+            'hobbies' => ['playing drums'],
+        ],
     ]],
 )->get();
 
@@ -53,16 +60,11 @@ print("Completed response model:\n\n");
 
 dump($user);
 
-assert(isset($user->name));
-assert(isset($user->role));
-assert(isset($user->age));
-assert(isset($user->hobbies));
-assert(isset($user->username));
+assert($user->name === 'Jason');
+assert($user->age === 25);
+assert($user->role === UserType::Admin);
 assert(is_array($user->hobbies));
 assert(count($user->hobbies) > 0);
-assert($user->role === UserType::Admin);
-assert($user->age === 25);
-assert($user->name === 'Jason');
 assert(in_array($user->username, ['jxnlco', '@jxnlco']));
 ?>
 ```

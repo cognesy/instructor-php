@@ -51,7 +51,7 @@ $configSource = new CustomConfigSource([
                 'apiUrl' => 'https://api.deepseek.com',
                 'apiKey' => (string) Env::get('DEEPSEEK_API_KEY', ''),
                 'endpoint' => '/chat/completions',
-                'model' => 'deepseek-chat',
+                'model' => 'deepseek-v4-flash',
                 'maxTokens' => 128,
             ],
             'openai' => [

@@ -1,0 +1,41 @@
+v2.8.1 is a provider-compatibility patch release. It updates the bundled DeepSeek and Qwen
+integrations to their current OpenAI-compatible API contracts, adds provider examples and live
+smoke tests, and makes documentation release verification less dependent on third-party cache
+behaviour.
+
+## Provider Updates
+
+### DeepSeek V4
+
+The DeepSeek presets and evaluation connections now use the current V4 model identifiers:
+`deepseek-v4-flash` and `deepseek-v4-pro`. The capability matrix no longer infers behaviour from
+the legacy `reasoner` model-name substring. V4 requests forward thinking and
+`reasoning_effort`, support tool calling and JSON Output, and degrade native JSON Schema
+requests to the provider-supported JSON object format.
+
+Reasoning-content coverage now includes an opt-in DeepSeek V4 live smoke test.
+
+### Qwen
+
+The Qwen preset now targets `qwen3.8-max` through DashScope's international OpenAI-compatible
+endpoint. It recognizes `QWEN_API_KEY`, current context/output limits, Qwen thinking controls,
+and model-specific JSON Schema support. Unsupported tool-choice modes are translated to valid
+Qwen requests instead of being sent unchanged.
+
+New structured-output and LLM API examples are included under `examples/`, with deterministic
+request/capability coverage and an opt-in live smoke test.
+
+## Documentation and Release Verification
+
+The documentation release gate now verifies the uniquely versioned release page on both published
+documentation sites and relies on the generated release-note parity check for navigation
+coverage. This avoids treating a stale third-party CDN copy of the long-lived release index as a
+release failure.
+
+## Upgrade Notes
+
+The Qwen bundled preset now reads `QWEN_API_KEY`; users who previously configured only
+`DASHSCOPE_API_KEY` should set the new variable or provide an explicit Qwen configuration.
+
+The `deepseek` and `deepseek-r` preset names remain available, but now select DeepSeek V4 Flash
+and V4 Pro respectively. No other breaking changes are intended.

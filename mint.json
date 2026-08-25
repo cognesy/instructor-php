@@ -25,6 +25,7 @@
             "group": "Release Notes",
             "pages": [
                 "release-notes/versions",
+                "release-notes/v2.8.1",
                 "release-notes/v2.8.0",
                 "release-notes/v2.7.1",
                 "release-notes/v2.7.0",
@@ -527,6 +528,7 @@
                 "cookbook/examples/A04_APISupport/openai-responses",
                 "cookbook/examples/A04_APISupport/openrouter",
                 "cookbook/examples/A04_APISupport/perplexity",
+                "cookbook/examples/A04_APISupport/qwen",
                 "cookbook/examples/A04_APISupport/sambanova",
                 "cookbook/examples/A04_APISupport/togetherai",
                 "cookbook/examples/A04_APISupport/xai"
@@ -627,6 +629,7 @@
                 "cookbook/examples/B04_LLMApiSupport/llm_openai-responses",
                 "cookbook/examples/B04_LLMApiSupport/llm_openrouter",
                 "cookbook/examples/B04_LLMApiSupport/llm_perplexity",
+                "cookbook/examples/B04_LLMApiSupport/llm_qwen",
                 "cookbook/examples/B04_LLMApiSupport/llm_sambanova",
                 "cookbook/examples/B04_LLMApiSupport/llm_togetherai",
                 "cookbook/examples/B04_LLMApiSupport/llm_xai"
