@@ -99,8 +99,8 @@ describe('InferenceCases capability filtering', function () {
         expect($modes)->toContain(OutputMode::Text);
     });
 
-    it('filters Tools mode for deepseek-r (reasoner) connection', function () {
-        // 'deepseek-r' is the reasoner connection in the default set
+    it('includes Tools mode for the deepseek-r V4 Pro compatibility connection', function () {
+        // 'deepseek-r' remains a compatibility connection name, now backed by V4 Pro.
         $cases = iterator_to_array(InferenceCases::only(
             connections: ['deepseek-r'],
             modes: [OutputMode::Tools, OutputMode::Text],
@@ -108,13 +108,12 @@ describe('InferenceCases capability filtering', function () {
 
         $modes = array_map(fn($case) => $case->mode, $cases);
 
-        // Tools should be filtered out for reasoner model
-        expect($modes)->not->toContain(OutputMode::Tools);
+        expect($modes)->toContain(OutputMode::Tools);
         expect($modes)->toContain(OutputMode::Text);
     });
 
-    it('includes Tools mode for deepseek (chat) connection', function () {
-        // 'deepseek' is the chat connection in the default set
+    it('includes Tools mode for the deepseek V4 Flash connection', function () {
+        // 'deepseek' selects V4 Flash in the default set.
         $cases = iterator_to_array(InferenceCases::only(
             connections: ['deepseek'],
             modes: [OutputMode::Tools, OutputMode::Text],
@@ -122,7 +121,6 @@ describe('InferenceCases capability filtering', function () {
 
         $modes = array_map(fn($case) => $case->mode, $cases);
 
-        // Tools should be included for chat model
         expect($modes)->toContain(OutputMode::Tools);
         expect($modes)->toContain(OutputMode::Text);
     });

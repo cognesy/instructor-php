@@ -49,37 +49,55 @@ describe('anthropic capabilities', function () {
     });
 });
 
-describe('deepseek model-specific capabilities', function () {
-    // The only provider whose capabilities are a function of the model rather than a constant,
-    // and therefore the only reason InferenceDriverSpec::$capabilities accepts a closure.
-    it('supports native response formats and tools for chat models', function () {
-        $caps = capabilitiesOf('deepseek', 'deepseek-chat');
+describe('DeepSeek V4 capabilities', function () {
+    it('supports tools and JSON Output for V4 Flash', function () {
+        $caps = capabilitiesOf('deepseek', 'deepseek-v4-flash');
+
+        expect($caps->supportsToolCalling())->toBeTrue();
+        expect($caps->supportsToolChoice())->toBeTrue();
+        expect($caps->supportsResponseFormatJsonObject())->toBeTrue();
+        expect($caps->supportsResponseFormatJsonSchema())->toBeFalse();
+    });
+
+    it('supports the same feature set for V4 Pro', function () {
+        $caps = capabilitiesOf('deepseek', 'deepseek-v4-pro');
+
+        expect($caps->supportsToolCalling())->toBeTrue();
+        expect($caps->supportsToolChoice())->toBeTrue();
+        expect($caps->supportsResponseFormatJsonObject())->toBeTrue();
+        expect($caps->supportsResponseFormatJsonSchema())->toBeFalse();
+    });
+
+    it('does not vary by the selected V4 model', function () {
+        $caps = capabilitiesOf('deepseek', 'deepseek-v4-flash', forModel: 'deepseek-v4-pro');
+
+        expect($caps->supportsToolCalling())->toBeTrue();
+        expect($caps->supportsToolChoice())->toBeTrue();
+        expect($caps->supportsResponseFormatJsonSchema())->toBeFalse();
+    });
+
+    it('does not support combining response format with tools', function () {
+        expect(capabilitiesOf('deepseek', 'deepseek-v4-flash')->supportsResponseFormatWithTools())->toBeFalse();
+    });
+});
+
+describe('Qwen current model capabilities', function () {
+    it('supports tools, JSON Object, and JSON Schema on Qwen3.8-Max', function () {
+        $caps = capabilitiesOf('qwen', 'qwen3.8-max');
 
         expect($caps->supportsToolCalling())->toBeTrue();
         expect($caps->supportsToolChoice())->toBeTrue();
         expect($caps->supportsResponseFormatJsonObject())->toBeTrue();
         expect($caps->supportsResponseFormatJsonSchema())->toBeTrue();
+        expect($caps->supportsResponseFormatWithTools())->toBeFalse();
     });
 
-    it('disables tools and JSON schema for reasoner models via config', function () {
-        $caps = capabilitiesOf('deepseek', 'deepseek-reasoner');
+    it('limits legacy Qwen models to JSON Object', function () {
+        $caps = capabilitiesOf('qwen', 'qwen3-max-preview');
 
-        expect($caps->supportsToolCalling())->toBeFalse();
-        expect($caps->supportsToolChoice())->toBeFalse();
         expect($caps->supportsResponseFormatJsonObject())->toBeTrue();
         expect($caps->supportsResponseFormatJsonSchema())->toBeFalse();
-    });
-
-    it('lets the model parameter override the configured model', function () {
-        $caps = capabilitiesOf('deepseek', 'deepseek-chat', forModel: 'deepseek-reasoner');
-
-        expect($caps->supportsToolCalling())->toBeFalse();
-        expect($caps->supportsToolChoice())->toBeFalse();
-        expect($caps->supportsResponseFormatJsonSchema())->toBeFalse();
-    });
-
-    it('does not support combining response format with tools', function () {
-        expect(capabilitiesOf('deepseek', 'deepseek-chat')->supportsResponseFormatWithTools())->toBeFalse();
+        expect($caps->supportsResponseFormatWithTools())->toBeFalse();
     });
 });
 
@@ -135,7 +153,7 @@ describe('Drivers that do not combine response_format with tools', function () {
     it('reports the expected compatibility limits', function (string $driverName, string $model) {
         expect(capabilitiesOf($driverName, $model)->supportsResponseFormatWithTools())->toBeFalse();
     })->with([
-        ['qwen', 'qwen3-max-preview'],
+        ['qwen', 'qwen3.8-max'],
         ['glm', 'glm-4.5'],
         ['groq', 'llama-3'],
         ['mistral', 'mistral-large'],

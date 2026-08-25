@@ -251,9 +251,8 @@ class MyProviderBodyFormat extends OpenAICompatibleBodyFormat
 ```
 
 Do not override `toResponseFormat()` to do this. That method decides *whether* a response
-format is sent at all — `DeepseekBodyFormat` overrides it because its reasoner models take no
-structured output of any kind — while the three methods above decide what the payload looks
-like once that question is settled.
+format is sent at all, while the three methods above decide what the payload looks like once
+that question is settled. DeepSeek V4 uses the latter hook to degrade JSON Schema to JSON Output.
 
 > Provider variation used to be injected into `ResponseFormat` itself through
 > `withToTextHandler()` / `withToJsonObjectHandler()` / `withToJsonSchemaHandler()`. Those

@@ -135,7 +135,7 @@ Supported inference drivers:
 | `bedrock-openai` | spec: `OpenAICompatibleBodyFormat` + `BedrockOpenAIRequestAdapter` | AWS Bedrock (OpenAI-compatible) |
 | `cerebras` | spec: `CerebrasBodyFormat` | Cerebras |
 | `cohere` | spec: `CohereV2BodyFormat` + `CohereV2RequestAdapter` | Cohere v2 |
-| `deepseek` | spec: `DeepseekBodyFormat` | DeepSeek; the one provider whose capabilities depend on the model |
+| `deepseek` | spec: `DeepseekBodyFormat` | DeepSeek V4; tools and JSON Output, with JSON Schema degraded to JSON object |
 | `fireworks` | spec: `FireworksBodyFormat` | Fireworks AI |
 | `gemini` | spec: `GeminiBodyFormat` + `GeminiRequestAdapter` | Google Gemini native API |
 | `gemini-oai` | spec: `GeminiOAIBodyFormat` + `GeminiOAIRequestAdapter` | Gemini via OpenAI-compatible endpoint |
@@ -148,10 +148,10 @@ Supported inference drivers:
 | `mistral` | spec: `MistralBodyFormat` | Mistral |
 | `openai` | spec: `OpenAIBodyFormat` | OpenAI Chat Completions API |
 | `openai-responses` | spec: `OpenResponsesBodyFormat` + `OpenAIResponsesRequestAdapter` | OpenAI Responses API |
+| `qwen` | spec: `QwenBodyFormat` | Qwen3.8-Max; tools and JSON Output, with model-specific JSON Schema support |
 | `openresponses` | spec: `OpenResponsesBodyFormat` + `OpenResponsesRequestAdapter` | Open Responses API |
 | `openrouter` | spec: `OpenRouterBodyFormat` | OpenRouter |
 | `perplexity` | spec: `PerplexityBodyFormat` | Perplexity |
-| `qwen` | spec: `QwenBodyFormat` | Alibaba Qwen |
 | `sambanova` | spec: `SambaNovaBodyFormat` | SambaNova |
 | `xai` | spec: `OpenAICompatibleBodyFormat` + `XAiMessageFormat` | xAI (Grok) |
 | `moonshot` | spec: `OpenAICompatibleBodyFormat` | Moonshot (via OpenAI-compatible) |
@@ -250,5 +250,5 @@ The driver contract `CanProcessInferenceRequest` also includes a `capabilities()
 
 ```php
 $driver->capabilities()->supportsStreaming;
-$driver->capabilities('deepseek-reasoner')->supportsToolCalls;
+$driver->capabilities('deepseek-v4-pro')->supportsToolCalling();
 ```

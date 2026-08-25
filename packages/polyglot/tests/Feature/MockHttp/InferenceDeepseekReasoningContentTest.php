@@ -4,7 +4,7 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Polyglot\Inference\Inference;
 
-it('captures reasoning content from Deepseek responses', function () {
+it('captures reasoning content from DeepSeek V4 responses', function () {
     $mock = new MockHttpDriver();
     $mock->on()
         ->post('https://api.deepseek.com/chat/completions')
@@ -23,7 +23,7 @@ it('captures reasoning content from Deepseek responses', function () {
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $response = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('deepseek-r'), httpClient: $http))
+    $response = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('deepseek-v4-pro'), httpClient: $http))
         ->withMessages(\Cognesy\Messages\Messages::fromString('Q?'))
         ->response();
 
@@ -31,7 +31,7 @@ it('captures reasoning content from Deepseek responses', function () {
     expect($response->reasoningContent())->toBe('France capital lookup reasoning.');
 });
 
-it('extracts reasoning content from think tags when field is missing', function () {
+it('extracts DeepSeek V4 reasoning content from think tags when the field is missing', function () {
     $mock = new MockHttpDriver();
     $mock->on()
         ->post('https://api.deepseek.com/chat/completions')
@@ -49,7 +49,7 @@ it('extracts reasoning content from think tags when field is missing', function 
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $response = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('deepseek-r'), httpClient: $http))
+    $response = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::fromConfig(\Cognesy\Polyglot\Tests\Support\TestConfig::llm('deepseek-v4-pro'), httpClient: $http))
         ->withMessages(\Cognesy\Messages\Messages::fromString('Q?'))
         ->response();
 

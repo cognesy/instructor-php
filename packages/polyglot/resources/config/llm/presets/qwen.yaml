@@ -1,8 +1,8 @@
 driver: qwen
 apiUrl: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1'
-apiKey: '${DASHSCOPE_API_KEY}'
+apiKey: '${QWEN_API_KEY}'
 endpoint: /chat/completions
-model: qwen3-max-preview
+model: qwen3.8-max
 maxTokens: 1024
-contextLength: 128000
-maxOutputLength: 8192
+contextLength: 1000000
+maxOutputLength: 131072

@@ -25,6 +25,7 @@
             "group": "Release Notes",
             "pages": [
                 "release-notes/versions",
+                "release-notes/v2.8.1",
                 "release-notes/v2.8.0",
                 "release-notes/v2.7.1",
                 "release-notes/v2.7.0",
@@ -512,6 +513,7 @@
                 "cookbook/examples/A04_APISupport/cerebras",
                 "cookbook/examples/A04_APISupport/cohere",
                 "cookbook/examples/A04_APISupport/deepseek",
+                "cookbook/examples/A04_APISupport/qwen",
                 "cookbook/examples/A04_APISupport/fireworks",
                 "cookbook/examples/A04_APISupport/google_gemini",
                 "cookbook/examples/A04_APISupport/google_gemini_oai",
@@ -613,6 +615,7 @@
                 "cookbook/examples/B04_LLMApiSupport/llm_cerebras",
                 "cookbook/examples/B04_LLMApiSupport/llm_cohere",
                 "cookbook/examples/B04_LLMApiSupport/llm_deepseek",
+                "cookbook/examples/B04_LLMApiSupport/llm_qwen",
                 "cookbook/examples/B04_LLMApiSupport/llm_fireworks",
                 "cookbook/examples/B04_LLMApiSupport/llm_google_gemini",
                 "cookbook/examples/B04_LLMApiSupport/llm_google_gemini_oai",

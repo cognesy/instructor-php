@@ -178,6 +178,7 @@ Instructor offers out-of-the-box support for the following LLM providers:
 - OpenAI
 - OpenRouter
 - Perplexity
+- Qwen
 - Sambanova
 - xAI / Grok
 
@@ -366,7 +367,7 @@ $answer = Inference::fromConfig(LLMConfig::fromArray([
     'driver' => 'deepseek',
     'apiUrl' => 'https://api.deepseek.com',
     'endpoint' => '/chat/completions',
-    'model' => 'deepseek-chat',
+    'model' => 'deepseek-v4-flash',
 ]))
     ->withMessages([['role' => 'user', 'content' => 'What is the capital of France']])
     ->withOptions(['max_tokens' => 64])

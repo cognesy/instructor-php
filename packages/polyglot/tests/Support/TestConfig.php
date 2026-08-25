@@ -38,12 +38,12 @@ final class TestConfig
                 'apiKey' => 'test',
                 'model' => 'gemini-1.5-flash',
             ],
-            'deepseek-r' => [
+            'deepseek-v4-pro' => [
                 'driver' => 'deepseek',
                 'apiUrl' => 'https://api.deepseek.com',
                 'endpoint' => '/chat/completions',
                 'apiKey' => 'test',
-                'model' => 'deepseek-reasoner',
+                'model' => 'deepseek-v4-pro',
             ],
             default => throw new InvalidArgumentException("Unknown test LLM config: {$name}"),
         });
@@ -65,4 +65,3 @@ final class TestConfig
         });
     }
 }
-

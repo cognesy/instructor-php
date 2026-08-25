@@ -34,7 +34,7 @@ final readonly class TellCredentialNames
         'openai-responses' => 'OPENAI_API_KEY',
         'openrouter' => 'OPENROUTER_API_KEY',
         'perplexity' => 'PERPLEXITY_API_KEY',
-        'qwen' => 'DASHSCOPE_API_KEY',
+        'qwen' => 'QWEN_API_KEY',
         'sambanova' => 'SAMBANOVA_API_KEY',
         'test' => 'OPENAI_API_KEY',
         'together' => 'TOGETHER_API_KEY',

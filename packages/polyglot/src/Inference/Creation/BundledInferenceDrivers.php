@@ -53,7 +53,6 @@ use Cognesy\Polyglot\Inference\Drivers\Qwen\QwenBodyFormat;
 use Cognesy\Polyglot\Inference\Drivers\Qwen\QwenResponseAdapter;
 use Cognesy\Polyglot\Inference\Drivers\SambaNova\SambaNovaBodyFormat;
 use Cognesy\Polyglot\Inference\Drivers\XAI\XAiMessageFormat;
-use Cognesy\Utils\Str;
 
 final class BundledInferenceDrivers
 {
@@ -99,17 +98,13 @@ final class BundledInferenceDrivers
             'deepseek' => new InferenceDriverSpec(
                 bodyFormat: DeepseekBodyFormat::class,
                 responseAdapter: DeepseekResponseAdapter::class,
-                // The one provider whose answer is not a constant: reasoner models drop tools
-                // and structured output. See InferenceDriverSpec::$capabilities.
-                capabilities: static function (string $model): DriverCapabilities {
-                    $isReasoner = Str::contains($model, 'reasoner');
-                    return new DriverCapabilities(
-                        toolCalling: !$isReasoner,
-                        toolChoice: !$isReasoner,
-                        responseFormatJsonSchema: !$isReasoner,
-                        responseFormatWithTools: false,
-                    );
-                },
+                // DeepSeek V4 Flash, Pro, and Flash Vision share the same
+                // advertised feature set: tools and JSON Output, but no native
+                // JSON Schema and no response_format alongside tools.
+                capabilities: new DriverCapabilities(
+                    responseFormatJsonSchema: false,
+                    responseFormatWithTools: false,
+                ),
             ),
             'fireworks' => new InferenceDriverSpec(
                 bodyFormat: FireworksBodyFormat::class,
@@ -151,7 +146,15 @@ final class BundledInferenceDrivers
             'qwen' => new InferenceDriverSpec(
                 bodyFormat: QwenBodyFormat::class,
                 responseAdapter: QwenResponseAdapter::class,
-                capabilities: new DriverCapabilities(responseFormatWithTools: false),
+                // Qwen Chat Completions supports tools and JSON Object. Native
+                // JSON Schema is model-specific (Qwen3.8-Max and Qwen3.7
+                // Max/Plus); the body format degrades unsupported models to
+                // JSON Object. Required tool choice is also downgraded to
+                // auto because Qwen does not accept that mode.
+                capabilities: static fn (string $model): DriverCapabilities => new DriverCapabilities(
+                    responseFormatJsonSchema: preg_match('/^qwen3\.(?:8-max|7-(?:max|plus))(?:-|$)/', $model) === 1,
+                    responseFormatWithTools: false,
+                ),
             ),
             'sambanova' => new InferenceDriverSpec(
                 bodyFormat: SambaNovaBodyFormat::class,

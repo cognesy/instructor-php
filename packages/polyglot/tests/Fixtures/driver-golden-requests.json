@@ -2745,7 +2745,7 @@
                 "toolCalling": true,
                 "toolChoice": true,
                 "jsonObject": true,
-                "jsonSchema": true,
+                "jsonSchema": false,
                 "formatWithTools": false,
                 "maxContextTokens": null,
                 "maxOutputTokens": null
@@ -2755,15 +2755,15 @@
                 "toolCalling": true,
                 "toolChoice": true,
                 "jsonObject": true,
-                "jsonSchema": true,
+                "jsonSchema": false,
                 "formatWithTools": false,
                 "maxContextTokens": null,
                 "maxOutputTokens": null
             },
             "reasoner-model": {
                 "streaming": true,
-                "toolCalling": false,
-                "toolChoice": false,
+                "toolCalling": true,
+                "toolChoice": true,
                 "jsonObject": true,
                 "jsonSchema": false,
                 "formatWithTools": false,
@@ -11747,7 +11747,7 @@
                 "toolCalling": true,
                 "toolChoice": true,
                 "jsonObject": true,
-                "jsonSchema": true,
+                "jsonSchema": false,
                 "formatWithTools": false,
                 "maxContextTokens": null,
                 "maxOutputTokens": null
@@ -11757,7 +11757,7 @@
                 "toolCalling": true,
                 "toolChoice": true,
                 "jsonObject": true,
-                "jsonSchema": true,
+                "jsonSchema": false,
                 "formatWithTools": false,
                 "maxContextTokens": null,
                 "maxOutputTokens": null
@@ -11767,7 +11767,7 @@
                 "toolCalling": true,
                 "toolChoice": true,
                 "jsonObject": true,
-                "jsonSchema": true,
+                "jsonSchema": false,
                 "formatWithTools": false,
                 "maxContextTokens": null,
                 "maxOutputTokens": null
@@ -11901,33 +11901,7 @@
                 "stream": false,
                 "max_completion_tokens": 1024,
                 "response_format": {
-                    "type": "json_schema",
-                    "json_schema": {
-                        "name": "answer",
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "text": {
-                                    "type": "string"
-                                },
-                                "score": {
-                                    "type": "integer"
-                                },
-                                "tags": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                }
-                            },
-                            "required": [
-                                "text"
-                            ],
-                            "additionalProperties": false,
-                            "nullable": false
-                        },
-                        "strict": true
-                    }
+                    "type": "json_object"
                 }
             },
             "method": "POST",
@@ -12044,7 +12018,7 @@
                         }
                     }
                 ],
-                "tool_choice": "required"
+                "tool_choice": "auto"
             },
             "method": "POST",
             "options": {
@@ -12137,12 +12111,7 @@
                         }
                     }
                 ],
-                "tool_choice": {
-                    "type": "function",
-                    "function": {
-                        "name": "get_weather"
-                    }
-                }
+                "tool_choice": "auto"
             },
             "method": "POST",
             "options": {

@@ -9,7 +9,6 @@ use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
 use Cognesy\Polyglot\Inference\Drivers\Support\RequestMessages;
 use Cognesy\Polyglot\Inference\Drivers\Support\RequestPayload;
-use Cognesy\Utils\Str;
 
 class DeepseekBodyFormat extends OpenAICompatibleBodyFormat
 {
@@ -51,25 +50,23 @@ class DeepseekBodyFormat extends OpenAICompatibleBodyFormat
     #[\Override]
     protected function supportsToolSelection(InferenceRequest $request): bool
     {
-        $model = $request->model() ?: $this->config->model;
-
-        return ! Str::contains($model, 'reasoner');
+        // DeepSeek V4 Flash, Pro, and Flash Vision all support tool calls and
+        // explicit tool choice, including when thinking mode is enabled.
+        return true;
     }
 
     #[\Override]
     protected function supportsStructuredOutput(InferenceRequest $request): bool
     {
-        $model = $request->model() ?: $this->config->model;
-
-        return ! Str::contains($model, 'reasoner');
+        // V4 supports JSON Output. JSON Schema requests are rendered as the
+        // provider's supported json_object form below.
+        return true;
     }
 
     #[\Override]
     protected function supportsAlternatingRoles(InferenceRequest $request): bool
     {
-        $model = $request->model() ?: $this->config->model;
-
-        return ! Str::contains($model, 'reasoner');
+        return true;
     }
 
     #[\Override]
@@ -80,31 +77,8 @@ class DeepseekBodyFormat extends OpenAICompatibleBodyFormat
 
     // INTERNAL ///////////////////////////////////////////////
 
-    /**
-     * Kept as an override for the reasoner guard alone: the reasoner models take no structured
-     * output at all, so they get plain text rather than the mode the caller asked for. The
-     * per-mode shapes live in the hooks below, like every other provider.
-     *
-     * Note this does NOT apply the base's `filterEmptyValues` to the result, which is why it
-     * still overrides rather than calling `parent::`.
-     */
-    #[\Override]
-    protected function toResponseFormat(InferenceRequest $request): array
-    {
-        if (! $this->supportsStructuredOutput($request)) {
-            return ['type' => 'text'];
-        }
-
-        $type = $this->toResponseFormatType($request);
-        if ($type === null) {
-            return [];
-        }
-
-        return $this->renderResponseFormatForType($request->responseFormat(), $type);
-    }
-
-    // Deepseek API supports json_object and text but no schema, so schema mode degrades to
-    // plain JSON.
+    // DeepSeek V4 supports json_object and text but not native JSON Schema, so
+    // schema mode degrades to plain JSON.
     #[\Override]
     protected function toJsonSchemaResponseFormat(ResponseFormat $responseFormat): array
     {

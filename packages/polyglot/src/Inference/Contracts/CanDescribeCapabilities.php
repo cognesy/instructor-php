@@ -15,8 +15,8 @@ interface CanDescribeCapabilities
     /**
      * Get driver capabilities, optionally for a specific model.
      *
-     * The model parameter allows model-specific capability checks, e.g.,
-     * deepseek-reasoner has different capabilities than deepseek-chat.
+     * The model parameter allows model-specific capability checks for providers whose model
+     * matrix genuinely differs. DeepSeek V4 models currently share one capability set.
      *
      * If model is null, capabilities for the configured default model are returned.
      */

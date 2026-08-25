@@ -913,46 +913,7 @@
         "type": "json_object"
     },
     "qwen/json_schema": {
-        "type": "json_schema",
-        "json_schema": {
-            "name": "user",
-            "schema": {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "age": {
-                        "type": "integer",
-                        "nullable": true
-                    },
-                    "tags": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "role": {
-                        "$ref": "#/$defs/Role"
-                    }
-                },
-                "required": [
-                    "name"
-                ],
-                "$defs": {
-                    "Role": {
-                        "type": "object",
-                        "properties": {
-                            "level": {
-                                "type": "integer"
-                            }
-                        }
-                    }
-                }
-            },
-            "strict": false
-        }
+        "type": "json_object"
     },
     "sambanova/text": {
         "type": "text"

@@ -21,8 +21,9 @@ class InferenceCases
     private const DEFAULT_CONNECTION_CONFIGS = [
         'a21' => ['driver' => 'a21', 'model' => 'jamba-large-1.7'],
         'anthropic' => ['driver' => 'anthropic', 'model' => 'claude-3-5-sonnet-latest'],
-        'deepseek' => ['driver' => 'deepseek', 'model' => 'deepseek-chat'],
-        'deepseek-r' => ['driver' => 'deepseek', 'model' => 'deepseek-reasoner'],
+        'deepseek' => ['driver' => 'deepseek', 'model' => 'deepseek-v4-flash'],
+        // Keep the connection name as a compatibility alias; it now selects the current V4 Pro.
+        'deepseek-r' => ['driver' => 'deepseek', 'model' => 'deepseek-v4-pro'],
         'gemini-oai' => ['driver' => 'gemini-oai', 'model' => 'gemini-2.5-flash'],
         'openai' => ['driver' => 'openai', 'model' => 'gpt-4o-mini'],
         'perplexity' => ['driver' => 'perplexity', 'model' => 'sonar'],

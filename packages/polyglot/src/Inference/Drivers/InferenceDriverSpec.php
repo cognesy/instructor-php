@@ -38,13 +38,9 @@ final readonly class InferenceDriverSpec
      * @param class-string<CanMapUsage> $usageFormat
      * @param class-string<CanMapMessages> $messageFormat
      * @param DriverCapabilities|(Closure(string): DriverCapabilities)|null $capabilities
-     *        A literal for the providers whose answer is fixed, which is all of them but one.
-     *        Deepseek reports different capabilities for its reasoner models, so it needs a
-     *        function of the model name -- the plan specified a plain `?DriverCapabilities`
-     *        here, and that field cannot express Deepseek, which the plan also lists among the
-     *        drivers to collapse. Widening the type was the smaller of the two deviations; the
-     *        alternative was a bespoke class whose only bespoke part is six booleans.
-     *        Null means the base default, i.e. everything supported.
+     *        A literal for providers whose answer is fixed. A closure remains available for
+     *        providers with a genuine model-specific capability matrix. Null means the base
+     *        default, i.e. everything supported.
      * @param class-string<SpecifiedInferenceDriver> $driverClass
      *        The extension point that replaces "subclass the bundled driver". Before this
      *        task, overriding one method of an OpenAI-compatible driver meant extending

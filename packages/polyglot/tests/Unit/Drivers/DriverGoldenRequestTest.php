@@ -337,13 +337,13 @@ function driverGoldenCapabilities(string $providerName): array {
         'maxOutputTokens' => $caps->maxOutputTokens,
     ];
 
-    // Three model names, because at least one driver varies its answer by model
-    // (Deepseek turns tools and schema off for its reasoner models). A single
-    // capabilities() reading would pin only one side of that branch.
+    // Keep the configured default and explicit V4 Pro override in the snapshot. DeepSeek V4
+    // models share one capability set, but the override still verifies that model selection is
+    // accepted by the registry-level capability API.
     return [
         'default' => $shape($driver->capabilities()),
         'test-model' => $shape($driver->capabilities('test-model')),
-        'reasoner-model' => $shape($driver->capabilities('deepseek-reasoner')),
+        'reasoner-model' => $shape($driver->capabilities('deepseek-v4-pro')),
     ];
 }
 
