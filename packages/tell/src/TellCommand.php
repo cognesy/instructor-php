@@ -25,6 +25,11 @@ use Cognesy\Tell\Render\TextRenderer;
 use Cognesy\Tell\Render\ToonRenderer;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Runtime\TellOptions;
+use Cognesy\Tell\Workspace\ArenaStore;
+use Cognesy\Tell\Workspace\WorkspaceSessionExecution;
+use Cognesy\Tell\Workspace\WorkspaceSessionRunner;
+use Cognesy\Tell\Workspace\WorkspaceTransientRunner;
+use Cognesy\Tell\Workspace\WorkspaceTurnRunner;
 use InvalidArgumentException;
 use Override;
 use Symfony\Component\Console\Command\Command;
@@ -55,6 +60,7 @@ Run an agent turn, or omit the prompt to discover available agents and next acti
 Examples:
   tell "summarize this repository"
   tell "continue the review" --session review-1
+  tell --transient "test a direction without recording it"
   tell --output=text "write a commit message"
 HELP)
             ->addArgument('prompt', InputArgument::OPTIONAL, 'Prompt')
@@ -66,6 +72,7 @@ HELP)
             ->addOption('dir', 'C', InputOption::VALUE_REQUIRED, 'Tool working directory', '')
             ->addOption('tools', null, InputOption::VALUE_REQUIRED, 'Comma-separated tool allow-list', '')
             ->addOption('max-steps', null, InputOption::VALUE_REQUIRED, 'Maximum agent steps', '10')
+            ->addOption('transient', null, InputOption::VALUE_NONE, 'Run without publishing workspace or session state')
             ->addOption('output', 'o', InputOption::VALUE_REQUIRED, 'Output: toon, text, json, or events', 'toon');
     }
 
@@ -84,10 +91,10 @@ HELP)
             $options = TellOptions::fromInput($input, $output);
             $this->factory()->assertReady($options);
             $renderer = $this->renderer($options, $output, $stderr);
-            $state = $this->executeTurn($options, $renderer);
-            $renderer->finish($state);
+            $execution = $this->executeTurn($options, $renderer);
+            $renderer->finish($execution->state, $execution->warnings, $execution->transient);
 
-            return $this->exitCode($state);
+            return $this->exitCode($execution->state);
         } catch (InvalidArgumentException $error) {
             $this->writeError($input, $output, $error->getMessage(), true);
 
@@ -106,29 +113,54 @@ HELP)
             plane: OperationalPlane::Data,
             command: 'tell "<prompt>"',
             responsibility: 'Execute one already-selected agent turn and emit bounded result evidence.',
-            ownedState: 'AgentState plus one append-only trace; AgentSession only when --session is explicit.',
+            ownedState: 'AgentState plus one append-only trace; initialized workspaces publish immutable arena turns unless --transient, and AgentSession is used only when --session is explicit and durable.',
             input: 'Prompt plus an immutable resolved AgentDefinition and AgentProfile.',
-            output: 'Terminal AgentState projection or typed events, an execution trace, and optional updated AgentSession.',
-            authority: 'Inference, resolved tools, its trace target, and optional write access to one named session.',
+            output: 'Terminal AgentState projection or typed events, explicit durable/transient mode, an execution trace, and optional updated AgentSession.',
+            authority: 'Inference, resolved tools, its trace target, and optional write access to one named session; --transient is read-only for conversation/session state.',
             degradedBehavior: 'Fails before inference when control resolution fails; trace-write failure does not fail the turn; stateless turns need no session storage.',
         );
     }
 
-    private function executeTurn(TellOptions $options, OutputRenderer $renderer): AgentState
+    private function executeTurn(TellOptions $options, OutputRenderer $renderer): WorkspaceSessionExecution
     {
+        if ($options->transient) {
+            return $this->executeTransient($options, $renderer);
+        }
+
         if ($options->session === null) {
             $definition = $this->factory()->definition($options);
             $loop = $this->factory()->build($options, $definition);
             $this->factory()->attachExecutionTrace($loop, $options);
             $renderer->attach($loop);
+            $workspace = $this->factory()->workspace()->discover($options->directory);
+            if ($workspace !== null) {
+                return new WorkspaceSessionExecution((new WorkspaceTurnRunner(new ArenaStore($workspace)))->execute(
+                    loop: $loop,
+                    definition: $definition,
+                    prompt: $options->prompt,
+                ));
+            }
             $seed = (new DefinitionStateFactory)
                 ->instantiateAgentState($definition)
                 ->withUserMessage($options->prompt);
 
-            return $loop->execute($seed);
+            return new WorkspaceSessionExecution($loop->execute($seed));
         }
 
         $sessionId = SessionId::from($options->session);
+        $workspace = $this->factory()->workspace()->discover($options->directory);
+        if ($workspace !== null) {
+            $definition = $this->factory()->definition($options);
+            $loop = $this->factory()->build($options, $definition);
+            $this->factory()->attachExecutionTrace($loop, $options);
+            $renderer->attach($loop);
+
+            return (new WorkspaceSessionRunner(
+                arena: new ArenaStore($workspace),
+                paths: $this->factory()->paths(),
+            ))->execute($sessionId, $loop, $definition, $options->prompt);
+        }
+
         $repository = $this->factory()->sessionRepository();
         if (! $repository->exists($sessionId)) {
             $definition = $this->factory()->definition($options);
@@ -164,7 +196,32 @@ HELP)
             new SendMessage($options->prompt, $loopFactory),
         );
 
-        return $session->state();
+        return new WorkspaceSessionExecution($session->state());
+    }
+
+    private function executeTransient(TellOptions $options, OutputRenderer $renderer): WorkspaceSessionExecution
+    {
+        $definition = $this->factory()->definition($options);
+        $loop = $this->factory()->build($options, $definition);
+        $this->factory()->attachExecutionTrace($loop, $options);
+        $renderer->attach($loop);
+        $workspace = $this->factory()->workspace()->discover($options->directory);
+
+        if ($workspace !== null) {
+            $session = $options->session === null ? null : SessionId::from($options->session);
+            $state = (new WorkspaceTransientRunner(
+                arena: new ArenaStore($workspace),
+                paths: $this->factory()->paths(),
+            ))->execute($session, $loop, $definition, $options->prompt);
+
+            return new WorkspaceSessionExecution($state, transient: true);
+        }
+
+        $seed = (new DefinitionStateFactory)
+            ->instantiateAgentState($definition)
+            ->withUserMessage($options->prompt);
+
+        return new WorkspaceSessionExecution($loop->execute($seed), transient: true);
     }
 
     private function renderer(
@@ -206,6 +263,7 @@ HELP)
         if (! is_dir($project)) {
             throw new InvalidArgumentException("Working directory does not exist: {$project}");
         }
+        $workspace = $this->factory()->workspace()->discover($project);
         $registry = $this->factory()->definitions($project);
         $agents = [];
         foreach ($registry->all() as $definition) {
@@ -220,6 +278,7 @@ HELP)
             'bin' => $this->binary(),
             'description' => 'Run and inspect Instructor agents in the current workspace.',
             'directory' => $project,
+            'workspace' => $workspace?->toArray(),
             'storage' => $this->factory()->paths()->toArray(),
             'observability' => $this->factory()->config()->toArray(),
             'agentCount' => count($agents),
@@ -231,6 +290,7 @@ HELP)
                 'Run `tell auth status` to inspect credential availability and provenance.',
                 'Run `tell planes` to inspect operational ownership and authority.',
                 'Run `tell sessions` to inspect persisted sessions.',
+                'Run `tell init` to initialize durable project state.',
                 'Trace roots are reported as storage.executionTraces and storage.sessionTraces.',
                 'Run `tell --help` for all turn options.',
             ],
@@ -265,6 +325,9 @@ HELP)
         bool $usage,
     ): void {
         $payload = ['error' => $message];
+        if ((bool) $input->getOption('transient')) {
+            $payload['execution'] = ['mode' => 'transient', 'durable' => false];
+        }
         if ($usage) {
             $payload['help'] = [
                 'Valid output modes: toon, text, json, events.',

@@ -12,6 +12,9 @@ use Cognesy\Tell\Render\ContentPreview;
 use Cognesy\Tell\Render\FieldSelection;
 use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Workspace\ArenaStore;
+use Cognesy\Tell\Workspace\TellWorkspace;
+use Cognesy\Tell\Workspace\WorkspaceSessionCatalog;
 use InvalidArgumentException;
 use Override;
 use Symfony\Component\Console\Command\Command;
@@ -39,6 +42,7 @@ List sessions, inspect one session, or remove one session.
 
 Examples:
   tell sessions
+  tell sessions --dir .
   tell sessions show review-1
   tell sessions show review-1 --full
   tell sessions rm review-1
@@ -47,6 +51,7 @@ HELP)
             ->addArgument('id', InputArgument::OPTIONAL, 'Session ID')
             ->addOption('fields', null, InputOption::VALUE_REQUIRED, 'Comma-separated list fields', '')
             ->addOption('full', null, InputOption::VALUE_NONE, 'Show complete session message content')
+            ->addOption('dir', 'C', InputOption::VALUE_REQUIRED, 'Workspace directory for arena-backed sessions', '')
             ->addOption('json', null, InputOption::VALUE_NONE, 'Emit JSON');
     }
 
@@ -83,22 +88,33 @@ HELP)
             plane: OperationalPlane::Management,
             command: 'sessions',
             responsibility: 'Observe and perform explicit lifecycle deletion of persisted agent sessions.',
-            ownedState: 'FileSessionStore is the sole writer for persisted AgentSession records.',
-            input: 'Operator list, show, or remove command targeting the local session store.',
-            output: 'Bounded session inventory/detail or an idempotent deletion result.',
-            authority: 'Read all local sessions and delete only the explicitly named session.',
+            ownedState: 'FileSessionStore legacy records plus read-only workspace arena session projections.',
+            input: 'Operator list, show, or remove command targeting local sessions and an optional workspace.',
+            output: 'Bounded session inventory/detail with stable storage and source, or an idempotent legacy deletion result.',
+            authority: 'Read local sessions and workspace session projections; delete only an explicitly named session from legacy storage.',
             degradedBehavior: 'Stateless data-plane turns continue when storage is unavailable; session operations fail explicitly.',
         );
     }
 
     private function list(InputInterface $input, OutputInterface $output): int
     {
+        $sessionsById = [];
+        foreach ($this->legacySessions() as $session) {
+            $sessionsById[$session['sessionId']] = $session;
+        }
+        $workspace = $this->workspace($input);
+        if ($workspace !== null) {
+            foreach ((new WorkspaceSessionCatalog(new ArenaStore($workspace)))->list() as $session) {
+                $sessionsById[$session['sessionId']] = $session;
+            }
+        }
+        ksort($sessionsById, SORT_STRING);
         /** @var list<array<string, mixed>> $sessions */
-        $sessions = array_values($this->agents->sessions()->listSessions()->toArray());
+        $sessions = array_values($sessionsById);
         $fields = FieldSelection::from(
             (string) $input->getOption('fields'),
-            ['sessionId', 'status', 'agentName'],
-            ['sessionId', 'status', 'version', 'agentName', 'agentLabel', 'createdAt', 'updatedAt'],
+            ['sessionId', 'status', 'agentName', 'storage', 'source'],
+            ['sessionId', 'status', 'version', 'agentName', 'agentLabel', 'createdAt', 'updatedAt', 'storage', 'source'],
         );
         $payload = [
             'count' => count($sessions),
@@ -118,6 +134,19 @@ HELP)
 
     private function show(SessionId $id, InputInterface $input, OutputInterface $output): int
     {
+        $workspace = $this->workspace($input);
+        if ($workspace !== null) {
+            $workspaceSession = (new WorkspaceSessionCatalog(new ArenaStore($workspace)))->show(
+                $id,
+                (bool) $input->getOption('full'),
+            );
+            if ($workspaceSession !== null) {
+                (new StructuredOutput($output))->write($workspaceSession, json: (bool) $input->getOption('json'));
+
+                return Command::SUCCESS;
+            }
+        }
+
         $session = $this->agents->sessions()->getSession($id);
         $preview = ContentPreview::from(
             $session->state()->messages()->toString(),
@@ -129,6 +158,8 @@ HELP)
             'messageCharacters' => $preview->characters,
             'messages' => $preview->content,
             'truncated' => $preview->truncated,
+            'storage' => 'legacy',
+            'source' => 'legacy',
         ];
         if ($preview->truncated) {
             $data['help'] = ['Run `tell sessions show '.$id->toString().' --full` for complete messages.'];
@@ -162,5 +193,38 @@ HELP)
         }
 
         return SessionId::from($id);
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function legacySessions(): array
+    {
+        if (! is_dir($this->agents->paths()->sessions)) {
+            return [];
+        }
+
+        return array_map(
+            static fn (array $session): array => [
+                ...$session,
+                'storage' => 'legacy',
+                'source' => 'legacy',
+            ],
+            array_values($this->agents->sessions()->listSessions()->toArray()),
+        );
+    }
+
+    private function workspace(InputInterface $input): ?TellWorkspace
+    {
+        $directory = (string) $input->getOption('dir');
+        $cwd = getcwd();
+        $project = match (true) {
+            $directory !== '' => $directory,
+            is_string($cwd) => $cwd,
+            default => '.',
+        };
+        if (! is_dir($project)) {
+            throw new InvalidArgumentException("Workspace directory does not exist: {$project}");
+        }
+
+        return $this->agents->workspace()->discover($project);
     }
 }

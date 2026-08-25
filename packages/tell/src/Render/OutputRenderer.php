@@ -11,5 +11,6 @@ interface OutputRenderer
 {
     public function attach(AgentLoop $loop): void;
 
-    public function finish(AgentState $state): void;
+    /** @param list<string> $warnings */
+    public function finish(AgentState $state, array $warnings = [], bool $transient = false): void;
 }

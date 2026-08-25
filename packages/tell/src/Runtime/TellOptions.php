@@ -24,6 +24,7 @@ final readonly class TellOptions
         public string $output = 'toon',
         public bool $verbose = false,
         public bool $quiet = false,
+        public bool $transient = false,
     ) {
         if ($this->prompt === '') {
             throw new InvalidArgumentException('Prompt must not be empty.');
@@ -68,6 +69,7 @@ final readonly class TellOptions
             output: (string) $input->getOption('output'),
             verbose: $output->isVerbose(),
             quiet: $output->isQuiet(),
+            transient: (bool) $input->getOption('transient'),
         );
     }
 

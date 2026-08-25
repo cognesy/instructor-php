@@ -27,6 +27,66 @@ Put a prompt that matches a subcommand name after `--`, for example
 Use `--session NAME` to persist and continue a conversation. Without that
 option, Tell performs no session storage I/O.
 
+## Durable project workspaces
+
+Durable project history is opt-in. Initialize it once from the project root:
+
+```bash
+tell init
+```
+
+This creates a private, versioned `.tell/arena` in the project. On later turns
+Tell discovers the nearest initialized workspace, compiles the selected
+canonical history before the new prompt, and publishes a new immutable turn
+only after a completed execution. Projects without `.tell/` keep the normal
+stateless behavior.
+
+The default durable conversation is `main`. `--session NAME` selects a
+compatible named conversation; an existing legacy Tell session is imported once
+when a durable named turn first needs it, then the canonical arena is
+authoritative. Existing legacy session files are never rewritten by the
+compatibility path.
+
+Use the workspace commands to inspect and manage the selected conversation:
+
+```bash
+tell history --json                 # bounded, oldest-first turn summaries
+tell transcript --full --json       # ordered semantic messages and tool traces
+tell context --json                 # compiled next-turn context, without inference
+tell compact "keep release decisions" # explicit, provenance-linked summary
+tell clear --json                   # make the selected ref empty; retain objects
+```
+
+`history`, `transcript`, and `context` are read-only: they do not resolve a
+provider, build an agent loop, run tools, or change state. Their default output
+is bounded; pass `--full` only when complete canonical content is required.
+`compact` uses the configured inference connection and replaces the selected
+ref with a concise immutable summary linked to the prior head. `clear` moves
+only the selected ref to empty: it does not delete immutable records, legacy
+sessions, traces, or configuration.
+
+For a one-off experiment that may use the ordinary workspace context and tools
+but must not change any conversation or session state, use `--transient`:
+
+```bash
+tell --transient "compare this approach without recording it"
+tell --session review-1 --transient "inspect the current review safely"
+```
+
+Transient execution compiles the same selected history as a durable turn but
+never writes canonical objects or refs, imports legacy sessions, saves mutable
+sessions, or changes configuration. It stays stateless outside a workspace.
+Text output states that nothing was persisted; JSON and TOON include
+`execution.mode: transient` and `execution.durable: false`; event output emits
+`TellTransientExecution`. Execution traces remain external observations and
+carry `transient: true` under the normal trace privacy policy.
+
+Canonical workspace records contain semantic messages and tool-call/result
+relationships only. Provider requests and responses, credentials, headers,
+usage, timing, rendering data, traces, and absolute paths are not part of
+canonical hashes. Immutable records can remain after a failed compare-and-swap
+publication, compaction, or clear; Tell does not run garbage collection.
+
 ## Local storage and execution traces
 
 Tell keeps its local concerns under one explicit runtime home. Set `TELL_HOME`

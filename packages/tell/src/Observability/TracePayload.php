@@ -17,7 +17,9 @@ final class TracePayload
     private const array PAYLOAD_KEYS = [
         'args',
         'context',
+        'input',
         'messagepayload',
+        'output',
         'prompt',
         'result',
         'state',

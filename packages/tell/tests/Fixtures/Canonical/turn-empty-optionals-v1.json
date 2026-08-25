@@ -1,0 +1,1 @@
+{"id":"turn-005","kind":"turn","lineage":{"root":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},"messages":[{"parts":[{"text":"Start a fresh conversation.","type":"text"}],"role":"user"}],"schema":1,"status":"completed","toolCalls":[],"toolResults":[]}

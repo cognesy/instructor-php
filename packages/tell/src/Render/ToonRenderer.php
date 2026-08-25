@@ -32,8 +32,8 @@ final readonly class ToonRenderer implements OutputRenderer
     }
 
     #[Override]
-    public function finish(AgentState $state): void
+    public function finish(AgentState $state, array $warnings = [], bool $transient = false): void
     {
-        $this->output->write(AgentResult::fromState($state));
+        $this->output->write(AgentResult::fromState($state, $warnings, $transient));
     }
 }

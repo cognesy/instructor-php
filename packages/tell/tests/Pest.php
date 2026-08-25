@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Cognesy\Agents\AgentLoop;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Runtime\TellCredentialStore;
 use Cognesy\Tell\Runtime\TellPaths;
@@ -10,7 +11,7 @@ use Cognesy\Tell\Runtime\TellPaths;
 $tellTemporaryRoots = [];
 
 /**
- * @param  callable(Cognesy\Agents\AgentLoop): Cognesy\Agents\AgentLoop|null  $decorate
+ * @param  callable(AgentLoop): AgentLoop|null  $decorate
  * @param  array<string, string>  $userAgents
  * @param  array<string, string>  $credentials
  */

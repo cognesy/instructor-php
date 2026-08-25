@@ -41,7 +41,7 @@
     "cognesy/instructor-struct": "^2.8",
     "cognesy/instructor-telemetry": "^2.8",
     "cognesy/instructor-utils": "^2.8",
-    "cognesy/xprompt-php": "^2.8",
+    "cognesy/xprompt": "^2.8",
     "symfony/yaml": "^7.0 || ^8.0",
     "twig/twig": "^3.0"
   },

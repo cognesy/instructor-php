@@ -31,6 +31,7 @@ use Cognesy\Config\Secrets\SecretResolver;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Tell\Observability\ExecutionTraceWriter;
+use Cognesy\Tell\Workspace\WorkspaceManager;
 use RuntimeException;
 
 final readonly class TellAgentFactory
@@ -164,6 +165,11 @@ final readonly class TellAgentFactory
     public function paths(): TellPaths
     {
         return $this->paths;
+    }
+
+    public function workspace(): WorkspaceManager
+    {
+        return new WorkspaceManager;
     }
 
     public function assertReady(TellOptions $options): void

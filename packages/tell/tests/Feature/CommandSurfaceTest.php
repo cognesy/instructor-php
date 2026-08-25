@@ -374,14 +374,20 @@ it('exposes an honest typed map of tell operational planes', function (): void {
         ->and($payload['systemBoundary'])->toContain('local Tell agent runtime')
         ->and($payload['separationLevel'])->toContain('one collocated process')
         ->and($payload['lastKnownGood'])->toContain('no persisted control snapshot')
-        ->and($payload['planeCounts'])->toBe(['data' => 1, 'control' => 2, 'management' => 3])
+        ->and($payload['planeCounts'])->toBe(['data' => 2, 'control' => 2, 'management' => 8])
         ->and($byCommand['tell "<prompt>"']['plane'])->toBe('data')
         ->and($byCommand['describe']['plane'])->toBe('control')
         ->and($byCommand['tools']['plane'])->toBe('control')
         ->and($byCommand['agents']['plane'])->toBe('management')
         ->and($byCommand['auth']['plane'])->toBe('management')
+        ->and($byCommand['clear']['authority'])->toContain('mutate only the selected ref')
+        ->and($byCommand['compact [hint]']['authority'])->toContain('conditional selected-ref update')
+        ->and($byCommand['init [path]']['plane'])->toBe('management')
         ->and($byCommand['sessions']['plane'])->toBe('management')
         ->and($byCommand['sessions']['authority'])->toContain('explicitly named session')
+        ->and($byCommand['context']['authority'])->toContain('Read canonical state and configuration only')
+        ->and($byCommand['history']['authority'])->toContain('Read verified canonical objects only')
+        ->and($byCommand['transcript']['authority'])->toContain('Read verified canonical objects only')
         ->and($byCommand['tell "<prompt>"']['degradedBehavior'])->toContain('stateless turns');
 });
 

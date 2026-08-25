@@ -25,7 +25,21 @@ final readonly class EventsRenderer implements OutputRenderer
     }
 
     #[Override]
-    public function finish(AgentState $state): void {}
+    public function finish(AgentState $state, array $warnings = [], bool $transient = false): void
+    {
+        if ($transient) {
+            $this->stdout->writeln(json_encode([
+                'event' => 'TellTransientExecution',
+                'data' => ['durable' => false],
+            ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES));
+        }
+        foreach ($warnings as $warning) {
+            $this->stdout->writeln(json_encode([
+                'event' => 'WorkspaceSessionWarning',
+                'data' => ['message' => $warning],
+            ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES));
+        }
+    }
 
     /** @throws JsonException */
     private function encode(object $event): string

@@ -59,6 +59,18 @@ it('allows execution traces to be disabled in local config', function (): void {
         ->and(is_dir($factory->paths()->executionTraces))->toBeFalse();
 });
 
+it('marks transient traces without widening the existing redaction policy', function (): void {
+    $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('done')));
+    $tester = new CommandTester(new TellCommand($factory));
+
+    expect($tester->execute(['prompt' => 'transient trace prompt', '--transient' => true]))->toBe(0);
+    $records = tellTraceRecords(tellTraceFiles($factory->paths()->executionTraces)[0] ?? '');
+
+    expect($records[0]['transient'])->toBeTrue()
+        ->and($records[0]['data']['messagePayload'])->toBe('[omitted]')
+        ->and(json_encode($records, JSON_THROW_ON_ERROR))->not->toContain('transient trace prompt');
+});
+
 it('fails before inference when explicit observability config is invalid', function (): void {
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('must not run')));
     file_put_contents($factory->paths()->configFile, '{"observability":{"trace":true}}');

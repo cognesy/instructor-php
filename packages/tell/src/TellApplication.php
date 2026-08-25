@@ -6,10 +6,15 @@ namespace Cognesy\Tell;
 
 use Cognesy\Tell\Command\AgentsCommand;
 use Cognesy\Tell\Command\AuthCommand;
+use Cognesy\Tell\Command\ClearCommand;
+use Cognesy\Tell\Command\CompactCommand;
+use Cognesy\Tell\Command\ContextCommand;
 use Cognesy\Tell\Command\DescribeCommand;
+use Cognesy\Tell\Command\InitCommand;
 use Cognesy\Tell\Command\PlanesCommand;
 use Cognesy\Tell\Command\SessionsCommand;
 use Cognesy\Tell\Command\ToolsCommand;
+use Cognesy\Tell\Command\WorkspaceInspectionCommand;
 use Cognesy\Tell\Operational\PlaneMap;
 use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Runtime\TellAgentFactory;
@@ -40,25 +45,43 @@ final class TellApplication extends Application
         $tell = new TellCommand($agents);
         $agentsCommand = new AgentsCommand($agents);
         $authCommand = new AuthCommand($agents);
+        $clearCommand = new ClearCommand($agents);
+        $compactCommand = new CompactCommand($agents);
+        $contextCommand = new ContextCommand($agents);
         $describeCommand = new DescribeCommand($agents);
+        $initCommand = new InitCommand;
         $sessionsCommand = new SessionsCommand($agents);
         $toolsCommand = new ToolsCommand($agents);
+        $historyCommand = new WorkspaceInspectionCommand('history', $agents);
+        $transcriptCommand = new WorkspaceInspectionCommand('transcript', $agents);
         $planeMap = PlaneMap::fromCommands(
             $tell,
             $agentsCommand,
             $authCommand,
+            $clearCommand,
+            $compactCommand,
+            $contextCommand,
             $describeCommand,
+            $initCommand,
             $sessionsCommand,
             $toolsCommand,
+            $historyCommand,
+            $transcriptCommand,
         );
         $commands = [
             $tell,
             $agentsCommand,
             $authCommand,
+            $clearCommand,
+            $compactCommand,
+            $contextCommand,
             $describeCommand,
+            $initCommand,
             new PlanesCommand($planeMap),
             $sessionsCommand,
             $toolsCommand,
+            $historyCommand,
+            $transcriptCommand,
         ];
         $this->routingDefinition = $this->routingDefinition(...$commands);
         $this->addCommands($commands);

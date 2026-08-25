@@ -110,6 +110,7 @@ final class ExecutionTraceWriter
             'agent' => $this->options->agent,
             'session' => $this->options->session,
             'workspace' => $this->workspace(),
+            'transient' => $this->options->transient,
             'data' => $data,
         ];
     }

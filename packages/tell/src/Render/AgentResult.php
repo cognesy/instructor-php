@@ -10,11 +10,11 @@ use Throwable;
 final class AgentResult
 {
     /** @return array<string, mixed> */
-    public static function fromState(AgentState $state): array
+    public static function fromState(AgentState $state, array $warnings = [], bool $transient = false): array
     {
         $status = $state->status();
 
-        return [
+        $result = [
             'status' => match ($status) {
                 null => 'unknown',
                 default => $status->value,
@@ -26,7 +26,16 @@ final class AgentResult
                 static fn (Throwable $error): string => $error->getMessage(),
                 $state->errors()->all(),
             ),
+            'execution' => [
+                'mode' => $transient ? 'transient' : 'durable',
+                'durable' => ! $transient,
+            ],
         ];
+        if ($warnings !== []) {
+            $result['warnings'] = $warnings;
+        }
+
+        return $result;
     }
 
     private function __construct() {}
