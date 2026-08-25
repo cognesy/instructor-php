@@ -7,14 +7,20 @@ namespace Cognesy\Tell\Runtime;
 use Closure;
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Capability\AgentCapabilityRegistry;
-use Cognesy\Agents\Capability\Coding\UseCodingTools;
+use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
+use Cognesy\Agents\Capability\Cancellation\CooperativeCancellationHook;
 use Cognesy\Agents\Capability\Definitions\UseAgentDefinitions;
 use Cognesy\Agents\Capability\Describe\UseSelfDescription;
 use Cognesy\Agents\Capability\Prompt\UseSystemPrompt;
 use Cognesy\Agents\Capability\SelfKnowledge\UseSelfKnowledge;
+use Cognesy\Agents\Capability\Subagent\SubagentPolicy;
+use Cognesy\Agents\Capability\Subagent\UseSubagents;
 use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Data\ExecutionBudget;
 use Cognesy\Agents\Discovery\CapabilityDiscovery;
+use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
+use Cognesy\Agents\Hook\Collections\HookTriggers;
+use Cognesy\Agents\Hook\HookStack;
 use Cognesy\Agents\Session\SessionRepository;
 use Cognesy\Agents\Session\SessionRuntime;
 use Cognesy\Agents\Session\Store\FileSessionStore;
@@ -30,7 +36,10 @@ use Cognesy\Config\Secrets\EnvironmentSecretSource;
 use Cognesy\Config\Secrets\SecretResolver;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Tell\Observability\ExecutionTraceWriter;
+use Cognesy\Tell\Capability\Coding\TellCodingTools;
+use Cognesy\Tell\Capability\AskUser\TellAskUserCapability;
 use Cognesy\Tell\Workspace\WorkspaceManager;
 use RuntimeException;
 
@@ -39,15 +48,19 @@ final readonly class TellAgentFactory
     /** @var Closure(AgentLoop): AgentLoop|null */
     private ?Closure $decorateLoop;
 
+    private CanReadTellClock $clock;
+
     /** @param callable(AgentLoop): AgentLoop|null $decorateLoop */
     public function __construct(
         private TellPaths $paths,
         ?callable $decorateLoop = null,
+        ?CanReadTellClock $clock = null,
     ) {
         $this->decorateLoop = match ($decorateLoop) {
             null => null,
             default => Closure::fromCallable($decorateLoop),
         };
+        $this->clock = $clock ?? new SystemTellClock;
     }
 
     public static function installed(): self
@@ -91,7 +104,12 @@ final readonly class TellAgentFactory
         );
     }
 
-    public function build(TellOptions $options, ?AgentDefinition $definition = null): AgentLoop
+    public function build(
+        TellOptions $options,
+        ?AgentDefinition $definition = null,
+        ?CanProvideCancellationSignal $cancellation = null,
+        ?TellDelegationScope $delegation = null,
+    ): AgentLoop
     {
         $definition = match (true) {
             $definition === null => $this->definition($options),
@@ -102,7 +120,23 @@ final readonly class TellAgentFactory
         $tools = new ToolRegistry;
         CapabilityDiscovery::discover($capabilities, $tools);
 
-        $capabilities->register('tell.coding', new UseCodingTools($options->directory));
+        $policy = $options->policy ?? TellExecutionPolicy::defaults();
+        $capabilities->register('tell.coding', new TellCodingTools(
+            $options->directory,
+            new \Cognesy\Agents\Capability\Bash\BashPolicy(
+                maxOutputChars: $policy->maxToolOutputChars,
+                timeout: max(1, (int) ceil($policy->timeoutMs / 1_000)),
+                stdoutLimitBytes: $policy->maxToolOutputChars,
+                stderrLimitBytes: $policy->maxToolOutputChars,
+            ),
+        ));
+        $capabilities->register('tell.ask_user', new TellAskUserCapability($options->answers));
+        $capabilities->register('use_subagents', new UseSubagents(
+            provider: $definitions,
+            policy: new SubagentPolicy(maxDepth: 1),
+            executor: $delegation === null ? null : new TellSubagentExecutor($this, $options, $delegation),
+            currentDepth: $delegation === null ? 0 : $delegation->depth,
+        ));
         $capabilities->register('tell.system_prompt', new UseSystemPrompt);
         $capabilities->register('tell.self_knowledge', new UseSelfKnowledge);
         $capabilities->register('tell.self_description', new UseSelfDescription);
@@ -113,6 +147,8 @@ final readonly class TellAgentFactory
 
         $loop = (new DefinitionLoopFactory($capabilities, $tools))->instantiateAgentLoop($definition);
         $loop = $this->filterTools($loop, $options->tools);
+        $loop = $this->withExecutionPolicy($loop, $policy);
+        $loop = $this->withCooperativeCancellation($loop, $cancellation);
 
         return match ($this->decorateLoop) {
             null => $loop,
@@ -241,5 +277,55 @@ final readonly class TellAgentFactory
         }
 
         return $loop->withTools(new Tools(...$selected));
+    }
+
+    private function withExecutionPolicy(AgentLoop $loop, TellExecutionPolicy $policy): AgentLoop
+    {
+        $driver = $loop->driver();
+        if ($driver instanceof ToolCallingDriver) {
+            $loop = $loop->withDriver($driver->withRetryPolicy(new InferenceRetryPolicy(
+                maxAttempts: $policy->maxRetries + 1,
+            )));
+        }
+        $interceptor = $loop->interceptor();
+        if (! $interceptor instanceof HookStack) {
+            throw new RuntimeException('Tell requires the Agents hook-stack lifecycle interceptor.');
+        }
+
+        return $loop->withInterceptor($interceptor->with(
+            hook: new TellExecutionBudgetHook($policy, $this->clock),
+            triggerTypes: HookTriggers::of(
+                \Cognesy\Agents\Hook\Enums\HookTrigger::BeforeExecution,
+                \Cognesy\Agents\Hook\Enums\HookTrigger::BeforeStep,
+                \Cognesy\Agents\Hook\Enums\HookTrigger::BeforeToolUse,
+                \Cognesy\Agents\Hook\Enums\HookTrigger::AfterToolUse,
+                \Cognesy\Agents\Hook\Enums\HookTrigger::AfterStep,
+            ),
+            priority: 300,
+            name: 'tell:execution_budget',
+        ));
+    }
+
+    private function withCooperativeCancellation(
+        AgentLoop $loop,
+        ?CanProvideCancellationSignal $cancellation,
+    ): AgentLoop {
+        if ($cancellation === null) {
+            return $loop;
+        }
+        $interceptor = $loop->interceptor();
+        if (! $interceptor instanceof HookStack) {
+            throw new RuntimeException('Tell requires the Agents hook-stack lifecycle interceptor.');
+        }
+
+        return $loop->withInterceptor($interceptor->with(
+            hook: new CooperativeCancellationHook($cancellation),
+            triggerTypes: HookTriggers::of(
+                \Cognesy\Agents\Hook\Enums\HookTrigger::BeforeExecution,
+                \Cognesy\Agents\Hook\Enums\HookTrigger::BeforeStep,
+            ),
+            priority: 250,
+            name: 'tell:cooperative_cancellation',
+        ));
     }
 }

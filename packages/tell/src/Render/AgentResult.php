@@ -10,7 +10,8 @@ use Throwable;
 final class AgentResult
 {
     /** @return array<string, mixed> */
-    public static function fromState(AgentState $state, array $warnings = [], bool $transient = false): array
+    /** @param array{name: string, source: 'current'|'invocation'}|null $branch */
+    public static function fromState(AgentState $state, array $warnings = [], bool $transient = false, ?array $branch = null): array
     {
         $status = $state->status();
 
@@ -19,7 +20,7 @@ final class AgentResult
                 null => 'unknown',
                 default => $status->value,
             },
-            'answer' => trim($state->finalResponse()->toString()),
+            'answer' => self::answer($state),
             'steps' => $state->stepCount(),
             'usage' => $state->usage()->toArray(),
             'errors' => array_map(
@@ -34,8 +35,25 @@ final class AgentResult
         if ($warnings !== []) {
             $result['warnings'] = $warnings;
         }
+        if ($branch !== null) {
+            $result['branch'] = $branch;
+        }
+        $signal = $state->stopSignal();
+        if ($signal !== null) {
+            $result['termination'] = [
+                'reason' => $signal->reason->value,
+                'message' => $signal->message,
+            ];
+        }
 
         return $result;
+    }
+
+    public static function answer(AgentState $state): string
+    {
+        return $state->stopSignal()?->reason->value === 'output_limit'
+            ? ''
+            : trim($state->finalResponse()->toString());
     }
 
     private function __construct() {}

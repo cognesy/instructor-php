@@ -21,6 +21,7 @@ final readonly class SpawnSubagentToolDescriptor extends ToolDescriptor
                 'parameters' => [
                     'subagent' => 'Registered subagent name.',
                     'prompt' => 'Task prompt for the subagent.',
+                    'context' => 'fork (default) captures parent context; fresh starts with no inherited context.',
                 ],
                 'returns' => 'Final state of executed subagent.',
             ],

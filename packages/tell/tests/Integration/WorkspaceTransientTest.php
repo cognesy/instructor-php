@@ -144,7 +144,12 @@ it('keeps transient text and events explicitly non-durable while leaving tool-en
         array_values(array_filter(explode("\n", trim($events->getDisplay())))),
     );
 
-    expect($lines)->toContain(['event' => 'TellTransientExecution', 'data' => ['durable' => false]])
+    expect(array_filter(
+        $lines,
+        static fn (array $event): bool => $event['schema'] === 'tell.event.v1'
+            && $event['kind'] === 'execution.completed'
+            && $event['terminal'] === 'completed',
+    ))->not->toBeEmpty()
         ->and(tellTransientSnapshot($workspace->paths->arena))->toBe($before);
 });
 
@@ -203,8 +208,9 @@ it('keeps a no-workspace transient invocation stateless and records only redacte
         ->and(is_dir($factory->paths()->sessions))->toBeFalse()
         ->and($files)->toBe([])
         ->and($sessionFiles)->toHaveCount(1)
-        ->and($records[0]['transient'])->toBeTrue()
-        ->and($records[0]['data']['messagePayload'])->toBe('[omitted]')
+        ->and($records[0]['schema'])->toBe('tell.event.v1')
+        ->and($records[0]['kind'])->toBe('execution.started')
+        ->and($records[0]['metadata'])->not->toHaveKey('messagePayload')
         ->and(json_encode($records, JSON_THROW_ON_ERROR))->not->toContain('transient private prompt');
 });
 

@@ -36,6 +36,7 @@ use Cognesy\Telemetry\Domain\Trace\TraceContext;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
 use DateTimeImmutable;
+use InvalidArgumentException;
 use Override;
 use Throwable;
 
@@ -57,6 +58,7 @@ final class SpawnSubagentTool extends ContextAwareTool
         int $currentDepth = 0,
         ?SubagentPolicy $policy = null,
         ?CanHandleEvents $events = null,
+        private ?CanExecuteSubagent $executor = null,
     ) {
         parent::__construct(new SpawnSubagentToolDescriptor($provider));
 
@@ -98,6 +100,7 @@ final class SpawnSubagentTool extends ContextAwareTool
             currentDepth: $currentDepth ?? $this->currentDepth,
             policy: $policy ?? $this->policy,
             events: $events ?? $this->events,
+            executor: $this->executor,
         );
         $new->toolCall = $toolCall ?? $this->toolCall;
         $new->agentState = $agentState ?? $this->agentState;
@@ -108,6 +111,11 @@ final class SpawnSubagentTool extends ContextAwareTool
     public function __invoke(mixed ...$args): mixed {
         $subagentName = $this->arg($args, 'subagent', 0, '');
         $prompt = $this->arg($args, 'prompt', 1, '');
+        $context = $this->arg($args, 'context', 2, 'fork');
+
+        if (!is_string($context) || !in_array($context, ['fork', 'fresh'], true)) {
+            throw new InvalidArgumentException('Subagent context must be either fork or fresh.');
+        }
 
         if ($this->currentDepth >= $this->policy->maxDepth) {
             throw new SubagentDepthExceededException(
@@ -141,9 +149,20 @@ final class SpawnSubagentTool extends ContextAwareTool
             toolCallId: $toolCallId,
         );
 
-        $subagentLoop = $this->createSubagentLoop($spec);
-        $initialState = $this->createInitialState($prompt, $spec, $parentAgentId);
-        $finalState = $subagentLoop->execute($initialState);
+        $execution = match ($this->executor) {
+            null => $this->createSubagentLoop($spec)->execute($this->createInitialState($prompt, $spec, $parentAgentId)),
+            default => $this->executor->execute(new SubagentInvocation(
+                definition: $spec,
+                prompt: $prompt,
+                parentTools: $this->parentTools,
+                parentDriver: $this->parentDriver,
+                parentState: $this->agentState,
+                depth: $this->currentDepth,
+                policy: $this->policy,
+                context: $context,
+            )),
+        };
+        $finalState = $execution instanceof SubagentExecutionResult ? $execution->state : $execution;
 
         $this->emitSubagentCompleted(
             parentAgentId: $parentAgentId->toString(),
@@ -162,7 +181,7 @@ final class SpawnSubagentTool extends ContextAwareTool
             throw SubagentExecutionException::fromState($finalState, $spec->name);
         }
 
-        return $finalState;
+        return $execution instanceof SubagentExecutionResult ? $execution->toolResult : $finalState;
     }
 
     // SUBAGENT CREATION ////////////////////////////////////////////
@@ -179,6 +198,7 @@ final class SpawnSubagentTool extends ContextAwareTool
                 currentDepth: $this->currentDepth + 1,
                 policy: $this->policy,
                 events: $this->events,
+                executor: $this->executor,
             );
 
             $tools = $tools->withToolRemoved('spawn_subagent')
@@ -287,6 +307,7 @@ final class SpawnSubagentTool extends ContextAwareTool
                 ->withProperties([
                     JsonSchema::enum('subagent', $subagentNames, 'Which subagent to spawn'),
                     JsonSchema::string('prompt', 'The task or question for the subagent'),
+                    JsonSchema::enum('context', ['fork', 'fresh'], 'fork reuses the captured parent context; fresh starts empty'),
                 ])
                 ->withRequiredProperties(['subagent', 'prompt']),
         )->toArray());

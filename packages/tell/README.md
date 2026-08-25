@@ -17,15 +17,101 @@ tell sessions
 
 With no prompt, `tell` returns live workspace discovery plus useful next actions.
 The default format is TOON. Use `--output=text` for a raw final answer,
-`--output=json` for JSON terminal state, or `--output=events` for an NDJSON event
-stream. List commands accept `--fields` for a smaller schema; session detail is
-bounded unless `tell sessions show ID --full` is requested.
+`--output=json` for JSON terminal state, or `--output=events` for a payload-free
+NDJSON stream using the versioned `tell.event.v1` envelope. List commands
+accept `--fields` for a smaller schema; session detail is bounded unless
+`tell sessions show ID --full` is requested.
 
 Put a prompt that matches a subcommand name after `--`, for example
 `tell -- agents`. The explicit `tell tell "agents"` form is also available.
 
 Use `--session NAME` to persist and continue a conversation. Without that
 option, Tell performs no session storage I/O.
+
+## PHP SDK
+
+Tell is also controllable directly from PHP. The default request is stateless;
+call `durable()` only when the application deliberately wants workspace
+history. Use event callbacks for live lifecycle data and `runStream()` when a
+worker, HTTP stream, or UI needs completed tool/inference checkpoints without
+parsing terminal output.
+
+```php
+use Cognesy\Tell\Tell;
+use Cognesy\Tell\TellRequest;
+
+$tell = Tell::open(__DIR__);
+
+$result = $tell->run(
+    TellRequest::prompt('Summarize the release risks')
+        ->connection('deepseek')
+        ->model('deepseek-v4-flash'),
+);
+
+foreach ($tell->runStream(
+    TellRequest::prompt('Investigate and report progress')
+        ->onEvent(fn ($event) => $logger->info($event->type(), $event->data())),
+) as $progress) {
+    $reportProgress($progress->stepCount(), $progress->usage());
+}
+```
+
+Consume the stream to completion before reading its `TellResult` via
+`Generator::getReturn()`. A durable streamed turn publishes only after this
+successful completion; abandoning the generator leaves its selected ref
+unchanged.
+
+Use workspace handles for intentional durable work. They return SDK values,
+never arena or canonical records:
+
+```php
+$workspace = $tell->workspace();
+$workspace->initialize();
+
+$conversation = $tell->conversation('release-review');
+$conversation->send(TellRequest::prompt('Record the decision.'));
+$history = $conversation->history(limit: 10);
+// Moves only this selector to empty; immutable history remains.
+$conversation->clear();
+```
+
+`TellEvent::envelope()` returns the same safe `tell.event.v1` projection used by
+NDJSON and default traces. `source()` remains available for an application that
+deliberately needs the original typed Agent event; never serialize it at a
+process boundary.
+
+## Non-interactive questions
+
+Tell never opens a terminal prompt. An agent can call its Tell-owned
+`ask_user` tool only to consume an answer supplied before execution. Provide
+ordered answers with repeatable `--answer`, or use one UTF-8 JSON array source:
+
+```bash
+tell --answer yes --answer production "run the release check"
+tell --answers-file answers.json "run the release check"
+printf '%s' '[{"id":"target","value":"production"}]' | \
+  tell --answers-stdin "run the release check"
+```
+
+An array item is either a string (the next ordered answer) or an object with
+`id` and `value`. IDs select exactly one matching `ask_user` call; an answer
+outside declared choices, a missing answer, malformed input, duplicate IDs, or
+an oversized value fails immediately with a typed tool result. Tell accepts at
+most 32 answers of 8192 bytes each. Extra answers are reported only as a count.
+Answers are redacted from normalized events and default traces. A completed
+durable turn keeps the semantic tool result in its canonical history; a
+transient turn does not publish it.
+
+PHP callers provide the same bounded queue explicitly:
+
+```php
+use Cognesy\Tell\Capability\AskUser\TellAnswerQueue;
+
+$request = TellRequest::prompt('Run the release check')
+    ->withAnswers(new TellAnswerQueue([
+        ['id' => 'target', 'value' => 'production', 'source' => 'cli'],
+    ]));
+```
 
 ## Durable project workspaces
 
@@ -46,6 +132,164 @@ compatible named conversation; an existing legacy Tell session is imported once
 when a durable named turn first needs it, then the canonical arena is
 authoritative. Existing legacy session files are never rewritten by the
 compatibility path.
+
+Tell branches are immutable-head user references for planning independent lines
+of work. Creation shares the existing canonical head; it never copies canonical
+objects. Each workspace starts on `main`; use `checkout` to make a different
+branch current, or pass `--branch` to select one invocation without changing
+the workspace selection:
+
+```bash
+tell branch list --json
+tell branch create review             # points at the current main head
+tell branch create followup --from review
+tell branch create scratch --empty
+tell branch show review --json
+tell checkout review
+tell --branch main "compare the original plan"
+```
+
+Branch names are 1-64 lowercase ASCII characters, begin with a letter, and may
+otherwise contain letters, digits, and hyphens. `main`, `internal-*`,
+`session-*`, and `agent-*` are reserved; uppercase and Unicode are rejected to
+avoid cross-filesystem case ambiguity. `list` and `show` only verify local refs
+and canonical objects—no inference or writes occur. `create` atomically writes
+only its new branch ref plus immutable creation provenance. Reset, checkout,
+merge, rebase, deletion, and garbage collection are intentionally not part of
+the `branch` command.
+
+`tell reset` moves only one selected branch ref backwards, either by a bounded
+number of parent links or to a verified reachable canonical ancestor. It never
+deletes immutable objects, and deliberately has no public reflog; make a
+recovery branch before moving a head if you need a durable return point:
+
+```bash
+tell branch create before-reset --from review
+tell reset --branch review --steps 1 --json
+tell reset --branch review --to <ancestor-hash> --json
+```
+
+The reset succeeds only if the selected head has not changed since validation;
+a concurrent update fails safely rather than overwriting another turn.
+
+Each branch may also keep secret-free runtime intent. It is versioned and
+atomically updated, so configuration for one branch cannot modify another:
+
+```bash
+tell config show --branch review --json
+tell config set model '"deepseek-v4-flash"' --if-version 0 --branch review
+tell config set maxToolCalls 12 --if-version 1 --branch review
+tell config effective --branch review --json
+```
+
+Allowed keys are `connection`, `model`, `tools`, `maxRetries`, `timeoutMs`,
+`maxOutputChars`, `maxToolOutputChars`, and `maxToolCalls`. Values are
+labels, model names, tool profiles, and bounded policy values only: Tell
+rejects credentials, tokens,
+headers, raw environment values, and DSNs with embedded credentials. New
+branches copy source intent by value and later edits remain independent.
+Explicit connection, model, and tool flags take precedence over branch intent.
+`effective` identifies the source of each branch/bundled value; it never
+resolves or displays credential material.
+
+## Providers and models
+
+Tell reads connection presets and declared driver capability metadata from
+Polyglot; it does not keep a second provider table. These inspection commands
+need neither credentials nor network access:
+
+```bash
+tell providers --json
+tell providers --fields=connection,provider,defaultModel,source --json
+tell models deepseek --json
+tell models qwen --json
+tell config effective --branch review --json
+```
+
+`providers` lists the resolved connection precedence and its preset default
+model. `models` accepts either a provider or a connection name and lists only
+models explicitly declared by those presets. Full provider rows include known
+context and tool/structured-output metadata with source provenance. Metadata
+Polyglot does not declare—such as vision, thinking, or a full remote model
+catalogue—is returned as explicitly unknown with a reason, never inferred from
+model names. `config effective` reports the selected connection/model and their
+sources without resolving or displaying an API key.
+
+## Coding tools and direct dispatch
+
+The default Tell agent exposes one bounded implementation for each canonical
+coding operation: `read_file`, `write_file`, `apply_patch`, and `shell`.
+Existing `read`, `write`, `edit`, and `bash` names remain compatibility aliases
+over those same operations and policy. `apply_patch` validates all hunks before
+writing, confines paths to the project, and never falls back to an arbitrary
+shell command.
+
+Shell agents can invoke the exact same registered tool without inference or
+conversation publication:
+
+```bash
+tell tool read_file '{"path":"README.md"}' --json
+tell tool apply_patch --input-file patch.json --json
+printf '%s' '{"command":"printf ready"}' | tell tool shell --stdin --json
+```
+
+Direct dispatch validates one strict JSON argument object, applies the selected
+branch's tool and execution policy, and returns a bounded structured result.
+It may perform the named tool's declared file/shell side effect, but it never
+runs a model or appends a Tell turn. Event output uses the same redacted,
+versioned envelope as agent execution.
+
+## Bounded child delegation
+
+The built-in `spawn_subagent` tool gives a Tell agent one sequential delegated
+run. The tool creates a private `agent-*` branch before it starts, records
+non-secret policy/configuration provenance, and returns a bounded child result
+to the parent on successful completion. `context: "fork"` starts at the
+parent's captured canonical head; `context: "fresh"` starts from empty context.
+Later parent changes cannot alter either start point.
+
+Child branches use the same effective policy, tool registry, cancellation, and
+redacted events as their parent. They can be listed or inspected with
+`tell branch show`, `tell history --branch`, or `tell transcript --branch`, but
+cannot be selected, reset, or written as normal user branches. Delegation is
+depth-one and sequential: a child cannot create a grandchild, and it has no
+authority to write parent or sibling refs. A failed, cancelled, or stale child
+publication leaves the parent ref unchanged; completed child history remains
+inspectable on its own branch.
+
+## Execution budgets
+
+Every Tell execution has finite policy defaults: zero provider retries, a 30s
+wall deadline, 200,000 total model-output bytes, 40,000 bytes retained from one
+tool result, and 100 tool calls. Override one invocation without persisting it:
+
+```bash
+tell --max-retries 2 --timeout-ms 60000 --max-output-chars 100000 \
+  --max-tool-output-chars 12000 --max-tool-calls 20 "investigate the failure"
+```
+
+`SIGINT` is cooperative: Tell stops at the next public agent boundary, emits
+one non-success terminal event, and does not publish a durable branch head for
+the interrupted turn. This requires PHP's `pcntl` signal support; verbose CLI
+output reports when it is unavailable. SDK callers can instead provide their
+own public Agents cancellation source to `Tell::open()` for deterministic
+programmatic cancellation.
+
+The same limits are available through `TellRequest` (`maxRetries()`,
+`timeoutMs()`, `maxOutputChars()`, `maxToolOutputChars()`, and
+`maxToolCalls()`). Policy precedence is CLI/SDK override, branch config,
+project defaults, user defaults, then bundled values. Project defaults live at
+`.tell/arena/config/defaults.json`; user defaults live at
+`~/.tell/config/execution-defaults.json`. Both are strict, secret-free JSON:
+
+```json
+{"schema":"tell.execution-defaults.v1","values":{"timeoutMs":60000,"maxToolCalls":20}}
+```
+
+Tell rejects invalid, zero, negative, or over-limit values before inference.
+An exhausted deadline, output, or tool-call limit stops the turn; tool-result
+truncation is explicit and UTF-8 safe. An incomplete stopped turn never moves a
+durable ref, while a completed answer exactly at a limit may publish.
 
 Use the workspace commands to inspect and manage the selected conversation:
 
@@ -77,9 +321,9 @@ Transient execution compiles the same selected history as a durable turn but
 never writes canonical objects or refs, imports legacy sessions, saves mutable
 sessions, or changes configuration. It stays stateless outside a workspace.
 Text output states that nothing was persisted; JSON and TOON include
-`execution.mode: transient` and `execution.durable: false`; event output emits
-`TellTransientExecution`. Execution traces remain external observations and
-carry `transient: true` under the normal trace privacy policy.
+`execution.mode: transient` and `execution.durable: false`; events retain the
+same normalized lifecycle envelope. Execution traces remain external
+observations under the normal trace privacy policy.
 
 Canonical workspace records contain semantic messages and tool-call/result
 relationships only. Provider requests and responses, credentials, headers,
@@ -145,10 +389,13 @@ The resolver is injected through Instructor Config's `CanResolveSecrets`
 contract, leaving room for an OS-keychain source without changing connection
 files or the data-plane runtime.
 
-Each trace line contains schema, timestamp, event identity and level, agent,
-session, workspace, and sanitized event data. Prompts, tool arguments, tool
-results, state snapshots, and context payloads are omitted by default. Common
-credential fields remain redacted even when payload capture is enabled. Put
+Each default trace line is the same payload-free `tell.event.v1` envelope as
+the NDJSON renderer: schema, stable kind, sequence, execution ID, selected
+branch/session, bounded public metadata, and one terminal status. Prompts,
+tool arguments/results, exception details, state snapshots, and provider
+payloads are omitted by default. `includePayloads: true` adds a separate,
+sanitized trace-only `payload` field; common credential fields remain redacted.
+Put
 this optional configuration in `~/.tell/config/tell.json`:
 
 ```json

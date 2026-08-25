@@ -9,6 +9,8 @@ enum StopReason: string
     case TokenLimitReached = 'token_limit';
     case TimeLimitReached = 'time_limit';
     case RetryLimitReached = 'retry_limit';
+    case OutputLimitReached = 'output_limit';
+    case ToolCallLimitReached = 'tool_call_limit';
     case ErrorForbade = 'error';
     case StopRequested = 'stop_requested';
     case FinishReasonReceived = 'finish_reason';
@@ -24,9 +26,11 @@ enum StopReason: string
             self::TokenLimitReached => 4,
             self::TimeLimitReached => 5,
             self::RetryLimitReached => 6,
-            self::FinishReasonReceived => 7,
-            self::Completed => 8,
-            self::Unknown => 9,
+            self::OutputLimitReached => 7,
+            self::ToolCallLimitReached => 8,
+            self::FinishReasonReceived => 9,
+            self::Completed => 10,
+            self::Unknown => 11,
         };
     }
 

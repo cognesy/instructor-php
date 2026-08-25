@@ -164,7 +164,7 @@ it('isolates a missing class until that specific capability is resolved', functi
             ->and($capabilities->get('healthy'))->toBeInstanceOf(LazyCapability::class);
         try {
             $capabilities->get('broken');
-            $this->fail('Expected missing capability resolution to fail.');
+            throw new \RuntimeException('Expected missing capability resolution to fail.');
         } catch (CapabilityResolutionException $exception) {
             expect($exception->getMessage())->toContain('fixture/contributor')
                 ->and($exception->getMessage())->toContain('broken')
@@ -183,7 +183,7 @@ it('reports package name, entry name, and class for a wrong capability interface
         CapabilityDiscovery::discover($capabilities, new ToolRegistry(), $root . '/vendor', $root . '/composer.json');
         try {
             $capabilities->get('wrong');
-            $this->fail('Expected capability resolution to fail.');
+            throw new \RuntimeException('Expected capability resolution to fail.');
         } catch (CapabilityResolutionException $exception) {
             expect($exception->getMessage())->toContain('fixture/contributor')
                 ->and($exception->getMessage())->toContain('wrong')
@@ -202,7 +202,7 @@ it('rejects constructor requirements at resolution time with an actionable messa
         CapabilityDiscovery::discover($capabilities, new ToolRegistry(), $root . '/vendor', $root . '/composer.json');
         try {
             $capabilities->get('configured');
-            $this->fail('Expected configured capability resolution to fail.');
+            throw new \RuntimeException('Expected configured capability resolution to fail.');
         } catch (CapabilityResolutionException $exception) {
             expect($exception->getMessage())->toContain('fixture/contributor')
                 ->and($exception->getMessage())->toContain('configured')

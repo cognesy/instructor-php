@@ -15,6 +15,7 @@ use Cognesy\Tell\Canonical\CanonicalException;
 use Cognesy\Tell\Canonical\CanonicalLineage;
 use Cognesy\Tell\Canonical\CanonicalSerializer;
 use Cognesy\Tell\Canonical\CanonicalSessionMetadata;
+use Generator;
 use Throwable;
 
 /**
@@ -33,13 +34,27 @@ final class WorkspaceTurnRunner
 
     public function execute(AgentLoop $loop, AgentDefinition $definition, string $prompt): AgentState
     {
+        $states = $this->iterate($loop, $definition, $prompt);
+        foreach ($states as $_) {
+        }
+
+        return $states->getReturn();
+    }
+
+    /** @return Generator<int, AgentState, mixed, AgentState> */
+    public function iterate(AgentLoop $loop, AgentDefinition $definition, string $prompt): Generator
+    {
         $reference = $this->arena->readOptionalRef($this->ref) ?? ArenaRef::empty();
         $history = $this->historyCompiler->compile($this->arena, $reference->head);
         $seed = (new DefinitionStateFactory)
             ->instantiateAgentState($definition)
             ->withMessages($history->messages)
             ->withUserMessage($prompt);
-        $state = $loop->execute($seed);
+        $state = $seed;
+        foreach ($loop->iterate($seed) as $checkpoint) {
+            $state = $checkpoint;
+            yield $checkpoint;
+        }
 
         $this->assertPublishable($state);
         $this->publish($state, $history);

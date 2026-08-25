@@ -194,7 +194,7 @@ it('leaves an empty workspace arena unchanged when inference cannot publish', fu
                 ));
             }
         },
-        'only persists text message content',
+        'Collection contains composite messages and cannot be converted to string.',
     ],
 ]);
 
@@ -249,17 +249,26 @@ it('keeps successful workspace output contracts intact', function (string $mode)
     $factory = tellTestFactory(static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(FakeAgentDriver::fromResponses('workspace answer')));
     $project = tellWorkspaceProject($factory);
     $tester = new CommandTester(new TellCommand($factory));
-    $status = $tester->execute(['prompt' => 'render workspace answer', '--dir' => $project, '--output' => $mode]);
+    $status = $tester->execute(
+        ['prompt' => 'render workspace answer', '--dir' => $project, '--output' => $mode],
+        ['capture_stderr_separately' => true],
+    );
     $lines = array_values(array_filter(explode("\n", trim($tester->getDisplay()))));
 
     expect($status)->toBe(0);
     match ($mode) {
         'json' => expect(json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR)['answer'])->toBe('workspace answer'),
-        'events' => expect(array_map(
-            static fn (string $line): string => json_decode($line, true, flags: JSON_THROW_ON_ERROR)['event'],
-            $lines,
-        ))->toContain('AgentExecutionCompleted'),
-        'text' => expect(trim($tester->getDisplay()))->toBe('workspace answer'),
+        'events' => expect(array_filter(
+            array_map(
+                static fn (string $line): array => json_decode($line, true, flags: JSON_THROW_ON_ERROR),
+                $lines,
+            ),
+            static fn (array $event): bool => $event['schema'] === 'tell.event.v1'
+                && $event['kind'] === 'execution.completed'
+                && $event['terminal'] === 'completed',
+        ))->not->toBeEmpty(),
+        'text' => expect(trim($tester->getDisplay()))->toBe('workspace answer')
+            ->and($tester->getErrorOutput())->toContain('[tell] branch: main (current).'),
         default => expect(Toon::decode($tester->getDisplay())['answer'])->toBe('workspace answer'),
     };
 })->with(['toon', 'text', 'json', 'events']);

@@ -6,6 +6,7 @@ namespace Cognesy\Tell\Render;
 
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Data\AgentState;
+use Cognesy\Tell\Observability\TellEventNormalizer;
 use JsonException;
 use Override;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -15,14 +16,14 @@ final readonly class JsonRenderer implements OutputRenderer
     public function __construct(private OutputInterface $stdout) {}
 
     #[Override]
-    public function attach(AgentLoop $loop): void {}
+    public function attach(AgentLoop $loop, ?TellEventNormalizer $events = null): void {}
 
     /** @throws JsonException */
     #[Override]
-    public function finish(AgentState $state, array $warnings = [], bool $transient = false): void
+    public function finish(AgentState $state, array $warnings = [], bool $transient = false, ?array $branch = null): void
     {
         $this->stdout->writeln(json_encode(
-            AgentResult::fromState($state, $warnings, $transient),
+            AgentResult::fromState($state, $warnings, $transient, $branch),
             JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES,
         ));
     }

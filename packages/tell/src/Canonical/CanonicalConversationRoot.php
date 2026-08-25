@@ -47,11 +47,13 @@ final readonly class CanonicalConversationRoot implements CanonicalRecord
         return new self(CanonicalInput::identifier($data['id'], 'conversation id'), $messages, $session);
     }
 
+    #[\Override]
     public function kind(): string
     {
         return 'conversation';
     }
 
+    #[\Override]
     public function schema(): int
     {
         return CanonicalSchema::VERSION;
@@ -73,6 +75,7 @@ final readonly class CanonicalConversationRoot implements CanonicalRecord
         return $this->session;
     }
 
+    #[\Override]
     /** @return array<string, mixed> */
     public function toCanonicalArray(): array
     {

@@ -76,6 +76,27 @@ final class LLMConfig
         return self::fromArray($data);
     }
 
+    /**
+     * @return list<string>
+     */
+    public static function presetNames(?string $basePath = null): array
+    {
+        $basePaths = $basePath !== null ? [$basePath] : self::PRESET_PATHS;
+        $names = [];
+        foreach (BasePath::resolveExisting(...$basePaths) as $path) {
+            foreach (glob(rtrim($path, '/\\').'/*.yaml') ?: [] as $file) {
+                $name = pathinfo($file, PATHINFO_FILENAME);
+                if ($name !== '') {
+                    $names[$name] = true;
+                }
+            }
+        }
+        $names = array_keys($names);
+        sort($names, SORT_STRING);
+
+        return $names;
+    }
+
     public static function fromArray(#[\SensitiveParameter] array $config): LLMConfig
     {
         $typed = self::coerceScalarTypes($config);

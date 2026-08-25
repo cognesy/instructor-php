@@ -80,7 +80,7 @@ it('returns stable success, failure, and stopped exit codes', function (FakeAgen
 ]);
 
 it('references no agents classes annotated internal', function (): void {
-    $agentsRoot = dirname(__DIR__, 3).'/agents/src';
+    $agentsRoot = dirname(__DIR__, 2).'/vendor/cognesy/agents/src';
     $tellRoot = dirname(__DIR__, 2).'/src';
     $internal = [];
     $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($agentsRoot));

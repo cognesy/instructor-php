@@ -12,6 +12,8 @@ use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Runtime\TellOptions;
 use Cognesy\Tell\Workspace\ArenaStore;
+use Cognesy\Tell\Workspace\BranchResolver;
+use Cognesy\Tell\Workspace\BranchConfigStore;
 use Cognesy\Tell\Workspace\TellWorkspace;
 use Cognesy\Tell\Workspace\WorkspaceContextInspector;
 use Cognesy\Tell\Workspace\WorkspaceConversationReader;
@@ -58,6 +60,7 @@ HELP)
             ->addOption('model', 'm', InputOption::VALUE_REQUIRED, 'Model override', '')
             ->addOption('dsn', 'd', InputOption::VALUE_REQUIRED, 'Inline LLM DSN', '')
             ->addOption('session', 's', InputOption::VALUE_REQUIRED, 'Inspect a named workspace session')
+            ->addOption('branch', 'b', InputOption::VALUE_REQUIRED, 'Inspect one branch without checking it out')
             ->addOption('dir', 'C', InputOption::VALUE_REQUIRED, 'Workspace directory', '')
             ->addOption('json', null, InputOption::VALUE_NONE, 'Emit JSON');
     }
@@ -69,7 +72,19 @@ HELP)
             $options = $this->options($input);
             $workspace = $this->workspace($options->directory);
             $session = $this->session($input);
-            $conversation = (new WorkspaceConversationReader(new ArenaStore($workspace)))->read($session);
+            $arena = new ArenaStore($workspace);
+            $requested = $input->getOption('branch');
+            if ($requested !== null && $requested !== '' && $session !== null) {
+                throw new InvalidArgumentException('--branch and --session cannot be used together.');
+            }
+            if ($requested !== null && ! is_string($requested)) {
+                throw new InvalidArgumentException('Tell branch selector must be a string.');
+            }
+            $branch = $session === null ? (new BranchResolver($arena))->resolve($requested === '' ? null : $requested) : null;
+            if ($branch !== null) {
+                $options = $options->withBranchConfig((new BranchConfigStore($workspace))->runtimeValues($branch->branch));
+            }
+            $conversation = (new WorkspaceConversationReader($arena))->read($session, $branch);
             $definition = $this->agents->definition($options);
             $payload = (new WorkspaceContextInspector)->inspect(
                 conversation: $conversation,
@@ -121,7 +136,10 @@ HELP)
             connection: (string) $input->getOption('connection'),
             model: (string) $input->getOption('model'),
             dsn: (string) $input->getOption('dsn'),
+            branch: ($input->getOption('branch') ?: null),
             directory: $project,
+            connectionExplicit: $input->hasParameterOption(['--connection', '-c'], true),
+            modelExplicit: $input->hasParameterOption(['--model', '-m'], true),
         );
     }
 

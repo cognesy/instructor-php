@@ -27,7 +27,7 @@ and whether it builds an HTTP client implicitly or supplies a custom client/mock
 Treat these sources as authoritative when the prose documentation differs:
 
 - `just/examples.just` — preferred record/replay command wrappers
-- `examples/boot.php` and `examples/Support/HttpRecordingBoot.php` — mode and
+- `examples/boot.php` and `examples/_support/HttpRecordingBoot.php` — mode and
   recording-directory behavior
 - `packages/hub/src/Commands/EnhancedRunAllExamples.php` — corpus filtering and
   `OK`/`ASSERT`/`ERROR`/`FLAKY` classification

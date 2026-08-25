@@ -6,6 +6,7 @@ namespace Cognesy\Tell\Render;
 
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Data\AgentState;
+use Cognesy\Tell\Observability\TellEventNormalizer;
 use Override;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -26,14 +27,14 @@ final readonly class ToonRenderer implements OutputRenderer
     }
 
     #[Override]
-    public function attach(AgentLoop $loop): void
+    public function attach(AgentLoop $loop, ?TellEventNormalizer $events = null): void
     {
-        $this->progress->attach($loop);
+        $this->progress->attach($loop, $events);
     }
 
     #[Override]
-    public function finish(AgentState $state, array $warnings = [], bool $transient = false): void
+    public function finish(AgentState $state, array $warnings = [], bool $transient = false, ?array $branch = null): void
     {
-        $this->output->write(AgentResult::fromState($state, $warnings, $transient));
+        $this->output->write(AgentResult::fromState($state, $warnings, $transient, $branch));
     }
 }

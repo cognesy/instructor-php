@@ -144,6 +144,14 @@ class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptL
         return $this->with(interceptor: $interceptor);
     }
 
+    /**
+     * Sets the public Polyglot retry policy for inference requests created by this driver.
+     * Callers should express retry counts here rather than wrapping the driver in a retry loop.
+     */
+    public function withRetryPolicy(InferenceRetryPolicy $retryPolicy): static {
+        return $this->with(retryPolicy: $retryPolicy);
+    }
+
     #[Override]
     public function useTools(AgentState $state): AgentState {
         $state = $this->ensureStateLLMConfig($state);

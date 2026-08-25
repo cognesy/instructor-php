@@ -11,6 +11,7 @@ use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Workspace\ArenaStore;
+use Cognesy\Tell\Workspace\BranchResolver;
 use Cognesy\Tell\Workspace\SessionCompatibilityRef;
 use Cognesy\Tell\Workspace\TellWorkspace;
 use Cognesy\Tell\Workspace\WorkspaceConversationReader;
@@ -51,6 +52,7 @@ Examples:
 HELP)
             ->addOption('dir', 'C', InputOption::VALUE_REQUIRED, 'Workspace directory', '')
             ->addOption('session', 's', InputOption::VALUE_REQUIRED, 'Clear a named workspace session')
+            ->addOption('branch', 'b', InputOption::VALUE_REQUIRED, 'Clear one branch without checking it out')
             ->addOption('json', null, InputOption::VALUE_NONE, 'Emit JSON');
     }
 
@@ -61,10 +63,20 @@ HELP)
             $workspace = $this->workspace($input);
             $session = $this->session($input);
             $arena = new ArenaStore($workspace);
-            $conversation = (new WorkspaceConversationReader($arena))->read($session);
+            $requested = $input->getOption('branch');
+            if ($requested !== null && $requested !== '' && $session !== null) {
+                throw new InvalidArgumentException('--branch and --session cannot be used together.');
+            }
+            if ($requested !== null && ! is_string($requested)) {
+                throw new InvalidArgumentException('Tell branch selector must be a string.');
+            }
+            $branch = $session === null
+                ? (new BranchResolver($arena))->resolve($requested === '' ? null : $requested)
+                : null;
+            $conversation = (new WorkspaceConversationReader($arena))->read($session, $branch);
             $previousHead = $conversation->head();
             $ref = match ($session) {
-                null => 'main',
+                null => $branch->ref,
                 default => (new SessionCompatibilityRef($session))->refName(),
             };
             $result = $arena->compareAndSwapToEmpty($ref, $previousHead);

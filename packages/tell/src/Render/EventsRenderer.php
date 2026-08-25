@@ -6,52 +6,53 @@ namespace Cognesy\Tell\Render;
 
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Data\AgentState;
-use Cognesy\Events\Event;
+use Cognesy\Tell\Observability\TellEventNormalizer;
 use JsonException;
 use Override;
-use ReflectionClass;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final readonly class EventsRenderer implements OutputRenderer
+final class EventsRenderer implements OutputRenderer
 {
+    private ?TellEventNormalizer $events = null;
+
+    private bool $terminal = false;
+
     public function __construct(private OutputInterface $stdout) {}
 
     #[Override]
-    public function attach(AgentLoop $loop): void
+    public function attach(AgentLoop $loop, ?TellEventNormalizer $events = null): void
     {
+        $this->events = $events ?? new TellEventNormalizer;
         $loop->wiretap(function (object $event): void {
-            $this->stdout->writeln($this->encode($event));
+            $envelope = $this->normalizer()->normalize($event);
+            if ($envelope['terminal'] !== null && $this->terminal) {
+                return;
+            }
+            $this->terminal = $envelope['terminal'] !== null;
+            $this->stdout->writeln($this->encode($envelope));
         });
     }
 
     #[Override]
-    public function finish(AgentState $state, array $warnings = [], bool $transient = false): void
+    public function finish(AgentState $state, array $warnings = [], bool $transient = false, ?array $branch = null): void
     {
-        if ($transient) {
-            $this->stdout->writeln(json_encode([
-                'event' => 'TellTransientExecution',
-                'data' => ['durable' => false],
-            ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES));
-        }
-        foreach ($warnings as $warning) {
-            $this->stdout->writeln(json_encode([
-                'event' => 'WorkspaceSessionWarning',
-                'data' => ['message' => $warning],
-            ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES));
+        if (! $this->terminal) {
+            $this->stdout->writeln($this->encode($this->normalizer()->terminal(
+                $state->status()->value,
+                ['steps' => $state->stepCount()],
+            )));
+            $this->terminal = true;
         }
     }
 
     /** @throws JsonException */
-    private function encode(object $event): string
+    private function encode(array $envelope): string
     {
-        $payload = match (true) {
-            $event instanceof Event => $event->data,
-            default => get_object_vars($event),
-        };
+        return json_encode($envelope, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    }
 
-        return json_encode([
-            'event' => (new ReflectionClass($event))->getShortName(),
-            'data' => $payload,
-        ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+    private function normalizer(): TellEventNormalizer
+    {
+        return $this->events ??= new TellEventNormalizer;
     }
 }

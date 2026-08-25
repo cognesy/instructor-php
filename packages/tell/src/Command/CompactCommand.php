@@ -12,6 +12,8 @@ use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Runtime\TellOptions;
 use Cognesy\Tell\Workspace\ArenaStore;
+use Cognesy\Tell\Workspace\BranchResolver;
+use Cognesy\Tell\Workspace\BranchConfigStore;
 use Cognesy\Tell\Workspace\SessionCompatibilityRef;
 use Cognesy\Tell\Workspace\TellWorkspace;
 use Cognesy\Tell\Workspace\WorkspaceCompactionRunner;
@@ -60,6 +62,7 @@ HELP)
             ->addOption('model', 'm', InputOption::VALUE_REQUIRED, 'Model override', '')
             ->addOption('dsn', 'd', InputOption::VALUE_REQUIRED, 'Inline LLM DSN', '')
             ->addOption('session', 's', InputOption::VALUE_REQUIRED, 'Compact a named workspace session')
+            ->addOption('branch', 'b', InputOption::VALUE_REQUIRED, 'Compact one branch without checking it out')
             ->addOption('dir', 'C', InputOption::VALUE_REQUIRED, 'Workspace directory', '')
             ->addOption('max-steps', null, InputOption::VALUE_REQUIRED, 'Maximum agent steps', '10')
             ->addOption('json', null, InputOption::VALUE_NONE, 'Emit JSON');
@@ -73,21 +76,35 @@ HELP)
             $options = $this->options($input);
             $workspace = $this->workspace($options->directory);
             $session = $this->session($input);
+            $requested = $input->getOption('branch');
+            if ($requested !== null && $requested !== '' && $session !== null) {
+                throw new InvalidArgumentException('--branch and --session cannot be used together.');
+            }
+            if ($requested !== null && ! is_string($requested)) {
+                throw new InvalidArgumentException('Tell branch selector must be a string.');
+            }
+            $arena = new ArenaStore($workspace);
+            $branch = $session === null ? (new BranchResolver($arena))->resolve($requested === '' ? null : $requested) : null;
+            if ($branch !== null) {
+                $options = $options->withBranchConfig((new BranchConfigStore($workspace))->runtimeValues($branch->branch));
+            }
             $definition = $this->agents->definition($options);
             $this->agents->assertReady($options);
             $loop = $this->agents->build($options, $definition);
             $this->agents->attachExecutionTrace($loop, $options);
             $result = (new WorkspaceCompactionRunner(
-                arena: new ArenaStore($workspace),
+                arena: $arena,
                 ref: match ($session) {
-                    null => 'main',
+                    null => $branch->ref,
                     default => (new SessionCompatibilityRef($session))->refName(),
                 },
             ))->execute($loop, $definition, $hint);
 
             (new StructuredOutput($output))->write([
                 'selector' => match ($session) {
-                    null => ['type' => 'main', 'name' => 'main'],
+                    null => $branch->branch === 'main'
+                        ? ['type' => 'main', 'name' => 'main']
+                        : ['type' => 'branch', 'name' => $branch->branch, 'source' => $branch->invocationLocal ? 'invocation' : 'current'],
                     default => ['type' => 'session', 'name' => $session->toString()],
                 },
                 ...$result->toArray(),
@@ -155,8 +172,11 @@ HELP)
             connection: (string) $input->getOption('connection'),
             model: (string) $input->getOption('model'),
             dsn: (string) $input->getOption('dsn'),
+            branch: ($input->getOption('branch') ?: null),
             directory: $project,
             maxSteps: (int) $input->getOption('max-steps'),
+            connectionExplicit: $input->hasParameterOption(['--connection', '-c'], true),
+            modelExplicit: $input->hasParameterOption(['--model', '-m'], true),
         );
     }
 

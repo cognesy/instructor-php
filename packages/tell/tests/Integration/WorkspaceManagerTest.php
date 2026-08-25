@@ -6,6 +6,7 @@ require_once dirname(__DIR__).'/Pest.php';
 
 use Cognesy\Tell\Workspace\WorkspaceException;
 use Cognesy\Tell\Workspace\WorkspaceManager;
+use PHPUnit\Framework\Assert;
 
 it('initializes a private versioned arena without rewriting an existing workspace', function (): void {
     $root = tellWorkspaceTestDirectory('init');
@@ -89,7 +90,7 @@ it('refuses malformed, incompatible, and unsafe marker layouts without mutation'
 
 it('refuses a symlinked workspace marker without following it', function (): void {
     if (! function_exists('symlink')) {
-        $this->markTestSkipped('Symlink support is unavailable.');
+        Assert::markTestSkipped('Symlink support is unavailable.');
     }
     $root = tellWorkspaceTestDirectory('symlink');
     $outside = tellWorkspaceTestDirectory('outside');

@@ -1,0 +1,169 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Cognesy\Tell\Runtime;
+
+use InvalidArgumentException;
+use Symfony\Component\Console\Input\InputInterface;
+
+/** Resolved, finite execution limits for one Tell invocation. */
+final readonly class TellExecutionPolicy
+{
+    public const int DEFAULT_MAX_RETRIES = 0;
+    public const int DEFAULT_TIMEOUT_MS = 30_000;
+    public const int DEFAULT_MAX_OUTPUT_CHARS = 200_000;
+    public const int DEFAULT_MAX_TOOL_OUTPUT_CHARS = 40_000;
+    public const int DEFAULT_MAX_TOOL_CALLS = 100;
+
+    public const int MAX_RETRIES = 10;
+    public const int MAX_TIMEOUT_MS = 3_600_000;
+    public const int MAX_OUTPUT_CHARS = 1_000_000;
+    public const int MAX_TOOL_OUTPUT_CHARS = 250_000;
+    public const int MAX_TOOL_CALLS = 1_000;
+
+    /** @param array<string, 'cli'|'branch'|'project'|'user'|'bundled'> $provenance */
+    public function __construct(
+        public int $maxRetries = self::DEFAULT_MAX_RETRIES,
+        public int $timeoutMs = self::DEFAULT_TIMEOUT_MS,
+        public int $maxOutputChars = self::DEFAULT_MAX_OUTPUT_CHARS,
+        public int $maxToolOutputChars = self::DEFAULT_MAX_TOOL_OUTPUT_CHARS,
+        public int $maxToolCalls = self::DEFAULT_MAX_TOOL_CALLS,
+        private array $provenance = [],
+    ) {
+        self::assertRange('maxRetries', $this->maxRetries, 0, self::MAX_RETRIES);
+        self::assertRange('timeoutMs', $this->timeoutMs, 1, self::MAX_TIMEOUT_MS);
+        self::assertRange('maxOutputChars', $this->maxOutputChars, 1, self::MAX_OUTPUT_CHARS);
+        self::assertRange('maxToolOutputChars', $this->maxToolOutputChars, 1, self::MAX_TOOL_OUTPUT_CHARS);
+        self::assertRange('maxToolCalls', $this->maxToolCalls, 0, self::MAX_TOOL_CALLS);
+    }
+
+    public static function defaults(): self
+    {
+        return new self(provenance: self::bundledProvenance());
+    }
+
+    /**
+     * @param array<string, mixed> $branchValues
+     * @param array<string, int> $cliOverrides
+     * @param array<string, int> $projectDefaults
+     * @param array<string, int> $userDefaults
+     */
+    public static function resolve(
+        array $branchValues,
+        array $cliOverrides = [],
+        array $projectDefaults = [],
+        array $userDefaults = [],
+    ): self
+    {
+        $defaults = self::defaults()->values();
+        $values = $defaults;
+        $provenance = self::bundledProvenance();
+        foreach (array_keys($defaults) as $key) {
+            if (array_key_exists($key, $userDefaults)) {
+                $values[$key] = self::integer($key, $userDefaults[$key]);
+                $provenance[$key] = 'user';
+            }
+            if (array_key_exists($key, $projectDefaults)) {
+                $values[$key] = self::integer($key, $projectDefaults[$key]);
+                $provenance[$key] = 'project';
+            }
+            if (array_key_exists($key, $branchValues)) {
+                $values[$key] = self::integer($key, $branchValues[$key]);
+                $provenance[$key] = 'branch';
+            }
+            if (array_key_exists($key, $cliOverrides)) {
+                $values[$key] = self::integer($key, $cliOverrides[$key]);
+                $provenance[$key] = 'cli';
+            }
+        }
+
+        return new self(
+            maxRetries: $values['maxRetries'],
+            timeoutMs: $values['timeoutMs'],
+            maxOutputChars: $values['maxOutputChars'],
+            maxToolOutputChars: $values['maxToolOutputChars'],
+            maxToolCalls: $values['maxToolCalls'],
+            provenance: $provenance,
+        );
+    }
+
+    /** @return array<string, int> */
+    public static function overridesFromInput(InputInterface $input): array
+    {
+        $options = [
+            'maxRetries' => '--max-retries',
+            'timeoutMs' => '--timeout-ms',
+            'maxOutputChars' => '--max-output-chars',
+            'maxToolOutputChars' => '--max-tool-output-chars',
+            'maxToolCalls' => '--max-tool-calls',
+        ];
+        $overrides = [];
+        foreach ($options as $key => $option) {
+            if (! $input->hasParameterOption($option, true)) {
+                continue;
+            }
+            $overrides[$key] = self::integer($option, $input->getOption(ltrim($option, '-')));
+        }
+        self::resolve([], $overrides);
+
+        return $overrides;
+    }
+
+    /** @return array{maxRetries: int, timeoutMs: int, maxOutputChars: int, maxToolOutputChars: int, maxToolCalls: int} */
+    public function values(): array
+    {
+        return [
+            'maxRetries' => $this->maxRetries,
+            'timeoutMs' => $this->timeoutMs,
+            'maxOutputChars' => $this->maxOutputChars,
+            'maxToolOutputChars' => $this->maxToolOutputChars,
+            'maxToolCalls' => $this->maxToolCalls,
+        ];
+    }
+
+    /** @return array<string, 'cli'|'branch'|'project'|'user'|'bundled'> */
+    public function provenance(): array
+    {
+        return $this->provenance === [] ? self::bundledProvenance() : $this->provenance;
+    }
+
+    /** @return array{values: array<string, int>, provenance: array<string, 'cli'|'branch'|'project'|'user'|'bundled'>} */
+    public function toArray(): array
+    {
+        return ['values' => $this->values(), 'provenance' => $this->provenance()];
+    }
+
+    private static function integer(string $name, mixed $value): int
+    {
+        if (is_int($value) || (is_string($value) && preg_match('/^-?\\d+$/', $value) === 1)) {
+            return (int) $value;
+        }
+        throw new InvalidArgumentException("{$name} must be an integer.");
+    }
+
+    private static function assertRange(string $name, int $value, int $minimum, int $maximum): void
+    {
+        if ($value < $minimum || $value > $maximum) {
+            throw new InvalidArgumentException("{$name} must be between {$minimum} and {$maximum}.");
+        }
+    }
+
+    /** @return array<string, 'bundled'> */
+    private static function bundledProvenance(): array
+    {
+        return array_fill_keys(array_keys(self::defaultsValues()), 'bundled');
+    }
+
+    /** @return array<string, int> */
+    private static function defaultsValues(): array
+    {
+        return [
+            'maxRetries' => self::DEFAULT_MAX_RETRIES,
+            'timeoutMs' => self::DEFAULT_TIMEOUT_MS,
+            'maxOutputChars' => self::DEFAULT_MAX_OUTPUT_CHARS,
+            'maxToolOutputChars' => self::DEFAULT_MAX_TOOL_OUTPUT_CHARS,
+            'maxToolCalls' => self::DEFAULT_MAX_TOOL_CALLS,
+        ];
+    }
+}

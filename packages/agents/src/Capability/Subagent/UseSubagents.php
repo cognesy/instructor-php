@@ -19,6 +19,8 @@ final class UseSubagents implements CanProvideAgentCapability
         private ?CanManageAgentDefinitions $provider = null,
         ?SubagentPolicy $policy = null,
         private ?SkillLibrary $skillLibrary = null,
+        private ?CanExecuteSubagent $executor = null,
+        private int $currentDepth = 0,
     ) {
         $this->policy = $policy ?? SubagentPolicy::default();
     }
@@ -46,11 +48,13 @@ final class UseSubagents implements CanProvideAgentCapability
         $skillLibrary = $this->skillLibrary;
         $policy = $this->policy;
 
-        $deferred = new class($provider, $skillLibrary, $policy) implements CanProvideDeferredTools {
+        $deferred = new class($provider, $skillLibrary, $policy, $this->executor, $this->currentDepth) implements CanProvideDeferredTools {
             public function __construct(
                 private CanManageAgentDefinitions $provider,
                 private ?SkillLibrary $skillLibrary,
                 private SubagentPolicy $policy,
+                private ?CanExecuteSubagent $executor,
+                private int $currentDepth,
             ) {}
 
             #[Override]
@@ -60,9 +64,10 @@ final class UseSubagents implements CanProvideAgentCapability
                     parentDriver: $context->toolUseDriver(),
                     provider: $this->provider,
                     skillLibrary: $this->skillLibrary,
-                    currentDepth: 0,
+                    currentDepth: $this->currentDepth,
                     policy: $this->policy,
                     events: $context->events(),
+                    executor: $this->executor,
                 ));
             }
         };

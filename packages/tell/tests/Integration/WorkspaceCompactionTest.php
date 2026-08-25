@@ -187,7 +187,7 @@ it('keeps the selected ref on compaction failures and rejects oversized focus hi
                 inferenceResponse: new InferenceResponse(content: 'image'),
             ));
         }
-    }, 'only accepts text summary content'],
+    }, 'did not complete'],
     'invalid canonical serialization' => [new class implements CanUseTools
     {
         public function useTools(AgentState $state): AgentState

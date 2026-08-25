@@ -1,0 +1,45 @@
+---
+title: 'v2.8.3'
+---
+
+v2.8.3 makes Tell a branchable, programmable project workspace while retaining
+its non-interactive CLI model. It adds bounded execution controls, provider
+catalogue inspection, safer event output, and durable child-agent delegation.
+
+## Branchable Tell Workspaces
+
+Tell workspaces can now create, inspect, select, and reset named branches.
+Branch-local configuration records runtime intent such as connection and model
+selection without storing credentials. Branch heads use validated immutable
+history and compare-and-swap publication, so conflicting concurrent updates do
+not overwrite one another.
+
+The PHP SDK now exposes Tell requests, results, progress events, workspace
+inspection, and conversation views for programmatic integrations alongside the
+CLI.
+
+## Runtime Control and Inspection
+
+New commands expose the effective configuration and the bundled Polyglot
+provider/model catalogue without requiring credentials or network access.
+Execution policies bound retries, deadlines, tool calls, and output; signal
+cancellation produces redacted, normalized event envelopes.
+
+Tell also adds compatible coding-tool aliases, direct tool dispatch, and a
+bounded non-interactive `ask_user` response path. Model-driven and direct tool
+calls use the same validation, sandbox, working-directory, output, and error
+policy.
+
+## Durable Delegation
+
+Delegated work now runs on a durable reserved child branch. Child agents can
+start with either forked parent context or fresh context, and their terminal
+status and transcript remain inspectable after a new Tell process starts.
+Delegation remains single-depth and sequential.
+
+## Upgrade Notes
+
+Existing Tell calls continue to work. Run `tell init` to use project-local
+workspace state, then use `tell branch`, `tell checkout`, `tell config`,
+`tell providers`, and `tell models` to inspect and control it. No provider
+credentials are persisted in workspace records.

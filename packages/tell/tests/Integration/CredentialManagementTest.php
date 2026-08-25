@@ -9,6 +9,7 @@ use Cognesy\Tell\Command\DescribeCommand;
 use Cognesy\Tell\Runtime\TellOptions;
 use Cognesy\Tell\TellApplication;
 use HelgeSverre\Toon\Toon;
+use PHPUnit\Framework\Assert;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -203,7 +204,7 @@ YAML);
 
 it('rejects credential files readable by other users', function (): void {
     if (PHP_OS_FAMILY === 'Windows') {
-        $this->markTestSkipped('POSIX permissions are not available on Windows.');
+        Assert::markTestSkipped('POSIX permissions are not available on Windows.');
     }
     $factory = tellTestFactory(credentials: []);
     file_put_contents($factory->paths()->credentials, 'OPENAI_API_KEY="unsafe"'."\n");
@@ -221,7 +222,7 @@ it('does not retain malformed credential contents in exceptions', function (): v
 
     try {
         $factory->credentials()->variables();
-        $this->fail('Expected malformed credentials to fail.');
+        Assert::fail('Expected malformed credentials to fail.');
     } catch (RuntimeException $error) {
         expect($error->getMessage())->toBe('Unable to parse Tell credentials file.')
             ->and($error->getPrevious())->toBeNull()

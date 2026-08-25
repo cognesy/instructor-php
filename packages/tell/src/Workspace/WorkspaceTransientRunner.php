@@ -12,6 +12,7 @@ use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
 use Cognesy\Messages\Messages;
 use Cognesy\Tell\Canonical\CanonicalValidationException;
 use Cognesy\Tell\Runtime\TellPaths;
+use Generator;
 
 /**
  * Executes against selected durable context without mutating either state store.
@@ -22,6 +23,7 @@ final readonly class WorkspaceTransientRunner
         private ArenaStore $arena,
         private TellPaths $paths,
         private ArenaHistoryCompiler $history = new ArenaHistoryCompiler,
+        private string $ref = 'main',
     ) {}
 
     public function execute(
@@ -30,19 +32,39 @@ final readonly class WorkspaceTransientRunner
         AgentDefinition $definition,
         string $prompt,
     ): AgentState {
+        $states = $this->iterate($sessionId, $loop, $definition, $prompt);
+        foreach ($states as $_) {
+        }
+
+        return $states->getReturn();
+    }
+
+    /** @return Generator<int, AgentState, mixed, AgentState> */
+    public function iterate(
+        ?SessionId $sessionId,
+        AgentLoop $loop,
+        AgentDefinition $definition,
+        string $prompt,
+    ): Generator {
         $messages = $this->messages($sessionId);
         $seed = (new DefinitionStateFactory)
             ->instantiateAgentState($definition)
             ->withMessages($messages)
             ->withUserMessage($prompt);
 
-        return $loop->execute($seed);
+        $state = $seed;
+        foreach ($loop->iterate($seed) as $checkpoint) {
+            $state = $checkpoint;
+            yield $checkpoint;
+        }
+
+        return $state;
     }
 
     private function messages(?SessionId $sessionId): Messages
     {
         if ($sessionId === null) {
-            $reference = $this->arena->readOptionalRef('main') ?? ArenaRef::empty();
+            $reference = $this->arena->readOptionalRef($this->ref) ?? ArenaRef::empty();
 
             return $this->history->compile($this->arena, $reference->head)->messages;
         }

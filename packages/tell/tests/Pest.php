@@ -33,7 +33,9 @@ name: default
 label: Tell Test
 description: Deterministic test agent
 capabilities:
+  - use_subagents
   - tell.coding
+  - tell.ask_user
   - tell.system_prompt
   - tell.self_knowledge
   - tell.self_description

@@ -16,15 +16,19 @@ final readonly class WorkspaceConversationReader
         private ArenaHistoryCompiler $history = new ArenaHistoryCompiler,
     ) {}
 
-    public function read(?SessionId $sessionId = null): WorkspaceConversationInspection
+    public function read(?SessionId $sessionId = null, ?BranchSelection $branch = null): WorkspaceConversationInspection
     {
+        if ($sessionId !== null && $branch !== null) {
+            throw new \InvalidArgumentException('--branch and --session cannot be used together.');
+        }
         $compatibility = $sessionId === null ? null : new SessionCompatibilityRef($sessionId);
-        $reference = $this->arena->readOptionalRef($compatibility?->refName() ?? 'main') ?? ArenaRef::empty();
+        $reference = $this->arena->readOptionalRef($compatibility?->refName() ?? $branch->ref ?? 'main') ?? ArenaRef::empty();
 
         return new WorkspaceConversationInspection(
             sessionId: $sessionId,
             head: $reference->head,
             history: $this->history->compile($this->arena, $reference->head),
+            branch: $branch,
         );
     }
 }

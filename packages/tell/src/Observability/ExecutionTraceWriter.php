@@ -16,17 +16,23 @@ use Throwable;
 
 final class ExecutionTraceWriter
 {
-    private const string SCHEMA = 'tell.execution-event.v1';
 
     private ?string $path = null;
 
     private bool $failed = false;
 
+    private readonly TellEventNormalizer $events;
+
     public function __construct(
         private readonly TellPaths $paths,
         private readonly TellConfig $config,
         private readonly TellOptions $options,
-    ) {}
+    ) {
+        $this->events = new TellEventNormalizer(
+            branch: $options->branch,
+            session: $options->session,
+        );
+    }
 
     public function attach(AgentLoop $loop): void
     {
@@ -92,36 +98,25 @@ final class ExecutionTraceWriter
         return $directory.DIRECTORY_SEPARATOR.$slug.'-'.$hash.'.jsonl';
     }
 
+    private function events(): TellEventNormalizer
+    {
+        return $this->events;
+    }
+
     /** @return array<string, mixed> */
     private function eventPayload(Event $event): array
     {
-        $data = TracePayload::sanitize(
+        $envelope = $this->events()->normalize($event);
+        if (! $this->config->includePayloads) {
+            return $envelope;
+        }
+
+        $envelope['payload'] = TracePayload::sanitize(
             $event->data,
-            $this->config->includePayloads,
-            $this->config->maxStringLength,
+            includePayloads: true,
+            maxStringLength: $this->config->maxStringLength,
         );
 
-        return [
-            'schema' => self::SCHEMA,
-            'timestamp' => $event->createdAt->format(DATE_ATOM),
-            'event' => $event->name(),
-            'eventId' => $event->id,
-            'level' => $event->logLevel,
-            'agent' => $this->options->agent,
-            'session' => $this->options->session,
-            'workspace' => $this->workspace(),
-            'transient' => $this->options->transient,
-            'data' => $data,
-        ];
-    }
-
-    private function workspace(): string
-    {
-        $resolved = realpath($this->options->directory);
-
-        return match ($resolved) {
-            false => $this->options->directory,
-            default => $resolved,
-        };
+        return $envelope;
     }
 }

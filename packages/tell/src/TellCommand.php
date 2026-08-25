@@ -4,16 +4,9 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell;
 
-use Cognesy\Agents\CanControlAgentLoop;
+use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Enums\ExecutionStatus;
-use Cognesy\Agents\Session\Actions\SendMessage;
-use Cognesy\Agents\Session\Data\AgentSession;
-use Cognesy\Agents\Session\Data\AgentSessionInfo;
-use Cognesy\Agents\Session\Data\SessionId;
-use Cognesy\Agents\Template\Contracts\CanInstantiateAgentLoop;
-use Cognesy\Agents\Template\Data\AgentDefinition;
-use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
 use Cognesy\Tell\Operational\CanDescribeOperationalPlane;
 use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
@@ -23,13 +16,11 @@ use Cognesy\Tell\Render\OutputRenderer;
 use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Render\TextRenderer;
 use Cognesy\Tell\Render\ToonRenderer;
+use Cognesy\Tell\Observability\TellEventNormalizer;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Runtime\TellOptions;
-use Cognesy\Tell\Workspace\ArenaStore;
-use Cognesy\Tell\Workspace\WorkspaceSessionExecution;
-use Cognesy\Tell\Workspace\WorkspaceSessionRunner;
-use Cognesy\Tell\Workspace\WorkspaceTransientRunner;
-use Cognesy\Tell\Workspace\WorkspaceTurnRunner;
+use Cognesy\Tell\Runtime\TellRuntime;
+use Cognesy\Tell\Runtime\TellSignalCancellationSource;
 use InvalidArgumentException;
 use Override;
 use Symfony\Component\Console\Command\Command;
@@ -69,9 +60,18 @@ HELP)
             ->addOption('model', 'm', InputOption::VALUE_REQUIRED, 'Model override', '')
             ->addOption('dsn', 'd', InputOption::VALUE_REQUIRED, 'Inline LLM DSN', '')
             ->addOption('session', 's', InputOption::VALUE_REQUIRED, 'Persist or continue a named session')
+            ->addOption('branch', 'b', InputOption::VALUE_REQUIRED, 'Use one workspace branch for this invocation')
             ->addOption('dir', 'C', InputOption::VALUE_REQUIRED, 'Tool working directory', '')
             ->addOption('tools', null, InputOption::VALUE_REQUIRED, 'Comma-separated tool allow-list', '')
+            ->addOption('answer', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Pre-supplied non-interactive answer; repeat for each question')
+            ->addOption('answers-file', null, InputOption::VALUE_REQUIRED, 'UTF-8 JSON answer array for multiple questions')
+            ->addOption('answers-stdin', null, InputOption::VALUE_NONE, 'Read a UTF-8 JSON answer array from standard input')
             ->addOption('max-steps', null, InputOption::VALUE_REQUIRED, 'Maximum agent steps', '10')
+            ->addOption('max-retries', null, InputOption::VALUE_REQUIRED, 'Maximum provider retries', '0')
+            ->addOption('timeout-ms', null, InputOption::VALUE_REQUIRED, 'Wall-time budget in milliseconds', '30000')
+            ->addOption('max-output-chars', null, InputOption::VALUE_REQUIRED, 'Maximum total model-output bytes', '200000')
+            ->addOption('max-tool-output-chars', null, InputOption::VALUE_REQUIRED, 'Maximum bytes retained from one tool result', '40000')
+            ->addOption('max-tool-calls', null, InputOption::VALUE_REQUIRED, 'Maximum tool calls', '100')
             ->addOption('transient', null, InputOption::VALUE_NONE, 'Run without publishing workspace or session state')
             ->addOption('output', 'o', InputOption::VALUE_REQUIRED, 'Output: toon, text, json, or events', 'toon');
     }
@@ -89,12 +89,29 @@ HELP)
                 return $this->showHome($input, $output);
             }
             $options = TellOptions::fromInput($input, $output);
-            $this->factory()->assertReady($options);
             $renderer = $this->renderer($options, $output, $stderr);
-            $execution = $this->executeTurn($options, $renderer);
-            $renderer->finish($execution->state, $execution->warnings, $execution->transient);
+            $cancellation = new TellSignalCancellationSource;
+            $signalsEnabled = $cancellation->install();
+            $result = (new TellRuntime($this->factory(), $cancellation))->run(
+                TellRequest::fromOptions($options),
+                static function (AgentLoop $loop, TellRequest $request, ?string $selectedBranch = null) use ($renderer): void {
+                    $renderer->attach($loop, new TellEventNormalizer($selectedBranch ?? $request->branch, $request->session));
+                },
+            );
+            $branch = match ($result->branch()) {
+                null => null,
+                default => ['name' => $result->branch(), 'source' => $result->branchSource() ?? 'current'],
+            };
+            $warnings = $result->warnings();
+            if ($options->answers->remaining() > 0) {
+                $warnings[] = "Unused non-interactive answers: {$options->answers->remaining()}.";
+            }
+            $renderer->finish($result->state(), $warnings, $result->isTransient(), $branch);
+            if (! $signalsEnabled && $output->isVerbose()) {
+                $stderr->writeln('[tell] SIGINT cancellation is unavailable: pcntl signal support was not detected.');
+            }
 
-            return $this->exitCode($execution->state);
+            return $this->exitCode($result->state());
         } catch (InvalidArgumentException $error) {
             $this->writeError($input, $output, $error->getMessage(), true);
 
@@ -119,109 +136,6 @@ HELP)
             authority: 'Inference, resolved tools, its trace target, and optional write access to one named session; --transient is read-only for conversation/session state.',
             degradedBehavior: 'Fails before inference when control resolution fails; trace-write failure does not fail the turn; stateless turns need no session storage.',
         );
-    }
-
-    private function executeTurn(TellOptions $options, OutputRenderer $renderer): WorkspaceSessionExecution
-    {
-        if ($options->transient) {
-            return $this->executeTransient($options, $renderer);
-        }
-
-        if ($options->session === null) {
-            $definition = $this->factory()->definition($options);
-            $loop = $this->factory()->build($options, $definition);
-            $this->factory()->attachExecutionTrace($loop, $options);
-            $renderer->attach($loop);
-            $workspace = $this->factory()->workspace()->discover($options->directory);
-            if ($workspace !== null) {
-                return new WorkspaceSessionExecution((new WorkspaceTurnRunner(new ArenaStore($workspace)))->execute(
-                    loop: $loop,
-                    definition: $definition,
-                    prompt: $options->prompt,
-                ));
-            }
-            $seed = (new DefinitionStateFactory)
-                ->instantiateAgentState($definition)
-                ->withUserMessage($options->prompt);
-
-            return new WorkspaceSessionExecution($loop->execute($seed));
-        }
-
-        $sessionId = SessionId::from($options->session);
-        $workspace = $this->factory()->workspace()->discover($options->directory);
-        if ($workspace !== null) {
-            $definition = $this->factory()->definition($options);
-            $loop = $this->factory()->build($options, $definition);
-            $this->factory()->attachExecutionTrace($loop, $options);
-            $renderer->attach($loop);
-
-            return (new WorkspaceSessionRunner(
-                arena: new ArenaStore($workspace),
-                paths: $this->factory()->paths(),
-            ))->execute($sessionId, $loop, $definition, $options->prompt);
-        }
-
-        $repository = $this->factory()->sessionRepository();
-        if (! $repository->exists($sessionId)) {
-            $definition = $this->factory()->definition($options);
-            $state = (new DefinitionStateFactory)->instantiateAgentState($definition);
-            $repository->create(new AgentSession(
-                header: AgentSessionInfo::fresh($sessionId, $definition->name, $definition->label()),
-                definition: $definition,
-                state: $state,
-            ));
-        }
-
-        $loopFactory = new class($this->factory(), $options, $renderer) implements CanInstantiateAgentLoop
-        {
-            public function __construct(
-                private readonly TellAgentFactory $agents,
-                private readonly TellOptions $options,
-                private readonly OutputRenderer $renderer,
-            ) {}
-
-            #[Override]
-            public function instantiateAgentLoop(AgentDefinition $definition): CanControlAgentLoop
-            {
-                $loop = $this->agents->build($this->options, $definition);
-                $this->agents->attachExecutionTrace($loop, $this->options);
-                $this->renderer->attach($loop);
-
-                return $loop;
-            }
-        };
-
-        $session = $this->factory()->sessions()->execute(
-            $sessionId,
-            new SendMessage($options->prompt, $loopFactory),
-        );
-
-        return new WorkspaceSessionExecution($session->state());
-    }
-
-    private function executeTransient(TellOptions $options, OutputRenderer $renderer): WorkspaceSessionExecution
-    {
-        $definition = $this->factory()->definition($options);
-        $loop = $this->factory()->build($options, $definition);
-        $this->factory()->attachExecutionTrace($loop, $options);
-        $renderer->attach($loop);
-        $workspace = $this->factory()->workspace()->discover($options->directory);
-
-        if ($workspace !== null) {
-            $session = $options->session === null ? null : SessionId::from($options->session);
-            $state = (new WorkspaceTransientRunner(
-                arena: new ArenaStore($workspace),
-                paths: $this->factory()->paths(),
-            ))->execute($session, $loop, $definition, $options->prompt);
-
-            return new WorkspaceSessionExecution($state, transient: true);
-        }
-
-        $seed = (new DefinitionStateFactory)
-            ->instantiateAgentState($definition)
-            ->withUserMessage($options->prompt);
-
-        return new WorkspaceSessionExecution($loop->execute($seed), transient: true);
     }
 
     private function renderer(

@@ -120,11 +120,13 @@ final readonly class CanonicalTurn implements CanonicalRecord
         );
     }
 
+    #[\Override]
     public function kind(): string
     {
         return 'turn';
     }
 
+    #[\Override]
     public function schema(): int
     {
         return CanonicalSchema::VERSION;
@@ -163,6 +165,7 @@ final readonly class CanonicalTurn implements CanonicalRecord
         return $this->status;
     }
 
+    #[\Override]
     /** @return array<string, mixed> */
     public function toCanonicalArray(): array
     {

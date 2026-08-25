@@ -8,6 +8,7 @@ use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Tell\Render\EventsRenderer;
+use Cognesy\Tell\Observability\TellEventNormalizer;
 use Cognesy\Tell\Runtime\TellOptions;
 use Cognesy\Tell\TellApplication;
 use Cognesy\Tell\TellCommand;
@@ -32,32 +33,34 @@ it('selects text, json, and event renderers deterministically', function (string
             ->and(json_decode($lines[0], true, flags: JSON_THROW_ON_ERROR)['answer'])->toBe('rendered answer'),
         'events' => expect($lines === [])->toBeFalse()
             ->and(array_map(
-                static fn (string $line): string => json_decode($line, true, flags: JSON_THROW_ON_ERROR)['event'],
+                static fn (string $line): string => json_decode($line, true, flags: JSON_THROW_ON_ERROR)['kind'],
                 $lines,
-            ))->toContain('AgentExecutionCompleted'),
+            ))->toContain('execution.completed'),
         default => expect(trim($tester->getDisplay()))->toBe('rendered answer'),
     };
 })->with(['toon', 'text', 'json', 'events']);
 
-it('emits exactly the independently observed event sequence as ndjson', function (): void {
+it('emits a monotonic, versioned, payload-free NDJSON sequence', function (): void {
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('done')));
     $options = new TellOptions(prompt: 'events', directory: tellLastTemporaryRoot());
     $loop = $factory->build($options);
     $output = new BufferedOutput;
     (new EventsRenderer($output))->attach($loop);
-    $observed = [];
-    $loop->wiretap(static function (object $event) use (&$observed): void {
-        $observed[] = (new ReflectionClass($event))->getShortName();
-    });
-
     $loop->execute(AgentState::empty()->withUserMessage('events'));
     $rendered = array_map(
-        static fn (string $line): string => json_decode($line, true, flags: JSON_THROW_ON_ERROR)['event'],
+        static fn (string $line): array => json_decode($line, true, flags: JSON_THROW_ON_ERROR),
         array_values(array_filter(explode("\n", trim($output->fetch())))),
     );
 
-    expect($rendered)->toBe($observed);
-    expect($rendered === [])->toBeFalse();
+    expect($rendered)->not->toBeEmpty()
+        ->and(array_column($rendered, 'schema'))->each->toBe('tell.event.v1')
+        ->and(array_column($rendered, 'sequence'))->toBe(range(1, count($rendered)))
+        ->and(array_filter($rendered, static fn (array $event): bool => $event['terminal'] !== null))->toHaveCount(1)
+        ->and(json_encode($rendered, JSON_THROW_ON_ERROR))->not->toContain('events');
+
+    $unknown = (new TellEventNormalizer)->normalize(new \stdClass);
+    expect($unknown['kind'])->toBe('unknown')
+        ->and($unknown['metadata'])->toBe([]);
 });
 
 it('keeps quiet output final-only and makes verbose tool progress explicit', function (): void {

@@ -11,6 +11,7 @@ use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Workspace\ArenaStore;
+use Cognesy\Tell\Workspace\BranchResolver;
 use Cognesy\Tell\Workspace\TellWorkspace;
 use Cognesy\Tell\Workspace\WorkspaceConversationInspection;
 use Cognesy\Tell\Workspace\WorkspaceConversationReader;
@@ -52,6 +53,7 @@ final class WorkspaceInspectionCommand extends Command implements CanDescribeOpe
             ->setHelp($this->help())
             ->addOption('dir', 'C', InputOption::VALUE_REQUIRED, 'Workspace directory', '')
             ->addOption('session', 's', InputOption::VALUE_REQUIRED, 'Inspect a named workspace session')
+            ->addOption('branch', 'b', InputOption::VALUE_REQUIRED, 'Inspect one branch without checking it out')
             ->addOption('full', null, InputOption::VALUE_NONE, 'Include complete message, tool argument, and result content')
             ->addOption('json', null, InputOption::VALUE_NONE, 'Emit JSON');
         if ($this->view === 'history') {
@@ -144,8 +146,20 @@ HELP,
     {
         $workspace = $this->workspace($input);
         $session = $this->session($input);
+        $branch = $input->getOption('branch');
+        if ($branch !== null && $branch !== '' && $session !== null) {
+            throw new InvalidArgumentException('--branch and --session cannot be used together.');
+        }
+        if ($branch !== null && ! is_string($branch)) {
+            throw new InvalidArgumentException('Tell branch selector must be a string.');
+        }
+        $arena = new ArenaStore($workspace);
 
-        return (new WorkspaceConversationReader(new ArenaStore($workspace)))->read($session);
+        $selection = $session === null
+            ? (new BranchResolver($arena))->resolve($branch === '' ? null : $branch, allowTellOwned: true)
+            : null;
+
+        return (new WorkspaceConversationReader($arena))->read($session, $selection);
     }
 
     private function workspace(InputInterface $input): TellWorkspace

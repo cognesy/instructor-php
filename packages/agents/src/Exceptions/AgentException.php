@@ -5,9 +5,6 @@ namespace Cognesy\Agents\Exceptions;
 use RuntimeException;
 use Throwable;
 
-/**
- * @phpstan-consistent-constructor
- */
 class AgentException extends RuntimeException
 {
     public function __construct(string $message, ?Throwable $previous = null) {

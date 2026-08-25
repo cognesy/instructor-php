@@ -20,13 +20,23 @@ final readonly class WorkspaceConversationInspection
         private ?SessionId $sessionId,
         private ?CanonicalHash $head,
         private ArenaHistory $history,
+        private ?BranchSelection $branch = null,
     ) {}
 
-    /** @return array{name: string, type: 'main'|'session'} */
+    /** @return array{name: string, type: 'main'|'branch'|'session', source?: string} */
     public function selector(): array
     {
         return match ($this->sessionId) {
-            null => ['type' => 'main', 'name' => 'main'],
+            null => match ($this->branch) {
+                null => ['type' => 'main', 'name' => 'main'],
+                default => $this->branch->branch === 'main'
+                    ? array_filter([
+                        'type' => 'main',
+                        'name' => 'main',
+                        'source' => $this->branch->invocationLocal ? 'invocation' : null,
+                    ], static fn (mixed $value): bool => $value !== null)
+                    : ['type' => 'branch', 'name' => $this->branch->branch, 'source' => $this->branch->invocationLocal ? 'invocation' : 'current'],
+            },
             default => ['type' => 'session', 'name' => $this->sessionId->toString()],
         };
     }

@@ -6,14 +6,21 @@ namespace Cognesy\Tell;
 
 use Cognesy\Tell\Command\AgentsCommand;
 use Cognesy\Tell\Command\AuthCommand;
+use Cognesy\Tell\Command\BranchCommand;
 use Cognesy\Tell\Command\ClearCommand;
+use Cognesy\Tell\Command\CheckoutCommand;
 use Cognesy\Tell\Command\CompactCommand;
+use Cognesy\Tell\Command\ConfigCommand;
 use Cognesy\Tell\Command\ContextCommand;
 use Cognesy\Tell\Command\DescribeCommand;
 use Cognesy\Tell\Command\InitCommand;
+use Cognesy\Tell\Command\ModelsCommand;
+use Cognesy\Tell\Command\ProvidersCommand;
+use Cognesy\Tell\Command\ResetCommand;
 use Cognesy\Tell\Command\PlanesCommand;
 use Cognesy\Tell\Command\SessionsCommand;
 use Cognesy\Tell\Command\ToolsCommand;
+use Cognesy\Tell\Command\ToolCommand;
 use Cognesy\Tell\Command\WorkspaceInspectionCommand;
 use Cognesy\Tell\Operational\PlaneMap;
 use Cognesy\Tell\Render\StructuredOutput;
@@ -45,26 +52,40 @@ final class TellApplication extends Application
         $tell = new TellCommand($agents);
         $agentsCommand = new AgentsCommand($agents);
         $authCommand = new AuthCommand($agents);
+        $branchCommand = new BranchCommand($agents);
         $clearCommand = new ClearCommand($agents);
+        $checkoutCommand = new CheckoutCommand($agents);
         $compactCommand = new CompactCommand($agents);
+        $configCommand = new ConfigCommand($agents);
         $contextCommand = new ContextCommand($agents);
         $describeCommand = new DescribeCommand($agents);
         $initCommand = new InitCommand;
+        $modelsCommand = new ModelsCommand($agents);
+        $providersCommand = new ProvidersCommand($agents);
+        $resetCommand = new ResetCommand($agents);
         $sessionsCommand = new SessionsCommand($agents);
         $toolsCommand = new ToolsCommand($agents);
+        $toolCommand = new ToolCommand($agents);
         $historyCommand = new WorkspaceInspectionCommand('history', $agents);
         $transcriptCommand = new WorkspaceInspectionCommand('transcript', $agents);
         $planeMap = PlaneMap::fromCommands(
             $tell,
             $agentsCommand,
             $authCommand,
+            $branchCommand,
             $clearCommand,
+            $checkoutCommand,
             $compactCommand,
+            $configCommand,
             $contextCommand,
             $describeCommand,
             $initCommand,
+            $modelsCommand,
+            $providersCommand,
+            $resetCommand,
             $sessionsCommand,
             $toolsCommand,
+            $toolCommand,
             $historyCommand,
             $transcriptCommand,
         );
@@ -72,14 +93,21 @@ final class TellApplication extends Application
             $tell,
             $agentsCommand,
             $authCommand,
+            $branchCommand,
             $clearCommand,
+            $checkoutCommand,
             $compactCommand,
+            $configCommand,
             $contextCommand,
             $describeCommand,
             $initCommand,
+            $modelsCommand,
+            $providersCommand,
+            $resetCommand,
             new PlanesCommand($planeMap),
             $sessionsCommand,
             $toolsCommand,
+            $toolCommand,
             $historyCommand,
             $transcriptCommand,
         ];

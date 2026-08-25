@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Runtime;
 
+use Cognesy\Tell\Capability\AskUser\TellAnswerQueue;
 use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -18,13 +19,21 @@ final readonly class TellOptions
         public string $model = '',
         public string $dsn = '',
         public ?string $session = null,
+        public ?string $branch = null,
         public string $directory = '',
         public array $tools = [],
+        public TellAnswerQueue $answers = new TellAnswerQueue,
         public int $maxSteps = 10,
         public string $output = 'toon',
         public bool $verbose = false,
         public bool $quiet = false,
         public bool $transient = false,
+        public bool $connectionExplicit = false,
+        public bool $modelExplicit = false,
+        public bool $toolsExplicit = false,
+        /** @var array<string, int> */
+        public array $policyOverrides = [],
+        public ?TellExecutionPolicy $policy = null,
     ) {
         if ($this->prompt === '') {
             throw new InvalidArgumentException('Prompt must not be empty.');
@@ -63,13 +72,56 @@ final readonly class TellOptions
             model: (string) $input->getOption('model'),
             dsn: (string) $input->getOption('dsn'),
             session: self::nullableString($input->getOption('session')),
+            branch: self::nullableString($input->getOption('branch')),
             directory: $resolvedDirectory,
             tools: self::parseTools((string) $input->getOption('tools')),
+            answers: TellAnswerQueue::fromInput($input),
             maxSteps: (int) $input->getOption('max-steps'),
             output: (string) $input->getOption('output'),
             verbose: $output->isVerbose(),
             quiet: $output->isQuiet(),
             transient: (bool) $input->getOption('transient'),
+            connectionExplicit: $input->hasParameterOption(['--connection', '-c'], true),
+            modelExplicit: $input->hasParameterOption(['--model', '-m'], true),
+            toolsExplicit: $input->hasParameterOption('--tools', true),
+            policyOverrides: TellExecutionPolicy::overridesFromInput($input),
+        );
+    }
+
+    /** @param array<string, mixed> $values */
+    public function withBranchConfig(array $values): self
+    {
+        $connection = $this->dsn === '' && ! $this->connectionExplicit && isset($values['connection']) && is_string($values['connection'])
+            ? $values['connection']
+            : $this->connection;
+        $model = $this->dsn === '' && ! $this->modelExplicit && isset($values['model']) && is_string($values['model'])
+            ? $values['model']
+            : $this->model;
+        $tools = ! $this->toolsExplicit && isset($values['tools']) && is_array($values['tools'])
+            ? array_values(array_filter($values['tools'], static fn (mixed $tool): bool => is_string($tool)))
+            : $this->tools;
+
+        return new self(
+            prompt: $this->prompt,
+            agent: $this->agent,
+            connection: $connection,
+            model: $model,
+            dsn: $this->dsn,
+            session: $this->session,
+            branch: $this->branch,
+            directory: $this->directory,
+            tools: $tools,
+            answers: $this->answers,
+            maxSteps: $this->maxSteps,
+            output: $this->output,
+            verbose: $this->verbose,
+            quiet: $this->quiet,
+            transient: $this->transient,
+            connectionExplicit: $this->connectionExplicit,
+            modelExplicit: $this->modelExplicit,
+            toolsExplicit: $this->toolsExplicit,
+            policyOverrides: $this->policyOverrides,
+            policy: TellExecutionPolicy::resolve($values, $this->policyOverrides),
         );
     }
 

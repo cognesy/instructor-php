@@ -11,6 +11,7 @@ use Cognesy\Tell\Canonical\CanonicalConversationRoot;
 use Cognesy\Tell\Canonical\CanonicalHash;
 use Cognesy\Tell\Canonical\CanonicalValidationException;
 use Cognesy\Tell\Runtime\TellPaths;
+use Generator;
 
 /**
  * Selects one workspace-native named session and imports legacy state once.
@@ -30,6 +31,20 @@ final readonly class WorkspaceSessionRunner
         AgentDefinition $definition,
         string $prompt,
     ): WorkspaceSessionExecution {
+        $states = $this->iterate($sessionId, $loop, $definition, $prompt);
+        foreach ($states as $_) {
+        }
+
+        return $states->getReturn();
+    }
+
+    /** @return Generator<int, \Cognesy\Agents\Data\AgentState, mixed, WorkspaceSessionExecution> */
+    public function iterate(
+        SessionId $sessionId,
+        AgentLoop $loop,
+        AgentDefinition $definition,
+        string $prompt,
+    ): Generator {
         try {
             $compatibility = new SessionCompatibilityRef($sessionId);
             // Validate the display name before touching either persistent store.
@@ -52,13 +67,16 @@ final readonly class WorkspaceSessionRunner
             $warnings = $this->warningsForChangedLegacySource($compatibility, $existing->head);
         }
 
-        $state = (new WorkspaceTurnRunner(
+        $states = (new WorkspaceTurnRunner(
             arena: $this->arena,
             ref: $compatibility->refName(),
             session: $compatibility->metadata(),
-        ))->execute($loop, $definition, $prompt);
+        ))->iterate($loop, $definition, $prompt);
+        foreach ($states as $state) {
+            yield $state;
+        }
 
-        return new WorkspaceSessionExecution($state, $warnings);
+        return new WorkspaceSessionExecution($states->getReturn(), $warnings);
     }
 
     /** @return list<string> */

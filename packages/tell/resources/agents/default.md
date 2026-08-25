@@ -3,7 +3,9 @@ name: default
 label: Tell
 description: A lightweight coding agent for one non-interactive turn
 capabilities:
+  - use_subagents
   - tell.coding
+  - tell.ask_user
   - tell.system_prompt
   - tell.self_knowledge
   - tell.self_description

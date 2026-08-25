@@ -10,13 +10,15 @@ it('defines all stop reasons', function () {
         StopReason::cases(),
     );
 
-    expect(count($values))->toBe(10);
+    expect(count($values))->toBe(12);
     expect($values)->toBe([
         'completed',
         'steps_limit',
         'token_limit',
         'time_limit',
         'retry_limit',
+        'output_limit',
+        'tool_call_limit',
         'error',
         'stop_requested',
         'finish_reason',

@@ -20,19 +20,17 @@ it('writes one private jsonl trace from the real execution event stream', functi
     expect($status)->toBe(0)
         ->and(Toon::decode($tester->getDisplay())['answer'])->toBe('traced answer')
         ->and($files)->toHaveCount(1)
-        ->and($records[0]['schema'])->toBe('tell.execution-event.v1')
-        ->and($records[0]['event'])->toBe('AgentExecutionStarted')
-        ->and($records[0]['agent'])->toBe('default')
+        ->and($records[0]['schema'])->toBe('tell.event.v1')
+        ->and($records[0]['kind'])->toBe('execution.started')
         ->and($records[0]['session'])->toBeNull()
-        ->and($records[0]['data']['messagePayload'])->toBe('[omitted]')
-        ->and($records[array_key_last($records)]['event'])->toBe('AgentExecutionCompleted');
-    expect(array_unique(array_column(array_column($records, 'data'), 'executionId')))->toHaveCount(1);
+        ->and($records[array_key_last($records)]['kind'])->toBe('execution.completed');
+    expect(array_unique(array_column($records, 'executionId')))->toHaveCount(1);
     if (DIRECTORY_SEPARATOR !== '\\') {
         expect(fileperms($files[0]) & 0777)->toBe(0600);
     }
 });
 
-it('includes payloads only when explicitly enabled in local config', function (): void {
+it('includes trace payloads only when explicitly enabled in local config', function (): void {
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('done')));
     file_put_contents($factory->paths()->configFile, json_encode([
         'schema' => 'tell.config.v1',
@@ -42,8 +40,8 @@ it('includes payloads only when explicitly enabled in local config', function ()
     (new CommandTester(new TellCommand($factory)))->execute(['prompt' => 'captured prompt']);
     $records = tellTraceRecords(tellTraceFiles($factory->paths()->executionTraces)[0] ?? '');
 
-    expect($records[0]['data']['messagePayload'])->toBeArray();
-    expect(json_encode($records[0]['data']['messagePayload'], JSON_THROW_ON_ERROR))->toContain('captured prompt');
+    expect($records[0]['payload']['messagePayload'])->toBeArray();
+    expect(json_encode($records[0]['payload']['messagePayload'], JSON_THROW_ON_ERROR))->toContain('captured prompt');
 });
 
 it('allows execution traces to be disabled in local config', function (): void {
@@ -66,8 +64,7 @@ it('marks transient traces without widening the existing redaction policy', func
     expect($tester->execute(['prompt' => 'transient trace prompt', '--transient' => true]))->toBe(0);
     $records = tellTraceRecords(tellTraceFiles($factory->paths()->executionTraces)[0] ?? '');
 
-    expect($records[0]['transient'])->toBeTrue()
-        ->and($records[0]['data']['messagePayload'])->toBe('[omitted]')
+    expect($records[array_key_last($records)]['terminal'])->toBe('completed')
         ->and(json_encode($records, JSON_THROW_ON_ERROR))->not->toContain('transient trace prompt');
 });
 
@@ -113,7 +110,7 @@ it('appends later turns to the same named session trace', function (): void {
     $records = tellTraceRecords($files[0] ?? '');
 
     expect($files)->toHaveCount(1)
-        ->and(array_count_values(array_column($records, 'event'))['AgentExecutionStarted'] ?? 0)->toBe(2);
+        ->and(array_count_values(array_column($records, 'kind'))['execution.started'] ?? 0)->toBe(2);
 });
 
 it('does not fail an agent turn when trace storage is unavailable', function (): void {

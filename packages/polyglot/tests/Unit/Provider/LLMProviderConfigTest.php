@@ -7,6 +7,13 @@ use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
+it('lists bundled preset names without resolving their environment templates', function () {
+    $presets = LLMConfig::presetNames();
+
+    expect($presets)->toContain('deepseek', 'qwen')
+        ->and($presets)->toBe(array_values(array_unique($presets)));
+});
+
 it('creates driver from explicit config and resolves correct class', function () {
     $config = new LLMConfig(
         apiUrl: 'https://api.openai.com/v1',

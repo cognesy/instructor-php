@@ -60,6 +60,21 @@ final readonly class InferenceDriverSpec
     ) {}
 
     /**
+     * Returns the declared capability contract without constructing a driver
+     * or opening a transport. This is intentionally a description of the
+     * bundled specification, not a probe of a live provider.
+     */
+    public function capabilities(string $model = ''): DriverCapabilities
+    {
+        return match ($this->capabilities) {
+            null => new DriverCapabilities,
+            default => $this->capabilities instanceof Closure
+                ? ($this->capabilities)($model)
+                : $this->capabilities,
+        };
+    }
+
+    /**
      * Plain `new $class(...)` in the same nesting order the hand-written constructors used --
      * no reflection and no container, so the cost is the four allocations the driver always
      * paid. Drivers are built per request; specs are built once, with the memoized registry.

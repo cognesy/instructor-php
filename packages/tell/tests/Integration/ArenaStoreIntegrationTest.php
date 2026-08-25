@@ -10,6 +10,7 @@ use Cognesy\Tell\Canonical\CanonicalMessage;
 use Cognesy\Tell\Canonical\CanonicalRole;
 use Cognesy\Tell\Canonical\CanonicalTextPart;
 use Cognesy\Tell\Workspace\ArenaStore;
+use Cognesy\Tell\Workspace\BranchConfigStore;
 use Cognesy\Tell\Workspace\WorkspaceManager;
 
 beforeEach(function (): void {
@@ -69,6 +70,49 @@ it('tolerates an identical object winner from separate processes', function (): 
         ->and(count(glob($workspace->paths->objects.DIRECTORY_SEPARATOR.'*'.DIRECTORY_SEPARATOR.'*') ?: []))->toBe(1);
 });
 
+it('allows one process-level branch creator and reports one stable conflict', function (): void {
+    $root = tellArenaIntegrationDirectory('branch-create');
+    $workspace = (new WorkspaceManager)->initialize($root)->workspace;
+    $store = new ArenaStore($workspace);
+
+    [[$firstOutput, $firstExit], [$secondOutput, $secondExit]] = tellArenaWorkers($root, 'branch-create', 'review');
+
+    expect([$firstOutput, $secondOutput])->toContain('created')
+        ->and([$firstOutput, $secondOutput])->toContain('conflict')
+        ->and([$firstExit, $secondExit])->each->toBe(0)
+        ->and($store->readRef('branches/review')->head)->toBeNull();
+});
+
+it('persists a complete current-branch selector across processes and concurrent checkouts', function (): void {
+    $root = tellArenaIntegrationDirectory('checkout');
+    $workspace = (new WorkspaceManager)->initialize($root)->workspace;
+    $store = new ArenaStore($workspace);
+    $store->createBranch(\Cognesy\Tell\Workspace\BranchName::from('review'), $store->readRef());
+
+    [[$firstOutput, $firstExit], [$secondOutput, $secondExit]] = tellArenaWorkers($root, 'checkout', 'review');
+    [$persisted, $persistedExit] = tellArenaSingleWorker($root, 'branch-current');
+
+    expect([$firstOutput, $secondOutput])->each->toBe('checked-out')
+        ->and([$firstExit, $secondExit])->each->toBe(0)
+        ->and($persistedExit)->toBe(0)
+        ->and($persisted)->toBe('review')
+        ->and($store->readCurrentBranch()->branch)->toBe('review');
+});
+
+it('allows one process-level branch config writer and reports one version conflict', function (): void {
+    $root = tellArenaIntegrationDirectory('config-cas');
+    $workspace = (new WorkspaceManager)->initialize($root)->workspace;
+
+    [[$firstOutput, $firstExit], [$secondOutput, $secondExit]] = tellArenaWorkers($root, 'config-set', 'main');
+    $config = (new BranchConfigStore($workspace))->read('main');
+
+    expect([$firstOutput, $secondOutput])->toContain('configured')
+        ->and([$firstOutput, $secondOutput])->toContain('conflict')
+        ->and([$firstExit, $secondExit])->each->toBe(0)
+        ->and($config['version'])->toBe(1)
+        ->and($config['values']['model'])->toStartWith('worker-');
+});
+
 function tellArenaIntegrationDirectory(string $name): string
 {
     global $tellTemporaryRoots;
@@ -121,6 +165,31 @@ function tellArenaStartWorker(string $root, string $mode, ?string $hash, string 
     fclose($pipes[0]);
 
     return ['process' => $process, 'pipes' => $pipes];
+}
+
+/** @return array{0: string, 1: int} */
+function tellArenaSingleWorker(string $root, string $mode, ?string $value = null): array
+{
+    $command = [PHP_BINARY, __DIR__.'/../Fixtures/arena-cas-worker.php', $root, $mode, $value ?? ''];
+    $process = proc_open($command, [
+        0 => ['pipe', 'r'],
+        1 => ['pipe', 'w'],
+        2 => ['pipe', 'w'],
+    ], $pipes);
+    if (! is_resource($process)) {
+        throw new RuntimeException('Unable to start Tell arena worker process.');
+    }
+    fclose($pipes[0]);
+    $output = stream_get_contents($pipes[1]);
+    $error = stream_get_contents($pipes[2]);
+    fclose($pipes[1]);
+    fclose($pipes[2]);
+    $exitCode = proc_close($process);
+    if ($error !== '') {
+        throw new RuntimeException("Tell arena worker failed: {$error}");
+    }
+
+    return [trim($output), $exitCode];
 }
 
 /** @param array{process: resource, pipes: array<int, resource>} $worker @return array{0: string, 1: int} */

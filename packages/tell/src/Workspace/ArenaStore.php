@@ -130,6 +130,101 @@ final class ArenaStore
         return $refs;
     }
 
+    /** @return list<BranchName> */
+    public function branchNames(): array
+    {
+        $this->validateWorkspace();
+        $directory = $this->workspace->paths->refs.DIRECTORY_SEPARATOR.'branches';
+        if (! $this->pathExists($directory)) {
+            return [];
+        }
+        if (is_link($directory) || ! is_dir($directory)) {
+            throw new ArenaIntegrityException('Tell branch ref directory is not safe.');
+        }
+        $entries = scandir($directory);
+        if ($entries === false) {
+            throw new ArenaIntegrityException('Tell branch refs could not be listed safely.');
+        }
+
+        $branches = [];
+        foreach ($entries as $entry) {
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
+            try {
+                $name = BranchName::fromStored($entry);
+            } catch (\InvalidArgumentException $exception) {
+                throw new ArenaIntegrityException('Tell branch ref name is invalid.', previous: $exception);
+            }
+            $path = $directory.DIRECTORY_SEPARATOR.$entry;
+            if (is_link($path) || ! is_file($path)) {
+                throw new ArenaIntegrityException('Tell branch ref is not a safe regular file.');
+            }
+            $branches[] = $name;
+        }
+        usort($branches, static fn (BranchName $left, BranchName $right): int => $left->toString() <=> $right->toString());
+
+        return $branches;
+    }
+
+    public function createBranch(BranchName $name, ArenaRef $reference): ArenaRef
+    {
+        $this->validateWorkspace();
+        if ($reference->head !== null) {
+            $this->get($reference->head);
+        }
+        $ref = 'branches/'.$name->toString();
+        $path = $this->refPath($ref);
+
+        return $this->withLock($this->refLockName($ref), function () use ($path, $ref, $reference): ArenaRef {
+            $this->validateWorkspace();
+            if ($this->pathExists($path)) {
+                throw new ArenaRefConflict($ref, null, $this->readRefAtPath($path)->head);
+            }
+            $this->writeAtomically(dirname($path), $path, $reference->toBytes(), 'branch ref', false);
+
+            return $this->readRefAtPath($path);
+        });
+    }
+
+    public function readCurrentBranch(): CurrentBranchSelector
+    {
+        $this->validateWorkspace();
+
+        if (! $this->pathExists($this->workspace->paths->currentBranch)) {
+            return CurrentBranchSelector::main();
+        }
+
+        return $this->readCurrentBranchAtPath($this->workspace->paths->currentBranch);
+    }
+
+    public function checkout(string $branch): CurrentBranchSelector
+    {
+        $this->validateWorkspace();
+        $branch = $branch === 'main' ? 'main' : BranchName::from($branch)->toString();
+        $ref = $branch === 'main' ? 'main' : 'branches/'.$branch;
+        $reference = $this->readOptionalRef($ref);
+        if ($reference === null) {
+            throw new ArenaException("Tell branch '{$branch}' does not exist.");
+        }
+        if ($reference->head !== null) {
+            $this->get($reference->head);
+        }
+
+        return $this->withLock('current-branch', function () use ($branch): CurrentBranchSelector {
+            $this->validateWorkspace();
+            $this->writeAtomically(
+                dirname($this->workspace->paths->currentBranch),
+                $this->workspace->paths->currentBranch,
+                (new CurrentBranchSelector($branch))->toBytes(),
+                'current branch selector',
+                true,
+            );
+
+            return $this->readCurrentBranchAtPath($this->workspace->paths->currentBranch);
+        });
+    }
+
     public function compareAndSwap(string $ref, ?CanonicalHash $expectedHead, CanonicalHash $newHead): ArenaRef
     {
         $this->validateWorkspace();
@@ -145,7 +240,7 @@ final class ArenaStore
                 throw new ArenaRefConflict($ref, $expectedHead, $current->head);
             }
 
-            $published = new ArenaRef($newHead);
+            $published = new ArenaRef($newHead, $current->provenance);
             $this->writeAtomically(dirname($path), $path, $published->toBytes(), 'ref', true);
 
             return $this->readRefAtPath($path);
@@ -195,11 +290,26 @@ final class ArenaStore
         if (
             preg_match('/\A[a-z][a-z0-9-]{0,63}\z/', $ref) !== 1
             && preg_match('/\Asessions\/[a-f0-9]{64}\z/', $ref) !== 1
+            && ! $this->isBranchRef($ref)
         ) {
             throw new ArenaException('Tell ref name is invalid.');
         }
 
         return $this->workspace->paths->refs.DIRECTORY_SEPARATOR.$ref;
+    }
+
+    private function isBranchRef(string $ref): bool
+    {
+        if (! str_starts_with($ref, 'branches/')) {
+            return false;
+        }
+        try {
+            BranchName::fromStored(substr($ref, strlen('branches/')));
+        } catch (\InvalidArgumentException) {
+            return false;
+        }
+
+        return true;
     }
 
     private function refLockName(string $ref): string
@@ -230,6 +340,17 @@ final class ArenaStore
             throw $exception;
         } catch (Throwable $exception) {
             throw new ArenaIntegrityException('Tell ref could not be read safely.', previous: $exception);
+        }
+    }
+
+    private function readCurrentBranchAtPath(string $path): CurrentBranchSelector
+    {
+        try {
+            return CurrentBranchSelector::fromBytes($this->readPrivateFile($path, 'current branch selector'));
+        } catch (ArenaException $exception) {
+            throw $exception;
+        } catch (Throwable $exception) {
+            throw new ArenaIntegrityException('Tell current branch selector could not be read safely.', previous: $exception);
         }
     }
 

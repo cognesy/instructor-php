@@ -6,9 +6,18 @@ use Cognesy\Tell\Canonical\CanonicalConversationRoot;
 use Cognesy\Tell\Canonical\CanonicalHash;
 use Cognesy\Tell\Workspace\ArenaRefConflict;
 use Cognesy\Tell\Workspace\ArenaStore;
+use Cognesy\Tell\Workspace\BranchName;
+use Cognesy\Tell\Workspace\BranchConfigStore;
+use Cognesy\Tell\Workspace\WorkspaceException;
 use Cognesy\Tell\Workspace\WorkspaceManager;
 
-require dirname(__DIR__, 4).'/vendor/autoload.php';
+$packageRoot = dirname(__DIR__, 2);
+$monorepoRoot = dirname(__DIR__, 4);
+$autoload = is_dir($monorepoRoot.'/packages/tell')
+    ? $monorepoRoot.'/vendor/autoload.php'
+    : $packageRoot.'/vendor/autoload.php';
+
+require $autoload;
 
 $workspace = (new WorkspaceManager)->discover($argv[1] ?? '');
 if ($workspace === null) {
@@ -54,6 +63,37 @@ if ($mode === 'clear') {
         $store->compareAndSwapToEmpty('main', new CanonicalHash($argv[3] ?? ''));
         echo "cleared\n";
     } catch (ArenaRefConflict) {
+        echo "conflict\n";
+    }
+    exit(0);
+}
+
+if ($mode === 'branch-create') {
+    try {
+        $store->createBranch(BranchName::from($argv[3] ?? ''), $store->readRef());
+        echo "created\n";
+    } catch (ArenaRefConflict) {
+        echo "conflict\n";
+    }
+    exit(0);
+}
+
+if ($mode === 'checkout') {
+    $store->checkout($argv[3] ?? '');
+    echo "checked-out\n";
+    exit(0);
+}
+
+if ($mode === 'branch-current') {
+    echo $store->readCurrentBranch()->branch."\n";
+    exit(0);
+}
+
+if ($mode === 'config-set') {
+    try {
+        (new BranchConfigStore($workspace))->set($argv[3] ?? 'main', 'model', 'worker-'.getmypid(), 0);
+        echo "configured\n";
+    } catch (WorkspaceException) {
         echo "conflict\n";
     }
     exit(0);

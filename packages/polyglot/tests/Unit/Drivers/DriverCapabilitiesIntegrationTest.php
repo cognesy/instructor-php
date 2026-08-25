@@ -37,6 +37,15 @@ describe('openai capabilities', function () {
     });
 });
 
+it('describes bundled capabilities without constructing a driver', function () {
+    $caps = BundledInferenceDrivers::capabilities('deepseek', 'deepseek-v4-flash');
+
+    expect($caps)->not->toBeNull()
+        ->and($caps?->supportsToolCalling())->toBeTrue()
+        ->and($caps?->supportsResponseFormatJsonSchema())->toBeFalse()
+        ->and(BundledInferenceDrivers::capabilities('not-a-provider'))->toBeNull();
+});
+
 describe('anthropic capabilities', function () {
     it('supports tools but no native response formats', function () {
         $caps = capabilitiesOf('anthropic', 'claude-3-opus');

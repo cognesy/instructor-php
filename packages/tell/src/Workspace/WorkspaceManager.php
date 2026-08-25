@@ -22,6 +22,7 @@ final class WorkspaceManager
         $this->ensurePrivateDirectory($paths->locks, 'workspace locks');
         $this->writePrivateFile($paths->schema, WorkspacePaths::SCHEMA_VERSION."\n", 'workspace schema');
         $this->writePrivateFile($paths->mainRef, ArenaRef::empty()->toBytes(), 'main branch ref');
+        $this->writePrivateFile($paths->currentBranch, CurrentBranchSelector::main()->toBytes(), 'current branch selector');
 
         return new WorkspaceInitialization($this->read($paths), true);
     }
@@ -71,6 +72,11 @@ final class WorkspaceManager
         $this->assertDirectory($paths->refs, 'workspace refs');
         $this->assertDirectory($paths->locks, 'workspace locks');
         $this->assertFile($paths->mainRef, 'main branch ref');
+        // P1 workspaces add this selector. Its absence is a read-only legacy
+        // main selection until an explicit checkout writes the new record.
+        if ($this->exists($paths->currentBranch)) {
+            $this->assertFile($paths->currentBranch, 'current branch selector');
+        }
 
         $contents = file_get_contents($paths->schema);
         if ($contents === false) {

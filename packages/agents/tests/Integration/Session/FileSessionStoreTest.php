@@ -96,7 +96,7 @@ it('load throws InvalidSessionFileException on corrupt file', function () {
         return;
     }
     cleanupDir($dir);
-    $this->fail('Expected InvalidSessionFileException');
+    throw new \RuntimeException('Expected InvalidSessionFileException');
 });
 
 it('load throws on malformed session data', function () {
@@ -112,7 +112,7 @@ it('load throws on malformed session data', function () {
         return;
     }
     cleanupDir($dir);
-    $this->fail('Expected InvalidSessionFileException');
+    throw new \RuntimeException('Expected InvalidSessionFileException');
 });
 
 it('listHeaders returns SessionInfoList', function () {
@@ -144,7 +144,7 @@ it('listHeaders throws on first invalid file', function () {
         return;
     }
     cleanupDir($dir);
-    $this->fail('Expected InvalidSessionFileException');
+    throw new \RuntimeException('Expected InvalidSessionFileException');
 });
 
 it('delete removes session file', function () {
@@ -185,7 +185,7 @@ it('save throws on corrupt JSON in existing file', function () {
         return;
     }
     cleanupDir($dir);
-    $this->fail('Expected InvalidSessionFileException');
+    throw new \RuntimeException('Expected InvalidSessionFileException');
 });
 
 it('save overwrites malformed structure when version matches', function () {

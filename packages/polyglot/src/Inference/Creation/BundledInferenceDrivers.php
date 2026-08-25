@@ -70,6 +70,9 @@ final class BundledInferenceDrivers
      */
     private static ?InferenceDriverRegistry $instance = null;
 
+    /** @var array<string, InferenceDriverSpec>|null */
+    private static ?array $specifications = null;
+
     /**
      * Every bundled provider is an `InferenceDriverSpec`: the row names the provider's
      * translators and capabilities, while `SpecifiedInferenceDriver` supplies the shared
@@ -81,11 +84,24 @@ final class BundledInferenceDrivers
      * why `withDriver()` continues to accept a class-string or a closure from outside.
      */
     public static function registry(): InferenceDriverRegistry {
+        return self::$instance ??= InferenceDriverRegistry::fromArray(self::specifications());
+    }
+
+    public static function capabilities(string $driver, string $model = ''): ?DriverCapabilities
+    {
+        $specification = self::specifications()[$driver] ?? null;
+
+        return $specification?->capabilities($model);
+    }
+
+    /** @return array<string, InferenceDriverSpec> */
+    public static function specifications(): array
+    {
         // Four names, one behaviour. They shared OpenAICompatibleDriver before and share one
         // spec object now; the names stay because configuration files reference them.
         $openAiCompatible = new InferenceDriverSpec(bodyFormat: OpenAICompatibleBodyFormat::class);
 
-        return self::$instance ??= InferenceDriverRegistry::fromArray([
+        return self::$specifications ??= [
             // -- OpenAI wire protocol: declared, not coded ---------------------------------
             'a21' => new InferenceDriverSpec(
                 bodyFormat: A21BodyFormat::class,
@@ -236,6 +252,6 @@ final class BundledInferenceDrivers
                 usageFormat: OpenResponsesUsageFormat::class,
                 messageFormat: OpenResponsesMessageFormat::class,
             ),
-        ]);
+        ];
     }
 }

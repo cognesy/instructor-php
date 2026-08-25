@@ -18,9 +18,13 @@ final readonly class WorkspacePaths
 
     public string $locks;
 
+    public string $config;
+
     public string $schema;
 
     public string $mainRef;
+
+    public string $currentBranch;
 
     public function __construct(public string $root)
     {
@@ -29,8 +33,10 @@ final readonly class WorkspacePaths
         $this->objects = $this->join($this->arena, 'objects');
         $this->refs = $this->join($this->arena, 'refs');
         $this->locks = $this->join($this->arena, 'locks');
+        $this->config = $this->join($this->arena, 'config');
         $this->schema = $this->join($this->arena, 'schema');
         $this->mainRef = $this->join($this->refs, 'main');
+        $this->currentBranch = $this->join($this->refs, 'current');
     }
 
     private function join(string $directory, string $name): string
