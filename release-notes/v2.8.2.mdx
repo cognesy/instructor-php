@@ -1,0 +1,38 @@
+v2.8.2 makes Tell conversations durable at the project level and corrects the
+published Xprompt package dependency name.
+
+## Durable Tell Workspaces
+
+`tell init` creates a private `.tell/arena` workspace that stores immutable,
+canonical conversation turns. Subsequent Tell invocations reopen that history
+automatically and publish a new turn only after execution completes.
+
+New workspace commands provide bounded, provider-free inspection and explicit
+state management:
+
+- `tell history`
+- `tell transcript`
+- `tell context`
+- `tell compact "summary instruction"`
+- `tell clear`
+
+Named legacy sessions migrate once into a compatible canonical reference while
+leaving the legacy source untouched. `tell --transient "prompt"` uses the same
+selected context without publishing conversation, configuration, or session
+state.
+
+Canonical workspace records hold semantic messages and tool relationships only.
+Credentials, provider envelopes, headers, usage, timing, rendering data,
+execution traces, and absolute paths are excluded from canonical hashes.
+
+## Package Resolution
+
+The Xprompt Composer package is `cognesy/xprompt`. Internal package metadata
+now uses that registered name consistently, fixing installs that previously
+attempted to resolve the nonexistent `cognesy/xprompt-php` package.
+
+## Upgrade Notes
+
+Existing Tell commands remain stateless until a project is explicitly
+initialized with `tell init`. Use `--transient` for one-off experiments that
+must retain the current workspace context without recording the result.

@@ -20,7 +20,7 @@ return [
         ],
     ],
 ];
-// @doctest id="c78c"
+// @doctest id="c590"
 ```
 
 When `bridge_events` is empty (the default), every Instructor event is forwarded to Laravel's dispatcher. To reduce overhead in production, list only the event classes your listeners actually need.
@@ -116,7 +116,7 @@ class LogExtractionCompleted
         ]);
     }
 }
-// @doctest id="0910"
+// @doctest id="d747"
 ```
 
 Register in `EventServiceProvider`:
@@ -137,7 +137,7 @@ class EventServiceProvider extends ServiceProvider
         ],
     ];
 }
-// @doctest id="fab2"
+// @doctest id="fc70"
 ```
 
 ### Using Closures
@@ -166,7 +166,7 @@ class AppServiceProvider extends ServiceProvider
         });
     }
 }
-// @doctest id="a191"
+// @doctest id="82c7"
 ```
 
 ### Using Event Subscribers
@@ -208,7 +208,7 @@ class InstructorEventSubscriber
         ];
     }
 }
-// @doctest id="e711"
+// @doctest id="67f6"
 ```
 
 Register it in `EventServiceProvider`:
@@ -226,7 +226,7 @@ class EventServiceProvider extends ServiceProvider
         InstructorEventSubscriber::class,
     ];
 }
-// @doctest id="c512"
+// @doctest id="d892"
 ```
 
 ## Common Use Cases
@@ -253,7 +253,7 @@ Event::listen(ExtractionFailed::class, function ($event) {
         'data' => $event->data,
     ]);
 });
-// @doctest id="7c6d"
+// @doctest id="f604"
 ```
 
 ### Metrics and Analytics
@@ -268,7 +268,7 @@ Event::listen(ExtractionCompleted::class, function ($event) {
         'data' => $event->data,
     ]);
 });
-// @doctest id="c657"
+// @doctest id="6444"
 ```
 
 ### Alerting on Failures
@@ -282,7 +282,7 @@ Event::listen(ExtractionFailed::class, function ($event) {
     Notification::route('slack', config('services.slack.webhook'))
         ->notify(new ExtractionFailedNotification($event));
 });
-// @doctest id="7fd5"
+// @doctest id="3513"
 ```
 
 ### Queued Event Listeners
@@ -305,7 +305,7 @@ class ProcessExtractionAnalytics implements ShouldQueue
         // Heavy analytics processing runs on the queue
     }
 }
-// @doctest id="77b7"
+// @doctest id="f266"
 ```
 
 ## Wiretap (Direct Event Handling)
@@ -328,7 +328,7 @@ $person = StructuredOutput::withRuntime($runtime)->with(
     responseModel: PersonData::class,
 )
 ->get();
-// @doctest id="e62e"
+// @doctest id="adc8"
 ```
 
 The `LaravelEventDispatcher` itself also supports `wiretap` for registering global listeners that receive every event, regardless of class. These listeners run at the lowest priority after all class-specific and bridged listeners have executed.
@@ -343,14 +343,14 @@ return [
         'dispatch_to_laravel' => false,
     ],
 ];
-// @doctest id="74a7"
+// @doctest id="f4a3"
 ```
 
 Or via environment variable:
 
 ```env
 INSTRUCTOR_DISPATCH_EVENTS=false
-// @doctest id="48b3"
+// @doctest id="30ca"
 ```
 
 Disabling the bridge only stops events from being forwarded to Laravel's dispatcher. Internal Instructor event listeners and wiretaps continue to work normally.
@@ -379,7 +379,7 @@ final class EventBridgeTest extends TestCase
         Event::assertDispatched(ExtractionCompleted::class);
     }
 }
-// @doctest id="58cd"
+// @doctest id="87f3"
 ```
 
 Assert event data with a closure:
@@ -388,5 +388,5 @@ Assert event data with a closure:
 Event::assertDispatched(ExtractionCompleted::class, function ($event) {
     return !empty($event->data);
 });
-// @doctest id="b706"
+// @doctest id="bab3"
 ```
