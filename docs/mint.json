@@ -513,7 +513,6 @@
                 "cookbook/examples/A04_APISupport/cerebras",
                 "cookbook/examples/A04_APISupport/cohere",
                 "cookbook/examples/A04_APISupport/deepseek",
-                "cookbook/examples/A04_APISupport/qwen",
                 "cookbook/examples/A04_APISupport/fireworks",
                 "cookbook/examples/A04_APISupport/google_gemini",
                 "cookbook/examples/A04_APISupport/google_gemini_oai",
@@ -529,6 +528,7 @@
                 "cookbook/examples/A04_APISupport/openai-responses",
                 "cookbook/examples/A04_APISupport/openrouter",
                 "cookbook/examples/A04_APISupport/perplexity",
+                "cookbook/examples/A04_APISupport/qwen",
                 "cookbook/examples/A04_APISupport/sambanova",
                 "cookbook/examples/A04_APISupport/togetherai",
                 "cookbook/examples/A04_APISupport/xai"
@@ -615,7 +615,6 @@
                 "cookbook/examples/B04_LLMApiSupport/llm_cerebras",
                 "cookbook/examples/B04_LLMApiSupport/llm_cohere",
                 "cookbook/examples/B04_LLMApiSupport/llm_deepseek",
-                "cookbook/examples/B04_LLMApiSupport/llm_qwen",
                 "cookbook/examples/B04_LLMApiSupport/llm_fireworks",
                 "cookbook/examples/B04_LLMApiSupport/llm_google_gemini",
                 "cookbook/examples/B04_LLMApiSupport/llm_google_gemini_oai",
@@ -630,6 +629,7 @@
                 "cookbook/examples/B04_LLMApiSupport/llm_openai-responses",
                 "cookbook/examples/B04_LLMApiSupport/llm_openrouter",
                 "cookbook/examples/B04_LLMApiSupport/llm_perplexity",
+                "cookbook/examples/B04_LLMApiSupport/llm_qwen",
                 "cookbook/examples/B04_LLMApiSupport/llm_sambanova",
                 "cookbook/examples/B04_LLMApiSupport/llm_togetherai",
                 "cookbook/examples/B04_LLMApiSupport/llm_xai"
