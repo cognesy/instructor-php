@@ -68,7 +68,7 @@ $agent = AgentBuilder::base()
 $result = $agent->execute(
     AgentState::empty()->withUserMessage('Explain closures in PHP.')
 );
-// @doctest id="d7ec"
+// @doctest id="aa40"
 ```
 
 Once installed, the capability listens to the relevant execution, step, tool, continuation, and streaming events and emits normalized envelopes through your transport. Your app consumes those envelopes and updates the UI.
@@ -99,7 +99,7 @@ $agent = AgentLoop::default()->withDriver(
         events: $events,
     )
 );
-// @doctest id="5c19"
+// @doctest id="9167"
 ```
 
 Without streamed inference, you still receive step, tool, and status envelopes, but not incremental text chunks.
@@ -113,7 +113,7 @@ interface CanBroadcastAgentEvents
 {
     public function broadcast(string $channel, array $envelope): void;
 }
-// @doctest id="4424"
+// @doctest id="39cf"
 ```
 
 This keeps the integration boundary small. The broadcaster does not require a framework or network stack. Your implementation decides how envelopes leave the process.
@@ -148,7 +148,7 @@ $broadcaster = new AgentEventBroadcaster(
     executionId: 'exec-1',
     config: BroadcastConfig::standard(),
 );
-// @doctest id="0b39"
+// @doctest id="3bfd"
 ```
 
 For most user-facing apps, `standard()` is the right default.
@@ -187,7 +187,7 @@ $description = $agent->describe();
 $data = $description->toArray();
 $text = $description->toText();
 $markdown = $description->toMarkdown();
-// @doctest id="4b71"
+// @doctest id="508e"
 ```
 
 The description includes the resolved identity, driver, safe LLM configuration, installed capabilities, resolved tools, registered hooks, self-knowledge summary, and public metadata. Tool entries use the same resolved names and prompt-visibility rule as prompt composition. Hook entries are ordered by lifecycle trigger, then priority, then registration order.
@@ -209,7 +209,7 @@ use Cognesy\Agents\Capability\Describe\UseSelfDescription;
 $agent = AgentBuilder::base()
     ->withCapability(new UseSelfDescription())
     ->build();
-// @doctest id="d8af"
+// @doctest id="f42f"
 ```
 
 The tool receives the final resolved profile after all capabilities, tools, hooks, and driver configuration have been applied. Its full response is therefore the same safe array returned by `$agent->describe()->toArray()`, including the `describe_self` tool itself.
