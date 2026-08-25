@@ -774,6 +774,16 @@
             ]
         },
         {
+            "group": "D11_TellHarness",
+            "pages": [
+                "cookbook/examples/D11_TellHarness/tell_harness_stateless_run",
+                "cookbook/examples/D11_TellHarness/tell_harness_observable_run",
+                "cookbook/examples/D11_TellHarness/tell_harness_durable_conversation",
+                "cookbook/examples/D11_TellHarness/tell_harness_transient_experiment",
+                "cookbook/examples/D11_TellHarness/tell_harness_context_lifecycle"
+            ]
+        },
+        {
             "group": "D20_Sandbox",
             "pages": [
                 "cookbook/examples/D20_Sandbox/sandbox_host_ls",
