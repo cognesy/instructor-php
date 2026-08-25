@@ -1,0 +1,58 @@
+## Overview
+
+Durable work is explicit. Initialize a project-local workspace, select a named
+conversation, and use the conversation handle for sending turns and inspecting
+its canonical history. The harness returns bounded SDK DTOs rather than arena
+or canonical storage records.
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+require_once dirname(__DIR__).'/Support.php';
+
+use Cognesy\Tell\Tell;
+use Cognesy\Tell\TellRequest;
+
+$project = TellHarnessExample::project();
+
+try {
+    $tell = Tell::open($project);
+    $workspace = $tell->workspace()->initialize();
+    $review = $tell->conversation('release-review');
+
+    $result = $review->send(
+        TellRequest::prompt('Record one concise release-readiness recommendation.'),
+    );
+    $history = $review->history(limit: 10);
+    $transcript = $review->transcript();
+    $context = $review->context();
+
+    echo "=== Workspace ===\n";
+    echo "Root: {$workspace->root}\n";
+    echo 'Created: '.($workspace->created ? 'yes' : 'no')."\n";
+    echo 'Conversation: '.$history->selector['name']."\n";
+    echo 'Turns: '.count($history->turns)."\n";
+    echo 'Messages: '.count($transcript->messages)."\n";
+    $messageCount = $context->details['compiled']['messageCount'] ?? 'unknown';
+    echo 'Compiled messages: '.$messageCount."\n";
+
+    assert($result->isDurable(), 'Conversation sends must be durable.');
+    assert(
+        $result->session() === 'release-review',
+        'Expected the selected conversation name.',
+    );
+    assert(count($history->turns) === 1, 'Expected one published durable turn.');
+} finally {
+    TellHarnessExample::remove($project);
+}
+```
+
+## Key Points
+
+- `initialize()` is idempotent and creates a local `.tell/arena` only for this
+  project.
+- `history()`, `transcript()`, and `context()` are read-only and do not invoke
+  inference.
+- A named Tell conversation is a durable selector, not an in-memory chat object.

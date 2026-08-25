@@ -25,6 +25,7 @@
             "group": "Release Notes",
             "pages": [
                 "release-notes/versions",
+                "release-notes/v2.8.3",
                 "release-notes/v2.8.2",
                 "release-notes/v2.8.1",
                 "release-notes/v2.8.0",
@@ -770,6 +771,16 @@
                 "cookbook/examples/D10_AgentCtrl/pi_streaming",
                 "cookbook/examples/D10_AgentCtrl/agent_ctrl_telemetry_langfuse",
                 "cookbook/examples/D10_AgentCtrl/agent_ctrl_telemetry_logfire"
+            ]
+        },
+        {
+            "group": "D11_TellHarness",
+            "pages": [
+                "cookbook/examples/D11_TellHarness/tell_harness_stateless_run",
+                "cookbook/examples/D11_TellHarness/tell_harness_observable_run",
+                "cookbook/examples/D11_TellHarness/tell_harness_durable_conversation",
+                "cookbook/examples/D11_TellHarness/tell_harness_transient_experiment",
+                "cookbook/examples/D11_TellHarness/tell_harness_context_lifecycle"
             ]
         },
         {

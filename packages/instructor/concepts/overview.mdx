@@ -36,7 +36,7 @@ $user = (new StructuredOutput)
 
 // $user->name === 'Jason'
 // $user->age  === 25
-// @doctest id="1e87"
+// @doctest id="c921"
 ```
 
 Behind the scenes, Instructor builds a JSON schema from the `User` class, instructs the
@@ -83,7 +83,7 @@ $user = (new StructuredOutput)
         model: 'gpt-4o',
     )
     ->get();
-// @doctest id="5158"
+// @doctest id="ef4f"
 ```
 
 The fluent style chains individual methods:
@@ -95,7 +95,7 @@ $user = (new StructuredOutput)
     ->withSystem('Extract accurate data.')
     ->withModel('gpt-4o')
     ->get();
-// @doctest id="7c57"
+// @doctest id="15fd"
 ```
 
 Both produce identical requests. `StructuredOutput` is immutable -- every method returns
@@ -122,7 +122,7 @@ $user = (new StructuredOutput)
     ->withRuntime($runtime)
     ->with(messages: 'Jason is 25 years old.', responseModel: User::class)
     ->get();
-// @doctest id="b5b3"
+// @doctest id="b2cf"
 ```
 
 If you do not provide a runtime, `StructuredOutput` creates one from default settings
@@ -174,7 +174,7 @@ $user = (new StructuredOutput)
 
 // If the LLM returns an invalid email on the first attempt,
 // Instructor retries up to 2 more times to get a valid result.
-// @doctest id="919a"
+// @doctest id="902a"
 ```
 
 This self-correcting loop is one of Instructor's most powerful features. The LLM sees

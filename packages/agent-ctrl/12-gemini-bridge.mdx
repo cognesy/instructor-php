@@ -15,7 +15,7 @@ $builder = AgentCtrl::gemini();
 
 // Or via the generic factory
 $builder = AgentCtrl::make(AgentType::Gemini);
-// @doctest id="be6e"
+// @doctest id="e33e"
 ```
 
 ### Prerequisites
@@ -31,7 +31,7 @@ brew install gemini-cli
 
 # npx (no install)
 npx @google/gemini-cli
-# @doctest id="faa3"
+# @doctest id="3456"
 ```
 
 Configure authentication (one of):
@@ -45,7 +45,7 @@ export GOOGLE_API_KEY=...
 
 # Or authenticate via Google account (free tier)
 gemini
-# @doctest id="cc9c"
+# @doctest id="5195"
 ```
 
 ## Basic Usage
@@ -57,7 +57,7 @@ $response = AgentCtrl::gemini()
     ->execute('Explain the architecture of this project.');
 
 echo $response->text();
-// @doctest id="db78"
+// @doctest id="8677"
 ```
 
 With model selection:
@@ -68,7 +68,7 @@ $response = AgentCtrl::gemini()
     ->execute('Review the test suite.');
 
 echo $response->text();
-// @doctest id="9b83"
+// @doctest id="23d6"
 ```
 
 ## Model Selection
@@ -84,7 +84,7 @@ AgentCtrl::gemini()->withModel('flash-lite');  // gemini-2.5-flash-lite
 
 // Full model name
 AgentCtrl::gemini()->withModel('gemini-2.5-pro');
-// @doctest id="a532"
+// @doctest id="5c7d"
 ```
 
 ## Approval Modes
@@ -105,7 +105,7 @@ AgentCtrl::gemini()->yolo();
 
 // Plan — read-only analysis mode
 AgentCtrl::gemini()->planMode();
-// @doctest id="f53e"
+// @doctest id="145e"
 ```
 
 ## Sandbox Mode
@@ -116,7 +116,7 @@ Enable sandboxed execution for process isolation:
 AgentCtrl::gemini()
     ->withSandbox()
     ->execute('Analyze the codebase.');
-// @doctest id="6df5"
+// @doctest id="a305"
 ```
 
 On macOS, this uses Seatbelt (`sandbox-exec`). Docker, Podman, and gVisor are also supported.
@@ -133,7 +133,7 @@ Add additional workspace directories for the agent to access:
 AgentCtrl::gemini()
     ->withIncludeDirectories(['/projects/shared-lib', '/projects/config'])
     ->execute('Check for shared dependencies.');
-// @doctest id="0246"
+// @doctest id="1bc0"
 ```
 
 ## Extensions
@@ -144,7 +144,7 @@ Use specific extensions:
 AgentCtrl::gemini()
     ->withExtensions(['my-extension'])
     ->execute('...');
-// @doctest id="27de"
+// @doctest id="b51f"
 ```
 
 ## MCP Servers
@@ -155,7 +155,7 @@ Restrict which MCP servers are available:
 AgentCtrl::gemini()
     ->withAllowedMcpServers(['filesystem', 'github'])
     ->execute('...');
-// @doctest id="76f6"
+// @doctest id="e578"
 ```
 
 ## Policy Files
@@ -166,7 +166,7 @@ Load additional policy files for fine-grained tool approval rules:
 AgentCtrl::gemini()
     ->withPolicy(['/path/to/policy.yaml'])
     ->execute('...');
-// @doctest id="a94c"
+// @doctest id="4b71"
 ```
 
 ## Allowed Tools
@@ -177,7 +177,7 @@ Restrict which tools the agent can use:
 AgentCtrl::gemini()
     ->withAllowedTools(['read_file', 'search_files', 'list_directory'])
     ->execute('Analyze the codebase structure.');
-// @doctest id="a3a5"
+// @doctest id="e918"
 ```
 
 ## Debug Mode
@@ -188,7 +188,7 @@ Enable debug output for troubleshooting CLI behavior:
 AgentCtrl::gemini()
     ->debug()
     ->execute('Analyze the codebase.');
-// @doctest id="1e0e"
+// @doctest id="f707"
 ```
 
 ## Streaming with Gemini
@@ -205,7 +205,7 @@ $response = AgentCtrl::gemini()
     ->onError(fn(string $message, ?string $code) => print("\nError: {$message}\n"))
     ->onComplete(fn(AgentResponse $r) => print("\n--- Done ---\n"))
     ->executeStreaming('Analyze the error handling in this codebase.');
-// @doctest id="f101"
+// @doctest id="08d9"
 ```
 
 ### Event Normalization
@@ -237,7 +237,7 @@ if ($sessionId !== null) {
         ->resumeSession((string) $sessionId)
         ->execute('Continue with the next step.');
 }
-// @doctest id="f309"
+// @doctest id="e74f"
 ```
 
 ## Usage Data
@@ -259,7 +259,7 @@ if ($usage !== null) {
         echo "Cached tokens:   {$usage->cacheRead}\n";
     }
 }
-// @doctest id="2e81"
+// @doctest id="967b"
 ```
 
 ## Data Availability
@@ -302,7 +302,7 @@ if ($response->isSuccess()) {
 } else {
     echo "\nFailed with exit code: {$response->exitCode}\n";
 }
-// @doctest id="ddff"
+// @doctest id="abc6"
 ```
 
 ## Comparison with Other Bridges

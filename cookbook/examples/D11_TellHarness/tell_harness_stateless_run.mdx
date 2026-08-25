@@ -1,0 +1,52 @@
+## Overview
+
+The smallest Tell SDK integration is a stateless, request/response call. It is
+appropriate for a queue worker, controller action, or command that does not
+intend to retain a conversation. No `.tell` directory is created.
+
+This example uses a new temporary project, so it cannot affect the repository
+from which it is run. It needs a normal Tell connection and credential.
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+require_once dirname(__DIR__).'/Support.php';
+
+use Cognesy\Tell\Tell;
+use Cognesy\Tell\TellRequest;
+
+$project = TellHarnessExample::project();
+
+try {
+    $result = Tell::open($project)->run(
+        TellRequest::prompt('In one sentence, explain why stateless jobs are useful.'),
+    );
+
+    echo "=== Tell Result ===\n";
+    echo 'Completed: '.($result->isCompleted() ? 'yes' : 'no')."\n";
+    echo 'Durable: '.($result->isDurable() ? 'yes' : 'no')."\n";
+    echo 'Response: '.$result->text()."\n";
+
+    assert($result->isCompleted(), 'Expected a completed Tell result.');
+    assert(
+        ! $result->isDurable(),
+        'Stateless Tell execution must not publish history.',
+    );
+    assert(
+        ! is_dir($project.'/.tell'),
+        'Stateless Tell execution must not create a workspace.',
+    );
+} finally {
+    TellHarnessExample::remove($project);
+}
+```
+
+## Key Points
+
+- `Tell::open()` binds a reusable harness to a working directory.
+- `TellRequest::prompt()` is immutable; add model, connection, tools, or a
+  step budget only when the caller needs them.
+- A `TellResult` exposes final text, execution status, usage, warnings, and
+  durable/transient state without parsing CLI output.
