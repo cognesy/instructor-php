@@ -165,6 +165,17 @@ class HookContext
         );
     }
 
+    public static function onAbandoned(
+        AgentState $state,
+        array $metadata = [],
+    ): self {
+        return new self(
+            triggerType: HookTrigger::OnAbandoned,
+            state: $state,
+            metadata: $metadata,
+        );
+    }
+
     public static function onError(
         AgentState $state,
         ErrorList $errorList,

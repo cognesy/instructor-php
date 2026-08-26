@@ -1,5 +1,20 @@
 # Instructor Tell
 
+The supported SDK, CLI, persistence, event, trace, and exit contracts are
+tracked in [COMPATIBILITY.md](COMPATIBILITY.md).
+
+Cold-start and discovery-scan budgets are tracked in
+[STARTUP_BASELINE.md](STARTUP_BASELINE.md).
+
+The static host primitive and rejected Context/Layer adapter are documented in
+[STATIC_COMPOSITION_DECISION.md](STATIC_COMPOSITION_DECISION.md).
+
+Application replacement seams and their dependency rules are documented in
+[CONTRACTS.md](CONTRACTS.md).
+
+The minimal factory-backed composition boundary is documented in
+[HOST.md](HOST.md).
+
 `tell` is a small, non-interactive reference frontend for `cognesy/agents`.
 It loads an agent template, builds the runtime through public APIs, and follows
 the [Agent eXperience Interface](https://axi.md/) at its shell boundary.
@@ -79,6 +94,127 @@ $conversation->clear();
 NDJSON and default traces. `source()` remains available for an application that
 deliberately needs the original typed Agent event; never serialize it at a
 process boundary.
+
+### Deterministic SDK tests
+
+Applications can test Tell orchestration without HTTP calls or real provider
+credentials. The convenience API scripts final responses:
+
+```php
+$result = Tell::testing($temporaryProject, 'scripted answer')->run(
+    TellRequest::prompt('Exercise the integration.'),
+);
+```
+
+Use `TellTestFactory::steps()` with Agents' `ScenarioStep` values for multi-step
+tool, usage, and terminal-failure scenarios. This keeps Tell's request
+compilation, tools, policies, events, workspaces, and persistence real; only
+provider inference is replaced. The factory writes isolated test state under
+`$temporaryProject/.tell-testing`, so callers should supply a temporary project
+and own its cleanup.
+
+## Host-scoped shell jobs
+
+Applications that need a background command can opt into a separate resource
+host. It is not booted by `Tell::open()`, the CLI, or the one-run protocol.
+Denial is the default, so the embedding boundary must explicitly supply an
+approval policy:
+
+```php
+use Cognesy\Tell\Resource\TellShellJobApprovals;
+use Cognesy\Tell\TellResourceHost;
+use Cognesy\Tell\TellShellJobRequest;
+
+$resources = TellResourceHost::shellJobs(
+    project: __DIR__,
+    approval: TellShellJobApprovals::allowAll(),
+)->boot();
+
+try {
+    $job = $resources->jobs()->start(
+        TellShellJobRequest::command('php -S 127.0.0.1:8080')
+            ->forMilliseconds(30_000),
+    );
+    $page = $resources->jobs()->read($job->id, after: 0);
+    $finished = $resources->jobs()->cancel($job->id);
+} finally {
+    $resources->dispose();
+}
+```
+
+Jobs may outlive `start()` but never their resource host or PHP process. Host
+policy bounds their project-local working directory, concurrency, lifetime,
+retained output, each cursored read, and cancellation grace. Public callers get
+immutable snapshots and output chunks—not process, pipe, Cordis context, or
+fiber handles. `tell.resource.event.v1` observations are distinct from agent
+execution events and never contain commands, environment values, or output.
+
+## External one-run protocol
+
+Non-PHP supervisors can execute the same public request model through a small
+process boundary:
+
+```bash
+request='{"schema":"tell.agent.request.v1","id":"job-42",'
+request+='"prompt":"Review the release","mode":"stateless"}'
+printf '%s\n' "$request" | tell agent --rpc --dir /path/to/project
+```
+
+The command reads exactly one JSON object (one line, at most 1 MiB) from stdin.
+The request schema is `tell.agent.request.v1`:
+
+```json
+{
+  "schema": "tell.agent.request.v1",
+  "id": "job-42",
+  "prompt": "Review the release",
+  "agent": "default",
+  "connection": "deepseek",
+  "model": "deepseek-v4-flash",
+  "reasoningEffort": "medium",
+  "mode": "stateless",
+  "tools": ["read_file"],
+  "maxSteps": 5,
+  "policy": {
+    "maxRetries": 1,
+    "timeoutMs": 30000,
+    "maxOutputChars": 20000,
+    "maxToolOutputChars": 4000,
+    "maxToolCalls": 8
+  }
+}
+```
+
+Only `schema`, `id`, and `prompt` are required. `mode` is `stateless` by
+default and may also be `durable` or `transient`; durable/transient requests can
+select one `session` or `branch`. Unknown fields and schema versions are
+rejected before inference. The boundary deliberately accepts no DSN, raw
+provider options, credentials, headers, or pre-supplied `ask_user` answers.
+
+Stdout contains only newline-delimited `tell.agent.frame.v1` objects. Sequence
+numbers start at one and increase monotonically. A run emits zero or more
+`progress` frames followed by exactly one terminal frame:
+
+<!-- markdownlint-disable MD013 -->
+| Terminal type | Meaning | Exit status |
+| --- | --- | --- |
+| `result` | completed run with a bounded answer and usage | `0` |
+| `error` | invalid request, stopped budget, or failed run | `2` for invalid input; otherwise `1` |
+| `cancelled` | cooperative caller/SIGINT cancellation | `130` |
+<!-- markdownlint-enable MD013 -->
+
+Each frame is capped at 1 MiB; terminal answers are UTF-8 safely capped at
+200,000 bytes and carry `answerTruncated`. Prompts, tool arguments/results,
+provider payloads, exception messages, credentials, and absolute workspace
+paths are not serialized. Bounded human diagnostics are written to stderr.
+
+Compatibility is schema-versioned, not inferred from the Tell package version.
+Within `v1`, existing fields and meanings remain stable and new optional fields
+may be added. Controllers must ignore unknown response fields but should reject
+an unknown `schema`. Any breaking request or frame change requires a new schema
+identifier and parallel support during a documented migration window. This is
+a one-run protocol—not a resident daemon, bidirectional JSON-RPC session, or
+pause/resume API. Cancellation uses the process signal/cooperative hook.
 
 ## Non-interactive questions
 
@@ -172,23 +308,48 @@ tell reset --branch review --to <ancestor-hash> --json
 The reset succeeds only if the selected head has not changed since validation;
 a concurrent update fails safely rather than overwriting another turn.
 
+PHP consumers can inspect any branch without changing the current checkout and
+can pin a verified immutable head or root:
+
+```php
+$review = $tell->workspace()->branch('review');
+$frozen = $review->pin();
+
+$reviewHistory = $review->history(); // follows the named branch ref
+$frozenHistory = $frozen->history(); // remains fixed after branch changes
+$sameSnapshot = $tell->workspace()->ref($frozen->hash());
+```
+
+`TellBranch` and `TellRef` are read-only. Their bounded `history()`,
+`transcript()`, and `context()` projections use the same canonical validation
+and preview rules as conversation inspection. Mutation remains explicit on
+`workspace()->branches()`.
+
 Each branch may also keep secret-free runtime intent. It is versioned and
 atomically updated, so configuration for one branch cannot modify another:
 
 ```bash
 tell config show --branch review --json
-tell config set model '"deepseek-v4-flash"' --if-version 0 --branch review
-tell config set maxToolCalls 12 --if-version 1 --branch review
+tell config set connection '"deepseek"' --if-version 0 --branch review
+tell config set model '"deepseek-v4-flash"' --if-version 1 --branch review
+tell config set reasoningEffort '"medium"' --if-version 2 --branch review
+tell --branch review --reasoning-effort low "review the release"
 tell config effective --branch review --json
 ```
 
-Allowed keys are `connection`, `model`, `tools`, `maxRetries`, `timeoutMs`,
-`maxOutputChars`, `maxToolOutputChars`, and `maxToolCalls`. Values are
+Allowed keys are `connection`, `model`, `reasoningEffort`, `tools`,
+`maxRetries`, `timeoutMs`, `maxOutputChars`, `maxToolOutputChars`, and
+`maxToolCalls`. Values are
 labels, model names, tool profiles, and bounded policy values only: Tell
 rejects credentials, tokens,
 headers, raw environment values, and DSNs with embedded credentials. New
 branches copy source intent by value and later edits remain independent.
-Explicit connection, model, and tool flags take precedence over branch intent.
+Explicit connection, model, reasoning-effort, and tool flags take precedence
+over branch intent. PHP callers select the typed value with
+`TellRequest::reasoningEffort(TellReasoningEffort::Low)`; supported values are
+`low`, `medium`, and `high`. Tell rejects provider/model combinations without
+declared reasoning-effort support before inference and translates supported
+intent to provider-native Polyglot options at runtime.
 `effective` identifies the source of each branch/bundled value; it never
 resolves or displays credential material.
 

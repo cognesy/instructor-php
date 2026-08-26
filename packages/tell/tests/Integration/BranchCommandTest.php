@@ -287,7 +287,7 @@ it('inherits branch config by value, exposes effective provenance, and keeps bra
         ->and(json_decode($show->getDisplay(), true, flags: JSON_THROW_ON_ERROR))->toMatchArray([
             'version' => 1,
             'values' => ['model' => 'deepseek-v4-flash'],
-            'allowedKeys' => ['connection', 'model', 'tools', 'maxRetries', 'timeoutMs', 'maxOutputChars', 'maxToolOutputChars', 'maxToolCalls'],
+            'allowedKeys' => ['connection', 'model', 'reasoningEffort', 'tools', 'maxRetries', 'timeoutMs', 'maxOutputChars', 'maxToolOutputChars', 'maxToolCalls'],
         ]);
 
     $review = new CommandTester($command);
@@ -382,6 +382,7 @@ it('persists every allowed typed branch config value through a fresh workspace r
     $values = [
         'connection' => 'ollama',
         'model' => 'local-model',
+        'reasoningEffort' => 'medium',
         'tools' => ['tell.coding', 'tell.self_knowledge'],
         'maxRetries' => 2,
         'timeoutMs' => 1_500,
@@ -396,7 +397,7 @@ it('persists every allowed typed branch config value through a fresh workspace r
     ksort($values, SORT_STRING);
     $fresh = new BranchConfigStore($factory->workspace()->discover($project) ?? throw new RuntimeException('workspace missing'));
 
-    expect($fresh->read('main'))->toBe(['version' => 8, 'values' => $values]);
+    expect($fresh->read('main'))->toBe(['version' => 9, 'values' => $values]);
 });
 
 function tellBranchProject(TellAgentFactory $factory): string

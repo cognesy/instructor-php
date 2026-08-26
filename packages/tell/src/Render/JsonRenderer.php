@@ -20,10 +20,10 @@ final readonly class JsonRenderer implements OutputRenderer
 
     /** @throws JsonException */
     #[Override]
-    public function finish(AgentState $state, array $warnings = [], bool $transient = false, ?array $branch = null): void
+    public function finish(AgentState $state, array $warnings = [], bool $transient = false, ?array $branch = null, array $diagnostics = []): void
     {
         $this->stdout->writeln(json_encode(
-            AgentResult::fromState($state, $warnings, $transient, $branch),
+            AgentResult::fromState($state, $warnings, $transient, $branch, $diagnostics),
             JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES,
         ));
     }

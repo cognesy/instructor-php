@@ -45,6 +45,20 @@ it('requires a platform home when TELL_HOME is absent', function (): void {
     });
 });
 
+it('resolves an injected environment without reading or mutating the process', function (): void {
+    $before = getenv('TELL_HOME');
+
+    $first = TellPaths::installed(['HOME' => '/srv/tenant-a']);
+    $second = TellPaths::installed([
+        'HOME' => '/srv/tenant-b',
+        'TELL_HOME' => '/runtime/tenant-b',
+    ]);
+
+    expect($first->home)->toBe('/srv/tenant-a/.tell')
+        ->and($second->home)->toBe('/runtime/tenant-b')
+        ->and(getenv('TELL_HOME'))->toBe($before);
+});
+
 /** @param Closure(): void $assertion */
 function tellWithHomeEnvironment(
     string|false $home,

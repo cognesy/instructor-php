@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\InstructorHub\Commands;
 
@@ -6,13 +8,13 @@ use Cognesy\InstructorHub\Contracts\CanExecuteExample;
 use Cognesy\InstructorHub\Core\Cli;
 use Cognesy\InstructorHub\Data\Example;
 use Cognesy\InstructorHub\Services\ExampleRepository;
+use Cognesy\InstructorHub\Services\ExampleScript;
 use Cognesy\Utils\Cli\Color;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Exception;
 
 class RunOneExample extends Command
 {
@@ -39,14 +41,16 @@ class RunOneExample extends Command
         $file = $input->getArgument('example');
 
         if (empty($file)) {
-            Cli::outln("Please specify an example to run");
+            Cli::outln('Please specify an example to run');
             Cli::outln("You can list available examples with `list` command.\n", [Color::DARK_GRAY]);
+
             return Command::FAILURE;
         }
 
         $example = $this->examples->argToExample($file);
         if (is_null($example)) {
-            Cli::outln("Example not found", [Color::RED]);
+            Cli::outln('Example not found', [Color::RED]);
+
             return Command::FAILURE;
         }
 
@@ -59,7 +63,7 @@ class RunOneExample extends Command
 
     public function doRun(Example $example): int
     {
-        $idTag = !empty($example->id) ? " [x{$example->id}]" : '';
+        $idTag = ! empty($example->id) ? " [x{$example->id}]" : '';
         Cli::outln('');
         Cli::outln("Executing example:{$idTag} {$example->group}/{$example->name}", [Color::BOLD, Color::YELLOW]);
         Cli::outln('');
@@ -70,21 +74,21 @@ class RunOneExample extends Command
         $totalTime = $timeEnd - $timeStart;
 
         if ($result->isSuccessful()) {
-            Cli::out("Status: ", [Color::DARK_GRAY]);
-            Cli::outln("OK", [Color::GREEN, Color::BOLD]);
+            Cli::out('Status: ', [Color::DARK_GRAY]);
+            Cli::outln('OK', [Color::GREEN, Color::BOLD]);
         } else {
-            Cli::out("Status: ", [Color::DARK_GRAY]);
-            Cli::outln("ERROR", [Color::RED, Color::BOLD]);
+            Cli::out('Status: ', [Color::DARK_GRAY]);
+            Cli::outln('ERROR', [Color::RED, Color::BOLD]);
 
             if ($result->error) {
                 Cli::outln('');
-                Cli::outln("Error: " . Cli::limit($result->error->message, 70), [Color::RED]);
+                Cli::outln('Error: '.Cli::limit($result->error->message, 70), [Color::RED]);
             }
         }
 
         Cli::outln('');
-        Cli::out("Example executed in ", [Color::DARK_GRAY]);
-        Cli::outln(round($totalTime, 2) . " seconds", [Color::BOLD, Color::WHITE]);
+        Cli::out('Example executed in ', [Color::DARK_GRAY]);
+        Cli::outln(round($totalTime, 2).' seconds', [Color::BOLD, Color::WHITE]);
         Cli::outln('');
 
         return $result->isSuccessful() ? Command::SUCCESS : Command::FAILURE;
@@ -95,22 +99,23 @@ class RunOneExample extends Command
      */
     private function doRawRun(Example $example): int
     {
-        $idTag = !empty($example->id) ? " [x{$example->id}]" : '';
+        $idTag = ! empty($example->id) ? " [x{$example->id}]" : '';
         Cli::outln('');
         Cli::outln("Executing example (raw output):{$idTag} {$example->group}/{$example->name}", [Color::BOLD, Color::YELLOW]);
         Cli::outln('');
 
         $timeStart = microtime(true);
 
+        $script = ExampleScript::fromRunPath($example->runPath);
         // Execute as separate PHP process for real-time output
-        $command = 'php ' . escapeshellarg($example->runPath);
+        $command = 'php '.escapeshellarg($script->path);
         $exitCode = 0;
 
         // Preserve terminal environment for colors, TTY detection, and PATH for CLI tools
         // Use $_SERVER as fallback since $_ENV may not have PATH on some systems
         $env = array_merge($_SERVER, $_ENV);
         // Keep only string values (filter out arrays from $_SERVER like argv)
-        $env = array_filter($env, fn($v) => is_string($v));
+        $env = array_filter($env, fn ($v) => is_string($v));
         $env['FORCE_COLOR'] = '1';
         $env['TERM'] = $env['TERM'] ?? 'xterm-256color';
 
@@ -118,12 +123,16 @@ class RunOneExample extends Command
         $descriptorSpec = [
             0 => STDIN,
             1 => STDOUT,
-            2 => STDERR
+            2 => STDERR,
         ];
 
-        $process = proc_open($command, $descriptorSpec, $pipes, null, $env);
-        if (is_resource($process)) {
-            $exitCode = proc_close($process);
+        try {
+            $process = proc_open($command, $descriptorSpec, $pipes, null, $env);
+            if (is_resource($process)) {
+                $exitCode = proc_close($process);
+            }
+        } finally {
+            $script->cleanup();
         }
 
         $timeEnd = microtime(true);
@@ -131,16 +140,16 @@ class RunOneExample extends Command
 
         Cli::outln('');
         if ($exitCode === 0) {
-            Cli::out("Status: ", [Color::DARK_GRAY]);
-            Cli::outln("OK", [Color::GREEN, Color::BOLD]);
+            Cli::out('Status: ', [Color::DARK_GRAY]);
+            Cli::outln('OK', [Color::GREEN, Color::BOLD]);
         } else {
-            Cli::out("Status: ", [Color::DARK_GRAY]);
-            Cli::outln("ERROR", [Color::RED, Color::BOLD]);
+            Cli::out('Status: ', [Color::DARK_GRAY]);
+            Cli::outln('ERROR', [Color::RED, Color::BOLD]);
         }
 
         Cli::outln('');
-        Cli::out("Example executed in ", [Color::DARK_GRAY]);
-        Cli::outln(round($totalTime, 2) . " seconds", [Color::BOLD, Color::WHITE]);
+        Cli::out('Example executed in ', [Color::DARK_GRAY]);
+        Cli::outln(round($totalTime, 2).' seconds', [Color::BOLD, Color::WHITE]);
         Cli::outln('');
 
         return $exitCode === 0 ? Command::SUCCESS : Command::FAILURE;

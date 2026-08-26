@@ -17,7 +17,7 @@ use Throwable;
  * PHP exposes it), then renamed atomically. PHP has no portable parent-directory
  * fsync primitive, so directory-entry durability is delegated to the host filesystem.
  */
-final class ArenaStore
+final class ArenaStore implements CanUseTellArena
 {
     private const int FANOUT_LENGTH = 2;
 

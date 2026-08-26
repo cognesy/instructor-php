@@ -78,4 +78,22 @@ describe('DefinitionLoopFactory', function () {
         expect(fn() => $factory->instantiateAgentLoop($definition))
             ->toThrow(\InvalidArgumentException::class);
     });
+
+    it('uses an explicitly supplied initial driver without process configuration', function () {
+        $environmentBefore = getenv();
+        $definition = new AgentDefinition(
+            name: 'embedded-agent',
+            description: 'Agent with a host-provided driver',
+            systemPrompt: 'Test.',
+        );
+        $loop = (new DefinitionLoopFactory(
+            capabilities: new AgentCapabilityRegistry(),
+            initialDriver: FakeAgentDriver::fromResponses('embedded result'),
+        ))->instantiateAgentLoop($definition);
+
+        $result = $loop->execute(AgentState::empty()->withUserMessage('hello'));
+
+        expect(trim($result->finalResponse()->toString()))->toBe('embedded result')
+            ->and(getenv())->toBe($environmentBefore);
+    });
 });

@@ -6,7 +6,7 @@ namespace Cognesy\Tell;
 
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Runtime\TellRuntime;
+use Cognesy\Tell\Testing\TellTestFactory;
 use Generator;
 
 final readonly class Tell
@@ -14,22 +14,40 @@ final readonly class Tell
     private function __construct(
         private string $directory,
         private TellAgentFactory $agents,
-        private TellRuntime $runtime,
+        private TellHost $host,
+        private ?CanProvideCancellationSignal $cancellation,
     ) {}
 
     public static function open(
         string $directory,
         ?TellAgentFactory $agents = null,
         ?CanProvideCancellationSignal $cancellation = null,
-    ): self
-    {
+    ): self {
         $agents ??= TellAgentFactory::installed();
+        $host = TellHost::standard(
+            directory: $directory,
+            paths: $agents->paths(),
+            agentFactory: $agents,
+            cancellation: $cancellation,
+        )->boot();
 
         return new self(
             directory: $directory,
             agents: $agents,
-            runtime: new TellRuntime($agents, $cancellation),
+            host: $host,
+            cancellation: $cancellation,
         );
+    }
+
+    /**
+     * Open Tell with deterministic, in-process model responses.
+     *
+     * No network request or real provider credential is used. For scripted
+     * tool, failure, or usage steps, use TellTestFactory directly.
+     */
+    public static function testing(string $directory, string ...$responses): self
+    {
+        return TellTestFactory::responses(...$responses)->open($directory);
     }
 
     public function run(TellRequest $request): TellResult
@@ -39,7 +57,7 @@ final readonly class Tell
             default => $request,
         };
 
-        return $this->runtime->run($request);
+        return $this->host->runner()->run($request);
     }
 
     /**
@@ -52,16 +70,43 @@ final readonly class Tell
             default => $request,
         };
 
-        return $this->runtime->stream($request);
+        return $this->host->runner()->stream($request);
     }
 
     public function workspace(): TellWorkspace
     {
-        return new TellWorkspace($this, $this->agents, $this->directory);
+        return new TellWorkspace(
+            $this->agents,
+            $this->directory,
+            $this->host->workspace(),
+            $this->host->conversations(),
+        );
     }
 
     public function conversation(string $name): TellConversation
     {
         return $this->workspace()->conversation($name);
+    }
+
+    public function catalogue(): TellCatalogue
+    {
+        return new TellCatalogue($this->agents, $this->directory);
+    }
+
+    public function tools(): TellTools
+    {
+        return TellTools::controlled($this->host->tools(), $this->cancellation);
+    }
+
+    /** Explicit control surface for inspection and host-owned capabilities. */
+    public function host(): TellHost
+    {
+        return $this->host;
+    }
+
+    /** Release host-owned resources. Safe to call more than once. */
+    public function dispose(): void
+    {
+        $this->host->dispose();
     }
 }

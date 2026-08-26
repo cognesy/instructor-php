@@ -4,25 +4,9 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell;
 
-use Cognesy\Tell\Command\AgentsCommand;
-use Cognesy\Tell\Command\AuthCommand;
-use Cognesy\Tell\Command\BranchCommand;
-use Cognesy\Tell\Command\ClearCommand;
-use Cognesy\Tell\Command\CheckoutCommand;
-use Cognesy\Tell\Command\CompactCommand;
-use Cognesy\Tell\Command\ConfigCommand;
-use Cognesy\Tell\Command\ContextCommand;
-use Cognesy\Tell\Command\DescribeCommand;
-use Cognesy\Tell\Command\InitCommand;
-use Cognesy\Tell\Command\ModelsCommand;
-use Cognesy\Tell\Command\ProvidersCommand;
-use Cognesy\Tell\Command\ResetCommand;
-use Cognesy\Tell\Command\PlanesCommand;
-use Cognesy\Tell\Command\SessionsCommand;
-use Cognesy\Tell\Command\ToolsCommand;
-use Cognesy\Tell\Command\ToolCommand;
-use Cognesy\Tell\Command\WorkspaceInspectionCommand;
-use Cognesy\Tell\Operational\PlaneMap;
+use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
+use Cognesy\Tell\Console\CoreTellCommandContributor;
+use Cognesy\Tell\Contracts\Collections\TellCommandDescriptors;
 use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Composer\InstalledVersions;
@@ -43,76 +27,45 @@ final class TellApplication extends Application
 
     private readonly InputDefinition $routingDefinition;
 
-    public function __construct(?TellAgentFactory $agents = null)
-    {
+    public function __construct(
+        ?TellAgentFactory $agents = null,
+        ?CanProvideCancellationSignal $agentCancellation = null,
+        ?TellCommandDescriptors $descriptors = null,
+    ) {
         parent::__construct('Instructor Tell', self::packageVersion());
         $this->setDefaultCommand('tell');
 
-        $agents ??= TellAgentFactory::installed();
-        $tell = new TellCommand($agents);
-        $agentsCommand = new AgentsCommand($agents);
-        $authCommand = new AuthCommand($agents);
-        $branchCommand = new BranchCommand($agents);
-        $clearCommand = new ClearCommand($agents);
-        $checkoutCommand = new CheckoutCommand($agents);
-        $compactCommand = new CompactCommand($agents);
-        $configCommand = new ConfigCommand($agents);
-        $contextCommand = new ContextCommand($agents);
-        $describeCommand = new DescribeCommand($agents);
-        $initCommand = new InitCommand;
-        $modelsCommand = new ModelsCommand($agents);
-        $providersCommand = new ProvidersCommand($agents);
-        $resetCommand = new ResetCommand($agents);
-        $sessionsCommand = new SessionsCommand($agents);
-        $toolsCommand = new ToolsCommand($agents);
-        $toolCommand = new ToolCommand($agents);
-        $historyCommand = new WorkspaceInspectionCommand('history', $agents);
-        $transcriptCommand = new WorkspaceInspectionCommand('transcript', $agents);
-        $planeMap = PlaneMap::fromCommands(
-            $tell,
-            $agentsCommand,
-            $authCommand,
-            $branchCommand,
-            $clearCommand,
-            $checkoutCommand,
-            $compactCommand,
-            $configCommand,
-            $contextCommand,
-            $describeCommand,
-            $initCommand,
-            $modelsCommand,
-            $providersCommand,
-            $resetCommand,
-            $sessionsCommand,
-            $toolsCommand,
-            $toolCommand,
-            $historyCommand,
-            $transcriptCommand,
-        );
-        $commands = [
-            $tell,
-            $agentsCommand,
-            $authCommand,
-            $branchCommand,
-            $clearCommand,
-            $checkoutCommand,
-            $compactCommand,
-            $configCommand,
-            $contextCommand,
-            $describeCommand,
-            $initCommand,
-            $modelsCommand,
-            $providersCommand,
-            $resetCommand,
-            new PlanesCommand($planeMap),
-            $sessionsCommand,
-            $toolsCommand,
-            $toolCommand,
-            $historyCommand,
-            $transcriptCommand,
-        ];
+        $descriptors ??= (new CoreTellCommandContributor(
+            $agents ?? TellAgentFactory::installed(),
+            $agentCancellation,
+        ))->commands();
+        $commands = array_map(static function ($descriptor): Command {
+            $command = $descriptor->create();
+            if (! $command instanceof Command) {
+                throw new InvalidArgumentException("Tell command {$descriptor->name} factory must return a Symfony command.");
+            }
+            if ($command->getName() !== $descriptor->name) {
+                throw new InvalidArgumentException("Tell command descriptor {$descriptor->name} created {$command->getName()}.");
+            }
+            return $command;
+        }, $descriptors->all());
         $this->routingDefinition = $this->routingDefinition(...$commands);
         $this->addCommands($commands);
+    }
+
+    public static function fromDescriptors(TellCommandDescriptors $commands): self
+    {
+        return new self(descriptors: $commands);
+    }
+
+    public static function fromHost(TellHost $host): self
+    {
+        $descriptors = [];
+        foreach ($host->commandContributors() as $contributor) {
+            array_push($descriptors, ...$contributor->commands()->all());
+        }
+
+        return self::fromDescriptors(new TellCommandDescriptors(...$descriptors));
     }
 
     /** @param list<string>|null $argv */

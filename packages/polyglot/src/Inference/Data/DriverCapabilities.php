@@ -17,6 +17,7 @@ readonly class DriverCapabilities
      * @param bool $responseFormatJsonObject Whether native JSON object response format is supported
      * @param bool $responseFormatJsonSchema Whether native JSON schema response format is supported
      * @param bool $responseFormatWithTools Whether response_format works alongside tools
+     * @param bool $reasoningEffort Whether the selected model accepts reasoning_effort
      * @param ?int $maxContextTokens Maximum supported input context, if known
      * @param ?int $maxOutputTokens Maximum supported output tokens, if known
      */
@@ -29,6 +30,7 @@ readonly class DriverCapabilities
         public bool $responseFormatWithTools = true,
         public ?int $maxContextTokens = null,
         public ?int $maxOutputTokens = null,
+        public bool $reasoningEffort = false,
     ) {}
 
     /**
@@ -71,5 +73,12 @@ readonly class DriverCapabilities
      */
     public function supportsResponseFormatWithTools(): bool {
         return $this->responseFormatWithTools;
+    }
+
+    /**
+     * Check if the selected model accepts an explicit reasoning effort.
+     */
+    public function supportsReasoningEffort(): bool {
+        return $this->reasoningEffort;
     }
 }

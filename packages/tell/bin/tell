@@ -1,9 +1,14 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
-use Cognesy\Tell\TellApplication;
+use Cognesy\Tell\TellHost;
+use Cognesy\Tell\Runtime\TellSignalCancellationSource;
 
 $findAutoload = static function (): string {
+    $monorepoAutoload = dirname(__DIR__, 3).'/vendor/autoload.php';
+    if (is_file($monorepoAutoload)) {
+        return $monorepoAutoload;
+    }
     $directory = __DIR__;
     do {
         $autoload = $directory . '/vendor/autoload.php';
@@ -22,4 +27,15 @@ $findAutoload = static function (): string {
 
 require $findAutoload();
 
-exit((new TellApplication())->runArgv());
+$host = TellHost::standard(cancellation: new TellSignalCancellationSource)->boot();
+try {
+    $commands = [];
+    foreach ($host->commandContributors() as $contributor) {
+        array_push($commands, ...$contributor->commands()->all());
+    }
+    $application = $host->application()->build(new \Cognesy\Tell\Contracts\Collections\TellCommandDescriptors(...$commands));
+    $argv = array_values($_SERVER['argv'] ?? []);
+    exit($application->run($argv));
+} finally {
+    $host->dispose();
+}

@@ -19,6 +19,50 @@ use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Tester\ApplicationTester;
 use Symfony\Component\Console\Tester\CommandTester;
 
+it('keeps the registered route catalogue aligned with the compatibility contract', function (): void {
+    $application = new TellApplication(tellTestFactory());
+    $frameworkCommands = ['_complete', 'completion', 'help', 'list'];
+    $routes = array_values(array_diff(array_keys($application->all()), $frameworkCommands));
+    sort($routes);
+    $expected = [
+        'agent',
+        'agents',
+        'auth',
+        'branch',
+        'checkout',
+        'clear',
+        'compact',
+        'config',
+        'context',
+        'describe',
+        'history',
+        'init',
+        'models',
+        'planes',
+        'providers',
+        'reset',
+        'sessions',
+        'tell',
+        'tool',
+        'tools',
+        'transcript',
+    ];
+    $document = file_get_contents(dirname(__DIR__, 2).'/COMPATIBILITY.md');
+
+    expect($document)->not->toBeFalse()
+        ->and($routes)->toBe($expected);
+    assert(is_string($document));
+    foreach ($expected as $route) {
+        expect($document)->toMatch('/^\\| `'.preg_quote($route, '/').'` \\|/m');
+    }
+
+    preg_match_all('/`(tests\\/[A-Za-z0-9_\\/-]+Test\\.php)`/', $document, $matches);
+    expect($matches[1])->not->toBeEmpty();
+    foreach (array_unique($matches[1]) as $testPath) {
+        expect(dirname(__DIR__, 2).'/'.$testPath)->toBeFile();
+    }
+});
+
 it('boots the real application without global option collisions', function (): void {
     $application = new TellApplication(tellTestFactory());
     $application->setAutoExit(false);
@@ -374,8 +418,9 @@ it('exposes an honest typed map of tell operational planes', function (): void {
         ->and($payload['systemBoundary'])->toContain('local Tell agent runtime')
         ->and($payload['separationLevel'])->toContain('one collocated process')
         ->and($payload['lastKnownGood'])->toContain('no persisted control snapshot')
-            ->and($payload['planeCounts'])->toBe(['data' => 3, 'control' => 2, 'management' => 14])
+            ->and($payload['planeCounts'])->toBe(['data' => 4, 'control' => 2, 'management' => 14])
         ->and($byCommand['tell "<prompt>"']['plane'])->toBe('data')
+        ->and($byCommand['agent --rpc']['plane'])->toBe('data')
         ->and($byCommand['tool NAME JSON']['plane'])->toBe('data')
         ->and($byCommand['describe']['plane'])->toBe('control')
         ->and($byCommand['tools']['plane'])->toBe('control')

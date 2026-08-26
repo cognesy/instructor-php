@@ -13,6 +13,7 @@ use Cognesy\Tell\Workspace\BranchConfigStore;
 use Cognesy\Tell\Workspace\BranchName;
 use Cognesy\Tell\Workspace\BranchProvenance;
 use Cognesy\Tell\Workspace\WorkspaceTurnRunner;
+use Cognesy\Tell\Diagnostics\TellDiagnostics;
 use Override;
 use RuntimeException;
 use Throwable;
@@ -24,6 +25,7 @@ final readonly class TellSubagentExecutor implements CanExecuteSubagent
         private TellAgentFactory $agents,
         private TellOptions $parentOptions,
         private TellDelegationScope $scope,
+        private ?TellDiagnostics $diagnostics = null,
     ) {}
 
     #[Override]
@@ -50,6 +52,7 @@ final readonly class TellSubagentExecutor implements CanExecuteSubagent
                 depth: 1,
                 cancellation: $this->scope->cancellation,
             ),
+            diagnostics: $this->diagnostics,
         );
         $this->agents->attachExecutionTrace($loop, $options);
 
@@ -118,6 +121,7 @@ final readonly class TellSubagentExecutor implements CanExecuteSubagent
             agent: $invocation->definition->name,
             connection: $parent->connection,
             model: $parent->model,
+            reasoningEffort: $parent->reasoningEffort,
             dsn: $parent->dsn,
             branch: $child->toString(),
             directory: $parent->directory,
@@ -128,6 +132,7 @@ final readonly class TellSubagentExecutor implements CanExecuteSubagent
             transient: false,
             connectionExplicit: $parent->connectionExplicit,
             modelExplicit: $parent->modelExplicit,
+            reasoningEffortExplicit: $parent->reasoningEffortExplicit,
             toolsExplicit: $parent->toolsExplicit,
             policyOverrides: $parent->policyOverrides,
             policy: $parent->policy,

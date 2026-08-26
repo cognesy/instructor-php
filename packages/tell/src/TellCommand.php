@@ -58,6 +58,7 @@ HELP)
             ->addOption('agent', 'a', InputOption::VALUE_REQUIRED, 'Agent definition name', 'default')
             ->addOption('connection', 'c', InputOption::VALUE_REQUIRED, 'LLM connection preset name', 'openai')
             ->addOption('model', 'm', InputOption::VALUE_REQUIRED, 'Model override', '')
+            ->addOption('reasoning-effort', null, InputOption::VALUE_REQUIRED, 'Reasoning effort: low, medium, or high')
             ->addOption('dsn', 'd', InputOption::VALUE_REQUIRED, 'Inline LLM DSN', '')
             ->addOption('session', 's', InputOption::VALUE_REQUIRED, 'Persist or continue a named session')
             ->addOption('branch', 'b', InputOption::VALUE_REQUIRED, 'Use one workspace branch for this invocation')
@@ -106,7 +107,11 @@ HELP)
             if ($options->answers->remaining() > 0) {
                 $warnings[] = "Unused non-interactive answers: {$options->answers->remaining()}.";
             }
-            $renderer->finish($result->state(), $warnings, $result->isTransient(), $branch);
+            $diagnostics = array_map(
+                static fn (\Cognesy\Tell\Diagnostics\TellDiagnostic $diagnostic): array => $diagnostic->toArray(),
+                $result->diagnostics(),
+            );
+            $renderer->finish($result->state(), $warnings, $result->isTransient(), $branch, $diagnostics);
             if (! $signalsEnabled && $output->isVerbose()) {
                 $stderr->writeln('[tell] SIGINT cancellation is unavailable: pcntl signal support was not detected.');
             }
@@ -219,12 +224,7 @@ HELP)
         if (! is_string($binary) || $binary === '') {
             return 'tell';
         }
-        $home = getenv('HOME');
-
-        return match (true) {
-            is_string($home) && $home !== '' && str_starts_with($binary, $home.DIRECTORY_SEPARATOR) => '~'.substr($binary, strlen($home)),
-            default => $binary,
-        };
+        return $binary;
     }
 
     private function factory(): TellAgentFactory

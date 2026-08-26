@@ -7,7 +7,7 @@ namespace Cognesy\Tell;
 /** The result of atomically clearing one Tell conversation selector. */
 final readonly class TellClearResult
 {
-    /** @param array{name: string, type: 'main'|'branch'|'session', source?: string} $selector */
+    /** @param array{name: string, type: 'main'|'branch'|'session'|'ref', source?: string} $selector */
     public function __construct(
         public array $selector,
         public ?string $previousHead,

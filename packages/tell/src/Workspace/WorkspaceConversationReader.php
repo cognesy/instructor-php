@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Workspace;
 
 use Cognesy\Agents\Session\Data\SessionId;
+use Cognesy\Tell\Canonical\CanonicalHash;
 
 /**
  * Resolves the public default or named-session selector into verified arena history.
@@ -29,6 +30,17 @@ final readonly class WorkspaceConversationReader
             head: $reference->head,
             history: $this->history->compile($this->arena, $reference->head),
             branch: $branch,
+        );
+    }
+
+    /** Read one immutable canonical conversation head or root without consulting a mutable ref. */
+    public function readImmutable(CanonicalHash $reference): WorkspaceConversationInspection
+    {
+        return new WorkspaceConversationInspection(
+            sessionId: null,
+            head: $reference,
+            history: $this->history->compile($this->arena, $reference),
+            immutableRef: $reference,
         );
     }
 }

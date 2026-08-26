@@ -311,9 +311,36 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php: ['8.2', '8.3', '8.4']
+        # Every split package currently declares php ^8.3. Keep this matrix in
+        # lockstep with those package-level constraints.
+        php: ['8.3', '8.4', '8.5']
         composer: ['--prefer-stable']
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: composer
+
+      - name: Verify package PHP constraints match the test matrix
+        run: |
+          mismatches="$(
+            for manifest in packages/*/composer.json; do
+              constraint="$(jq -r '.require.php // ""' "$manifest")"
+              if [ "$constraint" != '^8.3' ]; then
+                printf '%s: %s\n' "$manifest" "$constraint"
+              fi
+            done
+          )"
+          if [ -n "$mismatches" ]; then
+            echo "Package PHP constraints no longer match the 8.3-8.5 split-test matrix:"
+            echo "$mismatches"
+            exit 1
+          fi
+
       - name: Install dependencies in all packages
         run: |
           for dir in packages/*; do

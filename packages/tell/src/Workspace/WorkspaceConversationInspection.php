@@ -21,11 +21,16 @@ final readonly class WorkspaceConversationInspection
         private ?CanonicalHash $head,
         private ArenaHistory $history,
         private ?BranchSelection $branch = null,
+        private ?CanonicalHash $immutableRef = null,
     ) {}
 
-    /** @return array{name: string, type: 'main'|'branch'|'session', source?: string} */
+    /** @return array{name: string, type: 'main'|'branch'|'session'|'ref', source?: string} */
     public function selector(): array
     {
+        if ($this->immutableRef !== null) {
+            return ['type' => 'ref', 'name' => $this->immutableRef->toString()];
+        }
+
         return match ($this->sessionId) {
             null => match ($this->branch) {
                 null => ['type' => 'main', 'name' => 'main'],

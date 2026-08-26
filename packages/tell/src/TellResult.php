@@ -7,11 +7,13 @@ namespace Cognesy\Tell;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
+use Cognesy\Tell\Diagnostics\TellDiagnostic;
 
 final readonly class TellResult
 {
     /**
      * @param list<string> $warnings
+     * @param list<TellDiagnostic> $diagnostics
      * @param 'current'|'invocation'|null $branchSource
      */
     public function __construct(
@@ -23,6 +25,7 @@ final readonly class TellResult
         private ?string $workspace = null,
         private ?string $branch = null,
         private ?string $branchSource = null,
+        private array $diagnostics = [],
     ) {}
 
     public function state(): AgentState
@@ -49,6 +52,12 @@ final readonly class TellResult
     public function warnings(): array
     {
         return $this->warnings;
+    }
+
+    /** @return list<TellDiagnostic> */
+    public function diagnostics(): array
+    {
+        return $this->diagnostics;
     }
 
     public function isCompleted(): bool

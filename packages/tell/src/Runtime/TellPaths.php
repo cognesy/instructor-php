@@ -44,10 +44,13 @@ final readonly class TellPaths
         $this->sessionTraces = $this->join($this->logs, 'sessions');
     }
 
-    public static function installed(): self
+    /** @param array<string, string>|null $environment */
+    public static function installed(?array $environment = null): self
     {
-        $configured = self::environmentPath('TELL_HOME');
-        $home = self::environmentPath('HOME') ?? self::environmentPath('USERPROFILE');
+        $environment ??= self::processEnvironment();
+        $configured = self::environmentPath($environment, 'TELL_HOME');
+        $home = self::environmentPath($environment, 'HOME')
+            ?? self::environmentPath($environment, 'USERPROFILE');
         if ($configured === null && $home === null) {
             throw new RuntimeException('HOME or USERPROFILE must be set when TELL_HOME is not configured.');
         }
@@ -79,12 +82,20 @@ final readonly class TellPaths
         ];
     }
 
-    private static function environmentPath(string $name): ?string
+    /** @return array<string, string> */
+    private static function processEnvironment(): array
     {
-        $value = getenv($name);
+        $environment = getenv();
+        return is_array($environment) ? $environment : [];
+    }
+
+    /** @param array<string, string> $environment */
+    private static function environmentPath(array $environment, string $name): ?string
+    {
+        $value = $environment[$name] ?? null;
 
         return match (true) {
-            ! is_string($value), trim($value) === '' => null,
+            $value === null, trim($value) === '' => null,
             default => rtrim($value, '/\\'),
         };
     }

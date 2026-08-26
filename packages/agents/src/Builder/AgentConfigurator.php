@@ -54,23 +54,28 @@ final readonly class AgentConfigurator implements CanConfigureAgent
     public static function base(
         ?CanHandleEvents $parentEvents = null,
         ?AgentIdentity $identity = null,
+        ?CanUseTools $initialDriver = null,
     ): self {
         $events = $parentEvents !== null
             ? new EventDispatcher('agent-builder', $parentEvents)
             : EventLog::root('agent-builder');
-        $llm = LLMProvider::new();
-
-        return new self(
-            tools: new Tools(),
-            contextCompiler: new ConversationWithCurrentToolTrace(),
-            toolUseDriver: new ToolCallingDriver(
+        $driver = $initialDriver;
+        if ($driver === null) {
+            $llm = LLMProvider::new();
+            $driver = new ToolCallingDriver(
                 llm: $llm,
                 events: $events,
                 inference: InferenceRuntime::fromProvider(
                     provider: $llm,
                     events: $events,
                 ),
-            ),
+            );
+        }
+
+        return new self(
+            tools: new Tools(),
+            contextCompiler: new ConversationWithCurrentToolTrace(),
+            toolUseDriver: $driver,
             hooks: new HookStack(new RegisteredHooks()),
             deferredTools: DeferredToolProviders::empty(),
             events: $events,

@@ -45,7 +45,7 @@ try {
             ->onEvent(
                 static function (TellEvent $event) use (&$eventTypes): void {
                     $eventTypes[] = $event->type();
-                    echo '[event] '.$event->type()."\n";
+                    echo json_encode($event->envelope(), JSON_THROW_ON_ERROR)."\n";
                 },
             ),
     );
@@ -78,7 +78,7 @@ try {
 ## Key Points
 
 - A checkpoint represents a completed agent-loop step, not an arbitrary token.
-- `TellEvent::source()` is available when a caller intentionally needs
-  provider- or framework-specific fields.
-- Event payloads can contain tool or provider data. Project sanitized telemetry
-  deliberately instead of forwarding payloads blindly to logs.
+- `TellEvent::envelope()` is the stable, redacted event contract for logs,
+  queues, server-sent events, and telemetry.
+- Treat source events and raw payloads as in-process diagnostic details; do not
+  forward them blindly across a process boundary.

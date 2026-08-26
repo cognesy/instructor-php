@@ -1,0 +1,79 @@
+---
+title: 'Tell Harness: Branch, Recover, and Reset Work'
+docname: 'tell_harness_branch_workflow'
+order: 6
+id: 'd1106'
+tags:
+  - 'tell'
+  - 'tell-harness'
+  - 'branches'
+---
+## Overview
+
+Tell branches are named, immutable-history views of a workspace conversation.
+Use them to try an approach without mutating the selected branch, and create a
+recovery branch before moving a head backwards. Reset changes only a ref; it
+does not delete canonical history.
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+require_once dirname(__DIR__).'/Support.php';
+
+use Cognesy\Tell\Tell;
+use Cognesy\Tell\TellRequest;
+
+$project = TellHarnessExample::project();
+
+try {
+    $tell = Tell::testing($project, 'deterministic workspace result');
+    $workspace = $tell->workspace();
+    $workspace->initialize();
+
+    // Give main a durable head, then fork a review branch from it.
+    $tell->run(TellRequest::prompt('Record the release baseline.')->durable());
+    $branches = $workspace->branches();
+    $review = $branches->create('release-review');
+    $branches->checkout($review->name);
+
+    $result = $tell->run(
+        TellRequest::prompt('Review the release candidate.')->durable(),
+    );
+    echo 'Published on branch: '.$result->branch()."\n";
+
+    // A branch handle reads that named branch regardless of later checkout.
+    // Pinning captures an immutable head that remains readable after ref moves.
+    $reviewHandle = $workspace->branch('release-review');
+    $frozen = $reviewHandle->pin();
+
+    // Preserve a named recovery point before moving release-review back.
+    $recovery = $branches->create('release-review-recovery', from: 'release-review');
+    $reset = $branches->reset('release-review', steps: 1);
+
+    echo 'Recovery branch: '.$recovery->name."\n";
+    echo 'Reset '.($reset->changed ? 'completed' : 'did not change the head')."\n";
+    echo 'Review turns after reset: '.count($reviewHandle->history()->turns)."\n";
+    echo 'Frozen turns: '.count($frozen->history()->turns)."\n";
+
+    assert($result->isCompleted(), 'Expected durable branch work to complete.');
+    assert($reset->changed, 'Expected the branch reset to move one ancestor back.');
+    assert(count($reviewHandle->history()->turns) === 1);
+    assert(count($frozen->history()->turns) === 2);
+} finally {
+    TellHarnessExample::remove($project);
+}
+```
+
+## Key Points
+
+- `branches()->create()` validates portable user branch names and inherits the
+  current selected head unless an explicit source is provided.
+- `checkout()` changes the workspace default. Use `TellRequest::branch()` for
+  a one-invocation selection instead.
+- `reset()` accepts a bounded ancestor distance and retains immutable objects;
+  create a recovery branch first when the current head must remain named.
+- `workspace()->branch()` is a read-only named handle; `pin()` returns a
+  `TellRef` fixed to the verified canonical head even after the branch advances
+  or resets.

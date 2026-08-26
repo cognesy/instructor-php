@@ -1,16 +1,19 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\InstructorHub\Services;
 
 use Cognesy\InstructorHub\Contracts\CanExecuteExample;
 use Cognesy\InstructorHub\Contracts\CanTrackExecution;
 use Cognesy\InstructorHub\Data\Example;
-use Cognesy\InstructorHub\Data\ExecutionResult;
 use Cognesy\InstructorHub\Data\ExecutionError;
+use Cognesy\InstructorHub\Data\ExecutionResult;
 
 class EnhancedRunner implements CanExecuteExample
 {
     private ?CanTrackExecution $tracker = null;
+
     private bool $interrupted = false;
 
     public function __construct(
@@ -28,7 +31,7 @@ class EnhancedRunner implements CanExecuteExample
     #[\Override]
     public function execute(Example $example): ExecutionResult
     {
-        if (!$this->canExecute($example)) {
+        if (! $this->canExecute($example)) {
             return ExecutionResult::failure(
                 0.0,
                 ExecutionError::fromException(new \RuntimeException("Cannot execute example: {$example->name}"))
@@ -44,8 +47,10 @@ class EnhancedRunner implements CanExecuteExample
 
         $this->tracker?->recordStart($example);
 
+        $script = null;
         try {
-            [$output, $exitCode] = $this->executeWithTimeout($example->runPath, $this->timeoutSeconds);
+            $script = ExampleScript::fromRunPath($example->runPath);
+            [$output, $exitCode] = $this->executeWithTimeout($script->path, $this->timeoutSeconds);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
@@ -54,6 +59,7 @@ class EnhancedRunner implements CanExecuteExample
             if ($this->interrupted) {
                 $result = ExecutionResult::interrupted($executionTime);
                 $this->tracker?->recordResult($example, $result);
+
                 return $result;
             }
 
@@ -66,6 +72,7 @@ class EnhancedRunner implements CanExecuteExample
             }
 
             $this->tracker?->recordResult($example, $result);
+
             return $result;
 
         } catch (\Throwable $e) {
@@ -73,7 +80,10 @@ class EnhancedRunner implements CanExecuteExample
             $error = ExecutionError::fromException($e);
             $result = ExecutionResult::failure($executionTime, $error);
             $this->tracker?->recordResult($example, $result);
+
             return $result;
+        } finally {
+            $script?->cleanup();
         }
     }
 
@@ -95,17 +105,17 @@ class EnhancedRunner implements CanExecuteExample
 
     private function registerSignalHandlers(): void
     {
-        if (!extension_loaded('pcntl')) {
+        if (! extension_loaded('pcntl')) {
             return;
         }
 
         pcntl_async_signals(true);
 
-        pcntl_signal(SIGINT, function() {
+        pcntl_signal(SIGINT, function () {
             $this->interrupted = true;
         });
 
-        pcntl_signal(SIGTERM, function() {
+        pcntl_signal(SIGTERM, function () {
             $this->interrupted = true;
         });
     }
@@ -126,7 +136,7 @@ class EnhancedRunner implements CanExecuteExample
 
         $process = proc_open($command, $descriptorspec, $pipes);
 
-        if (!is_resource($process)) {
+        if (! is_resource($process)) {
             throw new \RuntimeException('Failed to start process');
         }
 
@@ -157,7 +167,8 @@ class EnhancedRunner implements CanExecuteExample
                 fclose($pipes[1]);
                 fclose($pipes[2]);
                 proc_close($process);
-                return [$output . $error, 130]; // 130 = SIGTERM exit code
+
+                return [$output.$error, 130]; // 130 = SIGTERM exit code
             }
 
             $status = proc_get_status($process);
@@ -173,7 +184,7 @@ class EnhancedRunner implements CanExecuteExample
                 $error .= $stderrContent;
             }
 
-            if (!$status['running']) {
+            if (! $status['running']) {
                 break;
             }
 
@@ -196,7 +207,6 @@ class EnhancedRunner implements CanExecuteExample
 
         $exitCode = proc_close($process);
 
-        return [trim($output . $error), $exitCode];
+        return [trim($output.$error), $exitCode];
     }
-
 }

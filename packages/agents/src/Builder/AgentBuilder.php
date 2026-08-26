@@ -5,6 +5,7 @@ namespace Cognesy\Agents\Builder;
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Builder\Contracts\CanComposeAgentLoop;
 use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
+use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Agents\Profile\AgentIdentity;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Override;
@@ -19,6 +20,7 @@ final readonly class AgentBuilder implements CanComposeAgentLoop
 
     private function __construct(
         private ?CanHandleEvents $parentEvents = null,
+        private ?CanUseTools $initialDriver = null,
         array $capabilities = [],
         private AgentIdentity $identity = new AgentIdentity('anonymous', ''),
         private bool $hookContractDiagnostics = false,
@@ -27,14 +29,18 @@ final readonly class AgentBuilder implements CanComposeAgentLoop
         $this->capabilities = $capabilities;
     }
 
-    public static function base(?CanHandleEvents $parentEvents = null): self {
-        return new self(parentEvents: $parentEvents);
+    public static function base(
+        ?CanHandleEvents $parentEvents = null,
+        ?CanUseTools $initialDriver = null,
+    ): self {
+        return new self(parentEvents: $parentEvents, initialDriver: $initialDriver);
     }
 
     #[Override]
     public function withCapability(CanProvideAgentCapability $capability): self {
         return new self(
             parentEvents: $this->parentEvents,
+            initialDriver: $this->initialDriver,
             capabilities: [...$this->capabilities, $capability],
             identity: $this->identity,
             hookContractDiagnostics: $this->hookContractDiagnostics,
@@ -45,6 +51,7 @@ final readonly class AgentBuilder implements CanComposeAgentLoop
     public function withIdentity(AgentIdentity $identity): self {
         return new self(
             parentEvents: $this->parentEvents,
+            initialDriver: $this->initialDriver,
             capabilities: $this->capabilities,
             identity: $identity,
             hookContractDiagnostics: $this->hookContractDiagnostics,
@@ -55,6 +62,7 @@ final readonly class AgentBuilder implements CanComposeAgentLoop
     public function withHookContractDiagnostics(): self {
         return new self(
             parentEvents: $this->parentEvents,
+            initialDriver: $this->initialDriver,
             capabilities: $this->capabilities,
             identity: $this->identity,
             hookContractDiagnostics: true,
@@ -65,6 +73,7 @@ final readonly class AgentBuilder implements CanComposeAgentLoop
     public function withStrictHookContracts(): self {
         return new self(
             parentEvents: $this->parentEvents,
+            initialDriver: $this->initialDriver,
             capabilities: $this->capabilities,
             identity: $this->identity,
             hookContractDiagnostics: true,
@@ -77,6 +86,7 @@ final readonly class AgentBuilder implements CanComposeAgentLoop
         $installer = AgentConfigurator::base(
             parentEvents: $this->parentEvents,
             identity: $this->identity,
+            initialDriver: $this->initialDriver,
         );
         foreach ($this->capabilities as $capability) {
             $installer = $installer->install($capability);

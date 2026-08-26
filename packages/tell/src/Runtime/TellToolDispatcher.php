@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Runtime;
 
+use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
+use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Tool\Contracts\ToolInterface;
 use InvalidArgumentException;
 use JsonException;
@@ -13,16 +15,16 @@ final readonly class TellToolDispatcher
 {
     public function __construct(
         private TellAgentFactory $agents,
-        private ?TellSignalCancellationSource $cancellation = null,
+        private ?CanProvideCancellationSignal $cancellation = null,
     ) {}
 
     /**
-     * @param array<string, mixed> $arguments
+     * @param  array<string, mixed>  $arguments
      * @return array<string, mixed>
      */
     public function dispatch(TellOptions $options, string $name, array $arguments): array
     {
-        if ($this->cancellation?->isCancelled()) {
+        if ($this->isCancelled()) {
             return $this->failure($name, 'cancelled', 'Tool invocation was cancelled before execution.');
         }
         $options = (new TellRuntime($this->agents))->resolveDirectOptions($options);
@@ -39,7 +41,7 @@ final readonly class TellToolDispatcher
         $tool = $loop->tools()->get($name);
         $this->validateArguments($tool, $arguments);
         $result = $tool->use(...$arguments);
-        if ($this->cancellation?->isCancelled()) {
+        if ($this->isCancelled()) {
             return $this->failure($name, 'cancelled', 'Tool invocation was cancelled.');
         }
         if ($result->isFailure()) {
@@ -145,5 +147,10 @@ final readonly class TellToolDispatcher
             'effect' => $tool === null ? 'unknown' : $this->effect($tool),
             'execution' => ['mode' => 'direct', 'inference' => false, 'durable' => false],
         ];
+    }
+
+    private function isCancelled(): bool
+    {
+        return $this->cancellation?->cancellationSignal(AgentState::empty()) !== null;
     }
 }

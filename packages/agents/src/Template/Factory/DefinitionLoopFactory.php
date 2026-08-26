@@ -10,6 +10,7 @@ use Cognesy\Agents\Capability\Core\UseDriver;
 use Cognesy\Agents\Capability\Core\UseGuards;
 use Cognesy\Agents\Capability\Core\UseTools;
 use Cognesy\Agents\Collections\Tools;
+use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Agents\Profile\AgentIdentity;
 use Cognesy\Agents\Template\AgentDefinitionReferenceRules;
@@ -31,13 +32,14 @@ final readonly class DefinitionLoopFactory implements CanInstantiateAgentLoop
         private CanManageAgentCapabilities $capabilities,
         private ?CanManageTools $tools = null,
         private ?CanHandleEvents $events = null,
+        private ?CanUseTools $initialDriver = null,
     ) {
         $this->references = new AgentDefinitionReferenceRules($capabilities, $tools);
     }
 
     #[Override]
     public function instantiateAgentLoop(AgentDefinition $definition): AgentLoop {
-        $builder = AgentBuilder::base($this->events)->withIdentity(new AgentIdentity(
+        $builder = AgentBuilder::base($this->events, $this->initialDriver)->withIdentity(new AgentIdentity(
             name: $definition->name,
             description: $definition->description,
         ));

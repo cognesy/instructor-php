@@ -26,7 +26,7 @@ final readonly class TextRenderer implements OutputRenderer
     }
 
     #[Override]
-    public function finish(AgentState $state, array $warnings = [], bool $transient = false, ?array $branch = null): void
+    public function finish(AgentState $state, array $warnings = [], bool $transient = false, ?array $branch = null, array $diagnostics = []): void
     {
         $verbosity = match ($this->quiet) {
             true => OutputInterface::VERBOSITY_QUIET,
@@ -47,6 +47,9 @@ final readonly class TextRenderer implements OutputRenderer
         }
         foreach ($warnings as $warning) {
             $this->stderr->writeln('[tell] '.$warning, $verbosity);
+        }
+        foreach ($diagnostics as $diagnostic) {
+            $this->stderr->writeln("[tell] {$diagnostic['severity']} {$diagnostic['code']}: {$diagnostic['message']}", $verbosity);
         }
     }
 }

@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Drivers\CanUseTools;
+use Cognesy\Tell\Diagnostics\StartupScanCounter;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Runtime\TellCredentialStore;
 use Cognesy\Tell\Runtime\TellPaths;
@@ -19,6 +21,10 @@ function tellTestFactory(
     ?callable $decorate = null,
     array $userAgents = [],
     array $credentials = ['OPENAI_API_KEY' => 'tell-test-key'],
+    ?StartupScanCounter $startupScans = null,
+    ?CanUseTools $driver = null,
+    ?string $composerVendorDir = null,
+    ?string $rootComposerPath = null,
 ): TellAgentFactory {
     global $tellTemporaryRoots;
 
@@ -53,7 +59,14 @@ MD);
     }
     $tellTemporaryRoots[] = $root;
 
-    return new TellAgentFactory($paths, $decorate);
+    return new TellAgentFactory(
+        paths: $paths,
+        decorateLoop: $decorate,
+        driver: $driver,
+        startupScans: $startupScans,
+        composerVendorDir: $composerVendorDir,
+        rootComposerPath: $rootComposerPath,
+    );
 }
 
 function tellLastTemporaryRoot(): string
@@ -61,6 +74,55 @@ function tellLastTemporaryRoot(): string
     global $tellTemporaryRoots;
 
     return $tellTemporaryRoots[array_key_last($tellTemporaryRoots)];
+}
+
+function tellTestProject(): string
+{
+    global $tellTemporaryRoots;
+
+    $root = sys_get_temp_dir().'/instructor-tell-'.bin2hex(random_bytes(8));
+    mkdir($root, 0755, true);
+    $tellTemporaryRoots[] = $root;
+
+    return $root;
+}
+
+function standardHostPaths(string $project): TellPaths
+{
+    $paths = new TellPaths($project.'/package-agents', $project.'/.tell-host');
+    mkdir($paths->packageAgents, 0755, true);
+    file_put_contents($paths->packageAgents.'/default.md', <<<'MD'
+---
+name: default
+label: Standard Host Test
+description: Deterministic standard host agent
+capabilities:
+  - tell.coding
+---
+
+You are deterministic.
+MD);
+
+    return $paths;
+}
+
+function tellMalformedComposerVendor(): string
+{
+    $root = tellTestProject();
+    $vendor = $root.'/vendor';
+    mkdir($vendor.'/composer', 0755, true);
+    file_put_contents($vendor.'/composer/installed.json', json_encode([
+        'packages' => [[
+            'name' => 'example/malformed-extension',
+            'extra' => [
+                'cognesy-agents' => [
+                    'capabilities' => ['not-a-name-to-class-map'],
+                ],
+            ],
+        ]],
+    ], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT));
+
+    return $vendor;
 }
 
 function tellRemoveDirectory(string $directory): void

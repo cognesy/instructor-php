@@ -7,7 +7,7 @@ namespace Cognesy\Tell;
 /** A bounded, read-only projection of a Tell conversation. */
 final readonly class TellConversationView
 {
-    /** @param array{name: string, type: 'main'|'branch'|'session', source?: string} $selector
+    /** @param array{name: string, type: 'main'|'branch'|'session'|'ref', source?: string} $selector
      * @param list<array<string, mixed>> $turns
      * @param list<array<string, mixed>> $messages
      */

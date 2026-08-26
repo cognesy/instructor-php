@@ -19,6 +19,7 @@ use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Data\ExecutionBudget;
 use Cognesy\Agents\Discovery\CapabilityDiscovery;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
+use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Agents\Hook\Collections\HookTriggers;
 use Cognesy\Agents\Hook\HookStack;
 use Cognesy\Agents\Session\SessionRepository;
@@ -40,6 +41,10 @@ use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Tell\Observability\ExecutionTraceWriter;
 use Cognesy\Tell\Capability\Coding\TellCodingTools;
 use Cognesy\Tell\Capability\AskUser\TellAskUserCapability;
+use Cognesy\Tell\Diagnostics\StartupScanCounter;
+use Cognesy\Tell\Diagnostics\TellDiagnostics;
+use Cognesy\Tell\Contracts\CanResolveTellModel;
+use Cognesy\Tell\TellRequest;
 use Cognesy\Tell\Workspace\WorkspaceManager;
 use RuntimeException;
 
@@ -55,6 +60,11 @@ final readonly class TellAgentFactory
         private TellPaths $paths,
         ?callable $decorateLoop = null,
         ?CanReadTellClock $clock = null,
+        private ?CanUseTools $driver = null,
+        private ?StartupScanCounter $startupScans = null,
+        private ?string $composerVendorDir = null,
+        private ?string $rootComposerPath = null,
+        private ?CanResolveTellModel $modelResolver = null,
     ) {
         $this->decorateLoop = match ($decorateLoop) {
             null => null,
@@ -70,6 +80,7 @@ final readonly class TellAgentFactory
 
     public function definitions(string $projectPath): AgentDefinitionRegistry
     {
+        $this->startupScans?->recordAgentDefinitionScan();
         $registry = new AgentDefinitionRegistry;
         $registry->autoDiscover(
             projectPath: $projectPath,
@@ -89,12 +100,23 @@ final readonly class TellAgentFactory
 
     public function configureDefinition(AgentDefinition $definition, TellOptions $options): AgentDefinition
     {
+        if ($this->driver !== null) {
+            $this->assertReasoningSupportedWithoutCredentials($options);
+        }
+        $llmConfig = match ($this->driver) {
+            null => $this->llmConfig($options),
+            default => null,
+        };
+        if ($llmConfig !== null && $this->modelResolver === null && $options->dsn === '') {
+            $this->assertCredentialAvailable($llmConfig, $options->connection);
+        }
+
         return new AgentDefinition(
             name: $definition->name,
             description: $definition->description,
             systemPrompt: $definition->systemPrompt,
             label: $definition->label,
-            llmConfig: $this->llmConfig($options),
+            llmConfig: $llmConfig,
             capabilities: $definition->capabilities,
             tools: $definition->tools,
             toolsDeny: $definition->toolsDeny,
@@ -109,16 +131,24 @@ final readonly class TellAgentFactory
         ?AgentDefinition $definition = null,
         ?CanProvideCancellationSignal $cancellation = null,
         ?TellDelegationScope $delegation = null,
+        ?TellDiagnostics $diagnostics = null,
     ): AgentLoop
     {
-        $definition = match (true) {
-            $definition === null => $this->definition($options),
-            default => $this->configureDefinition($definition, $options),
-        };
+        // A supplied definition has already been resolved for this immutable
+        // request. Re-resolving here made credentials/model selection depend on
+        // timing and performed duplicate filesystem/environment reads.
+        $definition ??= $this->definition($options);
         $definitions = $this->definitions($options->directory);
         $capabilities = new AgentCapabilityRegistry;
         $tools = new ToolRegistry;
-        CapabilityDiscovery::discover($capabilities, $tools);
+        $this->startupScans?->recordComposerManifestScan();
+        $discovery = CapabilityDiscovery::discover(
+            $capabilities,
+            $tools,
+            $this->composerVendorDir,
+            $this->rootComposerPath,
+        );
+        $diagnostics?->recordExtensionDiscovery($discovery);
 
         $policy = $options->policy ?? TellExecutionPolicy::defaults();
         $capabilities->register('tell.coding', new TellCodingTools(
@@ -134,7 +164,7 @@ final readonly class TellAgentFactory
         $capabilities->register('use_subagents', new UseSubagents(
             provider: $definitions,
             policy: new SubagentPolicy(maxDepth: 1),
-            executor: $delegation === null ? null : new TellSubagentExecutor($this, $options, $delegation),
+            executor: $delegation === null ? null : new TellSubagentExecutor($this, $options, $delegation, $diagnostics),
             currentDepth: $delegation === null ? 0 : $delegation->depth,
         ));
         $capabilities->register('tell.system_prompt', new UseSystemPrompt);
@@ -145,7 +175,11 @@ final readonly class TellAgentFactory
             validator: new AgentDefinitionValidator($capabilities, $tools),
         ));
 
-        $loop = (new DefinitionLoopFactory($capabilities, $tools))->instantiateAgentLoop($definition);
+        $loop = (new DefinitionLoopFactory(
+            capabilities: $capabilities,
+            tools: $tools,
+            initialDriver: $this->driver,
+        ))->instantiateAgentLoop($definition);
         $loop = $this->filterTools($loop, $options->tools);
         $loop = $this->withExecutionPolicy($loop, $policy);
         $loop = $this->withCooperativeCancellation($loop, $cancellation);
@@ -205,11 +239,15 @@ final readonly class TellAgentFactory
 
     public function workspace(): WorkspaceManager
     {
-        return new WorkspaceManager;
+        return new WorkspaceManager($this->startupScans);
     }
 
     public function assertReady(TellOptions $options): void
     {
+        if ($this->driver !== null) {
+            $this->assertReasoningSupportedWithoutCredentials($options);
+            return;
+        }
         if ($options->dsn !== '') {
             return;
         }
@@ -219,8 +257,14 @@ final readonly class TellAgentFactory
 
     private function llmConfig(TellOptions $options): LLMConfig
     {
+        if ($this->modelResolver !== null) {
+            return $this->modelResolver->resolve(TellRequest::fromOptions($options));
+        }
         if ($options->dsn !== '') {
-            return LLMConfig::fromArray(Dsn::fromString($options->dsn)->toArray());
+            return $this->withReasoning(
+                LLMConfig::fromArray(Dsn::fromString($options->dsn)->toArray()),
+                $options,
+            );
         }
 
         TellCredentialNames::forProvider($options->connection);
@@ -230,10 +274,49 @@ final readonly class TellAgentFactory
             template: new EnvTemplate($this->secretResolver($options->directory)),
         );
 
-        return match ($options->model) {
+        $config = match ($options->model) {
             '' => $config,
             default => $config->withOverrides(['model' => $options->model]),
         };
+
+        return $this->withReasoning($config, $options);
+    }
+
+    private function withReasoning(LLMConfig $config, TellOptions $options): LLMConfig
+    {
+        if ($options->reasoningEffort === null) {
+            return $config;
+        }
+        TellReasoningSupport::assertSupported($config->driver, $config->model, $options->reasoningEffort);
+
+        return $config->withOverrides([
+            'options' => [
+                ...$config->options,
+                ...TellReasoningSupport::options($config->driver, $options->reasoningEffort),
+            ],
+        ]);
+    }
+
+    private function assertReasoningSupportedWithoutCredentials(TellOptions $options): void
+    {
+        if ($options->reasoningEffort === null) {
+            return;
+        }
+        if ($options->dsn !== '') {
+            $config = LLMConfig::fromArray(Dsn::fromString($options->dsn)->toArray());
+            TellReasoningSupport::assertSupported($config->driver, $config->model, $options->reasoningEffort);
+
+            return;
+        }
+
+        $resolved = (new TellProviderCatalogue($this->paths))->resolve(
+            $options->directory,
+            $options->connection,
+            $options->model,
+        );
+        $driver = is_string($resolved['provider'] ?? null) ? $resolved['provider'] : $options->connection;
+        $model = is_string($resolved['model'] ?? null) ? $resolved['model'] : $options->model;
+        TellReasoningSupport::assertSupported($driver, $model, $options->reasoningEffort);
     }
 
     private function connectionDirectory(TellOptions $options): ?string

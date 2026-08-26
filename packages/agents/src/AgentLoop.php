@@ -12,6 +12,7 @@ use Cognesy\Agents\Drivers\CanAcceptToolRuntime;
 use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Agents\Enums\ExecutionStatus;
+use Cognesy\Agents\Events\AgentExecutionAbandoned;
 use Cognesy\Agents\Events\AgentExecutionCompleted;
 use Cognesy\Agents\Events\AgentExecutionFailed;
 use Cognesy\Agents\Events\AgentExecutionStarted;
@@ -114,50 +115,62 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
         $driver = $this->bindToolRuntime($this->driver);
         $driver = $this->bindInterceptor($driver);
         $state = $this->onBeforeExecution($state);
-        if ($this->shouldStopAtCheckpoint($state)) {
-            $state = $this->onStop($state);
-            $finalState = $this->onAfterExecution($state);
+        // Settled once, by whichever path gets there first: normal completion below,
+        // or the outer finally when the caller abandons or throws into this generator.
+        // Nothing it calls may yield - that is fatal in a force-closed generator.
+        $settled = false;
+        try {
+            if ($this->shouldStopAtCheckpoint($state)) {
+                $state = $this->onStop($state);
+                $settled = true;
+                $finalState = $this->onAfterExecution($state);
+                if ($finalState->updatedAt() !== $state->updatedAt()) {
+                    yield $finalState;
+                }
+                return;
+            }
+
+            while (true) {
+                $stepStarted = false;
+                try {
+                    $state = $this->onBeforeStep($state);
+                    if ($this->shouldStopAtCheckpoint($state)) {
+                        $state = $this->onStop($state);
+                        break;
+                    }
+
+                    $stepStarted = true;
+                    $state = $this->handleToolUse($state, $driver);
+                } catch (AgentStopException $stop) {
+                    $state = $this->handleStopException($state, $stop);
+                } catch (Throwable $error) {
+                    $state = $this->onError($state, $error);
+                } finally {
+                    if ($stepStarted) {
+                        $state = $this->onAfterStep($state);
+                    }
+                }
+                if ($this->shouldStop($state)) {
+                    $state = $this->onStop($state);
+                    $state = $state->withCurrentStepCompleted();
+                    break;
+                }
+                $state = $state->withCurrentStepCompleted();
+                yield $state;
+            }
+            $finalState = match (true) {
+                $state->hasCurrentStep() => $state->withCurrentStepCompleted(),
+                default => $state,
+            };
+            $settled = true;
+            $finalState = $this->onAfterExecution($finalState);
             if ($finalState->updatedAt() !== $state->updatedAt()) {
                 yield $finalState;
             }
-            return;
-        }
-
-        while (true) {
-            $stepStarted = false;
-            try {
-                $state = $this->onBeforeStep($state);
-                if ($this->shouldStopAtCheckpoint($state)) {
-                    $state = $this->onStop($state);
-                    break;
-                }
-
-                $stepStarted = true;
-                $state = $this->handleToolUse($state, $driver);
-            } catch (AgentStopException $stop) {
-                $state = $this->handleStopException($state, $stop);
-            } catch (Throwable $error) {
-                $state = $this->onError($state, $error);
-            } finally {
-                if ($stepStarted) {
-                    $state = $this->onAfterStep($state);
-                }
+        } finally {
+            if (!$settled) {
+                $this->onAbandoned($state);
             }
-            if ($this->shouldStop($state)) {
-                $state = $this->onStop($state);
-                $state = $state->withCurrentStepCompleted();
-                break;
-            }
-            $state = $state->withCurrentStepCompleted();
-            yield $state;
-        }
-        $finalState = match (true) {
-            $state->hasCurrentStep() => $state->withCurrentStepCompleted(),
-            default => $state,
-        };
-        $finalState = $this->onAfterExecution($finalState);
-        if ($finalState->updatedAt() !== $state->updatedAt()) {
-            yield $finalState;
         }
     }
 
@@ -195,6 +208,23 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
         $state = $state->withExecutionCompleted();
         $this->emitExecutionFinished($state);
         return $state;
+    }
+
+    /**
+     * Terminal teardown for an execution that never reached onAfterExecution(),
+     * because the caller abandoned the generator or threw into it. Runs from the
+     * loop's outer finally: it must not yield, and it must not escape, since an
+     * exception raised while a generator is force-closed surfaces at whatever
+     * statement happened to drop the last reference.
+     */
+    protected function onAbandoned(AgentState $state): void {
+        $teardownError = '';
+        try {
+            $this->interceptor->intercept(HookContext::onAbandoned($state));
+        } catch (Throwable $error) {
+            $teardownError = $error->getMessage();
+        }
+        $this->emitExecutionAbandoned($state, $teardownError);
     }
 
     protected function onError(AgentState $state, Throwable $error): AgentState {
@@ -459,6 +489,19 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
             source: $signal?->source,
             totalSteps: $state->stepCount(),
             stopContext: $signal?->context ?? [],
+        );
+
+        $this->events->dispatch(AgentTelemetry::attach($event, AgentStateTelemetry::loadSeed($state)));
+    }
+
+    private function emitExecutionAbandoned(AgentState $state, string $teardownError): void {
+        $event = new AgentExecutionAbandoned(
+            agentId: $state->agentId()->toString(),
+            executionId: $state->execution()?->executionId()->toString() ?? '',
+            parentAgentId: $state->parentAgentId() !== null ? (string) $state->parentAgentId() : null,
+            status: $state->status(),
+            totalSteps: $state->stepCount(),
+            teardownError: $teardownError,
         );
 
         $this->events->dispatch(AgentTelemetry::attach($event, AgentStateTelemetry::loadSeed($state)));

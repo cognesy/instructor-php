@@ -117,9 +117,10 @@ final class BundledInferenceDrivers
                 // DeepSeek V4 Flash, Pro, and Flash Vision share the same
                 // advertised feature set: tools and JSON Output, but no native
                 // JSON Schema and no response_format alongside tools.
-                capabilities: new DriverCapabilities(
+                capabilities: static fn (string $model): DriverCapabilities => new DriverCapabilities(
                     responseFormatJsonSchema: false,
                     responseFormatWithTools: false,
+                    reasoningEffort: preg_match('/^deepseek-v4-(?:flash|pro|flash-vision-exp)$/', $model) === 1,
                 ),
             ),
             'fireworks' => new InferenceDriverSpec(
@@ -170,6 +171,7 @@ final class BundledInferenceDrivers
                 capabilities: static fn (string $model): DriverCapabilities => new DriverCapabilities(
                     responseFormatJsonSchema: preg_match('/^qwen3\.(?:8-max|7-(?:max|plus))(?:-|$)/', $model) === 1,
                     responseFormatWithTools: false,
+                    reasoningEffort: preg_match('/^qwen3\./', $model) === 1,
                 ),
             ),
             'sambanova' => new InferenceDriverSpec(

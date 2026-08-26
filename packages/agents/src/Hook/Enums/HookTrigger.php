@@ -16,6 +16,14 @@ enum HookTrigger: string
     case AfterExecution = 'after_execution';
     case OnError = 'on_error';
 
+    /**
+     * Terminal teardown of an execution that did not run to completion, because
+     * the caller abandoned the iterate() generator or threw into it. Dispatched
+     * from the loop's outer finally, so it may not yield and its state is not
+     * carried forward - only metadata is mutable.
+     */
+    case OnAbandoned = 'on_abandoned';
+
     public function equals(HookTrigger $type): bool {
         return $this === $type;
     }
@@ -40,6 +48,7 @@ enum HookTrigger: string
             ],
             self::AfterToolUse => ['state', 'toolExecution', 'metadata'],
             self::OnError => ['state', 'errorList', 'metadata'],
+            self::OnAbandoned => ['metadata'],
         };
     }
 }

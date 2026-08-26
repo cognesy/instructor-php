@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Workspace;
 
+use Cognesy\Tell\Diagnostics\StartupScanCounter;
 use InvalidArgumentException;
 
 final class WorkspaceManager
 {
+    public function __construct(private readonly ?StartupScanCounter $startupScans = null) {}
+
     public function initialize(string $directory): WorkspaceInitialization
     {
         $paths = $this->pathsForDirectory($directory);
@@ -29,6 +32,7 @@ final class WorkspaceManager
 
     public function discover(string $directory): ?TellWorkspace
     {
+        $this->startupScans?->recordWorkspaceDiscovery();
         $path = $this->pathsForDirectory($directory)->root;
 
         while (true) {

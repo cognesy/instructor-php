@@ -54,6 +54,7 @@ describe('anthropic capabilities', function () {
         expect($caps->supportsToolChoice())->toBeTrue();
         expect($caps->supportsResponseFormatJsonObject())->toBeFalse();
         expect($caps->supportsResponseFormatJsonSchema())->toBeFalse();
+        expect($caps->supportsReasoningEffort())->toBeFalse();
         expect($caps->supportsResponseFormatWithTools())->toBeFalse();
     });
 });
@@ -66,6 +67,7 @@ describe('DeepSeek V4 capabilities', function () {
         expect($caps->supportsToolChoice())->toBeTrue();
         expect($caps->supportsResponseFormatJsonObject())->toBeTrue();
         expect($caps->supportsResponseFormatJsonSchema())->toBeFalse();
+        expect($caps->supportsReasoningEffort())->toBeTrue();
     });
 
     it('supports the same feature set for V4 Pro', function () {
@@ -75,6 +77,7 @@ describe('DeepSeek V4 capabilities', function () {
         expect($caps->supportsToolChoice())->toBeTrue();
         expect($caps->supportsResponseFormatJsonObject())->toBeTrue();
         expect($caps->supportsResponseFormatJsonSchema())->toBeFalse();
+        expect($caps->supportsReasoningEffort())->toBeTrue();
     });
 
     it('does not vary by the selected V4 model', function () {
@@ -88,6 +91,10 @@ describe('DeepSeek V4 capabilities', function () {
     it('does not support combining response format with tools', function () {
         expect(capabilitiesOf('deepseek', 'deepseek-v4-flash')->supportsResponseFormatWithTools())->toBeFalse();
     });
+
+    it('does not advertise reasoning effort for legacy model identifiers', function () {
+        expect(capabilitiesOf('deepseek', 'deepseek-chat')->supportsReasoningEffort())->toBeFalse();
+    });
 });
 
 describe('Qwen current model capabilities', function () {
@@ -99,6 +106,7 @@ describe('Qwen current model capabilities', function () {
         expect($caps->supportsResponseFormatJsonObject())->toBeTrue();
         expect($caps->supportsResponseFormatJsonSchema())->toBeTrue();
         expect($caps->supportsResponseFormatWithTools())->toBeFalse();
+        expect($caps->supportsReasoningEffort())->toBeTrue();
     });
 
     it('limits legacy Qwen models to JSON Object', function () {
@@ -107,6 +115,7 @@ describe('Qwen current model capabilities', function () {
         expect($caps->supportsResponseFormatJsonObject())->toBeTrue();
         expect($caps->supportsResponseFormatJsonSchema())->toBeFalse();
         expect($caps->supportsResponseFormatWithTools())->toBeFalse();
+        expect($caps->supportsReasoningEffort())->toBeFalse();
     });
 });
 

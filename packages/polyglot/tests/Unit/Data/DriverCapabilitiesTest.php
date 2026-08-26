@@ -13,6 +13,7 @@ describe('DriverCapabilities', function () {
         expect($caps->supportsResponseFormatJsonObject())->toBeTrue();
         expect($caps->supportsResponseFormatJsonSchema())->toBeTrue();
         expect($caps->supportsResponseFormatWithTools())->toBeTrue();
+        expect($caps->supportsReasoningEffort())->toBeFalse();
         expect($caps->maxContextTokens)->toBeNull();
         expect($caps->maxOutputTokens)->toBeNull();
     });
@@ -25,6 +26,7 @@ describe('DriverCapabilities', function () {
             responseFormatJsonObject: false,
             responseFormatJsonSchema: false,
             responseFormatWithTools: false,
+            reasoningEffort: true,
         );
 
         expect($caps->supportsStreaming())->toBeFalse();
@@ -33,6 +35,7 @@ describe('DriverCapabilities', function () {
         expect($caps->supportsResponseFormatJsonObject())->toBeFalse();
         expect($caps->supportsResponseFormatJsonSchema())->toBeFalse();
         expect($caps->supportsResponseFormatWithTools())->toBeFalse();
+        expect($caps->supportsReasoningEffort())->toBeTrue();
     });
 
     it('stores optional limits when provided', function () {
@@ -55,6 +58,7 @@ describe('DriverCapabilities', function () {
             responseFormatWithTools: false,
             maxContextTokens: 131072,
             maxOutputTokens: 4096,
+            reasoningEffort: true,
         );
 
         expect($caps->streaming)->toBeTrue();
@@ -65,5 +69,6 @@ describe('DriverCapabilities', function () {
         expect($caps->responseFormatWithTools)->toBeFalse();
         expect($caps->maxContextTokens)->toBe(131072);
         expect($caps->maxOutputTokens)->toBe(4096);
+        expect($caps->reasoningEffort)->toBeTrue();
     });
 });

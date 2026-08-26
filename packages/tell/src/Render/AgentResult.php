@@ -11,7 +11,8 @@ final class AgentResult
 {
     /** @return array<string, mixed> */
     /** @param array{name: string, source: 'current'|'invocation'}|null $branch */
-    public static function fromState(AgentState $state, array $warnings = [], bool $transient = false, ?array $branch = null): array
+    /** @param list<array{code: string, source: string, severity: string, message: string}> $diagnostics */
+    public static function fromState(AgentState $state, array $warnings = [], bool $transient = false, ?array $branch = null, array $diagnostics = []): array
     {
         $status = $state->status();
 
@@ -37,6 +38,9 @@ final class AgentResult
         }
         if ($branch !== null) {
             $result['branch'] = $branch;
+        }
+        if ($diagnostics !== []) {
+            $result['diagnostics'] = $diagnostics;
         }
         $signal = $state->stopSignal();
         if ($signal !== null) {

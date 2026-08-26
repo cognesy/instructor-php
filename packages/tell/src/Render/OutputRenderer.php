@@ -14,5 +14,6 @@ interface OutputRenderer
 
     /** @param list<string> $warnings */
     /** @param array{name: string, source: 'current'|'invocation'}|null $branch */
-    public function finish(AgentState $state, array $warnings = [], bool $transient = false, ?array $branch = null): void;
+    /** @param list<array{code: string, source: string, severity: string, message: string}> $diagnostics */
+    public function finish(AgentState $state, array $warnings = [], bool $transient = false, ?array $branch = null, array $diagnostics = []): void;
 }

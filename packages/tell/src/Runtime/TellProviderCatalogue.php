@@ -85,7 +85,7 @@ final readonly class TellProviderCatalogue
             'availableModels' => $config->model === '' ? [] : [$config->model],
             'contextCapacity' => $config->contextLength,
             'maxOutputTokens' => $config->maxOutputLength,
-            'capabilities' => $this->capabilities($capabilities),
+            'capabilities' => $this->capabilities($capabilities, $config->driver, $config->model),
             'unknown' => [
                 'vision' => 'not declared by Polyglot driver metadata',
                 'thinking' => 'not declared by Polyglot driver metadata',
@@ -101,7 +101,7 @@ final readonly class TellProviderCatalogue
     }
 
     /** @return array<string,bool|null> */
-    private function capabilities(?DriverCapabilities $capabilities): array
+    private function capabilities(?DriverCapabilities $capabilities, string $driver, string $model): array
     {
         return [
             'streaming' => $capabilities?->supportsStreaming(),
@@ -110,6 +110,7 @@ final readonly class TellProviderCatalogue
             'jsonObject' => $capabilities?->supportsResponseFormatJsonObject(),
             'jsonSchema' => $capabilities?->supportsResponseFormatJsonSchema(),
             'responseFormatWithTools' => $capabilities?->supportsResponseFormatWithTools(),
+            'reasoningEffort' => $capabilities === null ? null : TellReasoningSupport::supports($driver, $model),
         ];
     }
 }

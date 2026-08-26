@@ -41,6 +41,7 @@ function hookContractContexts(): array {
         HookContext::onStop($state),
         HookContext::afterExecution($state),
         HookContext::onError($state, ErrorList::fromErrors(new RuntimeException('fixture'))),
+        HookContext::onAbandoned($state),
     ];
 }
 
@@ -59,6 +60,7 @@ it('defines the explicit mutable fields for every lifecycle trigger', function (
         ['on_stop', ['state', 'metadata']],
         ['after_execution', ['state', 'metadata']],
         ['on_error', ['state', 'errorList', 'metadata']],
+        ['on_abandoned', ['metadata']],
     ]);
 });
 

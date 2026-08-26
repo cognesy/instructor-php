@@ -34,7 +34,7 @@ final class EventsRenderer implements OutputRenderer
     }
 
     #[Override]
-    public function finish(AgentState $state, array $warnings = [], bool $transient = false, ?array $branch = null): void
+    public function finish(AgentState $state, array $warnings = [], bool $transient = false, ?array $branch = null, array $diagnostics = []): void
     {
         if (! $this->terminal) {
             $this->stdout->writeln($this->encode($this->normalizer()->terminal(

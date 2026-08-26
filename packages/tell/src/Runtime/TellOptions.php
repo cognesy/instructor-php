@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Runtime;
 
 use Cognesy\Tell\Capability\AskUser\TellAnswerQueue;
+use Cognesy\Tell\TellReasoningEffort;
 use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -17,6 +18,7 @@ final readonly class TellOptions
         public string $agent = 'default',
         public string $connection = 'openai',
         public string $model = '',
+        public ?TellReasoningEffort $reasoningEffort = null,
         public string $dsn = '',
         public ?string $session = null,
         public ?string $branch = null,
@@ -30,6 +32,7 @@ final readonly class TellOptions
         public bool $transient = false,
         public bool $connectionExplicit = false,
         public bool $modelExplicit = false,
+        public bool $reasoningEffortExplicit = false,
         public bool $toolsExplicit = false,
         /** @var array<string, int> */
         public array $policyOverrides = [],
@@ -70,6 +73,7 @@ final readonly class TellOptions
             agent: (string) $input->getOption('agent'),
             connection: (string) $input->getOption('connection'),
             model: (string) $input->getOption('model'),
+            reasoningEffort: self::reasoningEffort($input->getOption('reasoning-effort')),
             dsn: (string) $input->getOption('dsn'),
             session: self::nullableString($input->getOption('session')),
             branch: self::nullableString($input->getOption('branch')),
@@ -83,6 +87,7 @@ final readonly class TellOptions
             transient: (bool) $input->getOption('transient'),
             connectionExplicit: $input->hasParameterOption(['--connection', '-c'], true),
             modelExplicit: $input->hasParameterOption(['--model', '-m'], true),
+            reasoningEffortExplicit: $input->hasParameterOption('--reasoning-effort', true),
             toolsExplicit: $input->hasParameterOption('--tools', true),
             policyOverrides: TellExecutionPolicy::overridesFromInput($input),
         );
@@ -97,6 +102,9 @@ final readonly class TellOptions
         $model = $this->dsn === '' && ! $this->modelExplicit && isset($values['model']) && is_string($values['model'])
             ? $values['model']
             : $this->model;
+        $reasoningEffort = ! $this->reasoningEffortExplicit && isset($values['reasoningEffort']) && is_string($values['reasoningEffort'])
+            ? TellReasoningEffort::parse($values['reasoningEffort'])
+            : $this->reasoningEffort;
         $tools = ! $this->toolsExplicit && isset($values['tools']) && is_array($values['tools'])
             ? array_values(array_filter($values['tools'], static fn (mixed $tool): bool => is_string($tool)))
             : $this->tools;
@@ -106,6 +114,7 @@ final readonly class TellOptions
             agent: $this->agent,
             connection: $connection,
             model: $model,
+            reasoningEffort: $reasoningEffort,
             dsn: $this->dsn,
             session: $this->session,
             branch: $this->branch,
@@ -119,6 +128,7 @@ final readonly class TellOptions
             transient: $this->transient,
             connectionExplicit: $this->connectionExplicit,
             modelExplicit: $this->modelExplicit,
+            reasoningEffortExplicit: $this->reasoningEffortExplicit,
             toolsExplicit: $this->toolsExplicit,
             policyOverrides: $this->policyOverrides,
             policy: TellExecutionPolicy::resolve($values, $this->policyOverrides),
@@ -140,6 +150,24 @@ final readonly class TellOptions
     {
         return match (true) {
             is_string($value) && $value !== '' => $value,
+            default => null,
+        };
+    }
+
+    /** @return 'branch'|'invocation'|null */
+    public function reasoningEffortSource(): ?string
+    {
+        return match (true) {
+            $this->reasoningEffort === null => null,
+            $this->reasoningEffortExplicit => 'invocation',
+            default => 'branch',
+        };
+    }
+
+    private static function reasoningEffort(mixed $value): ?TellReasoningEffort
+    {
+        return match (true) {
+            is_string($value) && trim($value) !== '' => TellReasoningEffort::parse($value),
             default => null,
         };
     }

@@ -14,10 +14,11 @@ final readonly class BranchConfigStore
 
     private const int MAX_TOOL_NAMES = 50;
 
-    /** @var array<string, array{type: 'int'|'list'|'string', min?: int, max?: int}> */
+    /** @var array<string, array{type: 'enum'|'int'|'list'|'string', min?: int, max?: int, values?: list<string>}> */
     private const array KEYS = [
         'connection' => ['type' => 'string'],
         'model' => ['type' => 'string'],
+        'reasoningEffort' => ['type' => 'enum', 'values' => ['low', 'medium', 'high']],
         'tools' => ['type' => 'list'],
         'maxRetries' => ['type' => 'int', 'min' => 0, 'max' => 10],
         'timeoutMs' => ['type' => 'int', 'min' => 1, 'max' => 3_600_000],
@@ -259,6 +260,13 @@ final readonly class BranchConfigStore
                 || $value < ($spec['min'] ?? 0)
                 || $value > ($spec['max'] ?? PHP_INT_MAX)) {
                 throw new InvalidArgumentException("Tell branch config {$key} has an invalid range.");
+            }
+
+            return;
+        }
+        if ($spec['type'] === 'enum') {
+            if (! is_string($value) || ! in_array($value, $spec['values'] ?? [], true)) {
+                throw new InvalidArgumentException("Tell branch config {$key} must be one of: low, medium, high.");
             }
 
             return;
