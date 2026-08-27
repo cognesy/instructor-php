@@ -34,7 +34,7 @@
     "icanhazstring/composer-unused": "^0.9.0",
     "jetbrains/phpstorm-attributes": "^1.2",
     "maglnet/composer-require-checker": "^4.16",
-    "pestphp/pest": "^2.34",
+    "pestphp/pest": "^4.0",
     "phpstan/phpstan": "^1.11",
     "vimeo/psalm": "^6.0"
   },

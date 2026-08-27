@@ -24,7 +24,7 @@
   "require": {
     "php": "^8.3",
     "cognesy/instructor-contracts": "^2.8",
-    "cognesy/agent-ctrl": "^1.22",
+    "cognesy/agent-ctrl": "^2.8",
     "cognesy/agents": "^2.8",
     "cognesy/instructor-config": "^2.8",
     "cognesy/instructor-events": "^2.8",

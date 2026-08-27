@@ -32,7 +32,7 @@
     "cognesy/instructor-templates": "^2.8"
   },
   "require-dev": {
-    "pestphp/pest": "^2.34"
+    "pestphp/pest": "^4.0"
   },
   "scripts": {
     "tests": "@php vendor/bin/pest"
