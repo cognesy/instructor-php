@@ -25,6 +25,7 @@
             "group": "Release Notes",
             "pages": [
                 "release-notes/versions",
+                "release-notes/v2.8.4",
                 "release-notes/v2.8.3",
                 "release-notes/v2.8.2",
                 "release-notes/v2.8.1",
@@ -780,7 +781,16 @@
                 "cookbook/examples/D11_TellHarness/tell_harness_observable_run",
                 "cookbook/examples/D11_TellHarness/tell_harness_durable_conversation",
                 "cookbook/examples/D11_TellHarness/tell_harness_transient_experiment",
-                "cookbook/examples/D11_TellHarness/tell_harness_context_lifecycle"
+                "cookbook/examples/D11_TellHarness/tell_harness_context_lifecycle",
+                "cookbook/examples/D11_TellHarness/tell_harness_branch_workflow",
+                "cookbook/examples/D11_TellHarness/tell_harness_branch_configuration",
+                "cookbook/examples/D11_TellHarness/tell_harness_controlled_run",
+                "cookbook/examples/D11_TellHarness/tell_harness_agent_capabilities",
+                "cookbook/examples/D11_TellHarness/tell_harness_deterministic_testing",
+                "cookbook/examples/D11_TellHarness/tell_harness_reasoning_configuration",
+                "cookbook/examples/D11_TellHarness/tell_harness_external_protocol",
+                "cookbook/examples/D11_TellHarness/tell_harness_modular_host",
+                "cookbook/examples/D11_TellHarness/tell_harness_persistent_shell_jobs"
             ]
         },
         {

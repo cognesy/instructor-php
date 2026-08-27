@@ -1,0 +1,35 @@
+v2.8.4 makes Tell’s programmable runtime and operator boundaries available as
+a supported 2.x surface. It also fixes Tell construction with the released
+`cognesy/agents` v2.8.3 package when an application supplies its own driver.
+
+## Modular Tell Runtime
+
+Tell now provides a static, host-scoped composition model for applications that
+need to configure its runtime before boot. `TellHostBuilder` and the standard
+profile assemble typed capabilities without exposing a mutable service
+container. The public SDK adds catalogue and direct-tool access, typed
+reasoning controls, deterministic testing, controlled cancellation, and a
+one-run `tell agent --rpc` protocol for external supervisors.
+
+Project workspaces gain named branches, branch-local secret-free configuration,
+and inspectable durable child-agent runs. Shell jobs are confined to an
+explicit resource host with bounded output, lifetime, concurrency, approval,
+and cleanup behavior.
+
+## Runtime Compatibility and Tooling
+
+Tell now attaches an injected `ToolCallingDriver` after creating its definition
+loop. This preserves custom-driver integrations with the published Agents
+v2.8.3 constructor contract.
+
+Hub can execute Markdown-backed examples by materializing their PHP fence in a
+temporary sibling file, preserving `__DIR__` behavior and cleaning the file up
+after execution. Polyglot now advertises reasoning-effort support for matching
+DeepSeek V4 and Qwen 3 models.
+
+## Upgrade Notes
+
+Existing Tell facade calls, CLI routes, persisted workspace schemas, and event
+envelopes remain compatible. No migration is required. Applications that
+provide a custom Tell driver can upgrade directly; the driver is now applied
+through the supported `AgentLoop::withDriver()` path.

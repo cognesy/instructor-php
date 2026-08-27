@@ -21,7 +21,7 @@ instructor:
     drivers:
       otel:
         endpoint: '%env(INSTRUCTOR_TELEMETRY_OTEL_ENDPOINT)%'
-# @doctest id="e3b8"
+# @doctest id="95ac"
 ```
 
 This resolves:
@@ -67,7 +67,7 @@ instructor:
         host: '%env(INSTRUCTOR_TELEMETRY_LANGFUSE_HOST)%'
         public_key: '%env(INSTRUCTOR_TELEMETRY_LANGFUSE_PUBLIC_KEY)%'
         secret_key: '%env(INSTRUCTOR_TELEMETRY_LANGFUSE_SECRET_KEY)%'
-# @doctest id="d2cc"
+# @doctest id="1803"
 ```
 
 ## Projector Selection
@@ -85,7 +85,7 @@ instructor:
       http: true
       agent_ctrl: true
       agents: true
-# @doctest id="cc54"
+# @doctest id="9dc8"
 ```
 
 This matters because the package event bus is the source of truth.
@@ -102,7 +102,7 @@ instructor:
   telemetry:
     http:
       capture_streaming_chunks: false
-# @doctest id="310b"
+# @doctest id="275b"
 ```
 
 Leave it off by default for production noise control.

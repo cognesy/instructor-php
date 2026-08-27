@@ -1,0 +1,58 @@
+## Overview
+
+Discover the installed preset catalogue without resolving credentials, then run
+one registered tool directly without starting inference. Direct tools use the
+same policy and branch configuration as an agent run but never publish a Tell
+conversation head.
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+require_once dirname(__DIR__).'/Support.php';
+
+use Cognesy\Tell\Capability\AskUser\TellAnswerQueue;
+use Cognesy\Tell\Tell;
+use Cognesy\Tell\TellRequest;
+use Cognesy\Tell\Tool\TellToolRequest;
+
+$project = TellHarnessExample::project();
+file_put_contents($project.'/evidence.txt', "release evidence\n");
+
+try {
+    $tell = Tell::open($project);
+    $catalogue = $tell->catalogue()->connections();
+    $direct = $tell->tools()->dispatch(
+        TellToolRequest::invoke('read_file', ['path' => 'evidence.txt']),
+    );
+
+    echo 'Known connections: '.count($catalogue['connections'])."\n";
+    echo 'Direct tool output: '.$direct->data['text'];
+    assert($direct->success, 'Expected the direct read_file tool call to succeed.');
+    assert($direct->execution()['inference'] === false);
+
+    // Construct a non-interactive run only when an enabled agent may ask for
+    // a decision. Answers are consumed once and are redacted from event output.
+    $request = TellRequest::prompt('Continue only after confirming release intent.')
+        ->withAnswers(new TellAnswerQueue([
+            ['id' => 'release', 'value' => 'approve', 'source' => 'cli'],
+        ]));
+
+    // A durable agent run may delegate one enabled child agent. Tell persists
+    // that child on an inspectable `agent-*` branch; use branches()->list()
+    // after the run to inspect the durable child result.
+} finally {
+    TellHarnessExample::remove($project);
+}
+```
+
+## Key Points
+
+- `catalogue()` is read-only local preset metadata; it does not load API keys
+  or make network calls. `models('connection-or-provider')` narrows it.
+- `tools()->dispatch()` performs exactly one enabled tool call. Its result
+  explicitly reports `direct`, `inference: false`, and `durable: false`.
+- For a non-interactive agent run, supply `TellAnswerQueue` up front. Durable
+  delegation is opt-in through an enabled agent's `spawn_subagent` tool and
+  gives each child an inspectable Tell-owned `agent-*` branch.
