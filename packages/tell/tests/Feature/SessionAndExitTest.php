@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__).'/Pest.php';
 
+use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Agents\Session\Data\SessionId;
@@ -80,7 +81,7 @@ it('returns stable success, failure, and stopped exit codes', function (FakeAgen
 ]);
 
 it('references no agents classes annotated internal', function (): void {
-    $agentsRoot = dirname(__DIR__, 2).'/vendor/cognesy/agents/src';
+    $agentsRoot = dirname((new ReflectionClass(AgentLoop::class))->getFileName());
     $tellRoot = dirname(__DIR__, 2).'/src';
     $internal = [];
     $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($agentsRoot));

@@ -4,17 +4,17 @@ This document defines the supported external behavior of
 `cognesy/instructor-tell`. It is an acceptance inventory, not an inventory of
 every public PHP symbol in `src/`.
 
-The baseline was taken on 2026-08-26. The `v2.8.3` tag and repository `HEAD`
-both resolve to commit `d85dece468e3570bf6af58ecbb1bf5280895d356` for Tell.
-There is therefore no committed-but-unreleased Tell API at this baseline.
+The `v2.8.3` baseline resolves to commit
+`d85dece468e3570bf6af58ecbb1bf5280895d356` for Tell. This v2.8.4 release
+promotes the additions recorded below into the supported 2.x contract.
 
 ## Surface classification
 
 <!-- markdownlint-disable MD013 -->
 | Classification | Compatibility obligation |
 | --- | --- |
-| Published | Shipped by Packagist as `cognesy/instructor-tell` v2.8.3. Preserve within the 2.x line unless a documented deprecation says otherwise. |
-| Committed unreleased | None at this baseline. Additions in this class must be named here before release. |
+| Published | Shipped by Packagist as `cognesy/instructor-tell` v2.8.4. Preserve within the 2.x line unless a documented deprecation says otherwise. |
+| Committed unreleased | None at the v2.8.4 release cut. Additions in this class must be named here before release. |
 | Worktree experiment | Intentional, tested work that is not committed or released. It may change while the current redesign is in progress. It becomes supported only when moved to the published or committed-unreleased class. |
 <!-- markdownlint-enable MD013 -->
 
@@ -56,12 +56,12 @@ normalized compatibility contract. Tests: `tests/Feature/RenderingTest.php`,
 `tests/Integration/ExecutionTraceTest.php`, and
 `tests/Integration/ToolCommandTest.php`.
 
-## Current worktree experiments
+## v2.8.4 published additions
 
-These additions are accepted inputs to the redesign but are not yet released:
+These additions are supported in v2.8.4 alongside the existing facade:
 
 <!-- markdownlint-disable MD013 -->
-| Experimental surface | Evidence |
+| Published surface | Evidence |
 | --- | --- |
 | Branch/ref/config SDK: `TellBranches`, `TellBranch`, `TellRef`, `TellBranchConfiguration`, and returned branch values | `tests/Integration/SdkBranchControlTest.php`, `tests/Integration/SdkBranchRefTest.php`, `tests/Integration/SdkBranchConfigurationTest.php` |
 | Catalogue and direct-tool SDK: `Tell::catalogue()`, `Tell::tools()`, `TellCatalogue`, `TellTools`, `TellToolRequest`, and `TellToolResult` | `tests/Integration/SdkAgentCapabilitiesTest.php` |
@@ -71,7 +71,7 @@ These additions are accepted inputs to the redesign but are not yet released:
 | One-run external controller boundary: `agent --rpc`, `tell.agent.request.v1`, and `tell.agent.frame.v1` | `tests/Integration/AgentProtocolTest.php` |
 <!-- markdownlint-enable MD013 -->
 
-The experimental classes widen existing released CLI behavior; they do not
+These additions widen existing CLI behavior; they do not
 make workspace store classes, command constructors, or runtime factories part
 of the supported facade.
 
@@ -79,8 +79,8 @@ of the supported facade.
 
 The published v2.8.3 application has 19 Symfony command classes: 18 under
 `src/Command/` plus `TellCommand`. They register 20 routes because
-`WorkspaceInspectionCommand` supplies both `history` and `transcript`. The
-worktree adds `AgentCommand`, producing 20 classes and 21 routes.
+`WorkspaceInspectionCommand` supplies both `history` and `transcript`.
+v2.8.4 adds `AgentCommand`, producing 20 classes and 21 routes.
 
 All named routes retain the custom routing rules characterized by
 `tests/Feature/CommandSurfaceTest.php`: an implicit prompt routes to `tell`, a
@@ -92,7 +92,7 @@ instances, rather than a separately maintained catalogue.
 | Route | Class | Status | Behavior tests |
 | --- | --- | --- | --- |
 | `tell` | `TellCommand` | Published | `tests/Feature/CommandSurfaceTest.php`, `tests/Feature/SessionAndExitTest.php`, `tests/Integration/WorkspaceTurnTest.php` |
-| `agent` | `Command\AgentCommand` | Worktree experiment | `tests/Integration/AgentProtocolTest.php` |
+| `agent` | `Command\AgentCommand` | Published | `tests/Integration/AgentProtocolTest.php` |
 | `agents` | `Command\AgentsCommand` | Published | `tests/Feature/CommandSurfaceTest.php` |
 | `auth` | `Command\AuthCommand` | Published | `tests/Integration/CredentialManagementTest.php` |
 | `branch` | `Command\BranchCommand` | Published | `tests/Integration/BranchCommandTest.php` |
@@ -124,9 +124,9 @@ instances, rather than a separately maintained catalogue.
 | Legacy sessions | Existing Tell session JSON is a read-only import source; canonical arena history becomes authoritative after a successful first-use migration | `tests/Feature/SessionAndExitTest.php`, `tests/Integration/WorkspaceSessionCompatibilityTest.php` |
 | Normalized events | Monotonic payload-safe NDJSON using `tell.event.v1`; one normalized terminal outcome; raw typed source objects are not wire data | `tests/Feature/RenderingTest.php`, `tests/Integration/ExecutionTraceTest.php`, `tests/Integration/ToolCommandTest.php` |
 | Execution traces | Private JSONL derived from normalized events, payloads excluded by default, credentials always redacted, trace failure does not fail the run | `tests/Integration/ExecutionTraceTest.php`, `tests/Unit/TracePayloadTest.php` |
-| One-run protocol | Experimental request `tell.agent.request.v1` and frame `tell.agent.frame.v1`; bounded input/output, monotonic sequence, exactly one terminal frame | `tests/Integration/AgentProtocolTest.php` |
+| One-run protocol | Request `tell.agent.request.v1` and frame `tell.agent.frame.v1`; bounded input/output, monotonic sequence, exactly one terminal frame | `tests/Integration/AgentProtocolTest.php` |
 | Rendering | TOON default plus explicit text, JSON, and event modes; structured usage errors remain on stdout | `tests/Feature/RenderingTest.php`, `tests/Feature/CommandSurfaceTest.php` |
-| Process exits | `0` completed, `1` failed/stopped runtime, `2` invalid usage; experimental protocol cancellation is `130` | `tests/Feature/SessionAndExitTest.php`, `tests/Feature/CommandSurfaceTest.php`, `tests/Integration/AgentProtocolTest.php` |
+| Process exits | `0` completed, `1` failed/stopped runtime, `2` invalid usage; protocol cancellation is `130` | `tests/Feature/SessionAndExitTest.php`, `tests/Feature/CommandSurfaceTest.php`, `tests/Integration/AgentProtocolTest.php` |
 <!-- markdownlint-enable MD013 -->
 
 Changing a schema identifier, persisted meaning, redaction guarantee, route,

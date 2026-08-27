@@ -7,6 +7,7 @@ namespace Cognesy\Tell\Runtime;
 use Closure;
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Capability\AgentCapabilityRegistry;
+use Cognesy\Agents\Capability\Bash\BashPolicy;
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
 use Cognesy\Agents\Capability\Cancellation\CooperativeCancellationHook;
 use Cognesy\Agents\Capability\Definitions\UseAgentDefinitions;
@@ -18,9 +19,10 @@ use Cognesy\Agents\Capability\Subagent\UseSubagents;
 use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Data\ExecutionBudget;
 use Cognesy\Agents\Discovery\CapabilityDiscovery;
-use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Agents\Drivers\CanUseTools;
+use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Agents\Hook\Collections\HookTriggers;
+use Cognesy\Agents\Hook\Enums\HookTrigger;
 use Cognesy\Agents\Hook\HookStack;
 use Cognesy\Agents\Session\SessionRepository;
 use Cognesy\Agents\Session\SessionRuntime;
@@ -36,14 +38,14 @@ use Cognesy\Config\Secrets\DotenvFileSecretSource;
 use Cognesy\Config\Secrets\EnvironmentSecretSource;
 use Cognesy\Config\Secrets\SecretResolver;
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
-use Cognesy\Tell\Observability\ExecutionTraceWriter;
-use Cognesy\Tell\Capability\Coding\TellCodingTools;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Tell\Capability\AskUser\TellAskUserCapability;
+use Cognesy\Tell\Capability\Coding\TellCodingTools;
+use Cognesy\Tell\Contracts\CanResolveTellModel;
 use Cognesy\Tell\Diagnostics\StartupScanCounter;
 use Cognesy\Tell\Diagnostics\TellDiagnostics;
-use Cognesy\Tell\Contracts\CanResolveTellModel;
+use Cognesy\Tell\Observability\ExecutionTraceWriter;
 use Cognesy\Tell\TellRequest;
 use Cognesy\Tell\Workspace\WorkspaceManager;
 use RuntimeException;
@@ -132,8 +134,7 @@ final readonly class TellAgentFactory
         ?CanProvideCancellationSignal $cancellation = null,
         ?TellDelegationScope $delegation = null,
         ?TellDiagnostics $diagnostics = null,
-    ): AgentLoop
-    {
+    ): AgentLoop {
         // A supplied definition has already been resolved for this immutable
         // request. Re-resolving here made credentials/model selection depend on
         // timing and performed duplicate filesystem/environment reads.
@@ -153,7 +154,7 @@ final readonly class TellAgentFactory
         $policy = $options->policy ?? TellExecutionPolicy::defaults();
         $capabilities->register('tell.coding', new TellCodingTools(
             $options->directory,
-            new \Cognesy\Agents\Capability\Bash\BashPolicy(
+            new BashPolicy(
                 maxOutputChars: $policy->maxToolOutputChars,
                 timeout: max(1, (int) ceil($policy->timeoutMs / 1_000)),
                 stdoutLimitBytes: $policy->maxToolOutputChars,
@@ -178,8 +179,11 @@ final readonly class TellAgentFactory
         $loop = (new DefinitionLoopFactory(
             capabilities: $capabilities,
             tools: $tools,
-            initialDriver: $this->driver,
         ))->instantiateAgentLoop($definition);
+        $loop = match ($this->driver) {
+            null => $loop,
+            default => $loop->withDriver($this->driver),
+        };
         $loop = $this->filterTools($loop, $options->tools);
         $loop = $this->withExecutionPolicy($loop, $policy);
         $loop = $this->withCooperativeCancellation($loop, $cancellation);
@@ -246,6 +250,7 @@ final readonly class TellAgentFactory
     {
         if ($this->driver !== null) {
             $this->assertReasoningSupportedWithoutCredentials($options);
+
             return;
         }
         if ($options->dsn !== '') {
@@ -378,11 +383,11 @@ final readonly class TellAgentFactory
         return $loop->withInterceptor($interceptor->with(
             hook: new TellExecutionBudgetHook($policy, $this->clock),
             triggerTypes: HookTriggers::of(
-                \Cognesy\Agents\Hook\Enums\HookTrigger::BeforeExecution,
-                \Cognesy\Agents\Hook\Enums\HookTrigger::BeforeStep,
-                \Cognesy\Agents\Hook\Enums\HookTrigger::BeforeToolUse,
-                \Cognesy\Agents\Hook\Enums\HookTrigger::AfterToolUse,
-                \Cognesy\Agents\Hook\Enums\HookTrigger::AfterStep,
+                HookTrigger::BeforeExecution,
+                HookTrigger::BeforeStep,
+                HookTrigger::BeforeToolUse,
+                HookTrigger::AfterToolUse,
+                HookTrigger::AfterStep,
             ),
             priority: 300,
             name: 'tell:execution_budget',
@@ -404,8 +409,8 @@ final readonly class TellAgentFactory
         return $loop->withInterceptor($interceptor->with(
             hook: new CooperativeCancellationHook($cancellation),
             triggerTypes: HookTriggers::of(
-                \Cognesy\Agents\Hook\Enums\HookTrigger::BeforeExecution,
-                \Cognesy\Agents\Hook\Enums\HookTrigger::BeforeStep,
+                HookTrigger::BeforeExecution,
+                HookTrigger::BeforeStep,
             ),
             priority: 250,
             name: 'tell:cooperative_cancellation',
