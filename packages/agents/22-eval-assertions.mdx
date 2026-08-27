@@ -13,7 +13,7 @@ $t->maxToolCalls(3)->soft();                 // a failure here scores the case, 
 $t->expect($t->run()->reply())
     ->similarity('Verification required for order A1049')
     ->atLeast(0.9);                          // pass once the score reaches 0.9, not just at 1.0
-// @doctest id="180f"
+// @doctest id="933c"
 ```
 
 `AssertionHandle` supports `.gate()`, `.soft()`, `.atLeast(float $threshold)`, and `.label(string $label)`, each mutating the just-recorded result in place. Every assertion documented on this page defaults to `Gate` severity; call `.soft()` to turn a failure into a lower score instead of a case failure. (One exception defaults to `Soft` on its own: `ValueExpectation::similarity()`, described below. Judge assertions from `$t->judge()->...`, described on the eval judges page, default to `Soft` only when a judge is actually configured -- with none configured they default to `Gate`, and a judge that throws is always recorded as a `Gate` failure regardless of any prior `.gate()`/`.soft()` call. Call `.gate()` explicitly if a configured judge's failure must fail the case.)
@@ -40,7 +40,7 @@ $t->stopped();                                // run()->status() === ExecutionSt
 $t->messageIncludes('Verification');          // str_contains(run()->reply(), text)
 $t->outputEquals('Verified.');                // EvalMatcher::matches(expected, run()->reply())
 $t->outputMatches('/order\s+#\d+/');          // EvalMatch::regex(pattern)->matches(run()->reply())
-// @doctest id="7cef"
+// @doctest id="2e32"
 ```
 
 `outputEquals()` accepts a literal value (strict `===`), an `EvalMatch` (see below), or a partial array structure -- but since `reply()` is always a string, only the literal-string and `EvalMatch` forms are meaningful here; partial-array matching is for tool arguments and results, covered next.
@@ -56,7 +56,7 @@ $t->toolOrder('refunds_lookup', 'policy_check');
 $t->usedNoTools();
 $t->maxToolCalls(3);
 $t->noFailedActions();
-// @doctest id="50a5"
+// @doctest id="f3eb"
 ```
 
 - **`calledTool(string $name, mixed $arguments = null, mixed $result = null, ?bool $isError = null, int|EvalCount|null $count = null)`** counts executions of `$name` whose arguments, result, and error state (when given) match, then compares that count against `$count`: an exact `int`, an `EvalCount` (below), or -- when omitted -- "at least one." Arguments and results are compared with `EvalMatcher::matches()`, so you can pass a literal value, a partial array (only the given keys need to match; extra keys in the actual value are ignored), or an `EvalMatch`. The assertion name is `calledTool:{name}` and the message is always `"matched {n} tool calls"`, present whether it passes or fails.
@@ -79,7 +79,7 @@ $t->event(AgentStepCompleted::class, predicate: fn (object $e) => $e->stepType =
 $t->notEvent(AgentExecutionFailed::class);
 $t->eventOrder(AgentExecutionStarted::class, AgentExecutionCompleted::class);
 $t->eventsSatisfy(fn (EvalEvents $events) => $events->count() < 20);
-// @doctest id="66da"
+// @doctest id="6c9c"
 ```
 
 - **`calledSubagent(string $name, int|EvalCount|null $count = null)`** counts `SubagentCompleted` events whose `subagentName` matches, using the same `int`/`EvalCount`/"at least one" rule as `calledTool()`. Assertion name `calledSubagent:{name}`; no message.
@@ -96,7 +96,7 @@ These read `run()->stepCount()` and `run()->usage()->total()`, both accumulated 
 $t->stepCount(2);          // "expected 2 steps, got {actual}"
 $t->maxSteps(6);           // "expected at most 6 steps, got {actual}"
 $t->totalTokensAtMost(4_000); // "used {actual} tokens, limit 4000"
-// @doctest id="654a"
+// @doctest id="e80e"
 ```
 
 - **`stepCount(int $expected)`** passes only on an exact match.
@@ -112,7 +112,7 @@ $t->expect($t->run()->reply())
     ->includes('order')                              // recorded, still Gate
     ->similarity('Verification required for order A1049')
     ->atLeast(0.9);                                   // applies to `similarity`, not `includes`
-// @doctest id="b544"
+// @doctest id="b645"
 ```
 
 - **`includes(mixed $expected)`** -- `str_contains()` when the value is a string, `in_array($expected, $value, true)` when it's an array, otherwise fails.
