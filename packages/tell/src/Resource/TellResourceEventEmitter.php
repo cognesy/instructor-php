@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Resource;
 
 use Cognesy\Tell\Contracts\CanObserveTellResources;
-use Cognesy\Tell\TellResourceEvent;
 use DateTimeImmutable;
 
 /** @internal */
@@ -28,7 +27,7 @@ final class TellResourceEventEmitter
                 kind: $kind,
                 sequence: ++$this->sequence,
                 resourceId: $resourceId,
-                occurredAt: new DateTimeImmutable(),
+                occurredAt: new DateTimeImmutable,
                 metadata: $metadata,
                 terminal: $terminal,
             ));

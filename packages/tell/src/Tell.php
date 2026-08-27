@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Cognesy\Tell;
 
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
+use Cognesy\Tell\Composition\TellHost;
+use Cognesy\Tell\Discovery\TellCatalogue;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Testing\TellTestFactory;
+use Cognesy\Tell\Tool\TellTools;
 use Generator;
 
 final readonly class Tell

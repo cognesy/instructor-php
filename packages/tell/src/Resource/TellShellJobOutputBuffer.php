@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Resource;
 
-use Cognesy\Tell\TellShellJobOutput;
-use Cognesy\Tell\TellShellJobOutputChunk;
+use Cognesy\Tell\Shell\TellShellJobOutput;
+use Cognesy\Tell\Shell\TellShellJobOutputChunk;
 
 /** @internal */
 final class TellShellJobOutputBuffer
@@ -14,10 +14,15 @@ final class TellShellJobOutputBuffer
     private array $records = [];
 
     private int $cursor = 0;
+
     private int $evictedThrough = 0;
+
     private int $retainedBytes = 0;
+
     private int $stdoutBytes = 0;
+
     private int $stderrBytes = 0;
+
     private bool $truncated = false;
 
     public function __construct(private readonly int $maxRetainedBytes) {}
@@ -105,6 +110,7 @@ final class TellShellJobOutputBuffer
                 $this->retainedBytes -= $bytes;
                 $this->evictedThrough = $first['end'];
                 $this->truncated = true;
+
                 continue;
             }
 

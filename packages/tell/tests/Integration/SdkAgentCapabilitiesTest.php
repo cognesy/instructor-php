@@ -10,9 +10,9 @@ use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Tell\Capability\AskUser\TellAnswerQueue;
 use Cognesy\Tell\Tell;
 use Cognesy\Tell\TellRequest;
-use Cognesy\Tell\TellToolRequest;
 use Cognesy\Tell\Tests\Support\RecordingDriver;
 use Cognesy\Tell\Tests\Support\RequestRecorder;
+use Cognesy\Tell\Tool\TellToolRequest;
 
 it('discovers connection metadata and invokes one direct public SDK tool without inference', function (): void {
     $recorder = new RequestRecorder;

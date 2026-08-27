@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Cognesy\Tell;
+namespace Cognesy\Tell\Composition;
 
 use Cognesy\Tell\Composition\TellHostBootstrap;
 use Cognesy\Tell\Composition\TellHostProfile;

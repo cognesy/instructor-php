@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Cognesy\Tell;
+namespace Cognesy\Tell\Tool;
 
 /** Stable bounded result of one direct Tell tool invocation. */
 final readonly class TellToolResult

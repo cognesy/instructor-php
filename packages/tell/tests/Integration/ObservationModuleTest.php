@@ -6,10 +6,12 @@ require_once dirname(__DIR__).'/Pest.php';
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Tell\Composition\StandardTellProfile;
+use Cognesy\Tell\Composition\TellHostBuilder;
 use Cognesy\Tell\Composition\TellModuleDefinition;
 use Cognesy\Tell\Contracts\CanObserveTellExecution;
 use Cognesy\Tell\Contracts\Data\TellEventEnvelope;
-use Cognesy\Tell\TellHostBuilder;
+use Cognesy\Tell\Observability\PsrTellObserver;
+use Cognesy\Tell\TellExecutionMode;
 use Cognesy\Tell\TellRequest;
 use Psr\Log\AbstractLogger;
 
@@ -58,7 +60,7 @@ it('adapts normalized envelopes to PSR logging without exposing a source event',
             $this->records->append(compact('level', 'message', 'context'));
         }
     };
-    $observer = new Cognesy\Tell\Observability\PsrTellObserver($logger);
+    $observer = new PsrTellObserver($logger);
     $observer->observe(new TellEventEnvelope(
         schema: 'tell.event.v1',
         kind: 'execution.completed',
@@ -69,7 +71,7 @@ it('adapts normalized envelopes to PSR logging without exposing a source event',
         occurredAt: new DateTimeImmutable('2026-08-26T12:00:00+00:00'),
         metadata: ['durationMs' => 7],
         terminal: 'completed',
-        mode: Cognesy\Tell\TellExecutionMode::Stateless,
+        mode: TellExecutionMode::Stateless,
         agent: 'default',
     ));
 

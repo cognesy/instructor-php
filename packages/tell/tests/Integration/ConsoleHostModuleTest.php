@@ -5,13 +5,13 @@ declare(strict_types=1);
 require_once dirname(__DIR__).'/Pest.php';
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
+use Cognesy\Tell\Composition\TellHost;
 use Cognesy\Tell\Composition\TellHostGraphException;
 use Cognesy\Tell\Composition\TellModuleDefinition;
 use Cognesy\Tell\Contracts\CanContributeTellCommands;
 use Cognesy\Tell\Contracts\Collections\TellCommandDescriptors;
 use Cognesy\Tell\Contracts\Data\TellCommandDescriptor;
 use Cognesy\Tell\TellApplication;
-use Cognesy\Tell\TellHost;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 it('assembles the complete compatible CLI surface from the standard host', function (): void {

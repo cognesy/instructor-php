@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Contracts;
 
-use Cognesy\Tell\TellResourceEvent;
+use Cognesy\Tell\Resource\TellResourceEvent;
 
 interface CanObserveTellResources
 {

@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Cognesy\Tell;
+namespace Cognesy\Tell\Branch;
 
+use Cognesy\Tell\TellRequest;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Runtime\TellExecutionPolicy;
 use Cognesy\Tell\Runtime\TellPolicyDefaults;

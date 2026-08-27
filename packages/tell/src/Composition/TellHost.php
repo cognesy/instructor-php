@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Cognesy\Tell;
+namespace Cognesy\Tell\Composition;
 
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
 use Cognesy\Tell\Composition\TellHostDescription;

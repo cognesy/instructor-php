@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Cognesy\Tell;
+namespace Cognesy\Tell\Resource;
 
 final readonly class TellResourceHealth
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Cognesy\Tell;
+namespace Cognesy\Tell\Resource;
 
 use Closure;
 use Cognesy\Tell\Contracts\CanApproveTellShellJobs;
@@ -11,6 +11,7 @@ use Cognesy\Tell\Contracts\CanObserveTellResources;
 use Cognesy\Tell\Resource\Exception\TellResourceHostDisposedException;
 use Cognesy\Tell\Resource\NullTellResourceObserver;
 use Cognesy\Tell\Resource\TellShellJobApprovals;
+use Cognesy\Tell\Shell\TellShellJobPolicy;
 use CordisPhp\Runtime\Fiber;
 use CordisPhp\Runtime\Runtime;
 

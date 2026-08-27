@@ -7,9 +7,9 @@ require_once dirname(__DIR__).'/Pest.php';
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Tell\Composition\StandardTellProfile;
+use Cognesy\Tell\Composition\TellHostBuilder;
 use Cognesy\Tell\Contracts\CanResolveTellModel;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\TellHostBuilder;
 use Cognesy\Tell\TellRequest;
 
 it('runs the standard modular host with a replaced driver factory', function (): void {
@@ -57,6 +57,7 @@ it('resolves a model once when an immutable definition is handed to loop constru
         public function resolve(TellRequest $request): LLMConfig
         {
             $this->calls->append($request->model);
+
             return LLMConfig::fromArray([
                 'driver' => 'openai',
                 'model' => 'gpt-4o-mini',

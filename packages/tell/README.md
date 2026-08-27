@@ -122,8 +122,8 @@ approval policy:
 
 ```php
 use Cognesy\Tell\Resource\TellShellJobApprovals;
-use Cognesy\Tell\TellResourceHost;
-use Cognesy\Tell\TellShellJobRequest;
+use Cognesy\Tell\Resource\TellResourceHost;
+use Cognesy\Tell\Shell\TellShellJobRequest;
 
 $resources = TellResourceHost::shellJobs(
     project: __DIR__,

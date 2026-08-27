@@ -40,14 +40,13 @@ it('keeps capability contracts independent of hosts frameworks and implementatio
 it('keeps the static composition host free of dynamic kernels and shell frameworks', function (): void {
     $paths = [
         dirname(__DIR__, 2).'/src/Composition',
-        dirname(__DIR__, 2).'/src/TellHost.php',
-        dirname(__DIR__, 2).'/src/TellHostBuilder.php',
     ];
     $source = '';
     foreach ($paths as $path) {
         if (is_file($path)) {
             $contents = file_get_contents($path);
             $source .= is_string($contents) ? $contents : '';
+
             continue;
         }
         $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path));
@@ -90,7 +89,8 @@ it('publishes explicit cardinality for every graph capability', function (): voi
 });
 
 it('uses a contract directly without booting a host or shell framework', function (): void {
-    $resolver = new class implements CanResolveTellPaths {
+    $resolver = new class implements CanResolveTellPaths
+    {
         public function resolve(string $directory): TellResolvedPaths
         {
             return new TellResolvedPaths(

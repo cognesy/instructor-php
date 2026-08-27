@@ -7,14 +7,14 @@ require_once dirname(__DIR__).'/Pest.php';
 use Cognesy\Tell\Resource\Exception\TellResourceHostDisposedException;
 use Cognesy\Tell\Resource\Exception\TellShellJobDeniedException;
 use Cognesy\Tell\Resource\Exception\TellShellJobStartException;
+use Cognesy\Tell\Resource\TellResourceEvent;
+use Cognesy\Tell\Resource\TellResourceHost;
 use Cognesy\Tell\Resource\TellResourceObservers;
 use Cognesy\Tell\Resource\TellShellJobApprovals;
-use Cognesy\Tell\TellResourceEvent;
-use Cognesy\Tell\TellResourceHost;
-use Cognesy\Tell\TellShellJobApproval;
-use Cognesy\Tell\TellShellJobPolicy;
-use Cognesy\Tell\TellShellJobRequest;
-use Cognesy\Tell\TellShellJobState;
+use Cognesy\Tell\Shell\TellShellJobApproval;
+use Cognesy\Tell\Shell\TellShellJobPolicy;
+use Cognesy\Tell\Shell\TellShellJobRequest;
+use Cognesy\Tell\Shell\TellShellJobState;
 use Symfony\Component\Process\Process;
 
 it('runs a shell job beyond the start call and preserves both output streams', function (): void {
@@ -26,7 +26,7 @@ it('runs a shell job beyond the start call and preserves both output streams', f
 
     try {
         $started = $host->jobs()->start(TellShellJobRequest::command(
-            "printf first; sleep 0.05; printf second; printf problem >&2",
+            'printf first; sleep 0.05; printf second; printf problem >&2',
         ));
         $finished = $host->jobs()->wait($started->id, 3_000);
         $output = $host->jobs()->read($started->id);
@@ -55,7 +55,7 @@ it('denies by default before allocating a visible job identity', function (): vo
 
 it('validates containment and resource bounds before asking for approval', function (): void {
     $project = tellTestProject();
-    $approvals = new ArrayObject();
+    $approvals = new ArrayObject;
     $approval = TellShellJobApprovals::callback(
         static function () use ($approvals): TellShellJobApproval {
             $approvals->append(true);
@@ -155,7 +155,7 @@ it('keeps independent hosts and their job catalogues isolated', function (): voi
 });
 
 it('emits normalized redacted resource events without exposing commands or output', function (): void {
-    $events = new ArrayObject();
+    $events = new ArrayObject;
     $observer = TellResourceObservers::callback(
         static fn (TellResourceEvent $event) => $events->append($event->toArray()),
     );
@@ -204,7 +204,7 @@ it('contains observer failures instead of corrupting resource lifecycle', functi
 
 it('publishes no partial job when process startup fails after approval', function (): void {
     $project = tellTestProject();
-    $events = new ArrayObject();
+    $events = new ArrayObject;
     $host = TellResourceHost::shellJobs(
         $project,
         approval: TellShellJobApprovals::callback(
@@ -233,7 +233,7 @@ it('publishes no partial job when process startup fails after approval', functio
 it('abandons a running process before disposing its owner module', function (): void {
     $project = tellTestProject();
     $marker = $project.'/leaked.txt';
-    $events = new ArrayObject();
+    $events = new ArrayObject;
     $host = TellResourceHost::shellJobs(
         $project,
         policy: new TellShellJobPolicy(cancellationGraceMs: 25),
@@ -291,7 +291,7 @@ it('boots a fresh isolated runtime each time a reusable builder is booted', func
 
 it('cancels multiple running jobs in reverse ownership order on shutdown', function (): void {
     $project = tellTestProject();
-    $events = new ArrayObject();
+    $events = new ArrayObject;
     $host = TellResourceHost::shellJobs(
         $project,
         policy: new TellShellJobPolicy(cancellationGraceMs: 25),

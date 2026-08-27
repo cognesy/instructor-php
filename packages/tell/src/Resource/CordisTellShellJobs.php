@@ -10,10 +10,10 @@ use Cognesy\Tell\Resource\Exception\TellResourceHostDisposedException;
 use Cognesy\Tell\Resource\Exception\TellShellJobDeniedException;
 use Cognesy\Tell\Resource\Exception\TellShellJobNotFoundException;
 use Cognesy\Tell\Resource\Exception\TellShellJobStartException;
-use Cognesy\Tell\TellShellJobOutput;
-use Cognesy\Tell\TellShellJobPolicy;
-use Cognesy\Tell\TellShellJobRequest;
-use Cognesy\Tell\TellShellJobSnapshot;
+use Cognesy\Tell\Shell\TellShellJobOutput;
+use Cognesy\Tell\Shell\TellShellJobPolicy;
+use Cognesy\Tell\Shell\TellShellJobRequest;
+use Cognesy\Tell\Shell\TellShellJobSnapshot;
 use CordisPhp\Plugin\PluginDefinition;
 use CordisPhp\Runtime\Context;
 use CordisPhp\Runtime\FiberState;
@@ -77,7 +77,7 @@ final class CordisTellShellJobs implements CanManageTellShellJobs
 
                 return null;
             }),
-            label: 'shell.job.' . $id,
+            label: 'shell.job.'.$id,
         );
 
         if (! $process instanceof TellShellJobProcess || $fiber->state() !== FiberState::Active) {
@@ -206,13 +206,13 @@ final class CordisTellShellJobs implements CanManageTellShellJobs
             ? $this->projectDirectory
             : ($this->isAbsolutePath($requestedDirectory)
                 ? $requestedDirectory
-                : $this->projectDirectory . DIRECTORY_SEPARATOR . $requestedDirectory);
+                : $this->projectDirectory.DIRECTORY_SEPARATOR.$requestedDirectory);
         $workingDirectory = realpath($candidate);
         if ($workingDirectory === false || ! is_dir($workingDirectory)) {
             throw new InvalidArgumentException('The requested shell job working directory does not exist.');
         }
         if ($workingDirectory !== $this->projectDirectory
-            && ! str_starts_with($workingDirectory, $this->projectDirectory . DIRECTORY_SEPARATOR)) {
+            && ! str_starts_with($workingDirectory, $this->projectDirectory.DIRECTORY_SEPARATOR)) {
             throw new InvalidArgumentException('A shell job working directory must remain inside the project.');
         }
 
@@ -235,7 +235,7 @@ final class CordisTellShellJobs implements CanManageTellShellJobs
 
         $record->terminalObserved = true;
         $this->events->emit(
-            'shell.job.' . $snapshot->state->value,
+            'shell.job.'.$snapshot->state->value,
             $jobId,
             [
                 'exitCode' => $snapshot->exitCode,
@@ -258,7 +258,7 @@ final class CordisTellShellJobs implements CanManageTellShellJobs
     private function assertActive(): void
     {
         if ($this->disposed) {
-            throw new TellResourceHostDisposedException();
+            throw new TellResourceHostDisposedException;
         }
     }
 

@@ -27,7 +27,7 @@ use Cognesy\Tell\Composition\TellModuleDefinition;
 use Cognesy\Tell\Contracts\CanObserveTellExecution;
 use Cognesy\Tell\Contracts\Data\TellEventEnvelope;
 use Cognesy\Tell\Runtime\TellPaths;
-use Cognesy\Tell\TellHost;
+use Cognesy\Tell\Composition\TellHost;
 use Cognesy\Tell\TellRequest;
 
 $project = TellHarnessExample::project();

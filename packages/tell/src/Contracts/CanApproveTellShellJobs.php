@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Contracts;
 
-use Cognesy\Tell\TellShellJobApproval;
-use Cognesy\Tell\TellShellJobRequest;
+use Cognesy\Tell\Shell\TellShellJobApproval;
+use Cognesy\Tell\Shell\TellShellJobRequest;
 
 interface CanApproveTellShellJobs
 {

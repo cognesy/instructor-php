@@ -4,35 +4,34 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Workspace;
 
+use Cognesy\Tell\Branch\TellBranch;
+use Cognesy\Tell\Branch\TellBranchConfig;
+use Cognesy\Tell\Branch\TellBranches;
+use Cognesy\Tell\Branch\TellRef;
 use Cognesy\Tell\Contracts\CanAccessTellConversations;
 use Cognesy\Tell\Contracts\CanManageTellWorkspace;
 use Cognesy\Tell\Contracts\CanReadTellBranchConfiguration;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Tell;
-use Cognesy\Tell\TellBranch;
-use Cognesy\Tell\TellBranchConfig;
-use Cognesy\Tell\TellBranches;
 use Cognesy\Tell\TellConversation;
-use Cognesy\Tell\TellRef;
 use Cognesy\Tell\TellWorkspaceInfo;
 
 /** Cohesive owner of the existing canonical filesystem workspace semantics. */
-final readonly class FilesystemTellWorkspaceModule implements
-    CanManageTellWorkspace,
-    CanAccessTellConversations,
-    CanReadTellBranchConfiguration
+final readonly class FilesystemTellWorkspaceModule implements CanAccessTellConversations, CanManageTellWorkspace, CanReadTellBranchConfiguration
 {
     public function __construct(private TellAgentFactory $agents) {}
 
     public function initialize(string $directory): TellWorkspaceInfo
     {
         $result = $this->agents->workspace()->initialize($directory);
+
         return new TellWorkspaceInfo($result->workspace->paths->root, $result->workspace->schema, $result->created);
     }
 
     public function discover(string $directory): ?TellWorkspaceInfo
     {
         $workspace = $this->agents->workspace()->discover($directory);
+
         return $workspace === null ? null : new TellWorkspaceInfo($workspace->paths->root, $workspace->schema, false);
     }
 
@@ -41,6 +40,7 @@ final readonly class FilesystemTellWorkspaceModule implements
         $workspace = $this->agents->workspace()->discover($directory)
             ?? throw new WorkspaceException('Tell workspace is not initialized.');
         $workspace = $this->agents->workspace()->validate($workspace);
+
         return new TellWorkspaceInfo($workspace->paths->root, $workspace->schema, false);
     }
 
@@ -77,6 +77,7 @@ final readonly class FilesystemTellWorkspaceModule implements
         }
         $selected = (new BranchResolver(new ArenaStore($workspace)))->resolve($branch)->branch;
         $config = (new BranchConfigStore($workspace))->read($selected);
+
         return new TellBranchConfig($selected, $config['version'], $config['values']);
     }
 

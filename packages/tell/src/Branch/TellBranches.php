@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Cognesy\Tell;
+namespace Cognesy\Tell\Branch;
 
 use Cognesy\Tell\Canonical\CanonicalConversationRoot;
 use Cognesy\Tell\Canonical\CanonicalHash;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Cognesy\Tell;
+namespace Cognesy\Tell\Branch;
 
 /** Safe, versioned branch-local Tell runtime intent. */
 final readonly class TellBranchConfig

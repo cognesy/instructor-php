@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Resource;
 
-use Cognesy\Tell\TellShellJobOutput;
-use Cognesy\Tell\TellShellJobRequest;
-use Cognesy\Tell\TellShellJobSnapshot;
-use Cognesy\Tell\TellShellJobState;
+use Cognesy\Tell\Shell\TellShellJobOutput;
+use Cognesy\Tell\Shell\TellShellJobRequest;
+use Cognesy\Tell\Shell\TellShellJobSnapshot;
+use Cognesy\Tell\Shell\TellShellJobState;
 use DateTimeImmutable;
 use RuntimeException;
 use Symfony\Component\Process\Process;
@@ -50,7 +50,7 @@ final class TellShellJobProcess
         int $maxReadBytes,
         int $cancellationGraceMs,
     ): self {
-        $worker = dirname(__DIR__, 2) . '/resources/shell-job-worker.php';
+        $worker = dirname(__DIR__, 2).'/resources/shell-job-worker.php';
         if (! is_file($worker)) {
             throw new RuntimeException('The Tell shell job worker is unavailable.');
         }
@@ -70,7 +70,7 @@ final class TellShellJobProcess
             cancellationGraceMs: $cancellationGraceMs,
             maxReadBytes: $maxReadBytes,
             process: $process,
-            startedAt: new DateTimeImmutable(),
+            startedAt: new DateTimeImmutable,
             startedAtMonotonic: hrtime(true) / 1_000_000,
             maxRetainedOutputBytes: $maxRetainedOutputBytes,
             ownsProcessGroup: DIRECTORY_SEPARATOR === '/'
@@ -181,7 +181,7 @@ final class TellShellJobProcess
         $this->drainOutput();
         $this->exitCode = $this->process->getExitCode();
         $this->state = $terminal;
-        $this->finishedAt = new DateTimeImmutable();
+        $this->finishedAt = new DateTimeImmutable;
     }
 
     private function settleFromExitCode(): void
@@ -190,7 +190,7 @@ final class TellShellJobProcess
         $this->state = $this->exitCode === 0
             ? TellShellJobState::Exited
             : TellShellJobState::Failed;
-        $this->finishedAt = new DateTimeImmutable();
+        $this->finishedAt = new DateTimeImmutable;
     }
 
     private function drainOutput(): void

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Cognesy\Tell;
+namespace Cognesy\Tell\Branch;
 
 /** The branch selected for subsequent workspace-backed Tell requests. */
 final readonly class TellBranchSelection

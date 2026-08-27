@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Contracts;
 
-use Cognesy\Tell\TellBranch;
-use Cognesy\Tell\TellBranches;
+use Cognesy\Tell\Branch\TellBranch;
+use Cognesy\Tell\Branch\TellBranches;
+use Cognesy\Tell\Branch\TellRef;
 use Cognesy\Tell\TellConversation;
-use Cognesy\Tell\TellRef;
 
 /** Opens purpose-built canonical conversation facades without exposing stores. */
 interface CanAccessTellConversations

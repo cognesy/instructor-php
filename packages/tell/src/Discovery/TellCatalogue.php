@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Cognesy\Tell;
+namespace Cognesy\Tell\Discovery;
 
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Runtime\TellProviderCatalogue;

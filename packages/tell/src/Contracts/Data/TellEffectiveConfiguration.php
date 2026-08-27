@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Contracts\Data;
 
-use Cognesy\Tell\TellBranchConfig;
+use Cognesy\Tell\Branch\TellBranchConfig;
 use Cognesy\Tell\TellRequest;
 
 /** Immutable effective request intent and its non-secret provenance. */

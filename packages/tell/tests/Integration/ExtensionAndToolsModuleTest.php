@@ -6,9 +6,9 @@ require_once dirname(__DIR__).'/Pest.php';
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Tell\Composition\StandardTellProfile;
+use Cognesy\Tell\Composition\TellHostBuilder;
 use Cognesy\Tell\Runtime\ComposerTellExtensionCatalogue;
-use Cognesy\Tell\TellHostBuilder;
-use Cognesy\Tell\TellToolRequest;
+use Cognesy\Tell\Tool\TellToolRequest;
 
 it('reports malformed Composer extensions descriptively without mounting host modules', function (): void {
     $project = tellTestProject();

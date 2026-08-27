@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Cognesy\Tell;
+namespace Cognesy\Tell\Branch;
 
 /** Safe public view of one immutable-history Tell branch. */
 final readonly class TellBranchInfo

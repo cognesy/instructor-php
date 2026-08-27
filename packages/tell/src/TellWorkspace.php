@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell;
 
+use Cognesy\Tell\Branch\TellBranch;
+use Cognesy\Tell\Branch\TellBranchConfiguration;
+use Cognesy\Tell\Branch\TellBranches;
+use Cognesy\Tell\Branch\TellRef;
 use Cognesy\Tell\Contracts\CanAccessTellConversations;
 use Cognesy\Tell\Contracts\CanManageTellWorkspace;
 use Cognesy\Tell\Runtime\TellAgentFactory;

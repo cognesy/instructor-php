@@ -24,10 +24,10 @@ require_once dirname(__DIR__).'/Support.php';
 
 use Cognesy\Tell\Resource\TellResourceObservers;
 use Cognesy\Tell\Resource\TellShellJobApprovals;
-use Cognesy\Tell\TellResourceEvent;
-use Cognesy\Tell\TellResourceHost;
-use Cognesy\Tell\TellShellJobPolicy;
-use Cognesy\Tell\TellShellJobRequest;
+use Cognesy\Tell\Resource\TellResourceEvent;
+use Cognesy\Tell\Resource\TellResourceHost;
+use Cognesy\Tell\Shell\TellShellJobPolicy;
+use Cognesy\Tell\Shell\TellShellJobRequest;
 
 $project = TellHarnessExample::project();
 $events = new ArrayObject;

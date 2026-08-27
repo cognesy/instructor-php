@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Cognesy\Tell;
+namespace Cognesy\Tell\Resource;
 
 use Cognesy\Tell\Contracts\CanApproveTellShellJobs;
 use Cognesy\Tell\Contracts\CanManageTellShellJobs;
 use Cognesy\Tell\Contracts\CanObserveTellResources;
 use Cognesy\Tell\Resource\CordisTellShellJobs;
 use Cognesy\Tell\Resource\TellResourceEventEmitter;
+use Cognesy\Tell\Shell\TellShellJobPolicy;
 use CordisPhp\Plugin\PluginDefinition;
 use CordisPhp\Runtime\Context;
 use CordisPhp\Runtime\FiberState;

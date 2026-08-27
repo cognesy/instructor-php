@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Composition;
 
+use Cognesy\Tell\Contracts\CanContributeTellCommands;
 use Cognesy\Tell\Contracts\TellCapabilityCardinality;
 use Cognesy\Tell\Contracts\TellCapabilityContracts;
-use Cognesy\Tell\Contracts\CanContributeTellCommands;
-use Cognesy\Tell\TellHost;
 use Throwable;
 
 /** @internal */
 final readonly class TellHostBootstrap
 {
     /**
-     * @param list<TellModuleDefinition> $modules
-     * @param list<class-string> $requiredCapabilities
+     * @param  list<TellModuleDefinition>  $modules
+     * @param  list<class-string>  $requiredCapabilities
      */
     public static function boot(string $profile, array $modules, array $requiredCapabilities): TellHost
     {
@@ -71,7 +70,7 @@ final readonly class TellHostBootstrap
      * Contribution contents become available only after factories run, so they
      * are admitted before a booted host is returned and cleaned up on failure.
      *
-     * @param array<class-string, list<object>> $providers
+     * @param  array<class-string, list<object>>  $providers
      * @return list<string>
      */
     private static function commandContributionErrors(array $providers): array
@@ -86,6 +85,7 @@ final readonly class TellHostBootstrap
                 foreach ([$descriptor->name, ...$descriptor->aliases] as $name) {
                     if (isset($owners[$name])) {
                         $errors[] = "duplicate command name {$name} in contributions {$owners[$name]} and {$index}";
+
                         continue;
                     }
                     $owners[$name] = $index;
@@ -97,8 +97,8 @@ final readonly class TellHostBootstrap
     }
 
     /**
-     * @param list<TellModuleDefinition> $modules
-     * @param list<class-string> $requiredCapabilities
+     * @param  list<TellModuleDefinition>  $modules
+     * @param  list<class-string>  $requiredCapabilities
      * @return array<class-string, list<int>>
      */
     private static function admit(array $modules, array $requiredCapabilities): array
@@ -139,6 +139,7 @@ final readonly class TellHostBootstrap
         foreach ($requiredCapabilities as $capability) {
             if (! interface_exists($capability)) {
                 $errors[] = "profile requires non-interface {$capability}";
+
                 continue;
             }
             if (! isset($providerModules[$capability])) {
@@ -154,8 +155,8 @@ final readonly class TellHostBootstrap
     }
 
     /**
-     * @param list<TellModuleDefinition> $modules
-     * @param array<class-string, list<int>> $providerModules
+     * @param  list<TellModuleDefinition>  $modules
+     * @param  array<class-string, list<int>>  $providerModules
      * @return list<int>
      */
     private static function constructionOrder(array $modules, array $providerModules): array
@@ -182,6 +183,7 @@ final readonly class TellHostBootstrap
                 $constructed[$index] = true;
                 $order[] = $index;
                 unset($pending[$offset]);
+
                 continue 2;
             }
 
@@ -195,8 +197,8 @@ final readonly class TellHostBootstrap
     }
 
     /**
-     * @param list<class-string> $capabilities
-     * @param array<class-string, list<object>> $providers
+     * @param  list<class-string>  $capabilities
+     * @param  array<class-string, list<object>>  $providers
      * @return list<object|null>
      */
     private static function dependencies(array $capabilities, array $providers, bool $optional): array

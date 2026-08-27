@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cognesy\Tell;
 
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
+use Cognesy\Tell\Composition\TellHost;
 use Cognesy\Tell\Console\CoreTellCommandContributor;
 use Cognesy\Tell\Contracts\Collections\TellCommandDescriptors;
 use Cognesy\Tell\Render\StructuredOutput;
@@ -47,6 +48,7 @@ final class TellApplication extends Application
             if ($command->getName() !== $descriptor->name) {
                 throw new InvalidArgumentException("Tell command descriptor {$descriptor->name} created {$command->getName()}.");
             }
+
             return $command;
         }, $descriptors->all());
         $this->routingDefinition = $this->routingDefinition(...$commands);

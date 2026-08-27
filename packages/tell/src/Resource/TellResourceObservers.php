@@ -6,7 +6,6 @@ namespace Cognesy\Tell\Resource;
 
 use Closure;
 use Cognesy\Tell\Contracts\CanObserveTellResources;
-use Cognesy\Tell\TellResourceEvent;
 
 final readonly class TellResourceObservers implements CanObserveTellResources
 {

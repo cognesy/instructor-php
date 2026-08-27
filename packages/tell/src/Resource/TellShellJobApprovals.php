@@ -6,8 +6,8 @@ namespace Cognesy\Tell\Resource;
 
 use Closure;
 use Cognesy\Tell\Contracts\CanApproveTellShellJobs;
-use Cognesy\Tell\TellShellJobApproval;
-use Cognesy\Tell\TellShellJobRequest;
+use Cognesy\Tell\Shell\TellShellJobApproval;
+use Cognesy\Tell\Shell\TellShellJobRequest;
 
 final readonly class TellShellJobApprovals implements CanApproveTellShellJobs
 {

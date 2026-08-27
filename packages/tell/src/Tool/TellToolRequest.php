@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Cognesy\Tell;
+namespace Cognesy\Tell\Tool;
 
 use Cognesy\Tell\Runtime\TellExecutionPolicy;
 use InvalidArgumentException;

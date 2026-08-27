@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Cognesy\Tell;
+namespace Cognesy\Tell\Tool;
 
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
 use Cognesy\Tell\Capability\AskUser\TellAnswerQueue;

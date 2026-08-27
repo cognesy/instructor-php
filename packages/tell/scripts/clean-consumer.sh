@@ -87,9 +87,9 @@ require __DIR__.'/vendor/autoload.php';
 
 use Cognesy\Tell\Tell;
 use Cognesy\Tell\Resource\TellShellJobApprovals;
-use Cognesy\Tell\TellResourceHost;
+use Cognesy\Tell\Resource\TellResourceHost;
 use Cognesy\Tell\TellRequest;
-use Cognesy\Tell\TellShellJobRequest;
+use Cognesy\Tell\Shell\TellShellJobRequest;
 
 $project = sys_get_temp_dir().'/tell-clean-consumer-'.bin2hex(random_bytes(6));
 mkdir($project, 0755, true);

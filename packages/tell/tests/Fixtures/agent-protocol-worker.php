@@ -10,10 +10,10 @@ require file_exists($monorepoAutoload) ? $monorepoAutoload : $packageAutoload;
 use Cognesy\Agents\Capability\Cancellation\InMemoryCancellationSource;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
+use Cognesy\Tell\Composition\TellHost;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Runtime\TellPaths;
 use Cognesy\Tell\TellApplication;
-use Cognesy\Tell\TellHost;
 
 $scenario = getenv('TELL_RPC_SCENARIO') ?: 'success';
 $project = getenv('TELL_RPC_PROJECT') ?: sys_get_temp_dir();

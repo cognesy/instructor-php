@@ -7,7 +7,10 @@ use Cognesy\Agents\Continuation\StopSignal;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Tell\Composition\CanDisposeTellModule;
 use Cognesy\Tell\Composition\TellCapabilityProviders;
+use Cognesy\Tell\Composition\TellHost;
 use Cognesy\Tell\Composition\TellHostBootException;
+use Cognesy\Tell\Composition\TellHostBuilder;
+use Cognesy\Tell\Composition\TellHostDisposalException;
 use Cognesy\Tell\Composition\TellHostDisposedException;
 use Cognesy\Tell\Composition\TellHostGraphException;
 use Cognesy\Tell\Composition\TellHostProfile;
@@ -19,14 +22,12 @@ use Cognesy\Tell\Contracts\Collections\TellCommandDescriptors;
 use Cognesy\Tell\Contracts\Data\TellCommandDescriptor;
 use Cognesy\Tell\Contracts\Data\TellResolvedPaths;
 use Cognesy\Tell\Runtime\CanReadTellClock;
-use Cognesy\Tell\TellHost;
-use Cognesy\Tell\TellHostBuilder;
 
 interface MissingHostFixtureOne {}
 
 interface MissingHostFixtureTwo {}
 
-final class HostFixturePaths implements CanResolveTellPaths, CanDisposeTellModule
+final class HostFixturePaths implements CanDisposeTellModule, CanResolveTellPaths
 {
     public function __construct(
         private readonly ArrayObject $cleanup,
@@ -63,7 +64,7 @@ final class HostFixturePaths implements CanResolveTellPaths, CanDisposeTellModul
     }
 }
 
-final class HostFixtureClock implements CanReadTellClock, CanDisposeTellModule
+final class HostFixtureClock implements CanDisposeTellModule, CanReadTellClock
 {
     public function __construct(
         public readonly CanResolveTellPaths $paths,
@@ -118,7 +119,6 @@ final readonly class HostContributionClock implements CanReadTellClock
     }
 }
 
-/** @return TellModuleDefinition */
 function hostPathsModule(ArrayObject $cleanup, bool $failCleanup = false): TellModuleDefinition
 {
     return new TellModuleDefinition(
@@ -129,7 +129,6 @@ function hostPathsModule(ArrayObject $cleanup, bool $failCleanup = false): TellM
     );
 }
 
-/** @return TellModuleDefinition */
 function hostClockModule(ArrayObject $cleanup, int $time = 42, bool $failCleanup = false): TellModuleDefinition
 {
     return new TellModuleDefinition(
@@ -271,7 +270,7 @@ it('attempts every reverse cleanup after normal disposal failures', function ():
     try {
         $host->dispose();
         throw new RuntimeException('Expected disposal failure.');
-    } catch (\Cognesy\Tell\Composition\TellHostDisposalException $error) {
+    } catch (TellHostDisposalException $error) {
         expect($error->errors)->toHaveCount(2)
             ->and($cleanup->getArrayCopy())->toBe(['clock', 'paths']);
     }
