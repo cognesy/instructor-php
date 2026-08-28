@@ -113,6 +113,13 @@ branched on `execution.mode === 'durable'` must now also accept `stateless`.
 `execution.durable` keeps its meaning and is now correct for stateless turns.
 Evidence: `tests/Integration/ExecutionModeReportingTest.php`.
 
+`--output=human` is a new turn output mode alongside `toon`, `text`, `json`,
+and `events`. It renders the answer as Markdown for an ANSI terminal through
+`Cognesy\Utils\Cli\CliMarkdown`, and falls back to the plain answer whenever
+stdout is not decorated. No existing mode changes. `cognesy/instructor-tell`
+gains a direct `cognesy/instructor-utils` requirement, which was already
+present transitively. Evidence: `tests/Integration/HumanOutputTest.php`.
+
 `TellResult::executionMode()` is the published accessor for the same fact.
 `Render\OutputRenderer::finish()` takes a `TellExecutionMode` in place of its
 `bool $transient` parameter; renderers are an implementation seam, so that is
@@ -169,7 +176,7 @@ instances, rather than a separately maintained catalogue.
 | Normalized events | Monotonic payload-safe NDJSON using `tell.event.v1`; one normalized terminal outcome; raw typed source objects are not wire data | `tests/Feature/RenderingTest.php`, `tests/Integration/ExecutionTraceTest.php`, `tests/Integration/ToolCommandTest.php` |
 | Execution traces | Private JSONL derived from normalized events, payloads excluded by default, credentials always redacted, trace failure does not fail the run | `tests/Integration/ExecutionTraceTest.php`, `tests/Unit/TracePayloadTest.php` |
 | One-run protocol | Request `tell.agent.request.v1` and frame `tell.agent.frame.v1`; bounded input/output, monotonic sequence, exactly one terminal frame | `tests/Integration/AgentProtocolTest.php` |
-| Rendering | TOON default plus explicit text, JSON, and event modes; structured usage errors remain on stdout | `tests/Feature/RenderingTest.php`, `tests/Feature/CommandSurfaceTest.php` |
+| Rendering | TOON default plus explicit text, human, JSON, and event modes; structured usage errors remain on stdout | `tests/Feature/RenderingTest.php`, `tests/Feature/CommandSurfaceTest.php` |
 | Process exits | `0` completed, `1` failed/stopped runtime, `2` invalid usage; protocol cancellation is `130` | `tests/Feature/SessionAndExitTest.php`, `tests/Feature/CommandSurfaceTest.php`, `tests/Integration/AgentProtocolTest.php` |
 <!-- markdownlint-enable MD013 -->
 

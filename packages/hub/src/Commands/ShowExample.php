@@ -7,7 +7,7 @@ use Cognesy\InstructorHub\Core\Cli;
 use Cognesy\InstructorHub\Data\Example;
 use Cognesy\InstructorHub\Data\ExecutionStatus;
 use Cognesy\InstructorHub\Services\ExampleRepository;
-use Cognesy\InstructorHub\Utils\CliMarkdown;
+use Cognesy\Utils\Cli\CliMarkdown;
 use Cognesy\Utils\Cli\Color;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;

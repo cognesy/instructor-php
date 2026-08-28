@@ -1,0 +1,307 @@
+<?php declare(strict_types=1);
+
+namespace Cognesy\Utils\Cli;
+
+use cebe\markdown\GithubMarkdown;
+use Toolkit\Cli\Color as AnsiColor;
+use Toolkit\Cli\Color\ColorTag;
+use Toolkit\Cli\Util\Highlighter;
+
+/**
+ * Renders Markdown for an ANSI terminal.
+ *
+ * @package PhpPkg\CliMarkdown
+ * @link    https://github.com/charmbracelet/glow color refer
+ * @license MIT
+ *
+ * @phpstan-type Block array<mixed>
+ */
+class CliMarkdown extends GithubMarkdown
+{
+    public const NL = "\n";
+    public const NL2 = "\n\n";
+    public const POINT = '•●○◦◉◎⦿✓✔︎✕✖︎✗';
+    public const LANG_EN = 'en';
+    public const GITHUB_HOST = 'https://github.com/';
+    public const THEME_DEFAULT = [
+        'headline' => Color::WHITE,
+        'paragraph' => '',
+        'list' => '',
+        'image' => 'info',
+        'link' => Color::BLUE,
+        'code' => 'brown',
+        'quote' => Color::DARK_YELLOW,
+        'strong' => 'bold',
+        'inlineCode' => Color::YELLOW,
+    ];
+    private string $lang;
+    private array $theme = self::THEME_DEFAULT;
+
+    public function __construct(string $lang = '') {
+        $this->lang = $lang;
+    }
+
+    #[\Override]
+    public function parse($text): string {
+        $parsed = parent::parse($text);
+
+        return str_replace(["\n\n\n", "\n\n\n\n"], "\n\n", ltrim($parsed));
+    }
+
+    public function render(string $text): string {
+        $parsed = $this->parse($text);
+
+        return AnsiColor::parseTag($parsed);
+    }
+
+    #[\Override]
+    protected function renderHeadline(mixed $block): string {
+        assert(is_array($block));
+        $level = (int)$block['level'];
+
+        $prefix = str_repeat('#', $level);
+        $title = $this->renderAbsy($block['content']);
+
+        if ($this->lang === self::LANG_EN) {
+            $title = ucwords($title);
+        }
+
+        $hlText = $prefix . ' ' . $title;
+
+        $out = [
+            self::strln(),
+            self::strln(),
+            self::strln($hlText, $this->theme['headline']),
+            self::strln(),
+        ];
+
+        return implode('', $out);
+        //return self::NL . ColorTag::add($hlText, $this->theme['headline']) . self::NL2;
+    }
+
+    #[\Override]
+    protected function renderParagraph(mixed $block): string {
+        assert(is_array($block));
+        return self::NL . $this->renderAbsy($block['content']) . self::NL;
+    }
+
+    #[\Override]
+    protected function renderList(mixed $block): string {
+        assert(is_array($block));
+        $output = self::NL;
+
+        foreach ($block['items'] as $itemLines) {
+            $output .= ' • ' . $this->renderAbsy($itemLines) . "\n";
+        }
+
+        return $output . self::NL2;
+    }
+
+    #[\Override]
+    protected function renderTable(mixed $block): string {
+        assert(is_array($block));
+        $head = $body = '';
+
+        $tabInfo = ['width' => 60];
+        $colWidths = [];
+        foreach ($block['rows'] as $row) {
+            foreach ($row as $c => $cell) {
+                $cellLen = $this->getCellWith($cell);
+
+                if (!isset($tabInfo[$c])) {
+                    $colWidths[$c] = 16;
+                }
+
+                $colWidths[$c] = $this->compareMax($cellLen, $colWidths[$c]);
+            }
+        }
+
+        $colCount = count($colWidths);
+        $tabWidth = (int)array_sum($colWidths);
+
+        $first = true;
+        $splits = [];
+        foreach ($block['rows'] as $row) {
+            $tds = [];
+            foreach ($row as $c => $cell) {
+                $cellLen = $colWidths[$c];
+
+                // ︱｜｜—―￣==＝＝▪▪▭▭▃▃▄▄▁▁▕▏▎┇╇══
+                if ($first) {
+                    $splits[] = str_pad('=', $cellLen + 1, '=');
+                }
+
+                $lastIdx = count($cell) - 1;
+                // padding space to last item contents.
+                foreach ($cell as $idx => &$item) {
+                    if ($lastIdx === $idx) {
+                        $item[1] = str_pad($item[1], $cellLen);
+                    } else {
+                        $cellLen -= mb_strlen($item[1]);
+                    }
+                }
+                unset($item);
+
+                $tds[] = trim($this->renderAbsy($cell), "\n\r");
+            }
+
+            $tdsStr = implode(' | ', $tds);
+            if ($first) {
+                $head .= implode('=', $splits) . "\n$tdsStr\n" . implode('|', $splits) . "\n";
+            } else {
+                $body .= "$tdsStr\n";
+            }
+            $first = false;
+        }
+
+        return $head . $body . str_pad('=', $tabWidth + $colCount + 1, '=') . self::NL;
+    }
+
+    protected function getCellWith(array $cellElems): int {
+        $width = 0;
+        foreach ($cellElems as $elem) {
+            $width += mb_strlen($elem[1] ?? '');
+        }
+
+        return $width;
+    }
+
+    #[\Override]
+    protected function renderLink(mixed $block): string {
+        assert(is_array($block));
+        return self::str($block['orig'], $this->theme['link']);
+        //return ColorTag::add('♆ ' . $block['orig'], $this->theme['link']);
+    }
+
+    #[\Override]
+    protected function renderUrl(mixed $block): string {
+        return parent::renderUrl($block);
+    }
+
+    #[\Override]
+    protected function renderAutoUrl(mixed $block): string {
+        assert(is_array($block));
+        $tag = $this->theme['link'];
+        $url = $text = $block[1];
+
+        if (str_contains($url, self::GITHUB_HOST)) {
+            $text = substr($text, 19);
+        }
+
+        return sprintf('<%s>[%s]%s</%s>', $tag, $text, $url, $tag);
+    }
+
+    #[\Override]
+    protected function renderImage(mixed $block): string {
+        assert(is_array($block));
+        return self::NL . AnsiColor::addTag('▨ ' . $block['orig'], $this->theme['image']);
+    }
+
+    #[\Override]
+    protected function renderQuote(mixed $block): string {
+        assert(is_array($block));
+        // ¶ §
+        //$prefix = Color::render('¶ ', [Color::FG_GREEN, Color::BOLD]);
+        //$content = ltrim($this->renderAbsy($block['content']));
+        //return self::NL . $prefix . ColorTag::add($content, $this->theme['quote']);
+        $content = $block['content'][0]['content'][0][1] ?? '';
+        $color = $this->theme['quote'];
+        return implode('', [
+            self::strln(),
+            self::smargin($content, 6, $color, $color),
+            self::strln(),
+        ]);
+    }
+
+    #[\Override]
+    protected function renderCode(mixed $block): string {
+        assert(is_array($block));
+        $highlighted = Highlighter::create()->highlight($block['content']);
+        $lines = explode("\n", $highlighted);
+        // add line numbers to each line
+        // 1. get the number of lines
+        $lineCount = count($lines);
+        // 2. calculate the number of digits in the line number
+        $digits = strlen((string)$lineCount) + 1;
+        // 3. add the line number to each line
+        foreach ($lines as $i => $line) {
+            $number = $i + 1;
+            $number = sprintf("%{$digits}d", $number);
+            $lines[$i] = implode("", [
+                "   ",
+                self::str("{$number}", Color::DARK_GRAY),
+                self::str(" | ", Color::DARK_BLUE),
+                $line,
+            ]);
+        }
+        $code = implode("\n", $lines);
+
+        $out = [
+            self::strln(),
+            $code,
+            self::strln(),
+            self::strln(),
+        ];
+        return implode('', $out);
+    }
+
+    #[\Override]
+    protected function renderInlineCode(mixed $block): string {
+        assert(is_array($block));
+        return self::str($block[1], $this->theme['inlineCode']);
+        //return ColorTag::add($block[1], $this->theme['inlineCode']);
+    }
+
+    #[\Override]
+    protected function renderStrong(mixed $block): string {
+        assert(is_array($block));
+        $text = $this->renderAbsy($block[1]);
+
+        return ColorTag::add("**$text**", $this->theme['strong']);
+    }
+
+    /**
+     * @psalm-suppress ParamNameMismatch Vendor library cebe/markdown has inconsistent param names: Parser uses $block, Markdown/GithubMarkdown use $text
+     */
+    #[\Override]
+    protected function renderText(mixed $block): string {
+        assert(is_array($block));
+        return $block[1];
+    }
+
+    public function getTheme(): array {
+        return $this->theme;
+    }
+
+    public function setTheme(array $theme): void {
+        $this->theme = array_merge($this->theme, $theme);
+    }
+
+    private function compareMax(int $len1, int $len2): int {
+        return $len1 > $len2 ? $len1 : $len2;
+    }
+
+    private static function str(string $output = '', string|array|null $color = null): string {
+        if ($color) {
+            $colorOut = is_array($color) ? implode('', $color) : $color;
+            $output = $colorOut . $output . Color::RESET;
+        }
+        return $output;
+    }
+
+    private static function strln(string $output = '', string|array|null $color = null): string {
+        return self::str($output . "\n", $color);
+    }
+
+    private static function smargin(string $output = '', int $size = 3, string|array|null $mcolor = null, string|array|null $color = null): string {
+        $lines = explode("\n", $output);
+        $margined = [];
+        foreach ($lines as $line) {
+            $margined[] = implode('', [
+                self::str(' |' . str_repeat(' ', $size), $mcolor),
+                self::str($line, $color),
+            ]);
+        }
+        return self::strln(implode("\n", $margined));
+    }
+}

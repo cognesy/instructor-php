@@ -32,10 +32,13 @@ tell sessions
 
 With no prompt, `tell` returns live workspace discovery plus useful next actions.
 The default format is TOON. Use `--output=text` for a raw final answer,
+`--output=human` for the same answer rendered as Markdown for a terminal,
 `--output=json` for JSON terminal state, or `--output=events` for a payload-free
-NDJSON stream using the versioned `tell.event.v1` envelope. List commands
-accept `--fields` for a smaller schema; session detail is bounded unless
-`tell sessions show ID --full` is requested.
+NDJSON stream using the versioned `tell.event.v1` envelope. `human` decorates
+only when stdout is a terminal: redirected or piped output stays the plain
+Markdown the model wrote, so it remains usable as input to something else.
+List commands accept `--fields` for a smaller schema; session detail is
+bounded unless `tell sessions show ID --full` is requested.
 
 Put a prompt that matches a subcommand name after `--`, for example
 `tell -- agents`. The explicit `tell tell "agents"` form is also available.

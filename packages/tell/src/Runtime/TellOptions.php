@@ -50,8 +50,8 @@ final readonly class TellOptions
         if ($this->maxSteps < 1) {
             throw new InvalidArgumentException('--max-steps must be at least 1.');
         }
-        if (! in_array($this->output, ['toon', 'text', 'json', 'events'], true)) {
-            throw new InvalidArgumentException('--output must be one of: toon, text, json, events.');
+        if (! in_array($this->output, ['toon', 'text', 'human', 'json', 'events'], true)) {
+            throw new InvalidArgumentException('--output must be one of: toon, text, human, json, events.');
         }
         if ($this->verbose && $this->quiet) {
             throw new InvalidArgumentException('--verbose and --quiet cannot be used together.');

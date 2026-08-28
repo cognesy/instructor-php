@@ -11,6 +11,7 @@ use Cognesy\Tell\Operational\CanDescribeOperationalPlane;
 use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\EventsRenderer;
+use Cognesy\Tell\Render\HumanRenderer;
 use Cognesy\Tell\Render\JsonRenderer;
 use Cognesy\Tell\Render\OutputRenderer;
 use Cognesy\Tell\Render\StructuredOutput;
@@ -53,6 +54,7 @@ Examples:
   tell "continue the review" --session review-1
   tell --transient "test a direction without recording it"
   tell --output=text "write a commit message"
+  tell --output=human "explain this design"
 HELP)
             ->addArgument('prompt', InputArgument::OPTIONAL, 'Prompt')
             ->addOption('agent', 'a', InputOption::VALUE_REQUIRED, 'Agent definition name', 'default')
@@ -74,7 +76,7 @@ HELP)
             ->addOption('max-tool-output-chars', null, InputOption::VALUE_REQUIRED, 'Maximum bytes retained from one tool result', '40000')
             ->addOption('max-tool-calls', null, InputOption::VALUE_REQUIRED, 'Maximum tool calls', '100')
             ->addOption('transient', null, InputOption::VALUE_NONE, 'Run without publishing workspace or session state')
-            ->addOption('output', 'o', InputOption::VALUE_REQUIRED, 'Output: toon, text, json, or events', 'toon');
+            ->addOption('output', 'o', InputOption::VALUE_REQUIRED, 'Output: toon, text, human, json, or events', 'toon');
     }
 
     #[Override]
@@ -152,6 +154,7 @@ HELP)
             'json' => new JsonRenderer($stdout),
             'events' => new EventsRenderer($stdout),
             'text' => new TextRenderer($stdout, $stderr, $options->verbose, $options->quiet),
+            'human' => new HumanRenderer($stdout, $stderr, $options->verbose, $options->quiet),
             default => new ToonRenderer($stdout, $stderr, $options->verbose, $options->quiet),
         };
     }
@@ -244,7 +247,7 @@ HELP)
         }
         if ($usage) {
             $payload['help'] = [
-                'Valid output modes: toon, text, json, events.',
+                'Valid output modes: toon, text, human, json, events.',
                 'Run `tell --help` for all options and examples.',
             ];
         }

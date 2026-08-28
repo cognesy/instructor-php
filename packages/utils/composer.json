@@ -38,13 +38,15 @@
     "ext-xmlreader": "*",
     "adbario/php-dot-notation": "^3.3",
     "aimeos/map": "^3.8",
+    "cebe/markdown": "^1.2",
     "psr/log": "^3.0",
     "psr/container": "^2.0",
     "vlucas/phpdotenv": "^5.6",
     "symfony/yaml": "^7.0",
     "twig/twig": "^3.0",
     "gioni06/gpt3-tokenizer": "^1.2",
-    "yethee/tiktoken": "^1.1"
+    "yethee/tiktoken": "^1.1",
+    "toolkit/cli-utils": "^2.0"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",
