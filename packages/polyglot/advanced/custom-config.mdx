@@ -27,7 +27,7 @@ model: gpt-4.1-nano
 maxTokens: 1024
 contextLength: 1000000
 maxOutputLength: 16384
-# @doctest id="39a6"
+# @doctest id="e4af"
 ```
 
 Environment variable references like `${OPENAI_API_KEY}` are resolved automatically at load
@@ -90,7 +90,7 @@ $config = new LLMConfig(
 $text = Inference::fromConfig($config)
     ->withMessages(Messages::fromString('Say hello.'))
     ->get();
-// @doctest id="fff4"
+// @doctest id="4831"
 ```
 
 Note: `Messages` is imported from `Cognesy\Messages\Messages`. You can create messages from a
@@ -119,7 +119,7 @@ $config = LLMConfig::fromArray([
     'model' => 'gpt-4.1-nano',
     'maxTokens' => 1024,
 ]);
-// @doctest id="bff8"
+// @doctest id="0e3a"
 ```
 
 ### Overriding Configuration Values
@@ -139,7 +139,7 @@ $highCapConfig = $baseConfig->withOverrides([
     'model' => 'gpt-4.1',
     'maxTokens' => 4096,
 ]);
-// @doctest id="8796"
+// @doctest id="078d"
 ```
 
 
@@ -162,7 +162,7 @@ $embeddings = Embeddings::fromConfig(new EmbeddingsConfig(
     dimensions: 1536,
     maxInputs: 2048,
 ));
-// @doctest id="5033"
+// @doctest id="a6a4"
 ```
 
 The embeddings configuration parameters are:
@@ -196,7 +196,7 @@ $config = LLMConfig::fromDsn('openai://api.openai.com/v1?model=gpt-4.1-nano&apiK
 $response = Inference::fromConfig($config)
     ->withMessages(Messages::fromString('Hello!'))
     ->get();
-// @doctest id="1be4"
+// @doctest id="5f25"
 ```
 
 The DSN format encodes the driver as the scheme, the host and path as the API URL, and
@@ -214,7 +214,7 @@ OPENAI_API_KEY=sk-your-key-here
 ANTHROPIC_API_KEY=sk-ant-your-key-here
 GEMINI_API_KEY=your-key-here
 MISTRAL_API_KEY=your-key-here
-# @doctest id="3ad9"
+# @doctest id="2c28"
 ```
 
 Load them with a package like `vlucas/phpdotenv`, or rely on your framework's built-in
@@ -249,7 +249,7 @@ $response = Inference::using('openai')
         ],
     )
     ->get();
-// @doctest id="33a1"
+// @doctest id="232e"
 ```
 
 For Anthropic, the available options differ:
@@ -271,7 +271,7 @@ $response = Inference::using('anthropic')
         ],
     )
     ->get();
-// @doctest id="b57f"
+// @doctest id="febf"
 ```
 
 Polyglot passes these options through to the provider's API without modification, so consult
@@ -291,7 +291,7 @@ maxTokens: 2048
 options:
   temperature: 0.9
   top_p: 0.95
-# @doctest id="d43e"
+# @doctest id="fc66"
 ```
 
 
@@ -308,7 +308,7 @@ apiKey: ''
 endpoint: /chat/completions
 model: llama3
 maxTokens: 1024
-# @doctest id="b7e9"
+# @doctest id="1987"
 ```
 
 Then select the preset based on your application's environment:
@@ -324,7 +324,7 @@ $preset = getenv('APP_ENV') === 'production' ? 'openai' : 'dev-local';
 $response = Inference::using($preset)
     ->withMessages(Messages::fromString('Hello!'))
     ->get();
-// @doctest id="b999"
+// @doctest id="496d"
 ```
 
 This pattern keeps your application code completely environment-agnostic. The only thing that
@@ -346,7 +346,7 @@ model: gpt-4.1-nano
 maxTokens: 2048
 contextLength: 128000
 maxOutputLength: 16384
-# @doctest id="83f8"
+# @doctest id="76cf"
 ```
 
 Then reference it by name:
@@ -360,7 +360,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $response = Inference::using('my-proxy')
     ->withMessages(Messages::fromString('Hello from my proxy!'))
     ->get();
-// @doctest id="19a7"
+// @doctest id="797e"
 ```
 
 Polyglot will find your custom preset file before falling back to the bundled presets, so you
