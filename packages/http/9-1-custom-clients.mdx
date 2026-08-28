@@ -11,7 +11,7 @@ interface CanHandleHttpRequest
 {
     public function handle(HttpRequest $request): HttpResponse;
 }
-// @doctest id="6ce3"
+// @doctest id="7dc2"
 ```
 
 The method receives an `HttpRequest` and returns an `HttpResponse`. That is the entire contract. The driver is responsible for converting these value objects into whatever the underlying HTTP library expects.
@@ -87,7 +87,7 @@ class AcmeHttpDriver implements CanHandleHttpRequest
         );
     }
 }
-// @doctest id="a916"
+// @doctest id="7983"
 ```
 
 The key points are:
@@ -111,7 +111,7 @@ $drivers = BundledHttpDrivers::registry()->withDriver(
     static fn(HttpClientConfig $config, CanHandleEvents $events, ?object $clientInstance): CanHandleHttpRequest
         => new AcmeHttpDriver($config, $events, $clientInstance),
 );
-// @doctest id="a3d6"
+// @doctest id="89ca"
 ```
 
 Then use it through the builder:
@@ -124,7 +124,7 @@ $client = (new HttpClientBuilder())
     ->withDrivers($drivers)
     ->withConfig(new HttpClientConfig(driver: 'acme'))
     ->create();
-// @doctest id="44f7"
+// @doctest id="509e"
 ```
 
 The factory function receives the config, events dispatcher, and optional client instance. This lets users pass a pre-configured vendor client through `withClientInstance('acme', $myClient)`.
@@ -141,14 +141,14 @@ $driver = new AcmeHttpDriver($config, $events);
 $client = (new HttpClientBuilder())
     ->withDriver($driver)
     ->create();
-// @doctest id="7dfa"
+// @doctest id="0729"
 ```
 
 Or use the static shorthand:
 
 ```php
 $client = HttpClient::fromDriver($driver);
-// @doctest id="0bd6"
+// @doctest id="11bb"
 ```
 
 ## Reusing Vendor Client Instances
@@ -168,7 +168,7 @@ $symfony = SymfonyHttpClient::create([
 $client = (new HttpClientBuilder())
     ->withClientInstance('symfony', $symfony)
     ->create();
-// @doctest id="7af9"
+// @doctest id="c384"
 ```
 
 This pattern works with any registered driver. The `withClientInstance()` method sets both the driver name and the instance, so the driver factory receives it instead of creating its own.
@@ -194,7 +194,7 @@ public function handle(HttpRequest $request): HttpResponse
         stream: BufferedStream::fromStream($stream),
     );
 }
-// @doctest id="232c"
+// @doctest id="4e9e"
 ```
 
 The `BufferedStream`, `ArrayStream`, `IterableStream`, and `TransformStream` classes in the `Cognesy\Http\Stream` namespace provide various stream implementations you can use or compose.

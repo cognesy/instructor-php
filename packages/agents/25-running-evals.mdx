@@ -23,7 +23,7 @@ Options:
   --json                 Emit run result JSON
   --skip-report          Disable configured reporters
   -h, --help             Show this help
-// @doctest id="d9bb"
+// @doctest id="7f61"
 ```
 
 That block is the tool's actual `--help` output, not a paraphrase.
@@ -59,7 +59,7 @@ enum EvalVerdict: string {
     case Scored = 'scored';
     case Skipped = 'skipped';
 }
-// @doctest id="8b4d"
+// @doctest id="ebf4"
 ```
 
 `EvalVerdictResolver::resolve()` derives it from the case's assertions, in this order: an uncaught error or a failed gate assertion is always `Failed`; otherwise a skip (`$t->skip(...)`) is `Skipped`; otherwise a failed *soft* assertion (with nothing gated failing) is `Scored`, not `Failed` -- a soft miss is a signal to look at, not a hard break; anything else is `Passed`. This is the single-run rule; a repeated case (`--repeat`) resolves its verdict differently and a missed pass rate there IS a hard `Failed` even when every shortfall was soft -- see [Repetition and pass rate](#repetition-and-pass-rate) below.
@@ -72,7 +72,7 @@ enum EvalExitCode: int {
     case EvalFailure = 1;
     case ConfigurationError = 2;
 }
-// @doctest id="0ed8"
+// @doctest id="bc16"
 ```
 
 - **`Success` (0)** -- every case passed (or was soft-`Scored` in advisory mode), and no reporter raised an error.
@@ -90,7 +90,7 @@ A single run of `agents-eval` grades a stochastic target with (usually) a stocha
 ```text
 --repeat=<n>           Run every case n times, each with a fresh session
 --pass-rate=<r>        Fraction of trials that must pass, 0 < r <= 1
-// @doctest id="84a3"
+// @doctest id="ddaa"
 ```
 
 `--repeat=5 --pass-rate=0.8` runs every selected case five times. Each trial opens a **fresh session** through the target -- nothing about the conversation, the assertion collector, or the log collector carries over from one trial to the next, so trial 3 grades the same starting conditions trial 1 did, not an agent that has already answered twice. The cooperative `--timeout` stays a *per-trial* budget, not a budget for the whole repeated case -- a `--repeat=5` run therefore permits up to five times the total wall clock a single trial's `--timeout` allows, not the same ceiling stretched across all five.
@@ -104,7 +104,7 @@ $ agents-eval evals --repeat=5 --pass-rate=0.8
 PASS 4/5  refund-requires-verification  judge=0.80+/-0.20  (12.4ms)
 passed=1 failed=0 scored=0 skipped=0
 TOKENS target=710 judge=0 total=710
-// @doctest id="cdd5"
+// @doctest id="7b57"
 ```
 
 The rate line replaces the ordinary `[VERDICT] id (duration)` line whenever a case ran more than once: `PASS 4/5` (verdict-derived label and `passed/total`), the case id, an optional `judge=<mean>+/-<stddev>` when at least one assertion in the case was judged (omitted entirely, not printed as `judge=0.00`, when nothing was judged), and the total duration across every trial. `--verbose` additionally lists each trial:
@@ -116,7 +116,7 @@ The rate line replaces the ordinary `[VERDICT] id (duration)` line whenever a ca
   TRIAL 4/5 passed judge=0.90
   TRIAL 5/5 scored judge=0.40
   TARGET steps=1 tools=0 tokens=142 stop=none
-// @doctest id="5fb7"
+// @doctest id="c6ac"
 ```
 
 `repeat=1` is not a special case bolted on top of repetition -- `EvalRunner::runCase()` returns the single trial's `EvalResult` unchanged when `$options->repeat() === 1`, so a case that runs once produces exactly the object, console line, and serialized JSON it always did. There is no `repetition` key in a single-trial result's `toArray()` at all, and console output for the default options (`EvalRunOptions::default()`, i.e. `repeat=1`) is byte-for-byte identical to explicitly passing `--repeat=1`.
@@ -151,7 +151,7 @@ Note that this doesn't show up in provenance either way: `judge.temperature` in 
     ]
   }
 }
-// @doctest id="e7dc"
+// @doctest id="2885"
 ```
 
 Every trial's own assertions survive here, not just the aggregate's -- the aggregate's top-level `assertions` (and `run`, `logs`, `error`) come from a single **representative** trial (the first trial that didn't pass, or the first trial when all of them did), so a reporter always has one concrete failure to point at, while the full per-trial record stays in `repetition.results` for anyone who needs to see all five -- including which trial failed and why. `EvalResult::tokens()` for the case as a whole sums every trial's usage rather than reporting one trial's cost, since N trials really did spend N trials' worth of target and judge tokens; that aggregate is not a per-trial figure, but each trial's own `tokens` survives in `repetition.results[].tokens` (as in the example above), so a per-trial mean is still recoverable from there if you need one.
@@ -169,7 +169,7 @@ use Cognesy\Agents\Evals\PHPUnitEvalReporter; // or PestEvalReporter
 $config = EvalConfig::default()
     ->withTarget(/* ... */)
     ->withReporter(PHPUnitEvalReporter::default());
-// @doctest id="618b"
+// @doctest id="5b6e"
 ```
 
 Both reporters do nothing on `onRunStarted`/`onEvalCompleted` -- all the work happens in `onRunCompleted`, where `PHPUnitEvalReporter` calls `Assert::assertSame(EvalExitCode::Success, $result->exitCode(), ...)` and `PestEvalReporter` calls Pest's `expect($result->exitCode())->toBe(EvalExitCode::Success, ...)`. Either way, a suite that would exit non-zero on the CLI fails the enclosing PHPUnit or Pest test the same way any other assertion failure would -- these reporters translate a completed run's result into a framework failure; they never re-execute a case or judge anything a second time. `EvalRunner` also runs any `CanFailAgentEvalTestSuite` reporter's `onRunCompleted` last, after every other configured reporter has already run and had a chance to record its own error, so a PHPUnit/Pest failure also reflects a reporter error (a failed artifact write, for example) that happened alongside the eval results themselves.
@@ -182,7 +182,7 @@ Agent eval suite failed (1 failed, 0 scored, 0 reporter errors; strict mode).
   - repetition: passed 3/5, needed 4/5 (judge mean 0.70 +/- 0.24)
   - target: steps=1 stop=none
   - judge:closed_qa: Does the reply require verification? [soft]: score 0.40, required 0.80 — trial 4 scored 0.40
-// @doctest id="ecf8"
+// @doctest id="717d"
 ```
 
 For a case that ran once, the same message omits the `repetition:` line entirely rather than printing it for a case with nothing to repeat.
