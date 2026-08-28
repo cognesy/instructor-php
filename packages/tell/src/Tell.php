@@ -8,6 +8,7 @@ use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
 use Cognesy\Tell\Composition\TellHost;
 use Cognesy\Tell\Discovery\TellCatalogue;
 use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Runtime\TellRun;
 use Cognesy\Tell\Testing\TellTestFactory;
 use Cognesy\Tell\Tool\TellTools;
 use Generator;
@@ -74,6 +75,21 @@ final readonly class Tell
         };
 
         return $this->host->runner()->stream($request);
+    }
+
+    /**
+     * Starts a run and hands back a handle. Prefer this over runStream() when
+     * you may stop consuming checkpoints early: the handle still carries the
+     * result, and a run torn down before it committed is reported.
+     */
+    public function start(TellRequest $request): TellRun
+    {
+        $request = match ($request->directory) {
+            '' => $request->withDirectory($this->directory),
+            default => $request,
+        };
+
+        return $this->host->runner()->start($request);
     }
 
     public function workspace(): TellWorkspace

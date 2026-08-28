@@ -15,6 +15,7 @@ use Cognesy\Tell\Canonical\CanonicalException;
 use Cognesy\Tell\Canonical\CanonicalLineage;
 use Cognesy\Tell\Canonical\CanonicalSerializer;
 use Cognesy\Tell\Canonical\CanonicalSessionMetadata;
+use Cognesy\Tell\Runtime\TellRunOutcome;
 use Generator;
 use Throwable;
 
@@ -41,9 +42,20 @@ final class WorkspaceTurnRunner
         return $states->getReturn();
     }
 
-    /** @return Generator<int, AgentState, mixed, AgentState> */
-    public function iterate(AgentLoop $loop, AgentDefinition $definition, string $prompt): Generator
-    {
+    /**
+     * Publishes the terminal state *before* yielding it, so that observing the
+     * final checkpoint implies the turn is durable. Committing after the loop
+     * would leave the arena head hostage to one further advance the caller has
+     * no reason to make.
+     *
+     * @return Generator<int, AgentState, mixed, AgentState>
+     */
+    public function iterate(
+        AgentLoop $loop,
+        AgentDefinition $definition,
+        string $prompt,
+        ?TellRunOutcome $outcome = null,
+    ): Generator {
         $reference = $this->arena->readOptionalRef($this->ref) ?? ArenaRef::empty();
         $history = $this->historyCompiler->compile($this->arena, $reference->head);
         $seed = (new DefinitionStateFactory)
@@ -51,15 +63,42 @@ final class WorkspaceTurnRunner
             ->withMessages($history->messages)
             ->withUserMessage($prompt);
         $state = $seed;
+        $published = false;
         foreach ($loop->iterate($seed) as $checkpoint) {
             $state = $checkpoint;
+            if (! $published && $this->isPublishable($checkpoint)) {
+                $this->publish($checkpoint, $history);
+                $published = true;
+                $outcome?->recordCommitted($checkpoint);
+            }
             yield $checkpoint;
         }
 
-        $this->assertPublishable($state);
-        $this->publish($state, $history);
+        if (! $published) {
+            // No checkpoint was publishable: report the same refusal as before.
+            $this->assertPublishable($state);
+            $this->publish($state, $history);
+            $outcome?->recordCommitted($state);
+        }
 
         return $state;
+    }
+
+    /**
+     * Only a completed turn carrying a non-empty final response may advance the
+     * arena head. Intermediate tool-calling checkpoints never qualify, so the
+     * first checkpoint that does is also the last one the loop yields.
+     */
+    private function isPublishable(AgentState $state): bool
+    {
+        if ($state->status() !== ExecutionStatus::Completed) {
+            return false;
+        }
+        $lastStep = $state->lastStep();
+
+        return $lastStep !== null
+            && $lastStep->stepType() === AgentStepType::FinalResponse
+            && ! $lastStep->outputMessages()->isEmpty();
     }
 
     private function assertPublishable(AgentState $state): void

@@ -25,6 +25,22 @@ final class TellDiagnostics
         }
     }
 
+    /**
+     * Records that a run was torn down before it committed. A run that is
+     * abandoned mid-flight is a legitimate thing for a caller to do, but it must
+     * not be indistinguishable from one that never happened.
+     */
+    public function recordAbandonedRun(): void
+    {
+        $diagnostic = new TellDiagnostic(
+            code: 'run_abandoned',
+            source: 'runtime',
+            severity: 'warning',
+            message: 'Tell run was abandoned before it committed; no durable state was published for it.',
+        );
+        $this->diagnostics[$diagnostic->code."\0".$diagnostic->message] = $diagnostic;
+    }
+
     /** @return list<TellDiagnostic> */
     public function all(): array
     {

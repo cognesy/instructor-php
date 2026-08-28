@@ -11,6 +11,7 @@ use Cognesy\Tell\Canonical\CanonicalConversationRoot;
 use Cognesy\Tell\Canonical\CanonicalHash;
 use Cognesy\Tell\Canonical\CanonicalValidationException;
 use Cognesy\Tell\Runtime\TellPaths;
+use Cognesy\Tell\Runtime\TellRunOutcome;
 use Generator;
 
 /**
@@ -44,6 +45,7 @@ final readonly class WorkspaceSessionRunner
         AgentLoop $loop,
         AgentDefinition $definition,
         string $prompt,
+        ?TellRunOutcome $outcome = null,
     ): Generator {
         try {
             $compatibility = new SessionCompatibilityRef($sessionId);
@@ -66,12 +68,16 @@ final readonly class WorkspaceSessionRunner
         } elseif ($existing->head !== null) {
             $warnings = $this->warningsForChangedLegacySource($compatibility, $existing->head);
         }
+        // Warnings are known before the turn runs, so publish them to the
+        // outcome now rather than only in the value behind this generator's
+        // return.
+        $outcome?->recordWarnings($warnings);
 
         $states = (new WorkspaceTurnRunner(
             arena: $this->arena,
             ref: $compatibility->refName(),
             session: $compatibility->metadata(),
-        ))->iterate($loop, $definition, $prompt);
+        ))->iterate($loop, $definition, $prompt, $outcome);
         foreach ($states as $state) {
             yield $state;
         }

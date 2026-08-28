@@ -126,24 +126,28 @@ it('streams each completed checkpoint and returns the final result', function ()
         ->and($result->text())->toBe("streamed answer\n");
 });
 
-it('does not publish when a durable stream is abandoned after a checkpoint', function (): void {
-    $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('unpublished answer')));
+it('has already published once a durable stream shows its terminal checkpoint', function (): void {
+    $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('published answer')));
     $project = tellLastTemporaryRoot().'/project';
     mkdir($project, 0755, true);
     $workspace = $factory->workspace()->initialize($project)->workspace;
 
     $stream = Tell::open($project, $factory)->runStream(
-        TellRequest::prompt('Start but do not commit')->durable(),
+        TellRequest::prompt('Commit before the terminal yield')->durable(),
     );
+    // Observing the terminal checkpoint implies the turn is durable: the commit
+    // happens before the yield, not after the caller resumes the generator.
     $checkpoint = $stream->current();
 
-    expect($checkpoint)->not->toBeNull()
-        ->and((new ArenaStore($workspace))->readRef()->head)->toBeNull();
+    expect($checkpoint)->not->toBeNull();
+    $head = (new ArenaStore($workspace))->readRef()->head;
+    expect($head)->not->toBeNull();
 
+    // Walking away from the stream at that point changes nothing either way.
     unset($stream);
     gc_collect_cycles();
 
-    expect((new ArenaStore($workspace))->readRef()->head)->toBeNull();
+    expect((new ArenaStore($workspace))->readRef()->head?->toString())->toBe($head->toString());
 });
 
 it('does not publish a durable workspace turn when an observation listener fails', function (): void {

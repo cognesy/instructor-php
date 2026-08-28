@@ -24,4 +24,9 @@ final readonly class DefaultTellRunner implements CanRunTell
     {
         return $this->runtime->stream($request);
     }
+
+    public function start(TellRequest $request): TellRun
+    {
+        return $this->runtime->start($request);
+    }
 }

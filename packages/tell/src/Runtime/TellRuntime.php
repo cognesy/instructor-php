@@ -32,6 +32,8 @@ use Cognesy\Tell\Workspace\WorkspaceSessionRunner;
 use Cognesy\Tell\Workspace\WorkspaceTransientRunner;
 use Cognesy\Tell\Workspace\WorkspaceTurnRunner;
 use Closure;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Enums\ExecutionStatus;
 use Generator;
 use RuntimeException;
 
@@ -47,11 +49,7 @@ final readonly class TellRuntime
     /** @param callable(AgentLoop, TellRequest, ?string): void|null $prepareLoop */
     public function run(TellRequest $request, ?callable $prepareLoop = null): TellResult
     {
-        $progress = $this->stream($request, $prepareLoop);
-        foreach ($progress as $_) {
-        }
-
-        return $progress->getReturn();
+        return $this->start($request, $prepareLoop)->wait();
     }
 
     /**
@@ -60,16 +58,60 @@ final readonly class TellRuntime
      */
     public function stream(TellRequest $request, ?callable $prepareLoop = null): Generator
     {
+        return $this->start($request, $prepareLoop)->checkpoints();
+    }
+
+    /**
+     * Starts a run and hands back a handle. Unlike a bare generator, the handle
+     * carries the outcome, so a caller that stops iterating early still gets a
+     * result and an abandoned run is reported rather than lost.
+     *
+     * @param callable(AgentLoop, TellRequest, ?string): void|null $prepareLoop
+     */
+    public function start(TellRequest $request, ?callable $prepareLoop = null): TellRun
+    {
         $this->assertSelection($request);
         $request = $this->configuration?->resolve($request)->request ?? $this->withBranchConfig($request);
         $diagnostics = new TellDiagnostics;
+        $outcome = new TellRunOutcome;
 
-        return match ($request->mode) {
-            TellExecutionMode::Automatic => $this->streamAutomatic($request, $prepareLoop, $diagnostics),
-            TellExecutionMode::Stateless => $this->streamStateless($request, $prepareLoop, $diagnostics),
-            TellExecutionMode::Durable => $this->streamDurable($request, $prepareLoop, $diagnostics),
-            TellExecutionMode::Transient => $this->streamTransient($request, $prepareLoop, $diagnostics),
+        $stream = match ($request->mode) {
+            TellExecutionMode::Automatic => $this->streamAutomatic($request, $prepareLoop, $diagnostics, $outcome),
+            TellExecutionMode::Stateless => $this->streamStateless($request, $prepareLoop, $diagnostics, $outcome),
+            TellExecutionMode::Durable => $this->streamDurable($request, $prepareLoop, $diagnostics, $outcome),
+            TellExecutionMode::Transient => $this->streamTransient($request, $prepareLoop, $diagnostics, $outcome),
         };
+
+        return new TellRun($stream, $outcome, $diagnostics);
+    }
+
+    /**
+     * Publishes a terminal checkpoint to the outcome the moment it appears, so
+     * the run's result never depends on the caller advancing past the final
+     * yield. Runners that commit durably record themselves and win the race.
+     */
+    private function recordTerminal(?TellRunOutcome $outcome, AgentState $state): void
+    {
+        if ($outcome === null || $outcome->state() !== null) {
+            return;
+        }
+        if ($state->status() !== ExecutionStatus::Completed) {
+            return;
+        }
+        $outcome->recordCommitted($state);
+    }
+
+    /**
+     * Settles a fully drained run: whatever the outcome already holds wins, so a
+     * committed state is never overwritten by a recomputed one.
+     *
+     * @param callable(AgentState): TellResult $build
+     */
+    private function finish(?TellRunOutcome $outcome, AgentState $state, callable $build): TellResult
+    {
+        $outcome?->recordCommitted($state);
+
+        return $outcome?->result() ?? $build($state);
     }
 
     /**
@@ -88,47 +130,50 @@ final readonly class TellRuntime
     /** @param callable(AgentLoop, TellRequest, ?string): void|null $prepareLoop
      * @return Generator<int, TellProgress, mixed, TellResult>
      */
-    private function streamAutomatic(TellRequest $request, ?callable $prepareLoop, TellDiagnostics $diagnostics): Generator
+    private function streamAutomatic(TellRequest $request, ?callable $prepareLoop, TellDiagnostics $diagnostics, ?TellRunOutcome $outcome = null): Generator
     {
         $workspace = $this->agents->workspace()->discover($request->directory);
         if ($request->session === null && $workspace === null) {
             if ($request->branch !== null) {
                 throw new RuntimeException('Tell branch selection requires an initialized workspace. Call tell init or initialize the workspace first.');
             }
-            return $this->streamStateless($request, $prepareLoop, $diagnostics);
+            return $this->streamStateless($request, $prepareLoop, $diagnostics, $outcome);
         }
         if ($request->session === null) {
             $arena = new ArenaStore($workspace);
-            return $this->streamWorkspaceTurn($request, $arena, $workspace->paths->root, $prepareLoop, (new BranchResolver($arena))->resolve($request->branch), $diagnostics);
+            return $this->streamWorkspaceTurn($request, $arena, $workspace->paths->root, $prepareLoop, (new BranchResolver($arena))->resolve($request->branch), $diagnostics, $outcome);
         }
         if ($workspace !== null) {
-            return $this->streamWorkspaceSession($request, new ArenaStore($workspace), $workspace->paths->root, $prepareLoop, $diagnostics);
+            return $this->streamWorkspaceSession($request, new ArenaStore($workspace), $workspace->paths->root, $prepareLoop, $diagnostics, $outcome);
         }
 
-        return $this->streamLegacySession($request, $prepareLoop, $diagnostics);
+        return $this->streamLegacySession($request, $prepareLoop, $diagnostics, $outcome);
     }
 
     /** @param callable(AgentLoop, TellRequest, ?string): void|null $prepareLoop
      * @return Generator<int, TellProgress, mixed, TellResult>
      */
-    private function streamStateless(TellRequest $request, ?callable $prepareLoop, TellDiagnostics $diagnostics): Generator
+    private function streamStateless(TellRequest $request, ?callable $prepareLoop, TellDiagnostics $diagnostics, ?TellRunOutcome $outcome = null): Generator
     {
         [$definition, $loop] = $this->definitionAndLoop($request, $prepareLoop, diagnostics: $diagnostics);
         $state = $this->seed($definition, $request);
+        $build = static fn (AgentState $s): TellResult => new TellResult($s, diagnostics: $diagnostics->all());
+        $outcome?->useBuilder($build);
         $states = $loop->iterate($state);
         $finalState = $state;
         foreach ($states as $checkpoint) {
             $finalState = $checkpoint;
+            $this->recordTerminal($outcome, $checkpoint);
             yield new TellProgress($checkpoint);
         }
 
-        return new TellResult($finalState, diagnostics: $diagnostics->all());
+        return $this->finish($outcome, $finalState, $build);
     }
 
     /** @param callable(AgentLoop, TellRequest, ?string): void|null $prepareLoop
      * @return Generator<int, TellProgress, mixed, TellResult>
      */
-    private function streamDurable(TellRequest $request, ?callable $prepareLoop, TellDiagnostics $diagnostics): Generator
+    private function streamDurable(TellRequest $request, ?callable $prepareLoop, TellDiagnostics $diagnostics, ?TellRunOutcome $outcome = null): Generator
     {
         $workspace = $this->agents->workspace()->discover($request->directory);
         if ($workspace === null) {
@@ -136,44 +181,38 @@ final readonly class TellRuntime
         }
 
         return match ($request->session) {
-            null => $this->streamWorkspaceTurn($request, new ArenaStore($workspace), $workspace->paths->root, $prepareLoop, (new BranchResolver(new ArenaStore($workspace)))->resolve($request->branch), $diagnostics),
-            default => $this->streamWorkspaceSession($request, new ArenaStore($workspace), $workspace->paths->root, $prepareLoop, $diagnostics),
+            null => $this->streamWorkspaceTurn($request, new ArenaStore($workspace), $workspace->paths->root, $prepareLoop, (new BranchResolver(new ArenaStore($workspace)))->resolve($request->branch), $diagnostics, $outcome),
+            default => $this->streamWorkspaceSession($request, new ArenaStore($workspace), $workspace->paths->root, $prepareLoop, $diagnostics, $outcome),
         };
     }
 
     /** @param callable(AgentLoop, TellRequest, ?string): void|null $prepareLoop
      * @return Generator<int, TellProgress, mixed, TellResult>
      */
-    private function streamTransient(TellRequest $request, ?callable $prepareLoop, TellDiagnostics $diagnostics): Generator
+    private function streamTransient(TellRequest $request, ?callable $prepareLoop, TellDiagnostics $diagnostics, ?TellRunOutcome $outcome = null): Generator
     {
         $workspace = $this->agents->workspace()->discover($request->directory);
         if ($workspace === null) {
             [$definition, $loop] = $this->definitionAndLoop($request, $prepareLoop, diagnostics: $diagnostics);
             $state = $this->seed($definition, $request);
+            $build = static fn (AgentState $s): TellResult => new TellResult($s, transient: true, diagnostics: $diagnostics->all());
+            $outcome?->useBuilder($build);
             $states = $loop->iterate($state);
             $finalState = $state;
             foreach ($states as $checkpoint) {
                 $finalState = $checkpoint;
+                $this->recordTerminal($outcome, $checkpoint);
                 yield new TellProgress($checkpoint);
             }
 
-            return new TellResult($finalState, transient: true, diagnostics: $diagnostics->all());
+            return $this->finish($outcome, $finalState, $build);
         }
 
         $session = $request->session === null ? null : SessionId::from($request->session);
         $branch = $session === null ? (new BranchResolver(new ArenaStore($workspace)))->resolve($request->branch) : null;
         [$definition, $loop] = $this->definitionAndLoop($request, $prepareLoop, $workspace->paths->root, $branch?->branch, $diagnostics);
-        $states = (new WorkspaceTransientRunner(
-            arena: new ArenaStore($workspace),
-            paths: $this->agents->paths(),
-            ref: $session === null ? $branch->ref : 'main',
-        ))->iterate($session, $loop, $definition, $request->prompt);
-        foreach ($states as $state) {
-            yield new TellProgress($state);
-        }
-
-        return new TellResult(
-            state: $states->getReturn(),
+        $build = static fn (AgentState $s): TellResult => new TellResult(
+            state: $s,
             transient: true,
             session: $request->session,
             workspace: $workspace->paths->root,
@@ -181,6 +220,18 @@ final readonly class TellRuntime
             branchSource: $branch === null ? null : ($branch->invocationLocal ? 'invocation' : 'current'),
             diagnostics: $diagnostics->all(),
         );
+        $outcome?->useBuilder($build);
+        $states = (new WorkspaceTransientRunner(
+            arena: new ArenaStore($workspace),
+            paths: $this->agents->paths(),
+            ref: $session === null ? $branch->ref : 'main',
+        ))->iterate($session, $loop, $definition, $request->prompt);
+        foreach ($states as $state) {
+            $this->recordTerminal($outcome, $state);
+            yield new TellProgress($state);
+        }
+
+        return $this->finish($outcome, $states->getReturn(), $build);
     }
 
     /** @param callable(AgentLoop, TellRequest, ?string): void|null $prepareLoop
@@ -193,21 +244,24 @@ final readonly class TellRuntime
         ?callable $prepareLoop,
         \Cognesy\Tell\Workspace\BranchSelection $branch,
         TellDiagnostics $diagnostics,
+        ?TellRunOutcome $outcome = null,
     ): Generator {
         [$definition, $loop] = $this->definitionAndLoop($request, $prepareLoop, $workspace, $branch->branch, $diagnostics);
-        $states = (new WorkspaceTurnRunner($arena, ref: $branch->ref))->iterate($loop, $definition, $request->prompt);
-        foreach ($states as $state) {
-            yield new TellProgress($state);
-        }
-
-        return new TellResult(
-            state: $states->getReturn(),
+        $build = static fn (AgentState $s): TellResult => new TellResult(
+            state: $s,
             durable: true,
             workspace: $workspace,
             branch: $branch->branch,
             branchSource: $branch->invocationLocal ? 'invocation' : 'current',
             diagnostics: $diagnostics->all(),
         );
+        $outcome?->useBuilder($build);
+        $states = (new WorkspaceTurnRunner($arena, ref: $branch->ref))->iterate($loop, $definition, $request->prompt, $outcome);
+        foreach ($states as $state) {
+            yield new TellProgress($state);
+        }
+
+        return $this->finish($outcome, $states->getReturn(), $build);
     }
 
     /** @param callable(AgentLoop, TellRequest, ?string): void|null $prepareLoop
@@ -219,23 +273,36 @@ final readonly class TellRuntime
         string $workspace,
         ?callable $prepareLoop,
         TellDiagnostics $diagnostics,
+        ?TellRunOutcome $outcome = null,
     ): Generator {
         [$definition, $loop] = $this->definitionAndLoop($request, $prepareLoop, $workspace, diagnostics: $diagnostics);
+        $build = static fn (AgentState $s): TellResult => new TellResult(
+            state: $s,
+            warnings: $outcome?->warnings() ?? [],
+            durable: true,
+            session: $request->session,
+            workspace: $workspace,
+            diagnostics: $diagnostics->all(),
+        );
+        $outcome?->useBuilder($build);
         $states = (new WorkspaceSessionRunner(
             arena: $arena,
             paths: $this->agents->paths(),
-        ))->iterate(SessionId::from($request->session ?? ''), $loop, $definition, $request->prompt);
+        ))->iterate(SessionId::from($request->session ?? ''), $loop, $definition, $request->prompt, $outcome);
         foreach ($states as $state) {
             yield new TellProgress($state);
         }
 
-        return $this->resultFromExecution(
+        $result = $this->resultFromExecution(
             execution: $states->getReturn(),
             durable: true,
             session: $request->session,
             workspace: $workspace,
             diagnostics: $diagnostics,
         );
+        $outcome?->recordResult($result);
+
+        return $result;
     }
 
     /** @param callable(AgentLoop, TellRequest, ?string): void|null $prepareLoop */
@@ -302,9 +369,10 @@ final readonly class TellRuntime
     /** @param callable(AgentLoop, TellRequest, ?string): void|null $prepareLoop
      * @return Generator<int, TellProgress, mixed, TellResult>
      */
-    private function streamLegacySession(TellRequest $request, ?callable $prepareLoop, TellDiagnostics $diagnostics): Generator
+    private function streamLegacySession(TellRequest $request, ?callable $prepareLoop, TellDiagnostics $diagnostics, ?TellRunOutcome $outcome = null): Generator
     {
         $result = $this->executeLegacySession($request, $prepareLoop, $diagnostics);
+        $outcome?->recordResult($result);
         yield new TellProgress($result->state());
 
         return $result;
