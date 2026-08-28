@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once dirname(__DIR__).'/Pest.php';
 
 use Cognesy\Agents\AgentLoop;
+use Cognesy\Tell\Command\ConfigCommand;
 use Cognesy\Tell\Runtime\TellOptions;
 use Cognesy\Tell\TellCommand;
 use Cognesy\Tell\Tests\Support\RecordingDriver;
@@ -94,4 +95,85 @@ it('accepts human alongside the other output modes and rejects unknown ones', fu
 
     expect(static fn () => new TellOptions(prompt: 'p', directory: $project, output: 'markdown'))
         ->toThrow(InvalidArgumentException::class, '--output must be one of: toon, text, human, json, events.');
+});
+
+it('uses the branch-configured output format when the invocation does not choose one', function (): void {
+    $factory = tellTestFactory(static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(
+        new RecordingDriver(new RequestRecorder, TELL_HUMAN_ANSWER),
+    ));
+    $project = tellHumanProject();
+    $factory->workspace()->initialize($project);
+
+    $config = new CommandTester(new ConfigCommand($factory));
+    expect($config->execute([
+        'action' => 'set',
+        'key' => 'output',
+        'value' => '"human"',
+        '--dir' => $project,
+        '--if-version' => '0',
+        '--json' => true,
+    ]))->toBe(0);
+
+    $tester = new CommandTester(new TellCommand($factory));
+    expect($tester->execute(
+        ['prompt' => 'explain', '--dir' => $project],
+        ['decorated' => true],
+    ))->toBe(0);
+
+    // Rendered markdown, not the TOON projection the bundled default produces.
+    expect($tester->getDisplay(true))->toContain("\033[")
+        ->and($tester->getDisplay(true))->not->toContain('execution:');
+});
+
+it('lets an explicit --output win over the branch-configured format', function (): void {
+    $factory = tellTestFactory(static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(
+        new RecordingDriver(new RequestRecorder, 'plain answer'),
+    ));
+    $project = tellHumanProject();
+    $factory->workspace()->initialize($project);
+
+    $config = new CommandTester(new ConfigCommand($factory));
+    $config->execute([
+        'action' => 'set', 'key' => 'output', 'value' => '"human"',
+        '--dir' => $project, '--if-version' => '0', '--json' => true,
+    ]);
+
+    $tester = new CommandTester(new TellCommand($factory));
+    expect($tester->execute(
+        ['prompt' => 'explain', '--dir' => $project, '--output' => 'json'],
+        ['decorated' => true],
+    ))->toBe(0);
+
+    $payload = json_decode($tester->getDisplay(true), true, flags: JSON_THROW_ON_ERROR);
+    expect($payload['answer'])->toBe('plain answer');
+});
+
+it('rejects an unsupported output format at the config boundary', function (): void {
+    $factory = tellTestFactory();
+    $project = tellHumanProject();
+    $factory->workspace()->initialize($project);
+
+    $config = new CommandTester(new ConfigCommand($factory));
+    $config->execute([
+        'action' => 'set', 'key' => 'output', 'value' => '"markdown"',
+        '--dir' => $project, '--if-version' => '0', '--json' => true,
+    ]);
+
+    expect($config->getDisplay())->toContain('must be one of: toon, text, human, json, events');
+});
+
+it('reports output among the effective branch settings', function (): void {
+    $factory = tellTestFactory();
+    $project = tellHumanProject();
+    $factory->workspace()->initialize($project);
+
+    $config = new CommandTester(new ConfigCommand($factory));
+    expect($config->execute([
+        'action' => 'effective', '--dir' => $project, '--json' => true,
+    ]))->toBe(0);
+
+    $payload = json_decode($config->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
+
+    expect($payload['values']['output'])->toBe('toon')
+        ->and($payload['provenance']['output'])->toBe('bundled');
 });

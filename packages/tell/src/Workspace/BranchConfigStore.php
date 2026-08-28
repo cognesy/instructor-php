@@ -19,6 +19,7 @@ final readonly class BranchConfigStore
         'connection' => ['type' => 'string'],
         'model' => ['type' => 'string'],
         'reasoningEffort' => ['type' => 'enum', 'values' => ['low', 'medium', 'high']],
+        'output' => ['type' => 'enum', 'values' => ['toon', 'text', 'human', 'json', 'events']],
         'tools' => ['type' => 'list'],
         'maxRetries' => ['type' => 'int', 'min' => 0, 'max' => 10],
         'timeoutMs' => ['type' => 'int', 'min' => 1, 'max' => 3_600_000],
@@ -30,6 +31,7 @@ final readonly class BranchConfigStore
     /** @var array<string, int|list<string>|string> */
     private const array DEFAULTS = [
         'connection' => 'openai',
+        'output' => 'toon',
         'tools' => [],
         'maxRetries' => 0,
         'timeoutMs' => 30_000,
@@ -266,7 +268,8 @@ final readonly class BranchConfigStore
         }
         if ($spec['type'] === 'enum') {
             if (! is_string($value) || ! in_array($value, $spec['values'] ?? [], true)) {
-                throw new InvalidArgumentException("Tell branch config {$key} must be one of: low, medium, high.");
+                $allowed = implode(', ', $spec['values'] ?? []);
+                throw new InvalidArgumentException("Tell branch config {$key} must be one of: {$allowed}.");
             }
 
             return;

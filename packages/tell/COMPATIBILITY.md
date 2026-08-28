@@ -120,6 +120,14 @@ stdout is not decorated. No existing mode changes. `cognesy/instructor-tell`
 gains a direct `cognesy/instructor-utils` requirement, which was already
 present transitively. Evidence: `tests/Integration/HumanOutputTest.php`.
 
+`output` is a new branch configuration key accepting the same five values, so
+a workspace branch can set its own default turn format. An explicit `--output`
+still wins, and the bundled value stays `toon`; `tell config effective` now
+reports `output` alongside the other branch/bundled values. Enum rejection
+messages now name the offending key's own allowed values instead of always
+naming the reasoning-effort set. Evidence:
+`tests/Integration/HumanOutputTest.php`.
+
 `TellResult::executionMode()` is the published accessor for the same fact.
 `Render\OutputRenderer::finish()` takes a `TellExecutionMode` in place of its
 `bool $transient` parameter; renderers are an implementation seam, so that is

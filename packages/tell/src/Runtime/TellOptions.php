@@ -30,6 +30,7 @@ final readonly class TellOptions
         public bool $verbose = false,
         public bool $quiet = false,
         public bool $transient = false,
+        public bool $outputExplicit = false,
         public bool $connectionExplicit = false,
         public bool $modelExplicit = false,
         public bool $reasoningEffortExplicit = false,
@@ -85,6 +86,7 @@ final readonly class TellOptions
             verbose: $output->isVerbose(),
             quiet: $output->isQuiet(),
             transient: (bool) $input->getOption('transient'),
+            outputExplicit: $input->hasParameterOption(['--output', '-o'], true),
             connectionExplicit: $input->hasParameterOption(['--connection', '-c'], true),
             modelExplicit: $input->hasParameterOption(['--model', '-m'], true),
             reasoningEffortExplicit: $input->hasParameterOption('--reasoning-effort', true),
@@ -108,6 +110,9 @@ final readonly class TellOptions
         $tools = ! $this->toolsExplicit && isset($values['tools']) && is_array($values['tools'])
             ? array_values(array_filter($values['tools'], static fn (mixed $tool): bool => is_string($tool)))
             : $this->tools;
+        $output = ! $this->outputExplicit && isset($values['output']) && is_string($values['output'])
+            ? $values['output']
+            : $this->output;
 
         return new self(
             prompt: $this->prompt,
@@ -122,10 +127,11 @@ final readonly class TellOptions
             tools: $tools,
             answers: $this->answers,
             maxSteps: $this->maxSteps,
-            output: $this->output,
+            output: $output,
             verbose: $this->verbose,
             quiet: $this->quiet,
             transient: $this->transient,
+            outputExplicit: $this->outputExplicit,
             connectionExplicit: $this->connectionExplicit,
             modelExplicit: $this->modelExplicit,
             reasoningEffortExplicit: $this->reasoningEffortExplicit,

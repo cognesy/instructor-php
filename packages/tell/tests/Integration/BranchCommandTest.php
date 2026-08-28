@@ -287,7 +287,7 @@ it('inherits branch config by value, exposes effective provenance, and keeps bra
         ->and(json_decode($show->getDisplay(), true, flags: JSON_THROW_ON_ERROR))->toMatchArray([
             'version' => 1,
             'values' => ['model' => 'deepseek-v4-flash'],
-            'allowedKeys' => ['connection', 'model', 'reasoningEffort', 'tools', 'maxRetries', 'timeoutMs', 'maxOutputChars', 'maxToolOutputChars', 'maxToolCalls'],
+            'allowedKeys' => ['connection', 'model', 'reasoningEffort', 'output', 'tools', 'maxRetries', 'timeoutMs', 'maxOutputChars', 'maxToolOutputChars', 'maxToolCalls'],
         ]);
 
     $review = new CommandTester($command);
@@ -302,6 +302,7 @@ it('inherits branch config by value, exposes effective provenance, and keeps bra
             'values' => [
                 'connection' => 'openai',
                 'model' => 'deepseek-v4-pro',
+                'output' => 'toon',
                 'tools' => [],
                 'maxRetries' => 0,
                 'timeoutMs' => 30_000,
@@ -312,6 +313,7 @@ it('inherits branch config by value, exposes effective provenance, and keeps bra
             'provenance' => [
                 'connection' => 'bundled',
                 'model' => 'branch',
+                'output' => 'bundled',
                 'tools' => 'bundled',
                 'maxRetries' => 'bundled',
                 'timeoutMs' => 'bundled',

@@ -336,19 +336,21 @@ tell config show --branch review --json
 tell config set connection '"deepseek"' --if-version 0 --branch review
 tell config set model '"deepseek-v4-flash"' --if-version 1 --branch review
 tell config set reasoningEffort '"medium"' --if-version 2 --branch review
+tell config set output '"human"' --if-version 3 --branch review
 tell --branch review --reasoning-effort low "review the release"
 tell config effective --branch review --json
 ```
 
-Allowed keys are `connection`, `model`, `reasoningEffort`, `tools`,
+Allowed keys are `connection`, `model`, `reasoningEffort`, `output`, `tools`,
 `maxRetries`, `timeoutMs`, `maxOutputChars`, `maxToolOutputChars`, and
-`maxToolCalls`. Values are
+`maxToolCalls`. `output` selects the default turn format for the branch and
+accepts the same values as `--output`. Values are
 labels, model names, tool profiles, and bounded policy values only: Tell
 rejects credentials, tokens,
 headers, raw environment values, and DSNs with embedded credentials. New
 branches copy source intent by value and later edits remain independent.
-Explicit connection, model, reasoning-effort, and tool flags take precedence
-over branch intent. PHP callers select the typed value with
+Explicit connection, model, reasoning-effort, output, and tool flags take
+precedence over branch intent. PHP callers select the typed value with
 `TellRequest::reasoningEffort(TellReasoningEffort::Low)`; supported values are
 `low`, `medium`, and `high`. Tell rejects provider/model combinations without
 declared reasoning-effort support before inference and translates supported

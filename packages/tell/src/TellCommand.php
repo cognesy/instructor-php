@@ -22,6 +22,9 @@ use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Runtime\TellOptions;
 use Cognesy\Tell\Runtime\TellRuntime;
 use Cognesy\Tell\Runtime\TellSignalCancellationSource;
+use Cognesy\Tell\Workspace\ArenaStore;
+use Cognesy\Tell\Workspace\BranchConfigStore;
+use Cognesy\Tell\Workspace\BranchResolver;
 use InvalidArgumentException;
 use Override;
 use Symfony\Component\Console\Command\Command;
@@ -91,7 +94,7 @@ HELP)
             if (! is_string($prompt) || $prompt === '') {
                 return $this->showHome($input, $output);
             }
-            $options = TellOptions::fromInput($input, $output);
+            $options = $this->withBranchSettings(TellOptions::fromInput($input, $output));
             $renderer = $this->renderer($options, $output, $stderr);
             $cancellation = new TellSignalCancellationSource;
             $signalsEnabled = $cancellation->install();
@@ -143,6 +146,28 @@ HELP)
             authority: 'Inference, resolved tools, its trace target, and optional write access to one named session; --transient is read-only for conversation/session state.',
             degradedBehavior: 'Fails before inference when control resolution fails; trace-write failure does not fail the turn; stateless turns need no session storage.',
         );
+    }
+
+    /**
+     * Branch configuration can decide the output format, so it has to be read
+     * before the renderer is chosen rather than inside the runtime where the
+     * rest of it is applied. Both passes are the same explicit-wins merge over
+     * the same values, so resolving here changes nothing the runtime does.
+     */
+    private function withBranchSettings(TellOptions $options): TellOptions
+    {
+        // An explicit --output already outranks anything a branch could say, so
+        // there is nothing worth a workspace lookup to discover.
+        if ($options->outputExplicit || $options->session !== null) {
+            return $options;
+        }
+        $workspace = $this->factory()->workspace()->discover($options->directory);
+        if ($workspace === null) {
+            return $options;
+        }
+        $branch = (new BranchResolver(new ArenaStore($workspace)))->resolve($options->branch);
+
+        return $options->withBranchConfig((new BranchConfigStore($workspace))->runtimeValues($branch->branch));
     }
 
     private function renderer(
