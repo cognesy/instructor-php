@@ -31,7 +31,7 @@ $data = Inference::using('openai')
 
 // $data is guaranteed to have 'name' and 'country' keys
 echo "{$data['name']}, {$data['country']}\n";
-// @doctest id="9597"
+// @doctest id="50de"
 ```
 
 ## Using the Fluent API
@@ -63,7 +63,7 @@ $data = Inference::using('openai')
         strict: true,
     ))
     ->asJsonData();
-// @doctest id="1ba9"
+// @doctest id="42a2"
 ```
 
 ## Complex Nested Schemas
@@ -124,7 +124,7 @@ echo "Weather in {$data['location']}: {$data['conditions']}, {$data['current_tem
 foreach ($data['forecast'] as $day) {
     echo "  {$day['day']}: {$day['low']}C - {$day['high']}C, {$day['conditions']}\n";
 }
-// @doctest id="04e4"
+// @doctest id="214e"
 ```
 
 ## How Schema Validation Works
@@ -152,7 +152,7 @@ You can query support programmatically:
 
 ```php
 // DriverCapabilities::supportsResponseFormatJsonSchema()
-// @doctest id="4062"
+// @doctest id="6b6a"
 ```
 
 For providers without native JSON Schema support, consider using [JSON object mode](/modes/json) with detailed prompts, or use the Instructor layer above Polyglot for automatic fallback strategies.
