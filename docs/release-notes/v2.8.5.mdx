@@ -1,0 +1,44 @@
+---
+title: 'v2.8.5'
+---
+
+v2.8.5 fixes a durability defect in Tell's streaming runtime. A durable turn
+could complete inference, be paid for, and still publish nothing if the caller
+stopped consuming checkpoints at the end of the stream. The run's commit and
+its result both lived past the generator's final `yield`, so durability
+depended on consumer iteration discipline rather than on the runtime.
+
+## Commit Before the Terminal Checkpoint
+
+`WorkspaceTurnRunner` now publishes the first publishable checkpoint before
+yielding it. Observing a completed checkpoint therefore implies the turn is
+durable. The published state is unchanged: intermediate tool-calling
+checkpoints are still in progress, so the first publishable checkpoint is also
+the last one the agent loop yields. Streaming consumers see the same
+checkpoints, in the same order, with no added latency.
+
+## Run Handles Carry the Outcome
+
+`Tell::start()` returns a `TellRun` handle that owns the run's outcome
+independently of the stream. A caller that breaks early now receives a result
+carrying its real durable, workspace, and branch facts instead of a
+`Cannot get return value of a generator that hasn't returned` error. The handle
+exposes `checkpoints()`, `result()`, `isCommitted()`, `diagnostics()`, and
+`wait()`. The same entry point is available as `TellRuntime::start()` and on
+the `CanRunTell` contract.
+
+A run torn down before it commits records a `run_abandoned` diagnostic rather
+than disappearing silently. That teardown is guarded, because an exception
+raised while a generator is force-closed would otherwise surface at whatever
+statement happened to drop the last reference.
+
+## Upgrade Notes
+
+`Tell::run()` and `Tell::runStream()` keep their signatures and behavior; both
+now route through the new handle. Applications that implement `CanRunTell`
+directly must add the `start()` method.
+
+One behavior change is intentional and is the substance of this fix: abandoning
+a durable stream after its terminal checkpoint now leaves a published turn,
+because the commit already happened. Abandoning a stream before any publishable
+checkpoint still publishes nothing.

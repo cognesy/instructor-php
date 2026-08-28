@@ -5,8 +5,10 @@ This document defines the supported external behavior of
 every public PHP symbol in `src/`.
 
 The `v2.8.3` baseline resolves to commit
-`d85dece468e3570bf6af58ecbb1bf5280895d356` for Tell. This v2.8.4 release
-promotes the additions recorded below into the supported 2.x contract.
+`d85dece468e3570bf6af58ecbb1bf5280895d356` for Tell. The v2.8.4 release
+promoted the additions recorded below into the supported 2.x contract. This
+v2.8.5 release adds the run-handle surface and states the streaming durability
+contract explicitly.
 
 ## Surface classification
 
@@ -74,6 +76,22 @@ These additions are supported in v2.8.4 alongside the existing facade:
 These additions widen existing CLI behavior; they do not
 make workspace store classes, command constructors, or runtime factories part
 of the supported facade.
+
+## v2.8.5 published additions
+
+<!-- markdownlint-disable MD013 -->
+| Published surface | Evidence |
+| --- | --- |
+| Run handle SDK: `Tell::start()`, `TellRuntime::start()`, `CanRunTell::start()`, and `Runtime\TellRun` with `checkpoints()`, `result()`, `isCommitted()`, `diagnostics()`, and `wait()` | `tests/Integration/StreamCommitContractTest.php` |
+| Streaming durability contract: observing a completed checkpoint implies the durable turn is published; a run abandoned before any publishable checkpoint publishes nothing and records the `run_abandoned` diagnostic | `tests/Integration/StreamCommitContractTest.php`, `tests/Integration/SdkRuntimeTest.php` |
+<!-- markdownlint-enable MD013 -->
+
+`Runtime\TellRunOutcome` is the mechanism behind the handle, not a second SDK:
+it is populated by runners and read through `TellRun`.
+
+Implementers of `CanRunTell` outside this package must add `start()`. That is
+the only source-level break in this release; `Tell::run()` and
+`Tell::runStream()` keep their signatures and their observable behavior.
 
 ## CLI route inventory
 
