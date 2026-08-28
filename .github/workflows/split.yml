@@ -31,7 +31,9 @@ jobs:
 
       - name: Install PHP dependencies
         if: github.ref_type == 'tag' || inputs.release_tag != ''
-        run: composer install --no-dev --optimize-autoloader --no-interaction
+        # bin/instructor-docs is internal tooling: Cognesy\Doctools is a
+        # dev-only autoload entry, so this job installs dev dependencies.
+        run: composer install --optimize-autoloader --no-interaction
 
       - name: Generate docs build directories
         if: github.ref_type == 'tag' || inputs.release_tag != ''
