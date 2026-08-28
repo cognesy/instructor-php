@@ -47,6 +47,42 @@ it('discovers the nearest valid workspace from nested paths and stops at the fil
         ->and($manager->discover($outside))->toBeNull();
 });
 
+it('walks past a .tell directory that is not a workspace', function (): void {
+    // Tell's own user storage root is $HOME/.tell, so the first run writes an
+    // execution trace there and creates the directory. Discovery must not then
+    // mistake $HOME for an initialized workspace for every project under it.
+    $home = tellWorkspaceTestDirectory('fake-home');
+    mkdir($home.'/.tell/logs/executions', 0700, true);
+    $project = $home.'/project';
+    mkdir($project, 0700, true);
+    $manager = new WorkspaceManager;
+
+    expect($manager->discover($project))->toBeNull();
+});
+
+it('still discovers a real workspace above a .tell directory that is not one', function (): void {
+    $root = tellWorkspaceTestDirectory('real-above');
+    $workspace = (new WorkspaceManager)->initialize($root)->workspace;
+    $nested = $root.'/storage/project';
+    mkdir($nested, 0700, true);
+    mkdir($root.'/storage/.tell/logs', 0700, true);
+    $manager = new WorkspaceManager;
+
+    expect($manager->discover($nested)?->paths->root)->toBe($workspace->paths->root);
+});
+
+it('still reports a workspace whose arena is broken', function (): void {
+    $root = tellWorkspaceTestDirectory('broken-arena');
+    $workspace = (new WorkspaceManager)->initialize($root)->workspace;
+    // The schema identifies the workspace; a missing refs directory beneath it
+    // is corruption and must stay loud rather than being silently walked past.
+    array_map('unlink', glob($workspace->paths->refs.'/*') ?: []);
+    rmdir($workspace->paths->refs);
+
+    expect(static fn () => (new WorkspaceManager)->discover($root))
+        ->toThrow(WorkspaceException::class, 'workspace refs is not a directory');
+});
+
 it('does not create files or directories while discovering a workspace', function (): void {
     $root = tellWorkspaceTestDirectory('read-only');
     $nested = $root.'/a/b';

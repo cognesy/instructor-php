@@ -37,7 +37,13 @@ final class WorkspaceManager
 
         while (true) {
             $paths = new WorkspacePaths($path);
-            if ($this->exists($paths->marker)) {
+            // The schema record identifies a workspace, not the bare .tell
+            // directory. Tell's own user storage root is $HOME/.tell, so the
+            // first run writes an execution trace there and creates it; keying
+            // discovery on the marker alone would turn $HOME into a broken
+            // workspace for every project beneath it. Anything that does carry
+            // a schema is still validated strictly by read().
+            if ($this->exists($paths->schema)) {
                 return $this->read($paths);
             }
 
