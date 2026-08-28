@@ -315,6 +315,12 @@ jobs:
         # lockstep with those package-level constraints.
         php: ['8.3', '8.4', '8.5']
         composer: ['--prefer-stable']
+    env:
+      # This job resolves released packages from Packagist, so it can only cover
+      # packages that are split and published. packages/experimental is local
+      # scratch space that is never part of a release; it is not a split target
+      # and its dependencies are not resolvable after a tag.
+      UNRELEASED_PACKAGES: 'experimental'
     steps:
       - uses: actions/checkout@v4
 
@@ -325,10 +331,35 @@ jobs:
           coverage: none
           tools: composer
 
+      - name: Verify the released package set matches the split matrix
+        run: |
+          # Keeps UNRELEASED_PACKAGES honest in both directions: an excluded
+          # package must not be split, and every other package must be.
+          status=0
+          for dir in packages/*; do
+            [ -f "$dir/composer.json" ] || continue
+            name="$(basename "$dir")"
+            split=0
+            grep -q "local: 'packages/$name'" .github/workflows/split.yml && split=1
+            excluded=0
+            case " $UNRELEASED_PACKAGES " in *" $name "*) excluded=1 ;; esac
+            if [ "$split" = 1 ] && [ "$excluded" = 1 ]; then
+              echo "packages/$name is a split target, so it must not be listed in UNRELEASED_PACKAGES." >&2
+              status=1
+            fi
+            if [ "$split" = 0 ] && [ "$excluded" = 0 ]; then
+              echo "packages/$name is not a split target, so it must be listed in UNRELEASED_PACKAGES." >&2
+              status=1
+            fi
+          done
+          exit "$status"
+
       - name: Verify package PHP constraints match the test matrix
         run: |
           mismatches="$(
             for manifest in packages/*/composer.json; do
+              name="$(basename "$(dirname "$manifest")")"
+              case " $UNRELEASED_PACKAGES " in *" $name "*) continue ;; esac
               constraint="$(jq -r '.require.php // ""' "$manifest")"
               if [ "$constraint" != '^8.3' ]; then
                 printf '%s: %s\n' "$manifest" "$constraint"
@@ -341,20 +372,26 @@ jobs:
             exit 1
           fi
 
-      - name: Install dependencies in all packages
+      - name: Install dependencies in all released packages
         run: |
           for dir in packages/*; do
-            if [ -f "$dir/composer.json" ]; then
-              echo "📦 Installing dependencies in $dir"
-              composer --working-dir="$dir" update --no-interaction ${{ matrix.composer }}
-            fi
+            [ -f "$dir/composer.json" ] || continue
+            name="$(basename "$dir")"
+            case " $UNRELEASED_PACKAGES " in
+              *" $name "*) echo "⏭️  Skipping $dir (not released)"; continue ;;
+            esac
+            echo "📦 Installing dependencies in $dir"
+            composer --working-dir="$dir" update --no-interaction ${{ matrix.composer }}
           done
 
-      - name: Run tests in all packages
+      - name: Run tests in all released packages
         run: |
           for dir in packages/*; do
-            if [ -f "$dir/composer.json" ]; then
-              echo "🔍 Running tests in $dir"
-              composer --working-dir="$dir" test
-            fi
+            [ -f "$dir/composer.json" ] || continue
+            name="$(basename "$dir")"
+            case " $UNRELEASED_PACKAGES " in
+              *" $name "*) echo "⏭️  Skipping $dir (not released)"; continue ;;
+            esac
+            echo "🔍 Running tests in $dir"
+            composer --working-dir="$dir" test
           done
