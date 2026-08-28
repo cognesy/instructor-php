@@ -10,7 +10,7 @@ This is Laravel-native configuration. The Laravel integration reads `config('ins
 return [
     'default' => env('INSTRUCTOR_CONNECTION', 'openai'),
 ];
-// @doctest id="2dbf"
+// @doctest id="7ea6"
 ```
 
 This determines which LLM connection is used when you call a facade without specifying one explicitly. You can override it at runtime with `->connection('name')` on any facade, or by passing an `LLMConfig` object via `->fromConfig(...)`.
@@ -66,7 +66,7 @@ return [
         ],
     ],
 ];
-// @doctest id="ffc1"
+// @doctest id="000c"
 ```
 
 ### Supported Drivers
@@ -101,7 +101,7 @@ return [
         ],
     ],
 ];
-// @doctest id="66f7"
+// @doctest id="4913"
 ```
 
 ## Embeddings Connections
@@ -130,7 +130,7 @@ return [
         ],
     ],
 ];
-// @doctest id="1414"
+// @doctest id="568a"
 ```
 
 ## Extraction Settings
@@ -148,7 +148,7 @@ return [
         'retry_prompt_class' => App\Prompts\RetryFeedbackPrompt::class,
     ],
 ];
-// @doctest id="5c3d"
+// @doctest id="aa00"
 ```
 
 The structured-output path renders `retry_prompt_class`. The inline `retry_prompt` key
@@ -181,7 +181,7 @@ return [
         'connect_timeout' => env('INSTRUCTOR_HTTP_CONNECT_TIMEOUT', 30),
     ],
 ];
-// @doctest id="9b2c"
+// @doctest id="6888"
 ```
 
 The service provider binds `Cognesy\Http\Contracts\CanSendHttpRequests` to the Laravel-backed HTTP transport. All higher-level services (Inference, Embeddings, StructuredOutput) depend on that contract, ensuring consistent HTTP behavior across the entire package.
@@ -212,7 +212,7 @@ return [
         'templates' => [],
     ],
 ];
-// @doctest id="2dc8"
+// @doctest id="510a"
 ```
 
 ### Logging Presets
@@ -240,7 +240,7 @@ return [
         ],
     ],
 ];
-// @doctest id="b3ad"
+// @doctest id="7ede"
 ```
 
 When `bridge_events` is empty (the default), every Instructor event is forwarded to Laravel. To limit traffic, list only the event classes you care about. See the [Events](events) guide for the full list of available events and listener examples.
@@ -262,7 +262,7 @@ return [
         'prefix' => 'instructor',
     ],
 ];
-// @doctest id="ca6e"
+// @doctest id="70d5"
 ```
 
 ## Native Agents Settings
@@ -294,7 +294,7 @@ return [
         ],
     ],
 ];
-// @doctest id="5694"
+// @doctest id="e8c1"
 ```
 
 The Laravel package resolves `tools` and `capabilities` through the container before registration, so constructor dependencies are supported. `definitions` accepts file or directory paths. `schemas` accepts class strings or schema-definition arrays.
@@ -323,7 +323,7 @@ return [
         ],
     ],
 ];
-// @doctest id="7170"
+// @doctest id="778b"
 ```
 
 ## Telemetry Settings
@@ -367,7 +367,7 @@ return [
         ],
     ],
 ];
-// @doctest id="46ce"
+// @doctest id="7ced"
 ```
 
 `driver` accepts `null`, `otel`, `langfuse`, `logfire`, or `composite`. The package binds telemetry, projector composition, and the runtime event bridge from this namespace automatically.
@@ -409,7 +409,7 @@ $result = StructuredOutput::connection('anthropic')  // Switch connection
         responseModel: MyModel::class,
     )
     ->get();
-// @doctest id="487a"
+// @doctest id="fc65"
 ```
 
 For full programmatic control, build an `LLMConfig` object and pass it directly:
@@ -428,5 +428,5 @@ $config = LLMConfig::fromArray([
 $result = StructuredOutput::fromConfig($config)
     ->with(messages: '...', responseModel: MyModel::class)
     ->get();
-// @doctest id="1782"
+// @doctest id="b9e8"
 ```
