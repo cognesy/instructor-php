@@ -77,9 +77,6 @@ jobs:
           - local: 'packages/contracts'
             repo:  'cognesy/instructor-contracts'
             name:  'instructor-contracts'
-          - local: 'packages/doctools'
-            repo:  'cognesy/instructor-doctools'
-            name:  'instructor-doctools'
           - local: 'packages/dynamic'
             repo:  'cognesy/instructor-dynamic'
             name:  'instructor-dynamic'
@@ -317,10 +314,10 @@ jobs:
         composer: ['--prefer-stable']
     env:
       # This job resolves released packages from Packagist, so it can only cover
-      # packages that are split and published. packages/experimental is local
-      # scratch space that is never part of a release; it is not a split target
-      # and its dependencies are not resolvable after a tag.
-      UNRELEASED_PACKAGES: 'experimental'
+      # packages that are split and published. packages/doctools is the internal
+      # documentation workflow and packages/experimental is local scratch space;
+      # neither is a split target, so neither resolves after a tag.
+      UNRELEASED_PACKAGES: 'doctools experimental'
     steps:
       - uses: actions/checkout@v4
 
