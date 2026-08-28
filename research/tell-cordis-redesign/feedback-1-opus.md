@@ -256,6 +256,68 @@ publication still sits after the `foreach`, so whether abandoning a run
 publishes remains decided by generator mechanics rather than by design. That
 is now a choice Tell can express, rather than a behaviour it inherits.
 
+### N3 (new, open): the generator is being used as a transaction
+
+Re-checked on 2026-08-28, after `refactor(tell): organize public namespaces`
+and `feat(tell): deliver modular SDK and scoped jobs`. The `AgentLoop` fix is
+intact and committed. **The Tell-side defect is unchanged, and it is not one
+site — it is a pattern.**
+
+Two things live past the last `yield` in Tell's runner generators: the
+**commit** (`assertPublishable()` + `publish()`,
+`WorkspaceTurnRunner.php:55-56`) and the **result** (`return $state`,
+retrievable only through `getReturn()`). Both are reachable only by exhausting
+the generator. So whether a paid-for turn becomes durable is a function of the
+consumer's iteration discipline — which no type expresses, no test covers, and
+no caller is warned about.
+
+Measured against the real durable path (scratchpad `AbandonedStreamTest`):
+
+| Consumer behaviour | Inference ran | Arena head |
+| --- | --- | --- |
+| drains the stream | yes | published |
+| stops at the last checkpoint | **yes** | **null** |
+
+The second row is silent data loss. The run completed, `isCompleted()` is
+true, the request was recorded and paid for, and nothing reached the arena —
+because the consumer never made the extra `next()` that lets the runner resume
+past its final `yield`. A `foreach (... as $p) { if ($p->isCompleted()) break; }`
+consumer is doing nothing unreasonable, and loses the turn.
+
+The same root cause has a second, louder symptom: `getReturn()` throws
+`Cannot get return value of a generator that hasn't returned`. There are
+**ten** `getReturn()` call sites across `TellRuntime`, the three workspace
+runners, `OneRunTellProtocol`, and `AgentCommand`, every one of which assumes
+a fully drained generator.
+
+The lesson generalises beyond this bug: the `AgentLoop` fix made the *loop's*
+teardown reliable, and the identical defect was waiting one layer out, in
+Tell's own generator. It will keep reappearing at every layer that wraps a
+generator and hangs meaning off its completion.
+
+#### Proposed fix
+
+**1. Commit before the terminal yield, not after it.** Today the commit sits
+after the `foreach`, so it is reachable only by an advance the consumer has no
+reason to make. Move it inside: when a checkpoint is publishable, publish it
+and *then* yield it. This inverts the guarantee into one callers can rely on —
+**observing the final checkpoint implies the turn is durable** — and it makes
+a failed write surface as an exception from the iteration the caller is
+already driving, rather than vanishing. Smallest change, largest effect.
+
+**2. Stop hanging the result off `getReturn()`.** Return a handle that carries
+the outcome independently of drain, so an early-break consumer gets a result
+instead of an exception. This is the structural half, and it retires all ten
+fragile call sites.
+
+**3. Make non-terminal abandonment loud.** A `try`/`finally` in the runner
+generators mirroring the `AgentLoop` fix, emitting a diagnostic when a run was
+torn down before committing. Teardown must not throw, for the same
+force-closed-generator reason as `onAbandoned()`.
+
+Items 1 and 3 are small and independent. Item 2 is a public-surface change and
+should be sequenced with the redesign rather than ahead of it.
+
 ### N1 (new, open): disposal runs cleanup before binding removal
 
 Unchanged by the upstream fixes, because it lives in `Fiber`/`ServiceRegistry`
