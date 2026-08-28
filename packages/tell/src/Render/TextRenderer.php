@@ -7,6 +7,7 @@ namespace Cognesy\Tell\Render;
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Tell\Observability\TellEventNormalizer;
+use Cognesy\Tell\TellExecutionMode;
 use Override;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -26,7 +27,7 @@ final readonly class TextRenderer implements OutputRenderer
     }
 
     #[Override]
-    public function finish(AgentState $state, array $warnings = [], bool $transient = false, ?array $branch = null, array $diagnostics = []): void
+    public function finish(AgentState $state, array $warnings = [], TellExecutionMode $mode = TellExecutionMode::Stateless, ?array $branch = null, array $diagnostics = []): void
     {
         $verbosity = match ($this->quiet) {
             true => OutputInterface::VERBOSITY_QUIET,
@@ -39,7 +40,7 @@ final readonly class TextRenderer implements OutputRenderer
         if ($state->stopSignal() !== null) {
             $this->stderr->writeln('[tell] execution stopped: '.$state->stopSignal()->toString(), $verbosity);
         }
-        if ($transient) {
+        if ($mode === TellExecutionMode::Transient) {
             $this->stderr->writeln('[tell] transient: no conversation or session state was persisted.', $verbosity);
         }
         if ($branch !== null) {

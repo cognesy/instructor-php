@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Render;
 
 use Cognesy\Agents\Data\AgentState;
+use Cognesy\Tell\TellExecutionMode;
 use Throwable;
 
 final class AgentResult
@@ -12,7 +13,7 @@ final class AgentResult
     /** @return array<string, mixed> */
     /** @param array{name: string, source: 'current'|'invocation'}|null $branch */
     /** @param list<array{code: string, source: string, severity: string, message: string}> $diagnostics */
-    public static function fromState(AgentState $state, array $warnings = [], bool $transient = false, ?array $branch = null, array $diagnostics = []): array
+    public static function fromState(AgentState $state, array $warnings = [], TellExecutionMode $mode = TellExecutionMode::Stateless, ?array $branch = null, array $diagnostics = []): array
     {
         $status = $state->status();
 
@@ -29,8 +30,13 @@ final class AgentResult
                 $state->errors()->all(),
             ),
             'execution' => [
-                'mode' => $transient ? 'transient' : 'durable',
-                'durable' => ! $transient,
+                // Automatic is a request-side mode that always resolves to one
+                // of the three outcomes before a result exists; it never
+                // describes what a finished turn persisted.
+                'mode' => $mode === TellExecutionMode::Automatic
+                    ? TellExecutionMode::Stateless->value
+                    : $mode->value,
+                'durable' => $mode === TellExecutionMode::Durable,
             ],
         ];
         if ($warnings !== []) {

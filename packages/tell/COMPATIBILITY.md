@@ -93,6 +93,32 @@ Implementers of `CanRunTell` outside this package must add `start()`. That is
 the only source-level break in this release; `Tell::run()` and
 `Tell::runStream()` keep their signatures and their observable behavior.
 
+## Committed unreleased behavior change: honest execution mode
+
+`execution.mode` in JSON and TOON turn output now reports what the turn
+actually persisted, and gains a third value:
+
+<!-- markdownlint-disable MD013 -->
+| `execution.mode` | `execution.durable` | Turn |
+| --- | --- | --- |
+| `durable` | `true` | Published an immutable arena turn, or saved a named session. |
+| `transient` | `false` | Ran with the workspace context but wrote no conversation or session state. |
+| `stateless` | `false` | Ran outside any initialized workspace with no named session (new value). |
+<!-- markdownlint-enable MD013 -->
+
+Through v2.8.5 both fields were derived from the transient flag alone, so a
+stateless turn — the default outside a `.tell/` project — reported
+`mode: durable` and `durable: true` while persisting nothing. Consumers that
+branched on `execution.mode === 'durable'` must now also accept `stateless`.
+`execution.durable` keeps its meaning and is now correct for stateless turns.
+Evidence: `tests/Integration/ExecutionModeReportingTest.php`.
+
+`TellResult::executionMode()` is the published accessor for the same fact.
+`Render\OutputRenderer::finish()` takes a `TellExecutionMode` in place of its
+`bool $transient` parameter; renderers are an implementation seam, so that is
+not a published break. The `direct` tool-call execution projection is a
+different path and is unchanged.
+
 ## CLI route inventory
 
 The published v2.8.3 application has 19 Symfony command classes: 18 under

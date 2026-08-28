@@ -486,6 +486,21 @@ Text output states that nothing was persisted; JSON and TOON include
 same normalized lifecycle envelope. Execution traces remain external
 observations under the normal trace privacy policy.
 
+`execution.mode` reports what the turn actually persisted, so it has three
+values and is not a restatement of `--transient`:
+
+<!-- markdownlint-disable MD013 -->
+| `execution.mode` | `execution.durable` | Turn |
+| --- | --- | --- |
+| `durable` | `true` | Published an immutable arena turn, or saved a named session. |
+| `transient` | `false` | Ran with the workspace context but deliberately wrote no conversation or session state. |
+| `stateless` | `false` | Ran outside any initialized workspace with no named session, so there was nothing to publish. |
+<!-- markdownlint-enable MD013 -->
+
+`stateless` is the default outside a `.tell/` project. Consumers that branch on
+`execution.mode` must accept all three values; `execution.durable` remains the
+single boolean answer to whether conversation state was written.
+
 Canonical workspace records contain semantic messages and tool-call/result
 relationships only. Provider requests and responses, credentials, headers,
 usage, timing, rendering data, traces, and absolute paths are not part of

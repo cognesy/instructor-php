@@ -75,6 +75,20 @@ final readonly class TellResult
         return $this->durable;
     }
 
+    /**
+     * The persistence actually reached by this turn. Transient and durable are
+     * independent facts, so a turn that is neither published nothing anywhere
+     * and is reported as stateless rather than inferred to be durable.
+     */
+    public function executionMode(): TellExecutionMode
+    {
+        return match (true) {
+            $this->transient => TellExecutionMode::Transient,
+            $this->durable => TellExecutionMode::Durable,
+            default => TellExecutionMode::Stateless,
+        };
+    }
+
     public function session(): ?string
     {
         return $this->session;

@@ -111,7 +111,7 @@ HELP)
                 static fn (\Cognesy\Tell\Diagnostics\TellDiagnostic $diagnostic): array => $diagnostic->toArray(),
                 $result->diagnostics(),
             );
-            $renderer->finish($result->state(), $warnings, $result->isTransient(), $branch, $diagnostics);
+            $renderer->finish($result->state(), $warnings, $result->executionMode(), $branch, $diagnostics);
             if (! $signalsEnabled && $output->isVerbose()) {
                 $stderr->writeln('[tell] SIGINT cancellation is unavailable: pcntl signal support was not detected.');
             }
@@ -137,7 +137,7 @@ HELP)
             responsibility: 'Execute one already-selected agent turn and emit bounded result evidence.',
             ownedState: 'AgentState plus one append-only trace; initialized workspaces publish immutable arena turns unless --transient, and AgentSession is used only when --session is explicit and durable.',
             input: 'Prompt plus an immutable resolved AgentDefinition and AgentProfile.',
-            output: 'Terminal AgentState projection or typed events, explicit durable/transient mode, an execution trace, and optional updated AgentSession.',
+            output: 'Terminal AgentState projection or typed events, explicit durable/transient/stateless mode, an execution trace, and optional updated AgentSession.',
             authority: 'Inference, resolved tools, its trace target, and optional write access to one named session; --transient is read-only for conversation/session state.',
             degradedBehavior: 'Fails before inference when control resolution fails; trace-write failure does not fail the turn; stateless turns need no session storage.',
         );
