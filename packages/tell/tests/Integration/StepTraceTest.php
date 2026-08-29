@@ -163,3 +163,25 @@ it('refuses machine progress that was also asked to be quiet', function (): void
     ))->toBe(2)
         ->and($tester->getDisplay())->toContain('--debug and --quiet cannot be used together');
 });
+
+it('separates the trace from the answer with a blank line, and adds none when nothing traced', function (): void {
+    $traced = tellTraceTester(ScenarioStep::final('done'));
+
+    expect($traced->execute(
+        ['prompt' => 'work', '--dir' => tellTraceProject(), '--output' => 'json'],
+        ['capture_stderr_separately' => true, 'verbosity' => OutputInterface::VERBOSITY_VERBOSE],
+    ))->toBe(0);
+
+    // json puts nothing of its own on stderr, so the channel's own tail is
+    // exactly one blank line after the closing band.
+    expect($traced->getErrorOutput())->toEndWith("\n\n")
+        ->and($traced->getErrorOutput())->not->toEndWith("\n\n\n");
+
+    $silent = tellTraceTester(ScenarioStep::final('done'));
+
+    expect($silent->execute(
+        ['prompt' => 'work', '--dir' => tellTraceProject(), '--output' => 'json'],
+        ['capture_stderr_separately' => true],
+    ))->toBe(0);
+    expect($silent->getErrorOutput())->toBe('');
+});

@@ -562,6 +562,11 @@ the value is an excerpt.
 Without either flag, `toon`, `text`, and `human` output keep the bare
 `[inference.start] step=N` heartbeat they have always written.
 
+Whenever a channel wrote anything, a blank line follows it before the answer,
+so progress never runs straight into the result. That separator goes on stderr
+along with the progress that earned it, so a piped or redirected stdout is
+unchanged.
+
 Both channels show tool arguments and results, which no other Tell surface
 does. That is what asking for them means, and it is why they exist only for
 the invocation that asked: they are never persisted, never enter the

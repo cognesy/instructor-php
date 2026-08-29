@@ -129,6 +129,12 @@ HELP)
                 static fn (\Cognesy\Tell\Diagnostics\TellDiagnostic $diagnostic): array => $diagnostic->toArray(),
                 $result->diagnostics(),
             );
+            // One blank line so the answer does not run straight into the last
+            // progress line. It goes on stderr because that is the stream the
+            // noise came from: a redirected stdout stays exactly as parseable.
+            if ($trace?->wrote() === true || $progress->wrote()) {
+                $stderr->write("\n", false, OutputInterface::OUTPUT_RAW);
+            }
             $renderer->finish($result->state(), $warnings, $result->executionMode(), $branch, $diagnostics);
             if (! $signalsEnabled && $output->isVerbose()) {
                 $stderr->writeln('[tell] SIGINT cancellation is unavailable: pcntl signal support was not detected.');

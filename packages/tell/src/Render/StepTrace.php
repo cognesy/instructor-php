@@ -36,10 +36,18 @@ final class StepTrace
 
     private int $step = 0;
 
+    private bool $wrote = false;
+
     public function __construct(
         private readonly OutputInterface $stderr,
         private readonly bool $full = false,
     ) {}
+
+    /** Whether this channel has put anything on stderr for the current turn. */
+    public function wrote(): bool
+    {
+        return $this->wrote;
+    }
 
     public function attach(AgentLoop $loop): void
     {
@@ -224,5 +232,6 @@ final class StepTrace
     private function line(string $text): void
     {
         $this->stderr->write($text."\n", false, OutputInterface::OUTPUT_RAW);
+        $this->wrote = true;
     }
 }

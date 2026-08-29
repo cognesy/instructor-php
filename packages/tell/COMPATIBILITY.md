@@ -148,6 +148,12 @@ Without either flag, `toon`, `text`, and `human` keep their existing
 `[inference.start] step=N` heartbeat and the structured formats keep writing
 nothing.
 
+Whenever a stderr channel wrote anything for a turn - a trace, machine lines,
+or the bare heartbeat - one blank line is written to stderr before the answer,
+so progress does not run straight into the result. It is placed on stderr
+rather than stdout, so a redirected or piped stdout is byte-for-byte what it
+was.
+
 These two channels are the only Tell surfaces that show tool arguments and
 results. Neither is persisted, neither enters the normalized `tell.event.v1`
 stream, and neither reaches an execution trace file, so the redaction

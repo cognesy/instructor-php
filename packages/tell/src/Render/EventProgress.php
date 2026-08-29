@@ -19,16 +19,24 @@ use Symfony\Component\Console\Output\OutputInterface;
  * stream. Arguments and results are read from the raw event and added locally;
  * they are never put into the envelope, which stays payload-free.
  */
-final readonly class EventProgress
+final class EventProgress
 {
     private const int MAX_VALUE = 512;
 
+    private bool $wrote = false;
+
     public function __construct(
-        private OutputInterface $stderr,
-        private bool $detailed = false,
-        private bool $quiet = false,
-        private bool $heartbeat = true,
+        private readonly OutputInterface $stderr,
+        private readonly bool $detailed = false,
+        private readonly bool $quiet = false,
+        private readonly bool $heartbeat = true,
     ) {}
+
+    /** Whether this channel has put anything on stderr for the current turn. */
+    public function wrote(): bool
+    {
+        return $this->wrote;
+    }
 
     public function attach(AgentLoop $loop, ?TellEventNormalizer $events = null): void
     {
@@ -43,6 +51,7 @@ final readonly class EventProgress
                 // OUTPUT_RAW: arguments and results routinely contain angle
                 // brackets that the console formatter would read as markup.
                 $this->stderr->writeln($line, OutputInterface::OUTPUT_RAW);
+                $this->wrote = true;
             }
         });
     }
