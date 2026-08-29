@@ -28,7 +28,7 @@ $agent = AgentBuilder::base()
 
 $state = AgentState::empty()->withUserMessage('List files in /tmp');
 $result = $agent->execute($state);
-// @doctest id="7fa4"
+// @doctest id="8dfe"
 ```
 
 The `AgentBuilder::base()` factory creates a builder pre-configured with sensible defaults: a `ToolCallingDriver` backed by the default LLM provider, the `ConversationWithCurrentToolTrace` message compiler, and an empty hook stack. Every `withCapability()` call returns a **new builder instance** -- the builder is immutable, so you can safely branch configurations from a shared base.
@@ -51,7 +51,7 @@ $coder = $base
 $reviewer = $base
     ->withCapability(new UseFileTools('/my/project'))
     ->build();
-// @doctest id="539c"
+// @doctest id="7c09"
 ```
 
 ## The Build Pipeline
@@ -84,7 +84,7 @@ $agent = AgentBuilder::base()
         preamble: 'You are a careful repository assistant.',
     ))
     ->build();
-// @doctest id="897a"
+// @doctest id="87a5"
 ```
 
 Profile creation deliberately happens before profile binding to avoid a circular
@@ -113,7 +113,7 @@ new UseLLMConfig(
     llm: LLMProvider::using('anthropic'),
     maxRetries: 3,
 );
-// @doctest id="5d5b"
+// @doctest id="467c"
 ```
 
 | Parameter | Type | Default | Description |
@@ -139,7 +139,7 @@ new UseGuards(
         InferenceFinishReason::EndTurn,
     ],
 );
-// @doctest id="df41"
+// @doctest id="0ed2"
 ```
 
 | Parameter | Type | Default | Description |
@@ -178,7 +178,7 @@ new UseHook(
     priority: 10,
     name: 'my_custom_hook',
 );
-// @doctest id="4d85"
+// @doctest id="c151"
 ```
 
 | Parameter | Type | Default | Description |
@@ -196,7 +196,7 @@ Replaces the default tool-use driver entirely. Use this when you need a complete
 use Cognesy\Agents\Capability\Core\UseDriver;
 
 new UseDriver($customDriver);
-// @doctest id="7625"
+// @doctest id="eb74"
 ```
 
 ### UseDriverDecorator
@@ -210,7 +210,7 @@ use Cognesy\Agents\Drivers\CanUseTools;
 new UseDriverDecorator(
     fn(CanUseTools $inner) => new LoggingDriver($inner)
 );
-// @doctest id="f02c"
+// @doctest id="b12a"
 ```
 
 ### UseContextCompiler
@@ -221,7 +221,7 @@ Replaces the message compiler that prepares the conversation history for the LLM
 use Cognesy\Agents\Capability\Core\UseContextCompiler;
 
 new UseContextCompiler($customCompiler);
-// @doctest id="4d0d"
+// @doctest id="4ceb"
 ```
 
 ### UseContextCompilerDecorator
@@ -235,7 +235,7 @@ use Cognesy\Agents\Context\CanCompileMessages;
 new UseContextCompilerDecorator(
     fn(CanCompileMessages $inner) => new TokenLimitCompiler($inner, maxTokens: 4000)
 );
-// @doctest id="af1f"
+// @doctest id="de9d"
 ```
 
 ### UseContextConfig
@@ -249,7 +249,7 @@ new UseContextConfig(
     systemPrompt: 'You are a helpful coding assistant.',
     responseFormat: new ResponseFormat(type: 'json_object'),
 );
-// @doctest id="aa7f"
+// @doctest id="dcb9"
 ```
 
 Both a `string` system prompt and a `ResponseFormat` object are accepted. If both are empty, the capability is a no-op.
@@ -269,7 +269,7 @@ new UseReActConfig(
     maxRetries: 2,
     mode: OutputMode::Json,
 );
-// @doctest id="98f8"
+// @doctest id="e408"
 ```
 
 ### UseToolFactory
@@ -286,7 +286,7 @@ new UseToolFactory(
     fn(Tools $tools, CanUseTools $driver, CanHandleEvents $events) =>
         new MyDynamicTool($tools, $driver)
 );
-// @doctest id="3a93"
+// @doctest id="2bcd"
 ```
 
 The callback receives three arguments: the resolved `Tools` collection, the finalized `CanUseTools` driver, and the `CanHandleEvents` event dispatcher. It must return a single `ToolInterface` instance.
@@ -338,7 +338,7 @@ final readonly class UseRateLimiting implements CanProvideAgentCapability
         );
     }
 }
-// @doctest id="74eb"
+// @doctest id="c13d"
 ```
 
 The `CanConfigureAgent` interface provides read and write access to all configurable components:
@@ -362,7 +362,7 @@ same registries used by definitions:
 
 ```php
 $result = CapabilityDiscovery::discover($capabilities, $tools);
-// @doctest id="c414"
+// @doctest id="10dc"
 ```
 
 Call discovery during application bootstrap before a `DefinitionLoopFactory`
@@ -400,7 +400,7 @@ $rootEvents->wiretap(fn($event) => logger()->debug((string) $event));
 $agent = AgentBuilder::base(parentEvents: $rootEvents)
     ->withCapability(new UseBash())
     ->build();
-// @doctest id="aba8"
+// @doctest id="673e"
 ```
 
 This is particularly useful when running subagents or sessions, where you want a unified event stream across all agent activity.
