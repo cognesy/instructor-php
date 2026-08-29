@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Tell\Protocol\TellAgentProtocolRequest;
 use Cognesy\Tell\Protocol\TellAgentProtocolWriter;
@@ -15,8 +15,7 @@ function tellAgentProtocolProcess(
     string $input,
     string $scenario = 'success',
     ?string $composerVendorDir = null,
-): array
-{
+): array {
     $environment = [
         'TELL_RPC_SCENARIO' => $scenario,
         'TELL_RPC_PROJECT' => $project,
@@ -27,7 +26,7 @@ function tellAgentProtocolProcess(
     $process = proc_open(
         [
             PHP_BINARY,
-            dirname(__DIR__).'/Fixtures/agent-protocol-worker.php',
+            dirname(__DIR__) . '/Fixtures/agent-protocol-worker.php',
             'agent',
             '--rpc',
             '--dir',
@@ -38,7 +37,7 @@ function tellAgentProtocolProcess(
         dirname(__DIR__, 3),
         $environment,
     );
-    if (! is_resource($process)) {
+    if (!is_resource($process)) {
         throw new RuntimeException('Unable to start the Tell agent protocol subprocess.');
     }
 
@@ -59,19 +58,17 @@ function tellAgentProtocolProcess(
 }
 
 /** @param array<string, mixed> $overrides */
-function tellAgentProtocolRequest(array $overrides = []): string
-{
+function tellAgentProtocolRequest(array $overrides = []): string {
     return json_encode([
         'schema' => TellAgentProtocolRequest::SCHEMA,
         'id' => 'controller-1',
         'prompt' => 'prompt-secret-canary',
         ...$overrides,
-    ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES)."\n";
+    ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES) . "\n";
 }
 
 /** @param list<array<string, mixed>> $frames */
-function expectTellAgentProtocolFrames(array $frames, string $terminalType): void
-{
+function expectTellAgentProtocolFrames(array $frames, string $terminalType): void {
     expect($frames)->not->toBeEmpty();
     foreach ($frames as $index => $frame) {
         expect($frame['schema'])->toBe(TellAgentProtocolWriter::SCHEMA)
@@ -87,7 +84,7 @@ function expectTellAgentProtocolFrames(array $frames, string $terminalType): voi
 
 it('streams ordered progress and exactly one successful terminal frame from a real process', function (): void {
     $project = tellTestProject();
-    file_put_contents($project.'/protocol-evidence.txt', "bounded evidence\n");
+    file_put_contents($project . '/protocol-evidence.txt', "bounded evidence\n");
 
     $run = tellAgentProtocolProcess($project, tellAgentProtocolRequest());
 
@@ -128,7 +125,7 @@ it('rejects malformed input and unknown protocol versions without inference', fu
 })->with([
     'malformed json' => ['{"schema":', 'invalid_request'],
     'unknown version' => [tellAgentProtocolRequest(['schema' => 'tell.agent.request.v999']), 'unsupported_version'],
-    'multiple lines' => [tellAgentProtocolRequest().tellAgentProtocolRequest(), 'invalid_request'],
+    'multiple lines' => [tellAgentProtocolRequest() . tellAgentProtocolRequest(), 'invalid_request'],
 ]);
 
 it('returns a distinct sanitized failure terminal from a real process', function (): void {

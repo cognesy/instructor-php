@@ -2,24 +2,22 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
-use Cognesy\Tell\TellCommand;
+use Cognesy\Tell\Console\TellCommand;
 use Symfony\Component\Console\Tester\CommandTester;
 
-function tellProgressProject(): string
-{
-    $project = tellLastTemporaryRoot().'/machine-progress-project';
+function tellProgressProject(): string {
+    $project = tellLastTemporaryRoot() . '/machine-progress-project';
     mkdir($project, 0700, true);
 
     return $project;
 }
 
-function tellProgressTester(ScenarioStep ...$steps): CommandTester
-{
+function tellProgressTester(ScenarioStep ...$steps): CommandTester {
     return new CommandTester(new TellCommand(tellTestFactory(
         static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(FakeAgentDriver::fromSteps(...$steps)),
     )));
@@ -91,7 +89,7 @@ it('leaves the bare heartbeat alone when no progress channel was asked for', fun
         ScenarioStep::final('done'),
     );
     $project = tellProgressProject();
-    file_put_contents($project.'/notes.txt', "a note\n");
+    file_put_contents($project . '/notes.txt', "a note\n");
 
     expect($tester->execute(
         ['prompt' => 'read the note', '--dir' => $project, '--output' => 'text'],

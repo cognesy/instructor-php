@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Continuation\AgentStopException;
@@ -20,23 +20,23 @@ use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
-use Cognesy\Tell\Canonical\CanonicalLineage;
-use Cognesy\Tell\Canonical\CanonicalMessage;
-use Cognesy\Tell\Canonical\CanonicalRole;
-use Cognesy\Tell\Canonical\CanonicalTextPart;
-use Cognesy\Tell\Canonical\CanonicalTurn;
+use Cognesy\Tell\Console\TellCommand;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\TellCommand;
 use Cognesy\Tell\Tests\Support\RecordingDriver;
 use Cognesy\Tell\Tests\Support\RequestRecorder;
-use Cognesy\Tell\Workspace\ArenaHistoryCompiler;
-use Cognesy\Tell\Workspace\ArenaStore;
-use Cognesy\Tell\Workspace\TellWorkspace;
+use Cognesy\Tell\Workspace\Arena\FilesystemArena;
+use Cognesy\Tell\Workspace\Arena\HistoryCompiler;
+use Cognesy\Tell\Workspace\Arena\Record\Lineage;
+use Cognesy\Tell\Workspace\Arena\Record\Message as RecordMessage;
+use Cognesy\Tell\Workspace\Arena\Record\Role;
+use Cognesy\Tell\Workspace\Arena\Record\TextPart;
+use Cognesy\Tell\Workspace\Arena\Record\Turn;
+use Cognesy\Tell\Workspace\WorkspaceState;
 use HelgeSverre\Toon\Toon;
 use Symfony\Component\Console\Tester\CommandTester;
 
 it('continues a canonical workspace transcript with a fresh Tell process', function (): void {
-    $recorder = new RequestRecorder;
+    $recorder = new RequestRecorder();
     $firstDriver = new RecordingDriver($recorder, 'first answer');
     $firstFactory = tellTestFactory(static fn (AgentLoop $loop): AgentLoop => $loop->withDriver($firstDriver));
     $project = tellWorkspaceProject($firstFactory);
@@ -60,13 +60,13 @@ it('continues a canonical workspace transcript with a fresh Tell process', funct
         $recorder->requests[1],
     );
     $workspace = tellWorkspace($freshFactory, $project);
-    $store = new ArenaStore($workspace);
+    $store = new FilesystemArena($workspace);
     $head = $store->readRef()->head;
     if ($head === null) {
         throw new RuntimeException('Expected the completed workspace turn to have a canonical head.');
     }
 
-    $history = (new ArenaHistoryCompiler)->compile($store, $head);
+    $history = (new HistoryCompiler())->compile($store, $head);
 
     expect($recorder->requests)->toHaveCount(2)
         ->and($secondRequest)->toContain(['role' => 'user', 'content' => 'first turn'])
@@ -85,14 +85,14 @@ it('compiles the same canonical head independently of provider selection', funct
     $project = tellWorkspaceProject($factory);
     (new CommandTester(new TellCommand($factory)))->execute(['prompt' => 'durable prompt', '--dir' => $project]);
 
-    $store = new ArenaStore(tellWorkspace($factory, $project));
+    $store = new FilesystemArena(tellWorkspace($factory, $project));
     $head = $store->readRef()->head;
     if ($head === null) {
         throw new RuntimeException('Expected a canonical workspace head.');
     }
 
-    $firstProviderView = tellWorkspaceMessageProjection((new ArenaHistoryCompiler)->compile($store, $head)->messages);
-    $secondProviderView = tellWorkspaceMessageProjection((new ArenaHistoryCompiler)->compile($store, $head)->messages);
+    $firstProviderView = tellWorkspaceMessageProjection((new HistoryCompiler())->compile($store, $head)->messages);
+    $secondProviderView = tellWorkspaceMessageProjection((new HistoryCompiler())->compile($store, $head)->messages);
 
     expect($firstProviderView)->toBe($secondProviderView)
         ->toBe([
@@ -102,10 +102,8 @@ it('compiles the same canonical head independently of provider selection', funct
 });
 
 it('writes only semantic canonical data and excludes provider observations', function (): void {
-    $driver = new class implements CanUseTools
-    {
-        public function useTools(AgentState $state): AgentState
-        {
+    $driver = new class implements CanUseTools {
+        public function useTools(AgentState $state): AgentState {
             return $state->withCurrentStep(new AgentStep(
                 inputMessages: $state->messages(),
                 outputMessages: Messages::fromString('semantic answer', 'assistant'),
@@ -156,17 +154,15 @@ it('leaves an empty workspace arena unchanged when inference cannot publish', fu
         ->and($payload)->toHaveKey('error')
         ->and($payload['error'])->toContain($expectedError)
         ->and(tellWorkspaceArenaSnapshot($workspace))->toBe($before)
-        ->and((new ArenaStore($workspace))->readRef()->head)->toBeNull();
+        ->and((new FilesystemArena($workspace))->readRef()->head)->toBeNull();
 })->with([
     'driver failure' => [
         new FakeAgentDriver([ScenarioStep::error('failed')]),
         'was not completed; arena head was left unchanged',
     ],
     'cancellation' => [
-        new class implements CanUseTools
-        {
-            public function useTools(AgentState $state): AgentState
-            {
+        new class implements CanUseTools {
+            public function useTools(AgentState $state): AgentState {
                 throw new AgentStopException(StopSignal::userRequested('cancelled'));
             }
         },
@@ -177,10 +173,8 @@ it('leaves an empty workspace arena unchanged when inference cannot publish', fu
         'has no final response; arena head was left unchanged',
     ],
     'unsupported canonical message' => [
-        new class implements CanUseTools
-        {
-            public function useTools(AgentState $state): AgentState
-            {
+        new class implements CanUseTools {
+            public function useTools(AgentState $state): AgentState {
                 return $state->withCurrentStep(new AgentStep(
                     inputMessages: $state->messages(),
                     outputMessages: new Messages(Message::fromContent(
@@ -204,21 +198,21 @@ it('keeps the competing canonical head when a compare-and-swap race loses', func
     expect((new CommandTester(new TellCommand($factory)))->execute(['prompt' => 'first turn', '--dir' => $project]))->toBe(0);
 
     $workspace = tellWorkspace($factory, $project);
-    $store = new ArenaStore($workspace);
+    $store = new FilesystemArena($workspace);
     $previousHead = $store->readRef()->head;
     if ($previousHead === null) {
         throw new RuntimeException('Expected initial turn to publish a canonical head.');
     }
     $previousTurn = $store->get($previousHead);
-    if (! $previousTurn instanceof CanonicalTurn) {
+    if (!$previousTurn instanceof Turn) {
         throw new RuntimeException('Expected initial arena head to be a canonical turn.');
     }
-    $winningHead = $store->put(new CanonicalTurn(
+    $winningHead = $store->put(new Turn(
         id: 'turn-race-winner',
-        lineage: new CanonicalLineage($previousTurn->lineage()->root(), $previousHead),
+        lineage: new Lineage($previousTurn->lineage()->root(), $previousHead),
         messages: [
-            new CanonicalMessage(CanonicalRole::User, [new CanonicalTextPart('racing turn')]),
-            new CanonicalMessage(CanonicalRole::Assistant, [new CanonicalTextPart('race winner')]),
+            new RecordMessage(Role::User, [new TextPart('racing turn')]),
+            new RecordMessage(Role::Assistant, [new TextPart('race winner')]),
         ],
     ));
 
@@ -273,17 +267,15 @@ it('keeps successful workspace output contracts intact', function (string $mode)
     };
 })->with(['toon', 'text', 'json', 'events']);
 
-function tellWorkspaceProject(TellAgentFactory $factory): string
-{
-    $project = tellLastTemporaryRoot().'/workspace';
+function tellWorkspaceProject(TellAgentFactory $factory): string {
+    $project = tellLastTemporaryRoot() . '/workspace';
     mkdir($project, 0700, true);
     $factory->workspace()->initialize($project);
 
     return $project;
 }
 
-function tellWorkspace(TellAgentFactory $factory, string $project): TellWorkspace
-{
+function tellWorkspace(TellAgentFactory $factory, string $project): WorkspaceState {
     $workspace = $factory->workspace()->discover($project);
     if ($workspace === null) {
         throw new RuntimeException('Expected initialized Tell workspace to be discoverable.');
@@ -293,15 +285,14 @@ function tellWorkspace(TellAgentFactory $factory, string $project): TellWorkspac
 }
 
 /** @return array<string, string> */
-function tellWorkspaceArenaSnapshot(TellWorkspace $workspace): array
-{
+function tellWorkspaceArenaSnapshot(WorkspaceState $workspace): array {
     $files = [];
-    $root = $workspace->paths->arena.DIRECTORY_SEPARATOR;
+    $root = $workspace->paths->arena . DIRECTORY_SEPARATOR;
     $iterator = new RecursiveIteratorIterator(
         new RecursiveDirectoryIterator($workspace->paths->arena, FilesystemIterator::SKIP_DOTS),
     );
     foreach ($iterator as $file) {
-        if (! $file->isFile()) {
+        if (!$file->isFile()) {
             continue;
         }
         $bytes = file_get_contents($file->getPathname());
@@ -316,8 +307,7 @@ function tellWorkspaceArenaSnapshot(TellWorkspace $workspace): array
 }
 
 /** @return list<array{role: string, content: string}> */
-function tellWorkspaceMessageProjection(Messages $messages): array
-{
+function tellWorkspaceMessageProjection(Messages $messages): array {
     return array_map(
         static fn (Message $message): array => [
             'role' => $message->role()->value,

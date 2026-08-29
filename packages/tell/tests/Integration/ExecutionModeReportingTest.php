@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\AgentLoop;
+use Cognesy\Tell\Console\TellCommand;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\TellCommand;
 use Cognesy\Tell\Tests\Support\RecordingDriver;
 use Cognesy\Tell\Tests\Support\RequestRecorder;
-use Cognesy\Tell\Workspace\ArenaStore;
+use Cognesy\Tell\Workspace\Arena\FilesystemArena;
 use Symfony\Component\Console\Tester\CommandTester;
 
 /**
@@ -50,7 +50,7 @@ it('reports a durable mode only when the turn published an arena turn', function
     $payload = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
 
     expect($payload['execution'])->toBe(['mode' => 'durable', 'durable' => true])
-        ->and((new ArenaStore($workspace))->readRef('main')->head)->not->toBeNull();
+        ->and((new FilesystemArena($workspace))->readRef('main')->head)->not->toBeNull();
 });
 
 it('reports a transient mode for an explicitly transient turn outside any workspace', function (): void {
@@ -70,16 +70,14 @@ it('reports a transient mode for an explicitly transient turn outside any worksp
     expect($payload['execution'])->toBe(['mode' => 'transient', 'durable' => false]);
 });
 
-function tellExecutionModeFactory(): TellAgentFactory
-{
+function tellExecutionModeFactory(): TellAgentFactory {
     return tellTestFactory(static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(
-        new RecordingDriver(new RequestRecorder, 'answer'),
+        new RecordingDriver(new RequestRecorder(), 'answer'),
     ));
 }
 
-function tellExecutionModeProject(): string
-{
-    $project = tellLastTemporaryRoot().'/execution-mode-project';
+function tellExecutionModeProject(): string {
+    $project = tellLastTemporaryRoot() . '/execution-mode-project';
     mkdir($project, 0700, true);
 
     return $project;

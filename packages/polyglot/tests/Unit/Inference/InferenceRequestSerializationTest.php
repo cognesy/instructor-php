@@ -101,7 +101,7 @@ it('preserves retry policy and cached context across serialization round-trip', 
 
 it('round-trips typed reasoning and omits provider default', function () {
     $request = (new InferenceRequestBuilder)
-        ->withReasoning(ReasoningSelection::withEffort(ReasoningEffort::High))
+        ->withReasoning(ReasoningSelection::effort(ReasoningEffort::High))
         ->create();
 
     $copy = InferenceRequest::fromArray($request->toArray());

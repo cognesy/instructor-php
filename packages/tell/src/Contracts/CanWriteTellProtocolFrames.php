@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Contracts;
 
-use Cognesy\Tell\TellProgress;
-use Cognesy\Tell\TellResult;
+use Cognesy\Tell\Data\TellProgress;
+use Cognesy\Tell\Data\TellResult;
 
 /** Per-run protocol output boundary; implementations own framing and size limits. */
 interface CanWriteTellProtocolFrames

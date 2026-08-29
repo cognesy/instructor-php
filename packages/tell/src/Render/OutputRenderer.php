@@ -6,8 +6,8 @@ namespace Cognesy\Tell\Render;
 
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Data\AgentState;
+use Cognesy\Tell\Data\TellExecutionMode;
 use Cognesy\Tell\Observability\TellEventNormalizer;
-use Cognesy\Tell\TellExecutionMode;
 
 interface OutputRenderer
 {

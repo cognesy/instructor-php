@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Command;
 
-use Cognesy\Tell\Canonical\CanonicalConversationRoot;
-use Cognesy\Tell\Canonical\CanonicalHash;
-use Cognesy\Tell\Canonical\CanonicalTurn;
 use Cognesy\Tell\Operational\CanDescribeOperationalPlane;
 use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Workspace\ArenaStore;
-use Cognesy\Tell\Workspace\BranchResolver;
+use Cognesy\Tell\Workspace\Arena\FilesystemArena;
+use Cognesy\Tell\Workspace\Arena\ObjectHash;
+use Cognesy\Tell\Workspace\Arena\Record\ConversationRoot;
+use Cognesy\Tell\Workspace\Arena\Record\Turn;
+use Cognesy\Tell\Workspace\Branch\BranchResolver;
 use Cognesy\Tell\Workspace\WorkspaceException;
 use InvalidArgumentException;
 use Override;
@@ -25,17 +25,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class ResetCommand extends Command implements CanDescribeOperationalPlane
 {
     private const int MAX_STEPS = 1_000;
-
     private const int MAX_LINEAGE_DEPTH = 1_000;
 
-    public function __construct(private readonly TellAgentFactory $agents)
-    {
+    public function __construct(private readonly TellAgentFactory $agents) {
         parent::__construct('reset');
     }
 
     #[Override]
-    protected function configure(): void
-    {
+    protected function configure(): void {
         $this->setDescription('Move a Tell branch head backwards without deleting immutable history')
             ->setHelp('Use either --steps N or --to HASH. This never deletes objects and has no public reflog; create a recovery branch first when needed.')
             ->addOption('steps', null, InputOption::VALUE_REQUIRED, 'Positive number of parent links to move backwards')
@@ -47,12 +44,11 @@ final class ResetCommand extends Command implements CanDescribeOperationalPlane
     }
 
     #[Override]
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         try {
             $session = $input->getOption('session');
             $requested = $input->getOption('branch');
-            if (($session !== null && $session !== '') || ($requested !== null && ! is_string($requested))) {
+            if (($session !== null && $session !== '') || ($requested !== null && !is_string($requested))) {
                 throw new InvalidArgumentException('--session is not supported by reset.');
             }
             $directory = (string) $input->getOption('dir');
@@ -62,8 +58,8 @@ final class ResetCommand extends Command implements CanDescribeOperationalPlane
             if ($workspace === null) {
                 throw new WorkspaceException('Tell reset requires an initialized workspace; run `tell init` first.');
             }
-            $arena = new ArenaStore($workspace);
-            $branch = (new BranchResolver($arena))->resolve($requested === '' ? null : $requested);
+            $arena = new FilesystemArena($workspace);
+            $branch = (new BranchResolver($arena, $workspace))->resolve($requested === '' ? null : $requested);
             $before = $arena->readRef($branch->ref)->head;
             [$target, $distance] = $this->target($arena, $before, $input);
             $result = $target === null
@@ -91,8 +87,7 @@ final class ResetCommand extends Command implements CanDescribeOperationalPlane
     }
 
     #[Override]
-    public function planeOperation(): PlaneOperation
-    {
+    public function planeOperation(): PlaneOperation {
         return new PlaneOperation(
             plane: OperationalPlane::Management,
             command: 'reset',
@@ -105,9 +100,8 @@ final class ResetCommand extends Command implements CanDescribeOperationalPlane
         );
     }
 
-    /** @return array{?CanonicalHash, int} */
-    private function target(ArenaStore $arena, ?CanonicalHash $head, InputInterface $input): array
-    {
+    /** @return array{?ObjectHash, int} */
+    private function target(FilesystemArena $arena, ?ObjectHash $head, InputInterface $input): array {
         $steps = $input->getOption('steps');
         $to = $input->getOption('to');
         if (($steps === null || $steps === '') === ($to === null || $to === '')) {
@@ -115,7 +109,7 @@ final class ResetCommand extends Command implements CanDescribeOperationalPlane
         }
         $lineage = $this->lineage($arena, $head);
         if ($to !== null && is_string($to)) {
-            $target = new CanonicalHash($to);
+            $target = new ObjectHash($to);
             foreach ($lineage as $distance => $candidate) {
                 if ($candidate !== null && $candidate->equals($target)) {
                     return [$candidate, $distance];
@@ -123,20 +117,19 @@ final class ResetCommand extends Command implements CanDescribeOperationalPlane
             }
             throw new InvalidArgumentException('Reset target must be a verified reachable ancestor of the selected head.');
         }
-        if (! is_string($steps) || ! ctype_digit($steps) || (int) $steps < 1 || (int) $steps > self::MAX_STEPS) {
-            throw new InvalidArgumentException('--steps must be a positive integer no greater than '.self::MAX_STEPS.'.');
+        if (!is_string($steps) || !ctype_digit($steps) || (int) $steps < 1 || (int) $steps > self::MAX_STEPS) {
+            throw new InvalidArgumentException('--steps must be a positive integer no greater than ' . self::MAX_STEPS . '.');
         }
         $distance = (int) $steps;
-        if (! array_key_exists($distance, $lineage)) {
+        if (!array_key_exists($distance, $lineage)) {
             throw new InvalidArgumentException('Reset steps exceed the selected branch ancestry.');
         }
 
         return [$lineage[$distance], $distance];
     }
 
-    /** @return array<int, ?CanonicalHash> */
-    private function lineage(ArenaStore $arena, ?CanonicalHash $head): array
-    {
+    /** @return array<int, ?ObjectHash> */
+    private function lineage(FilesystemArena $arena, ?ObjectHash $head): array {
         $lineage = [0 => $head];
         $seen = [];
         $cursor = $head;
@@ -151,8 +144,8 @@ final class ResetCommand extends Command implements CanDescribeOperationalPlane
             $seen[$id] = true;
             $record = $arena->get($cursor);
             $cursor = match (true) {
-                $record instanceof CanonicalTurn => $record->lineage()->parent(),
-                $record instanceof CanonicalConversationRoot => null,
+                $record instanceof Turn => $record->lineage()->parent(),
+                $record instanceof ConversationRoot => null,
                 default => throw new WorkspaceException('Tell branch head is not canonical conversation history.'),
             };
             $lineage[$distance] = $cursor;

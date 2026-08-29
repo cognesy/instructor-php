@@ -8,12 +8,12 @@ use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Hook\Data\HookContext;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
+use Cognesy\Tell\Console\TellOptions;
 use Cognesy\Tell\Operational\CanDescribeOperationalPlane;
 use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Runtime\TellOptions;
 use Override;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -24,15 +24,13 @@ final class DescribeCommand extends Command implements CanDescribeOperationalPla
 {
     private readonly TellAgentFactory $agents;
 
-    public function __construct(?TellAgentFactory $agents = null)
-    {
+    public function __construct(?TellAgentFactory $agents = null) {
         $this->agents = $agents ?? TellAgentFactory::installed();
         parent::__construct('describe');
     }
 
     #[Override]
-    protected function configure(): void
-    {
+    protected function configure(): void {
         $this->setDescription('Describe a built agent')
             ->setHelp(<<<'HELP'
 Describe the effective runtime assembled for an agent definition.
@@ -49,8 +47,7 @@ HELP)
     }
 
     #[Override]
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         $options = $this->options($input);
         $definition = $this->agents->definition($options);
         $loop = $this->agents->build($options, $definition);
@@ -69,8 +66,7 @@ HELP)
     }
 
     #[Override]
-    public function planeOperation(): PlaneOperation
-    {
+    public function planeOperation(): PlaneOperation {
         return new PlaneOperation(
             plane: OperationalPlane::Control,
             command: 'describe',
@@ -83,8 +79,7 @@ HELP)
         );
     }
 
-    private function options(InputInterface $input): TellOptions
-    {
+    private function options(InputInterface $input): TellOptions {
         $directory = (string) $input->getOption('dir');
         $cwd = getcwd();
         $project = match (true) {
@@ -100,9 +95,8 @@ HELP)
         );
     }
 
-    private function systemPrompt(AgentLoop $loop, AgentDefinition $definition): string
-    {
-        $state = (new DefinitionStateFactory)->instantiateAgentState($definition);
+    private function systemPrompt(AgentLoop $loop, AgentDefinition $definition): string {
+        $state = (new DefinitionStateFactory())->instantiateAgentState($definition);
         $interceptor = $loop->interceptor();
         $state = match (true) {
             $interceptor === null => $state,

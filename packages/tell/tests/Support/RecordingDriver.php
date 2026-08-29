@@ -19,12 +19,11 @@ final readonly class RecordingDriver implements CanAcceptMessageCompiler, CanUse
     public function __construct(
         private RequestRecorder $recorder,
         private string $response = 'recorded answer',
-        private CanCompileMessages $compiler = new SelectedSections,
+        private CanCompileMessages $compiler = new SelectedSections(),
     ) {}
 
     #[Override]
-    public function useTools(AgentState $state): AgentState
-    {
+    public function useTools(AgentState $state): AgentState {
         $messages = $this->compiler->compile($state);
         $this->recorder->requests[] = $messages->toArray();
 
@@ -36,14 +35,12 @@ final readonly class RecordingDriver implements CanAcceptMessageCompiler, CanUse
     }
 
     #[Override]
-    public function messageCompiler(): CanCompileMessages
-    {
+    public function messageCompiler(): CanCompileMessages {
         return $this->compiler;
     }
 
     #[Override]
-    public function withMessageCompiler(CanCompileMessages $compiler): static
-    {
+    public function withMessageCompiler(CanCompileMessages $compiler): static {
         return new self($this->recorder, $this->response, $compiler);
     }
 }

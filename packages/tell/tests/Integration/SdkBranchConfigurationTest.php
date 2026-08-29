@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Tell\Tell;
 
 it('configures branch-local runtime intent through the public SDK', function (): void {
     $factory = tellTestFactory();
-    $project = tellLastTemporaryRoot().'/project';
+    $project = tellLastTemporaryRoot() . '/project';
     mkdir($project, 0755, true);
     $workspace = Tell::open($project, $factory)->workspace();
     $workspace->initialize();
@@ -36,7 +36,7 @@ it('configures branch-local runtime intent through the public SDK', function ():
 
 it('rejects stale and secret-bearing public branch configuration writes', function (): void {
     $factory = tellTestFactory();
-    $project = tellLastTemporaryRoot().'/project';
+    $project = tellLastTemporaryRoot() . '/project';
     mkdir($project, 0755, true);
     $configuration = Tell::open($project, $factory)->workspace();
     $configuration->initialize();

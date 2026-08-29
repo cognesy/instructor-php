@@ -2,17 +2,16 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Tell\Capability\AskUser\AskUserTool;
 use Cognesy\Tell\Capability\AskUser\TellAnswerQueue;
+use Cognesy\Tell\Console\TellCommand;
+use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Tell;
-use Cognesy\Tell\TellCommand;
-use Cognesy\Tell\TellRequest;
-use Cognesy\Tell\Workspace\ArenaStore;
-use HelgeSverre\Toon\Toon;
+use Cognesy\Tell\Workspace\Arena\FilesystemArena;
 use Symfony\Component\Console\Tester\CommandTester;
 
 it('consumes ordered and exact-id answers once without ever prompting', function (): void {
@@ -57,7 +56,7 @@ it('continues a deterministic agent tool call from a supplied answer without exp
 it('loads bounded structured answers and reports extras without revealing their value', function (): void {
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('no question needed')));
     $directory = tellLastTemporaryRoot();
-    $answers = $directory.'/answers.json';
+    $answers = $directory . '/answers.json';
     file_put_contents($answers, '[{"id":"choice","value":"file-canary"},"extra-canary"]');
     $tester = new CommandTester(new TellCommand($factory));
 
@@ -75,7 +74,7 @@ it('loads bounded structured answers and reports extras without revealing their 
 });
 
 it('returns typed unavailable and invalid-choice outcomes immediately', function (): void {
-    $unavailable = new AskUserTool(new TellAnswerQueue);
+    $unavailable = new AskUserTool(new TellAnswerQueue());
     $invalid = new AskUserTool(new TellAnswerQueue([
         ['id' => null, 'value' => 'maybe', 'source' => 'stdin'],
     ]));
@@ -94,7 +93,7 @@ it('rejects duplicate, oversized, and conflicting supplied-answer inputs before 
     ]);
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('must not execute')));
     $directory = tellLastTemporaryRoot();
-    $file = $directory.'/answers.json';
+    $file = $directory . '/answers.json';
     file_put_contents($file, '[]');
     $tester = new CommandTester(new TellCommand($factory));
 
@@ -115,7 +114,7 @@ it('persists a durable semantic answer but never publishes a transient one', fun
         ScenarioStep::toolCall('ask_user', ['question' => 'Target?', 'id' => 'target']),
         ScenarioStep::final('durable continuation'),
     )));
-    $project = tellLastTemporaryRoot().'/project';
+    $project = tellLastTemporaryRoot() . '/project';
     mkdir($project, 0755, true);
     $workspace = $factory->workspace()->initialize($project)->workspace;
     $tell = Tell::open($project, $factory);
@@ -127,14 +126,14 @@ it('persists a durable semantic answer but never publishes a transient one', fun
                 ['id' => 'target', 'value' => $canary, 'source' => 'cli'],
             ])),
     );
-    $afterDurable = (new ArenaStore($workspace))->readRef()->toBytes();
+    $afterDurable = (new FilesystemArena($workspace))->readRef()->toBytes();
     $transcript = $tell->workspace()->main()->transcript(full: true);
 
     $transientFactory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromSteps(
         ScenarioStep::toolCall('ask_user', ['question' => 'Target?']),
         ScenarioStep::final('transient continuation'),
     )));
-    $transientProject = tellLastTemporaryRoot().'/transient-project';
+    $transientProject = tellLastTemporaryRoot() . '/transient-project';
     mkdir($transientProject, 0755, true);
     $transientWorkspace = $transientFactory->workspace()->initialize($transientProject)->workspace;
     $transient = Tell::open($transientProject, $transientFactory)->run(
@@ -149,6 +148,6 @@ it('persists a durable semantic answer but never publishes a transient one', fun
         ->and(json_encode($transcript->messages, JSON_THROW_ON_ERROR))->toContain($canary)
         ->and($transient->isCompleted())->toBeTrue()
         ->and($transient->isTransient())->toBeTrue()
-        ->and((new ArenaStore($transientWorkspace))->readRef()->head)->toBeNull()
+        ->and((new FilesystemArena($transientWorkspace))->readRef()->head)->toBeNull()
         ->and($afterDurable)->not->toBe('');
 });

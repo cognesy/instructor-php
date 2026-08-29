@@ -2,25 +2,23 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
-use Cognesy\Tell\TellCommand;
+use Cognesy\Tell\Console\TellCommand;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 
-function tellBusyProject(): string
-{
-    $project = tellLastTemporaryRoot().'/busy-indicator-project';
+function tellBusyProject(): string {
+    $project = tellLastTemporaryRoot() . '/busy-indicator-project';
     mkdir($project, 0700, true);
 
     return $project;
 }
 
-function tellBusyTester(ScenarioStep ...$steps): CommandTester
-{
+function tellBusyTester(ScenarioStep ...$steps): CommandTester {
     return new CommandTester(new TellCommand(tellTestFactory(
         static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(FakeAgentDriver::fromSteps(...$steps)),
     )));

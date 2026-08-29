@@ -61,7 +61,7 @@ parsing terminal output.
 
 ```php
 use Cognesy\Tell\Tell;
-use Cognesy\Tell\TellRequest;
+use Cognesy\Tell\Data\TellRequest;
 
 $tell = Tell::open(__DIR__);
 
@@ -85,7 +85,7 @@ successful completion; abandoning the generator leaves its selected ref
 unchanged.
 
 Use workspace handles for intentional durable work. They return SDK values,
-never arena or canonical records:
+never Arena infrastructure or storage records:
 
 ```php
 $workspace = $tell->workspace();
@@ -125,38 +125,38 @@ and own its cleanup.
 
 ## Host-scoped shell jobs
 
-Applications that need a background command can opt into a separate resource
+Applications that need a background command can opt into a separate shell-job
 host. It is not booted by `Tell::open()`, the CLI, or the one-run protocol.
 Denial is the default, so the embedding boundary must explicitly supply an
 approval policy:
 
 ```php
-use Cognesy\Tell\Resource\TellShellJobApprovals;
-use Cognesy\Tell\Resource\TellResourceHost;
-use Cognesy\Tell\Shell\TellShellJobRequest;
+use Cognesy\Tell\Data\TellShellJobRequest;
+use Cognesy\Tell\Shell\TellShellJobApprovals;
+use Cognesy\Tell\Shell\TellShellJobHost;
 
-$resources = TellResourceHost::shellJobs(
+$host = TellShellJobHost::shellJobs(
     project: __DIR__,
     approval: TellShellJobApprovals::allowAll(),
 )->boot();
 
 try {
-    $job = $resources->jobs()->start(
+    $job = $host->jobs()->start(
         TellShellJobRequest::command('php -S 127.0.0.1:8080')
             ->forMilliseconds(30_000),
     );
-    $page = $resources->jobs()->read($job->id, after: 0);
-    $finished = $resources->jobs()->cancel($job->id);
+    $page = $host->jobs()->read($job->id, after: 0);
+    $finished = $host->jobs()->cancel($job->id);
 } finally {
-    $resources->dispose();
+    $host->dispose();
 }
 ```
 
-Jobs may outlive `start()` but never their resource host or PHP process. Host
+Jobs may outlive `start()` but never their shell-job host or PHP process. Host
 policy bounds their project-local working directory, concurrency, lifetime,
 retained output, each cursored read, and cancellation grace. Public callers get
 immutable snapshots and output chunks—not process, pipe, Cordis context, or
-fiber handles. `tell.resource.event.v1` observations are distinct from agent
+fiber handles. `tell.shell-job.event.v1` observations are distinct from agent
 execution events and never contain commands, environment values, or output.
 
 ## External one-run protocol
@@ -273,11 +273,10 @@ canonical history before the new prompt, and publishes a new immutable turn
 only after a completed execution. Projects without `.tell/` keep the normal
 stateless behavior.
 
-The default durable conversation is `main`. `--session NAME` selects a
-compatible named conversation; an existing legacy Tell session is imported once
-when a durable named turn first needs it, then the canonical arena is
-authoritative. Existing legacy session files are never rewritten by the
-compatibility path.
+The default durable conversation is `main`. `--session NAME` selects an
+independent named conversation stored in the same canonical Arena. Named
+sessions require an initialized workspace; Tell has no second session store or
+fallback persistence path.
 
 Tell branches are immutable-head user references for planning independent lines
 of work. Creation shares the existing canonical head; it never copies canonical
@@ -358,10 +357,9 @@ with embedded credentials. New
 branches copy source intent by value and later edits remain independent.
 Explicit connection, model, reasoning-effort, output, and tool flags take
 precedence over branch intent. PHP callers select the typed value with
-`TellRequest::reasoningEffort(TellReasoningEffort::Low)`; supported values are
-`minimal`, `low`, `medium`, `high`, `xhigh`, and `max`. The enum is a deprecated
-compatibility alias of Polyglot's shared `ReasoningEffort`; new integrations
-should import `Cognesy\Polyglot\Inference\Reasoning\ReasoningEffort`. Tell asks
+`TellRequest::reasoningEffort(ReasoningEffort::Low)` after importing
+`Cognesy\Polyglot\Inference\Reasoning\ReasoningEffort`; supported values are
+`minimal`, `low`, `medium`, `high`, `xhigh`, and `max`. Tell asks
 Polyglot to validate the selected provider, protocol, and model, then Polyglot
 translates supported intent at the request-body boundary. Tell therefore keeps
 no provider-specific reasoning table or raw-option mapper of its own.
@@ -553,8 +551,8 @@ provider, build an agent loop, run tools, or change state. Their default output
 is bounded; pass `--full` only when complete canonical content is required.
 `compact` uses the configured inference connection and replaces the selected
 ref with a concise immutable summary linked to the prior head. `clear` moves
-only the selected ref to empty: it does not delete immutable records, legacy
-sessions, traces, or configuration.
+only the selected ref to empty: it does not delete immutable records, traces,
+or configuration.
 
 For a one-off experiment that may use the ordinary workspace context and tools
 but must not change any conversation or session state, use `--transient`:
@@ -565,8 +563,8 @@ tell --session review-1 --transient "inspect the current review safely"
 ```
 
 Transient execution compiles the same selected history as a durable turn but
-never writes canonical objects or refs, imports legacy sessions, saves mutable
-sessions, or changes configuration. It stays stateless outside a workspace.
+never writes canonical objects or refs, saves sessions, or changes
+configuration. It stays stateless outside a workspace.
 Text output states that nothing was persisted; JSON and TOON include
 `execution.mode: transient` and `execution.durable: false`; events retain the
 same normalized lifecycle envelope. Execution traces remain external
@@ -587,10 +585,10 @@ values and is not a restatement of `--transient`:
 `execution.mode` must accept all three values; `execution.durable` remains the
 single boolean answer to whether conversation state was written.
 
-Canonical workspace records contain semantic messages and tool-call/result
+Arena records contain semantic messages and tool-call/result
 relationships only. Provider requests and responses, credentials, headers,
 usage, timing, rendering data, traces, and absolute paths are not part of
-canonical hashes. Immutable records can remain after a failed compare-and-swap
+Arena object hashes. Immutable records can remain after a failed compare-and-swap
 publication, compaction, or clear; Tell does not run garbage collection.
 
 ## Watching a turn happen

@@ -20,7 +20,7 @@ $text = Inference::using('openai')
     ->withModel('gpt-5.6')
     ->withMessages('Check whether this argument is logically sound.')
     ->withReasoning(
-        ReasoningSelection::withEffort(ReasoningEffort::High),
+        ReasoningSelection::effort(ReasoningEffort::High),
     )
     ->get();
 ```
@@ -40,8 +40,8 @@ tagged selection rather than a nullable effort string:
 ReasoningSelection::providerDefault();
 ReasoningSelection::disabled();
 ReasoningSelection::enabled();
-ReasoningSelection::withEffort(ReasoningEffort::Medium);
-ReasoningSelection::withBudget(4096);
+ReasoningSelection::effort(ReasoningEffort::Medium);
+ReasoningSelection::budget(4096);
 ReasoningSelection::adaptive();
 ReasoningSelection::adaptive(ReasoningEffort::High);
 ```

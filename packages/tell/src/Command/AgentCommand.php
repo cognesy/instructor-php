@@ -8,6 +8,7 @@ use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
 use Cognesy\Agents\Continuation\StopReason;
 use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Tell\Contracts\CanRunTellProtocol;
+use Cognesy\Tell\Data\TellResult;
 use Cognesy\Tell\Operational\CanDescribeOperationalPlane;
 use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
@@ -17,7 +18,6 @@ use Cognesy\Tell\Protocol\TellAgentProtocolWriter;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Runtime\TellSignalCancellationSource;
 use Cognesy\Tell\Tell;
-use Cognesy\Tell\TellResult;
 use Override;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -37,25 +37,23 @@ final class AgentCommand extends Command implements CanDescribeOperationalPlane
         private readonly ?CanRunTellProtocol $protocolRunner = null,
     ) {
         parent::__construct('agent');
-        $this->cancellation = $cancellation ?? new TellSignalCancellationSource;
+        $this->cancellation = $cancellation ?? new TellSignalCancellationSource();
     }
 
     #[Override]
-    protected function configure(): void
-    {
+    protected function configure(): void {
         $this->setDescription('Run one versioned Tell request over a bounded JSONL protocol')
             ->addOption('rpc', null, InputOption::VALUE_NONE, 'Read one tell.agent.request.v1 object from stdin')
             ->addOption('dir', 'C', InputOption::VALUE_REQUIRED, 'Workspace directory', '');
     }
 
     #[Override]
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         $writer = new TellAgentProtocolWriter($output);
         $diagnostics = $output instanceof ConsoleOutputInterface ? $output->getErrorOutput() : $output;
 
         try {
-            if (! (bool) $input->getOption('rpc')) {
+            if (!(bool) $input->getOption('rpc')) {
                 throw new TellAgentProtocolException('invalid_request', 'The agent command requires --rpc.');
             }
             $directory = (string) $input->getOption('dir');
@@ -64,7 +62,7 @@ final class AgentCommand extends Command implements CanDescribeOperationalPlane
                 $directory = is_string($cwd) ? $cwd : '.';
             }
             $raw = stream_get_contents(STDIN, TellAgentProtocolRequest::MAX_INPUT_BYTES + 1);
-            if (! is_string($raw)) {
+            if (!is_string($raw)) {
                 throw new TellAgentProtocolException('invalid_request', 'Request could not be read from stdin.');
             }
             $protocol = TellAgentProtocolRequest::decode($raw, $directory);
@@ -85,14 +83,14 @@ final class AgentCommand extends Command implements CanDescribeOperationalPlane
 
             return $this->writeResult($writer, $result);
         } catch (TellAgentProtocolException $error) {
-            if (! $writer->hasTerminalFrame()) {
+            if (!$writer->hasTerminalFrame()) {
                 $writer->error($error->protocolCode, $error->getMessage());
             }
 
             return Command::INVALID;
         } catch (Throwable $error) {
-            $diagnostics->writeln('Tell agent run failed ('.get_debug_type($error).').', OutputInterface::OUTPUT_RAW);
-            if (! $writer->hasTerminalFrame()) {
+            $diagnostics->writeln('Tell agent run failed (' . get_debug_type($error) . ').', OutputInterface::OUTPUT_RAW);
+            if (!$writer->hasTerminalFrame()) {
                 $writer->error('runtime_error', 'The Tell run failed.');
             }
 
@@ -100,8 +98,7 @@ final class AgentCommand extends Command implements CanDescribeOperationalPlane
         }
     }
 
-    private function writeResult(TellAgentProtocolWriter $writer, TellResult $result): int
-    {
+    private function writeResult(TellAgentProtocolWriter $writer, TellResult $result): int {
         if ($result->status() === ExecutionStatus::Completed) {
             $writer->success($result);
 
@@ -126,8 +123,7 @@ final class AgentCommand extends Command implements CanDescribeOperationalPlane
     }
 
     #[Override]
-    public function planeOperation(): PlaneOperation
-    {
+    public function planeOperation(): PlaneOperation {
         return new PlaneOperation(
             plane: OperationalPlane::Data,
             command: 'agent --rpc',

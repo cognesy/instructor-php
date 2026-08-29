@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
-use Cognesy\Tell\Canonical\CanonicalConversationRoot;
-use Cognesy\Tell\Canonical\CanonicalMessage;
-use Cognesy\Tell\Canonical\CanonicalRole;
-use Cognesy\Tell\Canonical\CanonicalTextPart;
-use Cognesy\Tell\Workspace\ArenaException;
-use Cognesy\Tell\Workspace\ArenaIntegrityException;
-use Cognesy\Tell\Workspace\ArenaLockException;
-use Cognesy\Tell\Workspace\ArenaRefConflict;
-use Cognesy\Tell\Workspace\ArenaStore;
-use Cognesy\Tell\Workspace\WorkspaceManager;
+use Cognesy\Tell\Workspace\Arena\Exception\ArenaException;
+use Cognesy\Tell\Workspace\Arena\Exception\ArenaIntegrityException;
+use Cognesy\Tell\Workspace\Arena\Exception\ArenaLockException;
+use Cognesy\Tell\Workspace\Arena\Exception\RefConflict;
+use Cognesy\Tell\Workspace\Arena\FilesystemArena;
+use Cognesy\Tell\Workspace\Arena\Record\ConversationRoot;
+use Cognesy\Tell\Workspace\Arena\Record\Message as RecordMessage;
+use Cognesy\Tell\Workspace\Arena\Record\Role;
+use Cognesy\Tell\Workspace\Arena\Record\TextPart;
+use Cognesy\Tell\Workspace\WorkspaceRepository;
 
 beforeEach(function (): void {
     global $tellTemporaryRoots;
@@ -32,7 +32,7 @@ it('initializes a versioned empty main ref and publishes it with compare and swa
         ->and($published->head?->equals($hash))->toBeTrue()
         ->and($store->readRef()->head?->equals($hash))->toBeTrue()
         ->and(static fn (): mixed => $store->compareAndSwap('main', null, $hash))
-        ->toThrow(ArenaRefConflict::class)
+        ->toThrow(RefConflict::class)
         ->and(static fn (): mixed => $store->readRef('../main'))
         ->toThrow(ArenaException::class);
 });
@@ -48,8 +48,8 @@ it('stores immutable objects idempotently and verifies identity before returning
 
     expect($first->equals($second))->toBeTrue()
         ->and($store->exists($first))->toBeTrue()
-        ->and($loaded)->toBeInstanceOf(CanonicalConversationRoot::class)
-        ->and($path)->toMatch('/objects'.preg_quote(DIRECTORY_SEPARATOR, '/').'[a-f0-9]{2}'.preg_quote(DIRECTORY_SEPARATOR, '/').'[a-f0-9]{62}$/')
+        ->and($loaded)->toBeInstanceOf(ConversationRoot::class)
+        ->and($path)->toMatch('/objects' . preg_quote(DIRECTORY_SEPARATOR, '/') . '[a-f0-9]{2}' . preg_quote(DIRECTORY_SEPARATOR, '/') . '[a-f0-9]{62}$/')
         ->and(fileperms($path) & 0777)->toBe(0600)
         ->and(fileperms(dirname($path)) & 0777)->toBe(0700);
 });
@@ -63,11 +63,11 @@ it('detects truncated and symlink-substituted objects without returning partial 
     expect(static fn (): mixed => $store->get($hash))
         ->toThrow(ArenaIntegrityException::class);
 
-    if (! function_exists('symlink')) {
+    if (!function_exists('symlink')) {
         return;
     }
     $outside = tellArenaDirectory('outside-object');
-    $outsideFile = $outside.'/object';
+    $outsideFile = $outside . '/object';
     file_put_contents($outsideFile, 'outside');
     unlink($path);
     symlink($outsideFile, $path);
@@ -81,11 +81,11 @@ it('does not treat interrupted temporary files as canonical objects or move refs
     $store = tellArenaStore('interrupted');
     $hash = $store->put(tellArenaRoot());
     $path = $store->objectPath($hash);
-    $temporary = dirname($path).'/.object.tmp-interrupted';
+    $temporary = dirname($path) . '/.object.tmp-interrupted';
     file_put_contents($temporary, 'partial bytes');
 
     expect($store->readRef()->head)->toBeNull()
-        ->and($store->get($hash))->toBeInstanceOf(CanonicalConversationRoot::class)
+        ->and($store->get($hash))->toBeInstanceOf(ConversationRoot::class)
         ->and(is_file($temporary))->toBeTrue();
     unlink($temporary);
 });
@@ -94,10 +94,10 @@ it('fails bounded ref-lock acquisition without changing the current head', funct
     $store = tellArenaStore('lock-timeout');
     $hash = $store->put(tellArenaRoot());
     $lock = fopen(tellArenaWorkspacePath('locks/ref-main.lock'), 'c');
-    if ($lock === false || ! flock($lock, LOCK_EX)) {
+    if ($lock === false || !flock($lock, LOCK_EX)) {
         throw new RuntimeException('Unable to hold Tell arena ref lock for the test.');
     }
-    $contended = new ArenaStore($GLOBALS['tellArenaWorkspace'], lockTimeoutMilliseconds: 20);
+    $contended = new FilesystemArena($GLOBALS['tellArenaWorkspace'], lockTimeoutMilliseconds: 20);
 
     try {
         expect(static fn (): mixed => $contended->compareAndSwap('main', null, $hash))
@@ -112,16 +112,16 @@ it('fails bounded ref-lock acquisition without changing the current head', funct
 it('rejects unsafe ref substitution and malformed ref contents', function (): void {
     $store = tellArenaStore('unsafe-ref');
     $refPath = tellArenaWorkspacePath('refs/main');
-    file_put_contents($refPath, '{"head":"not-a-hash","schema":1}'."\n");
+    file_put_contents($refPath, '{"head":"not-a-hash","schema":1}' . "\n");
 
     expect(static fn (): mixed => $store->readRef())
         ->toThrow(ArenaIntegrityException::class);
 
-    if (! function_exists('symlink')) {
+    if (!function_exists('symlink')) {
         return;
     }
     $outside = tellArenaDirectory('outside-ref');
-    $outsideRef = $outside.'/main';
+    $outsideRef = $outside . '/main';
     file_put_contents($outsideRef, "{\"head\":null,\"schema\":1}\n");
     unlink($refPath);
     symlink($outsideRef, $refPath);
@@ -131,35 +131,31 @@ it('rejects unsafe ref substitution and malformed ref contents', function (): vo
     unlink($refPath);
 });
 
-function tellArenaStore(string $name): ArenaStore
-{
-    $workspace = (new WorkspaceManager)->initialize(tellArenaDirectory($name))->workspace;
+function tellArenaStore(string $name): FilesystemArena {
+    $workspace = (new WorkspaceRepository())->initialize(tellArenaDirectory($name))->workspace;
     $GLOBALS['tellArenaWorkspacePath'] = $workspace->paths->arena;
     $GLOBALS['tellArenaWorkspace'] = $workspace;
 
-    return new ArenaStore($workspace);
+    return new FilesystemArena($workspace);
 }
 
-function tellArenaDirectory(string $name): string
-{
+function tellArenaDirectory(string $name): string {
     global $tellTemporaryRoots;
 
-    $root = sys_get_temp_dir().'/instructor-tell-arena-'.$name.'-'.bin2hex(random_bytes(6));
+    $root = sys_get_temp_dir() . '/instructor-tell-arena-' . $name . '-' . bin2hex(random_bytes(6));
     mkdir($root, 0700, true);
     $tellTemporaryRoots[] = $root;
 
     return $root;
 }
 
-function tellArenaWorkspacePath(string $relative): string
-{
-    return $GLOBALS['tellArenaWorkspacePath'].DIRECTORY_SEPARATOR.$relative;
+function tellArenaWorkspacePath(string $relative): string {
+    return $GLOBALS['tellArenaWorkspacePath'] . DIRECTORY_SEPARATOR . $relative;
 }
 
-function tellArenaRoot(): CanonicalConversationRoot
-{
-    return new CanonicalConversationRoot(
+function tellArenaRoot(): ConversationRoot {
+    return new ConversationRoot(
         'conversation-001',
-        [new CanonicalMessage(CanonicalRole::System, [new CanonicalTextPart('You are a durable Tell agent.')])],
+        [new RecordMessage(Role::System, [new TextPart('You are a durable Tell agent.')])],
     );
 }

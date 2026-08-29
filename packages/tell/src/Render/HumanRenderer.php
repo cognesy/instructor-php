@@ -6,8 +6,8 @@ namespace Cognesy\Tell\Render;
 
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Data\AgentState;
+use Cognesy\Tell\Data\TellExecutionMode;
 use Cognesy\Tell\Observability\TellEventNormalizer;
-use Cognesy\Tell\TellExecutionMode;
 use Cognesy\Utils\Cli\CliMarkdown;
 use Override;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -33,8 +33,7 @@ final readonly class HumanRenderer implements OutputRenderer
     public function attach(AgentLoop $loop, ?TellEventNormalizer $events = null): void {}
 
     #[Override]
-    public function finish(AgentState $state, array $warnings = [], TellExecutionMode $mode = TellExecutionMode::Stateless, ?array $branch = null, array $diagnostics = []): void
-    {
+    public function finish(AgentState $state, array $warnings = [], TellExecutionMode $mode = TellExecutionMode::Stateless, ?array $branch = null, array $diagnostics = []): void {
         $verbosity = match ($this->quiet) {
             true => OutputInterface::VERBOSITY_QUIET,
             false => OutputInterface::VERBOSITY_NORMAL,
@@ -45,13 +44,13 @@ final readonly class HumanRenderer implements OutputRenderer
             // sequences, and model text may contain angle brackets that the
             // console formatter would otherwise read as its own markup.
             $this->stdout->write(
-                $this->rendered($answer)."\n",
+                $this->rendered($answer) . "\n",
                 false,
                 OutputInterface::OUTPUT_RAW | $verbosity,
             );
         }
         if ($state->stopSignal() !== null) {
-            $this->stderr->writeln('[tell] execution stopped: '.$state->stopSignal()->toString(), $verbosity);
+            $this->stderr->writeln('[tell] execution stopped: ' . $state->stopSignal()->toString(), $verbosity);
         }
         if ($mode === TellExecutionMode::Transient) {
             $this->stderr->writeln('[tell] transient: no conversation or session state was persisted.', $verbosity);
@@ -60,7 +59,7 @@ final readonly class HumanRenderer implements OutputRenderer
             $this->stderr->writeln("[tell] branch: {$branch['name']} ({$branch['source']}).", $verbosity);
         }
         foreach ($warnings as $warning) {
-            $this->stderr->writeln('[tell] '.$warning, $verbosity);
+            $this->stderr->writeln('[tell] ' . $warning, $verbosity);
         }
         foreach ($diagnostics as $diagnostic) {
             $this->stderr->writeln("[tell] {$diagnostic['severity']} {$diagnostic['code']}: {$diagnostic['message']}", $verbosity);
@@ -72,12 +71,11 @@ final readonly class HumanRenderer implements OutputRenderer
      * carries no colours, so it keeps the answer as the model wrote it and
      * stays usable as input to something else.
      */
-    private function rendered(string $answer): string
-    {
-        if (! $this->stdout->isDecorated()) {
+    private function rendered(string $answer): string {
+        if (!$this->stdout->isDecorated()) {
             return $answer;
         }
 
-        return rtrim((new CliMarkdown)->render($answer), "\n");
+        return rtrim((new CliMarkdown())->render($answer), "\n");
     }
 }

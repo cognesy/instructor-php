@@ -2,16 +2,19 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
-use Cognesy\Tell\Canonical\CanonicalConversationRoot;
-use Cognesy\Tell\Canonical\CanonicalHash;
-use Cognesy\Tell\Canonical\CanonicalMessage;
-use Cognesy\Tell\Canonical\CanonicalRole;
-use Cognesy\Tell\Canonical\CanonicalTextPart;
-use Cognesy\Tell\Workspace\ArenaStore;
-use Cognesy\Tell\Workspace\BranchConfigStore;
-use Cognesy\Tell\Workspace\WorkspaceManager;
+use Cognesy\Tell\Workspace\Arena\FilesystemArena;
+use Cognesy\Tell\Workspace\Arena\ObjectHash;
+use Cognesy\Tell\Workspace\Arena\Record\ConversationRoot;
+use Cognesy\Tell\Workspace\Arena\Record\Message as RecordMessage;
+use Cognesy\Tell\Workspace\Arena\Record\Role;
+use Cognesy\Tell\Workspace\Arena\Record\TextPart;
+use Cognesy\Tell\Workspace\Branch\BranchName;
+use Cognesy\Tell\Workspace\Branch\Storage\BranchConfigStore;
+use Cognesy\Tell\Workspace\Branch\Storage\BranchCurrentSelectionStore;
+use Cognesy\Tell\Workspace\Branch\Storage\BranchStore;
+use Cognesy\Tell\Workspace\WorkspaceRepository;
 
 beforeEach(function (): void {
     global $tellTemporaryRoots;
@@ -20,11 +23,11 @@ beforeEach(function (): void {
 
 it('allows one process-level ref publisher and reports one stale conflict', function (): void {
     $root = tellArenaIntegrationDirectory('cas');
-    $workspace = (new WorkspaceManager)->initialize($root)->workspace;
-    $store = new ArenaStore($workspace);
-    $hash = $store->put(new CanonicalConversationRoot(
+    $workspace = (new WorkspaceRepository())->initialize($root)->workspace;
+    $store = new FilesystemArena($workspace);
+    $hash = $store->put(new ConversationRoot(
         'conversation-cas',
-        [new CanonicalMessage(CanonicalRole::System, [new CanonicalTextPart('race')])],
+        [new RecordMessage(Role::System, [new TextPart('race')])],
     ));
 
     [[$firstOutput, $firstExit], [$secondOutput, $secondExit]] = tellArenaWorkers($root, 'publish', $hash->toString());
@@ -37,11 +40,11 @@ it('allows one process-level ref publisher and reports one stale conflict', func
 
 it('allows one process-level clearer and reports one stale conflict', function (): void {
     $root = tellArenaIntegrationDirectory('clear-cas');
-    $workspace = (new WorkspaceManager)->initialize($root)->workspace;
-    $store = new ArenaStore($workspace);
-    $hash = $store->put(new CanonicalConversationRoot(
+    $workspace = (new WorkspaceRepository())->initialize($root)->workspace;
+    $store = new FilesystemArena($workspace);
+    $hash = $store->put(new ConversationRoot(
         'conversation-clear-cas',
-        [new CanonicalMessage(CanonicalRole::System, [new CanonicalTextPart('retain immutable source')])],
+        [new RecordMessage(Role::System, [new TextPart('retain immutable source')])],
     ));
     $store->compareAndSwap('main', null, $hash);
 
@@ -56,24 +59,24 @@ it('allows one process-level clearer and reports one stale conflict', function (
 
 it('tolerates an identical object winner from separate processes', function (): void {
     $root = tellArenaIntegrationDirectory('object-race');
-    $workspace = (new WorkspaceManager)->initialize($root)->workspace;
-    $store = new ArenaStore($workspace);
+    $workspace = (new WorkspaceRepository())->initialize($root)->workspace;
+    $store = new FilesystemArena($workspace);
 
     [[$firstOutput, $firstExit], [$secondOutput, $secondExit]] = tellArenaWorkers($root, 'put');
 
     expect($firstExit)->toBe(0)
         ->and($secondExit)->toBe(0)
         ->and($firstOutput)->toBe($secondOutput);
-    $hash = new CanonicalHash($firstOutput);
+    $hash = new ObjectHash($firstOutput);
 
     expect($store->exists($hash))->toBeTrue()
-        ->and(count(glob($workspace->paths->objects.DIRECTORY_SEPARATOR.'*'.DIRECTORY_SEPARATOR.'*') ?: []))->toBe(1);
+        ->and(count(glob($workspace->paths->objects . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . '*') ?: []))->toBe(1);
 });
 
 it('allows one process-level branch creator and reports one stable conflict', function (): void {
     $root = tellArenaIntegrationDirectory('branch-create');
-    $workspace = (new WorkspaceManager)->initialize($root)->workspace;
-    $store = new ArenaStore($workspace);
+    $workspace = (new WorkspaceRepository())->initialize($root)->workspace;
+    $store = new FilesystemArena($workspace);
 
     [[$firstOutput, $firstExit], [$secondOutput, $secondExit]] = tellArenaWorkers($root, 'branch-create', 'review');
 
@@ -85,9 +88,10 @@ it('allows one process-level branch creator and reports one stable conflict', fu
 
 it('persists a complete current-branch selector across processes and concurrent checkouts', function (): void {
     $root = tellArenaIntegrationDirectory('checkout');
-    $workspace = (new WorkspaceManager)->initialize($root)->workspace;
-    $store = new ArenaStore($workspace);
-    $store->createBranch(\Cognesy\Tell\Workspace\BranchName::from('review'), $store->readRef());
+    $workspace = (new WorkspaceRepository())->initialize($root)->workspace;
+    $store = new FilesystemArena($workspace);
+    $branches = new BranchStore($store, new BranchCurrentSelectionStore($workspace));
+    $branches->create(BranchName::from('review'), $store->readRef());
 
     [[$firstOutput, $firstExit], [$secondOutput, $secondExit]] = tellArenaWorkers($root, 'checkout', 'review');
     [$persisted, $persistedExit] = tellArenaSingleWorker($root, 'branch-current');
@@ -96,12 +100,12 @@ it('persists a complete current-branch selector across processes and concurrent 
         ->and([$firstExit, $secondExit])->each->toBe(0)
         ->and($persistedExit)->toBe(0)
         ->and($persisted)->toBe('review')
-        ->and($store->readCurrentBranch()->branch)->toBe('review');
+        ->and($branches->current()->branch)->toBe('review');
 });
 
 it('allows one process-level branch config writer and reports one version conflict', function (): void {
     $root = tellArenaIntegrationDirectory('config-cas');
-    $workspace = (new WorkspaceManager)->initialize($root)->workspace;
+    $workspace = (new WorkspaceRepository())->initialize($root)->workspace;
 
     [[$firstOutput, $firstExit], [$secondOutput, $secondExit]] = tellArenaWorkers($root, 'config-set', 'main');
     $config = (new BranchConfigStore($workspace))->read('main');
@@ -113,11 +117,10 @@ it('allows one process-level branch config writer and reports one version confli
         ->and($config['values']['model'])->toStartWith('worker-');
 });
 
-function tellArenaIntegrationDirectory(string $name): string
-{
+function tellArenaIntegrationDirectory(string $name): string {
     global $tellTemporaryRoots;
 
-    $root = sys_get_temp_dir().'/instructor-tell-arena-integration-'.$name.'-'.bin2hex(random_bytes(6));
+    $root = sys_get_temp_dir() . '/instructor-tell-arena-integration-' . $name . '-' . bin2hex(random_bytes(6));
     mkdir($root, 0700, true);
     $tellTemporaryRoots[] = $root;
 
@@ -126,14 +129,13 @@ function tellArenaIntegrationDirectory(string $name): string
 
 /** @return array{0: string, 1: int} */
 /** @return array{0: array{0: string, 1: int}, 1: array{0: string, 1: int}} */
-function tellArenaWorkers(string $root, string $mode, ?string $hash = null): array
-{
-    $gate = $root.'/.tell/arena/locks/test-start-'.bin2hex(random_bytes(6));
+function tellArenaWorkers(string $root, string $mode, ?string $hash = null): array {
+    $gate = $root . '/.tell/arena/locks/test-start-' . bin2hex(random_bytes(6));
     $workers = [
         tellArenaStartWorker($root, $mode, $hash, $gate),
         tellArenaStartWorker($root, $mode, $hash, $gate),
     ];
-    $readyFiles = $gate.'.*.ready';
+    $readyFiles = $gate . '.*.ready';
     $deadline = hrtime(true) + 1_000_000_000;
     while (count(glob($readyFiles) ?: []) < 2 && hrtime(true) < $deadline) {
         usleep(1_000);
@@ -150,16 +152,15 @@ function tellArenaWorkers(string $root, string $mode, ?string $hash = null): arr
 }
 
 /** @return array{process: resource, pipes: array<int, resource>} */
-function tellArenaStartWorker(string $root, string $mode, ?string $hash, string $gate): array
-{
-    $command = [PHP_BINARY, __DIR__.'/../Fixtures/arena-cas-worker.php', $root, $mode, $hash ?? ''];
+function tellArenaStartWorker(string $root, string $mode, ?string $hash, string $gate): array {
+    $command = [PHP_BINARY, __DIR__ . '/../Fixtures/arena-cas-worker.php', $root, $mode, $hash ?? ''];
     $command[] = $gate;
     $process = proc_open($command, [
         0 => ['pipe', 'r'],
         1 => ['pipe', 'w'],
         2 => ['pipe', 'w'],
     ], $pipes);
-    if (! is_resource($process)) {
+    if (!is_resource($process)) {
         throw new RuntimeException('Unable to start Tell arena worker process.');
     }
     fclose($pipes[0]);
@@ -168,15 +169,14 @@ function tellArenaStartWorker(string $root, string $mode, ?string $hash, string 
 }
 
 /** @return array{0: string, 1: int} */
-function tellArenaSingleWorker(string $root, string $mode, ?string $value = null): array
-{
-    $command = [PHP_BINARY, __DIR__.'/../Fixtures/arena-cas-worker.php', $root, $mode, $value ?? ''];
+function tellArenaSingleWorker(string $root, string $mode, ?string $value = null): array {
+    $command = [PHP_BINARY, __DIR__ . '/../Fixtures/arena-cas-worker.php', $root, $mode, $value ?? ''];
     $process = proc_open($command, [
         0 => ['pipe', 'r'],
         1 => ['pipe', 'w'],
         2 => ['pipe', 'w'],
     ], $pipes);
-    if (! is_resource($process)) {
+    if (!is_resource($process)) {
         throw new RuntimeException('Unable to start Tell arena worker process.');
     }
     fclose($pipes[0]);
@@ -193,8 +193,7 @@ function tellArenaSingleWorker(string $root, string $mode, ?string $value = null
 }
 
 /** @param array{process: resource, pipes: array<int, resource>} $worker @return array{0: string, 1: int} */
-function tellArenaCollectWorker(array $worker): array
-{
+function tellArenaCollectWorker(array $worker): array {
     $pipes = $worker['pipes'];
     $output = stream_get_contents($pipes[1]);
     $error = stream_get_contents($pipes[2]);

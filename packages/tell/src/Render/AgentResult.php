@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Render;
 
 use Cognesy\Agents\Data\AgentState;
-use Cognesy\Tell\TellExecutionMode;
+use Cognesy\Tell\Data\TellExecutionMode;
 use Throwable;
 
 final class AgentResult
@@ -13,8 +13,7 @@ final class AgentResult
     /** @return array<string, mixed> */
     /** @param array{name: string, source: 'current'|'invocation'}|null $branch */
     /** @param list<array{code: string, source: string, severity: string, message: string}> $diagnostics */
-    public static function fromState(AgentState $state, array $warnings = [], TellExecutionMode $mode = TellExecutionMode::Stateless, ?array $branch = null, array $diagnostics = []): array
-    {
+    public static function fromState(AgentState $state, array $warnings = [], TellExecutionMode $mode = TellExecutionMode::Stateless, ?array $branch = null, array $diagnostics = []): array {
         $status = $state->status();
 
         $result = [
@@ -59,8 +58,7 @@ final class AgentResult
         return $result;
     }
 
-    public static function answer(AgentState $state): string
-    {
+    public static function answer(AgentState $state): string {
         return $state->stopSignal()?->reason->value === 'output_limit'
             ? ''
             : trim($state->finalResponse()->toString());

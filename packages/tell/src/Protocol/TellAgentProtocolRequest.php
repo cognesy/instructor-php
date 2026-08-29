@@ -5,17 +5,16 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Protocol;
 
 use Cognesy\Polyglot\Inference\Reasoning\ReasoningEffort;
-use Cognesy\Tell\Runtime\TellExecutionPolicy;
-use Cognesy\Tell\TellExecutionMode;
-use Cognesy\Tell\TellRequest;
+use Cognesy\Tell\Configuration\TellExecutionPolicy;
+use Cognesy\Tell\Data\TellExecutionMode;
+use Cognesy\Tell\Data\TellRequest;
+use InvalidArgumentException;
 use JsonException;
 
 final readonly class TellAgentProtocolRequest
 {
     public const string SCHEMA = 'tell.agent.request.v1';
-
     public const int MAX_INPUT_BYTES = 1_048_576;
-
     public const int MAX_PROMPT_BYTES = 262_144;
 
     /** @var list<string> */
@@ -51,8 +50,7 @@ final readonly class TellAgentProtocolRequest
         public TellRequest $request,
     ) {}
 
-    public static function decode(string $input, string $directory): self
-    {
+    public static function decode(string $input, string $directory): self {
         if (strlen($input) > self::MAX_INPUT_BYTES) {
             throw new TellAgentProtocolException('input_limit', 'Request exceeds the maximum input size.');
         }
@@ -64,7 +62,7 @@ final readonly class TellAgentProtocolRequest
         if (str_contains($payload, "\n") || str_contains($payload, "\r")) {
             throw new TellAgentProtocolException('invalid_request', 'Request must be encoded as one JSON line.');
         }
-        if (! str_starts_with($payload, '{')) {
+        if (!str_starts_with($payload, '{')) {
             throw new TellAgentProtocolException('invalid_request', 'Request must be a JSON object.');
         }
 
@@ -73,7 +71,7 @@ final readonly class TellAgentProtocolRequest
         } catch (JsonException) {
             throw new TellAgentProtocolException('invalid_request', 'Request is not valid JSON.');
         }
-        if (! is_array($decoded)) {
+        if (!is_array($decoded)) {
             throw new TellAgentProtocolException('invalid_request', 'Request must be a JSON object.');
         }
         if (array_diff(array_keys($decoded), self::FIELDS) !== []) {
@@ -131,8 +129,7 @@ final readonly class TellAgentProtocolRequest
     }
 
     /** @param array<string, mixed> $values */
-    private static function requiredString(array $values, string $key, int $maxBytes): string
-    {
+    private static function requiredString(array $values, string $key, int $maxBytes): string {
         $value = self::optionalString($values, $key, $maxBytes);
         if ($value === null) {
             throw new TellAgentProtocolException('invalid_request', "Request field {$key} is required.");
@@ -142,13 +139,12 @@ final readonly class TellAgentProtocolRequest
     }
 
     /** @param array<string, mixed> $values */
-    private static function optionalString(array $values, string $key, int $maxBytes): ?string
-    {
-        if (! array_key_exists($key, $values)) {
+    private static function optionalString(array $values, string $key, int $maxBytes): ?string {
+        if (!array_key_exists($key, $values)) {
             return null;
         }
         $value = $values[$key];
-        if (! is_string($value) || $value === '' || strlen($value) > $maxBytes || ! mb_check_encoding($value, 'UTF-8')) {
+        if (!is_string($value) || $value === '' || strlen($value) > $maxBytes || !mb_check_encoding($value, 'UTF-8')) {
             throw new TellAgentProtocolException('invalid_request', "Request field {$key} must be a bounded non-empty UTF-8 string.");
         }
 
@@ -156,12 +152,11 @@ final readonly class TellAgentProtocolRequest
     }
 
     /** @param array<string, mixed> $values */
-    private static function reasoningEffort(array $values): ?ReasoningEffort
-    {
-        if (! array_key_exists('reasoningEffort', $values)) {
+    private static function reasoningEffort(array $values): ?ReasoningEffort {
+        if (!array_key_exists('reasoningEffort', $values)) {
             return null;
         }
-        if (! is_string($values['reasoningEffort'])) {
+        if (!is_string($values['reasoningEffort'])) {
             throw new TellAgentProtocolException('invalid_request', 'Request field reasoningEffort must be minimal, low, medium, high, xhigh, or max.');
         }
 
@@ -177,9 +172,8 @@ final readonly class TellAgentProtocolRequest
     }
 
     /** @param array<string, mixed> $values */
-    private static function mode(array $values): TellExecutionMode
-    {
-        if (! array_key_exists('mode', $values)) {
+    private static function mode(array $values): TellExecutionMode {
+        if (!array_key_exists('mode', $values)) {
             return TellExecutionMode::Stateless;
         }
 
@@ -194,17 +188,16 @@ final readonly class TellAgentProtocolRequest
     /** @param array<string, mixed> $values
      * @return list<string>
      */
-    private static function tools(array $values): array
-    {
-        if (! array_key_exists('tools', $values)) {
+    private static function tools(array $values): array {
+        if (!array_key_exists('tools', $values)) {
             return [];
         }
         $tools = $values['tools'];
-        if (! is_array($tools) || ! array_is_list($tools) || count($tools) > 50) {
+        if (!is_array($tools) || !array_is_list($tools) || count($tools) > 50) {
             throw new TellAgentProtocolException('invalid_request', 'Request field tools must be a list of at most 50 tool names.');
         }
         foreach ($tools as $tool) {
-            if (! is_string($tool) || $tool === '' || strlen($tool) > 128 || ! mb_check_encoding($tool, 'UTF-8')) {
+            if (!is_string($tool) || $tool === '' || strlen($tool) > 128 || !mb_check_encoding($tool, 'UTF-8')) {
                 throw new TellAgentProtocolException('invalid_request', 'Every requested tool must be a bounded non-empty UTF-8 string.');
             }
         }
@@ -215,13 +208,12 @@ final readonly class TellAgentProtocolRequest
     /** @param array<string, mixed> $values
      * @return array<string, int>
      */
-    private static function policy(array $values): array
-    {
-        if (! array_key_exists('policy', $values)) {
+    private static function policy(array $values): array {
+        if (!array_key_exists('policy', $values)) {
             return [];
         }
         $policy = $values['policy'];
-        if (! is_array($policy) || array_is_list($policy)) {
+        if (!is_array($policy) || array_is_list($policy)) {
             throw new TellAgentProtocolException('invalid_request', 'Request field policy must be an object.');
         }
         if (array_diff(array_keys($policy), self::POLICY_FIELDS) !== []) {
@@ -229,14 +221,14 @@ final readonly class TellAgentProtocolRequest
         }
         $result = [];
         foreach ($policy as $key => $value) {
-            if (! is_int($value)) {
+            if (!is_int($value)) {
                 throw new TellAgentProtocolException('invalid_request', 'Every policy value must be an integer.');
             }
             $result[$key] = $value;
         }
         try {
             TellExecutionPolicy::resolve([], $result);
-        } catch (\InvalidArgumentException) {
+        } catch (InvalidArgumentException) {
             throw new TellAgentProtocolException('invalid_request', 'One or more policy values are outside the supported range.');
         }
 
@@ -251,11 +243,11 @@ final readonly class TellAgentProtocolRequest
         int $maximum,
         int $default,
     ): int {
-        if (! array_key_exists($key, $values)) {
+        if (!array_key_exists($key, $values)) {
             return $default;
         }
         $value = $values[$key];
-        if (! is_int($value) || $value < $minimum || $value > $maximum) {
+        if (!is_int($value) || $value < $minimum || $value > $maximum) {
             throw new TellAgentProtocolException('invalid_request', "Request field {$key} is outside the supported range.");
         }
 

@@ -7,7 +7,7 @@ namespace Cognesy\Tell\Workspace;
 final readonly class WorkspaceInitialization
 {
     public function __construct(
-        public TellWorkspace $workspace,
+        public WorkspaceState $workspace,
         public bool $created,
     ) {}
 }

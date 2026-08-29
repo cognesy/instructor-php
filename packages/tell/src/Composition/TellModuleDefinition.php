@@ -37,14 +37,12 @@ final readonly class TellModuleDefinition
     }
 
     /** @param list<object|null> $dependencies */
-    public function create(array $dependencies): object
-    {
+    public function create(array $dependencies): object {
         return ($this->factory)(...$dependencies);
     }
 
     /** @return array{id: string, description: string, provides: list<class-string>, requires: list<class-string>, optional: list<class-string>} */
-    public function describe(): array
-    {
+    public function describe(): array {
         return [
             'id' => $this->id,
             'description' => $this->description,

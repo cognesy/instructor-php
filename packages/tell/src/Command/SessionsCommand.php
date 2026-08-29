@@ -8,13 +8,13 @@ use Cognesy\Agents\Session\Data\SessionId;
 use Cognesy\Tell\Operational\CanDescribeOperationalPlane;
 use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
-use Cognesy\Tell\Render\ContentPreview;
 use Cognesy\Tell\Render\FieldSelection;
 use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Workspace\ArenaStore;
-use Cognesy\Tell\Workspace\TellWorkspace;
-use Cognesy\Tell\Workspace\WorkspaceSessionCatalog;
+use Cognesy\Tell\Workspace\Arena\FilesystemArena;
+use Cognesy\Tell\Workspace\Session\SessionCatalog;
+use Cognesy\Tell\Workspace\Session\SessionRef;
+use Cognesy\Tell\Workspace\WorkspaceState;
 use InvalidArgumentException;
 use Override;
 use Symfony\Component\Console\Command\Command;
@@ -27,15 +27,13 @@ final class SessionsCommand extends Command implements CanDescribeOperationalPla
 {
     private readonly TellAgentFactory $agents;
 
-    public function __construct(?TellAgentFactory $agents = null)
-    {
+    public function __construct(?TellAgentFactory $agents = null) {
         $this->agents = $agents ?? TellAgentFactory::installed();
         parent::__construct('sessions');
     }
 
     #[Override]
-    protected function configure(): void
-    {
+    protected function configure(): void {
         $this->setDescription('List, show, or remove persisted sessions')
             ->setHelp(<<<'HELP'
 List sessions, inspect one session, or remove one session.
@@ -56,8 +54,7 @@ HELP)
     }
 
     #[Override]
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         try {
             $action = (string) $input->getArgument('action');
             $id = $input->getArgument('id');
@@ -82,29 +79,24 @@ HELP)
     }
 
     #[Override]
-    public function planeOperation(): PlaneOperation
-    {
+    public function planeOperation(): PlaneOperation {
         return new PlaneOperation(
             plane: OperationalPlane::Management,
             command: 'sessions',
-            responsibility: 'Observe and perform explicit lifecycle deletion of persisted agent sessions.',
-            ownedState: 'FileSessionStore legacy records plus read-only workspace arena session projections.',
-            input: 'Operator list, show, or remove command targeting local sessions and an optional workspace.',
-            output: 'Bounded session inventory/detail with stable storage and source, or an idempotent legacy deletion result.',
-            authority: 'Read local sessions and workspace session projections; delete only an explicitly named session from legacy storage.',
-            degradedBehavior: 'Stateless data-plane turns continue when storage is unavailable; session operations fail explicitly.',
+            responsibility: 'Observe and clear Arena-backed named workspace sessions.',
+            ownedState: 'Named session refs and immutable canonical records in the selected workspace Arena.',
+            input: 'Operator list, show, or remove command targeting an initialized workspace.',
+            output: 'Bounded session inventory/detail or an idempotent named-session clear result.',
+            authority: 'Read canonical named sessions and atomically clear one explicitly named session ref.',
+            degradedBehavior: 'Stateless data-plane turns continue without a workspace; named-session operations fail explicitly.',
         );
     }
 
-    private function list(InputInterface $input, OutputInterface $output): int
-    {
+    private function list(InputInterface $input, OutputInterface $output): int {
         $sessionsById = [];
-        foreach ($this->legacySessions() as $session) {
-            $sessionsById[$session['sessionId']] = $session;
-        }
         $workspace = $this->workspace($input);
         if ($workspace !== null) {
-            foreach ((new WorkspaceSessionCatalog(new ArenaStore($workspace)))->list() as $session) {
+            foreach ((new SessionCatalog(new FilesystemArena($workspace)))->list() as $session) {
                 $sessionsById[$session['sessionId']] = $session;
             }
         }
@@ -132,52 +124,39 @@ HELP)
         return Command::SUCCESS;
     }
 
-    private function show(SessionId $id, InputInterface $input, OutputInterface $output): int
-    {
+    private function show(SessionId $id, InputInterface $input, OutputInterface $output): int {
         $workspace = $this->workspace($input);
-        if ($workspace !== null) {
-            $workspaceSession = (new WorkspaceSessionCatalog(new ArenaStore($workspace)))->show(
-                $id,
-                (bool) $input->getOption('full'),
-            );
-            if ($workspaceSession !== null) {
-                (new StructuredOutput($output))->write($workspaceSession, json: (bool) $input->getOption('json'));
-
-                return Command::SUCCESS;
-            }
+        if ($workspace === null) {
+            throw new InvalidArgumentException('Tell sessions require an initialized workspace.');
         }
-
-        $session = $this->agents->sessions()->getSession($id);
-        $preview = ContentPreview::from(
-            $session->state()->messages()->toString(),
+        $workspaceSession = (new SessionCatalog(new FilesystemArena($workspace)))->show(
+            $id,
             (bool) $input->getOption('full'),
         );
-        $data = [
-            ...$session->info()->toArray(),
-            'messageCount' => $session->state()->messages()->count(),
-            'messageCharacters' => $preview->characters,
-            'messages' => $preview->content,
-            'truncated' => $preview->truncated,
-            'storage' => 'legacy',
-            'source' => 'legacy',
-        ];
-        if ($preview->truncated) {
-            $data['help'] = ['Run `tell sessions show '.$id->toString().' --full` for complete messages.'];
+        if ($workspaceSession === null) {
+            throw new InvalidArgumentException("Tell session '{$id->toString()}' does not exist in this workspace.");
         }
-        (new StructuredOutput($output))->write($data, json: (bool) $input->getOption('json'));
+        (new StructuredOutput($output))->write($workspaceSession, json: (bool) $input->getOption('json'));
 
         return Command::SUCCESS;
     }
 
-    private function remove(SessionId $id, InputInterface $input, OutputInterface $output): int
-    {
-        $repository = $this->agents->sessionRepository();
-        $existed = $repository->exists($id);
-        $repository->delete($id);
+    private function remove(SessionId $id, InputInterface $input, OutputInterface $output): int {
+        $workspace = $this->workspace($input);
+        if ($workspace === null) {
+            throw new InvalidArgumentException('Tell sessions require an initialized workspace.');
+        }
+        $arena = new FilesystemArena($workspace);
+        $ref = (new SessionRef($id))->refName();
+        $reference = $arena->readOptionalRef($ref);
+        $removed = $reference?->head !== null;
+        if ($removed) {
+            $arena->compareAndSwapToEmpty($ref, $reference->head);
+        }
         (new StructuredOutput($output))->write([
             'sessionId' => $id->toString(),
-            'removed' => $existed,
-            'message' => match ($existed) {
+            'removed' => $removed,
+            'message' => match ($removed) {
                 true => 'Session removed.',
                 false => 'Session did not exist.',
             },
@@ -186,34 +165,15 @@ HELP)
         return Command::SUCCESS;
     }
 
-    private function requiredId(mixed $id): SessionId
-    {
-        if (! is_string($id) || $id === '') {
+    private function requiredId(mixed $id): SessionId {
+        if (!is_string($id) || $id === '') {
             throw new InvalidArgumentException('Session ID is required for show and rm.');
         }
 
         return SessionId::from($id);
     }
 
-    /** @return list<array<string, mixed>> */
-    private function legacySessions(): array
-    {
-        if (! is_dir($this->agents->paths()->sessions)) {
-            return [];
-        }
-
-        return array_map(
-            static fn (array $session): array => [
-                ...$session,
-                'storage' => 'legacy',
-                'source' => 'legacy',
-            ],
-            array_values($this->agents->sessions()->listSessions()->toArray()),
-        );
-    }
-
-    private function workspace(InputInterface $input): ?TellWorkspace
-    {
+    private function workspace(InputInterface $input): ?WorkspaceState {
         $directory = (string) $input->getOption('dir');
         $cwd = getcwd();
         $project = match (true) {
@@ -221,7 +181,7 @@ HELP)
             is_string($cwd) => $cwd,
             default => '.',
         };
-        if (! is_dir($project)) {
+        if (!is_dir($project)) {
             throw new InvalidArgumentException("Workspace directory does not exist: {$project}");
         }
 

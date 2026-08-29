@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Tell\Composition\StandardTellProfile;
 use Cognesy\Tell\Composition\TellHostBuilder;
-use Cognesy\Tell\Runtime\ComposerTellExtensionCatalogue;
-use Cognesy\Tell\Tool\TellToolRequest;
+use Cognesy\Tell\Data\TellToolRequest;
+use Cognesy\Tell\Discovery\ComposerTellExtensionCatalogue;
 
 it('reports malformed Composer extensions descriptively without mounting host modules', function (): void {
     $project = tellTestProject();
@@ -23,7 +23,7 @@ it('reports malformed Composer extensions descriptively without mounting host mo
 
 it('dispatches direct tools through the standard host controlled path', function (): void {
     $project = tellTestProject();
-    file_put_contents($project.'/visible.txt', "bounded content\n");
+    file_put_contents($project . '/visible.txt', "bounded content\n");
     $paths = standardHostPaths($project);
     $host = TellHostBuilder::fromProfile(StandardTellProfile::runtime(
         $project,

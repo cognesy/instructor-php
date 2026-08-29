@@ -15,7 +15,7 @@ final class TellHostBootException extends RuntimeException
         public readonly array $cleanupErrors,
         Throwable $previous,
     ) {
-        $cleanup = $cleanupErrors === [] ? '' : ' Cleanup failures: '.implode('; ', $cleanupErrors);
-        parent::__construct("Tell module {$module} failed to boot (".get_debug_type($previous).").{$cleanup}", previous: $previous);
+        $cleanup = $cleanupErrors === [] ? '' : ' Cleanup failures: ' . implode('; ', $cleanupErrors);
+        parent::__construct("Tell module {$module} failed to boot (" . get_debug_type($previous) . ").{$cleanup}", previous: $previous);
     }
 }

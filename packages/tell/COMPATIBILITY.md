@@ -4,24 +4,21 @@ This document defines the supported external behavior of
 `cognesy/instructor-tell`. It is an acceptance inventory, not an inventory of
 every public PHP symbol in `src/`.
 
-The `v2.8.3` baseline resolves to commit
-`d85dece468e3570bf6af58ecbb1bf5280895d356` for Tell. The v2.8.4 release
-promoted the additions recorded below into the supported 2.x contract. This
-v2.8.5 release adds the run-handle surface and states the streaming durability
-contract explicitly.
+The published baseline before this document is v2.8.5. v2.9.0 adds the
+reasoning, execution, rendering, spill, and namespace changes recorded below.
+The release keeps the PHP `^8.3` floor.
 
 ## Surface classification
 
 <!-- markdownlint-disable MD013 -->
 | Classification | Compatibility obligation |
 | --- | --- |
-| Published | Shipped by Packagist as `cognesy/instructor-tell` v2.8.4. Preserve within the 2.x line unless a documented deprecation says otherwise. |
-| Committed unreleased | None at the v2.8.4 release cut. Additions in this class must be named here before release. |
-| Worktree experiment | Intentional, tested work that is not committed or released. It may change while the current redesign is in progress. It becomes supported only when moved to the published or committed-unreleased class. |
+| Published through v2.8.5 | Shipped by Packagist before v2.9.0. Preserve unless an explicit v2.9.0 migration below replaces it. |
+| v2.9.0 | New or deliberately changed behavior in this release. It becomes the supported contract when v2.9.0 is published. |
+| Internal | Implementation seams whose observable facade, CLI, persistence, or wire behavior may still be supported. Their concrete collaboration graph is not frozen. |
 <!-- markdownlint-enable MD013 -->
 
-The compatibility target is PHP `^8.3`. The current redesign must not silently
-raise that floor.
+The compatibility target remains PHP `^8.3`.
 
 ## Published PHP SDK
 
@@ -31,16 +28,17 @@ objects returned by these facades are part of the same obligation.
 <!-- markdownlint-disable MD013 -->
 | Facade behavior | Published entry points | Characterization tests |
 | --- | --- | --- |
-| Open and execute | `Tell::open()`, `Tell::run()`, `Tell::runStream()`, `TellRequest`, `TellResult`, `TellProgress` | `tests/Integration/SdkRuntimeTest.php`, `tests/Integration/ExecutionPolicyTest.php` |
-| Durable conversation | `Tell::workspace()`, `Tell::conversation()`, `TellWorkspace::initialize()`, `discover()`, `main()`, `conversation()`, and `TellConversation` send/inspect/clear/compact operations | `tests/Integration/SdkRuntimeTest.php`, `tests/Integration/WorkspaceP0AcceptanceTest.php`, `tests/Integration/WorkspaceClearTest.php`, `tests/Integration/WorkspaceCompactionTest.php` |
-| Request controls | agent, connection, model, tools, supplied answers, step and execution budgets, session, branch, branch overrides, transient/durable mode, and event listeners on `TellRequest` | `tests/Integration/SdkRuntimeTest.php`, `tests/Integration/ExecutionPolicyTest.php`, `tests/Integration/AskUserTest.php` |
-| Observation | `TellEventEnvelope`, including `toArray()`, plus streamed `TellProgress` checkpoints | `tests/Integration/SdkRuntimeTest.php`, `tests/Feature/RenderingTest.php` |
-| Returned projections | `TellConversationView`, `TellContext`, `TellClearResult`, `TellCompactionResult`, `TellWorkspaceInfo`, and `TellExecutionMode` | `tests/Integration/WorkspaceInspectionTest.php`, `tests/Integration/WorkspaceContextTest.php`, `tests/Integration/WorkspaceClearTest.php`, `tests/Integration/WorkspaceCompactionTest.php` |
-| Explicit policy and answers | `Runtime\TellExecutionPolicy` and `Capability\AskUser\TellAnswerQueue` when supplied through `TellRequest` | `tests/Integration/ExecutionPolicyTest.php`, `tests/Integration/AskUserTest.php` |
+| Open and execute | `Tell::open()`, `Tell::run()`, `Tell::runStream()`, `Data\TellRequest`, `Data\TellResult`, `Data\TellProgress` | `tests/Integration/SdkRuntimeTest.php`, `tests/Integration/ExecutionPolicyTest.php` |
+| Durable conversation | `Tell::workspace()`, `Tell::conversation()`, `Workspace\TellWorkspace::initialize()`, `discover()`, `main()`, `conversation()`, and `Workspace\TellConversation` send/inspect/clear/compact operations | `tests/Integration/SdkRuntimeTest.php`, `tests/Integration/WorkspaceP0AcceptanceTest.php`, `tests/Integration/WorkspaceClearTest.php`, `tests/Integration/WorkspaceCompactionTest.php` |
+| Request controls | agent, connection, model, tools, supplied answers, step and execution budgets, session, branch, branch overrides, transient/durable mode, and event listeners on `Data\TellRequest` | `tests/Integration/SdkRuntimeTest.php`, `tests/Integration/ExecutionPolicyTest.php`, `tests/Integration/AskUserTest.php` |
+| Observation | `Data\TellEventEnvelope`, including `toArray()`, plus streamed `Data\TellProgress` checkpoints | `tests/Integration/SdkRuntimeTest.php`, `tests/Feature/RenderingTest.php` |
+| Returned projections | `Data\TellConversationView`, `Data\TellContext`, `Data\TellClearResult`, `Data\TellCompactionResult`, `Data\TellWorkspaceInfo`, and `Data\TellExecutionMode` | `tests/Integration/WorkspaceInspectionTest.php`, `tests/Integration/WorkspaceContextTest.php`, `tests/Integration/WorkspaceClearTest.php`, `tests/Integration/WorkspaceCompactionTest.php` |
+| Explicit policy and answers | `Configuration\TellExecutionPolicy` and `Capability\AskUser\TellAnswerQueue` when supplied through `Data\TellRequest` | `tests/Integration/ExecutionPolicyTest.php`, `tests/Integration/AskUserTest.php` |
 <!-- markdownlint-enable MD013 -->
 
-`TellApplication`, `TellCommand`, command classes, runtime builders, stores, and
-canonical records are implementation seams rather than a second SDK. Their
+`Console\TellApplication`, `Console\TellCommand`, command classes, runtime
+builders, stores, and Arena records are implementation seams rather than a
+second SDK. Their
 observable CLI and persistence behavior is supported as described below; their
 constructors and internal collaboration graph are not frozen.
 
@@ -72,8 +70,7 @@ These additions are supported in v2.8.4 alongside the existing facade:
 | Published surface | Evidence |
 | --- | --- |
 | Branch/ref/config SDK: `TellBranches`, `TellBranch`, `TellRef`, `TellBranchConfiguration`, and returned branch values | `tests/Integration/SdkBranchControlTest.php`, `tests/Integration/SdkBranchRefTest.php`, `tests/Integration/SdkBranchConfigurationTest.php` |
-| Catalogue and direct-tool SDK: `Tell::catalogue()`, `Tell::tools()`, `TellCatalogue`, `TellTools`, `TellToolRequest`, and `TellToolResult` | `tests/Integration/SdkAgentCapabilitiesTest.php` |
-| Typed reasoning control: `TellReasoningEffort` and `TellRequest::reasoningEffort()` | `tests/Integration/ReasoningConfigurationTest.php` |
+| Catalogue and direct-tool SDK: `Tell::catalogue()`, `Tell::tools()`, `Discovery\TellCatalogue`, `Tool\TellTools`, `Data\TellToolRequest`, and `Data\TellToolResult` | `tests/Integration/SdkAgentCapabilitiesTest.php` |
 | Deterministic test harness: `Tell::testing()` and `Testing\TellTestFactory` | `tests/Integration/SdkTestingHarnessTest.php` |
 | Controlled cancellation/output behavior added to the SDK | `tests/Integration/SdkControlledRunTest.php` |
 | One-run external controller boundary: `agent --rpc`, `tell.agent.request.v1`, and `tell.agent.frame.v1` | `tests/Integration/AgentProtocolTest.php` |
@@ -96,10 +93,35 @@ of the supported facade.
 it is populated by runners and read through `TellRun`.
 
 Implementers of `CanRunTell` outside this package must add `start()`. That is
-the only source-level break in this release; `Tell::run()` and
+the only source-level break introduced by v2.8.5; `Tell::run()` and
 `Tell::runStream()` keep their signatures and their observable behavior.
 
-## Committed unreleased behavior change: honest execution mode
+## v2.9.0 source migration
+
+v2.9.0 removes duplicate and transitional namespaces instead of shipping
+deprecated wrappers for both the old and new architecture:
+
+- request, result, event, tool, shell-job, diagnostic, and workspace projection
+  DTOs are under `Cognesy\Tell\Data`;
+- configuration policy and resolver classes are under
+  `Cognesy\Tell\Configuration`;
+- branch facades are under `Cognesy\Tell\Workspace\Branch`;
+- shell-job hosting is under `Cognesy\Tell\Shell`, with payloads under `Data`;
+- workspace implementation is grouped by `Arena`, `Branch`, `Compaction`,
+  `Conversation`, `Execution`, and `Session`.
+
+The top-level `Canonical`, duplicate top-level `Branch`, and `Resource`
+namespaces are removed. `Legacy*` session compatibility classes and redundant
+top-level DTO aliases are also removed. Applications importing those concrete
+symbols must update their imports.
+
+Typed reasoning is added in v2.9.0 through
+`Data\TellRequest::reasoningEffort()` and Polyglot's
+`Cognesy\Polyglot\Inference\Reasoning\ReasoningEffort`. The duplicate
+`Cognesy\Tell\TellReasoningEffort` enum does not exist in the v2.9.0 contract.
+Evidence: `tests/Integration/ReasoningConfigurationTest.php`.
+
+## v2.9.0 behavior changes: honest execution mode
 
 `execution.mode` in JSON and TOON turn output now reports what the turn
 actually persisted, and gains a third value:
@@ -119,12 +141,12 @@ branched on `execution.mode === 'durable'` must now also accept `stateless`.
 `execution.durable` keeps its meaning and is now correct for stateless turns.
 Evidence: `tests/Integration/ExecutionModeReportingTest.php`.
 
-`--output=human` is a new turn output mode alongside `toon`, `text`, `json`,
-and `events`. It renders the answer as Markdown for an ANSI terminal through
+`--output=human` is a turn output mode alongside `toon`, `text`, `json`, and
+`events`. It renders the answer as Markdown for an ANSI terminal through
 `Cognesy\Utils\Cli\CliMarkdown`, and falls back to the plain answer whenever
-stdout is not decorated. No existing mode changes. `cognesy/instructor-tell`
-gains a direct `cognesy/instructor-utils` requirement, which was already
-present transitively. Evidence: `tests/Integration/HumanOutputTest.php`.
+stdout is not decorated. `cognesy/instructor-tell` gains a direct
+`cognesy/instructor-utils` requirement, which was already present transitively.
+Evidence: `tests/Integration/HumanOutputTest.php`.
 
 `output` is a new branch configuration key accepting the same five values, so
 a workspace branch can set its own default turn format. An explicit `--output`
@@ -134,7 +156,7 @@ messages now name the offending key's own allowed values instead of always
 naming the reasoning-effort set. Evidence:
 `tests/Integration/HumanOutputTest.php`.
 
-Turn progress is now reported on two stderr channels. `-v` writes a readable
+Turn progress is reported on two stderr channels. `-v` writes a readable
 trace of each step, tool call, and result, with `-vvv` no longer abridging
 bodies; `--debug` is a new flag writing one bracketed `key=value` line per
 event. Both are channels rather than output modes, so stdout still carries
@@ -221,16 +243,16 @@ spilling on, the shell tool's own capture caps rise to the spill ceiling, so a
 result reaches the hook intact. Evidence:
 `tests/Integration/ToolOutputSpillTest.php`.
 
-`WorkspaceManager::initialize()` now keys on the schema record rather than the
+`WorkspaceRepository::initialize()` now keys on the schema record rather than the
 bare `.tell` directory, matching what `discover()` has always done. Anything
 else kept under that name - Tell's own storage root at `$HOME/.tell`, and
 formerly a spill store - was read as an existing workspace, so `tell init`
 failed with a broken-arena error and the directory could never be initialized.
 Initialization remains idempotent and still refuses a genuinely malformed
-workspace. Evidence: `tests/Integration/WorkspaceManagerTest.php`.
+workspace. Evidence: `tests/Integration/WorkspaceRepositoryTest.php`.
 
-`TellResult::executionMode()` is the published accessor for the same fact.
-`Render\OutputRenderer::finish()` takes a `TellExecutionMode` in place of its
+`Data\TellResult::executionMode()` is the published accessor for the same fact.
+`Render\OutputRenderer::finish()` takes a `Data\TellExecutionMode` in place of its
 `bool $transient` parameter; renderers are an implementation seam, so that is
 not a published break. The `direct` tool-call execution projection is a
 different path and is unchanged.
@@ -238,7 +260,7 @@ different path and is unchanged.
 ## CLI route inventory
 
 The published v2.8.3 application has 19 Symfony command classes: 18 under
-`src/Command/` plus `TellCommand`. They register 20 routes because
+`src/Command/` plus `Console\TellCommand`. They register 20 routes because
 `WorkspaceInspectionCommand` supplies both `history` and `transcript`.
 v2.8.4 adds `AgentCommand`, producing 20 classes and 21 routes.
 
@@ -251,7 +273,7 @@ instances, rather than a separately maintained catalogue.
 <!-- markdownlint-disable MD013 -->
 | Route | Class | Status | Behavior tests |
 | --- | --- | --- | --- |
-| `tell` | `TellCommand` | Published | `tests/Feature/CommandSurfaceTest.php`, `tests/Feature/SessionAndExitTest.php`, `tests/Integration/WorkspaceTurnTest.php` |
+| `tell` | `Console\TellCommand` | Published | `tests/Feature/CommandSurfaceTest.php`, `tests/Integration/SessionAndExitTest.php`, `tests/Integration/WorkspaceTurnTest.php` |
 | `agent` | `Command\AgentCommand` | Published | `tests/Integration/AgentProtocolTest.php` |
 | `agents` | `Command\AgentsCommand` | Published | `tests/Feature/CommandSurfaceTest.php` |
 | `auth` | `Command\AuthCommand` | Published | `tests/Integration/CredentialManagementTest.php` |
@@ -268,7 +290,7 @@ instances, rather than a separately maintained catalogue.
 | `planes` | `Command\PlanesCommand` | Published | `tests/Feature/CommandSurfaceTest.php` |
 | `providers` | `Command\ProvidersCommand` | Published | `tests/Integration/ProviderCatalogueCommandTest.php` |
 | `reset` | `Command\ResetCommand` | Published | `tests/Integration/BranchCommandTest.php` |
-| `sessions` | `Command\SessionsCommand` | Published | `tests/Feature/CommandSurfaceTest.php`, `tests/Feature/SessionAndExitTest.php` |
+| `sessions` | `Command\SessionsCommand` | Published | `tests/Feature/CommandSurfaceTest.php`, `tests/Integration/SessionAndExitTest.php` |
 | `tool` | `Command\ToolCommand` | Published | `tests/Integration/ToolCommandTest.php` |
 | `tools` | `Command\ToolsCommand` | Published | `tests/Feature/CommandSurfaceTest.php` |
 | `transcript` | `Command\WorkspaceInspectionCommand` | Published | `tests/Integration/WorkspaceInspectionTest.php` |
@@ -279,34 +301,23 @@ instances, rather than a separately maintained catalogue.
 <!-- markdownlint-disable MD013 -->
 | Boundary | Compatibility contract | Characterization tests |
 | --- | --- | --- |
-| Workspace marker and arena | Private `.tell/arena`, workspace schema 1, canonical schema 1, immutable content-addressed objects, versioned refs, atomic compare-and-swap publication | `tests/Integration/WorkspaceManagerTest.php`, `tests/Integration/ArenaStoreTest.php`, `tests/Integration/ArenaStoreIntegrationTest.php`, `tests/Unit/CanonicalRecordTest.php` |
+| Workspace marker and arena | Private `.tell/arena`, workspace schema 1, Arena record schema 1, immutable content-addressed objects, versioned refs, atomic compare-and-swap publication | `tests/Integration/WorkspaceRepositoryTest.php`, `tests/Integration/ArenaStoreTest.php`, `tests/Integration/ArenaStoreIntegrationTest.php`, `tests/Unit/ArenaRecordTest.php` |
 | Branch selectors/config | Current-branch selector schema 1, ref schema 1, branch-config schema 1; secrets are forbidden and writes are version-checked | `tests/Integration/BranchCommandTest.php`, `tests/Integration/ArenaStoreIntegrationTest.php` |
-| Legacy sessions | Existing Tell session JSON is a read-only import source; canonical arena history becomes authoritative after a successful first-use migration | `tests/Feature/SessionAndExitTest.php`, `tests/Integration/WorkspaceSessionCompatibilityTest.php` |
+| Named sessions | Named sessions are deterministic Arena refs with canonical session metadata; no alternate session store is consulted | `tests/Integration/SessionAndExitTest.php`, `tests/Integration/SdkRuntimeTest.php` |
 | Normalized events | Monotonic payload-safe NDJSON using `tell.event.v1`; one normalized terminal outcome; raw typed source objects are not wire data | `tests/Feature/RenderingTest.php`, `tests/Integration/ExecutionTraceTest.php`, `tests/Integration/ToolCommandTest.php` |
 | Execution traces | Private JSONL derived from normalized events, payloads excluded by default, credentials always redacted, trace failure does not fail the run | `tests/Integration/ExecutionTraceTest.php`, `tests/Unit/TracePayloadTest.php` |
 | One-run protocol | Request `tell.agent.request.v1` and frame `tell.agent.frame.v1`; bounded input/output, monotonic sequence, exactly one terminal frame | `tests/Integration/AgentProtocolTest.php` |
 | Rendering | Human default plus explicit toon, text, JSON, and event modes; structured usage errors remain on stdout | `tests/Feature/RenderingTest.php`, `tests/Feature/CommandSurfaceTest.php` |
 | Spilled tool output | Blobs in Tell's storage at `~/.tell/runtime/blobs/<project-hash>/<ab>/`, content-addressed and shard-fanned, never under the project; a stub names the blob, previews its head within `maxStubBytes`, and carries a `read` continuation unless the result is binary; `maxSpillBytes` of `0` restores head/tail truncation | `tests/Integration/ToolOutputSpillTest.php` |
-| Process exits | `0` completed, `1` failed/stopped runtime, `2` invalid usage; protocol cancellation is `130` | `tests/Feature/SessionAndExitTest.php`, `tests/Feature/CommandSurfaceTest.php`, `tests/Integration/AgentProtocolTest.php` |
+| Process exits | `0` completed, `1` failed/stopped runtime, `2` invalid usage; protocol cancellation is `130` | `tests/Integration/SessionAndExitTest.php`, `tests/Feature/CommandSurfaceTest.php`, `tests/Integration/AgentProtocolTest.php` |
 <!-- markdownlint-enable MD013 -->
 
 Changing a schema identifier, persisted meaning, redaction guarantee, route,
 exit meaning, or published facade behavior requires an explicit compatibility
 decision and a test update. Refactoring the internal graph does not.
 
-## Legacy session decision
+## Named session decision
 
-Decision dated 2026-08-26: retain legacy Tell session JSON discovery and
-read-only first-use migration for the complete 2.x release line.
-
-- Never rewrite or delete the legacy source during compatibility import.
-- After migration, canonical arena history is authoritative; divergence is a
-  warning, not an implicit re-import.
-- Review usage and maintenance cost on 2027-03-01. That review may retain the
-  importer longer, but cannot remove it from a 2.x release.
-- Removal is permitted only in Tell 3.0 or later, after at least one minor
-  release documents deprecation and provides an explicit migration command or
-  guide.
-
-The decision is characterized by
-`tests/Integration/WorkspaceSessionCompatibilityTest.php`.
+Named Tell sessions have one persistence model: canonical records selected by
+deterministic refs in an initialized workspace Arena. Tell does not discover,
+import, update, or delete records from an alternate JSON session store.

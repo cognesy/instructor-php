@@ -35,7 +35,7 @@
     "cognesy/instructor-http-client": "^2.8",
     "cognesy/logging": "^2.3",
     "cognesy/instructor-messages": "^2.8",
-    "cognesy/instructor-polyglot": "^2.8",
+    "cognesy/instructor-polyglot": "^2.9",
     "cognesy/instructor-sandbox": "^2.8",
     "cognesy/instructor-schema": "^2.8",
     "cognesy/instructor-struct": "^2.8",

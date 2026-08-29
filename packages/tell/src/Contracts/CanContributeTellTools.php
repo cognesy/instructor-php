@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Contracts;
 
-use Cognesy\Tell\Contracts\Collections\TellExtensionDescriptors;
+use Cognesy\Tell\Data\TellExtensionDescriptors;
+use Cognesy\Tell\Data\TellExtensionKind;
 
 interface CanContributeTellTools
 {

@@ -23,9 +23,9 @@ the typed value into provider-native Polyglot options only at the runtime edge.
 require 'examples/boot.php';
 require_once dirname(__DIR__).'/Support.php';
 
+use Cognesy\Polyglot\Inference\Reasoning\ReasoningEffort;
 use Cognesy\Tell\Tell;
-use Cognesy\Tell\TellReasoningEffort;
-use Cognesy\Tell\TellRequest;
+use Cognesy\Tell\Data\TellRequest;
 
 $project = TellHarnessExample::project();
 
@@ -43,7 +43,7 @@ try {
     $configuration->set('reasoningEffort', 'medium', $model->version);
 
     $request = TellRequest::prompt('Answer with a short justification.')
-        ->reasoningEffort(TellReasoningEffort::Low)
+        ->reasoningEffort(ReasoningEffort::Low)
         ->durable();
     $effective = $configuration->effective($request);
     $result = $tell->run($request);
@@ -58,11 +58,13 @@ try {
 } finally {
     TellHarnessExample::remove($project);
 }
+?>
 ```
 
 ## Key Points
 
-- Use `TellReasoningEffort` in PHP; branch storage uses its stable string value.
+- Use Polyglot's `ReasoningEffort` in PHP; branch storage uses its stable string
+  value.
 - Request intent wins over branch intent and effective configuration reports
   whether the value came from `invocation` or `branch`.
 - Unsupported provider/model combinations fail before provider I/O.

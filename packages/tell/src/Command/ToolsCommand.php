@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Command;
 
+use Cognesy\Tell\Console\TellOptions;
 use Cognesy\Tell\Operational\CanDescribeOperationalPlane;
 use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\FieldSelection;
 use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Runtime\TellOptions;
 use Override;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -21,15 +21,13 @@ final class ToolsCommand extends Command implements CanDescribeOperationalPlane
 {
     private readonly TellAgentFactory $agents;
 
-    public function __construct(?TellAgentFactory $agents = null)
-    {
+    public function __construct(?TellAgentFactory $agents = null) {
         $this->agents = $agents ?? TellAgentFactory::installed();
         parent::__construct('tools');
     }
 
     #[Override]
-    protected function configure(): void
-    {
+    protected function configure(): void {
         $this->setDescription('List tools resolved for a built agent')
             ->setHelp(<<<'HELP'
 Build an agent and list the tools available to its runtime.
@@ -46,8 +44,7 @@ HELP)
     }
 
     #[Override]
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         $directory = (string) $input->getOption('dir');
         $cwd = getcwd();
         $project = match (true) {
@@ -88,8 +85,7 @@ HELP)
     }
 
     #[Override]
-    public function planeOperation(): PlaneOperation
-    {
+    public function planeOperation(): PlaneOperation {
         return new PlaneOperation(
             plane: OperationalPlane::Control,
             command: 'tools',

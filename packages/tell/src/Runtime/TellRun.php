@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Runtime;
 
-use Cognesy\Tell\Diagnostics\TellDiagnostic;
-use Cognesy\Tell\Diagnostics\TellDiagnostics;
-use Cognesy\Tell\TellProgress;
-use Cognesy\Tell\TellResult;
+use Cognesy\Tell\Data\TellDiagnostic;
+use Cognesy\Tell\Data\TellProgress;
+use Cognesy\Tell\Data\TellResult;
 use Generator;
 use RuntimeException;
 use Throwable;
@@ -37,8 +36,7 @@ final class TellRun
      *
      * @return Generator<int, TellProgress, mixed, TellResult>
      */
-    public function checkpoints(): Generator
-    {
+    public function checkpoints(): Generator {
         $this->started = true;
         try {
             $result = yield from $this->stream;
@@ -51,8 +49,7 @@ final class TellRun
     }
 
     /** True once the run reached its terminal outcome and applied its effects. */
-    public function isCommitted(): bool
-    {
+    public function isCommitted(): bool {
         return $this->outcome->isCommitted();
     }
 
@@ -60,8 +57,7 @@ final class TellRun
      * The run's result. Available as soon as the run commits, whether or not the
      * caller drained the checkpoints.
      */
-    public function result(): TellResult
-    {
+    public function result(): TellResult {
         $result = $this->outcome->result();
         if ($result !== null) {
             return $result;
@@ -72,8 +68,7 @@ final class TellRun
     }
 
     /** @return list<TellDiagnostic> */
-    public function diagnostics(): array
-    {
+    public function diagnostics(): array {
         return $this->diagnostics->all();
     }
 
@@ -81,8 +76,7 @@ final class TellRun
      * Runs to completion and returns the result, for callers that do not care
      * about progress.
      */
-    public function wait(): TellResult
-    {
+    public function wait(): TellResult {
         foreach ($this->checkpoints() as $_) {
         }
 
@@ -94,9 +88,8 @@ final class TellRun
      * generator is force-closed surfaces at whatever statement happened to drop
      * the last reference.
      */
-    private function noteIfAbandoned(): void
-    {
-        if (! $this->started || $this->outcome->isCommitted()) {
+    private function noteIfAbandoned(): void {
+        if (!$this->started || $this->outcome->isCommitted()) {
             return;
         }
         try {

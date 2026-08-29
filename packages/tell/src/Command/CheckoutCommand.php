@@ -9,8 +9,10 @@ use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Workspace\ArenaStore;
-use Cognesy\Tell\Workspace\BranchResolver;
+use Cognesy\Tell\Workspace\Arena\FilesystemArena;
+use Cognesy\Tell\Workspace\Branch\BranchResolver;
+use Cognesy\Tell\Workspace\Branch\Storage\BranchCurrentSelectionStore;
+use Cognesy\Tell\Workspace\Branch\Storage\BranchStore;
 use Cognesy\Tell\Workspace\WorkspaceException;
 use InvalidArgumentException;
 use Override;
@@ -22,14 +24,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 final class CheckoutCommand extends Command implements CanDescribeOperationalPlane
 {
-    public function __construct(private readonly TellAgentFactory $agents)
-    {
+    public function __construct(private readonly TellAgentFactory $agents) {
         parent::__construct('checkout');
     }
 
     #[Override]
-    protected function configure(): void
-    {
+    protected function configure(): void {
         $this->setDescription('Persistently select a Tell branch')
             ->addArgument('name', InputArgument::REQUIRED, 'main or an existing user branch')
             ->addOption('dir', 'C', InputOption::VALUE_REQUIRED, 'Workspace directory', '')
@@ -37,8 +37,7 @@ final class CheckoutCommand extends Command implements CanDescribeOperationalPla
     }
 
     #[Override]
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         try {
             $directory = (string) $input->getOption('dir');
             $cwd = getcwd();
@@ -47,14 +46,14 @@ final class CheckoutCommand extends Command implements CanDescribeOperationalPla
             if ($workspace === null) {
                 throw new WorkspaceException('Tell checkout requires an initialized workspace; run `tell init` first.');
             }
-            $store = new ArenaStore($workspace);
-            $previous = (new BranchResolver($store))->resolve();
+            $store = new FilesystemArena($workspace);
+            $previous = (new BranchResolver($store, $workspace))->resolve();
             $value = $input->getArgument('name');
-            if (! is_string($value) || $value === '') {
+            if (!is_string($value) || $value === '') {
                 throw new InvalidArgumentException('Branch name is required.');
             }
-            $store->checkout($value);
-            $selected = (new BranchResolver($store))->resolve();
+            (new BranchStore($store, new BranchCurrentSelectionStore($workspace)))->checkout($value);
+            $selected = (new BranchResolver($store, $workspace))->resolve();
             (new StructuredOutput($output))->write([
                 'previous' => $previous->toArray(),
                 'branch' => $selected->toArray(),
@@ -74,8 +73,7 @@ final class CheckoutCommand extends Command implements CanDescribeOperationalPla
     }
 
     #[Override]
-    public function planeOperation(): PlaneOperation
-    {
+    public function planeOperation(): PlaneOperation {
         return new PlaneOperation(
             plane: OperationalPlane::Management,
             command: 'checkout NAME',

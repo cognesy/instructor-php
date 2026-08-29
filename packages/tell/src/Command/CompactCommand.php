@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Command;
 
 use Cognesy\Agents\Session\Data\SessionId;
+use Cognesy\Tell\Console\TellOptions;
 use Cognesy\Tell\Operational\CanDescribeOperationalPlane;
 use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Runtime\TellOptions;
-use Cognesy\Tell\Workspace\ArenaStore;
-use Cognesy\Tell\Workspace\BranchConfigStore;
-use Cognesy\Tell\Workspace\BranchResolver;
-use Cognesy\Tell\Workspace\SessionCompatibilityRef;
-use Cognesy\Tell\Workspace\TellWorkspace;
-use Cognesy\Tell\Workspace\WorkspaceCompactionRunner;
+use Cognesy\Tell\Workspace\Arena\FilesystemArena;
+use Cognesy\Tell\Workspace\Branch\BranchResolver;
+use Cognesy\Tell\Workspace\Branch\Storage\BranchConfigStore;
+use Cognesy\Tell\Workspace\Compaction\CompactionRunner;
+use Cognesy\Tell\Workspace\Session\SessionRef;
 use Cognesy\Tell\Workspace\WorkspaceException;
+use Cognesy\Tell\Workspace\WorkspaceState;
 use InvalidArgumentException;
 use Override;
 use Symfony\Component\Console\Command\Command;
@@ -36,15 +36,13 @@ final class CompactCommand extends Command implements CanDescribeOperationalPlan
 
     private readonly TellAgentFactory $agents;
 
-    public function __construct(?TellAgentFactory $agents = null)
-    {
+    public function __construct(?TellAgentFactory $agents = null) {
         $this->agents = $agents ?? TellAgentFactory::installed();
         parent::__construct('compact');
     }
 
     #[Override]
-    protected function configure(): void
-    {
+    protected function configure(): void {
         $this->setDescription('Explicitly summarize one Tell canonical conversation')
             ->setHelp(<<<'HELP'
 Run one configured inference request that replaces the selected canonical ref
@@ -69,8 +67,7 @@ HELP)
     }
 
     #[Override]
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         try {
             $hint = $this->hint($input);
             $options = $this->options($input);
@@ -80,11 +77,11 @@ HELP)
             if ($requested !== null && $requested !== '' && $session !== null) {
                 throw new InvalidArgumentException('--branch and --session cannot be used together.');
             }
-            if ($requested !== null && ! is_string($requested)) {
+            if ($requested !== null && !is_string($requested)) {
                 throw new InvalidArgumentException('Tell branch selector must be a string.');
             }
-            $arena = new ArenaStore($workspace);
-            $branch = $session === null ? (new BranchResolver($arena))->resolve($requested === '' ? null : $requested) : null;
+            $arena = new FilesystemArena($workspace);
+            $branch = $session === null ? (new BranchResolver($arena, $workspace))->resolve($requested === '' ? null : $requested) : null;
             if ($branch !== null) {
                 $options = $options->withBranchConfig((new BranchConfigStore($workspace))->runtimeValues($branch->branch));
             }
@@ -92,11 +89,11 @@ HELP)
             $this->agents->assertReady($options);
             $loop = $this->agents->build($options, $definition);
             $this->agents->attachExecutionTrace($loop, $options);
-            $result = (new WorkspaceCompactionRunner(
+            $result = (new CompactionRunner(
                 arena: $arena,
                 ref: match ($session) {
                     null => $branch->ref,
-                    default => (new SessionCompatibilityRef($session))->refName(),
+                    default => (new SessionRef($session))->refName(),
                 },
             ))->execute($loop, $definition, $hint);
 
@@ -124,8 +121,7 @@ HELP)
     }
 
     #[Override]
-    public function planeOperation(): PlaneOperation
-    {
+    public function planeOperation(): PlaneOperation {
         return new PlaneOperation(
             plane: OperationalPlane::Data,
             command: 'compact [hint]',
@@ -138,26 +134,24 @@ HELP)
         );
     }
 
-    private function hint(InputInterface $input): string
-    {
+    private function hint(InputInterface $input): string {
         $hint = $input->getArgument('hint');
         if ($hint === null || $hint === '') {
             return '';
         }
-        if (! is_string($hint)) {
+        if (!is_string($hint)) {
             throw new InvalidArgumentException('Tell compact hint must be a string.');
         }
         if (mb_strlen($hint) > self::MAX_HINT_CHARACTERS) {
             throw new InvalidArgumentException(
-                'Tell compact hint must be at most '.self::MAX_HINT_CHARACTERS.' characters.',
+                'Tell compact hint must be at most ' . self::MAX_HINT_CHARACTERS . ' characters.',
             );
         }
 
         return $hint;
     }
 
-    private function options(InputInterface $input): TellOptions
-    {
+    private function options(InputInterface $input): TellOptions {
         $directory = (string) $input->getOption('dir');
         $cwd = getcwd();
         $project = match (true) {
@@ -180,8 +174,7 @@ HELP)
         );
     }
 
-    private function workspace(string $directory): TellWorkspace
-    {
+    private function workspace(string $directory): WorkspaceState {
         $workspace = $this->agents->workspace()->discover($directory);
         if ($workspace === null) {
             throw new WorkspaceException('Tell compact requires an initialized workspace; run `tell init` first.');
@@ -190,21 +183,19 @@ HELP)
         return $workspace;
     }
 
-    private function session(InputInterface $input): ?SessionId
-    {
+    private function session(InputInterface $input): ?SessionId {
         $value = $input->getOption('session');
         if ($value === null || $value === '') {
             return null;
         }
-        if (! is_string($value)) {
+        if (!is_string($value)) {
             throw new InvalidArgumentException('Tell session selector must be a string.');
         }
 
         return SessionId::from($value);
     }
 
-    private function writeError(OutputInterface $output, string $message, bool $usage, bool $json): void
-    {
+    private function writeError(OutputInterface $output, string $message, bool $usage, bool $json): void {
         $payload = ['error' => $message];
         if ($usage) {
             $payload['help'] = ['Run `tell compact --help` for valid selectors and configuration options.'];

@@ -27,14 +27,12 @@ final class PlanesCommand extends Command
         'degradedBehavior',
     ];
 
-    public function __construct(private readonly PlaneMap $planes)
-    {
+    public function __construct(private readonly PlaneMap $planes) {
         parent::__construct('planes');
     }
 
     #[Override]
-    protected function configure(): void
-    {
+    protected function configure(): void {
         $this->setDescription('Describe Tell data, control, and management operations')
             ->setHelp(<<<'HELP'
 Show Tell's logical operational-plane map. The planes remain collocated in one
@@ -51,8 +49,7 @@ HELP)
     }
 
     #[Override]
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         $requested = (string) $input->getOption('fields');
         if ((bool) $input->getOption('full') && $requested !== '') {
             throw new InvalidArgumentException('--full and --fields cannot be combined.');

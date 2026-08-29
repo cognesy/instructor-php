@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Tell\Command\ModelsCommand;
 use Cognesy\Tell\Command\ProvidersCommand;
@@ -11,9 +11,9 @@ use Symfony\Component\Console\Tester\CommandTester;
 
 it('lists Polyglot-derived provider metadata without resolving or exposing preset secrets', function (): void {
     $factory = tellTestFactory();
-    $project = tellLastTemporaryRoot().'/catalogue-project';
-    mkdir($project.'/config/llm/presets', 0700, true);
-    file_put_contents($project.'/config/llm/presets/qwen.yaml', <<<'YAML'
+    $project = tellLastTemporaryRoot() . '/catalogue-project';
+    mkdir($project . '/config/llm/presets', 0700, true);
+    file_put_contents($project . '/config/llm/presets/qwen.yaml', <<<'YAML'
 driver: qwen
 apiUrl: https://example.invalid/v1
 apiKey: ${CATALOGUE_SECRET_CANARY}
@@ -41,7 +41,7 @@ YAML);
 
 it('filters models by provider or connection and rejects an unknown selector', function (): void {
     $factory = tellTestFactory();
-    $project = tellLastTemporaryRoot().'/models-project';
+    $project = tellLastTemporaryRoot() . '/models-project';
     mkdir($project, 0700, true);
     $tester = new CommandTester(new ModelsCommand($factory));
 

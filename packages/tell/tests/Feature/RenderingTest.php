@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
-use Cognesy\Tell\Render\EventsRenderer;
+use Cognesy\Tell\Console\TellApplication;
+use Cognesy\Tell\Console\TellCommand;
+use Cognesy\Tell\Console\TellOptions;
 use Cognesy\Tell\Observability\TellEventNormalizer;
-use Cognesy\Tell\Runtime\TellOptions;
-use Cognesy\Tell\TellApplication;
-use Cognesy\Tell\TellCommand;
+use Cognesy\Tell\Render\EventsRenderer;
 use HelgeSverre\Toon\Toon;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Tester\ApplicationTester;
@@ -44,7 +44,7 @@ it('emits a monotonic, versioned, payload-free NDJSON sequence', function (): vo
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('done')));
     $options = new TellOptions(prompt: 'events', directory: tellLastTemporaryRoot());
     $loop = $factory->build($options);
-    $output = new BufferedOutput;
+    $output = new BufferedOutput();
     (new EventsRenderer($output))->attach($loop);
     $loop->execute(AgentState::empty()->withUserMessage('events'));
     $rendered = array_map(
@@ -58,7 +58,7 @@ it('emits a monotonic, versioned, payload-free NDJSON sequence', function (): vo
         ->and(array_filter($rendered, static fn (array $event): bool => $event['terminal'] !== null))->toHaveCount(1)
         ->and(json_encode($rendered, JSON_THROW_ON_ERROR))->not->toContain('events');
 
-    $unknown = (new TellEventNormalizer)->normalize(new \stdClass);
+    $unknown = (new TellEventNormalizer())->normalize(new stdClass());
     expect($unknown['kind'])->toBe('unknown')
         ->and($unknown['metadata'])->toBe([]);
 });

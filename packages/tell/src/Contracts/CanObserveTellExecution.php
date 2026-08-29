@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Contracts;
 
-use Cognesy\Tell\Contracts\Data\TellEventEnvelope;
+use Cognesy\Tell\Data\TellEventEnvelope;
 
 interface CanObserveTellExecution
 {

@@ -25,8 +25,8 @@ require_once dirname(__DIR__).'/Support.php';
 
 use Cognesy\Tell\Capability\AskUser\TellAnswerQueue;
 use Cognesy\Tell\Tell;
-use Cognesy\Tell\TellRequest;
-use Cognesy\Tell\Tool\TellToolRequest;
+use Cognesy\Tell\Data\TellRequest;
+use Cognesy\Tell\Data\TellToolRequest;
 
 $project = TellHarnessExample::project();
 file_put_contents($project.'/evidence.txt', "release evidence\n");

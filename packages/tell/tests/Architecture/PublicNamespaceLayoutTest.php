@@ -2,67 +2,174 @@
 
 declare(strict_types=1);
 
-it('keeps only the established facade and request vocabulary in the root namespace', function (): void {
+use Cognesy\Tell\Composition\TellHost;
+use Cognesy\Tell\Composition\TellHostBuilder;
+use Cognesy\Tell\Data\TellShellJobApproval;
+use Cognesy\Tell\Data\TellShellJobEvent;
+use Cognesy\Tell\Data\TellShellJobHealth;
+use Cognesy\Tell\Data\TellShellJobOutput;
+use Cognesy\Tell\Data\TellShellJobOutputChunk;
+use Cognesy\Tell\Data\TellShellJobRequest;
+use Cognesy\Tell\Data\TellShellJobSnapshot;
+use Cognesy\Tell\Data\TellToolRequest;
+use Cognesy\Tell\Data\TellToolResult;
+use Cognesy\Tell\Discovery\TellCatalogue;
+use Cognesy\Tell\Shell\TellShellJobHost;
+use Cognesy\Tell\Shell\TellShellJobHostBuilder;
+use Cognesy\Tell\Shell\TellShellJobPolicy;
+use Cognesy\Tell\Shell\TellShellJobState;
+use Cognesy\Tell\Tool\TellTools;
+use Cognesy\Tell\Workspace\Branch\TellBranch;
+use Cognesy\Tell\Workspace\Branch\TellBranchConfig;
+use Cognesy\Tell\Workspace\Branch\TellBranchConfiguration;
+use Cognesy\Tell\Workspace\Branch\TellBranches;
+use Cognesy\Tell\Workspace\Branch\TellBranchInfo;
+use Cognesy\Tell\Workspace\Branch\TellBranchReset;
+use Cognesy\Tell\Workspace\Branch\TellBranchSelection;
+use Cognesy\Tell\Workspace\TellRef;
+
+it('keeps only the facade in the root namespace', function (): void {
     $rootFiles = array_map(
         static fn (string $path): string => basename($path),
-        glob(dirname(__DIR__, 2).'/src/*.php') ?: [],
+        glob(dirname(__DIR__, 2) . '/src/*.php') ?: [],
     );
     sort($rootFiles);
 
-    expect($rootFiles)->toBe([
-        'Tell.php',
-        'TellApplication.php',
-        'TellClearResult.php',
-        'TellCommand.php',
-        'TellCompactionResult.php',
-        'TellContext.php',
-        'TellConversation.php',
-        'TellConversationView.php',
-        'TellExecutionMode.php',
-        'TellProgress.php',
-        'TellReasoningEffort.php',
-        'TellRequest.php',
-        'TellResult.php',
-        'TellWorkspace.php',
-        'TellWorkspaceInfo.php',
+    expect($rootFiles)->toBe(['Tell.php']);
+});
+
+it('keeps boundary data in one flat Data namespace', function (): void {
+    $dataRoot = dirname(__DIR__, 2) . '/src/Data';
+    $files = array_map(
+        static fn (string $path): string => basename($path),
+        glob($dataRoot . '/*.php') ?: [],
+    );
+    sort($files, SORT_STRING);
+
+    expect(glob($dataRoot . '/*', GLOB_ONLYDIR) ?: [])->toBe([])
+        ->and($files)->toBe([
+            'TellClearResult.php',
+            'TellCommandDescriptor.php',
+            'TellCommandDescriptors.php',
+            'TellCompactionResult.php',
+            'TellContext.php',
+            'TellConversationView.php',
+            'TellDiagnostic.php',
+            'TellEffectiveConfiguration.php',
+            'TellEventEnvelope.php',
+            'TellExecutionMode.php',
+            'TellExtensionCatalogue.php',
+            'TellExtensionDescriptor.php',
+            'TellExtensionDescriptors.php',
+            'TellExtensionKind.php',
+            'TellHostDescription.php',
+            'TellProgress.php',
+            'TellRequest.php',
+            'TellResolvedPaths.php',
+            'TellResult.php',
+            'TellShellJobApproval.php',
+            'TellShellJobEvent.php',
+            'TellShellJobHealth.php',
+            'TellShellJobOutput.php',
+            'TellShellJobOutputChunk.php',
+            'TellShellJobRequest.php',
+            'TellShellJobSnapshot.php',
+            'TellToolRequest.php',
+            'TellToolResult.php',
+            'TellWorkspaceInfo.php',
+        ]);
+
+    foreach ($files as $file) {
+        $source = file_get_contents($dataRoot . '/' . $file);
+
+        expect($source)->toBeString()
+            ->and($source)->toContain('namespace Cognesy\\Tell\\Data;');
+    }
+});
+
+it('keeps Runtime limited to execution machinery', function (): void {
+    $runtimeFiles = array_map(
+        static fn (string $path): string => basename($path),
+        glob(dirname(__DIR__, 2) . '/src/Runtime/*.php') ?: [],
+    );
+    sort($runtimeFiles, SORT_STRING);
+
+    expect($runtimeFiles)->toBe([
+        'CanOpenTellRuntime.php',
+        'CanReadTellClock.php',
+        'DefaultTellRunner.php',
+        'StandardTellAgentBuilder.php',
+        'SystemTellClock.php',
+        'TellAgentFactory.php',
+        'TellDelegationScope.php',
+        'TellDiagnostics.php',
+        'TellExecutionBudgetHook.php',
+        'TellRun.php',
+        'TellRunOutcome.php',
+        'TellRuntime.php',
+        'TellSignalCancellationSource.php',
+        'TellSpillToolOutputHook.php',
+        'TellSubagentExecutor.php',
+        'ToolOutputSpill.php',
     ]);
+});
+
+it('keeps configuration independent of console input', function (): void {
+    $configuration = '';
+    foreach (glob(dirname(__DIR__, 2) . '/src/Configuration/*.php') ?: [] as $file) {
+        $source = file_get_contents($file);
+        $configuration .= is_string($source) ? $source : '';
+    }
+
+    expect($configuration)->not->toContain('Symfony\\Component\\Console')
+        ->not->toContain('Cognesy\\Tell\\Console\\');
+});
+
+it('does not recreate obsolete catch-all namespaces', function (): void {
+    $sourceRoot = dirname(__DIR__, 2) . '/src';
+
+    expect($sourceRoot . '/Canonical')->not->toBeDirectory()
+        ->and($sourceRoot . '/Diagnostics')->not->toBeDirectory()
+        ->and($sourceRoot . '/Resource')->not->toBeDirectory()
+        ->and($sourceRoot . '/Contracts/Data')->not->toBeDirectory()
+        ->and($sourceRoot . '/Contracts/Collections')->not->toBeDirectory();
 });
 
 it('aligns cohesive public class families with their PSR-4 namespaces', function (): void {
     $classes = [
-        Cognesy\Tell\Branch\TellBranch::class,
-        Cognesy\Tell\Branch\TellBranchConfig::class,
-        Cognesy\Tell\Branch\TellBranchConfiguration::class,
-        Cognesy\Tell\Branch\TellBranchInfo::class,
-        Cognesy\Tell\Branch\TellBranchReset::class,
-        Cognesy\Tell\Branch\TellBranchSelection::class,
-        Cognesy\Tell\Branch\TellBranches::class,
-        Cognesy\Tell\Branch\TellRef::class,
-        Cognesy\Tell\Composition\TellHost::class,
-        Cognesy\Tell\Composition\TellHostBuilder::class,
-        Cognesy\Tell\Discovery\TellCatalogue::class,
-        Cognesy\Tell\Resource\TellResourceEvent::class,
-        Cognesy\Tell\Resource\TellResourceHealth::class,
-        Cognesy\Tell\Resource\TellResourceHost::class,
-        Cognesy\Tell\Resource\TellResourceHostBuilder::class,
-        Cognesy\Tell\Shell\TellShellJobApproval::class,
-        Cognesy\Tell\Shell\TellShellJobOutput::class,
-        Cognesy\Tell\Shell\TellShellJobOutputChunk::class,
-        Cognesy\Tell\Shell\TellShellJobPolicy::class,
-        Cognesy\Tell\Shell\TellShellJobRequest::class,
-        Cognesy\Tell\Shell\TellShellJobSnapshot::class,
-        Cognesy\Tell\Shell\TellShellJobState::class,
-        Cognesy\Tell\Tool\TellToolRequest::class,
-        Cognesy\Tell\Tool\TellToolResult::class,
-        Cognesy\Tell\Tool\TellTools::class,
+        TellBranch::class,
+        TellBranchConfig::class,
+        TellBranchConfiguration::class,
+        TellBranchInfo::class,
+        TellBranchReset::class,
+        TellBranchSelection::class,
+        TellBranches::class,
+        TellRef::class,
+        TellHost::class,
+        TellHostBuilder::class,
+        TellCatalogue::class,
+        TellShellJobEvent::class,
+        TellShellJobHealth::class,
+        TellShellJobHost::class,
+        TellShellJobHostBuilder::class,
+        TellShellJobApproval::class,
+        TellShellJobOutput::class,
+        TellShellJobOutputChunk::class,
+        TellShellJobPolicy::class,
+        TellShellJobRequest::class,
+        TellShellJobSnapshot::class,
+        TellShellJobState::class,
+        TellToolRequest::class,
+        TellToolResult::class,
+        TellTools::class,
     ];
-    $source = realpath(dirname(__DIR__, 2).'/src');
+    $source = realpath(dirname(__DIR__, 2) . '/src');
 
     expect($source)->toBeString();
     foreach ($classes as $class) {
         $reflection = new ReflectionClass($class);
         $relativeClass = substr($class, strlen('Cognesy\\Tell\\'));
-        $expected = $source.DIRECTORY_SEPARATOR.str_replace('\\', DIRECTORY_SEPARATOR, $relativeClass).'.php';
+        $expected = $source . DIRECTORY_SEPARATOR . str_replace('\\', DIRECTORY_SEPARATOR, $relativeClass) . '.php';
 
         expect($reflection->getFileName())->toBe($expected);
     }

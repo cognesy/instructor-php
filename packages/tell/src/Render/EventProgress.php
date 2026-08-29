@@ -33,17 +33,15 @@ final class EventProgress
     ) {}
 
     /** Whether this channel has put anything on stderr for the current turn. */
-    public function wrote(): bool
-    {
+    public function wrote(): bool {
         return $this->wrote;
     }
 
-    public function attach(AgentLoop $loop, ?TellEventNormalizer $events = null): void
-    {
-        if ($this->quiet || (! $this->detailed && ! $this->heartbeat)) {
+    public function attach(AgentLoop $loop, ?TellEventNormalizer $events = null): void {
+        if ($this->quiet || (!$this->detailed && !$this->heartbeat)) {
             return;
         }
-        $normalizer = $events ?? new TellEventNormalizer;
+        $normalizer = $events ?? new TellEventNormalizer();
         $loop->wiretap(function (object $event) use ($normalizer): void {
             $envelope = $normalizer->normalize($event);
             $line = $this->line($envelope['kind'], $envelope['metadata'], $event);
@@ -57,8 +55,7 @@ final class EventProgress
     }
 
     /** @param array<string, int|float|string|bool|null> $metadata */
-    private function line(string $kind, array $metadata, object $event): ?string
-    {
+    private function line(string $kind, array $metadata, object $event): ?string {
         return match ($kind) {
             'inference.started' => $this->emit('inference.start', [
                 'step' => $metadata['step'] ?? 0,
@@ -93,7 +90,7 @@ final class EventProgress
                 'name' => $metadata['tool'] ?? 'unknown',
                 'status' => $this->status($metadata, $event),
                 'step' => $metadata['step'] ?? 0,
-                'duration' => ($metadata['durationMs'] ?? 0).'ms',
+                'duration' => ($metadata['durationMs'] ?? 0) . 'ms',
                 'error' => $event instanceof ToolCallCompleted ? $event->error : null,
                 ...$this->payload('result', $event instanceof ToolCallCompleted ? $event->result : null),
             ]) : null,
@@ -121,8 +118,7 @@ final class EventProgress
      *
      * @param  array<string, int|float|string|bool|null>  $metadata
      */
-    private function status(array $metadata, object $event): string
-    {
+    private function status(array $metadata, object $event): string {
         $failed = ($metadata['success'] ?? false) !== true
             || ($event instanceof ToolCallCompleted && ToolResultText::error($event->result) !== null);
 
@@ -137,8 +133,7 @@ final class EventProgress
      *
      * @return array<string, int|string|null>
      */
-    private function payload(string $key, mixed $value): array
-    {
+    private function payload(string $key, mixed $value): array {
         $encoded = $this->encode($value);
         if ($encoded === null) {
             return [];
@@ -150,12 +145,11 @@ final class EventProgress
 
         return [
             $key => (string) $this->encode(mb_substr($encoded, 0, self::MAX_VALUE)),
-            $key.'Bytes' => $length,
+            $key . 'Bytes' => $length,
         ];
     }
 
-    private function encode(mixed $value): ?string
-    {
+    private function encode(mixed $value): ?string {
         if ($value === null || $value === [] || $value === '') {
             return null;
         }
@@ -167,13 +161,11 @@ final class EventProgress
     }
 
     /** @param array<string, int|float|string|bool|null> $metadata */
-    private function detail(array $metadata, string $key): int|float|string|bool|null
-    {
+    private function detail(array $metadata, string $key): int|float|string|bool|null {
         return $this->detailed ? ($metadata[$key] ?? null) : null;
     }
 
-    private function flag(mixed $value): ?string
-    {
+    private function flag(mixed $value): ?string {
         return match ($value) {
             true => 'yes',
             false => 'no',
@@ -182,14 +174,13 @@ final class EventProgress
     }
 
     /** @param array<string, int|float|string|bool|null> $pairs */
-    private function emit(string $kind, array $pairs): string
-    {
-        $line = '['.$kind.']';
+    private function emit(string $kind, array $pairs): string {
+        $line = '[' . $kind . ']';
         foreach ($pairs as $key => $value) {
             if ($value === null || $value === '') {
                 continue;
             }
-            $line .= ' '.$key.'='.(is_bool($value) ? ($value ? 'yes' : 'no') : (string) $value);
+            $line .= ' ' . $key . '=' . (is_bool($value) ? ($value ? 'yes' : 'no') : (string) $value);
         }
 
         return $line;

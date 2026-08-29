@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Contracts;
 
+use Cognesy\Tell\Data\TellProgress;
+use Cognesy\Tell\Data\TellRequest;
+use Cognesy\Tell\Data\TellResult;
 use Cognesy\Tell\Runtime\TellRun;
-use Cognesy\Tell\TellProgress;
-use Cognesy\Tell\TellRequest;
-use Cognesy\Tell\TellResult;
 use Generator;
 
 interface CanRunTell

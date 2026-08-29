@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Session\Data\SessionId;
-use Cognesy\Tell\Canonical\CanonicalConversationRoot;
-use Cognesy\Tell\Canonical\CanonicalHash;
-use Cognesy\Tell\Canonical\CanonicalLineage;
-use Cognesy\Tell\Canonical\CanonicalMessage;
-use Cognesy\Tell\Canonical\CanonicalRole;
-use Cognesy\Tell\Canonical\CanonicalTextPart;
-use Cognesy\Tell\Canonical\CanonicalTurn;
+use Cognesy\Tell\Console\TellApplication;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\TellApplication;
-use Cognesy\Tell\Workspace\ArenaStore;
-use Cognesy\Tell\Workspace\SessionCompatibilityRef;
-use Cognesy\Tell\Workspace\TellWorkspace;
-use Cognesy\Tell\Workspace\WorkspaceConversationReader;
+use Cognesy\Tell\Workspace\Arena\FilesystemArena;
+use Cognesy\Tell\Workspace\Arena\ObjectHash;
+use Cognesy\Tell\Workspace\Arena\Record\ConversationRoot;
+use Cognesy\Tell\Workspace\Arena\Record\Lineage;
+use Cognesy\Tell\Workspace\Arena\Record\Message as RecordMessage;
+use Cognesy\Tell\Workspace\Arena\Record\Role;
+use Cognesy\Tell\Workspace\Arena\Record\TextPart;
+use Cognesy\Tell\Workspace\Arena\Record\Turn;
+use Cognesy\Tell\Workspace\Conversation\ConversationReader;
+use Cognesy\Tell\Workspace\Session\SessionRef;
+use Cognesy\Tell\Workspace\WorkspaceState;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 it('clears a canonical main ref without inference or immutable object deletion', function (): void {
@@ -27,13 +27,13 @@ it('clears a canonical main ref without inference or immutable object deletion',
     });
     $project = tellClearProject($factory);
     $workspace = tellClearWorkspace($factory, $project);
-    $arena = new ArenaStore($workspace);
+    $arena = new FilesystemArena($workspace);
     [$root, $head] = tellClearSeedHistory($arena, 'main');
     $objectsBefore = tellClearSnapshot($workspace->paths->objects);
     $homeBefore = tellClearSnapshot($factory->paths()->home);
     $application = new TellApplication($factory);
     $application->setAutoExit(false);
-    $output = new BufferedOutput;
+    $output = new BufferedOutput();
 
     $status = $application->runArgv(['tell', 'clear', '--dir', $project, '--json'], $output);
     $payload = json_decode($output->fetch(), true, flags: JSON_THROW_ON_ERROR);
@@ -48,13 +48,13 @@ it('clears a canonical main ref without inference or immutable object deletion',
             'changed' => true,
         ])
         ->and($arena->readRef()->head)->toBeNull()
-        ->and((new WorkspaceConversationReader($arena))->read()->history()->messages->isEmpty())->toBeTrue()
+        ->and((new ConversationReader($arena))->read()->history()->messages->isEmpty())->toBeTrue()
         ->and($arena->exists($root))->toBeTrue()
         ->and($arena->exists($head))->toBeTrue()
         ->and(tellClearSnapshot($workspace->paths->objects))->toBe($objectsBefore)
         ->and(tellClearSnapshot($factory->paths()->home))->toBe($homeBefore);
 
-    $secondOutput = new BufferedOutput;
+    $secondOutput = new BufferedOutput();
     $secondStatus = $application->runArgv(['tell', 'clear', '--dir', $project, '--json'], $secondOutput);
     $secondPayload = json_decode($secondOutput->fetch(), true, flags: JSON_THROW_ON_ERROR);
 
@@ -67,23 +67,20 @@ it('clears a canonical main ref without inference or immutable object deletion',
         ->and(tellClearSnapshot($workspace->paths->arena))->toBe($afterClear);
 });
 
-it('clears only the selected named compatibility ref and leaves legacy state untouched', function (): void {
+it('clears only the selected named session ref', function (): void {
     $factory = tellTestFactory(static function (AgentLoop $loop): AgentLoop {
         throw new RuntimeException('Tell clear must not build an agent loop.');
     });
     $project = tellClearProject($factory);
     $workspace = tellClearWorkspace($factory, $project);
-    $arena = new ArenaStore($workspace);
+    $arena = new FilesystemArena($workspace);
     [, $mainHead] = tellClearSeedHistory($arena, 'main');
     $session = SessionId::from('review-1');
-    $compatibility = new SessionCompatibilityRef($session);
-    [, $sessionHead] = tellClearSeedHistory($arena, $compatibility->refName(), $compatibility);
-    mkdir($factory->paths()->sessions, 0700, true);
-    file_put_contents($factory->paths()->sessions.'/review-1.json', '{"legacy":"unchanged"}');
-    $homeBefore = tellClearSnapshot($factory->paths()->home);
+    $sessionRef = new SessionRef($session);
+    [, $sessionHead] = tellClearSeedHistory($arena, $sessionRef->refName(), $sessionRef);
     $application = new TellApplication($factory);
     $application->setAutoExit(false);
-    $output = new BufferedOutput;
+    $output = new BufferedOutput();
 
     $status = $application->runArgv(['tell', 'clear', '--dir', $project, '--session', 'review-1', '--json'], $output);
     $display = $output->fetch();
@@ -96,28 +93,27 @@ it('clears only the selected named compatibility ref and leaves legacy state unt
             'head' => null,
             'changed' => true,
         ])
-        ->and(str_contains($display, $compatibility->refName()))->toBeFalse()
+        ->and(str_contains($display, $sessionRef->refName()))->toBeFalse()
         ->and($arena->readRef()->head?->equals($mainHead))->toBeTrue()
-        ->and($arena->readRef($compatibility->refName())->head)->toBeNull()
-        ->and(tellClearSnapshot($factory->paths()->home))->toBe($homeBefore);
+        ->and($arena->readRef($sessionRef->refName())->head)->toBeNull();
 });
 
 it('fails before mutation for invalid workspace selectors and corrupt canonical history', function (): void {
     $factory = tellTestFactory();
     $project = tellClearProject($factory);
     $workspace = tellClearWorkspace($factory, $project);
-    $arena = new ArenaStore($workspace);
+    $arena = new FilesystemArena($workspace);
     [$root] = tellClearSeedHistory($arena, 'main');
     $application = new TellApplication($factory);
     $application->setAutoExit(false);
 
-    $invalidOutput = new BufferedOutput;
-    $invalidStatus = $application->runArgv(['tell', 'clear', '--dir', $project.'/missing', '--json'], $invalidOutput);
+    $invalidOutput = new BufferedOutput();
+    $invalidStatus = $application->runArgv(['tell', 'clear', '--dir', $project . '/missing', '--json'], $invalidOutput);
     $invalidPayload = json_decode($invalidOutput->fetch(), true, flags: JSON_THROW_ON_ERROR);
 
     file_put_contents($arena->objectPath($root), '{"kind":"conversation"}');
     $beforeCorrupt = tellClearSnapshot($workspace->paths->arena);
-    $corruptOutput = new BufferedOutput;
+    $corruptOutput = new BufferedOutput();
     $corruptStatus = $application->runArgv(['tell', 'clear', '--dir', $project, '--json'], $corruptOutput);
     $corruptPayload = json_decode($corruptOutput->fetch(), true, flags: JSON_THROW_ON_ERROR);
 
@@ -128,17 +124,15 @@ it('fails before mutation for invalid workspace selectors and corrupt canonical 
         ->and(tellClearSnapshot($workspace->paths->arena))->toBe($beforeCorrupt);
 });
 
-function tellClearProject(TellAgentFactory $factory): string
-{
-    $project = tellLastTemporaryRoot().'/clear-workspace';
+function tellClearProject(TellAgentFactory $factory): string {
+    $project = tellLastTemporaryRoot() . '/clear-workspace';
     mkdir($project, 0700, true);
     $factory->workspace()->initialize($project);
 
     return $project;
 }
 
-function tellClearWorkspace(TellAgentFactory $factory, string $project): TellWorkspace
-{
+function tellClearWorkspace(TellAgentFactory $factory, string $project): WorkspaceState {
     $workspace = $factory->workspace()->discover($project);
     if ($workspace === null) {
         throw new RuntimeException('Expected initialized Tell workspace to be discoverable.');
@@ -147,21 +141,21 @@ function tellClearWorkspace(TellAgentFactory $factory, string $project): TellWor
     return $workspace;
 }
 
-/** @return array{0: CanonicalHash, 1: CanonicalHash} */
+/** @return array{0: ObjectHash, 1: ObjectHash} */
 function tellClearSeedHistory(
-    ArenaStore $arena,
+    FilesystemArena $arena,
     string $ref,
-    ?SessionCompatibilityRef $compatibility = null,
+    ?SessionRef $sessionRef = null,
 ): array {
-    $root = $arena->put(new CanonicalConversationRoot(
-        id: 'conversation-clear-'.str_replace('/', '-', $ref),
-        messages: [new CanonicalMessage(CanonicalRole::User, [new CanonicalTextPart('retain this history')])],
-        session: $compatibility?->metadata(),
+    $root = $arena->put(new ConversationRoot(
+        id: 'conversation-clear-' . str_replace('/', '-', $ref),
+        messages: [new RecordMessage(Role::User, [new TextPart('retain this history')])],
+        session: $sessionRef?->metadata(),
     ));
-    $head = $arena->put(new CanonicalTurn(
-        id: 'turn-clear-'.str_replace('/', '-', $ref),
-        lineage: new CanonicalLineage($root),
-        messages: [new CanonicalMessage(CanonicalRole::Assistant, [new CanonicalTextPart('clear only the ref')])],
+    $head = $arena->put(new Turn(
+        id: 'turn-clear-' . str_replace('/', '-', $ref),
+        lineage: new Lineage($root),
+        messages: [new RecordMessage(Role::Assistant, [new TextPart('clear only the ref')])],
     ));
     $arena->compareAndSwap($ref, null, $head);
 
@@ -169,18 +163,17 @@ function tellClearSeedHistory(
 }
 
 /** @return array<string, string> */
-function tellClearSnapshot(string $directory): array
-{
+function tellClearSnapshot(string $directory): array {
     $files = [];
-    if (! is_dir($directory)) {
+    if (!is_dir($directory)) {
         return $files;
     }
-    $root = rtrim($directory, '/\\').DIRECTORY_SEPARATOR;
+    $root = rtrim($directory, '/\\') . DIRECTORY_SEPARATOR;
     $iterator = new RecursiveIteratorIterator(
         new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS),
     );
     foreach ($iterator as $file) {
-        if (! $file->isFile()) {
+        if (!$file->isFile()) {
             continue;
         }
         $bytes = file_get_contents($file->getPathname());

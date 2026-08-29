@@ -27,7 +27,7 @@
     "php": "^8.3",
     "symfony/config": "^7.0 || ^8.0",
     "symfony/yaml": "^7.0 || ^8.0",
-    "vlucas/phpdotenv": "^5.6"
+    "vlucas/phpdotenv": "^5.6.1"
   },
   "require-dev": {
     "pestphp/pest": "^4.0",

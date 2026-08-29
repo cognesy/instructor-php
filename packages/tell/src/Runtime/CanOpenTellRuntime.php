@@ -17,6 +17,6 @@ interface CanOpenTellRuntime
         ?CanObserveTellExecution $observer = null,
     ): TellRuntime;
 
-    /** @internal Compatibility bridge while legacy workspace facades are migrated. */
+    /** @internal Composition access for workspace-facing modules. */
     public function agents(): TellAgentFactory;
 }

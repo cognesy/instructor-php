@@ -28,14 +28,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class StepTrace
 {
     private const int PREVIEW_LINES = 12;
-
     private const int PREVIEW_COLUMNS = 160;
 
     /** @var array<string, DateTimeImmutable> */
     private array $started = [];
 
     private int $step = 0;
-
     private bool $wrote = false;
 
     public function __construct(
@@ -44,13 +42,11 @@ final class StepTrace
     ) {}
 
     /** Whether this channel has put anything on stderr for the current turn. */
-    public function wrote(): bool
-    {
+    public function wrote(): bool {
         return $this->wrote;
     }
 
-    public function attach(AgentLoop $loop): void
-    {
+    public function attach(AgentLoop $loop): void {
         $loop->wiretap(function (object $event): void {
             match (true) {
                 $event instanceof AgentStepStarted => $this->stepStarted($event),
@@ -64,40 +60,37 @@ final class StepTrace
         });
     }
 
-    private function stepStarted(AgentStepStarted $event): void
-    {
+    private function stepStarted(AgentStepStarted $event): void {
         $this->step = $event->stepNumber;
         $this->line(
-            $this->paint('●', Color::CYAN).' '
-            .$this->paint('step '.$event->stepNumber, Color::BOLD),
+            $this->paint('●', Color::CYAN) . ' '
+            . $this->paint('step ' . $event->stepNumber, Color::BOLD),
         );
     }
 
-    private function toolStarted(ToolCallStarted $event): void
-    {
+    private function toolStarted(ToolCallStarted $event): void {
         $this->started[$this->key($event->toolCallId, $event->tool)] = $event->startedAt;
         $view = ToolCallView::forCall($event->tool, is_array($event->args) ? $event->args : []);
         $this->line(
-            '  '.$this->paint('▸', Color::CYAN).' '
-            .$this->paint($view->label, Color::BOLD)
-            .($view->detail === '' ? '' : ' '.$this->paint($view->detail, Color::DARK_GRAY)),
+            '  ' . $this->paint('▸', Color::CYAN) . ' '
+            . $this->paint($view->label, Color::BOLD)
+            . ($view->detail === '' ? '' : ' ' . $this->paint($view->detail, Color::DARK_GRAY)),
         );
         $this->body($view->body);
     }
 
-    private function toolCompleted(ToolCallCompleted $event): void
-    {
+    private function toolCompleted(ToolCallCompleted $event): void {
         $key = $this->key($event->toolCallId, $event->tool);
         $duration = $this->duration($this->started[$key] ?? null, $event->completedAt);
         unset($this->started[$key]);
         $error = ToolResultText::error($event->result);
-        $failed = ! $event->success || $error !== null;
+        $failed = !$event->success || $error !== null;
         $reason = $failed ? $this->reason($event->error, $error) : '';
         $this->line(
-            '  '.($failed ? $this->paint('✘', Color::RED) : $this->paint('✔', Color::GREEN)).' '
-            .$this->paint($event->tool, Color::DARK_GRAY)
-            .($duration === '' ? '' : ' '.$this->paint($duration, Color::DARK_GRAY))
-            .($failed ? ' '.$this->paint($this->clip($reason), Color::DARK_RED) : ''),
+            '  ' . ($failed ? $this->paint('✘', Color::RED) : $this->paint('✔', Color::GREEN)) . ' '
+            . $this->paint($event->tool, Color::DARK_GRAY)
+            . ($duration === '' ? '' : ' ' . $this->paint($duration, Color::DARK_GRAY))
+            . ($failed ? ' ' . $this->paint($this->clip($reason), Color::DARK_RED) : ''),
         );
         $body = ToolResultText::from($event->result);
         // Most failing tools put the same sentence in the envelope and in the
@@ -110,8 +103,7 @@ final class StepTrace
     }
 
     /** True when the result text says nothing the failure reason has not said. */
-    private function repeats(string $reason, string $body): bool
-    {
+    private function repeats(string $reason, string $body): bool {
         $body = trim($body);
         if (str_starts_with($body, 'Error:')) {
             $body = trim(substr($body, strlen('Error:')));
@@ -120,39 +112,36 @@ final class StepTrace
         return $body === '' || str_contains($reason, $body);
     }
 
-    private function toolBlocked(ToolCallBlocked $event): void
-    {
+    private function toolBlocked(ToolCallBlocked $event): void {
         $this->line(
-            '  '.$this->paint('⊘', Color::YELLOW).' '
-            .$this->paint($event->tool, Color::DARK_GRAY).' '
-            .$this->paint('blocked: '.$event->reason, Color::DARK_YELLOW),
+            '  ' . $this->paint('⊘', Color::YELLOW) . ' '
+            . $this->paint($event->tool, Color::DARK_GRAY) . ' '
+            . $this->paint('blocked: ' . $event->reason, Color::DARK_YELLOW),
         );
     }
 
-    private function inference(InferenceResponseReceived $event): void
-    {
+    private function inference(InferenceResponseReceived $event): void {
         $usage = $event->usage;
         $tokens = $usage === null
             ? 'inference completed'
-            : 'inference '.$usage->inputTokens.' in / '.$usage->outputTokens.' out';
+            : 'inference ' . $usage->inputTokens . ' in / ' . $usage->outputTokens . ' out';
         $this->line(
-            '  '.$this->paint('·', Color::DARK_GRAY).' '
-            .$this->paint(
-                $tokens.($event->finishReason === null || $event->finishReason === '' ? '' : ', '.$event->finishReason),
+            '  ' . $this->paint('·', Color::DARK_GRAY) . ' '
+            . $this->paint(
+                $tokens . ($event->finishReason === null || $event->finishReason === '' ? '' : ', ' . $event->finishReason),
                 Color::DARK_GRAY,
             ),
         );
     }
 
-    private function completed(AgentExecutionCompleted $event): void
-    {
+    private function completed(AgentExecutionCompleted $event): void {
         $marker = $event->status === ExecutionStatus::Completed ? Color::CYAN : Color::RED;
         $this->line(
-            $this->paint('●', $marker).' '
-            .$this->paint($event->status->value, Color::BOLD).' '
-            .$this->paint(
-                $event->totalSteps.' steps, '
-                .$event->totalUsage->inputTokens.' in / '.$event->totalUsage->outputTokens.' out tokens',
+            $this->paint('●', $marker) . ' '
+            . $this->paint($event->status->value, Color::BOLD) . ' '
+            . $this->paint(
+                $event->totalSteps . ' steps, '
+                . $event->totalUsage->inputTokens . ' in / ' . $event->totalUsage->outputTokens . ' out tokens',
                 Color::DARK_GRAY,
             ),
         );
@@ -163,8 +152,7 @@ final class StepTrace
      * the screen hides the steps it exists to show. The elided count is stated
      * so the reader knows the preview is one, and -vvv turns previewing off.
      */
-    private function body(string $text): void
-    {
+    private function body(string $text): void {
         $text = rtrim($text, "\n");
         if ($text === '') {
             return;
@@ -172,56 +160,51 @@ final class StepTrace
         $lines = explode("\n", $text);
         $shown = $this->full ? $lines : array_slice($lines, 0, self::PREVIEW_LINES);
         foreach ($shown as $line) {
-            $this->line('    '.$this->paint('│', Color::DARK_GRAY).' '.$this->clip($line));
+            $this->line('    ' . $this->paint('│', Color::DARK_GRAY) . ' ' . $this->clip($line));
         }
         $hidden = count($lines) - count($shown);
         if ($hidden > 0) {
-            $this->line('    '.$this->paint('⋯ '.$hidden.' more line'.($hidden === 1 ? '' : 's'), Color::DARK_GRAY));
+            $this->line('    ' . $this->paint('⋯ ' . $hidden . ' more line' . ($hidden === 1 ? '' : 's'), Color::DARK_GRAY));
         }
     }
 
-    private function clip(string $line): string
-    {
+    private function clip(string $line): string {
         $line = str_replace("\t", '    ', rtrim($line, "\r"));
         if ($this->full || mb_strlen($line) <= self::PREVIEW_COLUMNS) {
             return $line;
         }
 
-        return mb_substr($line, 0, self::PREVIEW_COLUMNS - 1).'…';
+        return mb_substr($line, 0, self::PREVIEW_COLUMNS - 1) . '…';
     }
 
-    private function reason(?string $error, ?array $structured): string
-    {
+    private function reason(?string $error, ?array $structured): string {
         return match (true) {
             is_string($error) && $error !== '' => $error,
-            $structured !== null && $structured['message'] !== '' => $structured['code'].': '.$structured['message'],
+            $structured !== null && $structured['message'] !== '' => $structured['code'] . ': ' . $structured['message'],
             $structured !== null => $structured['code'],
             default => 'failed',
         };
     }
 
-    private function duration(?DateTimeImmutable $started, DateTimeImmutable $completed): string
-    {
+    private function duration(?DateTimeImmutable $started, DateTimeImmutable $completed): string {
         if ($started === null) {
             return '';
         }
         $ms = max(0, (int) round(((float) $completed->format('U.u') - (float) $started->format('U.u')) * 1000));
 
-        return $ms.'ms';
+        return $ms . 'ms';
     }
 
     /**
      * A tool call id is the reliable pairing between a start and its completion;
      * concurrent calls to the same tool would otherwise share one timer.
      */
-    private function key(string $toolCallId, string $tool): string
-    {
-        return $toolCallId === '' ? 'tool:'.$tool.':'.$this->step : $toolCallId;
+    private function key(string $toolCallId, string $tool): string {
+        return $toolCallId === '' ? 'tool:' . $tool . ':' . $this->step : $toolCallId;
     }
 
-    private function paint(string $text, string $color): string
-    {
-        return $this->stderr->isDecorated() ? $color.$text.Color::RESET : $text;
+    private function paint(string $text, string $color): string {
+        return $this->stderr->isDecorated() ? $color . $text . Color::RESET : $text;
     }
 
     /**
@@ -229,9 +212,8 @@ final class StepTrace
      * arguments and results routinely contain angle brackets that the console
      * formatter would otherwise read as its own markup.
      */
-    private function line(string $text): void
-    {
-        $this->stderr->write($text."\n", false, OutputInterface::OUTPUT_RAW);
+    private function line(string $text): void {
+        $this->stderr->write($text . "\n", false, OutputInterface::OUTPUT_RAW);
         $this->wrote = true;
     }
 }

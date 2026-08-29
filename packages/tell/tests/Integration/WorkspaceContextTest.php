@@ -2,28 +2,28 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Session\Data\SessionId;
 use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
-use Cognesy\Tell\Canonical\CanonicalConversationRoot;
-use Cognesy\Tell\Canonical\CanonicalHash;
-use Cognesy\Tell\Canonical\CanonicalLineage;
-use Cognesy\Tell\Canonical\CanonicalMessage;
-use Cognesy\Tell\Canonical\CanonicalRole;
-use Cognesy\Tell\Canonical\CanonicalTextPart;
-use Cognesy\Tell\Canonical\CanonicalToolCall;
-use Cognesy\Tell\Canonical\CanonicalToolResult;
-use Cognesy\Tell\Canonical\CanonicalTurn;
 use Cognesy\Tell\Command\ContextCommand;
+use Cognesy\Tell\Console\TellApplication;
+use Cognesy\Tell\Console\TellOptions;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Runtime\TellOptions;
-use Cognesy\Tell\TellApplication;
-use Cognesy\Tell\Workspace\ArenaStore;
-use Cognesy\Tell\Workspace\SessionCompatibilityRef;
-use Cognesy\Tell\Workspace\TellWorkspace;
-use Cognesy\Tell\Workspace\WorkspaceConversationReader;
+use Cognesy\Tell\Workspace\Arena\FilesystemArena;
+use Cognesy\Tell\Workspace\Arena\ObjectHash;
+use Cognesy\Tell\Workspace\Arena\Record\ConversationRoot;
+use Cognesy\Tell\Workspace\Arena\Record\Lineage;
+use Cognesy\Tell\Workspace\Arena\Record\Message as RecordMessage;
+use Cognesy\Tell\Workspace\Arena\Record\Role;
+use Cognesy\Tell\Workspace\Arena\Record\TextPart;
+use Cognesy\Tell\Workspace\Arena\Record\ToolCall;
+use Cognesy\Tell\Workspace\Arena\Record\ToolResult;
+use Cognesy\Tell\Workspace\Arena\Record\Turn;
+use Cognesy\Tell\Workspace\Conversation\ConversationReader;
+use Cognesy\Tell\Workspace\Session\SessionRef;
+use Cognesy\Tell\Workspace\WorkspaceState;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -37,7 +37,7 @@ it('inspects an empty workspace context without loop construction or persistence
     $homeBefore = tellContextSnapshot($factory->paths()->home);
     $application = new TellApplication($factory);
     $application->setAutoExit(false);
-    $output = new BufferedOutput;
+    $output = new BufferedOutput();
 
     $status = $application->runArgv(['tell', 'context', '--dir', $project, '--json'], $output);
     $payload = json_decode($output->fetch(), true, flags: JSON_THROW_ON_ERROR);
@@ -65,7 +65,7 @@ it('reports the compiled AgentState, tool-heavy context, configured thresholds, 
     $factory = tellTestFactory();
     $project = tellContextProject($factory);
     $workspace = tellContextWorkspace($factory, $project);
-    $arena = new ArenaStore($workspace);
+    $arena = new FilesystemArena($workspace);
     [, $discarded, $head] = tellContextSeedToolHistory($arena);
     $before = tellContextSnapshot($workspace->paths->arena);
     $homeBefore = tellContextSnapshot($factory->paths()->home);
@@ -74,9 +74,9 @@ it('reports the compiled AgentState, tool-heavy context, configured thresholds, 
     expect($tester->execute(['--dir' => $project, '--json' => true]))->toBe(0);
     $payload = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
     $definition = $factory->definition(new TellOptions(prompt: 'Inspect Tell context.', directory: $project));
-    $state = (new DefinitionStateFactory)
+    $state = (new DefinitionStateFactory())
         ->instantiateAgentState($definition)
-        ->withMessages((new WorkspaceConversationReader($arena))->read()->history()->messages);
+        ->withMessages((new ConversationReader($arena))->read()->history()->messages);
 
     expect($payload['head'])->toBe($head->toString())
         ->and($payload['compiled']['messageCount'])->toBe($state->messages()->count())
@@ -104,19 +104,19 @@ it('reports the compiled AgentState, tool-heavy context, configured thresholds, 
         ->and(tellContextSnapshot($factory->paths()->home))->toBe($homeBefore);
 });
 
-it('inspects a named canonical session without exposing its hashed compatibility ref', function (): void {
+it('inspects a named canonical session without exposing its hashed session ref', function (): void {
     $factory = tellTestFactory();
     $project = tellContextProject($factory);
     $workspace = tellContextWorkspace($factory, $project);
-    $arena = new ArenaStore($workspace);
+    $arena = new FilesystemArena($workspace);
     $session = SessionId::from('review-1');
-    $compatibility = new SessionCompatibilityRef($session);
-    $root = $arena->put(new CanonicalConversationRoot(
+    $sessionRef = new SessionRef($session);
+    $root = $arena->put(new ConversationRoot(
         id: 'conversation-context-session',
-        messages: [new CanonicalMessage(CanonicalRole::User, [new CanonicalTextPart('named context')])],
-        session: $compatibility->metadata(),
+        messages: [new RecordMessage(Role::User, [new TextPart('named context')])],
+        session: $sessionRef->metadata(),
     ));
-    $arena->compareAndSwap($compatibility->refName(), null, $root);
+    $arena->compareAndSwap($sessionRef->refName(), null, $root);
     $before = tellContextSnapshot($workspace->paths->arena);
     $tester = new CommandTester(new ContextCommand($factory));
 
@@ -126,7 +126,7 @@ it('inspects a named canonical session without exposing its hashed compatibility
 
     expect($payload['selector'])->toBe(['type' => 'session', 'name' => 'review-1'])
         ->and($payload['compiled']['messageCount'])->toBe(1)
-        ->and(str_contains($display, $compatibility->refName()))->toBeFalse()
+        ->and(str_contains($display, $sessionRef->refName()))->toBeFalse()
         ->and(tellContextSnapshot($workspace->paths->arena))->toBe($before);
 });
 
@@ -134,7 +134,7 @@ it('keeps unknown configured capacity explicit and fails corrupt contexts withou
     $factory = tellTestFactory();
     $project = tellContextProject($factory);
     $workspace = tellContextWorkspace($factory, $project);
-    $arena = new ArenaStore($workspace);
+    $arena = new FilesystemArena($workspace);
     [$root] = tellContextSeedToolHistory($arena);
     $command = new ContextCommand($factory);
     $unknown = new CommandTester($command);
@@ -162,17 +162,15 @@ it('keeps unknown configured capacity explicit and fails corrupt contexts withou
         ->and(tellContextSnapshot($workspace->paths->arena))->toBe($before);
 });
 
-function tellContextProject(TellAgentFactory $factory): string
-{
-    $project = tellLastTemporaryRoot().'/context-workspace';
+function tellContextProject(TellAgentFactory $factory): string {
+    $project = tellLastTemporaryRoot() . '/context-workspace';
     mkdir($project, 0700, true);
     $factory->workspace()->initialize($project);
 
     return $project;
 }
 
-function tellContextWorkspace(TellAgentFactory $factory, string $project): TellWorkspace
-{
+function tellContextWorkspace(TellAgentFactory $factory, string $project): WorkspaceState {
     $workspace = $factory->workspace()->discover($project);
     if ($workspace === null) {
         throw new RuntimeException('Expected initialized Tell workspace to be discoverable.');
@@ -181,29 +179,28 @@ function tellContextWorkspace(TellAgentFactory $factory, string $project): TellW
     return $workspace;
 }
 
-/** @return array{0: CanonicalHash, 1: CanonicalHash, 2: CanonicalHash} */
-function tellContextSeedToolHistory(ArenaStore $arena): array
-{
-    $root = $arena->put(new CanonicalConversationRoot(
+/** @return array{0: ObjectHash, 1: ObjectHash, 2: ObjectHash} */
+function tellContextSeedToolHistory(FilesystemArena $arena): array {
+    $root = $arena->put(new ConversationRoot(
         id: 'conversation-context',
-        messages: [new CanonicalMessage(CanonicalRole::User, [new CanonicalTextPart('Calculate 2 + 2 and 3 + 3.')])],
+        messages: [new RecordMessage(Role::User, [new TextPart('Calculate 2 + 2 and 3 + 3.')])],
     ));
-    $discarded = $arena->put(new CanonicalTurn(
+    $discarded = $arena->put(new Turn(
         id: 'turn-context-discarded',
-        lineage: new CanonicalLineage($root),
-        messages: [new CanonicalMessage(CanonicalRole::Assistant, [new CanonicalTextPart('This turn was compacted.')])],
+        lineage: new Lineage($root),
+        messages: [new RecordMessage(Role::Assistant, [new TextPart('This turn was compacted.')])],
     ));
-    $head = $arena->put(new CanonicalTurn(
+    $head = $arena->put(new Turn(
         id: 'turn-context-current',
-        lineage: new CanonicalLineage($root, compactedFrom: [$discarded]),
-        messages: [new CanonicalMessage(CanonicalRole::Assistant, [new CanonicalTextPart('The results are 4 and 6.')])],
+        lineage: new Lineage($root, compactedFrom: [$discarded]),
+        messages: [new RecordMessage(Role::Assistant, [new TextPart('The results are 4 and 6.')])],
         toolCalls: [
-            new CanonicalToolCall('context-call-1', 'calculator', ['expression' => '2 + 2']),
-            new CanonicalToolCall('context-call-2', 'calculator', ['expression' => '3 + 3']),
+            new ToolCall('context-call-1', 'calculator', ['expression' => '2 + 2']),
+            new ToolCall('context-call-2', 'calculator', ['expression' => '3 + 3']),
         ],
         toolResults: [
-            new CanonicalToolResult('context-call-1', [new CanonicalTextPart('4')]),
-            new CanonicalToolResult('context-call-2', [new CanonicalTextPart('6')]),
+            new ToolResult('context-call-1', [new TextPart('4')]),
+            new ToolResult('context-call-2', [new TextPart('6')]),
         ],
     ));
     $arena->compareAndSwap('main', null, $head);
@@ -212,18 +209,17 @@ function tellContextSeedToolHistory(ArenaStore $arena): array
 }
 
 /** @return array<string, string> */
-function tellContextSnapshot(string $directory): array
-{
+function tellContextSnapshot(string $directory): array {
     $files = [];
-    if (! is_dir($directory)) {
+    if (!is_dir($directory)) {
         return $files;
     }
-    $root = rtrim($directory, '/\\').DIRECTORY_SEPARATOR;
+    $root = rtrim($directory, '/\\') . DIRECTORY_SEPARATOR;
     $iterator = new RecursiveIteratorIterator(
         new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS),
     );
     foreach ($iterator as $file) {
-        if (! $file->isFile()) {
+        if (!$file->isFile()) {
             continue;
         }
         $bytes = file_get_contents($file->getPathname());

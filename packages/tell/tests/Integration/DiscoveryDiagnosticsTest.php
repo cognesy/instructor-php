@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
+use Cognesy\Tell\Console\TellCommand;
+use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Tell;
-use Cognesy\Tell\TellCommand;
-use Cognesy\Tell\TellRequest;
 use Symfony\Component\Console\Tester\CommandTester;
 
 it('returns malformed extension discovery as typed SDK diagnostics', function (): void {

@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
-use Cognesy\Tell\Runtime\TellOptions;
+use Cognesy\Agents\Collections\Tools;
+use Cognesy\Tell\Console\TellOptions;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 
-function tellCodingTools(TellAgentFactory $factory, string $project): \Cognesy\Agents\Collections\Tools
-{
+function tellCodingTools(TellAgentFactory $factory, string $project): Tools {
     return $factory->build(new TellOptions(prompt: 'Inspect coding tools.', directory: $project))->tools();
 }
 
 it('exposes canonical coding tools with explicit legacy aliases', function (): void {
     $factory = tellTestFactory();
-    $project = tellLastTemporaryRoot().'/project';
+    $project = tellLastTemporaryRoot() . '/project';
     mkdir($project, 0755, true);
     $tools = tellCodingTools($factory, $project);
 
@@ -29,15 +29,15 @@ it('exposes canonical coding tools with explicit legacy aliases', function (): v
 
 it('runs canonical and legacy read write and shell names through equivalent operations', function (): void {
     $factory = tellTestFactory();
-    $project = tellLastTemporaryRoot().'/project';
+    $project = tellLastTemporaryRoot() . '/project';
     mkdir($project, 0755, true);
-    file_put_contents($project.'/notes.txt', "Zażółć\n");
+    file_put_contents($project . '/notes.txt', "Zażółć\n");
     $tools = tellCodingTools($factory, $project);
 
-    $canonicalRead = $tools->get('read_file')->use(path: $project.'/notes.txt')->unwrap();
-    $legacyRead = $tools->get('read')->use(path: $project.'/notes.txt')->unwrap();
-    $canonicalWrite = $tools->get('write_file')->use(path: $project.'/canonical.txt', content: "one\n")->unwrap();
-    $legacyWrite = $tools->get('write')->use(path: $project.'/legacy.txt', content: "one\n")->unwrap();
+    $canonicalRead = $tools->get('read_file')->use(path: $project . '/notes.txt')->unwrap();
+    $legacyRead = $tools->get('read')->use(path: $project . '/notes.txt')->unwrap();
+    $canonicalWrite = $tools->get('write_file')->use(path: $project . '/canonical.txt', content: "one\n")->unwrap();
+    $legacyWrite = $tools->get('write')->use(path: $project . '/legacy.txt', content: "one\n")->unwrap();
     $canonicalShell = $tools->get('shell')->use(command: 'printf ready')->unwrap();
     $legacyShell = $tools->get('bash')->use(command: 'printf ready')->unwrap();
 
@@ -53,33 +53,33 @@ it('runs canonical and legacy read write and shell names through equivalent oper
 
 it('applies unicode multi-hunk patches only after all hunks validate', function (): void {
     $factory = tellTestFactory();
-    $project = tellLastTemporaryRoot().'/project';
+    $project = tellLastTemporaryRoot() . '/project';
     mkdir($project, 0755, true);
-    file_put_contents($project.'/notes.txt', "alpha\nZażółć\nomega\n");
+    file_put_contents($project . '/notes.txt', "alpha\nZażółć\nomega\n");
     $tools = tellCodingTools($factory, $project);
 
     $patch = "--- a/notes.txt\n+++ b/notes.txt\n@@ -1,3 +1,3 @@\n-alpha\n+beta\n Zażółć\n-omega\n+done\n";
     $success = $tools->get('apply_patch')->use(patch: $patch)->unwrap();
-    $beforeFailure = file_get_contents($project.'/notes.txt');
+    $beforeFailure = file_get_contents($project . '/notes.txt');
     $failed = $tools->get('apply_patch')->use(patch: "--- a/notes.txt\n+++ b/notes.txt\n@@ -1 +1 @@\n-missing\n+never\n")->unwrap();
 
     expect($success['success'])->toBeTrue()
         ->and($success['partial'])->toBeFalse()
-        ->and(file_get_contents($project.'/notes.txt'))->toBe("beta\nZażółć\ndone\n")
+        ->and(file_get_contents($project . '/notes.txt'))->toBe("beta\nZażółć\ndone\n")
         ->and($failed['success'])->toBeFalse()
         ->and($failed['error']['code'])->toBe('hunk_failed')
-        ->and(file_get_contents($project.'/notes.txt'))->toBe($beforeFailure);
+        ->and(file_get_contents($project . '/notes.txt'))->toBe($beforeFailure);
 });
 
 it('keeps the legacy edit schema on the same bounded patch operation', function (): void {
     $factory = tellTestFactory();
-    $project = tellLastTemporaryRoot().'/project';
+    $project = tellLastTemporaryRoot() . '/project';
     mkdir($project, 0755, true);
-    file_put_contents($project.'/notes.txt', "draft\n");
+    file_put_contents($project . '/notes.txt', "draft\n");
     $tools = tellCodingTools($factory, $project);
 
     $result = $tools->get('edit')->use(
-        path: $project.'/notes.txt',
+        path: $project . '/notes.txt',
         old_string: 'draft',
         new_string: 'verified',
     )->unwrap();
@@ -87,16 +87,16 @@ it('keeps the legacy edit schema on the same bounded patch operation', function 
     expect($result['success'])->toBeTrue()
         ->and($result['operation'])->toBe('apply_patch')
         ->and($result['partial'])->toBeFalse()
-        ->and(file_get_contents($project.'/notes.txt'))->toBe("verified\n");
+        ->and(file_get_contents($project . '/notes.txt'))->toBe("verified\n");
 });
 
 it('denies traversal and symlink patch targets and rejects malformed or oversized patches', function (): void {
     $factory = tellTestFactory();
-    $project = tellLastTemporaryRoot().'/project';
+    $project = tellLastTemporaryRoot() . '/project';
     mkdir($project, 0755, true);
-    $outside = tellLastTemporaryRoot().'/outside.txt';
+    $outside = tellLastTemporaryRoot() . '/outside.txt';
     file_put_contents($outside, "outside\n");
-    symlink($outside, $project.'/linked.txt');
+    symlink($outside, $project . '/linked.txt');
     $tools = tellCodingTools($factory, $project);
 
     $traversal = $tools->get('apply_patch')->use(patch: "--- a/../outside.txt\n+++ b/../outside.txt\n@@ -1 +1 @@\n-outside\n+changed\n")->unwrap();

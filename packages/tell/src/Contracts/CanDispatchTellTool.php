@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Contracts;
 
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
-use Cognesy\Tell\Tool\TellToolRequest;
-use Cognesy\Tell\Tool\TellToolResult;
+use Cognesy\Tell\Data\TellToolRequest;
+use Cognesy\Tell\Data\TellToolResult;
 
 interface CanDispatchTellTool
 {

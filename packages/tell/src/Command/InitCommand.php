@@ -9,7 +9,7 @@ use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Workspace\WorkspaceException;
-use Cognesy\Tell\Workspace\WorkspaceManager;
+use Cognesy\Tell\Workspace\WorkspaceRepository;
 use InvalidArgumentException;
 use Override;
 use Symfony\Component\Console\Command\Command;
@@ -20,14 +20,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 final class InitCommand extends Command implements CanDescribeOperationalPlane
 {
-    public function __construct(private readonly WorkspaceManager $workspaces = new WorkspaceManager)
-    {
+    public function __construct(private readonly WorkspaceRepository $workspaces = new WorkspaceRepository()) {
         parent::__construct('init');
     }
 
     #[Override]
-    protected function configure(): void
-    {
+    protected function configure(): void {
         $this->setDescription('Initialize durable Tell state in a project')
             ->setHelp(<<<'HELP'
 Create the private, versioned Tell workspace for a project. Repeating this
@@ -43,8 +41,7 @@ HELP)
     }
 
     #[Override]
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         try {
             $requested = (string) $input->getArgument('path');
             $cwd = getcwd();
@@ -79,8 +76,7 @@ HELP)
     }
 
     #[Override]
-    public function planeOperation(): PlaneOperation
-    {
+    public function planeOperation(): PlaneOperation {
         return new PlaneOperation(
             plane: OperationalPlane::Management,
             command: 'init [path]',
@@ -93,8 +89,7 @@ HELP)
         );
     }
 
-    private function writeError(OutputInterface $output, string $message, bool $usage, bool $json): void
-    {
+    private function writeError(OutputInterface $output, string $message, bool $usage, bool $json): void {
         $payload = ['error' => $message];
         if ($usage) {
             $payload['help'] = ['Run `tell init [path]` with an existing project directory.'];

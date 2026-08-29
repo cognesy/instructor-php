@@ -24,8 +24,7 @@ final readonly class ToolCallView
     ) {}
 
     /** @param array<array-key, mixed> $args */
-    public static function forCall(string $tool, array $args): self
-    {
+    public static function forCall(string $tool, array $args): self {
         return match ($tool) {
             'shell', 'bash' => new self(
                 'shell',
@@ -48,15 +47,14 @@ final readonly class ToolCallView
     }
 
     /** @param array<array-key, mixed> $args */
-    private static function write(array $args): self
-    {
+    private static function write(array $args): self {
         $path = self::text($args, 'path');
         $content = self::text($args, 'content');
         $bytes = strlen($content);
 
         return new self(
             'write',
-            trim(self::quoted($path).' ('.$bytes.' byte'.($bytes === 1 ? '' : 's').')'),
+            trim(self::quoted($path) . ' (' . $bytes . ' byte' . ($bytes === 1 ? '' : 's') . ')'),
             $content,
             self::languageFor($path),
         );
@@ -68,24 +66,22 @@ final readonly class ToolCallView
      *
      * @param  array<array-key, mixed>  $args
      */
-    private static function replacement(array $args): string
-    {
+    private static function replacement(array $args): string {
         $old = self::text($args, 'old_string');
         $new = self::text($args, 'new_string');
         $lines = [];
         foreach (self::lines($old) as $line) {
-            $lines[] = '- '.$line;
+            $lines[] = '- ' . $line;
         }
         foreach (self::lines($new) as $line) {
-            $lines[] = '+ '.$line;
+            $lines[] = '+ ' . $line;
         }
 
         return implode("\n", $lines);
     }
 
     /** @return list<string> */
-    private static function lines(string $text): array
-    {
+    private static function lines(string $text): array {
         return $text === '' ? [] : explode("\n", $text);
     }
 
@@ -93,8 +89,7 @@ final readonly class ToolCallView
      * The language only decides how a body is labelled, so an unrecognised
      * extension is left blank rather than guessed at.
      */
-    private static function languageFor(string $path): string
-    {
+    private static function languageFor(string $path): string {
         return match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
             'php' => 'php',
             'json' => 'json',
@@ -106,26 +101,22 @@ final readonly class ToolCallView
     }
 
     /** @param array<array-key, mixed> $args */
-    private static function text(array $args, string $key): string
-    {
+    private static function text(array $args, string $key): string {
         $value = $args[$key] ?? null;
 
         return is_string($value) ? $value : '';
     }
 
-    private static function bracketed(string $value): string
-    {
-        return $value === '' ? '' : '['.$value.']';
+    private static function bracketed(string $value): string {
+        return $value === '' ? '' : '[' . $value . ']';
     }
 
-    private static function quoted(string $value): string
-    {
-        return $value === '' ? '' : '`'.$value.'`';
+    private static function quoted(string $value): string {
+        return $value === '' ? '' : '`' . $value . '`';
     }
 
     /** @param array<array-key, mixed> $args */
-    private static function json(array $args): string
-    {
+    private static function json(array $args): string {
         if ($args === []) {
             return '';
         }

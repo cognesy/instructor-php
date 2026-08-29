@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
-use Cognesy\Tell\Runtime\TellPaths;
+use Cognesy\Tell\Configuration\TellPaths;
 
 it('uses USERPROFILE when HOME is unavailable', function (): void {
     $profile = 'tell-user-profile';
 
     tellWithHomeEnvironment(false, $profile, false, static function () use ($profile): void {
         $paths = TellPaths::installed();
-        $tellHome = $profile.DIRECTORY_SEPARATOR.'.tell';
+        $tellHome = $profile . DIRECTORY_SEPARATOR . '.tell';
 
         expect($paths->home)->toBe($tellHome)
-            ->and($paths->configFile)->toBe($tellHome.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'tell.json')
-            ->and($paths->userAgents)->toBe($tellHome.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'agents')
-            ->and($paths->sessions)->toBe($tellHome.DIRECTORY_SEPARATOR.'runtime'.DIRECTORY_SEPARATOR.'sessions')
-            ->and($paths->executionTraces)->toBe($tellHome.DIRECTORY_SEPARATOR.'logs'.DIRECTORY_SEPARATOR.'executions')
-            ->and($paths->sessionTraces)->toBe($tellHome.DIRECTORY_SEPARATOR.'logs'.DIRECTORY_SEPARATOR.'sessions');
+            ->and($paths->configFile)->toBe($tellHome . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'tell.json')
+            ->and($paths->userAgents)->toBe($tellHome . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'agents')
+            ->and($paths->sessions)->toBe($tellHome . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'sessions')
+            ->and($paths->executionTraces)->toBe($tellHome . DIRECTORY_SEPARATOR . 'logs' . DIRECTORY_SEPARATOR . 'executions')
+            ->and($paths->sessionTraces)->toBe($tellHome . DIRECTORY_SEPARATOR . 'logs' . DIRECTORY_SEPARATOR . 'sessions');
     });
 });
 
@@ -26,7 +26,7 @@ it('prefers HOME over USERPROFILE', function (): void {
     $home = 'tell-home';
 
     tellWithHomeEnvironment($home, 'tell-user-profile', false, static function () use ($home): void {
-        expect(TellPaths::installed()->home)->toBe($home.DIRECTORY_SEPARATOR.'.tell');
+        expect(TellPaths::installed()->home)->toBe($home . DIRECTORY_SEPARATOR . '.tell');
     });
 });
 
@@ -63,8 +63,8 @@ it('keeps a project spill store in Tell storage rather than in the project', fun
     $paths = TellPaths::installed(['TELL_HOME' => '/runtime/tell']);
     $store = $paths->blobsFor('/srv/project-a');
 
-    expect($paths->blobs)->toBe('/runtime/tell'.DIRECTORY_SEPARATOR.'runtime'.DIRECTORY_SEPARATOR.'blobs')
-        ->and($store)->toStartWith($paths->blobs.DIRECTORY_SEPARATOR)
+    expect($paths->blobs)->toBe('/runtime/tell' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'blobs')
+        ->and($store)->toStartWith($paths->blobs . DIRECTORY_SEPARATOR)
         ->and($store)->not->toStartWith('/srv/project-a')
         // Named for the project path, so two projects never share a store.
         ->and($store)->not->toBe($paths->blobsFor('/srv/project-b'))
@@ -93,8 +93,7 @@ function tellWithHomeEnvironment(
     }
 }
 
-function tellSetEnvironment(string $name, string|false $value): void
-{
+function tellSetEnvironment(string $name, string|false $value): void {
     if ($value === false) {
         putenv($name);
 

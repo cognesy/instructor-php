@@ -12,8 +12,7 @@ enum TellShellJobState: string
     case Cancelled = 'cancelled';
     case TimedOut = 'timed_out';
 
-    public function isTerminal(): bool
-    {
+    public function isTerminal(): bool {
         return $this !== self::Running;
     }
 }

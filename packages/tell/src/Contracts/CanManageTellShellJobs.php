@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Contracts;
 
-use Cognesy\Tell\Shell\TellShellJobOutput;
-use Cognesy\Tell\Shell\TellShellJobRequest;
-use Cognesy\Tell\Shell\TellShellJobSnapshot;
+use Cognesy\Tell\Data\TellShellJobOutput;
+use Cognesy\Tell\Data\TellShellJobRequest;
+use Cognesy\Tell\Data\TellShellJobSnapshot;
 
 interface CanManageTellShellJobs
 {

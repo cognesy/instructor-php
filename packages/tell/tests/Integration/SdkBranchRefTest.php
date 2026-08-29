@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
-use Cognesy\Tell\Canonical\CanonicalValidationException;
+use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Tell;
-use Cognesy\Tell\TellRequest;
-use Cognesy\Tell\Workspace\ArenaIntegrityException;
+use Cognesy\Tell\Workspace\Arena\Exception\ArenaIntegrityException;
+use Cognesy\Tell\Workspace\Arena\RecordException;
 use Cognesy\Tell\Workspace\WorkspaceException;
 
 it('reads a named branch independently and keeps an immutable snapshot reproducible', function (): void {
@@ -51,7 +51,7 @@ it('rejects missing branches and malformed or non-existent immutable refs', func
     expect(fn () => $workspace->branch('missing'))
         ->toThrow(WorkspaceException::class, "branch 'missing' does not exist")
         ->and(fn () => $workspace->ref('not-a-hash'))
-        ->toThrow(CanonicalValidationException::class, 'lowercase SHA-256')
+        ->toThrow(RecordException::class, 'lowercase SHA-256')
         ->and(fn () => $workspace->ref(str_repeat('a', 64)))
         ->toThrow(ArenaIntegrityException::class, 'object does not exist');
 });

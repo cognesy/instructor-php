@@ -35,7 +35,6 @@ final class TellEventNormalizer
     public const string SCHEMA = 'tell.event.v1';
 
     private int $sequence = 0;
-
     private ?string $executionId = null;
 
     public function __construct(
@@ -44,8 +43,7 @@ final class TellEventNormalizer
     ) {}
 
     /** @return array{schema: string, kind: string, sequence: int, executionId: string, branch: ?string, session: ?string, timestamp: string, metadata: array<string, int|float|string|bool|null>, terminal: ?string} */
-    public function normalize(object $event): array
-    {
+    public function normalize(object $event): array {
         [$kind, $metadata, $terminal] = $this->map($event);
         $executionId = $this->executionId($event);
 
@@ -64,8 +62,7 @@ final class TellEventNormalizer
 
     /** @param array<string, int|float|string|bool|null> $metadata */
     /** @return array{schema: string, kind: string, sequence: int, executionId: string, branch: ?string, session: ?string, timestamp: string, metadata: array<string, int|float|string|bool|null>, terminal: string} */
-    public function terminal(string $status, array $metadata = []): array
-    {
+    public function terminal(string $status, array $metadata = []): array {
         return [
             'schema' => self::SCHEMA,
             'kind' => 'execution.completed',
@@ -73,7 +70,7 @@ final class TellEventNormalizer
             'executionId' => $this->executionId ?? 'unknown',
             'branch' => $this->branch,
             'session' => $this->session,
-            'timestamp' => (new DateTimeImmutable)->format(DATE_ATOM),
+            'timestamp' => (new DateTimeImmutable())->format(DATE_ATOM),
             'metadata' => ['status' => $status, ...$metadata],
             'terminal' => $status,
         ];
@@ -81,8 +78,7 @@ final class TellEventNormalizer
 
     /** @param array<string, int|float|string|bool|null> $metadata */
     /** @return array{schema: string, kind: string, sequence: int, executionId: string, branch: ?string, session: ?string, timestamp: string, metadata: array<string, int|float|string|bool|null>, terminal: ?string} */
-    public function direct(string $kind, array $metadata = []): array
-    {
+    public function direct(string $kind, array $metadata = []): array {
         return [
             'schema' => self::SCHEMA,
             'kind' => $kind,
@@ -90,15 +86,14 @@ final class TellEventNormalizer
             'executionId' => 'direct',
             'branch' => $this->branch,
             'session' => $this->session,
-            'timestamp' => (new DateTimeImmutable)->format(DATE_ATOM),
+            'timestamp' => (new DateTimeImmutable())->format(DATE_ATOM),
             'metadata' => $metadata,
             'terminal' => null,
         ];
     }
 
     /** @return array{0: string, 1: array<string, int|float|string|bool|null>, 2: ?string} */
-    private function map(object $event): array
-    {
+    private function map(object $event): array {
         return match (true) {
             $event instanceof AgentExecutionStarted => ['execution.started', ['tools' => $event->availableTools], null],
             $event instanceof AgentStepStarted => ['step.started', [
@@ -179,8 +174,7 @@ final class TellEventNormalizer
         };
     }
 
-    private function executionId(object $event): string
-    {
+    private function executionId(object $event): string {
         if (property_exists($event, 'executionId') && is_string($event->executionId) && $event->executionId !== '') {
             return $this->executionId = $event->executionId;
         }
@@ -188,16 +182,14 @@ final class TellEventNormalizer
         return $this->executionId ?? 'unknown';
     }
 
-    private function timestamp(object $event): string
-    {
+    private function timestamp(object $event): string {
         return match (true) {
             $event instanceof Event => $event->createdAt->format(DATE_ATOM),
-            default => (new DateTimeImmutable)->format(DATE_ATOM),
+            default => (new DateTimeImmutable())->format(DATE_ATOM),
         };
     }
 
-    private function durationMs(DateTimeImmutable $started, DateTimeImmutable $completed): int
-    {
+    private function durationMs(DateTimeImmutable $started, DateTimeImmutable $completed): int {
         return max(0, (int) round(((float) $completed->format('U.u') - (float) $started->format('U.u')) * 1000));
     }
 }

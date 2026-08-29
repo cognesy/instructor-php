@@ -6,10 +6,12 @@ namespace Cognesy\Tell\Tool;
 
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
 use Cognesy\Tell\Capability\AskUser\TellAnswerQueue;
+use Cognesy\Tell\Console\TellOptions;
 use Cognesy\Tell\Contracts\CanDispatchTellTool;
+use Cognesy\Tell\Data\TellToolRequest;
+use Cognesy\Tell\Data\TellToolResult;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Runtime\TellOptions;
-use Cognesy\Tell\Runtime\TellToolDispatcher;
+use LogicException;
 
 /** Direct, model-free tool calls resolved from the same Tell configuration as agent work. */
 final readonly class TellTools
@@ -28,13 +30,12 @@ final readonly class TellTools
         return new self(null, '', $cancellation, $dispatcher);
     }
 
-    public function dispatch(TellToolRequest $request): TellToolResult
-    {
+    public function dispatch(TellToolRequest $request): TellToolResult {
         if ($this->dispatcher !== null) {
             return $this->dispatcher->dispatch($request, $this->cancellation);
         }
         if ($this->agents === null) {
-            throw new \LogicException('Tell tools require an agent factory or controlled dispatcher.');
+            throw new LogicException('Tell tools require an agent factory or controlled dispatcher.');
         }
         $result = (new TellToolDispatcher($this->agents, $this->cancellation))->dispatch(
             new TellOptions(
@@ -46,7 +47,7 @@ final readonly class TellTools
                 branch: $request->branch,
                 directory: $this->directory,
                 tools: array_values($request->tools),
-                answers: new TellAnswerQueue,
+                answers: new TellAnswerQueue(),
                 maxSteps: $request->maxSteps,
                 connectionExplicit: $request->connectionExplicit,
                 modelExplicit: $request->modelExplicit,

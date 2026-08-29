@@ -8,8 +8,7 @@ use LogicException;
 
 final class TellHostDisposedException extends LogicException
 {
-    public function __construct()
-    {
+    public function __construct() {
         parent::__construct('Tell host has been disposed.');
     }
 }

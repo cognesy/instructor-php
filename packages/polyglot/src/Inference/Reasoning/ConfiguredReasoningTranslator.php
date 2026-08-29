@@ -45,7 +45,7 @@ final readonly class ConfiguredReasoningTranslator implements CanTranslateReason
         $effective = match (true) {
             $mapping === null => $selection,
             $selection->kind === ReasoningSelectionKind::Adaptive => ReasoningSelection::adaptive($mapping->effective),
-            default => ReasoningSelection::withEffort($mapping->effective),
+            default => ReasoningSelection::effort($mapping->effective),
         };
 
         return new ReasoningTranslation(

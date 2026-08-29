@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Drivers\CanUseTools;
-use Cognesy\Tell\Diagnostics\StartupScanCounter;
+use Cognesy\Tell\Configuration\TellCredentialStore;
+use Cognesy\Tell\Configuration\TellPaths;
+use Cognesy\Tell\Discovery\StartupScanCounter;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Runtime\TellCredentialStore;
-use Cognesy\Tell\Runtime\TellPaths;
 
 /** @var list<string> $tellTemporaryRoots */
 $tellTemporaryRoots = [];
@@ -28,12 +28,12 @@ function tellTestFactory(
 ): TellAgentFactory {
     global $tellTemporaryRoots;
 
-    $root = sys_get_temp_dir().'/instructor-tell-'.bin2hex(random_bytes(8));
-    $package = $root.'/package-agents';
-    $paths = new TellPaths($package, $root.'/tell-home');
+    $root = sys_get_temp_dir() . '/instructor-tell-' . bin2hex(random_bytes(8));
+    $package = $root . '/package-agents';
+    $paths = new TellPaths($package, $root . '/tell-home');
     mkdir($package, 0755, true);
     mkdir($paths->userAgents, 0755, true);
-    file_put_contents($package.'/default.md', <<<'MD'
+    file_put_contents($package . '/default.md', <<<'MD'
 ---
 name: default
 label: Tell Test
@@ -51,7 +51,7 @@ capabilities:
 You are a deterministic test agent.
 MD);
     foreach ($userAgents as $filename => $content) {
-        file_put_contents($paths->userAgents.'/'.$filename, $content);
+        file_put_contents($paths->userAgents . '/' . $filename, $content);
     }
     $credentialStore = new TellCredentialStore($paths);
     foreach ($credentials as $variable => $value) {
@@ -69,29 +69,26 @@ MD);
     );
 }
 
-function tellLastTemporaryRoot(): string
-{
+function tellLastTemporaryRoot(): string {
     global $tellTemporaryRoots;
 
     return $tellTemporaryRoots[array_key_last($tellTemporaryRoots)];
 }
 
-function tellTestProject(): string
-{
+function tellTestProject(): string {
     global $tellTemporaryRoots;
 
-    $root = sys_get_temp_dir().'/instructor-tell-'.bin2hex(random_bytes(8));
+    $root = sys_get_temp_dir() . '/instructor-tell-' . bin2hex(random_bytes(8));
     mkdir($root, 0755, true);
     $tellTemporaryRoots[] = $root;
 
     return $root;
 }
 
-function standardHostPaths(string $project): TellPaths
-{
-    $paths = new TellPaths($project.'/package-agents', $project.'/.tell-host');
+function standardHostPaths(string $project): TellPaths {
+    $paths = new TellPaths($project . '/package-agents', $project . '/.tell-host');
     mkdir($paths->packageAgents, 0755, true);
-    file_put_contents($paths->packageAgents.'/default.md', <<<'MD'
+    file_put_contents($paths->packageAgents . '/default.md', <<<'MD'
 ---
 name: default
 label: Standard Host Test
@@ -106,12 +103,11 @@ MD);
     return $paths;
 }
 
-function tellMalformedComposerVendor(): string
-{
+function tellMalformedComposerVendor(): string {
     $root = tellTestProject();
-    $vendor = $root.'/vendor';
-    mkdir($vendor.'/composer', 0755, true);
-    file_put_contents($vendor.'/composer/installed.json', json_encode([
+    $vendor = $root . '/vendor';
+    mkdir($vendor . '/composer', 0755, true);
+    file_put_contents($vendor . '/composer/installed.json', json_encode([
         'packages' => [[
             'name' => 'example/malformed-extension',
             'extra' => [
@@ -125,9 +121,8 @@ function tellMalformedComposerVendor(): string
     return $vendor;
 }
 
-function tellRemoveDirectory(string $directory): void
-{
-    if (! str_starts_with($directory, sys_get_temp_dir().'/instructor-tell-') || ! is_dir($directory)) {
+function tellRemoveDirectory(string $directory): void {
+    if (!str_starts_with($directory, sys_get_temp_dir() . '/instructor-tell-') || !is_dir($directory)) {
         return;
     }
     $iterator = new RecursiveIteratorIterator(

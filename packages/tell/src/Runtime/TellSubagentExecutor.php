@@ -7,15 +7,15 @@ namespace Cognesy\Tell\Runtime;
 use Cognesy\Agents\Capability\Subagent\CanExecuteSubagent;
 use Cognesy\Agents\Capability\Subagent\SubagentExecutionResult;
 use Cognesy\Agents\Capability\Subagent\SubagentInvocation;
-use Cognesy\Tell\Diagnostics\TellDiagnostics;
-use Cognesy\Tell\Workspace\ArenaRef;
-use Cognesy\Tell\Workspace\ArenaRefConflict;
-use Cognesy\Tell\Workspace\ArenaStore;
-use Cognesy\Tell\Workspace\BranchConfigStore;
-use Cognesy\Tell\Workspace\BranchName;
-use Cognesy\Tell\Workspace\BranchProvenance;
-use Cognesy\Tell\Workspace\BranchSelection;
-use Cognesy\Tell\Workspace\WorkspaceTurnRunner;
+use Cognesy\Tell\Console\TellOptions;
+use Cognesy\Tell\Workspace\Arena\Exception\RefConflict;
+use Cognesy\Tell\Workspace\Arena\FilesystemArena;
+use Cognesy\Tell\Workspace\Arena\Provenance;
+use Cognesy\Tell\Workspace\Arena\Ref;
+use Cognesy\Tell\Workspace\Branch\BranchName;
+use Cognesy\Tell\Workspace\Branch\ResolvedBranch;
+use Cognesy\Tell\Workspace\Branch\Storage\BranchConfigStore;
+use Cognesy\Tell\Workspace\Execution\TurnRunner;
 use Override;
 use RuntimeException;
 use Throwable;
@@ -31,13 +31,12 @@ final readonly class TellSubagentExecutor implements CanExecuteSubagent
     ) {}
 
     #[Override]
-    public function execute(SubagentInvocation $invocation): SubagentExecutionResult
-    {
+    public function execute(SubagentInvocation $invocation): SubagentExecutionResult {
         if ($this->scope->depth >= 1) {
             throw new RuntimeException('Tell child delegation is limited to one depth.');
         }
 
-        $arena = new ArenaStore($this->scope->workspace);
+        $arena = new FilesystemArena($this->scope->workspace);
         $parent = $arena->readRef($this->scope->parent->ref);
         $child = $this->createChild($arena, $parent, $invocation);
         (new BranchConfigStore($this->scope->workspace))->inherit($this->scope->parent->branch, $child->toString());
@@ -50,7 +49,7 @@ final readonly class TellSubagentExecutor implements CanExecuteSubagent
             cancellation: $this->scope->cancellation,
             delegation: new TellDelegationScope(
                 $this->scope->workspace,
-                new BranchSelection($child->toString(), 'branches/'.$child->toString(), true),
+                new ResolvedBranch($child->toString(), 'branches/' . $child->toString(), true),
                 depth: 1,
                 cancellation: $this->scope->cancellation,
             ),
@@ -59,8 +58,8 @@ final readonly class TellSubagentExecutor implements CanExecuteSubagent
         $this->agents->attachExecutionTrace($loop, $options);
 
         try {
-            $state = (new WorkspaceTurnRunner($arena, ref: 'branches/'.$child->toString()))->execute($loop, $definition, $invocation->prompt);
-            $head = $arena->readRef('branches/'.$child->toString())->head?->toString();
+            $state = (new TurnRunner($arena, ref: 'branches/' . $child->toString()))->execute($loop, $definition, $invocation->prompt);
+            $head = $arena->readRef('branches/' . $child->toString())->head?->toString();
 
             return new SubagentExecutionResult($state, [
                 'success' => true,
@@ -71,33 +70,31 @@ final readonly class TellSubagentExecutor implements CanExecuteSubagent
                 'definition' => $definition->name,
             ]);
         } catch (Throwable $exception) {
-            throw new RuntimeException('Tell delegated child failed on '.$child->toString().'.', previous: $exception);
+            throw new RuntimeException('Tell delegated child failed on ' . $child->toString() . '.', previous: $exception);
         }
     }
 
-    private function bound(string $report): string
-    {
+    private function bound(string $report): string {
         $limit = $this->parentOptions->policy->maxToolOutputChars;
         if (strlen($report) <= $limit) {
             return $report;
         }
 
-        return substr($report, 0, $limit).'…';
+        return substr($report, 0, $limit) . '…';
     }
 
-    private function createChild(ArenaStore $arena, ArenaRef $parent, SubagentInvocation $invocation): BranchName
-    {
+    private function createChild(FilesystemArena $arena, Ref $parent, SubagentInvocation $invocation): BranchName {
         for ($attempt = 0; $attempt < 3; $attempt++) {
-            $child = BranchName::child('agent-'.bin2hex(random_bytes(12)));
+            $child = BranchName::child('agent-' . bin2hex(random_bytes(12)));
             $head = $invocation->context === 'fresh' ? null : $parent->head;
             try {
-                $arena->createBranch($child, new ArenaRef(
+                $arena->createRef('branches/' . $child->toString(), new Ref(
                     $head,
-                    new BranchProvenance('agent', $this->scope->parent->branch, $parent->head, [
+                    new Provenance('agent', $this->scope->parent->branch, $parent->head, [
                         'kind' => 'delegated-child',
                         'context' => $invocation->context,
                         'definition' => $invocation->definition->name,
-                        'executionId' => 'delegation-'.bin2hex(random_bytes(12)),
+                        'executionId' => 'delegation-' . bin2hex(random_bytes(12)),
                         'configuration' => [
                             'policy' => $this->effectivePolicyProvenance(),
                         ],
@@ -105,7 +102,7 @@ final readonly class TellSubagentExecutor implements CanExecuteSubagent
                 ));
 
                 return $child;
-            } catch (ArenaRefConflict) {
+            } catch (RefConflict) {
                 continue;
             }
         }
@@ -113,8 +110,7 @@ final readonly class TellSubagentExecutor implements CanExecuteSubagent
         throw new RuntimeException('Tell could not reserve a unique child branch.');
     }
 
-    private function childOptions(SubagentInvocation $invocation, BranchName $child): TellOptions
-    {
+    private function childOptions(SubagentInvocation $invocation, BranchName $child): TellOptions {
         $values = (new BranchConfigStore($this->scope->workspace))->runtimeValues($child->toString());
         $parent = $this->parentOptions;
 
@@ -142,8 +138,7 @@ final readonly class TellSubagentExecutor implements CanExecuteSubagent
     }
 
     /** @return array<string, 'cli'|'branch'|'project'|'user'|'bundled'> */
-    private function effectivePolicyProvenance(): array
-    {
+    private function effectivePolicyProvenance(): array {
         return $this->parentOptions->policy->provenance();
     }
 }

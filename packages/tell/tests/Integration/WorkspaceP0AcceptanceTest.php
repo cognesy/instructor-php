@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\AgentLoop;
+use Cognesy\Tell\Configuration\TellPaths;
+use Cognesy\Tell\Console\TellApplication;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Runtime\TellPaths;
-use Cognesy\Tell\TellApplication;
 use Cognesy\Tell\Tests\Support\RecordingDriver;
 use Cognesy\Tell\Tests\Support\RequestRecorder;
-use Cognesy\Tell\Workspace\ArenaStore;
-use Cognesy\Tell\Workspace\TellWorkspace;
+use Cognesy\Tell\Workspace\Arena\FilesystemArena;
+use Cognesy\Tell\Workspace\WorkspaceState;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 it('keeps the complete P0 workspace lifecycle durable across fresh Tell applications', function (): void {
-    $recorder = new RequestRecorder;
+    $recorder = new RequestRecorder();
     $factory = tellTestFactory(static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(
         new RecordingDriver($recorder, 'verified semantic response'),
     ));
-    $project = tellLastTemporaryRoot().'/p0-acceptance';
+    $project = tellLastTemporaryRoot() . '/p0-acceptance';
     mkdir($project, 0700, true);
 
     [$status, $initialized] = tellP0Run(tellP0Application($factory->paths(), $recorder), [
@@ -114,7 +114,7 @@ it('keeps the complete P0 workspace lifecycle durable across fresh Tell applicat
     ]);
     expect($status)->toBe(0)
         ->and($cleared['empty'])->toBeTrue()
-        ->and((new ArenaStore($workspace))->readRef()->head)->toBeNull();
+        ->and((new FilesystemArena($workspace))->readRef()->head)->toBeNull();
 
     expect(tellP0Run(tellP0Application($factory->paths(), $recorder), [
         'tell',
@@ -139,8 +139,7 @@ it('keeps the complete P0 workspace lifecycle durable across fresh Tell applicat
         ->not->toContain(['role' => 'user', 'content' => 'record the release decision']);
 });
 
-function tellP0Application(TellPaths $paths, RequestRecorder $recorder): TellApplication
-{
+function tellP0Application(TellPaths $paths, RequestRecorder $recorder): TellApplication {
     $application = new TellApplication(new TellAgentFactory(
         $paths,
         static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(
@@ -156,20 +155,18 @@ function tellP0Application(TellPaths $paths, RequestRecorder $recorder): TellApp
  * @param  list<string>  $arguments
  * @return array{0: int, 1: array<string, mixed>}
  */
-function tellP0Run(TellApplication $application, array $arguments): array
-{
-    $output = new BufferedOutput;
+function tellP0Run(TellApplication $application, array $arguments): array {
+    $output = new BufferedOutput();
     $status = $application->runArgv(['tell', ...$arguments], $output);
     $payload = json_decode($output->fetch(), true, flags: JSON_THROW_ON_ERROR);
-    if (! is_array($payload)) {
+    if (!is_array($payload)) {
         throw new RuntimeException('Expected a structured P0 acceptance payload.');
     }
 
     return [$status, $payload];
 }
 
-function tellP0Workspace(TellAgentFactory $factory, string $project): TellWorkspace
-{
+function tellP0Workspace(TellAgentFactory $factory, string $project): WorkspaceState {
     $workspace = $factory->workspace()->discover($project);
     if ($workspace === null) {
         throw new RuntimeException('Expected the P0 acceptance workspace.');
@@ -179,18 +176,17 @@ function tellP0Workspace(TellAgentFactory $factory, string $project): TellWorksp
 }
 
 /** @return array<string, string> */
-function tellP0Snapshot(string $directory): array
-{
+function tellP0Snapshot(string $directory): array {
     $files = [];
-    if (! is_dir($directory)) {
+    if (!is_dir($directory)) {
         return $files;
     }
-    $root = rtrim($directory, '/\\').DIRECTORY_SEPARATOR;
+    $root = rtrim($directory, '/\\') . DIRECTORY_SEPARATOR;
     $iterator = new RecursiveIteratorIterator(
         new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS),
     );
     foreach ($iterator as $file) {
-        if (! $file->isFile()) {
+        if (!$file->isFile()) {
             continue;
         }
         $bytes = file_get_contents($file->getPathname());
@@ -205,8 +201,7 @@ function tellP0Snapshot(string $directory): array
 }
 
 /** @return list<array{role: string, content: string}> */
-function tellP0Messages(array $request): array
-{
+function tellP0Messages(array $request): array {
     return array_map(
         static fn (array $message): array => [
             'role' => $message['role'],

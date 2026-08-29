@@ -16,7 +16,7 @@ use InvalidArgumentException;
 it('loads yaml file as raw array', function () {
     $tmp = makeTmpConfigDir();
     $path = writeFile(
-        $tmp.'/config/polyglot/llm/connections/openai.yaml',
+        $tmp . '/config/polyglot/llm/connections/openai.yaml',
         "driver: openai\nmodel: gpt-4o-mini\n",
     );
 
@@ -32,7 +32,7 @@ it('loads yaml file as raw array', function () {
 it('loads php file as raw array', function () {
     $tmp = makeTmpConfigDir();
     $path = writeFile(
-        $tmp.'/config/polyglot/llm/connections/openai.php',
+        $tmp . '/config/polyglot/llm/connections/openai.php',
         "<?php\nreturn ['driver' => 'openai', 'model' => 'gpt-4o-mini'];\n",
     );
 
@@ -48,10 +48,10 @@ it('loads php file as raw array', function () {
 it('uses single-file cache and refreshes on source change', function () {
     $tmp = makeTmpConfigDir();
     $source = writeFile(
-        $tmp.'/config/polyglot/llm/connections/openai.yaml',
+        $tmp . '/config/polyglot/llm/connections/openai.yaml',
         "driver: openai\nmodel: gpt-4o-mini\n",
     );
-    $cache = $tmp.'/var/cache/openai-config.php';
+    $cache = $tmp . '/var/cache/openai-config.php';
 
     $first = Config::fromPaths(dirname($source))
         ->withCache($cache)
@@ -74,11 +74,11 @@ it('uses single-file cache and refreshes on source change', function () {
 
 it('loads relative config files from configured base paths', function () {
     $tmp = makeTmpConfigDir();
-    $polyglotBase = $tmp.'/packages/polyglot/resources/config';
-    $httpBase = $tmp.'/packages/http-client/resources/config';
+    $polyglotBase = $tmp . '/packages/polyglot/resources/config';
+    $httpBase = $tmp . '/packages/http-client/resources/config';
 
-    writeFile($polyglotBase.'/llm/openai.yml', "driver: openai\nmodel: gpt-4o-mini\n");
-    writeFile($httpBase.'/http/guzzle.yml', "driver: guzzle\nrequest_timeout: 30\n");
+    writeFile($polyglotBase . '/llm/openai.yml', "driver: openai\nmodel: gpt-4o-mini\n");
+    writeFile($httpBase . '/http/guzzle.yml', "driver: guzzle\nrequest_timeout: 30\n");
 
     $config = Config::fromPaths($polyglotBase, $httpBase);
 
@@ -91,11 +91,11 @@ it('loads relative config files from configured base paths', function () {
 
 it('uses first matching base path when file exists in multiple roots', function () {
     $tmp = makeTmpConfigDir();
-    $firstBase = $tmp.'/packages/first/resources/config';
-    $secondBase = $tmp.'/packages/second/resources/config';
+    $firstBase = $tmp . '/packages/first/resources/config';
+    $secondBase = $tmp . '/packages/second/resources/config';
 
-    writeFile($firstBase.'/llm/openai.yml', "driver: openai\nmodel: first-model\n");
-    writeFile($secondBase.'/llm/openai.yml', "driver: openai\nmodel: second-model\n");
+    writeFile($firstBase . '/llm/openai.yml', "driver: openai\nmodel: first-model\n");
+    writeFile($secondBase . '/llm/openai.yml', "driver: openai\nmodel: second-model\n");
 
     $entry = Config::fromPaths($firstBase, $secondBase)->load('llm/openai.yml');
 
@@ -105,8 +105,8 @@ it('uses first matching base path when file exists in multiple roots', function 
 
 it('requires relative path when configured with base directory', function () {
     $tmp = makeTmpConfigDir();
-    $basePath = $tmp.'/packages/polyglot/resources/config';
-    writeFile($basePath.'/llm/openai.yml', "driver: openai\n");
+    $basePath = $tmp . '/packages/polyglot/resources/config';
+    writeFile($basePath . '/llm/openai.yml', "driver: openai\n");
 
     expect(fn () => Config::fromPaths($basePath)->load(''))
         ->toThrow(InvalidArgumentException::class, 'Config::load() requires a relative config file path');
@@ -114,8 +114,8 @@ it('requires relative path when configured with base directory', function () {
 
 it('rejects absolute config paths', function () {
     $tmp = makeTmpConfigDir();
-    $basePath = $tmp.'/packages/polyglot/resources/config';
-    writeFile($basePath.'/llm/openai.yml', "driver: openai\n");
+    $basePath = $tmp . '/packages/polyglot/resources/config';
+    writeFile($basePath . '/llm/openai.yml', "driver: openai\n");
 
     expect(fn () => Config::fromPaths($basePath)->load('/llm/openai.yml'))
         ->toThrow(InvalidArgumentException::class, 'Config::load() accepts relative paths only');
@@ -123,8 +123,8 @@ it('rejects absolute config paths', function () {
 
 it('rejects path traversal segments', function () {
     $tmp = makeTmpConfigDir();
-    $basePath = $tmp.'/packages/polyglot/resources/config';
-    writeFile($basePath.'/llm/openai.yml', "driver: openai\n");
+    $basePath = $tmp . '/packages/polyglot/resources/config';
+    writeFile($basePath . '/llm/openai.yml', "driver: openai\n");
 
     expect(fn () => Config::fromPaths($basePath)->load('../outside.yaml'))
         ->toThrow(InvalidArgumentException::class, 'Config path traversal is not allowed');
@@ -137,11 +137,11 @@ it('rejects empty constructor paths', function () {
 
 it('ignores unresolved base paths when at least one base path exists', function () {
     $tmp = makeTmpConfigDir();
-    $existingBasePath = $tmp.'/packages/polyglot/resources/config';
-    writeFile($existingBasePath.'/llm/openai.yml', "driver: openai\n");
+    $existingBasePath = $tmp . '/packages/polyglot/resources/config';
+    writeFile($existingBasePath . '/llm/openai.yml', "driver: openai\n");
 
     $entry = Config::fromPaths(
-        $tmp.'/packages/missing/resources/config',
+        $tmp . '/packages/missing/resources/config',
         $existingBasePath,
     )->load('llm/openai.yml');
 
@@ -152,18 +152,18 @@ it('throws when no provided base path exists', function () {
     $tmp = makeTmpConfigDir();
 
     expect(fn () => Config::fromPaths(
-        $tmp.'/packages/missing-a/resources/config',
-        $tmp.'/packages/missing-b/resources/config',
+        $tmp . '/packages/missing-a/resources/config',
+        $tmp . '/packages/missing-b/resources/config',
     ))
         ->toThrow(InvalidArgumentException::class, 'Config requires at least one existing base path');
 });
 
 it('loads one config via ConfigLoader', function () {
     $tmp = makeTmpConfigDir();
-    $basePath = $tmp.'/config';
+    $basePath = $tmp . '/config';
 
     writeFile(
-        $basePath.'/polyglot/llm/connections/openai.yaml',
+        $basePath . '/polyglot/llm/connections/openai.yaml',
         "driver: openai\nmodel: gpt-4o-mini\n",
     );
     $loader = ConfigLoader::fromPaths($basePath);
@@ -174,14 +174,14 @@ it('loads one config via ConfigLoader', function () {
 
 it('loads multiple configs via ConfigLoader::loadAll', function () {
     $tmp = makeTmpConfigDir();
-    $basePath = $tmp.'/config';
+    $basePath = $tmp . '/config';
 
     writeFile(
-        $basePath.'/polyglot/llm/connections/openai.yaml',
+        $basePath . '/polyglot/llm/connections/openai.yaml',
         "driver: openai\nmodel: gpt-4o-mini\n",
     );
     writeFile(
-        $basePath.'/http-client/http/profiles/curl.yaml',
+        $basePath . '/http-client/http/profiles/curl.yaml',
         "driver: curl\nrequest_timeout: 30\n",
     );
 
@@ -200,12 +200,12 @@ it('loads multiple configs via ConfigLoader::loadAll', function () {
 
 it('uses ConfigLoader cache and refreshes when source file changes', function () {
     $tmp = makeTmpConfigDir();
-    $basePath = $tmp.'/config';
+    $basePath = $tmp . '/config';
     $sourcePath = writeFile(
-        $basePath.'/polyglot/llm/connections/openai.yaml',
+        $basePath . '/polyglot/llm/connections/openai.yaml',
         "driver: openai\nmodel: gpt-4o-mini\n",
     );
-    $cachePath = $tmp.'/var/cache/instructor-config.php';
+    $cachePath = $tmp . '/var/cache/instructor-config.php';
 
     $first = ConfigLoader::fromPaths($basePath)
         ->withCache($cachePath)
@@ -228,10 +228,10 @@ it('uses ConfigLoader cache and refreshes when source file changes', function ()
 
 it('stores multiple loaded files in one cache payload', function () {
     $tmp = makeTmpConfigDir();
-    $basePath = $tmp.'/config';
-    writeFile($basePath.'/polyglot/llm/connections/openai.yaml', "driver: openai\nmodel: gpt-4o-mini\n");
-    writeFile($basePath.'/http-client/http/profiles/curl.yaml', "driver: curl\nrequest_timeout: 30\n");
-    $cachePath = $tmp.'/var/cache/instructor-config.php';
+    $basePath = $tmp . '/config';
+    writeFile($basePath . '/polyglot/llm/connections/openai.yaml', "driver: openai\nmodel: gpt-4o-mini\n");
+    writeFile($basePath . '/http-client/http/profiles/curl.yaml', "driver: curl\nrequest_timeout: 30\n");
+    $cachePath = $tmp . '/var/cache/instructor-config.php';
 
     $config = Config::fromPaths($basePath)->withCache($cachePath);
     $config->load('polyglot/llm/connections/openai.yaml');
@@ -245,8 +245,8 @@ it('stores multiple loaded files in one cache payload', function () {
 
 it('throws when config file does not exist in any base path', function () {
     $tmp = makeTmpConfigDir();
-    $basePath = $tmp.'/config';
-    writeFile($basePath.'/polyglot/llm/connections/openai.yaml', "driver: openai\n");
+    $basePath = $tmp . '/config';
+    writeFile($basePath . '/polyglot/llm/connections/openai.yaml', "driver: openai\n");
 
     $loader = ConfigLoader::fromPaths($basePath);
 
@@ -256,8 +256,8 @@ it('throws when config file does not exist in any base path', function () {
 
 it('throws when ConfigLoader::loadAll has no config paths', function () {
     $tmp = makeTmpConfigDir();
-    $basePath = $tmp.'/config';
-    writeFile($basePath.'/polyglot/llm/connections/openai.yaml', "driver: openai\n");
+    $basePath = $tmp . '/config';
+    writeFile($basePath . '/polyglot/llm/connections/openai.yaml', "driver: openai\n");
 
     $loader = ConfigLoader::fromPaths($basePath);
 
@@ -268,7 +268,7 @@ it('throws when ConfigLoader::loadAll has no config paths', function () {
 it('interpolates simple env placeholder values', function () {
     $tmp = makeTmpConfigDir();
     $path = writeFile(
-        $tmp.'/config/polyglot/llm/connections/openai.yaml',
+        $tmp . '/config/polyglot/llm/connections/openai.yaml',
         "apiKey: \${TEST_OPENAI_KEY}\n",
     );
 
@@ -281,11 +281,11 @@ it('interpolates simple env placeholder values', function () {
 it('interpolates values from configured .env paths', function () {
     $tmp = makeTmpConfigDir();
     $path = writeFile(
-        $tmp.'/config/polyglot/llm/connections/openai.yaml',
+        $tmp . '/config/polyglot/llm/connections/openai.yaml',
         "apiKey: \${CFG_DOTENV_KEY}\n",
     );
     writeFile(
-        $tmp.'/.env',
+        $tmp . '/.env',
         "CFG_DOTENV_KEY=dotenv-key\n",
     );
 
@@ -300,11 +300,11 @@ it('interpolates values from configured .env paths', function () {
 it('keeps default env filename when only dotenv paths are set', function () {
     $tmp = makeTmpConfigDir();
     $path = writeFile(
-        $tmp.'/config/polyglot/llm/connections/openai.yaml',
+        $tmp . '/config/polyglot/llm/connections/openai.yaml',
         "apiKey: \${CFG_PATHS_ONLY_KEY}\n",
     );
     writeFile(
-        $tmp.'/.env',
+        $tmp . '/.env',
         "CFG_PATHS_ONLY_KEY=paths-only-key\n",
     );
 
@@ -319,10 +319,20 @@ it('keeps default env filename when only dotenv paths are set', function () {
     });
 });
 
+it('silently ignores dotenv directories without a matching file', function () {
+    $tmp = makeTmpConfigDir();
+
+    withEnvVarUnset('CFG_MISSING_DOTENV_KEY', function () use ($tmp): void {
+        withDotenvPaths([$tmp], ['.env'], function (): void {
+            expect(Env::get('CFG_MISSING_DOTENV_KEY', 'fallback'))->toBe('fallback');
+        });
+    });
+});
+
 it('interpolates values from server variables when env is not exported', function () {
     $tmp = makeTmpConfigDir();
     $path = writeFile(
-        $tmp.'/config/polyglot/llm/connections/openai.yaml',
+        $tmp . '/config/polyglot/llm/connections/openai.yaml',
         "apiKey: \${CFG_SERVER_ONLY_KEY}\n",
     );
 
@@ -337,7 +347,7 @@ it('interpolates values from server variables when env is not exported', functio
 it('interpolates placeholders in the middle of a string', function () {
     $tmp = makeTmpConfigDir();
     $path = writeFile(
-        $tmp.'/config/polyglot/llm/connections/openai.yaml',
+        $tmp . '/config/polyglot/llm/connections/openai.yaml',
         "url: \"https://api.\${CFG_HOST}/v1/\${CFG_PATH}/chat\"\nheader: \"Bearer \${CFG_TOKEN}\"\nlabel: \"pre-\${CFG_MIDDLE}-post\"\n",
     );
 
@@ -357,7 +367,7 @@ it('interpolates placeholders in the middle of a string', function () {
 it('uses default value for missing env placeholders', function () {
     $tmp = makeTmpConfigDir();
     $path = writeFile(
-        $tmp.'/config/polyglot/llm/connections/openai.yaml',
+        $tmp . '/config/polyglot/llm/connections/openai.yaml',
         "region: \${CFG_REGION:-us-east-1}\n",
     );
 
@@ -370,7 +380,7 @@ it('uses default value for missing env placeholders', function () {
 it('throws for required placeholders when env value is missing', function () {
     $tmp = makeTmpConfigDir();
     $path = writeFile(
-        $tmp.'/config/polyglot/llm/connections/openai.yaml',
+        $tmp . '/config/polyglot/llm/connections/openai.yaml',
         "apiKey: \${CFG_REQUIRED?}\n",
     );
 
@@ -383,7 +393,7 @@ it('throws for required placeholders when env value is missing', function () {
 it('throws for required placeholders with custom error message', function () {
     $tmp = makeTmpConfigDir();
     $path = writeFile(
-        $tmp.'/config/polyglot/llm/connections/openai.yaml',
+        $tmp . '/config/polyglot/llm/connections/openai.yaml',
         "apiKey: \${CFG_CUSTOM_REQ:?Set CFG_CUSTOM_REQ in your environment}\n",
     );
 
@@ -396,10 +406,10 @@ it('throws for required placeholders with custom error message', function () {
 it('applies interpolation after cache read so env changes are picked up', function () {
     $tmp = makeTmpConfigDir();
     $path = writeFile(
-        $tmp.'/config/polyglot/llm/connections/openai.yaml',
+        $tmp . '/config/polyglot/llm/connections/openai.yaml',
         "apiKey: \${CFG_CACHE_KEY}\n",
     );
-    $cache = $tmp.'/var/cache/openai-config.php';
+    $cache = $tmp . '/var/cache/openai-config.php';
 
     withEnvVar('CFG_CACHE_KEY', 'first', function () use ($path, $cache): void {
         $first = Config::fromPaths(dirname($path))
@@ -423,7 +433,7 @@ it('applies interpolation after cache read so env changes are picked up', functi
 
 it('loads dotenv secrets without mutating global environment state', function (): void {
     $tmp = makeTmpConfigDir();
-    $path = writeFile($tmp.'/.secrets.env', "API_KEY=dotenv-secret\n");
+    $path = writeFile($tmp . '/.secrets.env', "API_KEY=dotenv-secret\n");
     $source = DotenvFileSecretSource::fromFile($path, 'application-secrets');
 
     $resolved = $source->resolve('API_KEY');
@@ -435,7 +445,7 @@ it('loads dotenv secrets without mutating global environment state', function ()
 
 it('loads config through an application-provided layered secret resolver', function (): void {
     $tmp = makeTmpConfigDir();
-    $path = writeFile($tmp.'/config/openai.yaml', "apiKey: \${OPENAI_API_KEY}\n");
+    $path = writeFile($tmp . '/config/openai.yaml', "apiKey: \${OPENAI_API_KEY}\n");
     $resolver = new SecretResolver(
         new ArraySecretSource('runtime', []),
         new ArraySecretSource('application', ['OPENAI_API_KEY' => 'application-secret']),
@@ -449,9 +459,8 @@ it('loads config through an application-provided layered secret resolver', funct
         ->and($entry->sourcePath())->toBe(realpath($path));
 });
 
-function makeTmpConfigDir(): string
-{
-    $dir = sys_get_temp_dir().'/instructor-config-test-'.bin2hex(random_bytes(6));
+function makeTmpConfigDir(): string {
+    $dir = sys_get_temp_dir() . '/instructor-config-test-' . bin2hex(random_bytes(6));
     mkdir($dir, 0777, true);
     register_shutdown_function(static function () use ($dir): void {
         deleteDirRecursive($dir);
@@ -460,10 +469,9 @@ function makeTmpConfigDir(): string
     return $dir;
 }
 
-function writeFile(string $path, string $content): string
-{
+function writeFile(string $path, string $content): string {
     $directory = dirname($path);
-    if (! is_dir($directory)) {
+    if (!is_dir($directory)) {
         mkdir($directory, 0777, true);
     }
 
@@ -472,9 +480,8 @@ function writeFile(string $path, string $content): string
     return $path;
 }
 
-function deleteDirRecursive(string $dir): void
-{
-    if (! is_dir($dir)) {
+function deleteDirRecursive(string $dir): void {
+    if (!is_dir($dir)) {
         return;
     }
 
@@ -488,7 +495,7 @@ function deleteDirRecursive(string $dir): void
             continue;
         }
 
-        $path = $dir.'/'.$item;
+        $path = $dir . '/' . $item;
         if (is_dir($path)) {
             deleteDirRecursive($path);
 
@@ -501,8 +508,7 @@ function deleteDirRecursive(string $dir): void
     rmdir($dir);
 }
 
-function withEnvVar(string $name, ?string $value, callable $callback): void
-{
+function withEnvVar(string $name, ?string $value, callable $callback): void {
     $previousValue = getenv($name);
     $hadPrevious = $previousValue !== false || array_key_exists($name, $_ENV);
     $previousEnv = $_ENV[$name] ?? null;
@@ -537,13 +543,11 @@ function withEnvVar(string $name, ?string $value, callable $callback): void
     }
 }
 
-function withEnvVarUnset(string $name, callable $callback): void
-{
+function withEnvVarUnset(string $name, callable $callback): void {
     withEnvVar($name, null, $callback);
 }
 
-function withServerVar(string $name, ?string $value, callable $callback): void
-{
+function withServerVar(string $name, ?string $value, callable $callback): void {
     $hadPrevious = array_key_exists($name, $_SERVER);
     $previous = $_SERVER[$name] ?? null;
 
@@ -567,8 +571,7 @@ function withServerVar(string $name, ?string $value, callable $callback): void
 }
 
 /** @param array<int, string> $paths @param array<int, string> $names */
-function withDotenvPaths(array $paths, array $names, callable $callback): void
-{
+function withDotenvPaths(array $paths, array $names, callable $callback): void {
     Env::set($paths, $names);
     try {
         $callback();
@@ -578,8 +581,7 @@ function withDotenvPaths(array $paths, array $names, callable $callback): void
 }
 
 /** @param array<string, string> $vars */
-function withEnvVars(array $vars, callable $callback): void
-{
+function withEnvVars(array $vars, callable $callback): void {
     if ($vars === []) {
         $callback();
 
@@ -600,8 +602,7 @@ function withEnvVars(array $vars, callable $callback): void
 }
 
 /** @param array<int, string> $keys @param array<string, string> $vars */
-function withEnvVarsRecursive(array $keys, array $vars, callable $callback): void
-{
+function withEnvVarsRecursive(array $keys, array $vars, callable $callback): void {
     if ($keys === []) {
         $callback();
 

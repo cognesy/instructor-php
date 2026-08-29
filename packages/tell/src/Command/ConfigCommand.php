@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Command;
 
+use Cognesy\Tell\Configuration\TellExecutionPolicy;
+use Cognesy\Tell\Configuration\TellPolicyDefaults;
+use Cognesy\Tell\Discovery\TellProviderCatalogue;
 use Cognesy\Tell\Operational\CanDescribeOperationalPlane;
 use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Runtime\TellExecutionPolicy;
-use Cognesy\Tell\Runtime\TellPolicyDefaults;
-use Cognesy\Tell\Runtime\TellProviderCatalogue;
-use Cognesy\Tell\Workspace\ArenaStore;
-use Cognesy\Tell\Workspace\BranchConfigStore;
-use Cognesy\Tell\Workspace\BranchResolver;
-use Cognesy\Tell\Workspace\BranchSelection;
-use Cognesy\Tell\Workspace\TellWorkspace;
+use Cognesy\Tell\Workspace\Arena\FilesystemArena;
+use Cognesy\Tell\Workspace\Branch\BranchResolver;
+use Cognesy\Tell\Workspace\Branch\ResolvedBranch;
+use Cognesy\Tell\Workspace\Branch\Storage\BranchConfigStore;
 use Cognesy\Tell\Workspace\WorkspaceException;
+use Cognesy\Tell\Workspace\WorkspaceState;
 use InvalidArgumentException;
 use JsonException;
 use Override;
@@ -29,14 +29,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 final class ConfigCommand extends Command implements CanDescribeOperationalPlane
 {
-    public function __construct(private readonly TellAgentFactory $agents)
-    {
+    public function __construct(private readonly TellAgentFactory $agents) {
         parent::__construct('config');
     }
 
     #[Override]
-    protected function configure(): void
-    {
+    protected function configure(): void {
         $this->setDescription('Show or atomically change secret-free branch runtime intent')
             ->setHelp(<<<'HELP'
 Configuration contains branch-local runtime intent only: connection labels,
@@ -60,8 +58,7 @@ HELP)
     }
 
     #[Override]
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         try {
             $workspace = $this->workspace($input);
             $branch = $this->branch($workspace, $input);
@@ -89,8 +86,7 @@ HELP)
     }
 
     #[Override]
-    public function planeOperation(): PlaneOperation
-    {
+    public function planeOperation(): PlaneOperation {
         return new PlaneOperation(
             plane: OperationalPlane::Management,
             command: 'config',
@@ -104,8 +100,7 @@ HELP)
     }
 
     /** @param array{name: string, source: string} $branch @return array<string, mixed> */
-    private function show(array $branch, BranchConfigStore $store, string $name): array
-    {
+    private function show(array $branch, BranchConfigStore $store, string $name): array {
         $config = $store->read($name);
 
         return [
@@ -117,14 +112,13 @@ HELP)
     }
 
     /** @param array{name: string, source: string} $branch @return array<string, mixed> */
-    private function effective(TellWorkspace $workspace, array $branch, BranchConfigStore $store, string $name): array
-    {
+    private function effective(WorkspaceState $workspace, array $branch, BranchConfigStore $store, string $name): array {
         $config = $store->effective($name);
         $branchValues = $store->read($name)['values'];
         $policy = TellExecutionPolicy::resolve(
             branchValues: $branchValues,
-            projectDefaults: TellPolicyDefaults::fromFile($workspace->paths->config.'/defaults.json'),
-            userDefaults: TellPolicyDefaults::fromFile($this->agents->paths()->configDirectory.'/execution-defaults.json'),
+            projectDefaults: TellPolicyDefaults::fromFile($workspace->paths->config . '/defaults.json'),
+            userDefaults: TellPolicyDefaults::fromFile($this->agents->paths()->configDirectory . '/execution-defaults.json'),
         );
         foreach ($policy->values() as $key => $value) {
             $config['values'][$key] = $value;
@@ -157,8 +151,7 @@ HELP)
     }
 
     /** @param array{name: string, source: string} $branch @return array<string, mixed> */
-    private function get(TellWorkspace $workspace, array $branch, BranchConfigStore $store, string $name, InputInterface $input): array
-    {
+    private function get(WorkspaceState $workspace, array $branch, BranchConfigStore $store, string $name, InputInterface $input): array {
         $key = $this->key($store, $input);
         $config = $this->effective($workspace, $branch, $store, $name);
 
@@ -172,8 +165,7 @@ HELP)
     }
 
     /** @param array{name: string, source: string} $branch @return array<string, mixed> */
-    private function change(BranchConfigStore $store, string $name, array $branch, InputInterface $input, bool $delete): array
-    {
+    private function change(BranchConfigStore $store, string $name, array $branch, InputInterface $input, bool $delete): array {
         $version = $this->version($input);
         $key = $this->key($store, $input);
         $config = $delete
@@ -188,30 +180,27 @@ HELP)
         ];
     }
 
-    private function version(InputInterface $input): int
-    {
+    private function version(InputInterface $input): int {
         $version = $input->getOption('if-version');
-        if (! is_string($version) || ! ctype_digit($version)) {
+        if (!is_string($version) || !ctype_digit($version)) {
             throw new InvalidArgumentException('--if-version is required for config set and delete.');
         }
 
         return (int) $version;
     }
 
-    private function key(BranchConfigStore $store, InputInterface $input): string
-    {
+    private function key(BranchConfigStore $store, InputInterface $input): string {
         $key = $input->getArgument('key');
-        if (! is_string($key) || ! in_array($key, $store->keys(), true)) {
-            throw new InvalidArgumentException('Config key must be one of: '.implode(', ', $store->keys()).'.');
+        if (!is_string($key) || !in_array($key, $store->keys(), true)) {
+            throw new InvalidArgumentException('Config key must be one of: ' . implode(', ', $store->keys()) . '.');
         }
 
         return $key;
     }
 
-    private function jsonValue(InputInterface $input): mixed
-    {
+    private function jsonValue(InputInterface $input): mixed {
         $raw = $input->getArgument('value');
-        if (! is_string($raw)) {
+        if (!is_string($raw)) {
             throw new InvalidArgumentException('Config set requires a JSON value.');
         }
         try {
@@ -221,8 +210,7 @@ HELP)
         }
     }
 
-    private function workspace(InputInterface $input): TellWorkspace
-    {
+    private function workspace(InputInterface $input): WorkspaceState {
         $directory = (string) $input->getOption('dir');
         $cwd = getcwd();
         $directory = $directory !== '' ? $directory : (is_string($cwd) ? $cwd : '.');
@@ -234,13 +222,12 @@ HELP)
         return $workspace;
     }
 
-    private function branch(TellWorkspace $workspace, InputInterface $input): BranchSelection
-    {
+    private function branch(WorkspaceState $workspace, InputInterface $input): ResolvedBranch {
         $requested = $input->getOption('branch');
-        if ($requested !== null && ! is_string($requested)) {
+        if ($requested !== null && !is_string($requested)) {
             throw new InvalidArgumentException('Tell branch selector must be a string.');
         }
 
-        return (new BranchResolver(new ArenaStore($workspace)))->resolve($requested === '' ? null : $requested);
+        return (new BranchResolver(new FilesystemArena($workspace), $workspace))->resolve($requested === '' ? null : $requested);
     }
 }

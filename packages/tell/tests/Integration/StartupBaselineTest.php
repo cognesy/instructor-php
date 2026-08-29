@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
-use Cognesy\Tell\Diagnostics\StartupScanCounter;
-use Cognesy\Tell\TellApplication;
+use Cognesy\Tell\Console\TellApplication;
+use Cognesy\Tell\Discovery\StartupScanCounter;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 it('keeps bare discovery within its semantic scan budget', function (): void {
-    $scans = new StartupScanCounter;
+    $scans = new StartupScanCounter();
     $application = new TellApplication(tellTestFactory(startupScans: $scans));
     $application->setAutoExit(false);
 
     $status = $application->runArgv(
-        ['tell', '--output=json', '--dir='.tellTestProject()],
-        new BufferedOutput,
+        ['tell', '--output=json', '--dir=' . tellTestProject()],
+        new BufferedOutput(),
     );
 
     expect($status)->toBe(0)
@@ -28,13 +28,13 @@ it('keeps bare discovery within its semantic scan budget', function (): void {
 });
 
 it('keeps agent listing within its semantic scan budget', function (): void {
-    $scans = new StartupScanCounter;
+    $scans = new StartupScanCounter();
     $application = new TellApplication(tellTestFactory(startupScans: $scans));
     $application->setAutoExit(false);
 
     $status = $application->runArgv(
-        ['tell', 'agents', '--json', '--dir='.tellTestProject()],
-        new BufferedOutput,
+        ['tell', 'agents', '--json', '--dir=' . tellTestProject()],
+        new BufferedOutput(),
     );
 
     expect($status)->toBe(0)
@@ -46,7 +46,7 @@ it('keeps agent listing within its semantic scan budget', function (): void {
 });
 
 it('reads the workspace once more when the invocation leaves the output format open', function (): void {
-    $scans = new StartupScanCounter;
+    $scans = new StartupScanCounter();
     $factory = tellTestFactory(
         decorate: static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('baseline answer')),
         startupScans: $scans,
@@ -57,8 +57,8 @@ it('reads the workspace once more when the invocation leaves the output format o
     // Without --output the renderer cannot be chosen until branch configuration
     // has been read, which costs one discovery the explicit form does not pay.
     $status = $application->runArgv(
-        ['tell', 'baseline prompt', '--dir='.tellTestProject()],
-        new BufferedOutput,
+        ['tell', 'baseline prompt', '--dir=' . tellTestProject()],
+        new BufferedOutput(),
     );
 
     expect($status)->toBe(0)
@@ -70,7 +70,7 @@ it('reads the workspace once more when the invocation leaves the output format o
 });
 
 it('records the current automatic stateless turn scan baseline', function (): void {
-    $scans = new StartupScanCounter;
+    $scans = new StartupScanCounter();
     $factory = tellTestFactory(
         decorate: static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('baseline answer')),
         startupScans: $scans,
@@ -79,8 +79,8 @@ it('records the current automatic stateless turn scan baseline', function (): vo
     $application->setAutoExit(false);
 
     $status = $application->runArgv(
-        ['tell', 'baseline prompt', '--output=json', '--dir='.tellTestProject()],
-        new BufferedOutput,
+        ['tell', 'baseline prompt', '--output=json', '--dir=' . tellTestProject()],
+        new BufferedOutput(),
     );
 
     expect($status)->toBe(0)

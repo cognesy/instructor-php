@@ -12,12 +12,11 @@ final readonly class ContentPreview
         public bool $truncated,
     ) {}
 
-    public static function from(string $content, bool $full, int $limit = 1200): self
-    {
+    public static function from(string $content, bool $full, int $limit = 1200): self {
         $characters = mb_strlen($content);
-        $truncated = ! $full && $characters > $limit;
+        $truncated = !$full && $characters > $limit;
         $preview = match ($truncated) {
-            true => rtrim(mb_substr($content, 0, $limit - 3)).'...',
+            true => rtrim(mb_substr($content, 0, $limit - 3)) . '...',
             false => $content,
         };
 

@@ -2,34 +2,94 @@
 title: 'v2.9.0'
 ---
 
-v2.9.0 moves reasoning capabilities into Polyglot, where provider request
-translation belongs. Applications can now express reasoning intent once while
-preserving differences between named effort, token budgets, enable/disable
-modes, adaptive reasoning, and provider defaults.
+v2.9.0 gives reasoning controls one portable home in Polyglot and gives Tell a
+cohesive, explicit architecture. It removes the duplicate reasoning enum and
+the transitional namespace layers that made Tell difficult to navigate.
 
-## Portable Reasoning Selections
+## Portable Reasoning Controls
 
 `Inference::withReasoning()` accepts a typed `ReasoningSelection`. Named effort
 uses the shared `ReasoningEffort` vocabulary: `minimal`, `low`, `medium`,
 `high`, `xhigh`, and `max`. Polyglot validates selections against curated
-model-and-protocol capability profiles and translates accepted intent at the
-request-body boundary.
+model-and-protocol capability profiles and translates accepted intent only at
+the provider request boundary.
 
-The default selection emits no new request field, preserving existing behavior.
-Explicit typed reasoning cannot be mixed with raw provider reasoning options;
-ambiguous requests fail before network I/O. Lossy aliases are represented in
-capability metadata but rejected by default.
+The profiles cover OpenAI Chat Completions and Responses, Anthropic, DeepSeek,
+Gemini, GLM, Qwen, Cohere, Mistral, Moonshot/Kimi, xAI/Grok, and OpenRouter.
+They preserve provider differences between named effort, token budgets,
+enable/disable modes, adaptive reasoning, and provider defaults. Unknown model
+IDs remain explicitly unknown instead of inheriting a provider-wide guess.
 
-## Tell Compatibility
+The default selection emits no new request field. Explicit typed reasoning
+cannot be mixed with raw provider reasoning options, and lossy aliases are
+rejected by default, so ambiguous requests fail before network I/O.
 
-Tell delegates reasoning validation and translation to Polyglot. Its former
-three-value `TellReasoningEffort` definition remains as a deprecated runtime
-alias of the shared six-value enum, so existing imports continue to resolve
-while new code can use Polyglot directly.
+## Tell Architecture
 
-## Provider Coverage
+Tell now follows one visible domain structure:
 
-Bundled profiles cover OpenAI Chat Completions and Responses, Anthropic,
-DeepSeek, Gemini, GLM, Qwen, Cohere, Mistral, Moonshot/Kimi, xAI/Grok, and
-OpenRouter. Unknown model IDs remain explicitly unknown rather than inheriting
-an unsafe provider-wide assumption.
+- DTOs and returned projections live under `Cognesy\Tell\Data`.
+- Configuration services and policy values live under
+  `Cognesy\Tell\Configuration`.
+- Shell-job hosting lives under `Cognesy\Tell\Shell` and remains an explicit,
+  opt-in capability rather than part of the ordinary Tell host.
+- Workspace internals are grouped under `Workspace\Arena`,
+  `Workspace\Branch`, `Workspace\Compaction`, `Workspace\Conversation`,
+  `Workspace\Execution`, and `Workspace\Session`.
+
+The old top-level `Canonical`, duplicate `Branch`, `Resource`, and catch-all
+workspace structures are gone. Transitional `Legacy*` classes and redundant
+aliases were deliberately removed rather than preserving two competing mental
+models.
+
+### Upgrade imports
+
+- Replace `Cognesy\Tell\TellReasoningEffort` with
+  `Cognesy\Polyglot\Inference\Reasoning\ReasoningEffort`.
+- Import request/result/event/tool/workspace projection DTOs from
+  `Cognesy\Tell\Data`.
+- Import branch facades from `Cognesy\Tell\Workspace\Branch`.
+- Import configuration policy and resolver classes from
+  `Cognesy\Tell\Configuration`.
+- Import shell-job hosts, policies, and exceptions from
+  `Cognesy\Tell\Shell`; import their payloads from `Cognesy\Tell\Data`.
+
+There are no deprecated compatibility wrappers for the removed namespaces.
+This is a source-level migration for applications that imported those symbols
+directly.
+
+## Honest Execution and Human CLI
+
+Tell now reports whether a turn was actually `durable`, `transient`, or
+`stateless`. A turn outside an initialized workspace and without a named
+session no longer claims that it persisted state.
+
+Human output is now the CLI default. A bare `tell "..."` renders Markdown on a
+terminal and plain Markdown when redirected. Scripts that previously parsed
+TOON from a bare invocation must pass `--output=toon`. The other explicit
+formats remain available.
+
+Readable `-v` tracing and machine-oriented `--debug` progress are separate
+stderr channels. Interactive human output also gains a self-erasing busy
+indicator, while stdout remains reserved for the selected result format.
+
+## Complete Tool Results
+
+Oversized textual tool output is now written to a private, content-addressed
+store under `~/.tell/runtime/blobs/<project-hash>/` and represented in context
+by a bounded continuation stub. This avoids silently discarding most of a
+large result.
+
+The blobs contain raw tool output on disk and are not pruned automatically.
+Set `maxSpillBytes` to `0` to restore bounded head/tail truncation. The store is
+created with private permissions and is never written into the project.
+
+## Package and Runtime Maintenance
+
+- Tell can be installed and tested as an isolated Composer package, including
+  lowest/highest dependency matrices on PHP 8.3, 8.4, and 8.5.
+- Config tolerates projects without an `.env` file and now declares the
+  supported Dotenv floor explicitly.
+- Shared CLI Markdown rendering lives in Utils and is reused by Hub and Tell.
+- Split-package publishing excludes internal Doctools and Experimental trees
+  from the public package release matrix.

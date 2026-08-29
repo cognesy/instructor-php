@@ -10,6 +10,7 @@ use Cognesy\Agents\Data\ToolExecution;
 use Cognesy\Agents\Hook\Contracts\HookInterface;
 use Cognesy\Agents\Hook\Data\HookContext;
 use Cognesy\Agents\Hook\Enums\HookTrigger;
+use Cognesy\Tell\Configuration\TellExecutionPolicy;
 use Cognesy\Utils\Result\Result;
 use Override;
 
@@ -17,11 +18,8 @@ use Override;
 final class TellExecutionBudgetHook implements HookInterface
 {
     private ?int $startedAtMs = null;
-
     private int $toolCalls = 0;
-
     private int $modelOutputBytes = 0;
-
     private bool $toolLimitExceeded = false;
 
     public function __construct(
@@ -30,8 +28,7 @@ final class TellExecutionBudgetHook implements HookInterface
     ) {}
 
     #[Override]
-    public function handle(HookContext $context): HookContext
-    {
+    public function handle(HookContext $context): HookContext {
         return match ($context->triggerType()) {
             HookTrigger::BeforeExecution => $this->start($context),
             HookTrigger::BeforeStep, HookTrigger::BeforeInferenceRequest => $this->enforceTime($context),
@@ -42,15 +39,13 @@ final class TellExecutionBudgetHook implements HookInterface
         };
     }
 
-    private function start(HookContext $context): HookContext
-    {
+    private function start(HookContext $context): HookContext {
         $this->startedAtMs = $this->clock->nowMs();
 
         return $context;
     }
 
-    private function enforceTime(HookContext $context): HookContext
-    {
+    private function enforceTime(HookContext $context): HookContext {
         if ($this->startedAtMs === null) {
             return $context;
         }
@@ -65,8 +60,7 @@ final class TellExecutionBudgetHook implements HookInterface
         ]);
     }
 
-    private function reserveToolCall(HookContext $context): HookContext
-    {
+    private function reserveToolCall(HookContext $context): HookContext {
         if ($this->toolCalls < $this->policy->maxToolCalls) {
             $this->toolCalls++;
 
@@ -77,19 +71,18 @@ final class TellExecutionBudgetHook implements HookInterface
         return $context->blockToolExecution('Tell tool-call budget exhausted.');
     }
 
-    private function truncateToolOutput(HookContext $context): HookContext
-    {
+    private function truncateToolOutput(HookContext $context): HookContext {
         // A spilled result is already a short stub, and cutting it further
         // would strip the path and read hint that make it useful.
         if ($context->metadata(TellSpillToolOutputHook::SPILLED) === true) {
             return $context;
         }
         $execution = $context->toolExecution();
-        if ($execution === null || ! $execution->result()->isSuccess()) {
+        if ($execution === null || !$execution->result()->isSuccess()) {
             return $context;
         }
         $encoded = json_encode($execution->value(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        if (! is_string($encoded) || strlen($encoded) <= $this->policy->maxToolOutputChars) {
+        if (!is_string($encoded) || strlen($encoded) <= $this->policy->maxToolOutputChars) {
             return $context;
         }
         $value = $execution->value();
@@ -106,8 +99,7 @@ final class TellExecutionBudgetHook implements HookInterface
         ));
     }
 
-    private function enforceAfterStep(HookContext $context): HookContext
-    {
+    private function enforceAfterStep(HookContext $context): HookContext {
         if ($this->toolLimitExceeded) {
             return $this->stop($context, $this->limitReason('tool_call_limit'), 'Tell tool-call budget exhausted.', [
                 'toolCalls' => $this->toolCalls,
@@ -127,8 +119,7 @@ final class TellExecutionBudgetHook implements HookInterface
     }
 
     /** @param array<string, int> $details */
-    private function stop(HookContext $context, StopReason $reason, string $message, array $details): HookContext
-    {
+    private function stop(HookContext $context, StopReason $reason, string $message, array $details): HookContext {
         return $context->withState($context->state()->withStopSignal(new StopSignal(
             reason: $reason,
             message: $message,
@@ -143,13 +134,11 @@ final class TellExecutionBudgetHook implements HookInterface
      * the precise value; old installations degrade to its established token
      * limit rather than failing during class loading.
      */
-    private function limitReason(string $value): StopReason
-    {
+    private function limitReason(string $value): StopReason {
         return StopReason::tryFrom($value) ?? StopReason::TokenLimitReached;
     }
 
-    private static function truncateUtf8(string $value, int $limit): string
-    {
+    private static function truncateUtf8(string $value, int $limit): string {
         if (strlen($value) <= $limit) {
             return $value;
         }
@@ -162,6 +151,6 @@ final class TellExecutionBudgetHook implements HookInterface
             $bytes = substr($bytes, 0, -1);
         }
 
-        return $bytes.$suffix;
+        return $bytes . $suffix;
     }
 }

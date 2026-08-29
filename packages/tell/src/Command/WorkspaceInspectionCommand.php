@@ -10,12 +10,12 @@ use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Workspace\ArenaStore;
-use Cognesy\Tell\Workspace\BranchResolver;
-use Cognesy\Tell\Workspace\TellWorkspace;
-use Cognesy\Tell\Workspace\WorkspaceConversationInspection;
-use Cognesy\Tell\Workspace\WorkspaceConversationReader;
+use Cognesy\Tell\Workspace\Arena\FilesystemArena;
+use Cognesy\Tell\Workspace\Branch\BranchResolver;
+use Cognesy\Tell\Workspace\Conversation\ConversationInspection;
+use Cognesy\Tell\Workspace\Conversation\ConversationReader;
 use Cognesy\Tell\Workspace\WorkspaceException;
+use Cognesy\Tell\Workspace\WorkspaceState;
 use InvalidArgumentException;
 use LogicException;
 use Override;
@@ -30,7 +30,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class WorkspaceInspectionCommand extends Command implements CanDescribeOperationalPlane
 {
     private const int DEFAULT_HISTORY_LIMIT = 20;
-
     private const int MAX_HISTORY_LIMIT = 100;
 
     private readonly TellAgentFactory $agents;
@@ -39,7 +38,7 @@ final class WorkspaceInspectionCommand extends Command implements CanDescribeOpe
         private readonly string $view,
         ?TellAgentFactory $agents = null,
     ) {
-        if (! in_array($view, ['history', 'transcript'], true)) {
+        if (!in_array($view, ['history', 'transcript'], true)) {
             throw new LogicException('Tell workspace inspection view is invalid.');
         }
         $this->agents = $agents ?? TellAgentFactory::installed();
@@ -47,8 +46,7 @@ final class WorkspaceInspectionCommand extends Command implements CanDescribeOpe
     }
 
     #[Override]
-    protected function configure(): void
-    {
+    protected function configure(): void {
         $this->setDescription($this->description())
             ->setHelp($this->help())
             ->addOption('dir', 'C', InputOption::VALUE_REQUIRED, 'Workspace directory', '')
@@ -68,8 +66,7 @@ final class WorkspaceInspectionCommand extends Command implements CanDescribeOpe
     }
 
     #[Override]
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         try {
             $inspection = $this->inspection($input);
             $payload = match ($this->view) {
@@ -91,8 +88,7 @@ final class WorkspaceInspectionCommand extends Command implements CanDescribeOpe
     }
 
     #[Override]
-    public function planeOperation(): PlaneOperation
-    {
+    public function planeOperation(): PlaneOperation {
         return new PlaneOperation(
             plane: OperationalPlane::Management,
             command: $this->view,
@@ -109,16 +105,14 @@ final class WorkspaceInspectionCommand extends Command implements CanDescribeOpe
         );
     }
 
-    private function description(): string
-    {
+    private function description(): string {
         return match ($this->view) {
             'history' => 'Inspect bounded canonical Tell turn history',
             'transcript' => 'Inspect the canonical Tell conversation transcript',
         };
     }
 
-    private function help(): string
-    {
+    private function help(): string {
         return match ($this->view) {
             'history' => <<<'HELP'
 List verified canonical turns in stable oldest-first order. This is read-only:
@@ -142,28 +136,26 @@ HELP,
         };
     }
 
-    private function inspection(InputInterface $input): WorkspaceConversationInspection
-    {
+    private function inspection(InputInterface $input): ConversationInspection {
         $workspace = $this->workspace($input);
         $session = $this->session($input);
         $branch = $input->getOption('branch');
         if ($branch !== null && $branch !== '' && $session !== null) {
             throw new InvalidArgumentException('--branch and --session cannot be used together.');
         }
-        if ($branch !== null && ! is_string($branch)) {
+        if ($branch !== null && !is_string($branch)) {
             throw new InvalidArgumentException('Tell branch selector must be a string.');
         }
-        $arena = new ArenaStore($workspace);
+        $arena = new FilesystemArena($workspace);
 
         $selection = $session === null
-            ? (new BranchResolver($arena))->resolve($branch === '' ? null : $branch, allowTellOwned: true)
+            ? (new BranchResolver($arena, $workspace))->resolve($branch === '' ? null : $branch, allowTellOwned: true)
             : null;
 
-        return (new WorkspaceConversationReader($arena))->read($session, $selection);
+        return (new ConversationReader($arena))->read($session, $selection);
     }
 
-    private function workspace(InputInterface $input): TellWorkspace
-    {
+    private function workspace(InputInterface $input): WorkspaceState {
         $directory = (string) $input->getOption('dir');
         $cwd = getcwd();
         $project = match (true) {
@@ -171,7 +163,7 @@ HELP,
             is_string($cwd) => $cwd,
             default => '.',
         };
-        if (! is_dir($project)) {
+        if (!is_dir($project)) {
             throw new InvalidArgumentException("Workspace directory does not exist: {$project}");
         }
         $workspace = $this->agents->workspace()->discover($project);
@@ -182,13 +174,12 @@ HELP,
         return $workspace;
     }
 
-    private function session(InputInterface $input): ?SessionId
-    {
+    private function session(InputInterface $input): ?SessionId {
         $value = $input->getOption('session');
         if ($value === null || $value === '') {
             return null;
         }
-        if (! is_string($value)) {
+        if (!is_string($value)) {
             throw new InvalidArgumentException('Tell session selector must be a string.');
         }
 
@@ -196,8 +187,7 @@ HELP,
     }
 
     /** @return array<string, mixed> */
-    private function historyPayload(WorkspaceConversationInspection $inspection, InputInterface $input): array
-    {
+    private function historyPayload(ConversationInspection $inspection, InputInterface $input): array {
         $all = $inspection->historyRows((bool) $input->getOption('full'));
         $limit = $this->historyLimit($input);
         $turns = array_slice($all, -$limit);
@@ -224,8 +214,7 @@ HELP,
     }
 
     /** @return array<string, mixed> */
-    private function transcriptPayload(WorkspaceConversationInspection $inspection, InputInterface $input): array
-    {
+    private function transcriptPayload(ConversationInspection $inspection, InputInterface $input): array {
         $messages = $inspection->transcriptRows((bool) $input->getOption('full'));
         $history = $inspection->history();
         $payload = [
@@ -246,34 +235,31 @@ HELP,
         if ($messages === []) {
             $payload['message'] = 'No canonical messages exist for the selected conversation.';
         }
-        if (! (bool) $input->getOption('full')) {
+        if (!(bool) $input->getOption('full')) {
             $payload['help'] = ['Run `tell transcript --full` to include complete canonical content.'];
         }
 
         return $payload;
     }
 
-    private function historyLimit(InputInterface $input): int
-    {
+    private function historyLimit(InputInterface $input): int {
         $value = $input->getOption('limit');
-        if (! is_string($value) || preg_match('/\A[1-9][0-9]*\z/', $value) !== 1) {
-            throw new InvalidArgumentException('--limit must be an integer between 1 and '.self::MAX_HISTORY_LIMIT.'.');
+        if (!is_string($value) || preg_match('/\A[1-9][0-9]*\z/', $value) !== 1) {
+            throw new InvalidArgumentException('--limit must be an integer between 1 and ' . self::MAX_HISTORY_LIMIT . '.');
         }
         $limit = (int) $value;
         if ($limit > self::MAX_HISTORY_LIMIT) {
-            throw new InvalidArgumentException('--limit must be an integer between 1 and '.self::MAX_HISTORY_LIMIT.'.');
+            throw new InvalidArgumentException('--limit must be an integer between 1 and ' . self::MAX_HISTORY_LIMIT . '.');
         }
 
         return $limit;
     }
 
-    private function nextHistoryLimit(int $current): int
-    {
+    private function nextHistoryLimit(int $current): int {
         return min(self::MAX_HISTORY_LIMIT, max($current + 1, $current * 2));
     }
 
-    private function writeError(OutputInterface $output, string $message, bool $usage, bool $json): void
-    {
+    private function writeError(OutputInterface $output, string $message, bool $usage, bool $json): void {
         $payload = ['error' => $message];
         if ($usage) {
             $payload['help'] = ["Run `tell {$this->view} --help` for valid selectors and examples."];

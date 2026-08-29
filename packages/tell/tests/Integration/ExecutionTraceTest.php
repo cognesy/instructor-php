@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
-use Cognesy\Tell\TellCommand;
+use Cognesy\Tell\Console\TellCommand;
 use HelgeSverre\Toon\Toon;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -84,10 +84,13 @@ it('fails before inference when explicit observability config is invalid', funct
 it('uses a separate lock-safe trace file for every named session', function (): void {
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('done')));
     $command = new TellCommand($factory);
+    $project = tellLastTemporaryRoot() . '/separate-session-traces';
+    mkdir($project, 0700, true);
+    $factory->workspace()->initialize($project);
 
-    (new CommandTester($command))->execute(['prompt' => 'alpha turn', '--session' => 'alpha']);
-    (new CommandTester($command))->execute(['prompt' => 'beta turn', '--session' => 'beta']);
-    $files = glob($factory->paths()->sessionTraces.'/*.jsonl') ?: [];
+    (new CommandTester($command))->execute(['prompt' => 'alpha turn', '--session' => 'alpha', '--dir' => $project]);
+    (new CommandTester($command))->execute(['prompt' => 'beta turn', '--session' => 'beta', '--dir' => $project]);
+    $files = glob($factory->paths()->sessionTraces . '/*.jsonl') ?: [];
     sort($files);
     $sessions = array_map(
         static fn (string $file): mixed => tellTraceRecords($file)[0]['session'] ?? null,
@@ -103,10 +106,13 @@ it('uses a separate lock-safe trace file for every named session', function (): 
 it('appends later turns to the same named session trace', function (): void {
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('done')));
     $command = new TellCommand($factory);
+    $project = tellLastTemporaryRoot() . '/appended-session-trace';
+    mkdir($project, 0700, true);
+    $factory->workspace()->initialize($project);
 
-    (new CommandTester($command))->execute(['prompt' => 'first', '--session' => 'review']);
-    (new CommandTester($command))->execute(['prompt' => 'second', '--session' => 'review']);
-    $files = glob($factory->paths()->sessionTraces.'/*.jsonl') ?: [];
+    (new CommandTester($command))->execute(['prompt' => 'first', '--session' => 'review', '--dir' => $project]);
+    (new CommandTester($command))->execute(['prompt' => 'second', '--session' => 'review', '--dir' => $project]);
+    $files = glob($factory->paths()->sessionTraces . '/*.jsonl') ?: [];
     $records = tellTraceRecords($files[0] ?? '');
 
     expect($files)->toHaveCount(1)
@@ -125,22 +131,23 @@ it('does not fail an agent turn when trace storage is unavailable', function ():
 });
 
 /** @return list<string> */
-function tellTraceFiles(string $directory): array
-{
-    $files = glob($directory.'/*/*.jsonl') ?: [];
+function tellTraceFiles(string $directory): array {
+    $files = glob($directory . '/*/*.jsonl') ?: [];
     sort($files);
 
     return array_values($files);
 }
 
 /** @return list<array<string, mixed>> */
-function tellTraceRecords(string $path): array
-{
+function tellTraceRecords(string $path): array {
     $contents = file_get_contents($path);
-    if (! is_string($contents)) {
+    if (!is_string($contents)) {
         return [];
     }
-    $lines = array_values(array_filter(explode("\n", $contents)));
+    $lines = array_values(array_filter(
+        explode("\n", $contents),
+        static fn (string $line): bool => $line !== '',
+    ));
 
     return array_map(
         static fn (string $line): array => json_decode($line, true, flags: JSON_THROW_ON_ERROR),

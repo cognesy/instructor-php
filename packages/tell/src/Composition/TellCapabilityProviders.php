@@ -16,25 +16,21 @@ final readonly class TellCapabilityProviders implements Countable, IteratorAggre
     private array $providers;
 
     /** @param list<object> $providers */
-    public function __construct(array $providers)
-    {
+    public function __construct(array $providers) {
         $this->providers = array_values($providers);
     }
 
     /** @return list<object> */
-    public function all(): array
-    {
+    public function all(): array {
         return $this->providers;
     }
 
-    public function count(): int
-    {
+    public function count(): int {
         return count($this->providers);
     }
 
     /** @return Traversable<int, object> */
-    public function getIterator(): Traversable
-    {
+    public function getIterator(): Traversable {
         return new ArrayIterator($this->providers);
     }
 }

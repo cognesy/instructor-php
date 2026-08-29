@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Tell\Command\ConfigCommand;
-use Cognesy\Tell\Runtime\TellOptions;
-use Cognesy\Tell\TellCommand;
+use Cognesy\Tell\Console\TellCommand;
+use Cognesy\Tell\Console\TellOptions;
 use Cognesy\Tell\Tests\Support\RecordingDriver;
 use Cognesy\Tell\Tests\Support\RequestRecorder;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -23,19 +23,17 @@ The `discover()` walk stops at the **schema record**, not the marker:
 > Anything carrying a schema is validated strictly.
 MD;
 
-function tellHumanProject(): string
-{
-    $project = tellLastTemporaryRoot().'/human-output-project';
+function tellHumanProject(): string {
+    $project = tellLastTemporaryRoot() . '/human-output-project';
     mkdir($project, 0700, true);
 
     return $project;
 }
 
-function tellHumanTester(): CommandTester
-{
+function tellHumanTester(): CommandTester {
     return new CommandTester(new TellCommand(tellTestFactory(
         static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(
-            new RecordingDriver(new RequestRecorder, TELL_HUMAN_ANSWER),
+            new RecordingDriver(new RequestRecorder(), TELL_HUMAN_ANSWER),
         ),
     )));
 }
@@ -75,7 +73,7 @@ it('leaves the answer as plain markdown when stdout is not a terminal', function
 it('does not let console markup in an answer reach the formatter', function (): void {
     $tester = new CommandTester(new TellCommand(tellTestFactory(
         static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(
-            new RecordingDriver(new RequestRecorder, 'Use <error> and <T> as generic parameters.'),
+            new RecordingDriver(new RequestRecorder(), 'Use <error> and <T> as generic parameters.'),
         ),
     )));
 
@@ -99,7 +97,7 @@ it('accepts human alongside the other output modes and rejects unknown ones', fu
 
 it('uses the branch-configured output format when the invocation does not choose one', function (): void {
     $factory = tellTestFactory(static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(
-        new RecordingDriver(new RequestRecorder, TELL_HUMAN_ANSWER),
+        new RecordingDriver(new RequestRecorder(), TELL_HUMAN_ANSWER),
     ));
     $project = tellHumanProject();
     $factory->workspace()->initialize($project);
@@ -127,7 +125,7 @@ it('uses the branch-configured output format when the invocation does not choose
 
 it('lets an explicit --output win over the branch-configured format', function (): void {
     $factory = tellTestFactory(static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(
-        new RecordingDriver(new RequestRecorder, 'plain answer'),
+        new RecordingDriver(new RequestRecorder(), 'plain answer'),
     ));
     $project = tellHumanProject();
     $factory->workspace()->initialize($project);

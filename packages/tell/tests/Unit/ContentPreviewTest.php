@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Tell\Render\ContentPreview;
 
@@ -11,7 +11,7 @@ it('bounds long content without splitting multibyte characters', function (): vo
 
     expect($preview->characters)->toBe(20)
         ->and($preview->truncated)->toBeTrue()
-        ->and($preview->content)->toBe(str_repeat('ż', 7).'...')
+        ->and($preview->content)->toBe(str_repeat('ż', 7) . '...')
         ->and(mb_check_encoding($preview->content, 'UTF-8'))->toBeTrue();
 });
 

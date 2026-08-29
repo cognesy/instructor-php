@@ -18,9 +18,9 @@ use Cognesy\Tell\Composition\TellModuleDefinition;
 use Cognesy\Tell\Contracts\CanContributeTellCommands;
 use Cognesy\Tell\Contracts\CanReadTellBranchConfiguration;
 use Cognesy\Tell\Contracts\CanResolveTellPaths;
-use Cognesy\Tell\Contracts\Collections\TellCommandDescriptors;
-use Cognesy\Tell\Contracts\Data\TellCommandDescriptor;
-use Cognesy\Tell\Contracts\Data\TellResolvedPaths;
+use Cognesy\Tell\Data\TellCommandDescriptor;
+use Cognesy\Tell\Data\TellCommandDescriptors;
+use Cognesy\Tell\Data\TellResolvedPaths;
 use Cognesy\Tell\Runtime\CanReadTellClock;
 
 interface MissingHostFixtureOne {}
@@ -35,8 +35,7 @@ final class HostFixturePaths implements CanDisposeTellModule, CanResolveTellPath
         private readonly bool $failCleanup = false,
     ) {}
 
-    public function resolve(string $directory): TellResolvedPaths
-    {
+    public function resolve(string $directory): TellResolvedPaths {
         return new TellResolvedPaths(
             project: $directory,
             home: '/tell',
@@ -46,7 +45,7 @@ final class HostFixturePaths implements CanDisposeTellModule, CanResolveTellPath
             connections: '/tell/config/connections',
             packageAgents: '/package/agents',
             userAgents: '/tell/config/agents',
-            projectAgents: $directory.'/.claude/agents',
+            projectAgents: $directory . '/.claude/agents',
             runtime: '/tell/runtime',
             sessions: '/tell/runtime/sessions',
             logs: '/tell/logs',
@@ -55,8 +54,7 @@ final class HostFixturePaths implements CanDisposeTellModule, CanResolveTellPath
         );
     }
 
-    public function dispose(): void
-    {
+    public function dispose(): void {
         $this->cleanup->append($this->label);
         if ($this->failCleanup) {
             throw new RuntimeException('fixture cleanup failure');
@@ -73,13 +71,11 @@ final class HostFixtureClock implements CanDisposeTellModule, CanReadTellClock
         private readonly bool $failCleanup = false,
     ) {}
 
-    public function nowMs(): int
-    {
+    public function nowMs(): int {
         return $this->time;
     }
 
-    public function dispose(): void
-    {
+    public function dispose(): void {
         $this->cleanup->append('clock');
         if ($this->failCleanup) {
             throw new RuntimeException('fixture cleanup failure');
@@ -89,8 +85,7 @@ final class HostFixtureClock implements CanDisposeTellModule, CanReadTellClock
 
 final readonly class HostFixtureCancellation implements CanProvideCancellationSignal
 {
-    public function cancellationSignal(AgentState $state): ?StopSignal
-    {
+    public function cancellationSignal(AgentState $state): ?StopSignal {
         return null;
     }
 }
@@ -99,11 +94,10 @@ final readonly class HostCommandContributor implements CanContributeTellCommands
 {
     public function __construct(public string $label) {}
 
-    public function commands(): TellCommandDescriptors
-    {
+    public function commands(): TellCommandDescriptors {
         return new TellCommandDescriptors(new TellCommandDescriptor(
             $this->label,
-            static fn (): object => new stdClass,
+            static fn (): object => new stdClass(),
         ));
     }
 }
@@ -113,14 +107,12 @@ final readonly class HostContributionClock implements CanReadTellClock
     /** @param list<string> $labels */
     public function __construct(public array $labels) {}
 
-    public function nowMs(): int
-    {
+    public function nowMs(): int {
         return count($this->labels);
     }
 }
 
-function hostPathsModule(ArrayObject $cleanup, bool $failCleanup = false): TellModuleDefinition
-{
+function hostPathsModule(ArrayObject $cleanup, bool $failCleanup = false): TellModuleDefinition {
     return new TellModuleDefinition(
         id: 'paths.fixture',
         provides: [CanResolveTellPaths::class],
@@ -129,8 +121,7 @@ function hostPathsModule(ArrayObject $cleanup, bool $failCleanup = false): TellM
     );
 }
 
-function hostClockModule(ArrayObject $cleanup, int $time = 42, bool $failCleanup = false): TellModuleDefinition
-{
+function hostClockModule(ArrayObject $cleanup, int $time = 42, bool $failCleanup = false): TellModuleDefinition {
     return new TellModuleDefinition(
         id: 'clock.fixture',
         provides: [CanReadTellClock::class],
@@ -141,7 +132,7 @@ function hostClockModule(ArrayObject $cleanup, int $time = 42, bool $failCleanup
 }
 
 it('boots a typed graph from fresh factories and disposes in reverse order', function (): void {
-    $cleanup = new ArrayObject;
+    $cleanup = new ArrayObject();
     $profile = new TellHostProfile(
         name: 'fixture',
         modules: [hostClockModule($cleanup), hostPathsModule($cleanup)],
@@ -166,7 +157,7 @@ it('boots a typed graph from fresh factories and disposes in reverse order', fun
 });
 
 it('supports auditable replacement and removal only before boot', function (): void {
-    $cleanup = new ArrayObject;
+    $cleanup = new ArrayObject();
     $profile = new TellHostProfile('fixture', [hostPathsModule($cleanup), hostClockModule($cleanup)], [CanReadTellClock::class]);
     $replacement = new TellModuleDefinition(
         id: 'clock.custom',
@@ -188,7 +179,7 @@ it('supports auditable replacement and removal only before boot', function (): v
 });
 
 it('aggregates duplicate invalid and missing graph errors before factories run', function (): void {
-    $calls = new ArrayObject;
+    $calls = new ArrayObject();
     $module = new TellModuleDefinition(
         id: 'bad.fixture',
         provides: [CanResolveTellPaths::class, stdClass::class],
@@ -196,13 +187,13 @@ it('aggregates duplicate invalid and missing graph errors before factories run',
         factory: static function () use ($calls): object {
             $calls->append('called');
 
-            return new stdClass;
+            return new stdClass();
         },
     );
     $duplicate = new TellModuleDefinition(
         id: 'bad.fixture',
         provides: [CanResolveTellPaths::class],
-        factory: static fn (): object => new stdClass,
+        factory: static fn (): object => new stdClass(),
     );
 
     try {
@@ -210,7 +201,7 @@ it('aggregates duplicate invalid and missing graph errors before factories run',
         throw new RuntimeException('Expected graph admission failure.');
     } catch (TellHostGraphException $error) {
         expect($error->getMessage())->toContain('duplicate module id bad.fixture')
-            ->toContain('duplicate singleton provider '.CanResolveTellPaths::class)
+            ->toContain('duplicate singleton provider ' . CanResolveTellPaths::class)
             ->toContain('non-interface stdClass')
             ->toContain(MissingHostFixtureOne::class)
             ->toContain(MissingHostFixtureTwo::class)
@@ -222,13 +213,13 @@ it('rejects dependency cycles before constructing modules', function (): void {
     $first = new TellModuleDefinition(
         'cycle.paths',
         [CanResolveTellPaths::class],
-        static fn (CanReadTellClock $clock): object => new stdClass,
+        static fn (CanReadTellClock $clock): object => new stdClass(),
         [CanReadTellClock::class],
     );
     $second = new TellModuleDefinition(
         'cycle.clock',
         [CanReadTellClock::class],
-        static fn (CanResolveTellPaths $paths): object => new stdClass,
+        static fn (CanResolveTellPaths $paths): object => new stdClass(),
         [CanResolveTellPaths::class],
     );
 
@@ -237,7 +228,7 @@ it('rejects dependency cycles before constructing modules', function (): void {
 });
 
 it('attempts every reverse cleanup after partial boot failure', function (): void {
-    $cleanup = new ArrayObject;
+    $cleanup = new ArrayObject();
     $failure = new TellModuleDefinition(
         id: 'runtime.failure',
         provides: [CanProvideCancellationSignal::class],
@@ -261,7 +252,7 @@ it('attempts every reverse cleanup after partial boot failure', function (): voi
 });
 
 it('attempts every reverse cleanup after normal disposal failures', function (): void {
-    $cleanup = new ArrayObject;
+    $cleanup = new ArrayObject();
     $host = TellHostBuilder::empty()
         ->with(hostPathsModule($cleanup, failCleanup: true))
         ->with(hostClockModule($cleanup, failCleanup: true))
@@ -280,11 +271,11 @@ it('attempts every reverse cleanup after normal disposal failures', function ():
 });
 
 it('rejects factories that do not implement every advertised interface', function (): void {
-    $cleanup = new ArrayObject;
+    $cleanup = new ArrayObject();
     $invalid = new TellModuleDefinition(
         'clock.invalid',
         [CanReadTellClock::class],
-        static fn (CanResolveTellPaths $paths): object => new HostFixtureCancellation,
+        static fn (CanResolveTellPaths $paths): object => new HostFixtureCancellation(),
         [CanResolveTellPaths::class],
     );
 
@@ -353,7 +344,7 @@ it('injects absent optional singleton dependencies as null', function (): void {
 });
 
 it('rejects every capability access after idempotent disposal', function (): void {
-    $cleanup = new ArrayObject;
+    $cleanup = new ArrayObject();
     $host = TellHostBuilder::empty()->with(hostPathsModule($cleanup))->boot();
 
     $host->dispose();

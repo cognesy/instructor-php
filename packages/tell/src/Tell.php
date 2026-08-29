@@ -6,11 +6,16 @@ namespace Cognesy\Tell;
 
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
 use Cognesy\Tell\Composition\TellHost;
+use Cognesy\Tell\Data\TellProgress;
+use Cognesy\Tell\Data\TellRequest;
+use Cognesy\Tell\Data\TellResult;
 use Cognesy\Tell\Discovery\TellCatalogue;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Runtime\TellRun;
 use Cognesy\Tell\Testing\TellTestFactory;
 use Cognesy\Tell\Tool\TellTools;
+use Cognesy\Tell\Workspace\TellConversation;
+use Cognesy\Tell\Workspace\TellWorkspace;
 use Generator;
 
 final readonly class Tell
@@ -49,13 +54,11 @@ final readonly class Tell
      * No network request or real provider credential is used. For scripted
      * tool, failure, or usage steps, use TellTestFactory directly.
      */
-    public static function testing(string $directory, string ...$responses): self
-    {
+    public static function testing(string $directory, string ...$responses): self {
         return TellTestFactory::responses(...$responses)->open($directory);
     }
 
-    public function run(TellRequest $request): TellResult
-    {
+    public function run(TellRequest $request): TellResult {
         $request = match ($request->directory) {
             '' => $request->withDirectory($this->directory),
             default => $request,
@@ -67,8 +70,7 @@ final readonly class Tell
     /**
      * @return Generator<int, TellProgress, mixed, TellResult>
      */
-    public function runStream(TellRequest $request): Generator
-    {
+    public function runStream(TellRequest $request): Generator {
         $request = match ($request->directory) {
             '' => $request->withDirectory($this->directory),
             default => $request,
@@ -82,8 +84,7 @@ final readonly class Tell
      * you may stop consuming checkpoints early: the handle still carries the
      * result, and a run torn down before it committed is reported.
      */
-    public function start(TellRequest $request): TellRun
-    {
+    public function start(TellRequest $request): TellRun {
         $request = match ($request->directory) {
             '' => $request->withDirectory($this->directory),
             default => $request,
@@ -92,8 +93,7 @@ final readonly class Tell
         return $this->host->runner()->start($request);
     }
 
-    public function workspace(): TellWorkspace
-    {
+    public function workspace(): TellWorkspace {
         return new TellWorkspace(
             $this->agents,
             $this->directory,
@@ -102,30 +102,25 @@ final readonly class Tell
         );
     }
 
-    public function conversation(string $name): TellConversation
-    {
+    public function conversation(string $name): TellConversation {
         return $this->workspace()->conversation($name);
     }
 
-    public function catalogue(): TellCatalogue
-    {
+    public function catalogue(): TellCatalogue {
         return new TellCatalogue($this->agents, $this->directory);
     }
 
-    public function tools(): TellTools
-    {
+    public function tools(): TellTools {
         return TellTools::controlled($this->host->tools(), $this->cancellation);
     }
 
     /** Explicit control surface for inspection and host-owned capabilities. */
-    public function host(): TellHost
-    {
+    public function host(): TellHost {
         return $this->host;
     }
 
     /** Release host-owned resources. Safe to call more than once. */
-    public function dispose(): void
-    {
+    public function dispose(): void {
         $this->host->dispose();
     }
 }

@@ -12,6 +12,7 @@ use Cognesy\Agents\Capability\File\ReadFileTool;
 use Cognesy\Agents\Capability\File\WriteFileTool;
 use Cognesy\Agents\Collections\Tools;
 use Cognesy\Sandbox\Config\ExecutionPolicy;
+use Cognesy\Tell\Tell;
 use Override;
 
 /**
@@ -33,15 +34,13 @@ final readonly class TellCodingTools implements CanProvideAgentCapability
     ) {}
 
     #[Override]
-    public static function capabilityName(): string
-    {
+    public static function capabilityName(): string {
         return 'tell.coding';
     }
 
     #[Override]
-    public function configure(CanConfigureAgent $agent): CanConfigureAgent
-    {
-        $bash = $this->bashPolicy ?? new BashPolicy;
+    public function configure(CanConfigureAgent $agent): CanConfigureAgent {
+        $bash = $this->bashPolicy ?? new BashPolicy();
         $readable = array_values(array_filter(
             [$this->baseDir, $this->blobsDir],
             static fn (?string $path): bool => $path !== null && $path !== '',

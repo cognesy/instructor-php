@@ -18,8 +18,7 @@ final readonly class PlaneOperation
     ) {}
 
     /** @return array<string, string> */
-    public function toArray(): array
-    {
+    public function toArray(): array {
         return [
             'plane' => $this->plane->value,
             'command' => $this->command,

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Agents\Enums\ExecutionStatus;
+use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Tell;
-use Cognesy\Tell\TellRequest;
 use Cognesy\Tell\Testing\TellTestFactory;
 
 it('runs deterministic SDK responses without external provider credentials', function (): void {
@@ -24,7 +24,7 @@ it('runs deterministic SDK responses without external provider credentials', fun
             ->and(trim($result->text()))->toBe('deterministic answer');
     } finally {
         match (is_string($previous)) {
-            true => putenv('OPENAI_API_KEY='.$previous),
+            true => putenv('OPENAI_API_KEY=' . $previous),
             false => putenv('OPENAI_API_KEY'),
         };
     }
@@ -32,7 +32,7 @@ it('runs deterministic SDK responses without external provider credentials', fun
 
 it('scripts multi-step and terminal failure scenarios', function (): void {
     $project = tellTestProject();
-    file_put_contents($project.'/fixture.txt', "fixture\n");
+    file_put_contents($project . '/fixture.txt', "fixture\n");
 
     $completed = TellTestFactory::steps(
         ScenarioStep::toolCall('read_file', ['path' => 'fixture.txt'], 'working'),

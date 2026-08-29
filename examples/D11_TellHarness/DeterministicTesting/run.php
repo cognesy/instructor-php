@@ -24,7 +24,7 @@ require_once dirname(__DIR__).'/Support.php';
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Tell\Tell;
-use Cognesy\Tell\TellRequest;
+use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Testing\TellTestFactory;
 
 $project = TellHarnessExample::project();

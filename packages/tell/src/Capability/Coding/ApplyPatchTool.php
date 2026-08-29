@@ -13,8 +13,7 @@ use Override;
 
 final class ApplyPatchTool extends SimpleTool
 {
-    public function __construct(private readonly PatchOperation $operation)
-    {
+    public function __construct(private readonly PatchOperation $operation) {
         parent::__construct(new ToolDescriptor(
             name: 'apply_patch',
             description: 'Apply a bounded unified diff to existing text files under the Tell working directory.',
@@ -35,14 +34,12 @@ final class ApplyPatchTool extends SimpleTool
     }
 
     #[Override]
-    public function __invoke(mixed ...$args): array
-    {
+    public function __invoke(mixed ...$args): array {
         return $this->operation->applyUnified((string) $this->arg($args, 'patch', 0, ''));
     }
 
     #[Override]
-    public function toToolSchema(): ToolDefinition
-    {
+    public function toToolSchema(): ToolDefinition {
         return ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),

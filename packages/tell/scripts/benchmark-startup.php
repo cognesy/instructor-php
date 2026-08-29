@@ -4,10 +4,10 @@
 declare(strict_types=1);
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
-use Cognesy\Tell\Diagnostics\StartupScanCounter;
+use Cognesy\Tell\Discovery\StartupScanCounter;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Runtime\TellPaths;
-use Cognesy\Tell\TellApplication;
+use Cognesy\Tell\Configuration\TellPaths;
+use Cognesy\Tell\Console\TellApplication;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 $findAutoload = static function (): string {

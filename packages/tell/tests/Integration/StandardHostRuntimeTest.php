@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Tell\Composition\StandardTellProfile;
 use Cognesy\Tell\Composition\TellHostBuilder;
 use Cognesy\Tell\Contracts\CanResolveTellModel;
+use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\TellRequest;
 
 it('runs the standard modular host with a replaced driver factory', function (): void {
     $project = tellTestProject();
@@ -49,13 +49,11 @@ it('runs the standard modular host with a replaced driver factory', function ():
 it('resolves a model once when an immutable definition is handed to loop construction', function (): void {
     $project = tellTestProject();
     $paths = standardHostPaths($project);
-    $calls = new ArrayObject;
-    $resolver = new class($calls) implements CanResolveTellModel
-    {
+    $calls = new ArrayObject();
+    $resolver = new class($calls) implements CanResolveTellModel {
         public function __construct(private ArrayObject $calls) {}
 
-        public function resolve(TellRequest $request): LLMConfig
-        {
+        public function resolve(TellRequest $request): LLMConfig {
             $this->calls->append($request->model);
 
             return LLMConfig::fromArray([

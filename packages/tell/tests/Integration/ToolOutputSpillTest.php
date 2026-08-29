@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Capability\File\ReadFileTool;
 use Cognesy\Agents\Data\AgentState;
@@ -14,33 +14,30 @@ use Cognesy\Agents\Hook\Enums\HookTrigger;
 use Cognesy\Agents\Hook\HookStack;
 use Cognesy\Messages\ToolCall;
 use Cognesy\Sandbox\Config\ExecutionPolicy;
+use Cognesy\Tell\Configuration\TellExecutionPolicy;
+use Cognesy\Tell\Configuration\TellPaths;
 use Cognesy\Tell\Runtime\CanReadTellClock;
 use Cognesy\Tell\Runtime\TellExecutionBudgetHook;
-use Cognesy\Tell\Runtime\TellExecutionPolicy;
-use Cognesy\Tell\Runtime\TellPaths;
 use Cognesy\Tell\Runtime\TellSpillToolOutputHook;
 use Cognesy\Tell\Runtime\ToolOutputSpill;
 use Cognesy\Utils\Result\Result;
 
 /** A project directory, and separately the blob store that serves it. */
-function tellSpillProject(string $name): string
-{
+function tellSpillProject(string $name): string {
     tellTestFactory();
-    $project = tellLastTemporaryRoot().'/'.$name;
+    $project = tellLastTemporaryRoot() . '/' . $name;
     mkdir($project, 0700, true);
 
     return $project;
 }
 
-function tellSpillStore(string $project): string
-{
-    return tellLastTemporaryRoot().'/blobstore/'.basename($project);
+function tellSpillStore(string $project): string {
+    return tellLastTemporaryRoot() . '/blobstore/' . basename($project);
 }
 
 /** The two AfterToolUse hooks, registered exactly as the agent factory does. */
-function tellSpillStack(string $project, TellExecutionPolicy $policy, CanReadTellClock $clock): HookStack
-{
-    return (new HookStack(new RegisteredHooks))
+function tellSpillStack(string $project, TellExecutionPolicy $policy, CanReadTellClock $clock): HookStack {
+    return (new HookStack(new RegisteredHooks()))
         ->with(
             hook: new TellExecutionBudgetHook($policy, $clock),
             triggerTypes: HookTriggers::of(HookTrigger::AfterToolUse),
@@ -56,30 +53,27 @@ function tellSpillStack(string $project, TellExecutionPolicy $policy, CanReadTel
 }
 
 /** The blob path a stub names, without the bracket or quote that follows it. */
-function tellSpillPath(string $stub, string $extension): string
-{
-    preg_match('/([^\s\]"]+\.'.$extension.')/', $stub, $matches);
+function tellSpillPath(string $stub, string $extension): string {
+    preg_match('/([^\s\]"]+\.' . $extension . ')/', $stub, $matches);
 
     return $matches[1] ?? '';
 }
 
 /** How many head lines a stub previewed, according to its own read hint. */
-function tellSpillShown(string $stub): int
-{
+function tellSpillShown(string $stub): int {
     preg_match('/offset=(\d+), limit=200\)/', $stub, $matches);
 
     return (int) ($matches[1] ?? -1);
 }
 
 /** A result long enough to spill, whose lines are individually identifiable. */
-function tellSpillText(int $lines): string
-{
+function tellSpillText(int $lines): string {
     $rows = [];
     for ($line = 1; $line <= $lines; $line++) {
-        $rows[] = 'line '.$line.' '.str_repeat('x', 60);
+        $rows[] = 'line ' . $line . ' ' . str_repeat('x', 60);
     }
 
-    return implode("\n", $rows)."\n";
+    return implode("\n", $rows) . "\n";
 }
 
 it('stores an oversized tool result and answers with a stub that describes it', function (): void {
@@ -89,13 +83,13 @@ it('stores an oversized tool result and answers with a stub that describes it', 
     $shown = tellSpillShown($stub);
 
     expect($stub)->toStartWith('[tool output: 400 lines, ')
-        ->and($stub)->toContain('— stored at '.tellSpillStore($project))
+        ->and($stub)->toContain('— stored at ' . tellSpillStore($project))
         // The head is the point: as much of it as the stub budget buys, in
         // order, and the read hint resumes exactly where the preview stopped.
         ->and($shown)->toBeGreaterThan(10)
         ->and($stub)->toContain("\n  line 1 ")
-        ->and($stub)->toContain("\n  line ".$shown.' ')
-        ->and($stub)->not->toContain("\n  line ".($shown + 1).' ')
+        ->and($stub)->toContain("\n  line " . $shown . ' ')
+        ->and($stub)->not->toContain("\n  line " . ($shown + 1) . ' ')
         ->and(strlen($stub))->toBeLessThanOrEqual(2_000);
 
     $blob = tellSpillPath($stub, 'txt');
@@ -158,12 +152,12 @@ it('writes one blob for one result, however many times it is produced', function
     $text = tellSpillText(200);
 
     expect($spill->replace($text))->toBe($spill->replace($text))
-        ->and(glob(tellSpillStore($project).'/*/*.txt'))->toHaveCount(1)
+        ->and(glob(tellSpillStore($project) . '/*/*.txt'))->toHaveCount(1)
         // Sharded on the first two characters of the blob's own name, so no
         // one directory collects every result a project ever spilled.
-        ->and(glob(tellSpillStore($project).'/*.txt'))->toBe([])
+        ->and(glob(tellSpillStore($project) . '/*.txt'))->toBe([])
         // Nothing is written into the project the output came from.
-        ->and(is_dir($project.'/.tell'))->toBeFalse();
+        ->and(is_dir($project . '/.tell'))->toBeFalse();
 });
 
 it('emits the stub whole, however small the retained-bytes limit is', function (): void {
@@ -171,14 +165,12 @@ it('emits the stub whole, however small the retained-bytes limit is', function (
     // The limit governs tool results, and the stub is the answer to it: a stub
     // cut short would name a blob and then lose the way to read it.
     $policy = new TellExecutionPolicy(maxToolOutputChars: 300, maxSpillBytes: 1_000_000);
-    $clock = new class implements CanReadTellClock
-    {
-        public function nowMs(): int
-        {
+    $clock = new class implements CanReadTellClock {
+        public function nowMs(): int {
             return 0;
         }
     };
-    $now = new DateTimeImmutable;
+    $now = new DateTimeImmutable();
     $call = ToolCall::fromArray(['name' => 'shell', 'arguments' => []]);
     $execution = new ToolExecution($call, Result::success(tellSpillText(400)), $now, $now);
     $value = (string) tellSpillStack($project, $policy, $clock)
@@ -199,7 +191,7 @@ it('stores binary output without previewing it or promising a read', function ()
     $stub = (string) (new ToolOutputSpill(tellSpillStore($project), 1_000, 200_000, 2_000))->replace($binary);
 
     expect($stub)->toStartWith('[tool output: ')
-        ->and($stub)->toContain('of binary data — stored at '.tellSpillStore($project))
+        ->and($stub)->toContain('of binary data — stored at ' . tellSpillStore($project))
         // The extension does not claim to be text, and no read is suggested.
         ->and($stub)->toContain('.bin]')
         ->and($stub)->not->toContain('Continue: read(')
@@ -214,7 +206,7 @@ it('stores binary output without previewing it or promising a read', function ()
 
 it('does not walk a binary result byte by byte looking for a character boundary', function (): void {
     $project = tellSpillProject('spill-binary-ceiling');
-    $binary = random_bytes(40_000)."\0".random_bytes(40_000);
+    $binary = random_bytes(40_000) . "\0" . random_bytes(40_000);
     $stub = (string) (new ToolOutputSpill(tellSpillStore($project), 1_000, 20_000, 2_000))->replace($binary);
 
     $blob = tellSpillPath($stub, 'bin');
@@ -251,16 +243,14 @@ it('writes nothing at all when the spill ceiling is zero', function (): void {
 it('spills before the budget hook can truncate the bytes worth keeping', function (): void {
     $project = tellSpillProject('spill-ordering');
     $policy = new TellExecutionPolicy(maxToolOutputChars: 4_000, maxSpillBytes: 1_000_000);
-    $clock = new class implements CanReadTellClock
-    {
-        public function nowMs(): int
-        {
+    $clock = new class implements CanReadTellClock {
+        public function nowMs(): int {
             return 0;
         }
     };
     $stack = tellSpillStack($project, $policy, $clock);
 
-    $now = new DateTimeImmutable;
+    $now = new DateTimeImmutable();
     $call = ToolCall::fromArray(['name' => 'shell', 'arguments' => []]);
     $execution = new ToolExecution($call, Result::success(tellSpillText(400)), $now, $now);
     $value = (string) $stack
@@ -291,8 +281,8 @@ it('hands the model a path its own read tool can open', function (): void {
 
 it('writes nothing into the project it spilled from, workspace or not', function (): void {
     $project = tellSpillProject('spill-clean-project');
-    $home = tellLastTemporaryRoot().'/tell-home';
-    $paths = new TellPaths($home.'/package-agents', $home);
+    $home = tellLastTemporaryRoot() . '/tell-home';
+    $paths = new TellPaths($home . '/package-agents', $home);
     // The store the agent factory would hand the hook for a turn in this
     // directory - stateless turns included, which have no workspace to write to
     // and must leave the directory exactly as they found it.
@@ -302,7 +292,7 @@ it('writes nothing into the project it spilled from, workspace or not', function
     $blob = tellSpillPath($stub, 'txt');
 
     expect(scandir($project))->toBe(['.', '..'])
-        ->and($blob)->toStartWith($store.DIRECTORY_SEPARATOR)
+        ->and($blob)->toStartWith($store . DIRECTORY_SEPARATOR)
         ->and(is_file($blob))->toBeTrue()
         ->and(substr(sprintf('%o', fileperms($store)), -3))->toBe('700')
         ->and(substr(sprintf('%o', fileperms(dirname($blob))), -3))->toBe('700');

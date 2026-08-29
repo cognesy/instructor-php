@@ -27,8 +27,8 @@ require_once dirname(__DIR__).'/Support.php';
 
 use Cognesy\Agents\Capability\Cancellation\InMemoryCancellationSource;
 use Cognesy\Tell\Tell;
-use Cognesy\Tell\Contracts\Data\TellEventEnvelope;
-use Cognesy\Tell\TellRequest;
+use Cognesy\Tell\Data\TellEventEnvelope;
+use Cognesy\Tell\Data\TellRequest;
 
 $project = TellHarnessExample::project();
 $cancellation = new InMemoryCancellationSource();

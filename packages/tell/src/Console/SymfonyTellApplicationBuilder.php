@@ -6,13 +6,11 @@ namespace Cognesy\Tell\Console;
 
 use Cognesy\Tell\Contracts\CanBuildTellApplication;
 use Cognesy\Tell\Contracts\CanRunTellApplication;
-use Cognesy\Tell\Contracts\Collections\TellCommandDescriptors;
-use Cognesy\Tell\TellApplication;
+use Cognesy\Tell\Data\TellCommandDescriptors;
 
 final readonly class SymfonyTellApplicationBuilder implements CanBuildTellApplication
 {
-    public function build(TellCommandDescriptors $commands): CanRunTellApplication
-    {
+    public function build(TellCommandDescriptors $commands): CanRunTellApplication {
         $application = TellApplication::fromDescriptors($commands);
         $application->setAutoExit(false);
 

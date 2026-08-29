@@ -32,12 +32,12 @@ final readonly class ReasoningSelection
         return new self(ReasoningSelectionKind::Enabled);
     }
 
-    public static function withEffort(ReasoningEffort $effort): self
+    public static function effort(ReasoningEffort $effort): self
     {
         return new self(ReasoningSelectionKind::Effort, effort: $effort);
     }
 
-    public static function withBudget(int $budgetTokens): self
+    public static function budget(int $budgetTokens): self
     {
         return new self(ReasoningSelectionKind::Budget, budgetTokens: $budgetTokens);
     }

@@ -9,8 +9,7 @@ use Override;
 final readonly class SystemTellClock implements CanReadTellClock
 {
     #[Override]
-    public function nowMs(): int
-    {
+    public function nowMs(): int {
         return intdiv(hrtime(true), 1_000_000);
     }
 }

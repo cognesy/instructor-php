@@ -3,22 +3,22 @@
 declare(strict_types=1);
 
 $packageRoot = dirname(__DIR__, 2);
-$monorepoAutoload = dirname(__DIR__, 4).'/vendor/autoload.php';
-$packageAutoload = $packageRoot.'/vendor/autoload.php';
+$monorepoAutoload = dirname(__DIR__, 4) . '/vendor/autoload.php';
+$packageAutoload = $packageRoot . '/vendor/autoload.php';
 require file_exists($monorepoAutoload) ? $monorepoAutoload : $packageAutoload;
 
 use Cognesy\Agents\Capability\Cancellation\InMemoryCancellationSource;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Tell\Composition\TellHost;
+use Cognesy\Tell\Configuration\TellPaths;
+use Cognesy\Tell\Console\TellApplication;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Runtime\TellPaths;
-use Cognesy\Tell\TellApplication;
 
 $scenario = getenv('TELL_RPC_SCENARIO') ?: 'success';
 $project = getenv('TELL_RPC_PROJECT') ?: sys_get_temp_dir();
 $composerVendorDir = getenv('TELL_RPC_COMPOSER_VENDOR_DIR');
-$cancellation = new InMemoryCancellationSource;
+$cancellation = new InMemoryCancellationSource();
 
 $driver = match ($scenario) {
     'success' => FakeAgentDriver::fromSteps(
@@ -43,8 +43,8 @@ if ($scenario === 'cancelled') {
 
 $factory = new TellAgentFactory(
     paths: new TellPaths(
-        packageAgents: $packageRoot.'/resources/agents',
-        home: $project.'/.tell-rpc-testing',
+        packageAgents: $packageRoot . '/resources/agents',
+        home: $project . '/.tell-rpc-testing',
     ),
     driver: $driver,
     composerVendorDir: is_string($composerVendorDir) && $composerVendorDir !== '' ? $composerVendorDir : null,

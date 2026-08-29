@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Session\Data\SessionId;
-use Cognesy\Tell\Canonical\CanonicalConversationRoot;
-use Cognesy\Tell\Canonical\CanonicalHash;
-use Cognesy\Tell\Canonical\CanonicalLineage;
-use Cognesy\Tell\Canonical\CanonicalMessage;
-use Cognesy\Tell\Canonical\CanonicalRole;
-use Cognesy\Tell\Canonical\CanonicalTextPart;
-use Cognesy\Tell\Canonical\CanonicalToolCall;
-use Cognesy\Tell\Canonical\CanonicalToolResult;
-use Cognesy\Tell\Canonical\CanonicalTurn;
 use Cognesy\Tell\Command\WorkspaceInspectionCommand;
+use Cognesy\Tell\Console\TellApplication;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\TellApplication;
-use Cognesy\Tell\Workspace\ArenaStore;
-use Cognesy\Tell\Workspace\SessionCompatibilityRef;
-use Cognesy\Tell\Workspace\TellWorkspace;
+use Cognesy\Tell\Workspace\Arena\FilesystemArena;
+use Cognesy\Tell\Workspace\Arena\ObjectHash;
+use Cognesy\Tell\Workspace\Arena\Record\ConversationRoot;
+use Cognesy\Tell\Workspace\Arena\Record\Lineage;
+use Cognesy\Tell\Workspace\Arena\Record\Message as RecordMessage;
+use Cognesy\Tell\Workspace\Arena\Record\Role;
+use Cognesy\Tell\Workspace\Arena\Record\TextPart;
+use Cognesy\Tell\Workspace\Arena\Record\ToolCall;
+use Cognesy\Tell\Workspace\Arena\Record\ToolResult;
+use Cognesy\Tell\Workspace\Arena\Record\Turn;
+use Cognesy\Tell\Workspace\Session\SessionRef;
+use Cognesy\Tell\Workspace\WorkspaceState;
 use HelgeSverre\Toon\Toon;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -35,11 +35,11 @@ it('inspects an empty workspace without inference or persistence writes', functi
     $homeBefore = tellInspectionDirectorySnapshot($factory->paths()->home);
     $application = new TellApplication($factory);
     $application->setAutoExit(false);
-    $output = new BufferedOutput;
+    $output = new BufferedOutput();
 
     $status = $application->runArgv(['tell', 'history', '--dir', $project, '--json'], $output);
     $payload = json_decode($output->fetch(), true, flags: JSON_THROW_ON_ERROR);
-    $toonOutput = new BufferedOutput;
+    $toonOutput = new BufferedOutput();
     $toonStatus = $application->runArgv(['tell', 'transcript', '--dir', $project], $toonOutput);
     $toon = Toon::decode($toonOutput->fetch());
 
@@ -67,7 +67,7 @@ it('inspects an empty workspace without inference or persistence writes', functi
 it('lists canonical turns oldest-first with bounded Unicode previews and explicit full detail', function (): void {
     $factory = tellTestFactory();
     $project = tellInspectionProject($factory);
-    $arena = new ArenaStore(tellInspectionWorkspace($factory, $project));
+    $arena = new FilesystemArena(tellInspectionWorkspace($factory, $project));
     [, $first, $second, $longAnswer] = tellInspectionSeedHistory($arena);
     $before = tellInspectionArenaSnapshot(tellInspectionWorkspace($factory, $project));
     $command = new WorkspaceInspectionCommand('history', $factory);
@@ -108,17 +108,17 @@ it('lists canonical turns oldest-first with bounded Unicode previews and explici
 it('renders verified ordered tool call and result pairs without exposing provider data', function (): void {
     $factory = tellTestFactory();
     $project = tellInspectionProject($factory);
-    $arena = new ArenaStore(tellInspectionWorkspace($factory, $project));
-    $root = $arena->put(new CanonicalConversationRoot(
+    $arena = new FilesystemArena(tellInspectionWorkspace($factory, $project));
+    $root = $arena->put(new ConversationRoot(
         id: 'conversation-tool-inspection',
-        messages: [new CanonicalMessage(CanonicalRole::User, [new CanonicalTextPart('calculate safely')])],
+        messages: [new RecordMessage(Role::User, [new TextPart('calculate safely')])],
     ));
-    $turn = $arena->put(new CanonicalTurn(
+    $turn = $arena->put(new Turn(
         id: 'turn-tool-inspection',
-        lineage: new CanonicalLineage($root),
-        messages: [new CanonicalMessage(CanonicalRole::Assistant, [new CanonicalTextPart('The answer is 4.')])],
-        toolCalls: [new CanonicalToolCall('tool-call-inspection', 'calculator', ['expression' => '2 + 2'])],
-        toolResults: [new CanonicalToolResult('tool-call-inspection', [new CanonicalTextPart('4')])],
+        lineage: new Lineage($root),
+        messages: [new RecordMessage(Role::Assistant, [new TextPart('The answer is 4.')])],
+        toolCalls: [new ToolCall('tool-call-inspection', 'calculator', ['expression' => '2 + 2'])],
+        toolResults: [new ToolResult('tool-call-inspection', [new TextPart('4')])],
     ));
     $arena->compareAndSwap('main', null, $turn);
     $workspace = tellInspectionWorkspace($factory, $project);
@@ -151,17 +151,17 @@ it('renders verified ordered tool call and result pairs without exposing provide
         ->and(tellInspectionArenaSnapshot($workspace))->toBe($before);
 });
 
-it('selects named canonical sessions without exposing their hashed compatibility ref', function (): void {
+it('selects named canonical sessions without exposing their hashed session ref', function (): void {
     $factory = tellTestFactory();
     $project = tellInspectionProject($factory);
-    $arena = new ArenaStore(tellInspectionWorkspace($factory, $project));
-    $compatibility = new SessionCompatibilityRef(SessionId::from('review-1'));
-    $root = $arena->put(new CanonicalConversationRoot(
+    $arena = new FilesystemArena(tellInspectionWorkspace($factory, $project));
+    $sessionRef = new SessionRef(SessionId::from('review-1'));
+    $root = $arena->put(new ConversationRoot(
         id: 'conversation-inspection-session',
-        messages: [new CanonicalMessage(CanonicalRole::User, [new CanonicalTextPart('session history')])],
-        session: $compatibility->metadata(),
+        messages: [new RecordMessage(Role::User, [new TextPart('session history')])],
+        session: $sessionRef->metadata(),
     ));
-    $arena->compareAndSwap($compatibility->refName(), null, $root);
+    $arena->compareAndSwap($sessionRef->refName(), null, $root);
     $before = tellInspectionArenaSnapshot(tellInspectionWorkspace($factory, $project));
     $tester = new CommandTester(new WorkspaceInspectionCommand('transcript', $factory));
 
@@ -171,7 +171,7 @@ it('selects named canonical sessions without exposing their hashed compatibility
 
     expect($payload['selector'])->toBe(['type' => 'session', 'name' => 'review-1'])
         ->and($payload['messages'][0]['content'])->toBe('session history')
-        ->and(str_contains($display, $compatibility->refName()))->toBeFalse()
+        ->and(str_contains($display, $sessionRef->refName()))->toBeFalse()
         ->and(tellInspectionArenaSnapshot(tellInspectionWorkspace($factory, $project)))->toBe($before);
 });
 
@@ -179,7 +179,7 @@ it('fails atomically for corrupt lineage and malformed limits', function (): voi
     $factory = tellTestFactory();
     $project = tellInspectionProject($factory);
     $workspace = tellInspectionWorkspace($factory, $project);
-    $arena = new ArenaStore($workspace);
+    $arena = new FilesystemArena($workspace);
     [$root] = tellInspectionSeedHistory($arena);
     $command = new WorkspaceInspectionCommand('history', $factory);
 
@@ -200,17 +200,15 @@ it('fails atomically for corrupt lineage and malformed limits', function (): voi
         ->and(tellInspectionArenaSnapshot($workspace))->toBe($beforeCorrupt);
 });
 
-function tellInspectionProject(TellAgentFactory $factory): string
-{
-    $project = tellLastTemporaryRoot().'/workspace';
+function tellInspectionProject(TellAgentFactory $factory): string {
+    $project = tellLastTemporaryRoot() . '/workspace';
     mkdir($project, 0700, true);
     $factory->workspace()->initialize($project);
 
     return $project;
 }
 
-function tellInspectionWorkspace(TellAgentFactory $factory, string $project): TellWorkspace
-{
+function tellInspectionWorkspace(TellAgentFactory $factory, string $project): WorkspaceState {
     $workspace = $factory->workspace()->discover($project);
     if ($workspace === null) {
         throw new RuntimeException('Expected initialized Tell workspace to be discoverable.');
@@ -219,25 +217,24 @@ function tellInspectionWorkspace(TellAgentFactory $factory, string $project): Te
     return $workspace;
 }
 
-/** @return array{0: CanonicalHash, 1: CanonicalHash, 2: CanonicalHash, 3: string} */
-function tellInspectionSeedHistory(ArenaStore $arena): array
-{
+/** @return array{0: ObjectHash, 1: ObjectHash, 2: ObjectHash, 3: string} */
+function tellInspectionSeedHistory(FilesystemArena $arena): array {
     $longAnswer = str_repeat('Zażółć ', 250);
-    $root = $arena->put(new CanonicalConversationRoot(
+    $root = $arena->put(new ConversationRoot(
         id: 'conversation-inspection',
-        messages: [new CanonicalMessage(CanonicalRole::User, [new CanonicalTextPart('first question')])],
+        messages: [new RecordMessage(Role::User, [new TextPart('first question')])],
     ));
-    $first = $arena->put(new CanonicalTurn(
+    $first = $arena->put(new Turn(
         id: 'turn-inspection-one',
-        lineage: new CanonicalLineage($root),
-        messages: [new CanonicalMessage(CanonicalRole::Assistant, [new CanonicalTextPart('first answer')])],
+        lineage: new Lineage($root),
+        messages: [new RecordMessage(Role::Assistant, [new TextPart('first answer')])],
     ));
-    $second = $arena->put(new CanonicalTurn(
+    $second = $arena->put(new Turn(
         id: 'turn-inspection-two',
-        lineage: new CanonicalLineage($root, $first),
+        lineage: new Lineage($root, $first),
         messages: [
-            new CanonicalMessage(CanonicalRole::User, [new CanonicalTextPart('second question')]),
-            new CanonicalMessage(CanonicalRole::Assistant, [new CanonicalTextPart($longAnswer)]),
+            new RecordMessage(Role::User, [new TextPart('second question')]),
+            new RecordMessage(Role::Assistant, [new TextPart($longAnswer)]),
         ],
     ));
     $arena->compareAndSwap('main', null, $first);
@@ -247,21 +244,19 @@ function tellInspectionSeedHistory(ArenaStore $arena): array
 }
 
 /** @return array<string, string> */
-function tellInspectionArenaSnapshot(TellWorkspace $workspace): array
-{
+function tellInspectionArenaSnapshot(WorkspaceState $workspace): array {
     return tellInspectionDirectorySnapshot($workspace->paths->arena);
 }
 
 /** @return array<string, string> */
-function tellInspectionDirectorySnapshot(string $directory): array
-{
+function tellInspectionDirectorySnapshot(string $directory): array {
     $files = [];
-    $root = rtrim($directory, '/\\').DIRECTORY_SEPARATOR;
+    $root = rtrim($directory, '/\\') . DIRECTORY_SEPARATOR;
     $iterator = new RecursiveIteratorIterator(
         new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS),
     );
     foreach ($iterator as $file) {
-        if (! $file->isFile()) {
+        if (!$file->isFile()) {
             continue;
         }
         $bytes = file_get_contents($file->getPathname());

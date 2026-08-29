@@ -11,8 +11,7 @@ use Cognesy\Tell\Runtime\CanReadTellClock;
 final readonly class TellCapabilityContracts
 {
     /** @return array<class-string, TellCapabilityCardinality> */
-    public static function cardinalities(): array
-    {
+    public static function cardinalities(): array {
         return [
             CanRunTell::class => TellCapabilityCardinality::Singleton,
             CanBuildTellAgent::class => TellCapabilityCardinality::Singleton,
@@ -37,8 +36,7 @@ final readonly class TellCapabilityContracts
     }
 
     /** @param class-string $capability */
-    public static function cardinality(string $capability): ?TellCapabilityCardinality
-    {
+    public static function cardinality(string $capability): ?TellCapabilityCardinality {
         return self::cardinalities()[$capability] ?? null;
     }
 }

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Agents\Events\AgentExecutionCompleted;
 use Cognesy\Agents\Events\ToolCallCompleted;
-use Cognesy\Tell\Contracts\Data\TellEventEnvelope;
-use Cognesy\Tell\Observability\TellEventNormalizer;
-use Cognesy\Tell\TellExecutionMode;
 use Cognesy\Polyglot\Inference\Data\InferenceUsage;
+use Cognesy\Tell\Data\TellEventEnvelope;
+use Cognesy\Tell\Data\TellExecutionMode;
+use Cognesy\Tell\Observability\TellEventNormalizer;
 
 /**
  * The envelope is a wire format: `--output events` writes it to stdout, traces
@@ -31,12 +31,19 @@ const TELL_ENVELOPE_KEYS = [
 ];
 
 it('emits the normalized envelope keys in a fixed order', function (): void {
-    $now = new DateTimeImmutable;
+    $now = new DateTimeImmutable();
     $normalizer = new TellEventNormalizer(branch: 'main', session: 'session-1');
 
     $envelope = $normalizer->normalize(new ToolCallCompleted(
-        agentId: 'agent', executionId: 'exec-1', parentAgentId: null, stepNumber: 1,
-        tool: 'read', success: true, error: null, startedAt: $now, completedAt: $now,
+        agentId: 'agent',
+        executionId: 'exec-1',
+        parentAgentId: null,
+        stepNumber: 1,
+        tool: 'read',
+        success: true,
+        error: null,
+        startedAt: $now,
+        completedAt: $now,
     ));
 
     expect(array_keys($envelope))->toBe(TELL_ENVELOPE_KEYS)
@@ -47,17 +54,28 @@ it('emits the normalized envelope keys in a fixed order', function (): void {
 });
 
 it('numbers events from one and marks exactly the terminal one', function (): void {
-    $now = new DateTimeImmutable;
-    $normalizer = new TellEventNormalizer;
+    $now = new DateTimeImmutable();
+    $normalizer = new TellEventNormalizer();
 
     $first = $normalizer->normalize(new ToolCallCompleted(
-        agentId: 'agent', executionId: 'exec-1', parentAgentId: null, stepNumber: 1,
-        tool: 'read', success: true, error: null, startedAt: $now, completedAt: $now,
+        agentId: 'agent',
+        executionId: 'exec-1',
+        parentAgentId: null,
+        stepNumber: 1,
+        tool: 'read',
+        success: true,
+        error: null,
+        startedAt: $now,
+        completedAt: $now,
     ));
     $last = $normalizer->normalize(new AgentExecutionCompleted(
-        agentId: 'agent', executionId: 'exec-1', parentAgentId: null,
+        agentId: 'agent',
+        executionId: 'exec-1',
+        parentAgentId: null,
         status: ExecutionStatus::Completed,
-        totalSteps: 1, totalUsage: new InferenceUsage, errors: null,
+        totalSteps: 1,
+        totalUsage: new InferenceUsage(),
+        errors: null,
     ));
 
     expect($first['sequence'])->toBe(1)
@@ -67,10 +85,17 @@ it('numbers events from one and marks exactly the terminal one', function (): vo
 });
 
 it('carries invocation context only on the boundary projection', function (): void {
-    $now = new DateTimeImmutable;
-    $normalized = (new TellEventNormalizer)->normalize(new ToolCallCompleted(
-        agentId: 'agent', executionId: 'exec-1', parentAgentId: null, stepNumber: 1,
-        tool: 'read', success: true, error: null, startedAt: $now, completedAt: $now,
+    $now = new DateTimeImmutable();
+    $normalized = (new TellEventNormalizer())->normalize(new ToolCallCompleted(
+        agentId: 'agent',
+        executionId: 'exec-1',
+        parentAgentId: null,
+        stepNumber: 1,
+        tool: 'read',
+        success: true,
+        error: null,
+        startedAt: $now,
+        completedAt: $now,
     ));
 
     $envelope = TellEventEnvelope::fromNormalized($normalized, TellExecutionMode::Durable, 'default');
@@ -83,12 +108,19 @@ it('carries invocation context only on the boundary projection', function (): vo
 });
 
 it('keeps every metadata value a scalar, whatever the source event carried', function (): void {
-    $now = new DateTimeImmutable;
-    $normalizer = new TellEventNormalizer;
+    $now = new DateTimeImmutable();
+    $normalizer = new TellEventNormalizer();
 
     $envelope = $normalizer->normalize(new ToolCallCompleted(
-        agentId: 'agent', executionId: 'exec-1', parentAgentId: null, stepNumber: 1,
-        tool: 'read', success: true, error: null, startedAt: $now, completedAt: $now,
+        agentId: 'agent',
+        executionId: 'exec-1',
+        parentAgentId: null,
+        stepNumber: 1,
+        tool: 'read',
+        success: true,
+        error: null,
+        startedAt: $now,
+        completedAt: $now,
         result: ['secret' => 'raw tool payload canary'],
     ));
 

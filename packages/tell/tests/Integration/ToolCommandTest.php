@@ -2,22 +2,21 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Tell\Command\ToolCommand;
-use Cognesy\Tell\Runtime\TellOptions;
+use Cognesy\Tell\Console\TellOptions;
 use Cognesy\Tell\Runtime\TellSignalCancellationSource;
-use Cognesy\Tell\Runtime\TellToolDispatcher;
 use Cognesy\Tell\Tests\Support\RecordingDriver;
 use Cognesy\Tell\Tests\Support\RequestRecorder;
-use HelgeSverre\Toon\Toon;
+use Cognesy\Tell\Tool\TellToolDispatcher;
 use Symfony\Component\Console\Tester\CommandTester;
 
 it('invokes the resolved canonical tool directly without inference or workspace publication', function (): void {
-    $recorder = new RequestRecorder;
+    $recorder = new RequestRecorder();
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(new RecordingDriver($recorder)));
     $directory = tellLastTemporaryRoot();
-    file_put_contents($directory.'/note.txt', "direct evidence\n");
+    file_put_contents($directory . '/note.txt', "direct evidence\n");
     $tester = new CommandTester(new ToolCommand($factory));
 
     $status = $tester->execute([
@@ -34,7 +33,7 @@ it('invokes the resolved canonical tool directly without inference or workspace 
         ->and($payload['execution'])->toBe(['mode' => 'direct', 'inference' => false, 'durable' => false])
         ->and($payload['data']['text'])->toContain('direct evidence')
         ->and($recorder->requests)->toBe([])
-        ->and(is_dir($directory.'/.tell'))->toBeFalse();
+        ->and(is_dir($directory . '/.tell'))->toBeFalse();
 });
 
 it('uses the exact resolved allow-list and strict tool schema', function (): void {
@@ -128,7 +127,7 @@ it('rejects ambiguous and malformed argument sources with usage exit code two', 
 });
 
 it('reports bounded timeouts and pre-cancelled direct work without inference', function (): void {
-    $recorder = new RequestRecorder;
+    $recorder = new RequestRecorder();
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(new RecordingDriver($recorder)));
     $directory = tellLastTemporaryRoot();
     $tester = new CommandTester(new ToolCommand($factory));
@@ -142,7 +141,7 @@ it('reports bounded timeouts and pre-cancelled direct work without inference', f
     ]);
     $timeoutPayload = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
 
-    $cancellation = new TellSignalCancellationSource;
+    $cancellation = new TellSignalCancellationSource();
     $cancellation->cancel();
     $cancelled = (new TellToolDispatcher($factory, $cancellation))->dispatch(
         new TellOptions(prompt: 'direct', directory: $directory),

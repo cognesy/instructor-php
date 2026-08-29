@@ -7,7 +7,7 @@ namespace Cognesy\Tell\Contracts;
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
 use Cognesy\Agents\Template\Data\AgentDefinition;
-use Cognesy\Tell\TellRequest;
+use Cognesy\Tell\Data\TellRequest;
 
 interface CanBuildTellAgent
 {

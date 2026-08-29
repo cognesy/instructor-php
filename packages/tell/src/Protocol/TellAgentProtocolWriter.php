@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Protocol;
 
 use Cognesy\Tell\Contracts\CanWriteTellProtocolFrames;
-use Cognesy\Tell\Diagnostics\TellDiagnostic;
-use Cognesy\Tell\TellProgress;
-use Cognesy\Tell\TellResult;
+use Cognesy\Tell\Data\TellDiagnostic;
+use Cognesy\Tell\Data\TellProgress;
+use Cognesy\Tell\Data\TellResult;
 use JsonException;
 use LogicException;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -15,13 +15,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class TellAgentProtocolWriter implements CanWriteTellProtocolFrames
 {
     public const string SCHEMA = 'tell.agent.frame.v1';
-
     public const int MAX_FRAME_BYTES = 1_048_576;
-
     private const int MAX_ANSWER_BYTES = 200_000;
 
     private int $sequence = 0;
-
     private bool $terminal = false;
 
     public function __construct(
@@ -29,13 +26,11 @@ final class TellAgentProtocolWriter implements CanWriteTellProtocolFrames
         private ?string $id = null,
     ) {}
 
-    public function identify(string $id): void
-    {
+    public function identify(string $id): void {
         $this->id = $id;
     }
 
-    public function progress(TellProgress $progress): void
-    {
+    public function progress(TellProgress $progress): void {
         $this->write('progress', [
             'progress' => [
                 'step' => $progress->stepCount(),
@@ -46,8 +41,7 @@ final class TellAgentProtocolWriter implements CanWriteTellProtocolFrames
         ]);
     }
 
-    public function success(TellResult $result): void
-    {
+    public function success(TellResult $result): void {
         $answer = self::boundedAnswer($result->text());
         $this->write('result', [
             'result' => [
@@ -89,8 +83,7 @@ final class TellAgentProtocolWriter implements CanWriteTellProtocolFrames
         $this->write('error', ['error' => $payload], terminal: true);
     }
 
-    public function cancelled(TellResult $result): void
-    {
+    public function cancelled(TellResult $result): void {
         $this->write('cancelled', [
             'cancellation' => [
                 'code' => 'cancelled',
@@ -103,14 +96,12 @@ final class TellAgentProtocolWriter implements CanWriteTellProtocolFrames
         ], terminal: true);
     }
 
-    public function hasTerminalFrame(): bool
-    {
+    public function hasTerminalFrame(): bool {
         return $this->terminal;
     }
 
     /** @param array<string, mixed> $payload */
-    private function write(string $type, array $payload, bool $terminal = false): void
-    {
+    private function write(string $type, array $payload, bool $terminal = false): void {
         if ($this->terminal) {
             throw new LogicException('Tell agent protocol already emitted a terminal frame.');
         }
@@ -135,8 +126,7 @@ final class TellAgentProtocolWriter implements CanWriteTellProtocolFrames
         $this->terminal = $terminal;
     }
 
-    private static function boundedAnswer(string $answer): string
-    {
+    private static function boundedAnswer(string $answer): string {
         if (strlen($answer) <= self::MAX_ANSWER_BYTES) {
             return $answer;
         }
@@ -145,8 +135,7 @@ final class TellAgentProtocolWriter implements CanWriteTellProtocolFrames
     }
 
     /** @return list<array{code: string, source: string, severity: string, message: string}> */
-    private function externalDiagnostics(TellResult $result): array
-    {
+    private function externalDiagnostics(TellResult $result): array {
         return array_map(
             static fn (TellDiagnostic $diagnostic): array => $diagnostic->toExternalArray(),
             $result->diagnostics(),

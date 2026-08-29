@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Runtime;
 
+use Cognesy\Tell\Configuration\TellExecutionPolicy;
+
 /**
  * Moves an oversized tool result out of the conversation and onto disk.
  *
@@ -50,8 +52,7 @@ final readonly class ToolOutputSpill
         private int $stubBudget = TellExecutionPolicy::DEFAULT_MAX_STUB_BYTES,
     ) {}
 
-    public static function fromPolicy(string $directory, TellExecutionPolicy $policy): self
-    {
+    public static function fromPolicy(string $directory, TellExecutionPolicy $policy): self {
         return new self(
             $directory,
             $policy->maxToolOutputChars,
@@ -65,8 +66,7 @@ final readonly class ToolOutputSpill
      * it is small enough, because spilling is off, or because the blob could
      * not be written and the established truncation should stay in charge.
      */
-    public function replace(mixed $value): mixed
-    {
+    public function replace(mixed $value): mixed {
         if ($this->ceiling <= 0) {
             return null;
         }
@@ -91,8 +91,7 @@ final readonly class ToolOutputSpill
         return is_string($encoded) ? $this->stub($encoded) : null;
     }
 
-    private function stub(string $text): ?string
-    {
+    private function stub(string $text): ?string {
         if (strlen($text) <= $this->threshold) {
             return null;
         }
@@ -103,8 +102,8 @@ final readonly class ToolOutputSpill
             return null;
         }
         $discarded = strlen($stored) < strlen($text)
-            ? '[the result was '.self::size(strlen($text)).'; everything past the '
-                .number_format($this->ceiling).'-byte spill ceiling was discarded]'
+            ? '[the result was ' . self::size(strlen($text)) . '; everything past the '
+                . number_format($this->ceiling) . '-byte spill ceiling was discarded]'
             : null;
 
         // Binary gets no preview and no read hint. Its bytes would be noise in
@@ -112,16 +111,16 @@ final readonly class ToolOutputSpill
         // binary - a stub that suggested one would promise what Tell cannot do.
         if ($binary) {
             return implode("\n", array_filter([
-                '[tool output: '.self::size(strlen($stored)).' of binary data — stored at '.$path.']',
+                '[tool output: ' . self::size(strlen($stored)) . ' of binary data — stored at ' . $path . ']',
                 $discarded,
                 'Not text: it has no preview, and the read tool will not open it. Inspect it with a shell command if you need its contents.',
-            ]))."\n";
+            ])) . "\n";
         }
 
         $lines = self::lines($stored);
         $head = array_values(array_filter([
-            '[tool output: '.number_format(count($lines)).' line'.(count($lines) === 1 ? '' : 's')
-                .', '.self::size(strlen($stored)).' — stored at '.$path.']',
+            '[tool output: ' . number_format(count($lines)) . ' line' . (count($lines) === 1 ? '' : 's')
+                . ', ' . self::size(strlen($stored)) . ' — stored at ' . $path . ']',
             $discarded,
         ]));
 
@@ -133,8 +132,7 @@ final readonly class ToolOutputSpill
      * can open. The read tool asks `file` for a MIME type; this is stricter,
      * so a stub never offers a read that would come back as an error.
      */
-    private static function isBinary(string $text): bool
-    {
+    private static function isBinary(string $text): bool {
         $sample = substr($text, 0, self::SNIFF_BYTES);
 
         return str_contains($sample, "\0") || preg_match('//u', $sample) !== 1;
@@ -153,11 +151,10 @@ final readonly class ToolOutputSpill
      * @param  list<string>  $head
      * @param  list<string>  $lines
      */
-    private function assemble(array $head, array $lines, string $path): string
-    {
+    private function assemble(array $head, array $lines, string $path): string {
         $preview = [];
         foreach ($lines as $line) {
-            $candidate = [...$preview, '  '.self::clip($line)];
+            $candidate = [...$preview, '  ' . self::clip($line)];
             if (strlen(self::join($head, $candidate, $path)) > $this->stubBudget) {
                 break;
             }
@@ -171,11 +168,10 @@ final readonly class ToolOutputSpill
      * @param  list<string>  $head
      * @param  list<string>  $preview
      */
-    private static function join(array $head, array $preview, string $path): string
-    {
-        $continue = 'Continue: read("'.$path.'", offset='.count($preview).', limit='.self::CONTINUE_LINES.')';
+    private static function join(array $head, array $preview, string $path): string {
+        $continue = 'Continue: read("' . $path . '", offset=' . count($preview) . ', limit=' . self::CONTINUE_LINES . ')';
 
-        return implode("\n", [...$head, ...$preview, $continue])."\n";
+        return implode("\n", [...$head, ...$preview, $continue]) . "\n";
     }
 
     /**
@@ -183,8 +179,7 @@ final readonly class ToolOutputSpill
      * a UTF-8 character is at most four bytes long, so backing off is bounded.
      * Binary has no characters to land between and is cut where it is cut.
      */
-    private function clamp(string $text, bool $binary): string
-    {
+    private function clamp(string $text, bool $binary): string {
         if (strlen($text) <= $this->ceiling) {
             return $text;
         }
@@ -204,26 +199,25 @@ final readonly class ToolOutputSpill
      * stub points at the first one's bytes. Returns the project-relative path
      * the model should read, or null when the project is not writable.
      */
-    private function write(string $content, bool $binary): ?string
-    {
+    private function write(string $content, bool $binary): ?string {
         $extension = $binary ? '.bin' : '.txt';
         $hash = substr(hash('sha256', $content), 0, self::HASH_LENGTH);
         $directory = rtrim($this->directory, '/\\')
-            .DIRECTORY_SEPARATOR.substr($hash, 0, self::SHARD_LENGTH);
-        $path = $directory.DIRECTORY_SEPARATOR.substr($hash, self::SHARD_LENGTH).$extension;
+            . DIRECTORY_SEPARATOR . substr($hash, 0, self::SHARD_LENGTH);
+        $path = $directory . DIRECTORY_SEPARATOR . substr($hash, self::SHARD_LENGTH) . $extension;
         if (is_file($path)) {
             return $path;
         }
-        if (! is_dir($directory) && ! @mkdir($directory, 0o700, true) && ! is_dir($directory)) {
+        if (!is_dir($directory) && !@mkdir($directory, 0o700, true) && !is_dir($directory)) {
             return null;
         }
         // Written aside and renamed: a reader that arrives mid-write would
         // otherwise see a blob whose name promises bytes it does not yet hold.
-        $temporary = $path.'.'.getmypid().'.tmp';
+        $temporary = $path . '.' . getmypid() . '.tmp';
         if (@file_put_contents($temporary, $content) === false) {
             return null;
         }
-        if (! @rename($temporary, $path)) {
+        if (!@rename($temporary, $path)) {
             @unlink($temporary);
 
             return null;
@@ -233,27 +227,24 @@ final readonly class ToolOutputSpill
     }
 
     /** @return list<string> */
-    private static function lines(string $text): array
-    {
+    private static function lines(string $text): array {
         return explode("\n", rtrim($text, "\n"));
     }
 
-    private static function clip(string $line): string
-    {
+    private static function clip(string $line): string {
         $line = rtrim($line, "\r");
         if (mb_strlen($line) <= self::PREVIEW_COLUMNS) {
             return $line;
         }
 
-        return mb_substr($line, 0, self::PREVIEW_COLUMNS - 1).'…';
+        return mb_substr($line, 0, self::PREVIEW_COLUMNS - 1) . '…';
     }
 
-    private static function size(int $bytes): string
-    {
+    private static function size(int $bytes): string {
         return match (true) {
-            $bytes < 1024 => $bytes.' B',
-            $bytes < 1024 * 1024 => number_format($bytes / 1024, 1).' KB',
-            default => number_format($bytes / (1024 * 1024), 1).' MB',
+            $bytes < 1024 => $bytes . ' B',
+            $bytes < 1024 * 1024 => number_format($bytes / 1024, 1) . ' KB',
+            default => number_format($bytes / (1024 * 1024), 1) . ' MB',
         };
     }
 }

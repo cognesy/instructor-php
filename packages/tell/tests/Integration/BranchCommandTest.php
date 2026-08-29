@@ -2,34 +2,37 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
-use Cognesy\Tell\Canonical\CanonicalConversationRoot;
-use Cognesy\Tell\Canonical\CanonicalLineage;
-use Cognesy\Tell\Canonical\CanonicalMessage;
-use Cognesy\Tell\Canonical\CanonicalRole;
-use Cognesy\Tell\Canonical\CanonicalTextPart;
-use Cognesy\Tell\Canonical\CanonicalTurn;
+use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Tell\Command\BranchCommand;
 use Cognesy\Tell\Command\CheckoutCommand;
 use Cognesy\Tell\Command\ConfigCommand;
 use Cognesy\Tell\Command\ResetCommand;
+use Cognesy\Tell\Console\TellCommand;
+use Cognesy\Tell\Console\TellOptions;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Runtime\TellOptions;
-use Cognesy\Tell\TellCommand;
-use Cognesy\Tell\Workspace\ArenaStore;
-use Cognesy\Tell\Workspace\BranchConfigStore;
-use Cognesy\Tell\Workspace\TellWorkspace;
+use Cognesy\Tell\Workspace\Arena\FilesystemArena;
+use Cognesy\Tell\Workspace\Arena\Record\ConversationRoot;
+use Cognesy\Tell\Workspace\Arena\Record\Lineage;
+use Cognesy\Tell\Workspace\Arena\Record\Message as RecordMessage;
+use Cognesy\Tell\Workspace\Arena\Record\Role;
+use Cognesy\Tell\Workspace\Arena\Record\TextPart;
+use Cognesy\Tell\Workspace\Arena\Record\Turn;
+use Cognesy\Tell\Workspace\Branch\BranchResolver;
+use Cognesy\Tell\Workspace\Branch\Storage\BranchConfigStore;
+use Cognesy\Tell\Workspace\Branch\Storage\BranchCurrentSelectionStore;
+use Cognesy\Tell\Workspace\WorkspaceState;
 use Symfony\Component\Console\Tester\CommandTester;
 
 it('creates independent refs from main, another branch, and empty state without copying objects', function (): void {
     $factory = tellTestFactory();
     $project = tellBranchProject($factory);
     $workspace = tellBranchWorkspace($factory, $project);
-    $arena = new ArenaStore($workspace);
-    $head = $arena->put(new CanonicalConversationRoot(
+    $arena = new FilesystemArena($workspace);
+    $head = $arena->put(new ConversationRoot(
         'branch-main',
-        [new CanonicalMessage(CanonicalRole::User, [new CanonicalTextPart('shared history')])],
+        [new RecordMessage(Role::User, [new TextPart('shared history')])],
     ));
     $arena->compareAndSwap('main', null, $head);
     $objectSnapshot = tellBranchSnapshot($workspace->paths->objects);
@@ -72,8 +75,8 @@ it('lists and shows deterministic verified branch views without inference or wri
     });
     $project = tellBranchProject($factory);
     $workspace = tellBranchWorkspace($factory, $project);
-    $arena = new ArenaStore($workspace);
-    $head = $arena->put(new CanonicalConversationRoot('branch-list'));
+    $arena = new FilesystemArena($workspace);
+    $head = $arena->put(new ConversationRoot('branch-list'));
     $arena->compareAndSwap('main', null, $head);
     $command = new BranchCommand($factory);
     (new CommandTester($command))->execute(['action' => 'create', 'name' => 'zeta', '--dir' => $project]);
@@ -134,8 +137,8 @@ it('fails show when the referenced canonical head is corrupt or dangling', funct
     $factory = tellTestFactory();
     $project = tellBranchProject($factory);
     $workspace = tellBranchWorkspace($factory, $project);
-    $arena = new ArenaStore($workspace);
-    $head = $arena->put(new CanonicalConversationRoot('branch-corrupt'));
+    $arena = new FilesystemArena($workspace);
+    $head = $arena->put(new ConversationRoot('branch-corrupt'));
     $arena->compareAndSwap('main', null, $head);
     (new CommandTester(new BranchCommand($factory)))->execute(['action' => 'create', 'name' => 'review', '--dir' => $project]);
     file_put_contents($arena->objectPath($head), '{"truncated"');
@@ -151,8 +154,8 @@ it('persists checkout while an invocation-local branch resolution leaves it unch
     $factory = tellTestFactory();
     $project = tellBranchProject($factory);
     $workspace = tellBranchWorkspace($factory, $project);
-    $arena = new ArenaStore($workspace);
-    $head = $arena->put(new CanonicalConversationRoot('checkout'));
+    $arena = new FilesystemArena($workspace);
+    $head = $arena->put(new ConversationRoot('checkout'));
     $arena->compareAndSwap('main', null, $head);
     (new CommandTester(new BranchCommand($factory)))->execute(['action' => 'create', 'name' => 'review', '--dir' => $project]);
 
@@ -166,21 +169,22 @@ it('persists checkout while an invocation-local branch resolution leaves it unch
 
     $reopened = $factory->workspace()->discover($project);
     expect($reopened)->not->toBeNull();
-    $store = new ArenaStore($reopened);
-    expect($store->readCurrentBranch()->branch)->toBe('review')
-        ->and((new \Cognesy\Tell\Workspace\BranchResolver($store))->resolve('main')->toArray())->toBe([
+    $store = new FilesystemArena($reopened);
+    $current = new BranchCurrentSelectionStore($reopened);
+    expect($current->read()->branch)->toBe('review')
+        ->and((new BranchResolver($store, $reopened))->resolve('main')->toArray())->toBe([
             'name' => 'main', 'source' => 'invocation',
         ])
-        ->and($store->readCurrentBranch()->branch)->toBe('review');
+        ->and($current->read()->branch)->toBe('review');
 });
 
 it('reports current or invocation-local branch selection in terminal output and rejects session ambiguity before inference', function (): void {
-    $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(\Cognesy\Agents\Drivers\Testing\FakeAgentDriver::fromResponses('branch answer', 'current answer')));
+    $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('branch answer', 'current answer')));
     $project = tellBranchProject($factory);
     (new CommandTester(new BranchCommand($factory)))->execute(['action' => 'create', 'name' => 'review', '--empty' => true, '--dir' => $project]);
 
     $invocation = new CommandTester(new TellCommand($factory));
-    expect($invocation->execute(['prompt' => 'on review', '--branch' => 'review', '--dir' => $project, '--output' => 'json']))->toBe(0)
+    expect($invocation->execute(['prompt' => 'on review', '--branch' => 'review', '--dir' => $project, '--output' => 'json']))->toBe(0, $invocation->getDisplay())
         ->and(json_decode($invocation->getDisplay(), true, flags: JSON_THROW_ON_ERROR)['branch'])->toBe(['name' => 'review', 'source' => 'invocation']);
 
     expect((new CommandTester(new CheckoutCommand($factory)))->execute(['name' => 'review', '--dir' => $project]))->toBe(0);
@@ -200,8 +204,8 @@ it('resets only the selected branch ref and retains immutable objects', function
     $factory = tellTestFactory();
     $project = tellBranchProject($factory);
     $workspace = tellBranchWorkspace($factory, $project);
-    $arena = new ArenaStore($workspace);
-    $head = $arena->put(new CanonicalConversationRoot('reset-root'));
+    $arena = new FilesystemArena($workspace);
+    $head = $arena->put(new ConversationRoot('reset-root'));
     $arena->compareAndSwap('main', null, $head);
     (new CommandTester(new BranchCommand($factory)))->execute(['action' => 'create', 'name' => 'review', '--dir' => $project]);
     $before = tellBranchSnapshot($workspace->paths->objects);
@@ -220,17 +224,17 @@ it('resets only verified reachable ancestors and leaves invalid targets untouche
     $factory = tellTestFactory();
     $project = tellBranchProject($factory);
     $workspace = tellBranchWorkspace($factory, $project);
-    $arena = new ArenaStore($workspace);
-    $root = $arena->put(new CanonicalConversationRoot('reset-history'));
-    $first = $arena->put(new CanonicalTurn(
+    $arena = new FilesystemArena($workspace);
+    $root = $arena->put(new ConversationRoot('reset-history'));
+    $first = $arena->put(new Turn(
         'reset-first',
-        new CanonicalLineage($root),
-        [new CanonicalMessage(CanonicalRole::User, [new CanonicalTextPart('first')])],
+        new Lineage($root),
+        [new RecordMessage(Role::User, [new TextPart('first')])],
     ));
-    $second = $arena->put(new CanonicalTurn(
+    $second = $arena->put(new Turn(
         'reset-second',
-        new CanonicalLineage($root, $first),
-        [new CanonicalMessage(CanonicalRole::User, [new CanonicalTextPart('second')])],
+        new Lineage($root, $first),
+        [new RecordMessage(Role::User, [new TextPart('second')])],
     ));
     $arena->compareAndSwap('main', null, $second);
     (new CommandTester(new BranchCommand($factory)))->execute(['action' => 'create', 'name' => 'review', '--dir' => $project]);
@@ -247,11 +251,11 @@ it('resets only verified reachable ancestors and leaves invalid targets untouche
         ->and($arena->readRef('main')->head?->toString())->toBe($second->toString())
         ->and(tellBranchSnapshot($workspace->paths->objects))->toBe($objects);
 
-    $unrelated = $arena->put(new CanonicalConversationRoot('unrelated'));
-    $descendant = $arena->put(new CanonicalTurn(
+    $unrelated = $arena->put(new ConversationRoot('unrelated'));
+    $descendant = $arena->put(new Turn(
         'reset-descendant',
-        new CanonicalLineage($root, $second),
-        [new CanonicalMessage(CanonicalRole::User, [new CanonicalTextPart('future')])],
+        new Lineage($root, $second),
+        [new RecordMessage(Role::User, [new TextPart('future')])],
     ));
     $before = $arena->readRef('branches/review')->toBytes();
     $noOp = new CommandTester(new ResetCommand($factory));
@@ -406,17 +410,15 @@ it('persists every allowed typed branch config value through a fresh workspace r
     expect($fresh->read('main'))->toBe(['version' => 9, 'values' => $values]);
 });
 
-function tellBranchProject(TellAgentFactory $factory): string
-{
-    $project = tellLastTemporaryRoot().'/branch-workspace';
+function tellBranchProject(TellAgentFactory $factory): string {
+    $project = tellLastTemporaryRoot() . '/branch-workspace';
     mkdir($project, 0700, true);
     $factory->workspace()->initialize($project);
 
     return $project;
 }
 
-function tellBranchWorkspace(TellAgentFactory $factory, string $project): TellWorkspace
-{
+function tellBranchWorkspace(TellAgentFactory $factory, string $project): WorkspaceState {
     $workspace = $factory->workspace()->discover($project);
     if ($workspace === null) {
         throw new RuntimeException('Expected initialized Tell workspace.');
@@ -426,14 +428,13 @@ function tellBranchWorkspace(TellAgentFactory $factory, string $project): TellWo
 }
 
 /** @return array<string, string> */
-function tellBranchSnapshot(string $directory): array
-{
+function tellBranchSnapshot(string $directory): array {
     $iterator = new RecursiveIteratorIterator(
         new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS),
     );
     $snapshot = [];
     foreach ($iterator as $file) {
-        if (! $file->isFile()) {
+        if (!$file->isFile()) {
             continue;
         }
         $path = $file->getPathname();

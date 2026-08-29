@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Contracts;
 
-use Cognesy\Tell\TellWorkspaceInfo;
+use Cognesy\Tell\Data\TellWorkspaceInfo;
 
 interface CanManageTellWorkspace
 {

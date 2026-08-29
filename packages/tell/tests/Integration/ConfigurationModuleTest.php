@@ -2,27 +2,25 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
-use Cognesy\Tell\Branch\TellBranchConfig;
+use Cognesy\Tell\Configuration\StandardTellConfigurationResolver;
+use Cognesy\Tell\Configuration\StandardTellPathResolver;
+use Cognesy\Tell\Configuration\TellPaths;
 use Cognesy\Tell\Contracts\CanReadTellBranchConfiguration;
-use Cognesy\Tell\Runtime\StandardTellConfigurationResolver;
-use Cognesy\Tell\Runtime\StandardTellPathResolver;
-use Cognesy\Tell\Runtime\TellPaths;
-use Cognesy\Tell\TellRequest;
+use Cognesy\Tell\Data\TellRequest;
+use Cognesy\Tell\Workspace\Branch\TellBranchConfig;
 
 it('resolves one explicit request branch host user bundled precedence with provenance', function (): void {
     $project = tellTestProject();
-    $paths = new TellPaths($project.'/agents', $project.'/home');
+    $paths = new TellPaths($project . '/agents', $project . '/home');
     mkdir($paths->configDirectory, 0755, true);
-    file_put_contents($paths->configDirectory.'/execution-defaults.json', json_encode([
+    file_put_contents($paths->configDirectory . '/execution-defaults.json', json_encode([
         'schema' => 'tell.execution-defaults.v1',
         'values' => ['timeoutMs' => 40_000, 'maxToolCalls' => 20],
     ], JSON_THROW_ON_ERROR));
-    $branches = new class implements CanReadTellBranchConfiguration
-    {
-        public function read(string $directory, ?string $branch = null): ?TellBranchConfig
-        {
+    $branches = new class implements CanReadTellBranchConfiguration {
+        public function read(string $directory, ?string $branch = null): ?TellBranchConfig {
             return new TellBranchConfig($branch ?? 'main', 2, [
                 'connection' => 'deepseek',
                 'timeoutMs' => 20_000,
@@ -56,7 +54,7 @@ it('resolves one explicit request branch host user bundled precedence with prove
 
 it('accepts an absent optional branch reader without graph or resolution failure', function (): void {
     $project = tellTestProject();
-    $paths = new TellPaths($project.'/agents', $project.'/home');
+    $paths = new TellPaths($project . '/agents', $project . '/home');
     $effective = (new StandardTellConfigurationResolver(new StandardTellPathResolver($paths)))
         ->resolve(TellRequest::prompt('no branch')->withDirectory($project));
 

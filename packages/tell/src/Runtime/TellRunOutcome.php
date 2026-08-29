@@ -6,7 +6,7 @@ namespace Cognesy\Tell\Runtime;
 
 use Closure;
 use Cognesy\Agents\Data\AgentState;
-use Cognesy\Tell\TellResult;
+use Cognesy\Tell\Data\TellResult;
 
 /**
  * Carries a run's outcome out of its generator as soon as the outcome exists,
@@ -17,9 +17,7 @@ use Cognesy\Tell\TellResult;
 final class TellRunOutcome
 {
     private ?AgentState $state = null;
-
     private ?TellResult $result = null;
-
     private bool $committed = false;
 
     /** @var list<string> */
@@ -35,45 +33,38 @@ final class TellRunOutcome
      *
      * @param  callable(AgentState): TellResult  $builder
      */
-    public function useBuilder(callable $builder): void
-    {
+    public function useBuilder(callable $builder): void {
         $this->builder = Closure::fromCallable($builder);
     }
 
     /** Records the terminal state at the instant its durable effect is applied. */
-    public function recordCommitted(AgentState $state): void
-    {
+    public function recordCommitted(AgentState $state): void {
         $this->state ??= $state;
         $this->committed = true;
     }
 
     /** Records the assembled result for the same run. */
-    public function recordResult(TellResult $result): void
-    {
+    public function recordResult(TellResult $result): void {
         $this->result = $result;
         $this->state ??= $result->state();
         $this->committed = true;
     }
 
     /** @param list<string> $warnings */
-    public function recordWarnings(array $warnings): void
-    {
+    public function recordWarnings(array $warnings): void {
         $this->warnings = $warnings;
     }
 
     /** @return list<string> */
-    public function warnings(): array
-    {
+    public function warnings(): array {
         return $this->warnings;
     }
 
-    public function state(): ?AgentState
-    {
+    public function state(): ?AgentState {
         return $this->state;
     }
 
-    public function result(): ?TellResult
-    {
+    public function result(): ?TellResult {
         if ($this->result !== null) {
             return $this->result;
         }
@@ -84,8 +75,7 @@ final class TellRunOutcome
         return $this->result = ($this->builder)($this->state);
     }
 
-    public function isCommitted(): bool
-    {
+    public function isCommitted(): bool {
         return $this->committed;
     }
 }

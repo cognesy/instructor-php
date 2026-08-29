@@ -28,7 +28,7 @@ final class StructuredToolAdapter extends SimpleTool
         $isAlias = $name !== $canonicalName;
         parent::__construct(new ToolDescriptor(
             name: $name,
-            description: $source->description().($isAlias ? "\n\nCompatibility alias for {$canonicalName}." : ''),
+            description: $source->description() . ($isAlias ? "\n\nCompatibility alias for {$canonicalName}." : ''),
             metadata: [
                 ...$source->metadata(),
                 'name' => $name,
@@ -50,8 +50,7 @@ final class StructuredToolAdapter extends SimpleTool
     }
 
     #[Override]
-    public function __invoke(mixed ...$args): array
-    {
+    public function __invoke(mixed ...$args): array {
         $result = $this->operation->use(...$args);
         if ($result->isFailure()) {
             return $this->failure('operation_exception', $result->exception()->getMessage());
@@ -78,8 +77,7 @@ final class StructuredToolAdapter extends SimpleTool
     }
 
     #[Override]
-    public function toToolSchema(): ToolDefinition
-    {
+    public function toToolSchema(): ToolDefinition {
         return new ToolDefinition(
             name: $this->name(),
             description: $this->description(),
@@ -88,8 +86,7 @@ final class StructuredToolAdapter extends SimpleTool
     }
 
     /** @return array{success: false, operation: string, invoked_as: string, data: array<string, string>, error: array{code: string, message: string}, truncated: false, partial: false} */
-    private function failure(string $code, string $message, ?string $text = null): array
-    {
+    private function failure(string $code, string $message, ?string $text = null): array {
         return [
             'success' => false,
             'operation' => $this->canonicalName,

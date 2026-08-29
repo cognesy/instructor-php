@@ -25,17 +25,16 @@
   },
   "require": {
     "php": "^8.3",
-    "cognesy/agents": "^2.8",
-    "cognesy/instructor-config": "^2.8",
-    "cognesy/instructor-polyglot": "^2.8",
-    "cognesy/instructor-utils": "^2.8",
+    "cognesy/agents": "^2.9",
+    "cognesy/instructor-config": "^2.9",
+    "cognesy/instructor-polyglot": "^2.9",
+    "cognesy/instructor-utils": "^2.9",
     "composer-runtime-api": "^2.0",
     "cordis-php/cordis": "^1.0.1",
     "helgesverre/toon": "^3.2",
     "psr/log": "^3.0",
     "symfony/console": "^7.3 || ^8.0",
-    "symfony/process": "^7.3 || ^8.0",
-    "vlucas/phpdotenv": "^5.6"
+    "symfony/process": "^7.3 || ^8.0"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",
@@ -47,7 +46,7 @@
     "vimeo/psalm": "^6.0"
   },
   "scripts": {
-    "tests": "@php vendor/bin/pest",
+    "tests": "bash scripts/tests.sh",
     "phpstan": "cd \"$(dirname \"${COMPOSER:-composer.json}\")\" && php -d memory_limit=1G vendor/bin/phpstan analyse -c phpstan.neon",
     "psalm": "cd \"$(dirname \"${COMPOSER:-composer.json}\")\" && php vendor/bin/psalm",
     "tell": "@php bin/tell"

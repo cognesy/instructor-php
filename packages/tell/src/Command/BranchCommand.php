@@ -9,15 +9,15 @@ use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Workspace\ArenaRef;
-use Cognesy\Tell\Workspace\ArenaStore;
-use Cognesy\Tell\Workspace\BranchCatalog;
-use Cognesy\Tell\Workspace\BranchConfigStore;
-use Cognesy\Tell\Workspace\BranchName;
-use Cognesy\Tell\Workspace\BranchProvenance;
-use Cognesy\Tell\Workspace\BranchResolver;
-use Cognesy\Tell\Workspace\TellWorkspace;
+use Cognesy\Tell\Workspace\Arena\FilesystemArena;
+use Cognesy\Tell\Workspace\Arena\Provenance;
+use Cognesy\Tell\Workspace\Arena\Ref;
+use Cognesy\Tell\Workspace\Branch\BranchCatalog;
+use Cognesy\Tell\Workspace\Branch\BranchName;
+use Cognesy\Tell\Workspace\Branch\BranchResolver;
+use Cognesy\Tell\Workspace\Branch\Storage\BranchConfigStore;
 use Cognesy\Tell\Workspace\WorkspaceException;
+use Cognesy\Tell\Workspace\WorkspaceState;
 use InvalidArgumentException;
 use Override;
 use Symfony\Component\Console\Command\Command;
@@ -30,15 +30,13 @@ final class BranchCommand extends Command implements CanDescribeOperationalPlane
 {
     private readonly TellAgentFactory $agents;
 
-    public function __construct(?TellAgentFactory $agents = null)
-    {
+    public function __construct(?TellAgentFactory $agents = null) {
         $this->agents = $agents ?? TellAgentFactory::installed();
         parent::__construct('branch');
     }
 
     #[Override]
-    protected function configure(): void
-    {
+    protected function configure(): void {
         $this->setDescription('List, create, or inspect immutable-head Tell branches')
             ->setHelp(<<<'HELP'
 List branches, create one from the checked-out head or another user branch,
@@ -67,8 +65,7 @@ HELP)
     }
 
     #[Override]
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         try {
             $action = (string) $input->getArgument('action');
 
@@ -90,8 +87,7 @@ HELP)
     }
 
     #[Override]
-    public function planeOperation(): PlaneOperation
-    {
+    public function planeOperation(): PlaneOperation {
         return new PlaneOperation(
             plane: OperationalPlane::Management,
             command: 'branch',
@@ -104,11 +100,10 @@ HELP)
         );
     }
 
-    private function list(InputInterface $input, OutputInterface $output): int
-    {
+    private function list(InputInterface $input, OutputInterface $output): int {
         $workspace = $this->workspace($input);
-        $store = new ArenaStore($workspace);
-        $current = (new BranchResolver($store))->resolve();
+        $store = new FilesystemArena($workspace);
+        $current = (new BranchResolver($store, $workspace))->resolve();
         $catalog = new BranchCatalog($store, new BranchConfigStore($workspace));
         $branches = $catalog->list((bool) $input->getOption('full'));
         $branches = array_map(static function (array $branch) use ($current): array {
@@ -129,26 +124,25 @@ HELP)
         return Command::SUCCESS;
     }
 
-    private function create(BranchName $name, InputInterface $input, OutputInterface $output): int
-    {
+    private function create(BranchName $name, InputInterface $input, OutputInterface $output): int {
         $from = $input->getOption('from');
-        if ($from !== null && ! is_string($from)) {
+        if ($from !== null && !is_string($from)) {
             throw new InvalidArgumentException('--from must be a branch name.');
         }
         if ((bool) $input->getOption('empty') && $from !== null) {
             throw new InvalidArgumentException('--empty and --from cannot be used together.');
         }
         $workspace = $this->workspace($input);
-        $store = new ArenaStore($workspace);
+        $store = new FilesystemArena($workspace);
         $source = match (true) {
-            (bool) $input->getOption('empty') => new ArenaRef(null, new BranchProvenance('empty', null, null)),
+            (bool) $input->getOption('empty') => new Ref(null, new Provenance('empty', null, null)),
             $from !== null => $this->fromBranch($store, BranchName::from($from)),
-            default => $this->fromCurrent($store),
+            default => $this->fromCurrent($store, $workspace),
         };
-        $created = $store->createBranch($name, $source);
-        if (! (bool) $input->getOption('empty')) {
+        $created = $store->createRef('branches/' . $name->toString(), $source);
+        if (!(bool) $input->getOption('empty')) {
             $sourceName = $from === null
-                ? (new BranchResolver($store))->resolve()->branch
+                ? (new BranchResolver($store, $workspace))->resolve()->branch
                 : BranchName::from($from)->toString();
             (new BranchConfigStore($workspace))->inherit($sourceName, $name->toString());
         }
@@ -160,57 +154,51 @@ HELP)
         return Command::SUCCESS;
     }
 
-    private function show(BranchName $name, InputInterface $input, OutputInterface $output): int
-    {
+    private function show(BranchName $name, InputInterface $input, OutputInterface $output): int {
         $workspace = $this->workspace($input);
-        $store = new ArenaStore($workspace);
+        $store = new FilesystemArena($workspace);
         $payload = (new BranchCatalog($store, new BranchConfigStore($workspace)))->show($name);
-        $payload['current'] = $name->toString() === (new BranchResolver($store))->resolve()->branch;
+        $payload['current'] = $name->toString() === (new BranchResolver($store, $workspace))->resolve()->branch;
         (new StructuredOutput($output))->write($payload, json: (bool) $input->getOption('json'));
 
         return Command::SUCCESS;
     }
 
-    private function fromCurrent(ArenaStore $store): ArenaRef
-    {
-        $selection = (new BranchResolver($store))->resolve();
+    private function fromCurrent(FilesystemArena $store, WorkspaceState $workspace): Ref {
+        $selection = (new BranchResolver($store, $workspace))->resolve();
         $current = $store->readRef($selection->ref);
 
-        return new ArenaRef($current->head, new BranchProvenance('current', $selection->branch, $current->head));
+        return new Ref($current->head, new Provenance('current', $selection->branch, $current->head));
     }
 
-    private function fromBranch(ArenaStore $store, BranchName $source): ArenaRef
-    {
-        $ref = $store->readOptionalRef('branches/'.$source->toString());
+    private function fromBranch(FilesystemArena $store, BranchName $source): Ref {
+        $ref = $store->readOptionalRef('branches/' . $source->toString());
         if ($ref === null) {
             throw new InvalidArgumentException("Tell branch '{$source->toString()}' does not exist.");
         }
 
-        return new ArenaRef($ref->head, new BranchProvenance('branch', $source->toString(), $ref->head));
+        return new Ref($ref->head, new Provenance('branch', $source->toString(), $ref->head));
     }
 
-    private function requiredName(InputInterface $input): BranchName
-    {
+    private function requiredName(InputInterface $input): BranchName {
         $value = $input->getArgument('name');
-        if (! is_string($value) || $value === '') {
+        if (!is_string($value) || $value === '') {
             throw new InvalidArgumentException('Branch name is required for create and show.');
         }
 
         return BranchName::from($value);
     }
 
-    private function requiredStoredName(InputInterface $input): BranchName
-    {
+    private function requiredStoredName(InputInterface $input): BranchName {
         $value = $input->getArgument('name');
-        if (! is_string($value) || $value === '') {
+        if (!is_string($value) || $value === '') {
             throw new InvalidArgumentException('Branch name is required for create and show.');
         }
 
         return BranchName::fromStored($value);
     }
 
-    private function workspace(InputInterface $input): TellWorkspace
-    {
+    private function workspace(InputInterface $input): WorkspaceState {
         $directory = (string) $input->getOption('dir');
         $cwd = getcwd();
         $project = match (true) {
@@ -218,7 +206,7 @@ HELP)
             is_string($cwd) => $cwd,
             default => '.',
         };
-        if (! is_dir($project)) {
+        if (!is_dir($project)) {
             throw new InvalidArgumentException("Workspace directory does not exist: {$project}");
         }
         $workspace = $this->agents->workspace()->discover($project);
@@ -229,8 +217,7 @@ HELP)
         return $workspace;
     }
 
-    private function writeError(OutputInterface $output, string $message, bool $usage, InputInterface $input): void
-    {
+    private function writeError(OutputInterface $output, string $message, bool $usage, InputInterface $input): void {
         $payload = ['error' => $message];
         if ($usage) {
             $payload['help'] = [

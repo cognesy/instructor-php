@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Agents\Tool\Tools\FakeTool;
+use Cognesy\Tell\Data\TellExecutionMode;
+use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Runtime\TellRuntime;
 use Cognesy\Tell\Tests\Support\RecordingDriver;
 use Cognesy\Tell\Tests\Support\RequestRecorder;
-use Cognesy\Tell\TellExecutionMode;
-use Cognesy\Tell\TellRequest;
-use Cognesy\Tell\Workspace\ArenaStore;
+use Cognesy\Tell\Workspace\Arena\FilesystemArena;
 
 /**
  * A Tell runner must not use its generator as a transaction. Observing the
@@ -23,34 +23,30 @@ use Cognesy\Tell\Workspace\ArenaStore;
  * reachable without draining, and a run torn down before it commits has to say
  * so rather than disappear.
  */
-function commitProject(TellAgentFactory $factory): string
-{
-    $project = tellLastTemporaryRoot().'/workspace';
+function commitProject(TellAgentFactory $factory): string {
+    $project = tellLastTemporaryRoot() . '/workspace';
     mkdir($project, 0700, true);
     $factory->workspace()->initialize($project);
 
     return $project;
 }
 
-function commitArenaHead(TellAgentFactory $factory, string $project): ?string
-{
+function commitArenaHead(TellAgentFactory $factory, string $project): ?string {
     $workspace = $factory->workspace()->discover($project);
     if ($workspace === null) {
         return null;
     }
 
-    return (new ArenaStore($workspace))->readOptionalRef('main')?->head?->toString();
+    return (new FilesystemArena($workspace))->readOptionalRef('main')?->head?->toString();
 }
 
-function commitDurableRequest(string $prompt, string $project): TellRequest
-{
+function commitDurableRequest(string $prompt, string $project): TellRequest {
     return (new TellRequest(prompt: $prompt, mode: TellExecutionMode::Durable))->withDirectory($project);
 }
 
 /** A driver that spends several tool-calling steps before answering. */
-function commitSteppingFactory(int $toolSteps): TellAgentFactory
-{
-    $tools = (new Tools)->withTool(FakeTool::returning('ping', 'ping', 'pong'));
+function commitSteppingFactory(int $toolSteps): TellAgentFactory {
+    $tools = (new Tools())->withTool(FakeTool::returning('ping', 'ping', 'pong'));
     $steps = array_fill(0, $toolSteps, ScenarioStep::toolCall('ping'));
     $steps[] = ScenarioStep::final('stepped answer');
 
@@ -60,7 +56,7 @@ function commitSteppingFactory(int $toolSteps): TellAgentFactory
 }
 
 it('publishes before the caller can observe the final checkpoint', function (): void {
-    $recorder = new RequestRecorder;
+    $recorder = new RequestRecorder();
     $factory = tellTestFactory(static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(
         new RecordingDriver($recorder, 'committed answer'),
     ));
@@ -83,7 +79,7 @@ it('publishes before the caller can observe the final checkpoint', function (): 
 });
 
 it('still publishes exactly once when the stream is fully drained', function (): void {
-    $recorder = new RequestRecorder;
+    $recorder = new RequestRecorder();
     $factory = tellTestFactory(static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(
         new RecordingDriver($recorder, 'drained answer'),
     ));
@@ -102,7 +98,7 @@ it('still publishes exactly once when the stream is fully drained', function ():
 });
 
 it('hands an early-break consumer a result instead of an exception', function (): void {
-    $recorder = new RequestRecorder;
+    $recorder = new RequestRecorder();
     $factory = tellTestFactory(static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(
         new RecordingDriver($recorder, 'early answer'),
     ));

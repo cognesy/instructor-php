@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Command;
 
+use Cognesy\Tell\Discovery\TellProviderCatalogue;
 use Cognesy\Tell\Operational\CanDescribeOperationalPlane;
 use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\FieldSelection;
 use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Runtime\TellProviderCatalogue;
 use InvalidArgumentException;
 use Override;
 use Symfony\Component\Console\Command\Command;
@@ -21,14 +21,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 final class ModelsCommand extends Command implements CanDescribeOperationalPlane
 {
-    public function __construct(private readonly TellAgentFactory $agents)
-    {
+    public function __construct(private readonly TellAgentFactory $agents) {
         parent::__construct('models');
     }
 
     #[Override]
-    protected function configure(): void
-    {
+    protected function configure(): void {
         $this->setDescription('List preset-declared models for a provider or connection')
             ->addArgument('provider-or-connection', InputArgument::OPTIONAL)
             ->addOption('dir', 'C', InputOption::VALUE_REQUIRED, 'Project directory', '')
@@ -37,8 +35,7 @@ final class ModelsCommand extends Command implements CanDescribeOperationalPlane
     }
 
     #[Override]
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         try {
             $directory = (string) $input->getOption('dir');
             $cwd = getcwd();
@@ -61,8 +58,7 @@ final class ModelsCommand extends Command implements CanDescribeOperationalPlane
     }
 
     #[Override]
-    public function planeOperation(): PlaneOperation
-    {
+    public function planeOperation(): PlaneOperation {
         return new PlaneOperation(
             plane: OperationalPlane::Management,
             command: 'models',

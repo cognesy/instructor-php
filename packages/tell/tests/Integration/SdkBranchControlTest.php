@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
+use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Tell;
-use Cognesy\Tell\TellRequest;
 
 it('controls immutable-history workspace branches through the public SDK', function (): void {
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(
         FakeAgentDriver::fromResponses('baseline', 'review'),
     ));
-    $project = tellLastTemporaryRoot().'/project';
+    $project = tellLastTemporaryRoot() . '/project';
     mkdir($project, 0755, true);
     $tell = Tell::open($project, $factory);
     $workspace = $tell->workspace();
@@ -42,7 +42,7 @@ it('controls immutable-history workspace branches through the public SDK', funct
 
 it('keeps invalid or overlong branch reset operations outside the public SDK state', function (): void {
     $factory = tellTestFactory();
-    $project = tellLastTemporaryRoot().'/project';
+    $project = tellLastTemporaryRoot() . '/project';
     mkdir($project, 0755, true);
     $branches = Tell::open($project, $factory)->workspace();
     $branches->initialize();

@@ -35,32 +35,23 @@ final class BusyIndicator
     private const array FRAMES = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
 
     private const int TICK_MICROSECONDS = 100_000;
-
     private const string STOP = "\x04";
 
     private string $status = 'starting';
-
     private int $step = 0;
 
     /** @var resource|null */
     private mixed $channel = null;
 
     private int $drawer = 0;
-
     private float $startedAt = 0.0;
-
     private int $frame = 0;
-
     private bool $isDrawer = false;
-
     private bool $suspended = false;
-
     private int $width = 0;
-
     private readonly bool $decorated;
 
-    public function __construct(private readonly OutputInterface $stderr)
-    {
+    public function __construct(private readonly OutputInterface $stderr) {
         $this->decorated = $stderr->isDecorated();
     }
 
@@ -68,8 +59,7 @@ final class BusyIndicator
      * Animation needs a real terminal to draw on and a process to draw from.
      * Without either, the indicator still reports status; it just does not spin.
      */
-    public static function canAnimate(): bool
-    {
+    public static function canAnimate(): bool {
         return function_exists('pcntl_fork')
             && function_exists('pcntl_waitpid')
             && function_exists('posix_kill')
@@ -78,8 +68,7 @@ final class BusyIndicator
             && stream_isatty(STDERR);
     }
 
-    public function attach(AgentLoop $loop): void
-    {
+    public function attach(AgentLoop $loop): void {
         $this->startedAt = microtime(true);
         $this->spawn();
         $loop->wiretap(function (object $event): void {
@@ -101,8 +90,7 @@ final class BusyIndicator
      * error, or on a cancellation, and every one of those paths has to leave the
      * line erased rather than stranded mid-frame.
      */
-    public function stop(): void
-    {
+    public function stop(): void {
         if ($this->drawer !== 0) {
             $this->send(self::STOP);
             $this->reap();
@@ -114,8 +102,7 @@ final class BusyIndicator
         $this->erase();
     }
 
-    private function step(AgentStepStarted $event): void
-    {
+    private function step(AgentStepStarted $event): void {
         $this->step = $event->stepNumber;
         $this->show('thinking');
     }
@@ -124,8 +111,7 @@ final class BusyIndicator
      * A tool that talks to the person owns the terminal while it does, so the
      * indicator gets out of the way rather than drawing over a question.
      */
-    private function toolStarted(ToolCallStarted $event): void
-    {
+    private function toolStarted(ToolCallStarted $event): void {
         if ($event->tool === 'ask_user') {
             $this->suspended = true;
             $this->stop();
@@ -135,8 +121,7 @@ final class BusyIndicator
         $this->show($this->tool($event));
     }
 
-    private function toolCompleted(ToolCallCompleted $event): void
-    {
+    private function toolCompleted(ToolCallCompleted $event): void {
         if ($event->tool === 'ask_user' && $this->suspended) {
             $this->suspended = false;
             $this->spawn();
@@ -144,22 +129,20 @@ final class BusyIndicator
         $this->show('working');
     }
 
-    private function tool(ToolCallStarted $event): string
-    {
+    private function tool(ToolCallStarted $event): string {
         $view = ToolCallView::forCall($event->tool, is_array($event->args) ? $event->args : []);
         $detail = trim($view->detail, " \t`[]");
 
-        return $detail === '' ? $view->label : $view->label.': '.$detail;
+        return $detail === '' ? $view->label : $view->label . ': ' . $detail;
     }
 
-    private function show(string $status): void
-    {
+    private function show(string $status): void {
         $this->status = $status;
         if ($this->suspended) {
             return;
         }
         if ($this->drawer !== 0) {
-            $this->send($this->label()."\n");
+            $this->send($this->label() . "\n");
 
             return;
         }
@@ -169,9 +152,8 @@ final class BusyIndicator
         $this->paint(self::FRAMES[$this->frame], $this->label(), microtime(true) - $this->startedAt);
     }
 
-    private function label(): string
-    {
-        return $this->step === 0 ? $this->status : 'step '.$this->step.' · '.$this->status;
+    private function label(): string {
+        return $this->step === 0 ? $this->status : 'step ' . $this->step . ' · ' . $this->status;
     }
 
     /**
@@ -179,9 +161,8 @@ final class BusyIndicator
      * passed over a socket rather than shared: a forked child cannot see any
      * state the parent changes after the fork.
      */
-    private function spawn(): void
-    {
-        if (! self::canAnimate()) {
+    private function spawn(): void {
+        if (!self::canAnimate()) {
             return;
         }
         $pair = @stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, 0);
@@ -203,7 +184,7 @@ final class BusyIndicator
         fclose($pair[1]);
         $this->channel = $pair[0];
         $this->drawer = $pid;
-        $this->send($this->label()."\n");
+        $this->send($this->label() . "\n");
     }
 
     /**
@@ -213,8 +194,7 @@ final class BusyIndicator
      *
      * @param  resource  $channel
      */
-    private function draw(mixed $channel, int $parent): never
-    {
+    private function draw(mixed $channel, int $parent): never {
         $this->isDrawer = true;
         stream_set_blocking($channel, false);
         $label = $this->label();
@@ -243,34 +223,30 @@ final class BusyIndicator
         exit(0);
     }
 
-    private function paint(string $frame, string $label, float $elapsed): void
-    {
-        $line = $frame.' '.$label.'  '.$this->elapsed($elapsed);
-        $this->width = $this->width !== 0 ? $this->width : max(20, (new Terminal)->getWidth() - 1);
+    private function paint(string $frame, string $label, float $elapsed): void {
+        $line = $frame . ' ' . $label . '  ' . $this->elapsed($elapsed);
+        $this->width = $this->width !== 0 ? $this->width : max(20, (new Terminal())->getWidth() - 1);
         if (mb_strlen($line) > $this->width) {
-            $line = mb_substr($line, 0, $this->width - 1).'…';
+            $line = mb_substr($line, 0, $this->width - 1) . '…';
         }
-        $this->write("\r\033[K".($this->decorated ? Color::DARK_GRAY.$line.Color::RESET : $line));
+        $this->write("\r\033[K" . ($this->decorated ? Color::DARK_GRAY . $line . Color::RESET : $line));
     }
 
-    private function erase(): void
-    {
+    private function erase(): void {
         $this->write("\r\033[K");
     }
 
-    private function elapsed(float $seconds): string
-    {
+    private function elapsed(float $seconds): string {
         $whole = (int) $seconds;
 
-        return $whole < 60 ? $whole.'s' : intdiv($whole, 60).'m'.str_pad((string) ($whole % 60), 2, '0', STR_PAD_LEFT).'s';
+        return $whole < 60 ? $whole . 's' : intdiv($whole, 60) . 'm' . str_pad((string) ($whole % 60), 2, '0', STR_PAD_LEFT) . 's';
     }
 
     /**
      * The drawer writes to the descriptor directly because it must not touch a
      * console object it shares with a parent that is writing at the same time.
      */
-    private function write(string $text): void
-    {
+    private function write(string $text): void {
         if ($this->isDrawer) {
             fwrite(STDERR, $text);
 
@@ -279,16 +255,14 @@ final class BusyIndicator
         $this->stderr->write($text, false, OutputInterface::OUTPUT_RAW);
     }
 
-    private function send(string $message): void
-    {
+    private function send(string $message): void {
         if ($this->channel !== null) {
             @fwrite($this->channel, $message);
         }
     }
 
     /** Give the drawer its tick to notice the stop, then insist. */
-    private function reap(): void
-    {
+    private function reap(): void {
         for ($waited = 0; $waited < 20; $waited++) {
             if (pcntl_waitpid($this->drawer, $status, WNOHANG) !== 0) {
                 $this->drawer = 0;

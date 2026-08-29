@@ -13,7 +13,6 @@ use UnitEnum;
 final class TracePayload
 {
     private const int MAX_DEPTH = 8;
-
     private const array PAYLOAD_KEYS = [
         'args',
         'context',
@@ -25,7 +24,6 @@ final class TracePayload
         'state',
         'stopcontext',
     ];
-
     private const array SECRET_KEYS = [
         'accesstoken',
         'apikey',
@@ -41,8 +39,7 @@ final class TracePayload
         'secret',
     ];
 
-    public static function sanitize(mixed $value, bool $includePayloads, int $maxStringLength): mixed
-    {
+    public static function sanitize(mixed $value, bool $includePayloads, int $maxStringLength): mixed {
         return self::value($value, $includePayloads, $maxStringLength, 0);
     }
 
@@ -91,7 +88,7 @@ final class TracePayload
             $normalized = is_string($key) ? self::normalizedKey($key) : '';
             $sanitized[$key] = match (true) {
                 self::isSecretKey($normalized) => '[redacted]',
-                ! $includePayloads && in_array($normalized, self::PAYLOAD_KEYS, true) => '[omitted]',
+                !$includePayloads && in_array($normalized, self::PAYLOAD_KEYS, true) => '[omitted]',
                 default => self::value($value, $includePayloads, $maxStringLength, $depth + 1),
             };
         }
@@ -99,22 +96,19 @@ final class TracePayload
         return $sanitized;
     }
 
-    private static function string(string $value, int $maxStringLength): string
-    {
+    private static function string(string $value, int $maxStringLength): string {
         if (mb_strlen($value) <= $maxStringLength) {
             return $value;
         }
 
-        return mb_substr($value, 0, $maxStringLength).'...';
+        return mb_substr($value, 0, $maxStringLength) . '...';
     }
 
-    private static function normalizedKey(string $key): string
-    {
+    private static function normalizedKey(string $key): string {
         return strtolower(str_replace(['-', '_', '.'], '', $key));
     }
 
-    private static function isSecretKey(string $key): bool
-    {
+    private static function isSecretKey(string $key): bool {
         return match (true) {
             in_array($key, self::SECRET_KEYS, true) => true,
             str_contains($key, 'password') => true,

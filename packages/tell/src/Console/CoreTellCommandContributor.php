@@ -26,11 +26,10 @@ use Cognesy\Tell\Command\ToolsCommand;
 use Cognesy\Tell\Command\WorkspaceInspectionCommand;
 use Cognesy\Tell\Contracts\CanContributeTellCommands;
 use Cognesy\Tell\Contracts\CanRunTellProtocol;
-use Cognesy\Tell\Contracts\Collections\TellCommandDescriptors;
-use Cognesy\Tell\Contracts\Data\TellCommandDescriptor;
+use Cognesy\Tell\Data\TellCommandDescriptor;
+use Cognesy\Tell\Data\TellCommandDescriptors;
 use Cognesy\Tell\Operational\PlaneMap;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\TellCommand;
 use Symfony\Component\Console\Command\Command;
 
 /** Symfony is confined to the shell edge; the host sees framework-neutral descriptors. */
@@ -42,8 +41,7 @@ final readonly class CoreTellCommandContributor implements CanContributeTellComm
         private ?CanRunTellProtocol $protocol = null,
     ) {}
 
-    public function commands(): TellCommandDescriptors
-    {
+    public function commands(): TellCommandDescriptors {
         $tell = new TellCommand($this->agents);
         $agent = new AgentCommand($this->agents, $this->cancellation, $this->protocol);
         $commands = [
@@ -58,7 +56,7 @@ final readonly class CoreTellCommandContributor implements CanContributeTellComm
             new ConfigCommand($this->agents),
             new ContextCommand($this->agents),
             new DescribeCommand($this->agents),
-            new InitCommand,
+            new InitCommand(),
             new ModelsCommand($this->agents),
             new ProvidersCommand($this->agents),
             new ResetCommand($this->agents),

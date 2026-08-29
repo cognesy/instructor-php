@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Command;
 
+use Cognesy\Tell\Console\TellOptions;
 use Cognesy\Tell\Observability\TellEventNormalizer;
 use Cognesy\Tell\Operational\CanDescribeOperationalPlane;
 use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Runtime\TellExecutionPolicy;
-use Cognesy\Tell\Runtime\TellOptions;
 use Cognesy\Tell\Runtime\TellSignalCancellationSource;
-use Cognesy\Tell\Runtime\TellToolDispatcher;
+use Cognesy\Tell\Tool\TellToolDispatcher;
 use InvalidArgumentException;
 use JsonException;
 use Override;
@@ -29,14 +28,12 @@ final class ToolCommand extends Command implements CanDescribeOperationalPlane
 {
     private const int MAX_INPUT_BYTES = 1_048_576;
 
-    public function __construct(private readonly TellAgentFactory $agents)
-    {
+    public function __construct(private readonly TellAgentFactory $agents) {
         parent::__construct('tool');
     }
 
     #[Override]
-    protected function configure(): void
-    {
+    protected function configure(): void {
         $this->setDescription('Invoke one resolved Tell tool without model inference')
             ->setHelp(<<<'HELP'
 Invoke exactly one tool from the same resolved registry an agent would receive.
@@ -72,13 +69,12 @@ HELP)
     }
 
     #[Override]
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         try {
             $options = $this->options($input);
             $name = (string) $input->getArgument('name');
             $arguments = $this->arguments($input);
-            $cancellation = new TellSignalCancellationSource;
+            $cancellation = new TellSignalCancellationSource();
             $cancellation->install();
             $result = (new TellToolDispatcher($this->agents, $cancellation))->dispatch($options, $name, $arguments);
             $this->render($output, $options->output, $name, $result);
@@ -96,8 +92,7 @@ HELP)
     }
 
     #[Override]
-    public function planeOperation(): PlaneOperation
-    {
+    public function planeOperation(): PlaneOperation {
         return new PlaneOperation(
             plane: OperationalPlane::Data,
             command: 'tool NAME JSON',
@@ -110,8 +105,7 @@ HELP)
         );
     }
 
-    private function options(InputInterface $input): TellOptions
-    {
+    private function options(InputInterface $input): TellOptions {
         $directory = (string) $input->getOption('dir');
         $cwd = getcwd();
         $directory = $directory !== '' ? $directory : (is_string($cwd) ? $cwd : '.');
@@ -130,13 +124,12 @@ HELP)
             connectionExplicit: $input->hasParameterOption(['--connection', '-c'], true),
             modelExplicit: $input->hasParameterOption(['--model', '-m'], true),
             toolsExplicit: $input->hasParameterOption('--tools', true),
-            policyOverrides: TellExecutionPolicy::overridesFromInput($input),
+            policyOverrides: TellOptions::executionPolicyOverrides($input),
         );
     }
 
     /** @return array<string, mixed> */
-    private function arguments(InputInterface $input): array
-    {
+    private function arguments(InputInterface $input): array {
         $inline = $input->getArgument('input');
         $file = $input->getOption('input-file');
         $stdin = (bool) $input->getOption('stdin');
@@ -159,16 +152,15 @@ HELP)
         } catch (JsonException) {
             throw new InvalidArgumentException('Tool arguments must be a valid JSON object.');
         }
-        if (! is_array($arguments) || array_is_list($arguments)) {
+        if (!is_array($arguments) || array_is_list($arguments)) {
             throw new InvalidArgumentException('Tool arguments must be a JSON object.');
         }
 
         return $arguments;
     }
 
-    private function readFile(string $path): string
-    {
-        if (! is_file($path) || ! is_readable($path)) {
+    private function readFile(string $path): string {
+        if (!is_file($path) || !is_readable($path)) {
             throw new InvalidArgumentException("Cannot read tool argument file: {$path}");
         }
         $size = filesize($path);
@@ -183,8 +175,7 @@ HELP)
         return $content;
     }
 
-    private function readStdin(): string
-    {
+    private function readStdin(): string {
         $content = stream_get_contents(STDIN, self::MAX_INPUT_BYTES + 1);
         if ($content === false || strlen($content) > self::MAX_INPUT_BYTES) {
             throw new InvalidArgumentException('--stdin exceeds the 1048576-byte input limit.');
@@ -194,10 +185,9 @@ HELP)
     }
 
     /** @param array<string, mixed> $result */
-    private function render(OutputInterface $output, string $mode, string $name, array $result): void
-    {
+    private function render(OutputInterface $output, string $mode, string $name, array $result): void {
         if ($mode === 'events') {
-            $events = new TellEventNormalizer;
+            $events = new TellEventNormalizer();
             foreach ([
                 $events->direct('tool.started', ['tool' => $name, 'effect' => (string) $result['effect']]),
                 $events->direct('tool.completed', ['tool' => $name, 'success' => $result['success'] === true, 'truncated' => $result['truncated'] === true]),
@@ -211,11 +201,10 @@ HELP)
         (new StructuredOutput($output))->write($result, json: $mode === 'json');
     }
 
-    private function error(OutputInterface $output, string $mode, string $message): void
-    {
+    private function error(OutputInterface $output, string $mode, string $message): void {
         if ($mode === 'events') {
             $output->writeln(json_encode(
-                (new TellEventNormalizer)->terminal('failed', ['errorCode' => 'invalid_input']),
+                (new TellEventNormalizer())->terminal('failed', ['errorCode' => 'invalid_input']),
                 JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES,
             ));
 
@@ -228,19 +217,16 @@ HELP)
         ], json: $mode === 'json');
     }
 
-    private function output(InputInterface $input): string
-    {
+    private function output(InputInterface $input): string {
         return (bool) $input->getOption('json') ? 'json' : (string) $input->getOption('output');
     }
 
     /** @return list<string> */
-    private function tools(string $tools): array
-    {
+    private function tools(string $tools): array {
         return array_values(array_unique(array_filter(array_map('trim', explode(',', $tools)), static fn (string $name): bool => $name !== '')));
     }
 
-    private function nullable(string $value): ?string
-    {
+    private function nullable(string $value): ?string {
         return $value === '' ? null : $value;
     }
 }

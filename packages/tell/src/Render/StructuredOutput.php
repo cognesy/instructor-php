@@ -12,8 +12,7 @@ final readonly class StructuredOutput
     public function __construct(private OutputInterface $output) {}
 
     /** @param array<string, mixed> $data */
-    public function write(array $data, bool $json = false): void
-    {
+    public function write(array $data, bool $json = false): void {
         $encoded = match ($json) {
             true => $this->json($data),
             false => Toon::encode($data),
@@ -22,8 +21,7 @@ final readonly class StructuredOutput
     }
 
     /** @param array<string, mixed> $data */
-    private function json(array $data): string
-    {
+    private function json(array $data): string {
         return json_encode($data, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
     }
 }

@@ -31,13 +31,12 @@ final class TellSpillToolOutputHook implements HookInterface
     public function __construct(private readonly ToolOutputSpill $spill) {}
 
     #[Override]
-    public function handle(HookContext $context): HookContext
-    {
+    public function handle(HookContext $context): HookContext {
         if ($context->triggerType() !== HookTrigger::AfterToolUse) {
             return $context;
         }
         $execution = $context->toolExecution();
-        if ($execution === null || ! $execution->result()->isSuccess()) {
+        if ($execution === null || !$execution->result()->isSuccess()) {
             return $context;
         }
         $replacement = $this->spill->replace($execution->value());

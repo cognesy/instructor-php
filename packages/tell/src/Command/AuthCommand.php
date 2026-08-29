@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Command;
 
 use Closure;
+use Cognesy\Tell\Configuration\TellCredentialNames;
 use Cognesy\Tell\Operational\CanDescribeOperationalPlane;
 use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Runtime\TellCredentialNames;
 use InvalidArgumentException;
 use Override;
 use RuntimeException;
@@ -42,8 +42,7 @@ final class AuthCommand extends Command implements CanDescribeOperationalPlane
     }
 
     #[Override]
-    protected function configure(): void
-    {
+    protected function configure(): void {
         $this->setDescription('Inspect or manage Tell credentials')
             ->setHelp(<<<'HELP'
 Inspect credential provenance or explicitly manage Tell's private credential file.
@@ -67,8 +66,7 @@ HELP)
     }
 
     #[Override]
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         try {
             return match ((string) $input->getArgument('action')) {
                 'status' => $this->status($input, $output),
@@ -88,8 +86,7 @@ HELP)
     }
 
     #[Override]
-    public function planeOperation(): PlaneOperation
-    {
+    public function planeOperation(): PlaneOperation {
         return new PlaneOperation(
             plane: OperationalPlane::Management,
             command: 'auth',
@@ -102,8 +99,7 @@ HELP)
         );
     }
 
-    private function status(InputInterface $input, OutputInterface $output): int
-    {
+    private function status(InputInterface $input, OutputInterface $output): int {
         if ((bool) $input->getOption('stdin')) {
             throw new InvalidArgumentException('--stdin is valid only for auth set.');
         }
@@ -149,10 +145,9 @@ HELP)
         return Command::SUCCESS;
     }
 
-    private function set(InputInterface $input, OutputInterface $output): int
-    {
+    private function set(InputInterface $input, OutputInterface $output): int {
         $provider = $this->requiredProvider($input);
-        if (! (bool) $input->getOption('stdin')) {
+        if (!(bool) $input->getOption('stdin')) {
             throw new InvalidArgumentException('auth set requires --stdin; credential values are never accepted as arguments.');
         }
         $variable = $this->variable($input, $provider);
@@ -170,8 +165,7 @@ HELP)
         return Command::SUCCESS;
     }
 
-    private function remove(InputInterface $input, OutputInterface $output): int
-    {
+    private function remove(InputInterface $input, OutputInterface $output): int {
         $provider = $this->requiredProvider($input);
         if ((bool) $input->getOption('stdin')) {
             throw new InvalidArgumentException('--stdin is valid only for auth set.');
@@ -188,8 +182,7 @@ HELP)
         return Command::SUCCESS;
     }
 
-    private function workspace(InputInterface $input): string
-    {
+    private function workspace(InputInterface $input): string {
         $directory = (string) $input->getOption('dir');
         $cwd = getcwd();
         $workspace = match (true) {
@@ -197,15 +190,14 @@ HELP)
             is_string($cwd) => $cwd,
             default => '.',
         };
-        if (! is_dir($workspace)) {
+        if (!is_dir($workspace)) {
             throw new InvalidArgumentException("Working directory does not exist: {$workspace}");
         }
 
         return $workspace;
     }
 
-    private function requiredProvider(InputInterface $input): string
-    {
+    private function requiredProvider(InputInterface $input): string {
         $provider = $this->optionalProvider($input);
         if ($provider === null) {
             throw new InvalidArgumentException('Provider is required for auth set and remove.');
@@ -214,8 +206,7 @@ HELP)
         return $provider;
     }
 
-    private function optionalProvider(InputInterface $input): ?string
-    {
+    private function optionalProvider(InputInterface $input): ?string {
         $provider = $input->getArgument('provider');
 
         return match (true) {
@@ -224,8 +215,7 @@ HELP)
         };
     }
 
-    private function variable(InputInterface $input, string $provider): string
-    {
+    private function variable(InputInterface $input, string $provider): string {
         $variable = (string) $input->getOption('variable');
         $resolved = match ($variable) {
             '' => TellCredentialNames::forProvider($provider),
@@ -237,13 +227,11 @@ HELP)
     }
 
     /** @param array<string, mixed> $payload */
-    private function write(InputInterface $input, OutputInterface $output, array $payload): void
-    {
+    private function write(InputInterface $input, OutputInterface $output, array $payload): void {
         (new StructuredOutput($output))->write($payload, json: (bool) $input->getOption('json'));
     }
 
-    private function error(InputInterface $input, OutputInterface $output, string $message): void
-    {
+    private function error(InputInterface $input, OutputInterface $output, string $message): void {
         $this->write($input, $output, [
             'error' => $message,
             'help' => ['Run `tell auth --help` for safe credential-management examples.'],

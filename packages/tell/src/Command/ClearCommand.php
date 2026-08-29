@@ -10,12 +10,12 @@ use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\Workspace\ArenaStore;
-use Cognesy\Tell\Workspace\BranchResolver;
-use Cognesy\Tell\Workspace\SessionCompatibilityRef;
-use Cognesy\Tell\Workspace\TellWorkspace;
-use Cognesy\Tell\Workspace\WorkspaceConversationReader;
+use Cognesy\Tell\Workspace\Arena\FilesystemArena;
+use Cognesy\Tell\Workspace\Branch\BranchResolver;
+use Cognesy\Tell\Workspace\Conversation\ConversationReader;
+use Cognesy\Tell\Workspace\Session\SessionRef;
 use Cognesy\Tell\Workspace\WorkspaceException;
+use Cognesy\Tell\Workspace\WorkspaceState;
 use InvalidArgumentException;
 use Override;
 use Symfony\Component\Console\Command\Command;
@@ -30,20 +30,18 @@ final class ClearCommand extends Command implements CanDescribeOperationalPlane
 {
     private readonly TellAgentFactory $agents;
 
-    public function __construct(?TellAgentFactory $agents = null)
-    {
+    public function __construct(?TellAgentFactory $agents = null) {
         $this->agents = $agents ?? TellAgentFactory::installed();
         parent::__construct('clear');
     }
 
     #[Override]
-    protected function configure(): void
-    {
+    protected function configure(): void {
         $this->setDescription('Clear one Tell canonical conversation without deleting history')
             ->setHelp(<<<'HELP'
 Move the selected canonical ref to its empty state. Prior immutable objects stay
-available for audit, and the command neither runs inference nor deletes legacy
-sessions, traces, configuration, or other refs.
+available for audit, and the command neither runs inference nor deletes traces,
+configuration, or other refs.
 
 Examples:
   tell clear
@@ -57,27 +55,26 @@ HELP)
     }
 
     #[Override]
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         try {
             $workspace = $this->workspace($input);
             $session = $this->session($input);
-            $arena = new ArenaStore($workspace);
+            $arena = new FilesystemArena($workspace);
             $requested = $input->getOption('branch');
             if ($requested !== null && $requested !== '' && $session !== null) {
                 throw new InvalidArgumentException('--branch and --session cannot be used together.');
             }
-            if ($requested !== null && ! is_string($requested)) {
+            if ($requested !== null && !is_string($requested)) {
                 throw new InvalidArgumentException('Tell branch selector must be a string.');
             }
             $branch = $session === null
-                ? (new BranchResolver($arena))->resolve($requested === '' ? null : $requested)
+                ? (new BranchResolver($arena, $workspace))->resolve($requested === '' ? null : $requested)
                 : null;
-            $conversation = (new WorkspaceConversationReader($arena))->read($session, $branch);
+            $conversation = (new ConversationReader($arena))->read($session, $branch);
             $previousHead = $conversation->head();
             $ref = match ($session) {
                 null => $branch->ref,
-                default => (new SessionCompatibilityRef($session))->refName(),
+                default => (new SessionRef($session))->refName(),
             };
             $result = $arena->compareAndSwapToEmpty($ref, $previousHead);
 
@@ -106,8 +103,7 @@ HELP)
     }
 
     #[Override]
-    public function planeOperation(): PlaneOperation
-    {
+    public function planeOperation(): PlaneOperation {
         return new PlaneOperation(
             plane: OperationalPlane::Management,
             command: 'clear',
@@ -120,8 +116,7 @@ HELP)
         );
     }
 
-    private function workspace(InputInterface $input): TellWorkspace
-    {
+    private function workspace(InputInterface $input): WorkspaceState {
         $directory = (string) $input->getOption('dir');
         $cwd = getcwd();
         $project = match (true) {
@@ -129,7 +124,7 @@ HELP)
             is_string($cwd) => $cwd,
             default => '.',
         };
-        if (! is_dir($project)) {
+        if (!is_dir($project)) {
             throw new InvalidArgumentException("Workspace directory does not exist: {$project}");
         }
         $workspace = $this->agents->workspace()->discover($project);
@@ -140,21 +135,19 @@ HELP)
         return $workspace;
     }
 
-    private function session(InputInterface $input): ?SessionId
-    {
+    private function session(InputInterface $input): ?SessionId {
         $value = $input->getOption('session');
         if ($value === null || $value === '') {
             return null;
         }
-        if (! is_string($value)) {
+        if (!is_string($value)) {
             throw new InvalidArgumentException('Tell session selector must be a string.');
         }
 
         return SessionId::from($value);
     }
 
-    private function writeError(OutputInterface $output, string $message, bool $usage, bool $json): void
-    {
+    private function writeError(OutputInterface $output, string $message, bool $usage, bool $json): void {
         $payload = ['error' => $message];
         if ($usage) {
             $payload['help'] = ['Run `tell clear --help` for valid selectors and examples.'];

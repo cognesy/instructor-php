@@ -19,7 +19,7 @@ use Cognesy\Polyglot\Inference\Reasoning\ReasoningSelection;
 $text = Inference::using('openai')
     ->withModel('gpt-5.6')
     ->withMessages('Write one short sentence about PHP.')
-    ->withReasoning(ReasoningSelection::withEffort(ReasoningEffort::Medium))
+    ->withReasoning(ReasoningSelection::effort(ReasoningEffort::Medium))
     ->get();
 ```
 

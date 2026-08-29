@@ -44,12 +44,20 @@ use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
 use Cognesy\Polyglot\Inference\Reasoning\ReasoningSelection;
 use Cognesy\Tell\Capability\AskUser\TellAskUserCapability;
 use Cognesy\Tell\Capability\Coding\TellCodingTools;
+use Cognesy\Tell\Configuration\TellConfig;
+use Cognesy\Tell\Configuration\TellCredentialNames;
+use Cognesy\Tell\Configuration\TellCredentialStore;
+use Cognesy\Tell\Configuration\TellExecutionPolicy;
+use Cognesy\Tell\Configuration\TellPaths;
+use Cognesy\Tell\Configuration\TellStorage;
+use Cognesy\Tell\Console\TellOptions;
 use Cognesy\Tell\Contracts\CanResolveTellModel;
-use Cognesy\Tell\Diagnostics\StartupScanCounter;
-use Cognesy\Tell\Diagnostics\TellDiagnostics;
+use Cognesy\Tell\Data\TellRequest;
+use Cognesy\Tell\Discovery\StartupScanCounter;
+use Cognesy\Tell\Discovery\TellProviderCatalogue;
 use Cognesy\Tell\Observability\ExecutionTraceWriter;
-use Cognesy\Tell\TellRequest;
-use Cognesy\Tell\Workspace\WorkspaceManager;
+use Cognesy\Tell\Workspace\WorkspaceRepository;
+use InvalidArgumentException;
 use RuntimeException;
 
 final readonly class TellAgentFactory
@@ -74,18 +82,16 @@ final readonly class TellAgentFactory
             null => null,
             default => Closure::fromCallable($decorateLoop),
         };
-        $this->clock = $clock ?? new SystemTellClock;
+        $this->clock = $clock ?? new SystemTellClock();
     }
 
-    public static function installed(): self
-    {
+    public static function installed(): self {
         return new self(TellPaths::installed());
     }
 
-    public function definitions(string $projectPath): AgentDefinitionRegistry
-    {
+    public function definitions(string $projectPath): AgentDefinitionRegistry {
         $this->startupScans?->recordAgentDefinitionScan();
-        $registry = new AgentDefinitionRegistry;
+        $registry = new AgentDefinitionRegistry();
         $registry->autoDiscover(
             projectPath: $projectPath,
             packagePath: $this->paths->packageAgents,
@@ -95,15 +101,13 @@ final readonly class TellAgentFactory
         return $registry;
     }
 
-    public function definition(TellOptions $options): AgentDefinition
-    {
+    public function definition(TellOptions $options): AgentDefinition {
         $definition = $this->definitions($options->directory)->get($options->agent);
 
         return $this->configureDefinition($definition, $options);
     }
 
-    public function configureDefinition(AgentDefinition $definition, TellOptions $options): AgentDefinition
-    {
+    public function configureDefinition(AgentDefinition $definition, TellOptions $options): AgentDefinition {
         if ($this->driver !== null) {
             $this->assertReasoningSupportedWithoutCredentials($options);
         }
@@ -149,8 +153,8 @@ final readonly class TellAgentFactory
         // timing and performed duplicate filesystem/environment reads.
         $definition ??= $this->definition($options);
         $definitions = $this->definitions($options->directory);
-        $capabilities = new AgentCapabilityRegistry;
-        $tools = new ToolRegistry;
+        $capabilities = new AgentCapabilityRegistry();
+        $tools = new ToolRegistry();
         $this->startupScans?->recordComposerManifestScan();
         $discovery = CapabilityDiscovery::discover(
             $capabilities,
@@ -176,9 +180,9 @@ final readonly class TellAgentFactory
             executor: $delegation === null ? null : new TellSubagentExecutor($this, $options, $delegation, $diagnostics),
             currentDepth: $delegation === null ? 0 : $delegation->depth,
         ));
-        $capabilities->register('tell.system_prompt', new UseSystemPrompt);
-        $capabilities->register('tell.self_knowledge', new UseSelfKnowledge);
-        $capabilities->register('tell.self_description', new UseSelfDescription);
+        $capabilities->register('tell.system_prompt', new UseSystemPrompt());
+        $capabilities->register('tell.self_knowledge', new UseSelfKnowledge());
+        $capabilities->register('tell.self_description', new UseSelfDescription());
         $capabilities->register('tell.agent_definitions', new UseAgentDefinitions(
             registry: $definitions,
             validator: new AgentDefinitionValidator($capabilities, $tools),
@@ -203,60 +207,51 @@ final readonly class TellAgentFactory
         };
     }
 
-    public function sessions(): SessionRuntime
-    {
+    public function sessions(): SessionRuntime {
         return new SessionRuntime(
             sessions: $this->sessionRepository(),
             events: new EventDispatcher('tell-sessions'),
         );
     }
 
-    public function sessionRepository(): SessionRepository
-    {
+    public function sessionRepository(): SessionRepository {
         (new TellStorage($this->paths))->ensureSessions();
 
         return new SessionRepository(new FileSessionStore($this->paths->sessions));
     }
 
-    public function attachExecutionTrace(AgentLoop $loop, TellOptions $options): void
-    {
+    public function attachExecutionTrace(AgentLoop $loop, TellOptions $options): void {
         (new ExecutionTraceWriter($this->paths, $this->config(), $options))->attach($loop);
     }
 
-    public function config(): TellConfig
-    {
+    public function config(): TellConfig {
         return TellConfig::fromFile($this->paths->configFile);
     }
 
-    public function credentials(): TellCredentialStore
-    {
+    public function credentials(): TellCredentialStore {
         return new TellCredentialStore($this->paths);
     }
 
-    public function secretResolver(string $projectPath): SecretResolver
-    {
+    public function secretResolver(string $projectPath): SecretResolver {
         return new SecretResolver(
-            new EnvironmentSecretSource,
+            new EnvironmentSecretSource(),
             DotenvFileSecretSource::optional(
-                rtrim($projectPath, '/\\').DIRECTORY_SEPARATOR.'.env',
+                rtrim($projectPath, '/\\') . DIRECTORY_SEPARATOR . '.env',
                 'workspace-env',
             ),
             $this->credentials()->source(),
         );
     }
 
-    public function paths(): TellPaths
-    {
+    public function paths(): TellPaths {
         return $this->paths;
     }
 
-    public function workspace(): WorkspaceManager
-    {
-        return new WorkspaceManager($this->startupScans);
+    public function workspace(): WorkspaceRepository {
+        return new WorkspaceRepository($this->startupScans);
     }
 
-    public function assertReady(TellOptions $options): void
-    {
+    public function assertReady(TellOptions $options): void {
         if ($this->driver !== null) {
             $this->assertReasoningSupportedWithoutCredentials($options);
 
@@ -269,8 +264,7 @@ final readonly class TellAgentFactory
         $this->assertCredentialAvailable($this->llmConfig($options), $options->connection);
     }
 
-    private function llmConfig(TellOptions $options): LLMConfig
-    {
+    private function llmConfig(TellOptions $options): LLMConfig {
         if ($this->modelResolver !== null) {
             return $this->modelResolver->resolve(TellRequest::fromOptions($options));
         }
@@ -293,23 +287,21 @@ final readonly class TellAgentFactory
         return $config;
     }
 
-    private function withReasoningSelection(AgentLoop $loop, TellOptions $options): AgentLoop
-    {
+    private function withReasoningSelection(AgentLoop $loop, TellOptions $options): AgentLoop {
         if ($options->reasoningEffort === null) {
             return $loop;
         }
         $driver = $loop->driver();
-        if (! $driver instanceof ToolCallingDriver) {
+        if (!$driver instanceof ToolCallingDriver) {
             return $loop;
         }
 
         return $loop->withDriver($driver->withReasoning(
-            ReasoningSelection::withEffort($options->reasoningEffort),
+            ReasoningSelection::effort($options->reasoningEffort),
         ));
     }
 
-    private function assertReasoningSupportedWithoutCredentials(TellOptions $options): void
-    {
+    private function assertReasoningSupportedWithoutCredentials(TellOptions $options): void {
         if ($options->reasoningEffort === null) {
             return;
         }
@@ -338,31 +330,29 @@ final readonly class TellAgentFactory
         if ($options->reasoningEffort === null) {
             return;
         }
-        $selection = ReasoningSelection::withEffort($options->reasoningEffort);
+        $selection = ReasoningSelection::effort($options->reasoningEffort);
         $capabilities = BundledInferenceDrivers::capabilities($driver, $model)?->reasoning();
         if ($capabilities?->supports($selection) === true) {
             return;
         }
 
         $label = $model === '' ? $driver : "{$driver}/{$model}";
-        throw new \InvalidArgumentException(
+        throw new InvalidArgumentException(
             "Reasoning effort is not supported by '{$label}' according to Polyglot capability metadata.",
         );
     }
 
-    private function connectionDirectory(TellOptions $options): ?string
-    {
-        $project = rtrim($options->directory, '/\\').'/config/llm/presets';
+    private function connectionDirectory(TellOptions $options): ?string {
+        $project = rtrim($options->directory, '/\\') . '/config/llm/presets';
 
         return match (true) {
-            is_file($project.'/'.$options->connection.'.yaml') => $project,
-            is_file($this->paths->connections.'/'.$options->connection.'.yaml') => $this->paths->connections,
+            is_file($project . '/' . $options->connection . '.yaml') => $project,
+            is_file($this->paths->connections . '/' . $options->connection . '.yaml') => $this->paths->connections,
             default => null,
         };
     }
 
-    private function assertCredentialAvailable(LLMConfig $config, string $connection): void
-    {
+    private function assertCredentialAvailable(LLMConfig $config, string $connection): void {
         $host = parse_url($config->apiUrl, PHP_URL_HOST);
         $local = $config->driver === 'ollama'
             || in_array($host, ['localhost', '127.0.0.1', '::1'], true);
@@ -373,13 +363,12 @@ final readonly class TellAgentFactory
 
         throw new RuntimeException(
             "Missing credential {$variable} for connection '{$connection}'. "
-            ."Set it in the process environment, workspace .env, or with `tell auth set {$connection} --stdin`.",
+            . "Set it in the process environment, workspace .env, or with `tell auth set {$connection} --stdin`.",
         );
     }
 
     /** @param list<string> $allowed */
-    private function filterTools(AgentLoop $loop, array $allowed): AgentLoop
-    {
+    private function filterTools(AgentLoop $loop, array $allowed): AgentLoop {
         if ($allowed === []) {
             return $loop;
         }
@@ -399,8 +388,7 @@ final readonly class TellAgentFactory
      * become the spill ceiling, and fall back to the retained-bytes limit when
      * spilling is off.
      */
-    private function bashPolicy(TellExecutionPolicy $policy): BashPolicy
-    {
+    private function bashPolicy(TellExecutionPolicy $policy): BashPolicy {
         $bytes = $policy->spillsToolOutput() ? $policy->maxSpillBytes : $policy->maxToolOutputChars;
 
         return new BashPolicy(
@@ -413,8 +401,7 @@ final readonly class TellAgentFactory
         );
     }
 
-    private function withExecutionPolicy(AgentLoop $loop, TellExecutionPolicy $policy, ?string $blobs): AgentLoop
-    {
+    private function withExecutionPolicy(AgentLoop $loop, TellExecutionPolicy $policy, ?string $blobs): AgentLoop {
         $driver = $loop->driver();
         if ($driver instanceof ToolCallingDriver) {
             $loop = $loop->withDriver($driver->withRetryPolicy(new InferenceRetryPolicy(
@@ -422,7 +409,7 @@ final readonly class TellAgentFactory
             )));
         }
         $interceptor = $loop->interceptor();
-        if (! $interceptor instanceof HookStack) {
+        if (!$interceptor instanceof HookStack) {
             throw new RuntimeException('Tell requires the Agents hook-stack lifecycle interceptor.');
         }
 
@@ -460,7 +447,7 @@ final readonly class TellAgentFactory
             return $loop;
         }
         $interceptor = $loop->interceptor();
-        if (! $interceptor instanceof HookStack) {
+        if (!$interceptor instanceof HookStack) {
             throw new RuntimeException('Tell requires the Agents hook-stack lifecycle interceptor.');
         }
 

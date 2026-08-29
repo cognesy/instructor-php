@@ -59,35 +59,20 @@ use Override;
 class ToolCallingDriver implements CanAcceptLifecycleInterceptor, CanAcceptLLMConfig, CanAcceptMessageCompiler, CanAcceptToolRuntime, CanResolveLLMConfig, CanUseTools
 {
     private LLMProvider $llm;
-
     private ?CanSendHttpRequests $httpClient = null;
-
     private ToolChoice $toolChoice;
-
     private string $model;
-
     private ResponseFormat $responseFormat;
-
     private array $options;
-
     private CanCompileMessages $messageCompiler;
-
     private ?InferenceRetryPolicy $retryPolicy;
-
     private bool $parallelToolCalls = false;
-
     private ToolExecutionFormatter $formatter;
-
     private CanHandleEvents $events;
-
     private CanCreateInference $inference;
-
     private Tools $tools;
-
     private CanExecuteToolCalls $executor;
-
     private CanInterceptAgentLifecycle $interceptor;
-
     private ?ReasoningSelection $reasoning;
 
     public function __construct(
@@ -113,23 +98,22 @@ class ToolCallingDriver implements CanAcceptLifecycleInterceptor, CanAcceptLLMCo
         $this->model = $model;
         $this->responseFormat = $responseFormat ?? ResponseFormat::empty();
         $this->options = $options;
-        $this->messageCompiler = $messageCompiler ?? new ConversationWithCurrentToolTrace;
+        $this->messageCompiler = $messageCompiler ?? new ConversationWithCurrentToolTrace();
         $this->retryPolicy = $retryPolicy;
-        $this->formatter = new ToolExecutionFormatter;
+        $this->formatter = new ToolExecutionFormatter();
         $this->events = $events ?? new EventDispatcher(name: 'agents.driver.tool-calling');
-        $this->tools = $tools ?? new Tools;
+        $this->tools = $tools ?? new Tools();
         $this->executor = $executor ?? new ToolExecutor(
             tools: $this->tools,
             events: $this->events,
-            interceptor: new PassThroughInterceptor,
+            interceptor: new PassThroughInterceptor(),
         );
-        $this->interceptor = $interceptor ?? new PassThroughInterceptor;
+        $this->interceptor = $interceptor ?? new PassThroughInterceptor();
         $this->reasoning = $reasoning;
     }
 
     #[Override]
-    public function withLLMConfig(LLMConfig $config): static
-    {
+    public function withLLMConfig(LLMConfig $config): static {
         $llm = $this->llm->withLLMConfig($config);
 
         return $this->with(
@@ -143,32 +127,27 @@ class ToolCallingDriver implements CanAcceptLifecycleInterceptor, CanAcceptLLMCo
     }
 
     #[Override]
-    public function resolveConfig(): LLMConfig
-    {
+    public function resolveConfig(): LLMConfig {
         return $this->llm->resolveConfig();
     }
 
     #[Override]
-    public function messageCompiler(): CanCompileMessages
-    {
+    public function messageCompiler(): CanCompileMessages {
         return $this->messageCompiler;
     }
 
     #[Override]
-    public function withMessageCompiler(CanCompileMessages $compiler): static
-    {
+    public function withMessageCompiler(CanCompileMessages $compiler): static {
         return $this->with(messageCompiler: $compiler);
     }
 
     #[Override]
-    public function withToolRuntime(Tools $tools, CanExecuteToolCalls $executor): static
-    {
+    public function withToolRuntime(Tools $tools, CanExecuteToolCalls $executor): static {
         return $this->with(tools: $tools, executor: $executor);
     }
 
     #[Override]
-    public function withInterceptor(CanInterceptAgentLifecycle $interceptor): static
-    {
+    public function withInterceptor(CanInterceptAgentLifecycle $interceptor): static {
         return $this->with(interceptor: $interceptor);
     }
 
@@ -176,24 +155,20 @@ class ToolCallingDriver implements CanAcceptLifecycleInterceptor, CanAcceptLLMCo
      * Sets the public Polyglot retry policy for inference requests created by this driver.
      * Callers should express retry counts here rather than wrapping the driver in a retry loop.
      */
-    public function withRetryPolicy(InferenceRetryPolicy $retryPolicy): static
-    {
+    public function withRetryPolicy(InferenceRetryPolicy $retryPolicy): static {
         return $this->with(retryPolicy: $retryPolicy);
     }
 
-    public function withReasoning(ReasoningSelection $reasoning): static
-    {
+    public function withReasoning(ReasoningSelection $reasoning): static {
         return $this->with(reasoning: $reasoning);
     }
 
-    public function reasoning(): ReasoningSelection
-    {
+    public function reasoning(): ReasoningSelection {
         return $this->reasoning ?? ReasoningSelection::providerDefault();
     }
 
     #[Override]
-    public function useTools(AgentState $state): AgentState
-    {
+    public function useTools(AgentState $state): AgentState {
         $state = $this->ensureStateLLMConfig($state);
         $messages = $this->messageCompiler->compile($state);
         $inference = $this->performInference($state, $this->tools, $messages);
@@ -247,15 +222,14 @@ class ToolCallingDriver implements CanAcceptLifecycleInterceptor, CanAcceptLLMCo
         );
     }
 
-    private function performInference(AgentState $state, Tools $tools, Messages $messages): ToolCallingInference
-    {
+    private function performInference(AgentState $state, Tools $tools, Messages $messages): ToolCallingInference {
         $cache = $state->context()->toCachedContext($tools->toToolSchema());
         $cache = $cache->isEmpty() ? null : $cache;
         $request = $this->buildInferenceRequest($state, $messages, $tools, $cache);
         $hookContext = $this->interceptor->intercept(HookContext::beforeInferenceRequest($state, $request));
         $state = $hookContext->state();
         $request = $hookContext->inferenceRequest() ?? $request;
-        $requestStartedAt = new DateTimeImmutable;
+        $requestStartedAt = new DateTimeImmutable();
         $pending = $this->inference->create($request);
         $this->emitInferenceRequestStarted($state, $request, $pending->executionId());
         $response = $pending->response();
@@ -273,9 +247,9 @@ class ToolCallingDriver implements CanAcceptLifecycleInterceptor, CanAcceptLLMCo
         Tools $tools,
         ?CachedInferenceContext $cache = null,
     ): InferenceRequest {
-        $hasTools = ! $tools->isEmpty();
-        $hasCachedTools = ! ($cache?->tools()->isEmpty() ?? true);
-        $toolDefinitions = ($hasTools && ! $hasCachedTools) ? $tools->toToolSchema() : ToolDefinitions::empty();
+        $hasTools = !$tools->isEmpty();
+        $hasCachedTools = !($cache?->tools()->isEmpty() ?? true);
+        $toolDefinitions = ($hasTools && !$hasCachedTools) ? $tools->toToolSchema() : ToolDefinitions::empty();
 
         $options = $this->options;
         if ($hasTools) {
@@ -297,8 +271,7 @@ class ToolCallingDriver implements CanAcceptLifecycleInterceptor, CanAcceptLLMCo
 
     }
 
-    private function telemetryCorrelationFor(AgentState $state): ?OperationCorrelation
-    {
+    private function telemetryCorrelationFor(AgentState $state): ?OperationCorrelation {
         $executionId = $state->execution()?->executionId()->toString() ?? '';
         if ($executionId === '') {
             return null;
@@ -306,7 +279,7 @@ class ToolCallingDriver implements CanAcceptLifecycleInterceptor, CanAcceptLLMCo
 
         return OperationCorrelation::child(
             rootOperationId: $executionId,
-            parentOperationId: "{$executionId}:step:".($state->stepCount() + 1),
+            parentOperationId: "{$executionId}:step:" . ($state->stepCount() + 1),
         );
     }
 
@@ -326,8 +299,7 @@ class ToolCallingDriver implements CanAcceptLifecycleInterceptor, CanAcceptLLMCo
         );
     }
 
-    private function appendResponseContent(Messages $messages, InferenceResponse $response): Messages
-    {
+    private function appendResponseContent(Messages $messages, InferenceResponse $response): Messages {
         $content = $response->content();
         if ($content === '') {
             return $messages;
@@ -339,8 +311,7 @@ class ToolCallingDriver implements CanAcceptLifecycleInterceptor, CanAcceptLLMCo
         return $messages->appendMessage(Message::asAssistant($content));
     }
 
-    private function isToolArgsLeak(string $content, ToolCalls $toolCalls): bool
-    {
+    private function isToolArgsLeak(string $content, ToolCalls $toolCalls): bool {
         if ($toolCalls->hasNone()) {
             return false;
         }
@@ -357,13 +328,11 @@ class ToolCallingDriver implements CanAcceptLifecycleInterceptor, CanAcceptLLMCo
         return false;
     }
 
-    private function parseContentArgs(string $content): ?array
-    {
+    private function parseContentArgs(string $content): ?array {
         return JsonExtractor::first($content);
     }
 
-    private function ensureStateLLMConfig(AgentState $state): AgentState
-    {
+    private function ensureStateLLMConfig(AgentState $state): AgentState {
         if ($state->llmConfig() !== null) {
             return $state;
         }
@@ -371,8 +340,7 @@ class ToolCallingDriver implements CanAcceptLifecycleInterceptor, CanAcceptLLMCo
         return $state->withLLMConfig($this->llm->resolveConfig());
     }
 
-    private function resolveModel(AgentState $state): ?string
-    {
+    private function resolveModel(AgentState $state): ?string {
         if ($this->model !== '') {
             return $this->model;
         }
@@ -384,8 +352,7 @@ class ToolCallingDriver implements CanAcceptLifecycleInterceptor, CanAcceptLLMCo
 
     // EVENT EMISSION ////////////////////////////////////////////
 
-    private function emitInferenceRequestStarted(AgentState $state, InferenceRequest $request, ?string $inferenceExecutionId = null): void
-    {
+    private function emitInferenceRequestStarted(AgentState $state, InferenceRequest $request, ?string $inferenceExecutionId = null): void {
         $model = $request->model() !== '' ? $request->model() : $this->resolveModel($state);
         $this->events->dispatch(new InferenceRequestStarted(
             agentId: $state->agentId()->toString(),
@@ -398,8 +365,7 @@ class ToolCallingDriver implements CanAcceptLifecycleInterceptor, CanAcceptLLMCo
         ));
     }
 
-    private function emitInferenceResponseReceived(AgentState $state, ?InferenceResponse $response, DateTimeImmutable $requestStartedAt, ?string $inferenceExecutionId = null): void
-    {
+    private function emitInferenceResponseReceived(AgentState $state, ?InferenceResponse $response, DateTimeImmutable $requestStartedAt, ?string $inferenceExecutionId = null): void {
         $this->events->dispatch(new InferenceResponseReceived(
             agentId: $state->agentId()->toString(),
             executionId: $state->execution()?->executionId()->toString() ?? '',

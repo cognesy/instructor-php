@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Continuation\AgentStopException;
@@ -12,27 +12,27 @@ use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Agents\Session\Data\SessionId;
-use Cognesy\Tell\Canonical\CanonicalConversationRoot;
-use Cognesy\Tell\Canonical\CanonicalLineage;
-use Cognesy\Tell\Canonical\CanonicalMessage;
-use Cognesy\Tell\Canonical\CanonicalRole;
-use Cognesy\Tell\Canonical\CanonicalTextPart;
-use Cognesy\Tell\Canonical\CanonicalTurn;
+use Cognesy\Tell\Console\TellCommand;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\TellCommand;
 use Cognesy\Tell\Tests\Support\RecordingDriver;
 use Cognesy\Tell\Tests\Support\RequestRecorder;
-use Cognesy\Tell\Workspace\ArenaStore;
-use Cognesy\Tell\Workspace\SessionCompatibilityRef;
-use Cognesy\Tell\Workspace\TellWorkspace;
+use Cognesy\Tell\Workspace\Arena\FilesystemArena;
+use Cognesy\Tell\Workspace\Arena\Record\ConversationRoot;
+use Cognesy\Tell\Workspace\Arena\Record\Lineage;
+use Cognesy\Tell\Workspace\Arena\Record\Message as RecordMessage;
+use Cognesy\Tell\Workspace\Arena\Record\Role;
+use Cognesy\Tell\Workspace\Arena\Record\TextPart;
+use Cognesy\Tell\Workspace\Arena\Record\Turn;
+use Cognesy\Tell\Workspace\Session\SessionRef;
+use Cognesy\Tell\Workspace\WorkspaceState;
 use Symfony\Component\Console\Tester\CommandTester;
 
 it('runs transient and durable turns with the same compiled workspace context while only the durable turn publishes', function (): void {
-    $recorder = new RequestRecorder;
+    $recorder = new RequestRecorder();
     $factory = tellTestFactory(static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(new RecordingDriver($recorder, 'answer')));
     $project = tellTransientProject($factory);
     $workspace = tellTransientWorkspace($factory, $project);
-    tellTransientSeedHistory(new ArenaStore($workspace));
+    tellTransientSeedHistory(new FilesystemArena($workspace));
     $beforeArena = tellTransientSnapshot($workspace->paths->arena);
     $beforeSessions = tellTransientSnapshot($factory->paths()->sessions);
     $command = new TellCommand($factory);
@@ -72,18 +72,15 @@ it('runs transient and durable turns with the same compiled workspace context wh
         ->and($messages($recorder->requests[0]))->toBe($messages($recorder->requests[1]));
 });
 
-it('reads a named compatible workspace history without changing its arena or legacy source', function (): void {
-    $recorder = new RequestRecorder;
+it('reads named canonical workspace session history without changing the arena', function (): void {
+    $recorder = new RequestRecorder();
     $factory = tellTestFactory(static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(new RecordingDriver($recorder, 'session answer')));
     $project = tellTransientProject($factory);
     $workspace = tellTransientWorkspace($factory, $project);
     $session = SessionId::from('review-1');
-    $compatibility = new SessionCompatibilityRef($session);
-    tellTransientSeedHistory(new ArenaStore($workspace), $compatibility->refName(), $compatibility);
-    mkdir($factory->paths()->sessions, 0700, true);
-    file_put_contents($factory->paths()->sessions.'/review-1.json', '{"legacy":"unchanged"}');
+    $sessionRef = new SessionRef($session);
+    tellTransientSeedHistory(new FilesystemArena($workspace), $sessionRef->refName(), $sessionRef);
     $beforeArena = tellTransientSnapshot($workspace->paths->arena);
-    $beforeSessions = tellTransientSnapshot($factory->paths()->sessions);
     $tester = new CommandTester(new TellCommand($factory));
 
     expect($tester->execute([
@@ -106,8 +103,7 @@ it('reads a named compatible workspace history without changing its arena or leg
         'role' => 'user',
         'content' => 'initial transient constraints',
     ])
-        ->and(tellTransientSnapshot($workspace->paths->arena))->toBe($beforeArena)
-        ->and(tellTransientSnapshot($factory->paths()->sessions))->toBe($beforeSessions);
+        ->and(tellTransientSnapshot($workspace->paths->arena))->toBe($beforeArena);
 });
 
 it('keeps transient text and events explicitly non-durable while leaving tool-enabled workspace state unchanged', function (): void {
@@ -117,8 +113,8 @@ it('keeps transient text and events explicitly non-durable while leaving tool-en
     )));
     $project = tellTransientProject($factory);
     $workspace = tellTransientWorkspace($factory, $project);
-    file_put_contents($project.'/notes.txt', 'safe workspace tool input');
-    tellTransientSeedHistory(new ArenaStore($workspace));
+    file_put_contents($project . '/notes.txt', 'safe workspace tool input');
+    tellTransientSeedHistory(new FilesystemArena($workspace));
     $before = tellTransientSnapshot($workspace->paths->arena);
     $text = new CommandTester(new TellCommand($factory));
 
@@ -157,7 +153,7 @@ it('marks transient failures and cancellation without publishing state', functio
     $factory = tellTestFactory(static fn (AgentLoop $loop): AgentLoop => $loop->withDriver($driver));
     $project = tellTransientProject($factory);
     $workspace = tellTransientWorkspace($factory, $project);
-    tellTransientSeedHistory(new ArenaStore($workspace));
+    tellTransientSeedHistory(new FilesystemArena($workspace));
     $beforeArena = tellTransientSnapshot($workspace->paths->arena);
     $beforeSessions = tellTransientSnapshot($factory->paths()->sessions);
     $tester = new CommandTester(new TellCommand($factory));
@@ -176,10 +172,8 @@ it('marks transient failures and cancellation without publishing state', functio
         ->and(tellTransientSnapshot($factory->paths()->sessions))->toBe($beforeSessions);
 })->with([
     'driver failure' => [new FakeAgentDriver([ScenarioStep::error('failed')]), 1],
-    'cancellation' => [new class implements CanUseTools
-    {
-        public function useTools(AgentState $state): AgentState
-        {
+    'cancellation' => [new class implements CanUseTools {
+        public function useTools(AgentState $state): AgentState {
             throw new AgentStopException(StopSignal::userRequested('cancelled'));
         }
     }, 1],
@@ -187,7 +181,7 @@ it('marks transient failures and cancellation without publishing state', functio
 
 it('keeps a no-workspace transient invocation stateless and records only redacted transient traces', function (): void {
     $factory = tellTestFactory(static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(FakeAgentDriver::fromResponses('stateless answer')));
-    $project = tellLastTemporaryRoot().'/no-workspace';
+    $project = tellLastTemporaryRoot() . '/no-workspace';
     mkdir($project, 0700, true);
     $tester = new CommandTester(new TellCommand($factory));
 
@@ -200,11 +194,11 @@ it('keeps a no-workspace transient invocation stateless and records only redacte
     ]))->toBe(0);
     $payload = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
     $files = tellTransientTraceFiles($factory->paths()->executionTraces);
-    $sessionFiles = glob($factory->paths()->sessionTraces.'/*.jsonl') ?: [];
+    $sessionFiles = glob($factory->paths()->sessionTraces . '/*.jsonl') ?: [];
     $records = tellTransientTraceRecords($sessionFiles[0] ?? '');
 
     expect($payload['execution'])->toBe(['mode' => 'transient', 'durable' => false])
-        ->and(is_dir($project.'/.tell'))->toBeFalse()
+        ->and(is_dir($project . '/.tell'))->toBeFalse()
         ->and(is_dir($factory->paths()->sessions))->toBeFalse()
         ->and($files)->toBe([])
         ->and($sessionFiles)->toHaveCount(1)
@@ -214,17 +208,15 @@ it('keeps a no-workspace transient invocation stateless and records only redacte
         ->and(json_encode($records, JSON_THROW_ON_ERROR))->not->toContain('transient private prompt');
 });
 
-function tellTransientProject(TellAgentFactory $factory): string
-{
-    $project = tellLastTemporaryRoot().'/transient-workspace';
+function tellTransientProject(TellAgentFactory $factory): string {
+    $project = tellLastTemporaryRoot() . '/transient-workspace';
     mkdir($project, 0700, true);
     $factory->workspace()->initialize($project);
 
     return $project;
 }
 
-function tellTransientWorkspace(TellAgentFactory $factory, string $project): TellWorkspace
-{
+function tellTransientWorkspace(TellAgentFactory $factory, string $project): WorkspaceState {
     $workspace = $factory->workspace()->discover($project);
     if ($workspace === null) {
         throw new RuntimeException('Expected initialized Tell workspace to be discoverable.');
@@ -234,37 +226,36 @@ function tellTransientWorkspace(TellAgentFactory $factory, string $project): Tel
 }
 
 function tellTransientSeedHistory(
-    ArenaStore $arena,
+    FilesystemArena $arena,
     string $ref = 'main',
-    ?SessionCompatibilityRef $compatibility = null,
+    ?SessionRef $sessionRef = null,
 ): void {
     $suffix = str_replace('/', '-', $ref);
-    $root = $arena->put(new CanonicalConversationRoot(
-        id: 'conversation-transient-'.$suffix,
-        messages: [new CanonicalMessage(CanonicalRole::User, [new CanonicalTextPart('initial transient constraints')])],
-        session: $compatibility?->metadata(),
+    $root = $arena->put(new ConversationRoot(
+        id: 'conversation-transient-' . $suffix,
+        messages: [new RecordMessage(Role::User, [new TextPart('initial transient constraints')])],
+        session: $sessionRef?->metadata(),
     ));
-    $head = $arena->put(new CanonicalTurn(
-        id: 'turn-transient-'.$suffix,
-        lineage: new CanonicalLineage($root),
-        messages: [new CanonicalMessage(CanonicalRole::Assistant, [new CanonicalTextPart('durable prior answer')])],
+    $head = $arena->put(new Turn(
+        id: 'turn-transient-' . $suffix,
+        lineage: new Lineage($root),
+        messages: [new RecordMessage(Role::Assistant, [new TextPart('durable prior answer')])],
     ));
     $arena->compareAndSwap($ref, null, $head);
 }
 
 /** @return array<string, string> */
-function tellTransientSnapshot(string $directory): array
-{
+function tellTransientSnapshot(string $directory): array {
     $files = [];
-    if (! is_dir($directory)) {
+    if (!is_dir($directory)) {
         return $files;
     }
-    $root = rtrim($directory, '/\\').DIRECTORY_SEPARATOR;
+    $root = rtrim($directory, '/\\') . DIRECTORY_SEPARATOR;
     $iterator = new RecursiveIteratorIterator(
         new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS),
     );
     foreach ($iterator as $file) {
-        if (! $file->isFile()) {
+        if (!$file->isFile()) {
             continue;
         }
         $bytes = file_get_contents($file->getPathname());
@@ -279,19 +270,17 @@ function tellTransientSnapshot(string $directory): array
 }
 
 /** @return list<string> */
-function tellTransientTraceFiles(string $directory): array
-{
-    $files = glob($directory.'/*/*.jsonl') ?: [];
+function tellTransientTraceFiles(string $directory): array {
+    $files = glob($directory . '/*/*.jsonl') ?: [];
     sort($files);
 
     return array_values($files);
 }
 
 /** @return list<array<string, mixed>> */
-function tellTransientTraceRecords(string $path): array
-{
+function tellTransientTraceRecords(string $path): array {
     $contents = file_get_contents($path);
-    if (! is_string($contents)) {
+    if (!is_string($contents)) {
         return [];
     }
 

@@ -36,9 +36,9 @@ it('accepts exact and documented mappings but rejects lossy ones', function () {
         ),
     );
 
-    expect($capabilities->supports(ReasoningSelection::withEffort(ReasoningEffort::Low)))->toBeTrue()
-        ->and($capabilities->supports(ReasoningSelection::withEffort(ReasoningEffort::Medium)))->toBeTrue()
-        ->and($capabilities->supports(ReasoningSelection::withEffort(ReasoningEffort::Max)))->toBeFalse();
+    expect($capabilities->supports(ReasoningSelection::effort(ReasoningEffort::Low)))->toBeTrue()
+        ->and($capabilities->supports(ReasoningSelection::effort(ReasoningEffort::Medium)))->toBeTrue()
+        ->and($capabilities->supports(ReasoningSelection::effort(ReasoningEffort::Max)))->toBeFalse();
 });
 
 it('validates budgets and mandatory reasoning independently', function () {
@@ -53,8 +53,8 @@ it('validates budgets and mandatory reasoning independently', function () {
         defaultBehavior: ReasoningDefaultBehavior::Mandatory,
     );
 
-    expect($capabilities->supports(ReasoningSelection::withBudget(64)))->toBeTrue()
-        ->and($capabilities->supports(ReasoningSelection::withBudget(4097)))->toBeFalse()
+    expect($capabilities->supports(ReasoningSelection::budget(64)))->toBeTrue()
+        ->and($capabilities->supports(ReasoningSelection::budget(4097)))->toBeFalse()
         ->and($capabilities->supports(ReasoningSelection::disabled()))->toBeFalse();
 });
 

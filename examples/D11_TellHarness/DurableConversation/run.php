@@ -25,7 +25,7 @@ require 'examples/boot.php';
 require_once dirname(__DIR__).'/Support.php';
 
 use Cognesy\Tell\Tell;
-use Cognesy\Tell\TellRequest;
+use Cognesy\Tell\Data\TellRequest;
 
 $project = TellHarnessExample::project();
 

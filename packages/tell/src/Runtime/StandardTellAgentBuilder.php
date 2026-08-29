@@ -10,19 +10,17 @@ use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Tell\Contracts\CanBuildTellAgent;
 use Cognesy\Tell\Contracts\CanObserveTellExecution;
 use Cognesy\Tell\Contracts\CanResolveTellConfiguration;
-use Cognesy\Tell\TellRequest;
+use Cognesy\Tell\Data\TellRequest;
 
 final readonly class StandardTellAgentBuilder implements CanBuildTellAgent, CanOpenTellRuntime
 {
     public function __construct(private TellAgentFactory $agents) {}
 
-    public function definition(TellRequest $request): AgentDefinition
-    {
+    public function definition(TellRequest $request): AgentDefinition {
         return $this->agents->definition($request->toOptions());
     }
 
-    public function build(TellRequest $request, ?CanProvideCancellationSignal $cancellation = null): AgentLoop
-    {
+    public function build(TellRequest $request, ?CanProvideCancellationSignal $cancellation = null): AgentLoop {
         return $this->agents->build($request->toOptions(), cancellation: $cancellation);
     }
 
@@ -34,8 +32,7 @@ final readonly class StandardTellAgentBuilder implements CanBuildTellAgent, CanO
         return new TellRuntime($this->agents, $cancellation, $configuration, $observer);
     }
 
-    public function agents(): TellAgentFactory
-    {
+    public function agents(): TellAgentFactory {
         return $this->agents;
     }
 }

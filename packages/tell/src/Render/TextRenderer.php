@@ -6,8 +6,8 @@ namespace Cognesy\Tell\Render;
 
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Data\AgentState;
+use Cognesy\Tell\Data\TellExecutionMode;
 use Cognesy\Tell\Observability\TellEventNormalizer;
-use Cognesy\Tell\TellExecutionMode;
 use Override;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -27,8 +27,7 @@ final readonly class TextRenderer implements OutputRenderer
     public function attach(AgentLoop $loop, ?TellEventNormalizer $events = null): void {}
 
     #[Override]
-    public function finish(AgentState $state, array $warnings = [], TellExecutionMode $mode = TellExecutionMode::Stateless, ?array $branch = null, array $diagnostics = []): void
-    {
+    public function finish(AgentState $state, array $warnings = [], TellExecutionMode $mode = TellExecutionMode::Stateless, ?array $branch = null, array $diagnostics = []): void {
         $verbosity = match ($this->quiet) {
             true => OutputInterface::VERBOSITY_QUIET,
             false => OutputInterface::VERBOSITY_NORMAL,
@@ -38,7 +37,7 @@ final readonly class TextRenderer implements OutputRenderer
             $this->stdout->writeln($answer, $verbosity);
         }
         if ($state->stopSignal() !== null) {
-            $this->stderr->writeln('[tell] execution stopped: '.$state->stopSignal()->toString(), $verbosity);
+            $this->stderr->writeln('[tell] execution stopped: ' . $state->stopSignal()->toString(), $verbosity);
         }
         if ($mode === TellExecutionMode::Transient) {
             $this->stderr->writeln('[tell] transient: no conversation or session state was persisted.', $verbosity);
@@ -47,7 +46,7 @@ final readonly class TextRenderer implements OutputRenderer
             $this->stderr->writeln("[tell] branch: {$branch['name']} ({$branch['source']}).", $verbosity);
         }
         foreach ($warnings as $warning) {
-            $this->stderr->writeln('[tell] '.$warning, $verbosity);
+            $this->stderr->writeln('[tell] ' . $warning, $verbosity);
         }
         foreach ($diagnostics as $diagnostic) {
             $this->stderr->writeln("[tell] {$diagnostic['severity']} {$diagnostic['code']}: {$diagnostic['message']}", $verbosity);

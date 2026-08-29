@@ -33,7 +33,7 @@ try {
     foreach ($host->commandContributors() as $contributor) {
         array_push($commands, ...$contributor->commands()->all());
     }
-    $application = $host->application()->build(new \Cognesy\Tell\Contracts\Collections\TellCommandDescriptors(...$commands));
+    $application = $host->application()->build(new \Cognesy\Tell\Data\TellCommandDescriptors(...$commands));
     $argv = array_values($_SERVER['argv'] ?? []);
     exit($application->run($argv));
 } finally {

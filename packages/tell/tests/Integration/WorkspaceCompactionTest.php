@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Continuation\AgentStopException;
@@ -20,22 +20,22 @@ use Cognesy\Messages\ContentPart;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Tell\Canonical\CanonicalConversationRoot;
-use Cognesy\Tell\Canonical\CanonicalHash;
-use Cognesy\Tell\Canonical\CanonicalLineage;
-use Cognesy\Tell\Canonical\CanonicalMessage;
-use Cognesy\Tell\Canonical\CanonicalRole;
-use Cognesy\Tell\Canonical\CanonicalTextPart;
-use Cognesy\Tell\Canonical\CanonicalTurn;
 use Cognesy\Tell\Command\CompactCommand;
+use Cognesy\Tell\Console\TellApplication;
+use Cognesy\Tell\Console\TellCommand;
 use Cognesy\Tell\Runtime\TellAgentFactory;
-use Cognesy\Tell\TellApplication;
-use Cognesy\Tell\TellCommand;
 use Cognesy\Tell\Tests\Support\RecordingDriver;
 use Cognesy\Tell\Tests\Support\RequestRecorder;
-use Cognesy\Tell\Workspace\ArenaStore;
-use Cognesy\Tell\Workspace\SessionCompatibilityRef;
-use Cognesy\Tell\Workspace\TellWorkspace;
+use Cognesy\Tell\Workspace\Arena\FilesystemArena;
+use Cognesy\Tell\Workspace\Arena\ObjectHash;
+use Cognesy\Tell\Workspace\Arena\Record\ConversationRoot;
+use Cognesy\Tell\Workspace\Arena\Record\Lineage;
+use Cognesy\Tell\Workspace\Arena\Record\Message as RecordMessage;
+use Cognesy\Tell\Workspace\Arena\Record\Role;
+use Cognesy\Tell\Workspace\Arena\Record\TextPart;
+use Cognesy\Tell\Workspace\Arena\Record\Turn;
+use Cognesy\Tell\Workspace\Session\SessionRef;
+use Cognesy\Tell\Workspace\WorkspaceState;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -43,7 +43,7 @@ it('compacts a canonical history into a provenance-linked summary and keeps its 
     $factory = tellTestFactory(static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(FakeAgentDriver::fromResponses('Carry forward the release decision and finish the migration.')));
     $project = tellCompactProject($factory);
     $workspace = tellCompactWorkspace($factory, $project);
-    $arena = new ArenaStore($workspace);
+    $arena = new FilesystemArena($workspace);
     [, $sourceHead] = tellCompactSeedHistory($arena);
     $sourceBytes = file_get_contents($arena->objectPath($sourceHead));
     $tester = new CommandTester(new CompactCommand($factory));
@@ -59,7 +59,7 @@ it('compacts a canonical history into a provenance-linked summary and keeps its 
         throw new RuntimeException('Expected compaction to publish a canonical head.');
     }
     $record = $arena->get($head);
-    if (! $record instanceof CanonicalTurn) {
+    if (!$record instanceof Turn) {
         throw new RuntimeException('Expected compacted arena head to be a canonical turn.');
     }
 
@@ -78,16 +78,16 @@ it('compacts a canonical history into a provenance-linked summary and keeps its 
         ->and($record->messages()[0]->parts()[0]->text())->toBe('Carry forward the release decision and finish the migration.')
         ->and(file_get_contents($arena->objectPath($sourceHead)))->toBe($sourceBytes);
 
-    $recorder = new RequestRecorder;
+    $recorder = new RequestRecorder();
     $freshFactory = new TellAgentFactory(
         $factory->paths(),
         static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(new RecordingDriver($recorder, 'continued after compaction')),
     );
     $freshApplication = new TellApplication($freshFactory);
     $freshApplication->setAutoExit(false);
-    $historyOutput = new BufferedOutput;
-    $transcriptOutput = new BufferedOutput;
-    $contextOutput = new BufferedOutput;
+    $historyOutput = new BufferedOutput();
+    $transcriptOutput = new BufferedOutput();
+    $contextOutput = new BufferedOutput();
     expect($freshApplication->runArgv(['tell', 'history', '--dir', $project, '--json'], $historyOutput))->toBe(0)
         ->and($freshApplication->runArgv(['tell', 'transcript', '--dir', $project, '--json'], $transcriptOutput))->toBe(0)
         ->and($freshApplication->runArgv(['tell', 'context', '--dir', $project, '--json'], $contextOutput))->toBe(0);
@@ -123,11 +123,11 @@ it('compacts only the selected named workspace session', function (): void {
     $factory = tellTestFactory(static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(FakeAgentDriver::fromResponses('Named session summary.')));
     $project = tellCompactProject($factory);
     $workspace = tellCompactWorkspace($factory, $project);
-    $arena = new ArenaStore($workspace);
+    $arena = new FilesystemArena($workspace);
     [, $mainHead] = tellCompactSeedHistory($arena);
     $session = SessionId::from('review-1');
-    $compatibility = new SessionCompatibilityRef($session);
-    [, $sourceHead] = tellCompactSeedHistory($arena, $compatibility->refName(), $compatibility);
+    $sessionRef = new SessionRef($session);
+    [, $sourceHead] = tellCompactSeedHistory($arena, $sessionRef->refName(), $sessionRef);
     $tester = new CommandTester(new CompactCommand($factory));
 
     $status = $tester->execute([
@@ -144,15 +144,15 @@ it('compacts only the selected named workspace session', function (): void {
             'sourceHead' => $sourceHead->toString(),
         ])
         ->and($arena->readRef()->head?->equals($mainHead))->toBeTrue()
-        ->and($arena->readRef($compatibility->refName())->head?->equals($sourceHead))->toBeFalse()
-        ->and(str_contains($display, $compatibility->refName()))->toBeFalse();
+        ->and($arena->readRef($sessionRef->refName())->head?->equals($sourceHead))->toBeFalse()
+        ->and(str_contains($display, $sessionRef->refName()))->toBeFalse();
 });
 
 it('keeps the selected ref on compaction failures and rejects oversized focus hints', function (CanUseTools $driver, string $error): void {
     $factory = tellTestFactory(static fn (AgentLoop $loop): AgentLoop => $loop->withDriver($driver));
     $project = tellCompactProject($factory);
     $workspace = tellCompactWorkspace($factory, $project);
-    $arena = new ArenaStore($workspace);
+    $arena = new FilesystemArena($workspace);
     [, $sourceHead] = tellCompactSeedHistory($arena);
     $before = tellCompactArenaSnapshot($workspace);
     $tester = new CommandTester(new CompactCommand($factory));
@@ -166,18 +166,14 @@ it('keeps the selected ref on compaction failures and rejects oversized focus hi
         ->and(tellCompactArenaSnapshot($workspace))->toBe($before);
 })->with([
     'driver failure' => [new FakeAgentDriver([ScenarioStep::error('failed')]), 'did not complete'],
-    'cancellation' => [new class implements CanUseTools
-    {
-        public function useTools(AgentState $state): AgentState
-        {
+    'cancellation' => [new class implements CanUseTools {
+        public function useTools(AgentState $state): AgentState {
             throw new AgentStopException(StopSignal::userRequested('cancelled'));
         }
     }, 'did not complete'],
     'empty final summary' => [new FakeAgentDriver([ScenarioStep::final(' ')]), 'empty summary'],
-    'non-text final summary' => [new class implements CanUseTools
-    {
-        public function useTools(AgentState $state): AgentState
-        {
+    'non-text final summary' => [new class implements CanUseTools {
+        public function useTools(AgentState $state): AgentState {
             return $state->withCurrentStep(new AgentStep(
                 inputMessages: $state->messages(),
                 outputMessages: new Messages(Message::fromContent(
@@ -188,10 +184,8 @@ it('keeps the selected ref on compaction failures and rejects oversized focus hi
             ));
         }
     }, 'did not complete'],
-    'invalid canonical serialization' => [new class implements CanUseTools
-    {
-        public function useTools(AgentState $state): AgentState
-        {
+    'invalid canonical serialization' => [new class implements CanUseTools {
+        public function useTools(AgentState $state): AgentState {
             return $state->withCurrentStep(new AgentStep(
                 inputMessages: $state->messages(),
                 outputMessages: Messages::fromString("\xB1", 'assistant'),
@@ -202,10 +196,8 @@ it('keeps the selected ref on compaction failures and rejects oversized focus hi
 ]);
 
 it('does not persist focus hints or provider wire data in a compacted canonical record', function (): void {
-    $driver = new class implements CanUseTools
-    {
-        public function useTools(AgentState $state): AgentState
-        {
+    $driver = new class implements CanUseTools {
+        public function useTools(AgentState $state): AgentState {
             return $state->withCurrentStep(new AgentStep(
                 inputMessages: $state->messages(),
                 outputMessages: Messages::fromString('Semantic summary only.', 'assistant'),
@@ -219,7 +211,7 @@ it('does not persist focus hints or provider wire data in a compacted canonical 
     $factory = tellTestFactory(static fn (AgentLoop $loop): AgentLoop => $loop->withDriver($driver));
     $project = tellCompactProject($factory);
     $workspace = tellCompactWorkspace($factory, $project);
-    $arena = new ArenaStore($workspace);
+    $arena = new FilesystemArena($workspace);
     tellCompactSeedHistory($arena);
     $tester = new CommandTester(new CompactCommand($factory));
 
@@ -241,7 +233,7 @@ it('preserves explicit compaction provenance when compacted again', function ():
     $factory = tellTestFactory(static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(FakeAgentDriver::fromResponses('Stable compacted summary.')));
     $project = tellCompactProject($factory);
     $workspace = tellCompactWorkspace($factory, $project);
-    $arena = new ArenaStore($workspace);
+    $arena = new FilesystemArena($workspace);
     [, $sourceHead] = tellCompactSeedHistory($arena);
     $tester = new CommandTester(new CompactCommand($factory));
 
@@ -256,7 +248,7 @@ it('preserves explicit compaction provenance when compacted again', function ():
         throw new RuntimeException('Expected second compacted head.');
     }
     $second = $arena->get($secondHead);
-    if (! $second instanceof CanonicalTurn) {
+    if (!$second instanceof Turn) {
         throw new RuntimeException('Expected second compacted record.');
     }
 
@@ -269,16 +261,16 @@ it('keeps a competing head when explicit compaction loses its final compare-and-
     $factory = tellTestFactory();
     $project = tellCompactProject($factory);
     $workspace = tellCompactWorkspace($factory, $project);
-    $arena = new ArenaStore($workspace);
+    $arena = new FilesystemArena($workspace);
     [, $sourceHead] = tellCompactSeedHistory($arena);
     $source = $arena->get($sourceHead);
-    if (! $source instanceof CanonicalTurn) {
+    if (!$source instanceof Turn) {
         throw new RuntimeException('Expected source canonical turn.');
     }
-    $winner = $arena->put(new CanonicalTurn(
+    $winner = $arena->put(new Turn(
         id: 'turn-compact-race-winner',
-        lineage: new CanonicalLineage($source->lineage()->root(), $sourceHead),
-        messages: [new CanonicalMessage(CanonicalRole::Assistant, [new CanonicalTextPart('Competing winner.')])],
+        lineage: new Lineage($source->lineage()->root(), $sourceHead),
+        messages: [new RecordMessage(Role::Assistant, [new TextPart('Competing winner.')])],
     ));
     $racingFactory = new TellAgentFactory(
         $factory->paths(),
@@ -304,7 +296,7 @@ it('returns usage code two for a bounded compact hint', function (): void {
     $factory = tellTestFactory();
     $project = tellCompactProject($factory);
     $workspace = tellCompactWorkspace($factory, $project);
-    $arena = new ArenaStore($workspace);
+    $arena = new FilesystemArena($workspace);
     [, $sourceHead] = tellCompactSeedHistory($arena);
     $tester = new CommandTester(new CompactCommand($factory));
 
@@ -320,17 +312,15 @@ it('returns usage code two for a bounded compact hint', function (): void {
         ->and($arena->readRef()->head?->equals($sourceHead))->toBeTrue();
 });
 
-function tellCompactProject(TellAgentFactory $factory): string
-{
-    $project = tellLastTemporaryRoot().'/compact-workspace';
+function tellCompactProject(TellAgentFactory $factory): string {
+    $project = tellLastTemporaryRoot() . '/compact-workspace';
     mkdir($project, 0700, true);
     $factory->workspace()->initialize($project);
 
     return $project;
 }
 
-function tellCompactWorkspace(TellAgentFactory $factory, string $project): TellWorkspace
-{
+function tellCompactWorkspace(TellAgentFactory $factory, string $project): WorkspaceState {
     $workspace = $factory->workspace()->discover($project);
     if ($workspace === null) {
         throw new RuntimeException('Expected initialized Tell workspace to be discoverable.');
@@ -339,30 +329,30 @@ function tellCompactWorkspace(TellAgentFactory $factory, string $project): TellW
     return $workspace;
 }
 
-/** @return array{0: CanonicalHash, 1: CanonicalHash} */
+/** @return array{0: ObjectHash, 1: ObjectHash} */
 function tellCompactSeedHistory(
-    ArenaStore $arena,
+    FilesystemArena $arena,
     string $ref = 'main',
-    ?SessionCompatibilityRef $compatibility = null,
+    ?SessionRef $sessionRef = null,
 ): array {
     $suffix = str_replace('/', '-', $ref);
-    $root = $arena->put(new CanonicalConversationRoot(
-        id: 'conversation-compact-'.$suffix,
-        messages: [new CanonicalMessage(CanonicalRole::User, [new CanonicalTextPart('initial constraints')])],
-        session: $compatibility?->metadata(),
+    $root = $arena->put(new ConversationRoot(
+        id: 'conversation-compact-' . $suffix,
+        messages: [new RecordMessage(Role::User, [new TextPart('initial constraints')])],
+        session: $sessionRef?->metadata(),
     ));
-    $first = $arena->put(new CanonicalTurn(
-        id: 'turn-compact-first-'.$suffix,
-        lineage: new CanonicalLineage($root),
+    $first = $arena->put(new Turn(
+        id: 'turn-compact-first-' . $suffix,
+        lineage: new Lineage($root),
         messages: [
-            new CanonicalMessage(CanonicalRole::Assistant, [new CanonicalTextPart('first completed decision')]),
-            new CanonicalMessage(CanonicalRole::User, [new CanonicalTextPart('follow-up investigation')]),
+            new RecordMessage(Role::Assistant, [new TextPart('first completed decision')]),
+            new RecordMessage(Role::User, [new TextPart('follow-up investigation')]),
         ],
     ));
-    $head = $arena->put(new CanonicalTurn(
-        id: 'turn-compact-second-'.$suffix,
-        lineage: new CanonicalLineage($root, $first),
-        messages: [new CanonicalMessage(CanonicalRole::Assistant, [new CanonicalTextPart('second completed result')])],
+    $head = $arena->put(new Turn(
+        id: 'turn-compact-second-' . $suffix,
+        lineage: new Lineage($root, $first),
+        messages: [new RecordMessage(Role::Assistant, [new TextPart('second completed result')])],
     ));
     $arena->compareAndSwap($ref, null, $head);
 
@@ -370,15 +360,14 @@ function tellCompactSeedHistory(
 }
 
 /** @return array<string, string> */
-function tellCompactArenaSnapshot(TellWorkspace $workspace): array
-{
+function tellCompactArenaSnapshot(WorkspaceState $workspace): array {
     $files = [];
-    $root = $workspace->paths->arena.DIRECTORY_SEPARATOR;
+    $root = $workspace->paths->arena . DIRECTORY_SEPARATOR;
     $iterator = new RecursiveIteratorIterator(
         new RecursiveDirectoryIterator($workspace->paths->arena, FilesystemIterator::SKIP_DOTS),
     );
     foreach ($iterator as $file) {
-        if (! $file->isFile()) {
+        if (!$file->isFile()) {
             continue;
         }
         $bytes = file_get_contents($file->getPathname());

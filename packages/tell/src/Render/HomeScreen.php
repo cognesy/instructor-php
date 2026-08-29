@@ -19,10 +19,9 @@ final readonly class HomeScreen
     public function __construct(private OutputInterface $output) {}
 
     /** @param array<string, mixed> $payload */
-    public function write(array $payload): void
-    {
+    public function write(array $payload): void {
         $binary = $this->text($payload, 'bin', 'tell');
-        $this->line($this->paint($binary, Color::BOLD).' — '.$this->text($payload, 'description'));
+        $this->line($this->paint($binary, Color::BOLD) . ' — ' . $this->text($payload, 'description'));
         $this->line('');
         $this->facts($payload);
         $this->agents($payload);
@@ -30,8 +29,7 @@ final readonly class HomeScreen
     }
 
     /** @param array<string, mixed> $payload */
-    private function facts(array $payload): void
-    {
+    private function facts(array $payload): void {
         $storage = is_array($payload['storage'] ?? null) ? $payload['storage'] : [];
         $workspace = $payload['workspace'] ?? null;
         foreach ([
@@ -45,33 +43,32 @@ final readonly class HomeScreen
             'storage' => $this->text($storage, 'home'),
             'traces' => $this->text($storage, 'executionTraces'),
         ] as $name => $value) {
-            $this->line('  '.$this->paint(str_pad($name, 10), Color::DARK_GRAY).$value);
+            $this->line('  ' . $this->paint(str_pad($name, 10), Color::DARK_GRAY) . $value);
         }
         $this->line('');
     }
 
     /** @param array<string, mixed> $payload */
-    private function agents(array $payload): void
-    {
+    private function agents(array $payload): void {
         $agents = is_array($payload['agents'] ?? null) ? $payload['agents'] : [];
-        $this->line($this->paint('Agents', Color::BOLD).' '.$this->paint('('.count($agents).')', Color::DARK_GRAY));
+        $this->line($this->paint('Agents', Color::BOLD) . ' ' . $this->paint('(' . count($agents) . ')', Color::DARK_GRAY));
         $width = 0;
         foreach ($agents as $agent) {
             $width = is_array($agent) ? max($width, mb_strlen($this->text($agent, 'name'))) : $width;
         }
         foreach ($agents as $agent) {
-            if (! is_array($agent)) {
+            if (!is_array($agent)) {
                 continue;
             }
             $name = $this->text($agent, 'name');
             $this->line(
-                '  '.$this->paint($name, Color::CYAN)
-                .str_repeat(' ', $width - mb_strlen($name) + 2).$this->text($agent, 'description'),
+                '  ' . $this->paint($name, Color::CYAN)
+                . str_repeat(' ', $width - mb_strlen($name) + 2) . $this->text($agent, 'description'),
             );
         }
         $errors = $payload['discoveryErrors'] ?? 0;
         if (is_int($errors) && $errors > 0) {
-            $this->line('  '.$this->paint($errors.' definition'.($errors === 1 ? '' : 's').' could not be read', Color::YELLOW));
+            $this->line('  ' . $this->paint($errors . ' definition' . ($errors === 1 ? '' : 's') . ' could not be read', Color::YELLOW));
         }
         $this->line('');
     }
@@ -83,27 +80,25 @@ final readonly class HomeScreen
      *
      * @param  array<string, mixed>  $payload
      */
-    private function next(array $payload, string $binary): void
-    {
+    private function next(array $payload, string $binary): void {
         $help = is_array($payload['help'] ?? null) ? $payload['help'] : [];
         $this->line($this->paint('Next', Color::BOLD));
         foreach ($help as $entry) {
             // Entries without a command are notes about the structured payload's
             // own field names, which say nothing to a reader of this screen.
-            if (! is_string($entry) || ! str_contains($entry, '`')) {
+            if (!is_string($entry) || !str_contains($entry, '`')) {
                 continue;
             }
-            $this->line('  '.$this->highlight($entry, $binary));
+            $this->line('  ' . $this->highlight($entry, $binary));
         }
     }
 
     /** Paint the backticked command in a help sentence, and drop the backticks. */
-    private function highlight(string $entry, string $binary): string
-    {
+    private function highlight(string $entry, string $binary): string {
         return (string) preg_replace_callback(
             '/`([^`]+)`/',
             fn (array $match): string => $this->paint(
-                str_starts_with($match[1], 'tell') ? $binary.substr($match[1], strlen('tell')) : $match[1],
+                str_starts_with($match[1], 'tell') ? $binary . substr($match[1], strlen('tell')) : $match[1],
                 Color::CYAN,
             ),
             $entry,
@@ -111,21 +106,18 @@ final readonly class HomeScreen
     }
 
     /** @param array<array-key, mixed> $source */
-    private function text(array $source, string $key, string $fallback = ''): string
-    {
+    private function text(array $source, string $key, string $fallback = ''): string {
         $value = $source[$key] ?? null;
 
         return is_string($value) && $value !== '' ? $value : $fallback;
     }
 
-    private function paint(string $text, string $color): string
-    {
-        return $this->output->isDecorated() ? $color.$text.Color::RESET : $text;
+    private function paint(string $text, string $color): string {
+        return $this->output->isDecorated() ? $color . $text . Color::RESET : $text;
     }
 
     /** OUTPUT_RAW: the line carries its own escape sequences and arbitrary paths. */
-    private function line(string $text): void
-    {
-        $this->output->write($text."\n", false, OutputInterface::OUTPUT_RAW);
+    private function line(string $text): void {
+        $this->output->write($text . "\n", false, OutputInterface::OUTPUT_RAW);
     }
 }

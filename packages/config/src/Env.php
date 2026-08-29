@@ -11,8 +11,10 @@ final class Env
 {
     /** @var array<int, string> */
     private static array $paths = ['.'];
+
     /** @var array<int, string> */
     private static array $names = ['.env'];
+
     private static ?Dotenv $dotenv = null;
 
     /**
@@ -22,7 +24,7 @@ final class Env
      * @param string|array<int, string>|null $names An array or a single string of names to set (optional).
      * @return void
      */
-    public static function set(string|array $paths, string|array|null $names = null) : void {
+    public static function set(string|array $paths, string|array|null $names = null): void {
         $normalizedPaths = self::normalizeInput($paths);
         if ($normalizedPaths !== []) {
             self::$paths = $normalizedPaths;
@@ -49,8 +51,7 @@ final class Env
      * @param mixed $default The default value to return if the environment variable is not found.
      * @return mixed The value of the environment variable or the default value.
      */
-    public static function get(mixed $key, mixed $default = null) : mixed
-    {
+    public static function get(mixed $key, mixed $default = null): mixed {
         if (!is_string($key) || $key === '') {
             return $default;
         }
@@ -76,18 +77,32 @@ final class Env
      *
      * @return void
      */
-    public static function load() : void {
+    public static function load(): void {
         if ([] === self::$paths || [] === self::$names) {
             return;
         }
 
-        $resolvedPaths = BasePath::resolveExisting(...self::$paths);
+        $resolvedPaths = array_values(array_filter(
+            BasePath::resolveExisting(...self::$paths),
+            self::containsEnvironmentFile(...),
+        ));
         if ($resolvedPaths === []) {
             return;
         }
 
         self::$dotenv = Dotenv::createImmutable($resolvedPaths, self::$names);
         self::$dotenv->safeLoad();
+    }
+
+    private static function containsEnvironmentFile(string $path): bool {
+        foreach (self::$names as $name) {
+            $file = rtrim($path, '/\\') . DIRECTORY_SEPARATOR . ltrim($name, '/\\');
+            if (is_file($file)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

@@ -23,13 +23,13 @@ it('maps evidence-backed provider wire families', function (
     'OpenAI Chat' => [
         BundledReasoning::openAiChat(),
         'gpt-5.6',
-        ReasoningSelection::withEffort(ReasoningEffort::XHigh),
+        ReasoningSelection::effort(ReasoningEffort::XHigh),
         ['reasoning_effort' => 'xhigh'],
     ],
     'OpenAI Responses' => [
         BundledReasoning::openAiResponses(),
         'gpt-5.6',
-        ReasoningSelection::withEffort(ReasoningEffort::Max),
+        ReasoningSelection::effort(ReasoningEffort::Max),
         ['reasoning' => ['effort' => 'max']],
     ],
     'Anthropic adaptive' => [
@@ -44,13 +44,13 @@ it('maps evidence-backed provider wire families', function (
     'Anthropic budget' => [
         BundledReasoning::anthropic(),
         'claude-sonnet-4-6',
-        ReasoningSelection::withBudget(1024),
+        ReasoningSelection::budget(1024),
         ['thinking' => ['type' => 'enabled', 'budget_tokens' => 1024]],
     ],
     'Gemini native' => [
         BundledReasoning::gemini(),
         'gemini-3.1-pro-preview',
-        ReasoningSelection::withEffort(ReasoningEffort::High),
+        ReasoningSelection::effort(ReasoningEffort::High),
         ['generationConfig' => ['thinkingConfig' => ['thinkingLevel' => 'HIGH']]],
     ],
     'GLM boolean' => [
@@ -62,19 +62,19 @@ it('maps evidence-backed provider wire families', function (
     'Qwen budget' => [
         BundledReasoning::qwen(),
         'qwen3.8-max',
-        ReasoningSelection::withBudget(1024),
+        ReasoningSelection::budget(1024),
         ['enable_thinking' => true, 'thinking_budget' => 1024],
     ],
     'Cohere budget' => [
         BundledReasoning::cohere(),
         'command-a-reasoning-08-2025',
-        ReasoningSelection::withBudget(64),
+        ReasoningSelection::budget(64),
         ['thinking' => ['type' => 'enabled', 'token_budget' => 64]],
     ],
     'Mistral subset' => [
         BundledReasoning::mistral(),
         'magistral-medium-latest',
-        ReasoningSelection::withEffort(ReasoningEffort::High),
+        ReasoningSelection::effort(ReasoningEffort::High),
         ['reasoning_effort' => 'high'],
     ],
     'Kimi toggle' => [
@@ -86,13 +86,13 @@ it('maps evidence-backed provider wire families', function (
     'Grok effort' => [
         BundledReasoning::xai(),
         'grok-4.6',
-        ReasoningSelection::withEffort(ReasoningEffort::Medium),
+        ReasoningSelection::effort(ReasoningEffort::Medium),
         ['reasoning_effort' => 'medium'],
     ],
     'OpenRouter budget' => [
         BundledReasoning::openRouter(),
         'openai/gpt-oss-120b',
-        ReasoningSelection::withBudget(2048),
+        ReasoningSelection::budget(2048),
         ['reasoning' => ['max_tokens' => 2048]],
     ],
 ]);
@@ -100,7 +100,7 @@ it('maps evidence-backed provider wire families', function (
 it('rejects lossy aliases, unsupported values, and unknown models locally', function () {
     expect(fn () => BundledReasoning::deepSeek()->translate(
         'deepseek-v4-pro',
-        ReasoningSelection::withEffort(ReasoningEffort::Medium),
+        ReasoningSelection::effort(ReasoningEffort::Medium),
     ))->toThrow(InvalidArgumentException::class)
         ->and(fn () => BundledReasoning::xai()->translate(
             'grok-4.6',
@@ -108,7 +108,7 @@ it('rejects lossy aliases, unsupported values, and unknown models locally', func
         ))->toThrow(InvalidArgumentException::class)
         ->and(fn () => BundledReasoning::openAiChat()->translate(
             'future-model',
-            ReasoningSelection::withEffort(ReasoningEffort::Low),
+            ReasoningSelection::effort(ReasoningEffort::Low),
         ))->toThrow(InvalidArgumentException::class);
 });
 
@@ -121,7 +121,7 @@ it('injects native Gemini controls after its formatter', function () {
     );
     $request = new InferenceRequest(
         messages: Messages::fromString('Think.'),
-        reasoning: ReasoningSelection::withEffort(ReasoningEffort::High),
+        reasoning: ReasoningSelection::effort(ReasoningEffort::High),
     );
 
     expect($body->toRequestBody($request))
@@ -137,7 +137,7 @@ it('rejects typed and raw reasoning configuration conflicts', function () {
     );
     $request = new InferenceRequest(
         options: ['thinkingConfig' => ['thinkingLevel' => 'LOW']],
-        reasoning: ReasoningSelection::withEffort(ReasoningEffort::High),
+        reasoning: ReasoningSelection::effort(ReasoningEffort::High),
     );
 
     expect(fn () => $body->toRequestBody($request))->toThrow(InvalidArgumentException::class);

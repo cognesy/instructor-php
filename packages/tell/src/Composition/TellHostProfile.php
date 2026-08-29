@@ -23,8 +23,7 @@ final readonly class TellHostProfile
         }
     }
 
-    public static function empty(string $name = 'custom'): self
-    {
+    public static function empty(string $name = 'custom'): self {
         return new self($name, []);
     }
 }

@@ -14,8 +14,7 @@ use Override;
 /** Backward-compatible Tell name for the apply_patch operation. */
 final class EditAliasTool extends SimpleTool
 {
-    public function __construct(private readonly PatchOperation $operation)
-    {
+    public function __construct(private readonly PatchOperation $operation) {
         parent::__construct(new ToolDescriptor(
             name: 'edit',
             description: 'Compatibility alias for apply_patch using the previous exact replacement schema.',
@@ -42,8 +41,7 @@ final class EditAliasTool extends SimpleTool
     }
 
     #[Override]
-    public function __invoke(mixed ...$args): array
-    {
+    public function __invoke(mixed ...$args): array {
         return $this->operation->replace(
             path: (string) $this->arg($args, 'path', 0, ''),
             old: (string) $this->arg($args, 'old_string', 1, ''),
@@ -53,8 +51,7 @@ final class EditAliasTool extends SimpleTool
     }
 
     #[Override]
-    public function toToolSchema(): ToolDefinition
-    {
+    public function toToolSchema(): ToolDefinition {
         return ToolDefinition::fromArray(ToolSchema::make(
             name: $this->name(),
             description: $this->description(),

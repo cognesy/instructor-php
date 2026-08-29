@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
-use Cognesy\Tell\TellApplication;
+use Cognesy\Tell\Console\TellApplication;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 

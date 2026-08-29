@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Tell\Command\AuthCommand;
 use Cognesy\Tell\Command\DescribeCommand;
-use Cognesy\Tell\Runtime\TellOptions;
-use Cognesy\Tell\TellApplication;
+use Cognesy\Tell\Console\TellApplication;
+use Cognesy\Tell\Console\TellOptions;
 use HelgeSverre\Toon\Toon;
 use PHPUnit\Framework\Assert;
 use Symfony\Component\Console\Output\BufferedOutput;
@@ -16,7 +16,7 @@ use Symfony\Component\Console\Tester\CommandTester;
 it('registers auth on the real Tell application surface', function (): void {
     $application = new TellApplication(tellTestFactory());
     $application->setAutoExit(false);
-    $output = new BufferedOutput;
+    $output = new BufferedOutput();
 
     $status = $application->runArgv(['tell', 'auth', 'status', 'openai', '--json'], $output);
     $payload = json_decode($output->fetch(), true, flags: JSON_THROW_ON_ERROR);
@@ -33,7 +33,7 @@ it('registers auth on the real Tell application surface', function (): void {
 it('stores private credentials from stdin without rendering their values', function (): void {
     $factory = tellTestFactory(credentials: []);
     $secret = 'sk-test-$dollar-and-"quote"';
-    $tester = new CommandTester(new AuthCommand($factory, static fn (): string => $secret."\n"));
+    $tester = new CommandTester(new AuthCommand($factory, static fn (): string => $secret . "\n"));
 
     $status = $tester->execute([
         'action' => 'set',
@@ -76,8 +76,8 @@ it('reports safe credential provenance in deterministic precedence order', funct
     $variable = 'TELL_LAYERED_TEST_API_KEY';
     $original = getenv($variable);
     $factory->credentials()->set($variable, 'tell-value');
-    file_put_contents($workspace.'/.env', $variable.'="workspace-value"'."\n");
-    putenv($variable.'=process-value');
+    file_put_contents($workspace . '/.env', $variable . '="workspace-value"' . "\n");
+    putenv($variable . '=process-value');
 
     try {
         $tester = new CommandTester(new AuthCommand($factory));
@@ -100,7 +100,7 @@ it('reports safe credential provenance in deterministic precedence order', funct
         ]);
         $workspaceSource = json_decode($tester->getDisplay(), true, flags: JSON_THROW_ON_ERROR);
 
-        unlink($workspace.'/.env');
+        unlink($workspace . '/.env');
         $tester->execute([
             'action' => 'status',
             'provider' => 'layered-test',
@@ -120,7 +120,7 @@ it('reports safe credential provenance in deterministic precedence order', funct
     } finally {
         match ($original) {
             false => putenv($variable),
-            default => putenv($variable.'='.$original),
+            default => putenv($variable . '=' . $original),
         };
     }
 });
@@ -149,14 +149,14 @@ it('resolves project connections before user connections with the Tell secret ch
     $workspace = tellLastTemporaryRoot();
     $paths = $factory->paths();
     mkdir($paths->connections, 0700, true);
-    file_put_contents($paths->connections.'/custom.yaml', <<<'YAML'
+    file_put_contents($paths->connections . '/custom.yaml', <<<'YAML'
 driver: openai
 apiUrl: https://user.example/v1
 apiKey: "${CUSTOM_API_KEY}"
 model: user-model
 YAML);
-    mkdir($workspace.'/config/llm/presets', 0755, true);
-    file_put_contents($workspace.'/config/llm/presets/custom.yaml', <<<'YAML'
+    mkdir($workspace . '/config/llm/presets', 0755, true);
+    file_put_contents($workspace . '/config/llm/presets/custom.yaml', <<<'YAML'
 driver: openai
 apiUrl: https://project.example/v1
 apiKey: "${CUSTOM_API_KEY}"
@@ -182,7 +182,7 @@ it('fails before inference when a remote connection has no credential', function
         $factory = tellTestFactory(credentials: []);
         $workspace = tellLastTemporaryRoot();
         mkdir($factory->paths()->connections, 0700, true);
-        file_put_contents($factory->paths()->connections.'/missing-test.yaml', <<<'YAML'
+        file_put_contents($factory->paths()->connections . '/missing-test.yaml', <<<'YAML'
 driver: openai
 apiUrl: https://missing.example/v1
 apiKey: "${MISSING_TEST_API_KEY}"
@@ -197,7 +197,7 @@ YAML);
     } finally {
         match ($original) {
             false => putenv($variable),
-            default => putenv($variable.'='.$original),
+            default => putenv($variable . '=' . $original),
         };
     }
 });
@@ -207,7 +207,7 @@ it('rejects credential files readable by other users', function (): void {
         Assert::markTestSkipped('POSIX permissions are not available on Windows.');
     }
     $factory = tellTestFactory(credentials: []);
-    file_put_contents($factory->paths()->credentials, 'OPENAI_API_KEY="unsafe"'."\n");
+    file_put_contents($factory->paths()->credentials, 'OPENAI_API_KEY="unsafe"' . "\n");
     chmod($factory->paths()->credentials, 0644);
 
     expect(fn () => $factory->credentials()->variables())
@@ -217,7 +217,7 @@ it('rejects credential files readable by other users', function (): void {
 it('does not retain malformed credential contents in exceptions', function (): void {
     $factory = tellTestFactory(credentials: []);
     $secret = 'malformed-secret-must-not-escape';
-    file_put_contents($factory->paths()->credentials, 'INVALID LINE '.$secret."\n");
+    file_put_contents($factory->paths()->credentials, 'INVALID LINE ' . $secret . "\n");
     chmod($factory->paths()->credentials, 0600);
 
     try {

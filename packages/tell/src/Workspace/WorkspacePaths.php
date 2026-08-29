@@ -4,30 +4,22 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Workspace;
 
+/** Canonical paths for one Tell workspace. */
 final readonly class WorkspacePaths
 {
     public const int SCHEMA_VERSION = 1;
 
     public string $marker;
-
     public string $arena;
-
     public string $objects;
-
     public string $refs;
-
     public string $locks;
-
     public string $config;
-
     public string $schema;
-
     public string $mainRef;
-
     public string $currentBranch;
 
-    public function __construct(public string $root)
-    {
+    public function __construct(public string $root) {
         $this->marker = $this->join($root, '.tell');
         $this->arena = $this->join($this->marker, 'arena');
         $this->objects = $this->join($this->arena, 'objects');
@@ -39,13 +31,12 @@ final readonly class WorkspacePaths
         $this->currentBranch = $this->join($this->refs, 'current');
     }
 
-    private function join(string $directory, string $name): string
-    {
+    private function join(string $directory, string $name): string {
         $base = rtrim($directory, '/\\');
         if ($base === '') {
             $base = DIRECTORY_SEPARATOR;
         }
 
-        return $base.DIRECTORY_SEPARATOR.$name;
+        return $base . DIRECTORY_SEPARATOR . $name;
     }
 }

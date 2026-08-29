@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Capability\Cancellation\InMemoryCancellationSource;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Tell\Capability\AskUser\TellAnswerQueue;
+use Cognesy\Tell\Data\TellRequest;
+use Cognesy\Tell\Data\TellToolRequest;
 use Cognesy\Tell\Tell;
-use Cognesy\Tell\TellRequest;
 use Cognesy\Tell\Tests\Support\RecordingDriver;
 use Cognesy\Tell\Tests\Support\RequestRecorder;
-use Cognesy\Tell\Tool\TellToolRequest;
 
 it('discovers connection metadata and invokes one direct public SDK tool without inference', function (): void {
-    $recorder = new RequestRecorder;
+    $recorder = new RequestRecorder();
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(new RecordingDriver($recorder)));
-    $project = tellLastTemporaryRoot().'/project';
+    $project = tellLastTemporaryRoot() . '/project';
     mkdir($project, 0755, true);
-    file_put_contents($project.'/evidence.txt', "direct evidence\n");
+    file_put_contents($project . '/evidence.txt', "direct evidence\n");
     $tell = Tell::open($project, $factory);
 
     $catalogue = $tell->catalogue()->connections();
@@ -35,14 +35,14 @@ it('discovers connection metadata and invokes one direct public SDK tool without
         ->and($result->data['text'])->toContain('direct evidence')
         ->and($result->execution())->toBe(['mode' => 'direct', 'inference' => false, 'durable' => false])
         ->and($recorder->requests)->toBe([])
-        ->and(is_dir($project.'/.tell'))->toBeFalse();
+        ->and(is_dir($project . '/.tell'))->toBeFalse();
 });
 
 it('applies direct-tool policy and public cancellation without starting inference', function (): void {
-    $cancellation = new InMemoryCancellationSource;
+    $cancellation = new InMemoryCancellationSource();
     $cancellation->cancel('deadline');
     $factory = tellTestFactory();
-    $project = tellLastTemporaryRoot().'/project';
+    $project = tellLastTemporaryRoot() . '/project';
     mkdir($project, 0755, true);
 
     $result = Tell::open($project, $factory, $cancellation)->tools()->dispatch(
@@ -65,7 +65,7 @@ it('accepts queued answers and exposes a delegated child through public workspac
     $factory = tellTestFactory(static function ($loop) use (&$build, $parent, $child) {
         return $loop->withDriver($build++ === 0 ? $parent : $child);
     });
-    $project = tellLastTemporaryRoot().'/project';
+    $project = tellLastTemporaryRoot() . '/project';
     mkdir($project, 0755, true);
     $tell = Tell::open($project, $factory);
     $tell->workspace()->initialize();

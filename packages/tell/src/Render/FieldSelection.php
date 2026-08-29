@@ -17,8 +17,7 @@ final readonly class FieldSelection
      * @param  list<string>  $defaults
      * @param  list<string>  $available
      */
-    public static function from(string $requested, array $defaults, array $available): self
-    {
+    public static function from(string $requested, array $defaults, array $available): self {
         $fields = match ($requested) {
             '' => $defaults,
             default => array_values(array_unique(array_filter(
@@ -42,14 +41,12 @@ final readonly class FieldSelection
      * @param  list<array<string, mixed>>  $rows
      * @return list<array<string, mixed>>
      */
-    public function project(array $rows): array
-    {
+    public function project(array $rows): array {
         return array_map($this->projectRow(...), $rows);
     }
 
     /** @param array<string, mixed> $row */
-    private function projectRow(array $row): array
-    {
+    private function projectRow(array $row): array {
         return array_intersect_key($row, array_flip($this->fields));
     }
 }

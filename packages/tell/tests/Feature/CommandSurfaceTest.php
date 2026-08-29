@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
@@ -10,9 +10,9 @@ use Cognesy\Tell\Command\AgentsCommand;
 use Cognesy\Tell\Command\DescribeCommand;
 use Cognesy\Tell\Command\SessionsCommand;
 use Cognesy\Tell\Command\ToolsCommand;
-use Cognesy\Tell\Runtime\TellOptions;
-use Cognesy\Tell\TellApplication;
-use Cognesy\Tell\TellCommand;
+use Cognesy\Tell\Console\TellApplication;
+use Cognesy\Tell\Console\TellCommand;
+use Cognesy\Tell\Console\TellOptions;
 use Composer\InstalledVersions;
 use HelgeSverre\Toon\Toon;
 use Symfony\Component\Console\Output\BufferedOutput;
@@ -47,19 +47,19 @@ it('keeps the registered route catalogue aligned with the compatibility contract
         'tools',
         'transcript',
     ];
-    $document = file_get_contents(dirname(__DIR__, 2).'/COMPATIBILITY.md');
+    $document = file_get_contents(dirname(__DIR__, 2) . '/COMPATIBILITY.md');
 
     expect($document)->not->toBeFalse()
         ->and($routes)->toBe($expected);
     assert(is_string($document));
     foreach ($expected as $route) {
-        expect($document)->toMatch('/^\\| `'.preg_quote($route, '/').'` \\|/m');
+        expect($document)->toMatch('/^\\| `' . preg_quote($route, '/') . '` \\|/m');
     }
 
     preg_match_all('/`(tests\\/[A-Za-z0-9_\\/-]+Test\\.php)`/', $document, $matches);
     expect($matches[1])->not->toBeEmpty();
     foreach (array_unique($matches[1]) as $testPath) {
-        expect(dirname(__DIR__, 2).'/'.$testPath)->toBeFile();
+        expect(dirname(__DIR__, 2) . '/' . $testPath)->toBeFile();
     }
 });
 
@@ -96,12 +96,12 @@ it('routes implicit prompts and keeps named subcommands available', function ():
     $application = new TellApplication($factory);
     $application->setAutoExit(false);
 
-    $promptOutput = new BufferedOutput;
+    $promptOutput = new BufferedOutput();
     $promptStatus = $application->runArgv(
         ['tell', '--connection', 'openai', 'hello'],
         $promptOutput,
     );
-    $agentsOutput = new BufferedOutput;
+    $agentsOutput = new BufferedOutput();
     $agentsStatus = $application->runArgv(['tell', 'agents', '--json'], $agentsOutput);
     $agents = json_decode($agentsOutput->fetch(), true, flags: JSON_THROW_ON_ERROR);
 
@@ -114,7 +114,7 @@ it('routes implicit prompts and keeps named subcommands available', function ():
 it('uses bare invocations for content-first discovery', function (array $arguments): void {
     $application = new TellApplication(tellTestFactory());
     $application->setAutoExit(false);
-    $output = new BufferedOutput;
+    $output = new BufferedOutput();
 
     $status = $application->runArgv($arguments, $output);
     $payload = Toon::decode($output->fetch());
@@ -145,7 +145,7 @@ it('uses bare invocations for content-first discovery', function (array $argumen
 it('renders unknown option errors as structured usage data', function (array $arguments): void {
     $application = new TellApplication(tellTestFactory());
     $application->setAutoExit(false);
-    $output = new BufferedOutput;
+    $output = new BufferedOutput();
 
     $status = $application->runArgv($arguments, $output);
     $display = $output->fetch();
@@ -165,7 +165,7 @@ it('renders unknown option errors as structured usage data', function (array $ar
 it('reports valid flags for the addressed command', function (array $arguments, string $flag, string $other): void {
     $application = new TellApplication(tellTestFactory());
     $application->setAutoExit(false);
-    $output = new BufferedOutput;
+    $output = new BufferedOutput();
 
     $status = $application->runArgv($arguments, $output);
     $display = $output->fetch();
@@ -181,7 +181,7 @@ it('reports valid flags for the addressed command', function (array $arguments, 
 it('resolves a subcommand that follows an option value', function (): void {
     $application = new TellApplication(tellTestFactory());
     $application->setAutoExit(false);
-    $output = new BufferedOutput;
+    $output = new BufferedOutput();
 
     $status = $application->runArgv(['tell', '--dir', (string) getcwd(), 'agents'], $output);
 
@@ -192,7 +192,7 @@ it('resolves a subcommand that follows an option value', function (): void {
 it('never mistakes an option value for a command name', function (): void {
     $application = new TellApplication(tellTestFactory());
     $application->setAutoExit(false);
-    $output = new BufferedOutput;
+    $output = new BufferedOutput();
 
     $status = $application->runArgv(['tell', '--model', 'gpt-4o-mini', 'agents'], $output);
 
@@ -208,7 +208,7 @@ it('treats a subcommand name after the separator as a prompt', function (): void
     $factory = tellTestFactory(static fn ($loop) => $loop->withDriver(FakeAgentDriver::fromResponses('literal prompt ok')));
     $application = new TellApplication($factory);
     $application->setAutoExit(false);
-    $output = new BufferedOutput;
+    $output = new BufferedOutput();
 
     $status = $application->runArgv(['tell', '--', 'agents'], $output);
 
@@ -382,7 +382,7 @@ it('makes empty session state explicit and actionable', function (): void {
 it('fails loudly when a requested list field is unknown', function (): void {
     $application = new TellApplication(tellTestFactory());
     $application->setAutoExit(false);
-    $output = new BufferedOutput;
+    $output = new BufferedOutput();
 
     $status = $application->runArgv(['tell', 'agents', '--fields=missing'], $output);
     $payload = Toon::decode($output->fetch());
@@ -395,7 +395,7 @@ it('fails loudly when a requested list field is unknown', function (): void {
 it('preserves explicit json for application-level errors', function (): void {
     $application = new TellApplication(tellTestFactory());
     $application->setAutoExit(false);
-    $output = new BufferedOutput;
+    $output = new BufferedOutput();
 
     $status = $application->runArgv(['tell', '--output=json', '--bogus', 'hello'], $output);
     $payload = json_decode($output->fetch(), true, flags: JSON_THROW_ON_ERROR);
@@ -408,7 +408,7 @@ it('preserves explicit json for application-level errors', function (): void {
 it('exposes an honest typed map of tell operational planes', function (): void {
     $application = new TellApplication(tellTestFactory());
     $application->setAutoExit(false);
-    $output = new BufferedOutput;
+    $output = new BufferedOutput();
 
     $status = $application->runArgv(['tell', 'planes', '--full'], $output);
     $payload = Toon::decode($output->fetch());
@@ -421,15 +421,15 @@ it('exposes an honest typed map of tell operational planes', function (): void {
         ->and($payload['systemBoundary'])->toContain('local Tell agent runtime')
         ->and($payload['separationLevel'])->toContain('one collocated process')
         ->and($payload['lastKnownGood'])->toContain('no persisted control snapshot')
-            ->and($payload['planeCounts'])->toBe(['data' => 4, 'control' => 2, 'management' => 14])
+        ->and($payload['planeCounts'])->toBe(['data' => 4, 'control' => 2, 'management' => 14])
         ->and($byCommand['tell "<prompt>"']['plane'])->toBe('data')
         ->and($byCommand['agent --rpc']['plane'])->toBe('data')
         ->and($byCommand['tool NAME JSON']['plane'])->toBe('data')
         ->and($byCommand['describe']['plane'])->toBe('control')
         ->and($byCommand['tools']['plane'])->toBe('control')
-            ->and($byCommand['agents']['plane'])->toBe('management')
-            ->and($byCommand['providers']['plane'])->toBe('management')
-            ->and($byCommand['models']['plane'])->toBe('management')
+        ->and($byCommand['agents']['plane'])->toBe('management')
+        ->and($byCommand['providers']['plane'])->toBe('management')
+        ->and($byCommand['models']['plane'])->toBe('management')
         ->and($byCommand['auth']['plane'])->toBe('management')
         ->and($byCommand['branch']['plane'])->toBe('management')
         ->and($byCommand['clear']['authority'])->toContain('mutate only the selected ref')
@@ -446,7 +446,7 @@ it('exposes an honest typed map of tell operational planes', function (): void {
 it('keeps the default plane map compact', function (): void {
     $application = new TellApplication(tellTestFactory());
     $application->setAutoExit(false);
-    $output = new BufferedOutput;
+    $output = new BufferedOutput();
 
     $status = $application->runArgv(['tell', 'planes'], $output);
     $payload = Toon::decode($output->fetch());

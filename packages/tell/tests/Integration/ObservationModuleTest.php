@@ -2,29 +2,27 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Tell\Composition\StandardTellProfile;
 use Cognesy\Tell\Composition\TellHostBuilder;
 use Cognesy\Tell\Composition\TellModuleDefinition;
 use Cognesy\Tell\Contracts\CanObserveTellExecution;
-use Cognesy\Tell\Contracts\Data\TellEventEnvelope;
+use Cognesy\Tell\Data\TellEventEnvelope;
+use Cognesy\Tell\Data\TellExecutionMode;
+use Cognesy\Tell\Data\TellRequest;
 use Cognesy\Tell\Observability\PsrTellObserver;
-use Cognesy\Tell\TellExecutionMode;
-use Cognesy\Tell\TellRequest;
 use Psr\Log\AbstractLogger;
 
 it('replaces observation pre-boot through the public normalized contract', function (): void {
     $project = tellTestProject();
     $paths = standardHostPaths($project);
-    $received = new ArrayObject;
-    $observer = new class($received) implements CanObserveTellExecution
-    {
+    $received = new ArrayObject();
+    $observer = new class($received) implements CanObserveTellExecution {
         public function __construct(private ArrayObject $received) {}
 
-        public function observe(TellEventEnvelope $event): void
-        {
+        public function observe(TellEventEnvelope $event): void {
             $this->received->append($event->toArray());
         }
     };
@@ -50,13 +48,11 @@ it('replaces observation pre-boot through the public normalized contract', funct
 });
 
 it('adapts normalized envelopes to PSR logging without exposing a source event', function (): void {
-    $records = new ArrayObject;
-    $logger = new class($records) extends AbstractLogger
-    {
+    $records = new ArrayObject();
+    $logger = new class($records) extends AbstractLogger {
         public function __construct(private ArrayObject $records) {}
 
-        public function log($level, Stringable|string $message, array $context = []): void
-        {
+        public function log($level, Stringable|string $message, array $context = []): void {
             $this->records->append(compact('level', 'message', 'context'));
         }
     };

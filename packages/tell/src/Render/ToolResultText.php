@@ -15,12 +15,11 @@ use JsonException;
  */
 final class ToolResultText
 {
-    public static function from(mixed $result): string
-    {
+    public static function from(mixed $result): string {
         if (is_string($result)) {
             return $result;
         }
-        if (! is_array($result)) {
+        if (!is_array($result)) {
             return self::encode($result);
         }
         $data = $result['data'] ?? null;
@@ -35,9 +34,8 @@ final class ToolResultText
     }
 
     /** @return array{code: string, message: string}|null */
-    public static function error(mixed $result): ?array
-    {
-        if (! is_array($result) || ! is_array($result['error'] ?? null)) {
+    public static function error(mixed $result): ?array {
+        if (!is_array($result) || !is_array($result['error'] ?? null)) {
             return null;
         }
         $error = $result['error'];
@@ -48,8 +46,7 @@ final class ToolResultText
         ];
     }
 
-    private static function encode(mixed $value): string
-    {
+    private static function encode(mixed $value): string {
         if ($value === null) {
             return '';
         }

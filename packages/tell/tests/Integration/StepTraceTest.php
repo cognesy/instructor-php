@@ -2,25 +2,23 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/Pest.php';
+require_once dirname(__DIR__) . '/Pest.php';
 
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
-use Cognesy\Tell\TellCommand;
+use Cognesy\Tell\Console\TellCommand;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 
-function tellTraceProject(): string
-{
-    $project = tellLastTemporaryRoot().'/step-trace-project';
+function tellTraceProject(): string {
+    $project = tellLastTemporaryRoot() . '/step-trace-project';
     mkdir($project, 0700, true);
 
     return $project;
 }
 
-function tellTraceTester(ScenarioStep ...$steps): CommandTester
-{
+function tellTraceTester(ScenarioStep ...$steps): CommandTester {
     return new CommandTester(new TellCommand(tellTestFactory(
         static fn (AgentLoop $loop): AgentLoop => $loop->withDriver(FakeAgentDriver::fromSteps(...$steps)),
     )));
@@ -32,7 +30,7 @@ it('traces steps and tool calls on stderr while stdout keeps the requested forma
         ScenarioStep::final('done reading'),
     );
     $project = tellTraceProject();
-    file_put_contents($project.'/notes.txt', "first line\nsecond line\n");
+    file_put_contents($project . '/notes.txt', "first line\nsecond line\n");
 
     expect($tester->execute(
         ['prompt' => 'read the note', '--dir' => $project, '--output' => 'text'],
@@ -98,7 +96,7 @@ it('stays silent unless a trace was asked for', function (): void {
         ScenarioStep::final('done reading'),
     );
     $project = tellTraceProject();
-    file_put_contents($project.'/notes.txt', "first line\n");
+    file_put_contents($project . '/notes.txt', "first line\n");
 
     expect($tester->execute(
         ['prompt' => 'read the note', '--dir' => $project, '--output' => 'text'],
@@ -116,7 +114,7 @@ it('previews a long body, states what it elided, and stops abridging at -vvv', f
         ScenarioStep::final('read it'),
     );
     $project = tellTraceProject();
-    file_put_contents($project.'/long.txt', $lines."\n");
+    file_put_contents($project . '/long.txt', $lines . "\n");
     expect($preview->execute(
         ['prompt' => 'read', '--dir' => $project, '--output' => 'text'],
         ['capture_stderr_separately' => true, 'verbosity' => OutputInterface::VERBOSITY_VERBOSE],

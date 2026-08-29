@@ -9,11 +9,11 @@ it('round trips every portable reasoning selection', function (ReasoningSelectio
     'default' => ReasoningSelection::providerDefault(),
     'disabled' => ReasoningSelection::disabled(),
     'enabled' => ReasoningSelection::enabled(),
-    'effort' => ReasoningSelection::withEffort(ReasoningEffort::XHigh),
-    'budget' => ReasoningSelection::withBudget(1024),
+    'effort' => ReasoningSelection::effort(ReasoningEffort::XHigh),
+    'budget' => ReasoningSelection::budget(1024),
     'adaptive' => ReasoningSelection::adaptive(ReasoningEffort::High),
 ]);
 
 it('rejects a non-positive reasoning budget', function () {
-    ReasoningSelection::withBudget(0);
+    ReasoningSelection::budget(0);
 })->throws(InvalidArgumentException::class);

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Contracts;
 
-use Cognesy\Tell\Branch\TellBranchConfig;
+use Cognesy\Tell\Workspace\Branch\TellBranchConfig;
 
 /** Optional input to aggregate configuration; branch values remain secret-free. */
 interface CanReadTellBranchConfiguration
