@@ -74,6 +74,11 @@ final class TellExecutionBudgetHook implements HookInterface
 
     private function truncateToolOutput(HookContext $context): HookContext
     {
+        // A spilled result is already a short stub, and cutting it further
+        // would strip the path and read hint that make it useful.
+        if ($context->metadata(TellSpillToolOutputHook::SPILLED) === true) {
+            return $context;
+        }
         $execution = $context->toolExecution();
         if ($execution === null || ! $execution->result()->isSuccess()) {
             return $context;

@@ -485,6 +485,18 @@ final readonly class TellRequest
         return $this->withPolicyOverrides(['maxToolCalls' => $maxToolCalls]);
     }
 
+    /** Zero turns tool-output spilling off for this request. */
+    public function maxSpillChars(int $maxSpillChars): self
+    {
+        return $this->withPolicyOverrides(['maxSpillChars' => $maxSpillChars]);
+    }
+
+    /** How much of the spilled result its stub may preview. */
+    public function maxStubChars(int $maxStubChars): self
+    {
+        return $this->withPolicyOverrides(['maxStubChars' => $maxStubChars]);
+    }
+
     public function withPolicy(TellExecutionPolicy $policy): self
     {
         return new self(

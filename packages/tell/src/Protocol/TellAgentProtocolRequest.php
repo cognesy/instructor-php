@@ -42,6 +42,8 @@ final readonly class TellAgentProtocolRequest
         'maxOutputChars',
         'maxToolOutputChars',
         'maxToolCalls',
+        'maxSpillChars',
+        'maxStubChars',
     ];
 
     public function __construct(

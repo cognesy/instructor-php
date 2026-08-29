@@ -154,12 +154,7 @@ final readonly class TellAgentFactory
         $policy = $options->policy ?? TellExecutionPolicy::defaults();
         $capabilities->register('tell.coding', new TellCodingTools(
             $options->directory,
-            new BashPolicy(
-                maxOutputChars: $policy->maxToolOutputChars,
-                timeout: max(1, (int) ceil($policy->timeoutMs / 1_000)),
-                stdoutLimitBytes: $policy->maxToolOutputChars,
-                stderrLimitBytes: $policy->maxToolOutputChars,
-            ),
+            $this->bashPolicy($policy),
         ));
         $capabilities->register('tell.ask_user', new TellAskUserCapability($options->answers));
         $capabilities->register('use_subagents', new UseSubagents(
@@ -185,7 +180,7 @@ final readonly class TellAgentFactory
             default => $loop->withDriver($this->driver),
         };
         $loop = $this->filterTools($loop, $options->tools);
-        $loop = $this->withExecutionPolicy($loop, $policy);
+        $loop = $this->withExecutionPolicy($loop, $policy, $options->directory);
         $loop = $this->withCooperativeCancellation($loop, $cancellation);
 
         return match ($this->decorateLoop) {
@@ -367,7 +362,27 @@ final readonly class TellAgentFactory
         return $loop->withTools(new Tools(...$selected));
     }
 
-    private function withExecutionPolicy(AgentLoop $loop, TellExecutionPolicy $policy): AgentLoop
+    /**
+     * Bash caps its own output before any hook can see it, so spilling only
+     * has a whole result to store if the tool is told to keep one. The caps
+     * become the spill ceiling, and fall back to the retained-bytes limit when
+     * spilling is off.
+     */
+    private function bashPolicy(TellExecutionPolicy $policy): BashPolicy
+    {
+        $bytes = $policy->spillsToolOutput() ? $policy->maxSpillChars : $policy->maxToolOutputChars;
+
+        return new BashPolicy(
+            maxOutputChars: $bytes,
+            headChars: intdiv($bytes, 2),
+            tailChars: $bytes - intdiv($bytes, 2),
+            timeout: max(1, (int) ceil($policy->timeoutMs / 1_000)),
+            stdoutLimitBytes: $bytes,
+            stderrLimitBytes: $bytes,
+        );
+    }
+
+    private function withExecutionPolicy(AgentLoop $loop, TellExecutionPolicy $policy, string $directory): AgentLoop
     {
         $driver = $loop->driver();
         if ($driver instanceof ToolCallingDriver) {
@@ -380,7 +395,7 @@ final readonly class TellAgentFactory
             throw new RuntimeException('Tell requires the Agents hook-stack lifecycle interceptor.');
         }
 
-        return $loop->withInterceptor($interceptor->with(
+        $interceptor = $interceptor->with(
             hook: new TellExecutionBudgetHook($policy, $this->clock),
             triggerTypes: HookTriggers::of(
                 HookTrigger::BeforeExecution,
@@ -391,7 +406,19 @@ final readonly class TellAgentFactory
             ),
             priority: 300,
             name: 'tell:execution_budget',
-        ));
+        );
+        if ($policy->spillsToolOutput()) {
+            // Above the budget hook, which would otherwise truncate the result
+            // this one exists to preserve.
+            $interceptor = $interceptor->with(
+                hook: new TellSpillToolOutputHook(ToolOutputSpill::fromPolicy($directory, $policy)),
+                triggerTypes: HookTriggers::of(HookTrigger::AfterToolUse),
+                priority: 400,
+                name: 'tell:spill_tool_output',
+            );
+        }
+
+        return $loop->withInterceptor($interceptor);
     }
 
     private function withCooperativeCancellation(

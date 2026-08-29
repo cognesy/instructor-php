@@ -15,12 +15,26 @@ final readonly class TellExecutionPolicy
     public const int DEFAULT_MAX_OUTPUT_CHARS = 200_000;
     public const int DEFAULT_MAX_TOOL_OUTPUT_CHARS = 40_000;
     public const int DEFAULT_MAX_TOOL_CALLS = 100;
+    /**
+     * The ceiling on one spilled tool result, and the switch for spilling
+     * itself: zero turns spilling off, and the older head/tail truncation is
+     * what a tool result over `maxToolOutputChars` gets instead.
+     */
+    public const int DEFAULT_MAX_SPILL_CHARS = 1_000_000;
+
+    /**
+     * How many bytes a spill stub may spend on the head of the result it
+     * replaces. Zero keeps the header and the read hint and drops the preview.
+     */
+    public const int DEFAULT_MAX_STUB_CHARS = 2_000;
 
     public const int MAX_RETRIES = 10;
     public const int MAX_TIMEOUT_MS = 3_600_000;
     public const int MAX_OUTPUT_CHARS = 1_000_000;
     public const int MAX_TOOL_OUTPUT_CHARS = 250_000;
     public const int MAX_TOOL_CALLS = 1_000;
+    public const int MAX_SPILL_CHARS = 20_000_000;
+    public const int MAX_STUB_CHARS = 100_000;
 
     /** @param array<string, 'cli'|'branch'|'project'|'user'|'bundled'> $provenance */
     public function __construct(
@@ -29,6 +43,8 @@ final readonly class TellExecutionPolicy
         public int $maxOutputChars = self::DEFAULT_MAX_OUTPUT_CHARS,
         public int $maxToolOutputChars = self::DEFAULT_MAX_TOOL_OUTPUT_CHARS,
         public int $maxToolCalls = self::DEFAULT_MAX_TOOL_CALLS,
+        public int $maxSpillChars = self::DEFAULT_MAX_SPILL_CHARS,
+        public int $maxStubChars = self::DEFAULT_MAX_STUB_CHARS,
         private array $provenance = [],
     ) {
         self::assertRange('maxRetries', $this->maxRetries, 0, self::MAX_RETRIES);
@@ -36,6 +52,17 @@ final readonly class TellExecutionPolicy
         self::assertRange('maxOutputChars', $this->maxOutputChars, 1, self::MAX_OUTPUT_CHARS);
         self::assertRange('maxToolOutputChars', $this->maxToolOutputChars, 1, self::MAX_TOOL_OUTPUT_CHARS);
         self::assertRange('maxToolCalls', $this->maxToolCalls, 0, self::MAX_TOOL_CALLS);
+        self::assertRange('maxSpillChars', $this->maxSpillChars, 0, self::MAX_SPILL_CHARS);
+        self::assertRange('maxStubChars', $this->maxStubChars, 0, self::MAX_STUB_CHARS);
+    }
+
+    /**
+     * Whether a tool result larger than `maxToolOutputChars` is written to a
+     * blob under the project and replaced with a stub the model can read back.
+     */
+    public function spillsToolOutput(): bool
+    {
+        return $this->maxSpillChars > 0;
     }
 
     public static function defaults(): self
@@ -84,6 +111,8 @@ final readonly class TellExecutionPolicy
             maxOutputChars: $values['maxOutputChars'],
             maxToolOutputChars: $values['maxToolOutputChars'],
             maxToolCalls: $values['maxToolCalls'],
+            maxSpillChars: $values['maxSpillChars'],
+            maxStubChars: $values['maxStubChars'],
             provenance: $provenance,
         );
     }
@@ -97,6 +126,8 @@ final readonly class TellExecutionPolicy
             'maxOutputChars' => '--max-output-chars',
             'maxToolOutputChars' => '--max-tool-output-chars',
             'maxToolCalls' => '--max-tool-calls',
+            'maxSpillChars' => '--max-spill-chars',
+            'maxStubChars' => '--max-stub-chars',
         ];
         $overrides = [];
         foreach ($options as $key => $option) {
@@ -110,7 +141,7 @@ final readonly class TellExecutionPolicy
         return $overrides;
     }
 
-    /** @return array{maxRetries: int, timeoutMs: int, maxOutputChars: int, maxToolOutputChars: int, maxToolCalls: int} */
+    /** @return array{maxRetries: int, timeoutMs: int, maxOutputChars: int, maxToolOutputChars: int, maxToolCalls: int, maxSpillChars: int, maxStubChars: int} */
     public function values(): array
     {
         return [
@@ -119,6 +150,8 @@ final readonly class TellExecutionPolicy
             'maxOutputChars' => $this->maxOutputChars,
             'maxToolOutputChars' => $this->maxToolOutputChars,
             'maxToolCalls' => $this->maxToolCalls,
+            'maxSpillChars' => $this->maxSpillChars,
+            'maxStubChars' => $this->maxStubChars,
         ];
     }
 
@@ -164,6 +197,8 @@ final readonly class TellExecutionPolicy
             'maxOutputChars' => self::DEFAULT_MAX_OUTPUT_CHARS,
             'maxToolOutputChars' => self::DEFAULT_MAX_TOOL_OUTPUT_CHARS,
             'maxToolCalls' => self::DEFAULT_MAX_TOOL_CALLS,
+            'maxSpillChars' => self::DEFAULT_MAX_SPILL_CHARS,
+            'maxStubChars' => self::DEFAULT_MAX_STUB_CHARS,
         ];
     }
 }

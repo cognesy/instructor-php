@@ -26,6 +26,8 @@ final readonly class BranchConfigStore
         'maxOutputChars' => ['type' => 'int', 'min' => 1, 'max' => 1_000_000],
         'maxToolOutputChars' => ['type' => 'int', 'min' => 1, 'max' => 250_000],
         'maxToolCalls' => ['type' => 'int', 'min' => 0, 'max' => 1_000],
+        'maxSpillChars' => ['type' => 'int', 'min' => 0, 'max' => 20_000_000],
+        'maxStubChars' => ['type' => 'int', 'min' => 0, 'max' => 100_000],
     ];
 
     /** @var array<string, int|list<string>|string> */
@@ -38,6 +40,8 @@ final readonly class BranchConfigStore
         'maxOutputChars' => 200_000,
         'maxToolOutputChars' => 40_000,
         'maxToolCalls' => 100,
+        'maxSpillChars' => 1_000_000,
+        'maxStubChars' => 2_000,
     ];
 
     public function __construct(private TellWorkspace $workspace) {}

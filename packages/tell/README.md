@@ -347,12 +347,12 @@ tell config effective --branch review --json
 ```
 
 Allowed keys are `connection`, `model`, `reasoningEffort`, `output`, `tools`,
-`maxRetries`, `timeoutMs`, `maxOutputChars`, `maxToolOutputChars`, and
-`maxToolCalls`. `output` selects the default turn format for the branch and
-accepts the same values as `--output`. Values are
-labels, model names, tool profiles, and bounded policy values only: Tell
-rejects credentials, tokens,
-headers, raw environment values, and DSNs with embedded credentials. New
+`maxRetries`, `timeoutMs`, `maxOutputChars`, `maxToolOutputChars`,
+`maxToolCalls`, `maxSpillChars`, and `maxStubChars`. `output` selects the
+default turn format for the branch and accepts the same values as `--output`.
+Values are labels, model names, tool profiles, and bounded policy values only:
+Tell rejects credentials, tokens, headers, raw environment values, and DSNs
+with embedded credentials. New
 branches copy source intent by value and later edits remain independent.
 Explicit connection, model, reasoning-effort, output, and tool flags take
 precedence over branch intent. PHP callers select the typed value with
@@ -432,7 +432,8 @@ inspectable on its own branch.
 
 Every Tell execution has finite policy defaults: zero provider retries, a 30s
 wall deadline, 200,000 total model-output bytes, 40,000 bytes retained from one
-tool result, and 100 tool calls. Override one invocation without persisting it:
+tool result, 100 tool calls, a 1,000,000-byte spill ceiling, and a 2,000-byte
+spill stub. Override one invocation without persisting it:
 
 ```bash
 tell --max-retries 2 --timeout-ms 60000 --max-output-chars 100000 \
@@ -447,9 +448,10 @@ own public Agents cancellation source to `Tell::open()` for deterministic
 programmatic cancellation.
 
 The same limits are available through `TellRequest` (`maxRetries()`,
-`timeoutMs()`, `maxOutputChars()`, `maxToolOutputChars()`, and
-`maxToolCalls()`). Policy precedence is CLI/SDK override, branch config,
-project defaults, user defaults, then bundled values. Project defaults live at
+`timeoutMs()`, `maxOutputChars()`, `maxToolOutputChars()`, `maxToolCalls()`,
+`maxSpillChars()`, and `maxStubChars()`). Policy precedence is CLI/SDK
+override, branch config, project defaults, user defaults, then bundled values.
+Project defaults live at
 `.tell/arena/config/defaults.json`; user defaults live at
 `~/.tell/config/execution-defaults.json`. Both are strict, secret-free JSON:
 
@@ -461,6 +463,47 @@ Tell rejects invalid, zero, negative, or over-limit values before inference.
 An exhausted deadline, output, or tool-call limit stops the turn; tool-result
 truncation is explicit and UTF-8 safe. An incomplete stopped turn never moves a
 durable ref, while a completed answer exactly at a limit may publish.
+
+### Spilled tool output
+
+A tool result larger than `maxToolOutputChars` is not cut down any more. Tell
+writes the whole result to a content-addressed blob under the project and hands
+the step a stub in its place:
+
+```text
+[tool output: 4,812 lines, 312.4 KB — stored at .tell/blobs/ab12cd34ef56a789.txt]
+  PASS  Tests\Feature\RenderingTest
+  …as much of the head as the stub budget buys…
+Continue: read(".tell/blobs/ab12cd34ef56a789.txt", offset=20, limit=200)
+```
+
+The head preview answers most questions without a read at all, and the `read`
+call is there for the ones it does not. The blob keeps the bytes the older
+head/tail window used to discard, so a model that needs line 900 of a test run
+can still reach it. Identical results share one blob, and the store writes its
+own `.gitignore` so blobs never enter the repository.
+
+`maxStubChars` is what the stub may spend, and the only limit that applies to
+it: the stub is emitted whole regardless of `maxToolOutputChars`, because that
+limit is what the stub answers rather than something it is subject to. Lower
+the budget for a shorter head, or set it to `0` for a header and a read hint
+with no preview. The header and the read hint are never dropped - a stub cut
+short would name a file and lose the instruction for opening it.
+
+**This writes raw tool output to disk, and it is on by default.** Everything a
+tool printed - file contents, command output, whatever the environment happened
+to include - lands in `.tell/blobs/` under the project and stays there until
+something removes it. That is a deliberate change of posture: Tell's traces are
+payload-free by default and its normalized events carry no payloads, and blobs
+carry the payload in full. `.tell/blobs` is created `0700`, is excluded from
+git, and never leaves the machine, but it is a plain readable file. Set
+`maxSpillChars` to `0` - per invocation with `--max-spill-chars 0`, per branch
+with `tell config set maxSpillChars 0`, or for a project or user in the
+defaults files above - to turn spilling off and get the previous head/tail
+truncation instead.
+
+Spilling raises the shell tool's own capture caps to the spill ceiling, because
+a result the tool has already truncated is not one Tell can preserve.
 
 Use the workspace commands to inspect and manage the selected conversation:
 
