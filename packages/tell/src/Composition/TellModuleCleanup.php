@@ -10,7 +10,7 @@ use Throwable;
 final readonly class TellModuleCleanup
 {
     /**
-     * @param list<array{id: string, instance: object}> $constructed
+     * @param  list<array{id: string, instance: object}>  $constructed
      * @return list<string>
      */
     public static function dispose(array $constructed): array

@@ -12,10 +12,10 @@ use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Workspace\ArenaRef;
 use Cognesy\Tell\Workspace\ArenaStore;
 use Cognesy\Tell\Workspace\BranchCatalog;
+use Cognesy\Tell\Workspace\BranchConfigStore;
 use Cognesy\Tell\Workspace\BranchName;
 use Cognesy\Tell\Workspace\BranchProvenance;
 use Cognesy\Tell\Workspace\BranchResolver;
-use Cognesy\Tell\Workspace\BranchConfigStore;
 use Cognesy\Tell\Workspace\TellWorkspace;
 use Cognesy\Tell\Workspace\WorkspaceException;
 use InvalidArgumentException;
@@ -113,6 +113,7 @@ HELP)
         $branches = $catalog->list((bool) $input->getOption('full'));
         $branches = array_map(static function (array $branch) use ($current): array {
             $branch['current'] = $branch['name'] === $current->branch;
+
             return $branch;
         }, $branches);
         $payload = [

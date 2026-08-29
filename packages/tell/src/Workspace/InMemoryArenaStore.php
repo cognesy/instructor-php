@@ -34,6 +34,7 @@ final class InMemoryArenaStore implements CanUseTellArena
             throw new ArenaIntegrityException('Canonical hash collision in memory arena.');
         }
         $this->objects[$key] = $bytes;
+
         return $hash;
     }
 
@@ -51,6 +52,7 @@ final class InMemoryArenaStore implements CanUseTellArena
         if (! CanonicalHash::fromBytes($bytes)->equals($hash)) {
             throw new ArenaIntegrityException('Tell in-memory object hash does not match its content.');
         }
+
         return $this->serializer->decode($bytes);
     }
 
@@ -73,6 +75,7 @@ final class InMemoryArenaStore implements CanUseTellArena
         if (isset($this->refs[$ref])) {
             throw new ArenaRefConflict($ref, null, $this->refs[$ref]->head);
         }
+
         return $this->refs[$ref] = $reference;
     }
 
@@ -88,6 +91,7 @@ final class InMemoryArenaStore implements CanUseTellArena
         if (! isset($this->refs[$ref])) {
             throw new ArenaException("Tell branch '{$branch}' does not exist.");
         }
+
         return $this->current = new CurrentBranchSelector($branch);
     }
 
@@ -99,6 +103,7 @@ final class InMemoryArenaStore implements CanUseTellArena
         if (! $this->same($current->head, $expectedHead)) {
             throw new ArenaRefConflict($ref, $expectedHead, $current->head);
         }
+
         return $this->refs[$ref] = new ArenaRef($newHead, $current->provenance);
     }
 
@@ -112,6 +117,7 @@ final class InMemoryArenaStore implements CanUseTellArena
         if ($current->head === null) {
             return $current;
         }
+
         return $this->refs[$ref] = ArenaRef::empty();
     }
 
@@ -129,6 +135,7 @@ final class InMemoryArenaStore implements CanUseTellArena
         ) {
             throw new ArenaException('Tell ref name is invalid.');
         }
+
         return $ref;
     }
 
@@ -136,6 +143,7 @@ final class InMemoryArenaStore implements CanUseTellArena
     {
         try {
             BranchName::fromStored($name);
+
             return true;
         } catch (\InvalidArgumentException) {
             return false;

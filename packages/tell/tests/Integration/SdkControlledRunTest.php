@@ -7,7 +7,7 @@ require_once dirname(__DIR__).'/Pest.php';
 use Cognesy\Agents\Capability\Cancellation\InMemoryCancellationSource;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Tell\Tell;
-use Cognesy\Tell\TellEvent;
+use Cognesy\Tell\Contracts\Data\TellEventEnvelope;
 use Cognesy\Tell\TellRequest;
 use Cognesy\Tell\Workspace\ArenaStore;
 use Cognesy\Tell\Workspace\WorkspaceTurnException;
@@ -27,8 +27,8 @@ it('streams bounded SDK checkpoints with stable redacted event envelopes', funct
             ->maxOutputChars(100)
             ->maxToolOutputChars(50)
             ->maxToolCalls(1)
-            ->onEvent(static function (TellEvent $event) use (&$events): void {
-                $events[] = $event->envelope();
+            ->onEvent(static function (TellEventEnvelope $event) use (&$events): void {
+                $events[] = $event->toArray();
             }),
     );
     $checkpoints = iterator_to_array($stream);

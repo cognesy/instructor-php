@@ -7,13 +7,15 @@ namespace Cognesy\Tell\Runtime;
 use Cognesy\Agents\Capability\Subagent\CanExecuteSubagent;
 use Cognesy\Agents\Capability\Subagent\SubagentExecutionResult;
 use Cognesy\Agents\Capability\Subagent\SubagentInvocation;
+use Cognesy\Tell\Diagnostics\TellDiagnostics;
 use Cognesy\Tell\Workspace\ArenaRef;
+use Cognesy\Tell\Workspace\ArenaRefConflict;
 use Cognesy\Tell\Workspace\ArenaStore;
 use Cognesy\Tell\Workspace\BranchConfigStore;
 use Cognesy\Tell\Workspace\BranchName;
 use Cognesy\Tell\Workspace\BranchProvenance;
+use Cognesy\Tell\Workspace\BranchSelection;
 use Cognesy\Tell\Workspace\WorkspaceTurnRunner;
-use Cognesy\Tell\Diagnostics\TellDiagnostics;
 use Override;
 use RuntimeException;
 use Throwable;
@@ -48,7 +50,7 @@ final readonly class TellSubagentExecutor implements CanExecuteSubagent
             cancellation: $this->scope->cancellation,
             delegation: new TellDelegationScope(
                 $this->scope->workspace,
-                new \Cognesy\Tell\Workspace\BranchSelection($child->toString(), 'branches/'.$child->toString(), true),
+                new BranchSelection($child->toString(), 'branches/'.$child->toString(), true),
                 depth: 1,
                 cancellation: $this->scope->cancellation,
             ),
@@ -103,7 +105,7 @@ final readonly class TellSubagentExecutor implements CanExecuteSubagent
                 ));
 
                 return $child;
-            } catch (\Cognesy\Tell\Workspace\ArenaRefConflict) {
+            } catch (ArenaRefConflict) {
                 continue;
             }
         }

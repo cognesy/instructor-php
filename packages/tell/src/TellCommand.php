@@ -7,6 +7,8 @@ namespace Cognesy\Tell;
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Enums\ExecutionStatus;
+use Cognesy\Tell\Diagnostics\TellDiagnostic;
+use Cognesy\Tell\Observability\TellEventNormalizer;
 use Cognesy\Tell\Operational\CanDescribeOperationalPlane;
 use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
@@ -21,7 +23,6 @@ use Cognesy\Tell\Render\StepTrace;
 use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Render\TextRenderer;
 use Cognesy\Tell\Render\ToonRenderer;
-use Cognesy\Tell\Observability\TellEventNormalizer;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Runtime\TellOptions;
 use Cognesy\Tell\Runtime\TellRuntime;
@@ -69,7 +70,7 @@ HELP)
             ->addOption('agent', 'a', InputOption::VALUE_REQUIRED, 'Agent definition name', 'default')
             ->addOption('connection', 'c', InputOption::VALUE_REQUIRED, 'LLM connection preset name', 'openai')
             ->addOption('model', 'm', InputOption::VALUE_REQUIRED, 'Model override', '')
-            ->addOption('reasoning-effort', null, InputOption::VALUE_REQUIRED, 'Reasoning effort: low, medium, or high')
+            ->addOption('reasoning-effort', null, InputOption::VALUE_REQUIRED, 'Reasoning effort: minimal, low, medium, high, xhigh, or max')
             ->addOption('dsn', 'd', InputOption::VALUE_REQUIRED, 'Inline LLM DSN', '')
             ->addOption('session', 's', InputOption::VALUE_REQUIRED, 'Persist or continue a named session')
             ->addOption('branch', 'b', InputOption::VALUE_REQUIRED, 'Use one workspace branch for this invocation')
@@ -138,7 +139,7 @@ HELP)
                 $warnings[] = "Unused non-interactive answers: {$options->answers->remaining()}.";
             }
             $diagnostics = array_map(
-                static fn (\Cognesy\Tell\Diagnostics\TellDiagnostic $diagnostic): array => $diagnostic->toArray(),
+                static fn (TellDiagnostic $diagnostic): array => $diagnostic->toArray(),
                 $result->diagnostics(),
             );
             // One blank line so the answer does not run straight into the last
@@ -322,6 +323,7 @@ HELP)
         if (! is_string($binary) || $binary === '') {
             return 'tell';
         }
+
         return $binary;
     }
 

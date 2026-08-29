@@ -6,23 +6,23 @@ namespace Cognesy\Tell\Composition;
 
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
 use Cognesy\Agents\Drivers\CanUseTools;
+use Cognesy\Tell\Contracts\CanAccessTellConversations;
 use Cognesy\Tell\Contracts\CanBuildTellAgent;
 use Cognesy\Tell\Contracts\CanBuildTellApplication;
 use Cognesy\Tell\Contracts\CanCatalogueTellExtensions;
+use Cognesy\Tell\Contracts\CanContributeTellCommands;
 use Cognesy\Tell\Contracts\CanDispatchTellTool;
-use Cognesy\Tell\Contracts\CanObserveTellExecution;
-use Cognesy\Tell\Contracts\CanAccessTellConversations;
 use Cognesy\Tell\Contracts\CanManageTellWorkspace;
-use Cognesy\Tell\Contracts\CanResolveTellModel;
+use Cognesy\Tell\Contracts\CanObserveTellExecution;
 use Cognesy\Tell\Contracts\CanResolveTellConfiguration;
+use Cognesy\Tell\Contracts\CanResolveTellModel;
 use Cognesy\Tell\Contracts\CanResolveTellPaths;
 use Cognesy\Tell\Contracts\CanResolveTellSecrets;
 use Cognesy\Tell\Contracts\CanRunTell;
-use Cognesy\Tell\Contracts\CanContributeTellCommands;
 use Cognesy\Tell\Contracts\CanRunTellProtocol;
 use Cognesy\Tell\Runtime\CanReadTellClock;
-use Cognesy\Tell\Runtime\TellPaths;
 use Cognesy\Tell\Runtime\TellAgentFactory;
+use Cognesy\Tell\Runtime\TellPaths;
 
 final readonly class StandardTellProfile
 {

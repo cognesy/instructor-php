@@ -8,13 +8,13 @@ normal run cannot create `.tell` state in this repository.
 | Example | Scenario | Primary SDK surface |
 | --- | --- | --- |
 | `StatelessRun` | queue job or request/response endpoint | `Tell::run()` and `TellResult` |
-| `ObservableRun` | long-running inference/tool sequence | `runStream()`, `TellProgress`, `TellEvent` |
+| `ObservableRun` | long-running inference/tool sequence | `runStream()`, `TellProgress`, `TellEventEnvelope` |
 | `DurableConversation` | project-local named work | workspace and conversation handles |
 | `TransientExperiment` | compare an alternative safely | `transient()` with durable context |
 | `CompactionAndClear` | intentional context lifecycle | `compact()` and `clear()` |
 | `BranchWorkflow` | isolate, recover, and reset work safely | `workspace()->branches()` |
 | `BranchConfiguration` | versioned runtime intent without credentials | `workspace()->configuration()` |
-| `ControlledRun` | finite policy, cancellation, and safe lifecycle output | policies, cancellation source, `TellEvent::envelope()` |
+| `ControlledRun` | finite policy, cancellation, and safe lifecycle output | policies, cancellation source, `TellEventEnvelope::toArray()` |
 | `AgentCapabilities` | preset discovery, direct tools, answers, and delegation | `catalogue()`, `tools()`, answers, child branches |
 | `DeterministicTesting` | deterministic SDK integration without provider I/O | `Tell::testing()` and `TellTestFactory` |
 | `ReasoningConfiguration` | typed request and branch reasoning intent | `TellReasoningEffort` and effective provenance |

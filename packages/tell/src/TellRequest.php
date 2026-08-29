@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell;
 
-use Cognesy\Tell\Capability\AskUser\TellAnswerQueue;
-use Cognesy\Tell\Runtime\TellOptions;
-use Cognesy\Tell\Runtime\TellExecutionPolicy;
 use Closure;
+use Cognesy\Polyglot\Inference\Reasoning\ReasoningEffort;
+use Cognesy\Tell\Capability\AskUser\TellAnswerQueue;
+use Cognesy\Tell\Contracts\Data\TellEventEnvelope;
+use Cognesy\Tell\Runtime\TellExecutionPolicy;
+use Cognesy\Tell\Runtime\TellOptions;
 use InvalidArgumentException;
 
 final readonly class TellRequest
 {
     /**
-     * @param list<string> $tools
-     * @param list<Closure(TellEvent): void> $listeners
+     * @param  list<string>  $tools
+     * @param  list<Closure(TellEventEnvelope): void>  $listeners
      */
     public function __construct(
         public string $prompt,
@@ -22,7 +24,7 @@ final readonly class TellRequest
         public string $agent = 'default',
         public string $connection = 'openai',
         public string $model = '',
-        public ?TellReasoningEffort $reasoningEffort = null,
+        public ?ReasoningEffort $reasoningEffort = null,
         public string $dsn = '',
         public ?string $session = null,
         public ?string $branch = null,
@@ -190,7 +192,7 @@ final readonly class TellRequest
         );
     }
 
-    public function reasoningEffort(TellReasoningEffort $effort): self
+    public function reasoningEffort(ReasoningEffort $effort): self
     {
         return new self(
             prompt: $this->prompt,
@@ -357,7 +359,7 @@ final readonly class TellRequest
             ? $values['model']
             : $this->model;
         $reasoningEffort = ! $this->reasoningEffortExplicit && isset($values['reasoningEffort']) && is_string($values['reasoningEffort'])
-            ? TellReasoningEffort::parse($values['reasoningEffort'])
+            ? ReasoningEffort::parse($values['reasoningEffort'])
             : $this->reasoningEffort;
         $tools = ! $this->toolsExplicit && isset($values['tools']) && is_array($values['tools'])
             ? array_values(array_filter($values['tools'], static fn (mixed $tool): bool => is_string($tool)))
@@ -387,7 +389,7 @@ final readonly class TellRequest
         );
     }
 
-    /** @param callable(TellEvent): void $listener */
+    /** @param callable(TellEventEnvelope): void $listener */
     public function onEvent(callable $listener): self
     {
         return new self(
@@ -414,7 +416,7 @@ final readonly class TellRequest
         );
     }
 
-    /** @return list<Closure(TellEvent): void> */
+    /** @return list<Closure(TellEventEnvelope): void> */
     public function listeners(): array
     {
         return $this->listeners;

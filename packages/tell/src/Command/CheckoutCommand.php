@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Command;
 
-use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Operational\CanDescribeOperationalPlane;
 use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
+use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Workspace\ArenaStore;
 use Cognesy\Tell\Workspace\BranchResolver;
@@ -60,12 +60,15 @@ final class CheckoutCommand extends Command implements CanDescribeOperationalPla
                 'branch' => $selected->toArray(),
                 'changed' => $previous->branch !== $selected->branch,
             ], json: (bool) $input->getOption('json'));
+
             return Command::SUCCESS;
         } catch (InvalidArgumentException $error) {
             (new StructuredOutput($output))->write(['error' => $error->getMessage()], json: (bool) $input->getOption('json'));
+
             return Command::INVALID;
         } catch (WorkspaceException $error) {
             (new StructuredOutput($output))->write(['error' => $error->getMessage()], json: (bool) $input->getOption('json'));
+
             return Command::FAILURE;
         }
     }

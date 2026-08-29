@@ -12,6 +12,7 @@ use Symfony\Component\Console\Input\InputInterface;
 final class TellAnswerQueue
 {
     public const int MAX_ANSWERS = 32;
+
     public const int MAX_ANSWER_BYTES = 8_192;
 
     /** @var list<array{id: ?string, value: string, source: 'cli'|'file'|'stdin'}> */

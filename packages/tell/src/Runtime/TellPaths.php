@@ -90,6 +90,7 @@ final readonly class TellPaths
     private static function processEnvironment(): array
     {
         $environment = getenv();
+
         return is_array($environment) ? $environment : [];
     }
 

@@ -16,7 +16,6 @@ use Throwable;
 
 final class ExecutionTraceWriter
 {
-
     private ?string $path = null;
 
     private bool $failed = false;

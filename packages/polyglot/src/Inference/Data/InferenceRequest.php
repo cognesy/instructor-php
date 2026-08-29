@@ -7,6 +7,7 @@ namespace Cognesy\Polyglot\Inference\Data;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
+use Cognesy\Polyglot\Inference\Reasoning\ReasoningSelection;
 use Cognesy\Telemetry\Domain\Envelope\OperationCorrelation;
 use DateTimeImmutable;
 use InvalidArgumentException;
@@ -44,6 +45,8 @@ class InferenceRequest
 
     protected ?OperationCorrelation $telemetryCorrelation;
 
+    protected ?ReasoningSelection $reasoning;
+
     public function __construct(
         ?Messages $messages = null,
         ?string $model = null,
@@ -55,6 +58,7 @@ class InferenceRequest
         ?ResponseCachePolicy $responseCachePolicy = null,
         ?InferenceRetryPolicy $retryPolicy = null,
         ?OperationCorrelation $telemetryCorrelation = null,
+        ?ReasoningSelection $reasoning = null,
         //
         ?InferenceRequestId $id = null, // for deserialization
         ?DateTimeImmutable $createdAt = null, // for deserialization
@@ -71,6 +75,7 @@ class InferenceRequest
         $this->assertNoRetryPolicyInOptions($this->options);
         $this->retryPolicy = $retryPolicy;
         $this->telemetryCorrelation = $telemetryCorrelation;
+        $this->reasoning = $reasoning;
 
         $this->tools = $tools ?? ToolDefinitions::empty();
         $this->toolChoice = $toolChoice ?? ToolChoice::empty();
@@ -161,6 +166,11 @@ class InferenceRequest
         return $this->telemetryCorrelation;
     }
 
+    public function reasoning(): ReasoningSelection
+    {
+        return $this->reasoning ?? ReasoningSelection::providerDefault();
+    }
+
     /**
      * Retrieves the configured response format.
      */
@@ -238,6 +248,11 @@ class InferenceRequest
         return ! empty($this->options);
     }
 
+    public function hasReasoning(): bool
+    {
+        return ! $this->reasoning()->isDefault();
+    }
+
     // MUTATORS //////////////////////////////////////
 
     /**
@@ -256,6 +271,7 @@ class InferenceRequest
         ?ResponseCachePolicy $responseCachePolicy = null,
         ?InferenceRetryPolicy $retryPolicy = null,
         ?OperationCorrelation $telemetryCorrelation = null,
+        ?ReasoningSelection $reasoning = null,
     ): self {
         return new self(
             messages: $messages ?? $this->messages,
@@ -268,6 +284,7 @@ class InferenceRequest
             responseCachePolicy: $responseCachePolicy ?? $this->responseCachePolicy,
             retryPolicy: $retryPolicy ?? $this->retryPolicy,
             telemetryCorrelation: $telemetryCorrelation ?? $this->telemetryCorrelation,
+            reasoning: $reasoning ?? $this->reasoning,
             id: $this->id,
             createdAt: $this->createdAt,
             // Carried over, not recomputed: with() runs per attempt via
@@ -340,6 +357,11 @@ class InferenceRequest
         return $this->with(telemetryCorrelation: $telemetryCorrelation);
     }
 
+    public function withReasoning(ReasoningSelection $reasoning): self
+    {
+        return $this->with(reasoning: $reasoning);
+    }
+
     /**
      * Returns a copy of the current object with cached context applied if it is available.
      * If no cached context is set, it returns the current instance unchanged.
@@ -365,6 +387,7 @@ class InferenceRequest
             responseCachePolicy: $this->responseCachePolicy,
             retryPolicy: $this->retryPolicy,
             telemetryCorrelation: $this->telemetryCorrelation,
+            reasoning: $this->reasoning,
             id: $this->id,
             createdAt: $this->createdAt,
         );
@@ -390,6 +413,9 @@ class InferenceRequest
             'response_cache_policy' => $this->responseCachePolicy->value,
             'retry_policy' => $this->retryPolicy?->toArray(),
             'telemetry_correlation' => $this->telemetryCorrelation?->toArray(),
+            ...($this->reasoning === null || $this->reasoning->isDefault()
+                ? []
+                : ['reasoning' => $this->reasoning->toArray()]),
         ];
     }
 
@@ -410,15 +436,16 @@ class InferenceRequest
             responseCachePolicy: isset($data['response_cache_policy']) ? ResponseCachePolicy::from($data['response_cache_policy']) : null,
             retryPolicy: self::retryPolicyFromArray($retryPolicy),
             telemetryCorrelation: self::telemetryCorrelationFromArray($telemetryCorrelation),
+            reasoning: self::reasoningFromArray($data['reasoning'] ?? null),
         );
     }
 
     private static function telemetryCorrelationFromArray(mixed $value): ?OperationCorrelation
     {
         return match (true) {
-            !is_array($value) => null,
-            !isset($value['root_operation_id']) => null,
-            !is_string($value['root_operation_id']) => null,
+            ! is_array($value) => null,
+            ! isset($value['root_operation_id']) => null,
+            ! is_string($value['root_operation_id']) => null,
             default => OperationCorrelation::fromArray($value),
         };
     }
@@ -482,6 +509,15 @@ class InferenceRequest
         return match (true) {
             $retryPolicy instanceof InferenceRetryPolicy => $retryPolicy,
             is_array($retryPolicy) => InferenceRetryPolicy::fromArray($retryPolicy),
+            default => null,
+        };
+    }
+
+    private static function reasoningFromArray(mixed $reasoning): ?ReasoningSelection
+    {
+        return match (true) {
+            $reasoning instanceof ReasoningSelection => $reasoning,
+            is_array($reasoning) => ReasoningSelection::fromArray($reasoning),
             default => null,
         };
     }

@@ -1,12 +1,14 @@
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Data\ToolChoice;
 use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
-use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Reasoning\ReasoningEffort;
+use Cognesy\Polyglot\Inference\Reasoning\ReasoningSelection;
 
 it('serializes inference request to a JSON-encodable array', function () {
     $request = (new InferenceRequestBuilder)
@@ -58,7 +60,7 @@ it('preserves retry policy and cached context across serialization round-trip', 
             maxDelayMs: 1200,
             jitter: 'equal',
             retryOnStatus: [408, 429],
-            retryOnExceptions: [\RuntimeException::class],
+            retryOnExceptions: [RuntimeException::class],
             lengthRecovery: 'continue',
             lengthMaxAttempts: 3,
             lengthContinuePrompt: 'Continue now.',
@@ -95,4 +97,19 @@ it('preserves retry policy and cached context across serialization round-trip', 
         ->and($copy->cachedContext()?->responseFormat()->toArray())->toBe(['type' => 'json_object'])
         ->and($copy->cachedContext()?->messages()->toArray()[0]['role'] ?? null)->toBe('assistant')
         ->and($copy->cachedContext()?->messages()->toArray()[0]['content'] ?? null)->toBe('Cached reply');
+});
+
+it('round-trips typed reasoning and omits provider default', function () {
+    $request = (new InferenceRequestBuilder)
+        ->withReasoning(ReasoningSelection::withEffort(ReasoningEffort::High))
+        ->create();
+
+    $copy = InferenceRequest::fromArray($request->toArray());
+    $default = (new InferenceRequestBuilder)->create()->toArray();
+
+    expect($request->toArray()['reasoning'])->toBe([
+        'kind' => 'effort',
+        'effort' => 'high',
+    ])->and($copy->reasoning())->toEqual($request->reasoning())
+        ->and($default)->not()->toHaveKey('reasoning');
 });

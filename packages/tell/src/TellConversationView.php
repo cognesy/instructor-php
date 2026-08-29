@@ -8,8 +8,8 @@ namespace Cognesy\Tell;
 final readonly class TellConversationView
 {
     /** @param array{name: string, type: 'main'|'branch'|'session'|'ref', source?: string} $selector
-     * @param list<array<string, mixed>> $turns
-     * @param list<array<string, mixed>> $messages
+     * @param  list<array<string, mixed>>  $turns
+     * @param  list<array<string, mixed>>  $messages
      */
     public function __construct(
         public array $selector,

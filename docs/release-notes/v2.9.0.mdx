@@ -1,0 +1,35 @@
+---
+title: 'v2.9.0'
+---
+
+v2.9.0 moves reasoning capabilities into Polyglot, where provider request
+translation belongs. Applications can now express reasoning intent once while
+preserving differences between named effort, token budgets, enable/disable
+modes, adaptive reasoning, and provider defaults.
+
+## Portable Reasoning Selections
+
+`Inference::withReasoning()` accepts a typed `ReasoningSelection`. Named effort
+uses the shared `ReasoningEffort` vocabulary: `minimal`, `low`, `medium`,
+`high`, `xhigh`, and `max`. Polyglot validates selections against curated
+model-and-protocol capability profiles and translates accepted intent at the
+request-body boundary.
+
+The default selection emits no new request field, preserving existing behavior.
+Explicit typed reasoning cannot be mixed with raw provider reasoning options;
+ambiguous requests fail before network I/O. Lossy aliases are represented in
+capability metadata but rejected by default.
+
+## Tell Compatibility
+
+Tell delegates reasoning validation and translation to Polyglot. Its former
+three-value `TellReasoningEffort` definition remains as a deprecated runtime
+alias of the shared six-value enum, so existing imports continue to resolve
+while new code can use Polyglot directly.
+
+## Provider Coverage
+
+Bundled profiles cover OpenAI Chat Completions and Responses, Anthropic,
+DeepSeek, Gemini, GLM, Qwen, Cohere, Mistral, Moonshot/Kimi, xAI/Grok, and
+OpenRouter. Unknown model IDs remain explicitly unknown rather than inheriting
+an unsafe provider-wide assumption.

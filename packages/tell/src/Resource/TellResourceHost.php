@@ -9,8 +9,6 @@ use Cognesy\Tell\Contracts\CanApproveTellShellJobs;
 use Cognesy\Tell\Contracts\CanManageTellShellJobs;
 use Cognesy\Tell\Contracts\CanObserveTellResources;
 use Cognesy\Tell\Resource\Exception\TellResourceHostDisposedException;
-use Cognesy\Tell\Resource\NullTellResourceObserver;
-use Cognesy\Tell\Resource\TellShellJobApprovals;
 use Cognesy\Tell\Shell\TellShellJobPolicy;
 use CordisPhp\Runtime\Fiber;
 use CordisPhp\Runtime\Runtime;
@@ -35,9 +33,9 @@ final class TellResourceHost
     ): TellResourceHostBuilder {
         return new TellResourceHostBuilder(
             projectDirectory: $project,
-            policy: $policy ?? new TellShellJobPolicy(),
+            policy: $policy ?? new TellShellJobPolicy,
             approval: $approval ?? TellShellJobApprovals::denyAll(),
-            observer: $observer ?? new NullTellResourceObserver(),
+            observer: $observer ?? new NullTellResourceObserver,
         );
     }
 
@@ -80,7 +78,7 @@ final class TellResourceHost
     private function assertActive(): void
     {
         if ($this->disposed) {
-            throw new TellResourceHostDisposedException();
+            throw new TellResourceHostDisposedException;
         }
     }
 }

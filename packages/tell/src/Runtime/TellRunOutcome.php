@@ -33,7 +33,7 @@ final class TellRunOutcome
      * a caller that stops iterating early still gets the durability, workspace
      * and branch facts its mode would have reported.
      *
-     * @param callable(AgentState): TellResult $builder
+     * @param  callable(AgentState): TellResult  $builder
      */
     public function useBuilder(callable $builder): void
     {

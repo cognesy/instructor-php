@@ -10,8 +10,8 @@ use InvalidArgumentException;
 final readonly class TellHostProfile
 {
     /**
-     * @param list<TellModuleDefinition> $modules
-     * @param list<class-string> $requiredCapabilities
+     * @param  list<TellModuleDefinition>  $modules
+     * @param  list<class-string>  $requiredCapabilities
      */
     public function __construct(
         public string $name,

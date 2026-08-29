@@ -8,8 +8,8 @@ use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Tell\Contracts\CanBuildTellAgent;
-use Cognesy\Tell\Contracts\CanResolveTellConfiguration;
 use Cognesy\Tell\Contracts\CanObserveTellExecution;
+use Cognesy\Tell\Contracts\CanResolveTellConfiguration;
 use Cognesy\Tell\TellRequest;
 
 final readonly class StandardTellAgentBuilder implements CanBuildTellAgent, CanOpenTellRuntime

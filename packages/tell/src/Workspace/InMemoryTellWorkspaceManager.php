@@ -21,6 +21,7 @@ final class InMemoryTellWorkspaceManager implements CanManageTellWorkspace
         if ($current !== null) {
             return new TellWorkspaceInfo($current->root, $current->schema, false);
         }
+
         return $this->workspaces[$root] = new TellWorkspaceInfo($root, WorkspacePaths::SCHEMA_VERSION, true);
     }
 
@@ -30,6 +31,7 @@ final class InMemoryTellWorkspaceManager implements CanManageTellWorkspace
         while (true) {
             if (isset($this->workspaces[$path])) {
                 $workspace = $this->workspaces[$path];
+
                 return new TellWorkspaceInfo($workspace->root, $workspace->schema, false);
             }
             $parent = dirname($path);
@@ -51,6 +53,7 @@ final class InMemoryTellWorkspaceManager implements CanManageTellWorkspace
         if (! is_dir($directory)) {
             throw new InvalidArgumentException("Workspace directory does not exist: {$directory}");
         }
+
         return realpath($directory) ?: throw new InvalidArgumentException("Workspace directory cannot be resolved safely: {$directory}");
     }
 }

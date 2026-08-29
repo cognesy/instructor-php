@@ -18,7 +18,7 @@ final readonly class BranchConfigStore
     private const array KEYS = [
         'connection' => ['type' => 'string'],
         'model' => ['type' => 'string'],
-        'reasoningEffort' => ['type' => 'enum', 'values' => ['low', 'medium', 'high']],
+        'reasoningEffort' => ['type' => 'enum', 'values' => ['minimal', 'low', 'medium', 'high', 'xhigh', 'max']],
         'output' => ['type' => 'enum', 'values' => ['toon', 'text', 'human', 'json', 'events']],
         'tools' => ['type' => 'list'],
         'maxRetries' => ['type' => 'int', 'min' => 0, 'max' => 10],
@@ -91,6 +91,7 @@ final readonly class BranchConfigStore
     public function runtimeValues(string $branch): array
     {
         $values = $this->read($branch)['values'];
+
         return $values;
     }
 
@@ -176,6 +177,7 @@ final readonly class BranchConfigStore
             }
 
             $values = $operation($current['values']);
+
             return $this->write($branch, $values, $current['version']);
         } finally {
             flock($handle, LOCK_UN);

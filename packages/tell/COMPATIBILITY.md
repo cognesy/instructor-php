@@ -34,7 +34,7 @@ objects returned by these facades are part of the same obligation.
 | Open and execute | `Tell::open()`, `Tell::run()`, `Tell::runStream()`, `TellRequest`, `TellResult`, `TellProgress` | `tests/Integration/SdkRuntimeTest.php`, `tests/Integration/ExecutionPolicyTest.php` |
 | Durable conversation | `Tell::workspace()`, `Tell::conversation()`, `TellWorkspace::initialize()`, `discover()`, `main()`, `conversation()`, and `TellConversation` send/inspect/clear/compact operations | `tests/Integration/SdkRuntimeTest.php`, `tests/Integration/WorkspaceP0AcceptanceTest.php`, `tests/Integration/WorkspaceClearTest.php`, `tests/Integration/WorkspaceCompactionTest.php` |
 | Request controls | agent, connection, model, tools, supplied answers, step and execution budgets, session, branch, branch overrides, transient/durable mode, and event listeners on `TellRequest` | `tests/Integration/SdkRuntimeTest.php`, `tests/Integration/ExecutionPolicyTest.php`, `tests/Integration/AskUserTest.php` |
-| Observation | `TellEvent`, including `source()` and `envelope()`, plus streamed `TellProgress` checkpoints | `tests/Integration/SdkRuntimeTest.php`, `tests/Feature/RenderingTest.php` |
+| Observation | `TellEventEnvelope`, including `toArray()`, plus streamed `TellProgress` checkpoints | `tests/Integration/SdkRuntimeTest.php`, `tests/Feature/RenderingTest.php` |
 | Returned projections | `TellConversationView`, `TellContext`, `TellClearResult`, `TellCompactionResult`, `TellWorkspaceInfo`, and `TellExecutionMode` | `tests/Integration/WorkspaceInspectionTest.php`, `tests/Integration/WorkspaceContextTest.php`, `tests/Integration/WorkspaceClearTest.php`, `tests/Integration/WorkspaceCompactionTest.php` |
 | Explicit policy and answers | `Runtime\TellExecutionPolicy` and `Capability\AskUser\TellAnswerQueue` when supplied through `TellRequest` | `tests/Integration/ExecutionPolicyTest.php`, `tests/Integration/AskUserTest.php` |
 <!-- markdownlint-enable MD013 -->
@@ -46,17 +46,23 @@ constructors and internal collaboration graph are not frozen.
 
 ### Event compatibility boundary
 
-`TellEvent::source()` exposes the original typed Agents event to in-process PHP
-listeners. It is source-level compatibility only: consumers may inspect the
-object, but must not serialize it or treat its concrete object layout as a Tell
-wire schema.
+`TellRequest::onEvent()` listeners receive a `TellEventEnvelope`, the same type
+`CanObserveTellExecution::observe()` takes. It is the process-safe projection,
+carrying the `tell.event.v1` schema used by event output and default execution
+traces. Its schema, redaction, ordering, metadata bounds, and terminal semantics
+are the normalized compatibility contract, and its key set and order are pinned
+by `tests/Integration/EventEnvelopeShapeTest.php`. Other tests:
+`tests/Feature/RenderingTest.php`, `tests/Integration/ExecutionTraceTest.php`,
+and `tests/Integration/ToolCommandTest.php`.
 
-`TellEvent::envelope()` is the process-safe projection. It has the same
-`tell.event.v1` schema used by event output and default execution traces. Its
-schema, redaction, ordering, metadata bounds, and terminal semantics are the
-normalized compatibility contract. Tests: `tests/Feature/RenderingTest.php`,
-`tests/Integration/ExecutionTraceTest.php`, and
-`tests/Integration/ToolCommandTest.php`.
+There is no longer a raw framework event behind an observation. `TellEvent` and
+its `source()` accessor are removed: the wrapper duplicated the envelope's
+eleven fields in an untyped array, and `source()` was the one route by which an
+unredacted tool result could be reached from a public listener. Nothing in the
+repository called it. Code that deliberately wants the original typed Agents
+event passes a `$prepareLoop` callable to `TellRuntime::run()`/`start()` and
+wiretaps the loop directly, which yields the concrete event class rather than
+the `object` that `source()` returned.
 
 ## v2.8.4 published additions
 

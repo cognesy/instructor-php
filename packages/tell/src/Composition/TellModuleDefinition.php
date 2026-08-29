@@ -14,10 +14,10 @@ final readonly class TellModuleDefinition
     private Closure $factory;
 
     /**
-     * @param list<class-string> $provides
-     * @param list<class-string> $requires
-     * @param list<class-string> $optional
-     * @param callable(mixed ...): object $factory
+     * @param  list<class-string>  $provides
+     * @param  list<class-string>  $requires
+     * @param  list<class-string>  $optional
+     * @param  callable(mixed ...): object  $factory
      */
     public function __construct(
         public string $id,

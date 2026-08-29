@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Protocol;
 
+use Cognesy\Polyglot\Inference\Reasoning\ReasoningEffort;
 use Cognesy\Tell\Runtime\TellExecutionPolicy;
 use Cognesy\Tell\TellExecutionMode;
-use Cognesy\Tell\TellReasoningEffort;
 use Cognesy\Tell\TellRequest;
 use JsonException;
 
@@ -156,20 +156,23 @@ final readonly class TellAgentProtocolRequest
     }
 
     /** @param array<string, mixed> $values */
-    private static function reasoningEffort(array $values): ?TellReasoningEffort
+    private static function reasoningEffort(array $values): ?ReasoningEffort
     {
         if (! array_key_exists('reasoningEffort', $values)) {
             return null;
         }
         if (! is_string($values['reasoningEffort'])) {
-            throw new TellAgentProtocolException('invalid_request', 'Request field reasoningEffort must be low, medium, or high.');
+            throw new TellAgentProtocolException('invalid_request', 'Request field reasoningEffort must be minimal, low, medium, high, xhigh, or max.');
         }
 
         return match ($values['reasoningEffort']) {
-            'low' => TellReasoningEffort::Low,
-            'medium' => TellReasoningEffort::Medium,
-            'high' => TellReasoningEffort::High,
-            default => throw new TellAgentProtocolException('invalid_request', 'Request field reasoningEffort must be low, medium, or high.'),
+            'minimal' => ReasoningEffort::Minimal,
+            'low' => ReasoningEffort::Low,
+            'medium' => ReasoningEffort::Medium,
+            'high' => ReasoningEffort::High,
+            'xhigh' => ReasoningEffort::XHigh,
+            'max' => ReasoningEffort::Max,
+            default => throw new TellAgentProtocolException('invalid_request', 'Request field reasoningEffort must be minimal, low, medium, high, xhigh, or max.'),
         };
     }
 

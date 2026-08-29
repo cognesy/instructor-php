@@ -6,10 +6,10 @@ namespace Cognesy\Tell\Tool;
 
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
 use Cognesy\Tell\Capability\AskUser\TellAnswerQueue;
+use Cognesy\Tell\Contracts\CanDispatchTellTool;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Runtime\TellOptions;
 use Cognesy\Tell\Runtime\TellToolDispatcher;
-use Cognesy\Tell\Contracts\CanDispatchTellTool;
 
 /** Direct, model-free tool calls resolved from the same Tell configuration as agent work. */
 final readonly class TellTools

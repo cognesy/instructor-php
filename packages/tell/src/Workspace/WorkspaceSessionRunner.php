@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Workspace;
 
 use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Session\Data\SessionId;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Tell\Canonical\CanonicalConversationRoot;
@@ -39,7 +40,7 @@ final readonly class WorkspaceSessionRunner
         return $states->getReturn();
     }
 
-    /** @return Generator<int, \Cognesy\Agents\Data\AgentState, mixed, WorkspaceSessionExecution> */
+    /** @return Generator<int, AgentState, mixed, WorkspaceSessionExecution> */
     public function iterate(
         SessionId $sessionId,
         AgentLoop $loop,

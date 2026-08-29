@@ -73,7 +73,7 @@ $result = $tell->run(
 
 foreach ($tell->runStream(
     TellRequest::prompt('Investigate and report progress')
-        ->onEvent(fn ($event) => $logger->info($event->type(), $event->data())),
+        ->onEvent(fn ($event) => $logger->info($event->kind, $event->metadata)),
 ) as $progress) {
     $reportProgress($progress->stepCount(), $progress->usage());
 }
@@ -98,10 +98,12 @@ $history = $conversation->history(limit: 10);
 $conversation->clear();
 ```
 
-`TellEvent::envelope()` returns the same safe `tell.event.v1` projection used by
-NDJSON and default traces. `source()` remains available for an application that
-deliberately needs the original typed Agent event; never serialize it at a
-process boundary.
+`TellEventEnvelope::toArray()` returns the same safe `tell.event.v1` projection
+used by NDJSON and default traces. The envelope is all a listener gets: it holds
+scalars only, so there is no raw framework event behind it to serialize by
+accident. An application that deliberately needs the original typed Agent event
+takes `TellRuntime::run($request, $prepareLoop)` and wiretaps the loop, where
+the event arrives as its own class rather than an untyped object.
 
 ### Deterministic SDK tests
 
@@ -357,9 +359,12 @@ branches copy source intent by value and later edits remain independent.
 Explicit connection, model, reasoning-effort, output, and tool flags take
 precedence over branch intent. PHP callers select the typed value with
 `TellRequest::reasoningEffort(TellReasoningEffort::Low)`; supported values are
-`low`, `medium`, and `high`. Tell rejects provider/model combinations without
-declared reasoning-effort support before inference and translates supported
-intent to provider-native Polyglot options at runtime.
+`minimal`, `low`, `medium`, `high`, `xhigh`, and `max`. The enum is a deprecated
+compatibility alias of Polyglot's shared `ReasoningEffort`; new integrations
+should import `Cognesy\Polyglot\Inference\Reasoning\ReasoningEffort`. Tell asks
+Polyglot to validate the selected provider, protocol, and model, then Polyglot
+translates supported intent at the request-body boundary. Tell therefore keeps
+no provider-specific reasoning table or raw-option mapper of its own.
 `effective` identifies the source of each branch/bundled value; it never
 resolves or displays credential material.
 

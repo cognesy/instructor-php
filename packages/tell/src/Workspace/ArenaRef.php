@@ -69,7 +69,6 @@ final readonly class ArenaRef
         )."\n";
     }
 
-    /** @param mixed $data */
     private static function provenanceFromData(mixed $data): ?BranchProvenance
     {
         if ($data === null) {

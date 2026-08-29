@@ -12,6 +12,7 @@ use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Data\ToolChoice;
 use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
+use Cognesy\Polyglot\Inference\Reasoning\ReasoningSelection;
 use Cognesy\Telemetry\Domain\Envelope\OperationCorrelation;
 
 class InferenceRequestBuilder
@@ -38,6 +39,8 @@ class InferenceRequestBuilder
 
     private ?int $maxTokens;
 
+    private ?ReasoningSelection $reasoning;
+
     protected CachedInferenceContext $cachedContext;
 
     public function __construct(
@@ -53,6 +56,7 @@ class InferenceRequestBuilder
         ?ResponseCachePolicy $responseCachePolicy = null,
         ?InferenceRetryPolicy $retryPolicy = null,
         ?OperationCorrelation $telemetryCorrelation = null,
+        ?ReasoningSelection $reasoning = null,
     ) {
         $this->messages = $messages;
         $this->model = $model;
@@ -66,6 +70,7 @@ class InferenceRequestBuilder
         $this->responseCachePolicy = $responseCachePolicy;
         $this->retryPolicy = $retryPolicy;
         $this->telemetryCorrelation = $telemetryCorrelation;
+        $this->reasoning = $reasoning;
     }
 
     /**
@@ -160,6 +165,13 @@ class InferenceRequestBuilder
         return $this;
     }
 
+    public function withReasoning(ReasoningSelection $reasoning): static
+    {
+        $this->reasoning = $reasoning;
+
+        return $this;
+    }
+
     public function withResponseCachePolicy(ResponseCachePolicy $policy): static
     {
         $this->responseCachePolicy = $policy;
@@ -218,6 +230,7 @@ class InferenceRequestBuilder
         $this->responseCachePolicy = $request->responseCachePolicy();
         $this->retryPolicy = $request->retryPolicy();
         $this->telemetryCorrelation = $request->telemetryCorrelation();
+        $this->reasoning = $request->reasoning();
 
         return $this;
     }
@@ -239,6 +252,7 @@ class InferenceRequestBuilder
             responseCachePolicy: $this->responseCachePolicy,
             retryPolicy: $this->retryPolicy,
             telemetryCorrelation: $this->telemetryCorrelation,
+            reasoning: $this->reasoning,
         );
     }
 

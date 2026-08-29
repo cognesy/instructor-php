@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Branch;
 
+use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\TellContext;
 use Cognesy\Tell\TellConversationView;
 use Cognesy\Tell\TellRequest;
-use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Workspace\ArenaStore;
 use Cognesy\Tell\Workspace\BranchName;
 use Cognesy\Tell\Workspace\BranchResolver;

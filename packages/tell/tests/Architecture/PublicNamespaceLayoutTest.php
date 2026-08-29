@@ -18,7 +18,6 @@ it('keeps only the established facade and request vocabulary in the root namespa
         'TellContext.php',
         'TellConversation.php',
         'TellConversationView.php',
-        'TellEvent.php',
         'TellExecutionMode.php',
         'TellProgress.php',
         'TellReasoningEffort.php',

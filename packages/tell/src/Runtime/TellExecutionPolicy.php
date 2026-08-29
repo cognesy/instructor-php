@@ -11,10 +11,15 @@ use Symfony\Component\Console\Input\InputInterface;
 final readonly class TellExecutionPolicy
 {
     public const int DEFAULT_MAX_RETRIES = 0;
+
     public const int DEFAULT_TIMEOUT_MS = 30_000;
+
     public const int DEFAULT_MAX_OUTPUT_CHARS = 200_000;
+
     public const int DEFAULT_MAX_TOOL_OUTPUT_CHARS = 40_000;
+
     public const int DEFAULT_MAX_TOOL_CALLS = 100;
+
     /**
      * The ceiling on one spilled tool result, and the switch for spilling
      * itself: zero turns spilling off, and the older head/tail truncation is
@@ -32,11 +37,17 @@ final readonly class TellExecutionPolicy
     public const int DEFAULT_MAX_STUB_BYTES = 2_000;
 
     public const int MAX_RETRIES = 10;
+
     public const int MAX_TIMEOUT_MS = 3_600_000;
+
     public const int MAX_OUTPUT_CHARS = 1_000_000;
+
     public const int MAX_TOOL_OUTPUT_CHARS = 250_000;
+
     public const int MAX_TOOL_CALLS = 1_000;
+
     public const int MAX_SPILL_BYTES = 5_000_000;
+
     public const int MAX_STUB_BYTES = 100_000;
 
     /** @param array<string, 'cli'|'branch'|'project'|'user'|'bundled'> $provenance */
@@ -75,18 +86,17 @@ final readonly class TellExecutionPolicy
     }
 
     /**
-     * @param array<string, mixed> $branchValues
-     * @param array<string, int> $cliOverrides
-     * @param array<string, int> $projectDefaults
-     * @param array<string, int> $userDefaults
+     * @param  array<string, mixed>  $branchValues
+     * @param  array<string, int>  $cliOverrides
+     * @param  array<string, int>  $projectDefaults
+     * @param  array<string, int>  $userDefaults
      */
     public static function resolve(
         array $branchValues,
         array $cliOverrides = [],
         array $projectDefaults = [],
         array $userDefaults = [],
-    ): self
-    {
+    ): self {
         $defaults = self::defaults()->values();
         $values = $defaults;
         $provenance = self::bundledProvenance();

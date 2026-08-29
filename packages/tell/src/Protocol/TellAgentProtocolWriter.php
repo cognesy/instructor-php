@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Protocol;
 
 use Cognesy\Tell\Contracts\CanWriteTellProtocolFrames;
+use Cognesy\Tell\Diagnostics\TellDiagnostic;
 use Cognesy\Tell\TellProgress;
 use Cognesy\Tell\TellResult;
 use JsonException;
@@ -147,7 +148,7 @@ final class TellAgentProtocolWriter implements CanWriteTellProtocolFrames
     private function externalDiagnostics(TellResult $result): array
     {
         return array_map(
-            static fn (\Cognesy\Tell\Diagnostics\TellDiagnostic $diagnostic): array => $diagnostic->toExternalArray(),
+            static fn (TellDiagnostic $diagnostic): array => $diagnostic->toExternalArray(),
             $result->diagnostics(),
         );
     }

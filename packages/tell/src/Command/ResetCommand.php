@@ -77,12 +77,15 @@ final class ResetCommand extends Command implements CanDescribeOperationalPlane
                 'changed' => ($before?->toString()) !== ($result->head?->toString()),
                 'message' => 'Immutable history is retained; create a branch before reset when durable recovery is required.',
             ], json: (bool) $input->getOption('json'));
+
             return Command::SUCCESS;
         } catch (InvalidArgumentException $error) {
             (new StructuredOutput($output))->write(['error' => $error->getMessage()], json: (bool) $input->getOption('json'));
+
             return Command::INVALID;
         } catch (WorkspaceException $error) {
             (new StructuredOutput($output))->write(['error' => $error->getMessage()], json: (bool) $input->getOption('json'));
+
             return Command::FAILURE;
         }
     }
@@ -127,6 +130,7 @@ final class ResetCommand extends Command implements CanDescribeOperationalPlane
         if (! array_key_exists($distance, $lineage)) {
             throw new InvalidArgumentException('Reset steps exceed the selected branch ancestry.');
         }
+
         return [$lineage[$distance], $distance];
     }
 
@@ -153,6 +157,7 @@ final class ResetCommand extends Command implements CanDescribeOperationalPlane
             };
             $lineage[$distance] = $cursor;
         }
+
         return $lineage;
     }
 }

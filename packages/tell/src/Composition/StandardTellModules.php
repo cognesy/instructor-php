@@ -7,39 +7,39 @@ namespace Cognesy\Tell\Composition;
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
 use Cognesy\Agents\Capability\Cancellation\InMemoryCancellationSource;
 use Cognesy\Agents\Drivers\CanUseTools;
+use Cognesy\Tell\Console\CoreTellCommandContributor;
+use Cognesy\Tell\Console\SymfonyTellApplicationBuilder;
+use Cognesy\Tell\Contracts\CanAccessTellConversations;
 use Cognesy\Tell\Contracts\CanBuildTellAgent;
 use Cognesy\Tell\Contracts\CanBuildTellApplication;
 use Cognesy\Tell\Contracts\CanCatalogueTellExtensions;
-use Cognesy\Tell\Contracts\CanDispatchTellTool;
 use Cognesy\Tell\Contracts\CanContributeTellCommands;
-use Cognesy\Tell\Contracts\CanRunTellProtocol;
-use Cognesy\Tell\Contracts\CanObserveTellExecution;
-use Cognesy\Tell\Contracts\CanAccessTellConversations;
+use Cognesy\Tell\Contracts\CanDispatchTellTool;
 use Cognesy\Tell\Contracts\CanManageTellWorkspace;
+use Cognesy\Tell\Contracts\CanObserveTellExecution;
 use Cognesy\Tell\Contracts\CanReadTellBranchConfiguration;
-use Cognesy\Tell\Contracts\CanResolveTellModel;
 use Cognesy\Tell\Contracts\CanResolveTellConfiguration;
+use Cognesy\Tell\Contracts\CanResolveTellModel;
 use Cognesy\Tell\Contracts\CanResolveTellPaths;
 use Cognesy\Tell\Contracts\CanResolveTellSecrets;
 use Cognesy\Tell\Contracts\CanRunTell;
+use Cognesy\Tell\Contracts\CanRunTellProtocol;
+use Cognesy\Tell\Observability\NullTellObserver;
+use Cognesy\Tell\Protocol\OneRunTellProtocol;
 use Cognesy\Tell\Runtime\CanOpenTellRuntime;
 use Cognesy\Tell\Runtime\CanReadTellClock;
+use Cognesy\Tell\Runtime\ComposerTellExtensionCatalogue;
 use Cognesy\Tell\Runtime\DefaultTellRunner;
 use Cognesy\Tell\Runtime\PolyglotTellModelResolver;
 use Cognesy\Tell\Runtime\StandardTellAgentBuilder;
+use Cognesy\Tell\Runtime\StandardTellConfigurationResolver;
 use Cognesy\Tell\Runtime\StandardTellPathResolver;
 use Cognesy\Tell\Runtime\StandardTellSecretResolver;
-use Cognesy\Tell\Runtime\StandardTellConfigurationResolver;
-use Cognesy\Tell\Runtime\ComposerTellExtensionCatalogue;
 use Cognesy\Tell\Runtime\StandardTellToolDispatcher;
 use Cognesy\Tell\Runtime\SystemTellClock;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Runtime\TellPaths;
 use Cognesy\Tell\Workspace\FilesystemTellWorkspaceModule;
-use Cognesy\Tell\Observability\NullTellObserver;
-use Cognesy\Tell\Console\CoreTellCommandContributor;
-use Cognesy\Tell\Console\SymfonyTellApplicationBuilder;
-use Cognesy\Tell\Protocol\OneRunTellProtocol;
 
 /** Auditable standard module definitions; every factory creates a fresh instance. */
 final readonly class StandardTellModules
@@ -62,6 +62,7 @@ final readonly class StandardTellModules
             requires: [CanResolveTellPaths::class],
             factory: static function (CanResolveTellPaths $paths) use ($directory): object {
                 $resolved = $paths->resolve($directory);
+
                 return new StandardTellSecretResolver(
                     new TellPaths($resolved->packageAgents, $resolved->home),
                     $resolved->project,
@@ -79,6 +80,7 @@ final readonly class StandardTellModules
             requires: [CanResolveTellPaths::class, CanResolveTellSecrets::class],
             factory: static function (CanResolveTellPaths $paths, CanResolveTellSecrets $secrets) use ($directory): object {
                 $resolved = $paths->resolve($directory);
+
                 return new PolyglotTellModelResolver(
                     new TellPaths($resolved->packageAgents, $resolved->home),
                     $secrets,
@@ -113,8 +115,7 @@ final readonly class StandardTellModules
         string $directory,
         ?callable $driverFactory = null,
         ?TellAgentFactory $agentFactory = null,
-    ): TellModuleDefinition
-    {
+    ): TellModuleDefinition {
         return new TellModuleDefinition(
             id: 'agent.cognesy',
             provides: [CanBuildTellAgent::class, CanOpenTellRuntime::class],
@@ -128,6 +129,7 @@ final readonly class StandardTellModules
                     return new StandardTellAgentBuilder($agentFactory);
                 }
                 $resolved = $paths->resolve($directory);
+
                 return new StandardTellAgentBuilder(new TellAgentFactory(
                     paths: new TellPaths($resolved->packageAgents, $resolved->home),
                     clock: $clock,

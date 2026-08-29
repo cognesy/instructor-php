@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Runtime;
 
+use Closure;
 use Cognesy\Agents\AgentLoop;
-use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
 use Cognesy\Agents\CanControlAgentLoop;
+use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Agents\Session\Actions\SendMessage;
 use Cognesy\Agents\Session\Data\AgentSession;
 use Cognesy\Agents\Session\Data\AgentSessionInfo;
@@ -14,26 +17,23 @@ use Cognesy\Agents\Session\Data\SessionId;
 use Cognesy\Agents\Template\Contracts\CanInstantiateAgentLoop;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
+use Cognesy\Tell\Contracts\CanObserveTellExecution;
+use Cognesy\Tell\Contracts\CanResolveTellConfiguration;
+use Cognesy\Tell\Contracts\Data\TellEventEnvelope;
+use Cognesy\Tell\Diagnostics\TellDiagnostics;
+use Cognesy\Tell\Observability\TellEventNormalizer;
 use Cognesy\Tell\TellExecutionMode;
-use Cognesy\Tell\TellEvent;
 use Cognesy\Tell\TellProgress;
 use Cognesy\Tell\TellRequest;
 use Cognesy\Tell\TellResult;
-use Cognesy\Tell\Diagnostics\TellDiagnostics;
-use Cognesy\Tell\Contracts\CanResolveTellConfiguration;
-use Cognesy\Tell\Contracts\CanObserveTellExecution;
-use Cognesy\Tell\Contracts\Data\TellEventEnvelope;
-use Cognesy\Tell\Observability\TellEventNormalizer;
 use Cognesy\Tell\Workspace\ArenaStore;
-use Cognesy\Tell\Workspace\BranchResolver;
 use Cognesy\Tell\Workspace\BranchConfigStore;
+use Cognesy\Tell\Workspace\BranchResolver;
+use Cognesy\Tell\Workspace\BranchSelection;
 use Cognesy\Tell\Workspace\WorkspaceSessionExecution;
 use Cognesy\Tell\Workspace\WorkspaceSessionRunner;
 use Cognesy\Tell\Workspace\WorkspaceTransientRunner;
 use Cognesy\Tell\Workspace\WorkspaceTurnRunner;
-use Closure;
-use Cognesy\Agents\Data\AgentState;
-use Cognesy\Agents\Enums\ExecutionStatus;
 use Generator;
 use RuntimeException;
 
@@ -53,7 +53,7 @@ final readonly class TellRuntime
     }
 
     /**
-     * @param callable(AgentLoop, TellRequest, ?string): void|null $prepareLoop
+     * @param  callable(AgentLoop, TellRequest, ?string): void|null  $prepareLoop
      * @return Generator<int, TellProgress, mixed, TellResult>
      */
     public function stream(TellRequest $request, ?callable $prepareLoop = null): Generator
@@ -66,7 +66,7 @@ final readonly class TellRuntime
      * carries the outcome, so a caller that stops iterating early still gets a
      * result and an abandoned run is reported rather than lost.
      *
-     * @param callable(AgentLoop, TellRequest, ?string): void|null $prepareLoop
+     * @param  callable(AgentLoop, TellRequest, ?string): void|null  $prepareLoop
      */
     public function start(TellRequest $request, ?callable $prepareLoop = null): TellRun
     {
@@ -105,7 +105,7 @@ final readonly class TellRuntime
      * Settles a fully drained run: whatever the outcome already holds wins, so a
      * committed state is never overwritten by a recomputed one.
      *
-     * @param callable(AgentState): TellResult $build
+     * @param  callable(AgentState): TellResult  $build
      */
     private function finish(?TellRunOutcome $outcome, AgentState $state, callable $build): TellResult
     {
@@ -137,10 +137,12 @@ final readonly class TellRuntime
             if ($request->branch !== null) {
                 throw new RuntimeException('Tell branch selection requires an initialized workspace. Call tell init or initialize the workspace first.');
             }
+
             return $this->streamStateless($request, $prepareLoop, $diagnostics, $outcome);
         }
         if ($request->session === null) {
             $arena = new ArenaStore($workspace);
+
             return $this->streamWorkspaceTurn($request, $arena, $workspace->paths->root, $prepareLoop, (new BranchResolver($arena))->resolve($request->branch), $diagnostics, $outcome);
         }
         if ($workspace !== null) {
@@ -242,7 +244,7 @@ final readonly class TellRuntime
         ArenaStore $arena,
         string $workspace,
         ?callable $prepareLoop,
-        \Cognesy\Tell\Workspace\BranchSelection $branch,
+        BranchSelection $branch,
         TellDiagnostics $diagnostics,
         ?TellRunOutcome $outcome = null,
     ): Generator {
@@ -347,10 +349,11 @@ final readonly class TellRuntime
                 $normalizer = new TellEventNormalizer($this->request->branch, $this->request->session);
                 foreach ($this->request->listeners() as $listener) {
                     $loop->wiretap(function (object $event) use ($listener, $normalizer): void {
-                        $envelope = $normalizer->normalize($event);
-                        $envelope['mode'] = $this->request->mode->value;
-                        $envelope['agent'] = $this->request->agent;
-                        $listener(new TellEvent($envelope, $event));
+                        $listener(TellEventEnvelope::fromNormalized(
+                            $normalizer->normalize($event),
+                            $this->request->mode,
+                            $this->request->agent,
+                        ));
                     });
                 }
                 if ($this->prepareLoop !== null) {
@@ -386,13 +389,12 @@ final readonly class TellRuntime
         ?string $workspace = null,
         ?string $selectedBranch = null,
         ?TellDiagnostics $diagnostics = null,
-    ): AgentLoop
-    {
+    ): AgentLoop {
         $delegation = match ($workspace) {
             null => null,
             default => new TellDelegationScope(
                 $this->agents->workspace()->discover($workspace) ?? throw new RuntimeException('Tell delegation requires a valid workspace.'),
-                new \Cognesy\Tell\Workspace\BranchSelection($selectedBranch ?? 'main', $selectedBranch === null || $selectedBranch === 'main' ? 'main' : 'branches/'.$selectedBranch, false),
+                new BranchSelection($selectedBranch ?? 'main', $selectedBranch === null || $selectedBranch === 'main' ? 'main' : 'branches/'.$selectedBranch, false),
                 cancellation: $this->cancellation,
             ),
         };
@@ -411,11 +413,12 @@ final readonly class TellRuntime
         }
         foreach ($request->listeners() as $listener) {
             $normalizer = new TellEventNormalizer($selectedBranch ?? $request->branch, $request->session);
-            $loop->wiretap(static function (object $event) use ($listener, $normalizer, $request, $workspace): void {
-                $envelope = $normalizer->normalize($event);
-                $envelope['mode'] = $request->mode->value;
-                $envelope['agent'] = $request->agent;
-                $listener(new TellEvent($envelope, $event, $workspace));
+            $loop->wiretap(static function (object $event) use ($listener, $normalizer, $request): void {
+                $listener(TellEventEnvelope::fromNormalized(
+                    $normalizer->normalize($event),
+                    $request->mode,
+                    $request->agent,
+                ));
             });
         }
         if ($prepareLoop !== null) {
@@ -434,14 +437,13 @@ final readonly class TellRuntime
         ?string $workspace = null,
         ?string $selectedBranch = null,
         ?TellDiagnostics $diagnostics = null,
-    ): array
-    {
+    ): array {
         $definition = $this->agents->definition($request->toOptions());
 
         return [$definition, $this->loop($request, $definition, $prepareLoop, $workspace, $selectedBranch, $diagnostics)];
     }
 
-    private function seed(AgentDefinition $definition, TellRequest $request): \Cognesy\Agents\Data\AgentState
+    private function seed(AgentDefinition $definition, TellRequest $request): AgentState
     {
         return (new DefinitionStateFactory)
             ->instantiateAgentState($definition)
@@ -513,5 +515,4 @@ final readonly class TellRuntime
             diagnostics: $diagnostics->all(),
         );
     }
-
 }

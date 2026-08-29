@@ -27,7 +27,7 @@ require_once dirname(__DIR__).'/Support.php';
 
 use Cognesy\Agents\Capability\Cancellation\InMemoryCancellationSource;
 use Cognesy\Tell\Tell;
-use Cognesy\Tell\TellEvent;
+use Cognesy\Tell\Contracts\Data\TellEventEnvelope;
 use Cognesy\Tell\TellRequest;
 
 $project = TellHarnessExample::project();
@@ -45,9 +45,9 @@ try {
             ->maxOutputChars(20_000)
             ->maxToolOutputChars(4_000)
             ->maxToolCalls(8)
-            ->onEvent(static function (TellEvent $event): void {
+            ->onEvent(static function (TellEventEnvelope $event): void {
                 // Safe for queues, logs, server-sent events, and telemetry.
-                echo json_encode($event->envelope(), JSON_THROW_ON_ERROR)."\n";
+                echo json_encode($event->toArray(), JSON_THROW_ON_ERROR)."\n";
             }),
     );
 
@@ -73,5 +73,5 @@ try {
 - Keep the cancellation source in the controlling process. Cancellation is
   cooperative, so currently executing provider or tool work stops at its next
   safe checkpoint.
-- `TellEvent::envelope()` is the stable redacted boundary projection. Do not
+- `TellEventEnvelope::toArray()` is the stable redacted boundary projection. Do not
   forward raw provider/framework event data to logs or clients.

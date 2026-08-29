@@ -14,6 +14,7 @@ use RuntimeException;
 final readonly class PatchOperation
 {
     private const MAX_PATCH_BYTES = 262_144;
+
     private const MAX_SOURCE_BYTES = 2_097_152;
 
     private string $root;
@@ -21,7 +22,7 @@ final readonly class PatchOperation
     public function __construct(string $baseDir)
     {
         $root = realpath($baseDir);
-        if ($root === false || !is_dir($root)) {
+        if ($root === false || ! is_dir($root)) {
             throw new RuntimeException("Tell patch root does not exist: {$baseDir}");
         }
         $this->root = rtrim($root, DIRECTORY_SEPARATOR);
@@ -70,7 +71,7 @@ final readonly class PatchOperation
             if ($occurrences === 0) {
                 throw new PatchFailure('hunk_failed', 'old_string was not found; no file was changed.');
             }
-            if ($occurrences > 1 && !$replaceAll) {
+            if ($occurrences > 1 && ! $replaceAll) {
                 throw new PatchFailure('ambiguous_hunk', "old_string matched {$occurrences} times; use replace_all or add context.");
             }
 
@@ -101,12 +102,12 @@ final readonly class PatchOperation
         $index = 0;
         $files = [];
         while ($index < count($lines)) {
-            if (!str_starts_with($lines[$index], '--- ')) {
+            if (! str_starts_with($lines[$index], '--- ')) {
                 throw new PatchFailure('malformed_patch', 'Expected a --- file header.');
             }
             $oldPath = $this->headerPath(substr($lines[$index], 4));
             $index++;
-            if (!isset($lines[$index]) || !str_starts_with($lines[$index], '+++ ')) {
+            if (! isset($lines[$index]) || ! str_starts_with($lines[$index], '+++ ')) {
                 throw new PatchFailure('malformed_patch', 'Expected a +++ file header.');
             }
             $newPath = $this->headerPath(substr($lines[$index], 4));
@@ -157,9 +158,9 @@ final readonly class PatchOperation
         $index++;
         /** @var list<array{kind: string, value: string}> $hunkLines */
         $hunkLines = [];
-        while ($index < count($lines) && !str_starts_with($lines[$index], '@@ ') && !str_starts_with($lines[$index], '--- ')) {
+        while ($index < count($lines) && ! str_starts_with($lines[$index], '@@ ') && ! str_starts_with($lines[$index], '--- ')) {
             $line = $lines[$index];
-            if ($line === '' || !in_array($line[0], [' ', '+', '-'], true)) {
+            if ($line === '' || ! in_array($line[0], [' ', '+', '-'], true)) {
                 throw new PatchFailure('malformed_patch', 'Each hunk line must begin with a space, +, or -.');
             }
             $hunkLines[] = ['kind' => $line[0], 'value' => substr($line, 1)];
@@ -192,7 +193,7 @@ final readonly class PatchOperation
             throw new PatchFailure('path_denied', "Refusing symlink target: {$relative}");
         }
         $path = realpath($candidate);
-        if ($path === false || !is_file($path) || !str_starts_with($path, $this->root.DIRECTORY_SEPARATOR)) {
+        if ($path === false || ! is_file($path) || ! str_starts_with($path, $this->root.DIRECTORY_SEPARATOR)) {
             throw new PatchFailure('path_denied', "Path is not an existing regular file inside the Tell working directory: {$relative}");
         }
         $content = file_get_contents($path);
@@ -211,7 +212,7 @@ final readonly class PatchOperation
     {
         $eol = str_contains($source, "\r\n") ? "\r\n" : "\n";
         $hasFinalNewline = str_ends_with($source, $eol);
-        if (!$hasFinalNewline) {
+        if (! $hasFinalNewline) {
             throw new PatchFailure('unsupported_patch', "{$relative} has no final newline; use the legacy edit alias for this file.");
         }
         $sourceLines = explode($eol, substr($source, 0, -strlen($eol)));
@@ -225,7 +226,7 @@ final readonly class PatchOperation
             array_push($output, ...array_slice($sourceLines, $cursor, $target - $cursor));
             $cursor = $target;
             foreach ($hunk['lines'] as $line) {
-                if ($line['kind'] !== '+' && (!isset($sourceLines[$cursor]) || $sourceLines[$cursor] !== $line['value'])) {
+                if ($line['kind'] !== '+' && (! isset($sourceLines[$cursor]) || $sourceLines[$cursor] !== $line['value'])) {
                     throw new PatchFailure('hunk_failed', "Hunk context does not match {$relative}; no files were changed.");
                 }
                 if ($line['kind'] === ' ') {
@@ -262,13 +263,13 @@ final readonly class PatchOperation
                 }
                 chmod($temp, fileperms($change['path']) & 0777);
                 $backup = tempnam(dirname($change['path']), '.tell-patch-backup-');
-                if ($backup === false || !copy($change['path'], $backup)) {
+                if ($backup === false || ! copy($change['path'], $backup)) {
                     throw new PatchFailure('write_failed', "Could not protect {$change['relative']} before update.");
                 }
                 $backups[] = $backup;
             }
             foreach ($changes as $index => $pending) {
-                if (!rename($temporary[$index], $pending['path'])) {
+                if (! rename($temporary[$index], $pending['path'])) {
                     throw new PatchFailure('commit_failed', "Could not atomically update {$pending['relative']}.");
                 }
                 $temporary[$index] = '';
@@ -276,11 +277,12 @@ final readonly class PatchOperation
         } catch (PatchFailure $failure) {
             $partial = false;
             foreach ($changes as $index => $change) {
-                if (($temporary[$index] ?? null) === '' && isset($backups[$index]) && !rename($backups[$index], $change['path'])) {
+                if (($temporary[$index] ?? null) === '' && isset($backups[$index]) && ! rename($backups[$index], $change['path'])) {
                     $partial = true;
                 }
             }
             $this->cleanup(array_values($temporary), $backups);
+
             return $this->failure($failure->reason, $failure->getMessage(), $partial);
         }
         $this->cleanup([], $backups);

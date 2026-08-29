@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Inference\Creation;
 
@@ -83,7 +85,8 @@ final class BundledInferenceDrivers
      * To the registry bundled specs and custom registrations are still just callables, which is
      * why `withDriver()` continues to accept a class-string or a closure from outside.
      */
-    public static function registry(): InferenceDriverRegistry {
+    public static function registry(): InferenceDriverRegistry
+    {
         return self::$instance ??= InferenceDriverRegistry::fromArray(self::specifications());
     }
 
@@ -114,6 +117,7 @@ final class BundledInferenceDrivers
             'deepseek' => new InferenceDriverSpec(
                 bodyFormat: DeepseekBodyFormat::class,
                 responseAdapter: DeepseekResponseAdapter::class,
+                reasoning: BundledReasoning::deepSeek(),
                 // DeepSeek V4 Flash, Pro, and Flash Vision share the same
                 // advertised feature set: tools and JSON Output, but no native
                 // JSON Schema and no response_format alongside tools.
@@ -131,6 +135,7 @@ final class BundledInferenceDrivers
                 bodyFormat: GlmBodyFormat::class,
                 responseAdapter: GlmResponseAdapter::class,
                 capabilities: new DriverCapabilities(responseFormatWithTools: false),
+                reasoning: BundledReasoning::glm(),
             ),
             'groq' => new InferenceDriverSpec(
                 bodyFormat: GroqBodyFormat::class,
@@ -146,11 +151,16 @@ final class BundledInferenceDrivers
             'mistral' => new InferenceDriverSpec(
                 bodyFormat: MistralBodyFormat::class,
                 capabilities: new DriverCapabilities(responseFormatWithTools: false),
+                reasoning: BundledReasoning::mistral(),
             ),
-            'openai' => new InferenceDriverSpec(bodyFormat: OpenAIBodyFormat::class),
+            'openai' => new InferenceDriverSpec(
+                bodyFormat: OpenAIBodyFormat::class,
+                reasoning: BundledReasoning::openAiChat(),
+            ),
             'openrouter' => new InferenceDriverSpec(
                 bodyFormat: OpenRouterBodyFormat::class,
                 capabilities: new DriverCapabilities(responseFormatWithTools: false),
+                reasoning: BundledReasoning::openRouter(),
             ),
             'perplexity' => new InferenceDriverSpec(
                 bodyFormat: PerplexityBodyFormat::class,
@@ -163,6 +173,7 @@ final class BundledInferenceDrivers
             'qwen' => new InferenceDriverSpec(
                 bodyFormat: QwenBodyFormat::class,
                 responseAdapter: QwenResponseAdapter::class,
+                reasoning: BundledReasoning::qwen(),
                 // Qwen Chat Completions supports tools and JSON Object. Native
                 // JSON Schema is model-specific (Qwen3.8-Max and Qwen3.7
                 // Max/Plus); the body format degrades unsupported models to
@@ -184,8 +195,12 @@ final class BundledInferenceDrivers
             'xai' => new InferenceDriverSpec(
                 bodyFormat: OpenAICompatibleBodyFormat::class,
                 messageFormat: XAiMessageFormat::class,
+                reasoning: BundledReasoning::xai(),
             ),
-            'moonshot' => $openAiCompatible,
+            'moonshot' => new InferenceDriverSpec(
+                bodyFormat: OpenAICompatibleBodyFormat::class,
+                reasoning: BundledReasoning::moonshot(),
+            ),
             'ollama' => $openAiCompatible,
             'openai-compatible' => $openAiCompatible,
             'together' => $openAiCompatible,
@@ -202,6 +217,7 @@ final class BundledInferenceDrivers
                     responseFormatJsonSchema: false,
                     responseFormatWithTools: false,
                 ),
+                reasoning: BundledReasoning::anthropic(),
             ),
             'azure' => new InferenceDriverSpec(
                 bodyFormat: OpenAIBodyFormat::class,
@@ -217,6 +233,7 @@ final class BundledInferenceDrivers
                 responseAdapter: CohereV2ResponseAdapter::class,
                 usageFormat: CohereV2UsageFormat::class,
                 capabilities: new DriverCapabilities(responseFormatWithTools: false),
+                reasoning: BundledReasoning::cohere(),
             ),
             'gemini' => new InferenceDriverSpec(
                 bodyFormat: GeminiBodyFormat::class,
@@ -225,6 +242,7 @@ final class BundledInferenceDrivers
                 usageFormat: GeminiUsageFormat::class,
                 messageFormat: GeminiMessageFormat::class,
                 capabilities: new DriverCapabilities(responseFormatWithTools: false),
+                reasoning: BundledReasoning::gemini(),
             ),
             'gemini-oai' => new InferenceDriverSpec(
                 bodyFormat: GeminiOAIBodyFormat::class,
@@ -234,6 +252,7 @@ final class BundledInferenceDrivers
                     responseFormatJsonSchema: false,
                     responseFormatWithTools: false,
                 ),
+                reasoning: BundledReasoning::geminiOai(),
             ),
             'huggingface' => new InferenceDriverSpec(
                 bodyFormat: HuggingFaceBodyFormat::class,
@@ -246,6 +265,7 @@ final class BundledInferenceDrivers
                 responseAdapter: OpenResponsesResponseAdapter::class,
                 usageFormat: OpenResponsesUsageFormat::class,
                 messageFormat: OpenResponsesMessageFormat::class,
+                reasoning: BundledReasoning::openAiResponses(),
             ),
             'openresponses' => new InferenceDriverSpec(
                 bodyFormat: OpenResponsesBodyFormat::class,

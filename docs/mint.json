@@ -25,6 +25,7 @@
             "group": "Release Notes",
             "pages": [
                 "release-notes/versions",
+                "release-notes/v2.9.0",
                 "release-notes/v2.8.5",
                 "release-notes/v2.8.4",
                 "release-notes/v2.8.3",
@@ -240,6 +241,7 @@
                         "packages/polyglot/essentials/overview",
                         "packages/polyglot/essentials/inference-class",
                         "packages/polyglot/essentials/creating-requests",
+                        "packages/polyglot/essentials/reasoning",
                         "packages/polyglot/essentials/request-options",
                         "packages/polyglot/essentials/response-handling"
                     ]

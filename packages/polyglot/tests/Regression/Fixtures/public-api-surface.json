@@ -19,6 +19,7 @@
         "withMessages": "withMessages(Cognesy\\Messages\\Messages $messages): static",
         "withModel": "withModel(string $model): static",
         "withOptions": "withOptions(array $options): static",
+        "withReasoning": "withReasoning(Cognesy\\Polyglot\\Inference\\Reasoning\\ReasoningSelection $reasoning): static",
         "withRequest": "withRequest(Cognesy\\Polyglot\\Inference\\Data\\InferenceRequest $request): static",
         "withResponseCachePolicy": "withResponseCachePolicy(Cognesy\\Polyglot\\Inference\\Enums\\ResponseCachePolicy $policy): static",
         "withResponseFormat": "withResponseFormat(Cognesy\\Polyglot\\Inference\\Data\\ResponseFormat $responseFormat): static",

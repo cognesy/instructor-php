@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Inference\Traits;
 
@@ -9,74 +11,105 @@ use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Data\ToolChoice;
 use Cognesy\Polyglot\Inference\Data\ToolDefinitions;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
+use Cognesy\Polyglot\Inference\Reasoning\ReasoningSelection;
 
 trait HandlesRequestBuilder
 {
     private InferenceRequestBuilder $requestBuilder;
 
-    protected function cloneWithRequestBuilder(): static {
+    protected function cloneWithRequestBuilder(): static
+    {
         $copy = clone $this;
         $copy->requestBuilder = clone $this->requestBuilder;
+
         return $copy;
     }
 
-    public function withMessages(Messages $messages): static {
+    public function withMessages(Messages $messages): static
+    {
         $copy = $this->cloneWithRequestBuilder();
         $copy->requestBuilder->withMessages($messages);
+
         return $copy;
     }
 
-    public function withModel(string $model): static {
+    public function withModel(string $model): static
+    {
         $copy = $this->cloneWithRequestBuilder();
         $copy->requestBuilder->withModel($model);
+
         return $copy;
     }
 
-    public function withMaxTokens(int $maxTokens): static {
+    public function withMaxTokens(int $maxTokens): static
+    {
         $copy = $this->cloneWithRequestBuilder();
         $copy->requestBuilder->withMaxTokens($maxTokens);
+
         return $copy;
     }
 
-    public function withTools(ToolDefinitions $tools): static {
+    public function withReasoning(ReasoningSelection $reasoning): static
+    {
+        $copy = $this->cloneWithRequestBuilder();
+        $copy->requestBuilder->withReasoning($reasoning);
+
+        return $copy;
+    }
+
+    public function withTools(ToolDefinitions $tools): static
+    {
         $copy = $this->cloneWithRequestBuilder();
         $copy->requestBuilder->withTools($tools);
+
         return $copy;
     }
 
-    public function withToolChoice(ToolChoice $toolChoice): static {
+    public function withToolChoice(ToolChoice $toolChoice): static
+    {
         $copy = $this->cloneWithRequestBuilder();
         $copy->requestBuilder->withToolChoice($toolChoice);
+
         return $copy;
     }
 
-    public function withResponseFormat(ResponseFormat $responseFormat): static {
+    public function withResponseFormat(ResponseFormat $responseFormat): static
+    {
         $copy = $this->cloneWithRequestBuilder();
         $copy->requestBuilder->withResponseFormat($responseFormat);
+
         return $copy;
     }
 
-    public function withOptions(array $options): static {
+    public function withOptions(array $options): static
+    {
         $copy = $this->cloneWithRequestBuilder();
         $copy->requestBuilder->withOptions($options);
+
         return $copy;
     }
 
-    public function withStreaming(bool $stream = true): static {
+    public function withStreaming(bool $stream = true): static
+    {
         $copy = $this->cloneWithRequestBuilder();
         $copy->requestBuilder->withStreaming($stream);
+
         return $copy;
     }
 
-    public function withResponseCachePolicy(ResponseCachePolicy $policy): static {
+    public function withResponseCachePolicy(ResponseCachePolicy $policy): static
+    {
         $copy = $this->cloneWithRequestBuilder();
         $copy->requestBuilder->withResponseCachePolicy($policy);
+
         return $copy;
     }
 
-    public function withRetryPolicy(InferenceRetryPolicy $retryPolicy): static {
+    public function withRetryPolicy(InferenceRetryPolicy $retryPolicy): static
+    {
         $copy = $this->cloneWithRequestBuilder();
         $copy->requestBuilder->withRetryPolicy($retryPolicy);
+
         return $copy;
     }
 
@@ -88,6 +121,7 @@ trait HandlesRequestBuilder
     ): static {
         $copy = $this->cloneWithRequestBuilder();
         $copy->requestBuilder->withCachedContext($messages, $tools, $toolChoice, $responseFormat);
+
         return $copy;
     }
 }

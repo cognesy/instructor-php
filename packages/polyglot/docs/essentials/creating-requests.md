@@ -62,6 +62,10 @@ All parameters on `with()` are optional -- pass only what you need:
 | `responseFormat` | `?ResponseFormat`       | Response format specification              |
 | `options`        | `?array`                | Provider-specific request options          |
 
+Reasoning is configured separately with `withReasoning()`. See
+[Reasoning](./reasoning.md) for model-aware effort, budget, and adaptive
+selections.
+
 ## Focused Helper Methods
 
 For better readability, use the dedicated fluent helpers instead of packing everything
@@ -103,6 +107,7 @@ The full list of fluent helpers:
 - `withOptions(...)` -- set provider-specific options
 - `withStreaming(...)` -- enable or disable streaming
 - `withMaxTokens(...)` -- set the maximum token count
+- `withReasoning(...)` -- set portable, model-validated reasoning intent
 - `withCachedContext(...)` -- attach reusable cached context
 - `withRetryPolicy(...)` -- configure retry behavior
 - `withResponseCachePolicy(...)` -- configure response caching

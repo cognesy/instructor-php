@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Runtime;
 
+use Cognesy\Polyglot\Inference\Reasoning\ReasoningEffort;
 use Cognesy\Tell\Capability\AskUser\TellAnswerQueue;
-use Cognesy\Tell\TellReasoningEffort;
 use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -18,7 +18,7 @@ final readonly class TellOptions
         public string $agent = 'default',
         public string $connection = 'openai',
         public string $model = '',
-        public ?TellReasoningEffort $reasoningEffort = null,
+        public ?ReasoningEffort $reasoningEffort = null,
         public string $dsn = '',
         public ?string $session = null,
         public ?string $branch = null,
@@ -113,7 +113,7 @@ final readonly class TellOptions
             ? $values['model']
             : $this->model;
         $reasoningEffort = ! $this->reasoningEffortExplicit && isset($values['reasoningEffort']) && is_string($values['reasoningEffort'])
-            ? TellReasoningEffort::parse($values['reasoningEffort'])
+            ? ReasoningEffort::parse($values['reasoningEffort'])
             : $this->reasoningEffort;
         $tools = ! $this->toolsExplicit && isset($values['tools']) && is_array($values['tools'])
             ? array_values(array_filter($values['tools'], static fn (mixed $tool): bool => is_string($tool)))
@@ -180,10 +180,10 @@ final readonly class TellOptions
         };
     }
 
-    private static function reasoningEffort(mixed $value): ?TellReasoningEffort
+    private static function reasoningEffort(mixed $value): ?ReasoningEffort
     {
         return match (true) {
-            is_string($value) && trim($value) !== '' => TellReasoningEffort::parse($value),
+            is_string($value) && trim($value) !== '' => ReasoningEffort::parse($value),
             default => null,
         };
     }

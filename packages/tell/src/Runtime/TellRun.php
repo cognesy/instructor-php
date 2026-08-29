@@ -23,7 +23,7 @@ final class TellRun
     private bool $started = false;
 
     /**
-     * @param Generator<int, TellProgress, mixed, TellResult> $stream
+     * @param  Generator<int, TellProgress, mixed, TellResult>  $stream
      */
     public function __construct(
         private readonly Generator $stream,

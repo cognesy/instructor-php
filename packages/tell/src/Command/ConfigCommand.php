@@ -15,6 +15,7 @@ use Cognesy\Tell\Runtime\TellProviderCatalogue;
 use Cognesy\Tell\Workspace\ArenaStore;
 use Cognesy\Tell\Workspace\BranchConfigStore;
 use Cognesy\Tell\Workspace\BranchResolver;
+use Cognesy\Tell\Workspace\BranchSelection;
 use Cognesy\Tell\Workspace\TellWorkspace;
 use Cognesy\Tell\Workspace\WorkspaceException;
 use InvalidArgumentException;
@@ -233,7 +234,7 @@ HELP)
         return $workspace;
     }
 
-    private function branch(TellWorkspace $workspace, InputInterface $input): \Cognesy\Tell\Workspace\BranchSelection
+    private function branch(TellWorkspace $workspace, InputInterface $input): BranchSelection
     {
         $requested = $input->getOption('branch');
         if ($requested !== null && ! is_string($requested)) {

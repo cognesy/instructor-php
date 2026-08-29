@@ -52,14 +52,19 @@ $options = [
 For common behaviors, prefer the dedicated fluent helpers instead of manually placing
 values in the `options` array. The helpers ensure correct handling across all providers:
 
-| Instead of this...                         | Use this...                   |
-|--------------------------------------------|-------------------------------|
-| `withOptions(['stream' => true])`          | `withStreaming(true)`         |
-| `withOptions(['max_tokens' => 256])`       | `withMaxTokens(256)`         |
-| `withOptions(['retryPolicy' => [...]])`    | `withRetryPolicy($policy)`   |
+| Instead of this... | Use this... |
+| --- | --- |
+| `withOptions(['stream' => true])` | `withStreaming(true)` |
+| `withOptions(['max_tokens' => 256])` | `withMaxTokens(256)` |
+| `withOptions(['reasoning_effort' => ...])` | `withReasoning(...)` |
+| `withOptions(['retryPolicy' => [...]])` | `withRetryPolicy($policy)` |
 
 These helpers set values that the request builder manages separately from the raw
 options array, ensuring they are applied correctly regardless of the provider.
+
+Do not combine typed reasoning with raw reasoning keys. Polyglot rejects that
+ambiguous request instead of silently allowing one setting to override the
+other.
 
 ## Provider-Specific Options
 

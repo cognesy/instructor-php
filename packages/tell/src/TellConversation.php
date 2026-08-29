@@ -8,8 +8,10 @@ use Cognesy\Agents\Session\Data\SessionId;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Workspace\ArenaStore;
 use Cognesy\Tell\Workspace\SessionCompatibilityRef;
+use Cognesy\Tell\Workspace\TellWorkspace;
 use Cognesy\Tell\Workspace\WorkspaceCompactionRunner;
 use Cognesy\Tell\Workspace\WorkspaceContextInspector;
+use Cognesy\Tell\Workspace\WorkspaceConversationInspection;
 use Cognesy\Tell\Workspace\WorkspaceConversationReader;
 use Cognesy\Tell\Workspace\WorkspaceException;
 use Generator;
@@ -114,12 +116,12 @@ final readonly class TellConversation
         return new TellCompactionResult($this->inspection()->selector(), $result->toArray());
     }
 
-    private function inspection(): \Cognesy\Tell\Workspace\WorkspaceConversationInspection
+    private function inspection(): WorkspaceConversationInspection
     {
         return (new WorkspaceConversationReader(new ArenaStore($this->workspace())))->read($this->sessionId());
     }
 
-    private function workspace(): \Cognesy\Tell\Workspace\TellWorkspace
+    private function workspace(): TellWorkspace
     {
         $workspace = $this->agents->workspace()->discover($this->directory);
         if ($workspace === null) {

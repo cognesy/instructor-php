@@ -14,7 +14,10 @@ final readonly class TellAskUserCapability implements CanProvideAgentCapability
     public function __construct(private TellAnswerQueue $answers) {}
 
     #[Override]
-    public static function capabilityName(): string { return 'tell.ask_user'; }
+    public static function capabilityName(): string
+    {
+        return 'tell.ask_user';
+    }
 
     #[Override]
     public function configure(CanConfigureAgent $agent): CanConfigureAgent

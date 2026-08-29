@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Branch;
 
-use Cognesy\Tell\TellRequest;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Runtime\TellExecutionPolicy;
 use Cognesy\Tell\Runtime\TellPolicyDefaults;
 use Cognesy\Tell\Runtime\TellProviderCatalogue;
+use Cognesy\Tell\TellRequest;
 use Cognesy\Tell\Workspace\ArenaStore;
 use Cognesy\Tell\Workspace\BranchConfigStore;
 use Cognesy\Tell\Workspace\BranchResolver;

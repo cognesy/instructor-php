@@ -5,10 +5,7 @@ declare(strict_types=1);
 namespace Cognesy\Tell\Composition;
 
 use Cognesy\Agents\Capability\Cancellation\CanProvideCancellationSignal;
-use Cognesy\Tell\Composition\TellHostDescription;
-use Cognesy\Tell\Composition\TellHostDisposedException;
-use Cognesy\Tell\Composition\TellHostDisposalException;
-use Cognesy\Tell\Composition\TellModuleCleanup;
+use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Tell\Contracts\CanAccessTellConversations;
 use Cognesy\Tell\Contracts\CanBuildTellAgent;
 use Cognesy\Tell\Contracts\CanBuildTellApplication;
@@ -27,7 +24,6 @@ use Cognesy\Tell\Contracts\CanResolveTellSecrets;
 use Cognesy\Tell\Contracts\CanRunTell;
 use Cognesy\Tell\Contracts\CanRunTellProtocol;
 use Cognesy\Tell\Runtime\CanReadTellClock;
-use Cognesy\Tell\Composition\StandardTellProfile;
 use Cognesy\Tell\Runtime\TellAgentFactory;
 use Cognesy\Tell\Runtime\TellPaths;
 use LogicException;
@@ -38,8 +34,9 @@ final class TellHost
     private bool $disposed = false;
 
     /**
-     * @param array<class-string, list<object>> $providers
-     * @param list<array{id: string, instance: object}> $constructed
+     * @param  array<class-string, list<object>>  $providers
+     * @param  list<array{id: string, instance: object}>  $constructed
+     *
      * @internal Construct through TellHostBuilder.
      */
     public function __construct(
@@ -48,7 +45,7 @@ final class TellHost
         private readonly TellHostDescription $description,
     ) {}
 
-    /** @param callable(): \Cognesy\Agents\Drivers\CanUseTools|null $driverFactory */
+    /** @param callable(): CanUseTools|null $driverFactory */
     public static function standard(
         ?string $directory = null,
         ?TellPaths $paths = null,
@@ -187,7 +184,8 @@ final class TellHost
 
     /**
      * @template T of object
-     * @param class-string<T> $capability
+     *
+     * @param  class-string<T>  $capability
      * @return T
      */
     private function singleton(string $capability): object
@@ -203,7 +201,8 @@ final class TellHost
 
     /**
      * @template T of object
-     * @param class-string<T> $capability
+     *
+     * @param  class-string<T>  $capability
      * @return T|null
      */
     private function optionalSingleton(string $capability): ?object
@@ -219,7 +218,8 @@ final class TellHost
 
     /**
      * @template T of object
-     * @param class-string<T> $capability
+     *
+     * @param  class-string<T>  $capability
      * @return list<T>
      */
     private function contributors(string $capability): array

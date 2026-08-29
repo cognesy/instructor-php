@@ -17,8 +17,11 @@ use Override;
 final class TellExecutionBudgetHook implements HookInterface
 {
     private ?int $startedAtMs = null;
+
     private int $toolCalls = 0;
+
     private int $modelOutputBytes = 0;
+
     private bool $toolLimitExceeded = false;
 
     public function __construct(
@@ -42,6 +45,7 @@ final class TellExecutionBudgetHook implements HookInterface
     private function start(HookContext $context): HookContext
     {
         $this->startedAtMs = $this->clock->nowMs();
+
         return $context;
     }
 
@@ -64,7 +68,8 @@ final class TellExecutionBudgetHook implements HookInterface
     private function reserveToolCall(HookContext $context): HookContext
     {
         if ($this->toolCalls < $this->policy->maxToolCalls) {
-            ++$this->toolCalls;
+            $this->toolCalls++;
+
             return $context;
         }
         $this->toolLimitExceeded = true;

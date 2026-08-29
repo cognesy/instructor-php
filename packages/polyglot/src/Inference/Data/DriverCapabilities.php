@@ -1,6 +1,14 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Inference\Data;
+
+use Cognesy\Polyglot\Inference\Reasoning\ReasoningCapabilities;
+use Cognesy\Polyglot\Inference\Reasoning\ReasoningEffort;
+use Cognesy\Polyglot\Inference\Reasoning\ReasoningEffortMappings;
+use Cognesy\Polyglot\Inference\Reasoning\ReasoningSelectionKind;
+use Cognesy\Polyglot\Inference\Reasoning\ReasoningSelectionKinds;
 
 /**
  * Describes the capabilities of an inference driver.
@@ -11,15 +19,16 @@ namespace Cognesy\Polyglot\Inference\Data;
 readonly class DriverCapabilities
 {
     /**
-     * @param bool $streaming Whether streaming responses are supported
-     * @param bool $toolCalling Whether tool/function calling is supported
-     * @param bool $toolChoice Whether explicit tool choice is supported
-     * @param bool $responseFormatJsonObject Whether native JSON object response format is supported
-     * @param bool $responseFormatJsonSchema Whether native JSON schema response format is supported
-     * @param bool $responseFormatWithTools Whether response_format works alongside tools
-     * @param bool $reasoningEffort Whether the selected model accepts reasoning_effort
-     * @param ?int $maxContextTokens Maximum supported input context, if known
-     * @param ?int $maxOutputTokens Maximum supported output tokens, if known
+     * @param  bool  $streaming  Whether streaming responses are supported
+     * @param  bool  $toolCalling  Whether tool/function calling is supported
+     * @param  bool  $toolChoice  Whether explicit tool choice is supported
+     * @param  bool  $responseFormatJsonObject  Whether native JSON object response format is supported
+     * @param  bool  $responseFormatJsonSchema  Whether native JSON schema response format is supported
+     * @param  bool  $responseFormatWithTools  Whether response_format works alongside tools
+     * @param  bool  $reasoningEffort  Whether the selected model accepts reasoning_effort
+     * @param  ?ReasoningCapabilities  $reasoningCapabilities  Structured reasoning contract
+     * @param  ?int  $maxContextTokens  Maximum supported input context, if known
+     * @param  ?int  $maxOutputTokens  Maximum supported output tokens, if known
      */
     public function __construct(
         public bool $streaming = true,
@@ -31,54 +40,99 @@ readonly class DriverCapabilities
         public ?int $maxContextTokens = null,
         public ?int $maxOutputTokens = null,
         public bool $reasoningEffort = false,
+        public ?ReasoningCapabilities $reasoningCapabilities = null,
     ) {}
 
     /**
      * Check if streaming responses are supported.
      */
-    public function supportsStreaming(): bool {
+    public function supportsStreaming(): bool
+    {
         return $this->streaming;
     }
 
     /**
      * Check if tool/function calling is supported.
      */
-    public function supportsToolCalling(): bool {
+    public function supportsToolCalling(): bool
+    {
         return $this->toolCalling;
     }
 
     /**
      * Check if explicit tool choice is supported.
      */
-    public function supportsToolChoice(): bool {
+    public function supportsToolChoice(): bool
+    {
         return $this->toolChoice;
     }
 
     /**
      * Check if native JSON object response format is supported.
      */
-    public function supportsResponseFormatJsonObject(): bool {
+    public function supportsResponseFormatJsonObject(): bool
+    {
         return $this->responseFormatJsonObject;
     }
 
     /**
      * Check if native JSON schema response format is supported.
      */
-    public function supportsResponseFormatJsonSchema(): bool {
+    public function supportsResponseFormatJsonSchema(): bool
+    {
         return $this->responseFormatJsonSchema;
     }
 
     /**
      * Check if response_format can be used alongside tools.
      */
-    public function supportsResponseFormatWithTools(): bool {
+    public function supportsResponseFormatWithTools(): bool
+    {
         return $this->responseFormatWithTools;
     }
 
     /**
      * Check if the selected model accepts an explicit reasoning effort.
      */
-    public function supportsReasoningEffort(): bool {
-        return $this->reasoningEffort;
+    public function supportsReasoningEffort(): bool
+    {
+        return $this->reasoning()->supportsEffort();
+    }
+
+    public function withReasoning(ReasoningCapabilities $reasoning): self
+    {
+        return new self(
+            streaming: $this->streaming,
+            toolCalling: $this->toolCalling,
+            toolChoice: $this->toolChoice,
+            responseFormatJsonObject: $this->responseFormatJsonObject,
+            responseFormatJsonSchema: $this->responseFormatJsonSchema,
+            responseFormatWithTools: $this->responseFormatWithTools,
+            maxContextTokens: $this->maxContextTokens,
+            maxOutputTokens: $this->maxOutputTokens,
+            reasoningEffort: $reasoning->supportsEffort(),
+            reasoningCapabilities: $reasoning,
+        );
+    }
+
+    public function reasoning(): ReasoningCapabilities
+    {
+        if ($this->reasoningCapabilities !== null) {
+            return $this->reasoningCapabilities;
+        }
+
+        if (! $this->reasoningEffort) {
+            return ReasoningCapabilities::unknown();
+        }
+
+        return new ReasoningCapabilities(
+            known: true,
+            selectionKinds: new ReasoningSelectionKinds(ReasoningSelectionKind::Effort),
+            effortMappings: ReasoningEffortMappings::exact(
+                ReasoningEffort::Low,
+                ReasoningEffort::Medium,
+                ReasoningEffort::High,
+            ),
+        );
     }
 }

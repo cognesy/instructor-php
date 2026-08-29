@@ -29,15 +29,6 @@ final readonly class PolyglotTellModelResolver implements CanResolveTellModel
             '' => $config,
             default => $config->withOverrides(['model' => $request->model]),
         };
-        if ($request->reasoningEffort !== null) {
-            TellReasoningSupport::assertSupported($config->driver, $config->model, $request->reasoningEffort);
-            $config = $config->withOverrides([
-                'options' => [
-                    ...$config->options,
-                    ...TellReasoningSupport::options($config->driver, $request->reasoningEffort),
-                ],
-            ]);
-        }
         $this->assertCredentialAvailable($config, $request->connection);
 
         return $config;

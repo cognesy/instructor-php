@@ -8,7 +8,7 @@ namespace Cognesy\Tell;
 final readonly class TellCompactionResult
 {
     /** @param array{name: string, type: 'main'|'branch'|'session'|'ref', source?: string} $selector
-     * @param array<string, mixed> $details
+     * @param  array<string, mixed>  $details
      */
     public function __construct(
         public array $selector,

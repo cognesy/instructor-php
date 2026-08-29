@@ -87,8 +87,7 @@ final readonly class TellToolRequest
         ?string $connection = null,
         ?string $model = null,
         ?TellExecutionPolicy $policy = null,
-    ): self
-    {
+    ): self {
         return new self(
             name: $this->name,
             arguments: $this->arguments,

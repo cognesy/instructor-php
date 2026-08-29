@@ -142,7 +142,9 @@ function tellRemoveDirectory(string $directory): void
 
 afterEach(function (): void {
     global $tellTemporaryRoots;
-    foreach ($tellTemporaryRoots as $root) {
+    // Null until some test asks for a temporary root, which a test file that
+    // touches no filesystem never does.
+    foreach ($tellTemporaryRoots ?? [] as $root) {
         tellRemoveDirectory($root);
     }
     $tellTemporaryRoots = [];

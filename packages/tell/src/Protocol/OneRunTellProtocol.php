@@ -30,18 +30,22 @@ final readonly class OneRunTellProtocol implements CanRunTellProtocol
 
         if ($result->status() === ExecutionStatus::Completed) {
             $frames->success($result);
+
             return 0;
         }
         $reason = $result->state()->stopReason();
         if ($result->status() === ExecutionStatus::Stopped && $reason === StopReason::UserRequested) {
             $frames->cancelled($result);
+
             return 130;
         }
         if ($result->status() === ExecutionStatus::Stopped) {
             $frames->error('run_stopped', 'The Tell run stopped before completion.', $result, $reason?->value);
+
             return 1;
         }
         $frames->error('run_failed', 'The Tell run failed.', $result);
+
         return 1;
     }
 }

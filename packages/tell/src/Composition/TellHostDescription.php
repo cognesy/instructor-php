@@ -8,8 +8,8 @@ namespace Cognesy\Tell\Composition;
 final readonly class TellHostDescription
 {
     /**
-     * @param list<array{id: string, description: string, provides: list<class-string>, requires: list<class-string>, optional: list<class-string>}> $modules
-     * @param list<class-string> $requiredCapabilities
+     * @param  list<array{id: string, description: string, provides: list<class-string>, requires: list<class-string>, optional: list<class-string>}>  $modules
+     * @param  list<class-string>  $requiredCapabilities
      */
     public function __construct(
         public string $profile,

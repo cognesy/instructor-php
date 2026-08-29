@@ -12,9 +12,9 @@ use Cognesy\Tell\Diagnostics\TellDiagnostic;
 final readonly class TellResult
 {
     /**
-     * @param list<string> $warnings
-     * @param list<TellDiagnostic> $diagnostics
-     * @param 'current'|'invocation'|null $branchSource
+     * @param  list<string>  $warnings
+     * @param  list<TellDiagnostic>  $diagnostics
+     * @param  'current'|'invocation'|null  $branchSource
      */
     public function __construct(
         private AgentState $state,

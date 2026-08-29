@@ -40,6 +40,8 @@ use Cognesy\Config\Secrets\SecretResolver;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Creation\BundledInferenceDrivers;
+use Cognesy\Polyglot\Inference\Reasoning\ReasoningSelection;
 use Cognesy\Tell\Capability\AskUser\TellAskUserCapability;
 use Cognesy\Tell\Capability\Coding\TellCodingTools;
 use Cognesy\Tell\Contracts\CanResolveTellModel;
@@ -112,6 +114,13 @@ final readonly class TellAgentFactory
         if ($llmConfig !== null && $this->modelResolver === null && $options->dsn === '') {
             $this->assertCredentialAvailable($llmConfig, $options->connection);
         }
+        if ($llmConfig !== null) {
+            $this->assertReasoningSupported(
+                $llmConfig->driver,
+                $llmConfig->model,
+                $options,
+            );
+        }
 
         return new AgentDefinition(
             name: $definition->name,
@@ -183,6 +192,7 @@ final readonly class TellAgentFactory
             null => $loop,
             default => $loop->withDriver($this->driver),
         };
+        $loop = $this->withReasoningSelection($loop, $options);
         $loop = $this->filterTools($loop, $options->tools);
         $loop = $this->withExecutionPolicy($loop, $policy, $blobs);
         $loop = $this->withCooperativeCancellation($loop, $cancellation);
@@ -265,10 +275,7 @@ final readonly class TellAgentFactory
             return $this->modelResolver->resolve(TellRequest::fromOptions($options));
         }
         if ($options->dsn !== '') {
-            return $this->withReasoning(
-                LLMConfig::fromArray(Dsn::fromString($options->dsn)->toArray()),
-                $options,
-            );
+            return LLMConfig::fromArray(Dsn::fromString($options->dsn)->toArray());
         }
 
         TellCredentialNames::forProvider($options->connection);
@@ -283,22 +290,22 @@ final readonly class TellAgentFactory
             default => $config->withOverrides(['model' => $options->model]),
         };
 
-        return $this->withReasoning($config, $options);
+        return $config;
     }
 
-    private function withReasoning(LLMConfig $config, TellOptions $options): LLMConfig
+    private function withReasoningSelection(AgentLoop $loop, TellOptions $options): AgentLoop
     {
         if ($options->reasoningEffort === null) {
-            return $config;
+            return $loop;
         }
-        TellReasoningSupport::assertSupported($config->driver, $config->model, $options->reasoningEffort);
+        $driver = $loop->driver();
+        if (! $driver instanceof ToolCallingDriver) {
+            return $loop;
+        }
 
-        return $config->withOverrides([
-            'options' => [
-                ...$config->options,
-                ...TellReasoningSupport::options($config->driver, $options->reasoningEffort),
-            ],
-        ]);
+        return $loop->withDriver($driver->withReasoning(
+            ReasoningSelection::withEffort($options->reasoningEffort),
+        ));
     }
 
     private function assertReasoningSupportedWithoutCredentials(TellOptions $options): void
@@ -308,7 +315,7 @@ final readonly class TellAgentFactory
         }
         if ($options->dsn !== '') {
             $config = LLMConfig::fromArray(Dsn::fromString($options->dsn)->toArray());
-            TellReasoningSupport::assertSupported($config->driver, $config->model, $options->reasoningEffort);
+            $this->assertReasoningSupported($config->driver, $config->model, $options);
 
             return;
         }
@@ -320,7 +327,27 @@ final readonly class TellAgentFactory
         );
         $driver = is_string($resolved['provider'] ?? null) ? $resolved['provider'] : $options->connection;
         $model = is_string($resolved['model'] ?? null) ? $resolved['model'] : $options->model;
-        TellReasoningSupport::assertSupported($driver, $model, $options->reasoningEffort);
+        $this->assertReasoningSupported($driver, $model, $options);
+    }
+
+    private function assertReasoningSupported(
+        string $driver,
+        string $model,
+        TellOptions $options,
+    ): void {
+        if ($options->reasoningEffort === null) {
+            return;
+        }
+        $selection = ReasoningSelection::withEffort($options->reasoningEffort);
+        $capabilities = BundledInferenceDrivers::capabilities($driver, $model)?->reasoning();
+        if ($capabilities?->supports($selection) === true) {
+            return;
+        }
+
+        $label = $model === '' ? $driver : "{$driver}/{$model}";
+        throw new \InvalidArgumentException(
+            "Reasoning effort is not supported by '{$label}' according to Polyglot capability metadata.",
+        );
     }
 
     private function connectionDirectory(TellOptions $options): ?string

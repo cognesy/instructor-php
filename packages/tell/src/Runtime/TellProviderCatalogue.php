@@ -29,6 +29,7 @@ final readonly class TellProviderCatalogue
                     $config = LLMConfig::fromPreset($name, $directory);
                 } catch (InvalidArgumentException $error) {
                     $errors[] = ['connection' => $name, 'source' => $source, 'error' => $error->getMessage()];
+
                     continue;
                 }
                 $connections[$name] = $this->entry($name, $source, $config);
@@ -85,7 +86,7 @@ final readonly class TellProviderCatalogue
             'availableModels' => $config->model === '' ? [] : [$config->model],
             'contextCapacity' => $config->contextLength,
             'maxOutputTokens' => $config->maxOutputLength,
-            'capabilities' => $this->capabilities($capabilities, $config->driver, $config->model),
+            'capabilities' => $this->capabilities($capabilities),
             'unknown' => [
                 'vision' => 'not declared by Polyglot driver metadata',
                 'thinking' => 'not declared by Polyglot driver metadata',
@@ -101,7 +102,7 @@ final readonly class TellProviderCatalogue
     }
 
     /** @return array<string,bool|null> */
-    private function capabilities(?DriverCapabilities $capabilities, string $driver, string $model): array
+    private function capabilities(?DriverCapabilities $capabilities): array
     {
         return [
             'streaming' => $capabilities?->supportsStreaming(),
@@ -110,7 +111,7 @@ final readonly class TellProviderCatalogue
             'jsonObject' => $capabilities?->supportsResponseFormatJsonObject(),
             'jsonSchema' => $capabilities?->supportsResponseFormatJsonSchema(),
             'responseFormatWithTools' => $capabilities?->supportsResponseFormatWithTools(),
-            'reasoningEffort' => $capabilities === null ? null : TellReasoningSupport::supports($driver, $model),
+            'reasoningEffort' => $capabilities?->reasoning()->supportsEffort(),
         ];
     }
 }

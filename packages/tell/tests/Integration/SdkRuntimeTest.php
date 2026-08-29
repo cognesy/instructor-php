@@ -5,8 +5,9 @@ declare(strict_types=1);
 require_once dirname(__DIR__).'/Pest.php';
 
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
-use Cognesy\Tell\TellEvent;
+use Cognesy\Tell\Contracts\Data\TellEventEnvelope;
 use Cognesy\Tell\Tell;
+use Cognesy\Tell\TellExecutionMode;
 use Cognesy\Tell\TellRequest;
 use Cognesy\Tell\Workspace\ArenaStore;
 use Cognesy\Tell\Workspace\SessionCompatibilityRef;
@@ -86,12 +87,12 @@ it('observes typed lifecycle events in agent source order', function (): void {
     $events = [];
 
     Tell::open($project, $factory)->run(
-        TellRequest::prompt('Observe this')->durable()->onEvent(static function (TellEvent $event) use (&$events): void {
+        TellRequest::prompt('Observe this')->durable()->onEvent(static function (TellEventEnvelope $event) use (&$events): void {
             $events[] = $event;
         }),
     );
 
-    $types = array_map(static fn (TellEvent $event): string => $event->type(), $events);
+    $types = array_map(static fn (TellEventEnvelope $event): string => $event->kind, $events);
     $started = array_search('execution.started', $types, true);
     $step = array_search('step.completed', $types, true);
     $completed = array_search('execution.completed', $types, true);
@@ -104,10 +105,10 @@ it('observes typed lifecycle events in agent source order', function (): void {
         ->toContain('execution.completed')
         ->and($started)->toBeLessThan($step)
         ->and($step)->toBeLessThan($completed)
-        ->and($events[0]->agent())->toBe('default')
-        ->and($events[0]->workspace())->toBe(realpath($project))
-        ->and($events[0]->envelope()['branch'])->toBe('main')
-        ->and($events[0]->envelope()['schema'])->toBe('tell.event.v1');
+        ->and($events[0]->agent)->toBe('default')
+        ->and($events[0]->mode)->toBe(TellExecutionMode::Durable)
+        ->and($events[0]->branch)->toBe('main')
+        ->and($events[0]->toArray()['schema'])->toBe('tell.event.v1');
 });
 
 it('streams each completed checkpoint and returns the final result', function (): void {
@@ -159,7 +160,7 @@ it('does not publish a durable workspace turn when an observation listener fails
     expect(static fn () => Tell::open($project, $factory)->run(
         TellRequest::prompt('Fail during observation')
             ->durable()
-            ->onEvent(static fn (TellEvent $event) => throw new RuntimeException('observer failed')),
+            ->onEvent(static fn (TellEventEnvelope $event) => throw new RuntimeException('observer failed')),
     ))->toThrow(RuntimeException::class, 'observer failed')
         ->and((new ArenaStore($workspace))->readRef()->head)->toBeNull();
 });

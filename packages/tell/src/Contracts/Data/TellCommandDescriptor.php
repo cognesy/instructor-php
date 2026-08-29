@@ -14,8 +14,8 @@ final readonly class TellCommandDescriptor
     private Closure $factory;
 
     /**
-     * @param callable(): object $factory
-     * @param list<string> $aliases
+     * @param  callable(): object  $factory
+     * @param  list<string>  $aliases
      */
     public function __construct(
         public string $name,

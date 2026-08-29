@@ -4,17 +4,14 @@ declare(strict_types=1);
 
 namespace Cognesy\Tell\Composition;
 
-use Cognesy\Tell\Composition\TellHostBootstrap;
-use Cognesy\Tell\Composition\TellHostProfile;
-use Cognesy\Tell\Composition\TellModuleDefinition;
 use InvalidArgumentException;
 
 /** Immutable pre-boot graph editor. */
 final readonly class TellHostBuilder
 {
     /**
-     * @param list<TellModuleDefinition> $modules
-     * @param list<class-string> $requiredCapabilities
+     * @param  list<TellModuleDefinition>  $modules
+     * @param  list<class-string>  $requiredCapabilities
      */
     private function __construct(
         private string $profile,

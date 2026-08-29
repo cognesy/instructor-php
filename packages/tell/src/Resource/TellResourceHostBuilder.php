@@ -7,8 +7,6 @@ namespace Cognesy\Tell\Resource;
 use Cognesy\Tell\Contracts\CanApproveTellShellJobs;
 use Cognesy\Tell\Contracts\CanManageTellShellJobs;
 use Cognesy\Tell\Contracts\CanObserveTellResources;
-use Cognesy\Tell\Resource\CordisTellShellJobs;
-use Cognesy\Tell\Resource\TellResourceEventEmitter;
 use Cognesy\Tell\Shell\TellShellJobPolicy;
 use CordisPhp\Plugin\PluginDefinition;
 use CordisPhp\Runtime\Context;
@@ -34,10 +32,10 @@ final readonly class TellResourceHostBuilder
             throw new RuntimeException('The Tell resource host project directory does not exist.');
         }
 
-        $runtime = new Runtime();
+        $runtime = new Runtime;
         $events = new TellResourceEventEmitter($this->observer);
         $unsubscribe = $runtime->onStatus(static function (FiberStatusChange $change) use ($events): void {
-            $events->emit('module.' . $change->current->value, $change->fiber->label(), [
+            $events->emit('module.'.$change->current->value, $change->fiber->label(), [
                 'previous' => $change->previous->value,
                 'current' => $change->current->value,
             ], $change->current === FiberState::Failed ? 'failed' : null);

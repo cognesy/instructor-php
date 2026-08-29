@@ -28,7 +28,7 @@ require 'examples/boot.php';
 require_once dirname(__DIR__).'/Support.php';
 
 use Cognesy\Tell\Tell;
-use Cognesy\Tell\TellEvent;
+use Cognesy\Tell\Contracts\Data\TellEventEnvelope;
 use Cognesy\Tell\TellRequest;
 
 $project = TellHarnessExample::project();
@@ -43,9 +43,9 @@ try {
         )
             ->maxSteps(5)
             ->onEvent(
-                static function (TellEvent $event) use (&$eventTypes): void {
-                    $eventTypes[] = $event->type();
-                    echo json_encode($event->envelope(), JSON_THROW_ON_ERROR)."\n";
+                static function (TellEventEnvelope $event) use (&$eventTypes): void {
+                    $eventTypes[] = $event->kind;
+                    echo json_encode($event->toArray(), JSON_THROW_ON_ERROR)."\n";
                 },
             ),
     );
@@ -78,7 +78,7 @@ try {
 ## Key Points
 
 - A checkpoint represents a completed agent-loop step, not an arbitrary token.
-- `TellEvent::envelope()` is the stable, redacted event contract for logs,
+- `TellEventEnvelope::toArray()` is the stable, redacted event contract for logs,
   queues, server-sent events, and telemetry.
 - Treat source events and raw payloads as in-process diagnostic details; do not
   forward them blindly across a process boundary.
