@@ -29,7 +29,7 @@ $eval = AgentEval::define(
             ->atLeast(0.75);
     },
 );
-// @doctest id="3d34"
+// @doctest id="b7e4"
 ```
 
 `$t->send(...)` drives the target agent; the assertions that follow read the accumulated `AgentRun` the send produced. Nothing here constructs a loop, wires a driver, or manages state -- that lives in the target and the runner, described below.
@@ -50,7 +50,7 @@ $config = EvalConfig::default()
     ->withJudge(PolyglotAgentJudge::fromInference(new Inference()));
 
 $result = (new EvalRunner(config: $config))->run(new AgentEvals($eval));
-// @doctest id="9bf3"
+// @doctest id="6769"
 ```
 
 `$result` is an `EvalRunResult` you can inspect programmatically; running evals from the command line, reading verdicts, and wiring PHPUnit/Pest integration are covered by the pages listed at the end of this one.
@@ -62,7 +62,7 @@ $result = (new EvalRunner(config: $config))->run(new AgentEvals($eval));
 ```php
 $eval = AgentEval::define('...', function (EvalContext $t): void { /* ... */ }, EvalTags::of('smoke'))
     ->withId('support/refund-requires-verification');
-// @doctest id="bd49"
+// @doctest id="efa9"
 ```
 
 An id identifies a case in reports and lets you select cases by tag when running a suite. It is optional when you build `AgentEvals` and hand them to `EvalRunner` directly, but `EvalDiscovery` (below) always derives and assigns an id from the file path when it scans a directory -- a `withId()` call inside a file that discovery will scan is overwritten.
@@ -75,7 +75,7 @@ An id identifies a case in reports and lets you select cases by tag when running
 use Cognesy\Agents\Evals\AgentEvalSet;
 
 $set = AgentEvalSet::of($firstEval, $secondEval);
-// @doctest id="905c"
+// @doctest id="8134"
 ```
 
 or generate one case per row of a dataset:
@@ -96,7 +96,7 @@ $set = AgentEvalSet::fromDataset($dataset, function (EvalDatasetRow $row): Agent
         },
     );
 });
-// @doctest id="4f57"
+// @doctest id="e68c"
 ```
 
 `EvalDataset::fromJson($path)` and `EvalDataset::fromYaml($path)` both load a file whose root is a list of objects into a list of `EvalDatasetRow`. A row exposes `value(string $key)` for any type, `string(string $key)` when the value must be a string, and `toArray()` for the raw associative data.
@@ -129,7 +129,7 @@ $target = LocalAgentTarget::fromFactory(static fn () => AgentBuilder::base()
     ->withCapability(new UseTools($refundsLookup, $refundsIssue))
     ->withCapability(new UseGuards(maxSteps: 6))
     ->build());
-// @doctest id="8abe"
+// @doctest id="fcff"
 ```
 
 `open()` builds one loop from the factory and hands back a session backed by it; the loop and its state are then reused for every `send()` you make on that session, so a multi-turn conversation behaves like a real conversation. Calling `open()` again starts a brand new loop from scratch.
@@ -147,7 +147,7 @@ $target = new HttpAgentTarget(
     baseUrl: 'https://agent.example.test',
     authorization: 'Bearer ' . getenv('AGENT_EVAL_TOKEN'),
 );
-// @doctest id="4726"
+// @doctest id="b54f"
 ```
 
 `open()` performs a `GET /health` check (unless you pass `healthCheck: false`), then `POST /evals/sessions` and expects a `sessionId` back. Each `send()` becomes `POST /evals/sessions/{id}/turns`, and the remote server's JSON response is decoded into the same `AgentRun` shape a local target produces. If a session already exists -- for example, one started by another process -- attach to it instead of opening a new one: `$target->attach($sessionId)`.
@@ -166,7 +166,7 @@ $t->send('I need to return it -- it arrived damaged.');
 
 $run = $t->run();       // reply, tools, steps, and usage across BOTH turns
 $run->turns();          // 2
-// @doctest id="dea2"
+// @doctest id="099c"
 ```
 
 `EvalContext::run(): AgentRun` (and every deterministic assertion, which reads `run()` internally) always reflects everything sent on that session so far, not just the last turn.
@@ -181,7 +181,7 @@ $t->calledTool('refunds_lookup', count: 1);
 $t->stepCount(2);
 $t->maxSteps(6);
 $t->totalTokensAtMost(4_000);
-// @doctest id="8981"
+// @doctest id="4d86"
 ```
 
 The full catalogue -- trajectory, event, and step/token assertions -- is covered by the eval assertions page listed below.
