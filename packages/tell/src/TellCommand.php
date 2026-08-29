@@ -10,6 +10,7 @@ use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Tell\Operational\CanDescribeOperationalPlane;
 use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
+use Cognesy\Tell\Render\EventProgress;
 use Cognesy\Tell\Render\EventsRenderer;
 use Cognesy\Tell\Render\HumanRenderer;
 use Cognesy\Tell\Render\JsonRenderer;
@@ -59,7 +60,8 @@ Examples:
   tell --transient "test a direction without recording it"
   tell --output=text "write a commit message"
   tell --output=human "explain this design"
-  tell --debug "fix the failing test"
+  tell -v "fix the failing test"
+  tell --debug "fix the failing test" > answer.txt
 HELP)
             ->addArgument('prompt', InputArgument::OPTIONAL, 'Prompt')
             ->addOption('agent', 'a', InputOption::VALUE_REQUIRED, 'Agent definition name', 'default')
@@ -81,7 +83,7 @@ HELP)
             ->addOption('max-tool-output-chars', null, InputOption::VALUE_REQUIRED, 'Maximum bytes retained from one tool result', '40000')
             ->addOption('max-tool-calls', null, InputOption::VALUE_REQUIRED, 'Maximum tool calls', '100')
             ->addOption('transient', null, InputOption::VALUE_NONE, 'Run without publishing workspace or session state')
-            ->addOption('debug', null, InputOption::VALUE_NONE, 'Trace steps, tool calls, and tool results on stderr')
+            ->addOption('debug', null, InputOption::VALUE_NONE, 'Emit machine-readable progress lines, with parameters and results, on stderr')
             ->addOption('output', 'o', InputOption::VALUE_REQUIRED, 'Output: toon, text, human, json, or events', 'toon');
     }
 
@@ -99,15 +101,19 @@ HELP)
             }
             $options = $this->withBranchSettings(TellOptions::fromInput($input, $output));
             $renderer = $this->renderer($options, $output, $stderr);
-            // The trace is its own stderr channel rather than an output mode,
-            // so it composes with whichever format stdout was asked for.
-            $trace = $options->debug ? new StepTrace($stderr, $options->debugFull) : null;
+            // Both progress channels are stderr channels rather than output
+            // modes, so each composes with whichever format stdout was asked
+            // for. -v reads the turn; --debug parses it.
+            $trace = $options->verbose ? new StepTrace($stderr, $options->verboseFull) : null;
+            $progress = new EventProgress($stderr, $options->debug, $options->quiet, $this->heartbeat($options));
             $cancellation = new TellSignalCancellationSource;
             $signalsEnabled = $cancellation->install();
             $result = (new TellRuntime($this->factory(), $cancellation))->run(
                 TellRequest::fromOptions($options),
-                static function (AgentLoop $loop, TellRequest $request, ?string $selectedBranch = null) use ($renderer, $trace): void {
-                    $renderer->attach($loop, new TellEventNormalizer($selectedBranch ?? $request->branch, $request->session));
+                static function (AgentLoop $loop, TellRequest $request, ?string $selectedBranch = null) use ($renderer, $trace, $progress): void {
+                    $events = new TellEventNormalizer($selectedBranch ?? $request->branch, $request->session);
+                    $renderer->attach($loop, $events);
+                    $progress->attach($loop, $events);
                     $trace?->attach($loop);
                 },
             );
@@ -177,6 +183,16 @@ HELP)
         return $options->withBranchConfig((new BranchConfigStore($workspace))->runtimeValues($branch->branch));
     }
 
+    /**
+     * The reading formats have always carried a bare inference heartbeat on
+     * stderr and the structured ones have not; adding one now would change the
+     * stderr of readers who never asked for it. A trace supersedes it.
+     */
+    private function heartbeat(TellOptions $options): bool
+    {
+        return ! $options->verbose && in_array($options->output, ['toon', 'text', 'human'], true);
+    }
+
     private function renderer(
         TellOptions $options,
         OutputInterface $stdout,
@@ -185,9 +201,9 @@ HELP)
         return match ($options->output) {
             'json' => new JsonRenderer($stdout),
             'events' => new EventsRenderer($stdout),
-            'text' => new TextRenderer($stdout, $stderr, $options->verbose, $options->quiet),
-            'human' => new HumanRenderer($stdout, $stderr, $options->verbose, $options->quiet),
-            default => new ToonRenderer($stdout, $stderr, $options->verbose, $options->quiet),
+            'text' => new TextRenderer($stdout, $stderr, $options->quiet),
+            'human' => new HumanRenderer($stdout, $stderr, $options->quiet),
+            default => new ToonRenderer($stdout),
         };
     }
 

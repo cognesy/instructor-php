@@ -35,8 +35,8 @@ it('traces steps and tool calls on stderr while stdout keeps the requested forma
     file_put_contents($project.'/notes.txt', "first line\nsecond line\n");
 
     expect($tester->execute(
-        ['prompt' => 'read the note', '--dir' => $project, '--debug' => true, '--output' => 'text'],
-        ['capture_stderr_separately' => true],
+        ['prompt' => 'read the note', '--dir' => $project, '--output' => 'text'],
+        ['capture_stderr_separately' => true, 'verbosity' => OutputInterface::VERBOSITY_VERBOSE],
     ))->toBe(0);
 
     $trace = $tester->getErrorOutput();
@@ -59,8 +59,8 @@ it('shows the argument that matters for each tool rather than its raw JSON', fun
     );
 
     expect($tester->execute(
-        ['prompt' => 'work', '--dir' => tellTraceProject(), '--debug' => true, '--output' => 'text'],
-        ['capture_stderr_separately' => true],
+        ['prompt' => 'work', '--dir' => tellTraceProject(), '--output' => 'text'],
+        ['capture_stderr_separately' => true, 'verbosity' => OutputInterface::VERBOSITY_VERBOSE],
     ))->toBe(0);
 
     $trace = $tester->getErrorOutput();
@@ -79,8 +79,8 @@ it('reports a failed tool call with the reason the tool gave', function (): void
     );
 
     expect($tester->execute(
-        ['prompt' => 'read a missing file', '--dir' => tellTraceProject(), '--debug' => true, '--output' => 'text'],
-        ['capture_stderr_separately' => true],
+        ['prompt' => 'read a missing file', '--dir' => tellTraceProject(), '--output' => 'text'],
+        ['capture_stderr_separately' => true, 'verbosity' => OutputInterface::VERBOSITY_VERBOSE],
     ))->toBe(0);
 
     $trace = $tester->getErrorOutput();
@@ -118,8 +118,8 @@ it('previews a long body, states what it elided, and stops abridging at -vvv', f
     $project = tellTraceProject();
     file_put_contents($project.'/long.txt', $lines."\n");
     expect($preview->execute(
-        ['prompt' => 'read', '--dir' => $project, '--debug' => true, '--output' => 'text'],
-        ['capture_stderr_separately' => true],
+        ['prompt' => 'read', '--dir' => $project, '--output' => 'text'],
+        ['capture_stderr_separately' => true, 'verbosity' => OutputInterface::VERBOSITY_VERBOSE],
     ))->toBe(0);
     expect($preview->getErrorOutput())->toContain('line 1')
         ->and($preview->getErrorOutput())->not->toContain('line 30')
@@ -140,21 +140,21 @@ it('previews a long body, states what it elided, and stops abridging at -vvv', f
 it('decorates the trace only when stderr is a terminal', function (): void {
     $plain = tellTraceTester(ScenarioStep::final('done'));
     expect($plain->execute(
-        ['prompt' => 'work', '--dir' => tellTraceProject(), '--debug' => true, '--output' => 'text'],
-        ['capture_stderr_separately' => true],
+        ['prompt' => 'work', '--dir' => tellTraceProject(), '--output' => 'text'],
+        ['capture_stderr_separately' => true, 'verbosity' => OutputInterface::VERBOSITY_VERBOSE],
     ))->toBe(0);
     expect($plain->getErrorOutput())->toContain('● step 1')
         ->and($plain->getErrorOutput())->not->toContain("\033[");
 
     $decorated = tellTraceTester(ScenarioStep::final('done'));
     expect($decorated->execute(
-        ['prompt' => 'work', '--dir' => tellTraceProject(), '--debug' => true, '--output' => 'text'],
-        ['capture_stderr_separately' => true, 'decorated' => true],
+        ['prompt' => 'work', '--dir' => tellTraceProject(), '--output' => 'text'],
+        ['capture_stderr_separately' => true, 'decorated' => true, 'verbosity' => OutputInterface::VERBOSITY_VERBOSE],
     ))->toBe(0);
     expect($decorated->getErrorOutput())->toContain("\033[");
 });
 
-it('refuses a trace that was also asked to be quiet', function (): void {
+it('refuses machine progress that was also asked to be quiet', function (): void {
     $tester = tellTraceTester(ScenarioStep::final('done'));
 
     expect($tester->execute(

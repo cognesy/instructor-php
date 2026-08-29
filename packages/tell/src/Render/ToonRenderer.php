@@ -15,23 +15,17 @@ final readonly class ToonRenderer implements OutputRenderer
 {
     private StructuredOutput $output;
 
-    private EventProgress $progress;
-
-    public function __construct(
-        OutputInterface $output,
-        OutputInterface $stderr,
-        bool $verbose = false,
-        bool $quiet = false,
-    ) {
-        $this->output = new StructuredOutput($output);
-        $this->progress = new EventProgress($stderr, $verbose, $quiet);
-    }
-
-    #[Override]
-    public function attach(AgentLoop $loop, ?TellEventNormalizer $events = null): void
+    public function __construct(OutputInterface $output)
     {
-        $this->progress->attach($loop, $events);
+        $this->output = new StructuredOutput($output);
     }
+
+    /**
+     * Progress channels belong to the invocation, not to one output format, so
+     * they are attached alongside this renderer rather than by it.
+     */
+    #[Override]
+    public function attach(AgentLoop $loop, ?TellEventNormalizer $events = null): void {}
 
     #[Override]
     public function finish(AgentState $state, array $warnings = [], TellExecutionMode $mode = TellExecutionMode::Stateless, ?array $branch = null, array $diagnostics = []): void

@@ -128,15 +128,32 @@ messages now name the offending key's own allowed values instead of always
 naming the reasoning-effort set. Evidence:
 `tests/Integration/HumanOutputTest.php`.
 
-`--debug` is a new CLI flag that writes a step and tool-call trace to stderr;
-`-vv` enables the same trace and `-vvv` additionally stops abridging bodies.
-It is a stderr channel, not an output mode, so stdout still carries whichever
-`--output` format was requested and no existing mode changes. It is refused
-together with `--quiet`. The trace is the one Tell surface that shows tool
-arguments and results: it is never persisted, never enters the normalized
-`tell.event.v1` stream, and never reaches an execution trace file, so the
-redaction guarantees of those surfaces are unchanged. Evidence:
-`tests/Integration/StepTraceTest.php`.
+Turn progress is now reported on two stderr channels. `-v` writes a readable
+trace of each step, tool call, and result, with `-vvv` no longer abridging
+bodies; `--debug` is a new flag writing one bracketed `key=value` line per
+event. Both are channels rather than output modes, so stdout still carries
+whichever `--output` format was requested and no existing mode changes; both
+are refused together with `--quiet`.
+
+`--debug` replaces what `--verbose` used to emit. Its lines keep the previous
+`[tool.start] name=X` and `[tool.complete] name=X status=ok` prefixes and add
+the step number, duration, call arguments, and results. `status` is now
+`failed` when a tool returned its own failure envelope, where it previously
+read `ok`. Payload values are valid JSON bounded to 512 bytes; an excerpt is
+emitted as a JSON string with a companion `argsBytes`/`resultBytes` size.
+`--debug` now also accompanies `json` and `events` output, which carried no
+progress channel before.
+
+Without either flag, `toon`, `text`, and `human` keep their existing
+`[inference.start] step=N` heartbeat and the structured formats keep writing
+nothing.
+
+These two channels are the only Tell surfaces that show tool arguments and
+results. Neither is persisted, neither enters the normalized `tell.event.v1`
+stream, and neither reaches an execution trace file, so the redaction
+guarantees of those surfaces are unchanged. Evidence:
+`tests/Integration/StepTraceTest.php`,
+`tests/Integration/MachineProgressTest.php`, `tests/Feature/RenderingTest.php`.
 
 `TellResult::executionMode()` is the published accessor for the same fact.
 `Render\OutputRenderer::finish()` takes a `TellExecutionMode` in place of its

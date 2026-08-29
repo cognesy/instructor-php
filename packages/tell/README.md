@@ -514,15 +514,19 @@ publication, compaction, or clear; Tell does not run garbage collection.
 
 ## Watching a turn happen
 
-`--debug` writes a live account of the turn to stderr: each step, each tool
-call with the argument that matters, and each result.
+Two stderr channels report a turn in progress. `-v` writes it for a reader;
+`--debug` writes it for a program. Both compose with whichever `--output`
+format stdout was asked for, and neither can be combined with `--quiet`.
+
+`-v` shows each step, each tool call with the argument that matters, and each
+result:
 
 ```text
 ● step 1
   ▸ shell [check the suite]
     │ vendor/bin/pest packages/tell
   ✔ shell 812ms
-    │ Tests:    337 passed (2012 assertions)
+    │ Tests:    342 passed (2033 assertions)
 ● step 2
   ▸ write `notes.md` (184 bytes)
     │ # Findings
@@ -534,17 +538,34 @@ call with the argument that matters, and each result.
 Known tools show what they are doing rather than their JSON arguments: a shell
 call shows its command, a file call its path, a write its size, an edit the
 lines it replaces. Anything else falls back to name plus arguments. Bodies are
-previewed at twelve lines and elision is stated, not silent.
+previewed at twelve lines and elision is stated, not silent; `-vvv` stops
+abridging.
 
-The trace is a stderr channel rather than an output mode, so it composes with
-whichever `--output` format stdout was asked for. `-vv` turns it on as well,
-and `-vvv` additionally stops abridging bodies. It cannot be combined with
-`--quiet`.
+`--debug` writes one bracketed `key=value` line per event instead:
 
-Unlike every other Tell output, a trace shows tool arguments and results. That
-is the point of asking for one, and it is why the trace exists only for the
-invocation that requested it: it is never persisted, never enters the
-normalized `tell.event.v1` stream, and never reaches an execution trace file.
+```text
+[step.start] step=1 messages=14 tools=8
+[tool.start] name=shell step=1 args={"command":"vendor/bin/pest packages/tell"}
+[tool.complete] name=shell status=ok step=1 duration=812ms result={"success":true,…}
+[step.complete] step=1 toolCalls=yes errors=0 in=4210 out=318 finish=tool_calls
+[execution.complete] status=completed steps=2 in=4210 out=318
+```
+
+Kinds and keys are the ones from the normalized `tell.event.v1` contract, so
+the lines read against the same vocabulary as `--output=events`. `status` is
+`failed` whenever the call failed or the tool returned its own failure
+envelope. Payload values are always valid JSON and bounded to 512 bytes; an
+excerpt is emitted as a JSON string and carries a companion `argsBytes` or
+`resultBytes` giving the real size, so the presence of that key is what says
+the value is an excerpt.
+
+Without either flag, `toon`, `text`, and `human` output keep the bare
+`[inference.start] step=N` heartbeat they have always written.
+
+Both channels show tool arguments and results, which no other Tell surface
+does. That is what asking for them means, and it is why they exist only for
+the invocation that asked: they are never persisted, never enter the
+normalized `tell.event.v1` stream, and never reach an execution trace file.
 
 ## Local storage and execution traces
 

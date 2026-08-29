@@ -22,15 +22,15 @@ final readonly class HumanRenderer implements OutputRenderer
     public function __construct(
         private OutputInterface $stdout,
         private OutputInterface $stderr,
-        private bool $verbose = false,
         private bool $quiet = false,
     ) {}
 
+    /**
+     * Progress channels belong to the invocation, not to one output format, so
+     * they are attached alongside this renderer rather than by it.
+     */
     #[Override]
-    public function attach(AgentLoop $loop, ?TellEventNormalizer $events = null): void
-    {
-        (new EventProgress($this->stderr, $this->verbose, $this->quiet))->attach($loop, $events);
-    }
+    public function attach(AgentLoop $loop, ?TellEventNormalizer $events = null): void {}
 
     #[Override]
     public function finish(AgentState $state, array $warnings = [], TellExecutionMode $mode = TellExecutionMode::Stateless, ?array $branch = null, array $diagnostics = []): void

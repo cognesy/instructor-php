@@ -63,7 +63,7 @@ it('emits a monotonic, versioned, payload-free NDJSON sequence', function (): vo
         ->and($unknown['metadata'])->toBe([]);
 });
 
-it('keeps quiet output final-only and makes verbose tool progress explicit', function (): void {
+it('keeps quiet output final-only and makes machine tool progress explicit', function (): void {
     $driver = new FakeAgentDriver([
         ScenarioStep::toolCall('list_agents'),
         ScenarioStep::final('tool answer'),
@@ -80,14 +80,14 @@ it('keeps quiet output final-only and makes verbose tool progress explicit', fun
     expect(Toon::decode($quiet->getDisplay())['answer'])->toBe('tool answer')
         ->and($quiet->getErrorOutput())->toBe('');
 
-    $verboseApplication = new TellApplication($factory);
-    $verboseApplication->setAutoExit(false);
-    $verbose = new ApplicationTester($verboseApplication);
-    $verbose->run(
-        ['command' => 'tell', 'prompt' => 'use a tool', '--verbose' => true],
+    $debugApplication = new TellApplication($factory);
+    $debugApplication->setAutoExit(false);
+    $debug = new ApplicationTester($debugApplication);
+    $debug->run(
+        ['command' => 'tell', 'prompt' => 'use a tool', '--debug' => true],
         ['capture_stderr_separately' => true],
     );
-    expect(Toon::decode($verbose->getDisplay())['answer'])->toBe('tool answer')
-        ->and($verbose->getErrorOutput())->toContain('[tool.start] name=list_agents')
+    expect(Toon::decode($debug->getDisplay())['answer'])->toBe('tool answer')
+        ->and($debug->getErrorOutput())->toContain('[tool.start] name=list_agents')
         ->toContain('[tool.complete] name=list_agents status=ok');
 });
