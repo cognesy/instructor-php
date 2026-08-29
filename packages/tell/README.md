@@ -559,8 +559,27 @@ excerpt is emitted as a JSON string and carries a companion `argsBytes` or
 `resultBytes` giving the real size, so the presence of that key is what says
 the value is an excerpt.
 
-Without either flag, `toon`, `text`, and `human` output keep the bare
-`[inference.start] step=N` heartbeat they have always written.
+`--output=human` asks for a reader at a terminal, so with neither flag it gets
+a third thing: one self-erasing line saying what the turn is doing.
+
+```text
+⠹ step 2 · shell: check the suite  14s
+```
+
+It names the step, the running tool and its salient argument, and how long the
+turn has been going. The frames advance on a clock rather than on events,
+because a PHP turn spends most of its wall clock blocked inside the inference
+request where nothing in-process can run; the drawing happens in a forked
+child that is killed and reaped when the turn ends. Where that is unavailable
+the line still reports status, it just advances when something happens. A tool
+that asks the person a question takes the terminal back for the duration.
+
+The line exists only on a terminal. Redirect or pipe stderr and it is not
+written at all - a line that erases itself is noise in a file - and `-v`,
+`--debug`, and `--quiet` each supersede it.
+
+Without any of this, `toon`, `text`, and redirected `human` output keep the
+bare `[inference.start] step=N` heartbeat they have always written.
 
 Whenever a channel wrote anything, a blank line follows it before the answer,
 so progress never runs straight into the result. That separator goes on stderr

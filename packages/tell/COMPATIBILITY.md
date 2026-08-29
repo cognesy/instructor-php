@@ -144,7 +144,18 @@ emitted as a JSON string with a companion `argsBytes`/`resultBytes` size.
 `--debug` now also accompanies `json` and `events` output, which carried no
 progress channel before.
 
-Without either flag, `toon`, `text`, and `human` keep their existing
+`--output=human` on a terminal, with none of `-v`, `--debug`, or `--quiet`,
+now writes a single self-erasing status line naming the current step, the
+running tool, and elapsed time. It replaces that format's `[inference.start]`
+heartbeat on a terminal only; redirected `human` stderr is unchanged, and
+`toon`, `text`, and the structured formats are unchanged everywhere. The line
+is erased on completion, failure, and cancellation alike, and is suspended
+while a tool is asking the person a question. Animation forks a drawer process
+when `pcntl`/`posix` are present and stderr is a real terminal, and falls back
+to event-driven repainting otherwise. Evidence:
+`tests/Integration/BusyIndicatorTest.php`.
+
+Without any of this, `toon`, `text`, and redirected `human` keep their existing
 `[inference.start] step=N` heartbeat and the structured formats keep writing
 nothing.
 

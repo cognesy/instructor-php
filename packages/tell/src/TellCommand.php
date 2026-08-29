@@ -10,6 +10,7 @@ use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Tell\Operational\CanDescribeOperationalPlane;
 use Cognesy\Tell\Operational\OperationalPlane;
 use Cognesy\Tell\Operational\PlaneOperation;
+use Cognesy\Tell\Render\BusyIndicator;
 use Cognesy\Tell\Render\EventProgress;
 use Cognesy\Tell\Render\EventsRenderer;
 use Cognesy\Tell\Render\HumanRenderer;
@@ -105,18 +106,26 @@ HELP)
             // modes, so each composes with whichever format stdout was asked
             // for. -v reads the turn; --debug parses it.
             $trace = $options->verbose ? new StepTrace($stderr, $options->verboseFull) : null;
-            $progress = new EventProgress($stderr, $options->debug, $options->quiet, $this->heartbeat($options));
+            $progress = new EventProgress($stderr, $options->debug, $options->quiet, $this->heartbeat($options, $stderr));
+            $busy = $this->busy($options, $stderr) ? new BusyIndicator($stderr) : null;
             $cancellation = new TellSignalCancellationSource;
             $signalsEnabled = $cancellation->install();
-            $result = (new TellRuntime($this->factory(), $cancellation))->run(
-                TellRequest::fromOptions($options),
-                static function (AgentLoop $loop, TellRequest $request, ?string $selectedBranch = null) use ($renderer, $trace, $progress): void {
-                    $events = new TellEventNormalizer($selectedBranch ?? $request->branch, $request->session);
-                    $renderer->attach($loop, $events);
-                    $progress->attach($loop, $events);
-                    $trace?->attach($loop);
-                },
-            );
+            try {
+                $result = (new TellRuntime($this->factory(), $cancellation))->run(
+                    TellRequest::fromOptions($options),
+                    static function (AgentLoop $loop, TellRequest $request, ?string $selectedBranch = null) use ($renderer, $trace, $progress, $busy): void {
+                        $events = new TellEventNormalizer($selectedBranch ?? $request->branch, $request->session);
+                        $renderer->attach($loop, $events);
+                        $progress->attach($loop, $events);
+                        $trace?->attach($loop);
+                        $busy?->attach($loop);
+                    },
+                );
+            } finally {
+                // A turn that failed or was cancelled still has to give the
+                // terminal its line back before anything else is written.
+                $busy?->stop();
+            }
             $branch = match ($result->branch()) {
                 null => null,
                 default => ['name' => $result->branch(), 'source' => $result->branchSource() ?? 'current'],
@@ -192,11 +201,29 @@ HELP)
     /**
      * The reading formats have always carried a bare inference heartbeat on
      * stderr and the structured ones have not; adding one now would change the
-     * stderr of readers who never asked for it. A trace supersedes it.
+     * stderr of readers who never asked for it. A trace supersedes it, and so
+     * does the busy line, which says the same thing in a form that erases.
      */
-    private function heartbeat(TellOptions $options): bool
+    private function heartbeat(TellOptions $options, OutputInterface $stderr): bool
     {
-        return ! $options->verbose && in_array($options->output, ['toon', 'text', 'human'], true);
+        return ! $options->verbose
+            && ! $this->busy($options, $stderr)
+            && in_array($options->output, ['toon', 'text', 'human'], true);
+    }
+
+    /**
+     * `human` is the format that assumes a person is watching, so it is the one
+     * that owes that person a sign of life when they asked for no channel at
+     * all. Anything redirected gets nothing: a self-erasing line is meaningless
+     * once written to a file, and the other formats never claimed a terminal.
+     */
+    private function busy(TellOptions $options, OutputInterface $stderr): bool
+    {
+        return $options->output === 'human'
+            && ! $options->verbose
+            && ! $options->debug
+            && ! $options->quiet
+            && $stderr->isDecorated();
     }
 
     private function renderer(
