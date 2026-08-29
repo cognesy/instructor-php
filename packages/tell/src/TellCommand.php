@@ -14,6 +14,7 @@ use Cognesy\Tell\Render\EventsRenderer;
 use Cognesy\Tell\Render\HumanRenderer;
 use Cognesy\Tell\Render\JsonRenderer;
 use Cognesy\Tell\Render\OutputRenderer;
+use Cognesy\Tell\Render\StepTrace;
 use Cognesy\Tell\Render\StructuredOutput;
 use Cognesy\Tell\Render\TextRenderer;
 use Cognesy\Tell\Render\ToonRenderer;
@@ -58,6 +59,7 @@ Examples:
   tell --transient "test a direction without recording it"
   tell --output=text "write a commit message"
   tell --output=human "explain this design"
+  tell --debug "fix the failing test"
 HELP)
             ->addArgument('prompt', InputArgument::OPTIONAL, 'Prompt')
             ->addOption('agent', 'a', InputOption::VALUE_REQUIRED, 'Agent definition name', 'default')
@@ -79,6 +81,7 @@ HELP)
             ->addOption('max-tool-output-chars', null, InputOption::VALUE_REQUIRED, 'Maximum bytes retained from one tool result', '40000')
             ->addOption('max-tool-calls', null, InputOption::VALUE_REQUIRED, 'Maximum tool calls', '100')
             ->addOption('transient', null, InputOption::VALUE_NONE, 'Run without publishing workspace or session state')
+            ->addOption('debug', null, InputOption::VALUE_NONE, 'Trace steps, tool calls, and tool results on stderr')
             ->addOption('output', 'o', InputOption::VALUE_REQUIRED, 'Output: toon, text, human, json, or events', 'toon');
     }
 
@@ -96,12 +99,16 @@ HELP)
             }
             $options = $this->withBranchSettings(TellOptions::fromInput($input, $output));
             $renderer = $this->renderer($options, $output, $stderr);
+            // The trace is its own stderr channel rather than an output mode,
+            // so it composes with whichever format stdout was asked for.
+            $trace = $options->debug ? new StepTrace($stderr, $options->debugFull) : null;
             $cancellation = new TellSignalCancellationSource;
             $signalsEnabled = $cancellation->install();
             $result = (new TellRuntime($this->factory(), $cancellation))->run(
                 TellRequest::fromOptions($options),
-                static function (AgentLoop $loop, TellRequest $request, ?string $selectedBranch = null) use ($renderer): void {
+                static function (AgentLoop $loop, TellRequest $request, ?string $selectedBranch = null) use ($renderer, $trace): void {
                     $renderer->attach($loop, new TellEventNormalizer($selectedBranch ?? $request->branch, $request->session));
+                    $trace?->attach($loop);
                 },
             );
             $branch = match ($result->branch()) {

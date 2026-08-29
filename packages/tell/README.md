@@ -512,6 +512,40 @@ usage, timing, rendering data, traces, and absolute paths are not part of
 canonical hashes. Immutable records can remain after a failed compare-and-swap
 publication, compaction, or clear; Tell does not run garbage collection.
 
+## Watching a turn happen
+
+`--debug` writes a live account of the turn to stderr: each step, each tool
+call with the argument that matters, and each result.
+
+```text
+● step 1
+  ▸ shell [check the suite]
+    │ vendor/bin/pest packages/tell
+  ✔ shell 812ms
+    │ Tests:    337 passed (2012 assertions)
+● step 2
+  ▸ write `notes.md` (184 bytes)
+    │ # Findings
+    ⋯ 6 more lines
+  ✔ write 3ms
+● completed 2 steps, 4210 in / 318 out tokens
+```
+
+Known tools show what they are doing rather than their JSON arguments: a shell
+call shows its command, a file call its path, a write its size, an edit the
+lines it replaces. Anything else falls back to name plus arguments. Bodies are
+previewed at twelve lines and elision is stated, not silent.
+
+The trace is a stderr channel rather than an output mode, so it composes with
+whichever `--output` format stdout was asked for. `-vv` turns it on as well,
+and `-vvv` additionally stops abridging bodies. It cannot be combined with
+`--quiet`.
+
+Unlike every other Tell output, a trace shows tool arguments and results. That
+is the point of asking for one, and it is why the trace exists only for the
+invocation that requested it: it is never persisted, never enters the
+normalized `tell.event.v1` stream, and never reaches an execution trace file.
+
 ## Local storage and execution traces
 
 Tell keeps its local concerns under one explicit runtime home. Set `TELL_HOME`

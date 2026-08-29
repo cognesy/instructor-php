@@ -128,6 +128,16 @@ messages now name the offending key's own allowed values instead of always
 naming the reasoning-effort set. Evidence:
 `tests/Integration/HumanOutputTest.php`.
 
+`--debug` is a new CLI flag that writes a step and tool-call trace to stderr;
+`-vv` enables the same trace and `-vvv` additionally stops abridging bodies.
+It is a stderr channel, not an output mode, so stdout still carries whichever
+`--output` format was requested and no existing mode changes. It is refused
+together with `--quiet`. The trace is the one Tell surface that shows tool
+arguments and results: it is never persisted, never enters the normalized
+`tell.event.v1` stream, and never reaches an execution trace file, so the
+redaction guarantees of those surfaces are unchanged. Evidence:
+`tests/Integration/StepTraceTest.php`.
+
 `TellResult::executionMode()` is the published accessor for the same fact.
 `Render\OutputRenderer::finish()` takes a `TellExecutionMode` in place of its
 `bool $transient` parameter; renderers are an implementation seam, so that is

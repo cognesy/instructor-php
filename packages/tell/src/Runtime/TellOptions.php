@@ -30,6 +30,8 @@ final readonly class TellOptions
         public bool $verbose = false,
         public bool $quiet = false,
         public bool $transient = false,
+        public bool $debug = false,
+        public bool $debugFull = false,
         public bool $outputExplicit = false,
         public bool $connectionExplicit = false,
         public bool $modelExplicit = false,
@@ -56,6 +58,9 @@ final readonly class TellOptions
         }
         if ($this->verbose && $this->quiet) {
             throw new InvalidArgumentException('--verbose and --quiet cannot be used together.');
+        }
+        if ($this->debug && $this->quiet) {
+            throw new InvalidArgumentException('--debug and --quiet cannot be used together.');
         }
     }
 
@@ -86,6 +91,10 @@ final readonly class TellOptions
             verbose: $output->isVerbose(),
             quiet: $output->isQuiet(),
             transient: (bool) $input->getOption('transient'),
+            // -vv asks for the same account of the turn that --debug names
+            // explicitly, and -vvv is the conventional place to stop abridging.
+            debug: (bool) $input->getOption('debug') || $output->isVeryVerbose(),
+            debugFull: $output->isDebug(),
             outputExplicit: $input->hasParameterOption(['--output', '-o'], true),
             connectionExplicit: $input->hasParameterOption(['--connection', '-c'], true),
             modelExplicit: $input->hasParameterOption(['--model', '-m'], true),
@@ -131,6 +140,8 @@ final readonly class TellOptions
             verbose: $this->verbose,
             quiet: $this->quiet,
             transient: $this->transient,
+            debug: $this->debug,
+            debugFull: $this->debugFull,
             outputExplicit: $this->outputExplicit,
             connectionExplicit: $this->connectionExplicit,
             modelExplicit: $this->modelExplicit,
