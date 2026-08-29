@@ -47,7 +47,7 @@ it('reports the discovered durable workspace from a nested stateless home view',
     $application->runArgv(['tell', 'init', $root], $initOutput);
 
     $output = new BufferedOutput;
-    $status = $application->runArgv(['tell', '--dir', $nested], $output);
+    $status = $application->runArgv(['tell', '--dir', $nested, '--output=toon'], $output);
     $payload = Toon::decode($output->fetch());
 
     expect($status)->toBe(0)
@@ -66,7 +66,7 @@ it('keeps a bare stateless invocation outside a workspace read-only and actionab
     $before = scandir($root);
 
     $output = new BufferedOutput;
-    $status = $application->runArgv(['tell', '--dir', $root], $output);
+    $status = $application->runArgv(['tell', '--dir', $root, '--output=toon'], $output);
     $payload = Toon::decode($output->fetch());
 
     expect($status)->toBe(0)

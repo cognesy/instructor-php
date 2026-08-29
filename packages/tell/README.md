@@ -30,8 +30,10 @@ tell agents
 tell sessions
 ```
 
-With no prompt, `tell` returns live workspace discovery plus useful next actions
-in TOON, the one structured form that screen has.
+With no prompt, `tell` shows help: where a turn would run, which agents are
+available, and what to type next. `--output=toon` and `--output=json` return
+the same discovery as data; the formats that exist only to carry an answer have
+no form for this screen and say so.
 
 A turn defaults to `--output=human`: the answer rendered as Markdown for a
 terminal. It decorates only when stdout is a terminal, so a redirected or piped

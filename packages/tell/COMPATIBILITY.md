@@ -150,9 +150,11 @@ the plain Markdown the model wrote anywhere else, so anything parsing TOON out
 of a bare `tell "..."` must now pass `--output=toon`. The bundled branch
 default moves with it, and `tell config effective` reports `human`. The other
 formats, every explicit `--output`, and the no-prompt home screen are
-unchanged; the home screen still has only its structured forms, so it renders
-TOON when it inherits the new default and still rejects a format it cannot draw
-when one is asked for by name. Two commands may now declare the same option
+unchanged. The no-prompt home screen gained a readable form and is what a bare
+`tell` now prints: the same discovery as help rather than as a payload.
+`--output=toon` and `--output=json` still return it as data, and `text` and
+`events` are still refused by name, with the message now naming all three
+accepted forms. Two commands may now declare the same option
 with different defaults, which the application's routing definition tolerates
 while the declarations parse alike. Evidence:
 `tests/Feature/RenderingTest.php`, `tests/Integration/BusyIndicatorTest.php`.

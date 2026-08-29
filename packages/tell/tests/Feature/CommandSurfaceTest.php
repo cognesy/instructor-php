@@ -134,9 +134,12 @@ it('uses bare invocations for content-first discovery', function (array $argumen
     expect($payload['help'] === [])->toBeFalse();
     expect(array_key_exists('credentials', $payload['storage']))->toBeFalse();
 })->with([
-    'empty argv' => [['tell']],
-    'empty argv with verbosity' => [['tell', '-v']],
-    'separator without a prompt' => [['tell', '--']],
+    // The subject is the structured payload, so each of these asks for it; that
+    // the bare, verbose, and separator forms all reach this screen at all is
+    // what the argv shapes are here to prove.
+    'empty argv' => [['tell', '--output=toon']],
+    'empty argv with verbosity' => [['tell', '-v', '--output=toon']],
+    'separator without a prompt' => [['tell', '--output=toon', '--']],
 ]);
 
 it('renders unknown option errors as structured usage data', function (array $arguments): void {

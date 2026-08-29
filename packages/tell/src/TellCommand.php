@@ -13,6 +13,7 @@ use Cognesy\Tell\Operational\PlaneOperation;
 use Cognesy\Tell\Render\BusyIndicator;
 use Cognesy\Tell\Render\EventProgress;
 use Cognesy\Tell\Render\EventsRenderer;
+use Cognesy\Tell\Render\HomeScreen;
 use Cognesy\Tell\Render\HumanRenderer;
 use Cognesy\Tell\Render\JsonRenderer;
 use Cognesy\Tell\Render\OutputRenderer;
@@ -252,15 +253,15 @@ HELP)
 
     private function showHome(InputInterface $input, OutputInterface $output): int
     {
-        // The home screen is an inventory, not an answer, so it has only ever
-        // had a structured form. Asking for one it cannot render is still an
-        // error; arriving with the default turn format is not, because nobody
-        // chose it here.
+        // Arriving here with no prompt is how a person finds out what tell can
+        // do, so the default format owes them help rather than an inventory or
+        // a complaint. The formats that exist only to carry an answer have
+        // nothing to say on this screen and still refuse it by name.
         $mode = (string) $input->getOption('output');
-        if ($input->hasParameterOption(['--output', '-o'], true) && ! in_array($mode, ['toon', 'json'], true)) {
-            throw new InvalidArgumentException('Without a prompt, --output must be toon or json.');
+        if ($input->hasParameterOption(['--output', '-o'], true) && ! in_array($mode, ['human', 'toon', 'json'], true)) {
+            throw new InvalidArgumentException('Without a prompt, --output must be human, toon, or json.');
         }
-        $mode = in_array($mode, ['toon', 'json'], true) ? $mode : 'toon';
+        $mode = in_array($mode, ['human', 'toon', 'json'], true) ? $mode : 'human';
         $directory = (string) $input->getOption('dir');
         $cwd = getcwd();
         $project = match (true) {
@@ -282,7 +283,7 @@ HELP)
             ];
         }
         usort($agents, static fn (array $left, array $right): int => $left['name'] <=> $right['name']);
-        (new StructuredOutput($output))->write([
+        $payload = [
             'bin' => $this->binary(),
             'description' => 'Run and inspect Instructor agents in the current workspace.',
             'directory' => $project,
@@ -302,7 +303,13 @@ HELP)
                 'Trace roots are reported as storage.executionTraces and storage.sessionTraces.',
                 'Run `tell --help` for all turn options.',
             ],
-        ], json: $mode === 'json');
+        ];
+        if ($mode === 'human') {
+            (new HomeScreen($output))->write($payload);
+
+            return Command::SUCCESS;
+        }
+        (new StructuredOutput($output))->write($payload, json: $mode === 'json');
 
         return Command::SUCCESS;
     }

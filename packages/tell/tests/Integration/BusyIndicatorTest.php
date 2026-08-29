@@ -117,12 +117,38 @@ it('gets out of the way while a tool is asking the person a question', function 
         ->and($busy)->toEndWith("\r\033[K");
 });
 
-it('renders the home screen structurally on the default format, and still rejects a chosen one it cannot draw', function (): void {
-    $default = tellBusyTester();
-    expect($default->execute(['--dir' => tellBusyProject()]))->toBe(0)
-        ->and($default->getDisplay())->toContain('agentCount');
+it('answers a bare invocation with help rather than an inventory or a complaint', function (): void {
+    foreach ([[], ['--output' => 'human']] as $invocation) {
+        $tester = tellBusyTester();
 
-    $chosen = tellBusyTester();
-    expect($chosen->execute(['--dir' => tellBusyProject(), '--output' => 'text']))->toBe(2)
-        ->and($chosen->getDisplay())->toContain('Without a prompt, --output must be toon or json');
+        expect($tester->execute(['--dir' => tellBusyProject(), ...$invocation]))->toBe(0);
+
+        $home = $tester->getDisplay();
+
+        // Help, not the structured payload: no field names, and the next actions
+        // read as commands to type.
+        expect($home)->toContain('Run and inspect Instructor agents')
+            ->and($home)->toContain('Agents (1)')
+            ->and($home)->toContain('default')
+            ->and($home)->toContain('Next')
+            ->and($home)->toContain('"<prompt>"')
+            ->and($home)->not->toContain('agentCount')
+            ->and($home)->not->toContain('discoveryErrors')
+            // The note about the payload's own field names has no reader here.
+            ->and($home)->not->toContain('storage.executionTraces');
+    }
+});
+
+it('keeps the structured home screen, and still refuses a format that has no home form', function (): void {
+    $toon = tellBusyTester();
+    expect($toon->execute(['--dir' => tellBusyProject(), '--output' => 'toon']))->toBe(0)
+        ->and($toon->getDisplay())->toContain('agentCount');
+
+    $json = tellBusyTester();
+    expect($json->execute(['--dir' => tellBusyProject(), '--output' => 'json']))->toBe(0)
+        ->and(json_decode($json->getDisplay(), true, flags: JSON_THROW_ON_ERROR))->toHaveKey('agentCount');
+
+    $answerOnly = tellBusyTester();
+    expect($answerOnly->execute(['--dir' => tellBusyProject(), '--output' => 'text']))->toBe(2)
+        ->and($answerOnly->getDisplay())->toContain('Without a prompt, --output must be human, toon, or json');
 });
